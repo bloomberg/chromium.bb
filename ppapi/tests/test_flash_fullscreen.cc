@@ -10,6 +10,7 @@
 
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
 #include "ppapi/cpp/graphics_2d.h"
+#include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/point.h"
@@ -66,30 +67,27 @@ std::string TestFlashFullscreen::TestNormalToFullscreenToNormal() {
   if (screen_mode_.IsFullscreen())
     return ReportError("IsFullscreen() at start", true);
 
+  // This is only allowed within a contet of a user gesture (e.g. mouse click).
+  if (screen_mode_.SetFullscreen(true))
+    return ReportError("SetFullscreen(true) outside of user gesture", true);
+
   // 1. Switch to fullscreen.
   // The transition is asynchronous and ends at the next DidChangeView().
   // No graphics devices can be bound while in transition.
   fullscreen_pending_ = true;
-  if (!screen_mode_.SetFullscreen(true))
-    return ReportError("SetFullscreen(true) in normal", false);
-  pp::Graphics2D graphics2d_fullscreen(instance_, pp::Size(10, 10), false);
-  if (graphics2d_fullscreen.is_null())
-    return "Failed to create graphics2d_fullscreen";
-  // The out-of-process proxy is asynchronous, so testing for the following
-  // conditions is flaky and can only be done reliably in-process.
-  if (!testing_interface_->IsOutOfProcess()) {
-    if (instance_->BindGraphics(graphics2d_fullscreen))
-      return ReportError("BindGraphics() in fullscreen transition", true);
-    if (screen_mode_.IsFullscreen())
-      return ReportError("IsFullscreen() in fullscreen transtion", true);
-  }
-
+  instance_->RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
+  SimulateUserGesture();
   // DidChangeView() will call the callback once in fullscreen mode.
   fullscreen_event_.Wait();
+  if (GotError())
+    return Error();
   if (fullscreen_pending_)
     return "fullscreen_pending_ has not been reset";
   if (!screen_mode_.IsFullscreen())
     return ReportError("IsFullscreen() in fullscreen", false);
+  pp::Graphics2D graphics2d_fullscreen(instance_, pp::Size(10, 10), false);
+  if (graphics2d_fullscreen.is_null())
+    return "Failed to create graphics2d_fullscreen";
   if (!instance_->BindGraphics(graphics2d_fullscreen))
     return ReportError("BindGraphics() in fullscreen", false);
 
@@ -137,6 +135,8 @@ std::string TestFlashFullscreen::TestNormalToFullscreenToNormal() {
 void TestFlashFullscreen::DidChangeView(const pp::View& view) {
   pp::Rect position = view.GetRect();
   pp::Rect clip = view.GetClipRect();
+  if (normal_position_.IsEmpty())
+    normal_position_ = view.GetRect();
   if (fullscreen_pending_ && IsFullscreenView(position, clip, screen_size_)) {
     fullscreen_pending_ = false;
     fullscreen_event_.Signal();
@@ -146,4 +146,59 @@ void TestFlashFullscreen::DidChangeView(const pp::View& view) {
     if (testing_interface_->IsOutOfProcess())
       normal_event_.Signal();
   }
+}
+
+void TestFlashFullscreen::SimulateUserGesture() {
+  pp::Point plugin_center(
+      normal_position_.x() + normal_position_.width() / 2,
+      normal_position_.y() + normal_position_.height() / 2);
+  pp::Point mouse_movement;
+  pp::MouseInputEvent input_event(
+      instance_,
+      PP_INPUTEVENT_TYPE_MOUSEDOWN,
+      0,  // time_stamp
+      0,  // modifiers
+      PP_INPUTEVENT_MOUSEBUTTON_LEFT,
+      plugin_center,
+      1,  // click_count
+      mouse_movement);
+
+  testing_interface_->SimulateInputEvent(instance_->pp_instance(),
+                                         input_event.pp_resource());
+}
+
+bool TestFlashFullscreen::GotError() {
+  return !error_.empty();
+}
+
+std::string TestFlashFullscreen::Error() {
+  std::string last_error = error_;
+  error_.clear();
+  return last_error;
+}
+
+void TestFlashFullscreen::FailFullscreenTest(const std::string& error) {
+  error_ = error;
+  fullscreen_event_.Signal();
+}
+
+bool TestFlashFullscreen::HandleInputEvent(const pp::InputEvent& event) {
+  if (event.GetType() != PP_INPUTEVENT_TYPE_MOUSEDOWN &&
+      event.GetType() != PP_INPUTEVENT_TYPE_MOUSEUP) {
+    return false;
+  }
+
+  instance_->ClearInputEventRequest(PP_INPUTEVENT_CLASS_MOUSE);
+  if (screen_mode_.IsFullscreen()) {
+    FailFullscreenTest(
+        ReportError("IsFullscreen() before fullscreen transition", true));
+    return false;
+  }
+  if (!screen_mode_.SetFullscreen(true)) {
+    FailFullscreenTest(
+        ReportError("SetFullscreen(true) in normal", false));
+    return false;
+  }
+  // DidChangeView() will complete the transition to fullscreen.
+  return false;
 }

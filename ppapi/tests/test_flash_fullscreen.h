@@ -24,13 +24,21 @@ class TestFlashFullscreen : public TestCase {
   virtual bool Init();
   virtual void RunTests(const std::string& filter);
   virtual void DidChangeView(const pp::View& view);
+  bool HandleInputEvent(const pp::InputEvent& event) override;
 
  private:
   std::string TestGetScreenSize();
   std::string TestNormalToFullscreenToNormal();
+  void SimulateUserGesture();
+  bool GotError();
+  std::string Error();
+  void FailFullscreenTest(const std::string& error);
+
+  std::string error_;
 
   pp::FlashFullscreen screen_mode_;
   pp::Size screen_size_;
+  pp::Rect normal_position_;
 
   bool fullscreen_pending_;
   bool normal_pending_;
