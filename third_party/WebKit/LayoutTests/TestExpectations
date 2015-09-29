@@ -965,6 +965,16 @@ crbug.com/505415 [ XP ] accessibility/canvas-fallback-content-labels.html [ Fail
 
 crbug.com/506312 imported/csswg-test/css-pseudo-4/first-letter-001.html [ ImageOnlyFailure ]
 
+crbug.com/536234 css3/flexbox/flexbox-baseline-margins.html [ NeedsRebaseline ]
+crbug.com/536234 [ Android Linux Win SnowLeopard Lion MountainLion Retina Mavericks ] fast/forms/basic-textareas-quirks.html [ NeedsRebaseline ]
+crbug.com/536234 [ Android Linux Win SnowLeopard Lion MountainLion Retina Mavericks ] fast/forms/basic-textareas.html [ NeedsRebaseline ]
+crbug.com/536234 [ Android Linux Win SnowLeopard Lion MountainLion Retina Mavericks ] fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/536234 fast/forms/textarea-scrolled-focus-ring.html [ NeedsRebaseline ]
+crbug.com/536234 fast/layers/scroll-rect-to-visible.html [ NeedsRebaseline ]
+crbug.com/536234 [ Android Linux Win SnowLeopard Lion MountainLion Retina Mavericks ] fast/overflow/overflow-x-y.html [ NeedsRebaseline ]
+crbug.com/536234 [ Android Linux Win SnowLeopard Lion MountainLion Retina Mavericks ] fast/parser/open-comment-in-textarea.html [ NeedsRebaseline ]
+crbug.com/536234 [ Android Linux Win SnowLeopard Lion MountainLion Retina Mavericks ] fast/replaced/width100percent-textarea.html [ NeedsRebaseline ]
+
 crbug.com/524646 [ Yosemite ] css3/selectors3/html/css3-modsel-161.html [ NeedsRebaseline ]
 crbug.com/524646 [ Yosemite ] css3/selectors3/html/css3-modsel-19b.html [ NeedsRebaseline ]
 crbug.com/524646 [ Yosemite ] css3/selectors3/html/css3-modsel-23.html [ NeedsRebaseline ]

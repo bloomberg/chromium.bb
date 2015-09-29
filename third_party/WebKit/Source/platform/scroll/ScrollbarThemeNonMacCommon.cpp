@@ -72,16 +72,15 @@ IntRect ScrollbarThemeNonMacCommon::forwardButtonRect(ScrollbarThemeClient* scro
 
 IntRect ScrollbarThemeNonMacCommon::trackRect(ScrollbarThemeClient* scrollbar, bool)
 {
+    // The track occupies all space between the two buttons.
     IntSize bs = buttonSize(scrollbar);
     int thickness = scrollbarThickness(scrollbar->controlSize());
     if (scrollbar->orientation() == HorizontalScrollbar) {
-        // Once the scrollbar becomes smaller than the size of the
-        // two buttons with a 1 pixel gap, the track disappears.
-        if (scrollbar->width() <= 2 * bs.width() + 1)
+        if (scrollbar->width() <= 2 * bs.width())
             return IntRect();
         return IntRect(scrollbar->x() + bs.width(), scrollbar->y(), scrollbar->width() - 2 * bs.width(), thickness);
     }
-    if (scrollbar->height() <= 2 * bs.height() + 1)
+    if (scrollbar->height() <= 2 * bs.height())
         return IntRect();
     return IntRect(scrollbar->x(), scrollbar->y() + bs.height(), thickness, scrollbar->height() - 2 * bs.height());
 }

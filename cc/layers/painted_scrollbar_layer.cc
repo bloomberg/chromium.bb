@@ -243,7 +243,7 @@ bool PaintedScrollbarLayer::Update() {
 
   bool updated = false;
 
-  if (track_rect_.IsEmpty() || scaled_track_rect.IsEmpty()) {
+  if (scaled_track_rect.IsEmpty()) {
     if (track_resource_) {
       track_resource_ = nullptr;
       thumb_resource_ = nullptr;

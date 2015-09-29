@@ -791,6 +791,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   resource_count = 0;
   expected_created = 2;
   expected_deleted = 2;
+  scrollbar_layer->SetBounds(gfx::Size(0, 0));
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(0, 0, 0, 0));
   EXPECT_TRUE(scrollbar_layer->Update());
   EXPECT_EQ(0, scrollbar_layer->track_resource_id());
@@ -813,6 +814,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   resource_count = 2;
   expected_created = 4;
   expected_deleted = 2;
+  scrollbar_layer->SetBounds(gfx::Size(100, 15));
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
   EXPECT_TRUE(scrollbar_layer->Update());
   EXPECT_NE(0, scrollbar_layer->track_resource_id());
@@ -835,6 +837,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   resource_count = 0;
   expected_created = 5;
   expected_deleted = 5;
+  scrollbar_layer->SetBounds(gfx::Size(0, 0));
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(0, 0, 0, 0));
   EXPECT_TRUE(scrollbar_layer->Update());
   EXPECT_EQ(0, scrollbar_layer->track_resource_id());
@@ -846,15 +849,27 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   resource_count = 2;
   expected_created = 7;
   expected_deleted = 5;
+  scrollbar_layer->SetBounds(gfx::Size(100, 15));
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
   scrollbar_layer->fake_scrollbar()->set_has_thumb(true);
   EXPECT_TRUE(scrollbar_layer->Update());
   EXPECT_NE(0, scrollbar_layer->track_resource_id());
   EXPECT_NE(0, scrollbar_layer->thumb_resource_id());
 
-  resource_count = 1;
-  expected_created = 8;
+  resource_count = 2;
+  expected_created = 9;
   expected_deleted = 7;
+  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(0, 0, 0, 0));
+  EXPECT_TRUE(scrollbar_layer->Update());
+  EXPECT_NE(0, scrollbar_layer->track_resource_id());
+  EXPECT_NE(0, scrollbar_layer->thumb_resource_id());
+  EXPECT_EQ(resource_count, layer_tree_host_->UIResourceCount());
+  EXPECT_EQ(expected_created, layer_tree_host_->TotalUIResourceCreated());
+  EXPECT_EQ(expected_deleted, layer_tree_host_->TotalUIResourceDeleted());
+
+  resource_count = 1;
+  expected_created = 10;
+  expected_deleted = 9;
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
   scrollbar_layer->fake_scrollbar()->set_has_thumb(false);
   scrollbar_layer->SetBounds(gfx::Size(90, 15));
