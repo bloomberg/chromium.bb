@@ -402,7 +402,7 @@ class LocationBarView : public LocationBar,
   // Our delegate.
   Delegate* delegate_;
 
-  // Object used to paint the border.
+  // Object used to paint the border. Not used for material design.
   scoped_ptr<views::Painter> border_painter_;
 
   // An icon to the left of the edit field.

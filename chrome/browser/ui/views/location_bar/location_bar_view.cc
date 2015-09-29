@@ -187,7 +187,7 @@ void LocationBarView::Init() {
         IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW);
     border_painter_.reset(
         views::Painter::CreateImageGridPainter(kOmniboxPopupBorderImages));
-  } else {
+  } else if (!ui::MaterialDesignController::IsModeMaterial()) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     const gfx::Insets omnibox_border_insets(14, 9, 14, 9);
     border_painter_.reset(views::Painter::CreateImagePainter(
@@ -528,11 +528,13 @@ void LocationBarView::GetAccessibleState(ui::AXViewState* state) {
 
 gfx::Size LocationBarView::GetPreferredSize() const {
   // Compute minimum height.
-  gfx::Size min_size(border_painter_->GetMinimumSize());
+  gfx::Size min_size;
   // For non-material the size of the asset determines the size of the
   // LocationBarView.
   if (ui::MaterialDesignController::IsModeMaterial())
     min_size.set_height(GetLayoutConstant(LOCATION_BAR_HEIGHT));
+  else
+    min_size = border_painter_->GetMinimumSize();
 
   if (!IsInitialized())
     return min_size;
@@ -1273,8 +1275,34 @@ void LocationBarView::PaintChildren(const ui::PaintContext& context) {
   gfx::Rect border_rect(GetContentsBounds());
   if (is_popup_mode_ && (GetHorizontalEdgeThickness() == 0))
     border_rect.Inset(-kPopupEdgeThickness, 0);
-  views::Painter::PaintPainterAt(recorder.canvas(), border_painter_.get(),
-                                 border_rect);
+
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    gfx::Canvas* canvas = recorder.canvas();
+    const float display_scale = canvas->image_scale();
+    canvas->Save();
+    SkScalar scale_factor = 1.0f / display_scale;
+    canvas->sk_canvas()->scale(scale_factor, scale_factor);
+
+    SkPaint paint;
+    paint.setStyle(SkPaint::Style::kStroke_Style);
+    paint.setColor(SkColorSetARGB(0x40, 0x00, 0x00, 0x00));
+    paint.setStrokeWidth(1);
+    paint.setAntiAlias(true);
+
+    const float kOffset = 0.5f;
+    gfx::RectF border_rect_f(border_rect);
+    border_rect_f.Scale(display_scale);
+    gfx::InsetsF insets(kOffset, kOffset, kOffset, kOffset);
+    border_rect_f.Inset(insets);
+
+    const SkScalar kCornerRadius = SkDoubleToScalar(2.5f * display_scale);
+    canvas->sk_canvas()->drawRoundRect(gfx::RectFToSkRect(border_rect_f),
+                                       kCornerRadius, kCornerRadius, paint);
+    recorder.canvas()->Restore();
+  } else {
+    views::Painter::PaintPainterAt(recorder.canvas(), border_painter_.get(),
+                                   border_rect);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
