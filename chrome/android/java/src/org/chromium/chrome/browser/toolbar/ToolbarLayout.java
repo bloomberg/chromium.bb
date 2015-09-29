@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.Invalidator;
@@ -48,6 +50,9 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected TintedImageButton mMenuButton;
     private AppMenuButtonHelper mAppMenuButtonHelper;
 
+    protected final ColorStateList mDarkModeTint;
+    protected final ColorStateList mLightModeTint;
+
     private ToolbarDataProvider mToolbarDataProvider;
     private ToolbarTabController mToolbarTabController;
     private ToolbarProgressBar mProgressBar;
@@ -68,6 +73,10 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         super(context, attrs);
         mToolbarHeightWithoutShadow = getResources().getDimensionPixelOffset(
                 getToolbarHeightWithoutShadowResId());
+        mDarkModeTint =
+                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
+        mLightModeTint =
+                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.light_mode_tint);
     }
 
     @Override

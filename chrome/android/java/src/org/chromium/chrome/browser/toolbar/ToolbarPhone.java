@@ -12,7 +12,6 @@ import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -166,6 +165,9 @@ public class ToolbarPhone extends ToolbarLayout
     private TabSwitcherDrawable mTabSwitcherButtonDrawable;
     private TabSwitcherDrawable mTabSwitcherButtonDrawableLight;
 
+    private final int mLightModeDefaultColor;
+    private final int mDarkModeDefaultColor;
+
     private final Rect mUrlViewportBounds = new Rect();
     private final Rect mUrlBackgroundPadding = new Rect();
     private final Rect mBackgroundOverlayBounds = new Rect();
@@ -246,6 +248,10 @@ public class ToolbarPhone extends ToolbarLayout
                 ApiCompatibilityUtils.getColor(getResources(), R.color.progress_bar_background);
         mProgressBackBackgroundColorWhite = ApiCompatibilityUtils.getColor(getResources(),
                 R.color.progress_bar_background_white);
+        mLightModeDefaultColor =
+                ApiCompatibilityUtils.getColor(getResources(), R.color.light_mode_tint);
+        mDarkModeDefaultColor =
+                ApiCompatibilityUtils.getColor(getResources(), R.color.dark_mode_tint);
     }
 
     @Override
@@ -943,8 +949,8 @@ public class ToolbarPhone extends ToolbarLayout
             translateCanvasToView(mToolbarButtonsContainer, mMenuButton, canvas);
             mTabSwitcherAnimationMenuDrawable.setAlpha(rgbAlpha);
             int color = mUseLightToolbarDrawables
-                    ? ApiCompatibilityUtils.getColor(getResources(), R.color.light_mode_tint)
-                    : ApiCompatibilityUtils.getColor(getResources(), R.color.dark_mode_tint);
+                    ? mLightModeDefaultColor
+                    : mDarkModeDefaultColor;
             mTabSwitcherAnimationMenuDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
             mTabSwitcherAnimationMenuDrawable.draw(canvas);
         }
@@ -1373,8 +1379,8 @@ public class ToolbarPhone extends ToolbarLayout
             Resources res = getResources();
             mTabSwitcherAnimationMenuDrawable = ApiCompatibilityUtils.getDrawable(
                     res, R.drawable.btn_menu).mutate();
-            mTabSwitcherAnimationMenuDrawable.setColorFilter(isIncognito() ? Color.WHITE
-                    : ApiCompatibilityUtils.getColor(res, R.color.light_normal_color),
+            mTabSwitcherAnimationMenuDrawable.setColorFilter(
+                    isIncognito() ? mLightModeDefaultColor : mDarkModeDefaultColor,
                     PorterDuff.Mode.SRC_IN);
             ((BitmapDrawable) mTabSwitcherAnimationMenuDrawable).setGravity(Gravity.CENTER);
         }
@@ -1874,25 +1880,21 @@ public class ToolbarPhone extends ToolbarLayout
                 : R.color.progress_bar_foreground);
         getProgressBar().setForegroundColor(progressBarForegroundColor);
 
-        ColorStateList dark =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
-        ColorStateList white =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.light_mode_tint);
 
         if (mToggleTabStackButton != null) {
             mToggleTabStackButton.setImageDrawable(mUseLightToolbarDrawables
                     ? mTabSwitcherButtonDrawableLight : mTabSwitcherButtonDrawable);
             if (mTabSwitcherAnimationTabStackDrawable != null) {
                 mTabSwitcherAnimationTabStackDrawable.setTint(
-                        mUseLightToolbarDrawables ? white : dark);
+                        mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
             }
         }
 
         if (shouldShowMenuButton()) {
-            mMenuButton.setTint(mUseLightToolbarDrawables ? white : dark);
+            mMenuButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
         }
         if (mHomeButton.getVisibility() != GONE) {
-            mHomeButton.setTint(mUseLightToolbarDrawables ? white : dark);
+            mHomeButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
         }
 
         mPhoneLocationBar.updateVisualsForState();

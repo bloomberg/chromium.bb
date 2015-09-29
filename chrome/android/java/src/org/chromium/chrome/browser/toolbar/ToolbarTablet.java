@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -292,14 +291,10 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             setBackgroundResource(incognito
                     ? R.color.incognito_primary_color : R.color.default_primary_color);
 
-            ColorStateList dark =
-                    ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
-            ColorStateList white = ApiCompatibilityUtils.getColorStateList(getResources(),
-                    R.color.light_mode_tint);
-            mMenuButton.setTint(incognito ? white : dark);
-            mHomeButton.setTint(incognito ? white : dark);
-            mBackButton.setTint(incognito ? white : dark);
-            mForwardButton.setTint(incognito ? white : dark);
+            mMenuButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
+            mHomeButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
+            mBackButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
+            mForwardButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
             if (incognito) {
                 mLocationBar.getContainerView().getBackground().setAlpha(
                         ToolbarPhone.LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
@@ -339,26 +334,23 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             mReloadButton.setContentDescription(getContext().getString(
                     R.string.accessibility_btn_refresh));
         }
-        ColorStateList dark = ApiCompatibilityUtils.getColorStateList(getResources(),
-                R.color.dark_mode_tint);
-        ColorStateList white = ApiCompatibilityUtils.getColorStateList(getResources(),
-                R.color.light_mode_tint);
-        mReloadButton.setTint(isIncognito() ? white : dark);
+        mReloadButton.setTint(isIncognito() ? mLightModeTint : mDarkModeTint);
         mReloadButton.setEnabled(!mInTabSwitcherwMode);
     }
 
     @Override
     protected void updateBookmarkButton(boolean isBookmarked, boolean editingAllowed) {
-        int tintColor = isIncognito() ? R.color.light_mode_tint : R.color.dark_mode_tint;
         if (isBookmarked) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
             // Non-incognito mode shows a blue filled star.
-            if (!isIncognito()) tintColor = R.color.blue_mode_tint;
+            mBookmarkButton.setTint(isIncognito()
+                    ? mLightModeTint
+                    : ApiCompatibilityUtils.getColorStateList(
+                            getResources(), R.color.blue_mode_tint));
         } else {
             mBookmarkButton.setImageResource(R.drawable.btn_star);
+            mBookmarkButton.setTint(isIncognito() ? mLightModeTint : mDarkModeTint);
         }
-        ColorStateList tint = ApiCompatibilityUtils.getColorStateList(getResources(), tintColor);
-        mBookmarkButton.setTint(tint);
         mBookmarkButton.setEnabled(editingAllowed);
     }
 

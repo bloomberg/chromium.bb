@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.toolbar;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
@@ -303,15 +302,14 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     private void updateButtonsTint() {
-        Resources resources = getResources();
-        ColorStateList colorStateList = ApiCompatibilityUtils.getColorStateList(resources,
-                mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
-        mMenuButton.setTint(colorStateList);
+        mMenuButton.setTint(mUseDarkColors ? mDarkModeTint : mLightModeTint);
         if (mCloseButton.getDrawable() instanceof TintedDrawable) {
-            ((TintedDrawable) mCloseButton.getDrawable()).setTint(colorStateList);
+            ((TintedDrawable) mCloseButton.getDrawable()).setTint(
+                    mUseDarkColors ? mDarkModeTint : mLightModeTint);
         }
         if (mCustomActionButton.getDrawable() instanceof TintedDrawable) {
-            ((TintedDrawable) mCustomActionButton.getDrawable()).setTint(colorStateList);
+            ((TintedDrawable) mCustomActionButton.getDrawable()).setTint(
+                    mUseDarkColors ? mDarkModeTint : mLightModeTint);
         }
     }
 
