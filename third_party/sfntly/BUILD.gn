@@ -122,6 +122,11 @@ static_library("sfntly") {
   defines = [ "SFNTLY_NO_EXCEPTION" ]
   include_dirs = [ "src/cpp/src" ]
 
+  # This is the equivalent to the following in sfntly.gyp.
+  # 'msvs_disabled_warnings': [ 4267 ],
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
   deps = [
     "//third_party/icu:icuuc",
   ]
