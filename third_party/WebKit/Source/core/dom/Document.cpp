@@ -575,7 +575,7 @@ void Document::dispose()
     m_userActionElements.documentDidRemoveLastRef();
     m_associatedFormControls.clear();
 
-    m_scriptRunner.clear();
+    m_scriptRunner->dispose();
     detachParser();
 
     m_registrationContext.clear();

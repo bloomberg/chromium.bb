@@ -48,6 +48,13 @@ ScriptRunner::ScriptRunner(Document* document)
 ScriptRunner::~ScriptRunner()
 {
 #if !ENABLE(OILPAN)
+    dispose();
+#endif
+}
+
+#if !ENABLE(OILPAN)
+void ScriptRunner::dispose()
+{
     // Make sure that ScriptLoaders don't keep their PendingScripts alive.
     for (ScriptLoader* scriptLoader : m_scriptsToExecuteInOrder)
         scriptLoader->detach();
@@ -55,8 +62,12 @@ ScriptRunner::~ScriptRunner()
         scriptLoader->detach();
     for (ScriptLoader* scriptLoader : m_pendingAsyncScripts)
         scriptLoader->detach();
-#endif
+
+    m_scriptsToExecuteInOrder.clear();
+    m_scriptsToExecuteSoon.clear();
+    m_pendingAsyncScripts.clear();
 }
+#endif
 
 void ScriptRunner::addPendingAsyncScript(ScriptLoader* scriptLoader)
 {

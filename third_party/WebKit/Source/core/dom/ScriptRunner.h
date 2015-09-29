@@ -48,6 +48,9 @@ public:
         return adoptPtrWillBeNoop(new ScriptRunner(document));
     }
     ~ScriptRunner();
+#if !ENABLE(OILPAN)
+    void dispose();
+#endif
 
     enum ExecutionType { ASYNC_EXECUTION, IN_ORDER_EXECUTION };
     void queueScriptForExecution(ScriptLoader*, ExecutionType);
@@ -82,6 +85,6 @@ private:
     OwnPtr<CancellableTaskFactory> m_executeScriptsTaskFactory;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // ScriptRunner_h
