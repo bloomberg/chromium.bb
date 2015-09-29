@@ -108,8 +108,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
   if (!frame_tree) {
     frame_tree = new HTMLFrameTreeManager(global_state);
     frame_tree->Init(delegate, view, frame_data, change_id);
-    if (frame_data[0]->frame_id == view->id())
-      (*instances_)[frame_data[0]->frame_id] = frame_tree;
+    (*instances_)[frame_data[0]->frame_id] = frame_tree;
   } else if (view_connect_type ==
              web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING) {
     HTMLFrame* existing_frame = frame_tree->root_->FindFrame(view_id);
