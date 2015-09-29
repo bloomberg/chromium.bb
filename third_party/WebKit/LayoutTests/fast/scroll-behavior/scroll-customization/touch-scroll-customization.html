@@ -140,11 +140,11 @@ if ('ScrollState' in window) {
       // c applies the first two scrolls, and then hits its scroll extents.
       [0, 0, -65, -55, -45],
       // b doesn't scroll, and so leaves the same deltas unapplied as c.
-      [0, 0, -65, -55, -45],
+      [-65, -55, -45],
       // a hits its scroll extent on the second last step.
-      [0, 0, 0, 0, -45],
+      [0, 0, -45],
       // The scrollingElement performs the frame scroll.
-      [0, 0, 0, 0, 0]];
+      [0]];
 
     for (var i = 0; i < deltas.length; ++i)
       applyDelta(deltas[i]);
@@ -167,28 +167,17 @@ if ('ScrollState' in window) {
   test(function() {
     reset();
 
-    // Consume one pixel of delta per call to applyScroll.
-    for (var i = 0; i < elements.length; ++i) {
-      if (scrollableElements.indexOf(elements[i]) == -1)
-        continue;
-      elements[i].setApplyScroll((function(scrollState) {
-        if (scrollState.deltaY !== 0)
-          scrollState.consumeDelta(0, -1);
-      }).bind(elements[i]), "perform-before-native-scroll");
-    }
-
     // Scroll five times, with three scrollable elements.
-    // The scroll distance is decreased more the higher up the scroll chain the element is.
-    var cScrollTop = [85 - 1, 100, 100, 100, 100];
-    var aScrollTop = [0, 0, 65 - 2, 100, 100];
-    var scrollingElementScrollTop = [0, 0, 0, 0, 45 - 3];
+    var cScrollTop = [85, 100, 100, 100, 100];
+    var aScrollTop = [0, 0, 65, 100, 100];
+    var scrollingElementScrollTop = [0, 0, 0, 0, 45];
     for (var i = 0; i < deltas.length; ++i) {
       applyDelta(deltas[i]);
       assert_equals(c.scrollTop, cScrollTop[i], "For id 'c' on step " + i);
       assert_equals(a.scrollTop, aScrollTop[i], "For id 'a' on step " + i);
       assert_equals(document.scrollingElement.scrollTop, scrollingElementScrollTop[i], "For scrollingElement on step " + i);
     }
-  }, "Consuming deltas prevents scrolling.");
+  }, "Scroll propagation behaves correctly.");
 
   test(function() {
     reset();

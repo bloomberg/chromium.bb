@@ -25,9 +25,9 @@ PASS container.scrollLeft is 0
 Gesture scrolling input text should scroll text the specified amount
 PASS box.scrollLeft is 60
 PASS container.scrollLeft is 0
-Gesture scrolling input text past scroll width should scroll container div
+Gesture scrolling input text past scroll width shouldn't scroll container div
 PASS box.scrollLeft is fullyScrolled
-PASS container.scrollLeft is 50
+PASS container.scrollLeft is 0
 ===Testing vertical scroll behavior===
 PASS box.scrollTop is 0
 PASS container.scrollTop is 0

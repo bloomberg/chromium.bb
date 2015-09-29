@@ -54,11 +54,11 @@
             shouldBe('container.scrollLeft', '0');
 
             eventSender.gestureScrollBegin(gestureX, gestureY);
-            // Prevent scroll to propagate by passing true for third parameter
-            eventSender.gestureScrollUpdate(-10, 0, true);
-            eventSender.gestureScrollUpdate(-10, 0, true);
-            eventSender.gestureScrollUpdate(-10, 0, true);
-            eventSender.gestureScrollUpdate(-10, 0, true);
+
+            eventSender.gestureScrollUpdate(-10, 0);
+            eventSender.gestureScrollUpdate(-10, 0);
+            eventSender.gestureScrollUpdate(-10, 0);
+            eventSender.gestureScrollUpdate(-10, 0);
             eventSender.gestureScrollEnd(0, 0);
 
             debug("Flinging input text should scroll text by the specified amount");
@@ -68,10 +68,10 @@
             resetScroll();
 
             eventSender.gestureScrollBegin(gestureX, gestureY);
-            eventSender.gestureScrollUpdate(-fullyScrolled, 0, true);
-            eventSender.gestureScrollUpdate(-100, 0, true);
-            eventSender.gestureScrollUpdate(-100, 0, true);
-            eventSender.gestureScrollUpdate(-300, 0, true);
+            eventSender.gestureScrollUpdate(-fullyScrolled, 0);
+            eventSender.gestureScrollUpdate(-100, 0);
+            eventSender.gestureScrollUpdate(-100, 0);
+            eventSender.gestureScrollUpdate(-300, 0);
             eventSender.gestureScrollEnd(0, 0);
 
             debug("Flinging input text past the scrollable width shouldn't scroll containing div");
@@ -80,8 +80,8 @@
             shouldBe('container.scrollLeft', '0');
 
             eventSender.gestureScrollBegin(gestureX, gestureY);
-            eventSender.gestureScrollUpdate(-30, 0, true);
-            eventSender.gestureScrollUpdate(-30, 0, true);
+            eventSender.gestureScrollUpdate(-30, 0);
+            eventSender.gestureScrollUpdate(-30, 0);
             eventSender.gestureScrollEnd(0, 0);
 
             debug("Flinging fully scrolled input text should fling containing div");
@@ -113,9 +113,9 @@
             eventSender.gestureScrollUpdate(-50, 0);
             eventSender.gestureScrollEnd(0, 0);
 
-            debug("Gesture scrolling input text past scroll width should scroll container div");
+            debug("Gesture scrolling input text past scroll width shouldn't scroll container div");
             shouldBe('box.scrollLeft', 'fullyScrolled');
-            shouldBe('container.scrollLeft', '50');
+            shouldBe('container.scrollLeft', '0');
         }
 
         function testVerticalScroll()

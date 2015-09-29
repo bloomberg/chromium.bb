@@ -107,7 +107,7 @@ var touchtarget;
 var expectedGesturesTotal = 2;
 var gesturesOccurred = 0;
 var scrollAmountX = ['0', '0'];
-var scrollAmountY = ['0', '25'];
+var scrollAmountY = ['0', '0'];
 var wheelEventsOccurred = 0;
 var expectedWheelEventsOccurred = ['0', '0'];
 var scrollEventsOccurred = 0;
@@ -150,8 +150,8 @@ function runTest()
     touchtarget.addEventListener("mousewheel", recordWheel);
 
     if (window.eventSender) {
-        description('This tests that a gesture scroll is propagated from an ' +
-                'inner div to an outer div twice when the scrolled divs have no ' +
+        description('This tests that a gesture scroll isn\'t propagated from an ' +
+                'inner div to an outer div when the scrolled divs have no ' +
                 'remaining scroll offset.');
         if (checkTestDependencies())
             firstGestureScroll();

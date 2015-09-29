@@ -135,8 +135,11 @@ public:
 
     bool preventPropagation() const
     {
+        // TODO(tdresser) Once we've decided if we're getting rid of scroll
+        // chaining, we should remove all scroll chaining related logic. See
+        // crbug.com/526462 for details.
         ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
-        return m_data.m_scroll.m_preventPropagation;
+        return true;
     }
 
     float scale() const

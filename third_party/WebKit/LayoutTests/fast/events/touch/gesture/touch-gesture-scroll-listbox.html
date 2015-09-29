@@ -116,9 +116,19 @@
             eventSender.gestureScrollUpdate(0, -50);
             eventSender.gestureScrollEnd(0, 0);
 
-            debug("Gesture scrolling list past the end should scroll container div");
+            debug("Gesture scrolling list past the end shouldn't scroll container div");
             shouldBe('box.scrollTop', 'fullyScrolled');
-            shouldBe('container.scrollTop', '50');
+            shouldBe('container.scrollTop', '0');
+
+            eventSender.gestureScrollBegin(gestureX, gestureY);
+            eventSender.gestureScrollUpdate(0, -fullyScrolled);
+            eventSender.gestureScrollUpdate(0, -50);
+            eventSender.gestureScrollEnd(0, 0);
+
+            debug("Gesture scrolling list past the end should scroll container div when starting at scroll extent");
+            shouldBe('box.scrollTop', 'fullyScrolled');
+            shouldBe('container.scrollTop', 'fullyScrolled + 50');
+
         }
 
         function testHorizontalScroll()

@@ -49,15 +49,30 @@ if (window.testRunner)
 function runTest()
 {
     if (window.eventSender) {
-        description('This tests that a gesture scroll is propagated from an ' +
-                'inner div to an outer div when the inner div has ' +
-                'remaining scroll offset on one axis, but not on the other.');
+        description('This tests that a gesture scroll isn\'t propagated from an ' +
+            'inner div to an outer div when the inner div has ' +
+            'remaining scroll offset on one axis but not on the other, unless ' +
+            'the outer div starts at its scroll extent');
         if (checkTestDependencies()) {
             eventSender.gestureScrollBegin(10, 10);
             eventSender.gestureScrollUpdate(-15, -20);
             eventSender.gestureScrollEnd(0, 0);
             shouldBe("horizontal.scrollLeft", "15");
+            shouldBe("vertical.scrollTop", "0");
+
+            // Scroll to extents.
+            eventSender.gestureScrollBegin(10, 10);
+            eventSender.gestureScrollUpdate(-1000, -1000);
+            eventSender.gestureScrollEnd(0, 0);
+            shouldBe("horizontal.scrollLeft", "600");
+            shouldBe("vertical.scrollTop", "0");
+
+            eventSender.gestureScrollBegin(10, 10);
+            eventSender.gestureScrollUpdate(-15, -20);
+            eventSender.gestureScrollEnd(0, 0);
+            shouldBe("horizontal.scrollLeft", "600");
             shouldBe("vertical.scrollTop", "20");
+
             if (window.testRunner)
               testRunner.notifyDone();
         } else {

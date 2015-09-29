@@ -27,9 +27,12 @@ PASS box.scrollTop is 3*itemHeight+6
 PASS container.scrollTop is 0
 PASS box.scrollTop is 0
 PASS container.scrollTop is 0
-Gesture scrolling list past the end should scroll container div
+Gesture scrolling list past the end shouldn't scroll container div
 PASS box.scrollTop is fullyScrolled
-PASS container.scrollTop is 50
+PASS container.scrollTop is 0
+Gesture scrolling list past the end should scroll container div when starting at scroll extent
+PASS box.scrollTop is fullyScrolled
+PASS container.scrollTop is fullyScrolled + 50
 ===Testing horizontal scroll===
 PASS box.scrollLeft is 0
 PASS container.scrollLeft is 0
