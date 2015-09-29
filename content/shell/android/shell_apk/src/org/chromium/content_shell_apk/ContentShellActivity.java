@@ -86,8 +86,7 @@ public class ContentShellActivity extends Activity {
             mShellManager.setStartupUrl(Shell.sanitizeUrl(startupUrl));
         }
 
-        if (CommandLine.getInstance().hasSwitch(ContentSwitches.RUN_LAYOUT_TEST)
-                || CommandLine.getInstance().hasSwitch(ContentSwitches.DUMP_RENDER_TREE)) {
+        if (CommandLine.getInstance().hasSwitch(ContentSwitches.RUN_LAYOUT_TEST)) {
             try {
                 BrowserStartupController.get(this, LibraryProcessType.PROCESS_BROWSER)
                         .startBrowserProcessesSync(false);

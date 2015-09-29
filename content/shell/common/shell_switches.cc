@@ -28,12 +28,7 @@ const char kCrashDumpsDir[] = "crash-dumps-dir";
 // causes the leak detector to cause immediate crash when found leak.
 const char kCrashOnFailure[] = "crash-on-failure";
 
-// Request the render trees of pages to be dumped as text once they have
-// finished loading. Note that this switch has been deprecated, and the
-// identically functioning |kRunLayoutTest| switch should be used instead.
-const char kDumpRenderTree[] = "dump-render-tree";
-
-// When dump-render-tree is enabled, this causes the line box tree for
+// When run-layout-test is enabled, this causes the line box tree for
 // each LayoutBlockFlow to be dumped as well.
 const char kDumpLineBoxTrees[] = "dump-line-box-trees";
 

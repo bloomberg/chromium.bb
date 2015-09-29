@@ -43,9 +43,6 @@ public abstract class ContentSwitches {
     // Native switch - chrome_switches::kEnableInstantExtendedAPI
     public static final String ENABLE_INSTANT_EXTENDED_API = "enable-instant-extended-api";
 
-    // Native switch - shell_switches::kDumpRenderTree
-    public static final String DUMP_RENDER_TREE = "dump-render-tree";
-
     // Native switch - shell_switches::kRunLayoutTest
     public static final String RUN_LAYOUT_TEST = "run-layout-test";
 

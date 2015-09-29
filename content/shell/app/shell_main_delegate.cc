@@ -121,12 +121,6 @@ ShellMainDelegate::~ShellMainDelegate() {
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
 
-  // "dump-render-tree" has been renamed to "run-layout-test", but the old
-  // flag name is still used in some places, so this check will remain until
-  // it is phased out entirely.
-  if (command_line.HasSwitch(switches::kDumpRenderTree))
-    command_line.AppendSwitch(switches::kRunLayoutTest);
-
 #if defined(OS_WIN)
   // Enable trace control and transport through event tracing for Windows.
   logging::LogEventProvider::Initialize(kContentShellProviderName);
