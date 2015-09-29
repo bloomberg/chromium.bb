@@ -2235,6 +2235,34 @@ TEST_F(ExtensionUpdaterTest, TestDisabledReasons3) {
   TestPingMetrics(0, disabled);
 }
 
+TEST_F(ExtensionUpdaterTest, TestUninstallWhileUpdateCheck) {
+  ServiceForManifestTests service(prefs_.get());
+  ExtensionList tmp;
+  service.CreateTestExtensions(1, 1, &tmp, nullptr, Manifest::INTERNAL);
+  service.set_extensions(tmp, ExtensionList());
+
+  ASSERT_EQ(1u, tmp.size());
+  ExtensionId id = tmp.front()->id();
+  ASSERT_TRUE(service.GetExtensionById(id, false));
+
+  ExtensionUpdater updater(&service,
+                           service.extension_prefs(),
+                           service.pref_service(),
+                           service.profile(),
+                           kUpdateFrequencySecs,
+                           NULL,
+                           service.GetDownloaderFactory());
+  ExtensionUpdater::CheckParams params;
+  params.ids.push_back(id);
+  updater.Start();
+  updater.CheckNow(params);
+
+  service.set_extensions(ExtensionList(), ExtensionList());
+  ASSERT_FALSE(service.GetExtensionById(id, false));
+
+  content::RunAllBlockingPoolTasksUntilIdle();
+}
+
 // TODO(asargent) - (http://crbug.com/12780) add tests for:
 // -prodversionmin (shouldn't update if browser version too old)
 // -manifests & updates arriving out of order / interleaved

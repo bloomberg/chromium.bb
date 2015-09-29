@@ -495,8 +495,7 @@ void ExtensionUpdater::OnForcedUpdatesDetermined(
     for (std::list<std::string>::const_iterator it = params.ids.begin();
          it != params.ids.end(); ++it) {
       const Extension* extension = service_->GetExtensionById(*it, true);
-      DCHECK(extension);
-      if (downloader_->AddExtension(*extension, request_id))
+      if (extension && downloader_->AddExtension(*extension, request_id))
         request.in_progress_ids_.push_back(extension->id());
     }
   }
