@@ -30,18 +30,30 @@ namespace test {
 
 namespace {
 
-bool ColorComponentsClose(SkColor component1, SkColor component2) {
+// The maximum color shift in the red, green, and blue components caused by
+// converting a gfx::Image between colorspaces. Color shifts occur when
+// converting between NSImage & UIImage to ImageSkia. Determined by trial and
+// error.
+const int kMaxColorSpaceConversionColorShift = 40;
+
+bool ColorComponentsClose(SkColor component1,
+                          SkColor component2,
+                          int max_deviation) {
   int c1 = static_cast<int>(component1);
   int c2 = static_cast<int>(component2);
-  return std::abs(c1 - c2) <= 40;
+  return std::abs(c1 - c2) <= max_deviation;
 }
 
-bool ColorsClose(SkColor color1, SkColor color2) {
+bool ColorsClose(SkColor color1, SkColor color2, int max_deviation) {
   // Be tolerant of floating point rounding and lossy color space conversions.
-  return ColorComponentsClose(SkColorGetR(color1), SkColorGetR(color2)) &&
-         ColorComponentsClose(SkColorGetG(color1), SkColorGetG(color2)) &&
-         ColorComponentsClose(SkColorGetB(color1), SkColorGetB(color2)) &&
-         ColorComponentsClose(SkColorGetA(color1), SkColorGetA(color2));
+  return ColorComponentsClose(SkColorGetR(color1), SkColorGetR(color2),
+                              max_deviation) &&
+         ColorComponentsClose(SkColorGetG(color1), SkColorGetG(color2),
+                              max_deviation) &&
+         ColorComponentsClose(SkColorGetB(color1), SkColorGetB(color2),
+                              max_deviation) &&
+         ColorComponentsClose(SkColorGetA(color1), SkColorGetA(color2),
+                              max_deviation);
 }
 
 }  // namespace
@@ -79,7 +91,13 @@ gfx::Image CreateImage(int width, int height) {
   return gfx::Image::CreateFrom1xBitmap(CreateBitmap(width, height));
 }
 
-bool IsEqual(const gfx::Image& img1, const gfx::Image& img2) {
+bool AreImagesEqual(const gfx::Image& img1, const gfx::Image& img2) {
+  return AreImagesClose(img1, img2, 0);
+}
+
+bool AreImagesClose(const gfx::Image& img1,
+                    const gfx::Image& img2,
+                    int max_deviation) {
   img1.AsImageSkia().EnsureRepsForSupportedScales();
   img2.AsImageSkia().EnsureRepsForSupportedScales();
   std::vector<gfx::ImageSkiaRep> img1_reps = img1.AsImageSkia().image_reps();
@@ -91,14 +109,21 @@ bool IsEqual(const gfx::Image& img1, const gfx::Image& img2) {
     float scale = img1_reps[i].scale();
     const gfx::ImageSkiaRep& image_rep2 = image_skia2.GetRepresentation(scale);
     if (image_rep2.scale() != scale ||
-        !IsEqual(img1_reps[i].sk_bitmap(), image_rep2.sk_bitmap())) {
+        !AreBitmapsClose(img1_reps[i].sk_bitmap(), image_rep2.sk_bitmap(),
+                         max_deviation)) {
       return false;
     }
   }
   return true;
 }
 
-bool IsEqual(const SkBitmap& bmp1, const SkBitmap& bmp2) {
+bool AreBitmapsEqual(const SkBitmap& bmp1, const SkBitmap& bmp2) {
+  return AreBitmapsClose(bmp1, bmp2, 0);
+}
+
+bool AreBitmapsClose(const SkBitmap& bmp1,
+                     const SkBitmap& bmp2,
+                     int max_deviation) {
   if (bmp1.isNull() && bmp2.isNull())
     return true;
 
@@ -116,7 +141,7 @@ bool IsEqual(const SkBitmap& bmp1, const SkBitmap& bmp2) {
 
   for (int y = 0; y < bmp1.height(); ++y) {
     for (int x = 0; x < bmp1.width(); ++x) {
-      if (!ColorsClose(bmp1.getColor(x,y), bmp2.getColor(x,y)))
+      if (!ColorsClose(bmp1.getColor(x,y), bmp2.getColor(x,y), max_deviation))
         return false;
     }
   }
@@ -124,15 +149,21 @@ bool IsEqual(const SkBitmap& bmp1, const SkBitmap& bmp2) {
   return true;
 }
 
-bool IsEqual(const scoped_refptr<base::RefCountedMemory>& bytes,
-             const SkBitmap& bitmap) {
+bool ArePNGBytesCloseToBitmap(
+    const scoped_refptr<base::RefCountedMemory>& bytes,
+    const SkBitmap& bitmap,
+    int max_deviation) {
   SkBitmap decoded;
   if (!bytes.get() ||
       !PNGCodec::Decode(bytes->front(), bytes->size(), &decoded)) {
     return bitmap.isNull();
   }
 
-  return IsEqual(bitmap, decoded);
+  return AreBitmapsClose(bitmap, decoded, max_deviation);
+}
+
+int MaxColorSpaceConversionColorShift() {
+  return kMaxColorSpaceConversionColorShift;
 }
 
 void CheckImageIndicatesPNGDecodeFailure(const gfx::Image& image) {
@@ -238,7 +269,7 @@ SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
 #endif
 
 void CheckColors(SkColor color1, SkColor color2) {
-  EXPECT_TRUE(ColorsClose(color1, color2));
+  EXPECT_TRUE(ColorsClose(color1, color2, MaxColorSpaceConversionColorShift()));
 }
 
 void CheckIsTransparent(SkColor color) {

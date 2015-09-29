@@ -30,7 +30,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_unittest_util.h"
 #include "ui/message_center/message_center.h"
 
 #if defined(OS_CHROMEOS)

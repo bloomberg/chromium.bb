@@ -222,7 +222,9 @@ TEST_F(ImageTest, MultiResolutionImageSkiaToPNG) {
       kSize2x, kSize2x), 2.0f));
   gfx::Image image(image_skia);
 
-  EXPECT_TRUE(gt::IsEqual(image.As1xPNGBytes(), bitmap_1x));
+  EXPECT_TRUE(
+      gt::ArePNGBytesCloseToBitmap(image.As1xPNGBytes(), bitmap_1x,
+                                   gt::MaxColorSpaceConversionColorShift()));
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepPNG));
 }
 
@@ -242,10 +244,12 @@ TEST_F(ImageTest, MultiResolutionPNGToImageSkia) {
   scales.push_back(1.0f);
   scales.push_back(2.0f);
   gfx::ImageSkia image_skia = image.AsImageSkia();
-  EXPECT_TRUE(gt::IsEqual(bytes1x,
-      image_skia.GetRepresentation(1.0f).sk_bitmap()));
-  EXPECT_TRUE(gt::IsEqual(bytes2x,
-      image_skia.GetRepresentation(2.0f).sk_bitmap()));
+  EXPECT_TRUE(gt::ArePNGBytesCloseToBitmap(bytes1x,
+      image_skia.GetRepresentation(1.0f).sk_bitmap(),
+      gt::MaxColorSpaceConversionColorShift()));
+  EXPECT_TRUE(gt::ArePNGBytesCloseToBitmap(bytes2x,
+      image_skia.GetRepresentation(2.0f).sk_bitmap(),
+      gt::MaxColorSpaceConversionColorShift()));
   EXPECT_TRUE(gt::ImageSkiaStructureMatches(image_skia, kSize1x, kSize1x,
                                             scales));
 #if !defined(OS_IOS)
@@ -279,13 +283,18 @@ TEST_F(ImageTest, MultiResolutionPNGToPlatform) {
   std::vector<float> scales = gfx::ImageSkia::GetSupportedScales();
   EXPECT_EQ(scales.size(), 1U);
   if (scales[0] == 1.0f)
-    EXPECT_TRUE(gt::IsEqual(bytes1x, from_platform.AsBitmap()));
+    EXPECT_TRUE(
+        gt::ArePNGBytesCloseToBitmap(bytes1x, from_platform.AsBitmap(),
+                                     gt::MaxColorSpaceConversionColorShift()));
   else if (scales[0] == 2.0f)
-    EXPECT_TRUE(gt::IsEqual(bytes2x, from_platform.AsBitmap()));
+    EXPECT_TRUE(gt::ArePNGBytesCloseToBitmap(bytes2x, from_platform.AsBitmap(),
+                gt::MaxColorSpaceConversionColorShift()));
   else
     ADD_FAILURE() << "Unexpected platform scale factor.";
 #else
-  EXPECT_TRUE(gt::IsEqual(bytes1x, from_platform.AsBitmap()));
+  EXPECT_TRUE(
+      gt::ArePNGBytesCloseToBitmap(bytes1x, from_platform.AsBitmap(),
+                                   gt::MaxColorSpaceConversionColorShift()));
 #endif  // defined(OS_IOS)
 }
 
@@ -321,7 +330,9 @@ TEST_F(ImageTest, PNGEncodeFromSkiaDecodeToPlatform) {
   gfx::Image from_platform(gt::CopyPlatformType(from_png));
 
   EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(from_platform)));
-  EXPECT_TRUE(gt::IsEqual(png_bytes, from_platform.AsBitmap()));
+  EXPECT_TRUE(
+      gt::ArePNGBytesCloseToBitmap(png_bytes, from_platform.AsBitmap(),
+                                   gt::MaxColorSpaceConversionColorShift()));
 }
 
 TEST_F(ImageTest, PNGEncodeFromPlatformDecodeToSkia) {
@@ -333,7 +344,9 @@ TEST_F(ImageTest, PNGEncodeFromPlatformDecodeToSkia) {
   image_png_reps.push_back(gfx::ImagePNGRep(png_bytes, 1.0f));
   gfx::Image from_png(image_png_reps);
 
-  EXPECT_TRUE(gt::IsEqual(from_platform.AsBitmap(), from_png.AsBitmap()));
+  EXPECT_TRUE(gt::AreBitmapsClose(
+      from_platform.AsBitmap(), from_png.AsBitmap(),
+      gt::MaxColorSpaceConversionColorShift()));
 }
 
 TEST_F(ImageTest, PNGDecodeToSkiaFailure) {

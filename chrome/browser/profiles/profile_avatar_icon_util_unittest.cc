@@ -40,7 +40,7 @@ TEST(ProfileInfoUtilTest, SizedMenuIcon) {
       profiles::GetSizedAvatarIcon(profile_image, false, 50, 50);
 
   EXPECT_FALSE(gfx::test::IsEmpty(result));
-  EXPECT_TRUE(gfx::test::IsEqual(profile_image, result));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(profile_image, result));
 
   // Test that a rectangular picture (e.g., GAIA image) is changed.
   gfx::Image rect_picture(gfx::test::CreateImage());
@@ -58,7 +58,7 @@ TEST(ProfileInfoUtilTest, MenuIcon) {
       ResourceBundle::GetSharedInstance().GetImageNamed(IDR_PROFILE_AVATAR_0));
   gfx::Image result = profiles::GetAvatarIconForMenu(profile_image, false);
   EXPECT_FALSE(gfx::test::IsEmpty(result));
-  EXPECT_TRUE(gfx::test::IsEqual(profile_image, result));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(profile_image, result));
 
   // Test that a rectangular picture is changed.
   gfx::Image rect_picture(gfx::test::CreateImage());
@@ -74,7 +74,7 @@ TEST(ProfileInfoUtilTest, WebUIIcon) {
       ResourceBundle::GetSharedInstance().GetImageNamed(IDR_PROFILE_AVATAR_0));
   gfx::Image result = profiles::GetAvatarIconForWebUI(profile_image, false);
   EXPECT_FALSE(gfx::test::IsEmpty(result));
-  EXPECT_TRUE(gfx::test::IsEqual(profile_image, result));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(profile_image, result));
 
   // Test that a rectangular picture is changed.
   gfx::Image rect_picture(gfx::test::CreateImage());
@@ -94,7 +94,7 @@ TEST(ProfileInfoUtilTest, TitleBarIcon) {
   gfx::Image result = profiles::GetAvatarIconForTitleBar(
       profile_image, false, width, height);
   EXPECT_FALSE(gfx::test::IsEmpty(result));
-  EXPECT_TRUE(gfx::test::IsEqual(profile_image, result));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(profile_image, result));
 
   // Test that a rectangular picture is changed.
   gfx::Image rect_picture(gfx::test::CreateImage());

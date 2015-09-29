@@ -40,12 +40,34 @@ gfx::Image CreateImage(int width, int height);
 
 // Returns true if the images are equal. Converts the images to ImageSkia to
 // compare them.
-bool IsEqual(const gfx::Image& image1, const gfx::Image& image2);
+bool AreImagesEqual(const gfx::Image& image1, const gfx::Image& image2);
 
-bool IsEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2);
+// Returns true if the images are visually similar. |max_deviation| is the
+// maximum color shift in each of the red, green, and blue components for the
+// images to be considered similar. Converts to ImageSkia to compare the images.
+bool AreImagesClose(const gfx::Image& image1,
+                    const gfx::Image& image2,
+                    int max_deviation);
 
-bool IsEqual(const scoped_refptr<base::RefCountedMemory>& bytes,
-             const SkBitmap& bitmap);
+// Returns true if the bitmaps are equal.
+bool AreBitmapsEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2);
+
+// Returns true if the bitmaps are visually similar.
+bool AreBitmapsClose(const SkBitmap& bitmap1,
+                     const SkBitmap& bitmap2,
+                     int max_deviation);
+
+// Returns true if the passed in PNG bitmap is visually similar to the passed in
+// SkBitmap.
+bool ArePNGBytesCloseToBitmap(
+    const scoped_refptr<base::RefCountedMemory>& bytes,
+    const SkBitmap& bitmap,
+    int max_deviation);
+
+// Returns the maximum color shift in the red, green, and blue components caused
+// by converting a gfx::Image between colorspaces. Color shifts occur when
+// converting between NSImage & UIImage to ImageSkia.
+int MaxColorSpaceConversionColorShift();
 
 // An image which was not successfully decoded to PNG should be a red bitmap.
 // Fails if the bitmap is not red.

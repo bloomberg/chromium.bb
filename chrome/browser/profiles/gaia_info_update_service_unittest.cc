@@ -177,7 +177,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   size_t index = GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
   EXPECT_EQ(name, GetCache()->GetGAIANameOfProfileAtIndex(index));
   EXPECT_EQ(given_name, GetCache()->GetGAIAGivenNameOfProfileAtIndex(index));
-  EXPECT_TRUE(gfx::test::IsEqual(
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
       image, *GetCache()->GetGAIAPictureOfProfileAtIndex(index)));
   EXPECT_EQ(url, service()->GetCachedPictureURL());
   EXPECT_EQ(Profile::kNoHostedDomainFound, profile()->GetPrefs()->
@@ -199,7 +199,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
   EXPECT_EQ(base::string16(), GetCache()->GetGAIANameOfProfileAtIndex(index));
   EXPECT_EQ(base::string16(),
             GetCache()->GetGAIAGivenNameOfProfileAtIndex(index));
-  EXPECT_TRUE(gfx::test::IsEqual(
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
       old_image, GetCache()->GetAvatarIconOfProfileAtIndex(index)));
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(index));
   EXPECT_EQ(std::string(), service()->GetCachedPictureURL());

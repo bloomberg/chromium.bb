@@ -183,34 +183,34 @@ TEST_F(MediaRouterActionUnitTest, Initialization) {
   EXPECT_EQ("media_router_action", action()->GetId());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_TITLE),
       action()->GetActionName());
-  EXPECT_TRUE(gfx::test::IsEqual(idle_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 }
 
 // Tests the MediaRouterAction icon based on updates to issues.
 TEST_F(MediaRouterActionUnitTest, UpdateIssues) {
   // Initially, there are no issues.
-  EXPECT_TRUE(gfx::test::IsEqual(idle_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Don't update |current_icon_| since the issue is only a notification.
   action()->OnIssueUpdated(fake_issue_notification());
-  EXPECT_TRUE(gfx::test::IsEqual(idle_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| since the issue is a warning.
   action()->OnIssueUpdated(fake_issue_warning());
-  EXPECT_TRUE(gfx::test::IsEqual(warning_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      warning_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| since the issue is fatal.
   action()->OnIssueUpdated(fake_issue_fatal());
-  EXPECT_TRUE(gfx::test::IsEqual(error_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      error_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Clear the issue.
   action()->OnIssueUpdated(nullptr);
-  EXPECT_TRUE(gfx::test::IsEqual(idle_icon(),
+  EXPECT_TRUE(gfx::test::AreImagesEqual(idle_icon(),
                                  action()->GetIcon(nullptr, gfx::Size())));
 }
 
@@ -220,28 +220,28 @@ TEST_F(MediaRouterActionUnitTest, UpdateRoutes) {
       new std::vector<media_router::MediaRoute>());
 
   // Initially, there are no routes.
-  EXPECT_TRUE(gfx::test::IsEqual(idle_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| since there is a local route.
   routes->push_back(fake_route_local());
   routes->push_back(fake_route_remote());
   action()->OnRoutesUpdated(*routes.get());
-  EXPECT_TRUE(gfx::test::IsEqual(active_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      active_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| since there are no more local routes.
   routes->clear();
   routes->push_back(fake_route_remote());
   action()->OnRoutesUpdated(*routes.get());
-  EXPECT_TRUE(gfx::test::IsEqual(idle_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // |current_icon_| stays the same if there are no local routes or no routes.
   routes->clear();
   action()->OnRoutesUpdated(*routes.get());
-  EXPECT_TRUE(gfx::test::IsEqual(idle_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 }
 
 // Tests the MediaRouterAction icon based on updates to both issues and routes.
@@ -250,67 +250,67 @@ TEST_F(MediaRouterActionUnitTest, UpdateIssuesAndRoutes) {
       new std::vector<media_router::MediaRoute>());
 
   // Initially, there are no issues or routes.
-  EXPECT_TRUE(gfx::test::IsEqual(idle_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // There is no change in |current_icon_| since notification issues do not
   // update the state.
   action()->OnIssueUpdated(fake_issue_notification());
-  EXPECT_TRUE(gfx::test::IsEqual(idle_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Non-local routes also do not have an effect on |current_icon_|.
   routes->push_back(fake_route_remote());
   action()->OnRoutesUpdated(*routes.get());
-  EXPECT_TRUE(gfx::test::IsEqual(idle_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| since there is a local route.
   routes->clear();
   routes->push_back(fake_route_local());
   action()->OnRoutesUpdated(*routes.get());
-  EXPECT_TRUE(gfx::test::IsEqual(active_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      active_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_|, with a priority to reflect the warning issue
   // rather than the local route.
   action()->OnIssueUpdated(fake_issue_warning());
-  EXPECT_TRUE(gfx::test::IsEqual(warning_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      warning_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Swapping the local route for a non-local one makes no difference to the
   // |current_icon_|.
   routes->clear();
   routes->push_back(fake_route_remote());
   action()->OnRoutesUpdated(*routes.get());
-  EXPECT_TRUE(gfx::test::IsEqual(warning_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      warning_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| since the issue has been updated to fatal.
   action()->OnIssueUpdated(fake_issue_fatal());
-  EXPECT_TRUE(gfx::test::IsEqual(error_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      error_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Fatal issues still take precedent over local routes.
   routes->clear();
   routes->push_back(fake_route_local());
   action()->OnRoutesUpdated(*routes.get());
-  EXPECT_TRUE(gfx::test::IsEqual(error_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      error_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // When the fatal issue is dismissed, |current_icon_| reflects the existing
   // local route.
   action()->OnIssueUpdated(nullptr);
-  EXPECT_TRUE(gfx::test::IsEqual(active_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      active_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| when the local route is swapped out for a non-local
   // route.
   routes->clear();
   routes->push_back(fake_route_remote());
   action()->OnRoutesUpdated(*routes.get());
-  EXPECT_TRUE(gfx::test::IsEqual(idle_icon(),
-                                 action()->GetIcon(nullptr, gfx::Size())));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 }
 
 TEST_F(MediaRouterActionUnitTest, IconPressedState) {
