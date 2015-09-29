@@ -39,6 +39,7 @@
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/timing/PerformanceBase.h"
 #include "platform/network/ResourceLoadTiming.h"
 #include "platform/network/ResourceResponse.h"
 
@@ -47,7 +48,8 @@ namespace blink {
 static unsigned long long toIntegerMilliseconds(double seconds)
 {
     ASSERT(seconds >= 0);
-    return static_cast<unsigned long long>(seconds * 1000.0);
+    double clampedSeconds = PerformanceBase::clampTimeResolution(seconds);
+    return static_cast<unsigned long long>(clampedSeconds * 1000.0);
 }
 
 static double toDoubleSeconds(unsigned long long integerMilliseconds)

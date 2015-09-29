@@ -32,6 +32,7 @@
 #include "config.h"
 #include "core/timing/PerformanceResourceTiming.h"
 
+#include "core/timing/PerformanceBase.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/network/ResourceTimingInfo.h"
@@ -43,7 +44,7 @@ static double monotonicTimeToDOMHighResTimeStamp(double timeOrigin, double secon
     ASSERT(seconds >= 0.0);
     if (!seconds)
         return 0.0;
-    return (seconds - timeOrigin) * 1000.0;
+    return PerformanceBase::clampTimeResolution(seconds - timeOrigin) * 1000.0;
 }
 
 PerformanceResourceTiming::PerformanceResourceTiming(const ResourceTimingInfo& info, double timeOrigin, double startTime, double lastRedirectEndTime, bool allowTimingDetails, bool allowRedirectDetails)
