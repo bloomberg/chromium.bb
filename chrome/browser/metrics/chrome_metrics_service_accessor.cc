@@ -11,7 +11,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_service.h"
-#include "components/variations/metrics_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -52,16 +51,15 @@ bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
 bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
     const std::string& trial_name,
     const std::string& group_name) {
-  return RegisterSyntheticFieldTrialWithNameHash(metrics::HashName(trial_name),
-                                                 group_name);
+  return metrics::MetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      g_browser_process->metrics_service(), trial_name, group_name);
 }
 
 // static
 bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameHash(
     uint32_t trial_name_hash,
     const std::string& group_name) {
-  return metrics::MetricsServiceAccessor::RegisterSyntheticFieldTrial(
-      g_browser_process->metrics_service(),
-      trial_name_hash,
-      metrics::HashName(group_name));
+  return metrics::MetricsServiceAccessor::
+      RegisterSyntheticFieldTrialWithNameHash(
+          g_browser_process->metrics_service(), trial_name_hash, group_name);
 }

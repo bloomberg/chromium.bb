@@ -94,18 +94,16 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   // http://crbug.com/362192,  http://crbug.com/532084
   static bool IsMetricsAndCrashReportingEnabled();
 
-  // Registers a field trial name and group to be used to annotate a UMA report
-  // with a particular Chrome configuration state. A UMA report will be
-  // annotated with this trial group if and only if all events in the report
-  // were created after the trial is registered. Only one group name may be
-  // registered at a time for a given trial name. Only the last group name that
-  // is registered for a given trial name will be recorded. The values passed
-  // in must not correspond to any real field trial in the code.
+  // Calls metrics::MetricsServiceAccessor::RegisterSyntheticFieldTrial() with
+  // g_browser_process->metrics_service(). See that function's declaration for
+  // details.
   static bool RegisterSyntheticFieldTrial(const std::string& trial_name,
                                           const std::string& group_name);
 
-  // Same as RegisterSyntheticFieldTrial above, but takes a hash for the trial
-  // name, rather than computing it from the string.
+  // Calls
+  // metrics::MetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameHash()
+  // with g_browser_process->metrics_service(). See that function's declaration
+  // for details.
   static bool RegisterSyntheticFieldTrialWithNameHash(
       uint32_t trial_name_hash,
       const std::string& group_name);
