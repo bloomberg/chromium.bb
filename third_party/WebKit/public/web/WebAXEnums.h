@@ -46,6 +46,7 @@ enum WebAXEvent {
     WebAXEventChildrenChanged,
     WebAXEventFocus,
     WebAXEventHide,
+    WebAXEventHover,
     WebAXEventInvalidStatusChanged,
     WebAXEventLayoutComplete,
     WebAXEventLiveRegionChanged,

@@ -107,6 +107,8 @@ public:
     const AtomicString& computedRoleForNode(Node*) override;
     String computedNameForNode(Node*) override;
 
+    void onTouchAccessibilityHover(const IntPoint&) override;
+
     // Returns the root object for the entire document.
     AXObject* rootObject();
 

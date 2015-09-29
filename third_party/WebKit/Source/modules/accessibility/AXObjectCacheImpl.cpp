@@ -1333,6 +1333,13 @@ String AXObjectCacheImpl::computedNameForNode(Node* node)
     return String();
 }
 
+void AXObjectCacheImpl::onTouchAccessibilityHover(const IntPoint& location)
+{
+    AXObject* hit = root()->accessibilityHitTest(location);
+    if (hit)
+        postPlatformNotification(hit, AXHover);
+}
+
 void AXObjectCacheImpl::setCanvasObjectBounds(Element* element, const LayoutRect& rect)
 {
     AXObject* obj = getOrCreate(element);

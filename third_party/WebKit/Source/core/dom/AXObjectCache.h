@@ -62,6 +62,7 @@ public:
         AXChildrenChanged,
         AXFocusedUIElementChanged,
         AXHide,
+        AXHover,
         AXInvalidStatusChanged,
         AXLayoutComplete,
         AXLiveRegionChanged,
@@ -134,6 +135,8 @@ public:
 
     virtual const AtomicString& computedRoleForNode(Node*) = 0;
     virtual String computedNameForNode(Node*) = 0;
+
+    virtual void onTouchAccessibilityHover(const IntPoint&) = 0;
 
     typedef AXObjectCache* (*AXObjectCacheCreateFunction)(Document&);
     static void init(AXObjectCacheCreateFunction);

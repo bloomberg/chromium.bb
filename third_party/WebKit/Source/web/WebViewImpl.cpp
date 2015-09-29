@@ -2086,6 +2086,29 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
             return true;
     }
 
+    if (inputEvent.modifiers & WebInputEvent::IsTouchAccessibility
+        && WebInputEvent::isMouseEventType(inputEvent.type)) {
+        PlatformMouseEventBuilder pme(mainFrameImpl()->frameView(), static_cast<const WebMouseEvent&>(inputEvent));
+
+        // Find the right target frame. See issue 1186900.
+        HitTestResult result = hitTestResultForRootFramePos(pme.position());
+        Frame* targetFrame;
+        if (result.innerNodeOrImageMapImage())
+            targetFrame = result.innerNodeOrImageMapImage()->document().frame();
+        else
+            targetFrame = m_page->focusController().focusedOrMainFrame();
+
+        if (targetFrame->isLocalFrame()) {
+            LocalFrame* targetLocalFrame = toLocalFrame(targetFrame);
+            Document* document = targetLocalFrame->document();
+            if (document) {
+                AXObjectCache* cache = document->existingAXObjectCache();
+                if (cache)
+                    cache->onTouchAccessibilityHover(pme.position());
+            }
+        }
+    }
+
     // Report the event to be NOT processed by WebKit, so that the browser can handle it appropriately.
     if (m_ignoreInputEvents)
         return false;

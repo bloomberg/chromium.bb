@@ -172,6 +172,11 @@ public:
         // Left/right modifiers for keyboard events.
         IsLeft           = 1 << 11,
         IsRight          = 1 << 12,
+
+        // Indicates that an event was generated on the touch screen while
+        // touch accessibility is enabled, so the event should be handled
+        // by accessibility code first before normal input event processing.
+        IsTouchAccessibility = 1 << 13
     };
 
     // The rail mode for a wheel event specifies the axis on which scrolling is

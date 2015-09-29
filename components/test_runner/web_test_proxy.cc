@@ -819,6 +819,9 @@ void WebTestProxyBase::PostAccessibilityEvent(const blink::WebAXObject& obj,
     case blink::WebAXEventHide:
       event_name = "Hide";
       break;
+    case blink::WebAXEventHover:
+      event_name = "Hover";
+      break;
     case blink::WebAXEventInvalidStatusChanged:
       event_name = "InvalidStatusChanged";
       break;

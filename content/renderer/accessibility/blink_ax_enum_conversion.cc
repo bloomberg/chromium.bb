@@ -358,6 +358,8 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
       return ui::AX_EVENT_CHILDREN_CHANGED;
     case blink::WebAXEventFocus:
       return ui::AX_EVENT_FOCUS;
+    case blink::WebAXEventHover:
+      return ui::AX_EVENT_HOVER;
     case blink::WebAXEventInvalidStatusChanged:
       return ui::AX_EVENT_INVALID_STATUS_CHANGED;
     case blink::WebAXEventLayoutComplete:

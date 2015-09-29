@@ -213,6 +213,8 @@ int EventFlagsToWebEventModifiers(int flags) {
     modifiers |= blink::WebInputEvent::CapsLockOn;
   if (flags & EF_IS_REPEAT)
     modifiers |= blink::WebInputEvent::IsAutoRepeat;
+  if (flags & ui::EF_TOUCH_ACCESSIBILITY)
+    modifiers |= blink::WebInputEvent::IsTouchAccessibility;
 
   return modifiers;
 }
