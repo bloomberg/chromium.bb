@@ -222,3 +222,37 @@ config("hide_native_jni_exports") {
   ldflags = [ "-Wl,--version-script=" +
               rebase_path("//build/android/android_no_jni_exports.lst") ]
 }
+
+# Instrumentation -------------------------------------------------------------
+#
+# The BUILDCONFIG file sets the "default_cygprofile_instrumentation" config on
+# targets by default. You can override whether the cygprofile instrumentation is
+# used on a per-target basis:
+#
+# configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
+# configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
+
+config("default_cygprofile_instrumentation") {
+  if (use_order_profiling) {
+    configs = [ ":cygprofile_instrumentation" ]
+  } else {
+    configs = [ ":no_cygprofile_instrumentation" ]
+  }
+}
+
+config("cygprofile_instrumentation") {
+  cflags = [
+    "-finstrument-functions",
+
+    # Allow mmx intrinsics to inline, so that the compiler can expand the intrinsics.
+    "-finstrument-functions-exclude-file-list=mmintrin.h",
+
+    # Avoid errors with current NDK:
+    # "third_party/android_tools/ndk/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/../lib/gcc/arm-linux-androideabi/4.6/include/arm_neon.h:3426:3: error: argument must be a constant"
+    "-finstrument-functions-exclude-file-list=arm_neon.h,SaturatedArithmeticARM.h",
+  ]
+  defines = [ "CYGPROFILE_INSTRUMENTATION=1" ]
+}
+
+config("no_cygprofile_instrumentation") {
+}

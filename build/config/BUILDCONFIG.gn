@@ -388,6 +388,11 @@ if (is_linux) {
   _native_compiler_configs += [ "//build/config/android:sdk" ]
 }
 
+if (is_android) {
+  _native_compiler_configs +=
+      [ "//build/config/android:default_cygprofile_instrumentation" ]
+}
+
 if (is_clang && !is_nacl) {
   _native_compiler_configs += [
     "//build/config/clang:find_bad_constructs",

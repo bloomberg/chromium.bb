@@ -82,18 +82,10 @@ source_set("libwebp_dsp") {
   ]
   if (is_android) {
     deps += [ "//third_party/android_tools:cpu_features" ]
-  }
 
-  # TODO(GYP):
-  #      'conditions': [
-  #        ['order_profiling != 0', {
-  #          'target_conditions' : [
-  #            ['_toolset=="target"', {
-  #              'cflags!': [ '-finstrument-functions' ],
-  #            }],
-  #          ],
-  #        }],
-  #      ],
+    configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
+    configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
+  }
 }
 
 if (use_dsp_neon) {
@@ -116,16 +108,10 @@ if (use_dsp_neon) {
       cflags = [ "-frename-registers" ]
     }
 
-    # TODO(GYP):
-    #        ['order_profiling != 0', {
-    #          'target_conditions' : [
-    #            ['_toolset=="target"', {
-    #              'cflags!': [ '-finstrument-functions' ],
-    #            }],
-    #          ],
-    #        }],
-    #      ],
-    #    }
+    if (is_android) {
+      configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
+      configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
+    }
   }
 }  # use_dsp_neon
 

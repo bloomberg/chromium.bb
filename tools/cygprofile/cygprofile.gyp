@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN: //tools/cygprofile
       'target_name': 'cygprofile',
       'type': 'static_library',
       'include_dirs': [ '../..', ],
@@ -21,6 +22,7 @@
       ],
     },
     {
+      # GN: //tools/cygprofile:cygprofile_unittests
       'target_name': 'cygprofile_unittests',
       'type': 'executable',
       'include_dirs': [ '../..', ],

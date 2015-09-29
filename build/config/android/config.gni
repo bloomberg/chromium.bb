@@ -75,6 +75,10 @@ if (is_android) {
 
     # Speed up dexing using dx --incremental.
     incremental_dx = true
+
+    # Adds intrumentation to each function. Writes a file with the order that
+    # functions are called at startup.
+    use_order_profiling = false
   }
 
   # Host stuff -----------------------------------------------------------------

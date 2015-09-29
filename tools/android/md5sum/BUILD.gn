@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/android/config.gni")
+
 # GYP: //tools/android/md5sum/md5sum.gyp:md5sum
 group("md5sum") {
   data_deps = [
@@ -23,12 +25,9 @@ executable("md5sum_bin") {
     "//build/config/sanitizers:deps",
   ]
 
-  # TODO(GYP)
-  #'conditions': [
-  #[ 'order_profiling!=0 and OS=="android"', {
-  #'dependencies': [ '../../../tools/cygprofile/cygprofile.gyp:cygprofile', ],
-  #}],
-  #],
+  if (is_android && use_order_profiling) {
+    deps += [ "//tools/cygprofile" ]
+  }
 }
 
 if (current_toolchain == default_toolchain) {
