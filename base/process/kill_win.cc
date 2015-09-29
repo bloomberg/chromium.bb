@@ -57,7 +57,7 @@ class TimerExpiredTask : public win::ObjectWatcher::Delegate {
 };
 
 TimerExpiredTask::TimerExpiredTask(Process process) : process_(process.Pass()) {
-  watcher_.StartWatching(process_.Handle(), this);
+  watcher_.StartWatchingOnce(process_.Handle(), this);
 }
 
 TimerExpiredTask::~TimerExpiredTask() {

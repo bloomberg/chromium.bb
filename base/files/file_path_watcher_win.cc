@@ -106,7 +106,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
   if (!UpdateWatch())
     return false;
 
-  watcher_.StartWatching(handle_, this);
+  watcher_.StartWatchingOnce(handle_, this);
 
   return true;
 }
@@ -198,7 +198,7 @@ void FilePathWatcherImpl::OnObjectSignaled(HANDLE object) {
 
   // The watch may have been cancelled by the callback.
   if (handle_ != INVALID_HANDLE_VALUE)
-    watcher_.StartWatching(handle_, this);
+    watcher_.StartWatchingOnce(handle_, this);
 }
 
 // static

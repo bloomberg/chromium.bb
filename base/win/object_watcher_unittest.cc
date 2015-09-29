@@ -42,7 +42,7 @@ void RunTest_BasicSignal(MessageLoop::Type message_loop_type) {
   HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);
 
   QuitDelegate delegate;
-  bool ok = watcher.StartWatching(event, &delegate);
+  bool ok = watcher.StartWatchingOnce(event, &delegate);
   EXPECT_TRUE(ok);
   EXPECT_TRUE(watcher.IsWatching());
   EXPECT_EQ(event, watcher.GetWatchedObject());
@@ -64,7 +64,7 @@ void RunTest_BasicCancel(MessageLoop::Type message_loop_type) {
   HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);
 
   QuitDelegate delegate;
-  bool ok = watcher.StartWatching(event, &delegate);
+  bool ok = watcher.StartWatchingOnce(event, &delegate);
   EXPECT_TRUE(ok);
 
   watcher.StopWatching();
@@ -83,7 +83,7 @@ void RunTest_CancelAfterSet(MessageLoop::Type message_loop_type) {
   // A manual-reset event that is not yet signaled.
   HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-  bool ok = watcher.StartWatching(event, &delegate);
+  bool ok = watcher.StartWatchingOnce(event, &delegate);
   EXPECT_TRUE(ok);
 
   SetEvent(event);
@@ -110,7 +110,7 @@ void RunTest_SignalBeforeWatch(MessageLoop::Type message_loop_type) {
   HANDLE event = CreateEvent(NULL, TRUE, TRUE, NULL);
 
   QuitDelegate delegate;
-  bool ok = watcher.StartWatching(event, &delegate);
+  bool ok = watcher.StartWatchingOnce(event, &delegate);
   EXPECT_TRUE(ok);
 
   MessageLoop::current()->Run();
@@ -130,9 +130,50 @@ void RunTest_OutlivesMessageLoop(MessageLoop::Type message_loop_type) {
       MessageLoop message_loop(message_loop_type);
 
       QuitDelegate delegate;
-      watcher.StartWatching(event, &delegate);
+      watcher.StartWatchingOnce(event, &delegate);
     }
   }
+  CloseHandle(event);
+}
+
+class QuitAfterMultipleDelegate : public ObjectWatcher::Delegate {
+ public:
+  QuitAfterMultipleDelegate(HANDLE event, int iterations)
+      : event_(event), iterations_(iterations) {}
+  void OnObjectSignaled(HANDLE object) override {
+    if (--iterations_) {
+      SetEvent(event_);
+    } else {
+      MessageLoop::current()->QuitWhenIdle();
+    }
+  }
+
+ private:
+  HANDLE event_;
+  int iterations_;
+};
+
+void RunTest_ExecuteMultipleTimes(MessageLoop::Type message_loop_type) {
+  MessageLoop message_loop(message_loop_type);
+
+  ObjectWatcher watcher;
+  EXPECT_FALSE(watcher.IsWatching());
+
+  // An auto-reset event that is not yet signaled.
+  HANDLE event = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+  QuitAfterMultipleDelegate delegate(event, 2);
+  bool ok = watcher.StartWatchingMultipleTimes(event, &delegate);
+  EXPECT_TRUE(ok);
+  EXPECT_TRUE(watcher.IsWatching());
+  EXPECT_EQ(event, watcher.GetWatchedObject());
+
+  SetEvent(event);
+
+  MessageLoop::current()->Run();
+
+  EXPECT_TRUE(watcher.IsWatching());
+  EXPECT_TRUE(watcher.StopWatching());
   CloseHandle(event);
 }
 
@@ -168,6 +209,12 @@ TEST(ObjectWatcherTest, OutlivesMessageLoop) {
   RunTest_OutlivesMessageLoop(MessageLoop::TYPE_DEFAULT);
   RunTest_OutlivesMessageLoop(MessageLoop::TYPE_IO);
   RunTest_OutlivesMessageLoop(MessageLoop::TYPE_UI);
+}
+
+TEST(ObjectWatcherTest, ExecuteMultipleTimes) {
+  RunTest_ExecuteMultipleTimes(MessageLoop::TYPE_DEFAULT);
+  RunTest_ExecuteMultipleTimes(MessageLoop::TYPE_IO);
+  RunTest_ExecuteMultipleTimes(MessageLoop::TYPE_UI);
 }
 
 }  // namespace win

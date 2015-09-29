@@ -296,7 +296,7 @@ bool NetworkChangeNotifierWin::WatchForAddressChangeInternal() {
   if (ret != ERROR_IO_PENDING)
     return false;
 
-  addr_watcher_.StartWatching(addr_overlapped_.hEvent, this);
+  addr_watcher_.StartWatchingOnce(addr_overlapped_.hEvent, this);
   return true;
 }
 

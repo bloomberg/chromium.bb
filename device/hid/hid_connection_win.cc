@@ -81,7 +81,7 @@ void PendingHidTransfer::TakeResultFromWindowsAPI(BOOL result) {
   } else if (GetLastError() == ERROR_IO_PENDING) {
     base::MessageLoop::current()->AddDestructionObserver(this);
     AddRef();
-    watcher_.StartWatching(event_.Get(), this);
+    watcher_.StartWatchingOnce(event_.Get(), this);
   } else {
     HID_PLOG(EVENT) << "HID transfer failed";
     callback_.Run(this, false);

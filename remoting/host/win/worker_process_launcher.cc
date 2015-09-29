@@ -113,7 +113,7 @@ void WorkerProcessLauncher::OnProcessLaunched(
   DCHECK(!process_watcher_.GetWatchedObject());
   DCHECK(!worker_process_.IsValid());
 
-  if (!process_watcher_.StartWatching(worker_process.Get(), this)) {
+  if (!process_watcher_.StartWatchingOnce(worker_process.Get(), this)) {
     StopWorker();
     return;
   }

@@ -378,7 +378,7 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   // connected and the exit of the child process is detecter by an error on the
   // IPC channel thereafter.
   DCHECK(!early_exit_watcher_.GetWatchedObject());
-  early_exit_watcher_.StartWatching(process.Handle(), this);
+  early_exit_watcher_.StartWatchingOnce(process.Handle(), this);
 #endif
 
   // TODO(rvargas) crbug.com/417532: Don't store a handle.

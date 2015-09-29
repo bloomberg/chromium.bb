@@ -674,14 +674,14 @@ void PolicyLoaderWin::SetupWatches() {
   DCHECK(is_initialized_);
   if (!user_policy_watcher_failed_ &&
       !user_policy_watcher_.GetWatchedObject() &&
-      !user_policy_watcher_.StartWatching(
+      !user_policy_watcher_.StartWatchingOnce(
           user_policy_changed_event_.handle(), this)) {
     DLOG(WARNING) << "Failed to start watch for user policy change event";
     user_policy_watcher_failed_ = true;
   }
   if (!machine_policy_watcher_failed_ &&
       !machine_policy_watcher_.GetWatchedObject() &&
-      !machine_policy_watcher_.StartWatching(
+      !machine_policy_watcher_.StartWatchingOnce(
           machine_policy_changed_event_.handle(), this)) {
     DLOG(WARNING) << "Failed to start watch for machine policy change event";
     machine_policy_watcher_failed_ = true;

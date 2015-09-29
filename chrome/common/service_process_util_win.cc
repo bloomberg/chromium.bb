@@ -58,7 +58,7 @@ class ServiceProcessTerminateMonitor
     base::string16 event_name = GetServiceProcessTerminateEventName();
     DCHECK(event_name.length() <= MAX_PATH);
     terminate_event_.Set(CreateEvent(NULL, TRUE, FALSE, event_name.c_str()));
-    watcher_.StartWatching(terminate_event_.Get(), this);
+    watcher_.StartWatchingOnce(terminate_event_.Get(), this);
   }
 
   // base::ObjectWatcher::Delegate implementation.

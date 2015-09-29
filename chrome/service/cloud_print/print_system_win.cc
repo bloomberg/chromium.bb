@@ -68,7 +68,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
       printer_change_.Set(FindFirstPrinterChangeNotification(
           printer_.Get(), PRINTER_CHANGE_PRINTER|PRINTER_CHANGE_JOB, 0, NULL));
       if (printer_change_.IsValid()) {
-        ret = watcher_.StartWatching(printer_change_.Get(), this);
+        ret = watcher_.StartWatchingOnce(printer_change_.Get(), this);
       }
     }
     if (!ret) {
@@ -106,7 +106,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
         delegate_->OnJobChanged();
       }
     }
-    watcher_.StartWatching(printer_change_.Get(), this);
+    watcher_.StartWatchingOnce(printer_change_.Get(), this);
   }
 
   bool GetCurrentPrinterInfo(printing::PrinterBasicInfo* printer_info) {
@@ -361,7 +361,8 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         delegate_->OnJobSpoolSucceeded(job_status.jobId);
       } else {
         job_progress_watcher_.StopWatching();
-        job_progress_watcher_.StartWatching(job_progress_event_.Get(), this);
+        job_progress_watcher_.StartWatchingOnce(
+            job_progress_event_.Get(), this);
       }
     }
 
@@ -483,7 +484,8 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       if (FAILED(doc_stream->Close()))
         return false;
 
-      job_progress_watcher_.StartWatching(job_progress_event_.Get(), this);
+      job_progress_watcher_.StartWatchingOnce(
+          job_progress_event_.Get(), this);
       job_canceler.reset();
       return true;
     }

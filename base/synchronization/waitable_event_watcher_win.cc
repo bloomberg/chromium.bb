@@ -22,7 +22,7 @@ bool WaitableEventWatcher::StartWatching(
     const EventCallback& callback) {
   callback_ = callback;
   event_ = event;
-  return watcher_.StartWatching(event->handle(), this);
+  return watcher_.StartWatchingOnce(event->handle(), this);
 }
 
 void WaitableEventWatcher::StopWatching() {

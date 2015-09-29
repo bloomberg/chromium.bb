@@ -82,7 +82,7 @@ bool RegKey::Watcher::StartWatching(HKEY key, const ChangeCallback& callback) {
   }
 
   callback_ = callback;
-  return object_watcher_.StartWatching(watch_event_.Get(), this);
+  return object_watcher_.StartWatchingOnce(watch_event_.Get(), this);
 }
 
 // RegKey ----------------------------------------------------------------------

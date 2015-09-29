@@ -133,14 +133,14 @@ void UDPSocketWin::Core::WatchForRead() {
   // We grab an extra reference because there is an IO operation in progress.
   // Balanced in ReadDelegate::OnObjectSignaled().
   AddRef();
-  read_watcher_.StartWatching(read_overlapped_.hEvent, &reader_);
+  read_watcher_.StartWatchingOnce(read_overlapped_.hEvent, &reader_);
 }
 
 void UDPSocketWin::Core::WatchForWrite() {
   // We grab an extra reference because there is an IO operation in progress.
   // Balanced in WriteDelegate::OnObjectSignaled().
   AddRef();
-  write_watcher_.StartWatching(write_overlapped_.hEvent, &writer_);
+  write_watcher_.StartWatchingOnce(write_overlapped_.hEvent, &writer_);
 }
 
 void UDPSocketWin::Core::ReadDelegate::OnObjectSignaled(HANDLE object) {
@@ -669,7 +669,7 @@ void UDPSocketWin::WatchForReadWrite() {
   if (read_write_watcher_.IsWatching())
     return;
   bool watched =
-      read_write_watcher_.StartWatching(read_write_event_.Get(), this);
+      read_write_watcher_.StartWatchingOnce(read_write_event_.Get(), this);
   DCHECK(watched);
 }
 

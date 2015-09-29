@@ -26,16 +26,16 @@ namespace win {
 //
 // Typical usage:
 //
-//   class MyClass : public base::ObjectWatcher::Delegate {
+//   class MyClass : public base::win::ObjectWatcher::Delegate {
 //    public:
 //     void DoStuffWhenSignaled(HANDLE object) {
-//       watcher_.StartWatching(object, this);
+//       watcher_.StartWatchingOnce(object, this);
 //     }
-//     virtual void OnObjectSignaled(HANDLE object) {
+//     void OnObjectSignaled(HANDLE object) override {
 //       // OK, time to do stuff!
 //     }
 //    private:
-//     base::ObjectWatcher watcher_;
+//     base::win::ObjectWatcher watcher_;
 //   };
 //
 // In the above example, MyClass wants to "do stuff" when object becomes
@@ -59,19 +59,23 @@ class BASE_EXPORT ObjectWatcher : public MessageLoop::DestructionObserver {
   ~ObjectWatcher() override;
 
   // When the object is signaled, the given delegate is notified on the thread
-  // where StartWatching is called.  The ObjectWatcher is not responsible for
+  // where StartWatchingOnce is called. The ObjectWatcher is not responsible for
   // deleting the delegate.
-  //
   // Returns true if the watch was started.  Otherwise, false is returned.
-  //
-  bool StartWatching(HANDLE object, Delegate* delegate);
+  bool StartWatchingOnce(HANDLE object, Delegate* delegate);
+
+  // Notifies the delegate, on the thread where this method is called, each time
+  // the object is set. By definition, the handle must be an auto-reset object.
+  // The caller must ensure that it (or any Windows system code) doesn't reset
+  // the event or else the delegate won't be called.
+  // Returns true if the watch was started.  Otherwise, false is returned.
+  bool StartWatchingMultipleTimes(HANDLE object, Delegate* delegate);
 
   // Stops watching.  Does nothing if the watch has already completed.  If the
   // watch is still active, then it is canceled, and the associated delegate is
   // not notified.
   //
   // Returns true if the watch was canceled.  Otherwise, false is returned.
-  //
   bool StopWatching();
 
   // Returns true if currently watching an object.
@@ -84,6 +88,10 @@ class BASE_EXPORT ObjectWatcher : public MessageLoop::DestructionObserver {
   // Called on a background thread when done waiting.
   static void CALLBACK DoneWaiting(void* param, BOOLEAN timed_out);
 
+  // Helper used by StartWatchingOnce and StartWatchingMultipleTimes.
+  bool StartWatchingInternal(HANDLE object, Delegate* delegate,
+                             bool execute_only_once);
+
   void Signal(Delegate* delegate);
 
   // MessageLoop::DestructionObserver implementation:
@@ -94,7 +102,7 @@ class BASE_EXPORT ObjectWatcher : public MessageLoop::DestructionObserver {
   HANDLE object_;             // The object being watched
   HANDLE wait_object_;        // Returned by RegisterWaitForSingleObject
   MessageLoop* origin_loop_;  // Used to get back to the origin thread
-
+  bool run_once_;
   WeakPtrFactory<ObjectWatcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectWatcher);

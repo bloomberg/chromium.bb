@@ -235,14 +235,14 @@ void TCPSocketWin::Core::WatchForRead() {
   // We grab an extra reference because there is an IO operation in progress.
   // Balanced in ReadDelegate::OnObjectSignaled().
   AddRef();
-  read_watcher_.StartWatching(read_overlapped_.hEvent, &reader_);
+  read_watcher_.StartWatchingOnce(read_overlapped_.hEvent, &reader_);
 }
 
 void TCPSocketWin::Core::WatchForWrite() {
   // We grab an extra reference because there is an IO operation in progress.
   // Balanced in WriteDelegate::OnObjectSignaled().
   AddRef();
-  write_watcher_.StartWatching(write_overlapped_.hEvent, &writer_);
+  write_watcher_.StartWatchingOnce(write_overlapped_.hEvent, &writer_);
 }
 
 void TCPSocketWin::Core::ReadDelegate::OnObjectSignaled(HANDLE object) {
@@ -402,7 +402,7 @@ int TCPSocketWin::Accept(scoped_ptr<TCPSocketWin>* socket,
   if (result == ERR_IO_PENDING) {
     // Start watching.
     WSAEventSelect(socket_, accept_event_, FD_ACCEPT);
-    accept_watcher_.StartWatching(accept_event_, this);
+    accept_watcher_.StartWatchingOnce(accept_event_, this);
 
     accept_socket_ = socket;
     accept_address_ = address;
@@ -772,7 +772,7 @@ void TCPSocketWin::OnObjectSignaled(HANDLE object) {
 
     // Start watching the next FD_ACCEPT event.
     WSAEventSelect(socket_, accept_event_, FD_ACCEPT);
-    accept_watcher_.StartWatching(accept_event_, this);
+    accept_watcher_.StartWatchingOnce(accept_event_, this);
   }
 }
 
