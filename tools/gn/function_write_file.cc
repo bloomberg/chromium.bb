@@ -115,6 +115,14 @@ Value RunWriteFile(Scope* scope,
     return Value();
   g_scheduler->AddWrittenFile(source_file);  // Track that we wrote this file.
 
+  // Track how to recreate this file, since we write it a gen time.
+  // Note this is a hack since the correct output is not a dependency proper,
+  // but an addition of this file to the output of the gn rule that writes it.
+  // This dependency will, however, cause the gen step to be re-run and the
+  // build restarted if the file is missing.
+  g_scheduler->AddGenDependency(
+      scope->settings()->build_settings()->GetFullPath(source_file));
+
   // Compute output.
   std::ostringstream contents;
   if (args[1].type() == Value::LIST) {
