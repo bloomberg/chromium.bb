@@ -51,9 +51,6 @@ const bool kScrollEventChangesTab = true;
 const bool kScrollEventChangesTab = false;
 #endif
 
-const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle =
-    ui::ResourceBundle::BoldFont;
-
 #if !defined(OS_ANDROID)
 const bool kPasswordEchoEnabled = false;
 #endif
