@@ -156,26 +156,6 @@ class DataReductionProxyConfigTest : public testing::Test {
   scoped_ptr<TestDataReductionProxyParams> expected_params_;
 };
 
-TEST_F(DataReductionProxyConfigTest, TestMaybeDisableIfVPNTrialDisabled) {
-  // Simulate a VPN connection.
-  config()->interfaces()->clear();
-  config()->interfaces()->push_back(net::NetworkInterface(
-      "tun0", /* network interface name */
-      "tun0", /* network interface friendly name */
-      0,      /* interface index */
-      net::NetworkChangeNotifier::CONNECTION_WIFI, net::IPAddressNumber(),
-      0,                             /* network prefix */
-      net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
-      ));
-  EXPECT_TRUE(config()->MaybeDisableIfVPN());
-}
-
-TEST_F(DataReductionProxyConfigTest, TestMaybeDisableIfVPNTrialEnabled) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "force-fieldtrials", "DataReductionProxyUseDataSaverOnVPN/Enabled");
-  EXPECT_FALSE(config()->MaybeDisableIfVPN());
-}
-
 TEST_F(DataReductionProxyConfigTest, TestUpdateConfigurator) {
   ResetSettings(true, true, true, false);
 
@@ -226,33 +206,6 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
   // IP address change triggers a secure proxy check that succeeds. Proxy is
   // unrestricted.
   CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ENABLED, false, false);
-  // Simulate a VPN connection. The proxy should be disabled.
-  config()->interfaces()->clear();
-  config()->interfaces()->push_back(net::NetworkInterface(
-      "tun0", /* network interface name */
-      "tun0", /* network interface friendly name */
-      0,      /* interface index */
-      net::NetworkChangeNotifier::CONNECTION_WIFI,
-      net::IPAddressNumber(),        /* IP address */
-      0,                             /* network prefix */
-      net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
-      ));
-  config()->OnIPAddressChanged();
-  RunUntilIdle();
-  CheckProxyConfigs(false, false);
-
-  // Check that the proxy is re-enabled if a non-VPN connection is later used.
-  config()->interfaces()->clear();
-  config()->interfaces()->push_back(net::NetworkInterface(
-      "eth0", /* network interface name */
-      "eth0", /* network interface friendly name */
-      0,      /* interface index */
-      net::NetworkChangeNotifier::CONNECTION_WIFI, net::IPAddressNumber(),
-      0,                             /* network prefix */
-      net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
-      ));
-  CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ALREADY_ENABLED, false,
-                                  false);
 }
 
 TEST_F(DataReductionProxyConfigTest,
@@ -280,33 +233,6 @@ TEST_F(DataReductionProxyConfigTest,
                                   false);
   // IP address change triggers a secure proxy check that succeeds. Proxy is
   // unrestricted.
-  CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ENABLED, false, false);
-  // Simulate a VPN connection. The proxy should be disabled.
-  config()->interfaces()->clear();
-  config()->interfaces()->push_back(net::NetworkInterface(
-      "tun0", /* network interface name */
-      "tun0", /* network interface friendly name */
-      0,      /* interface index */
-      net::NetworkChangeNotifier::CONNECTION_WIFI,
-      net::IPAddressNumber(),        /* IP address */
-      0,                             /* network prefix */
-      net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
-      ));
-  config()->OnIPAddressChanged();
-  RunUntilIdle();
-  CheckProxyConfigs(false, false);
-
-  // Check that the proxy is re-enabled if a non-VPN connection is later used.
-  config()->interfaces()->clear();
-  config()->interfaces()->push_back(net::NetworkInterface(
-      "eth0", /* network interface name */
-      "eth0", /* network interface friendly name */
-      0,      /* interface index */
-      net::NetworkChangeNotifier::CONNECTION_WIFI, net::IPAddressNumber(),
-      0,                             /* network prefix */
-      net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
-      ));
-  ExpectSecureProxyCheckResult(PROXY_DISABLED_BEFORE_CHECK);
   CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ENABLED, false, false);
 }
 

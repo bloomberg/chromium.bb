@@ -54241,7 +54241,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <enum name="DataReductionProxyNetworkChangeEvent" type="int">
   <int value="0" label="IP Address Change"/>
-  <int value="1" label="Proxy disabled on VPN"/>
+  <int value="1" label="Proxy disabled on VPN (deprecated)"/>
 </enum>
 
 <enum name="DataReductionProxyProbeURLFetchResult" type="int">

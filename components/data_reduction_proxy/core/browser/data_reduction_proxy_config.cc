@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
@@ -41,7 +40,8 @@ const char kControl[] = "Control";
 // name in metrics/histograms/histograms.xml.
 enum DataReductionProxyNetworkChangeEvent {
   IP_CHANGED = 0,         // The client IP address changed.
-  DISABLED_ON_VPN = 1,    // The proxy is disabled because a VPN is running.
+  DISABLED_ON_VPN = 1,    // [Deprecated] Proxy is disabled because a VPN is
+                          // running.
   CHANGE_EVENT_COUNT = 2  // This must always be last.
 };
 
@@ -230,7 +230,6 @@ DataReductionProxyConfig::DataReductionProxyConfig(
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
     : secure_proxy_allowed_(params::ShouldUseSecureProxyByDefault()),
-      disabled_on_vpn_(false),
       unreachable_(false),
       enabled_by_user_(false),
       config_values_(config_values.Pass()),
@@ -627,7 +626,7 @@ void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
       config_values_->proxies_for_http();
   std::vector<net::ProxyServer> proxies_for_https =
       config_values_->proxies_for_https();
-  if (enabled && !disabled_on_vpn_ && !config_values_->holdback() &&
+  if (enabled && !config_values_->holdback() &&
       (!proxies_for_http.empty() || !proxies_for_https.empty())) {
     configurator_->Enable(!secure_proxy_allowed, proxies_for_http,
                           proxies_for_https);
@@ -695,8 +694,6 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
   if (enabled_by_user_) {
     DCHECK(config_values_->allowed());
     RecordNetworkChangeEvent(IP_CHANGED);
-    if (MaybeDisableIfVPN())
-      return;
 
     bool should_use_secure_proxy = params::ShouldUseSecureProxyByDefault();
     if (!should_use_secure_proxy && secure_proxy_allowed_) {
@@ -959,32 +956,6 @@ void DataReductionProxyConfig::GetNetworkList(
     net::NetworkInterfaceList* interfaces,
     int policy) {
   net::GetNetworkList(interfaces, policy);
-}
-
-bool DataReductionProxyConfig::MaybeDisableIfVPN() {
-  if (params::IsIncludedInUseDataSaverOnVPNFieldTrial()) {
-    return false;
-  }
-  net::NetworkInterfaceList network_interfaces;
-  GetNetworkList(&network_interfaces, 0);
-  // VPNs use a "tun" interface, so the presence of a "tun" interface indicates
-  // a VPN is in use. This logic only works on Android and Linux platforms.
-  // Data Saver will not be disabled on any other platform on VPN.
-  const std::string vpn_interface_name_prefix = "tun";
-  for (size_t i = 0; i < network_interfaces.size(); ++i) {
-    if (base::StartsWith(network_interfaces[i].name, vpn_interface_name_prefix,
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      disabled_on_vpn_ = true;
-      ReloadConfig();
-      RecordNetworkChangeEvent(DISABLED_ON_VPN);
-      return true;
-    }
-  }
-  if (disabled_on_vpn_) {
-    disabled_on_vpn_ = false;
-    ReloadConfig();
-  }
-  return false;
 }
 
 }  // namespace data_reduction_proxy

@@ -133,11 +133,6 @@ std::string GetClientConfigFieldTrialName() {
   return kConfigServiceFieldTrial;
 }
 
-bool IsIncludedInUseDataSaverOnVPNFieldTrial() {
-  return FieldTrialList::FindFullName("DataReductionProxyUseDataSaverOnVPN") ==
-         kEnabled;
-}
-
 bool IsConfigClientEnabled() {
   std::string group_value =
       base::FieldTrialList::FindFullName(kConfigServiceFieldTrial);

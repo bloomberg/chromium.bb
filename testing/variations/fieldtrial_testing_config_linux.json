@@ -14,11 +14,6 @@
             "group_name": "Enabled"
         }
     ],
-    "DataReductionProxyUseDataSaverOnVPN": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "EnableGoogleCachedCopyTextExperiment": [
         {
             "group_name": "Button"

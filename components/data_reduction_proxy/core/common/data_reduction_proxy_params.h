@@ -79,10 +79,6 @@ std::string GetQuicFieldTrialName();
 // Returns the name of the client config field trial.
 std::string GetClientConfigFieldTrialName();
 
-// Returns true if this client is part of a field trial that allows Data Saver
-// to be used on VPN.
-bool IsIncludedInUseDataSaverOnVPNFieldTrial();
-
 // Returns true if the Data Reduction Proxy config client should be used.
 bool IsConfigClientEnabled();
 

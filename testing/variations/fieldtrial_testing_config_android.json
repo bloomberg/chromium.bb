@@ -63,11 +63,6 @@
             "group_name": "Enabled"
         }
     ],
-    "DataReductionProxyUseDataSaverOnVPN": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "DataReductionProxyUseQuic": [
         {
             "group_name": "Enabled"
