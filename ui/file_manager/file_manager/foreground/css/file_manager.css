@@ -343,7 +343,7 @@ body.check-select .dialog-header
   width: 16px;
 }
 
-.dialog-header paper-button::shadow > paper-material {
+.dialog-header paper-button {
   padding: 0 8px;
   line-height: 32px;
 }
