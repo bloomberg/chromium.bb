@@ -2,6 +2,7 @@ set(LIBRARYNAME BlinkGCPlugin)
 
 set(plugin_sources
   BlinkGCPlugin.cpp
+  CheckDispatchVisitor.cpp
   CheckFieldsVisitor.cpp
   CheckFinalizerVisitor.cpp
   CheckGCRootsVisitor.cpp

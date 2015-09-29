@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include "BlinkGCPluginOptions.h"
+#include "CheckDispatchVisitor.h"
 #include "CheckFieldsVisitor.h"
 #include "CheckFinalizerVisitor.h"
 #include "CheckGCRootsVisitor.h"
@@ -183,42 +184,6 @@ std::set<FunctionDecl*> GetLateParsedFunctionDecls(TranslationUnitDecl* decl) {
   return v.late_parsed_decls;
 }
 
-// This visitor checks that a method contains within its body, a call to a
-// method on the provided receiver class. This is used to check manual
-// dispatching for trace and finalize methods.
-class CheckDispatchVisitor : public RecursiveASTVisitor<CheckDispatchVisitor> {
- public:
-  CheckDispatchVisitor(RecordInfo* receiver)
-      : receiver_(receiver), dispatched_to_receiver_(false) {}
-
-  bool dispatched_to_receiver() { return dispatched_to_receiver_; }
-
-  bool VisitMemberExpr(MemberExpr* member) {
-    if (CXXMethodDecl* fn = dyn_cast<CXXMethodDecl>(member->getMemberDecl())) {
-      if (fn->getParent() == receiver_->record())
-        dispatched_to_receiver_ = true;
-    }
-    return true;
-  }
-
-  bool VisitUnresolvedMemberExpr(UnresolvedMemberExpr* member) {
-    for (Decl* decl : member->decls()) {
-      if (CXXMethodDecl* method = dyn_cast<CXXMethodDecl>(decl)) {
-        if (method->getParent() == receiver_->record() &&
-            Config::GetTraceMethodType(method) ==
-            Config::TRACE_AFTER_DISPATCH_METHOD) {
-          dispatched_to_receiver_ = true;
-          return true;
-        }
-      }
-    }
-    return true;
-  }
-
- private:
-  RecordInfo* receiver_;
-  bool dispatched_to_receiver_;
-};
 
 class EmptyStmtVisitor
     : public RecursiveASTVisitor<EmptyStmtVisitor> {
