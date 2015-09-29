@@ -120,6 +120,7 @@ EXTRA_ENV = {
   'DISABLE_ABI_CHECK': '0',
   'LLVM_PASSES_TO_DISABLE': '',
   'RUN_PASSES_SEPARATELY': '0',
+  'FINALIZE': '0',
 }
 
 def AddToBCLinkFlags(*args):
@@ -154,6 +155,8 @@ LDPatterns = [
   ( '--pnacl-run-passes-separately', "env.set('RUN_PASSES_SEPARATELY', '1')"),
   ( ('-target', '(.+)'), SetLibTarget),
   ( ('--target=(.+)'), SetLibTarget),
+  ( ('--finalize'),    "env.set('FINALIZE', '1')"),
+  ( ('--no-finalize'), "env.set('FINALIZE', '0')"),
 
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
@@ -424,6 +427,9 @@ def main(argv):
   else:
     chain = DriverChain('', output, tng)
 
+  if env.getbool('FINALIZE'):
+    chain.add(DoFinalize, 'finalize.' + bitcode_type)
+
   # If -arch is also specified, invoke pnacl-translate afterwards.
   if arch_flag_given:
     env.set('NATIVE_OBJECTS', *native_objects)
@@ -545,6 +551,9 @@ def DoLLVMPasses(pass_list):
     filtered_list.append('-preserve-bc-uselistorder=false')
     RunDriver('pnacl-opt', filtered_list + [infile, '-o', outfile])
   return Func
+
+def DoFinalize(infile, outfile):
+  RunDriver('pnacl-finalize', [infile, '-o', outfile])
 
 def DoTranslate(infile, outfile):
   args = env.get('TRANSLATE_FLAGS')

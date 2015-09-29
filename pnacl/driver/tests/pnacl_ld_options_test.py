@@ -16,6 +16,7 @@ from driver_env import env
 import driver_log
 import driver_test_utils
 import driver_tools
+import filetype
 
 class TestLDOptions(driver_test_utils.DriverTesterCommon):
   def setUp(self):
@@ -82,6 +83,17 @@ define i32 @_start() {
           bitcode,
           ['-O2', '-static', '--strip-all', '--pnacl-run-passes-separately'],
           4)
+
+  def test_finalize(self):
+    """ Test that pnacl-ld will finalize the pexe when requested"""
+    if not driver_test_utils.CanRunHost():
+      return
+    bitcode = self.getBitcode()
+    with self.getTemp(suffix='.pexe') as temp_output:
+      driver_tools.RunDriver(
+        'pnacl-ld', ['--finalize', bitcode.name, '-o', temp_output.name])
+      self.assertFalse(filetype.IsLLVMBitcode(temp_output.name))
+      self.assertTrue(filetype.IsPNaClBitcode(temp_output.name))
 
 
 if __name__ == '__main__':
