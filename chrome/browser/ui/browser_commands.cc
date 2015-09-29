@@ -217,11 +217,10 @@ void ReloadInternal(Browser* browser,
   if (!new_tab->FocusLocationBarByDefault())
     new_tab->Focus();
 
-  if (DevToolsWindow* devtools =
-      DevToolsWindow::GetInstanceForInspectedWebContents(new_tab)) {
-    devtools->ReloadInspectedWebContents(ignore_cache);
+  DevToolsWindow* devtools =
+      DevToolsWindow::GetInstanceForInspectedWebContents(new_tab);
+  if (devtools && devtools->ReloadInspectedWebContents(ignore_cache))
     return;
-  }
 
   if (ignore_cache)
     new_tab->GetController().ReloadIgnoringCache(true);

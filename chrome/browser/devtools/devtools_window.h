@@ -125,7 +125,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   bool ForwardKeyboardEvent(const content::NativeWebKeyboardEvent& event);
 
   // Reloads inspected web contents as if it was triggered from DevTools.
-  void ReloadInspectedWebContents(bool ignore_cache);
+  // Returns true if it has successfully handled reload, false if the caller
+  // is to proceed reload without DevTools interception.
+  bool ReloadInspectedWebContents(bool ignore_cache);
 
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,

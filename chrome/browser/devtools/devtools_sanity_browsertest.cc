@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
@@ -49,6 +50,7 @@
 #include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
@@ -91,11 +93,14 @@ const char kReloadSharedWorkerTestPage[] =
 const char kReloadSharedWorkerTestWorker[] =
     "files/workers/debug_shared_worker_initialization.js";
 
-void RunTestFunction(DevToolsWindow* window, const char* test_name) {
+template <typename... T>
+void DispatchOnTestSuite(DevToolsWindow* window,
+                         const char* method,
+                         T... args) {
   std::string result;
-
-  RenderViewHost* rvh = DevToolsWindowTesting::Get(window)->
-      main_web_contents()->GetRenderViewHost();
+  RenderViewHost* rvh = DevToolsWindowTesting::Get(window)
+                            ->main_web_contents()
+                            ->GetRenderViewHost();
   // At first check that JavaScript part of the front-end is loaded by
   // checking that global variable uiTests exists(it's created after all js
   // files have been loaded) and has runTest method.
@@ -103,15 +108,27 @@ void RunTestFunction(DevToolsWindow* window, const char* test_name) {
       content::ExecuteScriptAndExtractString(
           rvh,
           "window.domAutomationController.send("
-          "    '' + (window.uiTests && (typeof uiTests.runTest)));",
+          "    '' + (window.uiTests && (typeof uiTests.dispatchOnTestSuite)));",
           &result));
-
   ASSERT_EQ("function", result) << "DevTools front-end is broken.";
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      rvh,
-      base::StringPrintf("uiTests.runTest('%s')", test_name),
-      &result));
+
+  const char* args_array[] = {method, args...};
+  std::ostringstream script;
+  script << "uiTests.dispatchOnTestSuite([";
+  for (size_t i = 0; i < arraysize(args_array); ++i)
+    script << (i ? "," : "") << '\"' << args_array[i] << '\"';
+  script << "])";
+  ASSERT_TRUE(
+      content::ExecuteScriptAndExtractString(rvh, script.str(), &result));
   EXPECT_EQ("[OK]", result);
+}
+
+void RunTestFunction(DevToolsWindow* window, const char* test_name) {
+  DispatchOnTestSuite(window, test_name);
+}
+
+void SwitchToPanel(DevToolsWindow* window, const char* panel) {
+  DispatchOnTestSuite(window, "switchToPanel", panel);
 }
 
 }  // namespace
@@ -878,10 +895,38 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
       content::ExecuteScriptAndExtractString(
           main_web_contents()->GetRenderViewHost(),
           "window.domAutomationController.send("
-          "    '' + (window.uiTests && (typeof uiTests.runTest)));",
+          "    '' + (window.uiTests && (typeof uiTests.dispatchOnTestSuite)));",
           &result));
   ASSERT_EQ("function", result) << "DevTools front-end is broken.";
   CloseDevToolsWindow();
+}
+
+class DevToolsReattachAfterCrashTest : public DevToolsSanityTest {
+ protected:
+  void RunTestWithPanel(const char* panel_name) {
+    OpenDevToolsWindow("about:blank", false);
+    SwitchToPanel(window_, panel_name);
+    ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+    content::RenderProcessHostWatcher crash_observer(
+        GetInspectedTab(),
+        content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUICrashURL));
+    crash_observer.Wait();
+    content::TestNavigationObserver navigation_observer(GetInspectedTab(), 1);
+    chrome::Reload(browser(), CURRENT_TAB);
+    navigation_observer.Wait();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DevToolsReattachAfterCrashTest,
+                       TestReattachAfterCrashOnTimeline) {
+  RunTestWithPanel("timeline");
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsReattachAfterCrashTest,
+                       TestReattachAfterCrashOnNetwork) {
+  RunTestWithPanel("network");
 }
 
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, InspectSharedWorker) {

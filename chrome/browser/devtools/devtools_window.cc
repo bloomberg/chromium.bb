@@ -1263,8 +1263,13 @@ bool DevToolsWindow::ForwardKeyboardEvent(
   return event_forwarder_->ForwardEvent(event);
 }
 
-void DevToolsWindow::ReloadInspectedWebContents(bool ignore_cache) {
+bool DevToolsWindow::ReloadInspectedWebContents(bool ignore_cache) {
+  // Only route reload via front-end if the agent is attached.
+  WebContents* wc = GetInspectedWebContents();
+  if (!wc || wc->GetCrashedStatus() != base::TERMINATION_STATUS_STILL_RUNNING)
+    return false;
   base::FundamentalValue ignore_cache_value(ignore_cache);
   bindings_->CallClientFunction("DevToolsAPI.reloadInspectedPage",
                                 &ignore_cache_value, nullptr, nullptr);
+  return true;
 }
