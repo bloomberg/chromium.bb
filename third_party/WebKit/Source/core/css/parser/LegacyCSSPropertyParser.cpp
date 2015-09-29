@@ -3605,7 +3605,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseGridBreadth(CS
         double flexValue = currentValue->fValue;
 
         // Fractional unit is a non-negative dimension.
-        if (flexValue <= 0)
+        if (flexValue < 0)
             return nullptr;
 
         return cssValuePool().createValue(flexValue, CSSPrimitiveValue::UnitType::Fraction);

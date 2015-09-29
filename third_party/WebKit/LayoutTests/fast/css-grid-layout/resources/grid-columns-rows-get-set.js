@@ -62,6 +62,9 @@ testGridDefinitionsSetJSValues("3600Fr", "154fR", "800px", "600px", "3600fr", "1
 testGridDefinitionsSetJSValues("3.1459fr", "2.718fr", "800px", "600px");
 // A leading '+' is allowed.
 testGridDefinitionsSetJSValues("+3fr", "+4fr", "800px", "600px", "3fr", "4fr");
+// Flex factor values can be zero.
+testGridDefinitionsSetJSValues("0fr", ".0fr", "0px", "0px", "0fr", "0fr");
+testGridDefinitionsSetJSValues("minmax(0fr, 0fr)", "minmax(.0fr, .0fr)", "0px", "0px", "minmax(0fr, 0fr)", "minmax(0fr, 0fr)");
 
 debug("");
 debug("Test getting and setting grid-template-columns and grid-template-rows to calc() values through JS");
@@ -80,9 +83,9 @@ testGridDefinitionsSetBadJSValues("minmax(minmax(10px, 20px), 20px)", "minmax(10
 testGridDefinitionsSetBadJSValues("minmax()", "minmax(30px 30% 30em)");
 testGridDefinitionsSetBadJSValues("-2fr", "3ffr");
 testGridDefinitionsSetBadJSValues("-2.05fr", "+-3fr");
-testGridDefinitionsSetBadJSValues("0fr", "1r");
+testGridDefinitionsSetBadJSValues("1f", "1r");
 // A dimension doesn't allow spaces between the number and the unit.
-testGridDefinitionsSetBadJSValues(".0000fr", "13 fr");
+testGridDefinitionsSetBadJSValues(".1 fr", "13 fr");
 testGridDefinitionsSetBadJSValues("7.-fr", "-8,0fr");
 // Negative values are not allowed.
 testGridDefinitionsSetBadJSValues("-1px", "-6em");

@@ -19,6 +19,11 @@
     width: 100px;
     height: 100px;
 }
+.zeroValueFlexFactor {
+    grid-template-columns: .0fr .2fr .3fr;
+    grid-template-rows: 50px;
+    width: 100px;
+}
 .firstRowThirdColumn {
     background-color: yellow;
     grid-column: 3;
@@ -58,6 +63,14 @@
         <div class="firstRowFirstColumn" data-expected-width="50" data-expected-height="10"></div>
         <div class="secondRowFirstColumn" data-expected-width="50" data-expected-height="20"></div>
         <div class="thirdRowFirstColumn" data-expected-width="50" data-expected-height="30"></div>
+    </div>
+</div>
+
+<div style="position: relative;">
+    <div class="grid zeroValueFlexFactor">
+        <div class="firstRowFirstColumn" data-expected-width="0" data-expected-height="50"></div>
+        <div class="firstRowSecondColumn" data-expected-width="20" data-expected-height="50"></div>
+        <div class="firstRowThirdColumn" data-expected-width="30" data-expected-height="50"></div>
     </div>
 </div>
 

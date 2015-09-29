@@ -142,28 +142,6 @@ public:
     LayoutUnit distributionOffset = -1;
 };
 
-struct GridTrackForNormalization {
-    GridTrackForNormalization(const GridTrack& track, double flex)
-        : m_track(&track)
-        , m_flex(flex)
-        , m_normalizedFlexValue(track.baseSize() / flex)
-    {
-    }
-
-    // Required by std::sort.
-    GridTrackForNormalization& operator=(const GridTrackForNormalization& o)
-    {
-        m_track = o.m_track;
-        m_flex = o.m_flex;
-        m_normalizedFlexValue = o.m_normalizedFlexValue;
-        return *this;
-    }
-
-    const GridTrack* m_track;
-    double m_flex;
-    LayoutUnit m_normalizedFlexValue;
-};
-
 enum TrackSizeRestriction {
     AllowInfinity,
     ForbidInfinity,
@@ -396,6 +374,11 @@ bool LayoutGrid::gridElementIsShrinkToFit()
     return isFloatingOrOutOfFlowPositioned();
 }
 
+static inline double normalizedFlexFraction(const GridTrack& track, double flexFactor)
+{
+    return track.baseSize() / std::max<double>(1, flexFactor);
+}
+
 void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection direction, GridSizingData& sizingData, LayoutUnit& freeSpace)
 {
     const LayoutUnit initialFreeSpace = freeSpace;
@@ -456,14 +439,12 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
         return;
 
     // 4. Grow all Grid tracks having a fraction as the MaxTrackSizingFunction.
-    double normalizedFractionBreadth = 0;
+    double flexFraction = 0;
     if (!hasUndefinedRemainingSpace) {
-        normalizedFractionBreadth = computeNormalizedFractionBreadth(tracks, GridSpan(0, tracks.size() - 1), direction, initialFreeSpace);
+        flexFraction = findFlexFactorUnitSize(tracks, GridSpan(0, tracks.size() - 1), direction, initialFreeSpace);
     } else {
-        for (const auto& trackIndex : flexibleSizedTracksIndex) {
-            GridTrackSize trackSize = gridTrackSize(direction, trackIndex);
-            normalizedFractionBreadth = std::max(normalizedFractionBreadth, tracks[trackIndex].baseSize() / trackSize.maxTrackBreadth().flex());
-        }
+        for (const auto& trackIndex : flexibleSizedTracksIndex)
+            flexFraction = std::max(flexFraction, normalizedFlexFraction(tracks[trackIndex], gridTrackSize(direction, trackIndex).maxTrackBreadth().flex()));
 
         for (size_t i = 0; i < flexibleSizedTracksIndex.size(); ++i) {
             GridIterator iterator(m_grid, direction, flexibleSizedTracksIndex[i]);
@@ -475,8 +456,7 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
                 if (i > 0 && span.resolvedInitialPosition.toInt() <= flexibleSizedTracksIndex[i - 1])
                     continue;
 
-                double itemNormalizedFlexBreadth = computeNormalizedFractionBreadth(tracks, span, direction, maxContentForChild(*gridItem, direction, sizingData.columnTracks));
-                normalizedFractionBreadth = std::max(normalizedFractionBreadth, itemNormalizedFlexBreadth);
+                flexFraction = std::max(flexFraction, findFlexFactorUnitSize(tracks, span, direction, maxContentForChild(*gridItem, direction, sizingData.columnTracks)));
             }
         }
     }
@@ -484,7 +464,7 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
     for (const auto& trackIndex : flexibleSizedTracksIndex) {
         GridTrackSize trackSize = gridTrackSize(direction, trackIndex);
 
-        LayoutUnit baseSize = std::max<LayoutUnit>(tracks[trackIndex].baseSize(), normalizedFractionBreadth * trackSize.maxTrackBreadth().flex());
+        LayoutUnit baseSize = std::max<LayoutUnit>(tracks[trackIndex].baseSize(), flexFraction * trackSize.maxTrackBreadth().flex());
         tracks[trackIndex].setBaseSize(baseSize);
         freeSpace -= baseSize;
     }
@@ -528,59 +508,56 @@ LayoutUnit LayoutGrid::computeUsedBreadthOfSpecifiedLength(GridTrackSizingDirect
     return valueForLength(trackLength, direction == ForColumns ? contentLogicalWidth() : std::max(LayoutUnit(), computeContentLogicalHeight(MainOrPreferredSize, style()->logicalHeight(), -1)));
 }
 
-static bool sortByGridNormalizedFlexValue(const GridTrackForNormalization& track1, const GridTrackForNormalization& track2)
+double LayoutGrid::computeFlexFactorUnitSize(const Vector<GridTrack>& tracks, GridTrackSizingDirection direction, double flexFactorSum, LayoutUnit& leftOverSpace, const Vector<size_t, 8>& flexibleTracksIndexes, PassOwnPtr<TrackIndexSet> tracksToTreatAsInflexible) const
 {
-    return track1.m_normalizedFlexValue < track2.m_normalizedFlexValue;
+    // We want to avoid the effect of flex factors sum below 1 making the factor unit size to grow exponentially.
+    double hypotheticalFactorUnitSize = leftOverSpace / std::max<double>(1, flexFactorSum);
+
+    // product of the hypothetical "flex factor unit" and any flexible track's "flex factor" must be grater than such track's "base size".
+    OwnPtr<TrackIndexSet> additionalTracksToTreatAsInflexible = tracksToTreatAsInflexible;
+    bool validFlexFactorUnit = true;
+    for (auto index : flexibleTracksIndexes) {
+        if (additionalTracksToTreatAsInflexible && additionalTracksToTreatAsInflexible->contains(index))
+            continue;
+        LayoutUnit baseSize = tracks[index].baseSize();
+        double flexFactor = gridTrackSize(direction, index).maxTrackBreadth().flex();
+        // treating all such tracks as inflexible.
+        if (baseSize > hypotheticalFactorUnitSize * flexFactor) {
+            leftOverSpace -= baseSize;
+            flexFactorSum -= flexFactor;
+            if (!additionalTracksToTreatAsInflexible)
+                additionalTracksToTreatAsInflexible = adoptPtr(new TrackIndexSet());
+            additionalTracksToTreatAsInflexible->add(index);
+            validFlexFactorUnit = false;
+        }
+    }
+    if (!validFlexFactorUnit)
+        return computeFlexFactorUnitSize(tracks, direction, flexFactorSum, leftOverSpace, flexibleTracksIndexes, additionalTracksToTreatAsInflexible.release());
+    return hypotheticalFactorUnitSize;
 }
 
-double LayoutGrid::computeNormalizedFractionBreadth(Vector<GridTrack>& tracks, const GridSpan& tracksSpan, GridTrackSizingDirection direction, LayoutUnit spaceToFill) const
+double LayoutGrid::findFlexFactorUnitSize(const Vector<GridTrack>& tracks, const GridSpan& tracksSpan, GridTrackSizingDirection direction, LayoutUnit leftOverSpace) const
 {
-    LayoutUnit allocatedSpace;
-    Vector<GridTrackForNormalization> tracksForNormalization;
+    if (leftOverSpace <= 0)
+        return 0;
+
+    double flexFactorSum = 0;
+    Vector<size_t, 8> flexibleTracksIndexes;
     for (const auto& resolvedPosition : tracksSpan) {
-        GridTrack& track = tracks[resolvedPosition.toInt()];
-        allocatedSpace += track.baseSize();
-
-        GridTrackSize trackSize = gridTrackSize(direction, resolvedPosition.toInt());
-        if (!trackSize.maxTrackBreadth().isFlex())
-            continue;
-
-        tracksForNormalization.append(GridTrackForNormalization(track, trackSize.maxTrackBreadth().flex()));
+        size_t trackIndex = resolvedPosition.toInt();
+        GridTrackSize trackSize = gridTrackSize(direction, trackIndex);
+        if (!trackSize.maxTrackBreadth().isFlex()) {
+            leftOverSpace -= tracks[trackIndex].baseSize();
+        } else {
+            flexibleTracksIndexes.append(trackIndex);
+            flexFactorSum += trackSize.maxTrackBreadth().flex();
+        }
     }
 
     // The function is not called if we don't have <flex> grid tracks
-    ASSERT(!tracksForNormalization.isEmpty());
+    ASSERT(!flexibleTracksIndexes.isEmpty());
 
-    std::sort(tracksForNormalization.begin(), tracksForNormalization.end(), sortByGridNormalizedFlexValue);
-
-    // These values work together: as we walk over our grid tracks, we increase fractionValueBasedOnGridItemsRatio
-    // to match a grid track's usedBreadth to <flex> ratio until the total fractions sized grid tracks wouldn't
-    // fit into availableLogicalSpaceIgnoringFractionTracks.
-    double accumulatedFractions = 0;
-    LayoutUnit fractionValueBasedOnGridItemsRatio = 0;
-    LayoutUnit availableLogicalSpaceIgnoringFractionTracks = spaceToFill - allocatedSpace;
-
-    for (const auto& track : tracksForNormalization) {
-        if (track.m_normalizedFlexValue > fractionValueBasedOnGridItemsRatio) {
-            // If the normalized flex value (we ordered |tracksForNormalization| by increasing normalized flex value)
-            // will make us overflow our container, then stop. We have the previous step's ratio is the best fit.
-            if (track.m_normalizedFlexValue * accumulatedFractions > availableLogicalSpaceIgnoringFractionTracks)
-                break;
-
-            fractionValueBasedOnGridItemsRatio = track.m_normalizedFlexValue;
-        }
-
-        accumulatedFractions += track.m_flex;
-        // This item was processed so we re-add its used breadth to the available space to accurately count the remaining space.
-        availableLogicalSpaceIgnoringFractionTracks += track.m_track->baseSize();
-    }
-
-    // Let flex factor sum be the sum of the flex factors of the flexible tracks. If this value
-    // is less than 1, set it to 1 instead.
-    if (accumulatedFractions < 1)
-        return availableLogicalSpaceIgnoringFractionTracks;
-
-    return availableLogicalSpaceIgnoringFractionTracks / accumulatedFractions;
+    return computeFlexFactorUnitSize(tracks, direction, flexFactorSum, leftOverSpace, flexibleTracksIndexes);
 }
 
 bool LayoutGrid::hasDefiniteLogicalSize(GridTrackSizingDirection direction) const
