@@ -463,7 +463,6 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
     return;
   }
 
-  is_drag_in_progress_ = false;
   int delta = 0;
   if (drag_type == DRAG_TO_OVERFLOW)
     delta = -1;
