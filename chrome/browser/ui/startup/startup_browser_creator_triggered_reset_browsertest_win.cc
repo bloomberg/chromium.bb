@@ -155,13 +155,11 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(2, tab_strip->count());
 
-  if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
-    EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
-              tab_strip->GetWebContentsAt(0)->GetURL());
-  } else {
-    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-              tab_strip->GetWebContentsAt(0)->GetURL());
-  }
+  GURL expected_first_tab_url =
+      signin::ShouldShowPromoAtStartup(browser()->profile(), true)
+          ? signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false)
+          : GURL(chrome::kChromeUINewTabURL);
+  EXPECT_EQ(expected_first_tab_url, tab_strip->GetWebContentsAt(0)->GetURL());
 
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
