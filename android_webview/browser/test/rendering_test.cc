@@ -23,8 +23,8 @@ RenderingTest::~RenderingTest() {
 
 void RenderingTest::SetUpTestHarness() {
   DCHECK(!browser_view_renderer_.get());
-  browser_view_renderer_.reset(
-      new BrowserViewRenderer(this, base::ThreadTaskRunnerHandle::Get()));
+  browser_view_renderer_.reset(new BrowserViewRenderer(
+      this, base::ThreadTaskRunnerHandle::Get(), false));
   InitializeCompositor();
   Attach();
 }

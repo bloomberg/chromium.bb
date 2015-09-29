@@ -85,10 +85,12 @@ BrowserViewRenderer* BrowserViewRenderer::FromWebContents(
 
 BrowserViewRenderer::BrowserViewRenderer(
     BrowserViewRendererClient* client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+    bool disable_page_visibility)
     : client_(client),
       shared_renderer_state_(ui_task_runner, this),
       ui_task_runner_(ui_task_runner),
+      disable_page_visibility_(disable_page_visibility),
       compositor_(NULL),
       is_paused_(false),
       view_visible_(false),
@@ -444,6 +446,13 @@ bool BrowserViewRenderer::IsVisible() const {
   return view_visible_ && (!attached_to_window_ || window_visible_);
 }
 
+bool BrowserViewRenderer::IsClientVisible() const {
+  if (disable_page_visibility_)
+    return !is_paused_;
+
+  return !is_paused_ && IsVisible();
+}
+
 gfx::Rect BrowserViewRenderer::GetScreenRect() const {
   return gfx::Rect(client_->GetLocationOnScreen(), size_);
 }
@@ -716,9 +725,13 @@ bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas) {
 }
 
 void BrowserViewRenderer::UpdateCompositorIsActive() {
-  if (compositor_)
-    compositor_->SetIsActive(!is_paused_ &&
-                             (!attached_to_window_ || window_visible_));
+  if (compositor_) {
+    if (disable_page_visibility_)
+      compositor_->SetIsActive(!is_paused_ &&
+                               (!attached_to_window_ || window_visible_));
+    else
+      compositor_->SetIsActive(IsClientVisible());
+  }
 }
 
 std::string BrowserViewRenderer::ToString() const {

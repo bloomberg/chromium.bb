@@ -16,6 +16,7 @@
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "android_webview/common/aw_hit_test_data.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native/aw_autofill_client.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
@@ -187,7 +188,9 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
     : web_contents_(web_contents.Pass()),
       browser_view_renderer_(
           this,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnablePageVisibility)),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
@@ -861,6 +864,10 @@ void AwContents::OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h) {
 void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.OnDetachedFromWindow();
+}
+
+bool AwContents::IsVisible(JNIEnv* env, jobject obj) {
+  return browser_view_renderer_.IsClientVisible();
 }
 
 void AwContents::DetachFunctorFromView() {

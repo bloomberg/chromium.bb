@@ -42,7 +42,6 @@ import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
-import org.chromium.base.CommandLine;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -105,9 +104,6 @@ public class AwContents implements SmartClipProvider,
 
     private static final boolean FORCE_AUXILIARY_BITMAP_RENDERING =
             "goldfish".equals(Build.HARDWARE);
-
-    // Matches kEnablePageVisibility.
-    private static final String ENABLE_PAGE_VISIBILITY = "enable-page-visibility";
 
     /**
      * WebKit hit test related data structure. These are used to implement
@@ -236,8 +232,6 @@ public class AwContents implements SmartClipProvider,
     private final AwSettings mSettings;
     private final ScrollAccessibilityHelper mScrollAccessibilityHelper;
 
-    // Visibility related state.
-    private final boolean mEnablePageVisibility;
     private boolean mIsPaused;
     private boolean mIsViewVisible;
     private boolean mIsWindowVisible;
@@ -721,7 +715,6 @@ public class AwContents implements SmartClipProvider,
         mScrollOffsetManager =
                 dependencyFactory.createScrollOffsetManager(new AwScrollOffsetManagerDelegate());
         mScrollAccessibilityHelper = new ScrollAccessibilityHelper(mContainerView);
-        mEnablePageVisibility = CommandLine.getInstance().hasSwitch(ENABLE_PAGE_VISIBILITY);
 
         setOverScrollMode(mContainerView.getOverScrollMode());
         setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
@@ -2287,10 +2280,7 @@ public class AwContents implements SmartClipProvider,
 
     private void updateContentViewCoreVisibility() {
         if (isDestroyed()) return;
-        boolean contentViewCoreVisible = !mIsPaused;
-        if (mEnablePageVisibility) {
-            contentViewCoreVisible = contentViewCoreVisible && mIsWindowVisible && mIsViewVisible;
-        }
+        boolean contentViewCoreVisible = nativeIsVisible(mNativeAwContents);
 
         if (contentViewCoreVisible && !mIsContentViewCoreVisible) {
             mContentViewCore.onShow();
@@ -3123,7 +3113,8 @@ public class AwContents implements SmartClipProvider,
     private native void nativeSetWindowVisibility(long nativeAwContents, boolean visible);
     private native void nativeSetIsPaused(long nativeAwContents, boolean paused);
     private native void nativeOnAttachedToWindow(long nativeAwContents, int w, int h);
-    private static native void nativeOnDetachedFromWindow(long nativeAwContents);
+    private native void nativeOnDetachedFromWindow(long nativeAwContents);
+    private native boolean nativeIsVisible(long nativeAwContents);
     private native void nativeSetDipScale(long nativeAwContents, float dipScale);
 
     // Returns null if save state fails.

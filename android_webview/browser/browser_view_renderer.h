@@ -39,7 +39,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   BrowserViewRenderer(
       BrowserViewRendererClient* client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      bool disable_page_visibility);
 
   ~BrowserViewRenderer() override;
 
@@ -93,6 +94,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   gfx::Size size() const { return size_; }
   void ReleaseHardware();
 
+  bool IsClientVisible() const;
   void TrimMemory(const int level, const bool visible);
 
   // SynchronousCompositorClient overrides.
@@ -156,6 +158,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   BrowserViewRendererClient* client_;
   SharedRendererState shared_renderer_state_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  bool disable_page_visibility_;
 
   content::SynchronousCompositor* compositor_;
 
