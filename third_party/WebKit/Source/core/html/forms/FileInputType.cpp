@@ -242,12 +242,12 @@ FileList* FileInputType::createFileList(const Vector<FileChooserFileInfo>& files
 
 void FileInputType::countUsage()
 {
-    // It is required by isPrivilegedContext() but isn't
+    // It is required by isSecureContext() but isn't
     // actually used. This could be used later if a warning is shown in the
     // developer console.
     String insecureOriginMsg;
     Document* document = &element().document();
-    if (document->isPrivilegedContext(insecureOriginMsg))
+    if (document->isSecureContext(insecureOriginMsg))
         UseCounter::count(*document, UseCounter::InputTypeFileInsecureOrigin);
     else
         UseCounter::count(*document, UseCounter::InputTypeFileSecureOrigin);

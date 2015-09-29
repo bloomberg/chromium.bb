@@ -55,7 +55,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState, const RequestDe
 {
     // 1. If the incumbent settings object is not a secure context, reject promise with a SecurityError and abort these steps.
     String errorMessage;
-    if (!scriptState->executionContext()->isPrivilegedContext(errorMessage)) {
+    if (!scriptState->executionContext()->isSecureContext(errorMessage)) {
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, errorMessage));
     }
 

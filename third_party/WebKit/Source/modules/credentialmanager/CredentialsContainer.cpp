@@ -108,7 +108,7 @@ static bool checkBoilerplate(ScriptPromiseResolver* resolver)
     }
 
     String errorMessage;
-    if (!resolver->scriptState()->executionContext()->isPrivilegedContext(errorMessage)) {
+    if (!resolver->scriptState()->executionContext()->isSecureContext(errorMessage)) {
         resolver->reject(DOMException::create(SecurityError, errorMessage));
         return false;
     }

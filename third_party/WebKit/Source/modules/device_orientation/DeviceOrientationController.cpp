@@ -59,7 +59,7 @@ void DeviceOrientationController::didAddEventListener(LocalDOMWindow* window, co
 
     if (document().frame()) {
         String errorMessage;
-        if (document().isPrivilegedContext(errorMessage)) {
+        if (document().isSecureContext(errorMessage)) {
             UseCounter::count(document().frame(), UseCounter::DeviceOrientationSecureOrigin);
         } else {
             UseCounter::countDeprecation(document().frame(), UseCounter::DeviceOrientationInsecureOrigin);

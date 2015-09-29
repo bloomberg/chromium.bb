@@ -184,7 +184,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     // 3-4. 'May Document use powerful features?' check.
     ExecutionContext* executionContext = scriptState->executionContext();
     String errorMessage;
-    if (executionContext->isPrivilegedContext(errorMessage)) {
+    if (executionContext->isSecureContext(errorMessage)) {
         UseCounter::count(executionContext, UseCounter::EncryptedMediaSecureOrigin);
     } else {
         UseCounter::countDeprecation(executionContext, UseCounter::EncryptedMediaInsecureOrigin);

@@ -63,12 +63,12 @@ class CORE_EXPORT ExecutionContext
 public:
     DECLARE_VIRTUAL_TRACE();
 
-    // Used to specify whether |isPrivilegedContext| should walk the
+    // Used to specify whether |isSecureContext| should walk the
     // ancestor tree to decide whether to restrict usage of a powerful
     // feature.
-    enum PrivilegeContextCheck {
-        StandardPrivilegeCheck,
-        WebCryptoPrivilegeCheck
+    enum SecureContextCheck {
+        StandardSecureContextCheck,
+        WebCryptoSecureContextCheck
     };
 
     virtual bool isDocument() const { return false; }
@@ -156,7 +156,7 @@ public:
 
     // Decides whether this context is privileged, as described in
     // https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged.
-    virtual bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) const = 0;
+    virtual bool isSecureContext(String& errorMessage, const SecureContextCheck = StandardSecureContextCheck) const = 0;
 
     virtual void setReferrerPolicy(ReferrerPolicy);
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }

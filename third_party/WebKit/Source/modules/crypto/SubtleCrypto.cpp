@@ -56,7 +56,7 @@ static bool parseAlgorithm(const AlgorithmIdentifier& raw, WebCryptoOperation op
 static bool canAccessWebCrypto(ScriptState* scriptState, CryptoResult* result)
 {
     String errorMessage;
-    if (!scriptState->executionContext()->isPrivilegedContext(errorMessage, ExecutionContext::WebCryptoPrivilegeCheck)) {
+    if (!scriptState->executionContext()->isSecureContext(errorMessage, ExecutionContext::WebCryptoSecureContextCheck)) {
         result->completeWithError(WebCryptoErrorTypeNotSupported, errorMessage);
         return false;
     }

@@ -117,11 +117,11 @@ WebMediaConstraints UserMediaRequest::videoConstraints() const
     return m_video;
 }
 
-bool UserMediaRequest::isPrivilegedContextUse(String& errorMessage)
+bool UserMediaRequest::isSecureContextUse(String& errorMessage)
 {
     Document* document = ownerDocument();
 
-    if (document->isPrivilegedContext(errorMessage)) {
+    if (document->isSecureContext(errorMessage)) {
         UseCounter::count(document->frame(), UseCounter::GetUserMediaSecureOrigin);
         OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::GetUserMediaSecureOrigin);
         return true;

@@ -74,7 +74,7 @@ public:
 
     // errorMessage is only set if requestIsPrivilegedContext() returns |false|.
     // Caller is responsible for properly setting errors and canceling request.
-    bool isPrivilegedContextUse(String& errorMessage);
+    bool isSecureContextUse(String& errorMessage);
 
     // ContextLifecycleObserver
     void contextDestroyed() override;

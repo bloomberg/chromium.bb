@@ -82,13 +82,13 @@ WebSecurityOrigin WebDocument::securityOrigin() const
     return WebSecurityOrigin(constUnwrap<Document>()->securityOrigin());
 }
 
-bool WebDocument::isPrivilegedContext(WebString& errorMessage) const
+bool WebDocument::isSecureContext(WebString& errorMessage) const
 {
     const Document* document = constUnwrap<Document>();
     if (!document)
         return false;
     String message;
-    bool result = document->isPrivilegedContext(message);
+    bool result = document->isSecureContext(message);
     errorMessage = message;
     return result;
 }

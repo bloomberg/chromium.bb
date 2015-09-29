@@ -200,11 +200,11 @@ void Fullscreen::documentWasDisposed()
 
 void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
 {
-    // It is required by isPrivilegedContext() but isn't
+    // It is required by isSecureContext() but isn't
     // actually used. This could be used later if a warning is shown in the
     // developer console.
     String errorMessage;
-    if (document()->isPrivilegedContext(errorMessage)) {
+    if (document()->isSecureContext(errorMessage)) {
         UseCounter::count(document(), UseCounter::FullscreenSecureOrigin);
     } else {
         UseCounter::count(document(), UseCounter::FullscreenInsecureOrigin);

@@ -5651,7 +5651,7 @@ v8::Local<v8::Object> Document::associateWithWrapper(v8::Isolate* isolate, const
     return wrapper;
 }
 
-bool Document::isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck privilegeContextCheck) const
+bool Document::isSecureContext(String& errorMessage, const SecureContextCheck privilegeContextCheck) const
 {
     if (SecurityContext::isSandboxed(SandboxOrigin)) {
         if (!SecurityOrigin::create(url())->isPotentiallyTrustworthy(errorMessage))
@@ -5661,7 +5661,7 @@ bool Document::isPrivilegedContext(String& errorMessage, const PrivilegeContextC
             return false;
     }
 
-    if (privilegeContextCheck == StandardPrivilegeCheck) {
+    if (privilegeContextCheck == StandardSecureContextCheck) {
         Document* context = parentDocument();
         while (context) {
             // Skip to the next ancestor if it's a srcdoc.

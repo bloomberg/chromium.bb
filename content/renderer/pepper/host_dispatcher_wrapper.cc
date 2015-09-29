@@ -94,7 +94,7 @@ void HostDispatcherWrapper::AddInstance(PP_Instance instance) {
         plugin_instance->GetContainer()
             ->element()
             .document()
-            .isPrivilegedContext(unused) &&
+            .isSecureContext(unused) &&
         content::IsOriginSecure(plugin_instance->GetPluginURL());
     render_frame->Send(new FrameHostMsg_DidCreateOutOfProcessPepperInstance(
         plugin_child_id_, instance,

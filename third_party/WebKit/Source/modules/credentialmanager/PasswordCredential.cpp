@@ -46,7 +46,7 @@ FormData* PasswordCredential::toFormData(ScriptState* scriptState, const FormDat
     FormData* fd = FormData::create();
 
     String errorMessage;
-    if (!scriptState->executionContext()->isPrivilegedContext(errorMessage))
+    if (!scriptState->executionContext()->isSecureContext(errorMessage))
         return fd;
 
     fd->append(options.idName(), id());

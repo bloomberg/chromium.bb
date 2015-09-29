@@ -26,6 +26,7 @@ PASS oldChildWindow.history.state is newChildWindow.history.state
 PASS oldChildWindow.innerHeight is newChildWindow.innerHeight
 PASS oldChildWindow.innerWidth is newChildWindow.innerWidth
 PASS oldChildWindow.isJsTest is newChildWindow.isJsTest
+PASS oldChildWindow.isSecureContext is newChildWindow.isSecureContext
 PASS oldChildWindow.jsTestIsAsync is newChildWindow.jsTestIsAsync
 PASS oldChildWindow.length is newChildWindow.length
 PASS oldChildWindow.location.ancestorOrigins.length is newChildWindow.location.ancestorOrigins.length

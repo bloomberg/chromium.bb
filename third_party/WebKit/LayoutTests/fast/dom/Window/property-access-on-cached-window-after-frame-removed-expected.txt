@@ -26,6 +26,7 @@ PASS childWindow.history.state is null
 PASS childWindow.innerHeight is 0
 PASS childWindow.innerWidth is 0
 FAIL childWindow.isJsTest should be false (of type boolean). Was undefined (of type undefined).
+PASS childWindow.isSecureContext is false
 PASS childWindow.length is 0
 FAIL childWindow.location.ancestorOrigins.length should be 0. Threw exception TypeError: Cannot read property 'length' of undefined
 FAIL childWindow.location.hash should be  (of type string). Was undefined (of type undefined).

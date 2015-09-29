@@ -39,7 +39,7 @@ double NullExecutionContext::timerAlignmentInterval() const
     return DOMTimer::visiblePageAlignmentInterval();
 }
 
-bool NullExecutionContext::isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck privilegeContextCheck) const
+bool NullExecutionContext::isSecureContext(String& errorMessage, const SecureContextCheck privilegeContextCheck) const
 {
     return true;
 }

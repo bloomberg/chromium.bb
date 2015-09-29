@@ -42,7 +42,7 @@ public:
     void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
     void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override { }
 
-    bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) const override;
+    bool isSecureContext(String& errorMessage, const SecureContextCheck = StandardSecureContextCheck) const override;
 
     DEFINE_INLINE_TRACE()
     {

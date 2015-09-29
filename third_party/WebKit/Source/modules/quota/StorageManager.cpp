@@ -79,14 +79,14 @@ ScriptPromise StorageManager::requestPersistent(ScriptState* scriptState)
     ExecutionContext* executionContext = scriptState->executionContext();
     SecurityOrigin* securityOrigin = executionContext->securityOrigin();
     // TODO(dgrogan): Is the isUnique() check covered by the later
-    // isPrivilegedContext() check? If so, maybe remove it. Write a test if it
+    // isSecureContext() check? If so, maybe remove it. Write a test if it
     // stays.
     if (securityOrigin->isUnique()) {
         resolver->reject(DOMException::create(NotSupportedError));
         return promise;
     }
     String errorMessage;
-    if (!executionContext->isPrivilegedContext(errorMessage)) {
+    if (!executionContext->isSecureContext(errorMessage)) {
         resolver->reject(DOMException::create(SecurityError, errorMessage));
         return promise;
     }

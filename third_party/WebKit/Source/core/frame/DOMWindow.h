@@ -197,6 +197,8 @@ public:
 
     void resetLocation();
 
+    bool isSecureContext() const;
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(animationstart);

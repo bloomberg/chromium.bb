@@ -33,7 +33,7 @@ bool commonChecks(ScriptState* scriptState, ExceptionState& exceptionState)
         return false;
 
     String errorMessage;
-    if (!executionContext->isPrivilegedContext(errorMessage)) {
+    if (!executionContext->isSecureContext(errorMessage)) {
         exceptionState.throwSecurityError(errorMessage);
         return false;
     }

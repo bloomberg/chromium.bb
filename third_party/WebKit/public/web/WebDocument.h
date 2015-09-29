@@ -76,7 +76,7 @@ public:
     BLINK_EXPORT WebURL url() const;
     // Note: Security checks should use the securityOrigin(), not url().
     BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
-    BLINK_EXPORT bool isPrivilegedContext(WebString& errorMessage) const;
+    BLINK_EXPORT bool isSecureContext(WebString& errorMessage) const;
 
     BLINK_EXPORT WebString encoding() const;
     BLINK_EXPORT WebString contentLanguage() const;

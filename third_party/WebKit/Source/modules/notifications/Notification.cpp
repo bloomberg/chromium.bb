@@ -80,7 +80,7 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
     }
 
     String insecureOriginMessage;
-    UseCounter::Feature feature = context->isPrivilegedContext(insecureOriginMessage)
+    UseCounter::Feature feature = context->isSecureContext(insecureOriginMessage)
         ? UseCounter::NotificationSecureOrigin
         : UseCounter::NotificationInsecureOrigin;
 

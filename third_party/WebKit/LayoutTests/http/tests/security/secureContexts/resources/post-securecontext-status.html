@@ -1,0 +1,6 @@
+<script>
+    ["top", "parent", "opener"].forEach(function (x) {
+        if (window[x] && window[x] != window)
+            window[x].postMessage({ "isSecureContext": window.isSecureContext }, "*");
+    });
+</script>

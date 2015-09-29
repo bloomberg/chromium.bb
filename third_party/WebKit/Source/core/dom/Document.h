@@ -1027,7 +1027,7 @@ public:
 
     NthIndexCache* nthIndexCache() const { return m_nthIndexCache; }
 
-    bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) const override;
+    bool isSecureContext(String& errorMessage, const SecureContextCheck = StandardSecureContextCheck) const override;
 
     ClientHintsPreferences& clientHintsPreferences() { return m_clientHintsPreferences; }
 

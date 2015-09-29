@@ -58,7 +58,7 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const MediaS
     }
 
     String errorMessage;
-    if (!request->isPrivilegedContextUse(errorMessage)) {
+    if (!request->isSecureContextUse(errorMessage)) {
         request->failPermissionDenied(errorMessage);
         return;
     }

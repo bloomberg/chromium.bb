@@ -52,7 +52,7 @@ void DeviceMotionController::didAddEventListener(LocalDOMWindow* window, const A
 
     if (document().frame()) {
         String errorMessage;
-        if (document().isPrivilegedContext(errorMessage)) {
+        if (document().isSecureContext(errorMessage)) {
             UseCounter::count(document().frame(), UseCounter::DeviceMotionSecureOrigin);
         } else {
             UseCounter::countDeprecation(document().frame(), UseCounter::DeviceMotionInsecureOrigin);
