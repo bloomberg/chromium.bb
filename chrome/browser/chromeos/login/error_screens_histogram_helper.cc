@@ -10,13 +10,12 @@ namespace chromeos {
 
 namespace {
 
-static const char kOobeErrorScreensCounterPrefix[] = "OOBE.NetworkErrorShown.";
-static const char kOobeTimeSpentOnErrorScreensPrefix[] =
-    "OOBE.ErrorScreensTime.";
+const char kOobeErrorScreensCounterPrefix[] = "OOBE.NetworkErrorShown.";
+const char kOobeTimeSpentOnErrorScreensPrefix[] = "OOBE.ErrorScreensTime.";
 
-const base::TimeDelta time_min = base::TimeDelta::FromMilliseconds(10);
-const base::TimeDelta time_max = base::TimeDelta::FromMinutes(3);
-const int time_bucket_count = 50;
+const int kTimeMinInMS = 10;
+const int kTimeMaxInMinutes = 3;
+const int kTimeBucketCount = 50;
 
 std::string ErrorToString(NetworkError::ErrorState error) {
   switch (error) {
@@ -64,10 +63,8 @@ void StoreTimeOnErrorScreenToHistogram(const std::string& screen_name,
   // This comes from UMA_HISTOGRAM_MEDIUM_TIMES macros. Can't use it because of
   // non const histogram name.
   base::HistogramBase* histogram = base::Histogram::FactoryTimeGet(
-      histogram_name,
-      time_min,
-      time_max,
-      time_bucket_count,
+      histogram_name, base::TimeDelta::FromMilliseconds(kTimeMinInMS),
+      base::TimeDelta::FromMinutes(kTimeMaxInMinutes), kTimeBucketCount,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 
   histogram->AddTime(time_delta);

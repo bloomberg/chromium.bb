@@ -51,13 +51,13 @@ const int kDownloadProgressIncrement = 60;
 
 const char kUpdateDeadlineFile[] = "/tmp/update-check-response-deadline";
 
-// Minimum timestep between two consecutive measurements for the
-// download rate.
-const base::TimeDelta kMinTimeStep = base::TimeDelta::FromSeconds(1);
+// Minimum timestep between two consecutive measurements for the download rates.
+const int kMinTimeStepInSeconds = 1;
 
 // Smooth factor that is used for the average downloading speed
 // estimation.
-// avg_speed = smooth_factor * cur_speed + (1.0 - smooth_factor) * avg_speed.
+// avg_speed = smooth_factor * cur_speed + (1.0 - smooth_factor) *
+// avg_speed.
 const double kDownloadSpeedSmoothFactor = 0.1;
 
 // Minumum allowed value for the average downloading speed.
@@ -441,7 +441,9 @@ void UpdateScreen::CancelUpdate() {
 void UpdateScreen::UpdateDownloadingStats(
     const UpdateEngineClient::Status& status) {
   base::Time download_current_time = base::Time::Now();
-  if (download_current_time >= download_last_time_ + kMinTimeStep) {
+  if (download_current_time >=
+      download_last_time_ +
+          base::TimeDelta::FromSeconds(kMinTimeStepInSeconds)) {
     // Estimate downloading rate.
     double progress_delta =
         std::max(status.download_progress - download_last_progress_, 0.0);
