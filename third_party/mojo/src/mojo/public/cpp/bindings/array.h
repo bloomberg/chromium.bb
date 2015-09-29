@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
+#include "mojo/public/cpp/bindings/lib/value_traits.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
@@ -170,6 +171,13 @@ class Array {
   operator Testable() const { return is_null_ ? 0 : &Array::vec_; }
 
  private:
+  // Forbid the == and != operators explicitly, otherwise Array will be
+  // converted to Testable to do == or != comparison.
+  template <typename U>
+  bool operator==(const Array<U>& other) const = delete;
+  template <typename U>
+  bool operator!=(const Array<U>& other) const = delete;
+
   void Take(Array* other) {
     reset();
     Swap(other);

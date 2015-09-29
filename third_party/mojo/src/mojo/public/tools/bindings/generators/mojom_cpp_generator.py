@@ -167,7 +167,7 @@ def GetCppWrapperType(kind):
   if mojom.IsInterfaceKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsInterfaceRequestKind(kind):
-    raise Exception("InterfaceRequest fields not supported!")
+    return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if mojom.IsStringKind(kind):
     return "mojo::String"
   if mojom.IsGenericHandleKind(kind):

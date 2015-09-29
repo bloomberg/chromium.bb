@@ -168,6 +168,13 @@ class InterfacePtr {
   }
 
  private:
+  // Forbid the == and != operators explicitly, otherwise InterfacePtr will be
+  // converted to Testable to do == or != comparison.
+  template <typename T>
+  bool operator==(const InterfacePtr<T>& other) const = delete;
+  template <typename T>
+  bool operator!=(const InterfacePtr<T>& other) const = delete;
+
   typedef internal::InterfacePtrState<Interface> State;
   mutable State internal_state_;
 };

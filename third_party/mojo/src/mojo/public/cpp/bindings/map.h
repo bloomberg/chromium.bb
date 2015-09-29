@@ -8,6 +8,7 @@
 #include <map>
 
 #include "mojo/public/cpp/bindings/lib/map_internal.h"
+#include "mojo/public/cpp/bindings/lib/value_traits.h"
 
 namespace mojo {
 
@@ -231,6 +232,13 @@ class Map {
   operator Testable() const { return is_null_ ? 0 : &Map::map_; }
 
  private:
+  // Forbid the == and != operators explicitly, otherwise Map will be converted
+  // to Testable to do == or != comparison.
+  template <typename T, typename U>
+  bool operator==(const Map<T, U>& other) const = delete;
+  template <typename T, typename U>
+  bool operator!=(const Map<T, U>& other) const = delete;
+
   void Take(Map* other) {
     reset();
     Swap(other);

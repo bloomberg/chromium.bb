@@ -93,6 +93,14 @@ class StructPtr {
 
  private:
   friend class internal::StructHelper<Struct>;
+
+  // Forbid the == and != operators explicitly, otherwise StructPtr will be
+  // converted to Testable to do == or != comparison.
+  template <typename T>
+  bool operator==(const StructPtr<T>& other) const = delete;
+  template <typename T>
+  bool operator!=(const StructPtr<T>& other) const = delete;
+
   void Initialize() {
     MOJO_DCHECK(!ptr_);
     ptr_ = new Struct();
@@ -174,6 +182,14 @@ class InlinedStructPtr {
 
  private:
   friend class internal::StructHelper<Struct>;
+
+  // Forbid the == and != operators explicitly, otherwise InlinedStructPtr will
+  // be converted to Testable to do == or != comparison.
+  template <typename T>
+  bool operator==(const InlinedStructPtr<T>& other) const = delete;
+  template <typename T>
+  bool operator!=(const InlinedStructPtr<T>& other) const = delete;
+
   void Initialize() { is_null_ = false; }
 
   void Take(InlinedStructPtr* other) {

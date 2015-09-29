@@ -52,6 +52,7 @@ mojo_sdk_source_set("bindings") {
     "lib/validation_errors.h",
     "lib/validation_util.cc",
     "lib/validation_util.h",
+    "lib/value_traits.h",
     "map.h",
     "message.h",
     "message_filter.h",

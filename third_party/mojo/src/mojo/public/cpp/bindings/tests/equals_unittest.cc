@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/public/cpp/bindings/lib/value_traits.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +30,7 @@ class EqualsTest : public testing::Test {
 };
 }
 
-TEST_F(EqualsTest, Null) {
+TEST_F(EqualsTest, NullStruct) {
   RectPtr r1;
   RectPtr r2;
   EXPECT_TRUE(r1.Equals(r2));
@@ -40,7 +41,7 @@ TEST_F(EqualsTest, Null) {
   EXPECT_FALSE(r2.Equals(r1));
 }
 
-TEST_F(EqualsTest, EqualsStruct) {
+TEST_F(EqualsTest, Struct) {
   RectPtr r1(CreateRect());
   RectPtr r2(r1.Clone());
   EXPECT_TRUE(r1.Equals(r2));
@@ -50,7 +51,7 @@ TEST_F(EqualsTest, EqualsStruct) {
   EXPECT_FALSE(r1.Equals(r2));
 }
 
-TEST_F(EqualsTest, EqualsStructNested) {
+TEST_F(EqualsTest, StructNested) {
   RectPairPtr p1(RectPair::New());
   p1->first = CreateRect();
   p1->second = CreateRect();
@@ -62,7 +63,7 @@ TEST_F(EqualsTest, EqualsStructNested) {
   EXPECT_FALSE(p1.Equals(p2));
 }
 
-TEST_F(EqualsTest, EqualsArray) {
+TEST_F(EqualsTest, Array) {
   NamedRegionPtr n1(NamedRegion::New());
   n1->name = "n1";
   n1->rects.push_back(CreateRect());
@@ -86,7 +87,7 @@ TEST_F(EqualsTest, EqualsArray) {
   EXPECT_TRUE(n1.Equals(n2));
 }
 
-TEST_F(EqualsTest, EqualsMap) {
+TEST_F(EqualsTest, Map) {
   auto n1(NamedRegion::New());
   n1->name = "foo";
   n1->rects.push_back(CreateRect());
@@ -114,6 +115,49 @@ TEST_F(EqualsTest, EqualsMap) {
 
   m2 = m1.Clone();
   EXPECT_TRUE(m1.Equals(m2));
+}
+
+TEST_F(EqualsTest, InterfacePtr) {
+  using InterfaceValueTraits = mojo::internal::ValueTraits<SomeInterfacePtr>;
+
+  SomeInterfacePtr inf1;
+  SomeInterfacePtr inf2;
+
+  EXPECT_TRUE(InterfaceValueTraits::Equals(inf1, inf1));
+  EXPECT_TRUE(InterfaceValueTraits::Equals(inf1, inf2));
+
+  auto inf1_request = GetProxy(&inf1);
+  MOJO_ALLOW_UNUSED_LOCAL(inf1_request);
+
+  EXPECT_TRUE(InterfaceValueTraits::Equals(inf1, inf1));
+  EXPECT_FALSE(InterfaceValueTraits::Equals(inf1, inf2));
+
+  auto inf2_request = GetProxy(&inf2);
+  MOJO_ALLOW_UNUSED_LOCAL(inf2_request);
+
+  EXPECT_FALSE(InterfaceValueTraits::Equals(inf1, inf2));
+}
+
+TEST_F(EqualsTest, InterfaceRequest) {
+  using RequestValueTraits =
+      mojo::internal::ValueTraits<InterfaceRequest<SomeInterface>>;
+
+  InterfaceRequest<SomeInterface> req1;
+  InterfaceRequest<SomeInterface> req2;
+
+  EXPECT_TRUE(RequestValueTraits::Equals(req1, req1));
+  EXPECT_TRUE(RequestValueTraits::Equals(req1, req2));
+
+  SomeInterfacePtr inf1;
+  req1 = GetProxy(&inf1);
+
+  EXPECT_TRUE(RequestValueTraits::Equals(req1, req1));
+  EXPECT_FALSE(RequestValueTraits::Equals(req1, req2));
+
+  SomeInterfacePtr inf2;
+  req2 = GetProxy(&inf2);
+
+  EXPECT_FALSE(RequestValueTraits::Equals(req1, req2));
 }
 
 }  // test

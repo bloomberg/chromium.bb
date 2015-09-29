@@ -369,3 +369,9 @@ struct ContainsInterface {
 struct ContainsOther {
   int32 other;
 };
+
+// Used to verify that structs can contain interface requests.
+
+struct ContainsInterfaceRequest {
+  SomeInterface& request;
+};

@@ -10,15 +10,8 @@
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
-class String;
-
-template <typename T>
-class Array;
-
-template <typename K, typename V>
-class Map;
-
 namespace internal {
+
 template <typename T>
 class Array_Data;
 
@@ -123,29 +116,6 @@ struct WrapperTraits<InlinedStructPtr<S>, true> {
 template <typename S>
 struct WrapperTraits<S, true> {
   typedef typename S::Data_* DataType;
-};
-
-template <typename T, typename Enable = void>
-struct ValueTraits {
-  static bool Equals(const T& a, const T& b) { return a == b; }
-};
-
-template <typename T>
-struct ValueTraits<
-    T,
-    typename EnableIf<IsSpecializationOf<Array, T>::value ||
-                      IsSpecializationOf<Map, T>::value ||
-                      IsSpecializationOf<StructPtr, T>::value ||
-                      IsSpecializationOf<InlinedStructPtr, T>::value>::type> {
-  static bool Equals(const T& a, const T& b) { return a.Equals(b); }
-};
-
-template <typename T>
-struct ValueTraits<ScopedHandleBase<T>> {
-  static bool Equals(const ScopedHandleBase<T>& a,
-                     const ScopedHandleBase<T>& b) {
-    return a.get().value() == b.get().value();
-  }
 };
 
 }  // namespace internal

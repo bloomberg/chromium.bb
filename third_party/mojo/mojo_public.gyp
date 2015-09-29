@@ -155,6 +155,7 @@
         'src/mojo/public/cpp/bindings/lib/validation_errors.h',
         'src/mojo/public/cpp/bindings/lib/validation_util.cc',
         'src/mojo/public/cpp/bindings/lib/validation_util.h',
+        'src/mojo/public/cpp/bindings/lib/value_traits.h',
         # This comes from the mojo_interface_bindings_cpp_sources dependency.
         '>@(mojom_generated_sources)',
       ],

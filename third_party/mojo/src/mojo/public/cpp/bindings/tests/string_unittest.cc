@@ -54,11 +54,28 @@ TEST(StringTest, Equality) {
   String s("hello world");
   String t("hello world");
   EXPECT_EQ(s, t);
+  EXPECT_TRUE(s == s);
+  EXPECT_FALSE(s != s);
   EXPECT_TRUE(s == t);
+  EXPECT_FALSE(s != t);
   EXPECT_TRUE("hello world" == s);
   EXPECT_TRUE(s == "hello world");
   EXPECT_TRUE("not" != s);
+  EXPECT_FALSE("not" == s);
   EXPECT_TRUE(s != "not");
+  EXPECT_FALSE(s == "not");
+
+  // Test null strings.
+  String n1;
+  String n2;
+  EXPECT_TRUE(n1 == n1);
+  EXPECT_FALSE(n1 != n2);
+  EXPECT_TRUE(n1 == n2);
+  EXPECT_FALSE(n1 != n2);
+  EXPECT_TRUE(n1 != s);
+  EXPECT_FALSE(n1 == s);
+  EXPECT_TRUE(s != n1);
+  EXPECT_FALSE(s == n1);
 }
 
 TEST(StringTest, LessThanNullness) {
