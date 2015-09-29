@@ -1266,6 +1266,17 @@ bool VisibleSelectionTemplate<EditingStrategy>::expandUsingGranularity(TextGranu
 }
 
 template <> CORE_TEMPLATE_EXPORT
+VisibleSelectionTemplate<EditingInComposedTreeStrategy>::VisibleSelectionTemplate()
+{
+}
+
+template <> CORE_TEMPLATE_EXPORT
+VisibleSelectionTemplate<EditingInComposedTreeStrategy>::VisibleSelectionTemplate(const VisibleSelection& visibleSelection)
+    : m_visibleSelection(visibleSelection)
+{
+}
+
+template <> CORE_TEMPLATE_EXPORT
 bool VisibleSelectionTemplate<EditingInComposedTreeStrategy>::operator==(const VisibleSelectionTemplate<EditingInComposedTreeStrategy>& other) const
 {
     return equalSelectionsInComposedTree(m_visibleSelection, other.m_visibleSelection);
