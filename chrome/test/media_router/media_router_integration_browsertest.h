@@ -31,10 +31,9 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // Simulate user action to choose one sink in the popup dialog.
   // |web_contents|: The web contents of the test page which invokes the popup
   //                 dialog.
-  // |sink_id|: The sink id.
-  // |current_route|: The JSON string which represents current route.
+  // |sink_name|: The sink's human readable name.
   void ChooseSink(content::WebContents* web_contents,
-                  const std::string& sink_id, const std::string& current_route);
+                  const std::string& sink_name);
 
   // Execute javascript and check the return value.
   static void ExecuteJavaScriptAPI(content::WebContents* web_contents,
@@ -68,6 +67,11 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   content::WebContents* OpenMRDialog(content::WebContents* web_contents);
 
   bool IsRouteCreatedOnUI();
+
+  bool AreRoutesClosedOnUI();
+
+  // Close route through clicking 'Stop casting' button in route details dialog.
+  void CloseRouteOnUI();
 
   // Wait for the route to show up in the UI with a timeout. Fails if the
   // route did not show up before the timeout.

@@ -13,6 +13,10 @@
 
 namespace media_router {
 
+namespace {
+const char kTestSinkName[] = "test-sink-1";
+}
+
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* web_contents =
@@ -20,34 +24,36 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   content::WebContents* dialog_contents = OpenMRDialog(web_contents);
 
   // Verify the sink list.
-  std::string script;
-  script = base::StringPrintf(
-      "domAutomationController.send(window.document.getElementById("
-      "'media-router-container').sinkList.length)");
-  ASSERT_EQ(2, ExecuteScriptAndExtractInt(dialog_contents, script));
+  std::string sink_length_script = base::StringPrintf(
+      "domAutomationController.send("
+      "window.document.getElementById('media-router-container')."
+      "sinkList.length)");
+  ASSERT_EQ(2, ExecuteScriptAndExtractInt(dialog_contents, sink_length_script));
 
-  ChooseSink(web_contents, "id1", "");
+  ChooseSink(web_contents, kTestSinkName);
   WaitUntilRouteCreated();
 
-  // Verify the new route.
-  script = base::StringPrintf(
-      "domAutomationController.send(window.document.getElementById("
-      "'media-router-container').routeList[0].description)");
-  std::string route_description = ExecuteScriptAndExtractString(
-      dialog_contents, script);
-  ASSERT_EQ("Test Route", route_description);
+  // Verify the route details page.
+  std::string route_info_script = base::StringPrintf(
+      "domAutomationController.send("
+      "window.document.getElementById('media-router-container').shadowRoot."
+      "getElementById('route-details').shadowRoot.getElementById("
+      "'route-information').getElementsByTagName('span')[0].innerText)");
+  std::string route_information = ExecuteScriptAndExtractString(
+      dialog_contents, route_info_script);
+  ASSERT_EQ("Casting: Test Route", route_information);
 
-  script = base::StringPrintf(
-      "domAutomationController.send(window.document.getElementById("
-      "'media-router-container').routeList[0].id)");
-  std::string route_id = ExecuteScriptAndExtractString(dialog_contents, script);
-  std::string current_route = base::StringPrintf(
-      "{'id': '%s', 'sinkId': '%s', 'description': '%s', 'isLocal': '%s'}",
-      route_id.c_str(), "id1", route_description.c_str(), "false");
+  std::string sink_name_script = base::StringPrintf(
+      "domAutomationController.send("
+      "window.document.getElementById('media-router-container').shadowRoot."
+      "getElementById('route-details').shadowRoot.getElementById('sink-name')."
+      "innerText)");
+  std::string sink_name = ExecuteScriptAndExtractString(
+      dialog_contents, sink_name_script);
+  ASSERT_EQ(kTestSinkName, sink_name);
 
-  ChooseSink(web_contents, "id1", current_route);
-  // TODO(leilei): Verify the router details dialog, including the title and
-  // the text, also close the route.
+  // Close route.
+  CloseRouteOnUI();
 }
 
 }  // namespace media_router
