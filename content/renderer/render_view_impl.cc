@@ -1283,10 +1283,6 @@ void RenderViewImpl::TransferActiveWheelFlingAnimation(
     webview()->transferActiveWheelFlingAnimation(params);
 }
 
-bool RenderViewImpl::HasIMETextFocus() {
-  return GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
-}
-
 bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (main_frame && main_frame->isWebLocalFrame())
@@ -2064,8 +2060,7 @@ void RenderViewImpl::didHandleGestureEvent(
 
   // TODO(estade): hit test the event against focused node to make sure
   // the tap actually hit the focused node.
-  blink::WebTextInputType text_input_type =
-      GetWebView()->textInputInfo().type;
+  blink::WebTextInputType text_input_type = GetWebView()->textInputType();
 
   Send(new ViewHostMsg_FocusedNodeTouched(
       routing_id(), text_input_type != blink::WebTextInputTypeNone));

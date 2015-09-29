@@ -530,6 +530,11 @@ WebTextInputInfo WebFrameWidgetImpl::textInputInfo()
     return view()->textInputInfo();
 }
 
+WebTextInputType WebFrameWidgetImpl::textInputType()
+{
+    return view()->textInputType();
+}
+
 WebColor WebFrameWidgetImpl::backgroundColor() const
 {
     if (isTransparent())

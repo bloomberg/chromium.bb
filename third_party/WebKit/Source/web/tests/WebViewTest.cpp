@@ -803,8 +803,14 @@ void WebViewTest::testTextInputType(WebTextInputType expectedType, const std::st
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(htmlFile.c_str()));
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + htmlFile);
+    EXPECT_EQ(WebTextInputTypeNone, webView->textInputType());
+    EXPECT_EQ(WebTextInputTypeNone, webView->textInputInfo().type);
     webView->setInitialFocus(false);
+    EXPECT_EQ(expectedType, webView->textInputType());
     EXPECT_EQ(expectedType, webView->textInputInfo().type);
+    webView->clearFocusedElement();
+    EXPECT_EQ(WebTextInputTypeNone, webView->textInputType());
+    EXPECT_EQ(WebTextInputTypeNone, webView->textInputInfo().type);
 }
 
 TEST_F(WebViewTest, TextInputType)

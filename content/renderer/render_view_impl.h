@@ -281,11 +281,6 @@ class CONTENT_EXPORT RenderViewImpl
   void TransferActiveWheelFlingAnimation(
       const blink::WebActiveWheelFlingParameters& params);
 
-  // Returns true if the focused element is editable text from the perspective
-  // of IME support (also used for on-screen keyboard). Works correctly inside
-  // supported PPAPI plugins.
-  bool HasIMETextFocus();
-
   // Synchronously sends the current navigation state to the browser.
   void SendUpdateState();
 

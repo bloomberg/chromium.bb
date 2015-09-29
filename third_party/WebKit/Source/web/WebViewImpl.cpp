@@ -2412,7 +2412,21 @@ WebTextInputInfo WebViewImpl::textInputInfo()
 
 WebTextInputType WebViewImpl::textInputType()
 {
-    Element* element = focusedElement();
+    Frame* focusedFrame = m_page->focusController().focusedFrame();
+    if (!focusedFrame || !focusedFrame->isLocalFrame())
+        return WebTextInputTypeNone;
+
+    // It's important to preserve the equivalence of textInputInfo().type and textInputType(),
+    // so perform the same rootEditableElement() existence check here for consistency.
+    LocalFrame* focused = toLocalFrame(focusedFrame);
+    if (!focused || !focused->selection().selection().rootEditableElement())
+        return WebTextInputTypeNone;
+
+    Document* document = focused->document();
+    if (!document)
+        return WebTextInputTypeNone;
+
+    Element* element = document->focusedElement();
     if (!element)
         return WebTextInputTypeNone;
 

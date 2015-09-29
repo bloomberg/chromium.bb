@@ -4738,8 +4738,8 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
 
     range = gfx::Range(location, location + length);
 
-    if (GetRenderWidget()->webwidget()->textInputInfo().type !=
-            blink::WebTextInputTypeNone) {
+    if (GetRenderWidget()->webwidget()->textInputType() !=
+        blink::WebTextInputTypeNone) {
       // If current focused element is editable, we will send 100 more chars
       // before and after selection. It is for input method surrounding text
       // feature.

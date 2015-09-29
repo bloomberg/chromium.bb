@@ -75,6 +75,7 @@ public:
     bool confirmComposition(const WebString& text) override;
     bool compositionRange(size_t* location, size_t* length) override;
     WebTextInputInfo textInputInfo() override;
+    WebTextInputType textInputType() override;
     bool selectionBounds(WebRect& anchor, WebRect& focus) const override;
     bool selectionTextDirection(WebTextDirection& start, WebTextDirection& end) const override;
     bool isSelectionAnchorFirst() const override;
