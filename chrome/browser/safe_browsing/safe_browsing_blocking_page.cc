@@ -172,8 +172,11 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   reporting_info.extra_suffix = GetExtraMetricsSuffix();
   reporting_info.rappor_prefix = GetRapporPrefix();
   reporting_info.rappor_report_type = rappor::SAFEBROWSING_RAPPOR_TYPE;
-  set_metrics_helper(new ChromeMetricsHelper(
-      web_contents, request_url(), reporting_info, GetSamplingEventName()));
+  set_metrics_helper(
+      make_scoped_ptr(new ChromeMetricsHelper(web_contents, request_url(),
+                                              reporting_info,
+                                              GetSamplingEventName()))
+          .Pass());
   metrics_helper()->RecordUserDecision(
       security_interstitials::MetricsHelper::SHOW);
   metrics_helper()->RecordUserInteraction(

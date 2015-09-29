@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/captive_portal_metrics_recorder.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/rappor/rappor_service.h"
 #include "content/public/browser/web_contents.h"
@@ -34,6 +35,18 @@ ChromeMetricsHelper::ChromeMetricsHelper(
 }
 
 ChromeMetricsHelper::~ChromeMetricsHelper() {}
+
+void ChromeMetricsHelper::StartRecordingCaptivePortalMetrics(bool overridable) {
+  captive_portal_recorder_.reset(
+      new CaptivePortalMetricsRecorder(web_contents_, overridable));
+}
+
+void ChromeMetricsHelper::RecordExtraShutdownMetrics() {
+  // The captive portal metrics should be recorded when the interstitial is
+  // closing (or destructing).
+  if (captive_portal_recorder_)
+    captive_portal_recorder_->RecordCaptivePortalUMAStatistics();
+}
 
 void ChromeMetricsHelper::RecordExtraUserDecisionMetrics(
     security_interstitials::MetricsHelper::Decision decision) {

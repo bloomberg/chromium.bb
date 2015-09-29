@@ -91,14 +91,17 @@ class MetricsHelper {
   // histogram and potentially in a RAPPOR metric.
   void RecordUserDecision(Decision decision);
   void RecordUserInteraction(Interaction interaction);
+  void RecordShutdownMetrics();
+
   // Number of times user visited this origin before. -1 means not-yet-set.
   int NumVisits();
 
  protected:
   // Subclasses should implement any embedder-specific recording logic in these
-  // methods. They'll be invoked from RecordUserDecision/Interaction.
+  // methods. They'll be invoked from the matching Record methods.
   virtual void RecordExtraUserDecisionMetrics(Decision decision) = 0;
   virtual void RecordExtraUserInteractionMetrics(Interaction interaction) = 0;
+  virtual void RecordExtraShutdownMetrics() = 0;
 
  private:
   // Used to query the HistoryService to see if the URL is in history.  It will

@@ -134,6 +134,10 @@ void MetricsHelper::RecordUserInteraction(Interaction interaction) {
   RecordExtraUserInteractionMetrics(interaction);
 }
 
+void MetricsHelper::RecordShutdownMetrics() {
+  RecordExtraShutdownMetrics();
+}
+
 int MetricsHelper::NumVisits() {
   return num_visits_;
 }
