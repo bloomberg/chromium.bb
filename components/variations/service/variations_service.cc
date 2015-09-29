@@ -707,8 +707,8 @@ std::string VariationsService::LoadPermanentConsistencyCountry(
   std::string stored_country;
 
   // Determine if the saved pref value is present and valid.
-  const bool is_pref_present = list_value && !list_value->empty();
-  const bool is_pref_valid = is_pref_present && list_value->GetSize() == 2 &&
+  const bool is_pref_empty = list_value->empty();
+  const bool is_pref_valid = list_value->GetSize() == 2 &&
                              list_value->GetString(0, &stored_version_string) &&
                              list_value->GetString(1, &stored_country) &&
                              base::Version(stored_version_string).IsValid();
@@ -717,14 +717,15 @@ std::string VariationsService::LoadPermanentConsistencyCountry(
   const bool does_version_match =
       is_pref_valid && version.Equals(base::Version(stored_version_string));
 
-  // Determine if the country in the saved pref matches the country in |seed|.
+  // Determine if the country in the saved pref matches the country in
+  // |latest_country|.
   const bool does_country_match = is_pref_valid && !latest_country.empty() &&
                                   stored_country == latest_country;
 
   // Record a histogram for how the saved pref value compares to the current
   // version and the country code in the variations seed.
   LoadPermanentConsistencyCountryResult result;
-  if (!is_pref_present) {
+  if (is_pref_empty) {
     result = !latest_country.empty() ? LOAD_COUNTRY_NO_PREF_HAS_SEED
                                      : LOAD_COUNTRY_NO_PREF_NO_SEED;
   } else if (!is_pref_valid) {
@@ -745,7 +746,7 @@ std::string VariationsService::LoadPermanentConsistencyCountry(
 
   // Use the stored country if one is available and was fetched since the last
   // time Chrome was updated.
-  if (is_pref_present && does_version_match)
+  if (does_version_match)
     return stored_country;
 
   if (latest_country.empty()) {
@@ -765,6 +766,18 @@ std::string VariationsService::LoadPermanentConsistencyCountry(
   local_state_->Set(prefs::kVariationsPermanentConsistencyCountry,
                     new_list_value);
   return latest_country;
+}
+
+std::string VariationsService::GetStoredPermanentCountry() {
+  const base::ListValue* list_value =
+      local_state_->GetList(prefs::kVariationsPermanentConsistencyCountry);
+  std::string stored_country;
+
+  if (list_value->GetSize() == 2) {
+    list_value->GetString(1, &stored_country);
+  }
+
+  return stored_country;
 }
 
 }  // namespace variations

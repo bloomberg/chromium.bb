@@ -116,6 +116,10 @@ class VariationsService
   GURL GetVariationsServerURL(PrefService* local_prefs,
                               const std::string& restrict_mode_override);
 
+  // Returns the permanent country code stored for this client. Country code is
+  // in the format of lowercase ISO 3166-1 alpha-2. Example: us, br, in
+  std::string GetStoredPermanentCountry();
+
   // Exposed for testing.
   static std::string GetDefaultVariationsServerURLForTesting();
 
