@@ -11,7 +11,6 @@
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/baked_in_configs.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -55,17 +54,6 @@ bool UpdateBeaconFromAttempt(DomainReliabilityBeacon* beacon,
     beacon->server_ip = attempt.endpoint.ToString();
   else
     beacon->server_ip = "";
-  return true;
-}
-
-// TODO(ttuttle): This function is absurd. See if |socket_address| in
-// HttpResponseInfo can become an IPEndPoint.
-bool ConvertHostPortPairToIPEndPoint(const net::HostPortPair& host_port_pair,
-                                     net::IPEndPoint* ip_endpoint_out) {
-  net::IPAddressNumber ip_address_number;
-  if (!net::ParseIPLiteralToNumber(host_port_pair.host(), &ip_address_number))
-    return false;
-  *ip_endpoint_out = net::IPEndPoint(ip_address_number, host_port_pair.port());
   return true;
 }
 
@@ -275,6 +263,8 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
       is_upload(DomainReliabilityUploader::URLRequestIsUpload(request)) {
   request.GetLoadTimingInfo(&load_timing_info);
   request.GetConnectionAttempts(&connection_attempts);
+  if (!request.GetRemoteEndpoint(&remote_endpoint))
+    remote_endpoint = net::IPEndPoint();
 }
 
 DomainReliabilityMonitor::RequestInfo::~RequestInfo() {}
@@ -312,19 +302,8 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   else
     response_code = -1;
 
-  net::IPEndPoint url_request_endpoint;
-  // If response was cached, socket address will be from the serialized
-  // response info in the cache, so don't report it.
-  // TODO(ttuttle): Plumb out the "current" socket address so we can always
-  // report it.
-  if (!request.response_info.was_cached &&
-      !request.response_info.was_fetched_via_proxy) {
-    ConvertHostPortPairToIPEndPoint(request.response_info.socket_address,
-                                    &url_request_endpoint);
-  }
-
   net::ConnectionAttempt url_request_attempt(
-      url_request_endpoint, URLRequestStatusToNetError(request.status));
+      request.remote_endpoint, URLRequestStatusToNetError(request.status));
 
   DomainReliabilityBeacon beacon;
   beacon.protocol = GetDomainReliabilityProtocol(

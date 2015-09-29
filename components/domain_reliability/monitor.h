@@ -22,6 +22,7 @@
 #include "components/domain_reliability/scheduler.h"
 #include "components/domain_reliability/uploader.h"
 #include "components/domain_reliability/util.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_response_info.h"
@@ -146,6 +147,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
     int load_flags;
     net::LoadTimingInfo load_timing_info;
     net::ConnectionAttempts connection_attempts;
+    net::IPEndPoint remote_endpoint;
     bool is_upload;
   };
 
