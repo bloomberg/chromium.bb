@@ -202,7 +202,6 @@ protected:
 
 private:
     AXObject* treeAncestorDisallowingChild() const;
-    void ariaListboxSelectedChildren(AccessibilityChildrenVector&);
     bool nodeIsTextControl(const Node*) const;
     bool isTabItemSelected() const;
     bool isValidSelectionBound(const AXObject*) const;
@@ -222,7 +221,6 @@ private:
     void addRemoteSVGChildren();
     void addInlineTextBoxChildren(bool force);
 
-    void ariaSelectedRows(AccessibilityChildrenVector&);
     bool elementAttributeValue(const QualifiedName&) const;
     LayoutRect computeElementRect() const;
     AXRange textControlSelection() const;

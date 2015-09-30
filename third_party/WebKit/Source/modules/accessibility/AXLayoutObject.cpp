@@ -2246,20 +2246,6 @@ AXObject* AXLayoutObject::treeAncestorDisallowingChild() const
     return 0;
 }
 
-void AXLayoutObject::ariaListboxSelectedChildren(AccessibilityChildrenVector& result)
-{
-    bool isMulti = isMultiSelectable();
-
-    for (const auto& child : children()) {
-        // Every child should have aria-role option, and if so, check for selected attribute/state.
-        if (child->isSelected() && child->ariaRoleAttribute() == ListBoxOptionRole) {
-            result.append(child);
-            if (!isMulti)
-                return;
-        }
-    }
-}
-
 bool AXLayoutObject::nodeIsTextControl(const Node* node) const
 {
     if (!node)
@@ -2551,35 +2537,6 @@ void AXLayoutObject::addRemoteSVGChildren()
             m_children.append(child);
     } else {
         m_children.append(root);
-    }
-}
-
-void AXLayoutObject::ariaSelectedRows(AccessibilityChildrenVector& result)
-{
-    // Get all the rows.
-    AccessibilityChildrenVector allRows;
-    if (isTree())
-        ariaTreeRows(allRows);
-    else if (isAXTable() && toAXTable(this)->supportsSelectedRows())
-        allRows = toAXTable(this)->rows();
-
-    // Determine which rows are selected.
-    bool isMulti = isMultiSelectable();
-
-    // Prefer active descendant over aria-selected.
-    AXObject* activeDesc = activeDescendant();
-    if (activeDesc && (activeDesc->isTreeItem() || activeDesc->isTableRow())) {
-        result.append(activeDesc);
-        if (!isMulti)
-            return;
-    }
-
-    for (const auto& row : allRows) {
-        if (row->isSelected()) {
-            result.append(row);
-            if (!isMulti)
-                break;
-        }
     }
 }
 
