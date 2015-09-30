@@ -54,6 +54,8 @@ public:
     // be called before blink::initalize(). We can't create WebString objects
     // before blink::initialize().
     BLINK_EXPORT static void enableFeatureFromString(const std::string& name, bool enable);
+    // TODO(bashi): Remove.
+    BLINK_EXPORT static void enableFeatureFromString(const WebString& name, bool enable);
 
     BLINK_EXPORT static void enableApplicationCache(bool);
 

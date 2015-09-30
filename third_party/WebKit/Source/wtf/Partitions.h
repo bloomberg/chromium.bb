@@ -39,17 +39,29 @@ namespace WTF {
 
 class WTF_EXPORT Partitions {
 public:
-    static void initialize(HistogramEnumerationFunction);
+    static void initialize();
+    // TODO(bashi): Remove this function and make initialize() take
+    // HistogramEnumerationFunction when we can make sure that WTF::initialize()
+    // is called before using this class.
+    static void setHistogramEnumeration(HistogramEnumerationFunction);
     static void shutdown();
     ALWAYS_INLINE static PartitionRootGeneric* bufferPartition()
     {
-        ASSERT(s_initialized);
+        // TODO(haraken): This check is needed because some call sites allocate
+        // Blink things before WTF::initialize(). We should fix those call sites
+        // and remove the check.
+        if (UNLIKELY(!s_initialized))
+            initialize();
         return m_bufferAllocator.root();
     }
 
     ALWAYS_INLINE static PartitionRootGeneric* fastMallocPartition()
     {
-        ASSERT(s_initialized);
+        // TODO(haraken): This check is needed because some call sites allocate
+        // Blink things before WTF::initialize(). We should fix those call sites
+        // and remove the check.
+        if (UNLIKELY(!s_initialized))
+            initialize();
         return m_fastMallocAllocator.root();
     }
 
