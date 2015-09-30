@@ -124,7 +124,7 @@ Line: 1 Col: 45 Unexpected start tag (meta) in table context caused voodoo mode.
 |         " "
 
 #data
-<!doctype html><p><object type="application/x-non-existant-plugin"><p>X</p></object>
+<!doctype html><p><applet><p>X</p></applet>
 #errors
 #document
 | <!DOCTYPE html>
@@ -132,8 +132,7 @@ Line: 1 Col: 45 Unexpected start tag (meta) in table context caused voodoo mode.
 |   <head>
 |   <body>
 |     <p>
-|       <object>
-|         type="application/x-non-existant-plugin"
+|       <applet>
 |         <p>
 |           "X"
 

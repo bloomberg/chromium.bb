@@ -683,6 +683,16 @@
 |     <button>
 
 #data
+<!doctype html><applet><frameset>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|   <body>
+|     <applet>
+
+#data
 <!doctype html><marquee><frameset>
 #errors
 #document

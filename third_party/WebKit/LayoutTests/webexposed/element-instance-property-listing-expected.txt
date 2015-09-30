@@ -251,6 +251,7 @@ html element a
 html element abbr
 html element acronym
 html element address
+html element applet
 html element area
     property alt
     property coords

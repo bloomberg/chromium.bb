@@ -48,7 +48,8 @@ inline bool isRootNode(HTMLStackItem* item)
 
 inline bool isScopeMarker(HTMLStackItem* item)
 {
-    return item->hasTagName(captionTag)
+    return item->hasTagName(appletTag)
+        || item->hasTagName(captionTag)
         || item->hasTagName(marqueeTag)
         || item->hasTagName(objectTag)
         || item->hasTagName(tableTag)
