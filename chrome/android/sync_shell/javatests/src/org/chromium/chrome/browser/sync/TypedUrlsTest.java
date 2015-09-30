@@ -51,7 +51,7 @@ public class TypedUrlsTest extends SyncTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        setupTestAccountAndSignInToSync(CLIENT_ID);
+        setUpTestAccountAndSignInToSync();
         // Make sure the initial state is clean.
         assertClientTypedUrlCount(0);
         assertServerTypedUrlCountWithName(0, URL);

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
-import android.app.Activity;
 import android.content.Context;
 
 import org.chromium.base.ThreadUtils;
@@ -13,15 +12,11 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
-import org.chromium.chrome.browser.signin.AccountIdProvider;
-import org.chromium.chrome.browser.signin.AccountTrackerService;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.signin.AccountManagerHelper;
-import org.chromium.sync.signin.ChromeSigninController;
-import org.chromium.sync.test.util.MockAccountManager;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 
 import java.util.Set;
@@ -32,15 +27,13 @@ import java.util.Set;
 public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TAG = "SyncTestBase";
 
-    protected static final String CLIENT_ID = "Client_ID";
+    private static final String CLIENT_ID = "Client_ID";
 
     protected SyncTestUtil.SyncTestContext mContext;
-    protected MockAccountManager mAccountManager;
     protected SyncController mSyncController;
     protected FakeServerHelper mFakeServerHelper;
     protected ProfileSyncService mProfileSyncService;
     protected MockSyncContentResolverDelegate mSyncContentResolver;
-    protected ChromeSigninController mChromeSigninController;
 
     public SyncTestBase() {
       super(ChromeActivity.class);
@@ -55,21 +48,14 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     @Override
     protected void setUp() throws Exception {
-        // This must be called before super.setUp() in order for test authentication to work
-        // properly.
-        mapAccountNamesToIds();
+        // This must be called before super.setUp() in order for test authentication to work.
+        SigninTestUtil.setUpAuthForTest(getInstrumentation());
 
         super.setUp();
         Context targetContext = getInstrumentation().getTargetContext();
         mContext = new SyncTestUtil.SyncTestContext(targetContext);
 
         setUpMockAndroidSyncSettings();
-        setUpMockAccountManager();
-
-        // Initializes ChromeSigninController to use our test context and make sure there is no
-        // account is signed in yet.
-        mChromeSigninController = ChromeSigninController.get(mContext);
-        mChromeSigninController.setSignedInAccountName(null);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -87,6 +73,15 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                 mProfileSyncService = ProfileSyncService.get();
             }
         });
+
+        UniqueIdentificationGeneratorFactory.registerGenerator(
+                UuidBasedUniqueIdentificationGenerator.GENERATOR_ID,
+                new UniqueIdentificationGenerator() {
+                    @Override
+                    public String getUniqueId(String salt) {
+                        return CLIENT_ID;
+                    }
+                }, true);
     }
 
     @Override
@@ -99,33 +94,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
             }
         });
 
-        if (mChromeSigninController.isSignedIn()) signOut();
-
         super.tearDown();
-    }
-
-    private void mapAccountNamesToIds() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                AccountIdProvider.setInstanceForTest(new AccountIdProvider() {
-                    @Override
-                    public String getAccountId(Context ctx, String accountName) {
-                        return "gaia-id-" + accountName;
-                    }
-
-                    @Override
-                    public boolean canBeUsed(Context ctx, Activity activity) {
-                        return true;
-                    }
-                });
-            }
-        });
-    }
-
-    private void setUpMockAccountManager() {
-        mAccountManager = new MockAccountManager(mContext, getInstrumentation().getContext());
-        AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
     }
 
     private void setUpMockAndroidSyncSettings() {
@@ -134,40 +103,19 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolver);
     }
 
-    protected Account setupTestAccount(final String syncClientIdentifier)
-            throws InterruptedException {
-        Account defaultTestAccount = SyncTestUtil.setupTestAccountThatAcceptsAllAuthTokens(
-                mAccountManager, SyncTestUtil.DEFAULT_TEST_ACCOUNT, SyncTestUtil.DEFAULT_PASSWORD);
-
-        // Force refresh AccountTrackerService since accounts are changed.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                AccountTrackerService.get(mContext).forceRefresh();
-            }
-        });
-
-        UniqueIdentificationGeneratorFactory.registerGenerator(
-                UuidBasedUniqueIdentificationGenerator.GENERATOR_ID,
-                new UniqueIdentificationGenerator() {
-                    @Override
-                    public String getUniqueId(String salt) {
-                        return syncClientIdentifier;
-                    }
-                }, true);
-
+    protected Account setUpTestAccount() throws InterruptedException {
+        Account account = SigninTestUtil.get().addAndSignInTestAccount();
         SyncTestUtil.verifySyncIsSignedOut(getActivity());
-        return defaultTestAccount;
+        return account;
     }
 
-    protected void setupTestAccountAndSignInToSync(
-            final String syncClientIdentifier)
-            throws InterruptedException {
-        Account defaultTestAccount = setupTestAccount(syncClientIdentifier);
-        signIn(defaultTestAccount);
-        SyncTestUtil.verifySyncIsActiveForAccount(mContext, defaultTestAccount);
+    protected Account setUpTestAccountAndSignInToSync() throws InterruptedException {
+        Account account = setUpTestAccount();
+        signIn(account);
+        SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
         assertTrue("Sync everything should be enabled",
                 SyncTestUtil.isSyncEverythingEnabled(mContext));
+        return account;
     }
 
     protected void startSync() throws InterruptedException {

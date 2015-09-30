@@ -19,7 +19,6 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.util.concurrent.TimeoutException;
 
@@ -32,7 +31,7 @@ public class SyncTest extends SyncTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testGetAboutSyncInfoYieldsValidData() throws Throwable {
-        setupTestAccountAndSignInToSync(CLIENT_ID);
+        setUpTestAccountAndSignInToSync();
 
         final SyncTestUtil.AboutSyncInfoGetter syncInfoGetter =
                 new SyncTestUtil.AboutSyncInfoGetter(getActivity());
@@ -51,7 +50,7 @@ public class SyncTest extends SyncTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testFlushDirectoryDoesntBreakSync() throws Throwable {
-        setupTestAccountAndSignInToSync(CLIENT_ID);
+        setUpTestAccountAndSignInToSync();
         final Activity activity = getActivity();
 
         runTestOnUiThread(new Runnable() {
@@ -67,7 +66,7 @@ public class SyncTest extends SyncTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testAboutSyncPageDisplaysCurrentSyncStatus() throws InterruptedException {
-        setupTestAccountAndSignInToSync(CLIENT_ID);
+        setUpTestAccountAndSignInToSync();
 
         loadUrl("chrome://sync");
         SyncTestUtil.AboutSyncInfoGetter aboutInfoGetter =
@@ -112,9 +111,7 @@ public class SyncTest extends SyncTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testSignInAndOut() throws InterruptedException {
-        setupTestAccountAndSignInToSync(CLIENT_ID);
-        Account account =
-                AccountManagerHelper.createAccountFromName(SyncTestUtil.DEFAULT_TEST_ACCOUNT);
+        Account account = setUpTestAccountAndSignInToSync();
 
         // Signing out should disable sync.
         signOut();
@@ -128,9 +125,7 @@ public class SyncTest extends SyncTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testStopAndStartSync() throws InterruptedException {
-        setupTestAccountAndSignInToSync(CLIENT_ID);
-        Account account =
-                AccountManagerHelper.createAccountFromName(SyncTestUtil.DEFAULT_TEST_ACCOUNT);
+        Account account = setUpTestAccountAndSignInToSync();
 
         SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
         stopSync();
@@ -142,11 +137,9 @@ public class SyncTest extends SyncTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testDisableAndEnableSyncThroughAndroid() throws InterruptedException {
-        setupTestAccountAndSignInToSync(CLIENT_ID);
+        Account account = setUpTestAccountAndSignInToSync();
         SyncTestUtil.waitForSyncActive(mContext);
 
-        Account account =
-                AccountManagerHelper.createAccountFromName(SyncTestUtil.DEFAULT_TEST_ACCOUNT);
         String authority = AndroidSyncSettings.getContractAuthority(mContext);
 
         // Disabling Android sync should turn Chrome sync engine off.
