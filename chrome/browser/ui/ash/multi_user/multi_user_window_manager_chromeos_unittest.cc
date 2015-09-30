@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
+#include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -83,6 +84,15 @@ class TestShellDelegateChromeOS : public test::TestShellDelegate {
     return active_user
                ? multi_user_util::GetProfileFromUserID(active_user->GetUserID())
                : NULL;
+  }
+
+  bool CanShowWindowForUser(aura::Window* window) const override {
+    // Note that the implementation of GetActiveBrowserContext() here differs
+    // from the implementation in ChromeShellDelegate/session_util.cc.
+    return ::CanShowWindowForUser(
+        window, base::Bind(&TestShellDelegateChromeOS::GetActiveBrowserContext,
+                           base::Unretained(
+                               const_cast<TestShellDelegateChromeOS*>(this))));
   }
 
  private:

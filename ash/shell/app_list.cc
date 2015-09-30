@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
+#include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,7 +30,8 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/examples/examples_window_with_content.h"
+#include "ui/views/examples/example_base.h"
+#include "ui/views/examples/examples_window.h"
 
 namespace ash {
 namespace shell {
@@ -121,10 +123,9 @@ class WindowTypeShelfItem : public app_list::AppListItem {
         break;
       }
       case EXAMPLES_WINDOW: {
-        views::examples::ShowExamplesWindowWithContent(
-            views::examples::DO_NOTHING_ON_CLOSE,
-            Shell::GetInstance()->delegate()->GetActiveBrowserContext(),
-            NULL);
+        views::examples::ShowExamplesWindow(
+            views::examples::QUIT_ON_CLOSE, NULL,
+            scoped_ptr<ScopedVector<views::examples::ExampleBase>>());
         break;
       }
       default:

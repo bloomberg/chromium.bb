@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
 #include "ash/content/gpu_support_impl.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/ash/ash_keyboard_controller_proxy.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
+#include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -106,6 +108,10 @@ bool ChromeShellDelegate::IsMultiAccountEnabled() const {
   return false;
 }
 
+bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
+  return ::CanShowWindowForUser(window, base::Bind(&::GetActiveBrowserContext));
+}
+
 bool ChromeShellDelegate::IsForceMaximizeOnFirstRun() const {
 #if defined(OS_CHROMEOS)
   const user_manager::User* const user =
@@ -125,10 +131,7 @@ void ChromeShellDelegate::Exit() {
 }
 
 content::BrowserContext* ChromeShellDelegate::GetActiveBrowserContext() {
-#if defined(OS_CHROMEOS)
-  DCHECK(user_manager::UserManager::Get()->GetLoggedInUsers().size());
-#endif
-  return ProfileManager::GetActiveUserProfile();
+  return ::GetActiveBrowserContext();
 }
 
 app_list::AppListViewDelegate* ChromeShellDelegate::GetAppListViewDelegate() {

@@ -110,6 +110,10 @@ bool TestShellDelegate::IsMultiAccountEnabled() const {
   return false;
 }
 
+bool TestShellDelegate::CanShowWindowForUser(aura::Window* window) const {
+  return true;
+}
+
 bool TestShellDelegate::IsForceMaximizeOnFirstRun() const {
   return force_maximize_on_first_run_;
 }

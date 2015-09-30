@@ -39,6 +39,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   bool IsMultiProfilesEnabled() const override;
   bool IsRunningInForcedAppMode() const override;
   bool IsMultiAccountEnabled() const override;
+  bool CanShowWindowForUser(aura::Window* window) const override;
   bool IsForceMaximizeOnFirstRun() const override;
   void PreInit() override;
   void PreShutdown() override;
