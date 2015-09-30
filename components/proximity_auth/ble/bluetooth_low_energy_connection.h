@@ -304,12 +304,6 @@ class BluetoothLowEnergyConnection : public Connection,
   // Stores when the instace was created.
   base::TimeTicks start_time_;
 
-  // Delay imposed after a GATT connection is created and before any read/write
-  // request is sent to the characteristics. This delay is necessary as a
-  // workaroud for crbug.com/507325. Reading/writing characteristics
-  // immediatelly after the connection is complete fails with GATT_ERROR_FAILED.
-  base::TimeDelta delay_after_gatt_connection_;
-
   base::WeakPtrFactory<BluetoothLowEnergyConnection> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyConnection);

@@ -48,12 +48,6 @@ const int kFirstByteZero = 0;
 // write request. This is not the connection MTU, we are assuming that the
 // remote device allows for writes larger than MTU.
 const int kMaxChunkSize = 500;
-
-// This delay is necessary as a workaroud for crbug.com/507325. Reading/writing
-// characteristics immediatelly after the connection is complete fails with
-// GATT_ERROR_FAILED.
-const int kDelayAfterGattConnectionMilliseconds = 1000;
-
 }  // namespace
 
 BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
@@ -74,8 +68,6 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
       write_remote_characteristic_pending_(false),
       max_number_of_write_attempts_(max_number_of_write_attempts),
       max_chunk_size_(kMaxChunkSize),
-      delay_after_gatt_connection_(base::TimeDelta::FromMilliseconds(
-          kDelayAfterGattConnectionMilliseconds)),
       weak_ptr_factory_(this) {
   DCHECK(adapter_);
   DCHECK(adapter_->IsInitialized());
@@ -469,14 +461,7 @@ void BluetoothLowEnergyConnection::SendInviteToConnectSignal() {
             static_cast<uint32>(ControlSignal::kInviteToConnectSignal)),
         std::vector<uint8>(), false);
 
-    // This is a workaround for crbug.com/498850. Currently, trying to
-    // write/read characteristics immediatelly after the GATT connection was
-    // established fails with GATT_ERROR_FAILED.
-    task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&BluetoothLowEnergyConnection::WriteRemoteCharacteristic,
-                   weak_ptr_factory_.GetWeakPtr(), write_request),
-        delay_after_gatt_connection_);
+    WriteRemoteCharacteristic(write_request);
   }
 }
 
