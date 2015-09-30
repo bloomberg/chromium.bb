@@ -80,7 +80,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     : HTMLFormControlElementWithState(selectTag, document, form)
     , m_typeAhead(this)
     , m_size(0)
-    , m_lastOnChangeIndex(-1)
+    , m_lastOnChangeOption(nullptr)
     , m_activeSelectionAnchorIndex(-1)
     , m_activeSelectionEndIndex(-1)
     , m_isProcessingUserDrivenChange(false)
@@ -249,11 +249,8 @@ void HTMLSelectElement::remove(int optionIndex)
 
 String HTMLSelectElement::value() const
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = listItems();
-    for (unsigned i = 0; i < items.size(); i++) {
-        if (isHTMLOptionElement(items[i]) && toHTMLOptionElement(items[i])->selected())
-            return toHTMLOptionElement(items[i])->value();
-    }
+    if (HTMLOptionElement* option = selectedOption())
+        return option->value();
     return "";
 }
 
@@ -630,7 +627,7 @@ void HTMLSelectElement::selectAll()
 void HTMLSelectElement::saveLastSelection()
 {
     if (usesMenuList()) {
-        m_lastOnChangeIndex = selectedIndex();
+        m_lastOnChangeOption = selectedOption();
         return;
     }
 
@@ -724,9 +721,9 @@ void HTMLSelectElement::dispatchInputAndChangeEventForMenuList(bool requiresUser
 {
     ASSERT(usesMenuList());
 
-    int selected = selectedIndex();
-    if (m_lastOnChangeIndex != selected && (!requiresUserGesture || m_isProcessingUserDrivenChange)) {
-        m_lastOnChangeIndex = selected;
+    HTMLOptionElement* selectedOption = this->selectedOption();
+    if (m_lastOnChangeOption.get() != selectedOption && (!requiresUserGesture || m_isProcessingUserDrivenChange)) {
+        m_lastOnChangeOption = selectedOption;
         m_isProcessingUserDrivenChange = false;
         RefPtrWillBeRawPtr<HTMLSelectElement> protector(this);
         dispatchInputEvent();
@@ -861,6 +858,15 @@ void HTMLSelectElement::recalcListItems(bool updateSelectedStates) const
         firstOption->setSelectedState(true);
 }
 
+HTMLOptionElement* HTMLSelectElement::selectedOption() const
+{
+    for (const auto& element : listItems()) {
+        if (isHTMLOptionElement(*element) && toHTMLOptionElement(*element).selected())
+            return toHTMLOptionElement(element);
+    }
+    return nullptr;
+}
+
 int HTMLSelectElement::selectedIndex() const
 {
     unsigned index = 0;
@@ -938,6 +944,8 @@ void HTMLSelectElement::optionInserted(const HTMLOptionElement& option, bool opt
 
 void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
 {
+    if (m_lastOnChangeOption == &option)
+        m_lastOnChangeOption.clear();
     if (m_activeSelectionAnchorIndex < 0 && m_activeSelectionEndIndex < 0)
         return;
     int listIndex = optionToListIndex(option.index());
@@ -1768,6 +1776,7 @@ DEFINE_TRACE(HTMLSelectElement)
 #if ENABLE(OILPAN)
     visitor->trace(m_listItems);
 #endif
+    visitor->trace(m_lastOnChangeOption);
     visitor->trace(m_popup);
     HTMLFormControlElementWithState::trace(visitor);
 }

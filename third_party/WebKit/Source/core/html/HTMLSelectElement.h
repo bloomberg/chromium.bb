@@ -197,6 +197,8 @@ private:
 
     void typeAheadFind(KeyboardEvent*);
     void saveLastSelection();
+    // Returns the first selected OPTION, or nullptr.
+    HTMLOptionElement* selectedOption() const;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
@@ -254,7 +256,7 @@ private:
     Vector<bool> m_cachedStateForActiveSelection;
     TypeAhead m_typeAhead;
     unsigned m_size;
-    int m_lastOnChangeIndex;
+    RefPtrWillBeMember<HTMLOptionElement> m_lastOnChangeOption;
     int m_activeSelectionAnchorIndex;
     int m_activeSelectionEndIndex;
     bool m_isProcessingUserDrivenChange;

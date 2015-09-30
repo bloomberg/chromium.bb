@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<body>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<select id="select1">
+<option value="">Placeholder</option>
+<option>a</option>
+<option>b</option>
+<option>c</option>
+</select>
+<script>
+var select = document.querySelector('select');
+var placeholderOption = document.querySelector('option');
+var selectedValue;
+select.focus();
+select.addEventListener('change', function() {
+    selectedValue = select.value;
+    if (placeholderOption.parentNode == select)
+        select.removeChild(placeholderOption);
+});
+test(function() {
+    eventSender.keyDown('a');
+    assert_equals(selectedValue, 'a');
+    assert_equals(placeholderOption.parentNode, null);
+    internals.resetTypeAheadSession(select);
+
+    eventSender.keyDown('b');
+    assert_equals(select.value, 'b');
+    assert_equals(selectedValue, 'b');
+    internals.resetTypeAheadSession(select);
+
+    eventSender.keyDown('c');
+    assert_equals(selectedValue, 'c');
+}, 'Change event should be dispatched after the option removal.');
+</script>
+</body>
