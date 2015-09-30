@@ -29,6 +29,9 @@ const CGFloat kImagePaddingTop = 7;
 // Distance from left border to icon.
 const CGFloat kImagePaddingLeft = 9;
 
+// Horizontal distance from the icon to the text.
+const CGFloat kImagePaddingRight = 7;
+
 // Width of icon.
 const CGFloat kImageWidth = 16;
 
@@ -37,7 +40,7 @@ const CGFloat kImageHeight = 16;
 
 // x coordinate of download name string, in view coords.
 const CGFloat kTextPosLeft = kImagePaddingLeft +
-    kImageWidth + DownloadShelf::kFiletypeIconOffset;
+    kImageWidth + DownloadShelf::kFiletypeIconOffset + kImagePaddingRight;
 
 // Distance from end of download name string to dropdown area.
 const CGFloat kTextPaddingRight = 3;
@@ -548,9 +551,9 @@ using content::DownloadItem;
     int x = imagePosition.x - DownloadShelf::kFiletypeIconOffset;
     int y = imagePosition.y - DownloadShelf::kFiletypeIconOffset;
     NSRect dirtyRect = NSMakeRect(
-        x, y,
-        DownloadShelf::kProgressIndicatorSize,
-        DownloadShelf::kProgressIndicatorSize);
+        x - 1, y - 1,
+        DownloadShelf::kProgressIndicatorSize + 2,
+        DownloadShelf::kProgressIndicatorSize + 2);
 
     gfx::CanvasSkiaPaint canvas(dirtyRect, false);
     canvas.set_composite_alpha(true);
