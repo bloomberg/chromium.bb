@@ -70,8 +70,8 @@ const char* GetClientNameForMetrics();
 
 class CC_EXPORT ScopedUMAHistogramAreaTimerBase {
  public:
-  void AddArea(int area) { area_ += area; }
-  void SetArea(int area) { area_ = area; }
+  void AddArea(const base::CheckedNumeric<int>& area) { area_ += area; }
+  void SetArea(const base::CheckedNumeric<int>& area) { area_ = area; }
 
  protected:
   using Sample = base::HistogramBase::Sample;
