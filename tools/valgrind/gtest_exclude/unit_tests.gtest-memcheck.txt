@@ -37,3 +37,4 @@ TranslateManagerRenderViewHostTest.FetchLanguagesFromTranslateServer*
 ExtensionMessageBubbleTest.*
 DesktopMediaListAshTest.*
 ExtensionTestMessageListenerUnittest.*
+SigninErrorNotifierTest.*
