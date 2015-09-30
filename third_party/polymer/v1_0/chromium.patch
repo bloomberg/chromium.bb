@@ -42,3 +42,17 @@ index 3463659..f3ec42f 100644
  
    </template>
  </dom-module>
+diff --git a/components-chromium/polymer/polymer-extracted.js b/components-chromium/polymer/polymer-extracted.js
+index baf9ab3..985fe6c 100644
+--- a/components-chromium/polymer/polymer-extracted.js
++++ b/components-chromium/polymer/polymer-extracted.js
+@@ -2157,8 +2157,7 @@ _hasMixinRules: function (rules) {
+ return rules[0].selector.indexOf(this.VAR_START) >= 0;
+ },
+ removeCustomProps: function (cssText) {
+-cssText = this.removeCustomPropAssignment(cssText);
+-return this.removeCustomPropApply(cssText);
++return cssText;
+ },
+ removeCustomPropAssignment: function (cssText) {
+ return cssText.replace(this._rx.customProp, '').replace(this._rx.mixinProp, '');
