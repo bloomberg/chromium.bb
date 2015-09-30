@@ -65,3 +65,27 @@ paper-toolbar /deep/ .toolbar-tools {
 .invisible {
   visibility: hidden;
 }
+
+@media(max-width: 675px) {
+  #bookmarks,
+  #rotate-left {
+    display: none;
+  }
+
+  #pageselector-container {
+    flex: 2;
+  }
+}
+
+@media(max-width: 450px) {
+  #rotate-right {
+    display: none;
+  }
+}
+
+@media(max-width: 400px) {
+  #buttons,
+  #pageselector-container {
+    display: none;
+  }
+}

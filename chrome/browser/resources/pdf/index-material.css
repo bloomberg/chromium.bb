@@ -30,3 +30,21 @@ viewer-pdf-toolbar {
   position: absolute;
   z-index: 0;
 }
+
+@media(max-height: 250px) {
+  viewer-pdf-toolbar {
+    display: none;
+  }
+}
+
+@media(max-height: 200px) {
+  viewer-zoom-toolbar {
+    display: none;
+  }
+}
+
+@media(max-width: 300px) {
+  viewer-zoom-toolbar {
+    display: none;
+  }
+}

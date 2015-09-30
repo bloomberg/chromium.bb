@@ -96,6 +96,13 @@ PDFViewer.MIN_TOOLBAR_OFFSET = 15;
 PDFViewer.MATERIAL_TOOLBAR_HEIGHT = 56;
 
 /**
+ * Minimum height for the material toolbar to show (px). Should match the media
+ * query in index-material.css. If the window is smaller than this at load,
+ * leave no space for the toolbar.
+ */
+PDFViewer.TOOLBAR_WINDOW_MIN_HEIGHT = 250;
+
+/**
  * The light-gray background color used for print preview.
  */
 PDFViewer.LIGHT_BACKGROUND_COLOR = '0xFFCCCCCC';
@@ -144,8 +151,9 @@ function PDFViewer(browserApi) {
   }
 
   // Create the viewport.
+  var shortWindow = window.innerHeight < PDFViewer.TOOLBAR_WINDOW_MIN_HEIGHT;
   var topToolbarHeight =
-      (this.isMaterial_ && !this.isPrintPreview_) ?
+      (this.isMaterial_ && !this.isPrintPreview_ && !shortWindow) ?
       PDFViewer.MATERIAL_TOOLBAR_HEIGHT : 0;
   this.viewport_ = new Viewport(window,
                                 this.sizer_,
