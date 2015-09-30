@@ -81,7 +81,7 @@ void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload, const Ne
     if (request.url().protocolIsData())
         return;
     if (preload->resourceType() == Resource::Script || preload->resourceType() == Resource::CSSStyleSheet || preload->resourceType() == Resource::ImportResource)
-        request.setCharset(preload->charset().isEmpty() ? m_document->charset().string() : preload->charset());
+        request.setCharset(preload->charset().isEmpty() ? m_document->characterSet().string() : preload->charset());
     request.setForPreload(true);
     Platform::current()->histogramCustomCounts("WebCore.PreloadDelayMs", static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime())), 0, 2000, 20);
     m_document->loader()->startPreload(preload->resourceType(), request);

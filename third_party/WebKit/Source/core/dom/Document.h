@@ -305,7 +305,6 @@ public:
 
     String defaultCharset() const;
 
-    AtomicString charset() const { return Document::encodingName(); }
     AtomicString characterSet() const { return Document::encodingName(); }
 
     AtomicString encodingName() const;

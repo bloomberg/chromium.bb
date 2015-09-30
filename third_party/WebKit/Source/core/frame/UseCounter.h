@@ -142,7 +142,6 @@ public:
         DocumentCreateAttribute = 111,
         DocumentCreateAttributeNS = 112,
         DocumentCreateCDATASection = 113, // Removed from DOM4.
-        DocumentInputEncoding = 114,
         DocumentXMLEncoding = 115, // Removed from DOM4.
         DocumentXMLStandalone = 116, // Removed from DOM4.
         DocumentXMLVersion = 117, // Removed from DOM4.
@@ -151,7 +150,6 @@ public:
         NavigatorVendor = 124,
         NavigatorVendorSub = 125,
         FileError = 126,
-        DocumentCharset = 127, // Documented as IE extensions = 0, from KHTML days.
         PrefixedAnimationEndEvent = 128,
         UnprefixedAnimationEndEvent = 129,
         PrefixedAndUnprefixedAnimationEndEvent = 130,

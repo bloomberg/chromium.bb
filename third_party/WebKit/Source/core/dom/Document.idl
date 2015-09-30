@@ -38,7 +38,8 @@ interface Document : Node {
     readonly attribute DOMString compatMode;
 
     readonly attribute DOMString characterSet;
-    [MeasureAs=DocumentInputEncoding, ImplementedAs=characterSet] readonly attribute DOMString inputEncoding; // legacy alias of .characterSet
+    [ImplementedAs=characterSet] readonly attribute DOMString charset; // legacy alias of .characterSet
+    [ImplementedAs=characterSet] readonly attribute DOMString inputEncoding; // legacy alias of .characterSet
     readonly attribute DOMString contentType;
 
     readonly attribute DocumentType? doctype;
@@ -201,7 +202,6 @@ interface Document : Node {
     readonly attribute VisibilityState visibilityState;
 
     // Non-standard APIs
-    [MeasureAs=DocumentCharset] readonly attribute DOMString charset;
     [MeasureAs=DocumentDefaultCharset, TreatReturnedNullStringAs=Undefined] readonly attribute DOMString defaultCharset;
     [MeasureAs=DocumentCaretRangeFromPoint] Range caretRangeFromPoint([Default=Undefined] optional long x, [Default=Undefined] optional long y);
     [CallWith=ScriptState, DeprecateAs=DocumentGetCSSCanvasContext] any getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);

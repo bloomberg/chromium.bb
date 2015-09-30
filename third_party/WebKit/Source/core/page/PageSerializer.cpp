@@ -164,7 +164,7 @@ void SerializerMarkupAccumulator::appendElement(StringBuilder& result, Element& 
         result.appendLiteral("<meta http-equiv=\"Content-Type\" content=\"");
         MarkupFormatter::appendAttributeValue(result, m_document->suggestedMIMEType(), m_document->isHTMLDocument());
         result.appendLiteral("; charset=");
-        MarkupFormatter::appendAttributeValue(result, m_document->charset(), m_document->isHTMLDocument());
+        MarkupFormatter::appendAttributeValue(result, m_document->characterSet(), m_document->isHTMLDocument());
         if (m_document->isXHTMLDocument())
             result.appendLiteral("\" />");
         else

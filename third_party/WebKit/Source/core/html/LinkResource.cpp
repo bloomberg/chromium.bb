@@ -73,7 +73,7 @@ LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
 {
     m_charset = m_owner->getAttribute(charsetAttr);
     if (m_charset.isEmpty() && m_owner->document().frame())
-        m_charset = m_owner->document().charset();
+        m_charset = m_owner->document().characterSet();
 }
 
 FetchRequest LinkRequestBuilder::build(bool blocking) const
