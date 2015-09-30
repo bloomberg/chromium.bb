@@ -8,6 +8,7 @@
 
 // Multiply-included message header, no traditional include guard.
 
+#include "base/memory/memory_pressure_listener.h"
 #include "ipc/ipc_message_macros.h"
 #include "content/common/content_export.h"
 
@@ -16,7 +17,17 @@
 
 #define IPC_MESSAGE_START MemoryMsgStart
 
-// Sent to all child processes to enable/disable suppressing memory
+IPC_ENUM_TRAITS_VALIDATE(
+    base::MemoryPressureListener::MemoryPressureLevel,
+    (value == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE ||
+     value == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL))
+
+// Sent to all child processes to enable/disable suppressing memory pressure
 // notifications.
 IPC_MESSAGE_CONTROL1(MemoryMsg_SetPressureNotificationsSuppressed,
                      bool /* suppressed */)
+
+// Sent to all child processes to simulate a memory pressure notification.
+IPC_MESSAGE_CONTROL1(
+    MemoryMsg_SimulatePressureNotification,
+    base::MemoryPressureListener::MemoryPressureLevel /* level */)

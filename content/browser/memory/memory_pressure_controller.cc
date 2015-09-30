@@ -5,7 +5,6 @@
 #include "content/browser/memory/memory_pressure_controller.h"
 
 #include "base/bind.h"
-#include "base/memory/memory_pressure_listener.h"
 #include "content/browser/memory/memory_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -51,7 +50,7 @@ void MemoryPressureController::SetPressureNotificationsSuppressedInAllProcesses(
     bool suppressed) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     // Note that passing base::Unretained(this) is safe here because the
-    // controller is a leaky singleton (i.e. it is never deleted).
+    // controller is a leaky singleton.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&MemoryPressureController::
@@ -64,10 +63,33 @@ void MemoryPressureController::SetPressureNotificationsSuppressedInAllProcesses(
   base::MemoryPressureListener::SetNotificationsSuppressed(suppressed);
 
   // Enable/disable suppressing memory notifications in all child processes.
-  for (MemoryMessageFilterSet::iterator it = memory_message_filters_.begin();
-       it != memory_message_filters_.end(); ++it) {
-    it->get()->SendSetPressureNotificationsSuppressed(suppressed);
+  for (const scoped_refptr<MemoryMessageFilter>& filter :
+       memory_message_filters_)
+    filter->SendSetPressureNotificationsSuppressed(suppressed);
+}
+
+void MemoryPressureController::SimulatePressureNotificationInAllProcesses(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  DCHECK_NE(level, base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
+
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    // Note that passing base::Unretained(this) is safe here because the
+    // controller is a leaky singleton.
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&MemoryPressureController::
+                       SimulatePressureNotificationInAllProcesses,
+                   base::Unretained(this), level));
+    return;
   }
+
+  // Simulate memory pressure notification in the browser process.
+  base::MemoryPressureListener::SimulatePressureNotification(level);
+
+  // Simulate memory pressure notification in all child processes.
+  for (const scoped_refptr<MemoryMessageFilter>& filter :
+       memory_message_filters_)
+    filter->SendSimulatePressureNotification(level);
 }
 
 }  // namespace content

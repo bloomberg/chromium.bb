@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"
 
@@ -21,8 +22,10 @@ class CONTENT_EXPORT MemoryPressureController {
   void OnMemoryMessageFilterAdded(MemoryMessageFilter* filter);
   void OnMemoryMessageFilterRemoved(MemoryMessageFilter* filter);
 
-  // This method can be called from any thread.
+  // These methods can be called from any thread.
   void SetPressureNotificationsSuppressedInAllProcesses(bool suppressed);
+  void SimulatePressureNotificationInAllProcesses(
+      base::MemoryPressureListener::MemoryPressureLevel level);
 
   // This method can be called from any thread.
   static MemoryPressureController* GetInstance();

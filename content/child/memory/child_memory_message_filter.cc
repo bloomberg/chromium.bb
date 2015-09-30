@@ -4,7 +4,6 @@
 
 #include "content/child/memory/child_memory_message_filter.h"
 
-#include "base/memory/memory_pressure_listener.h"
 #include "content/common/memory_messages.h"
 
 namespace content {
@@ -18,6 +17,8 @@ bool ChildMemoryMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ChildMemoryMessageFilter, message)
     IPC_MESSAGE_HANDLER(MemoryMsg_SetPressureNotificationsSuppressed,
                         OnSetPressureNotificationsSuppressed)
+    IPC_MESSAGE_HANDLER(MemoryMsg_SimulatePressureNotification,
+                        OnSimulatePressureNotification)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -27,6 +28,11 @@ void ChildMemoryMessageFilter::OnSetPressureNotificationsSuppressed(
     bool suppressed) {
   // Enable/disable suppressing memory notifications in the child process.
   base::MemoryPressureListener::SetNotificationsSuppressed(suppressed);
+}
+
+void ChildMemoryMessageFilter::OnSimulatePressureNotification(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  base::MemoryPressureListener::SimulatePressureNotification(level);
 }
 
 }  // namespace content

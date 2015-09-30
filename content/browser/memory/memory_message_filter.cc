@@ -31,4 +31,9 @@ void MemoryMessageFilter::SendSetPressureNotificationsSuppressed(
   Send(new MemoryMsg_SetPressureNotificationsSuppressed(suppressed));
 }
 
+void MemoryMessageFilter::SendSimulatePressureNotification(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  Send(new MemoryMsg_SimulatePressureNotification(level));
+}
+
 }  // namespace content

@@ -27,6 +27,17 @@ MATCHER_P(IsSetSuppressedMessage, suppressed, "") {
   return suppressed == base::get<0>(param);
 }
 
+MATCHER_P(IsSimulateMessage, level, "") {
+  // Ensure that the message is deleted upon return.
+  scoped_ptr<IPC::Message> message(arg);
+  if (message == nullptr)
+    return false;
+  MemoryMsg_SimulatePressureNotification::Param param;
+  if (!MemoryMsg_SimulatePressureNotification::Read(message.get(), &param))
+    return false;
+  return level == base::get<0>(param);
+}
+
 class MemoryMessageFilterForTesting : public MemoryMessageFilter {
  public:
   MOCK_METHOD1(Send, bool(IPC::Message* message));
@@ -62,11 +73,22 @@ class MemoryMessageFilterForTesting : public MemoryMessageFilter {
 };
 
 class MemoryPressureControllerBrowserTest : public ContentBrowserTest {
+ public:
+  MOCK_METHOD1(OnMemoryPressure,
+               void(base::MemoryPressureListener::MemoryPressureLevel level));
+
  protected:
   void SetPressureNotificationsSuppressedInAllProcessesAndWait(
       bool suppressed) {
     MemoryPressureController::GetInstance()
         ->SetPressureNotificationsSuppressedInAllProcesses(suppressed);
+    RunAllPendingInMessageLoop(BrowserThread::IO);
+  }
+
+  void SimulatePressureNotificationInAllProcessesAndWait(
+      base::MemoryPressureListener::MemoryPressureLevel level) {
+    MemoryPressureController::GetInstance()
+        ->SimulatePressureNotificationInAllProcesses(level);
     RunAllPendingInMessageLoop(BrowserThread::IO);
   }
 };
@@ -126,6 +148,58 @@ IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
   filter2->Remove();
   SetPressureNotificationsSuppressedInAllProcessesAndWait(false);
   EXPECT_FALSE(base::MemoryPressureListener::AreNotificationsSuppressed());
+}
+
+IN_PROC_BROWSER_TEST_F(MemoryPressureControllerBrowserTest,
+                       SimulatePressureNotificationInAllProcesses) {
+  const auto MEMORY_PRESSURE_LEVEL_MODERATE =
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
+  const auto MEMORY_PRESSURE_LEVEL_CRITICAL =
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
+
+  scoped_refptr<MemoryMessageFilterForTesting> filter(
+      new MemoryMessageFilterForTesting);
+  scoped_ptr<base::MemoryPressureListener> listener(
+      new base::MemoryPressureListener(
+          base::Bind(&MemoryPressureControllerBrowserTest::OnMemoryPressure,
+                     base::Unretained(this))));
+
+  NavigateToURL(shell(), GetTestUrl("", "title.html"));
+
+  filter->Add();
+
+  EXPECT_CALL(*filter, Send(IsSimulateMessage(MEMORY_PRESSURE_LEVEL_CRITICAL)))
+      .Times(1);
+  EXPECT_CALL(*this, OnMemoryPressure(MEMORY_PRESSURE_LEVEL_CRITICAL)).Times(1);
+  SimulatePressureNotificationInAllProcessesAndWait(
+      MEMORY_PRESSURE_LEVEL_CRITICAL);
+  RunAllPendingInMessageLoop();  // Wait for the listener to run.
+
+  // Enable suppressing memory pressure notifications in all processes. This
+  // should have no impact on simulating memory pressure notifications.
+  EXPECT_CALL(*filter, Send(IsSetSuppressedMessage(true))).Times(1);
+  SetPressureNotificationsSuppressedInAllProcessesAndWait(true);
+
+  EXPECT_CALL(*filter, Send(IsSimulateMessage(MEMORY_PRESSURE_LEVEL_MODERATE)))
+      .Times(1);
+  EXPECT_CALL(*this, OnMemoryPressure(MEMORY_PRESSURE_LEVEL_MODERATE)).Times(1);
+  SimulatePressureNotificationInAllProcessesAndWait(
+      MEMORY_PRESSURE_LEVEL_MODERATE);
+  RunAllPendingInMessageLoop();  // Wait for the listener to run.
+
+  // Disable suppressing memory pressure notifications in all processes. This
+  // should have no impact on simulating memory pressure notifications.
+  EXPECT_CALL(*filter, Send(IsSetSuppressedMessage(false))).Times(1);
+  SetPressureNotificationsSuppressedInAllProcessesAndWait(false);
+
+  EXPECT_CALL(*filter, Send(IsSimulateMessage(MEMORY_PRESSURE_LEVEL_MODERATE)))
+      .Times(1);
+  EXPECT_CALL(*this, OnMemoryPressure(MEMORY_PRESSURE_LEVEL_MODERATE)).Times(1);
+  SimulatePressureNotificationInAllProcessesAndWait(
+      MEMORY_PRESSURE_LEVEL_MODERATE);
+  RunAllPendingInMessageLoop();  // Wait for the listener to run.
+
+  filter->Remove();
 }
 
 }  // namespace content
