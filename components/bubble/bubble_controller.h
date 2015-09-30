@@ -44,9 +44,11 @@ class BubbleController : public base::SupportsWeakPtr<BubbleController> {
   // Important when there's a UI change (ex: fullscreen transition).
   void UpdateAnchorPosition();
 
-  // Cleans up the delegate and its UI if it closed.
-  // Returns true if the bubble was closed.
-  bool ShouldClose(BubbleCloseReason reason);
+  // Returns true if the bubble should be closed.
+  bool ShouldClose(BubbleCloseReason reason) const;
+
+  // Cleans up the delegate and its UI.
+  void DoClose();
 
   BubbleManager* manager_;
   scoped_ptr<BubbleDelegate> delegate_;

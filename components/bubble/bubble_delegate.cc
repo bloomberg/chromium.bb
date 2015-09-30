@@ -8,9 +8,11 @@ BubbleDelegate::BubbleDelegate() {}
 
 BubbleDelegate::~BubbleDelegate() {}
 
-bool BubbleDelegate::ShouldClose(BubbleCloseReason reason) {
+bool BubbleDelegate::ShouldClose(BubbleCloseReason reason) const {
   return true;
 }
+
+void BubbleDelegate::DidClose() {}
 
 bool BubbleDelegate::UpdateBubbleUi(BubbleUi* bubble_ui) {
   return false;

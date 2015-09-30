@@ -53,12 +53,14 @@ void BubbleController::UpdateAnchorPosition() {
   bubble_ui_->UpdateAnchorPosition();
 }
 
-bool BubbleController::ShouldClose(BubbleCloseReason reason) {
+bool BubbleController::ShouldClose(BubbleCloseReason reason) const {
   DCHECK(bubble_ui_);
-  if (delegate_->ShouldClose(reason) || reason == BUBBLE_CLOSE_FORCED) {
-    bubble_ui_->Close();
-    bubble_ui_.reset();
-    return true;
-  }
-  return false;
+  return delegate_->ShouldClose(reason) || reason == BUBBLE_CLOSE_FORCED;
+}
+
+void BubbleController::DoClose() {
+  DCHECK(bubble_ui_);
+  bubble_ui_->Close();
+  bubble_ui_.reset();
+  delegate_->DidClose();
 }

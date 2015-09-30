@@ -10,29 +10,29 @@
 
 namespace {
 
-// Helper class used to test chaining another bubble.
-class DelegateChainHelper {
+class ChainShowBubbleDelegate : public MockBubbleDelegate {
  public:
-  DelegateChainHelper(BubbleManager* manager,
-                      scoped_ptr<BubbleDelegate> next_delegate);
+  ChainShowBubbleDelegate(BubbleManager* manager,
+                          scoped_ptr<BubbleDelegate> delegate)
+      : manager_(manager), delegate_(delegate.Pass()), closed_(false) {
+    EXPECT_CALL(*this, ShouldClose(testing::_)).WillOnce(testing::Return(true));
+  }
 
-  // Will show the bubble in |next_delegate_|.
-  void Chain() { manager_->ShowBubble(next_delegate_.Pass()); }
+  ~ChainShowBubbleDelegate() override { EXPECT_TRUE(closed_); }
 
-  // True if the bubble was taken by the bubble manager.
-  bool BubbleWasTaken() { return !next_delegate_; }
+  void DidClose() override {
+    MockBubbleDelegate::DidClose();
+    manager_->ShowBubble(delegate_.Pass());
+    closed_ = true;
+  }
 
  private:
-  BubbleManager* manager_;  // Weak.
-  scoped_ptr<BubbleDelegate> next_delegate_;
+  BubbleManager* manager_;
+  scoped_ptr<BubbleDelegate> delegate_;
+  bool closed_;
 
-  DISALLOW_COPY_AND_ASSIGN(DelegateChainHelper);
+  DISALLOW_COPY_AND_ASSIGN(ChainShowBubbleDelegate);
 };
-
-DelegateChainHelper::DelegateChainHelper(
-    BubbleManager* manager,
-    scoped_ptr<BubbleDelegate> next_delegate)
-    : manager_(manager), next_delegate_(next_delegate.Pass()) {}
 
 class MockBubbleManagerObserver : public BubbleManager::BubbleManagerObserver {
  public:
@@ -227,37 +227,16 @@ TEST_F(BubbleManagerTest, CloseAllShouldWorkWithoutBubbles) {
 }
 
 TEST_F(BubbleManagerTest, AllowBubbleChainingOnClose) {
-  scoped_ptr<BubbleDelegate> chained_delegate = MockBubbleDelegate::Default();
-  DelegateChainHelper chain_helper(manager_.get(), chained_delegate.Pass());
-
-  // Manager will delete |delegate|.
-  MockBubbleDelegate* delegate = new MockBubbleDelegate;
-  EXPECT_CALL(*delegate, ShouldClose(testing::_))
-      .WillOnce(testing::DoAll(testing::InvokeWithoutArgs(
-                                   &chain_helper, &DelegateChainHelper::Chain),
-                               testing::Return(true)));
-
-  BubbleReference ref = manager_->ShowBubble(make_scoped_ptr(delegate));
+  BubbleReference ref =
+      manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
+          manager_.get(), MockBubbleDelegate::Default())));
   ASSERT_TRUE(manager_->CloseBubble(ref, BUBBLE_CLOSE_FORCED));
-
-  ASSERT_TRUE(chain_helper.BubbleWasTaken());
 }
 
 TEST_F(BubbleManagerTest, AllowBubbleChainingOnCloseAll) {
-  scoped_ptr<BubbleDelegate> chained_delegate = MockBubbleDelegate::Default();
-  DelegateChainHelper chain_helper(manager_.get(), chained_delegate.Pass());
-
-  // Manager will delete |delegate|.
-  MockBubbleDelegate* delegate = new MockBubbleDelegate;
-  EXPECT_CALL(*delegate, ShouldClose(testing::_))
-      .WillOnce(testing::DoAll(testing::InvokeWithoutArgs(
-                                   &chain_helper, &DelegateChainHelper::Chain),
-                               testing::Return(true)));
-
-  manager_->ShowBubble(make_scoped_ptr(delegate));
+  manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
+      manager_.get(), MockBubbleDelegate::Default())));
   manager_->CloseAllBubbles(BUBBLE_CLOSE_FORCED);
-
-  ASSERT_TRUE(chain_helper.BubbleWasTaken());
 }
 
 TEST_F(BubbleManagerTest, BubblesDoNotChainOnDestroy) {
@@ -265,22 +244,11 @@ TEST_F(BubbleManagerTest, BubblesDoNotChainOnDestroy) {
   MockBubbleDelegate* chained_delegate = new MockBubbleDelegate;
   EXPECT_CALL(*chained_delegate->bubble_ui(), Show(testing::_)).Times(0);
   EXPECT_CALL(*chained_delegate, ShouldClose(testing::_)).Times(0);
+  EXPECT_CALL(*chained_delegate, DidClose()).Times(0);
 
-  DelegateChainHelper chain_helper(manager_.get(),
-                                   make_scoped_ptr(chained_delegate));
-
-  // Manager will delete |delegate|.
-  MockBubbleDelegate* delegate = new MockBubbleDelegate;
-  EXPECT_CALL(*delegate, ShouldClose(testing::_))
-      .WillOnce(testing::DoAll(testing::InvokeWithoutArgs(
-                                   &chain_helper, &DelegateChainHelper::Chain),
-                               testing::Return(true)));
-
-  manager_->ShowBubble(make_scoped_ptr(delegate));
+  manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
+      manager_.get(), make_scoped_ptr(chained_delegate))));
   manager_.reset();
-
-  // The manager will take the bubble, but not show it.
-  ASSERT_TRUE(chain_helper.BubbleWasTaken());
 }
 
 TEST_F(BubbleManagerTest, BubbleCloseReasonIsCalled) {
@@ -300,7 +268,7 @@ TEST_F(BubbleManagerTest, BubbleCloseNeverShownIsCalled) {
   MockBubbleManagerObserver metrics;
   // |chained_delegate| should never be shown.
   EXPECT_CALL(metrics, OnBubbleNeverShown(testing::_));
-  // |delegate| should be forced to close when the manager is destroyed.
+  // The ChainShowBubbleDelegate should be closed when the manager is destroyed.
   EXPECT_CALL(metrics, OnBubbleClosed(testing::_, BUBBLE_CLOSE_FORCED));
   manager_->AddBubbleManagerObserver(&metrics);
 
@@ -308,22 +276,11 @@ TEST_F(BubbleManagerTest, BubbleCloseNeverShownIsCalled) {
   MockBubbleDelegate* chained_delegate = new MockBubbleDelegate;
   EXPECT_CALL(*chained_delegate->bubble_ui(), Show(testing::_)).Times(0);
   EXPECT_CALL(*chained_delegate, ShouldClose(testing::_)).Times(0);
+  EXPECT_CALL(*chained_delegate, DidClose()).Times(0);
 
-  DelegateChainHelper chain_helper(manager_.get(),
-                                   make_scoped_ptr(chained_delegate));
-
-  // Manager will delete |delegate|.
-  MockBubbleDelegate* delegate = new MockBubbleDelegate;
-  EXPECT_CALL(*delegate, ShouldClose(testing::_))
-      .WillOnce(testing::DoAll(testing::InvokeWithoutArgs(
-                                   &chain_helper, &DelegateChainHelper::Chain),
-                               testing::Return(true)));
-
-  manager_->ShowBubble(make_scoped_ptr(delegate));
+  manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
+      manager_.get(), make_scoped_ptr(chained_delegate))));
   manager_.reset();
-
-  // The manager will take the bubble, but not show it.
-  ASSERT_TRUE(chain_helper.BubbleWasTaken());
 }
 
 }  // namespace

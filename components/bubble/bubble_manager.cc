@@ -52,6 +52,7 @@ bool BubbleManager::CloseBubble(BubbleReference bubble,
     if (*iter == bubble.get()) {
       bool closed = (*iter)->ShouldClose(reason);
       if (closed) {
+        (*iter)->DoClose();
         FOR_EACH_OBSERVER(BubbleManagerObserver, observers_,
                           OnBubbleClosed((*iter)->AsWeakPtr(), reason));
         iter = controllers_.erase(iter);
@@ -80,6 +81,7 @@ void BubbleManager::CloseAllBubbles(BubbleCloseReason reason) {
   for (auto iter = controllers_.begin(); iter != controllers_.end();) {
     bool closed = (*iter)->ShouldClose(reason);
     if (closed) {
+      (*iter)->DoClose();
       FOR_EACH_OBSERVER(BubbleManagerObserver, observers_,
                         OnBubbleClosed((*iter)->AsWeakPtr(), reason));
     }

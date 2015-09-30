@@ -23,7 +23,10 @@ class BubbleDelegate {
   // Called by BubbleController to notify a bubble of an event that the bubble
   // might want to close on. Return true if the bubble should close for the
   // specified reason.
-  virtual bool ShouldClose(BubbleCloseReason reason);
+  virtual bool ShouldClose(BubbleCloseReason reason) const;
+
+  // Called by BubbleController to notify a bubble that it has closed.
+  virtual void DidClose();
 
   // Called by BubbleController to build the UI that will represent this bubble.
   // BubbleDelegate should not keep a reference to this newly created UI.
