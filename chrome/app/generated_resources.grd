@@ -6565,6 +6565,26 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_LOW_PRIORITY_IFRAMES_UI_DESCRIPTION" desc="Description of the flag to enable the low priority iframes experiment.">
         Reduces the load priority of iframe resources.
       </message>
+      <if expr="is_win">
+        <message name="IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_NAME" desc="Name of the flag to enable PPAPI win32k lockdown experiment.">
+          Enable PPAPI Win32k Lockdown.
+        </message>
+        <message name="IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_DESCRIPTION" desc="Description of the flag to enable PPAPI win32k lockdown experiment.">
+          Specify the PPAPI plugins which will be run within the Win32k lockdown sandbox policy.
+        </message>
+        <message name="IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_FLASH_ONLY" desc="Enable Win32k lockdown for Flash">
+          Flash only
+        </message>
+        <message name="IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_PDF_ONLY" desc="Enable Win32k lockdown for PDF">
+          PDF only
+        </message>
+        <message name="IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_FLASH_AND_PDF" desc="Enable Win32k lockdown for Flash and PDF">
+          Flash and PDF
+        </message>
+        <message name="IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_ALL" desc="Enable Win32k lockdown for all plugins">
+          All plugins
+        </message>
+      </if>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

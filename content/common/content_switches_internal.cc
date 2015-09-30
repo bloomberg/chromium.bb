@@ -70,11 +70,10 @@ bool IsWin32kLockdownEnabledForMimeType(const std::string& mime_type) {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 
   std::string mime_types =
-      cmd_line->GetSwitchValueASCII(switches::kEnableWin32kLockDownMimeTypes);
-
-  if (mime_types.empty()) {
+      base::FieldTrialList::FindFullName("EnableWin32kLockDownMimeTypes");
+  if (cmd_line->HasSwitch(switches::kEnableWin32kLockDownMimeTypes)) {
     mime_types =
-        base::FieldTrialList::FindFullName("EnableWin32kLockDownMimeTypes");
+        cmd_line->GetSwitchValueASCII(switches::kEnableWin32kLockDownMimeTypes);
   }
 
   // Consider the value * to enable all mime types for lockdown.

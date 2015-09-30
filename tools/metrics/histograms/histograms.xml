@@ -63748,6 +63748,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2101151142" label="disable-direct-write"/>
   <int value="2119964154" label="enable-download-resumption"/>
   <int value="2121776031" label="auto-virtual-keyboard"/>
+  <int value="2122023503" label="enable-win32k-lockdown-mimetypes"/>
   <int value="2122876605" label="enable-bleeding-edge-rendering-fast-paths"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
   <int value="2137599770" label="enable-win32k-renderer-lockdown"/>

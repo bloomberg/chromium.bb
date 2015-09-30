@@ -538,6 +538,26 @@ const Experiment::Choice kCrosRegionsModeChoices[] = {
 };
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN)
+const Experiment::Choice kPpapiWin32kLockdown[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+     switches::kEnableWin32kLockDownMimeTypes, ""},
+    {IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_FLASH_ONLY,
+     switches::kEnableWin32kLockDownMimeTypes,
+     "application/x-shockwave-flash,application/futuresplash"},
+    {IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_PDF_ONLY,
+     switches::kEnableWin32kLockDownMimeTypes,
+     "application/x-google-chrome-pdf,application/pdf"},
+    {IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_FLASH_AND_PDF,
+     switches::kEnableWin32kLockDownMimeTypes,
+     "application/x-shockwave-flash,application/futuresplash,"
+     "application/x-google-chrome-pdf,application/pdf"},
+    {IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_ALL,
+     switches::kEnableWin32kLockDownMimeTypes, "*"},
+};
+#endif  // defined(OS_WIN)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -2073,6 +2093,12 @@ const Experiment kExperiments[] = {
      kOsCrOS,
      MULTI_VALUE_TYPE(kCrosRegionsModeChoices)},
 #endif  // OS_CHROMEOS
+#if defined(OS_WIN)
+    {"enable-ppapi-win32k-lockdown",
+     IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_NAME,
+     IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_DESCRIPTION, kOsWin,
+     MULTI_VALUE_TYPE(kPpapiWin32kLockdown)},
+#endif  // defined(OS_WIN)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
