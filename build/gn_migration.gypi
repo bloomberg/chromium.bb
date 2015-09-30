@@ -289,9 +289,6 @@
             '../base/base.gyp:chromium_android_linker',
             '../breakpad/breakpad.gyp:dump_syms',
             '../build/android/rezip.gyp:rezip_apk_jar',
-            '../chrome/chrome.gyp:chrome_public_apk',
-            '../chrome/chrome.gyp:chrome_public_test_apk',
-            '../chrome/chrome.gyp:chromedriver_webview_shell_apk',
             #"//clank" TODO(GYP) - conditional somehow?
             '../tools/imagediff/image_diff.gyp:image_diff#host',
             '../tools/telemetry/telemetry.gyp:bitmaptools#host',
@@ -352,6 +349,13 @@
             '../tools/gn/gn.gyp:gn_unittests',
             '../ui/app_list/app_list.gyp:app_list_unittests',
             '../url/url.gyp:url_unittests',
+          ],
+        }],
+        ['OS=="android" and chromecast==0', {
+          'dependencies': [
+            '../chrome/chrome.gyp:chrome_public_apk',
+            '../chrome/chrome.gyp:chrome_public_test_apk',
+            '../chrome/chrome.gyp:chromedriver_webview_shell_apk',
           ],
         }],
         ['OS=="android" or OS=="linux"', {

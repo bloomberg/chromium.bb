@@ -218,9 +218,6 @@ group("both_gn_and_gyp") {
       "//base/android/linker:chromium_android_linker",
       "//build/android/gyp/test:hello_world",
       "//build/android/rezip",
-      "//chrome/android:chrome_public_apk",
-      "//chrome/android:chrome_public_test_apk",
-      "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
       "//third_party/errorprone:chromium_errorprone",
       "//tools/android:android_tools",
       "//tools/imagediff($host_toolchain)",
@@ -305,6 +302,14 @@ group("both_gn_and_gyp") {
       "//ui/app_list:app_list_unittests",
       "//url:url_unittests",
     ]
+
+    if (!is_chromecast) {
+      deps += [
+        "//chrome/android:chrome_public_apk",
+        "//chrome/android:chrome_public_test_apk",
+        "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
+      ]
+    }
 
     if (has_chrome_android_internal) {
       deps += [ "//clank" ]  # TODO(GYP) ??
