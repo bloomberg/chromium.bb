@@ -139,7 +139,7 @@
 }
 
 .controls {
-  -webkit-margin-start: -8px;
+  -webkit-margin-start: -.57em;
 }
 
 #cancel,
@@ -147,6 +147,10 @@
 .keep,
 .discard {
   color: #5a5a5a;
+}
+
+#show {
+  margin: .7em .57em;
 }
 
 #controlled-by {

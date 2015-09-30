@@ -59,7 +59,6 @@ cr.define('downloads', function() {
             restore: loadTimeData.getString('dangerRestore'),
             retry: loadTimeData.getString('controlRetry'),
             save: loadTimeData.getString('dangerSave'),
-            show: loadTimeData.getString('controlShowInFolder'),
           };
         },
       },

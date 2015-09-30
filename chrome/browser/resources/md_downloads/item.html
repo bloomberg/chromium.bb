@@ -46,10 +46,8 @@
         </template>
 
         <div id="safe" class="controls" hidden$="[[isDangerous_]]">
-          <template is="dom-if" if="[[completelyOnDisk_]]">
-            <paper-button id="show" on-click="onShowClick_"
-                lowercase noink>[[i18n_.show]]</paper-button>
-          </template>
+          <a is="action-link" id="show" i18n-content="controlShowInFolder"
+              on-click="onShowClick_" hidden$="[[!completelyOnDisk_]]"></a>
           <template is="dom-if" if="[[data_.retry]]">
             <paper-button id="retry"
                 on-click="onRetryClick_">[[i18n_.retry]]</paper-button>
