@@ -385,6 +385,7 @@
       'browser/download/file_metadata_unittest_linux.cc',
       'browser/download/rate_estimator_unittest.cc',
       'browser/download/save_package_unittest.cc',
+      'browser/fileapi/blob_reader_unittest.cc',
       'browser/fileapi/blob_storage_context_unittest.cc',
       'browser/fileapi/blob_url_request_job_unittest.cc',
       'browser/fileapi/copy_or_move_file_validator_unittest.cc',

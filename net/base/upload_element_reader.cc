@@ -6,11 +6,6 @@
 
 namespace net {
 
-const UploadDiskCacheEntryElementReader*
-UploadElementReader::AsDiskCacheEntryReaderForTests() const {
-  return nullptr;
-}
-
 const UploadBytesElementReader* UploadElementReader::AsBytesReader() const {
   return nullptr;
 }
