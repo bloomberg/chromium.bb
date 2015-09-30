@@ -568,7 +568,14 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   EXPECT_EQ(http_status_code, entry->GetHttpStatusCode());
 }
 
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
+// Flaky on Linux. https://crbug.com/537592.
+#if defined (OS_LINUX)
+#define MAYBE_WindowWithOneTab DISABLED_WindowWithOneTab
+#else
+#define MAYBE_WindowWithOneTab WindowWithOneTab
+#endif
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MAYBE_WindowWithOneTab) {
   GURL url(ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(FILE_PATH_LITERAL("title1.html"))));
