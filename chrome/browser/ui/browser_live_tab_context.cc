@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
+#include "chrome/browser/ui/browser_live_tab_context.h"
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -19,42 +19,41 @@ using content::NavigationController;
 using content::SessionStorageNamespace;
 using content::WebContents;
 
-void BrowserTabRestoreServiceDelegate::ShowBrowserWindow() {
+void BrowserLiveTabContext::ShowBrowserWindow() {
   browser_->window()->Show();
 }
 
-const SessionID& BrowserTabRestoreServiceDelegate::GetSessionID() const {
+const SessionID& BrowserLiveTabContext::GetSessionID() const {
   return browser_->session_id();
 }
 
-int BrowserTabRestoreServiceDelegate::GetTabCount() const {
+int BrowserLiveTabContext::GetTabCount() const {
   return browser_->tab_strip_model()->count();
 }
 
-int BrowserTabRestoreServiceDelegate::GetSelectedIndex() const {
+int BrowserLiveTabContext::GetSelectedIndex() const {
   return browser_->tab_strip_model()->active_index();
 }
 
-std::string BrowserTabRestoreServiceDelegate::GetAppName() const {
+std::string BrowserLiveTabContext::GetAppName() const {
   return browser_->app_name();
 }
 
-sessions::LiveTab* BrowserTabRestoreServiceDelegate::GetLiveTabAt(
-    int index) const {
+sessions::LiveTab* BrowserLiveTabContext::GetLiveTabAt(int index) const {
   return sessions::ContentLiveTab::GetForWebContents(
       browser_->tab_strip_model()->GetWebContentsAt(index));
 }
 
-sessions::LiveTab* BrowserTabRestoreServiceDelegate::GetActiveLiveTab() const {
+sessions::LiveTab* BrowserLiveTabContext::GetActiveLiveTab() const {
   return sessions::ContentLiveTab::GetForWebContents(
       browser_->tab_strip_model()->GetActiveWebContents());
 }
 
-bool BrowserTabRestoreServiceDelegate::IsTabPinned(int index) const {
+bool BrowserLiveTabContext::IsTabPinned(int index) const {
   return browser_->tab_strip_model()->IsTabPinned(index);
 }
 
-sessions::LiveTab* BrowserTabRestoreServiceDelegate::AddRestoredTab(
+sessions::LiveTab* BrowserLiveTabContext::AddRestoredTab(
     const std::vector<sessions::SerializedNavigationEntry>& navigations,
     int tab_index,
     int selected_navigation,
@@ -78,7 +77,7 @@ sessions::LiveTab* BrowserTabRestoreServiceDelegate::AddRestoredTab(
   return sessions::ContentLiveTab::GetForWebContents(web_contents);
 }
 
-sessions::LiveTab* BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
+sessions::LiveTab* BrowserLiveTabContext::ReplaceRestoredTab(
     const std::vector<sessions::SerializedNavigationEntry>& navigations,
     int selected_navigation,
     bool from_last_session,
@@ -99,12 +98,12 @@ sessions::LiveTab* BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
   return sessions::ContentLiveTab::GetForWebContents(web_contents);
 }
 
-void BrowserTabRestoreServiceDelegate::CloseTab() {
+void BrowserLiveTabContext::CloseTab() {
   chrome::CloseTab(browser_);
 }
 
 // static
-sessions::TabRestoreServiceDelegate* BrowserTabRestoreServiceDelegate::Create(
+sessions::LiveTabContext* BrowserLiveTabContext::Create(
     Profile* profile,
     chrome::HostDesktopType host_desktop_type,
     const std::string& app_name) {
@@ -113,31 +112,29 @@ sessions::TabRestoreServiceDelegate* BrowserTabRestoreServiceDelegate::Create(
     browser = new Browser(Browser::CreateParams(profile, host_desktop_type));
   } else {
     // Only trusted app popup windows should ever be restored.
-    browser = new Browser(
-        Browser::CreateParams::CreateForApp(
-            app_name, true /* trusted_source */, gfx::Rect(), profile,
-            host_desktop_type));
+    browser = new Browser(Browser::CreateParams::CreateForApp(
+        app_name, true /* trusted_source */, gfx::Rect(), profile,
+        host_desktop_type));
   }
   if (browser)
-    return browser->tab_restore_service_delegate();
+    return browser->live_tab_context();
   else
     return NULL;
 }
 
 // static
-sessions::TabRestoreServiceDelegate*
-BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
+sessions::LiveTabContext* BrowserLiveTabContext::FindContextForWebContents(
     const WebContents* contents) {
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  return browser ? browser->tab_restore_service_delegate() : nullptr;
+  return browser ? browser->live_tab_context() : nullptr;
 }
 
 // static
-sessions::TabRestoreServiceDelegate*
-BrowserTabRestoreServiceDelegate::FindDelegateWithID(
+sessions::LiveTabContext* BrowserLiveTabContext::FindContextWithID(
     SessionID::id_type desired_id,
     chrome::HostDesktopType host_desktop_type) {
   Browser* browser = chrome::FindBrowserWithID(desired_id);
-  return (browser && browser->host_desktop_type() == host_desktop_type) ?
-             browser->tab_restore_service_delegate() : NULL;
+  return (browser && browser->host_desktop_type() == host_desktop_type)
+             ? browser->live_tab_context()
+             : NULL;
 }

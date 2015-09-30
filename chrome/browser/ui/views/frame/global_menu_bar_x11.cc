@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
+#include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host_x11.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/global_menu_bar_registrar_x11.h"
@@ -851,9 +851,8 @@ void GlobalMenuBarX11::OnHistoryItemActivated(DbusmenuMenuitem* sender,
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(profile_);
   if (item->session_id && service) {
-    service->RestoreEntryById(browser_->tab_restore_service_delegate(),
-                              item->session_id, browser_->host_desktop_type(),
-                              UNKNOWN);
+    service->RestoreEntryById(browser_->live_tab_context(), item->session_id,
+                              browser_->host_desktop_type(), UNKNOWN);
   } else {
     DCHECK(item->url.is_valid());
     browser_->OpenURL(content::OpenURLParams(

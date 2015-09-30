@@ -23,7 +23,7 @@ namespace sessions {
 
 class LiveTab;
 struct SessionWindow;
-class TabRestoreServiceDelegate;
+class LiveTabContext;
 
 // Callback from TabRestoreServiceClient::GetLastSession.
 // The second parameter is the id of the window that was last active.
@@ -36,27 +36,25 @@ class SESSIONS_EXPORT TabRestoreServiceClient {
  public:
   virtual ~TabRestoreServiceClient();
 
-  // Creates a TabRestoreServiceDelegate instance that is associated with
+  // Creates a LiveTabContext instance that is associated with
   // |host_desktop_type| and |app_name|. May return nullptr (e.g., if the
-  // embedder does not support TabRestoreServiceDelegate functionality).
+  // embedder does not support LiveTabContext functionality).
   // Note that |host_desktop_type| is opaque to the component; the only values
   // that will be passed here are those that have been passed *in* to the
   // component from the embedder via TabRestoreService.
-  virtual TabRestoreServiceDelegate* CreateTabRestoreServiceDelegate(
-      int host_desktop_type,
-      const std::string& app_name) = 0;
+  virtual LiveTabContext* CreateLiveTabContext(int host_desktop_type,
+                                               const std::string& app_name) = 0;
 
-  // Returns the TabRestoreServiceDelegate instance that is associated with
+  // Returns the LiveTabContext instance that is associated with
   // |tab|, or null if there is no such instance.
-  virtual TabRestoreServiceDelegate* FindTabRestoreServiceDelegateForTab(
-      const LiveTab* tab) = 0;
+  virtual LiveTabContext* FindLiveTabContextForTab(const LiveTab* tab) = 0;
 
-  // Returns the TabRestoreServiceDelegate instance that is associated with
+  // Returns the LiveTabContext instance that is associated with
   // |desired_id| and |host_desktop_type|, or null if there is no such instance.
   // Note that |host_desktop_type| is opaque to the component; the only values
   // that will be passed here are those that have been passed *in* to the
   // component from the embedder via TabRestoreService.
-  virtual TabRestoreServiceDelegate* FindTabRestoreServiceDelegateWithID(
+  virtual LiveTabContext* FindLiveTabContextWithID(
       SessionID::id_type desired_id,
       int host_desktop_type) = 0;
 

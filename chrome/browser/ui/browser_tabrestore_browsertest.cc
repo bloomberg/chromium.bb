@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
+#include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -123,16 +123,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, DelegateRestoreTabDisposition) {
       TabRestoreServiceFactory::GetForProfile(browser->profile());
   bool has_tab_restore_service = !!service;
   ASSERT_TRUE(has_tab_restore_service);
-  sessions::TabRestoreServiceDelegate* delegate =
-      BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
+  sessions::LiveTabContext* context =
+      BrowserLiveTabContext::FindContextForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
-  bool has_tab_restore_delegate = !!delegate;
-  ASSERT_TRUE(has_tab_restore_delegate);
+  bool has_live_tab_context = !!context;
+  ASSERT_TRUE(has_live_tab_context);
 
   // Restore tabs using that delegated restore service.
   content::DOMMessageQueue queue;
   service->RestoreMostRecentEntry(
-      delegate, browser->host_desktop_type());
+      context, browser->host_desktop_type());
   AwaitTabsReady(&queue, 2);
 
   // There should be 3 restored tabs in the new browser.

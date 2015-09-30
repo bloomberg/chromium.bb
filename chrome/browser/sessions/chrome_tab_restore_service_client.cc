@@ -21,7 +21,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
+#include "chrome/browser/ui/browser_live_tab_context.h"
 #endif
 
 namespace {
@@ -47,44 +47,43 @@ ChromeTabRestoreServiceClient::ChromeTabRestoreServiceClient(Profile* profile)
 
 ChromeTabRestoreServiceClient::~ChromeTabRestoreServiceClient() {}
 
-sessions::TabRestoreServiceDelegate*
-ChromeTabRestoreServiceClient::CreateTabRestoreServiceDelegate(
+sessions::LiveTabContext* ChromeTabRestoreServiceClient::CreateLiveTabContext(
     int host_desktop_type,
     const std::string& app_name) {
 #if defined(OS_ANDROID)
-  // Android does not support TabRestoreServiceDelegate, as tab persistence
+  // Android does not support LiveTabContext, as tab persistence
   // is implemented on the Java side.
   return nullptr;
 #else
-  return BrowserTabRestoreServiceDelegate::Create(
+  return BrowserLiveTabContext::Create(
       profile_, static_cast<chrome::HostDesktopType>(host_desktop_type),
       app_name);
 #endif
 }
 
-sessions::TabRestoreServiceDelegate*
-ChromeTabRestoreServiceClient::FindTabRestoreServiceDelegateForTab(
+sessions::LiveTabContext*
+ChromeTabRestoreServiceClient::FindLiveTabContextForTab(
     const sessions::LiveTab* tab) {
 #if defined(OS_ANDROID)
-  // Android does not support TabRestoreServiceDelegate, as tab persistence
+  // Android does not support LiveTabContext, as tab persistence
   // is implemented on the Java side.
   return nullptr;
 #else
-  return BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
+  return BrowserLiveTabContext::FindContextForWebContents(
       static_cast<const sessions::ContentLiveTab*>(tab)->web_contents());
 #endif
 }
 
-sessions::TabRestoreServiceDelegate*
-ChromeTabRestoreServiceClient::FindTabRestoreServiceDelegateWithID(
+sessions::LiveTabContext*
+ChromeTabRestoreServiceClient::FindLiveTabContextWithID(
     SessionID::id_type desired_id,
     int host_desktop_type) {
 #if defined(OS_ANDROID)
-  // Android does not support TabRestoreServiceDelegate, as tab persistence
+  // Android does not support LiveTabContext, as tab persistence
   // is implemented on the Java side.
   return nullptr;
 #else
-  return BrowserTabRestoreServiceDelegate::FindDelegateWithID(
+  return BrowserLiveTabContext::FindContextWithID(
       desired_id, static_cast<chrome::HostDesktopType>(host_desktop_type));
 #endif
 }

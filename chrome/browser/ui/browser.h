@@ -56,7 +56,7 @@ class BrowserContentSettingBubbleModelDelegate;
 class BrowserInstantController;
 class BrowserSyncedWindowDelegate;
 class BrowserToolbarModelDelegate;
-class BrowserTabRestoreServiceDelegate;
+class BrowserLiveTabContext;
 class BrowserWindow;
 class FindBarController;
 class PrefService;
@@ -271,9 +271,7 @@ class Browser : public TabStripModelObserver,
       content_setting_bubble_model_delegate() {
     return content_setting_bubble_model_delegate_.get();
   }
-  BrowserTabRestoreServiceDelegate* tab_restore_service_delegate() {
-    return tab_restore_service_delegate_.get();
-  }
+  BrowserLiveTabContext* live_tab_context() { return live_tab_context_.get(); }
   BrowserSyncedWindowDelegate* synced_window_delegate() {
     return synced_window_delegate_.get();
   }
@@ -956,8 +954,8 @@ class Browser : public TabStripModelObserver,
   // |search_model_| state with the tab's state.
   scoped_ptr<SearchDelegate> search_delegate_;
 
-  // Helper which implements the TabRestoreServiceDelegate interface.
-  scoped_ptr<BrowserTabRestoreServiceDelegate> tab_restore_service_delegate_;
+  // Helper which implements the LiveTabContext interface.
+  scoped_ptr<BrowserLiveTabContext> live_tab_context_;
 
   // Helper which implements the SyncedWindowDelegate interface.
   scoped_ptr<BrowserSyncedWindowDelegate> synced_window_delegate_;

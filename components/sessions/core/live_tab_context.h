@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_DELEGATE_H_
-#define COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_DELEGATE_H_
+#ifndef COMPONENTS_SESSIONS_CORE_LIVE_TAB_CONTEXT_H_
+#define COMPONENTS_SESSIONS_CORE_LIVE_TAB_CONTEXT_H_
 
 #include <string>
 #include <vector>
@@ -17,26 +17,17 @@ class LiveTab;
 class SerializedNavigationEntry;
 class PlatformSpecificTabData;
 
-// Objects implement this interface to provide necessary functionality for
-// TabRestoreService to operate. These methods are mostly copies of existing
-// Browser methods.
-class SESSIONS_EXPORT TabRestoreServiceDelegate {
+// An interface representing the context in which LiveTab instances exist in the
+// embedder. As a concrete example, desktop Chrome has an implementation that
+// is backed by an instance of the Browser class.
+class SESSIONS_EXPORT LiveTabContext {
  public:
-  // see BrowserWindow::Show()
+  // TODO(blundell): Rename.
   virtual void ShowBrowserWindow() = 0;
-
-  // see Browser::session_id()
   virtual const SessionID& GetSessionID() const = 0;
-
-  // see Browser::tab_count()
   virtual int GetTabCount() const = 0;
-
-  // see Browser::active_index()
   virtual int GetSelectedIndex() const = 0;
-
-  // see Browser::app_name()
   virtual std::string GetAppName() const = 0;
-
   virtual LiveTab* GetLiveTabAt(int index) const = 0;
   virtual LiveTab* GetActiveLiveTab() const = 0;
   virtual bool IsTabPinned(int index) const = 0;
@@ -68,9 +59,9 @@ class SESSIONS_EXPORT TabRestoreServiceDelegate {
   virtual void CloseTab() = 0;
 
  protected:
-  virtual ~TabRestoreServiceDelegate() {}
+  virtual ~LiveTabContext() {}
 };
 
 }  // namespace sessions
 
-#endif  // COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_DELEGATE_H_
+#endif  // COMPONENTS_SESSIONS_CORE_LIVE_TAB_CONTEXT_H_

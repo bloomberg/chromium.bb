@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
+#include "chrome/browser/ui/browser_live_tab_context.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "content/public/browser/user_metrics.h"
@@ -107,7 +107,7 @@ void RestoreTab(Browser* browser) {
     return;
 
   if (service->IsLoaded()) {
-    service->RestoreMostRecentEntry(browser->tab_restore_service_delegate(),
+    service->RestoreMostRecentEntry(browser->live_tab_context(),
                                     browser->host_desktop_type());
     return;
   }

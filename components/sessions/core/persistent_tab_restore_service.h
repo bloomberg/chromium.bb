@@ -32,16 +32,15 @@ class SESSIONS_EXPORT PersistentTabRestoreService : public TabRestoreService {
   void AddObserver(TabRestoreServiceObserver* observer) override;
   void RemoveObserver(TabRestoreServiceObserver* observer) override;
   void CreateHistoricalTab(LiveTab* live_tab, int index) override;
-  void BrowserClosing(TabRestoreServiceDelegate* delegate) override;
-  void BrowserClosed(TabRestoreServiceDelegate* delegate) override;
+  void BrowserClosing(LiveTabContext* context) override;
+  void BrowserClosed(LiveTabContext* context) override;
   void ClearEntries() override;
   const Entries& entries() const override;
-  std::vector<LiveTab*> RestoreMostRecentEntry(
-      TabRestoreServiceDelegate* delegate,
-      int host_desktop_type) override;
+  std::vector<LiveTab*> RestoreMostRecentEntry(LiveTabContext* context,
+                                               int host_desktop_type) override;
   Tab* RemoveTabEntryById(SessionID::id_type id) override;
   std::vector<LiveTab*> RestoreEntryById(
-      TabRestoreServiceDelegate* delegate,
+      LiveTabContext* context,
       SessionID::id_type id,
       int host_desktop_type,
       WindowOpenDisposition disposition) override;

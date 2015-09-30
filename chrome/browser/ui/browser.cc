@@ -98,8 +98,8 @@
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_tab_strip_model_delegate.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_toolbar_model_delegate.h"
@@ -378,7 +378,7 @@ Browser::Browser(const CreateParams& params)
       content_setting_bubble_model_delegate_(
           new BrowserContentSettingBubbleModelDelegate(this)),
       toolbar_model_delegate_(new BrowserToolbarModelDelegate(this)),
-      tab_restore_service_delegate_(new BrowserTabRestoreServiceDelegate(this)),
+      live_tab_context_(new BrowserLiveTabContext(this)),
       synced_window_delegate_(new BrowserSyncedWindowDelegate(this)),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
       command_controller_(new chrome::BrowserCommandController(this)),
@@ -510,7 +510,7 @@ Browser::~Browser() {
   sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile());
   if (tab_restore_service)
-    tab_restore_service->BrowserClosed(tab_restore_service_delegate());
+    tab_restore_service->BrowserClosed(live_tab_context());
 
 #if !defined(OS_MACOSX)
   if (!chrome::GetTotalBrowserCountForProfile(profile_)) {
@@ -734,11 +734,11 @@ void Browser::OnWindowClosing() {
 
 #if defined(USE_AURA)
   if (tab_restore_service && is_app() && !is_devtools())
-    tab_restore_service->BrowserClosing(tab_restore_service_delegate());
+    tab_restore_service->BrowserClosing(live_tab_context());
 #endif
 
   if (tab_restore_service && is_type_tabbed() && tab_strip_model_->count())
-    tab_restore_service->BrowserClosing(tab_restore_service_delegate());
+    tab_restore_service->BrowserClosing(live_tab_context());
 
   // TODO(sky): convert session/tab restore to use notification.
   content::NotificationService::current()->Notify(

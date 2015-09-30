@@ -10,8 +10,8 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
@@ -46,9 +46,9 @@ using content::Referrer;
   if (node->session_id && service) {
     Browser* browser = chrome::FindTabbedBrowser(bridge_->profile(), false,
         chrome::HOST_DESKTOP_TYPE_NATIVE);
-    BrowserTabRestoreServiceDelegate* delegate = browser ?
-        browser->tab_restore_service_delegate() : NULL;
-    service->RestoreEntryById(delegate, node->session_id,
+    BrowserLiveTabContext* context =
+        browser ? browser->live_tab_context() : NULL;
+    service->RestoreEntryById(context, node->session_id,
         chrome::HOST_DESKTOP_TYPE_NATIVE, UNKNOWN);
   } else {
     DCHECK(node->url.is_valid());

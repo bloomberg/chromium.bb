@@ -76,8 +76,7 @@ StringProvider* ChromeBrowserProvider::GetStringProvider() {
   return nullptr;
 }
 
-TabRestoreServiceDelegateProvider*
-ChromeBrowserProvider::GetTabRestoreServiceDelegateProvider() {
+LiveTabContextProvider* ChromeBrowserProvider::GetLiveTabContextProvider() {
   return nullptr;
 }
 

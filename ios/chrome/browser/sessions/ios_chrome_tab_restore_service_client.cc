@@ -7,7 +7,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/sessions/tab_restore_service_delegate_provider.h"
+#include "ios/public/provider/chrome/browser/sessions/live_tab_context_provider.h"
 #include "ios/web/public/web_thread.h"
 #include "url/gurl.h"
 
@@ -17,30 +17,29 @@ IOSChromeTabRestoreServiceClient::IOSChromeTabRestoreServiceClient(
 
 IOSChromeTabRestoreServiceClient::~IOSChromeTabRestoreServiceClient() {}
 
-sessions::TabRestoreServiceDelegate*
-IOSChromeTabRestoreServiceClient::CreateTabRestoreServiceDelegate(
+sessions::LiveTabContext*
+IOSChromeTabRestoreServiceClient::CreateLiveTabContext(
     int host_desktop_type,
     const std::string& app_name) {
-  return ios::GetChromeBrowserProvider()
-      ->GetTabRestoreServiceDelegateProvider()
-      ->Create(browser_state_);
+  return ios::GetChromeBrowserProvider()->GetLiveTabContextProvider()->Create(
+      browser_state_);
 }
 
-sessions::TabRestoreServiceDelegate*
-IOSChromeTabRestoreServiceClient::FindTabRestoreServiceDelegateForTab(
+sessions::LiveTabContext*
+IOSChromeTabRestoreServiceClient::FindLiveTabContextForTab(
     const sessions::LiveTab* tab) {
   return ios::GetChromeBrowserProvider()
-      ->GetTabRestoreServiceDelegateProvider()
-      ->FindDelegateForTab(tab);
+      ->GetLiveTabContextProvider()
+      ->FindContextForTab(tab);
 }
 
-sessions::TabRestoreServiceDelegate*
-IOSChromeTabRestoreServiceClient::FindTabRestoreServiceDelegateWithID(
+sessions::LiveTabContext*
+IOSChromeTabRestoreServiceClient::FindLiveTabContextWithID(
     SessionID::id_type desired_id,
     int host_desktop_type) {
   return ios::GetChromeBrowserProvider()
-      ->GetTabRestoreServiceDelegateProvider()
-      ->FindDelegateWithID(desired_id);
+      ->GetLiveTabContextProvider()
+      ->FindContextWithID(desired_id);
 }
 
 bool IOSChromeTabRestoreServiceClient::ShouldTrackURLForRestore(

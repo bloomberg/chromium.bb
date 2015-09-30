@@ -20,7 +20,7 @@ namespace sessions {
 
 class TabRestoreService;
 class TabRestoreServiceClient;
-class TabRestoreServiceDelegate;
+class LiveTabContext;
 class TabRestoreServiceObserver;
 class TimeFactory;
 
@@ -73,15 +73,14 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
   void AddObserver(TabRestoreServiceObserver* observer);
   void RemoveObserver(TabRestoreServiceObserver* observer);
   void CreateHistoricalTab(LiveTab* live_tab, int index);
-  void BrowserClosing(TabRestoreServiceDelegate* delegate);
-  void BrowserClosed(TabRestoreServiceDelegate* delegate);
+  void BrowserClosing(LiveTabContext* context);
+  void BrowserClosed(LiveTabContext* context);
   void ClearEntries();
   const Entries& entries() const;
-  std::vector<LiveTab*> RestoreMostRecentEntry(
-      TabRestoreServiceDelegate* delegate,
-      int host_desktop_type);
+  std::vector<LiveTab*> RestoreMostRecentEntry(LiveTabContext* context,
+                                               int host_desktop_type);
   Tab* RemoveTabEntryById(SessionID::id_type id);
-  std::vector<LiveTab*> RestoreEntryById(TabRestoreServiceDelegate* delegate,
+  std::vector<LiveTab*> RestoreEntryById(LiveTabContext* context,
                                          SessionID::id_type id,
                                          int host_desktop_type,
                                          WindowOpenDisposition disposition);
@@ -115,26 +114,26 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
   friend class PersistentTabRestoreService;
 
   // Populates the tab's navigations from the LiveTab, and its browser_id and
-  // pinned state from the delegate.
+  // pinned state from the context.
   void PopulateTab(Tab* tab,
                    int index,
-                   TabRestoreServiceDelegate* delegate,
+                   LiveTabContext* context,
                    LiveTab* live_tab);
 
   // This is a helper function for RestoreEntryById() for restoring a single
-  // tab. If |delegate| is NULL, this creates a new window for the entry. This
-  // returns the TabRestoreServiceDelegate into which the tab was restored.
+  // tab. If |context| is NULL, this creates a new window for the entry. This
+  // returns the LiveTabContext into which the tab was restored.
   // |disposition| will be respected, but if it is UNKNOWN then the tab's
   // original attributes will be respected instead. If a new
-  // TabRestoreServiceDelegate needs to be created for this tab,
+  // LiveTabContext needs to be created for this tab,
   // |host_desktop_type| will be passed to
-  // TabRestoreServiceClient::CreateTabRestoreServiceDelegate(). If present,
+  // TabRestoreServiceClient::CreateLiveTabContext(). If present,
   // |live_tab| will be populated with the LiveTab of the restored tab.
-  TabRestoreServiceDelegate* RestoreTab(const Tab& tab,
-                                        TabRestoreServiceDelegate* delegate,
-                                        int host_desktop_type,
-                                        WindowOpenDisposition disposition,
-                                        LiveTab** live_tab);
+  LiveTabContext* RestoreTab(const Tab& tab,
+                             LiveTabContext* context,
+                             int host_desktop_type,
+                             WindowOpenDisposition disposition,
+                             LiveTab** live_tab);
 
   // Returns true if |tab| has more than one navigation. If |tab| has more
   // than one navigation |tab->current_navigation_index| is constrained based
@@ -176,10 +175,10 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
 
   base::ObserverList<TabRestoreServiceObserver> observer_list_;
 
-  // Set of delegates that we've received a BrowserClosing method for but no
-  // corresponding BrowserClosed. We cache the set of delegates closing to
+  // Set of contexts that we've received a BrowserClosing method for but no
+  // corresponding BrowserClosed. We cache the set of contexts closing to
   // avoid creating historical tabs for them.
-  std::set<TabRestoreServiceDelegate*> closing_delegates_;
+  std::set<LiveTabContext*> closing_contexts_;
 
   TimeFactory* const time_factory_;
 

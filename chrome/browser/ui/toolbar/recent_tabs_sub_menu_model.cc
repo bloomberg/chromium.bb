@@ -19,7 +19,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
+#include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/grit/generated_resources.h"
@@ -288,8 +288,8 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
-  sessions::TabRestoreServiceDelegate* delegate =
-      BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
+  sessions::LiveTabContext* context =
+      BrowserLiveTabContext::FindContextForWebContents(
           browser_->tab_strip_model()->GetActiveWebContents());
   if (IsTabModelCommandId(command_id)) {
     TabNavigationItems* tab_items = NULL;
@@ -298,12 +298,12 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
     DCHECK(item.tab_id > -1 && item.url.is_valid());
 
     if (item.session_tag.empty()) {  // Restore tab of local session.
-      if (service && delegate) {
+      if (service && context) {
         content::RecordAction(
             base::UserMetricsAction("WrenchMenu_OpenRecentTabFromLocal"));
         UMA_HISTOGRAM_ENUMERATION("WrenchMenu.RecentTabsSubMenu",
                                   LOCAL_SESSION_TAB, LIMIT_RECENT_TAB_ACTION);
-        service->RestoreEntryById(delegate, item.tab_id,
+        service->RestoreEntryById(context, item.tab_id,
                                   browser_->host_desktop_type(), disposition);
       }
     } else {  // Restore tab of session from other devices.
@@ -325,7 +325,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
     }
   } else {
     DCHECK(IsWindowModelCommandId(command_id));
-    if (service && delegate) {
+    if (service && context) {
       int window_items_idx = CommandIdToWindowVectorIndex(command_id);
       DCHECK(window_items_idx >= 0 &&
              window_items_idx < static_cast<int>(local_window_items_.size()));
@@ -333,7 +333,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
           base::UserMetricsAction("WrenchMenu_OpenRecentWindow"));
       UMA_HISTOGRAM_ENUMERATION("WrenchMenu.RecentTabsSubMenu", RESTORE_WINDOW,
                                 LIMIT_RECENT_TAB_ACTION);
-      service->RestoreEntryById(delegate, local_window_items_[window_items_idx],
+      service->RestoreEntryById(context, local_window_items_[window_items_idx],
                                 browser_->host_desktop_type(), disposition);
     }
   }

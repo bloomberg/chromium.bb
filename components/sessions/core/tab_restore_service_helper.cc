@@ -11,10 +11,10 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "components/sessions/core/live_tab.h"
+#include "components/sessions/core/live_tab_context.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service_client.h"
-#include "components/sessions/core/tab_restore_service_delegate.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 
 namespace sessions {
@@ -68,41 +68,39 @@ void TabRestoreServiceHelper::CreateHistoricalTab(LiveTab* live_tab,
   if (restoring_)
     return;
 
-  TabRestoreServiceDelegate* delegate =
-      client_->FindTabRestoreServiceDelegateForTab(live_tab);
-  if (closing_delegates_.find(delegate) != closing_delegates_.end())
+  LiveTabContext* context = client_->FindLiveTabContextForTab(live_tab);
+  if (closing_contexts_.find(context) != closing_contexts_.end())
     return;
 
   scoped_ptr<Tab> local_tab(new Tab());
-  PopulateTab(local_tab.get(), index, delegate, live_tab);
+  PopulateTab(local_tab.get(), index, context, live_tab);
   if (local_tab->navigations.empty())
     return;
 
   AddEntry(local_tab.release(), true, true);
 }
 
-void TabRestoreServiceHelper::BrowserClosing(
-    TabRestoreServiceDelegate* delegate) {
-  closing_delegates_.insert(delegate);
+void TabRestoreServiceHelper::BrowserClosing(LiveTabContext* context) {
+  closing_contexts_.insert(context);
 
   scoped_ptr<Window> window(new Window());
-  window->selected_tab_index = delegate->GetSelectedIndex();
+  window->selected_tab_index = context->GetSelectedIndex();
   window->timestamp = TimeNow();
-  window->app_name = delegate->GetAppName();
+  window->app_name = context->GetAppName();
 
   // Don't use std::vector::resize() because it will push copies of an empty tab
   // into the vector, which will give all tabs in a window the same ID.
-  for (int i = 0; i < delegate->GetTabCount(); ++i) {
+  for (int i = 0; i < context->GetTabCount(); ++i) {
     window->tabs.push_back(Tab());
   }
   size_t entry_index = 0;
-  for (int tab_index = 0; tab_index < delegate->GetTabCount(); ++tab_index) {
-    PopulateTab(&(window->tabs[entry_index]), tab_index, delegate,
-                delegate->GetLiveTabAt(tab_index));
+  for (int tab_index = 0; tab_index < context->GetTabCount(); ++tab_index) {
+    PopulateTab(&(window->tabs[entry_index]), tab_index, context,
+                context->GetLiveTabAt(tab_index));
     if (window->tabs[entry_index].navigations.empty()) {
       window->tabs.erase(window->tabs.begin() + entry_index);
     } else {
-      window->tabs[entry_index].browser_id = delegate->GetSessionID().id();
+      window->tabs[entry_index].browser_id = context->GetSessionID().id();
       entry_index++;
     }
   }
@@ -119,9 +117,8 @@ void TabRestoreServiceHelper::BrowserClosing(
   }
 }
 
-void TabRestoreServiceHelper::BrowserClosed(
-    TabRestoreServiceDelegate* delegate) {
-  closing_delegates_.erase(delegate);
+void TabRestoreServiceHelper::BrowserClosed(LiveTabContext* context) {
+  closing_contexts_.erase(context);
 }
 
 void TabRestoreServiceHelper::ClearEntries() {
@@ -136,13 +133,13 @@ const TabRestoreService::Entries& TabRestoreServiceHelper::entries() const {
 }
 
 std::vector<LiveTab*> TabRestoreServiceHelper::RestoreMostRecentEntry(
-    TabRestoreServiceDelegate* delegate,
+    LiveTabContext* context,
     int host_desktop_type) {
   if (entries_.empty())
     return std::vector<LiveTab*>();
 
-  return RestoreEntryById(delegate, entries_.front()->id, host_desktop_type,
-      UNKNOWN);
+  return RestoreEntryById(context, entries_.front()->id, host_desktop_type,
+                          UNKNOWN);
 }
 
 TabRestoreService::Tab* TabRestoreServiceHelper::RemoveTabEntryById(
@@ -161,7 +158,7 @@ TabRestoreService::Tab* TabRestoreServiceHelper::RemoveTabEntryById(
 }
 
 std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
-    TabRestoreServiceDelegate* delegate,
+    LiveTabContext* context,
     SessionID::id_type id,
     int host_desktop_type,
     WindowOpenDisposition disposition) {
@@ -184,31 +181,31 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
     entry_iterator = entries_.end();
   }
 
-  // |delegate| will be NULL in cases where one isn't already available (eg,
+  // |context| will be NULL in cases where one isn't already available (eg,
   // when invoked on Mac OS X with no windows open). In this case, create a
   // new browser into which we restore the tabs.
   std::vector<LiveTab*> live_tabs;
   if (entry->type == TabRestoreService::TAB) {
     Tab* tab = static_cast<Tab*>(entry);
     LiveTab* restored_tab = NULL;
-    delegate = RestoreTab(*tab, delegate, host_desktop_type, disposition,
-        &restored_tab);
+    context = RestoreTab(*tab, context, host_desktop_type, disposition,
+                         &restored_tab);
     live_tabs.push_back(restored_tab);
-    delegate->ShowBrowserWindow();
+    context->ShowBrowserWindow();
   } else if (entry->type == TabRestoreService::WINDOW) {
-    TabRestoreServiceDelegate* current_delegate = delegate;
+    LiveTabContext* current_context = context;
     Window* window = static_cast<Window*>(entry);
 
     // When restoring a window, either the entire window can be restored, or a
     // single tab within it. If the entry's ID matches the one to restore, then
     // the entire window will be restored.
     if (!restoring_tab_in_window) {
-      delegate = client_->CreateTabRestoreServiceDelegate(host_desktop_type,
-                                                          window->app_name);
+      context =
+          client_->CreateLiveTabContext(host_desktop_type, window->app_name);
       for (size_t tab_i = 0; tab_i < window->tabs.size(); ++tab_i) {
         const Tab& tab = window->tabs[tab_i];
-        LiveTab* restored_tab = delegate->AddRestoredTab(
-            tab.navigations, delegate->GetTabCount(),
+        LiveTab* restored_tab = context->AddRestoredTab(
+            tab.navigations, context->GetTabCount(),
             tab.current_navigation_index, tab.extension_app_id,
             static_cast<int>(tab_i) == window->selected_tab_index, tab.pinned,
             tab.from_last_session, tab.platform_data.get(),
@@ -223,7 +220,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
       // All the window's tabs had the same former browser_id.
       if (window->tabs[0].has_browser()) {
         UpdateTabBrowserIDs(window->tabs[0].browser_id,
-                            delegate->GetSessionID().id());
+                            context->GetSessionID().id());
       }
     } else {
       // Restore a single tab from the window. Find the tab that matches the ID
@@ -233,8 +230,8 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
         const Tab& tab = *tab_i;
         if (tab.id == id) {
           LiveTab* restored_tab = NULL;
-          delegate = RestoreTab(tab, delegate, host_desktop_type, disposition,
-              &restored_tab);
+          context = RestoreTab(tab, context, host_desktop_type, disposition,
+                               &restored_tab);
           live_tabs.push_back(restored_tab);
           window->tabs.erase(tab_i);
           // If restoring the tab leaves the window with nothing else, delete it
@@ -246,22 +243,21 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
             // Update the browser ID of the rest of the tabs in the window so if
             // any one is restored, it goes into the same window as the tab
             // being restored now.
-            UpdateTabBrowserIDs(tab.browser_id,
-                                delegate->GetSessionID().id());
+            UpdateTabBrowserIDs(tab.browser_id, context->GetSessionID().id());
             for (std::vector<Tab>::iterator tab_j = window->tabs.begin();
                  tab_j != window->tabs.end(); ++tab_j) {
-              (*tab_j).browser_id = delegate->GetSessionID().id();
+              (*tab_j).browser_id = context->GetSessionID().id();
             }
           }
           break;
         }
       }
     }
-    delegate->ShowBrowserWindow();
+    context->ShowBrowserWindow();
 
-    if (disposition == CURRENT_TAB && current_delegate &&
-        current_delegate->GetActiveLiveTab()) {
-      current_delegate->CloseTab();
+    if (disposition == CURRENT_TAB && current_context &&
+        current_context->GetActiveLiveTab()) {
+      current_context->CloseTab();
     }
   } else {
     NOTREACHED();
@@ -361,7 +357,7 @@ bool TabRestoreServiceHelper::ValidateEntry(Entry* entry) {
 
 void TabRestoreServiceHelper::PopulateTab(Tab* tab,
                                           int index,
-                                          TabRestoreServiceDelegate* delegate,
+                                          LiveTabContext* context,
                                           LiveTab* live_tab) {
   const int pending_index = live_tab->GetPendingEntryIndex();
   int entry_count = live_tab->GetEntryCount();
@@ -387,52 +383,51 @@ void TabRestoreServiceHelper::PopulateTab(Tab* tab,
   tab->platform_data = live_tab->GetPlatformSpecificTabData();
 
   // Delegate may be NULL during unit tests.
-  if (delegate) {
-    tab->browser_id = delegate->GetSessionID().id();
-    tab->pinned = delegate->IsTabPinned(tab->tabstrip_index);
+  if (context) {
+    tab->browser_id = context->GetSessionID().id();
+    tab->pinned = context->IsTabPinned(tab->tabstrip_index);
   }
 }
 
-TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
+LiveTabContext* TabRestoreServiceHelper::RestoreTab(
     const Tab& tab,
-    TabRestoreServiceDelegate* delegate,
+    LiveTabContext* context,
     int host_desktop_type,
     WindowOpenDisposition disposition,
     LiveTab** live_tab) {
   LiveTab* restored_tab;
-  if (disposition == CURRENT_TAB && delegate) {
-    restored_tab = delegate->ReplaceRestoredTab(
+  if (disposition == CURRENT_TAB && context) {
+    restored_tab = context->ReplaceRestoredTab(
         tab.navigations, tab.current_navigation_index, tab.from_last_session,
         tab.extension_app_id, tab.platform_data.get(), tab.user_agent_override);
   } else {
     // We only respsect the tab's original browser if there's no disposition.
     if (disposition == UNKNOWN && tab.has_browser()) {
-      delegate = client_->FindTabRestoreServiceDelegateWithID(
-          tab.browser_id, host_desktop_type);
+      context =
+          client_->FindLiveTabContextWithID(tab.browser_id, host_desktop_type);
     }
 
     int tab_index = -1;
 
-    // |delegate| will be NULL in cases where one isn't already available (eg,
+    // |context| will be NULL in cases where one isn't already available (eg,
     // when invoked on Mac OS X with no windows open). In this case, create a
     // new browser into which we restore the tabs.
-    if (delegate && disposition != NEW_WINDOW) {
+    if (context && disposition != NEW_WINDOW) {
       tab_index = tab.tabstrip_index;
     } else {
-      delegate = client_->CreateTabRestoreServiceDelegate(host_desktop_type,
-                                                          std::string());
+      context = client_->CreateLiveTabContext(host_desktop_type, std::string());
       if (tab.has_browser())
-        UpdateTabBrowserIDs(tab.browser_id, delegate->GetSessionID().id());
+        UpdateTabBrowserIDs(tab.browser_id, context->GetSessionID().id());
     }
 
     // Place the tab at the end if the tab index is no longer valid or
     // we were passed a specific disposition.
-    if (tab_index < 0 || tab_index > delegate->GetTabCount() ||
+    if (tab_index < 0 || tab_index > context->GetTabCount() ||
         disposition != UNKNOWN) {
-      tab_index = delegate->GetTabCount();
+      tab_index = context->GetTabCount();
     }
 
-    restored_tab = delegate->AddRestoredTab(
+    restored_tab = context->AddRestoredTab(
         tab.navigations, tab_index, tab.current_navigation_index,
         tab.extension_app_id, disposition != NEW_BACKGROUND_TAB, tab.pinned,
         tab.from_last_session, tab.platform_data.get(),
@@ -444,7 +439,7 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
   if (live_tab)
     *live_tab = restored_tab;
 
-  return delegate;
+  return context;
 }
 
 

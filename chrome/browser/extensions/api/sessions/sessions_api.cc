@@ -26,7 +26,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
+#include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -457,11 +457,11 @@ bool SessionsRestoreFunction::RestoreMostRecentlyClosed(Browser* browser) {
   }
 
   bool is_window = is_window_entry(entries.front());
-  sessions::TabRestoreServiceDelegate* delegate =
-      BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
+  sessions::LiveTabContext* context =
+      BrowserLiveTabContext::FindContextForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   std::vector<sessions::LiveTab*> restored_tabs =
-      tab_restore_service->RestoreMostRecentEntry(delegate, host_desktop_type);
+      tab_restore_service->RestoreMostRecentEntry(context, host_desktop_type);
   DCHECK(restored_tabs.size());
 
   sessions::ContentLiveTab* first_tab =
@@ -499,11 +499,11 @@ bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
     }
   }
 
-  sessions::TabRestoreServiceDelegate* delegate =
-      BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
+  sessions::LiveTabContext* context =
+      BrowserLiveTabContext::FindContextForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   std::vector<sessions::LiveTab*> restored_tabs =
-      tab_restore_service->RestoreEntryById(delegate, session_id.id(),
+      tab_restore_service->RestoreEntryById(context, session_id.id(),
                                             host_desktop_type, UNKNOWN);
   // If the ID is invalid, restored_tabs will be empty.
   if (!restored_tabs.size()) {

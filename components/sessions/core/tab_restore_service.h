@@ -22,7 +22,7 @@ namespace sessions {
 
 class LiveTab;
 class PlatformSpecificTabData;
-class TabRestoreServiceDelegate;
+class LiveTabContext;
 class TabRestoreServiceObserver;
 
 // TabRestoreService is responsible for maintaining the most recently closed
@@ -136,13 +136,15 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   // entries has changed.
   virtual void CreateHistoricalTab(LiveTab* live_tab, int index) = 0;
 
-  // Invoked when a browser is closing. If |delegate| is a tabbed browser with
+  // TODO(blundell): Rename and fix comment.
+  // Invoked when a browser is closing. If |context| is a tabbed browser with
   // at least one tab, a Window is created, added to entries and observers are
   // notified.
-  virtual void BrowserClosing(TabRestoreServiceDelegate* delegate) = 0;
+  virtual void BrowserClosing(LiveTabContext* context) = 0;
 
+  // TODO(blundell): Rename and fix comment.
   // Invoked when the browser is done closing.
-  virtual void BrowserClosed(TabRestoreServiceDelegate* delegate) = 0;
+  virtual void BrowserClosed(LiveTabContext* context) = 0;
 
   // Removes all entries from the list and notifies observers the list
   // of tabs has changed.
@@ -154,12 +156,12 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
 
   // Restores the most recently closed entry. Does nothing if there are no
   // entries to restore. If the most recently restored entry is a tab, it is
-  // added to |delegate|. |host_desktop_type| is a value that is opaque to this
+  // added to |context|. |host_desktop_type| is a value that is opaque to this
   // class and will be used only to pass back to the embedder via
   // TabRestoreServiceClient if necessary. Returns the LiveTab instances of the
   // restored tab(s).
   virtual std::vector<LiveTab*> RestoreMostRecentEntry(
-      TabRestoreServiceDelegate* delegate,
+      LiveTabContext* context,
       int host_desktop_type) = 0;
 
   // Removes the Tab with id |id| from the list and returns it; ownership is
@@ -167,7 +169,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   virtual Tab* RemoveTabEntryById(SessionID::id_type id) = 0;
 
   // Restores an entry by id. If there is no entry with an id matching |id|,
-  // this does nothing. If |delegate| is NULL, this creates a new window for the
+  // this does nothing. If |context| is NULL, this creates a new window for the
   // entry. |disposition| is respected, but the attributes (tabstrip index,
   // browser window) of the tab when it was closed will be respected if
   // disposition is UNKNOWN.  |host_desktop_type| is a value that is opaque to
@@ -175,7 +177,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   // TabRestoreServiceClient if necessary.  Returns the LiveTab instances of the
   // restored tab(s).
   virtual std::vector<LiveTab*> RestoreEntryById(
-      TabRestoreServiceDelegate* delegate,
+      LiveTabContext* context,
       SessionID::id_type id,
       int host_desktop_type,
       WindowOpenDisposition disposition) = 0;

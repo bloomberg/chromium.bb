@@ -33,14 +33,12 @@ void InMemoryTabRestoreService::CreateHistoricalTab(LiveTab* live_tab,
   helper_.CreateHistoricalTab(live_tab, index);
 }
 
-void InMemoryTabRestoreService::BrowserClosing(
-    TabRestoreServiceDelegate* delegate) {
-  helper_.BrowserClosing(delegate);
+void InMemoryTabRestoreService::BrowserClosing(LiveTabContext* context) {
+  helper_.BrowserClosing(context);
 }
 
-void InMemoryTabRestoreService::BrowserClosed(
-    TabRestoreServiceDelegate* delegate) {
-  helper_.BrowserClosed(delegate);
+void InMemoryTabRestoreService::BrowserClosed(LiveTabContext* context) {
+  helper_.BrowserClosed(context);
 }
 
 void InMemoryTabRestoreService::ClearEntries() {
@@ -52,9 +50,9 @@ const TabRestoreService::Entries& InMemoryTabRestoreService::entries() const {
 }
 
 std::vector<LiveTab*> InMemoryTabRestoreService::RestoreMostRecentEntry(
-    TabRestoreServiceDelegate* delegate,
+    LiveTabContext* context,
     int host_desktop_type) {
-  return helper_.RestoreMostRecentEntry(delegate, host_desktop_type);
+  return helper_.RestoreMostRecentEntry(context, host_desktop_type);
 }
 
 TabRestoreService::Tab* InMemoryTabRestoreService::RemoveTabEntryById(
@@ -63,11 +61,11 @@ TabRestoreService::Tab* InMemoryTabRestoreService::RemoveTabEntryById(
 }
 
 std::vector<LiveTab*> InMemoryTabRestoreService::RestoreEntryById(
-    TabRestoreServiceDelegate* delegate,
+    LiveTabContext* context,
     SessionID::id_type id,
     int host_desktop_type,
     WindowOpenDisposition disposition) {
-  return helper_.RestoreEntryById(delegate, id, host_desktop_type, disposition);
+  return helper_.RestoreEntryById(context, id, host_desktop_type, disposition);
 }
 
 void InMemoryTabRestoreService::LoadTabsFromLastSession() {

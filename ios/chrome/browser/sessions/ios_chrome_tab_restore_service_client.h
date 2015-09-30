@@ -23,12 +23,12 @@ class IOSChromeTabRestoreServiceClient
 
  private:
   // TabRestoreServiceClient:
-  sessions::TabRestoreServiceDelegate* CreateTabRestoreServiceDelegate(
+  sessions::LiveTabContext* CreateLiveTabContext(
       int host_desktop_type,
       const std::string& app_name) override;
-  sessions::TabRestoreServiceDelegate* FindTabRestoreServiceDelegateForTab(
+  sessions::LiveTabContext* FindLiveTabContextForTab(
       const sessions::LiveTab* tab) override;
-  sessions::TabRestoreServiceDelegate* FindTabRestoreServiceDelegateWithID(
+  sessions::LiveTabContext* FindLiveTabContextWithID(
       SessionID::id_type desired_id,
       int host_desktop_type) override;
   bool ShouldTrackURLForRestore(const GURL& url) override;
