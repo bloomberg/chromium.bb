@@ -4491,11 +4491,7 @@ interface SVGSVGElement
     getter currentTranslate
     getter currentView
     getter height
-    getter pixelUnitToMillimeterX
-    getter pixelUnitToMillimeterY
     getter preserveAspectRatio
-    getter screenPixelToMillimeterX
-    getter screenPixelToMillimeterY
     getter useCurrentView
     getter viewBox
     getter viewport

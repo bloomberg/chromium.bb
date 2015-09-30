@@ -69,10 +69,6 @@
 
     // TODO(philipj): The following was part of SVG 1.1:
     // http://www.w3.org/TR/SVG11/struct.html#InterfaceSVGSVGElement
-    [Measure] readonly attribute float pixelUnitToMillimeterX;
-    [Measure] readonly attribute float pixelUnitToMillimeterY;
-    [Measure] readonly attribute float screenPixelToMillimeterX;
-    [Measure] readonly attribute float screenPixelToMillimeterY;
     [Measure] Element getElementById(DOMString elementId);
 };
 

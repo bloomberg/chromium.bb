@@ -654,10 +654,6 @@ public:
         V8Element_Animate_Method = 773,
         // The above items are available in M44 branch.
 
-        V8SVGSVGElement_PixelUnitToMillimeterX_AttributeGetter = 774,
-        V8SVGSVGElement_PixelUnitToMillimeterY_AttributeGetter = 775,
-        V8SVGSVGElement_ScreenPixelToMillimeterX_AttributeGetter = 776,
-        V8SVGSVGElement_ScreenPixelToMillimeterY_AttributeGetter = 777,
         V8SVGSVGElement_GetElementById_Method = 778,
         ElementCreateShadowRootMultiple = 779,
         V8MessageChannel_Constructor = 780,

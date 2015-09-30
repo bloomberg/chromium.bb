@@ -106,26 +106,6 @@ PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGSVGElement::viewport() const
     return SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
 }
 
-float SVGSVGElement::pixelUnitToMillimeterX() const
-{
-    return 1 / cssPixelsPerMillimeter;
-}
-
-float SVGSVGElement::pixelUnitToMillimeterY() const
-{
-    return 1 / cssPixelsPerMillimeter;
-}
-
-float SVGSVGElement::screenPixelToMillimeterX() const
-{
-    return pixelUnitToMillimeterX();
-}
-
-float SVGSVGElement::screenPixelToMillimeterY() const
-{
-    return pixelUnitToMillimeterY();
-}
-
 SVGViewSpec* SVGSVGElement::currentView()
 {
     if (!m_viewSpec)

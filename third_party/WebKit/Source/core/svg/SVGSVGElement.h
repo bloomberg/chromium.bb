@@ -57,11 +57,6 @@ public:
     // 'SVGSVGElement' functions
     PassRefPtrWillBeRawPtr<SVGRectTearOff> viewport() const;
 
-    float pixelUnitToMillimeterX() const;
-    float pixelUnitToMillimeterY() const;
-    float screenPixelToMillimeterX() const;
-    float screenPixelToMillimeterY() const;
-
     bool useCurrentView() const { return m_useCurrentView; }
     SVGViewSpec* currentView();
 
