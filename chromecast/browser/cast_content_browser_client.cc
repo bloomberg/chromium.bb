@@ -224,8 +224,6 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
 
     if (browser_command_line->HasSwitch(switches::kEnableCmaMediaPipeline))
       command_line->AppendSwitch(switches::kEnableCmaMediaPipeline);
-    if (browser_command_line->HasSwitch(switches::kEnableLegacyHolePunching))
-      command_line->AppendSwitch(switches::kEnableLegacyHolePunching);
     if (browser_command_line->HasSwitch(switches::kAllowHiddenMediaPlayback))
       command_line->AppendSwitch(switches::kAllowHiddenMediaPlayback);
   }

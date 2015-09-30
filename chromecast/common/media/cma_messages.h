@@ -64,13 +64,6 @@ IPC_MESSAGE_CONTROL2(CmaHostMsg_NotifyPipeWrite,
                      int /* Media pipeline ID */,
                      chromecast::media::TrackId /* Track ID */)
 
-IPC_MESSAGE_CONTROL5(CmaHostMsg_NotifyExternalSurface,
-                     int /* Surface ID */,
-                     gfx::PointF /* Quad video top left */,
-                     gfx::PointF /* Quad video top right */,
-                     gfx::PointF /* Quad video bottim right */,
-                     gfx::PointF /* Quad video bottom left */)
-
 // Messages from the browser to the renderer process.
 
 IPC_MESSAGE_CONTROL2(CmaMsg_MediaStateChanged,

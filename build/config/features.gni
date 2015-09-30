@@ -89,7 +89,7 @@ declare_args() {
   enable_remoting = !is_ios && !is_android && !is_chromecast
 
   # Enable hole punching for the protected video.
-  enable_video_hole = is_android || is_chromecast
+  enable_video_hole = is_android
 
   # Enables browser side Content Decryption Modules. Required for embedders
   # (e.g. Android and ChromeCast) that use a browser side CDM.

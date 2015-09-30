@@ -22,9 +22,8 @@ class VideoFrame;
 namespace chromecast {
 namespace media {
 
-// Creates VideoFrames for CMA - currently supports both overlay frames
-// (native textures that get turned into transparent holes in the browser
-// compositor), and legacy VIDEO_HOLE codepath.
+// Creates VideoFrames for CMA - native textures that get turned into
+// transparent holes in the browser compositor using overlay system.
 // All calls (including ctor/dtor) must be on media thread.
 class HoleFrameFactory {
  public:
@@ -40,7 +39,6 @@ class HoleFrameFactory {
   GLuint texture_;
   GLuint image_id_;
   GLuint sync_point_;
-  bool use_legacy_hole_punching_;
 
   DISALLOW_COPY_AND_ASSIGN(HoleFrameFactory);
 };

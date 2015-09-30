@@ -24,7 +24,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace gfx {
-class PointF;
 class Size;
 }
 
@@ -89,9 +88,6 @@ class CmaMessageFilterHost
   void SetPlaybackRate(int media_id, double playback_rate);
   void SetVolume(int media_id, TrackId track_id, float volume);
   void NotifyPipeWrite(int media_id, TrackId track_id);
-  void NotifyExternalSurface(int surface_id,
-                             const gfx::PointF& p0, const gfx::PointF& p1,
-                             const gfx::PointF& p2, const gfx::PointF& p3);
 
   // Audio/Video callbacks.
   void OnMediaStateChanged(int media_id,

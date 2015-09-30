@@ -12,11 +12,6 @@ const char kEnableCmaMediaPipeline[] = "enable-cma-media-pipeline";
 // The bitmask of codecs (media_caps.h) supported by the current HDMI sink.
 const char kHdmiSinkSupportedCodecs[] = "hdmi-sink-supported-codecs";
 
-// Enables old (VIDEO_HOLE) hole punching codepath for video plane.
-// TODO(halliwell): remove switch and old codepath once overlays
-// are well established.
-const char kEnableLegacyHolePunching[] = "enable-legacy-hole-punching";
-
 // Enable file accesses. It should not be enabled for most Cast devices.
 const char kEnableLocalFileAccesses[] = "enable-local-file-accesses";
 

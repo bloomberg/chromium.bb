@@ -25,6 +25,5 @@ source_set("media") {
     "//chromecast/media",
     "//content/public/browser",
     "//media",
-    "//ui/gfx/geometry",
   ]
 }

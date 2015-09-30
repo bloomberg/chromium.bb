@@ -1874,7 +1874,6 @@
             'arm_arch%': '',
             'arm_tune%': 'cortex-a9',
             'arm_thumb%': 1,
-            'video_hole%': 1,
           }],
         ],
       }],

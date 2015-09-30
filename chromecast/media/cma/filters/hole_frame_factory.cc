@@ -5,9 +5,7 @@
 #include "chromecast/media/cma/filters/hole_frame_factory.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/location.h"
-#include "chromecast/base/chromecast_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
@@ -21,11 +19,8 @@ HoleFrameFactory::HoleFrameFactory(
     : gpu_factories_(gpu_factories),
       texture_(0),
       image_id_(0),
-      sync_point_(0),
-      use_legacy_hole_punching_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableLegacyHolePunching)) {
-  if (gpu_factories_ && !use_legacy_hole_punching_) {
+      sync_point_(0) {
+  if (gpu_factories_) {
     gpu::gles2::GLES2Interface* gl = gpu_factories_->GetGLES2Interface();
     CHECK(gl);
 
@@ -54,13 +49,6 @@ HoleFrameFactory::~HoleFrameFactory() {
 
 scoped_refptr<::media::VideoFrame> HoleFrameFactory::CreateHoleFrame(
     const gfx::Size& size) {
-  if (use_legacy_hole_punching_) {
-#if defined(VIDEO_HOLE)
-    return ::media::VideoFrame::CreateHoleFrame(size);
-#endif
-    NOTREACHED();
-  }
-
   if (texture_) {
     scoped_refptr<::media::VideoFrame> frame =
         ::media::VideoFrame::WrapNativeTexture(

@@ -16,7 +16,6 @@ source_set("filters") {
 
   deps = [
     "//base",
-    "//chromecast/base",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/pipeline",
     "//gpu/command_buffer/client:gles2_interface",
