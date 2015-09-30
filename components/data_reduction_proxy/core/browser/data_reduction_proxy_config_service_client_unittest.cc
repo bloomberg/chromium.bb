@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/time/tick_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
@@ -21,6 +23,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/http/http_response_headers.h"
@@ -267,6 +270,8 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     return previous_config_;
   }
 
+  void EnableQuic(bool enable) { params()->EnableQuic(enable); }
+
   const std::string& loaded_config() const { return loaded_config_; }
 
  private:
@@ -325,6 +330,85 @@ TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoop) {
   EXPECT_THAT(configurator()->proxies_for_http(),
               testing::ContainerEq(enabled_proxies_for_http()));
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
+}
+
+// Tests the interaction of client config with dev rollout and QUIC field trial.
+TEST_F(DataReductionProxyConfigServiceClientTest, DevRolloutAndQuic) {
+  const struct {
+    bool enable_dev;
+    bool enable_quic;
+    std::string expected_primary_proxy;
+    std::string expected_fallback_proxy;
+    net::ProxyServer::Scheme expected_primary_proxy_scheme;
+  } tests[] = {
+      {false, false, kSuccessOrigin, kSuccessFallback,
+       net::ProxyServer::SCHEME_HTTPS},
+      {false, true, kSuccessOrigin, kSuccessFallback,
+       net::ProxyServer::SCHEME_QUIC},
+      {true, false, TestDataReductionProxyParams::DefaultDevOrigin(),
+       TestDataReductionProxyParams::DefaultDevFallbackOrigin(),
+       net::ProxyServer::SCHEME_HTTPS},
+      {true, true, TestDataReductionProxyParams::DefaultDevOrigin(),
+       TestDataReductionProxyParams::DefaultDevFallbackOrigin(),
+       net::ProxyServer::SCHEME_QUIC},
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    if (tests[i].enable_dev) {
+      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+      command_line->AppendSwitch(
+          data_reduction_proxy::switches::kEnableDataReductionProxyDev);
+    }
+
+    base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+    if (tests[i].enable_quic) {
+      base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
+                                             "Enabled");
+    } else {
+      base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
+                                             "Control");
+    }
+    EnableQuic(tests[i].enable_quic);
+
+    // Use a remote config.
+    net::MockRead mock_reads[] = {
+        net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+        net::MockRead(net::ASYNC, success_response().c_str(),
+                      success_response().length()),
+        net::MockRead(net::SYNCHRONOUS, net::OK),
+    };
+    net::StaticSocketDataProvider socket_data_provider(
+        mock_reads, arraysize(mock_reads), nullptr, 0);
+    mock_socket_factory()->AddSocketDataProvider(&socket_data_provider);
+    config_client()->SetConfigServiceURL(GURL("http://configservice.com"));
+
+    RequestOptionsPopulator populator(
+        base::Time::UnixEpoch() + base::TimeDelta::FromDays(1),
+        base::TimeDelta::FromDays(1));
+    SetDataReductionProxyEnabled(true);
+
+    config_client()->RetrieveConfig();
+    RunUntilIdle();
+    EXPECT_EQ(base::TimeDelta::FromMinutes(10), config_client()->GetDelay())
+        << i;
+
+    std::vector<net::ProxyServer> proxies_for_http =
+        configurator()->proxies_for_http();
+
+    EXPECT_EQ(2U, proxies_for_http.size()) << i;
+    EXPECT_EQ(net::ProxyServer(tests[i].expected_primary_proxy_scheme,
+                               net::ProxyServer::FromURI(
+                                   tests[i].expected_primary_proxy,
+                                   tests[i].expected_primary_proxy_scheme)
+                                   .host_port_pair()),
+              proxies_for_http[0])
+        << i;
+    EXPECT_EQ(net::ProxyServer::FromURI(tests[i].expected_fallback_proxy,
+                                        net::ProxyServer::SCHEME_HTTP),
+              proxies_for_http[1])
+        << i;
+    EXPECT_TRUE(configurator()->proxies_for_https().empty()) << i;
+  }
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoopShortDuration) {

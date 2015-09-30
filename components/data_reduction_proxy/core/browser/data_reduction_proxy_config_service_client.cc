@@ -429,11 +429,30 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
 
   std::vector<net::ProxyServer> proxies =
       GetProxiesForHTTP(config.proxy_config());
+
+  if (params_ && params::IsDevRolloutEnabled() && !use_local_config_) {
+    // If dev rollout is enabled, proxies returned by client config API are
+    // discarded.
+    proxies.clear();
+    proxies.push_back(net::ProxyServer::FromURI(params_->GetDefaultDevOrigin(),
+                                                net::ProxyServer::SCHEME_HTTP));
+    proxies.push_back(net::ProxyServer::FromURI(
+        params_->GetDefaultDevFallbackOrigin(), net::ProxyServer::SCHEME_HTTP));
+  }
+
   if (proxies.empty())
     return false;
 
   if (!use_local_config_) {
     request_options_->SetSecureSession(config.session_key());
+    // If QUIC is enabled, the scheme of the first proxy (if it is HTTPS) would
+    // be changed to QUIC.
+    if (proxies[0].scheme() == net::ProxyServer::SCHEME_HTTPS && params_ &&
+        params_->quic_enabled()) {
+      proxies[0] = net::ProxyServer(net::ProxyServer::SCHEME_QUIC,
+                                    proxies[0].host_port_pair());
+      DCHECK_EQ(net::ProxyServer::SCHEME_QUIC, proxies[0].scheme());
+    }
     config_values_->UpdateValues(proxies);
     config_->ReloadConfig();
     remote_config_applied_ = true;

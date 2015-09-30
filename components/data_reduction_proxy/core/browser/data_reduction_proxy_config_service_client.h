@@ -161,7 +161,8 @@ class DataReductionProxyConfigServiceClient
                       int response_code);
 
   // Parses out the proxy configuration portion of |config| and applies it to
-  // |config_| and |request_options_|.
+  // |config_| and |request_options_|. Takes into account the field trials that
+  // this session belongs to.
   bool ParseAndApplyProxyConfig(const ClientConfig& config);
 
   // Contains the static configuration data to use.

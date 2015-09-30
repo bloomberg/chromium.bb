@@ -41,6 +41,7 @@ const char kDefaultWarmupUrl[] = "http://www.gstatic.com/generate_204";
 const char kAndroidOneIdentifier[] = "sprout";
 
 const char kQuicFieldTrial[] = "DataReductionProxyUseQuic";
+const char kDevRolloutFieldTrial[] = "DataCompressionProxyDevRollout";
 
 const char kLoFiFieldTrial[] = "DataCompressionProxyLoFi";
 const char kLoFiFlagFieldTrial[] = "DataCompressionProxyLoFiFlag";
@@ -127,6 +128,16 @@ bool IsIncludedInQuicFieldTrial() {
 
 std::string GetQuicFieldTrialName() {
   return kQuicFieldTrial;
+}
+
+bool IsDevRolloutEnabled() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDisableDataReductionProxyDev))
+    return false;
+
+  return command_line.HasSwitch(switches::kEnableDataReductionProxyDev) ||
+         (FieldTrialList::FindFullName(kDevRolloutFieldTrial) == kEnabled);
 }
 
 std::string GetClientConfigFieldTrialName() {
@@ -230,7 +241,8 @@ bool GetOverrideProxiesForHttpFromCommandLine(
 void DataReductionProxyParams::EnableQuic(bool enable) {
   quic_enabled_ = enable;
   DCHECK(!quic_enabled_ || params::IsIncludedInQuicFieldTrial());
-  if (override_quic_origin_.empty() && quic_enabled_) {
+  if (!params::IsDevRolloutEnabled() && override_quic_origin_.empty() &&
+      quic_enabled_) {
     origin_ = net::ProxyServer::FromURI(kDefaultQuicOrigin,
                                         net::ProxyServer::SCHEME_HTTP);
     proxies_for_http_.clear();
@@ -439,29 +451,11 @@ bool DataReductionProxyParams::holdback() const {
 }
 
 std::string DataReductionProxyParams::GetDefaultDevOrigin() const {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDisableDataReductionProxyDev))
-    return std::string();
-  if (command_line.HasSwitch(switches::kEnableDataReductionProxyDev) ||
-      (FieldTrialList::FindFullName("DataCompressionProxyDevRollout") ==
-         kEnabled)) {
-    return kDevOrigin;
-  }
-  return std::string();
+  return params::IsDevRolloutEnabled() ? kDevOrigin : std::string();
 }
 
 std::string DataReductionProxyParams::GetDefaultDevFallbackOrigin() const {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDisableDataReductionProxyDev))
-    return std::string();
-  if (command_line.HasSwitch(switches::kEnableDataReductionProxyDev) ||
-      (FieldTrialList::FindFullName("DataCompressionProxyDevRollout") ==
-           kEnabled)) {
-    return kDevFallbackOrigin;
-  }
-  return std::string();
+  return params::IsDevRolloutEnabled() ? kDevFallbackOrigin : std::string();
 }
 
 // TODO(kundaji): Remove tests for macro definitions.
