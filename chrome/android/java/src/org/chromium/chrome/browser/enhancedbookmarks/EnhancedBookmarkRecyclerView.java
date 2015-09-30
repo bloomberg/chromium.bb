@@ -151,7 +151,8 @@ public class EnhancedBookmarkRecyclerView extends RecyclerView implements
         // line to show offline page size eats up the default spacing.
         if (mVerticalSpaceItemDecoration == null) {
             mVerticalSpaceItemDecoration =
-                    new VerticalSpaceItemDecoration(R.dimen.offline_page_item_vertical_spacing);
+                    new VerticalSpaceItemDecoration(getResources().getDimensionPixelSize(
+                            R.dimen.offline_page_item_vertical_spacing));
             addItemDecoration(mVerticalSpaceItemDecoration);
         }
     }

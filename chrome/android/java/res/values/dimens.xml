@@ -295,5 +295,5 @@
     <dimen name="media_session_icon_size">48dp</dimen>
 
     <!-- Offline pages dimensions -->
-    <dimen name="offline_page_item_vertical_spacing">40dp</dimen>
+    <dimen name="offline_page_item_vertical_spacing">16dp</dimen>
 </resources>
