@@ -126,6 +126,110 @@ static CSSParserTokenRange consumeFunction(CSSParserTokenRange& range)
     return contents;
 }
 
+class CalcParseScope {
+public:
+    CalcParseScope(CSSParserTokenRange& range, ValueRange valueRange = ValueRangeAll)
+    : m_sourceRange(range)
+    , m_range(range)
+    {
+        const CSSParserToken& token = range.peek();
+        if (token.functionId() == CSSValueCalc || token.functionId() == CSSValueWebkitCalc)
+            m_calcValue = CSSCalcValue::create(consumeFunction(m_range), valueRange);
+    }
+
+    const CSSCalcValue* value() const { return m_calcValue.get(); }
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> releaseValue()
+    {
+        m_sourceRange = m_range;
+        return CSSPrimitiveValue::create(m_calcValue.release());
+    }
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> releaseNumber()
+    {
+        m_sourceRange = m_range;
+        CSSPrimitiveValue::UnitType unitType = m_calcValue->isInt() ? CSSPrimitiveValue::UnitType::Integer : CSSPrimitiveValue::UnitType::Number;
+        return cssValuePool().createValue(m_calcValue->doubleValue(), unitType);
+    }
+
+private:
+    CSSParserTokenRange& m_sourceRange;
+    CSSParserTokenRange m_range;
+    RefPtrWillBeRawPtr<CSSCalcValue> m_calcValue;
+};
+
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRange& range, CSSParserMode cssParserMode, double minimumValue = std::numeric_limits<int>::min())
+{
+    const CSSParserToken& token = range.peek();
+    if (token.type() == NumberToken) {
+        if (token.numericValueType() == NumberValueType || token.numericValue() < minimumValue)
+            return nullptr;
+        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), token.unitType());
+    }
+    CalcParseScope calcScope(range);
+    if (const CSSCalcValue* calculation = calcScope.value()) {
+        if (calculation->category() != CalcNumber || !calculation->isInt())
+            return nullptr;
+        double value = calculation->doubleValue();
+        if (value < minimumValue)
+            return nullptr;
+        return calcScope.releaseNumber();
+    }
+    return nullptr;
+}
+
+inline bool shouldAcceptUnitlessValues(double fValue, CSSParserMode cssParserMode, UnitlessQuirk unitless)
+{
+    // Quirks mode for certain properties and presentation attributes accept unit-less values for certain units.
+    return !fValue // 0 can always be unitless.
+        || isUnitLessLengthParsingEnabledForMode(cssParserMode) // HTML and SVG attribute values can always be unitless.
+        || (cssParserMode == HTMLQuirksMode && (unitless == UnitlessQuirk::Allow));
+}
+
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRange& range, CSSParserMode cssParserMode, ValueRange valueRange, UnitlessQuirk unitless = UnitlessQuirk::Forbid)
+{
+    const CSSParserToken& token = range.peek();
+    if (token.type() == DimensionToken) {
+        switch (token.unitType()) {
+        case CSSPrimitiveValue::UnitType::QuirkyEms:
+            if (cssParserMode != UASheetMode)
+                return nullptr;
+        /* fallthrough intentional */
+        case CSSPrimitiveValue::UnitType::Ems:
+        case CSSPrimitiveValue::UnitType::Rems:
+        case CSSPrimitiveValue::UnitType::Chs:
+        case CSSPrimitiveValue::UnitType::Exs:
+        case CSSPrimitiveValue::UnitType::Pixels:
+        case CSSPrimitiveValue::UnitType::Centimeters:
+        case CSSPrimitiveValue::UnitType::Millimeters:
+        case CSSPrimitiveValue::UnitType::Inches:
+        case CSSPrimitiveValue::UnitType::Points:
+        case CSSPrimitiveValue::UnitType::Picas:
+        case CSSPrimitiveValue::UnitType::ViewportWidth:
+        case CSSPrimitiveValue::UnitType::ViewportHeight:
+        case CSSPrimitiveValue::UnitType::ViewportMin:
+        case CSSPrimitiveValue::UnitType::ViewportMax:
+            break;
+        default:
+            return nullptr;
+        }
+        if (valueRange == ValueRangeNonNegative && token.numericValue() < 0)
+            return nullptr;
+        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), token.unitType());
+    }
+    if (token.type() == NumberToken) {
+        if (!shouldAcceptUnitlessValues(token.numericValue(), cssParserMode, unitless)
+            || (valueRange == ValueRangeNonNegative && token.numericValue() < 0))
+            return nullptr;
+        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Pixels);
+    }
+    CalcParseScope calcScope(range, valueRange);
+    if (const CSSCalcValue* calculation = calcScope.value()) {
+        if (calculation->category() != CalcLength)
+            return nullptr;
+        return calcScope.releaseValue();
+    }
+    return nullptr;
+}
+
 static inline bool isCSSWideKeyword(const CSSValueID& id)
 {
     return id == CSSValueInitial || id == CSSValueInherit || id == CSSValueUnset || id == CSSValueDefault;
@@ -396,6 +500,22 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFamily(CSSParserTokenRang
     return list.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeSpacing(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().id() == CSSValueNormal)
+        return consumeIdent(range);
+    // TODO(timloh): Don't allow unitless values, and allow <percentage>s in word-spacing.
+    return consumeLength(range, cssParserMode, ValueRangeAll, UnitlessQuirk::Allow);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeTabSize(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue = consumeInteger(range, cssParserMode, 0);
+    if (parsedValue)
+        return parsedValue;
+    return consumeLength(range, cssParserMode, ValueRangeNonNegative);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -418,6 +538,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeFontFamily(m_range);
     case CSSPropertyFontWeight:
         return consumeFontWeight(m_range);
+    case CSSPropertyLetterSpacing:
+    case CSSPropertyWordSpacing:
+        return consumeSpacing(m_range, m_context.mode());
+    case CSSPropertyTabSize:
+        return consumeTabSize(m_range, m_context.mode());
     default:
         return nullptr;
     }

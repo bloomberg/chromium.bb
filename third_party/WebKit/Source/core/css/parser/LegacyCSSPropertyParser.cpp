@@ -691,14 +691,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = validUnit(value, FLength | FNonNeg | unitless);
         break;
 
-    case CSSPropertyLetterSpacing:       // normal | <length> | inherit
-    case CSSPropertyWordSpacing:         // normal | <length> | inherit
-        if (id == CSSValueNormal)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FLength | FUnitlessQuirk);
-        break;
-
     case CSSPropertyTextIndent:
         parsedValue = parseTextIndent();
         break;
@@ -912,10 +904,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         addProperty(propId, CSSValuePair::create(parsedValue1.release(), parsedValue2.release(), CSSValuePair::DropIdenticalValues), important);
         return true;
     }
-    case CSSPropertyTabSize:
-        // May be specified as a unit-less non-negative integer or length indicating number of space characters.
-        validPrimitive = validUnit(value, FInteger | FLength | FNonNeg);
-        break;
     case CSSPropertyBorderRadius:
     case CSSPropertyAliasWebkitBorderRadius:
         return parseBorderRadius(unresolvedProperty, important);
@@ -1424,6 +1412,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyFontVariant:
     case CSSPropertyFontFamily:
     case CSSPropertyFontWeight:
+    case CSSPropertyLetterSpacing:
+    case CSSPropertyWordSpacing:
+    case CSSPropertyTabSize:
         validPrimitive = false;
         break;
 

@@ -21,6 +21,13 @@
 .num-length-invalid {
     tab-size: 12345;
     tab-size: calc(1 + 1px);
+    tab-size: calc(1 + 100%);
+    tab-size: calc(100%);
+    tab-size: calc(10px) bla;
+    tab-size: calc(bla) 10px;
+}
+.px-valid {
+    tab-size: calc(10px);
 }
 </style>
 <div class="default int"></div>
@@ -29,6 +36,7 @@
 <div class="default float-invalid"></div>
 <div class="default px-invalid"></div>
 <div class="default num-length-invalid"></div>
+<div class="default px-valid"></div>
 <script src="../../resources/js-test.js"></script>
 <script>
 if (window.testRunner)
@@ -44,4 +52,5 @@ shouldBeCloseTo('Number(getComputedValue(".float", "opacity"))', 0.5, .0001);
 shouldBe('getComputedValue(".float-invalid", "tabSize")', '"12345"');
 shouldBeCloseTo('Number(getComputedValue(".px-invalid", "opacity"))', 0.9, .0001);
 shouldBe('getComputedValue(".num-length-invalid", "tabSize")', '"12345"');
+shouldBe('getComputedValue(".px-valid", "tabSize")', '"10px"');
 </script>

@@ -52,6 +52,11 @@ class CSSValue;
 class CSSValueList;
 class StylePropertyShorthand;
 
+enum class UnitlessQuirk {
+    Allow,
+    Forbid
+};
+
 // Inputs: PropertyID, isImportant bool, CSSParserValueList.
 // Outputs: Vector of CSSProperties
 
