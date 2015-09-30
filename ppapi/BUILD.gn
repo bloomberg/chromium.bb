@@ -218,8 +218,16 @@ if (enable_nacl) {
       } else {
         suffix = "newlib"
       }
+
+      # The CPU names used in tests/ppapi_nacl_tests_newlib.nmf
+      # are the ones used in GYP (x32 for x86).
+      if (target_cpu == "x86") {
+        nmf_cpu = "x32"
+      } else {
+        nmf_cpu = target_cpu
+      }
       outputs = [
-        "${root_build_dir}/{{source_name_part}}_${suffix}_${target_cpu}.nexe",
+        "${root_build_dir}/{{source_name_part}}_${suffix}_${nmf_cpu}.nexe",
       ]
       deps = [
         ":ppapi_nacl_tests",
@@ -270,7 +278,9 @@ if (enable_nacl) {
       deps = [
         ":nacl_tests_copy",
       ]
-      data_deps = [ ":nacl_tests_copy" ]
+      data_deps = [
+        ":nacl_tests_copy",
+      ]
     }
   }
 
