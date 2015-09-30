@@ -137,6 +137,7 @@ class SupervisedUserService : public KeyedService,
   // mint access tokens for Sync.
   void InitSync(const std::string& refresh_token);
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Convenience method that registers this supervised user using
   // |registration_utility| and initializes sync with the returned token.
   // The |callback| will be called when registration is complete,
@@ -147,6 +148,7 @@ class SupervisedUserService : public KeyedService,
       Profile* custodian_profile,
       const std::string& supervised_user_id,
       const AuthErrorCallback& callback);
+#endif
 
   void AddNavigationBlockedCallback(const NavigationBlockedCallback& callback);
   void DidBlockNavigation(content::WebContents* web_contents);
