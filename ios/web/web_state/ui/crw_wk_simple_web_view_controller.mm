@@ -4,6 +4,7 @@
 
 #import "ios/web/web_state/ui/crw_wk_simple_web_view_controller.h"
 
+#include "base/ios/ios_util.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
@@ -62,10 +63,15 @@
 }
 
 - (void)loadPDFAtFilePath:(NSString*)filePath {
+  if (!base::ios::IsRunningOnIOS9OrLater()) {
+    // WKWebView on iOS 8 can't load local files, so just bail.
+    NOTIMPLEMENTED();
+    return;
+  }
   DCHECK([[NSFileManager defaultManager] fileExistsAtPath:filePath]);
-  NSURLRequest* request =
-      [NSURLRequest requestWithURL:[NSURL fileURLWithPath:filePath]];
-  [_webView loadRequest:request];
+  NSURL* fileURL = [NSURL fileURLWithPath:filePath];
+  DCHECK(fileURL);
+  [_webView loadFileURL:fileURL allowingReadAccessToURL:fileURL];
 }
 
 - (void)setDelegate:(id<CRWSimpleWebViewControllerDelegate>)delegate {
