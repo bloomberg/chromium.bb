@@ -8,8 +8,12 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icons_public.h"
+
+#if defined(OS_MACOSX)
+#include "grit/theme_resources.h"
+#endif
 
 namespace {
 
@@ -38,8 +42,21 @@ RegisterProtocolHandlerPermissionRequest
 RegisterProtocolHandlerPermissionRequest::
 ~RegisterProtocolHandlerPermissionRequest() {}
 
+gfx::VectorIconId RegisterProtocolHandlerPermissionRequest::GetVectorIconId()
+    const {
+#if defined(OS_MACOSX)
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
+#else
+  return gfx::VectorIconId::PROTOCOL_HANDLER;
+#endif
+}
+
 int RegisterProtocolHandlerPermissionRequest::GetIconId() const {
+#if defined(OS_MACOSX)
   return IDR_REGISTER_PROTOCOL_HANDLER;
+#else
+  return 0;
+#endif
 }
 
 base::string16
