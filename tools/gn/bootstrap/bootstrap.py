@@ -247,6 +247,7 @@ def write_ninja(path, options):
       'base/trace_event/memory_dump_manager.cc',
       'base/trace_event/memory_dump_request_args.cc',
       'base/trace_event/memory_dump_session_state.cc',
+      'base/trace_event/memory_profiler_allocation_context.cc',
       'base/trace_event/process_memory_dump.cc',
       'base/trace_event/process_memory_maps.cc',
       'base/trace_event/process_memory_maps_dump_provider.cc',
