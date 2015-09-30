@@ -380,9 +380,9 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
     """Verify we try to upload on a normal file"""
     osutils.Touch(self.sym_file)
     sym_element = upload_symbols.SymbolElement(self.sym_item, None)
-    ret = upload_symbols.UploadSymbol(self.url, sym_element)
+    ret = upload_symbols.UploadSymbol(self.url, sym_element, 'TestProduct')
     self.assertEqual(ret, 0)
-    self.upload_mock.assert_called_with(self.url, self.sym_item)
+    self.upload_mock.assert_called_with(self.url, self.sym_item, 'TestProduct')
     self.assertEqual(self.upload_mock.call_count, 1)
 
   def testUploadSymbolErrorCountExceeded(self):
@@ -390,8 +390,8 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
     errors = ctypes.c_int(10000)
     # Pass in garbage values so that we crash if num_errors isn't handled.
     ret = upload_symbols.UploadSymbol(
-        None, upload_symbols.SymbolElement(self.sym_item, None), sleep=None,
-        num_errors=errors)
+        None, upload_symbols.SymbolElement(self.sym_item, None), 'TestProduct',
+        sleep=None, num_errors=errors)
     self.assertEqual(ret, 0)
 
   def testUploadRetryErrors(self, side_effect=None):
@@ -402,9 +402,10 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
     errors = ctypes.c_int()
     item = upload_symbols.FakeItem(sym_file='/dev/null')
     element = upload_symbols.SymbolElement(item, None)
-    ret = upload_symbols.UploadSymbol(self.url, element, num_errors=errors)
+    ret = upload_symbols.UploadSymbol(self.url, element, 'TestProduct',
+                                      num_errors=errors)
     self.assertEqual(ret, 1)
-    self.upload_mock.assert_called_with(self.url, item)
+    self.upload_mock.assert_called_with(self.url, item, 'TestProduct')
     self.assertTrue(self.upload_mock.call_count >= upload_symbols.MAX_RETRIES)
 
   def testConnectRetryErrors(self):
@@ -426,7 +427,7 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
     osutils.WriteFile(self.sym_file, content)
     ret = upload_symbols.UploadSymbol(
         self.url, upload_symbols.SymbolElement(self.sym_item, None),
-        file_limit=1)
+        'TestProduct', file_limit=1)
     self.assertEqual(ret, 0)
     # Make sure the item passed to the upload has a temp file and not the
     # original -- only the temp one has been stripped down.
@@ -443,7 +444,8 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
       f.write('STACK CFI 1234\n\n')
     ret = upload_symbols.UploadSymbol(
         self.url,
-        upload_symbols.SymbolElement(self.sym_item, None))
+        upload_symbols.SymbolElement(self.sym_item, None),
+        'TestProduct')
     self.assertEqual(ret, 0)
     # Make sure the item passed to the upload has a temp file and not the
     # original -- only the temp one has been truncated.
@@ -468,7 +470,7 @@ PUBLIC 1471 0 main"""
   def testPostUpload(self):
     """Verify HTTP POST has all the fields we need"""
     m = self.PatchObject(urllib2, 'urlopen', autospec=True)
-    upload_symbols.SymUpload(self.SYM_URL, self.sym_item)
+    upload_symbols.SymUpload(self.SYM_URL, self.sym_item, 'TestProduct')
     self.assertEquals(m.call_count, 1)
     req = m.call_args[0][0]
     self.assertEquals(req.get_full_url(), self.SYM_URL)
@@ -503,7 +505,7 @@ PUBLIC 1471 0 main"""
         (50 * 1024 * 1024, 257),
     )
     for size.return_value, timeout in tests:
-      upload_symbols.SymUpload(self.SYM_URL, self.sym_item)
+      upload_symbols.SymUpload(self.SYM_URL, self.sym_item, 'TestProduct')
       self.assertEqual(m.call_args[1]['timeout'], timeout)
 
 

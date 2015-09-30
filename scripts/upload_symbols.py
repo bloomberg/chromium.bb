@@ -167,7 +167,7 @@ def GetUploadTimeout(path):
   return max(os.path.getsize(path) / UPLOAD_MIN_RATE, UPLOAD_MIN_TIMEOUT)
 
 
-def SymUpload(upload_url, sym_item):
+def SymUpload(upload_url, sym_item, product_name):
   """Upload a symbol file to a HTTP server
 
   The upload is a multipart/form-data POST with the following parameters:
@@ -186,6 +186,7 @@ def SymUpload(upload_url, sym_item):
   Args:
     upload_url: The crash URL to POST the |sym_file| to
     sym_item: A SymbolItem containing the path to the breakpad symbol to upload
+    product_name: A string for stats purposes. Usually 'ChromeOS' or 'Android'.
   """
   sym_header = sym_item.sym_header
   sym_file = sym_item.sym_file
@@ -202,7 +203,7 @@ def SymUpload(upload_url, sym_item):
       # Not sure what to set for the version.  Maybe the git sha1 of this file.
       # Note: the server restricts this to 30 chars.
       #('version', None),
-      ('product', 'ChromeOS'),
+      ('product', product_name),
       ('os', sym_header.os),
       ('cpu', sym_header.cpu),
       poster.encode.MultipartParam.from_file('symbol_file', sym_file),
@@ -214,7 +215,7 @@ def SymUpload(upload_url, sym_item):
   urllib2.urlopen(request, timeout=GetUploadTimeout(sym_file))
 
 
-def TestingSymUpload(upload_url, sym_item):
+def TestingSymUpload(upload_url, sym_item, _product_name):
   """A stub version of SymUpload for --testing usage"""
   cmd = ['sym_upload', sym_item.sym_file, upload_url]
   # Randomly fail 80% of the time (the retry logic makes this 80%/3 per file).
@@ -277,9 +278,9 @@ def _UpdateCounter(counter, adj):
     _Update()
 
 
-def UploadSymbol(upload_url, symbol_element, file_limit=DEFAULT_FILE_LIMIT,
-                 sleep=0, num_errors=None, watermark_errors=None,
-                 failed_queue=None, passed_queue=None):
+def UploadSymbol(upload_url, symbol_element, product_name,
+                 file_limit=DEFAULT_FILE_LIMIT, sleep=0, num_errors=None,
+                 watermark_errors=None, failed_queue=None, passed_queue=None):
   """Upload |sym_element.symbol_item| to |upload_url|
 
   Args:
@@ -289,6 +290,7 @@ def UploadSymbol(upload_url, symbol_element, file_limit=DEFAULT_FILE_LIMIT,
                     to upload. symbol_element.opaque_push_state is an object of
                     _IsolateServerPushState or None if the item doesn't have
                     a push state.
+    product_name: A string for stats purposes. Usually 'ChromeOS' or 'Android'.
     file_limit: The max file size of a symbol file before we try to strip it
     sleep: Number of seconds to sleep before running
     num_errors: An object to update with the error count (needs a .value member)
@@ -349,7 +351,7 @@ def UploadSymbol(upload_url, symbol_element, file_limit=DEFAULT_FILE_LIMIT,
       cros_build_lib.TimedCommand(
           retry_util.RetryException,
           (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES, SymUpload,
-          upload_url, upload_item, sleep=INITIAL_RETRY_DELAY,
+          upload_url, upload_item, product_name, sleep=INITIAL_RETRY_DELAY,
           timed_log_msg=('upload of %10i bytes took %%(delta)s: %s' %
                          (file_size, os.path.basename(sym_file))))
       success = True
@@ -573,7 +575,8 @@ def WriteQueueToFile(listing, queue, relpath=None):
 def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
                   file_limit=DEFAULT_FILE_LIMIT, sleep=DEFAULT_SLEEP_DELAY,
                   upload_limit=None, sym_paths=None, failed_list=None,
-                  root=None, retry=True, dedupe_namespace=None):
+                  root=None, retry=True, dedupe_namespace=None,
+                  product_name='ChromeOS'):
   """Upload all the generated symbols for |board| to the crash server
 
   You can use in a few ways:
@@ -596,6 +599,7 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
     root: The tree to prefix to |breakpad_dir| (if |breakpad_dir| is not set)
     retry: Whether we should retry failures.
     dedupe_namespace: The isolateserver namespace to dedupe uploaded symbols.
+    product_name: A string for stats purposes. Usually 'ChromeOS' or 'Android'.
 
   Returns:
     The number of errors that were encountered.
@@ -650,9 +654,10 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
   watermark_errors = multiprocessing.Value('f')
   failed_queue = multiprocessing.Queue()
   uploader = functools.partial(
-      UploadSymbol, upload_url, file_limit=file_limit, sleep=sleep,
-      num_errors=bg_errors, watermark_errors=watermark_errors,
-      failed_queue=failed_queue, passed_queue=dedupe_queue)
+      UploadSymbol, upload_url, product_name=product_name,
+      file_limit=file_limit, sleep=sleep, num_errors=bg_errors,
+      watermark_errors=watermark_errors, failed_queue=failed_queue,
+      passed_queue=dedupe_queue)
 
   start_time = datetime.datetime.now()
   Counters = cros_build_lib.Collection(
