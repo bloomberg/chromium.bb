@@ -45,13 +45,6 @@ Polymer({
      */
     pageTitle: String,
 
-    /**
-     * Container that determines the sizing of expanded sections.
-     */
-    expandContainer: {
-      type: Object,
-    },
-
     animationConfig: {
       value: function() {
         return {
@@ -84,7 +77,6 @@ Polymer({
       if (newExpanded) {
         // If we navigate directly to a subpage, skip animations.
         this.classList.add('expanded');
-        this.expandContainer.classList.add('expanded');
       } else if (!visible) {
         this.hidden = true;
         this.$.card.elevation = 0;
@@ -128,7 +120,7 @@ Polymer({
   configure: function(config) {
     var section = config.node;
     var card = section.$.card;
-    var containerRect = section.expandContainer.getBoundingClientRect();
+    var containerRect = section.offsetParent.getBoundingClientRect();
     var cardRect = card.getBoundingClientRect();
 
     // Set placeholder height so the page does not reflow during animation.
@@ -150,15 +142,12 @@ Polymer({
     var section = config.node;
     section.classList.remove('neon-animating');
     section.classList.add('expanded');
-    section.expandContainer.classList.add('expanded');
 
     // This event fires on itself as well, but that is benign.
     var sections = section.parentNode.querySelectorAll('settings-section');
     for (var i = 0; i < sections.length; ++i) {
       sections[i].fire('expand-animation-complete');
     }
-
-    section.expandContainer.scrollTop = 0;
   }
 });
 
@@ -171,10 +160,9 @@ Polymer({
 
   configure: function(config) {
     var section = config.node;
-    var oldRect = section.expandContainer.getBoundingClientRect();
+    var oldRect = section.offsetParent.getBoundingClientRect();
 
     section.classList.remove('expanded');
-    section.expandContainer.classList.remove('expanded');
 
     var card = section.$.card;
     var newRect = card.getBoundingClientRect();

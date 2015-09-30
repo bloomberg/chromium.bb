@@ -15,21 +15,18 @@
   <template>
 <if expr="chromeos">
     <settings-section i18n-values="page-title:internetPageTitle"
-        expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="internet">
       <cr-settings-internet-page current-route="{{currentRoute}}">
       </cr-settings-internet-page>
     </settings-section>
 </if>
     <settings-section i18n-values="page-title:appearancePageTitle"
-        expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="appearance">
       <cr-settings-appearance-page prefs="{{prefs}}">
       </cr-settings-appearance-page>
     </settings-section>
 
     <settings-section i18n-values="page-title:onStartup"
-        expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="on-startup">
       <cr-settings-on-startup-page
           prefs="{{prefs}}" current-route="{{currentRoute}}">
@@ -37,7 +34,6 @@
     </settings-section>
 
     <settings-section i18n-values="page-title:searchPageTitle"
-        expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="search">
       <cr-settings-search-page current-route="{{currentRoute}}">
       </cr-settings-search-page>
@@ -45,7 +41,6 @@
 
 <if expr="chromeos">
     <settings-section i18n-values="page-title:usersPageTitle"
-        expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="users">
       <cr-settings-users-page prefs="{{prefs}}"></cr-settings-users-page>
     </settings-section>

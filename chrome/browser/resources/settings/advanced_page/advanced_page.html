@@ -16,21 +16,18 @@
   <template>
 <if expr="chromeos">
     <settings-section i18n-values="page-title:dateTimePageTitle"
-        expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="dateTime">
       <cr-settings-date-time-page prefs="{{prefs}}">
       </cr-settings-date-time-page>
     </settings-section>
 </if>
     <settings-section i18n-values="page-title:siteSettingsLocation"
-        expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="location">
       <cr-settings-location-page prefs="{{prefs}}">
       </cr-settings-location-page>
     </settings-section>
 
     <settings-section i18n-values="page-title:privacyPageTitle"
-        expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="privacy">
       <cr-settings-privacy-page prefs="{{prefs}}"
         current-route="{{currentRoute}}">
@@ -38,7 +35,6 @@
     </settings-section>
 
     <settings-section i18n-values="page-title:languagesPageTitle"
-        expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="languages">
       <cr-settings-languages-page prefs="{{prefs}}"
           current-route="{{currentRoute}}">
@@ -46,7 +42,6 @@
     </settings-section>
 
     <settings-section i18n-values="page-title:downloadsPageTitle"
-        expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="downloads">
       <cr-settings-downloads-page prefs="{{prefs}}">
       </cr-settings-downloads-page>
@@ -56,14 +51,12 @@
     <!-- TODO(dbeam): find somewhere to stuff "Add more accessibility features"
          on desktop. -->
     <settings-section i18n-values="page-title:a11yPageTitle"
-        expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="a11y">
       <cr-settings-a11y-page prefs="{{prefs}}"></cr-settings-a11y-page>
     </settings-section>
 </if>
 
     <settings-section i18n-values="page-title:syncPageTitle"
-        expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="sync">
       <cr-settings-sync-page></cr-settings-sync-page>
     </settings-section>
