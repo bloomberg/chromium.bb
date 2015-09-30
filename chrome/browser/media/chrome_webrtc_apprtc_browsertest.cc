@@ -240,9 +240,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   if (OnWinXp())
     return;
 
-  // Temporarily disabled due to http://crbug.com/535588, while AppRTC
-  // gets updated.
-  // DetectErrorsInJavaScript();
+  DetectErrorsInJavaScript();
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost("9999"));
   ASSERT_TRUE(LaunchColliderOnLocalHost("http://localhost:9999", "8089"));
   while (!LocalApprtcInstanceIsUp())
@@ -294,9 +292,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest,
   if (OnWinXp())
     return;
 
-  // Temporarily disabled due to http://crbug.com/535588, while AppRTC
-  // gets updated.
-  // DetectErrorsInJavaScript();
+  DetectErrorsInJavaScript();
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost("9999"));
   ASSERT_TRUE(LaunchColliderOnLocalHost("http://localhost:9999", "8089"));
   while (!LocalApprtcInstanceIsUp())
