@@ -214,7 +214,8 @@ void WorkerInspectorController::interruptAndDispatchInspectorCommands()
 
 void WorkerInspectorController::resumeStartup()
 {
-    m_paused = false;
+    if (m_paused)
+        m_workerThreadDebugger->quitMessageLoopOnPause();
 }
 
 bool WorkerInspectorController::isRunRequired()
@@ -232,13 +233,8 @@ void WorkerInspectorController::workerContextInitialized(bool shouldPauseOnStart
 void WorkerInspectorController::pauseOnStart()
 {
     m_paused = true;
-    WorkerThread::TaskQueueResult result;
-    m_workerGlobalScope->thread()->willRunDebuggerTasks();
-    do {
-        result = m_workerGlobalScope->thread()->runDebuggerTask();
-    // Keep waiting until execution is resumed.
-    } while (result == WorkerThread::TaskReceived && m_paused);
-    m_workerGlobalScope->thread()->didRunDebuggerTasks();
+    m_workerThreadDebugger->runMessageLoopOnPause(WorkerThreadDebugger::contextGroupId());
+    m_paused = false;
 }
 
 DEFINE_TRACE(WorkerInspectorController)

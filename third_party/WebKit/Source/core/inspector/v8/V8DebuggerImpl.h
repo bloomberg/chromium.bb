@@ -80,7 +80,7 @@ public:
     PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index);
     int frameCount();
 
-    bool isPaused() override;
+    bool isPaused();
 
     v8::Local<v8::Value> functionScopes(v8::Local<v8::Function>) override;
     v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&) override;

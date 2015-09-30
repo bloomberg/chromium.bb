@@ -43,6 +43,7 @@ static const int workerContextGroupId = 1;
 WorkerThreadDebugger::WorkerThreadDebugger(WorkerThread* workerThread)
     : ScriptDebuggerBase(v8::Isolate::GetCurrent())
     , m_workerThread(workerThread)
+    , m_paused(false)
 {
 }
 
@@ -60,20 +61,22 @@ int WorkerThreadDebugger::contextGroupId()
     return workerContextGroupId;
 }
 
-void WorkerThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context>)
+void WorkerThreadDebugger::runMessageLoopOnPause(int contextGroupId)
 {
+    ASSERT(contextGroupId == workerContextGroupId);
+    m_paused = true;
     WorkerThread::TaskQueueResult result;
     m_workerThread->willRunDebuggerTasks();
     do {
         result = m_workerThread->runDebuggerTask();
     // Keep waiting until execution is resumed.
-    } while (result == WorkerThread::TaskReceived && debugger()->isPaused());
+    } while (result == WorkerThread::TaskReceived && m_paused);
     m_workerThread->didRunDebuggerTasks();
 }
 
 void WorkerThreadDebugger::quitMessageLoopOnPause()
 {
-    // Nothing to do here in case of workers since runMessageLoopOnPause will check for paused state after each debugger command.
+    m_paused = false;
 }
 
 } // namespace blink

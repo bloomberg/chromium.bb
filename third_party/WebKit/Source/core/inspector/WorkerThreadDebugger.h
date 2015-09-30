@@ -49,11 +49,12 @@ public:
     static void setContextDebugData(v8::Local<v8::Context>);
     static int contextGroupId();
 
-private:
-    void runMessageLoopOnPause(v8::Local<v8::Context>);
-    void quitMessageLoopOnPause();
+    void runMessageLoopOnPause(int contextGroupId) override;
+    void quitMessageLoopOnPause() override;
 
+private:
     WorkerThread* m_workerThread;
+    bool m_paused;
 };
 
 } // namespace blink

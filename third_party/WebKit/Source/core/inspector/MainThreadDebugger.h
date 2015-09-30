@@ -73,7 +73,7 @@ public:
 private:
     MainThreadDebugger(PassOwnPtr<ClientMessageLoop>, v8::Isolate*);
 
-    void runMessageLoopOnPause(v8::Local<v8::Context>) override;
+    void runMessageLoopOnPause(int contextGroupId) override;
     void quitMessageLoopOnPause() override;
 
     static WTF::Mutex& creationMutex();

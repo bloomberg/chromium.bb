@@ -32,33 +32,15 @@
 #include "core/inspector/MainThreadDebugger.h"
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
-#include "bindings/core/v8/WindowProxy.h"
-#include "core/frame/FrameConsole.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTaskRunner.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/page/Page.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/TemporaryChange.h"
 #include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
 namespace {
-
-LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Local<v8::Context> context)
-{
-    return toLocalFrame(toFrameIfNotDetached(context));
-}
 
 int frameId(LocalFrame* frame)
 {
@@ -120,13 +102,13 @@ void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunne
         s_instance->m_taskRunner->interruptAndRun(task);
 }
 
-void MainThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context> context)
+void MainThreadDebugger::runMessageLoopOnPause(int contextGroupId)
 {
-    LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
+    LocalFrame* pausedFrame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
     // Do not pause in Context of detached frame.
-    if (!frame)
+    if (!pausedFrame)
         return;
-    LocalFrame* pausedFrame = frame->localFrameRoot();
+    ASSERT(pausedFrame == pausedFrame->localFrameRoot());
     // Wait for continue or step command.
     m_clientMessageLoop->run(pausedFrame);
 }

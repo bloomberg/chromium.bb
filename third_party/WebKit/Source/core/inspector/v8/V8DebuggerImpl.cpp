@@ -540,7 +540,9 @@ void V8DebuggerImpl::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8
     V8DebuggerListener::SkipPauseRequest result = listener->didPause(pausedContext, currentCallFrames(), exception, breakpointIds, isPromiseRejection);
     if (result == V8DebuggerListener::NoSkip) {
         m_runningNestedMessageLoop = true;
-        m_client->runMessageLoopOnPause(pausedContext);
+        int groupId = getGroupId(pausedContext);
+        ASSERT(groupId);
+        m_client->runMessageLoopOnPause(groupId);
         // The listener may have been removed in the nested loop.
         listener = getListenerForContext(pausedContext);
         if (listener)

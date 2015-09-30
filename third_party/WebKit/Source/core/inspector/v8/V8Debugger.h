@@ -45,8 +45,6 @@ public:
     virtual void setPauseOnNextStatement(bool) = 0;
     virtual bool pausingOnNextStatement() = 0;
 
-    virtual bool isPaused() = 0;
-
     // TODO: these methods will not be public once InjectedScriptHost is in the implementation.
     virtual v8::Local<v8::Value> functionScopes(v8::Local<v8::Function>) = 0;
     virtual v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&) = 0;
