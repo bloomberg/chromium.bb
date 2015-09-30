@@ -11,6 +11,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/UseCounter.h"
 #include "modules/credentialmanager/Credential.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/credentialmanager/CredentialRequestOptions.h"
@@ -131,6 +132,10 @@ ScriptPromise CredentialsContainer::get(ScriptState* scriptState, const Credenti
                 providers.append(url);
         }
     }
+
+    UseCounter::count(scriptState->executionContext(),
+                      options.suppressUI() ? UseCounter::CredentialManagerGetWithoutUI
+                                           : UseCounter::CredentialManagerGetWithUI);
 
     CredentialManagerClient::from(scriptState->executionContext())->dispatchGet(options.suppressUI(), providers, new RequestCallbacks(resolver));
     return promise;
