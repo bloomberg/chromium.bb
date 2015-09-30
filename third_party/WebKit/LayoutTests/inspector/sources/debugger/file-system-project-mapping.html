@@ -5,21 +5,16 @@
 <script src="../../../http/tests/inspector/workspace-test.js"></script>
 <script src="../../../http/tests/inspector/isolated-filesystem-test.js"></script>
 <script src="../../../http/tests/inspector/live-edit-test.js"></script>
-<script src="resources/edit-me.js"></script>
 <script>
 function test()
 {
     var target;
-    var manager;
     var resourceScriptMapping;
     var defaultScriptMapping;
 
-    function createObjects()
+    function createWorkspaceWithTarget()
     {
-        if (target)
-            InspectorTest.testTargetManager.removeTarget(target);
-        target = InspectorTest.createWorkspaceWithTarget();
-        manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
+        target = InspectorTest.createWorkspaceWithTarget(false);
         var entry = InspectorTest.testDebuggerWorkspaceBinding._targetToData.get(target);
         resourceScriptMapping = entry._resourceMapping;
         defaultScriptMapping = entry._defaultMapping;
@@ -28,6 +23,55 @@ function test()
     InspectorTest.runTestSuite([
         function testAutomaticMapping(next)
         {
+            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId("/var/www");
+
+            createWorkspaceWithTarget();
+
+            InspectorTest.addResult("Adding file system.");
+            var fs = new InspectorTest.TestFileSystem("/var/www");
+            fs.root.mkdir("html").addFile("foo.js", "<foo content>");
+            fs.root.addFile("bar.js", "<bar content>");
+            fs.reportCreated();
+
+            InspectorTest.addResult("Adding network resource.");
+            InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>");
+            InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>");
+            dumpFileSystemUISourceCodesMappings();
+
+            var uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
+            var networkUISourceCode = InspectorTest.testWorkspace.uiSourceCode(WebInspector.NetworkProject.projectId(target, "http://localhost"), "html/foo.js");
+            InspectorTest.override(WebInspector.SourcesPanel.prototype, "_suggestReload", function() { });
+            InspectorTest.addResult("Adding mapping between network and file system resources.");
+            InspectorTest.testNetworkMapping.addMapping(networkUISourceCode, uiSourceCode);
+            var setting = JSON.stringify(WebInspector.fileSystemMapping._fileSystemMappingSetting.get());
+
+            InspectorTest.addResult("Emulate reloading inspector.");
+            fs.reportRemoved();
+            createWorkspaceWithTarget();
+            WebInspector.fileSystemMapping._fileSystemMappingSetting.set(JSON.parse(setting));
+            WebInspector.fileSystemMapping._loadFromSettings();
+            fs.reportCreated();
+            InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>");
+            InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>");
+            dumpFileSystemUISourceCodesMappings();
+
+            InspectorTest.addResult("Removing mapping between network and file system resources.");
+            var uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
+            InspectorTest.testNetworkMapping.removeMapping(uiSourceCode);
+
+            InspectorTest.addResult("Emulate reloading inspector.");
+            fs.reportRemoved();
+            createWorkspaceWithTarget();
+            fs.reportCreated();
+            InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>");
+            InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>");
+            dumpFileSystemUISourceCodesMappings();
+
+            var networkURL = InspectorTest.testNetworkMapping.networkURL(networkUISourceCode);
+            WebInspector.fileSystemMapping.removeMappingForURL(networkURL);
+            fs.reportRemoved();
+            next();
+
             function dumpFileSystemUISourceCodesMappings()
             {
                 var uiSourceCodes = InspectorTest.testWorkspace.project(fileSystemProjectId).uiSourceCodes();
@@ -37,54 +81,6 @@ function test()
                     InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + networkURL);
                 }
             }
-
-            var fileSystemPath = "/var/www";
-            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-            var files = {"/html/foo.js": "<foo content>", "/bar.js": "<bar content>"};
-            var uiSourceCode;
-            var networkUISourceCode;
-            var setting;
-
-            createObjects();
-
-            InspectorTest.addResult("Adding file system.");
-            manager.addMockFileSystem(fileSystemPath);
-            manager.addFiles(fileSystemPath, files);
-            InspectorTest.addResult("Adding network resource.");
-            InspectorTest.addMockUISourceCodeToWorkspace("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>");
-            InspectorTest.addMockUISourceCodeToWorkspace("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>");
-            dumpFileSystemUISourceCodesMappings();
-            uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
-            networkUISourceCode = InspectorTest.testWorkspace.uiSourceCode(WebInspector.NetworkProject.projectId(target, "http://localhost"), "html/foo.js");
-            console.error("networkUISourceCode: " + networkUISourceCode);
-            InspectorTest.override(WebInspector.SourcesPanel.prototype, "_suggestReload", function() { });
-            InspectorTest.addResult("Adding mapping between network and file system resources.");
-            InspectorTest.testNetworkMapping.addMapping(networkUISourceCode, uiSourceCode, manager.fileSystemWorkspaceBinding);
-            setting = InspectorTest.testFileSystemMapping._fileSystemMappingSetting;
-            InspectorTest.addResult("Emulate reloading inspector.");
-
-            createObjects();
-
-            InspectorTest.testFileSystemMapping._fileSystemMappingSetting = setting;
-            InspectorTest.testFileSystemMapping._loadFromSettings();
-            manager.addMockFileSystem(fileSystemPath, true);
-            manager.addFiles(fileSystemPath, files);
-            dumpFileSystemUISourceCodesMappings();
-            InspectorTest.addResult("Removing mapping between network and file system resources.");
-            uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
-            InspectorTest.testNetworkMapping.removeMapping(uiSourceCode);
-
-            InspectorTest.addResult("Emulate reloading inspector.");
-
-            createObjects();
-
-            manager.addMockFileSystem(fileSystemPath);
-            manager.addFiles(fileSystemPath, files);
-            dumpFileSystemUISourceCodesMappings();
-
-            var networkURL = InspectorTest.testNetworkMapping.networkURL(networkUISourceCode);
-            InspectorTest.testFileSystemMapping.removeMappingForURL(networkURL);
-            next();
         },
 
         function testScriptFileOnReloadWithDirtyFile(next)
@@ -105,24 +101,24 @@ function test()
                 resourceScriptMapping.addScript(script);
             }
 
-            var fileSystemPath = "/var/www";
-            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-            var files = {"/html/foo.js": originalFileContent, "/bar.js": "<bar content>"};
+            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId("/var/www");
             var uiSourceCode;
-            var target;
 
-            createObjects();
+            createWorkspaceWithTarget();
 
             InspectorTest._originalDebuggerBinding = WebInspector.debuggerWorkspaceBinding;
             WebInspector.debuggerWorkspaceBinding = InspectorTest.testDebuggerWorkspaceBinding;
-            target = InspectorTest.testTargetManager.targets()[0];
+            var target = InspectorTest.testTargetManager.targets()[0];
             WebInspector._originalTargetManager = WebInspector.targetManager;
             WebInspector.targetManager = InspectorTest.testTargetManager;
+
             InspectorTest.addResult("Adding file system.");
-            manager.addMockFileSystem(fileSystemPath);
+            var fs = new InspectorTest.TestFileSystem("/var/www");
+            fs.root.mkdir("html").addFile("foo.js", originalFileContent);
+            fs.root.addFile("bar.js", "<bar content>");
             InspectorTest.addResult("Adding file system mapping.");
-            InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, "http://localhost/", "/");
-            manager.addFiles(fileSystemPath, files);
+            fs.addFileMapping("http://localhost/", "/");
+            fs.reportCreated();
 
             loadScript();
 
@@ -210,72 +206,9 @@ function test()
                 unloadScript();
                 loadScript;
 
-                InspectorTest.testFileSystemMapping.removeFileMapping(fileSystemPath, "http://localhost/", "/");
                 WebInspector.debuggerWorkspaceBinding = InspectorTest._originalDebuggerBinding;
+                fs.reportRemoved();
                 next();
-            }
-        },
-
-        function testLiveEditReload(next)
-        {
-            InspectorTest.showScriptSource("edit-me.js", didShowScriptSource);
-            
-            function didShowScriptSource(sourceFrame)
-            {
-                var scriptURL = InspectorTest.testNetworkMapping.networkURL(sourceFrame._uiSourceCode);
-
-                var fileContent = "function f()\n{\n    return 0;\n}\n";
-                var fileSystemPath = "/var/www";
-                var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-                var filePath = "/html/edit-me.js"; 
-                var files = {};
-                files[filePath] = fileContent;
-                InspectorTest.addResult("Adding file system.");
-                InspectorTest.addMockFileSystem(fileSystemPath)
-                InspectorTest.addResult("Adding file system mapping.");
-                WebInspector.fileSystemMapping.addMappingForResource(scriptURL, fileSystemPath, filePath.substr(1));
-                InspectorTest.addFilesToMockFileSystem(fileSystemPath, files);
-                // Now that we've set everything up, we need to reload a page to remove all network resources.
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function() {}, 7);
-                InspectorTest.reloadPage(pageReloaded);
-            }
-
-            function pageReloaded()
-            {
-                // Now reload again as part of test.
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function() {}, 7);
-                InspectorTest.reloadPage(pageReloadedAgain);
-            }
-
-            function pageReloadedAgain()
-            {
-                WebInspector.targetManager = WebInspector._originalTargetManager;
-                InspectorTest.showScriptSource("edit-me.js", didShowFile);
-            }
-
-            function didShowFile(sourceFrame)
-            {
-                replaceInSource(sourceFrame, "return 0;", "return \"live-edited string\";", didEditScriptSource);
-            }
-
-            function didEditScriptSource()
-            {
-                InspectorTest.evaluateInPage("f()", didEvaluateInPage)
-            }
-
-            function didEvaluateInPage(result)
-            {
-                InspectorTest.assertEquals("live-edited string", result.description, "edited function returns wrong result");
-                var panel = WebInspector.panels.sources;
-                InspectorTest.dumpSourceFrameContents(panel.visibleView);
-                next();
-            }
-
-            function replaceInSource(sourceFrame, string, replacement, callback)
-            {
-                InspectorTest.addSniffer(WebInspector.DebuggerModel.prototype, "_didEditScriptSource", callback);
-                InspectorTest.replaceInSource(sourceFrame, string, replacement);
-                InspectorTest.commitSource(sourceFrame);
             }
         },
 
@@ -289,14 +222,13 @@ function test()
                     InspectorTest.addResult("  - " + uiSourceCodes[i].originURL());
             }
 
-            var fileSystemPath = "/var/www";
-            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-            var files = {"/foo.js": ""};
-            createObjects();
+            createWorkspaceWithTarget();
 
             InspectorTest.addResult("Adding file system.");
-            manager.addMockFileSystem(fileSystemPath);
-            manager.addFiles(fileSystemPath, files);
+            var fs = new InspectorTest.TestFileSystem("/var/www");
+            fs.root.addFile("foo.js", "");
+            fs.reportCreated();
+
             dumpWorkspaceUISourceCodes();
             InspectorTest.addResult("Removing project:");
             InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, projectRemoved);
@@ -305,30 +237,32 @@ function test()
 
             function projectRemoved()
             {
+                InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.ProjectRemoved, projectRemoved);
                 InspectorTest.addResult("Received project removed event.");
+                fs.reportRemoved();
                 setImmediate(next);
             }
         },
 
         function testURLAfterRenaming(next)
         {
-            var fileSystemPath = "/var/www";
-            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-            var files = {"/html/foo.js": "<foo content>", "/bar.js": "<bar content>", "/foo/bar/baz.js": "<baz content>"};
-            var uiSourceCodes;
+            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId("/var/www");
             var index = 0;
             var oldURL;
 
-            createObjects();
+            createWorkspaceWithTarget();
 
             InspectorTest.addResult("Adding file system.");
-            manager.addMockFileSystem(fileSystemPath);
+            var fs = new InspectorTest.TestFileSystem("/var/www");
+            fs.root.mkdir("html").addFile("foo.js", "<foo content>");
+            fs.root.addFile("bar.js", "<bar content>");
+            fs.root.mkdir("foo").mkdir("bar").addFile("baz.js", "<baz content>");
             InspectorTest.addResult("Adding file system mapping.");
-            InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, "http://localhost/", "/");
-            manager.addFiles(fileSystemPath, files);
+            fs.addFileMapping("http://localhost/", "/");
+            fs.reportCreated();
 
             InspectorTest.addResult("Renaming files:");
-            uiSourceCodes = InspectorTest.testWorkspace.uiSourceCodes();
+            var uiSourceCodes = InspectorTest.testWorkspace.uiSourceCodes();
             renameNextFile();
 
             function renameNextFile()
@@ -346,8 +280,10 @@ function test()
                 ++index;
                 if (index < uiSourceCodes.length)
                     renameNextFile();
-                else
+                else {
+                    fs.reportRemoved();
                     next();
+                }
             }
         },
     ]);

@@ -1,0 +1,8 @@
+Tests file system project mappings in combination with live edit.
+
+
+Running: testLiveEditReload
+Adding file system.
+Editing filesystem resource: file:///var/www/html/edit-me.js
+Edited function returns: live-edited string
+

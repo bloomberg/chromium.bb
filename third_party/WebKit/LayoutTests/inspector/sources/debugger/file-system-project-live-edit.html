@@ -1,0 +1,60 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/workspace-test.js"></script>
+<script src="../../../http/tests/inspector/isolated-filesystem-test.js"></script>
+<script src="../../../http/tests/inspector/live-edit-test.js"></script>
+<script>
+function addScript()
+{
+    var script = document.createElement("script");
+    script.src = "resources/edit-me.js";
+    document.head.appendChild(script);
+}
+
+function test()
+{
+    InspectorTest.runTestSuite([
+        function testLiveEditReload(next)
+        {
+            var fs = new InspectorTest.TestFileSystem("/var/www");
+            fs.root.mkdir("html").addFile("edit-me.js", "function f()\n{\n    return 0;\n}\n");
+            fs.root.addFile("bar.js", "<bar content>");
+            InspectorTest.addResult("Adding file system.");
+            fs.addFileMapping(WebInspector.ParsedURL.completeURL(InspectorTest.resourceTreeModel.inspectedPageURL(), "resources/"), "/html/");
+            fs.reportCreated();
+            InspectorTest.evaluateInPage("addScript()", didAddScript);
+
+            function didAddScript()
+            {
+                InspectorTest.showScriptSource("edit-me.js", didShowScriptSource);
+            }
+
+            function didShowScriptSource(sourceFrame)
+            {
+                InspectorTest.addResult("Editing filesystem resource: " + sourceFrame.uiSourceCode().originURL());
+                InspectorTest.addSniffer(WebInspector.DebuggerModel.prototype, "_didEditScriptSource", didEditScriptSource);
+                InspectorTest.replaceInSource(sourceFrame, "return 0;", "return \"live-edited string\";");
+                InspectorTest.commitSource(sourceFrame);
+            }
+
+            function didEditScriptSource()
+            {
+                InspectorTest.evaluateInPage("f()", didEvaluateInPage);
+            }
+
+            function didEvaluateInPage(result)
+            {
+                InspectorTest.addResult("Edited function returns: " + result.description);
+                next();
+            }
+        }
+    ]);
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests file system project mappings in combination with live edit.</p>
+</body>
+</html>

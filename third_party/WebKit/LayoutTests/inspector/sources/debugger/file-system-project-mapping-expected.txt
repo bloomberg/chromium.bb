@@ -11,7 +11,6 @@ Workspace event: UISourceCodeAdded: http://localhost/bar.js.
 UISourceCode uri to url mappings:
     filesystem:/var/www/html/foo.js -> 
     filesystem:/var/www/bar.js -> 
-error: networkUISourceCode: [object Object]
 Adding mapping between network and file system resources.
 Emulate reloading inspector.
 Workspace event: UISourceCodeAdded: filesystem:/var/www/html/foo.js.
@@ -23,6 +22,8 @@ Removing mapping between network and file system resources.
 Emulate reloading inspector.
 Workspace event: UISourceCodeAdded: filesystem:/var/www/html/foo.js.
 Workspace event: UISourceCodeAdded: filesystem:/var/www/bar.js.
+Workspace event: UISourceCodeAdded: http://localhost/html/foo.js.
+Workspace event: UISourceCodeAdded: http://localhost/bar.js.
 UISourceCode uri to url mappings:
     filesystem:/var/www/html/foo.js -> 
     filesystem:/var/www/bar.js -> 
@@ -80,19 +81,6 @@ Loading script.
 Workspace event: UISourceCodeAdded: debugger:/VM4 foo.js.
  - hasDivergedFromVM: true
  - sourceFrame._muted: true
-
-Running: testLiveEditReload
-Adding file system.
-Adding file system mapping.
-Page reloaded.
-Page reloaded.
-==Source frame contents start==
-function f()
-{
-    return "live-edited string";
-}
-
-==Source frame contents end==
 
 Running: testRemoveProject
 Adding file system.

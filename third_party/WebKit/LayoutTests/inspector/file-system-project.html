@@ -112,10 +112,10 @@ function test()
                     InspectorTest.addResult("New modificationTime=" + modificationTime.getTime() + ", size=" + size);
                     var uiSourceCodesCount = InspectorTest.fileSystemUISourceCodes().length;
                     InspectorTest.addResult("Removing second file system.");
-                    fs1.removeFileSystem();
+                    fs1.reportRemoved();
                     InspectorTest.addResult("    number of uiSourceCodes in workspace after removing second file system: " + InspectorTest.fileSystemUISourceCodes().length);
                     InspectorTest.addResult("Removing first file system.");
-                    fs2.removeFileSystem();
+                    fs2.reportRemoved();
                     InspectorTest.addResult("    number of uiSourceCodes in workspace after removing first file system: " + InspectorTest.fileSystemUISourceCodes().length);
                     next();
                 }
@@ -147,21 +147,21 @@ function test()
             InspectorTest.addResult("");
             InspectorTest.addResult("-- Default excludes --");
             dumpWorkspaceUISourceCodes();
-            fs.removeFileSystem();
+            fs.reportRemoved();
 
             WebInspector.settings.createLocalSetting("workspaceExcludedFolders", {}).set({"/var/www2":["/html/"]});
             createFileSystem("/var/www2");
             InspectorTest.addResult("");
             InspectorTest.addResult("-- Excluded /html/ --");
             dumpWorkspaceUISourceCodes();
-            fs.removeFileSystem();
+            fs.reportRemoved();
 
             createFileSystem("/var/www3");
             InspectorTest.fileSystemUISourceCodes()[0].project().excludeFolder("/html2/");
             InspectorTest.addResult("");
             InspectorTest.addResult("-- Excluded /html2/ --");
             dumpWorkspaceUISourceCodes();
-            fs.removeFileSystem();
+            fs.reportRemoved();
             next();
         }
     ]);

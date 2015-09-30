@@ -15,19 +15,10 @@ function loadCSS()
 
 function test()
 {
-    WebInspector.settings.createLocalSetting("fileSystemMapping", {}).set({
-        fileSystemPath: [
-            {
-                fileSystemPath: "/var/www",
-                urlPrefix: WebInspector.ParsedURL.completeURL(InspectorTest.resourceTreeModel.inspectedPageURL(), "resources/source/"),
-                pathPrefix: "/"
-            }
-        ]
-    });
-
     InspectorTest.addResult("Creating filesystem with the SCSS file...");
     var fs = new InspectorTest.TestFileSystem("/var/www");
     fs.root.addFile("update-locations-on-filesystem-scss-load.scss", ["a {", "  foo: bar;", "/* COMMENT */", "  font-size: 12px;", "}"].join("\n"));
+    fs.addFileMapping(WebInspector.ParsedURL.completeURL(InspectorTest.resourceTreeModel.inspectedPageURL(), "resources/source/"), "/");
     fs.reportCreated();
 
     fileSystemCreated();
