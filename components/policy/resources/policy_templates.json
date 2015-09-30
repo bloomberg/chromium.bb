@@ -6950,7 +6950,14 @@
       'caption': '''Managed Bookmarks''',
       'desc': '''Configures a list of managed bookmarks.
 
-      The policy is a list of bookmarks, and each bookmark is a dictionary containing the bookmark "name" and the target "url". A bookmark can also be configured as a folder. In that case, define the folder "name" but don't define an "url"; instead, define the folder contents as another list of bookmarks under the "children" key. Chrome will amend incomplete URLs as if they were submitted via the Omnibox. For example, "google.com" becomes "https://google.com/".
+      The policy consists of a list of bookmarks whereas each bookmark is a
+      dictionary containing the keys "name" and "url" which hold the bookmark's
+      name and its target. A subfolder may be configured by defining a bookmark
+      without an "url" key but with an additional "children" key which itself
+      contains a list of bookmarks as defined above (some of which may be
+      folders again). <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+      amends incomplete URLs as if they were submitted via the Omnibox, for
+      example "google.com" becomes "https://google.com/".
 
       These bookmarks are placed in a Managed bookmarks folder that can't be modified by the user, but the user can choose to hide it from the bookmark bar. Managed bookmarks are not synced to the user account and can't be modified by extensions.''',
     },
