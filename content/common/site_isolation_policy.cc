@@ -72,12 +72,7 @@ bool SiteIsolationPolicy::UseSubframeNavigationEntries() {
 
 // static
 bool SiteIsolationPolicy::IsSwappedOutStateForbidden() {
-  // TODO(nasko): Fix Android issues and remove this ifdef.
-#if defined(OS_ANDROID)
   return AreCrossProcessFramesPossible();
-#else
-  return true;
-#endif
 }
 
 // static
