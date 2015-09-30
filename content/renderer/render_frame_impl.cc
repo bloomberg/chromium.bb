@@ -4470,7 +4470,6 @@ void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
 
   // Serialize the frame (without recursing into subframes).
   WebPageSerializer::serialize(GetWebFrame(),
-                               false,  // recursive?  nope.
                                this,   // WebPageSerializerClient.
                                weburl_links, webstring_paths,
                                local_directory_path.AsUTF16Unsafe());

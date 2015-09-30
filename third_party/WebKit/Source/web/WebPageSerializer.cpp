@@ -213,14 +213,13 @@ WebCString WebPageSerializer::serializeToMHTMLUsingBinaryEncoding(WebView* view)
 }
 
 bool WebPageSerializer::serialize(WebLocalFrame* frame,
-                                  bool recursive,
                                   WebPageSerializerClient* client,
                                   const WebVector<WebURL>& links,
                                   const WebVector<WebString>& localPaths,
                                   const WebString& localDirectoryName)
 {
     WebPageSerializerImpl serializerImpl(
-        frame, recursive, client, links, localPaths, localDirectoryName);
+        frame, client, links, localPaths, localDirectoryName);
     return serializerImpl.serialize();
 }
 

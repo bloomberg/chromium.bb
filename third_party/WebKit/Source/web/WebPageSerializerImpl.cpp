@@ -425,14 +425,11 @@ void WebPageSerializerImpl::buildContentForNode(Node* node,
 }
 
 WebPageSerializerImpl::WebPageSerializerImpl(WebFrame* frame,
-                                             bool recursiveSerialization,
                                              WebPageSerializerClient* client,
                                              const WebVector<WebURL>& links,
                                              const WebVector<WebString>& localPaths,
                                              const WebString& localDirectoryName)
     : m_client(client)
-    , m_recursiveSerialization(recursiveSerialization)
-    , m_framesCollected(false)
     , m_localDirectoryName(localDirectoryName)
     , m_htmlEntities(false)
     , m_xmlEntities(true)
@@ -453,51 +450,16 @@ WebPageSerializerImpl::WebPageSerializerImpl(WebFrame* frame,
     ASSERT(m_dataBuffer.isEmpty());
 }
 
-void WebPageSerializerImpl::collectTargetFrames()
-{
-    ASSERT(!m_framesCollected);
-    m_framesCollected = true;
-
-    // First, process main frame.
-    m_frames.append(m_specifiedWebLocalFrameImpl);
-    // Return now if user only needs to serialize specified frame, not including
-    // all sub-frames.
-    if (!m_recursiveSerialization)
-        return;
-    // Collect all frames inside the specified frame.
-    for (WebLocalFrameImpl* frame : m_frames) {
-        // Get current using document.
-        Document* currentDoc = frame->frame()->document();
-        // Go through sub-frames.
-        RefPtrWillBeRawPtr<HTMLAllCollection> all = currentDoc->all();
-
-        for (unsigned i = 0; Element* element = all->item(i); ++i) {
-            if (!element->isHTMLElement())
-                continue;
-            WebLocalFrameImpl* webFrame =
-                WebLocalFrameImpl::fromFrameOwnerElement(element);
-            if (webFrame)
-                m_frames.append(webFrame);
-        }
-    }
-}
-
 bool WebPageSerializerImpl::serialize()
 {
-    if (!m_framesCollected)
-        collectTargetFrames();
-
     bool didSerialization = false;
     KURL mainURL = m_specifiedWebLocalFrameImpl->frame()->document()->url();
 
-    for (unsigned i = 0; i < m_frames.size(); ++i) {
-        WebLocalFrameImpl* webFrame = m_frames[i];
-        Document* document = webFrame->frame()->document();
-        const KURL& url = document->url();
+    WebLocalFrameImpl* webFrame = m_specifiedWebLocalFrameImpl;
+    Document* document = webFrame->frame()->document();
+    const KURL& url = document->url();
 
-        if (!url.isValid() || !m_localLinks.contains(url.string()))
-            continue;
-
+    if (url.isValid() && m_localLinks.contains(url.string())) {
         didSerialization = true;
 
         const WTF::TextEncoding& textEncoding = document->encoding().isValid() ? document->encoding() : UTF8Encoding();

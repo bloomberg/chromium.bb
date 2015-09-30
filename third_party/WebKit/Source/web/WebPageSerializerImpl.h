@@ -55,24 +55,22 @@ class Element;
 class Node;
 class WebLocalFrameImpl;
 
-// Get html data by serializing all frames of current page with lists
-// which contain all resource links that have local copy.
-// contain all saved auxiliary files included all sub frames and resources.
-// This function will find out all frames and serialize them to HTML data.
-// We have a data buffer to temporary saving generated html data. We will
-// sequentially call WebViewDelegate::SendSerializedHtmlData once the data
-// buffer is full. See comments of WebViewDelegate::SendSerializedHtmlData
-// for getting more information.
+// Responsible for serializing the specified frame into html
+// (replacing links with paths to local files).
 class WebPageSerializerImpl {
     STACK_ALLOCATED();
 public:
-    // Do serialization action. Return false means no available frame has been
-    // serialized, otherwise return true.
+    // Do serialization action.
+    //
+    // Returns false to indicate that no data has been serialized (i.e. because
+    // the target frame didn't have a valid url).
+    //
+    // Synchronously calls WebPageSerializerClient methods to report
+    // serialization results.  See WebPageSerializerClient comments for more
+    // details.
     bool serialize();
 
     // The parameter specifies which frame need to be serialized.
-    // The parameter recursive_serialization specifies whether we need to
-    // serialize all sub frames of the specified frame or not.
     // The parameter delegate specifies the pointer of interface
     // DomSerializerDelegate provide sink interface which can receive the
     // individual chunks of data to be saved.
@@ -82,7 +80,6 @@ public:
     // The parameter local_directory_name is relative path of directory which
     // contain all saved auxiliary files included all sub frames and resources.
     WebPageSerializerImpl(WebFrame* frame,
-                          bool recursive,
                           WebPageSerializerClient* client,
                           const WebVector<WebURL>& links,
                           const WebVector<WebString>& localPaths,
@@ -101,17 +98,8 @@ private:
     LinkLocalPathMap m_localLinks;
     // Data buffer for saving result of serialized DOM data.
     StringBuilder m_dataBuffer;
-    // Passing true to recursive_serialization_ indicates we will serialize not
-    // only the specified frame but also all sub-frames in the specific frame.
-    // Otherwise we only serialize the specified frame excluded all sub-frames.
-    bool m_recursiveSerialization;
-    // Flag indicates whether we have collected all frames which need to be
-    // serialized or not;
-    bool m_framesCollected;
     // Local directory name of all local resource files.
     WTF::String m_localDirectoryName;
-    // Vector for saving all frames which need to be serialized.
-    WillBeHeapVector<RawPtrWillBeMember<WebLocalFrameImpl>> m_frames;
 
     // Web entities conversion maps.
     WebEntities m_htmlEntities;
@@ -142,8 +130,6 @@ private:
         bool haveAddedContentsBeforeEnd;
     };
 
-    // Collect all target frames which need to be serialized.
-    void collectTargetFrames();
     // Before we begin serializing open tag of a element, we give the target
     // element a chance to do some work prior to add some additional data.
     WTF::String preActionBeforeSerializeOpenTag(const Element*,

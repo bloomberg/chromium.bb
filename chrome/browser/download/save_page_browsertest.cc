@@ -775,6 +775,27 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
   EXPECT_EQ("foo", contents);
 }
 
+// Test that we don't crash when the page contains an iframe that
+// was handled as a download (http://crbug.com/42212).
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveDownloadableIFrame) {
+  GURL url = URLRequestMockHTTPJob::GetMockUrl(
+      base::FilePath(FILE_PATH_LITERAL("downloads"))
+          .AppendASCII("iframe-src-is-a-download.htm"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Wait for and then dismiss the non-save-page-as-related download item
+  // (the one associated with downloading of "thisdayinhistory.xls" file).
+  VerifySavePackageExpectations(browser(), url);
+  GetDownloadManager()->RemoveAllDownloads();
+
+  base::FilePath full_file_name, dir;
+  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
+                 "iframe-src-is-a-download", 2, &dir, &full_file_name);
+  ASSERT_FALSE(HasFailure());
+
+  EXPECT_TRUE(base::PathExists(full_file_name));
+}
+
 class SavePageSitePerProcessBrowserTest : public SavePageBrowserTest {
  public:
   SavePageSitePerProcessBrowserTest() {}
