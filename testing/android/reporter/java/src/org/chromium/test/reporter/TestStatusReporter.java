@@ -36,6 +36,8 @@ public class TestStatusReporter {
             "org.chromium.test.reporter.TestStatusReporter.TEST_CLASS";
     public static final String EXTRA_TEST_METHOD =
             "org.chromium.test.reporter.TestStatusReporter.TEST_METHOD";
+    public static final String EXTRA_STACK_TRACE =
+            "org.chromium.test.reporter.TestStatusReporter.STACK_TRACE";
 
     public static final int HEARTBEAT_INTERVAL_MS = 5000;
 
@@ -70,16 +72,24 @@ public class TestStatusReporter {
         sendTestBroadcast(ACTION_TEST_PASSED, testClass, testMethod);
     }
 
-    public void testFailed(String testClass, String testMethod) {
-        sendTestBroadcast(ACTION_TEST_FAILED, testClass, testMethod);
+    public void testFailed(String testClass, String testMethod, String stackTrace) {
+        sendTestBroadcast(ACTION_TEST_FAILED, testClass, testMethod, stackTrace);
     }
 
-    private void sendTestBroadcast(String action, String testClass, String testMethod) {
+    private void sendTestBroadcast(
+            String action, String testClass, String testMethod, String stackTrace) {
         Intent i = new Intent(action);
         i.setType(DATA_TYPE_RESULT);
         i.putExtra(EXTRA_TEST_CLASS, testClass);
         i.putExtra(EXTRA_TEST_METHOD, testMethod);
+        if (stackTrace != null) {
+            i.putExtra(EXTRA_STACK_TRACE, stackTrace);
+        }
         mContext.sendBroadcast(i);
+    }
+
+    private void sendTestBroadcast(String action, String testClass, String testMethod) {
+        sendTestBroadcast(action, testClass, testMethod, null);
     }
 
     public void testRunStarted(int pid) {
@@ -100,5 +110,4 @@ public class TestStatusReporter {
     public void stopHeartbeat() {
         mKeepBeating.set(false);
     }
-
 }

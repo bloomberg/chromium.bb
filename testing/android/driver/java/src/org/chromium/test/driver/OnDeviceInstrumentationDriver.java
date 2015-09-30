@@ -148,11 +148,19 @@ public class OnDeviceInstrumentationDriver extends Instrumentation {
             mTestClasses = testClasses;
         }
 
-        private void sendTestStatus(int status, String testClass, String testMethod) {
+        private void sendTestStatus(
+                int status, String testClass, String testMethod, String stackTrace) {
             Bundle statusBundle = new Bundle();
             statusBundle.putString(InstrumentationTestRunner.REPORT_KEY_NAME_CLASS, testClass);
             statusBundle.putString(InstrumentationTestRunner.REPORT_KEY_NAME_TEST, testMethod);
+            if (stackTrace != null) {
+                statusBundle.putString(InstrumentationTestRunner.REPORT_KEY_STACK, stackTrace);
+            }
             sendStatus(status, statusBundle);
+        }
+
+        private void sendTestStatus(int status, String testClass, String testMethod) {
+            sendTestStatus(status, testClass, testMethod, null);
         }
 
         /** Run the tests. */
@@ -188,9 +196,9 @@ public class OnDeviceInstrumentationDriver extends Instrumentation {
                 });
                 r.registerCallback(new TestStatusReceiver.FailCallback() {
                     @Override
-                    public void testFailed(String testClass, String testMethod) {
+                    public void testFailed(String testClass, String testMethod, String stackTrace) {
                         sendTestStatus(InstrumentationTestRunner.REPORT_VALUE_RESULT_ERROR,
-                                testClass, testMethod);
+                                testClass, testMethod, stackTrace);
                         synchronized (statusLock) {
                             finished.put(testClass + "#" + testMethod,
                                     ResultsBundleGenerator.TestResult.FAILED);

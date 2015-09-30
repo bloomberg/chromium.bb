@@ -21,6 +21,7 @@ public class TestStatusListener implements TestListener {
 
     private boolean mFailed;
     private final TestStatusReporter mReporter;
+    private Throwable mThrowable;
 
     public TestStatusListener(Context context) {
         mReporter = new TestStatusReporter(context);
@@ -38,6 +39,7 @@ public class TestStatusListener implements TestListener {
     public void addError(Test test, Throwable t) {
         Log.e(TAG, "Error while running " + test.toString(), t);
         mFailed = true;
+        mThrowable = t;
     }
 
     /** Called when a test has failed.
@@ -48,6 +50,7 @@ public class TestStatusListener implements TestListener {
     public void addFailure(Test test, AssertionFailedError e) {
         Log.e(TAG, "Failure while running " + test.toString(), e);
         mFailed = true;
+        mThrowable = e;
     }
 
     /** Called when a test has started.
@@ -68,11 +71,14 @@ public class TestStatusListener implements TestListener {
     public void endTest(Test test) {
         TestCase testCase = (TestCase) test;
         if (mFailed) {
-            mReporter.testFailed(testCase.getClass().getName(), testCase.getName());
+            String stackTrace = null;
+            if (mThrowable != null) {
+                stackTrace = Log.getStackTraceString(mThrowable);
+            }
+            mReporter.testFailed(testCase.getClass().getName(), testCase.getName(), stackTrace);
         } else {
             mReporter.testPassed(testCase.getClass().getName(), testCase.getName());
         }
         mReporter.stopHeartbeat();
     }
-
 }
