@@ -161,6 +161,8 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
   view_->InvalidateLine(prev_selected_line);
   view_->InvalidateLine(selected_line_);
 
+  view_->OnLineSelected(selected_line_);
+
   // Update the edit with the new data for this match.
   // TODO(pkasting): If |selected_line_| moves to the controller, this can be
   // eliminated and just become a call to the observer on the edit.

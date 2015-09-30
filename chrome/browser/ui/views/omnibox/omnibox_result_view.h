@@ -63,8 +63,12 @@ class OmniboxResultView : public views::View,
 
   void Invalidate();
 
+  // Invoked when this result view has been selected.
+  void OnSelected();
+
   // views::View:
   gfx::Size GetPreferredSize() const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   ResultViewState GetState() const;
 

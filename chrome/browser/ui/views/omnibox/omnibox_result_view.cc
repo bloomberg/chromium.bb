@@ -24,6 +24,7 @@
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -291,11 +292,30 @@ void OmniboxResultView::Invalidate() {
   SchedulePaint();
 }
 
+void OmniboxResultView::OnSelected() {
+  DCHECK_EQ(SELECTED, GetState());
+
+  // Notify assistive technology when results with answers attached are
+  // selected. The non-answer text is already accessible as a consequence of
+  // updating the text in the omnibox but this alert and GetAccessibleState
+  // below make the answer contents accessible.
+  if (match_.answer)
+    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+}
+
 gfx::Size OmniboxResultView::GetPreferredSize() const {
   if (!match_.answer)
     return gfx::Size(0, GetContentLineHeight());
   // An answer implies a match and a description in a large font.
   return gfx::Size(0, GetContentLineHeight() + GetAnswerLineHeight());
+}
+
+void OmniboxResultView::GetAccessibleState(ui::AXViewState* state) {
+  state->name = match_.answer
+                    ? l10n_util::GetStringFUTF16(
+                          IDS_OMNIBOX_ACCESSIBLE_ANSWER, match_.contents,
+                          match_.answer->second_line().AccessibleText())
+                    : match_.contents;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

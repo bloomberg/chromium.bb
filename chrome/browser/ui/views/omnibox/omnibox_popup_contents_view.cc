@@ -155,6 +155,10 @@ void OmniboxPopupContentsView::InvalidateLine(size_t line) {
   }
 }
 
+void OmniboxPopupContentsView::OnLineSelected(size_t line) {
+  result_view_at(line)->OnSelected();
+}
+
 void OmniboxPopupContentsView::UpdatePopupAppearance() {
   if (model_->result().empty() || omnibox_view_->IsImeShowingPopup()) {
     // No matches or the IME is showing a popup window which may overlap

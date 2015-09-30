@@ -52,6 +52,7 @@ class MockOmniboxPopupView : public OmniboxPopupView {
   // Overridden from OmniboxPopupView:
   bool IsOpen() const override { return is_open_; }
   void InvalidateLine(size_t line) override {}
+  void OnLineSelected(size_t line) override {}
   void UpdatePopupAppearance() override {}
   gfx::Rect GetTargetBounds() override { return gfx::Rect(); }
   void PaintUpdatesNow() override {}

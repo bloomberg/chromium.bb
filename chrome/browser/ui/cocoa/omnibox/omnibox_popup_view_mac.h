@@ -33,6 +33,7 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
   // Overridden from OmniboxPopupView:
   bool IsOpen() const override;
   void InvalidateLine(size_t line) override {}
+  void OnLineSelected(size_t line) override {}
   void UpdatePopupAppearance() override;
   gfx::Rect GetTargetBounds() override;
   // This is only called by model in SetSelectedLine() after updating

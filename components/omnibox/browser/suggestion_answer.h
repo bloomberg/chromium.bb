@@ -98,6 +98,10 @@ class SuggestionAnswer {
 
     bool Equals(const ImageLine& line) const;
 
+    // Returns a string appropriate for use as a readable representation of the
+    // content of this line.
+    base::string16 AccessibleText() const;
+
    private:
     // Forbid assignment.
     ImageLine& operator=(const ImageLine&);

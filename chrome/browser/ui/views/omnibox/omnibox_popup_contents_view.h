@@ -43,6 +43,7 @@ class OmniboxPopupContentsView : public views::View,
   // OmniboxPopupView:
   bool IsOpen() const override;
   void InvalidateLine(size_t line) override;
+  void OnLineSelected(size_t line) override;
   void UpdatePopupAppearance() override;
   gfx::Rect GetTargetBounds() override;
   void PaintUpdatesNow() override;
