@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "net/base/net_errors.h"
 
 namespace policy {
@@ -58,7 +59,8 @@ struct GaiaContext {
 };
 
 // A class that handles WebUI hooks in Gaia screen.
-class GaiaScreenHandler : public BaseScreenHandler {
+class GaiaScreenHandler : public BaseScreenHandler,
+                          public NetworkPortalDetector::Observer {
  public:
   enum FrameState {
     FRAME_STATE_UNKNOWN = 0,
@@ -111,6 +113,11 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;
+
+  // NetworkPortalDetector::Observer implementation.
+  void OnPortalDetectionCompleted(
+      const NetworkState* network,
+      const NetworkPortalDetector::CaptivePortalState& state) override;
 
   // WebUI message handlers.
   void HandleFrameLoadingCompleted(int status);
@@ -202,6 +209,10 @@ class GaiaScreenHandler : public BaseScreenHandler {
   void set_signin_screen_handler(SigninScreenHandler* handler) {
     signin_screen_handler_ = handler;
   }
+
+  // Are we on a restrictive proxy?
+  bool IsRestrictiveProxy() const;
+
   SigninScreenHandlerDelegate* Delegate();
 
   // Returns temporary unused device Id.
@@ -262,6 +273,12 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // True if Easy bootstrap is enabled.
   bool use_easy_bootstrap_ = false;
+
+  // True if proxy doesn't allow access to google.com/generate_204.
+  NetworkPortalDetector::CaptivePortalStatus captive_portal_status_ =
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
+
+  scoped_ptr<NetworkPortalDetector> network_portal_detector_;
 
   // Non-owning ptr to SigninScreenHandler instance. Should not be used
   // in dtor.

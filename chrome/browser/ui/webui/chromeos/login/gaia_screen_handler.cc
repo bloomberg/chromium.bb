@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/consumer_management_stage.h"
@@ -57,6 +58,8 @@ const char kAuthIframeParentName[] = "signin-frame";
 const char kAuthIframeParentOrigin[] =
     "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/";
 
+const char kRestrictiveProxyURL[] = "https://www.google.com/generate_204";
+
 const char kGaiaSandboxUrlSwitch[] = "gaia-sandbox-url";
 const char kEndpointGen[] = "1.0";
 
@@ -77,7 +80,8 @@ std::string GetChromeType() {
 
 void UpdateAuthParams(base::DictionaryValue* params,
                       bool has_users,
-                      bool is_enrolling_consumer_management) {
+                      bool is_enrolling_consumer_management,
+                      bool is_restrictive_proxy) {
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = true;
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
@@ -88,7 +92,7 @@ void UpdateAuthParams(base::DictionaryValue* params,
   params->SetBoolean("guestSignin", allow_guest);
 
   // nosignup flow if new users are not allowed.
-  if (!allow_new_user)
+  if (!allow_new_user || is_restrictive_proxy)
     params->SetString("flow", "nosignup");
 
   // Allow supervised user creation only if:
@@ -176,6 +180,8 @@ GaiaScreenHandler::GaiaScreenHandler(
 }
 
 GaiaScreenHandler::~GaiaScreenHandler() {
+  if (network_portal_detector_)
+    network_portal_detector_->RemoveObserver(this);
 }
 
 void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
@@ -208,9 +214,8 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
                     is_enrolling_consumer_management);
   params.SetString("gapsCookie", context.gaps_cookie);
 
-  UpdateAuthParams(&params,
-                   context.has_users,
-                   is_enrolling_consumer_management);
+  UpdateAuthParams(&params, context.has_users, is_enrolling_consumer_management,
+                   IsRestrictiveProxy());
 
   if (!context.use_offline) {
     const std::string app_locale = g_browser_process->GetApplicationLocale();
@@ -300,7 +305,8 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
 void GaiaScreenHandler::UpdateGaia(const GaiaContext& context) {
   base::DictionaryValue params;
   UpdateAuthParams(&params, context.has_users,
-                   context.is_enrolling_consumer_management);
+                   context.is_enrolling_consumer_management,
+                   IsRestrictiveProxy());
   CallJS("updateAuthExtension", params);
 }
 
@@ -399,6 +405,24 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("toggleEasyBootstrap",
               &GaiaScreenHandler::HandleToggleEasyBootstrap);
   AddCallback("identifierEntered", &GaiaScreenHandler::HandleIdentifierEntered);
+}
+
+void GaiaScreenHandler::OnPortalDetectionCompleted(
+    const NetworkState* network,
+    const NetworkPortalDetector::CaptivePortalState& state) {
+  VLOG(1) << "OnPortalDetectionCompleted " << state.status;
+
+  NetworkPortalDetector::CaptivePortalStatus status = state.status;
+  if (status == captive_portal_status_)
+    return;
+
+  // Only consider online/portal status.
+  if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE ||
+      status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL) {
+    captive_portal_status_ = status;
+    LoadAuthExtension(true /* force */, true /* silent_load */,
+                      false /* offline */);
+  }
 }
 
 void GaiaScreenHandler::HandleIdentifierEntered(
@@ -826,6 +850,15 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
 void GaiaScreenHandler::MaybePreloadAuthExtension() {
   VLOG(1) << "MaybePreloadAuthExtension() call.";
 
+  if (!network_portal_detector_) {
+    NetworkPortalDetectorImpl* detector = new NetworkPortalDetectorImpl(
+        g_browser_process->system_request_context(), false);
+    detector->set_portal_test_url(GURL(kRestrictiveProxyURL));
+    network_portal_detector_.reset(detector);
+    network_portal_detector_->Enable(true);
+    network_portal_detector_->AddAndFireObserver(this);
+  }
+
   // If cookies clearing was initiated or |dns_clear_task_running_| then auth
   // extension showing has already been initiated and preloading is pointless.
   if (signin_screen_handler_->ShouldLoadGaia() &&
@@ -886,6 +919,11 @@ void GaiaScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
 
 SigninScreenHandlerDelegate* GaiaScreenHandler::Delegate() {
   return signin_screen_handler_->delegate_;
+}
+
+bool GaiaScreenHandler::IsRestrictiveProxy() const {
+  return captive_portal_status_ ==
+         NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
 }
 
 }  // namespace chromeos
