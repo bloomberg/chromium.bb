@@ -28,6 +28,7 @@
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/mouse_constants.h"
 #include "ui/views/resources/grit/views_resources.h"
 
 using views::LabelButtonBorder;
@@ -53,7 +54,7 @@ ToolbarActionView::ToolbarActionView(
     ToolbarActionViewController* view_controller,
     Profile* profile,
     ToolbarActionView::Delegate* delegate)
-    : MenuButton(this, base::string16(), nullptr, false),
+    : MenuButton(nullptr, base::string16(), this, false),
       view_controller_(view_controller),
       profile_(profile),
       delegate_(delegate),
@@ -117,22 +118,17 @@ void ToolbarActionView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_BUTTON;
 }
 
-void ToolbarActionView::ButtonPressed(views::Button* sender,
-                                      const ui::Event& event) {
-  gfx::Point menu_point;
-  ui::MenuSourceType type = ui::MENU_SOURCE_NONE;
-  if (event.IsMouseEvent()) {
-    menu_point = static_cast<const ui::MouseEvent&>(event).location();
-    type = ui::MENU_SOURCE_MOUSE;
-  } else if (event.IsKeyEvent()) {
-    menu_point = GetKeyboardContextMenuLocation();
-    type = ui::MENU_SOURCE_KEYBOARD;
-  } else if (event.IsGestureEvent()) {
-    menu_point = static_cast<const ui::GestureEvent&>(event).location();
-    type = ui::MENU_SOURCE_TOUCH;
+void ToolbarActionView::OnMenuButtonClicked(views::View* sender,
+                                            const gfx::Point& point) {
+  if (!view_controller_->IsEnabled(GetCurrentWebContents())) {
+    // We should only get a button pressed event with a non-enabled action if
+    // the left-click behavior should open the menu.
+    DCHECK(view_controller_->DisabledClickOpensMenu());
+    context_menu_controller()->ShowContextMenuForView(this, point,
+                                                      ui::MENU_SOURCE_NONE);
+  } else {
+    view_controller_->ExecuteAction(true);
   }
-
-  HandleActivation(menu_point, type);
 }
 
 void ToolbarActionView::UpdateState() {
@@ -175,66 +171,15 @@ void ToolbarActionView::Observe(int type,
   UpdateState();
 }
 
-bool ToolbarActionView::Activate() {
-  if (!view_controller_->HasPopup(GetCurrentWebContents()))
-    return true;
-
-  // Unfortunately, we don't get any of the event points for this call. Since
-  // these are only used for showing a context menu when an action is disabled,
-  // it's not that big a deal. Fake it.
-  // TODO(devlin): This could obviously be improved.
-  HandleActivation(GetKeyboardContextMenuLocation(), ui::MENU_SOURCE_KEYBOARD);
-
-  // TODO(erikkay): Run a nested modal loop while the mouse is down to
-  // enable menu-like drag-select behavior.
-
-  // The return value of this method is returned via OnMousePressed.
-  // We need to return false here since we're handing off focus to another
-  // widget/view, and true will grab it right back and try to send events
-  // to us.
-  return false;
-}
-
 void ToolbarActionView::OnMouseEntered(const ui::MouseEvent& event) {
   delegate_->OnMouseEnteredToolbarActionView();
   views::MenuButton::OnMouseEntered(event);
 }
 
-bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
-  if (!event.IsRightMouseButton()) {
-    return view_controller_->HasPopup(GetCurrentWebContents()) ?
-        MenuButton::OnMousePressed(event) : LabelButton::OnMousePressed(event);
-  }
-  return false;
-}
-
-void ToolbarActionView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (view_controller_->HasPopup(GetCurrentWebContents()) || IsMenuRunning()) {
-    // TODO(erikkay) this never actually gets called (probably because of the
-    // loss of focus).
-    MenuButton::OnMouseReleased(event);
-  } else {
-    LabelButton::OnMouseReleased(event);
-  }
-}
-
-void ToolbarActionView::OnMouseExited(const ui::MouseEvent& event) {
-  if (view_controller_->HasPopup(GetCurrentWebContents()) || IsMenuRunning())
-    MenuButton::OnMouseExited(event);
-  else
-    LabelButton::OnMouseExited(event);
-}
-
-bool ToolbarActionView::OnKeyReleased(const ui::KeyEvent& event) {
-  return view_controller_->HasPopup(GetCurrentWebContents()) ?
-      MenuButton::OnKeyReleased(event) : LabelButton::OnKeyReleased(event);
-}
-
-void ToolbarActionView::OnGestureEvent(ui::GestureEvent* event) {
-  if (view_controller_->HasPopup(GetCurrentWebContents()))
-    MenuButton::OnGestureEvent(event);
-  else
-    LabelButton::OnGestureEvent(event);
+bool ToolbarActionView::ShouldEnterPushedState(const ui::Event& event) {
+  return views::MenuButton::ShouldEnterPushedState(event) &&
+         (base::TimeTicks::Now() - popup_closed_time_).InMilliseconds() >
+             views::kMinimumMsBetweenButtonClicks;
 }
 
 scoped_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder() const {
@@ -242,12 +187,6 @@ scoped_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder() const {
   border->set_insets(gfx::Insets(kBorderInset, kBorderInset,
                                  kBorderInset, kBorderInset));
   return border.Pass();
-}
-
-bool ToolbarActionView::ShouldEnterPushedState(const ui::Event& event) {
-  return view_controller_->HasPopup(GetCurrentWebContents()) ?
-      MenuButton::ShouldEnterPushedState(event) :
-      LabelButton::ShouldEnterPushedState(event);
 }
 
 gfx::ImageSkia ToolbarActionView::GetIconForTest() {
@@ -291,6 +230,7 @@ void ToolbarActionView::OnPopupShown(bool by_user) {
 }
 
 void ToolbarActionView::OnPopupClosed() {
+  popup_closed_time_ = base::TimeTicks::Now();
   pressed_lock_.reset();  // Unpress the menu button if it was pressed.
 }
 
@@ -386,17 +326,4 @@ bool ToolbarActionView::CloseActiveMenuIfNeeded() {
   }
 
   return false;
-}
-
-void ToolbarActionView::HandleActivation(const gfx::Point& menu_point,
-                                         ui::MenuSourceType source_type) {
-  if (!view_controller_->IsEnabled(GetCurrentWebContents())) {
-    // We should only get a button pressed event with a non-enabled action if
-    // the left-click behavior should open the menu.
-    DCHECK(view_controller_->DisabledClickOpensMenu());
-    context_menu_controller()->ShowContextMenuForView(
-        this, menu_point, source_type);
-  } else {
-    view_controller_->ExecuteAction(true);
-  }
 }

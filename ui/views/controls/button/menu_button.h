@@ -62,7 +62,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   void set_menu_offset(int x, int y) { menu_offset_.SetPoint(x, y); }
 
   // Activate the button (called when the button is pressed).
-  virtual bool Activate();
+  bool Activate();
 
   // Overridden from View:
   gfx::Size GetPreferredSize() const override;
