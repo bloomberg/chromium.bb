@@ -67,6 +67,53 @@ class CORE_EXPORT DeprecatedPaintLayerScrollableArea final : public NoBaseWillBe
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeprecatedPaintLayerScrollableArea);
     friend class Internals;
 
+private:
+    class ScrollbarManager {
+        // Helper class to manage the life cycle of Scrollbar objects.  Some layout containers
+        // (e.g., flexbox, table) run multi-pass layout on their children, applying different
+        // constraints.  If a child has overflow:auto, it may gain and lose scrollbars multiple
+        // times during multi-pass layout, causing pointless allocation/deallocation thrashing,
+        // and potentially leading to other problems (crbug.com/528940).
+
+        // ScrollbarManager allows a ScrollableArea to delay the destruction of a scrollbar that
+        // is no longer needed, until the end of multi-pass layout.  If the scrollbar is then
+        // re-added before multi-pass layout finishes, the previously "deleted" scrollbar will
+        // be restored, rather than constructing a new one.
+    public:
+        ScrollbarManager(DeprecatedPaintLayerScrollableArea&);
+
+        void dispose();
+
+        // When canDetachScrollbars is true, calls to setHas*Scrollbar(false) will NOT destroy
+        // an existing scrollbar, but instead detach it without destroying it.  If, subsequently,
+        // setHas*Scrollbar(true) is called, the existing scrollbar will be reattached.  When
+        // setCanDetachScrollbars(false) is called, any detached scrollbars will be destructed.
+        bool canDetachScrollbars() const { return m_canDetachScrollbars; }
+        void setCanDetachScrollbars(bool);
+
+        Scrollbar* horizontalScrollbar() const { return m_hBarIsAttached ? m_hBar.get(): nullptr; }
+        Scrollbar* verticalScrollbar() const { return m_vBarIsAttached ? m_vBar.get() : nullptr; }
+        bool hasHorizontalScrollbar() const { return horizontalScrollbar(); }
+        bool hasVerticalScrollbar() const { return verticalScrollbar(); }
+
+        void setHasHorizontalScrollbar(bool hasScrollbar);
+        void setHasVerticalScrollbar(bool hasScrollbar);
+
+        DECLARE_TRACE();
+
+    private:
+        PassRefPtrWillBeRawPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
+        void destroyScrollbar(ScrollbarOrientation, bool invalidate = false);
+
+    private:
+        DeprecatedPaintLayerScrollableArea& m_scrollableArea;
+        RefPtrWillBeMember<Scrollbar> m_hBar;
+        RefPtrWillBeMember<Scrollbar> m_vBar;
+        unsigned m_canDetachScrollbars: 1;
+        unsigned m_hBarIsAttached: 1;
+        unsigned m_vBarIsAttached: 1;
+    };
+
 public:
     // FIXME: We should pass in the LayoutBox but this opens a window
     // for crashers during DeprecatedPaintLayer setup (see crbug.com/368062).
@@ -81,8 +128,8 @@ public:
     bool hasHorizontalScrollbar() const { return horizontalScrollbar(); }
     bool hasVerticalScrollbar() const { return verticalScrollbar(); }
 
-    Scrollbar* horizontalScrollbar() const override { return m_hBar.get(); }
-    Scrollbar* verticalScrollbar() const override { return m_vBar.get(); }
+    Scrollbar* horizontalScrollbar() const override { return m_scrollbarManager.horizontalScrollbar(); }
+    Scrollbar* verticalScrollbar() const override { return m_scrollbarManager.verticalScrollbar(); }
 
     HostWindow* hostWindow() const override;
 
@@ -162,7 +209,7 @@ public:
 
     bool updateAfterCompositingChange() override;
 
-    bool hasScrollbar() const { return m_hBar || m_vBar; }
+    bool hasScrollbar() const { return hasHorizontalScrollbar() || hasVerticalScrollbar(); }
 
     LayoutScrollbarPart* scrollCorner() const { return m_scrollCorner; }
 
@@ -254,9 +301,6 @@ private:
     LayoutUnit horizontalScrollbarStart(int minX) const;
     IntSize scrollbarOffset(const Scrollbar*) const;
 
-    PassRefPtrWillBeRawPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
-    void destroyScrollbar(ScrollbarOrientation);
-
     void setHasHorizontalScrollbar(bool hasScrollbar);
     void setHasVerticalScrollbar(bool hasScrollbar);
 
@@ -289,14 +333,13 @@ private:
     // The width/height of our scrolled area.
     LayoutRect m_overflowRect;
 
+    // ScrollbarManager holds the Scrollbar instances.
+    ScrollbarManager m_scrollbarManager;
+
     // This is the (scroll) offset from scrollOrigin().
     DoubleSize m_scrollOffset;
 
     IntPoint m_cachedOverlayScrollbarOffset;
-
-    // For areas with overflow, we have a pair of scrollbars.
-    RefPtrWillBeMember<Scrollbar> m_hBar;
-    RefPtrWillBeMember<Scrollbar> m_vBar;
 
     // LayoutObject to hold our custom scroll corner.
     LayoutScrollbarPart* m_scrollCorner;
