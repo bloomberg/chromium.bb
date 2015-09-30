@@ -6,6 +6,7 @@
 #define SANDBOX_MAC_PRE_EXEC_DELEGATE_H_
 
 #include "base/process/launch.h"
+#include "sandbox/mac/xpc.h"
 
 namespace sandbox {
 
@@ -24,10 +25,22 @@ class PreExecDelegate : public base::LaunchOptions::PreExecDelegate {
   uint64_t sandbox_token() const { return sandbox_token_; }
 
  private:
+  // Allocates the bootstrap_look_up IPC message prior to fork().
+  xpc_object_t CreateBootstrapLookUpMessage();
+
+  // Performs a bootstrap_look_up(), either using the pre-allocated message
+  // or the normal routine, depending on the OS X system version.
+  kern_return_t DoBootstrapLookUp(mach_port_t* out_port);
+
   const std::string sandbox_server_bootstrap_name_;
   const char* const sandbox_server_bootstrap_name_ptr_;
   const uint64_t sandbox_token_;
   const bool is_yosemite_or_later_;
+
+  // If is_yosemite_or_later_, this field is used to hold the pre-allocated XPC
+  // object needed to interact with the bootstrap server in RunAsyncSafe().
+  // This is deliberately leaked in the fork()ed process.
+  xpc_object_t look_up_message_;
 
   DISALLOW_COPY_AND_ASSIGN(PreExecDelegate);
 };

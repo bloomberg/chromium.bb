@@ -10,6 +10,9 @@
 void xpc_dictionary_set_mach_send(xpc_object_t dictionary, const char* name, mach_port_t port);
 void xpc_dictionary_get_audit_token(xpc_object_t dictionary, audit_token_t* token);
 
+// Raw object getters.
+mach_port_t xpc_mach_send_get_right(xpc_object_t value);
+
 // Pipe methods.
 xpc_pipe_t xpc_pipe_create_from_port(mach_port_t port, int flags);
 int xpc_pipe_receive(mach_port_t port, xpc_object_t* message);

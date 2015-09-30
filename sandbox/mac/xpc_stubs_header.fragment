@@ -53,6 +53,10 @@ xpc_dictionary_get_uint64(xpc_object_t xdict, const char* key);
 XPC_EXPORT XPC_NONNULL1 XPC_NONNULL2 void
 xpc_dictionary_set_uint64(xpc_object_t xdict, const char* key, uint64_t value);
 
+XPC_EXPORT XPC_NONNULL1 XPC_NONNULL2
+void xpc_dictionary_set_string(xpc_object_t xdict, const char* key,
+                               const char* string);
+
 XPC_EXPORT XPC_MALLOC XPC_RETURNS_RETAINED XPC_WARN_RESULT xpc_object_t
 xpc_dictionary_create(const char* const* keys,
                       const xpc_object_t* values,
@@ -60,6 +64,9 @@ xpc_dictionary_create(const char* const* keys,
 XPC_EXPORT XPC_MALLOC XPC_RETURNS_RETAINED XPC_WARN_RESULT XPC_NONNULL_ALL
     xpc_object_t
     xpc_dictionary_create_reply(xpc_object_t original);
+
+XPC_EXPORT XPC_WARN_RESULT XPC_NONNULL1 XPC_NONNULL2
+xpc_object_t xpc_dictionary_get_value(xpc_object_t xdict, const char* key);
 
 XPC_EXPORT XPC_MALLOC XPC_WARN_RESULT XPC_NONNULL1
 char* xpc_copy_description(xpc_object_t object);
