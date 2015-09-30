@@ -2205,7 +2205,6 @@
     { "name": "301.website", "include_subdomains": true, "mode": "force-https" },
     { "name": "alza.cz", "include_subdomains": true, "mode": "force-https" },
     { "name": "armytricka.cz", "include_subdomains": true, "mode": "force-https" },
-    { "name": "astaxi.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "bradkovach.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "crypto.graphics", "include_subdomains": true, "mode": "force-https" },
     { "name": "cryptography.io", "include_subdomains": true, "mode": "force-https" },
