@@ -20,6 +20,8 @@ FakeSyncClient::FakeSyncClient(SyncApiComponentFactory* factory)
 
 FakeSyncClient::~FakeSyncClient() {}
 
+void FakeSyncClient::Initialize(SyncService* sync_service) {}
+
 SyncService* FakeSyncClient::GetSyncService() {
   return sync_service_.get();
 }

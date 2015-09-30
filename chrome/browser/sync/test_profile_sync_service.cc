@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_core.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
@@ -118,13 +119,14 @@ TestProfileSyncService::GetJsEventHandler() {
 }
 
 TestProfileSyncService::TestProfileSyncService(
-    scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
     Profile* profile,
     SigninManagerBase* signin,
     ProfileOAuth2TokenService* oauth2_token_service,
     browser_sync::ProfileSyncServiceStartBehavior behavior)
     : ProfileSyncService(
-          factory.Pass(),
+          make_scoped_ptr(new browser_sync::ChromeSyncClient(
+              profile,
+              make_scoped_ptr(new ProfileSyncComponentsFactoryMock))),
           profile,
           make_scoped_ptr(new SigninManagerWrapper(signin)),
           oauth2_token_service,
@@ -144,8 +146,6 @@ scoped_ptr<KeyedService> TestProfileSyncService::TestFactoryFunction(
   ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   return make_scoped_ptr(new TestProfileSyncService(
-      scoped_ptr<sync_driver::SyncApiComponentFactory>(
-          new ProfileSyncComponentsFactoryMock()),
       profile, signin, oauth2_token_service, browser_sync::AUTO_START));
 }
 
@@ -156,7 +156,7 @@ TestProfileSyncService* TestProfileSyncService::BuildAutoStartAsyncInit(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile, &TestProfileSyncService::TestFactoryFunction));
   ProfileSyncComponentsFactoryMock* components =
-      sync_service->components_factory_mock();
+      sync_service->GetSyncApiComponentFactoryMock();
   // TODO(tim): Convert to a fake instead of mock.
   EXPECT_CALL(*components, CreateSyncBackendHost(testing::_, testing::_,
                                                  testing::_, testing::_))
@@ -172,9 +172,10 @@ TestProfileSyncService* TestProfileSyncService::BuildAutoStartAsyncInit(
 }
 
 ProfileSyncComponentsFactoryMock*
-TestProfileSyncService::components_factory_mock() {
+TestProfileSyncService::GetSyncApiComponentFactoryMock() {
   // We always create a mock factory, see Build* routines.
-  return static_cast<ProfileSyncComponentsFactoryMock*>(factory());
+  return static_cast<ProfileSyncComponentsFactoryMock*>(
+      GetSyncClient()->GetSyncApiComponentFactory());
 }
 
 void TestProfileSyncService::OnConfigureDone(

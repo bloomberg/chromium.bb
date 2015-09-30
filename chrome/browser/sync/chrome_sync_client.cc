@@ -12,7 +12,6 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -27,6 +26,7 @@
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/sync_driver/sync_api_component_factory.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -70,10 +70,8 @@ namespace browser_sync {
 
 ChromeSyncClient::ChromeSyncClient(
     Profile* profile,
-    sync_driver::SyncApiComponentFactory* component_factory)
-    : profile_(profile),
-      component_factory_(component_factory) {
-}
+    scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory)
+    : profile_(profile), component_factory_(component_factory.Pass()) {}
 ChromeSyncClient::~ChromeSyncClient() {
 }
 
@@ -82,6 +80,7 @@ void ChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
   sync_service_ = sync_service;
   web_data_service_ = GetWebDataService();
   password_store_ = GetPasswordStore();
+  component_factory_->RegisterDataTypes(this);
 }
 
 sync_driver::SyncService* ChromeSyncClient::GetSyncService() {
@@ -253,7 +252,7 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 
 sync_driver::SyncApiComponentFactory*
 ChromeSyncClient::GetSyncApiComponentFactory() {
-  return component_factory_;
+  return component_factory_.get();
 }
 
 }  // namespace browser_sync

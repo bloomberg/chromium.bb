@@ -71,8 +71,6 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
  private:
   explicit OneClickTestProfileSyncService(Profile* profile)
       : TestProfileSyncService(
-          scoped_ptr<sync_driver::SyncApiComponentFactory>(
-              new ProfileSyncComponentsFactoryMock()),
           profile,
           SigninManagerFactory::GetForProfile(profile),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),

@@ -268,14 +268,10 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       signin->SetAuthenticatedAccountInfo("gaia_id", "test");
       sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(profile_,
                                                                       callback);
-      ProfileSyncComponentsFactoryMock* components =
-          sync_service_->components_factory_mock();
-      sync_client_.reset(
-          new browser_sync::ChromeSyncClient(profile_, components));
-      sync_client_->Initialize(sync_service_);
       TypedUrlDataTypeController* data_type_controller =
-          new TypedUrlDataTypeController(sync_client_.get());
-
+          new TypedUrlDataTypeController(sync_service_->GetSyncClient());
+      ProfileSyncComponentsFactoryMock* components =
+          sync_service_->GetSyncApiComponentFactoryMock();
       EXPECT_CALL(*components, CreateTypedUrlSyncComponents(_, _, _)).
           WillOnce(MakeTypedUrlSyncComponents(profile_,
                                               sync_service_,
@@ -411,7 +407,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   scoped_refptr<HistoryBackendMock> history_backend_;
   HistoryServiceMock* history_service_;
   sync_driver::DataTypeErrorHandlerMock error_handler_;
-  scoped_ptr<browser_sync::ChromeSyncClient> sync_client_;
 };
 
 void AddTypedUrlEntries(ProfileSyncServiceTypedUrlTest* test,

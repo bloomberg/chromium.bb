@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -46,8 +47,9 @@ class FakeProfileSyncService : public ProfileSyncService {
  public:
   explicit FakeProfileSyncService(Profile* profile)
       : ProfileSyncService(
-            scoped_ptr<sync_driver::SyncApiComponentFactory>(
-                new ProfileSyncComponentsFactoryMock()),
+            make_scoped_ptr(new browser_sync::ChromeSyncClient(
+                profile,
+                make_scoped_ptr(new ProfileSyncComponentsFactoryMock()))),
             profile,
             make_scoped_ptr<SigninManagerWrapper>(NULL),
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile),

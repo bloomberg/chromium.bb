@@ -22,6 +22,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/startup_controller.h"
@@ -154,14 +155,15 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   browser_sync::ProfileSyncServiceStartBehavior behavior =
       browser_defaults::kSyncAutoStarts ? browser_sync::AUTO_START
                                         : browser_sync::MANUAL_START;
-  ProfileSyncService* pss = new ProfileSyncService(
-      scoped_ptr<sync_driver::SyncApiComponentFactory>(
-          new ProfileSyncComponentsFactoryImpl(
-              profile, base::CommandLine::ForCurrentProcess(), sync_service_url,
-              token_service, url_request_context_getter)),
-      profile, signin_wrapper.Pass(), token_service, behavior);
-  pss->factory()->Initialize(pss);
-  pss->factory()->RegisterDataTypes();
+  scoped_ptr<sync_driver::SyncApiComponentFactory> sync_factory(
+      new ProfileSyncComponentsFactoryImpl(
+          profile, base::CommandLine::ForCurrentProcess(), sync_service_url,
+          token_service, url_request_context_getter));
+  scoped_ptr<browser_sync::ChromeSyncClient> sync_client(
+      new browser_sync::ChromeSyncClient(profile, sync_factory.Pass()));
+  ProfileSyncService* pss =
+      new ProfileSyncService(sync_client.Pass(), profile, signin_wrapper.Pass(),
+                             token_service, behavior);
   pss->Initialize();
   return pss;
 }

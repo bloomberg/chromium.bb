@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -137,7 +138,9 @@ scoped_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
               "device_id")));
 
   return make_scoped_ptr(new ProfileSyncServiceMock(
-      factory.Pass(), static_cast<Profile*>(context)));
+      make_scoped_ptr(new browser_sync::ChromeSyncClient(
+          static_cast<Profile*>(context), factory.Pass())),
+      static_cast<Profile*>(context)));
 }
 
 void ExtensionSessionsTest::CreateTestProfileSyncService() {

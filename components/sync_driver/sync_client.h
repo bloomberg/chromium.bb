@@ -48,6 +48,12 @@ class SyncService;
 class SyncClient {
  public:
   SyncClient();
+  virtual ~SyncClient();
+
+  // Initializes the sync client with the specified sync service. This will also
+  // register data type controllers with |service| (via
+  // SyncApiComponentFactory::RegisterDataTypes).
+  virtual void Initialize(SyncService* service) = 0;
 
   // Returns the current SyncService instance.
   virtual SyncService* GetSyncService() = 0;
@@ -71,9 +77,6 @@ class SyncClient {
 
   // Returns the current SyncApiComponentFactory instance.
   virtual SyncApiComponentFactory* GetSyncApiComponentFactory() = 0;
-
- protected:
-  virtual ~SyncClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncClient);

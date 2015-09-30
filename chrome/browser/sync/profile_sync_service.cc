@@ -73,6 +73,7 @@
 #include "components/sync_driver/favicon_cache.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_api_component_factory.h"
+#include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_error_controller.h"
 #include "components/sync_driver/sync_stopped_reporter.h"
@@ -207,7 +208,7 @@ bool ShouldShowActionOnUI(
 }
 
 ProfileSyncService::ProfileSyncService(
-    scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
+    scoped_ptr<sync_driver::SyncClient> sync_client,
     Profile* profile,
     scoped_ptr<SigninManagerWrapper> signin_wrapper,
     ProfileOAuth2TokenService* oauth2_token_service,
@@ -215,7 +216,7 @@ ProfileSyncService::ProfileSyncService(
     : OAuth2TokenService::Consumer("sync"),
       last_auth_error_(AuthError::AuthErrorNone()),
       passphrase_required_reason_(syncer::REASON_PASSPHRASE_NOT_REQUIRED),
-      factory_(factory.Pass()),
+      sync_client_(sync_client.Pass()),
       profile_(profile),
       sync_prefs_(profile_->GetPrefs()),
       sync_service_url_(
@@ -271,8 +272,8 @@ ProfileSyncService::ProfileSyncService(
   scoped_ptr<browser_sync::LocalSessionEventRouter> router(
       new NotificationServiceSessionsRouter(profile, flare));
 
-  DCHECK(factory_.get());
-  local_device_ = factory_->CreateLocalDeviceInfoProvider();
+  local_device_ = sync_client_->GetSyncApiComponentFactory()
+                      ->CreateLocalDeviceInfoProvider();
   sync_stopped_reporter_.reset(
           new browser_sync::SyncStoppedReporter(
               sync_service_url_,
@@ -322,6 +323,8 @@ bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
 }
 
 void ProfileSyncService::Initialize() {
+  sync_client_->Initialize(this);
+
   // We clear this here (vs Shutdown) because we want to remember that an error
   // happened on shutdown so we can display details (message, location) about it
   // in about:sync.
@@ -699,10 +702,8 @@ void ProfileSyncService::StartUpSlowBackendComponents(
   directory_path_ = profile_->GetPath().Append(sync_folder);
 
   backend_.reset(
-      factory_->CreateSyncBackendHost(
-          profile_->GetDebugName(),
-          invalidator,
-          sync_prefs_.AsWeakPtr(),
+      sync_client_->GetSyncApiComponentFactory()->CreateSyncBackendHost(
+          profile_->GetDebugName(), invalidator, sync_prefs_.AsWeakPtr(),
           sync_folder));
 
   // Initialize the backend.  Every time we start up a new SyncBackendHost,
@@ -1903,9 +1904,10 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   bool restart = false;
   if (!data_type_manager_) {
     restart = true;
-    data_type_manager_.reset(factory_->CreateDataTypeManager(
-        debug_info_listener_, &data_type_controllers_, this, backend_.get(),
-        this));
+    data_type_manager_.reset(
+        sync_client_->GetSyncApiComponentFactory()->CreateDataTypeManager(
+            debug_info_listener_, &data_type_controllers_, this, backend_.get(),
+            this));
 
     // We create the migrator at the same time.
     migrator_.reset(new browser_sync::BackendMigrator(
@@ -2653,6 +2655,10 @@ void ProfileSyncService::FlushDirectory() const {
   // If sync is not initialized yet, we fail silently.
   if (backend_initialized_)
     backend_->FlushDirectory();
+}
+
+sync_driver::SyncClient* ProfileSyncService::GetSyncClient() const {
+  return sync_client_.get();
 }
 
 base::FilePath ProfileSyncService::GetDirectoryPathForTest() const {

@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/chrome_sync_client.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "url/gurl.h"
@@ -45,10 +44,7 @@ class ProfileSyncComponentsFactoryImpl
       net::URLRequestContextGetter* url_request_context_getter);
   ~ProfileSyncComponentsFactoryImpl() override;
 
-  // Initializes internal state after construction.
-  void Initialize(sync_driver::SyncService* sync_service) override;
-
-  void RegisterDataTypes() override;
+  void RegisterDataTypes(sync_driver::SyncClient* sync_client) override;
 
   sync_driver::DataTypeManager* CreateDataTypeManager(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
@@ -90,12 +86,15 @@ class ProfileSyncComponentsFactoryImpl
   // |disabled_types| and |enabled_types| correspond only to those types
   // being explicitly enabled/disabled by the command line.
   void RegisterDesktopDataTypes(syncer::ModelTypeSet disabled_types,
-                                syncer::ModelTypeSet enabled_types);
+                                syncer::ModelTypeSet enabled_types,
+                                sync_driver::SyncClient* sync_client);
+
   // Register data types which are enabled on both desktop and mobile.
   // |disabled_types| and |enabled_types| correspond only to those types
   // being explicitly enabled/disabled by the command line.
   void RegisterCommonDataTypes(syncer::ModelTypeSet disabled_types,
-                               syncer::ModelTypeSet enabled_types);
+                               syncer::ModelTypeSet enabled_types,
+                               sync_driver::SyncClient* sync_client);
 
   void DisableBrokenType(syncer::ModelType type,
                          const tracked_objects::Location& from_here,
@@ -107,11 +106,6 @@ class ProfileSyncComponentsFactoryImpl
   const GURL sync_service_url_;
   OAuth2TokenService* const token_service_;
   net::URLRequestContextGetter* const url_request_context_getter_;
-
-  // Chrome specific implementation of SyncClient.
-  // TODO(zea): Move the creation of this into the ProfileSyncServiceFactory,
-  // and ownership to the ProfileSyncService itself.
-  browser_sync::ChromeSyncClient chrome_sync_client_;
 
   base::WeakPtrFactory<ProfileSyncComponentsFactoryImpl> weak_factory_;
 

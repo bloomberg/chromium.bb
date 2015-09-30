@@ -72,7 +72,6 @@ class TestProfileSyncService : public ProfileSyncService {
   // TODO(tim): Add ability to inject TokenService alongside SigninManager.
   // TODO(rogerta): what does above comment mean?
   TestProfileSyncService(
-      scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
       Profile* profile,
       SigninManagerBase* signin,
       ProfileOAuth2TokenService* oauth2_token_service,
@@ -89,7 +88,7 @@ class TestProfileSyncService : public ProfileSyncService {
   static TestProfileSyncService* BuildAutoStartAsyncInit(
       Profile* profile, base::Closure callback);
 
-  ProfileSyncComponentsFactoryMock* components_factory_mock();
+  ProfileSyncComponentsFactoryMock* GetSyncApiComponentFactoryMock();
 
   syncer::TestIdFactory* id_factory();
 

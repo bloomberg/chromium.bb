@@ -8,6 +8,7 @@
 #include "base/prefs/testing_pref_store.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -18,15 +19,18 @@
 
 ProfileSyncServiceMock::ProfileSyncServiceMock(Profile* profile)
     : ProfileSyncServiceMock(
-          scoped_ptr<sync_driver::SyncApiComponentFactory>(
-              new ProfileSyncComponentsFactoryMock()),
-          profile) {
-}
+          make_scoped_ptr(
+              new browser_sync::ChromeSyncClient(
+                  profile,
+                  make_scoped_ptr(new ProfileSyncComponentsFactoryMock())))
+              .Pass(),
+          profile) {}
 
 ProfileSyncServiceMock::ProfileSyncServiceMock(
-    scoped_ptr<sync_driver::SyncApiComponentFactory> factory, Profile* profile)
+    scoped_ptr<sync_driver::SyncClient> sync_client,
+    Profile* profile)
     : ProfileSyncService(
-          factory.Pass(),
+          sync_client.Pass(),
           profile,
           make_scoped_ptr(new SigninManagerWrapper(
               SigninManagerFactory::GetForProfile(profile))),

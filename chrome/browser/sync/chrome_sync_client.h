@@ -18,12 +18,13 @@ namespace browser_sync {
 
 class ChromeSyncClient : public sync_driver::SyncClient {
  public:
-  ChromeSyncClient(Profile* profile,
-                   sync_driver::SyncApiComponentFactory* component_factory);
+  ChromeSyncClient(
+      Profile* profile,
+      scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory);
   ~ChromeSyncClient() override;
 
   // Initializes the ChromeSyncClient internal state.
-  void Initialize(sync_driver::SyncService* sync_service);
+  void Initialize(sync_driver::SyncService* sync_service) override;
 
   // SyncClient implementation.
   sync_driver::SyncService* GetSyncService() override;
@@ -41,10 +42,8 @@ class ChromeSyncClient : public sync_driver::SyncClient {
  private:
   Profile* const profile_;
 
-  // TODO(zea): This is currently a pointer to the "parent" of this class, and
-  // is therefore not owned, but we should eventually have the SyncClient own
-  // the component factory (crbug.com/512832).
-  sync_driver::SyncApiComponentFactory* const component_factory_;
+  // The sync api component factory in use by this client.
+  scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory_;
 
   // Members that must be fetched on the UI thread but accessed on their
   // respective backend threads.

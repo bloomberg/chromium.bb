@@ -23,12 +23,15 @@
 
 using ::testing::Invoke;
 
+namespace sync_driver {
+class SyncClient;
+}
+
 class ProfileSyncServiceMock : public ProfileSyncService {
  public:
   explicit ProfileSyncServiceMock(Profile* profile);
-  ProfileSyncServiceMock(
-      scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
-      Profile* profile);
+  ProfileSyncServiceMock(scoped_ptr<sync_driver::SyncClient> sync_client,
+                         Profile* profile);
   virtual ~ProfileSyncServiceMock();
 
   // A utility used by sync tests to create a TestingProfile with a Google

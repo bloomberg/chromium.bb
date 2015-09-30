@@ -28,8 +28,7 @@ class ProfileSyncComponentsFactoryMock
       sync_driver::ChangeProcessor* change_processor);
   ~ProfileSyncComponentsFactoryMock() override;
 
-  MOCK_METHOD1(Initialize, void(sync_driver::SyncService*));
-  MOCK_METHOD0(RegisterDataTypes, void());
+  MOCK_METHOD1(RegisterDataTypes, void(sync_driver::SyncClient*));
   MOCK_METHOD5(CreateDataTypeManager,
                sync_driver::DataTypeManager*(
                    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,

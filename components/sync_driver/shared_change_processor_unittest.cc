@@ -41,8 +41,7 @@ class TestSyncApiComponentFactory : public SyncApiComponentFactory {
   ~TestSyncApiComponentFactory() override {}
 
   // SyncApiComponentFactory implementation.
-  void Initialize(sync_driver::SyncService* pss) override {}
-  void RegisterDataTypes() override {}
+  void RegisterDataTypes(sync_driver::SyncClient* sync_client) override {}
   sync_driver::DataTypeManager* CreateDataTypeManager(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,

@@ -512,7 +512,7 @@ class ProfileSyncServiceAutofillTest
     sync_client_->SetSyncService(sync_service_);
 
     ProfileSyncComponentsFactoryMock* components =
-        sync_service_->components_factory_mock();
+        sync_service_->GetSyncApiComponentFactoryMock();
 
     EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _)).
         WillOnce(ReturnNewDataTypeManagerWithDebugListener(

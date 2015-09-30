@@ -70,6 +70,7 @@ class DeviceInfoSyncService;
 class LocalDeviceInfoProvider;
 class OpenTabsUIDelegate;
 class SyncApiComponentFactory;
+class SyncClient;
 }  // namespace sync_driver
 
 namespace syncer {
@@ -228,7 +229,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Takes ownership of |factory| and |signin_wrapper|.
   ProfileSyncService(
-      scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
+      scoped_ptr<sync_driver::SyncClient> sync_client,
       Profile* profile,
       scoped_ptr<SigninManagerWrapper> signin_wrapper,
       ProfileOAuth2TokenService* oauth2_token_service,
@@ -408,10 +409,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // never become active. Use IsSyncActive to see if sync is running.
   virtual bool IsSyncRequested() const;
 
-  sync_driver::SyncApiComponentFactory* factory() const {
-    return factory_.get();
-  }
-
   // The profile we are syncing for.
   Profile* profile() const { return profile_; }
 
@@ -563,6 +560,9 @@ class ProfileSyncService : public sync_driver::SyncService,
   // It should be used to persist data to disk when the process might be
   // killed in the near future.
   void FlushDirectory() const;
+
+  // Returns the SyncClient associated with this profile.
+  sync_driver::SyncClient* GetSyncClient() const;
 
   // Needed to test whether the directory is deleted properly.
   base::FilePath GetDirectoryPathForTest() const;
@@ -780,8 +780,9 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Restarts sync clearing directory in the process.
   void OnClearServerDataDone();
 
-  // Factory used to create various dependent objects.
-  scoped_ptr<sync_driver::SyncApiComponentFactory> factory_;
+  // This profile's SyncClient, which abstracts away non-Sync dependencies and
+  // the Sync API component factory.
+  scoped_ptr<sync_driver::SyncClient> sync_client_;
 
   // The profile whose data we are synchronizing.
   Profile* profile_;

@@ -83,8 +83,7 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
   MockSyncApiComponentFactory() {}
 
   // SyncApiComponentFactory implementation.
-  void Initialize(SyncService* sync_service) override {}
-  void RegisterDataTypes() override {}
+  void RegisterDataTypes(sync_driver::SyncClient* sync_client) override {}
   sync_driver::DataTypeManager* CreateDataTypeManager(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,

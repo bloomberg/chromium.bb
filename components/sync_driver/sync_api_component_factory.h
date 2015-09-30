@@ -47,6 +47,7 @@ class DataTypeStatusTable;
 class GenericChangeProcessor;
 class LocalDeviceInfoProvider;
 class SyncPrefs;
+class SyncClient;
 class SyncService;
 
 // This factory provides sync driver code with the model type specific sync/api
@@ -76,10 +77,8 @@ class SyncApiComponentFactory {
         : model_associator(ma), change_processor(cp) {}
   };
 
-  virtual void Initialize(sync_driver::SyncService* sync_service) = 0;
-
-  // Creates and registers enabled datatypes with internal SyncService.
-  virtual void RegisterDataTypes() = 0;
+  // Creates and registers enabled datatypes with the provided SyncClient.
+  virtual void RegisterDataTypes(sync_driver::SyncClient* sync_client) = 0;
 
   // Instantiates a new DataTypeManager with a SyncBackendHost, a list of data
   // type controllers and a DataTypeManagerObserver.  The return pointer is

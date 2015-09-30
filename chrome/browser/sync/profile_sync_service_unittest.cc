@@ -38,6 +38,7 @@
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/fake_data_type_controller.h"
+#include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_driver_switches.h"
@@ -276,12 +277,12 @@ class ProfileSyncServiceTest : public ::testing::Test {
     signin->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
     ProfileOAuth2TokenService* oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-    components_factory_ = new ProfileSyncComponentsFactoryMock();
+    components_factory_.reset(new ProfileSyncComponentsFactoryMock());
+    scoped_ptr<sync_driver::FakeSyncClient> sync_client(
+        new sync_driver::FakeSyncClient(components_factory_.get()));
     service_.reset(new ProfileSyncService(
-        scoped_ptr<sync_driver::SyncApiComponentFactory>(components_factory_),
-        profile_,
-        make_scoped_ptr(new SigninManagerWrapper(signin)),
-        oauth2_token_service,
+        sync_client.Pass(), profile_,
+        make_scoped_ptr(new SigninManagerWrapper(signin)), oauth2_token_service,
         behavior));
     service_->SetClearingBrowseringDataForTesting(
         base::Bind(&ProfileSyncServiceTest::ClearBrowsingDataCallback,
@@ -393,7 +394,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   ProfileSyncComponentsFactoryMock* components_factory() {
-    return components_factory_;
+    return components_factory_.get();
   }
 
   void ClearBrowsingDataCallback(BrowsingDataRemover::Observer* observer,
@@ -421,8 +422,9 @@ class ProfileSyncServiceTest : public ::testing::Test {
   TestingProfile* profile_;
   scoped_ptr<ProfileSyncService> service_;
 
-  // Pointer to the components factory.  Not owned.  May be null.
-  ProfileSyncComponentsFactoryMock* components_factory_;
+  // The current component factory used by sync. May be null if the server
+  // hasn't been created yet.
+  scoped_ptr<ProfileSyncComponentsFactoryMock> components_factory_;
 };
 
 // Verify that the server URLs are sane.
