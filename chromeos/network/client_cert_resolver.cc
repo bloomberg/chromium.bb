@@ -71,6 +71,7 @@ bool HasPrivateKey(const net::X509Certificate& cert) {
 }
 
 // Describes a certificate which is issued by |issuer| (encoded as PEM).
+// |issuer| can be empty if no issuer certificate is found in the database.
 struct CertAndIssuer {
   CertAndIssuer(const scoped_refptr<net::X509Certificate>& certificate,
                 const std::string& issuer)
@@ -127,6 +128,33 @@ struct MatchCertWithPattern {
   const CertificatePattern pattern;
 };
 
+// Lookup the issuer certificate of |cert|. If it is available, return the PEM
+// encoding of that certificate. Otherwise return the empty string.
+std::string GetPEMEncodedIssuer(const net::X509Certificate& cert) {
+  net::ScopedCERTCertificate issuer_handle(
+      CERT_FindCertIssuer(cert.os_cert_handle(), PR_Now(), certUsageAnyCA));
+  if (!issuer_handle) {
+    VLOG(1) << "Couldn't find an issuer.";
+    return std::string();
+  }
+
+  scoped_refptr<net::X509Certificate> issuer =
+      net::X509Certificate::CreateFromHandle(
+          issuer_handle.get(),
+          net::X509Certificate::OSCertHandles() /* no intermediate certs */);
+  if (!issuer.get()) {
+    LOG(ERROR) << "Couldn't create issuer cert.";
+    return std::string();
+  }
+  std::string pem_encoded_issuer;
+  if (!net::X509Certificate::GetPEMEncoded(issuer->os_cert_handle(),
+                                           &pem_encoded_issuer)) {
+    LOG(ERROR) << "Couldn't PEM-encode certificate.";
+    return std::string();
+  }
+  return pem_encoded_issuer;
+}
+
 std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
     const net::CertificateList& certs) {
   // Filter all client certs and determines each certificate's issuer, which is
@@ -140,27 +168,7 @@ std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
         !CertLoader::IsCertificateHardwareBacked(&cert)) {
       continue;
     }
-    net::ScopedCERTCertificate issuer_handle(
-        CERT_FindCertIssuer(cert.os_cert_handle(), PR_Now(), certUsageAnyCA));
-    if (!issuer_handle) {
-      LOG(ERROR) << "Couldn't find an issuer.";
-      continue;
-    }
-    scoped_refptr<net::X509Certificate> issuer =
-        net::X509Certificate::CreateFromHandle(
-            issuer_handle.get(),
-            net::X509Certificate::OSCertHandles() /* no intermediate certs */);
-    if (!issuer.get()) {
-      LOG(ERROR) << "Couldn't create issuer cert.";
-      continue;
-    }
-    std::string pem_encoded_issuer;
-    if (!net::X509Certificate::GetPEMEncoded(issuer->os_cert_handle(),
-                                             &pem_encoded_issuer)) {
-      LOG(ERROR) << "Couldn't PEM-encode certificate.";
-      continue;
-    }
-    client_certs.push_back(CertAndIssuer(*it, pem_encoded_issuer));
+    client_certs.push_back(CertAndIssuer(*it, GetPEMEncodedIssuer(cert)));
   }
 
   std::sort(client_certs.begin(), client_certs.end(), &CompareCertExpiration);

@@ -101,24 +101,26 @@ class ClientCertResolverTest : public testing::Test,
     }
   }
 
-  // Imports a CA cert (stored as PEM in test_ca_cert_pem_) and a client
-  // certificate signed by that CA. Its PKCS#11 ID is stored in
-  // |test_cert_id_|.
-  void SetupTestCerts() {
-    // Import a CA cert.
-    net::CertificateList ca_cert_list =
-        net::CreateCertificateListFromFile(net::GetTestCertsDirectory(),
-                                           "client_1_ca.pem",
-                                           net::X509Certificate::FORMAT_AUTO);
+  // Imports a client certificate. Its PKCS#11 ID is stored in |test_cert_id_|.
+  // If |import_issuer| is true, also imports the CA cert (stored as PEM in
+  // test_ca_cert_pem_) that issued the client certificate.
+  void SetupTestCerts(bool import_issuer) {
+    // Load a CA cert.
+    net::CertificateList ca_cert_list = net::CreateCertificateListFromFile(
+        net::GetTestCertsDirectory(), "client_1_ca.pem",
+        net::X509Certificate::FORMAT_AUTO);
     ASSERT_TRUE(!ca_cert_list.empty());
-    net::NSSCertDatabase::ImportCertFailureList failures;
-    EXPECT_TRUE(test_nsscertdb_->ImportCACerts(
-        ca_cert_list, net::NSSCertDatabase::TRUST_DEFAULT, &failures));
-    ASSERT_TRUE(failures.empty()) << net::ErrorToString(failures[0].net_error);
-
     net::X509Certificate::GetPEMEncoded(ca_cert_list[0]->os_cert_handle(),
                                         &test_ca_cert_pem_);
     ASSERT_TRUE(!test_ca_cert_pem_.empty());
+
+    if (import_issuer) {
+      net::NSSCertDatabase::ImportCertFailureList failures;
+      EXPECT_TRUE(test_nsscertdb_->ImportCACerts(
+          ca_cert_list, net::NSSCertDatabase::TRUST_DEFAULT, &failures));
+      ASSERT_TRUE(failures.empty())
+          << net::ErrorToString(failures[0].net_error);
+    }
 
     // Import a client cert signed by that CA.
     test_client_cert_ =
@@ -172,10 +174,45 @@ class ClientCertResolverTest : public testing::Test,
         ->AddManagerService(kWifiStub, true);
   }
 
-  // Setup a policy with a certificate pattern that matches any client cert that
-  // is signed by the test CA cert (stored in |test_ca_cert_pem_|). In
+  // Sets up a policy with a certificate pattern that matches any client cert
+  // with a certain Issuer CN. It will match the test client cert.
+  void SetupPolicyMatchingIssuerCN() {
+    const char* kTestPolicy =
+        "[ { \"GUID\": \"wifi_stub\","
+        "    \"Name\": \"wifi_stub\","
+        "    \"Type\": \"WiFi\","
+        "    \"WiFi\": {"
+        "      \"Security\": \"WPA-EAP\","
+        "      \"SSID\": \"wifi_ssid\","
+        "      \"EAP\": {"
+        "        \"Outer\": \"EAP-TLS\","
+        "        \"ClientCertType\": \"Pattern\","
+        "        \"ClientCertPattern\": {"
+        "          \"Issuer\": {"
+        "            \"CommonName\": \"B CA\""
+        "          }"
+        "        }"
+        "      }"
+        "    }"
+        "} ]";
+
+    std::string error;
+    scoped_ptr<base::Value> policy_value = base::JSONReader::ReadAndReturnError(
+        kTestPolicy, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error);
+    ASSERT_TRUE(policy_value) << error;
+
+    base::ListValue* policy = NULL;
+    ASSERT_TRUE(policy_value->GetAsList(&policy));
+
+    managed_config_handler_->SetPolicy(
+        onc::ONC_SOURCE_USER_POLICY, kUserHash, *policy,
+        base::DictionaryValue() /* no global network config */);
+  }
+
+  // Sets up a policy with a certificate pattern that matches any client cert
+  // that is signed by the test CA cert (stored in |test_ca_cert_pem_|). In
   // particular it will match the test client cert.
-  void SetupPolicy() {
+  void SetupPolicyMatchingIssuerPEM() {
     const char* kTestPolicyTemplate =
         "[ { \"GUID\": \"wifi_stub\","
         "    \"Name\": \"wifi_stub\","
@@ -248,12 +285,13 @@ class ClientCertResolverTest : public testing::Test,
 };
 
 TEST_F(ClientCertResolverTest, NoMatchingCertificates) {
+  SetupTestCerts(false /* do not import the issuer */);
   StartCertLoader();
   SetupWifi();
   base::RunLoop().RunUntilIdle();
   network_properties_changed_count_ = 0;
   SetupNetworkHandlers();
-  SetupPolicy();
+  SetupPolicyMatchingIssuerPEM();
   base::RunLoop().RunUntilIdle();
 
   // Verify that no client certificate was configured.
@@ -264,13 +302,34 @@ TEST_F(ClientCertResolverTest, NoMatchingCertificates) {
   EXPECT_FALSE(client_cert_resolver_->IsAnyResolveTaskRunning());
 }
 
-TEST_F(ClientCertResolverTest, ResolveOnCertificatesLoaded) {
-  SetupTestCerts();
+TEST_F(ClientCertResolverTest, MatchIssuerCNWithoutIssuerInstalled) {
+  SetupTestCerts(false /* do not import the issuer */);
   SetupWifi();
   base::RunLoop().RunUntilIdle();
 
   SetupNetworkHandlers();
-  SetupPolicy();
+  SetupPolicyMatchingIssuerCN();
+  base::RunLoop().RunUntilIdle();
+
+  network_properties_changed_count_ = 0;
+  StartCertLoader();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that the resolver positively matched the pattern in the policy with
+  // the test client cert and configured the network.
+  std::string pkcs11_id;
+  GetClientCertProperties(&pkcs11_id);
+  EXPECT_EQ(test_cert_id_, pkcs11_id);
+  EXPECT_EQ(1, network_properties_changed_count_);
+}
+
+TEST_F(ClientCertResolverTest, ResolveOnCertificatesLoaded) {
+  SetupTestCerts(true /* import issuer */);
+  SetupWifi();
+  base::RunLoop().RunUntilIdle();
+
+  SetupNetworkHandlers();
+  SetupPolicyMatchingIssuerPEM();
   base::RunLoop().RunUntilIdle();
 
   network_properties_changed_count_ = 0;
@@ -286,7 +345,7 @@ TEST_F(ClientCertResolverTest, ResolveOnCertificatesLoaded) {
 }
 
 TEST_F(ClientCertResolverTest, ResolveAfterPolicyApplication) {
-  SetupTestCerts();
+  SetupTestCerts(true /* import issuer */);
   SetupWifi();
   base::RunLoop().RunUntilIdle();
   StartCertLoader();
@@ -295,7 +354,7 @@ TEST_F(ClientCertResolverTest, ResolveAfterPolicyApplication) {
 
   // Policy application will trigger the ClientCertResolver.
   network_properties_changed_count_ = 0;
-  SetupPolicy();
+  SetupPolicyMatchingIssuerPEM();
   base::RunLoop().RunUntilIdle();
 
   // Verify that the resolver positively matched the pattern in the policy with
