@@ -80,8 +80,6 @@ void SavePasswordProgressLogger::LogPasswordForm(
                 GetStringFromID(FormSchemeToStringID(form.scheme)));
   log.SetString(GetStringFromID(STRING_SIGNON_REALM),
                 ScrubURL(GURL(form.signon_realm)));
-  log.SetString(GetStringFromID(STRING_ORIGINAL_SIGNON_REALM),
-                ScrubURL(GURL(form.original_signon_realm)));
   log.SetString(GetStringFromID(STRING_ORIGIN), ScrubURL(form.origin));
   log.SetString(GetStringFromID(STRING_ACTION), ScrubURL(form.action));
   log.SetString(GetStringFromID(STRING_USERNAME_ELEMENT),
@@ -94,7 +92,8 @@ void SavePasswordProgressLogger::LogPasswordForm(
   log.SetBoolean(GetStringFromID(STRING_PASSWORD_GENERATED),
                  form.type == PasswordForm::TYPE_GENERATED);
   log.SetInteger(GetStringFromID(STRING_TIMES_USED), form.times_used);
-  log.SetBoolean(GetStringFromID(STRING_PSL_MATCH), form.IsPublicSuffixMatch());
+  log.SetBoolean(GetStringFromID(STRING_PSL_MATCH),
+                 form.is_public_suffix_match);
   LogValue(label, log);
 }
 
@@ -184,8 +183,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Scheme";
     case SavePasswordProgressLogger::STRING_SIGNON_REALM:
       return "Signon realm";
-    case SavePasswordProgressLogger::STRING_ORIGINAL_SIGNON_REALM:
-      return "Original signon realm";
     case SavePasswordProgressLogger::STRING_ORIGIN:
       return "Origin";
     case SavePasswordProgressLogger::STRING_ACTION:

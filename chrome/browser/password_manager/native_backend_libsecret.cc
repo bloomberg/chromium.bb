@@ -614,9 +614,7 @@ ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
           continue;
         }
         psl_domain_match_metric = password_manager::PSL_DOMAIN_MATCH_FOUND;
-        form->original_signon_realm = form->signon_realm;
-        form->signon_realm = lookup_form->signon_realm;
-        form->origin = lookup_form->origin;
+        form->is_public_suffix_match = true;
       }
       SecretValue* secretValue = secret_item_get_secret(secretItem);
       if (secretValue) {

@@ -936,9 +936,9 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
 }
 
 bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
-  if (form.IsPublicSuffixMatch()) {
-    // Do not try to remove |form|. It is a modified copy of a password stored
-    // for a different origin, and it is not contained in the database.
+  if (form.is_public_suffix_match) {
+    // TODO(dvadym): Discuss whether we should allow to remove PSL matched
+    // credentials.
     return false;
   }
   // Remove a login by UNIQUE-constrained fields.
@@ -1227,16 +1227,7 @@ bool LoginDatabase::StatementToForms(
       }
 
       psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND;
-      // This is not a perfect match, so we need to create a new valid result.
-      // We do this by copying over origin, signon realm and action from the
-      // observed form and setting the original signon realm to what we found
-      // in the database. We use the fact that |original_signon_realm| is
-      // non-empty to communicate that this match was found using public
-      // suffix matching.
-      new_form->original_signon_realm = new_form->signon_realm;
-      new_form->origin = psl_match->origin;
-      new_form->signon_realm = psl_match->signon_realm;
-      new_form->action = psl_match->action;
+      new_form->is_public_suffix_match = true;
     }
     forms->push_back(new_form.Pass());
   }

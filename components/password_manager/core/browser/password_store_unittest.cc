@@ -450,11 +450,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   expected_results.push_back(new PasswordForm(*all_credentials[0]));
   expected_results.push_back(new PasswordForm(*all_credentials[1]));
   for (PasswordForm* result : expected_results) {
-    if (result->signon_realm == observed_form.signon_realm)
-      continue;
-    result->original_signon_realm = result->signon_realm;
-    result->origin = observed_form.origin;
-    result->signon_realm = observed_form.signon_realm;
+    if (result->signon_realm != observed_form.signon_realm)
+      result->is_public_suffix_match = true;
   }
 
   std::vector<std::string> no_affiliated_android_realms;
@@ -516,7 +513,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
        kTestUnrelatedAndroidRealm,
        "", "", L"", L"", L"",
        L"username_value_5",
-       L"", true, true, 1}};
+       L"", true, true, 1}
+       };
   /* clang-format on */
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
@@ -549,11 +547,9 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
   expected_results.push_back(new PasswordForm(*all_credentials[3]));
   expected_results.push_back(new PasswordForm(*all_credentials[4]));
   for (PasswordForm* result : expected_results) {
-    if (result->signon_realm == observed_form.signon_realm)
-      continue;
-    result->original_signon_realm = result->signon_realm;
-    result->signon_realm = observed_form.signon_realm;
-    result->origin = observed_form.origin;
+    if (result->signon_realm != observed_form.signon_realm &&
+        !IsValidAndroidFacetURI(result->signon_realm))
+      result->is_public_suffix_match = true;
   }
 
   std::vector<std::string> affiliated_android_realms;

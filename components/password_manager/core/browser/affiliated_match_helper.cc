@@ -133,20 +133,6 @@ bool AffiliatedMatchHelper::IsValidWebCredential(
          facet_uri.IsValidWebFacetURI();
 }
 
-// static
-ScopedVector<autofill::PasswordForm>
-AffiliatedMatchHelper::TransformAffiliatedAndroidCredentials(
-    const autofill::PasswordForm& observed_form,
-    ScopedVector<autofill::PasswordForm> android_credentials) {
-  for (autofill::PasswordForm* form : android_credentials) {
-    DCHECK_EQ(form->scheme, autofill::PasswordForm::SCHEME_HTML);
-    form->origin = observed_form.origin;
-    form->original_signon_realm = form->signon_realm;
-    form->signon_realm = observed_form.signon_realm;
-  }
-  return android_credentials.Pass();
-}
-
 void AffiliatedMatchHelper::SetTaskRunnerUsedForWaitingForTesting(
     const scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   task_runner_for_waiting_ = task_runner;

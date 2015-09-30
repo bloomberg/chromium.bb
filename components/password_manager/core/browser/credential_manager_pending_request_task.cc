@@ -53,6 +53,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
       form = nullptr;
     } else if (affiliated_realms_.count(form->signon_realm) &&
                AffiliatedMatchHelper::IsValidAndroidCredential(*form)) {
+      form->is_affiliated = true;
       affiliated_results.push_back(form);
       form = nullptr;
     }
@@ -69,13 +70,9 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     // TODO(mkwst): This doesn't create a PasswordForm that we can use to create
     // a FederatedCredential (via CreatePasswordFormFromCredentialInfo). We need
     // to fix that.
-    ScopedVector<autofill::PasswordForm> more_local_results(
-        AffiliatedMatchHelper::TransformAffiliatedAndroidCredentials(
-            delegate_->GetSynthesizedFormForOrigin(),
-            affiliated_results.Pass()));
-    local_results.insert(local_results.end(), more_local_results.begin(),
-                         more_local_results.end());
-    more_local_results.weak_clear();
+    local_results.insert(local_results.end(), affiliated_results.begin(),
+                         affiliated_results.end());
+    affiliated_results.weak_clear();
   }
 
   if ((local_results.empty() && federated_results.empty())) {

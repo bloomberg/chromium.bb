@@ -1451,6 +1451,8 @@ TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
   base::MessageLoop::current()->Run();
 
   // 3. Add the returned password for m.facebook.com.
+  returned_form.signon_realm = "http://m.facebook.com";
+  returned_form.origin = GURL("http://m.facebook.com/index.html");
   EXPECT_EQ(AddChangeForForm(returned_form),
             login_db()->AddLogin(returned_form));
   owned_keychain_adapter.AddPassword(m_form);

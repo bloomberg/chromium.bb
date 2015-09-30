@@ -383,8 +383,7 @@ void PasswordStore::GetLoginsWithAffiliationsImpl(
     android_form.scheme = PasswordForm::SCHEME_HTML;
     android_form.signon_realm = realm;
     ScopedVector<PasswordForm> more_results(
-        AffiliatedMatchHelper::TransformAffiliatedAndroidCredentials(
-            form, FillMatchingLogins(android_form, DISALLOW_PROMPT)));
+        FillMatchingLogins(android_form, DISALLOW_PROMPT));
     results.insert(results.end(), more_results.begin(), more_results.end());
     more_results.weak_clear();
   }
@@ -408,7 +407,7 @@ scoped_ptr<PasswordForm> PasswordStore::GetLoginImpl(
       FillMatchingLogins(primary_key, DISALLOW_PROMPT));
   for (PasswordForm*& candidate : candidates) {
     if (ArePasswordFormUniqueKeyEqual(*candidate, primary_key) &&
-        !candidate->IsPublicSuffixMatch()) {
+        !candidate->is_public_suffix_match) {
       scoped_ptr<PasswordForm> result(candidate);
       candidate = nullptr;
       return result.Pass();
@@ -452,7 +451,7 @@ void PasswordStore::UpdateAffiliatedWebLoginsImpl(
       // non-HTML login forms; PSL matches; logins with a different username;
       // and logins with the same password (to avoid generating no-op updates).
       if (!AffiliatedMatchHelper::IsValidWebCredential(*web_login) ||
-          web_login->IsPublicSuffixMatch() ||
+          web_login->is_public_suffix_match ||
           web_login->username_value != updated_android_form.username_value ||
           web_login->password_value == updated_android_form.password_value)
         continue;

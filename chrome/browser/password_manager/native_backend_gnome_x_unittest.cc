@@ -582,8 +582,8 @@ class NativeBackendGnomeTest : public testing::Test {
     EXPECT_EQ(1u, form_list.size());
     PasswordForm m_facebook = *form_list[0];
     form_list.clear();
-    EXPECT_EQ(kMobileURL, m_facebook.origin);
-    EXPECT_EQ(kMobileURL.spec(), m_facebook.signon_realm);
+    m_facebook.origin = kMobileURL;
+    m_facebook.signon_realm = kMobileURL.spec();
 
     // Add the PSL-matched copy to saved logins.
     BrowserThread::PostTask(
@@ -648,7 +648,7 @@ class NativeBackendGnomeTest : public testing::Test {
     // There should be two results -- the exact one, and the PSL-matched one.
     EXPECT_EQ(2u, form_list.size());
     size_t index_non_psl = 0;
-    if (!form_list[index_non_psl]->original_signon_realm.empty())
+    if (form_list[index_non_psl]->is_public_suffix_match)
       index_non_psl = 1;
     EXPECT_EQ(kMobileURL, form_list[index_non_psl]->origin);
     EXPECT_EQ(kMobileURL.spec(), form_list[index_non_psl]->signon_realm);
@@ -668,7 +668,7 @@ class NativeBackendGnomeTest : public testing::Test {
     // There should be two results -- the exact one, and the PSL-matched one.
     EXPECT_EQ(2u, form_list.size());
     index_non_psl = 0;
-    if (!form_list[index_non_psl]->original_signon_realm.empty())
+    if (form_list[index_non_psl]->is_public_suffix_match)
       index_non_psl = 1;
     EXPECT_EQ(form_facebook_.origin, form_list[index_non_psl]->origin);
     EXPECT_EQ(form_facebook_.signon_realm,
@@ -831,8 +831,8 @@ TEST_F(NativeBackendGnomeTest, PSLMatchingPositive) {
   const GURL kMobileURL("http://m.facebook.com/");
   EXPECT_TRUE(CheckCredentialAvailability(
       form_facebook_, kMobileURL, PasswordForm::SCHEME_HTML, &result));
-  EXPECT_EQ(kMobileURL, result.origin);
-  EXPECT_EQ(kMobileURL.spec(), result.signon_realm);
+  EXPECT_EQ(form_facebook_.origin, result.origin);
+  EXPECT_EQ(form_facebook_.signon_realm, result.signon_realm);
 }
 
 // Save a password for www.facebook.com and see it not suggested for

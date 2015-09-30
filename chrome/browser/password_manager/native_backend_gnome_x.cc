@@ -197,10 +197,7 @@ ScopedVector<PasswordForm> ConvertFormList(GList* found,
           continue;
         }
         psl_domain_match_metric = password_manager::PSL_DOMAIN_MATCH_FOUND;
-        form->original_signon_realm = form->signon_realm;
-        form->signon_realm = lookup_form->signon_realm;
-        form->origin = lookup_form->origin;
-        form->action = lookup_form->action;
+        form->is_public_suffix_match = true;
       }
       if (data->secret) {
         form->password_value = UTF8ToUTF16(data->secret);

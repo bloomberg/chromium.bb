@@ -478,8 +478,7 @@ bool FormsMatchForMerge(const PasswordForm& form_a,
   }
   bool equal_realm = form_a.signon_realm == form_b.signon_realm;
   if (strictness == FUZZY_FORM_MATCH) {
-    equal_realm |= (!form_a.original_signon_realm.empty()) &&
-                   form_a.original_signon_realm == form_b.signon_realm;
+    equal_realm |= form_a.is_public_suffix_match;
   }
   return form_a.scheme == form_b.scheme && equal_realm &&
          form_a.username_value == form_b.username_value;
@@ -1183,9 +1182,8 @@ ScopedVector<autofill::PasswordForm> PasswordStoreMac::FillMatchingLogins(
     // http://crbug.com/340112
     if (form.scheme != db_form->scheme)
       continue;  // Forms with different schemes never match.
-    const std::string& original_singon_realm(db_form->original_signon_realm);
-    if (!original_singon_realm.empty())
-      realm_set.insert(original_singon_realm);
+    if (db_form->is_public_suffix_match)
+      realm_set.insert(db_form->signon_realm);
   }
   ScopedVector<autofill::PasswordForm> keychain_forms;
   for (std::set<std::string>::const_iterator realm = realm_set.begin();
@@ -1277,9 +1275,9 @@ bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
   if (!login_metadata_db_->GetLogins(form, &database_forms))
     return false;
   for (const autofill::PasswordForm* db_form : database_forms) {
-    // Below we filter out forms with non-empty original_signon_realm, because
-    // those signal fuzzy matches, and we are only interested in exact ones.
-    if (db_form->original_signon_realm.empty() &&
+    // Below we filter out fuzzy matched forms because we are only interested
+    // in exact ones.
+    if (!db_form->is_public_suffix_match &&
         internal_keychain_helpers::FormsMatchForMerge(
             form, *db_form, internal_keychain_helpers::STRICT_FORM_MATCH) &&
         db_form->origin == form.origin) {

@@ -149,7 +149,7 @@ void ManagePasswordsState::OnPasswordAutofilled(
   // TODO(vabr): Revert back to DCHECK once http://crbug.com/486931 is fixed.
   CHECK(!password_form_map.empty());
   ClearData();
-  if (password_form_map.begin()->second->IsPublicSuffixMatch()) {
+  if (password_form_map.begin()->second->is_public_suffix_match) {
     // Don't show the UI for PSL matched passwords. They are not stored for this
     // page and cannot be deleted.
     origin_ = GURL();

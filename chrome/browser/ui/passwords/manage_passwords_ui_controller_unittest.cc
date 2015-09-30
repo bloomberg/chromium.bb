@@ -569,8 +569,7 @@ TEST_F(ManagePasswordsUIControllerTest, InactiveOnPSLMatched) {
   autofill::PasswordFormMap map;
   scoped_ptr<autofill::PasswordForm> psl_matched_test_form(
       new autofill::PasswordForm(test_local_form()));
-  psl_matched_test_form->original_signon_realm =
-      "http://pslmatched.example.com";
+  psl_matched_test_form->is_public_suffix_match = true;
   map.insert(kTestUsername, psl_matched_test_form.Pass());
   controller()->OnPasswordAutofilled(map);
 

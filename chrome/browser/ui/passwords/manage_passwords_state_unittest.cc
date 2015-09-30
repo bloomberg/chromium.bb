@@ -358,7 +358,7 @@ TEST_F(ManagePasswordsStateTest, PasswordAutofilled) {
 
 TEST_F(ManagePasswordsStateTest, InactiveOnPSLMatched) {
   autofill::PasswordForm psl_matched_test_form = test_local_form();
-  psl_matched_test_form.original_signon_realm = "http://pslmatched.example.com";
+  psl_matched_test_form.is_public_suffix_match = true;
   autofill::PasswordFormMap password_form_map;
   password_form_map.insert(
       psl_matched_test_form.username_value,

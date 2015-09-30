@@ -339,8 +339,8 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
   // Match against the mobile site.
   EXPECT_TRUE(db().GetLogins(form2, &result));
   EXPECT_EQ(1U, result.size());
-  EXPECT_EQ("https://mobile.foo.com/", result[0]->signon_realm);
-  EXPECT_EQ("https://foo.com/", result[0]->original_signon_realm);
+  EXPECT_EQ("https://foo.com/", result[0]->signon_realm);
+  EXPECT_TRUE(result[0]->is_public_suffix_match);
 
   // Try to remove PSL matched form
   EXPECT_FALSE(db().RemoveLogin(*result[0]));
@@ -461,8 +461,8 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
   // Match against the mobile site.
   EXPECT_TRUE(db().GetLogins(form2, &result));
   EXPECT_EQ(1U, result.size());
-  EXPECT_EQ("https://mobile.foo.com/", result[0]->signon_realm);
-  EXPECT_EQ("https://foo.com/", result[0]->original_signon_realm);
+  EXPECT_EQ("https://foo.com/", result[0]->signon_realm);
+  EXPECT_TRUE(result[0]->is_public_suffix_match);
   result.clear();
 
   // Add baz.com desktop site.
@@ -493,8 +493,8 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
   // Match against the mobile site of baz.com.
   EXPECT_TRUE(db().GetLogins(form3, &result));
   EXPECT_EQ(1U, result.size());
-  EXPECT_EQ("https://m.baz.com/", result[0]->signon_realm);
-  EXPECT_EQ("https://baz.com/", result[0]->original_signon_realm);
+  EXPECT_EQ("https://baz.com/", result[0]->signon_realm);
+  EXPECT_TRUE(result[0]->is_public_suffix_match);
   result.clear();
 }
 

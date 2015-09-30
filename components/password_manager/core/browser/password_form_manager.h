@@ -383,6 +383,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // frequently require lookups by username value in IsNewLogin.
   autofill::PasswordFormMap best_matches_;
 
+  // Set of forms from PasswordStore that correspond to the current site and
+  // that are not in |best_matches_|.
+  ScopedVector<autofill::PasswordForm> not_best_matches_;
+
   // Set of blacklisted forms from the PasswordStore that best match the current
   // form.
   ScopedVector<autofill::PasswordForm> blacklisted_matches_;

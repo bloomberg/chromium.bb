@@ -21,8 +21,7 @@ void PasswordFormToJSON(const PasswordForm& form,
                         base::DictionaryValue* target) {
   target->SetInteger("scheme", form.scheme);
   target->SetString("signon_realm", form.signon_realm);
-  target->SetString("signon_realm", form.signon_realm);
-  target->SetString("original_signon_realm", form.original_signon_realm);
+  target->SetBoolean("is_public_suffix_match", form.is_public_suffix_match);
   target->SetString("origin", form.origin.possibly_invalid_spec());
   target->SetString("action", form.action.possibly_invalid_spec());
   target->SetString("submit_element", form.submit_element);
@@ -82,17 +81,13 @@ PasswordForm::PasswordForm()
       skip_zero_click(false),
       layout(Layout::LAYOUT_OTHER),
       was_parsed_using_autofill_predictions(false),
-      is_alive(true) {
-}
+      is_alive(true),
+      is_public_suffix_match(false),
+      is_affiliated(false) {}
 
 PasswordForm::~PasswordForm() {
   CHECK(is_alive);
   is_alive = false;
-}
-
-bool PasswordForm::IsPublicSuffixMatch() const {
-  CHECK(is_alive);
-  return !original_signon_realm.empty();
 }
 
 bool PasswordForm::IsPossibleChangePasswordForm() const {
@@ -105,37 +100,30 @@ bool PasswordForm::IsPossibleChangePasswordFormWithoutUsername() const {
 }
 
 bool PasswordForm::operator==(const PasswordForm& form) const {
-  return scheme == form.scheme &&
-      signon_realm == form.signon_realm &&
-      original_signon_realm == form.original_signon_realm &&
-      origin == form.origin &&
-      action == form.action &&
-      submit_element == form.submit_element &&
-      username_element == form.username_element &&
-      username_marked_by_site == form.username_marked_by_site &&
-      username_value == form.username_value &&
-      other_possible_usernames == form.other_possible_usernames &&
-      password_element == form.password_element &&
-      password_value == form.password_value &&
-      new_password_element == form.new_password_element &&
-      new_password_marked_by_site == form.new_password_marked_by_site &&
-      new_password_value == form.new_password_value &&
-      ssl_valid == form.ssl_valid &&
-      preferred == form.preferred &&
-      date_created == form.date_created &&
-      date_synced == form.date_synced &&
-      blacklisted_by_user == form.blacklisted_by_user &&
-      type == form.type &&
-      times_used == form.times_used &&
-      form_data.SameFormAs(form.form_data) &&
-      generation_upload_status == form.generation_upload_status &&
-      display_name == form.display_name &&
-      icon_url == form.icon_url &&
-      federation_url == form.federation_url &&
-      skip_zero_click == form.skip_zero_click &&
-      layout == form.layout &&
-      was_parsed_using_autofill_predictions ==
-          form.was_parsed_using_autofill_predictions;
+  return scheme == form.scheme && signon_realm == form.signon_realm &&
+         origin == form.origin && action == form.action &&
+         submit_element == form.submit_element &&
+         username_element == form.username_element &&
+         username_marked_by_site == form.username_marked_by_site &&
+         username_value == form.username_value &&
+         other_possible_usernames == form.other_possible_usernames &&
+         password_element == form.password_element &&
+         password_value == form.password_value &&
+         new_password_element == form.new_password_element &&
+         new_password_marked_by_site == form.new_password_marked_by_site &&
+         new_password_value == form.new_password_value &&
+         ssl_valid == form.ssl_valid && preferred == form.preferred &&
+         date_created == form.date_created && date_synced == form.date_synced &&
+         blacklisted_by_user == form.blacklisted_by_user && type == form.type &&
+         times_used == form.times_used &&
+         form_data.SameFormAs(form.form_data) &&
+         generation_upload_status == form.generation_upload_status &&
+         display_name == form.display_name && icon_url == form.icon_url &&
+         federation_url == form.federation_url &&
+         skip_zero_click == form.skip_zero_click && layout == form.layout &&
+         was_parsed_using_autofill_predictions ==
+             form.was_parsed_using_autofill_predictions &&
+         is_public_suffix_match == form.is_public_suffix_match;
 }
 
 bool PasswordForm::operator!=(const PasswordForm& form) const {

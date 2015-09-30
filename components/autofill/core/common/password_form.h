@@ -84,24 +84,6 @@ struct PasswordForm {
   // data from the database, so it must not be empty.
   std::string signon_realm;
 
-  // The original "Realm" for the sign-on (scheme, host, port for SCHEME_HTML,
-  // and contains the HTTP realm for dialog-based forms). This realm is only set
-  // when two PasswordForms are matched when trying to find a login/pass pair
-  // for a site. It is only set to a non-empty value during a match of the
-  // original stored login/pass and the current observed form if all these
-  // statements are true:
-  // 1) The full signon_realm is not the same.
-  // 2) The registry controlled domain is the same. For example; example.com,
-  // m.example.com, foo.login.example.com and www.example.com would all resolve
-  // to example.com since .com is the public suffix.
-  // 3) The scheme is the same.
-  // 4) The port is the same.
-  // For example, if there exists a stored password for http://www.example.com
-  // (where .com is the public suffix) and the observed form is
-  // http://m.example.com, |original_signon_realm| must be set to
-  // http://www.example.com.
-  std::string original_signon_realm;
-
   // An origin URL consists of the scheme, host, port and path; the rest is
   // stripped. This is the primary data used by the PasswordManager to decide
   // (in longest matching prefix fashion) whether or not a given PasswordForm
@@ -279,8 +261,11 @@ struct PasswordForm {
   // TODO(vabr): Remove |is_alive| once http://crbug.com/486931 is fixed.
   bool is_alive;  // Set on construction, reset on destruction.
 
-  // Returns true if this match was found using public suffix matching.
-  bool IsPublicSuffixMatch() const;
+  // if true this match was found using public suffix matching.
+  bool is_public_suffix_match;
+
+  // if true this form is affiliated with Android credentials.
+  bool is_affiliated;
 
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.
