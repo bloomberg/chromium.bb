@@ -17,9 +17,7 @@ namespace {{namespace}}Names {
 
 using namespace WTF;
 
-const int k{{suffix}}NameCount = {{entries|length}};
-
-void* {{suffix}}NamesStorage[k{{suffix}}NameCount * ((sizeof(AtomicString) + sizeof(void *) - 1) / sizeof(void *))];
+void* {{suffix}}NamesStorage[{{namespace}}{{suffix}}NamesCount * ((sizeof(AtomicString) + sizeof(void *) - 1) / sizeof(void *))];
 
 {% for entry in entries|sort(attribute='name', case_sensitive=True) %}
 {% filter enable_conditional(entry.Conditional) %}

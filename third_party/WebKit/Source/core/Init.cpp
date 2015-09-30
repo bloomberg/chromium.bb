@@ -58,7 +58,6 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/Partitions.h"
-#include "wtf/text/StringStatics.h"
 
 namespace blink {
 
@@ -76,6 +75,32 @@ void CoreInitializer::init()
 {
     ASSERT(!m_isInited);
     m_isInited = true;
+    // Note: in order to add core static strings for a new module (1)
+    // the value of 'coreStaticStringsCount' must be updated with the
+    // added strings count, (2) if the added strings are quialified names
+    // the 'qualifiedNamesCount' must be updated as well, (3) the strings
+    // 'init()' function call must be added.
+    // TODO(mikhail.pozdnyakov@intel.com): We should generate static strings initialization code.
+    const unsigned qualifiedNamesCount = HTMLNames::HTMLTagsCount + HTMLNames::HTMLAttrsCount
+        + MathMLNames::MathMLTagsCount + MathMLNames::MathMLAttrsCount
+        + SVGNames::SVGTagsCount + SVGNames::SVGAttrsCount
+        + XLinkNames::XLinkAttrsCount
+        + XMLNSNames::XMLNSAttrsCount
+        + XMLNames::XMLAttrsCount;
+
+    const unsigned coreStaticStringsCount = qualifiedNamesCount
+        + EventNames::EventNamesCount
+        + EventTargetNames::EventTargetNamesCount
+        + EventTypeNames::EventTypeNamesCount
+        + FetchInitiatorTypeNames::FetchInitiatorTypeNamesCount
+        + FontFamilyNames::FontFamilyNamesCount
+        + HTMLTokenizerNames::HTMLTokenizerNamesCount
+        + InputTypeNames::InputTypeNamesCount
+        + MediaFeatureNames::MediaFeatureNamesCount
+        + MediaTypeNames::MediaTypeNamesCount;
+
+    StringImpl::reserveStaticStringsCapacityForSize(coreStaticStringsCount + StringImpl::allStaticStrings().size());
+    QualifiedName::initAndReserveCapacityForSize(qualifiedNamesCount);
 
     HTMLNames::init();
     SVGNames::init();
@@ -97,13 +122,8 @@ void CoreInitializer::init()
     CSSPrimitiveValue::initUnitTable();
     CSSParserTokenRange::initStaticEOFToken();
 
-    // It would make logical sense to do this in WTF::initialize() but there are
-    // ordering dependencies, e.g. about "xmlns".
-    WTF::StringStatics::init();
-
     StyleChangeExtraData::init();
 
-    QualifiedName::init();
     EventTracer::initialize();
     KURL::initialize();
     SecurityPolicy::init();

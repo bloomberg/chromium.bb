@@ -79,15 +79,23 @@ void AtomicString::init()
     new (NotNull, (void*)&emptyAtom) AtomicString("");
 }
 
+template<unsigned charactersCount>
+PassRefPtr<StringImpl> addStaticASCIILiteral(const char (&characters)[charactersCount])
+{
+    unsigned length = charactersCount - 1;
+    unsigned hash = StringHasher::computeHashAndMaskTop8Bits(reinterpret_cast<const LChar*>(characters), length);
+    return adoptRef(StringImpl::createStatic(characters, length, hash));
+}
+
 void StringStatics::init()
 {
     ASSERT(isMainThread());
 
     // FIXME: These should be allocated at compile time.
     new (NotNull, (void*)&starAtom) AtomicString("*", AtomicString::ConstructFromLiteral);
-    new (NotNull, (void*)&xmlAtom) AtomicString("xml", AtomicString::ConstructFromLiteral);
-    new (NotNull, (void*)&xmlnsAtom) AtomicString("xmlns", AtomicString::ConstructFromLiteral);
-    new (NotNull, (void*)&xlinkAtom) AtomicString("xlink", AtomicString::ConstructFromLiteral);
+    new (NotNull, (void*)&xmlAtom) AtomicString(addStaticASCIILiteral("xml"));
+    new (NotNull, (void*)&xmlnsAtom) AtomicString(addStaticASCIILiteral("xmlns"));
+    new (NotNull, (void*)&xlinkAtom) AtomicString(addStaticASCIILiteral("xlink"));
     new (NotNull, (void*)&xmlnsWithColon) String("xmlns:");
 }
 

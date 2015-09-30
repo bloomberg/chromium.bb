@@ -28,6 +28,11 @@ void ModulesInitializer::init()
     ASSERT(!isInitialized());
 
     // Strings must be initialized before calling CoreInitializer::init().
+    const unsigned modulesStaticStringsCount = EventNames::EventModulesNamesCount
+        + EventTargetNames::EventTargetModulesNamesCount
+        + IndexedDBNames::IndexedDBNamesCount;
+    StringImpl::reserveStaticStringsCapacityForSize(modulesStaticStringsCount);
+
     EventNames::initModules();
     EventTargetNames::initModules();
     Document::registerEventFactory(EventModulesFactory::create());

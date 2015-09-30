@@ -397,6 +397,12 @@ StringImpl* StringImpl::createStatic(const char* string, unsigned length, unsign
     return impl;
 }
 
+void StringImpl::reserveStaticStringsCapacityForSize(unsigned size)
+{
+    ASSERT(s_allowCreationOfStaticStrings);
+    staticStrings().reserveCapacityForSize(size);
+}
+
 PassRefPtr<StringImpl> StringImpl::create(const UChar* characters, unsigned length)
 {
     if (!characters || !length)

@@ -41,18 +41,7 @@ struct SameSizeAsQualifiedNameImpl : public RefCounted<SameSizeAsQualifiedNameIm
 
 static_assert(sizeof(QualifiedName::QualifiedNameImpl) == sizeof(SameSizeAsQualifiedNameImpl), "QualifiedNameImpl should stay small");
 
-static const int staticQualifiedNamesCount = HTMLNames::HTMLTagsCount + HTMLNames::HTMLAttrsCount
-    + MathMLNames::MathMLTagsCount + MathMLNames::MathMLAttrsCount
-    + SVGNames::SVGTagsCount + SVGNames::SVGAttrsCount
-    + XLinkNames::XLinkAttrsCount
-    + XMLNSNames::XMLNSAttrsCount
-    + XMLNames::XMLAttrsCount;
-
-struct QualifiedNameHashTraits : public HashTraits<QualifiedName::QualifiedNameImpl*> {
-    static const unsigned minimumTableSize = WTF::HashTableCapacityForSize<staticQualifiedNamesCount>::value;
-};
-
-typedef HashSet<QualifiedName::QualifiedNameImpl*, QualifiedNameHash, QualifiedNameHashTraits> QualifiedNameCache;
+using QualifiedNameCache = HashSet<QualifiedName::QualifiedNameImpl*, QualifiedNameHash>;
 
 static QualifiedNameCache& qualifiedNameCache()
 {
@@ -115,9 +104,10 @@ String QualifiedName::toString() const
 DEFINE_GLOBAL(QualifiedName, anyName, nullAtom, starAtom, starAtom)
 DEFINE_GLOBAL(QualifiedName, nullName, nullAtom, nullAtom, nullAtom)
 
-void QualifiedName::init()
+void QualifiedName::initAndReserveCapacityForSize(unsigned size)
 {
     ASSERT(starAtom.impl());
+    qualifiedNameCache().reserveCapacityForSize(size + 2 /*starAtom and nullAtom */);
     new ((void*)&anyName) QualifiedName(nullAtom, starAtom, starAtom, true );
     new ((void*)&nullName) QualifiedName(nullAtom, nullAtom, nullAtom, true );
 }

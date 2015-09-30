@@ -35,6 +35,7 @@
 #include "wtf/Functional.h"
 #include "wtf/Threading.h"
 #include "wtf/text/AtomicString.h"
+#include "wtf/text/StringStatics.h"
 
 namespace WTF {
 
@@ -52,6 +53,7 @@ void initializeMainThread(void (*function)(MainThreadFunction, void*))
     mainThreadIdentifier = currentThread();
 
     AtomicString::init();
+    StringStatics::init();
 }
 
 namespace internal {

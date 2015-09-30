@@ -197,6 +197,7 @@ public:
     ~StringImpl();
 
     static StringImpl* createStatic(const char* string, unsigned length, unsigned hash);
+    static void reserveStaticStringsCapacityForSize(unsigned size);
     static void freezeStaticStrings();
     static const StaticStringsTable& allStaticStrings();
     static unsigned highestStaticStringLength() { return m_highestStaticStringLength; }

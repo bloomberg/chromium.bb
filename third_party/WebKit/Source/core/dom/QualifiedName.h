@@ -127,7 +127,7 @@ public:
     QualifiedNameImpl* impl() const { return m_impl.get(); }
 
     // Init routine for globals
-    static void init();
+    static void initAndReserveCapacityForSize(unsigned size);
 
     static const QualifiedName& null();
 

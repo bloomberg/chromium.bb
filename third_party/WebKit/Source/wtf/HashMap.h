@@ -97,6 +97,11 @@ public:
 
     unsigned size() const;
     unsigned capacity() const;
+    void reserveCapacityForSize(unsigned size)
+    {
+        m_impl.reserveCapacityForSize(size);
+    }
+
     bool isEmpty() const;
 
     // iterators iterate over pairs of keys and values
