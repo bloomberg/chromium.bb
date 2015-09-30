@@ -89,7 +89,7 @@ void OnGetSession(const base::WeakPtr<size_t>& session_remaining_count,
   (*session_remaining_count)--;
 
   scoped_ptr<base::DictionaryValue> session(new base::DictionaryValue());
-  session->Set("sessionId", new base::StringValue(session_id));
+  session->Set("id", new base::StringValue(session_id));
   session->Set("capabilities", value->DeepCopy());
   session_list->Append(session.release());
 

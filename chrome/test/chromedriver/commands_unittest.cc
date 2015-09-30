@@ -93,8 +93,8 @@ void OnGetSessions(const Status& status,
   base::DictionaryValue* session1_capabilities;
   base::DictionaryValue* session2_capabilities;
 
-  ASSERT_TRUE(session1->GetString("sessionId", &session1_id));
-  ASSERT_TRUE(session2->GetString("sessionId", &session2_id));
+  ASSERT_TRUE(session1->GetString("id", &session1_id));
+  ASSERT_TRUE(session2->GetString("id", &session2_id));
   ASSERT_TRUE(session1->GetDictionary("capabilities", &session1_capabilities));
   ASSERT_TRUE(session2->GetDictionary("capabilities", &session2_capabilities));
 
