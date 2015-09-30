@@ -18,35 +18,35 @@
     <div id="content" on-dragstart="onDragStart_"
         class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]">
       <div id="file-icon-wrapper" class="icon-wrapper">
-        <img class="icon" id="file-icon" alt="" hidden$="[[isDangerous_]]">
-        <div class="icon" id="warning" hidden$="[[!isDangerous_]]"></div>
+        <img class="icon" id="file-icon" alt="" hidden="[[isDangerous_]]">
+        <div class="icon" id="warning" hidden="[[!isDangerous_]]"></div>
       </div>
 
       <div id="details">
         <div id="title-area"><!--
           Can't have any line breaks.
-          --><a is="action-link" id="file-link" href$="[[data_.url]]"
+          --><a is="action-link" id="file-link" href="[[data_.url]]"
               on-click="onFileLinkClick_"
-              hidden$="[[!completelyOnDisk_]]">[[data_.file_name]]</a><!--
+              hidden="[[!completelyOnDisk_]]">[[data_.file_name]]</a><!--
           Before #name.
           --><span id="name"
-              hidden$="[[completelyOnDisk_]]">[[data_.file_name]]</span>
+              hidden="[[completelyOnDisk_]]">[[data_.file_name]]</span>
           <span id="tag">[[computeTag_(data_.state, data_.last_reason_text, data_.file_externally_removed)]]</span>
         </div>
 
-        <a id="url" target="_blank" href$="[[data_.url]]">[[data_.url]]</a>
+        <a id="url" target="_blank" href="[[data_.url]]">[[data_.url]]</a>
 
         <div id="description">[[computeDescription_(data_.state, data_.danger_type, data_.file_name, data_.progress_status_text)]]</div>
 
         <template is="dom-if" if="[[showProgress_]]">
           <paper-progress id="progress"
-              indeterminate$="[[isIndeterminate_(data_.percent)]]"
-              value$="[[data_.percent]]"></paper-progress>
+              indeterminate="[[isIndeterminate_(data_.percent)]]"
+              value="[[data_.percent]]"></paper-progress>
         </template>
 
-        <div id="safe" class="controls" hidden$="[[isDangerous_]]">
+        <div id="safe" class="controls" hidden="[[isDangerous_]]">
           <a is="action-link" id="show" i18n-content="controlShowInFolder"
-              on-click="onShowClick_" hidden$="[[!completelyOnDisk_]]"></a>
+              on-click="onShowClick_" hidden="[[!completelyOnDisk_]]"></a>
           <template is="dom-if" if="[[data_.retry]]">
             <paper-button id="retry"
                 on-click="onRetryClick_">[[i18n_.retry]]</paper-button>
@@ -95,7 +95,7 @@
       </div>
 
       <div id="incognito" i18n-values="title:inIncognito"
-          hidden$="[[!data_.otr]]"></div>
+          hidden="[[!data_.otr]]"></div>
     </div>
 
   </template>
