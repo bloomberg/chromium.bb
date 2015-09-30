@@ -11,7 +11,6 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "ui/base/page_transition_types.h"
 
 namespace base {
 class DictionaryValue;
@@ -33,11 +32,8 @@ class SiteEngagementScore {
   // The maximum number of points that can be accrued in one day.
   static const double kMaxPointsPerDay;
 
-  // The number of points given for navigations.
+  // The number of points given for a navigation.
   static const double kNavigationPoints;
-
-  // The number of points given for user input (indicating time-on-site).
-  static const double kUserInputPoints;
 
   // Decaying works by removing a portion of the score periodically. This
   // constant determines how often that happens.
@@ -92,10 +88,10 @@ class SiteEngagementScoreProvider {
  public:
   // Returns a non-negative integer representing the engagement score of the
   // origin for this URL.
-  virtual double GetScore(const GURL& url) = 0;
+  virtual int GetScore(const GURL& url) = 0;
 
   // Returns the sum of engagement points awarded to all sites.
-  virtual double GetTotalEngagementPoints() = 0;
+  virtual int GetTotalEngagementPoints() = 0;
 };
 
 // Stores and retrieves the engagement score of an origin.
@@ -120,24 +116,16 @@ class SiteEngagementService : public KeyedService,
   ~SiteEngagementService() override;
 
   // Returns a map of all stored origins and their engagement scores.
-  std::map<GURL, double> GetScoreMap();
+  std::map<GURL, int> GetScoreMap();
 
-  // Update the karma score of the origin matching |url| for navigation.
-  void HandleNavigation(const GURL& url, ui::PageTransition transition);
-
-  // Update the karma score of the origin matching |url| for time-on-site, based
-  // on user input.
-  void HandleUserInput(const GURL& url);
+  // Update the karma score of the origin matching |url| for user navigation.
+  void HandleNavigation(const GURL& url);
 
   // Overridden from SiteEngagementScoreProvider:
-  double GetScore(const GURL& url) override;
-  double GetTotalEngagementPoints() override;
+  int GetScore(const GURL& url) override;
+  int GetTotalEngagementPoints() override;
 
  private:
-  // Adds the specified number of points to the given origin, respecting the
-  // maximum limits for the day and overall.
-  void AddPoints(const GURL& url, double points);
-
   Profile* profile_;
 
   // The clock used to vend times.

@@ -19,23 +19,21 @@ class TestSiteEngagementScoreProvider : public SiteEngagementScoreProvider {
 
   virtual ~TestSiteEngagementScoreProvider() {}
 
-  double GetScore(const GURL& url) override {
-    return engagement_score_map_[url];
-  }
+  int GetScore(const GURL& url) override { return engagement_score_map_[url]; }
 
-  double GetTotalEngagementPoints() override {
-    double total = 0;
+  int GetTotalEngagementPoints() override {
+    int total = 0;
     for (const auto& site : engagement_score_map_)
       total += site.second;
     return total;
   }
 
-  void SetScore(const GURL& origin, double score) {
+  void SetScore(const GURL& origin, int score) {
     engagement_score_map_[origin] = score;
   }
 
  private:
-  std::map<GURL, double> engagement_score_map_;
+  std::map<GURL, int> engagement_score_map_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSiteEngagementScoreProvider);
 };

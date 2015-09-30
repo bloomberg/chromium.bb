@@ -989,7 +989,6 @@
       'browser/autofill/autofill_interactive_uitest.cc',
       'browser/autofill/autofill_uitest_util.cc',
       'browser/browser_keyevents_browsertest.cc',
-      'browser/engagement/site_engagement_service_browsertest.cc',
       'browser/extensions/api/extension_action/browser_action_interactive_test.cc',
       'browser/extensions/api/omnibox/omnibox_api_interactive_test.cc',
       'browser/extensions/browsertest_util.cc',

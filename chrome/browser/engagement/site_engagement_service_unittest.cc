@@ -14,9 +14,9 @@
 
 namespace {
 
-const int kLessAccumulationsThanNeededToMaxDailyEngagement = 2;
-const int kMoreAccumulationsThanNeededToMaxDailyEngagement = 40;
-const int kMoreAccumulationsThanNeededToMaxTotalEngagement = 200;
+const int kLessNavigationsThanNeededToMaxDailyEngagement = 2;
+const int kMoreNavigationsThanNeededToMaxDailyEngagement = 20;
+const int kMoreNavigationsThanNeededToMaxTotalEngagement = 200;
 const int kLessDaysThanNeededToMaxTotalEngagement = 4;
 const int kMoreDaysThanNeededToMaxTotalEngagement = 40;
 const int kLessPeriodsThanNeededToDecayMaxScore = 2;
@@ -88,13 +88,13 @@ class SiteEngagementScoreTest : public testing::Test {
   SiteEngagementScore score_;
 };
 
-// Accumulate score many times on the same day. Ensure each time the score goes
-// up by kNavigationPoints, but not more than kMaxPointsPerDay.
-TEST_F(SiteEngagementScoreTest, AccumulateOnSameDay) {
+// Navigate many times on the same day. Ensure each time the score goes up by
+// kNavigationPoints, but not more than kMaxPointsPerDay.
+TEST_F(SiteEngagementScoreTest, NavigateOnSameDay) {
   base::Time reference_time = GetReferenceTime();
 
   test_clock_.SetNow(reference_time);
-  for (int i = 0; i < kMoreAccumulationsThanNeededToMaxDailyEngagement; ++i) {
+  for (int i = 0; i < kMoreNavigationsThanNeededToMaxDailyEngagement; ++i) {
     score_.AddPoints(SiteEngagementScore::kNavigationPoints);
     EXPECT_EQ(std::min(SiteEngagementScore::kMaxPointsPerDay,
                        (i + 1) * SiteEngagementScore::kNavigationPoints),
@@ -104,20 +104,20 @@ TEST_F(SiteEngagementScoreTest, AccumulateOnSameDay) {
   EXPECT_EQ(SiteEngagementScore::kMaxPointsPerDay, score_.Score());
 }
 
-// Accumulate on the first day to max that day's engagement, then accumulate on
-// a different day.
-TEST_F(SiteEngagementScoreTest, AccumulateOnTwoDays) {
+// Navigate on the first day to max that day's engagement, then navigate on a
+// different day.
+TEST_F(SiteEngagementScoreTest, NavigateOnTwoDays) {
   base::Time reference_time = GetReferenceTime();
   base::Time later_date = reference_time + base::TimeDelta::FromDays(2);
 
   test_clock_.SetNow(reference_time);
-  for (int i = 0; i < kMoreAccumulationsThanNeededToMaxDailyEngagement; ++i)
+  for (int i = 0; i < kMoreNavigationsThanNeededToMaxDailyEngagement; ++i)
     score_.AddPoints(SiteEngagementScore::kNavigationPoints);
 
   EXPECT_EQ(SiteEngagementScore::kMaxPointsPerDay, score_.Score());
 
   test_clock_.SetNow(later_date);
-  for (int i = 0; i < kMoreAccumulationsThanNeededToMaxDailyEngagement; ++i) {
+  for (int i = 0; i < kMoreNavigationsThanNeededToMaxDailyEngagement; ++i) {
     score_.AddPoints(SiteEngagementScore::kNavigationPoints);
     double day_score =
         std::min(SiteEngagementScore::kMaxPointsPerDay,
@@ -129,15 +129,15 @@ TEST_F(SiteEngagementScoreTest, AccumulateOnTwoDays) {
   EXPECT_EQ(2 * SiteEngagementScore::kMaxPointsPerDay, score_.Score());
 }
 
-// Accumulate score on many consecutive days and ensure the score doesn't exceed
+// Navigate a lot on many consecutive days and ensure the score doesn't exceed
 // the maximum allowed.
-TEST_F(SiteEngagementScoreTest, AccumulateALotOnManyDays) {
+TEST_F(SiteEngagementScoreTest, NavigateALotOnManyDays) {
   base::Time current_day = GetReferenceTime();
 
   for (int i = 0; i < kMoreDaysThanNeededToMaxTotalEngagement; ++i) {
     current_day += base::TimeDelta::FromDays(1);
     test_clock_.SetNow(current_day);
-    for (int j = 0; j < kMoreAccumulationsThanNeededToMaxDailyEngagement; ++j)
+    for (int j = 0; j < kMoreNavigationsThanNeededToMaxDailyEngagement; ++j)
       score_.AddPoints(SiteEngagementScore::kNavigationPoints);
 
     EXPECT_EQ(std::min(SiteEngagementScore::kMaxPoints,
@@ -148,21 +148,21 @@ TEST_F(SiteEngagementScoreTest, AccumulateALotOnManyDays) {
   EXPECT_EQ(SiteEngagementScore::kMaxPoints, score_.Score());
 }
 
-// Accumulate a little on many consecutive days and ensure the score doesn't
+// Navigate a little on many consecutive days and ensure the score doesn't
 // exceed the maximum allowed.
-TEST_F(SiteEngagementScoreTest, AccumulateALittleOnManyDays) {
+TEST_F(SiteEngagementScoreTest, NavigateALittleOnManyDays) {
   base::Time current_day = GetReferenceTime();
 
-  for (int i = 0; i < kMoreAccumulationsThanNeededToMaxTotalEngagement; ++i) {
+  for (int i = 0; i < kMoreNavigationsThanNeededToMaxTotalEngagement; ++i) {
     current_day += base::TimeDelta::FromDays(1);
     test_clock_.SetNow(current_day);
 
-    for (int j = 0; j < kLessAccumulationsThanNeededToMaxDailyEngagement; ++j)
+    for (int j = 0; j < kLessNavigationsThanNeededToMaxDailyEngagement; ++j)
       score_.AddPoints(SiteEngagementScore::kNavigationPoints);
 
     EXPECT_EQ(
         std::min(SiteEngagementScore::kMaxPoints,
-                 (i + 1) * kLessAccumulationsThanNeededToMaxDailyEngagement *
+                 (i + 1) * kLessNavigationsThanNeededToMaxDailyEngagement *
                      SiteEngagementScore::kNavigationPoints),
         score_.Score());
   }
@@ -170,7 +170,7 @@ TEST_F(SiteEngagementScoreTest, AccumulateALittleOnManyDays) {
   EXPECT_EQ(SiteEngagementScore::kMaxPoints, score_.Score());
 }
 
-// Accumulate a bit, then check the score decays properly for a range of times.
+// Navigate a bit, then check the score decays properly for a range of times.
 TEST_F(SiteEngagementScoreTest, ScoresDecayOverTime) {
   base::Time current_day = GetReferenceTime();
 
@@ -179,7 +179,7 @@ TEST_F(SiteEngagementScoreTest, ScoresDecayOverTime) {
     current_day += base::TimeDelta::FromDays(1);
     test_clock_.SetNow(current_day);
 
-    for (int j = 0; j < kMoreAccumulationsThanNeededToMaxDailyEngagement; ++j)
+    for (int j = 0; j < kMoreNavigationsThanNeededToMaxDailyEngagement; ++j)
       score_.AddPoints(SiteEngagementScore::kNavigationPoints);
   }
 
@@ -228,7 +228,7 @@ TEST_F(SiteEngagementScoreTest, DecaysAppliedBeforeAdd) {
     current_day += base::TimeDelta::FromDays(1);
     test_clock_.SetNow(current_day);
 
-    for (int j = 0; j < kMoreAccumulationsThanNeededToMaxDailyEngagement; ++j)
+    for (int j = 0; j < kMoreNavigationsThanNeededToMaxDailyEngagement; ++j)
       score_.AddPoints(SiteEngagementScore::kNavigationPoints);
   }
 
@@ -258,7 +258,7 @@ TEST_F(SiteEngagementScoreTest, GoBackInTime) {
   base::Time current_day = GetReferenceTime();
 
   test_clock_.SetNow(current_day);
-  for (int i = 0; i < kMoreAccumulationsThanNeededToMaxDailyEngagement; ++i)
+  for (int i = 0; i < kMoreNavigationsThanNeededToMaxDailyEngagement; ++i)
     score_.AddPoints(SiteEngagementScore::kNavigationPoints);
 
   EXPECT_EQ(SiteEngagementScore::kMaxPointsPerDay, score_.Score());
@@ -268,7 +268,7 @@ TEST_F(SiteEngagementScoreTest, GoBackInTime) {
   test_clock_.SetNow(current_day - base::TimeDelta::FromDays(
                                        kMorePeriodsThanNeededToDecayMaxScore *
                                        SiteEngagementScore::kDecayPoints));
-  for (int i = 0; i < kMoreAccumulationsThanNeededToMaxDailyEngagement; ++i) {
+  for (int i = 0; i < kMoreNavigationsThanNeededToMaxDailyEngagement; ++i) {
     score_.AddPoints(SiteEngagementScore::kNavigationPoints);
     double day_score =
         std::min(SiteEngagementScore::kMaxPointsPerDay,
@@ -320,6 +320,7 @@ class SiteEngagementServiceTest : public BrowserWithTestWindowTest {
   }
 };
 
+
 // Tests that the Site Engagement service is hooked up properly to navigations
 // by performing two navigations and checking the engagement score increases
 // both times.
@@ -332,7 +333,7 @@ TEST_F(SiteEngagementServiceTest, ScoreIncrementsOnPageRequest) {
 
   AddTab(browser(), GURL("about:blank"));
   EXPECT_EQ(0, service->GetScore(url));
-  double prev_score = service->GetScore(url);
+  int prev_score = service->GetScore(url);
 
   NavigateAndCommitActiveTab(url);
   EXPECT_LT(prev_score, service->GetScore(url));
@@ -344,7 +345,7 @@ TEST_F(SiteEngagementServiceTest, ScoreIncrementsOnPageRequest) {
 
 // Expect that site engagement scores for several sites are correctly aggregated
 // by GetTotalEngagementPoints().
-TEST_F(SiteEngagementServiceTest, GetTotalNavigationPoints) {
+TEST_F(SiteEngagementServiceTest, GetTotalEngagementPoints) {
   SiteEngagementService* service =
       SiteEngagementServiceFactory::GetForProfile(profile());
   DCHECK(service);
@@ -358,54 +359,21 @@ TEST_F(SiteEngagementServiceTest, GetTotalNavigationPoints) {
   EXPECT_EQ(0, service->GetScore(url2));
   EXPECT_EQ(0, service->GetScore(url3));
 
-  service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
-  EXPECT_EQ(0.5, service->GetScore(url1));
-  EXPECT_EQ(0.5, service->GetTotalEngagementPoints());
+  service->HandleNavigation(url1);
+  EXPECT_EQ(1, service->GetScore(url1));
+  EXPECT_EQ(1, service->GetTotalEngagementPoints());
 
-  service->HandleNavigation(url2, ui::PAGE_TRANSITION_GENERATED);
-  service->HandleNavigation(url2, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
-  EXPECT_EQ(1, service->GetScore(url2));
-  EXPECT_EQ(1.5, service->GetTotalEngagementPoints());
-
-  service->HandleNavigation(url3, ui::PAGE_TRANSITION_TYPED);
-  EXPECT_EQ(0.5, service->GetScore(url3));
-  EXPECT_EQ(2, service->GetTotalEngagementPoints());
-
-  service->HandleNavigation(url1, ui::PAGE_TRANSITION_GENERATED);
-  service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
-  EXPECT_EQ(1.5, service->GetScore(url1));
+  service->HandleNavigation(url2);
+  service->HandleNavigation(url2);
+  EXPECT_EQ(2, service->GetScore(url2));
   EXPECT_EQ(3, service->GetTotalEngagementPoints());
-}
 
-TEST_F(SiteEngagementServiceTest, GetTotalUserInputPoints) {
-  SiteEngagementService* service =
-      SiteEngagementServiceFactory::GetForProfile(profile());
-  DCHECK(service);
+  service->HandleNavigation(url3);
+  EXPECT_EQ(1, service->GetScore(url3));
+  EXPECT_EQ(4, service->GetTotalEngagementPoints());
 
-  // The https and http versions of www.google.com should be separate.
-  GURL url1("https://www.google.com/");
-  GURL url2("http://www.google.com/");
-  GURL url3("http://drive.google.com/");
-
-  EXPECT_EQ(0, service->GetScore(url1));
-  EXPECT_EQ(0, service->GetScore(url2));
-  EXPECT_EQ(0, service->GetScore(url3));
-
-  service->HandleUserInput(url1);
-  EXPECT_DOUBLE_EQ(0.05, service->GetScore(url1));
-  EXPECT_DOUBLE_EQ(0.05, service->GetTotalEngagementPoints());
-
-  service->HandleUserInput(url2);
-  service->HandleUserInput(url2);
-  EXPECT_DOUBLE_EQ(0.1, service->GetScore(url2));
-  EXPECT_DOUBLE_EQ(0.15, service->GetTotalEngagementPoints());
-
-  service->HandleUserInput(url3);
-  EXPECT_DOUBLE_EQ(0.05, service->GetScore(url3));
-  EXPECT_DOUBLE_EQ(0.2, service->GetTotalEngagementPoints());
-
-  service->HandleUserInput(url1);
-  service->HandleUserInput(url1);
-  EXPECT_DOUBLE_EQ(0.15, service->GetScore(url1));
-  EXPECT_DOUBLE_EQ(0.3, service->GetTotalEngagementPoints());
+  service->HandleNavigation(url1);
+  service->HandleNavigation(url1);
+  EXPECT_EQ(3, service->GetScore(url1));
+  EXPECT_EQ(6, service->GetTotalEngagementPoints());
 }
