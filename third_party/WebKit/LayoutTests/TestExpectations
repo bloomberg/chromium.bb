@@ -678,6 +678,22 @@ crbug.com/116710 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-pres
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
+crbug.com/537535 [ Win10 ] printing/iframe-print.html [ Failure ]
+crbug.com/537535 [ Win10 ] printing/quirks-percentage-height-body.html [ Failure ]
+crbug.com/537535 [ Win10 ] printing/quirks-percentage-height.html [ Failure ]
+crbug.com/537535 [ Win10 ] printing/simultaneous-position-float-change.html [ Failure ]
+crbug.com/537535 [ Win10 ] printing/standards-percentage-heights.html [ Failure ]
+crbug.com/537535 [ Win10 ] printing/subframes-percentage-height.html [ Failure ]
+crbug.com/537535 [ Win10 ] printing/webgl-repeated-printing.html [ Failure ]
+crbug.com/537535 [ Win10 ] virtual/threaded/printing/iframe-print.html [ Failure ]
+crbug.com/537535 [ Win10 ] virtual/threaded/printing/quirks-percentage-height-body.html [ Failure ]
+crbug.com/537535 [ Win10 ] virtual/threaded/printing/quirks-percentage-height.html [ Failure ]
+crbug.com/537535 [ Win10 ] virtual/threaded/printing/simultaneous-position-float-change.html [ Failure ]
+crbug.com/537535 [ Win10 ] virtual/threaded/printing/standards-percentage-heights.html [ Failure ]
+crbug.com/537535 [ Win10 ] virtual/threaded/printing/subframes-percentage-height.html [ Failure ]
+crbug.com/537535 [ Win10 ] virtual/threaded/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
+crbug.com/537535 [ Win10 ] virtual/threaded/printing/webgl-repeated-printing.html [ Failure ]
+
 # Reftests that needs investigation.
 crbug.com/397232 [ XP ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure ]
 crbug.com/397232 [ XP ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]
