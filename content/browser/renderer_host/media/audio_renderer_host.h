@@ -5,7 +5,7 @@
 // AudioRendererHost serves audio related requests from AudioRenderer which
 // lives inside the render process and provide access to audio hardware.
 //
-// This class is owned by BrowserRenderProcessHost, and instantiated on UI
+// This class is owned by RenderProcessHostImpl, and instantiated on UI
 // thread, but all other operations and method calls happen on IO thread, so we
 // need to be extra careful about the lifetime of this object. AudioManager is a
 // singleton and created in IO thread, audio output streams are also created in

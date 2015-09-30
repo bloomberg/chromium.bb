@@ -25,7 +25,7 @@ namespace content {
 // MediaStreams are used by WebKit to open media devices such as Video Capture
 // and Audio input devices.
 // It's the complement of MediaStreamDispatcherHost (owned by
-// BrowserRenderProcessHost).
+// RenderProcessHostImpl).
 class CONTENT_EXPORT MediaStreamDispatcher
     : public RenderFrameObserver,
       public base::SupportsWeakPtr<MediaStreamDispatcher> {

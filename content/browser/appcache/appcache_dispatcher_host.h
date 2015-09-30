@@ -19,8 +19,8 @@ class ChromeAppCacheService;
 
 // Handles appcache related messages sent to the main browser process from
 // its child processes. There is a distinct host for each child process.
-// Messages are handled on the IO thread. The BrowserRenderProcessHost and
-// WorkerProcessHost create an instance and delegates calls to it.
+// Messages are handled on the IO thread. The RenderProcessHostImpl creates
+// an instance and delegates calls to it.
 class AppCacheDispatcherHost : public BrowserMessageFilter {
  public:
   AppCacheDispatcherHost(ChromeAppCacheService* appcache_service,

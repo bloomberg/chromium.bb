@@ -70,9 +70,9 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   void DecrementRelatedActiveContentsCount();
 
   // Sets the global factory used to create new RenderProcessHosts.  It may be
-  // NULL, in which case the default BrowserRenderProcessHost will be created
-  // (this is the behavior if you don't call this function).  The factory must
-  // be set back to NULL before it's destroyed; ownership is not transferred.
+  // NULL, in which case the default RenderProcessHost will be created (this is
+  // the behavior if you don't call this function).  The factory must be set
+  // back to NULL before it's destroyed; ownership is not transferred.
   static void set_render_process_host_factory(
       const RenderProcessHostFactory* rph_factory);
 

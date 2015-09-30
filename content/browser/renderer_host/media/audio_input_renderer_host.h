@@ -14,7 +14,7 @@
 //
 // AudioInputHostMsg_CloseStream -> OnCloseStream -> AIC::Close ->
 //
-// This class is owned by BrowserRenderProcessHost and instantiated on UI
+// This class is owned by RenderProcessHostImpl and instantiated on UI
 // thread. All other operations and method calls happen on IO thread, so we
 // need to be extra careful about the lifetime of this object.
 //
