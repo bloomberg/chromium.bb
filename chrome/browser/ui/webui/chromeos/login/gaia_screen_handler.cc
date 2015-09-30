@@ -464,6 +464,29 @@ void GaiaScreenHandler::HandleWebviewLoadAborted(
   UpdateState(error_reason);
 }
 
+std::string GaiaScreenHandler::GetCanonicalEmail(
+    const std::string& authenticated_email,
+    const std::string& gaia_id) const {
+  const std::string sanitized_email = gaia::SanitizeEmail(authenticated_email);
+
+  const std::string canonicalized_email =
+      gaia::CanonicalizeEmail(sanitized_email);
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (user_manager && !user_manager->IsKnownUser(canonicalized_email)) {
+    std::string old_canonical_email;
+    if (user_manager->GetKnownUserCanonicalEmail(gaia_id,
+                                                 &old_canonical_email)) {
+      if (old_canonical_email != canonicalized_email) {
+        LOG(WARNING) << "Existing user '" << old_canonical_email
+                     << "' authenticated by alias '" << sanitized_email << "'.";
+        return old_canonical_email;
+      }
+    }
+  }
+  // For compatibility reasons, sanitized email is used.
+  return sanitized_email;
+}
+
 void GaiaScreenHandler::HandleCompleteAuthentication(
     const std::string& gaia_id,
     const std::string& email,
@@ -478,7 +501,9 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   DCHECK(!gaia_id.empty());
   const std::string sanitized_email = gaia::SanitizeEmail(email);
   Delegate()->SetDisplayEmail(sanitized_email);
-  UserContext user_context(sanitized_email);
+
+  const std::string canonical_email = GetCanonicalEmail(email, gaia_id);
+  UserContext user_context(canonical_email);
   user_context.SetGaiaID(gaia_id);
   user_context.SetKey(Key(password));
   user_context.SetAuthCode(auth_code);
@@ -599,7 +624,8 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
   DCHECK(!gaia_id.empty());
   const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
   Delegate()->SetDisplayEmail(sanitized_email);
-  UserContext user_context(sanitized_email);
+  const std::string canonical_email = GetCanonicalEmail(typed_email, gaia_id);
+  UserContext user_context(canonical_email);
   user_context.SetGaiaID(gaia_id);
   user_context.SetKey(Key(password));
   user_context.SetAuthFlow(using_saml

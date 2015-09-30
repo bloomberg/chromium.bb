@@ -207,6 +207,11 @@ class GaiaScreenHandler : public BaseScreenHandler {
   // Returns temporary unused device Id.
   std::string GetTemporaryDeviceId();
 
+  // Returns user canonical e-mail. Finds already used account alias, if
+  // user has already signed in.
+  std::string GetCanonicalEmail(const std::string& authenticated_email,
+                                const std::string& gaia_id) const;
+
   // Current state of Gaia frame.
   FrameState frame_state_ = FRAME_STATE_UNKNOWN;
 
