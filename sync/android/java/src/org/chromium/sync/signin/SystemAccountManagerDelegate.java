@@ -14,6 +14,7 @@ import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.os.SystemClock;
 
 import org.chromium.base.ThreadUtils;
@@ -58,7 +59,14 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
 
     @Override
     public void invalidateAuthToken(String accountType, String authToken) {
-        mAccountManager.invalidateAuthToken(accountType, authToken);
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/535320
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+        StrictMode.allowThreadDiskReads();
+        try {
+            mAccountManager.invalidateAuthToken(accountType, authToken);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     @Override
