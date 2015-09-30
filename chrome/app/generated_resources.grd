@@ -15271,10 +15271,10 @@ After you create a new supervised user, you can manage their settings at any tim
 
       <!-- WebUsb Notification -->
       <message name="IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION" desc="Content for notification shown to the user when a USB device gets plugged in.">
-        Go to <ph name="LANDING_PAGE">$1</ph> to connect.
+        Go to <ph name="LANDING_PAGE">$1<ex>www.google.com</ex></ph> to connect.
       </message>
       <message name="IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION_TITLE" desc="Title for notification shown to the user when a USB device gets plugged in.">
-        <ph name="USB_DEVICE_NAME">$1</ph> detected
+        <ph name="USB_DEVICE_NAME">$1<ex>Nexus 5</ex></ph> detected
       </message>
     </if>
 
