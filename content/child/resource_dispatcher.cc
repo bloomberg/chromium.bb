@@ -180,6 +180,9 @@ void ResourceDispatcher::OnSetDataBuffer(int request_id,
                                          base::SharedMemoryHandle shm_handle,
                                          int shm_size,
                                          base::ProcessId renderer_pid) {
+  // TODO(erikchen): Temporary debugging to help track down crash.
+  // http://crbug.com/527588.
+  CHECK_LE(shm_size, 512 * 1024);
   TRACE_EVENT0("loader", "ResourceDispatcher::OnSetDataBuffer");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
