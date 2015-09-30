@@ -658,6 +658,7 @@ Background.prototype = {
    */
   isWhitelistedForCompat_: function(url) {
     return url.indexOf('chrome://md-settings') != -1 ||
+          url.indexOf('chrome://downloads') != -1 ||
           url.indexOf('chrome://oobe/login') != -1 ||
           url.indexOf(
               'https://accounts.google.com/embedded/setup/chromeos') === 0 ||
