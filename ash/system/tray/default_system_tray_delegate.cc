@@ -30,7 +30,7 @@ user::LoginStatus DefaultSystemTrayDelegate::GetUserLoginStatus() const {
   return user::LOGGED_IN_USER;
 }
 
-const std::string DefaultSystemTrayDelegate::GetSupervisedUserManager() const {
+std::string DefaultSystemTrayDelegate::GetSupervisedUserManager() const {
   if (!IsUserSupervised())
     return std::string();
   return "manager@chrome.com";

@@ -71,19 +71,19 @@ std::string SystemTrayDelegate::GetEnterpriseDomain() const {
   return std::string();
 }
 
-const base::string16 SystemTrayDelegate::GetEnterpriseMessage() const {
+base::string16 SystemTrayDelegate::GetEnterpriseMessage() const {
   return base::string16();
 }
 
-const std::string SystemTrayDelegate::GetSupervisedUserManager() const {
+std::string SystemTrayDelegate::GetSupervisedUserManager() const {
   return std::string();
 }
 
-const base::string16 SystemTrayDelegate::GetSupervisedUserManagerName() const {
+base::string16 SystemTrayDelegate::GetSupervisedUserManagerName() const {
   return base::string16();
 }
 
-const base::string16 SystemTrayDelegate::GetSupervisedUserMessage() const {
+base::string16 SystemTrayDelegate::GetSupervisedUserMessage() const {
   return base::string16();
 }
 

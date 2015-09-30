@@ -366,21 +366,21 @@ std::string SystemTrayDelegateChromeOS::GetEnterpriseDomain() const {
   return enterprise_domain_;
 }
 
-const base::string16 SystemTrayDelegateChromeOS::GetEnterpriseMessage() const {
+base::string16 SystemTrayDelegateChromeOS::GetEnterpriseMessage() const {
   if (GetEnterpriseDomain().empty())
     return base::string16();
   return l10n_util::GetStringFUTF16(IDS_DEVICE_OWNED_BY_NOTICE,
                                     base::UTF8ToUTF16(GetEnterpriseDomain()));
 }
 
-const std::string SystemTrayDelegateChromeOS::GetSupervisedUserManager() const {
+std::string SystemTrayDelegateChromeOS::GetSupervisedUserManager() const {
   if (!IsUserSupervised())
     return std::string();
   return SupervisedUserServiceFactory::GetForProfile(user_profile_)->
       GetCustodianEmailAddress();
 }
 
-const base::string16
+base::string16
 SystemTrayDelegateChromeOS::GetSupervisedUserManagerName() const {
   if (!IsUserSupervised())
     return base::string16();
@@ -388,7 +388,7 @@ SystemTrayDelegateChromeOS::GetSupervisedUserManagerName() const {
       user_profile_)->GetCustodianName());
 }
 
-const base::string16 SystemTrayDelegateChromeOS::GetSupervisedUserMessage()
+base::string16 SystemTrayDelegateChromeOS::GetSupervisedUserMessage()
     const {
   if (!IsUserSupervised())
     return base::string16();

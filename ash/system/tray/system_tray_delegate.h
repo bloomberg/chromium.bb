@@ -144,17 +144,17 @@ class ASH_EXPORT SystemTrayDelegate {
   virtual std::string GetEnterpriseDomain() const;
 
   // Returns notification for enterprise enrolled devices.
-  virtual const base::string16 GetEnterpriseMessage() const;
+  virtual base::string16 GetEnterpriseMessage() const;
 
   // Returns the display email of the user that manages the current supervised
   // user.
-  virtual const std::string GetSupervisedUserManager() const;
+  virtual std::string GetSupervisedUserManager() const;
 
   // Returns the name of the user that manages the current supervised user.
-  virtual const base::string16 GetSupervisedUserManagerName() const;
+  virtual base::string16 GetSupervisedUserManagerName() const;
 
   // Returns the notification for supervised users.
-  virtual const base::string16 GetSupervisedUserMessage() const;
+  virtual base::string16 GetSupervisedUserMessage() const;
 
   // Returns true if the current user is supervised: has legacy supervised
   // account or kid account.

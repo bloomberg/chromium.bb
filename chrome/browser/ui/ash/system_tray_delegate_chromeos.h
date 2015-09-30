@@ -81,10 +81,10 @@ class SystemTrayDelegateChromeOS
   ash::user::LoginStatus GetUserLoginStatus() const override;
   void ChangeProfilePicture() override;
   std::string GetEnterpriseDomain() const override;
-  const base::string16 GetEnterpriseMessage() const override;
-  const std::string GetSupervisedUserManager() const override;
-  const base::string16 GetSupervisedUserManagerName() const override;
-  const base::string16 GetSupervisedUserMessage() const override;
+  base::string16 GetEnterpriseMessage() const override;
+  std::string GetSupervisedUserManager() const override;
+  base::string16 GetSupervisedUserManagerName() const override;
+  base::string16 GetSupervisedUserMessage() const override;
   bool IsUserSupervised() const override;
   bool IsUserChild() const override;
   void GetSystemUpdateInfo(ash::UpdateInfo* info) const override;
