@@ -1279,15 +1279,6 @@ int HttpStreamFactoryImpl::Job::DoRestartTunnelAuthComplete(int result) {
     return OK;
   }
 
-  if (result == ERR_CONNECTION_CLOSED || result == ERR_CONNECTION_RESET ||
-      result == ERR_SOCKET_NOT_CONNECTED) {
-    // The server may have closed the connection while waiting for auth data.
-    // Automatically try to use a new connection.
-    establishing_tunnel_ = false;
-    ReturnToStateInitConnection(true /* close connection */);
-    return OK;
-  }
-
   return ReconsiderProxyAfterError(result);
 }
 

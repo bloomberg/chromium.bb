@@ -2554,35 +2554,32 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite(
+          "CONNECT www.example.org:443 HTTP/1.1\r\n"
+          "Host: www.example.org\r\n"
+          "Proxy-Connection: keep-alive\r\n\r\n"),
+
+      // After calling trans->RestartWithAuth(), this is the request we should
+      // be issuing -- the final header line contains the credentials.
+      MockWrite(
+          "CONNECT www.example.org:443 HTTP/1.1\r\n"
+          "Host: www.example.org\r\n"
+          "Proxy-Connection: keep-alive\r\n"
+          "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+
+      MockWrite(
+          "GET / HTTP/1.1\r\n"
+          "Host: www.example.org\r\n"
+          "Connection: keep-alive\r\n\r\n"),
   };
 
-  // The proxy responds to the connect with a 407, using a non-persistent
+  // The proxy responds to the connect with a 407, using a persistent
   // connection.
   MockRead data_reads1[] = {
       // No credentials.
       MockRead("HTTP/1.0 407 Proxy Authentication Required\r\n"),
       MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n\r\n"),
-  };
 
-  // Since the first connection couldn't be reused, need to establish another
-  // once given credentials.
-  MockWrite data_writes2[] = {
-      // After calling trans->RestartWithAuth(), this is the request we should
-      // be issuing -- the final header line contains the credentials.
-      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
-                "Proxy-Connection: keep-alive\r\n"
-                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
-
-      MockWrite("GET / HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
-                "Connection: keep-alive\r\n\r\n"),
-  };
-
-  MockRead data_reads2[] = {
       MockRead("HTTP/1.0 200 Connection Established\r\n\r\n"),
 
       MockRead("HTTP/1.1 200 OK\r\n"),
@@ -2594,9 +2591,6 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
   StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
                                  data_writes1, arraysize(data_writes1));
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
-  session_deps_.socket_factory->AddSocketDataProvider(&data2);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
@@ -2678,48 +2672,44 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
-  };
+      MockWrite(
+          "CONNECT www.example.org:443 HTTP/1.1\r\n"
+          "Host: www.example.org\r\n"
+          "Proxy-Connection: keep-alive\r\n\r\n"),
 
-  // The proxy responds to the connect with a 407, using a non-persistent
-  // connection.
-  MockRead data_reads1[] = {
-      // No credentials.
-      MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
-      MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
-      MockRead("Proxy-Connection: close\r\n\r\n"),
-  };
-
-  MockWrite data_writes2[] = {
       // After calling trans->RestartWithAuth(), this is the request we should
       // be issuing -- the final header line contains the credentials.
-      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
-                "Proxy-Connection: keep-alive\r\n"
-                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+      MockWrite(
+          "CONNECT www.example.org:443 HTTP/1.1\r\n"
+          "Host: www.example.org\r\n"
+          "Proxy-Connection: keep-alive\r\n"
+          "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
 
-      MockWrite("GET / HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
-                "Connection: keep-alive\r\n\r\n"),
+      MockWrite(
+          "GET / HTTP/1.1\r\n"
+          "Host: www.example.org\r\n"
+          "Connection: keep-alive\r\n\r\n"),
   };
 
-  MockRead data_reads2[] = {
-      MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
+  // The proxy responds to the connect with a 407, using a persistent
+  // connection.
+  MockRead data_reads1[] = {
+    // No credentials.
+    MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
+    MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
+    MockRead("Proxy-Connection: close\r\n\r\n"),
 
-      MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead("Content-Type: text/html; charset=iso-8859-1\r\n"),
-      MockRead("Content-Length: 5\r\n\r\n"),
-      MockRead(SYNCHRONOUS, "hello"),
+    MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
+
+    MockRead("HTTP/1.1 200 OK\r\n"),
+    MockRead("Content-Type: text/html; charset=iso-8859-1\r\n"),
+    MockRead("Content-Length: 5\r\n\r\n"),
+    MockRead(SYNCHRONOUS, "hello"),
   };
 
   StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
                                  data_writes1, arraysize(data_writes1));
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
-  session_deps_.socket_factory->AddSocketDataProvider(&data2);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
@@ -2995,97 +2985,6 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
   // Flush the idle socket before the NetLog and HttpNetworkTransaction go
   // out of scope.
   session->CloseAllConnections();
-}
-
-// Test the case a proxy closes a socket while the challenge body is being
-// drained.
-TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHangupDuringBody) {
-  HttpRequestInfo request;
-  request.method = "GET";
-  request.url = GURL("https://www.example.org/");
-  // Ensure that proxy authentication is attempted even
-  // when the no authentication data flag is set.
-  request.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
-
-  // Configure against proxy server "myproxy:70".
-  session_deps_.proxy_service = ProxyService::CreateFixed("myproxy:70");
-  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-
-  scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
-
-  // Since we have proxy, should try to establish tunnel.
-  MockWrite data_writes1[] = {
-      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
-                "Proxy-Connection: keep-alive\r\n\r\n"),
-  };
-
-  // The proxy responds to the connect with a 407, using a persistent
-  // connection.
-  MockRead data_reads1[] = {
-      // No credentials.
-      MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
-      MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
-      MockRead("Content-Length: 10\r\n\r\n"), MockRead("spam!"),
-      // Server hands up in the middle of the body.
-      MockRead(ASYNC, ERR_CONNECTION_CLOSED),
-  };
-
-  MockWrite data_writes2[] = {
-      // After calling trans->RestartWithAuth(), this is the request we should
-      // be issuing -- the final header line contains the credentials.
-      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
-                "Proxy-Connection: keep-alive\r\n"
-                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
-
-      MockWrite("GET / HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
-                "Connection: keep-alive\r\n\r\n"),
-  };
-
-  MockRead data_reads2[] = {
-      MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
-
-      MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead("Content-Type: text/html; charset=iso-8859-1\r\n"),
-      MockRead("Content-Length: 5\r\n\r\n"),
-      MockRead(SYNCHRONOUS, "hello"),
-  };
-
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
-  session_deps_.socket_factory->AddSocketDataProvider(&data2);
-  SSLSocketDataProvider ssl(ASYNC, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
-
-  TestCompletionCallback callback;
-
-  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(OK, callback.GetResult(rv));
-
-  const HttpResponseInfo* response = trans->GetResponseInfo();
-  ASSERT_TRUE(response);
-  ASSERT_TRUE(response->headers);
-  EXPECT_TRUE(response->headers->IsKeepAlive());
-  EXPECT_EQ(407, response->headers->response_code());
-  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
-
-  rv = trans->RestartWithAuth(AuthCredentials(kFoo, kBar), callback.callback());
-  EXPECT_EQ(OK, callback.GetResult(rv));
-
-  response = trans->GetResponseInfo();
-  ASSERT_TRUE(response);
-  ASSERT_TRUE(response->headers);
-  EXPECT_TRUE(response->headers->IsKeepAlive());
-  EXPECT_EQ(200, response->headers->response_code());
-  std::string body;
-  EXPECT_EQ(OK, ReadTransaction(trans.get(), &body));
-  EXPECT_EQ("hello", body);
 }
 
 // Test that we don't read the response body when we fail to establish a tunnel,
@@ -10661,7 +10560,8 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
 
       // kProxyChallenge uses Proxy-Connection: close which means that the
       // socket is closed and a new one will be created for the next request.
-      if (read_write_round.read.data == kProxyChallenge.data) {
+      if (read_write_round.read.data == kProxyChallenge.data &&
+          read_write_round.write.data != kConnect.data) {
         mock_reads.push_back(std::vector<MockRead>());
         mock_writes.push_back(std::vector<MockWrite>());
       }
@@ -11115,20 +11015,23 @@ TEST_P(HttpNetworkTransactionTest, SpdyAlternateProtocolThroughProxy) {
       // SPDY request
       CreateMockWrite(*req, 4),
   };
+  const char kRejectConnectResponse[] = ("HTTP/1.1 407 Unauthorized\r\n"
+                                         "Proxy-Authenticate: Mock\r\n"
+                                         "Proxy-Connection: close\r\n"
+                                         "\r\n");
+  const char kAcceptConnectResponse[] = "HTTP/1.1 200 Connected\r\n\r\n";
   MockRead data_reads_2[] = {
       // First connection attempt fails
-      MockRead(ASYNC, 1,
-               "HTTP/1.1 407 Unauthorized\r\n"
-               "Proxy-Authenticate: Mock\r\n"
-               "Content-Length: 0\r\n"
-               "Proxy-Connection: keep-alive\r\n"
-               "\r\n"),
+      MockRead(ASYNC, kRejectConnectResponse,
+               arraysize(kRejectConnectResponse) - 1, 1),
 
       // Second connection attempt passes
-      MockRead(ASYNC, 3, "HTTP/1.1 200 Connected\r\n\r\n"),
+      MockRead(ASYNC, kAcceptConnectResponse,
+               arraysize(kAcceptConnectResponse) - 1, 3),
 
       // SPDY response
-      CreateMockRead(*resp.get(), 5), CreateMockRead(*data.get(), 6),
+      CreateMockRead(*resp.get(), 5),
+      CreateMockRead(*data.get(), 6),
       MockRead(ASYNC, 0, 0, 7),
   };
   SequencedSocketData data_2(data_reads_2, arraysize(data_reads_2),
@@ -14594,8 +14497,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWssTunnel) {
       // No credentials.
       MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
       MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
-      MockRead("Content-Length: 0\r\n"),
-      MockRead("Proxy-Connection: keep-alive\r\n\r\n"),
+      MockRead("Proxy-Connection: close\r\n\r\n"),
 
       MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
 

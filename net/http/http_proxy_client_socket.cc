@@ -267,32 +267,36 @@ int HttpProxyClientSocket::PrepareForAuthRestart() {
   if (!response_.headers.get())
     return ERR_CONNECTION_RESET;
 
-  // If the connection can't be reused, just return ERR_CONNECTION_CLOSED.
-  // The request should be retried at a higher layer.
-  if (!response_.headers->IsKeepAlive() ||
-      !http_stream_parser_->CanFindEndOfResponse() ||
-      !transport_->socket()->IsConnectedAndIdle()) {
-    transport_->socket()->Disconnect();
-    return ERR_CONNECTION_CLOSED;
+  bool keep_alive = false;
+  if (response_.headers->IsKeepAlive() &&
+      http_stream_parser_->CanFindEndOfResponse()) {
+    if (!http_stream_parser_->IsResponseBodyComplete()) {
+      next_state_ = STATE_DRAIN_BODY;
+      drain_buf_ = new IOBuffer(kDrainBodyBufferSize);
+      return OK;
+    }
+    keep_alive = true;
   }
 
-  // If the auth request had a body, need to drain it before reusing the socket.
-  if (!http_stream_parser_->IsResponseBodyComplete()) {
-    next_state_ = STATE_DRAIN_BODY;
-    drain_buf_ = new IOBuffer(kDrainBodyBufferSize);
-    return OK;
-  }
-
-  return DidDrainBodyForAuthRestart();
+  // We don't need to drain the response body, so we act as if we had drained
+  // the response body.
+  return DidDrainBodyForAuthRestart(keep_alive);
 }
 
-int HttpProxyClientSocket::DidDrainBodyForAuthRestart() {
-  next_state_ = STATE_GENERATE_AUTH_TOKEN;
-  transport_->set_reuse_type(ClientSocketHandle::REUSED_IDLE);
+int HttpProxyClientSocket::DidDrainBodyForAuthRestart(bool keep_alive) {
+  if (keep_alive && transport_->socket()->IsConnectedAndIdle()) {
+    next_state_ = STATE_GENERATE_AUTH_TOKEN;
+    transport_->set_reuse_type(ClientSocketHandle::REUSED_IDLE);
+  } else {
+    // This assumes that the underlying transport socket is a TCP socket,
+    // since only TCP sockets are restartable.
+    next_state_ = STATE_TCP_RESTART;
+    transport_->socket()->Disconnect();
+  }
 
   // Reset the other member variables.
-  drain_buf_ = nullptr;
-  parser_buf_ = nullptr;
+  drain_buf_ = NULL;
+  parser_buf_ = NULL;
   http_stream_parser_.reset();
   request_line_.clear();
   request_headers_.Clear();
@@ -368,6 +372,13 @@ int HttpProxyClientSocket::DoLoop(int last_io_result) {
         break;
       case STATE_DRAIN_BODY_COMPLETE:
         rv = DoDrainBodyComplete(rv);
+        break;
+      case STATE_TCP_RESTART:
+        DCHECK_EQ(OK, rv);
+        rv = DoTCPRestart();
+        break;
+      case STATE_TCP_RESTART_COMPLETE:
+        rv = DoTCPRestartComplete(rv);
         break;
       case STATE_DONE:
         break;
@@ -529,13 +540,31 @@ int HttpProxyClientSocket::DoDrainBodyComplete(int result) {
   if (result < 0)
     return result;
 
-  if (!http_stream_parser_->IsResponseBodyComplete()) {
-    // Keep draining.
-    next_state_ = STATE_DRAIN_BODY;
-    return OK;
-  }
+  if (http_stream_parser_->IsResponseBodyComplete())
+    return DidDrainBodyForAuthRestart(true);
 
-  return DidDrainBodyForAuthRestart();
+  // Keep draining.
+  next_state_ = STATE_DRAIN_BODY;
+  return OK;
+}
+
+int HttpProxyClientSocket::DoTCPRestart() {
+  next_state_ = STATE_TCP_RESTART_COMPLETE;
+  return transport_->socket()->Connect(
+      base::Bind(&HttpProxyClientSocket::OnIOComplete, base::Unretained(this)));
+}
+
+int HttpProxyClientSocket::DoTCPRestartComplete(int result) {
+  // TODO(rvargas): Remove ScopedTracker below once crbug.com/462784 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "462784 HttpProxyClientSocket::DoTCPRestartComplete"));
+
+  if (result != OK)
+    return result;
+
+  next_state_ = STATE_GENERATE_AUTH_TOKEN;
+  return result;
 }
 
 }  // namespace net

@@ -99,6 +99,8 @@ class HttpProxyClientSocket : public ProxyClientSocket {
     STATE_READ_HEADERS_COMPLETE,
     STATE_DRAIN_BODY,
     STATE_DRAIN_BODY_COMPLETE,
+    STATE_TCP_RESTART,
+    STATE_TCP_RESTART_COMPLETE,
     STATE_DONE,
   };
 
@@ -108,7 +110,7 @@ class HttpProxyClientSocket : public ProxyClientSocket {
   static const int kDrainBodyBufferSize = 1024;
 
   int PrepareForAuthRestart();
-  int DidDrainBodyForAuthRestart();
+  int DidDrainBodyForAuthRestart(bool keep_alive);
 
   void LogBlockedTunnelResponse() const;
 
@@ -124,6 +126,8 @@ class HttpProxyClientSocket : public ProxyClientSocket {
   int DoReadHeadersComplete(int result);
   int DoDrainBody();
   int DoDrainBodyComplete(int result);
+  int DoTCPRestart();
+  int DoTCPRestartComplete(int result);
 
   CompletionCallback io_callback_;
   State next_state_;
