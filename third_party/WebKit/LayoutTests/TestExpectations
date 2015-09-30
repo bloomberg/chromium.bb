@@ -118,8 +118,6 @@ crbug.com/520166 compositing/overflow/do-not-repaint-if-scrolling-composited-lay
 crbug.com/520169 [ Win ] fast/dom/Geolocation/timestamp.html [ Failure Pass ]
 crbug.com/520170 [ Win ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/520172 [ Win ] fast/dom/webtiming.html [ Failure Pass ]
-crbug.com/520173 fast/events/domactivate-sets-underlying-click-event-as-handled.html [ Failure Pass ]
-crbug.com/520173 virtual/trustedeventsdefaultaction/fast/events/domactivate-sets-underlying-click-event-as-handled.html [ Failure Pass ]
 crbug.com/520174 fast/events/message-port-start-and-close-different-microtask.html [ Failure Pass ]
 crbug.com/520177 [ Android ] fast/images/style-access-during-imageChanged-crash.html [ Crash Pass ]
 crbug.com/520178 fast/loader/form-submit-aborts-parsing.html [ Failure Pass ]
