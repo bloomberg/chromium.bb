@@ -52,6 +52,11 @@ class EasyUnlockPrivateConnectionManager
                    int connection_id,
                    const std::string& payload);
 
+  // Returns the Bluetooth address of the device connected with a given
+  // |connection_id|, and an empty string if |connection_id| was not found.
+  std::string GetDeviceAddress(const Extension* extension,
+                               int connection_id) const;
+
   // proximity_auth::ConnectionObserver:
   void OnConnectionStatusChanged(
       proximity_auth::Connection* connection,

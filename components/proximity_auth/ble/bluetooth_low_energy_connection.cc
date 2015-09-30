@@ -219,12 +219,12 @@ void BluetoothLowEnergyConnection::DeviceChanged(BluetoothAdapter* adapter,
                                                  BluetoothDevice* device) {
   DCHECK(device);
   if (sub_status() == SubStatus::DISCONNECTED ||
-      device->GetAddress() != GetRemoteDeviceAddress())
+      device->GetAddress() != GetDeviceAddress())
     return;
 
   if (sub_status() != SubStatus::WAITING_GATT_CONNECTION &&
       !device->IsConnected()) {
-    PA_LOG(INFO) << "GATT connection dropped " << GetRemoteDeviceAddress()
+    PA_LOG(INFO) << "GATT connection dropped " << GetDeviceAddress()
                  << "\ndevice connected: " << device->IsConnected()
                  << "\ngatt connection: "
                  << (gatt_connection_ ? gatt_connection_->IsConnected()
@@ -237,10 +237,10 @@ void BluetoothLowEnergyConnection::DeviceRemoved(BluetoothAdapter* adapter,
                                                  BluetoothDevice* device) {
   DCHECK(device);
   if (sub_status_ == SubStatus::DISCONNECTED ||
-      device->GetAddress() != GetRemoteDeviceAddress())
+      device->GetAddress() != GetDeviceAddress())
     return;
 
-  PA_LOG(INFO) << "Device removed " << GetRemoteDeviceAddress();
+  PA_LOG(INFO) << "Device removed " << GetDeviceAddress();
   Disconnect();
 }
 
@@ -343,6 +343,9 @@ void BluetoothLowEnergyConnection::OnGattConnectionCreated(
                << " created.";
   PrintTimeElapsed();
 
+  // Informing |bluetooth_trottler_| a new connection was established.
+  bluetooth_throttler_->OnConnection(this);
+
   gatt_connection_ = gatt_connection.Pass();
   SetSubStatus(SubStatus::WAITING_CHARACTERISTICS);
   characteristic_finder_.reset(CreateCharacteristicsFinder(
@@ -350,9 +353,6 @@ void BluetoothLowEnergyConnection::OnGattConnectionCreated(
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&BluetoothLowEnergyConnection::OnCharacteristicsFinderError,
                  weak_ptr_factory_.GetWeakPtr())));
-
-  // Informing |bluetooth_trottler_| a new connection was established.
-  bluetooth_throttler_->OnConnection(this);
 }
 
 BluetoothLowEnergyCharacteristicsFinder*
@@ -544,7 +544,7 @@ void BluetoothLowEnergyConnection::PrintTimeElapsed() {
   PA_LOG(INFO) << "Time elapsed: " << base::TimeTicks::Now() - start_time_;
 }
 
-std::string BluetoothLowEnergyConnection::GetRemoteDeviceAddress() {
+std::string BluetoothLowEnergyConnection::GetDeviceAddress() {
   // When the remote device is connected we should rely on the address given by
   // |gatt_connection_|. As the device address may change if the device is
   // paired. The address in |gatt_connection_| is automatically updated in this
@@ -555,15 +555,15 @@ std::string BluetoothLowEnergyConnection::GetRemoteDeviceAddress() {
 
 BluetoothDevice* BluetoothLowEnergyConnection::GetRemoteDevice() {
   // It's not possible to simply use
-  // |adapter_->GetDevice(GetRemoteDeviceAddress())| to find the device with MAC
-  // address |GetRemoteDeviceAddress()|. For paired devices,
+  // |adapter_->GetDevice(GetDeviceAddress())| to find the device with MAC
+  // address |GetDeviceAddress()|. For paired devices,
   // BluetoothAdapter::GetDevice(XXX) searches for the temporary MAC address
-  // XXX, whereas |GetRemoteDeviceAddress()| is the real MAC address. This is a
+  // XXX, whereas |GetDeviceAddress()| is the real MAC address. This is a
   // bug in the way device::BluetoothAdapter is storing the devices (see
   // crbug.com/497841).
   std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
   for (const auto& device : devices) {
-    if (device->GetAddress() == GetRemoteDeviceAddress())
+    if (device->GetAddress() == GetDeviceAddress())
       return device;
   }
 

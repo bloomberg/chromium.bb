@@ -70,6 +70,15 @@ EasyUnlockPrivateConnectionManager::ConnectionStatus(const Extension* extension,
   return api::easy_unlock_private::CONNECTION_STATUS_NONE;
 }
 
+std::string EasyUnlockPrivateConnectionManager::GetDeviceAddress(
+    const Extension* extension,
+    int connection_id) const {
+  Connection* connection = GetConnection(extension->id(), connection_id);
+  if (!connection)
+    return std::string();
+  return connection->GetDeviceAddress();
+}
+
 bool EasyUnlockPrivateConnectionManager::Disconnect(const Extension* extension,
                                                     int connection_id) {
   Connection* connection = GetConnection(extension->id(), connection_id);

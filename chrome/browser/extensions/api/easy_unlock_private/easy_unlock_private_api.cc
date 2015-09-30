@@ -1039,7 +1039,12 @@ EasyUnlockPrivateFindSetupConnectionFunction::
           make_scoped_ptr(new base::DefaultTickClock()))) {}
 
 EasyUnlockPrivateFindSetupConnectionFunction::
-    ~EasyUnlockPrivateFindSetupConnectionFunction() {}
+    ~EasyUnlockPrivateFindSetupConnectionFunction() {
+  // |connection_finder_| has a raw pointer to |bluetooth_throttler_|, so it
+  // should be destroyed first.
+  connection_finder_.reset();
+  bluetooth_throttler_.reset();
+}
 
 void EasyUnlockPrivateFindSetupConnectionFunction::
     OnConnectionFinderTimedOut() {
@@ -1137,6 +1142,29 @@ bool EasyUnlockPrivateSetupConnectionSendFunction::RunSync() {
   bool success = GetConnectionManager(browser_context())
                      ->SendMessage(extension(), params->connection_id, payload);
   if (!success)
+    SetError("Invalid connectionId.");
+  return true;
+}
+
+EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction::
+    EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction() {}
+
+EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction::
+    ~EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction() {}
+
+bool EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction::RunSync() {
+  scoped_ptr<easy_unlock_private::SetupConnectionGetDeviceAddress::Params>
+      params =
+          easy_unlock_private::SetupConnectionGetDeviceAddress::Params::Create(
+              *args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  std::string device_address =
+      GetConnectionManager(browser_context())
+          ->GetDeviceAddress(extension(), params->connection_id);
+  results_ =
+      easy_unlock_private::SetupConnectionGetDeviceAddress::Results::Create(
+          device_address);
+  if (device_address.empty())
     SetError("Invalid connectionId.");
   return true;
 }

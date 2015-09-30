@@ -535,6 +535,24 @@ class EasyUnlockPrivateSetupConnectionSendFunction
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateSetupConnectionSendFunction);
 };
 
+class EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "easyUnlockPrivate.setupConnectionGetDeviceAddress",
+      EASYUNLOCKPRIVATE_SETUPCONNECTIONGETDEVICEADDRESS)
+  EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction();
+
+ private:
+  ~EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction() override;
+
+  // SyncExtensionFunction:
+  bool RunSync() override;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_API_H_

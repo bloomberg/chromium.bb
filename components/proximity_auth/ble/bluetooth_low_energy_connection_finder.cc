@@ -269,7 +269,8 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
     // If we invoke the callback now, the callback function may install its own
     // observer to |connection_|. Because we are in the ConnectionObserver
     // callstack, this new observer will receive this connection event.
-    // Therefore, we need to invoke the callback asynchronously.
+    // Therefore, we need to invoke the callback or restart discovery
+    // asynchronously.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&BluetoothLowEnergyConnectionFinder::InvokeCallbackAsync,

@@ -246,6 +246,12 @@ namespace easyUnlockPrivate {
   // |status|: The status of the connection with |connection_id|.
   callback SetupConnectionStatusCallback = void(ConnectionStatus status);
 
+  // Callback for the |setupConnectionGetDeviceAddress()| method.
+  // |deviceAddress|: The bluetooth address of the connection with 
+  // |connectionId|.
+  callback SetupConnectionGetDeviceAddressCallback = void(
+      DOMString deviceAddress);
+
   interface Functions {
     // Gets localized strings required to render the API.
     //
@@ -420,6 +426,10 @@ namespace easyUnlockPrivate {
     static void setupConnectionSend(long connectionId,
                                     ArrayBuffer data,
                                     optional EmptyCallback callback);
+
+    // Gets the Bluetooth address of the connection with |connectionId|
+    static void setupConnectionGetDeviceAddress(long connectionId,
+        SetupConnectionGetDeviceAddressCallback callback);
   };
 
   interface Events {

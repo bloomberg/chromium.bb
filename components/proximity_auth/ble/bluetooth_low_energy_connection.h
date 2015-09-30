@@ -96,6 +96,7 @@ class BluetoothLowEnergyConnection : public Connection,
   // proximity_auth::Connection:
   void Connect() override;
   void Disconnect() override;
+  std::string GetDeviceAddress() override;
 
  protected:
   // Exposed for testing.
@@ -223,9 +224,6 @@ class BluetoothLowEnergyConnection : public Connection,
 
   // Prints the time elapsed since |Connect()| was called.
   void PrintTimeElapsed();
-
-  // Returns the Bluetooth address of the remote device.
-  std::string GetRemoteDeviceAddress();
 
   // Returns the device corresponding to |remote_device_address_|.
   device::BluetoothDevice* GetRemoteDevice();

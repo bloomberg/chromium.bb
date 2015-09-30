@@ -54,6 +54,9 @@ class Connection {
   // Disconnects from the remote device.
   virtual void Disconnect() = 0;
 
+  // The bluetooth address of the connected device.
+  virtual std::string GetDeviceAddress();
+
   Status status() const { return status_; }
 
  protected:
