@@ -985,7 +985,10 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedF
             double extraSpace = 0;
             bool childShrunk = false;
             if (availableFreeSpace > 0 && totalFlexGrow > 0 && flexSign == PositiveFlexibility && std::isfinite(totalFlexGrow)) {
-                extraSpace = availableFreeSpace * child->style()->flexGrow() / totalFlexGrow;
+                if (totalFlexGrow < 1)
+                    extraSpace = availableFreeSpace * child->style()->flexGrow();
+                else
+                    extraSpace = availableFreeSpace * child->style()->flexGrow() / totalFlexGrow;
             } else if (availableFreeSpace < 0 && totalWeightedFlexShrink > 0 && flexSign == NegativeFlexibility && std::isfinite(totalWeightedFlexShrink) && child->style()->flexShrink()) {
                 extraSpace = availableFreeSpace * child->style()->flexShrink() * childInnerFlexBaseSize / totalWeightedFlexShrink;
                 childShrunk = true;

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<link href="resources/flexbox.css" rel="stylesheet">
+<style>
+.container {
+  height: 100px;
+  width: 100px;
+  border: 1px solid black;
+}
+
+.child-flex-grow-0-5 {
+  background-color: green;
+  flex-grow: 0.5;
+}
+
+.child-flex-grow-0-25 {
+  background-color: red;
+  flex-grow: 0.25;
+}
+
+.basis {
+  flex-basis: 30px;
+}
+
+.vertical {
+  -webkit-writing-mode: vertical-rl;
+}
+</style>
+<script src="../../resources/check-layout.js"></script>
+<body onload="checkLayout('.flexbox');">
+
+<div class="flexbox container">
+  <div class="child-flex-grow-0-5" data-expected-width="50"></div>
+</div>
+
+<div class="flexbox container">
+  <div class="child-flex-grow-0-5" data-expected-width="50"></div>
+  <div class="child-flex-grow-0-25" data-expected-width="25"></div>
+</div>
+
+<div class="flexbox container column">
+  <div class="child-flex-grow-0-5" data-expected-height="50"></div>
+  <div class="child-flex-grow-0-25" data-expected-height="25"></div>
+</div>
+
+<div class="flexbox container column vertical">
+  <div class="child-flex-grow-0-5 " data-expected-width="50"></div>
+  <div class="child-flex-grow-0-25 " data-expected-width="25"></div>
+</div>
+
+<div class="flexbox container vertical">
+  <div class="child-flex-grow-0-5 " data-expected-height="50"></div>
+  <div class="child-flex-grow-0-25 " data-expected-height="25"></div>
+</div>
+
+<div class="flexbox container">
+  <div class="child-flex-grow-0-5 basis" data-expected-width="50"></div>
+  <div class="child-flex-grow-0-25 basis" data-expected-width="40"></div>
+ </div>
+ 
+<div class="flexbox container column">
+  <div class="child-flex-grow-0-5 basis" data-expected-height="50"></div>
+  <div class="child-flex-grow-0-25 basis" data-expected-height="40"></div>
+</div>
+
+<div class="flexbox container vertical">
+  <div class="child-flex-grow-0-5 basis" data-expected-height="50"></div>
+  <div class="child-flex-grow-0-25 basis" data-expected-height="40"></div>
+</div>
+
+<div class="flexbox container column vertical">
+  <div class="child-flex-grow-0-5 basis" data-expected-width="50"></div>
+  <div class="child-flex-grow-0-25 basis" data-expected-width="40"></div>
+</div>
+</body>
