@@ -139,6 +139,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/touch_device_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/touch_handle_orientation_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/url_request_failed_job_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/web_display_mode"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/web_input_event_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/web_text_input_type"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/window_open_disposition_java"/>
