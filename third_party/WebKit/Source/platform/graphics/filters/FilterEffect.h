@@ -149,7 +149,7 @@ public:
 protected:
     FilterEffect(Filter*);
 
-    PassRefPtr<SkImageFilter> createTransparentBlack() const;
+    PassRefPtr<SkImageFilter> createTransparentBlack(SkiaImageFilterBuilder*) const;
 
     Color adaptColorToOperatingColorSpace(const Color& deviceColor);
 

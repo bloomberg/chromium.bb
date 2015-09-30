@@ -196,7 +196,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* bui
         // to download, is non-existent, or that cannot be displayed (e.g. because it is
         // not in a supported image format) fills the filter primitive subregion with
         // transparent black."
-        return createTransparentBlack();
+        return createTransparentBlack(builder);
     }
 
     FloatRect srcRect = FloatRect(FloatPoint(), m_image->size());
