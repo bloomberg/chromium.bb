@@ -145,8 +145,9 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
   ProgrammableInstallPrompt::Accept();
 }
 
+// Flaky: https://crbug.com/537526.
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
-                       ShouldBlockInlineInstallFromPopupWindow) {
+                       DISABLED_ShouldBlockInlineInstallFromPopupWindow) {
   GURL install_url =
       GenerateTestServerUrl(kAppDomain, "install_from_popup.html");
   // Disable popup blocking for the test url.
