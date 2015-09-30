@@ -414,7 +414,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     public void openBookmark(BookmarkId bookmark, int launchLocation) {
         clearSelection();
         if (mEnhancedBookmarksModel.getBookmarkById(bookmark) != null) {
-            String url = mEnhancedBookmarksModel.getLaunchUrlAndMarkAccessed(bookmark);
+            String url = mEnhancedBookmarksModel.getLaunchUrlAndMarkAccessed(mActivity, bookmark);
             // TODO(jianli): Notify the user about the failure.
             if (TextUtils.isEmpty(url)) return;
 

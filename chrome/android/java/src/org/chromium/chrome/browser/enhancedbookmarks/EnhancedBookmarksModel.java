@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.enhancedbookmarks;
 
+import android.content.Context;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.BookmarksBridge;
@@ -12,6 +14,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -229,14 +232,16 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
      * Retrieves the url to launch a bookmark or saved page. If latter, also marks it as being
      * accessed.
      *
+     * @parma context Context for checking connection.
      * @param bookmarkId ID of the bookmark to launch.
      * @return The launch URL.
      */
-    public String getLaunchUrlAndMarkAccessed(BookmarkId bookmarkId) {
+    public String getLaunchUrlAndMarkAccessed(Context context, BookmarkId bookmarkId) {
         String url = getBookmarkById(bookmarkId).getUrl();
-        if (mOfflinePageBridge == null) return url;
+        // When there is a network connection, we visit original URL online.
+        if (mOfflinePageBridge == null || OfflinePageUtils.isConnected(context)) return url;
 
-        // Return the offline url for the offline page.
+        // Return the offline url for the offline page if one exists.
         OfflinePageItem page = mOfflinePageBridge.getPageByBookmarkId(bookmarkId);
         if (page == null) return url;
 
