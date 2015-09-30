@@ -139,14 +139,6 @@ String truncateZeroes(const String& number)
     return number.left(number.length() - removeCount);
 }
 
-float toValidValue(CSSPropertyID propertyId, float newValue)
-{
-    if (CSSPropertyPaddingBottom <= propertyId && propertyId <= CSSPropertyPaddingTop)
-        return newValue >= 0 ? newValue : 0;
-
-    return newValue;
-}
-
 InspectorHighlightConfig affectedNodesHighlightConfig()
 {
     // TODO: find a better color
@@ -336,7 +328,8 @@ void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)
 void LayoutEditor::overlayPropertyChanged(float cssDelta)
 {
     if (m_changingProperty && m_factor) {
-        float newValue = toValidValue(m_changingProperty, cssDelta / m_factor + m_propertyInitialValue);
+        float newValue = cssDelta / m_factor + m_propertyInitialValue;
+        newValue = newValue >= 0 ? newValue : 0;
         m_isDirty |= setCSSPropertyValueInCurrentRule(truncateZeroes(String::format("%.2f", newValue)) + CSSPrimitiveValue::unitTypeToString(m_valueUnitType));
     }
 }
@@ -396,23 +389,13 @@ PassRefPtr<JSONObject> LayoutEditor::currentSelectorInfo() const
     if (!ownerDocument->isActive() || currentStyleIsInline())
         return object.release();
 
-    bool hasSameSelectors = false;
-    for (unsigned i = 0; i < m_matchedRules->length(); i++) {
-        if (i != m_currentRuleIndex && toCSSStyleRule(m_matchedRules->item(i))->selectorText() == currentSelectorText) {
-            hasSameSelectors = true;
-            break;
-        }
-    }
+    Vector<String> medias;
+    buildMediaListChain(m_matchedRules->item(m_currentRuleIndex), medias);
+    RefPtr<JSONArray> mediasJSONArray = JSONArray::create();
+    for (size_t i = 0; i < medias.size(); ++i)
+        mediasJSONArray->pushString(medias[i]);
 
-    if (hasSameSelectors) {
-        Vector<String> medias;
-        buildMediaListChain(m_matchedRules->item(m_currentRuleIndex), medias);
-        RefPtr<JSONArray> mediasJSONArray = JSONArray::create();
-        for (size_t i = 0; i < medias.size(); ++i)
-            mediasJSONArray->pushString(medias[i]);
-
-        object->setArray("medias", mediasJSONArray.release());
-    }
+    object->setArray("medias", mediasJSONArray.release());
 
     TrackExceptionState exceptionState;
     RefPtrWillBeRawPtr<StaticElementList> elements = ownerDocument->querySelectorAll(AtomicString(currentSelectorText), exceptionState);
