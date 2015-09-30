@@ -16,7 +16,7 @@ class V8Top25(perf_benchmark.PerfBenchmark):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = v8_gc_times.V8GCTimes
-  page_set = page_sets.V8Top25SmoothPageSet
+  page_set = page_sets.Top25SmoothPageSet
 
   @classmethod
   def Name(cls):
