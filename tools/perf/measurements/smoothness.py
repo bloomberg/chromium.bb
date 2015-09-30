@@ -40,7 +40,6 @@ class Smoothness(page_test.PageTest):
     options.AppendExtraBrowserArgs('--running-performance-benchmark')
 
   def WillNavigateToPage(self, page, tab):
-    tracing_controller = tab.browser.platform.tracing_controller
     # FIXME: Remove webkit.console when blink.console lands in chromium and
     # the ref builds are updated. crbug.com/386847
     custom_categories = [
@@ -54,7 +53,7 @@ class Smoothness(page_test.PageTest):
       options.category_filter.AddSyntheticDelay(delay)
     self._tbm = timeline_based_measurement.TimelineBasedMeasurement(
         options, self._results_wrapper)
-    self._tbm.WillRunStoryForPageTest(tracing_controller)
+    self._tbm.WillRunStory(tab.browser.platform)
 
   def ValidateAndMeasurePage(self, _, tab, results):
     self._tbm.Measure(tab.browser.platform, results)
