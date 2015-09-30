@@ -240,6 +240,11 @@ class AutofillManager : public AutofillDownloadManager::Observer,
     return external_delegate_;
   }
 
+  // Exposed for testing.
+  void set_download_manager(AutofillDownloadManager* manager) {
+    download_manager_.reset(manager);
+  }
+
  private:
   // AutofillDownloadManager::Observer:
   void OnLoadedServerPredictions(const std::string& response_xml) override;

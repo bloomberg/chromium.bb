@@ -21,6 +21,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
+#include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -206,6 +207,32 @@ class TestPersonalDataManager : public PersonalDataManager {
   size_t num_times_save_imported_profile_called_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
+};
+
+class TestAutofillDownloadManager : public AutofillDownloadManager {
+ public:
+  TestAutofillDownloadManager(AutofillDriver* driver,
+                              PrefService* pref_service,
+                              AutofillDownloadManager::Observer* observer)
+      : AutofillDownloadManager(driver, pref_service, observer) {}
+
+  bool StartQueryRequest(const std::vector<FormStructure*>& forms) override {
+    last_queried_forms_ = forms;
+    return true;
+  }
+
+  // Verify that the last queried forms equal |expected_forms|.
+  void VerifyLastQueriedForms(const std::vector<FormData>& expected_forms) {
+    ASSERT_EQ(expected_forms.size(), last_queried_forms_.size());
+    for (size_t i = 0; i < expected_forms.size(); ++i) {
+      EXPECT_EQ(*last_queried_forms_[i], expected_forms[i]);
+    }
+  }
+
+ private:
+  std::vector<FormStructure*> last_queried_forms_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAutofillDownloadManager);
 };
 
 void ExpectFilledField(const char* expected_label,
@@ -604,7 +631,11 @@ class AutofillManagerTest : public testing::Test {
     autofill_driver_->SetURLRequestContext(request_context_.get());
     autofill_manager_.reset(new TestAutofillManager(
         autofill_driver_.get(), &autofill_client_, &personal_data_));
-
+    download_manager_ = new TestAutofillDownloadManager(
+        autofill_driver_.get(), autofill_client_.GetPrefs(),
+        autofill_manager_.get());
+    // AutofillManager takes ownership of |download_manager_|.
+    autofill_manager_->set_download_manager(download_manager_);
     external_delegate_.reset(new TestAutofillExternalDelegate(
         autofill_manager_.get(),
         autofill_driver_.get()));
@@ -781,6 +812,7 @@ class AutofillManagerTest : public testing::Test {
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestAutofillExternalDelegate> external_delegate_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  TestAutofillDownloadManager* download_manager_;
   TestPersonalDataManager personal_data_;
 };
 
@@ -824,9 +856,45 @@ TEST_F(AutofillManagerTest, OnFormsSeen_Empty) {
       "Autofill.UserHappiness", 0 /* FORMS_LOADED */, 1);
 
   // No more forms, metric is not logged.
-  FormsSeen(std::vector<FormData>{});
+  forms.clear();
+  FormsSeen(forms);
   histogram_tester.ExpectUniqueSample(
       "Autofill.UserHappiness", 0 /* FORMS_LOADED */, 1);
+}
+
+// Test that calling OnFormsSeen consecutively with a different set of forms
+// will query for each separately.
+TEST_F(AutofillManagerTest, OnFormsSeen_DifferentFormStructures) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+
+  base::HistogramTester histogram_tester;
+  FormsSeen(forms);
+  histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
+                                      0 /* FORMS_LOADED */, 1);
+  download_manager_->VerifyLastQueriedForms(forms);
+
+  // Different form structure.
+  FormData form2;
+  form2.name = ASCIIToUTF16("MyForm");
+  form2.origin = GURL("https://myform.com/form.html");
+  form2.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  form2.fields.push_back(field);
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  form2.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
+  form2.fields.push_back(field);
+
+  forms.clear();
+  forms.push_back(form2);
+  FormsSeen(forms);
+  histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
+                                      0 /* FORMS_LOADED */, 2);
+  download_manager_->VerifyLastQueriedForms(forms);
 }
 
 // Test that we return all address profile suggestions when all form fields are

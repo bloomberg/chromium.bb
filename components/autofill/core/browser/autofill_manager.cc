@@ -1398,6 +1398,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     return;
 
   std::vector<FormStructure*> non_queryable_forms;
+  std::vector<FormStructure*> queryable_forms;
   for (const FormData& form : forms) {
     scoped_ptr<FormStructure> form_structure(new FormStructure(form));
 
@@ -1411,24 +1412,26 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 
     form_structure->DetermineHeuristicTypes();
 
-    if (form_structure->ShouldBeCrowdsourced()) {
+    // Ownership is transferred to |form_structures_| which maintains it until
+    // the manager is Reset() or destroyed. It is safe to use references below
+    // as long as receivers don't take ownership.
+    form_structures_.push_back(form_structure.Pass());
+
+    if (form_structures_.back()->ShouldBeCrowdsourced()) {
       AutofillMetrics::LogPasswordFormQueryVolume(
           AutofillMetrics::CURRENT_QUERY);
-      form_structures_.push_back(form_structure.release());
+      queryable_forms.push_back(form_structures_.back());
     } else {
-      non_queryable_forms.push_back(form_structure.release());
+      non_queryable_forms.push_back(form_structures_.back());
     }
   }
 
-  if (!form_structures_.empty() && download_manager_) {
+  if (!queryable_forms.empty() && download_manager_) {
     // Query the server if at least one of the forms was parsed.
-    download_manager_->StartQueryRequest(form_structures_.get());
+    download_manager_->StartQueryRequest(queryable_forms);
   }
 
-  for (FormStructure* structure : non_queryable_forms)
-    form_structures_.push_back(structure);
-
-  if (!form_structures_.empty()) {
+  if (!queryable_forms.empty() || !non_queryable_forms.empty()) {
     AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED);
 #if defined(OS_IOS)
     // Log this from same location as AutofillMetrics::FORMS_LOADED to ensure

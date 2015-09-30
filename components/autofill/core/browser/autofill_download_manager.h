@@ -67,7 +67,7 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   // Starts a query request to Autofill servers. The observer is called with the
   // list of the fields of all requested forms.
   // |forms| - array of forms aggregated in this request.
-  bool StartQueryRequest(const std::vector<FormStructure*>& forms);
+  virtual bool StartQueryRequest(const std::vector<FormStructure*>& forms);
 
   // Starts an upload request for the given |form|, unless throttled by the
   // server. The probability of the request going over the wire is
@@ -82,10 +82,11 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   // Note that in this case, |form.FormSignature()| gives the signature for the
   // registration form on which the password was generated, rather than the
   // submitted form's signature.
-  bool StartUploadRequest(const FormStructure& form,
-                          bool form_was_autofilled,
-                          const ServerFieldTypeSet& available_field_types,
-                          const std::string& login_form_signature);
+  virtual bool StartUploadRequest(
+      const FormStructure& form,
+      bool form_was_autofilled,
+      const ServerFieldTypeSet& available_field_types,
+      const std::string& login_form_signature);
 
  private:
   friend class AutofillDownloadTest;
