@@ -67,6 +67,11 @@
             '_GNU_SOURCE=1',
           ],
         }],
+        ['chromeos==1', {
+          'defines': [
+            'USBI_TIMERFD_AVAILABLE',
+          ]
+        }],
         ['use_udev==1', {
           'sources': [
             'src/libusb/os/linux_udev.cc',

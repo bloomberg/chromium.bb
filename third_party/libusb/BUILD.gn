@@ -99,6 +99,10 @@ static_library("libusb") {
     ]
   }
 
+  if (is_chromeos) {
+    defines += [ "USBI_TIMERFD_AVAILABLE" ]
+  }
+
   if (use_udev) {
     sources += [ "src/libusb/os/linux_udev.cc" ]
     defines += [
