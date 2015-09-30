@@ -660,8 +660,8 @@ class TestMain(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/bot/foo',
-            {'method': 'DELETE'},
+            'https://localhost:1/_ah/api/swarming/v1/bot/foo/delete',
+            {'method': 'POST', 'data': {}},
             {},
           ),
         ])

@@ -970,9 +970,9 @@ def CMDbot_delete(parser, args):
 
   result = 0
   for bot in bots:
-    url = '%s/_ah/api/swarming/v1/bot/%s' % (options.swarming, bot)
-    if net.url_read_json(url, method='DELETE') is None:
-      print('Deleting %s failed' % bot)
+    url = '%s/_ah/api/swarming/v1/bot/%s/delete' % (options.swarming, bot)
+    if net.url_read_json(url, data={}, method='POST') is None:
+      print('Deleting %s failed. Probably already gone' % bot)
       result = 1
   return result
 

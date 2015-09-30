@@ -232,7 +232,7 @@ class HttpServiceTest(RetryLoopMockedTest):
     def mock_perform_request(request):
       attempts.append(request)
       if len(attempts) == 1:
-        raise net.HttpError(404, 'application/json; charset=ASCII', None)
+        raise net.HttpError(404, 'application/text; charset=ASCII', None)
       return request.make_fake_response(response)
 
     service = self.mocked_http_service(perform_request=mock_perform_request)

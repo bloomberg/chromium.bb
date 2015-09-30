@@ -317,7 +317,7 @@ class HttpService(object):
       # result is not JSON. This assumes that we only use JSON encoding.
       return (
           suburl.startswith('/_ah/api/') and
-          content_type.startswith('application/json'))
+          not content_type.startswith('application/json'))
     # All other 4** errors are fatal.
     if code < 500:
       return False
