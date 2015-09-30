@@ -6016,7 +6016,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
     f.write("  CheckBytesWrittenMatchesExpectedSize(\n")
     f.write("      next_cmd, sizeof(cmd) +\n")
     f.write("      RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));\n")
-    f.write("  // TODO(gman): Check that ids were inserted;\n")
+    f.write("  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd),\n")
+    f.write("                      sizeof(ids)));\n")
     f.write("}\n")
     f.write("\n")
 
@@ -6480,7 +6481,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
     f.write("  CheckBytesWrittenMatchesExpectedSize(\n")
     f.write("      next_cmd, sizeof(cmd) +\n")
     f.write("      RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));\n")
-    f.write("  // TODO(gman): Check that ids were inserted;\n")
+    f.write("  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd),\n")
+    f.write("                      sizeof(ids)));\n")
     f.write("}\n")
     f.write("\n")
 

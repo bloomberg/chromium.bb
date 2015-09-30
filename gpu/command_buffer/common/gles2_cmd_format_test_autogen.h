@@ -744,7 +744,7 @@ TEST_F(GLES2FormatTest, DeleteBuffersImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, DeleteFramebuffersImmediate) {
@@ -762,7 +762,7 @@ TEST_F(GLES2FormatTest, DeleteFramebuffersImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, DeleteProgram) {
@@ -790,7 +790,7 @@ TEST_F(GLES2FormatTest, DeleteRenderbuffersImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, DeleteSamplersImmediate) {
@@ -808,7 +808,7 @@ TEST_F(GLES2FormatTest, DeleteSamplersImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, DeleteSync) {
@@ -846,7 +846,7 @@ TEST_F(GLES2FormatTest, DeleteTexturesImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, DeleteTransformFeedbacksImmediate) {
@@ -865,7 +865,7 @@ TEST_F(GLES2FormatTest, DeleteTransformFeedbacksImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, DepthFunc) {
@@ -1074,7 +1074,7 @@ TEST_F(GLES2FormatTest, GenBuffersImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, GenerateMipmap) {
@@ -1102,7 +1102,7 @@ TEST_F(GLES2FormatTest, GenFramebuffersImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, GenRenderbuffersImmediate) {
@@ -1120,7 +1120,7 @@ TEST_F(GLES2FormatTest, GenRenderbuffersImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, GenSamplersImmediate) {
@@ -1137,7 +1137,7 @@ TEST_F(GLES2FormatTest, GenSamplersImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, GenTexturesImmediate) {
@@ -1154,7 +1154,7 @@ TEST_F(GLES2FormatTest, GenTexturesImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, GenTransformFeedbacksImmediate) {
@@ -1172,7 +1172,7 @@ TEST_F(GLES2FormatTest, GenTransformFeedbacksImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, GetActiveAttrib) {
@@ -3778,7 +3778,7 @@ TEST_F(GLES2FormatTest, GenQueriesEXTImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, DeleteQueriesEXTImmediate) {
@@ -3796,7 +3796,7 @@ TEST_F(GLES2FormatTest, DeleteQueriesEXTImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, QueryCounterEXT) {
@@ -3919,7 +3919,7 @@ TEST_F(GLES2FormatTest, GenVertexArraysOESImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, DeleteVertexArraysOESImmediate) {
@@ -3937,7 +3937,7 @@ TEST_F(GLES2FormatTest, DeleteVertexArraysOESImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, IsVertexArrayOES) {
@@ -4585,7 +4585,7 @@ TEST_F(GLES2FormatTest, GenValuebuffersCHROMIUMImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, DeleteValuebuffersCHROMIUMImmediate) {
@@ -4604,7 +4604,7 @@ TEST_F(GLES2FormatTest, DeleteValuebuffersCHROMIUMImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd,
       sizeof(cmd) + RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
-  // TODO(gman): Check that ids were inserted;
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(GLES2FormatTest, IsValuebufferCHROMIUM) {
