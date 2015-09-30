@@ -16,14 +16,20 @@ const char kMallocBackingType[] = "malloc";
 }
 
 SkTraceMemoryDump_Chrome::SkTraceMemoryDump_Chrome(
+    base::trace_event::MemoryDumpLevelOfDetail level_of_detail,
     base::trace_event::ProcessMemoryDump* process_memory_dump)
-    : SkTraceMemoryDump_Chrome("", process_memory_dump) {}
+    : SkTraceMemoryDump_Chrome("", level_of_detail, process_memory_dump) {}
 
 SkTraceMemoryDump_Chrome::SkTraceMemoryDump_Chrome(
-    const char* dump_name_prefix,
+    const std::string& dump_name_prefix,
+    base::trace_event::MemoryDumpLevelOfDetail level_of_detail,
     base::trace_event::ProcessMemoryDump* process_memory_dump)
     : dump_name_prefix_(dump_name_prefix),
-      process_memory_dump_(process_memory_dump) {}
+      process_memory_dump_(process_memory_dump),
+      request_level_(
+          level_of_detail == base::trace_event::MemoryDumpLevelOfDetail::LIGHT
+              ? SkTraceMemoryDump::kLight_LevelOfDetail
+              : SkTraceMemoryDump::kObjectsBreakdowns_LevelOfDetail) {}
 
 SkTraceMemoryDump_Chrome::~SkTraceMemoryDump_Chrome() {}
 
@@ -62,6 +68,11 @@ void SkTraceMemoryDump_Chrome::setDiscardableMemoryBacking(
   auto dump = discardable_memory_obj.CreateMemoryAllocatorDump(
       name.c_str(), process_memory_dump_);
   DCHECK(dump);
+}
+
+SkTraceMemoryDump::LevelOfDetail SkTraceMemoryDump_Chrome::getRequestedDetails()
+    const {
+  return request_level_;
 }
 
 base::trace_event::MemoryAllocatorDump*

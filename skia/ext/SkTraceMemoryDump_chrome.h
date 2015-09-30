@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/macros.h"
+#include "base/trace_event/memory_dump_request_args.h"
 #include "third_party/skia/include/core/SkTraceMemoryDump.h"
 
 namespace base {
@@ -26,10 +28,12 @@ class SkTraceMemoryDump_Chrome : public SkTraceMemoryDump {
   // |dump_name_prefix| argument specifies the prefix appended to the dump
   // name skia provides. By default it is taken as empty string.
   SkTraceMemoryDump_Chrome(
+      base::trace_event::MemoryDumpLevelOfDetail level_of_detail,
       base::trace_event::ProcessMemoryDump* process_memory_dump);
 
   SkTraceMemoryDump_Chrome(
-      const char* dump_name_prefix,
+      const std::string& dump_name_prefix,
+      base::trace_event::MemoryDumpLevelOfDetail level_of_detail,
       base::trace_event::ProcessMemoryDump* process_memory_dump);
 
   ~SkTraceMemoryDump_Chrome() override;
@@ -45,6 +49,7 @@ class SkTraceMemoryDump_Chrome : public SkTraceMemoryDump {
   void setDiscardableMemoryBacking(
       const char* dumpName,
       const SkDiscardableMemory& discardableMemoryObject) override;
+  LevelOfDetail getRequestedDetails() const override;
 
  protected:
   base::trace_event::ProcessMemoryDump* process_memory_dump() {
@@ -52,13 +57,16 @@ class SkTraceMemoryDump_Chrome : public SkTraceMemoryDump {
   }
 
  private:
+  // Helper to create allocator dumps.
+  base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
+      const char* dumpName);
+
   std::string dump_name_prefix_;
 
   base::trace_event::ProcessMemoryDump* process_memory_dump_;
 
-  // Helper to create allocator dumps.
-  base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
-      const char* dumpName);
+  // Stores the level of detail for the current dump.
+  LevelOfDetail request_level_;
 
   DISALLOW_COPY_AND_ASSIGN(SkTraceMemoryDump_Chrome);
 };

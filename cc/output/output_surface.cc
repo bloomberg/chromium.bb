@@ -91,6 +91,12 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
     NOTREACHED();
   }
 
+  LevelOfDetail getRequestedDetails() const override {
+    // TODO(ssid): Use MemoryDumpArgs to create light dumps when requested
+    // (crbug.com/499731).
+    return kObjectsBreakdowns_LevelOfDetail;
+  }
+
  private:
   // Helper to create allocator dumps.
   base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
