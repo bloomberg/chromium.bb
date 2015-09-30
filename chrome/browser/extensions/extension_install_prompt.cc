@@ -856,15 +856,15 @@ void ExtensionInstallPrompt::ShowConfirmation() {
         profile_, extensions::PermissionsUpdater::INIT_FLAG_TRANSIENT)
         .InitializePermissions(extension_);
     permissions_to_display =
-        extension_->permissions_data()->active_permissions();
+        &extension_->permissions_data()->active_permissions();
     // For delegated installs, all optional permissions are pre-approved by the
     // person who triggers the install, so add them to the list.
     if (prompt_->type() == DELEGATED_PERMISSIONS_PROMPT ||
         prompt_->type() == DELEGATED_BUNDLE_PERMISSIONS_PROMPT) {
-      const PermissionSet* optional_permissions =
+      const PermissionSet& optional_permissions =
           extensions::PermissionsParser::GetOptionalPermissions(extension_);
       permissions_wrapper = PermissionSet::CreateUnion(*permissions_to_display,
-                                                       *optional_permissions);
+                                                       optional_permissions);
       permissions_to_display = permissions_wrapper.get();
     }
   }
@@ -880,16 +880,16 @@ void ExtensionInstallPrompt::ShowConfirmation() {
 
     prompt_->SetPermissions(message_provider->GetPermissionMessages(
                                 message_provider->GetAllPermissionIDs(
-                                    permissions_to_display, type)),
+                                    *permissions_to_display, type)),
                             REGULAR_PERMISSIONS);
 
     const PermissionSet* withheld =
-        extension_ ? extension_->permissions_data()->withheld_permissions()
+        extension_ ? &extension_->permissions_data()->withheld_permissions()
                    : nullptr;
     if (withheld && !withheld->IsEmpty()) {
       prompt_->SetPermissions(
           message_provider->GetPermissionMessages(
-              message_provider->GetAllPermissionIDs(withheld, type)),
+              message_provider->GetAllPermissionIDs(*withheld, type)),
           WITHHELD_PERMISSIONS);
     }
   }

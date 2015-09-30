@@ -117,10 +117,9 @@ void AddBackgroundPermission(ExtensionService* service,
 
   scoped_refptr<Extension> temporary =
       CreateExtension(GenerateUniqueExtensionName(), true);
-  const extensions::PermissionSet* permissions =
-      temporary->permissions_data()->active_permissions();
   extensions::PermissionsUpdater(service->profile())
-      .AddPermissions(extension, permissions);
+      .AddPermissions(extension,
+                      temporary->permissions_data()->active_permissions());
 }
 
 void RemoveBackgroundPermission(ExtensionService* service,

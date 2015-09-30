@@ -215,7 +215,7 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
 
   // Make sure it loaded properly.
   ASSERT_EQ(default_permissions,
-            *extension->permissions_data()->active_permissions());
+            extension->permissions_data()->active_permissions());
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_.get());
   scoped_ptr<const PermissionSet> active_permissions;
@@ -232,7 +232,7 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
                         URLPatternSet());
 
   PermissionsUpdaterListener listener;
-  PermissionsUpdater(profile_.get()).AddPermissions(extension.get(), &delta);
+  PermissionsUpdater(profile_.get()).AddPermissions(extension.get(), delta);
 
   listener.Wait();
 
@@ -245,7 +245,7 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   // Make sure the extension's active permissions reflect the change.
   active_permissions = PermissionSet::CreateUnion(default_permissions, delta);
   ASSERT_EQ(*active_permissions.get(),
-            *extension->permissions_data()->active_permissions());
+            extension->permissions_data()->active_permissions());
 
   // Verify that the new granted and active permissions were also stored
   // in the extension preferences. In this case, the granted permissions should
@@ -265,7 +265,7 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
 
   PermissionsUpdaterListener listener;
   PermissionsUpdater(profile_.get())
-      .RemovePermissions(extension.get(), &delta,
+      .RemovePermissions(extension.get(), delta,
                          PermissionsUpdater::REMOVE_SOFT);
   listener.Wait();
 
@@ -278,8 +278,8 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   // Make sure the extension's active permissions reflect the change.
   active_permissions =
       PermissionSet::CreateDifference(*active_permissions, delta);
-  ASSERT_EQ(*active_permissions.get(),
-            *extension->permissions_data()->active_permissions());
+  ASSERT_EQ(*active_permissions,
+            extension->permissions_data()->active_permissions());
 
   // Verify that the extension prefs hold the new active permissions and the
   // same granted permissions.
@@ -326,16 +326,16 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
   // At first, the active permissions should have only the safe patterns and
   // the withheld permissions should have only the all host patterns.
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions()->scriptable_hosts().patterns(),
+      permissions_data->active_permissions().scriptable_hosts().patterns(),
       safe_patterns));
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions()->explicit_hosts().patterns(),
+      permissions_data->active_permissions().explicit_hosts().patterns(),
       safe_patterns));
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->withheld_permissions()->scriptable_hosts().patterns(),
+      permissions_data->withheld_permissions().scriptable_hosts().patterns(),
       all_host_patterns));
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->withheld_permissions()->explicit_hosts().patterns(),
+      permissions_data->withheld_permissions().explicit_hosts().patterns(),
       all_host_patterns));
 
   // Then, we grant the withheld all-hosts permissions.
@@ -343,17 +343,17 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
   // Now, active permissions should have all patterns, and withheld permissions
   // should have none.
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions()->scriptable_hosts().patterns(),
+      permissions_data->active_permissions().scriptable_hosts().patterns(),
       all_patterns));
   EXPECT_TRUE(permissions_data->withheld_permissions()
-                  ->scriptable_hosts()
+                  .scriptable_hosts()
                   .patterns()
                   .empty());
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions()->explicit_hosts().patterns(),
+      permissions_data->active_permissions().explicit_hosts().patterns(),
       all_patterns));
   EXPECT_TRUE(permissions_data->withheld_permissions()
-                  ->explicit_hosts()
+                  .explicit_hosts()
                   .patterns()
                   .empty());
 
@@ -363,16 +363,16 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
   // We should be back to our initial state - all_hosts should be withheld, and
   // the safe patterns should be granted.
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions()->scriptable_hosts().patterns(),
+      permissions_data->active_permissions().scriptable_hosts().patterns(),
       safe_patterns));
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions()->explicit_hosts().patterns(),
+      permissions_data->active_permissions().explicit_hosts().patterns(),
       safe_patterns));
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->withheld_permissions()->scriptable_hosts().patterns(),
+      permissions_data->withheld_permissions().scriptable_hosts().patterns(),
       all_host_patterns));
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->withheld_permissions()->explicit_hosts().patterns(),
+      permissions_data->withheld_permissions().explicit_hosts().patterns(),
       all_host_patterns));
 
   // Creating a component extension should result in no withheld permissions.
@@ -381,17 +381,17 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
   permissions_data = extension->permissions_data();
   updater.InitializePermissions(extension.get());
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions()->scriptable_hosts().patterns(),
+      permissions_data->active_permissions().scriptable_hosts().patterns(),
       all_patterns));
   EXPECT_TRUE(permissions_data->withheld_permissions()
-                  ->scriptable_hosts()
+                  .scriptable_hosts()
                   .patterns()
                   .empty());
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions()->explicit_hosts().patterns(),
+      permissions_data->active_permissions().explicit_hosts().patterns(),
       all_patterns));
   EXPECT_TRUE(permissions_data->withheld_permissions()
-                  ->explicit_hosts()
+                  .explicit_hosts()
                   .patterns()
                   .empty());
 
@@ -402,17 +402,17 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
   permissions_data = extension->permissions_data();
   updater.InitializePermissions(extension.get());
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions()->scriptable_hosts().patterns(),
+      permissions_data->active_permissions().scriptable_hosts().patterns(),
       all_patterns));
   EXPECT_TRUE(permissions_data->withheld_permissions()
-                  ->scriptable_hosts()
+                  .scriptable_hosts()
                   .patterns()
                   .empty());
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions()->explicit_hosts().patterns(),
+      permissions_data->active_permissions().explicit_hosts().patterns(),
       all_patterns));
   EXPECT_TRUE(permissions_data->withheld_permissions()
-                  ->explicit_hosts()
+                  .explicit_hosts()
                   .patterns()
                   .empty());
 }
@@ -435,10 +435,10 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHostsWithTransientSwitch) {
   // Since the extension was created without the switch on, it should default
   // to having all urls access.
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions()->scriptable_hosts().patterns(),
+      permissions_data->active_permissions().scriptable_hosts().patterns(),
       all_host_patterns));
   EXPECT_TRUE(
-      permissions_data->withheld_permissions()->scriptable_hosts().is_empty());
+      permissions_data->withheld_permissions().scriptable_hosts().is_empty());
   EXPECT_TRUE(util::AllowedScriptingOnAllUrls(extension_a->id(), profile()));
 
   // Enable the switch, and re-init permission for the extension.
@@ -451,10 +451,10 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHostsWithTransientSwitch) {
   // have the all urls pref.
   permissions_data = extension_a->permissions_data();
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions()->scriptable_hosts().patterns(),
+      permissions_data->active_permissions().scriptable_hosts().patterns(),
       all_host_patterns));
   EXPECT_TRUE(
-      permissions_data->withheld_permissions()->scriptable_hosts().is_empty());
+      permissions_data->withheld_permissions().scriptable_hosts().is_empty());
   EXPECT_TRUE(util::AllowedScriptingOnAllUrls(extension_a->id(), profile()));
 
   // Load a new extension, which also has all urls. Since the switch is now on,
@@ -465,9 +465,9 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHostsWithTransientSwitch) {
   permissions_data = extension_b->permissions_data();
 
   EXPECT_TRUE(
-      permissions_data->active_permissions()->scriptable_hosts().is_empty());
+      permissions_data->active_permissions().scriptable_hosts().is_empty());
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->withheld_permissions()->scriptable_hosts().patterns(),
+      permissions_data->withheld_permissions().scriptable_hosts().patterns(),
       all_host_patterns));
   EXPECT_FALSE(util::AllowedScriptingOnAllUrls(extension_b->id(), profile()));
 
@@ -479,9 +479,9 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHostsWithTransientSwitch) {
   // restricted with the switch off.
   permissions_data = extension_b->permissions_data();
   EXPECT_TRUE(
-      permissions_data->active_permissions()->scriptable_hosts().is_empty());
+      permissions_data->active_permissions().scriptable_hosts().is_empty());
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->withheld_permissions()->scriptable_hosts().patterns(),
+      permissions_data->withheld_permissions().scriptable_hosts().patterns(),
       all_host_patterns));
   EXPECT_FALSE(util::AllowedScriptingOnAllUrls(extension_b->id(), profile()));
 }
@@ -522,7 +522,7 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
 
     // Add the optional "cookies" permission.
     updater.AddPermissions(extension.get(),
-                           api_permission_set(APIPermission::kCookie).get());
+                           *api_permission_set(APIPermission::kCookie));
     const PermissionsData* permissions = extension->permissions_data();
     // The extension should have the permission in its active permissions and
     // its granted permissions (stored in prefs). And, the permission should
@@ -536,7 +536,7 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
 
     // Repeat with "tabs".
     updater.AddPermissions(extension.get(),
-                           api_permission_set(APIPermission::kTab).get());
+                           *api_permission_set(APIPermission::kTab));
     EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kTab));
     granted_permissions = prefs->GetGrantedPermissions(extension->id());
     EXPECT_TRUE(granted_permissions->HasAPIPermission(APIPermission::kTab));
@@ -547,7 +547,7 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
     // in its active or granted permissions, and it shouldn't be revokable.
     // The extension should still have the "cookies" permission.
     updater.RemovePermissions(extension.get(),
-                              api_permission_set(APIPermission::kTab).get(),
+                              *api_permission_set(APIPermission::kTab),
                               PermissionsUpdater::REMOVE_HARD);
     EXPECT_FALSE(permissions->HasAPIPermission(APIPermission::kTab));
     granted_permissions = prefs->GetGrantedPermissions(extension->id());
@@ -583,38 +583,37 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
     const GURL kOrigin("http://foo.com");
     EXPECT_FALSE(extension->permissions_data()
                      ->active_permissions()
-                     ->HasExplicitAccessToOrigin(kOrigin));
+                     .HasExplicitAccessToOrigin(kOrigin));
     EXPECT_TRUE(extension->permissions_data()
                     ->withheld_permissions()
-                    ->HasExplicitAccessToOrigin(kOrigin));
+                    .HasExplicitAccessToOrigin(kOrigin));
 
     const GURL kRequiredOrigin("http://www.google.com/");
     EXPECT_TRUE(extension->permissions_data()
                     ->active_permissions()
-                    ->HasExplicitAccessToOrigin(kRequiredOrigin));
+                    .HasExplicitAccessToOrigin(kRequiredOrigin));
     EXPECT_FALSE(updater.GetRevokablePermissions(extension.get())
                      ->HasExplicitAccessToOrigin(kRequiredOrigin));
 
     // Give the extension access to foo.com. Now, the foo.com permission should
     // be revokable.
-    updater.AddPermissions(extension.get(), url_permission_set(kOrigin).get());
+    updater.AddPermissions(extension.get(), *url_permission_set(kOrigin));
     EXPECT_TRUE(extension->permissions_data()
                     ->active_permissions()
-                    ->HasExplicitAccessToOrigin(kOrigin));
+                    .HasExplicitAccessToOrigin(kOrigin));
     EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())
                     ->HasExplicitAccessToOrigin(kOrigin));
 
     // Revoke the foo.com permission. The extension should no longer have
     // access to foo.com, and the revokable permissions should be empty.
-    updater.RemovePermissions(extension.get(),
-                              url_permission_set(kOrigin).get(),
+    updater.RemovePermissions(extension.get(), *url_permission_set(kOrigin),
                               PermissionsUpdater::REMOVE_HARD);
     EXPECT_FALSE(extension->permissions_data()
                      ->active_permissions()
-                     ->HasExplicitAccessToOrigin(kOrigin));
+                     .HasExplicitAccessToOrigin(kOrigin));
     EXPECT_TRUE(extension->permissions_data()
                     ->withheld_permissions()
-                    ->HasExplicitAccessToOrigin(kOrigin));
+                    .HasExplicitAccessToOrigin(kOrigin));
     EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())->IsEmpty());
   }
 }

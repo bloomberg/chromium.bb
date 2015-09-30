@@ -45,9 +45,9 @@ class PermissionsParser {
   // Return the extension's manifest-specified permissions. In no cases should
   // these permissions be used to determine if an action is allowed. Instead,
   // use PermissionsData.
-  static const PermissionSet* GetRequiredPermissions(
+  static const PermissionSet& GetRequiredPermissions(
       const Extension* extension);
-  static const PermissionSet* GetOptionalPermissions(
+  static const PermissionSet& GetOptionalPermissions(
       const Extension* extension);
 
  private:

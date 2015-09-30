@@ -1612,7 +1612,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     // to a version that requires additional privileges.
     is_privilege_increase =
         extensions::PermissionMessageProvider::Get()->IsPrivilegeIncrease(
-            granted_permissions.get(),
+            *granted_permissions,
             extension->permissions_data()->active_permissions(),
             extension->GetType());
   }
@@ -1848,10 +1848,9 @@ void ExtensionService::OnExtensionManagementSettingsChanged() {
   for (const auto& extension : *all_extensions.get()) {
     if (!settings->IsPermissionSetAllowed(
             extension.get(),
-            *extension->permissions_data()->active_permissions())) {
+            extension->permissions_data()->active_permissions())) {
       extensions::PermissionsUpdater(profile()).RemovePermissionsUnsafe(
-          extension.get(),
-          settings->GetBlockedPermissions(extension.get()).get());
+          extension.get(), *settings->GetBlockedPermissions(extension.get()));
     }
   }
 

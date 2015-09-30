@@ -186,13 +186,9 @@ class ThemeSyncableServiceTest : public testing::Test {
                                           kCustomThemeName,
                                           GetThemeLocation(),
                                           kCustomThemeUrl);
-    extensions::APIPermissionSet empty_set;
-    extensions::ManifestPermissionSet empty_manifest_permissions;
-    extensions::URLPatternSet empty_extent;
-    extensions::PermissionSet permissions(empty_set, empty_manifest_permissions,
-                                          empty_extent, empty_extent);
     extensions::ExtensionPrefs::Get(profile_.get())
-        ->AddGrantedPermissions(theme_extension_->id(), &permissions);
+        ->AddGrantedPermissions(theme_extension_->id(),
+                                extensions::PermissionSet());
     service->AddExtension(theme_extension_.get());
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(profile_.get());

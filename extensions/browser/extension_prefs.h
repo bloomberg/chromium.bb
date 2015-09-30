@@ -360,11 +360,11 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // |extension_id|. The new granted permissions set will be the union of
   // |permissions| and the already granted permissions.
   void AddGrantedPermissions(const std::string& extension_id,
-                             const PermissionSet* permissions);
+                             const PermissionSet& permissions);
 
   // As above, but subtracts the given |permissions| from the granted set.
   void RemoveGrantedPermissions(const std::string& extension_id,
-                                const PermissionSet* permissions);
+                                const PermissionSet& permissions);
 
   // Gets the active permission set for the specified extension. This may
   // differ from the permissions in the manifest due to the optional
@@ -374,7 +374,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // Sets the active |permissions| for the extension with |extension_id|.
   void SetActivePermissions(const std::string& extension_id,
-                            const PermissionSet* permissions);
+                            const PermissionSet& permissions);
 
   // Records whether or not this extension is currently running.
   void SetExtensionRunning(const std::string& extension_id, bool is_running);
@@ -613,7 +613,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // belonging to |extension_id|.
   void SetExtensionPrefPermissionSet(const std::string& extension_id,
                                      const std::string& pref_key,
-                                     const PermissionSet* new_value);
+                                     const PermissionSet& new_value);
 
   // Returns an immutable dictionary for extension |id|'s prefs, or NULL if it
   // doesn't exist.

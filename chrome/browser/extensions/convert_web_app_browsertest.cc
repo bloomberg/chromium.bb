@@ -94,11 +94,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, DISABLED_Basic) {
             AppLaunchInfo::GetLaunchWebURL(installed_extension_));
   EXPECT_EQ(LAUNCH_CONTAINER_TAB,
             AppLaunchInfo::GetLaunchContainer(installed_extension_));
-  EXPECT_EQ(0u,
-            installed_extension_->permissions_data()
-                ->active_permissions()
-                ->apis()
-                .size());
+  EXPECT_EQ(0u, installed_extension_->permissions_data()
+                    ->active_permissions()
+                    .apis()
+                    .size());
   EXPECT_EQ(0u, IconsInfo::GetIcons(installed_extension_).map().size());
 }
 

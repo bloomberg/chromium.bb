@@ -131,7 +131,7 @@ TEST(ExtensionFromWebApp, Basic) {
   EXPECT_EQ(base::UTF16ToUTF8(web_app.description), extension->description());
   EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension.get()));
   EXPECT_EQ(0u,
-            extension->permissions_data()->active_permissions()->apis().size());
+            extension->permissions_data()->active_permissions().apis().size());
   ASSERT_EQ(0u, extension->web_extent().patterns().size());
 
   EXPECT_EQ(web_app.icons.size(),
@@ -178,7 +178,7 @@ TEST(ExtensionFromWebApp, Minimal) {
   EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension.get()));
   EXPECT_EQ(0u, IconsInfo::GetIcons(extension.get()).map().size());
   EXPECT_EQ(0u,
-            extension->permissions_data()->active_permissions()->apis().size());
+            extension->permissions_data()->active_permissions().apis().size());
   ASSERT_EQ(0u, extension->web_extent().patterns().size());
 }
 

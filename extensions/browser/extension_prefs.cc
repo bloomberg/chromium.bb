@@ -629,31 +629,31 @@ static base::ListValue* CreatePermissionList(const T& permissions) {
 void ExtensionPrefs::SetExtensionPrefPermissionSet(
     const std::string& extension_id,
     const std::string& pref_key,
-    const PermissionSet* new_value) {
+    const PermissionSet& new_value) {
   std::string api_pref = JoinPrefs(pref_key, kPrefAPIs);
-  base::ListValue* api_values = CreatePermissionList(new_value->apis());
+  base::ListValue* api_values = CreatePermissionList(new_value.apis());
   UpdateExtensionPref(extension_id, api_pref, api_values);
 
   std::string manifest_permissions_pref =
       JoinPrefs(pref_key, kPrefManifestPermissions);
-  base::ListValue* manifest_permissions_values = CreatePermissionList(
-      new_value->manifest_permissions());
+  base::ListValue* manifest_permissions_values =
+      CreatePermissionList(new_value.manifest_permissions());
   UpdateExtensionPref(extension_id,
                       manifest_permissions_pref,
                       manifest_permissions_values);
 
   // Set the explicit host permissions.
-  if (!new_value->explicit_hosts().is_empty()) {
+  if (!new_value.explicit_hosts().is_empty()) {
     SetExtensionPrefURLPatternSet(extension_id,
                                   JoinPrefs(pref_key, kPrefExplicitHosts),
-                                  new_value->explicit_hosts());
+                                  new_value.explicit_hosts());
   }
 
   // Set the scriptable host permissions.
-  if (!new_value->scriptable_hosts().is_empty()) {
+  if (!new_value.scriptable_hosts().is_empty()) {
     SetExtensionPrefURLPatternSet(extension_id,
                                   JoinPrefs(pref_key, kPrefScriptableHosts),
-                                  new_value->scriptable_hosts());
+                                  new_value.scriptable_hosts());
   }
 }
 
@@ -1020,34 +1020,30 @@ scoped_ptr<const PermissionSet> ExtensionPrefs::GetGrantedPermissions(
   return ReadPrefAsPermissionSet(extension_id, kPrefGrantedPermissions);
 }
 
-void ExtensionPrefs::AddGrantedPermissions(
-    const std::string& extension_id,
-    const PermissionSet* permissions) {
+void ExtensionPrefs::AddGrantedPermissions(const std::string& extension_id,
+                                           const PermissionSet& permissions) {
   CHECK(crx_file::id_util::IdIsValid(extension_id));
-  DCHECK(permissions);
-
   scoped_ptr<const PermissionSet> granted = GetGrantedPermissions(extension_id);
   scoped_ptr<const PermissionSet> union_set;
   if (granted)
-    union_set = PermissionSet::CreateUnion(*permissions, *granted);
+    union_set = PermissionSet::CreateUnion(permissions, *granted);
   // The new granted permissions are the union of the already granted
   // permissions and the newly granted permissions.
   SetExtensionPrefPermissionSet(extension_id, kPrefGrantedPermissions,
-                                union_set ? union_set.get() : permissions);
+                                union_set ? *union_set : permissions);
 }
 
 void ExtensionPrefs::RemoveGrantedPermissions(
     const std::string& extension_id,
-    const PermissionSet* permissions) {
+    const PermissionSet& permissions) {
   CHECK(crx_file::id_util::IdIsValid(extension_id));
 
   // The new granted permissions are the difference of the already granted
   // permissions and the newly ungranted permissions.
   SetExtensionPrefPermissionSet(
       extension_id, kPrefGrantedPermissions,
-      PermissionSet::CreateDifference(*GetGrantedPermissions(extension_id),
-                                      *permissions)
-          .get());
+      *PermissionSet::CreateDifference(*GetGrantedPermissions(extension_id),
+                                       permissions));
 }
 
 scoped_ptr<const PermissionSet> ExtensionPrefs::GetActivePermissions(
@@ -1056,9 +1052,8 @@ scoped_ptr<const PermissionSet> ExtensionPrefs::GetActivePermissions(
   return ReadPrefAsPermissionSet(extension_id, kPrefActivePermissions);
 }
 
-void ExtensionPrefs::SetActivePermissions(
-    const std::string& extension_id,
-    const PermissionSet* permissions) {
+void ExtensionPrefs::SetActivePermissions(const std::string& extension_id,
+                                          const PermissionSet& permissions) {
   SetExtensionPrefPermissionSet(
       extension_id, kPrefActivePermissions, permissions);
 }

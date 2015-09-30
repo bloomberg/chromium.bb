@@ -17,7 +17,7 @@ namespace extensions {
 
 namespace {
 
-PermissionMessages GetMessages(const PermissionSet* permissions,
+PermissionMessages GetMessages(const PermissionSet& permissions,
                                Manifest::Type extension_type) {
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
   return provider->GetPermissionMessages(
@@ -194,7 +194,7 @@ testing::AssertionResult VerifyHasPermissionMessage(
 }
 
 testing::AssertionResult VerifyHasPermissionMessage(
-    const PermissionSet* permissions,
+    const PermissionSet& permissions,
     Manifest::Type extension_type,
     const std::string& expected_message) {
   return VerifyHasPermissionMessage(permissions, extension_type,
@@ -202,7 +202,7 @@ testing::AssertionResult VerifyHasPermissionMessage(
 }
 
 testing::AssertionResult VerifyHasPermissionMessage(
-    const PermissionSet* permissions,
+    const PermissionSet& permissions,
     Manifest::Type extension_type,
     const base::string16& expected_message) {
   return VerifyHasPermissionMessageImpl(
@@ -231,7 +231,7 @@ testing::AssertionResult VerifyOnePermissionMessage(
 }
 
 testing::AssertionResult VerifyOnePermissionMessage(
-    const PermissionSet* permissions,
+    const PermissionSet& permissions,
     Manifest::Type extension_type,
     const base::string16& expected_message) {
   return VerifyPermissionMessagesWithSubmessagesImpl(

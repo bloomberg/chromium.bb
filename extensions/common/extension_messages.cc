@@ -54,9 +54,9 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     : manifest(extension->manifest()->value()->DeepCopy()),
       location(extension->location()),
       path(extension->path()),
-      active_permissions(*extension->permissions_data()->active_permissions()),
-      withheld_permissions(
-          *extension->permissions_data()->withheld_permissions()),
+      active_permissions(extension->permissions_data()->active_permissions()),
+      withheld_permissions(extension->permissions_data()
+                               ->withheld_permissions()),
       id(extension->id()),
       creation_flags(extension->creation_flags()) {
   if (include_tab_permissions) {

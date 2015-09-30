@@ -792,7 +792,7 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
   // set for extension |id|.
   void GrantAllOptionalPermissions(const std::string& id) {
     const Extension* extension = service()->GetInstalledExtension(id);
-    const PermissionSet* all_optional_permissions =
+    const PermissionSet& all_optional_permissions =
         extensions::PermissionsParser::GetOptionalPermissions(extension);
     extensions::PermissionsUpdater perms_updater(profile());
     perms_updater.AddPermissions(extension, all_optional_permissions);
@@ -1320,7 +1320,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   AddPattern(&expected_patterns, "https://*.google.com/*");
   EXPECT_EQ(
       expected_patterns,
-      extension->permissions_data()->active_permissions()->explicit_hosts());
+      extension->permissions_data()->active_permissions().explicit_hosts());
 
   EXPECT_EQ(std::string(good1), loaded_[1]->id());
   EXPECT_EQ(std::string("My extension 2"), loaded_[1]->name());

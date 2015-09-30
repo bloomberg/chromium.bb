@@ -42,13 +42,12 @@ class AutoLockOnValidThread {
 
 PermissionsData::PermissionsData(const Extension* extension)
     : extension_id_(extension->id()), manifest_type_(extension->GetType()) {
-  const PermissionSet* required_permissions =
+  const PermissionSet& required_permissions =
       PermissionsParser::GetRequiredPermissions(extension);
-  active_permissions_unsafe_.reset(
-      new PermissionSet(required_permissions->apis(),
-                        required_permissions->manifest_permissions(),
-                        required_permissions->explicit_hosts(),
-                        required_permissions->scriptable_hosts()));
+  active_permissions_unsafe_.reset(new PermissionSet(
+      required_permissions.apis(), required_permissions.manifest_permissions(),
+      required_permissions.explicit_hosts(),
+      required_permissions.scriptable_hosts()));
   withheld_permissions_unsafe_.reset(new PermissionSet());
 }
 
@@ -75,16 +74,16 @@ bool PermissionsData::CanExecuteScriptEverywhere(const Extension* extension) {
 // static
 bool PermissionsData::ScriptsMayRequireActionForExtension(
     const Extension* extension,
-    const PermissionSet* permissions) {
+    const PermissionSet& permissions) {
   // An extension may require user action to execute scripts iff the extension
   // shows up in chrome:extensions (so the user can grant withheld permissions),
   // is not part of chrome or corporate policy, not on the scripting whitelist,
   // and requires enough permissions that we should withhold them.
   return extension->ShouldDisplayInExtensionSettings() &&
-      !Manifest::IsPolicyLocation(extension->location()) &&
-      !Manifest::IsComponentLocation(extension->location()) &&
-      !CanExecuteScriptEverywhere(extension) &&
-      permissions->ShouldWarnAllHosts();
+         !Manifest::IsPolicyLocation(extension->location()) &&
+         !Manifest::IsComponentLocation(extension->location()) &&
+         !CanExecuteScriptEverywhere(extension) &&
+         permissions.ShouldWarnAllHosts();
 }
 
 // static
@@ -226,7 +225,7 @@ PermissionMessages PermissionsData::GetPermissionMessages() const {
   base::AutoLock auto_lock(runtime_lock_);
   return PermissionMessageProvider::Get()->GetPermissionMessages(
       PermissionMessageProvider::Get()->GetAllPermissionIDs(
-          active_permissions_unsafe_.get(), manifest_type_));
+          *active_permissions_unsafe_, manifest_type_));
 }
 
 bool PermissionsData::HasWithheldImpliedAllHosts() const {

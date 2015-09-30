@@ -24,11 +24,11 @@ testing::AssertionResult VerifyHasPermissionMessage(
     const PermissionsData* permissions_data,
     const base::string16& expected_message);
 testing::AssertionResult VerifyHasPermissionMessage(
-    const PermissionSet* permissions,
+    const PermissionSet& permissions,
     Manifest::Type extension_type,
     const std::string& expected_message);
 testing::AssertionResult VerifyHasPermissionMessage(
-    const PermissionSet* permissions,
+    const PermissionSet& permissions,
     Manifest::Type extension_type,
     const base::string16& expected_message);
 
@@ -42,7 +42,7 @@ testing::AssertionResult VerifyOnePermissionMessage(
     const PermissionsData* permissions_data,
     const base::string16& expected_message);
 testing::AssertionResult VerifyOnePermissionMessage(
-    const PermissionSet* permissions,
+    const PermissionSet& permissions,
     Manifest::Type extension_type,
     const base::string16& expected_message);
 

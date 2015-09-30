@@ -318,21 +318,21 @@ void PermissionsParser::SetScriptableHosts(
 }
 
 // static
-const PermissionSet* PermissionsParser::GetRequiredPermissions(
+const PermissionSet& PermissionsParser::GetRequiredPermissions(
     const Extension* extension) {
   DCHECK(extension->GetManifestData(keys::kPermissions));
-  return static_cast<const ManifestPermissions*>(
-             extension->GetManifestData(keys::kPermissions))
-      ->permissions.get();
+  return *static_cast<const ManifestPermissions*>(
+              extension->GetManifestData(keys::kPermissions))
+              ->permissions;
 }
 
 // static
-const PermissionSet* PermissionsParser::GetOptionalPermissions(
+const PermissionSet& PermissionsParser::GetOptionalPermissions(
     const Extension* extension) {
   DCHECK(extension->GetManifestData(keys::kOptionalPermissions));
-  return static_cast<const ManifestPermissions*>(
-             extension->GetManifestData(keys::kOptionalPermissions))
-      ->permissions.get();
+  return *static_cast<const ManifestPermissions*>(
+              extension->GetManifestData(keys::kOptionalPermissions))
+              ->permissions;
 }
 
 }  // namespace extensions

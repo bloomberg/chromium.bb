@@ -18,14 +18,14 @@ PermissionMessages TestPermissionMessageProvider::GetPermissionMessages(
 }
 
 bool TestPermissionMessageProvider::IsPrivilegeIncrease(
-    const PermissionSet* old_permissions,
-    const PermissionSet* new_permissions,
+    const PermissionSet& old_permissions,
+    const PermissionSet& new_permissions,
     Manifest::Type extension_type) const {
   return false;
 }
 
 PermissionIDSet TestPermissionMessageProvider::GetAllPermissionIDs(
-    const PermissionSet* permissions,
+    const PermissionSet& permissions,
     Manifest::Type extension_type) const {
   return PermissionIDSet();
 }

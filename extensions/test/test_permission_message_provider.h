@@ -18,11 +18,11 @@ class TestPermissionMessageProvider : public PermissionMessageProvider {
  private:
   PermissionMessages GetPermissionMessages(
       const PermissionIDSet& permissions) const override;
-  bool IsPrivilegeIncrease(const PermissionSet* old_permissions,
-                           const PermissionSet* new_permissions,
+  bool IsPrivilegeIncrease(const PermissionSet& old_permissions,
+                           const PermissionSet& new_permissions,
                            Manifest::Type extension_type) const override;
   PermissionIDSet GetAllPermissionIDs(
-      const PermissionSet* permissions,
+      const PermissionSet& permissions,
       Manifest::Type extension_type) const override;
 
   DISALLOW_COPY_AND_ASSIGN(TestPermissionMessageProvider);

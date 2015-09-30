@@ -268,7 +268,7 @@ void BundleInstaller::ShowPrompt() {
     // and doesn't compile. Use a more verbose, but compilable, workaround.
     permissions = PermissionSet::CreateUnion(
         permissions ? *permissions : empty,
-        *dummy_extensions_[i]->permissions_data()->active_permissions());
+        dummy_extensions_[i]->permissions_data()->active_permissions());
   }
 
   if (g_auto_approve_for_test == PROCEED) {

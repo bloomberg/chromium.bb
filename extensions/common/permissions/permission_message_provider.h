@@ -38,10 +38,9 @@ class PermissionMessageProvider {
   // Whether certain permissions are considered varies by extension type.
   // TODO(sashab): Add an implementation of this method that uses
   // PermissionIDSet instead, then deprecate this one.
-  virtual bool IsPrivilegeIncrease(
-      const PermissionSet* old_permissions,
-      const PermissionSet* new_permissions,
-      Manifest::Type extension_type) const = 0;
+  virtual bool IsPrivilegeIncrease(const PermissionSet& old_permissions,
+                                   const PermissionSet& new_permissions,
+                                   Manifest::Type extension_type) const = 0;
 
   // Given the permissions for an extension, finds the IDs of all the
   // permissions for that extension (including API, manifest and host
@@ -50,7 +49,7 @@ class PermissionMessageProvider {
   // this type, and make this take as little as is needed to work out the
   // PermissionIDSet.
   virtual PermissionIDSet GetAllPermissionIDs(
-      const PermissionSet* permissions,
+      const PermissionSet& permissions,
       Manifest::Type extension_type) const = 0;
 };
 

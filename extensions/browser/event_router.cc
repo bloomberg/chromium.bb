@@ -596,7 +596,7 @@ void EventRouter::DispatchEventToProcess(
         event->event_url.host() != extension->id() &&  // event for self is ok
         !extension->permissions_data()
              ->active_permissions()
-             ->HasEffectiveAccessToURL(event->event_url)) {
+             .HasEffectiveAccessToURL(event->event_url)) {
       return;
     }
     // Secondly, if the event is for incognito mode, the Extension must be

@@ -91,15 +91,15 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
 }
 
 bool ChromePermissionMessageProvider::IsPrivilegeIncrease(
-    const PermissionSet* old_permissions,
-    const PermissionSet* new_permissions,
+    const PermissionSet& old_permissions,
+    const PermissionSet& new_permissions,
     Manifest::Type extension_type) const {
   // Things can't get worse than native code access.
-  if (old_permissions->HasEffectiveFullAccess())
+  if (old_permissions.HasEffectiveFullAccess())
     return false;
 
   // Otherwise, it's a privilege increase if the new one has full access.
-  if (new_permissions->HasEffectiveFullAccess())
+  if (new_permissions.HasEffectiveFullAccess())
     return true;
 
   if (IsHostPrivilegeIncrease(old_permissions, new_permissions, extension_type))
@@ -112,7 +112,7 @@ bool ChromePermissionMessageProvider::IsPrivilegeIncrease(
 }
 
 PermissionIDSet ChromePermissionMessageProvider::GetAllPermissionIDs(
-    const PermissionSet* permissions,
+    const PermissionSet& permissions,
     Manifest::Type extension_type) const {
   PermissionIDSet permission_ids;
   AddAPIPermissions(permissions, &permission_ids);
@@ -122,9 +122,9 @@ PermissionIDSet ChromePermissionMessageProvider::GetAllPermissionIDs(
 }
 
 void ChromePermissionMessageProvider::AddAPIPermissions(
-    const PermissionSet* permissions,
+    const PermissionSet& permissions,
     PermissionIDSet* permission_ids) const {
-  for (const APIPermission* permission : permissions->apis())
+  for (const APIPermission* permission : permissions.apis())
     permission_ids->InsertAll(permission->GetPermissions());
 
   // A special hack: The warning message for declarativeWebRequest
@@ -136,19 +136,19 @@ void ChromePermissionMessageProvider::AddAPIPermissions(
   // "<all_urls>" (aka APIPermission::kHostsAll), such as kTab. This would
   // happen automatically if we didn't differentiate between API/Manifest/Host
   // permissions here.
-  if (permissions->ShouldWarnAllHosts())
+  if (permissions.ShouldWarnAllHosts())
     permission_ids->erase(APIPermission::kDeclarativeWebRequest);
 }
 
 void ChromePermissionMessageProvider::AddManifestPermissions(
-    const PermissionSet* permissions,
+    const PermissionSet& permissions,
     PermissionIDSet* permission_ids) const {
-  for (const ManifestPermission* p : permissions->manifest_permissions())
+  for (const ManifestPermission* p : permissions.manifest_permissions())
     permission_ids->InsertAll(p->GetPermissions());
 }
 
 void ChromePermissionMessageProvider::AddHostPermissions(
-    const PermissionSet* permissions,
+    const PermissionSet& permissions,
     PermissionIDSet* permission_ids,
     Manifest::Type extension_type) const {
   // Since platform apps always use isolated storage, they can't (silently)
@@ -158,12 +158,12 @@ void ChromePermissionMessageProvider::AddHostPermissions(
   if (extension_type == Manifest::TYPE_PLATFORM_APP)
     return;
 
-  if (permissions->ShouldWarnAllHosts()) {
+  if (permissions.ShouldWarnAllHosts()) {
     permission_ids->insert(APIPermission::kHostsAll);
   } else {
     URLPatternSet regular_hosts;
     ExtensionsClient::Get()->FilterHostPermissions(
-        permissions->effective_hosts(), &regular_hosts, permission_ids);
+        permissions.effective_hosts(), &regular_hosts, permission_ids);
 
     std::set<std::string> hosts =
         permission_message_util::GetDistinctHosts(regular_hosts, true, true);
@@ -175,8 +175,8 @@ void ChromePermissionMessageProvider::AddHostPermissions(
 }
 
 bool ChromePermissionMessageProvider::IsAPIOrManifestPrivilegeIncrease(
-    const PermissionSet* old_permissions,
-    const PermissionSet* new_permissions) const {
+    const PermissionSet& old_permissions,
+    const PermissionSet& new_permissions) const {
   PermissionIDSet old_ids;
   AddAPIPermissions(old_permissions, &old_ids);
   AddManifestPermissions(old_permissions, &old_ids);
@@ -217,8 +217,8 @@ bool ChromePermissionMessageProvider::IsAPIOrManifestPrivilegeIncrease(
 }
 
 bool ChromePermissionMessageProvider::IsHostPrivilegeIncrease(
-    const PermissionSet* old_permissions,
-    const PermissionSet* new_permissions,
+    const PermissionSet& old_permissions,
+    const PermissionSet& new_permissions,
     Manifest::Type extension_type) const {
   // Platform apps host permission changes do not count as privilege increases.
   // Note: this must remain consistent with AddHostPermissions.
@@ -226,16 +226,16 @@ bool ChromePermissionMessageProvider::IsHostPrivilegeIncrease(
     return false;
 
   // If the old permission set can access any host, then it can't be elevated.
-  if (old_permissions->HasEffectiveAccessToAllHosts())
+  if (old_permissions.HasEffectiveAccessToAllHosts())
     return false;
 
   // Likewise, if the new permission set has full host access, then it must be
   // a privilege increase.
-  if (new_permissions->HasEffectiveAccessToAllHosts())
+  if (new_permissions.HasEffectiveAccessToAllHosts())
     return true;
 
-  const URLPatternSet& old_list = old_permissions->effective_hosts();
-  const URLPatternSet& new_list = new_permissions->effective_hosts();
+  const URLPatternSet& old_list = old_permissions.effective_hosts();
+  const URLPatternSet& new_list = new_permissions.effective_hosts();
 
   // TODO(jstritar): This is overly conservative with respect to subdomains.
   // For example, going from *.google.com to www.google.com will be

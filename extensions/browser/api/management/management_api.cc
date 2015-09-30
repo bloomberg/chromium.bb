@@ -166,7 +166,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   }
 
   const std::set<std::string> perms =
-      extension.permissions_data()->active_permissions()->GetAPIsAsStrings();
+      extension.permissions_data()->active_permissions().GetAPIsAsStrings();
   if (!perms.empty()) {
     std::set<std::string>::const_iterator perms_iter;
     for (perms_iter = perms.begin(); perms_iter != perms.end(); ++perms_iter)
@@ -176,7 +176,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   if (!extension.is_hosted_app()) {
     // Skip host permissions for hosted apps.
     const URLPatternSet host_perms =
-        extension.permissions_data()->active_permissions()->explicit_hosts();
+        extension.permissions_data()->active_permissions().explicit_hosts();
     if (!host_perms.is_empty()) {
       for (URLPatternSet::const_iterator iter = host_perms.begin();
            iter != host_perms.end(); ++iter) {

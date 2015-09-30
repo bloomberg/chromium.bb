@@ -64,7 +64,7 @@ bool PermissionsContainsFunction::RunSync() {
     return false;
 
   results_ = Contains::Results::Create(
-      extension()->permissions_data()->active_permissions()->Contains(
+      extension()->permissions_data()->active_permissions().Contains(
           *permissions));
   return true;
 }
@@ -103,13 +103,13 @@ bool PermissionsRemoveFunction::RunSync() {
   // optional and required (and should assume its required), so we need both of
   // these checks.
   // TODO(devlin): *Why* do we support that? Should be a load error.
-  const PermissionSet* optional =
+  const PermissionSet& optional =
       PermissionsParser::GetOptionalPermissions(extension());
-  const PermissionSet* required =
+  const PermissionSet& required =
       PermissionsParser::GetRequiredPermissions(extension());
-  if (!optional->Contains(*permissions) ||
+  if (!optional.Contains(*permissions) ||
       !scoped_ptr<const PermissionSet>(
-           PermissionSet::CreateIntersection(*permissions, *required))
+           PermissionSet::CreateIntersection(*permissions, required))
            ->IsEmpty()) {
     error_ = kCantRemoveRequiredPermissionsError;
     return false;
@@ -119,10 +119,10 @@ bool PermissionsRemoveFunction::RunSync() {
   // For backwards compatability with behavior before this check was added, just
   // silently remove any that aren't present.
   permissions = PermissionSet::CreateIntersection(
-      *permissions, *extension()->permissions_data()->active_permissions());
+      *permissions, extension()->permissions_data()->active_permissions());
 
   PermissionsUpdater(GetProfile())
-      .RemovePermissions(extension(), permissions.get(),
+      .RemovePermissions(extension(), *permissions,
                          PermissionsUpdater::REMOVE_SOFT);
   results_ = Remove::Results::Create(true);
   return true;
@@ -143,7 +143,7 @@ PermissionsRequestFunction::PermissionsRequestFunction() {}
 
 void PermissionsRequestFunction::InstallUIProceed() {
   PermissionsUpdater perms_updater(GetProfile());
-  perms_updater.AddPermissions(extension(), requested_permissions_.get());
+  perms_updater.AddPermissions(extension(), *requested_permissions_);
 
   results_ = Request::Results::Create(true);
   SendResponse(true);
@@ -192,7 +192,7 @@ bool PermissionsRequestFunction::RunAsync() {
 
   // The requested permissions must be defined as optional in the manifest.
   if (!PermissionsParser::GetOptionalPermissions(extension())
-           ->Contains(*requested_permissions_)) {
+           .Contains(*requested_permissions_)) {
     error_ = kNotInOptionalPermissionsError;
     return false;
   }
@@ -212,7 +212,7 @@ bool PermissionsRequestFunction::RunAsync() {
           ->GetGrantedPermissions(extension()->id());
   if (granted.get() && granted->Contains(*requested_permissions_)) {
     PermissionsUpdater perms_updater(GetProfile());
-    perms_updater.AddPermissions(extension(), requested_permissions_.get());
+    perms_updater.AddPermissions(extension(), *requested_permissions_);
     results_ = Request::Results::Create(true);
     SendResponse(true);
     return true;
@@ -225,7 +225,7 @@ bool PermissionsRequestFunction::RunAsync() {
   // Filter out the active permissions.
   requested_permissions_ = PermissionSet::CreateDifference(
       *requested_permissions_,
-      *extension()->permissions_data()->active_permissions());
+      extension()->permissions_data()->active_permissions());
 
   AddRef();  // Balanced in InstallUIProceed() / InstallUIAbort().
 
@@ -236,9 +236,9 @@ bool PermissionsRequestFunction::RunAsync() {
       PermissionMessageProvider::Get();
   bool has_no_warnings =
       message_provider->GetPermissionMessages(
-                            message_provider->GetAllPermissionIDs(
-                                requested_permissions_.get(),
-                                extension()->GetType())).empty();
+                          message_provider->GetAllPermissionIDs(
+                              *requested_permissions_, extension()->GetType()))
+          .empty();
   if (auto_confirm_for_tests == PROCEED || has_no_warnings ||
       extension_->location() == Manifest::COMPONENT) {
     InstallUIProceed();

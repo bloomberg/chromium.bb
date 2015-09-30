@@ -218,7 +218,7 @@ bool SharedModuleHandler::Validate(
   // own, instead they rely on the permissions of the extensions which import
   // them.
   if (SharedModuleInfo::IsSharedModule(extension) &&
-      !extension->permissions_data()->active_permissions()->IsEmpty()) {
+      !extension->permissions_data()->active_permissions().IsEmpty()) {
     *error = errors::kInvalidExportPermissions;
     return false;
   }

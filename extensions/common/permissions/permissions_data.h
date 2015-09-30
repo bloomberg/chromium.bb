@@ -78,7 +78,7 @@ class PermissionsData {
   // that are currently on the extension's PermissionsData.
   static bool ScriptsMayRequireActionForExtension(
       const Extension* extension,
-      const PermissionSet* permissions);
+      const PermissionSet& permissions);
 
   // Returns true if we should skip the permissions warning for the extension
   // with the given |extension_id|.
@@ -204,14 +204,14 @@ class PermissionsData {
     return tab_specific_permissions_;
   }
 
-  const PermissionSet* active_permissions() const {
+  const PermissionSet& active_permissions() const {
     DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());
-    return active_permissions_unsafe_.get();
+    return *active_permissions_unsafe_;
   }
 
-  const PermissionSet* withheld_permissions() const {
+  const PermissionSet& withheld_permissions() const {
     DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());
-    return withheld_permissions_unsafe_.get();
+    return *withheld_permissions_unsafe_;
   }
 
 #if defined(UNIT_TEST)

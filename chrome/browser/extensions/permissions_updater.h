@@ -47,7 +47,7 @@ class PermissionsUpdater {
   // and sends the relevant messages and notifications. This method assumes the
   // user has already been prompted, if necessary, for the extra permissions.
   void AddPermissions(const Extension* extension,
-                      const PermissionSet* permissions);
+                      const PermissionSet& permissions);
 
   // Removes the set of |permissions| from the |extension|'s active permission
   // set and sends the relevant messages and notifications.
@@ -59,14 +59,14 @@ class PermissionsUpdater {
   // user. If it's the extension itself removing the permission, it is safe to
   // use REMOVE_SOFT.
   void RemovePermissions(const Extension* extension,
-                         const PermissionSet* permissions,
+                         const PermissionSet& permissions,
                          RemoveType remove_type);
 
   // Removes the |permissions| from |extension| and makes no effort to determine
   // if doing so is safe in the slightlest. This method shouldn't be used,
   // except for removing permissions totally blacklisted by management.
   void RemovePermissionsUnsafe(const Extension* extension,
-                               const PermissionSet* permissions);
+                               const PermissionSet& permissions);
 
   // Returns the set of revokable permissions.
   scoped_ptr<const PermissionSet> GetRevokablePermissions(

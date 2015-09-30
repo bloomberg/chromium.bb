@@ -40,7 +40,7 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
                                URLPatternSet());
 
   // Pack the permission set to value and verify its contents.
-  scoped_ptr<Permissions> permissions(PackPermissionSet(&permission_set));
+  scoped_ptr<Permissions> permissions(PackPermissionSet(permission_set));
   scoped_ptr<base::DictionaryValue> value(permissions->ToValue());
   base::ListValue* api_list = NULL;
   base::ListValue* origin_list = NULL;
