@@ -3003,17 +3003,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenPopupWithRemoteParent) {
 
 // Verify that named frames are discoverable from their opener's ancestors.
 // See https://crbug.com/511474.
-// Disable this flaky test on the official cros-trunk for now.
-// See crbug.com/515302.
-#if defined(OFFICIAL_BUILD)
-#define MAYBE_DiscoverNamedFrameFromAncestorOfOpener \
-    DISABLED_DiscoverNamedFrameFromAncestorOfOpener
-#else
-#define MAYBE_DiscoverNamedFrameFromAncestorOfOpener \
-    DiscoverNamedFrameFromAncestorOfOpener
-#endif  // defined(OFFICIAL_BUILD)
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_DiscoverNamedFrameFromAncestorOfOpener) {
+                       DiscoverNamedFrameFromAncestorOfOpener) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
