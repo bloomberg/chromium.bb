@@ -60,10 +60,9 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
                         int importance) override;
   void AddOwnershipEdge(blink::WebMemoryAllocatorDumpGuid source,
                         blink::WebMemoryAllocatorDumpGuid target) override;
-  virtual void AddSuballocation(
-      blink::WebMemoryAllocatorDumpGuid source,
-      const blink::WebString& targetNodeName) override;
-  virtual SkTraceMemoryDump* CreateDumpAdapterForSkia(
+  void AddSuballocation(blink::WebMemoryAllocatorDumpGuid source,
+                        const blink::WebString& targetNodeName) override;
+  SkTraceMemoryDump* CreateDumpAdapterForSkia(
       const blink::WebString& dumpNamePrefix) override;
 
   const base::trace_event::ProcessMemoryDump* process_memory_dump() const {
