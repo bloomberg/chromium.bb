@@ -178,29 +178,39 @@ void HTMLFrameTreeManager::RemoveObserver(
 }
 
 void HTMLFrameTreeManager::OnFrameDestroyed(HTMLFrame* frame) {
-  if (frame == root_)
-    root_ = nullptr;
-
-  if (frame == local_root_)
-    local_root_ = nullptr;
-
   if (!in_process_on_frame_removed_)
     pending_remove_ids_.insert(frame->id());
 
-  if (!local_root_ || !local_root_->HasLocalDescendant())
+  if (frame == root_) {
+    // If |root_| is removed before |local_frame_|, we don't have a way to
+    // select a new local frame when |local_frame_| is removed. On the other
+    // hand, it is impossible to remove |root_| after all local frames are gone,
+    // because by that time this object has already been deleted.
+    CHECK_EQ(root_, local_frame_);
+    root_ = nullptr;
+  }
+
+  if (frame != local_frame_)
+    return;
+
+  // |local_frame_| is being removed. We need to find out whether we have local
+  // frames that are not descendants of |local_frame_|, and if yes select a new
+  // |local_frame_|.
+  local_frame_ = FindNewLocalFrame();
+  if (!local_frame_)
     delete this;
 }
 
 HTMLFrameTreeManager::HTMLFrameTreeManager(GlobalState* global_state)
     : global_state_(global_state),
       root_(nullptr),
-      local_root_(nullptr),
+      local_frame_(nullptr),
       change_id_(0u),
       in_process_on_frame_removed_(false),
       weak_factory_(this) {}
 
 HTMLFrameTreeManager::~HTMLFrameTreeManager() {
-  DCHECK(!root_ || !local_root_);
+  DCHECK(!local_frame_);
   RemoveFromInstances();
 
   FOR_EACH_OBSERVER(HTMLFrameTreeManagerObserver, observers_,
@@ -214,9 +224,9 @@ void HTMLFrameTreeManager::Init(
     uint32_t change_id) {
   change_id_ = change_id;
   root_ = BuildFrameTree(delegate, frame_data, local_view->id(), local_view);
-  local_root_ = root_->FindFrame(local_view->id());
-  CHECK(local_root_);
-  local_root_->UpdateFocus();
+  local_frame_ = root_->FindFrame(local_view->id());
+  CHECK(local_frame_);
+  local_frame_->UpdateFocus();
 }
 
 HTMLFrame* HTMLFrameTreeManager::BuildFrameTree(
@@ -268,7 +278,7 @@ bool HTMLFrameTreeManager::PrepareForStructureChange(HTMLFrame* source,
     return false;
 
   // We only process changes for the topmost local root.
-  if (source != local_root_)
+  if (source != local_frame_)
     return false;
 
   // Update the id as the change is going to be applied (or we can assume it
@@ -359,12 +369,39 @@ void HTMLFrameTreeManager::ProcessOnFrameClientPropertyChanged(
     uint32_t frame_id,
     const mojo::String& name,
     mojo::Array<uint8_t> new_data) {
-  if (source != local_root_)
+  if (source != local_frame_)
     return;
 
   HTMLFrame* frame = root_->FindFrame(frame_id);
   if (frame)
     frame->SetValueFromClientProperty(name, new_data.Pass());
+}
+
+HTMLFrame* HTMLFrameTreeManager::FindNewLocalFrame() {
+  HTMLFrame* new_local_frame = nullptr;
+
+  if (root_) {
+    std::queue<HTMLFrame*> nodes;
+    nodes.push(root_);
+
+    while (!nodes.empty()) {
+      HTMLFrame* node = nodes.front();
+      nodes.pop();
+
+      if (node == local_frame_)
+        continue;
+
+      if (node->IsLocal()) {
+        new_local_frame = node;
+        break;
+      }
+
+      for (const auto& child : node->children())
+        nodes.push(child);
+    }
+  }
+
+  return new_local_frame;
 }
 
 }  // namespace mojo

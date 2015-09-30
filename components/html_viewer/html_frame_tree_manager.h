@@ -95,7 +95,7 @@ class HTMLFrameTreeManager {
 
   // Each HTMLFrame delegates FrameClient methods to the HTMLFrameTreeManager
   // the frame is in. HTMLFrameTreeManager only responds to changes from the
-  // |local_root_| (this is because each FrameClient sees the same change, and
+  // |local_frame_| (this is because each FrameClient sees the same change, and
   // a change only need be processed once).
   void ProcessOnFrameAdded(HTMLFrame* source,
                            uint32_t change_id,
@@ -108,15 +108,22 @@ class HTMLFrameTreeManager {
                                            const mojo::String& name,
                                            mojo::Array<uint8_t> new_data);
 
+  // Finds a new local frame which satisfies:
+  // - it is not a descendant of |local_frame_|;
+  // - it is the highest local frame or one of the highest local frames if
+  //   there are multiple.
+  HTMLFrame* FindNewLocalFrame();
+
   static TreeMap* instances_;
 
   GlobalState* global_state_;
 
   HTMLFrame* root_;
 
-  // The |local_root_| is the HTMLFrame that is the highest frame that is
-  // local.
-  HTMLFrame* local_root_;
+  // The |local_frame_| is the HTMLFrame that is the highest frame that is
+  // local. Please note that it is not necessarily the ancestor of all local
+  // frames.
+  HTMLFrame* local_frame_;
 
   uint32_t change_id_;
 

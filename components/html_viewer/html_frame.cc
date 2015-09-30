@@ -547,10 +547,9 @@ web_view::mojom::Frame* HTMLFrame::GetServerFrame() {
       return frame->server_.get();
   }
 
-  // No local root. This means we're a remote frame with no local frame
-  // ancestors. Use the server Frame from the local root of the
-  // HTMLFrameTreeManager.
-  return frame_tree_manager_->local_root_->server_.get();
+  // We're a remote frame with no local frame ancestors. Use the server Frame
+  // from the local frame of the HTMLFrameTreeManager.
+  return frame_tree_manager_->local_frame_->server_.get();
 }
 
 void HTMLFrame::SetView(mus::View* view) {
@@ -814,11 +813,24 @@ void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
 
 void HTMLFrame::OnWillNavigate(const mojo::String& origin,
                                const OnWillNavigateCallback& callback) {
+  bool should_swap = true;
+
+  if (this == frame_tree_manager_->local_frame_) {
+    HTMLFrame* new_local_frame = frame_tree_manager_->FindNewLocalFrame();
+    if (!new_local_frame) {
+      // All local frames are descendants of |this|. In this case, the whole
+      // frame tree in the current process is going to be deleted very soon. We
+      // don't have to swap.
+      should_swap = false;
+    } else {
+      frame_tree_manager_->local_frame_ = new_local_frame;
+    }
+  }
+
   DVLOG(2) << "HTMLFrame::OnWillNavigate this=" << this << " id=" << id_
-           << " local=" << IsLocal() << " will_swap="
-           << (IsLocal() && this != frame_tree_manager_->local_root_);
+           << " local=" << IsLocal() << " should_swap=" << should_swap;
   callback.Run();
-  if (IsLocal() && this != frame_tree_manager_->local_root_) {
+  if (should_swap) {
     SwapToRemote();
     const blink::WebSecurityOrigin security_origin(
         blink::WebSecurityOrigin::createFromString(
