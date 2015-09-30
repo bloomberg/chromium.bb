@@ -210,4 +210,14 @@ public class ThreadUtils {
     public static void setThreadPriorityAudio(int tid) {
         Process.setThreadPriority(tid, Process.THREAD_PRIORITY_AUDIO);
     }
+
+    /**
+     * Checks whether Thread priority is THREAD_PRIORITY_AUDIO or not.
+     * @param tid Thread id.
+     * @return true for THREAD_PRIORITY_AUDIO and false otherwise.
+     */
+    @CalledByNative
+    private static boolean isThreadPriorityAudio(int tid) {
+        return Process.getThreadPriority(tid) == Process.THREAD_PRIORITY_AUDIO;
+    }
 }

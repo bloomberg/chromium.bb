@@ -49,8 +49,14 @@ bool SetCurrentThreadPriorityForPlatform(ThreadPriority priority) {
 }
 
 bool GetCurrentThreadPriorityForPlatform(ThreadPriority* priority) {
-  // See http://crbug.com/505474.
-  NOTIMPLEMENTED();
+  DCHECK(priority);
+  *priority = ThreadPriority::NORMAL;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (Java_ThreadUtils_isThreadPriorityAudio(
+      env, PlatformThread::CurrentId())) {
+    *priority = ThreadPriority::REALTIME_AUDIO;
+    return true;
+  }
   return false;
 }
 
