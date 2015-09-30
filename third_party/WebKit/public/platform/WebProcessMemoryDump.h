@@ -7,7 +7,10 @@
 
 #include "WebCommon.h"
 #include "WebMemoryAllocatorDump.h"
+#include "WebMemoryDumpProvider.h"
 #include "WebString.h"
+
+class SkTraceMemoryDump;
 
 namespace blink {
 
@@ -76,6 +79,29 @@ public:
     virtual void AddOwnershipEdge(WebMemoryAllocatorDumpGuid source, WebMemoryAllocatorDumpGuid target)
     {
         BLINK_ASSERT_NOT_REACHED();
+    }
+
+    // Utility method to add a suballocation relationship with the following
+    // semantics: |source| is suballocated from |target_node_name|.
+    // This creates a child node of |target_node_name| and adds an ownership
+    // edge between |source| and the new child node. As a result, the UI will
+    // not account the memory of |source| in the target node.
+    virtual void AddSuballocation(WebMemoryAllocatorDumpGuid source, const WebString& targetNodeName)
+    {
+        BLINK_ASSERT_NOT_REACHED();
+    }
+
+    // Returns the SkTraceMemoryDump proxy interface that can be passed to Skia
+    // to dump into this WebProcessMemoryDump. Multiple SkTraceMemoryDump
+    // objects can be created using this method. The created dumpers are owned
+    // by WebProcessMemoryDump and cannot outlive the WebProcessMemoryDump
+    // object owning them. |dumpNamePrefix| is prefix appended to each dump
+    // created by the SkTraceMemoryDump implementation, if the dump should be
+    // placed under different namespace and not "skia".
+    virtual SkTraceMemoryDump* CreateDumpAdapterForSkia(const WebString& dumpNamePrefix)
+    {
+        BLINK_ASSERT_NOT_REACHED();
+        return nullptr;
     }
 };
 
