@@ -8,7 +8,6 @@ var binding = require('binding').Binding.create('runtime');
 
 var messaging = require('messaging');
 var runtimeNatives = requireNative('runtime');
-var unloadEvent = require('unload_event');
 var process = requireNative('process');
 var forEach = require('utils').forEach;
 
@@ -153,11 +152,6 @@ binding.registerCustomHook(function(binding, id, contextType) {
   });
 
   apiFunctions.setHandleRequest('connect', function(targetId, connectInfo) {
-    // Don't let orphaned content scripts communicate with their extension.
-    // http://crbug.com/168263
-    if (unloadEvent.wasDispatched)
-      throw new Error('Error connecting to extension ' + targetId);
-
     if (!targetId) {
       // runtime.id is only defined inside extensions. If we're in a webpage,
       // the best we can do at this point is to fail.
@@ -190,12 +184,10 @@ binding.registerCustomHook(function(binding, id, contextType) {
 
   apiFunctions.setHandleRequest('connectNative',
                                 function(nativeAppName) {
-    if (!unloadEvent.wasDispatched) {
-      var portId = runtimeNatives.OpenChannelToNativeApp(runtime.id,
-                                                         nativeAppName);
-      if (portId >= 0)
-        return messaging.createPort(portId, '');
-    }
+    var portId = runtimeNatives.OpenChannelToNativeApp(runtime.id,
+                                                       nativeAppName);
+    if (portId >= 0)
+      return messaging.createPort(portId, '');
     throw new Error('Error connecting to native app: ' + nativeAppName);
   });
 
