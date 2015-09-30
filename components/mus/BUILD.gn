@@ -69,8 +69,6 @@ source_set("lib") {
     "server_view_observer.h",
     "view_coordinate_conversions.cc",
     "view_coordinate_conversions.h",
-    "view_locator.cc",
-    "view_locator.h",
     "view_tree_host_connection.cc",
     "view_tree_host_connection.h",
     "view_tree_host_delegate.h",

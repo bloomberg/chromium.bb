@@ -360,7 +360,7 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
   connection1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 
-  display_manager_delegate()->OnEvent(ViewId(), CreatePointerDownEvent(21, 22));
+  display_manager_delegate()->OnEvent(CreatePointerDownEvent(21, 22));
   // Focus should go to child1. This result in notifying both the window
   // manager and client connection being notified.
   EXPECT_EQ(v1, connection1->GetHost()->GetFocusedView());
@@ -372,14 +372,14 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
       "Focused id=2,1",
       ChangesToDescription1(*connection1_client->tracker()->changes())[0]);
 
-  display_manager_delegate()->OnEvent(ViewId(), CreatePointerUpEvent(21, 22));
+  display_manager_delegate()->OnEvent(CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
   connection1_client->tracker()->changes()->clear();
 
   // Press outside of the embedded view. Focus should go to the root. Notice
   // the client1 doesn't see who has focus as the focused view (root) isn't
   // visible to it.
-  display_manager_delegate()->OnEvent(ViewId(), CreatePointerDownEvent(61, 22));
+  display_manager_delegate()->OnEvent(CreatePointerDownEvent(61, 22));
   EXPECT_EQ(host_connection()->view_tree_host()->root_view(),
             host_connection()->view_tree_host()->GetFocusedView());
   ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
@@ -390,13 +390,13 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
       "Focused id=null",
       ChangesToDescription1(*connection1_client->tracker()->changes())[0]);
 
-  display_manager_delegate()->OnEvent(ViewId(), CreatePointerUpEvent(21, 22));
+  display_manager_delegate()->OnEvent(CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
   connection1_client->tracker()->changes()->clear();
 
   // Press in the same location. Should not get a focus change event (only input
   // event).
-  display_manager_delegate()->OnEvent(ViewId(), CreatePointerDownEvent(61, 22));
+  display_manager_delegate()->OnEvent(CreatePointerDownEvent(61, 22));
   EXPECT_EQ(host_connection()->view_tree_host()->root_view(),
             host_connection()->view_tree_host()->GetFocusedView());
   ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u);
@@ -437,7 +437,7 @@ TEST_F(ViewTreeTest, BasicInputEventTarget) {
 
   // Send an event to |v1|. |embed_connection| should get the event, not
   // |wm_client|, since |v1| lives inside an embedded view.
-  display_manager_delegate()->OnEvent(ViewId(), CreatePointerDownEvent(21, 22));
+  display_manager_delegate()->OnEvent(CreatePointerDownEvent(21, 22));
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
   EXPECT_EQ("Focused id=2,1",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);

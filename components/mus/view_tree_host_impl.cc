@@ -104,7 +104,7 @@ void ViewTreeHostImpl::OnAccelerator(uint32_t accelerator_id,
   client()->OnAccelerator(accelerator_id, event.Pass());
 }
 
-void ViewTreeHostImpl::DispatchInputEventToView(const ServerView* target,
+void ViewTreeHostImpl::DispatchInputEventToView(ServerView* target,
                                                 mojo::EventPtr event) {
   // If the view is an embed root, forward to the embedded view, not the owner.
   ViewTreeImpl* connection =
@@ -147,15 +147,7 @@ ServerView* ViewTreeHostImpl::GetRootView() {
   return root_.get();
 }
 
-void ViewTreeHostImpl::OnEvent(ViewId id, mojo::EventPtr event) {
-  ServerView* view = connection_manager_->GetView(id);
-  // TODO(fsamuel): This should be a DCHECK but currently we use stale
-  // information to decide where to route input events. This should be fixed
-  // once we implement a UI scheduler.
-  if (view) {
-    DispatchInputEventToView(view, event.Pass());
-    return;
-  }
+void ViewTreeHostImpl::OnEvent(mojo::EventPtr event) {
   event_dispatcher_.OnEvent(event.Pass());
 }
 
@@ -180,6 +172,10 @@ void ViewTreeHostImpl::OnViewportMetricsChanged(
   // TODO(fsamuel): We shouldn't broadcast this to all connections but only
   // those within a window root.
   connection_manager_->ProcessViewportMetricsChanged(old_metrics, new_metrics);
+}
+
+void ViewTreeHostImpl::OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) {
+  surface_id_ = surface_id;
 }
 
 void ViewTreeHostImpl::OnFocusChanged(ServerView* old_focused_view,

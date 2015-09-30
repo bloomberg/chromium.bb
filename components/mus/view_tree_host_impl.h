@@ -54,6 +54,8 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
 
   mojo::ViewTreeHostClient* client() const { return client_.get(); }
 
+  cc::SurfaceId surface_id() const { return surface_id_; }
+
   // Returns whether |view| is a descendant of this root but not itself a
   // root view.
   bool IsViewAttachedToRoot(const ServerView* view) const;
@@ -80,7 +82,7 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
   void SetImeVisibility(ServerView* view, bool visible);
 
   void OnAccelerator(uint32_t accelerator_id, mojo::EventPtr event);
-  void DispatchInputEventToView(const ServerView* target, mojo::EventPtr event);
+  void DispatchInputEventToView(ServerView* target, mojo::EventPtr event);
 
   // ViewTreeHost:
   void SetSize(mojo::SizePtr size) override;
@@ -95,11 +97,12 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
 
   // DisplayManagerDelegate:
   ServerView* GetRootView() override;
-  void OnEvent(ViewId id, mojo::EventPtr event) override;
+  void OnEvent(mojo::EventPtr event) override;
   void OnDisplayClosed() override;
   void OnViewportMetricsChanged(
       const mojo::ViewportMetrics& old_metrics,
       const mojo::ViewportMetrics& new_metrics) override;
+  void OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) override;
 
   // FocusControllerDelegate:
   void OnFocusChanged(ServerView* old_focused_view,
@@ -112,6 +115,7 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
   scoped_ptr<ServerView> root_;
   scoped_ptr<DisplayManager> display_manager_;
   scoped_ptr<FocusController> focus_controller_;
+  cc::SurfaceId surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewTreeHostImpl);
 };

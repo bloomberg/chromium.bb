@@ -4,9 +4,12 @@
 
 #include "components/mus/event_dispatcher.h"
 
+#include "cc/surfaces/surface_id.h"
+#include "components/mus/connection_manager.h"
 #include "components/mus/server_view.h"
+#include "components/mus/server_view_delegate.h"
+#include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/view_coordinate_conversions.h"
-#include "components/mus/view_locator.h"
 #include "components/mus/view_tree_host_impl.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -71,26 +74,82 @@ bool EventDispatcher::FindAccelerator(const mojo::Event& event,
 
 ServerView* EventDispatcher::FindEventTarget(mojo::Event* event) {
   ServerView* focused_view = view_tree_host_->GetFocusedView();
-  if (event->pointer_data && event->pointer_data->location) {
-    ServerView* root = view_tree_host_->root_view();
-    const gfx::Point root_point(
-        static_cast<int>(event->pointer_data->location->x),
-        static_cast<int>(event->pointer_data->location->y));
-    ServerView* target = focused_view;
-    if (event->action == mojo::EVENT_TYPE_POINTER_DOWN || !target ||
-        !root->Contains(target)) {
-      target = FindDeepestVisibleView(root, root_point);
-      CHECK(target);
-    }
-    const gfx::PointF local_point(ConvertPointFBetweenViews(
-        root, target, gfx::PointF(event->pointer_data->location->x,
-                                  event->pointer_data->location->y)));
-    event->pointer_data->location->x = local_point.x();
-    event->pointer_data->location->y = local_point.y();
-    return target;
+  if (event->key_data)
+    return focused_view;
+
+  DCHECK(event->pointer_data || event->wheel_data) << "Unknown event type: "
+                                                   << event->action;
+
+  mojo::LocationData* event_location = nullptr;
+  if (event->pointer_data)
+    event_location = event->pointer_data->location.get();
+  else if (event->wheel_data)
+    event_location = event->wheel_data->location.get();
+  DCHECK(event_location);
+  gfx::Point location(static_cast<int>(event_location->x),
+                      static_cast<int>(event_location->y));
+  ServerView* target = focused_view;
+  ServerView* root = view_tree_host_->root_view();
+  if (event->action == mojo::EVENT_TYPE_POINTER_DOWN || !target ||
+      !root->Contains(target)) {
+    target = FindDeepestVisibleViewFromSurface(&location);
+    // Surface-based hit-testing will not return a valid target if no
+    // compositor-frame have been submitted (e.g. in unit-tests).
+    if (!target)
+      target = FindDeepestVisibleView(root, &location);
+    CHECK(target);
+  } else {
+    gfx::Point old_point = location;
+    location = ConvertPointBetweenViews(root, target, location);
   }
 
-  return focused_view;
+  event_location->x = location.x();
+  event_location->y = location.y();
+  return target;
+}
+
+ServerView* EventDispatcher::FindDeepestVisibleView(ServerView* view,
+                                                    gfx::Point* location) {
+  for (ServerView* child : view->GetChildren()) {
+    if (!child->visible())
+      continue;
+
+    // TODO(sky): support transform.
+    gfx::Point child_location(location->x() - child->bounds().x(),
+                              location->y() - child->bounds().y());
+    if (child_location.x() >= 0 && child_location.y() >= 0 &&
+        child_location.x() < child->bounds().width() &&
+        child_location.y() < child->bounds().height()) {
+      *location = child_location;
+      return FindDeepestVisibleView(child, location);
+    }
+  }
+  return view;
+}
+
+ServerView* EventDispatcher::FindDeepestVisibleViewFromSurface(
+    gfx::Point* location) {
+  if (view_tree_host_->surface_id().is_null())
+    return nullptr;
+
+  gfx::Transform transform_to_target_surface;
+  cc::SurfaceId target_surface =
+      view_tree_host_->root_view()->delegate()
+          ->GetSurfacesState()
+          ->hit_tester()
+          ->GetTargetSurfaceAtPoint(view_tree_host_->surface_id(), *location,
+                                    &transform_to_target_surface);
+  ViewId id = ViewIdFromTransportId(
+      cc::SurfaceIdAllocator::NamespaceForId(target_surface));
+  ServerView* target = view_tree_host_->connection_manager()->GetView(id);
+  // TODO(fsamuel): This should be a DCHECK but currently we use stale
+  // information to decide where to route input events. This should be fixed
+  // once we implement a UI scheduler.
+  if (target) {
+    transform_to_target_surface.TransformPoint(location);
+    return target;
+  }
+  return nullptr;
 }
 
 }  // namespace mus

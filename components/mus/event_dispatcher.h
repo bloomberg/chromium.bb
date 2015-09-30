@@ -12,6 +12,10 @@
 #include "ui/mojo/events/input_events.mojom.h"
 #include "ui/mojo/events/input_key_codes.mojom.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace mus {
 
 class ServerView;
@@ -56,6 +60,15 @@ class EventDispatcher {
   // pointer-type event, then this function also updates the event location to
   // make sure it is in the returned target's coordinate space.
   ServerView* FindEventTarget(mojo::Event* event);
+
+  // Finds the deepest visible view that contains the specified location, and
+  // updates |location| to be in the returned view's coordinate space.
+  ServerView* FindDeepestVisibleView(ServerView* view, gfx::Point* location);
+
+  // Finds the deepest visible view for the specified location based on surface
+  // hit-testing. Updates |location| to be in the returned view's coordinate
+  // space.
+  ServerView* FindDeepestVisibleViewFromSurface(gfx::Point* location);
 
   ViewTreeHostImpl* view_tree_host_;
 

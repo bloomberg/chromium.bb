@@ -8,6 +8,10 @@
 #include "components/mus/ids.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 
+namespace cc {
+struct SurfaceId;
+}
+
 namespace mus {
 
 class ServerView;
@@ -24,12 +28,14 @@ class DisplayManagerDelegate {
   virtual void OnDisplayClosed() = 0;
 
   // Called when an event arrives.
-  virtual void OnEvent(ViewId id, mojo::EventPtr event) = 0;
+  virtual void OnEvent(mojo::EventPtr event) = 0;
 
   // Signals that the metrics of this display's viewport has changed.
   virtual void OnViewportMetricsChanged(
       const mojo::ViewportMetrics& old_metrics,
       const mojo::ViewportMetrics& new_metrics) = 0;
+
+  virtual void OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) = 0;
 
  protected:
   virtual ~DisplayManagerDelegate() {}

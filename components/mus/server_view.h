@@ -106,6 +106,8 @@ class ServerView : public mojo::Surface, public cc::SurfaceFactoryClient {
     return last_submitted_frame_size_;
   }
 
+  ServerViewDelegate* delegate() { return delegate_; }
+
   // mojo::Surface:
   void SubmitCompositorFrame(
       mojo::CompositorFramePtr frame,

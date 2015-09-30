@@ -145,6 +145,7 @@ void DefaultDisplayManager::Init(DisplayManagerDelegate* delegate) {
 }
 
 DefaultDisplayManager::~DefaultDisplayManager() {
+  delegate_->OnTopLevelSurfaceChanged(cc::SurfaceId());
   // Invalidate WeakPtrs now to avoid callbacks back into the
   // DefaultDisplayManager during destruction of |top_level_display_client_|.
   weak_factory_.InvalidateWeakPtrs();
@@ -271,30 +272,7 @@ void DefaultDisplayManager::OnDamageRect(const gfx::Rect& damaged_region) {
 
 void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
   mojo::EventPtr mojo_event(mojo::Event::From(*event));
-  ViewId id;
-  if (event->IsLocatedEvent() && !!top_level_display_client_) {
-    ui::LocatedEvent* located_event = static_cast<ui::LocatedEvent*>(event);
-    gfx::Point transformed_point(located_event->location());
-    gfx::Transform transform_to_target_surface;
-    cc::SurfaceId target_surface =
-        surfaces_state_->hit_tester()->GetTargetSurfaceAtPoint(
-            top_level_display_client_->surface_id(), located_event->location(),
-            &transform_to_target_surface);
-    transform_to_target_surface.TransformPoint(&transformed_point);
-    id = ViewIdFromTransportId(
-        cc::SurfaceIdAllocator::NamespaceForId(target_surface));
-
-    mojo::LocationData* location = nullptr;
-    if (mojo_event->pointer_data)
-      location = mojo_event->pointer_data->location.get();
-    else if (mojo_event->wheel_data)
-      location = mojo_event->wheel_data->location.get();
-
-    DCHECK(location);
-    location->x = transformed_point.x();
-    location->y = transformed_point.y();
-  }
-  delegate_->OnEvent(id, mojo_event.Pass());
+  delegate_->OnEvent(mojo_event.Pass());
 
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
@@ -336,7 +314,7 @@ void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
             key_press_event->GetLocatedWindowsKeyboardCode(),
             key_press_event->GetText(), key_press_event->GetUnmodifiedText())));
 
-    delegate_->OnEvent(id, mojo::Event::From(char_event));
+    delegate_->OnEvent(mojo::Event::From(char_event));
   }
 #endif
 }
@@ -360,6 +338,8 @@ void DefaultDisplayManager::OnAcceleratedWidgetAvailable(
   if (widget != gfx::kNullAcceleratedWidget) {
     top_level_display_client_.reset(
         new TopLevelDisplayClient(widget, gpu_state_, surfaces_state_));
+    delegate_->OnTopLevelSurfaceChanged(
+        top_level_display_client_->surface_id());
   }
   UpdateMetrics(metrics_.size_in_pixels.To<gfx::Size>(), device_pixel_ratio);
 }
