@@ -22,7 +22,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -280,8 +279,8 @@ public class CardUnmaskPrompt
         text.setPadding(hPadding, vPadding, hPadding, vPadding);
 
         mStoreLocallyTooltipPopup.setContentView(text);
-        mStoreLocallyTooltipPopup.setWindowLayoutMode(
-                LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        mStoreLocallyTooltipPopup.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+        mStoreLocallyTooltipPopup.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         mStoreLocallyTooltipPopup.setOutsideTouchable(true);
         mStoreLocallyTooltipPopup.setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
                 resources, R.drawable.store_locally_tooltip_background));

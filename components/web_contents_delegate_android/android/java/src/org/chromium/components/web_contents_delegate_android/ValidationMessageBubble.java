@@ -117,8 +117,8 @@ class ValidationMessageBubble {
     }
 
     private void measure(RenderCoordinates coordinates) {
-        mPopup.setWindowLayoutMode(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        mPopup.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+        mPopup.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         mPopup.getContentView().setLayoutParams(
                 new RelativeLayout.LayoutParams(
                         RelativeLayout.LayoutParams.WRAP_CONTENT,

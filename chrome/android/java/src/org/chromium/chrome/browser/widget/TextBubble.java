@@ -91,8 +91,8 @@ public class TextBubble
                 (res.containsKey(TEXT_STYLE_ID) ? res.getInt(TEXT_STYLE_ID) : R.style.info_bubble));
 
         setContentView(mTooltipText);
-        setWindowLayoutMode(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+        setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
     /**

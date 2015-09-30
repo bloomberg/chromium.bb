@@ -45,8 +45,7 @@ class SnackbarPopupWindow extends PopupWindow {
                 ? parent.getResources().getDimensionPixelSize(R.dimen.snackbar_tablet_width)
                 : parent.getWidth());
 
-        setWindowLayoutMode(0, ViewGroup.LayoutParams.WRAP_CONTENT);
-
+        setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         update(snackbar, false);
     }
 
