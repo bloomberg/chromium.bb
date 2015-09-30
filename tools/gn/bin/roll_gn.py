@@ -199,7 +199,7 @@ class GNRoller(object):
     # Close the build CL and move off of the build branch back to whatever
     # we were on before.
     self.Call('git-cl set-close')
-    self.MovetoLastHead()
+    self.MoveToLastHead()
 
     return ret
 
@@ -375,9 +375,12 @@ class GNRoller(object):
 
     return 0
 
-  def MovetoLastHead(self):
-    _, out, _ = self.Call('git reflog -1')
-    m = re.match('moving from ([^\s]+)', out)
+  def MoveToLastHead(self):
+    # When this is called, there will be a commit + a checkout as
+    # the two most recent entries in the reflog, assuming nothing as
+    # modified the repo while this script has been running.
+    _, out, _ = self.Call('git reflog -2')
+    m = re.search('moving from ([^\s]+)', out)
     last_head = m.group(1)
     self.Call('git checkout %s' % last_head)
 
