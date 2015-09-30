@@ -488,6 +488,61 @@ class SSLUITest
       EXPECT_EQ(https_server_expired_.GetURL("/").host(),
                 GetLatestHostnameReported());
     } else {
+      base::RunLoop().RunUntilIdle();
+      EXPECT_EQ(std::string(), GetLatestHostnameReported());
+    }
+  }
+
+  // Helper function for testing invalid certificate chain reporting with the
+  // bad clock interstitial.
+  void TestBadClockReporting(
+      certificate_reporting_test_utils::OptIn opt_in,
+      certificate_reporting_test_utils::ExpectReport expect_report,
+      Browser* browser) {
+    base::RunLoop run_loop;
+    ASSERT_TRUE(https_server_expired_.Start());
+    ASSERT_NO_FATAL_FAILURE(SetUpMockReporter());
+
+    // Set up the build and current clock times to be more than a year apart.
+    scoped_ptr<base::SimpleTestClock> mock_clock(new base::SimpleTestClock());
+    mock_clock->SetNow(base::Time::NowFromSystemTime());
+    mock_clock->Advance(base::TimeDelta::FromDays(367));
+    SSLErrorHandler::SetClockForTest(mock_clock.get());
+    SSLErrorClassification::SetBuildTimeForTesting(
+        base::Time::NowFromSystemTime());
+
+    // Opt in to sending reports for invalid certificate chains.
+    certificate_reporting_test_utils::SetCertReportingOptIn(browser, opt_in);
+
+    ui_test_utils::NavigateToURL(browser, https_server_expired_.GetURL("/"));
+
+    WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
+    CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                   AuthState::SHOWING_INTERSTITIAL);
+
+    scoped_ptr<SSLCertReporter> ssl_cert_reporter =
+        certificate_reporting_test_utils::SetUpMockSSLCertReporter(
+            &run_loop, expect_report);
+
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    ASSERT_EQ(BadClockBlockingPage::kTypeForTesting,
+              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+    BadClockBlockingPage* clock_page = static_cast<BadClockBlockingPage*>(
+        tab->GetInterstitialPage()->GetDelegateForTesting());
+    clock_page->SetSSLCertReporterForTesting(ssl_cert_reporter.Pass());
+
+    EXPECT_EQ(std::string(), GetLatestHostnameReported());
+
+    interstitial_page->DontProceed();
+
+    if (expect_report ==
+        certificate_reporting_test_utils::CERT_REPORT_EXPECTED) {
+      // Check that the mock reporter received a request to send a report.
+      run_loop.Run();
+      EXPECT_EQ(https_server_expired_.GetURL("/").host(),
+                GetLatestHostnameReported());
+    } else {
+      base::RunLoop().RunUntilIdle();
       EXPECT_EQ(std::string(), GetLatestHostnameReported());
     }
   }
@@ -1339,6 +1394,26 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
       certificate_reporting_test_utils::EXTENDED_REPORTING_OPT_IN,
       SSL_INTERSTITIAL_PROCEED,
       certificate_reporting_test_utils::CERT_REPORT_NOT_EXPECTED, browser());
+}
+
+// Checkbox is shown but unchecked. Reports should never be sent, regardless of
+// Finch config.
+IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
+                       TestBadClockReportingWithNoOptIn) {
+  TestBadClockReporting(
+      certificate_reporting_test_utils::EXTENDED_REPORTING_DO_NOT_OPT_IN,
+      certificate_reporting_test_utils::CERT_REPORT_NOT_EXPECTED, browser());
+}
+
+// Test that when the interstitial closes and the checkbox is checked, a report
+// is sent or not sent depending on the Finch config.
+IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
+                       TestBadClockReportingWithOptIn) {
+  certificate_reporting_test_utils::ExpectReport expect_report =
+      certificate_reporting_test_utils::GetReportExpectedFromFinch();
+  TestBadClockReporting(
+      certificate_reporting_test_utils::EXTENDED_REPORTING_OPT_IN,
+      expect_report, browser());
 }
 
 // Visits a page that runs insecure content and tries to suppress the insecure

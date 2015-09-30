@@ -170,7 +170,7 @@ BadClockBlockingPage* CreateBadClockBlockingPage(
   if (strict_enforcement)
     options_mask |= SSLBlockingPage::STRICT_ENFORCEMENT;
   return new BadClockBlockingPage(web_contents, cert_error, ssl_info,
-                                  request_url, time_triggered_,
+                                  request_url, time_triggered_, nullptr,
                                   base::Callback<void(bool)>());
 }
 

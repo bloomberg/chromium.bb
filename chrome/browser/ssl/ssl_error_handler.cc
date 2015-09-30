@@ -338,7 +338,7 @@ void SSLErrorHandler::ShowSSLInterstitial() {
 void SSLErrorHandler::ShowBadClockInterstitial(const base::Time& now) {
   RecordUMA(SHOW_BAD_CLOCK);
   (new BadClockBlockingPage(web_contents_, cert_error_, ssl_info_, request_url_,
-                            now, callback_))
+                            now, ssl_cert_reporter_.Pass(), callback_))
       ->Show();
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".
