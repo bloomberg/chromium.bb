@@ -9,7 +9,7 @@
 #include "content/common/content_export.h"
 
 namespace base {
-class TaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace storage {
@@ -44,7 +44,7 @@ class CONTENT_EXPORT UploadDataStreamBuilder {
       ResourceRequestBody* body,
       storage::BlobStorageContext* blob_context,
       storage::FileSystemContext* file_system_context,
-      base::TaskRunner* file_task_runner);
+      base::SingleThreadTaskRunner* file_task_runner);
 };
 
 }  // namespace content

@@ -19,10 +19,6 @@ namespace {
 
 int kUserDataKey;  // The value is not important, the addr is a key.
 
-BlobDataHandle* GetRequestedBlobDataHandle(net::URLRequest* request) {
-  return static_cast<BlobDataHandle*>(request->GetUserData(&kUserDataKey));
-}
-
 }  // namespace
 
 // static
@@ -44,6 +40,12 @@ void BlobProtocolHandler::SetRequestedBlobDataHandle(
   request->SetUserData(&kUserDataKey, blob_data_handle.release());
 }
 
+// static
+BlobDataHandle* BlobProtocolHandler::GetRequestBlobDataHandle(
+    net::URLRequest* request) {
+  return static_cast<BlobDataHandle*>(request->GetUserData(&kUserDataKey));
+}
+
 BlobProtocolHandler::BlobProtocolHandler(
     BlobStorageContext* context,
     storage::FileSystemContext* file_system_context,
@@ -59,18 +61,16 @@ BlobProtocolHandler::~BlobProtocolHandler() {
 
 net::URLRequestJob* BlobProtocolHandler::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
-  return new storage::BlobURLRequestJob(request,
-                                        network_delegate,
-                                        LookupBlobData(request),
-                                        file_system_context_.get(),
-                                        file_task_runner_.get());
+  return new storage::BlobURLRequestJob(
+      request, network_delegate, LookupBlobHandle(request),
+      file_system_context_.get(), file_task_runner_.get());
 }
 
-scoped_ptr<BlobDataSnapshot> BlobProtocolHandler::LookupBlobData(
+BlobDataHandle* BlobProtocolHandler::LookupBlobHandle(
     net::URLRequest* request) const {
-  BlobDataHandle* blob_data_handle = GetRequestedBlobDataHandle(request);
+  BlobDataHandle* blob_data_handle = GetRequestBlobDataHandle(request);
   if (blob_data_handle)
-    return blob_data_handle->CreateSnapshot().Pass();
+    return blob_data_handle;
   if (!context_.get())
     return NULL;
 
@@ -83,12 +83,11 @@ scoped_ptr<BlobDataSnapshot> BlobProtocolHandler::LookupBlobData(
     return NULL;
   std::string uuid = request->url().spec().substr(kPrefix.length());
   scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(uuid);
-  scoped_ptr<BlobDataSnapshot> snapshot;
+  BlobDataHandle* handle_ptr = handle.get();
   if (handle) {
-    snapshot = handle->CreateSnapshot().Pass();
     SetRequestedBlobDataHandle(request, handle.Pass());
   }
-  return snapshot.Pass();
+  return handle_ptr;
 }
 
 }  // namespace storage

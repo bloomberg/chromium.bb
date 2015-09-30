@@ -53,6 +53,7 @@ class STORAGE_EXPORT BlobDataSnapshot : public base::SupportsUserData::Data {
   const std::string uuid_;
   const std::string content_type_;
   const std::string content_disposition_;
+
   // Non-const for constrution in BlobStorageContext
   std::vector<scoped_refptr<BlobDataItem>> items_;
 };
