@@ -700,13 +700,17 @@ def decorate_shard_output(swarming, shard_index, metadata):
 def collect(
     swarming, task_name, task_ids, timeout, decorate, print_status_updates,
     task_summary_json, task_output_dir):
-  """Retrieves results of a Swarming task."""
+  """Retrieves results of a Swarming task.
+
+  Returns:
+    process exit code that should be returned to the user.
+  """
   # Collect summary JSON and output files (if task_output_dir is not None).
   output_collector = TaskOutputCollector(
       task_output_dir, task_name, len(task_ids))
 
   seen_shards = set()
-  exit_code = 0
+  exit_code = None
   total_duration = 0
   try:
     for index, metadata in yield_results(
@@ -717,8 +721,9 @@ def collect(
       # Default to failure if there was no process that even started.
       shard_exit_code = metadata.get('exit_code')
       if shard_exit_code:
+        # It's encoded as a string, so bool('0') is True.
         shard_exit_code = int(shard_exit_code)
-      if shard_exit_code:
+      if shard_exit_code or exit_code is None:
         exit_code = shard_exit_code
       total_duration += metadata.get('duration', 0)
 
@@ -753,7 +758,7 @@ def collect(
         ', '.join(map(str, missing_shards)))
     return 1
 
-  return exit_code
+  return exit_code if exit_code is not None else 1
 
 
 ### API management.
