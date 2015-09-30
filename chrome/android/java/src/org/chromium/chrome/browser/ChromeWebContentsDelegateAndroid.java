@@ -126,6 +126,8 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
         findMatchRectsDetails.rects[index] = rect;
     }
 
+    protected static native void nativeOnRendererUnresponsive(WebContents webContents);
+    protected static native void nativeOnRendererResponsive(WebContents webContents);
     protected static native boolean nativeIsCapturingAudio(WebContents webContents);
     protected static native boolean nativeIsCapturingVideo(WebContents webContents);
 }

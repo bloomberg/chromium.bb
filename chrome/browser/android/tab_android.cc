@@ -12,7 +12,6 @@
 #include "cc/layers/layer.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
-#include "chrome/browser/android/hung_renderer_infobar_delegate.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/offline_pages/offline_page_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
@@ -55,8 +54,6 @@
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/favicon/content/content_favicon_driver.h"
-#include "components/infobars/core/infobar.h"
-#include "components/infobars/core/infobar_container.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "components/offline_pages/offline_page_feature.h"
@@ -103,16 +100,6 @@ namespace {
 const int kImageSearchThumbnailMinSize = 300 * 300;
 const int kImageSearchThumbnailMaxWidth = 600;
 const int kImageSearchThumbnailMaxHeight = 600;
-
-infobars::InfoBar* FindHungRendererInfoBar(InfoBarService* infobar_service) {
-  DCHECK(infobar_service);
-  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
-    infobars::InfoBar* infobar = infobar_service->infobar_at(i);
-    if (infobar->delegate()->AsHungRendererInfoBarDelegate())
-      return infobar;
-  }
-  return nullptr;
-}
 
 }  // namespace
 
@@ -869,28 +856,6 @@ const offline_pages::OfflinePageItem* TabAndroid::GetOfflinePage(
 bool TabAndroid::HasPrerenderedUrl(JNIEnv* env, jobject obj, jstring url) {
   GURL gurl(base::android::ConvertJavaStringToUTF8(env, url));
   return HasPrerenderedUrl(gurl);
-}
-
-void TabAndroid::OnRendererUnresponsive(JNIEnv* env, jobject obj) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  DCHECK(!FindHungRendererInfoBar(infobar_service));
-  HungRendererInfoBarDelegate::Create(infobar_service,
-                                      web_contents()->GetRenderProcessHost());
-}
-
-void TabAndroid::OnRendererResponsive(JNIEnv* env, jobject obj) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  infobars::InfoBar* hung_renderer_infobar =
-      FindHungRendererInfoBar(infobar_service);
-  if (!hung_renderer_infobar)
-    return;
-
-  hung_renderer_infobar->delegate()
-      ->AsHungRendererInfoBarDelegate()
-      ->OnRendererResponsive();
-  infobar_service->RemoveInfoBar(hung_renderer_infobar);
 }
 
 namespace {

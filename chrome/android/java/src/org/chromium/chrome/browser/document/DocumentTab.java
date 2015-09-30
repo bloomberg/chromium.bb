@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.TabState;
@@ -17,6 +18,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabUma;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
@@ -145,6 +147,10 @@ public class DocumentTab extends ChromeTab {
      */
     public class DocumentTabChromeWebContentsDelegateAndroid
             extends TabChromeWebContentsDelegateAndroid {
+        public DocumentTabChromeWebContentsDelegateAndroid(Tab tab, ChromeActivity activity) {
+            super(tab, activity);
+        }
+
         /**
          * TODO(dfalcantara): Remove this when DocumentActivity.getTabModelSelector()
          *                    can return a TabModelSelector that activateContents() can use.
@@ -157,7 +163,7 @@ public class DocumentTab extends ChromeTab {
 
     @Override
     protected TabChromeWebContentsDelegateAndroid createWebContentsDelegate() {
-        return new DocumentTabChromeWebContentsDelegateAndroid();
+        return new DocumentTabChromeWebContentsDelegateAndroid(this, mActivity);
     }
 
     /**

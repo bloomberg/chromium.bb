@@ -122,9 +122,6 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   bool HasPrerenderedUrl(GURL gurl);
 
-  void OnRendererUnresponsive(JNIEnv* env, jobject obj);
-  void OnRendererResponsive(JNIEnv* env, jobject obj);
-
   void MakeLoadURLParams(
       chrome::NavigateParams* params,
       content::NavigationController::LoadURLParams* load_url_params);

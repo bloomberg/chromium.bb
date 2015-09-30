@@ -8,8 +8,10 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "chrome/browser/android/feature_utilities.h"
+#include "chrome/browser/android/hung_renderer_infobar_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/file_select_helper.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
@@ -25,6 +27,7 @@
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/app_modal/javascript_dialog_manager.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -70,6 +73,16 @@ ScopedJavaLocalRef<jobject> CreateJavaRect(
           static_cast<int>(rect.y()),
           static_cast<int>(rect.right()),
           static_cast<int>(rect.bottom())));
+}
+
+infobars::InfoBar* FindHungRendererInfoBar(InfoBarService* infobar_service) {
+  DCHECK(infobar_service);
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+    infobars::InfoBar* infobar = infobar_service->infobar_at(i);
+    if (infobar->delegate()->AsHungRendererInfoBarDelegate())
+      return infobar;
+  }
+  return nullptr;
 }
 
 }  // anonymous namespace
@@ -385,6 +398,36 @@ void ChromeWebContentsDelegateAndroid::AddNewContents(
 
 }  // namespace android
 }  // namespace chrome
+
+void OnRendererUnresponsive(JNIEnv* env,
+                            const JavaParamRef<jclass>& clazz,
+                            const JavaParamRef<jobject>& java_web_contents) {
+  content::WebContents* web_contents =
+        content::WebContents::FromJavaWebContents(java_web_contents);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  DCHECK(!FindHungRendererInfoBar(infobar_service));
+  HungRendererInfoBarDelegate::Create(infobar_service,
+                                      web_contents->GetRenderProcessHost());
+}
+
+void OnRendererResponsive(JNIEnv* env,
+                          const JavaParamRef<jclass>& clazz,
+                          const JavaParamRef<jobject>& java_web_contents) {
+  content::WebContents* web_contents =
+          content::WebContents::FromJavaWebContents(java_web_contents);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  infobars::InfoBar* hung_renderer_infobar =
+      FindHungRendererInfoBar(infobar_service);
+  if (!hung_renderer_infobar)
+    return;
+
+  hung_renderer_infobar->delegate()
+      ->AsHungRendererInfoBarDelegate()
+      ->OnRendererResponsive();
+  infobar_service->RemoveInfoBar(hung_renderer_infobar);
+}
 
 jboolean IsCapturingAudio(JNIEnv* env,
                           const JavaParamRef<jclass>& clazz,
