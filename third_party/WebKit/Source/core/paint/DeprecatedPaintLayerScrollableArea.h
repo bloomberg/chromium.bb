@@ -69,6 +69,8 @@ class CORE_EXPORT DeprecatedPaintLayerScrollableArea final : public NoBaseWillBe
 
 private:
     class ScrollbarManager {
+        DISALLOW_ALLOCATION();
+
         // Helper class to manage the life cycle of Scrollbar objects.  Some layout containers
         // (e.g., flexbox, table) run multi-pass layout on their children, applying different
         // constraints.  If a child has overflow:auto, it may gain and lose scrollbars multiple
@@ -106,7 +108,7 @@ private:
         void destroyScrollbar(ScrollbarOrientation, bool invalidate = false);
 
     private:
-        DeprecatedPaintLayerScrollableArea& m_scrollableArea;
+        RawPtrWillBeMember<DeprecatedPaintLayerScrollableArea> m_scrollableArea;
         RefPtrWillBeMember<Scrollbar> m_hBar;
         RefPtrWillBeMember<Scrollbar> m_vBar;
         unsigned m_canDetachScrollbars: 1;

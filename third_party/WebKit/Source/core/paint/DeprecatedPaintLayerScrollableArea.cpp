@@ -159,7 +159,7 @@ void DeprecatedPaintLayerScrollableArea::dispose()
 
 DEFINE_TRACE(DeprecatedPaintLayerScrollableArea)
 {
-    m_scrollbarManager.trace(visitor);
+    visitor->trace(m_scrollbarManager);
     ScrollableArea::trace(visitor);
 }
 
@@ -1465,7 +1465,7 @@ bool DeprecatedPaintLayerScrollableArea::visualViewportSuppliesScrollbars() cons
 }
 
 DeprecatedPaintLayerScrollableArea::ScrollbarManager::ScrollbarManager(DeprecatedPaintLayerScrollableArea& scrollableArea)
-    : m_scrollableArea(scrollableArea)
+    : m_scrollableArea(&scrollableArea)
     , m_canDetachScrollbars(0)
     , m_hBarIsAttached(0)
     , m_vBarIsAttached(0)
@@ -1526,21 +1526,21 @@ PassRefPtrWillBeRawPtr<Scrollbar> DeprecatedPaintLayerScrollableArea::ScrollbarM
 {
     ASSERT(orientation == HorizontalScrollbar ? !m_hBarIsAttached : !m_vBarIsAttached);
     RefPtrWillBeRawPtr<Scrollbar> widget = nullptr;
-    LayoutObject* actualLayoutObject = layoutObjectForScrollbar(m_scrollableArea.box());
+    LayoutObject* actualLayoutObject = layoutObjectForScrollbar(m_scrollableArea->box());
     bool hasCustomScrollbarStyle = actualLayoutObject->isBox() && actualLayoutObject->style()->hasPseudoStyle(SCROLLBAR);
     if (hasCustomScrollbarStyle) {
-        widget = LayoutScrollbar::createCustomScrollbar(&m_scrollableArea, orientation, actualLayoutObject->node());
+        widget = LayoutScrollbar::createCustomScrollbar(m_scrollableArea.get(), orientation, actualLayoutObject->node());
     } else {
         ScrollbarControlSize scrollbarSize = RegularScrollbar;
         if (actualLayoutObject->style()->hasAppearance())
             scrollbarSize = LayoutTheme::theme().scrollbarControlSizeForPart(actualLayoutObject->style()->appearance());
-        widget = Scrollbar::create(&m_scrollableArea, orientation, scrollbarSize);
+        widget = Scrollbar::create(m_scrollableArea.get(), orientation, scrollbarSize);
         if (orientation == HorizontalScrollbar)
-            m_scrollableArea.didAddScrollbar(widget.get(), HorizontalScrollbar);
+            m_scrollableArea->didAddScrollbar(widget.get(), HorizontalScrollbar);
         else
-            m_scrollableArea.didAddScrollbar(widget.get(), VerticalScrollbar);
+            m_scrollableArea->didAddScrollbar(widget.get(), VerticalScrollbar);
     }
-    m_scrollableArea.box().document().view()->addChild(widget.get());
+    m_scrollableArea->box().document().view()->addChild(widget.get());
     return widget.release();
 }
 
@@ -1554,7 +1554,7 @@ void DeprecatedPaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(Scro
     if (invalidate)
         scrollbar->invalidate();
     if (!scrollbar->isCustomScrollbar())
-        m_scrollableArea.willRemoveScrollbar(scrollbar.get(), orientation);
+        m_scrollableArea->willRemoveScrollbar(scrollbar.get(), orientation);
 
     toFrameView(scrollbar->parent())->removeChild(scrollbar.get());
     scrollbar->disconnectFromScrollableArea();
@@ -1563,6 +1563,7 @@ void DeprecatedPaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(Scro
 
 DEFINE_TRACE(DeprecatedPaintLayerScrollableArea::ScrollbarManager)
 {
+    visitor->trace(m_scrollableArea);
     visitor->trace(m_hBar);
     visitor->trace(m_vBar);
 }
