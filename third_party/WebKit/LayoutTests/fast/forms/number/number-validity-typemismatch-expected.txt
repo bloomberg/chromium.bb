@@ -20,6 +20,8 @@ PASS "0xff" was sanitized to "".
 PASS "+1" was sanitized to "".
 PASS " 10" was sanitized to "".
 PASS "10 " was sanitized to "".
+PASS "0." was sanitized to "".
+PASS "1." was sanitized to "".
 PASS "1,2" was sanitized to "".
 PASS "1E" was sanitized to "".
 PASS "NaN" was sanitized to "".
@@ -30,8 +32,7 @@ PASS "Infinity" was sanitized to "".
 PASS "infinity" was sanitized to "".
 PASS "" is a valid number.
 PASS "1.2E65535" was sanitized to "".
-PASS "1." is a valid number.
-PASS "1.2e10" is a valid number.
+PASS "1.2e10" was sanitized to "1.2e10".
 PASS "invalid" is a valid number when disabled.
 PASS successfullyParsed is true
 

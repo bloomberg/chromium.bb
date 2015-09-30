@@ -10,6 +10,8 @@ description('This test aims to check for typeMismatch flag with type=number inpu
 var i = document.createElement('input');
 i.type = 'number';
 
+// TODO(tkent): check() doesn't make sense because the number type never be
+// typeMismatch.
 function check(value, disabled)
 {
     i.value = value;
@@ -55,6 +57,8 @@ checkSanitization('0xff', '');
 checkSanitization('+1', '');
 checkSanitization(' 10', '');
 checkSanitization('10 ', '');
+checkSanitization('0.', '');
+checkSanitization('1.', '');
 checkSanitization('1,2', '');
 checkSanitization('1E', '');
 checkSanitization('NaN', '');
@@ -70,9 +74,7 @@ check('');
 // Huge exponent.
 checkSanitization('1.2E65535', '');
 
-// The spec doesn't allow, but our implementation does.
-check('1.');
-check('1.2e10');
+checkSanitization('1.2e10', '1.2e10');
 
 // Disabled
 check('invalid', true);

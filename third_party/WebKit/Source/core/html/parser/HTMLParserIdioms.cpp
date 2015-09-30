@@ -121,6 +121,8 @@ double parseToDoubleForNumberType(const String& string, double fallbackValue)
     UChar firstCharacter = string[0];
     if (firstCharacter != '-' && firstCharacter != '.' && !isASCIIDigit(firstCharacter))
         return fallbackValue;
+    if (string.endsWith('.'))
+        return fallbackValue;
 
     bool valid = false;
     double value = string.toDouble(&valid);
