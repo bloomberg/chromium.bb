@@ -11,9 +11,9 @@ function redraw() {
                Math.random() * (c.height / 2),
                c.width / 2,
                c.height / 2);
-  window.setTimeout(redraw, 1);
+  window.requestAnimationFrame(redraw);
 }
-window.setTimeout(redraw, 1);
+window.requestAnimationFrame(redraw);
 </script>
 <div style="position:fixed; background-color: blue; -webkit-transform: translateZ(0);">
 <canvas id="canvas" width="400" height="300"></canvas>
