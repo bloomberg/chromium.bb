@@ -80,13 +80,8 @@ WebUSBClientImpl::~WebUSBClientImpl() {}
 void WebUSBClientImpl::getDevices(
     blink::WebUSBClientGetDevicesCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  // TODO(rockot): Remove this once DeviceManager is updated. It should no
-  // longer take enumeration options.
-  device::usb::EnumerationOptionsPtr options =
-      device::usb::EnumerationOptions::New();
-  options->filters = mojo::Array<device::usb::DeviceFilterPtr>::New(0);
   device_manager_->GetDevices(
-      options.Pass(),
+      nullptr,
       base::Bind(&OnGetDevicesComplete, base::Passed(&scoped_callbacks),
                  base::Unretained(device_services_.get())));
 }
