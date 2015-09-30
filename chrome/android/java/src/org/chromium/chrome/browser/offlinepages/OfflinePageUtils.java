@@ -146,6 +146,7 @@ public class OfflinePageUtils {
 
             @Override
             public void onDismissNoAction(Object actionData) {
+                if (actionData == null) return;
                 SnackbarButtonType buttonType = (SnackbarButtonType) actionData;
                 switch (buttonType) {
                     case NONE:
