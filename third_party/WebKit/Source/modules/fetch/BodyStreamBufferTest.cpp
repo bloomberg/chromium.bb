@@ -34,6 +34,7 @@ public:
     ~BodyStreamBufferTest() override {}
 
 protected:
+    ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
     ExecutionContext* executionContext() { return &m_page->document(); }
 
     OwnPtr<DummyPageHolder> m_page;
@@ -261,6 +262,46 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer)
     Heap::collectAllGarbage();
     checkpoint.Call(1);
     testing::runPendingTasks();
+    checkpoint.Call(2);
+}
+
+// TODO(hiroshige): Merge this class into MockFetchDataConsumerHandle.
+class MockFetchDataConsumerHandleWithMockDestructor : public DataConsumerHandleTestUtil::MockFetchDataConsumerHandle {
+public:
+    static PassOwnPtr<::testing::StrictMock<MockFetchDataConsumerHandleWithMockDestructor>> create() { return adoptPtr(new ::testing::StrictMock<MockFetchDataConsumerHandleWithMockDestructor>); }
+
+    ~MockFetchDataConsumerHandleWithMockDestructor() override
+    {
+        destruct();
+    }
+
+    MOCK_METHOD0(destruct, void());
+};
+
+TEST_F(BodyStreamBufferTest, SourceHandleAndReaderShouldBeDestructedWhenCanceled)
+{
+    ScriptState::Scope scope(scriptState());
+    using MockHandle = MockFetchDataConsumerHandleWithMockDestructor;
+    using MockReader = DataConsumerHandleTestUtil::MockFetchDataConsumerReader;
+    OwnPtr<MockHandle> handle = MockHandle::create();
+    OwnPtr<MockReader> reader = MockReader::create();
+
+    Checkpoint checkpoint;
+    InSequence s;
+
+    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(::testing::Return(reader.get()));
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*reader, destruct());
+    EXPECT_CALL(*handle, destruct());
+    EXPECT_CALL(checkpoint, Call(2));
+
+    // |reader| is adopted by |obtainReader|.
+    ASSERT_TRUE(reader.leakPtr());
+
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(handle.release());
+    checkpoint.Call(1);
+    ScriptValue reason(scriptState(), v8String(scriptState()->isolate(), "reason"));
+    buffer->cancelSource(scriptState(), reason);
     checkpoint.Call(2);
 }
 

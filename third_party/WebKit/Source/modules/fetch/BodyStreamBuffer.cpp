@@ -194,12 +194,14 @@ void BodyStreamBuffer::close()
 {
     m_reader = nullptr;
     m_stream->close();
+    m_handle.clear();
 }
 
 void BodyStreamBuffer::error()
 {
     m_reader = nullptr;
     m_stream->error(DOMException::create(NetworkError, "network error"));
+    m_handle.clear();
 }
 
 void BodyStreamBuffer::processData()
