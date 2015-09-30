@@ -510,7 +510,8 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
           static_cast<uint8*>(rgb_pixels),
           row_bytes,
           video_frame->visible_rect().width(),
-          video_frame->visible_rect().height());
+          video_frame->visible_rect().height(),
+          1);  // 1 = enable RGB premultiplication by Alpha.
       break;
 
     case PIXEL_FORMAT_YV24:
