@@ -3209,7 +3209,7 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
     sysdir = opendir(DRM_DIR_NAME);
     if (!sysdir) {
         ret = -errno;
-        goto close_sysdir;
+        goto free_locals;
     }
 
     i = 0;
@@ -3274,15 +3274,15 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
         device_count++;
     }
 
-    free(local_devices);
     closedir(sysdir);
+    free(local_devices);
     return device_count;
 
 free_devices:
     drmFreeDevices(local_devices, i);
-    free(local_devices);
-
-close_sysdir:
     closedir(sysdir);
+
+free_locals:
+    free(local_devices);
     return ret;
 }
