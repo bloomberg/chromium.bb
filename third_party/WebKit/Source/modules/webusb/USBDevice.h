@@ -24,6 +24,7 @@ class USBDevice
     : public GarbageCollectedFinalized<USBDevice>
     , public ContextLifecycleObserver
     , public ScriptWrappable {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(USBDevice);
     DEFINE_WRAPPERTYPEINFO();
 public:
     using WebType = OwnPtr<WebUSBDevice>;
