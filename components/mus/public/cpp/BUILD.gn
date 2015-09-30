@@ -7,8 +7,9 @@ import("//third_party/mojo/src/mojo/public/mojo_sdk.gni")
 mojo_sdk_source_set("cpp") {
   restrict_external_deps = false
   sources = [
-    "args.h",
-    "lib/args.cc",
+    "context_provider.h",
+    "lib/context_provider.cc",
+    "lib/output_surface.cc",
     "lib/scoped_view_ptr.cc",
     "lib/view.cc",
     "lib/view_observer.cc",
@@ -19,6 +20,7 @@ mojo_sdk_source_set("cpp") {
     "lib/view_tree_client_impl.h",
     "lib/view_tree_delegate.cc",
     "lib/view_tree_host_factory.cc",
+    "output_surface.h",
     "scoped_view_ptr.h",
     "view.h",
     "view_observer.h",
@@ -39,12 +41,19 @@ mojo_sdk_source_set("cpp") {
   ]
 
   deps = [
+    "//base",
+    "//cc",
+    "//cc/surfaces",
+    "//cc/surfaces:surface_id",
     "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//mojo/converters/surfaces",
+    "//mojo/gles2:headers",
+    "//mojo/gpu:mojo_gles2_implementation",
+    "//third_party/mojo/src/mojo/public/cpp/environment",
+    "//third_party/mojo/src/mojo/public/cpp/system",
     "//ui/mojo/events:interfaces",
     "//ui/mojo/geometry:interfaces",
-    "//base",
   ]
 
   mojo_sdk_deps = [
@@ -56,8 +65,10 @@ mojo_sdk_source_set("cpp") {
 
 source_set("common") {
   sources = [
+    "args.h",
     "keys.cc",
     "keys.h",
+    "lib/args.cc",
     "types.h",
     "util.h",
   ]

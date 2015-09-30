@@ -4,11 +4,11 @@
 
 source_set("surfaces") {
   sources = [
+    "direct_output_surface.cc",
+    "direct_output_surface.h",
     "surfaces_context_provider.cc",
     "surfaces_context_provider.h",
     "surfaces_context_provider_delegate.h",
-    "surfaces_output_surface.cc",
-    "surfaces_output_surface.h",
     "surfaces_scheduler.cc",
     "surfaces_scheduler.h",
     "surfaces_state.cc",

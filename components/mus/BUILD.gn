@@ -82,10 +82,6 @@ source_set("lib") {
     "window_manager_access_policy.h",
   ]
 
-  public_deps = [
-    "//components/mus/public/cpp",
-  ]
-
   deps = [
     "//base",
     "//cc",

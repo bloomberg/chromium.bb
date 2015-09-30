@@ -14,14 +14,14 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "cc/resources/shared_bitmap_manager.h"
+#include "components/mus/public/cpp/context_provider.h"
+#include "components/mus/public/cpp/output_surface.h"
 #include "components/mus/public/cpp/view.h"
 #include "components/mus/public/cpp/view_tree_connection.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "mandoline/ui/aura/window_tree_host_mojo.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
-#include "mojo/cc/context_provider_mojo.h"
-#include "mojo/cc/output_surface_mojo.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -98,9 +98,9 @@ SurfaceBinding::PerConnectionState::CreateOutputSurface(mus::View* view) {
   gpu_->CreateOffscreenGLES2Context(GetProxy(&cb));
 
   scoped_refptr<cc::ContextProvider> context_provider(
-      new mojo::ContextProviderMojo(cb.PassInterface().PassHandle()));
+      new mus::ContextProvider(cb.PassInterface().PassHandle()));
   return make_scoped_ptr(
-      new mojo::OutputSurfaceMojo(context_provider, view->RequestSurface()));
+      new mus::OutputSurface(context_provider, view->RequestSurface()));
 }
 
 SurfaceBinding::PerConnectionState::PerConnectionState(

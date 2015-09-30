@@ -12,11 +12,11 @@
 #include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
-namespace mojo {
+namespace mus {
 
-class ContextProviderMojo : public cc::ContextProvider {
+class ContextProvider : public cc::ContextProvider {
  public:
-  explicit ContextProviderMojo(ScopedMessagePipeHandle command_buffer_handle);
+  explicit ContextProvider(mojo::ScopedMessagePipeHandle command_buffer_handle);
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;
@@ -37,25 +37,25 @@ class ContextProviderMojo : public cc::ContextProvider {
       override {}
 
  protected:
-  friend class base::RefCountedThreadSafe<ContextProviderMojo>;
-  ~ContextProviderMojo() override;
+  friend class base::RefCountedThreadSafe<ContextProvider>;
+  ~ContextProvider() override;
 
  private:
   static void ContextLostThunk(void* closure) {
-    static_cast<ContextProviderMojo*>(closure)->ContextLost();
+    static_cast<ContextProvider*>(closure)->ContextLost();
   }
   void ContextLost();
 
   cc::ContextProvider::Capabilities capabilities_;
-  ScopedMessagePipeHandle command_buffer_handle_;
+  mojo::ScopedMessagePipeHandle command_buffer_handle_;
   MojoGLES2Context context_;
   scoped_ptr<gpu::gles2::GLES2Interface> context_gl_;
 
   base::Lock context_lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContextProviderMojo);
+  DISALLOW_COPY_AND_ASSIGN(ContextProvider);
 };
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // MOJO_CC_CONTEXT_PROVIDER_MOJO_H_

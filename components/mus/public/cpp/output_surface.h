@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_CC_OUTPUT_SURFACE_MOJO_H_
-#define MOJO_CC_OUTPUT_SURFACE_MOJO_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_OUTPUT_SURFACE_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_OUTPUT_SURFACE_H_
 
 #include "base/macros.h"
 #include "cc/output/output_surface.h"
@@ -12,14 +12,13 @@
 #include "components/mus/public/cpp/view_surface_client.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
-namespace mojo {
+namespace mus {
 
-class OutputSurfaceMojo : public cc::OutputSurface,
-                          public mus::ViewSurfaceClient {
+class OutputSurface : public cc::OutputSurface, public ViewSurfaceClient {
  public:
-  OutputSurfaceMojo(const scoped_refptr<cc::ContextProvider>& context_provider,
-                    scoped_ptr<mus::ViewSurface> surface);
-  ~OutputSurfaceMojo() override;
+  OutputSurface(const scoped_refptr<cc::ContextProvider>& context_provider,
+                scoped_ptr<ViewSurface> surface);
+  ~OutputSurface() override;
 
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;
@@ -29,15 +28,15 @@ class OutputSurfaceMojo : public cc::OutputSurface,
  private:
   // ViewSurfaceClient implementation:
   void OnResourcesReturned(
-      mus::ViewSurface* surface,
+      ViewSurface* surface,
       mojo::Array<mojo::ReturnedResourcePtr> resources) override;
 
   void SwapBuffersComplete();
 
-  scoped_ptr<mus::ViewSurface> surface_;
+  scoped_ptr<ViewSurface> surface_;
 
-  DISALLOW_COPY_AND_ASSIGN(OutputSurfaceMojo);
+  DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };
 }
 
-#endif  // MOJO_CC_OUTPUT_SURFACE_MOJO_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_OUTPUT_SURFACE_H_

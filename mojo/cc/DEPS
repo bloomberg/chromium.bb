@@ -1,7 +1,0 @@
-include_rules = [
-  "+cc",
-  "-cc/blink",
-  "+components/mus/public/cpp",
-  "+gpu/command_buffer/client",
-  "+mojo/gpu",
-]

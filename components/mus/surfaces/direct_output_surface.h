@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_SURFACES_SURFACES_OUTPUT_SURFACE_H_
-#define COMPONENTS_MUS_SURFACES_SURFACES_OUTPUT_SURFACE_H_
+#ifndef COMPONENTS_MUS_SURFACES_DIRECT_OUTPUT_SURFACE_H_
+#define COMPONENTS_MUS_SURFACES_DIRECT_OUTPUT_SURFACE_H_
 
 #include "cc/output/output_surface.h"
 
@@ -26,4 +26,4 @@ class DirectOutputSurface : public cc::OutputSurface {
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_SURFACES_SURFACES_OUTPUT_SURFACE_H_
+#endif  // COMPONENTS_MUS_SURFACES_DIRECT_OUTPUT_SURFACE_H_

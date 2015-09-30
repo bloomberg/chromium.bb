@@ -6,10 +6,10 @@
 
 #include "components/html_viewer/blink_basic_type_converters.h"
 #include "components/html_viewer/global_state.h"
+#include "components/mus/public/cpp/context_provider.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/cc/context_provider_mojo.h"
 #include "mojo/gles2/gles2_context.h"
 #include "mojo/gpu/mojo_gles2_impl_autogen.h"
 #include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"

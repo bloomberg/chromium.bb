@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/cc/output_surface_mojo.h"
+#include "components/mus/public/cpp/output_surface.h"
 
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
@@ -11,9 +11,9 @@
 #include "components/mus/public/cpp/view_surface.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
-namespace mojo {
+namespace mus {
 
-OutputSurfaceMojo::OutputSurfaceMojo(
+OutputSurface::OutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider,
     scoped_ptr<mus::ViewSurface> surface)
     : cc::OutputSurface(context_provider), surface_(surface.Pass()) {
@@ -21,33 +21,31 @@ OutputSurfaceMojo::OutputSurfaceMojo(
   capabilities_.max_frames_pending = 1;
 }
 
-OutputSurfaceMojo::~OutputSurfaceMojo() {
-}
+OutputSurface::~OutputSurface() {}
 
-bool OutputSurfaceMojo::BindToClient(cc::OutputSurfaceClient* client) {
+bool OutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
   surface_->BindToThread();
   surface_->set_client(this);
   return cc::OutputSurface::BindToClient(client);
 }
 
-void OutputSurfaceMojo::DetachFromClient() {
+void OutputSurface::DetachFromClient() {
   surface_.reset();
   cc::OutputSurface::DetachFromClient();
 }
 
-void OutputSurfaceMojo::SwapBuffers(cc::CompositorFrame* frame) {
+void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   // TODO(fsamuel, rjkroege): We should probably throttle compositor frames.
   client_->DidSwapBuffers();
-  // OutputSurfaceMojo owns ViewSurface, and so if OutputSurfaceMojo is
+  // OutputSurface owns ViewSurface, and so if OutputSurface is
   // destroyed then SubmitCompositorFrame's callback will never get called.
   // Thus, base::Unretained is safe here.
   surface_->SubmitCompositorFrame(
       mojo::CompositorFrame::From(*frame),
-      base::Bind(&OutputSurfaceMojo::SwapBuffersComplete,
-                 base::Unretained(this)));
+      base::Bind(&OutputSurface::SwapBuffersComplete, base::Unretained(this)));
 }
 
-void OutputSurfaceMojo::OnResourcesReturned(
+void OutputSurface::OnResourcesReturned(
     mus::ViewSurface* surface,
     mojo::Array<mojo::ReturnedResourcePtr> resources) {
   cc::CompositorFrameAck cfa;
@@ -55,8 +53,8 @@ void OutputSurfaceMojo::OnResourcesReturned(
   ReclaimResources(&cfa);
 }
 
-void OutputSurfaceMojo::SwapBuffersComplete() {
+void OutputSurface::SwapBuffersComplete() {
   client_->DidSwapBuffersComplete();
 }
 
-}  // namespace mojo
+}  // namespace mus

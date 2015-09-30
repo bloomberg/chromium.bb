@@ -36,7 +36,6 @@ source_set("aura") {
     "//skia",
     "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
-    "//mojo/cc",
     "//mojo/converters/geometry",
     "//mojo/converters/ime",
     "//mojo/converters/input_events",

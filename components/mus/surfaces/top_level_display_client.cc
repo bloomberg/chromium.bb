@@ -8,8 +8,8 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surface.h"
 #include "components/mus/gles2/gpu_state.h"
+#include "components/mus/surfaces/direct_output_surface.h"
 #include "components/mus/surfaces/surfaces_context_provider.h"
-#include "components/mus/surfaces/surfaces_output_surface.h"
 #include "components/mus/surfaces/surfaces_scheduler.h"
 #include "components/mus/surfaces/surfaces_state.h"
 

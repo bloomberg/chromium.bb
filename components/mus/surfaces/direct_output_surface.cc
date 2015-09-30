@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/cc/direct_output_surface.h"
+#include "components/mus/surfaces/direct_output_surface.h"
 
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
@@ -11,12 +11,11 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
-namespace mojo {
+namespace mus {
 
 DirectOutputSurface::DirectOutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider)
-    : cc::OutputSurface(context_provider), weak_ptr_factory_(this) {
-}
+    : cc::OutputSurface(context_provider), weak_ptr_factory_(this) {}
 
 DirectOutputSurface::~DirectOutputSurface() {}
 
@@ -33,10 +32,9 @@ void DirectOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   uint32_t sync_point =
       context_provider_->ContextGL()->InsertSyncPointCHROMIUM();
   context_provider_->ContextSupport()->SignalSyncPoint(
-      sync_point,
-      base::Bind(&OutputSurface::OnSwapBuffersComplete,
-                 weak_ptr_factory_.GetWeakPtr()));
+      sync_point, base::Bind(&OutputSurface::OnSwapBuffersComplete,
+                             weak_ptr_factory_.GetWeakPtr()));
   client_->DidSwapBuffers();
 }
 
-}  // namespace mojo
+}  // namespace mus

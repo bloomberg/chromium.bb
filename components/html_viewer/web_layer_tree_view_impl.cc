@@ -10,9 +10,9 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
+#include "components/mus/public/cpp/context_provider.h"
+#include "components/mus/public/cpp/output_surface.h"
 #include "components/mus/public/cpp/view.h"
-#include "mojo/cc/context_provider_mojo.h"
-#include "mojo/cc/output_surface_mojo.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "ui/gfx/buffer_types.h"
@@ -66,9 +66,9 @@ void WebLayerTreeViewImpl::Initialize(mojo::GpuPtr gpu_service,
     mojo::CommandBufferPtr cb;
     gpu_service->CreateOffscreenGLES2Context(GetProxy(&cb));
     scoped_refptr<cc::ContextProvider> context_provider(
-        new mojo::ContextProviderMojo(cb.PassInterface().PassHandle()));
+        new mus::ContextProvider(cb.PassInterface().PassHandle()));
     output_surface_.reset(
-        new mojo::OutputSurfaceMojo(context_provider, view_->RequestSurface()));
+        new mus::OutputSurface(context_provider, view_->RequestSurface()));
   }
   layer_tree_host_->SetLayerTreeHostClientReady();
 }
