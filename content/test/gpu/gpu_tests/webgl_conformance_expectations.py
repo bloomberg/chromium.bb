@@ -408,12 +408,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['chromeos', ('intel', 0xa011)], bug=375554)
     self.Fail('conformance/glsl/functions/glsl-function-sin.html',
         ['chromeos', ('intel', 0xa011)], bug=375554)
-    self.Fail('conformance/glsl/misc/empty_main.vert.html',
-        ['chromeos', ('intel', 0xa011)], bug=375554)
-    self.Fail('conformance/glsl/misc/gl_position_unset.vert.html',
-        ['chromeos', ('intel', 0xa011)], bug=375554)
-    self.Fail('conformance/glsl/misc/shaders-with-varyings.html',
-        ['chromeos', ('intel', 0xa011)], bug=375554)
     self.Fail('conformance/glsl/variables/gl-frontfacing.html',
         ['chromeos', ('intel', 0xa011)], bug=375554)
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
@@ -468,8 +462,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/texture-npot-video.html',
         ['chromeos', ('intel', 0xa011)], bug=375554)
     self.Fail('conformance/textures/misc/texture-size.html',
-        ['chromeos', ('intel', 0xa011)], bug=375554)
-    self.Fail('conformance/textures/misc/texture-size-limit.html',
         ['chromeos', ('intel', 0xa011)], bug=375554)
     self.Fail('conformance/uniforms/gl-uniform-arrays.html',
         ['chromeos', ('intel', 0xa011)], bug=375554)
@@ -680,48 +672,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/samplers/samplers.html',
         ['linux'], bug=483282)
-    self.Fail('deqp/data/gles3/shaders/arrays.html', ['linux'], bug=536887)
-    self.Fail('deqp/data/gles3/shaders/constants.html', ['linux'], bug=536887)
-    self.Fail('deqp/data/gles3/shaders/constant_expressions.html', ['linux'],
-        bug=536887)
-    self.Fail('deqp/data/gles3/shaders/conversions.html', ['linux'],
-        bug=536887)
-    self.Fail('deqp/data/gles3/shaders/functions.html', ['linux'], bug=536887)
-    self.Fail('deqp/data/gles3/shaders/linkage.html', ['linux'], bug=536887)
-    self.Fail('deqp/data/gles3/shaders/preprocessor.html', ['linux'],
-        bug=536887)
-    self.Fail('deqp/data/gles3/shaders/qualification_order.html', ['linux'],
-        bug=536887)
-    self.Fail('deqp/framework/opengl/simplereference/referencecontext.html',
-        ['linux'], bug=536887)
-    self.Fail('deqp/functional/gles3/attriblocation.html', ['linux'],
-        bug=536887)
-    self.Fail('deqp/functional/gles3/booleanstatequery.html', ['linux'],
-        bug=536887)
     # Linux NVIDIA only.
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux', 'nvidia'], bug=483282)
-    # Linux AMD only.
+    # Linux AMD only (but fails on all Linux, so not specified as AMD specific)
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
-    self.Skip('deqp/data/gles3/shaders/arrays.html',
-        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/data/gles3/shaders/arrays.html', ['linux'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/constant_expressions.html',
-        ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/data/gles3/shaders/constants.html',
-        ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/data/gles3/shaders/conversions.html',
-        ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/data/gles3/shaders/functions.html',
-        ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/data/gles3/shaders/linkage.html',
-        ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/data/gles3/shaders/preprocessor.html',
-        ['linux', 'amd'], bug=483282)
+        ['linux'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
-        ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/framework/opengl/simplereference/referencecontext.html',
-        ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/functional/gles3//attriblocation.html',
-        ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/functional/gles3/booleanstatequery.html',
-        ['linux', 'amd'], bug=483282)
+        ['linux'], bug=483282)
