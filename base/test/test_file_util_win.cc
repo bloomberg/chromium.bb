@@ -19,8 +19,6 @@
 
 namespace base {
 
-static const ptrdiff_t kOneMB = 1024 * 1024;
-
 namespace {
 
 struct PermissionInfo {
