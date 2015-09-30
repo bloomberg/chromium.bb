@@ -37,6 +37,7 @@ class OutputSurface : public cc::OutputSurface, public ViewSurfaceClient {
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };
-}
+
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_OUTPUT_SURFACE_H_

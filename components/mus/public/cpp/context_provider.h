@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_CC_CONTEXT_PROVIDER_MOJO_H_
-#define MOJO_CC_CONTEXT_PROVIDER_MOJO_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_CONTEXT_PROVIDER_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_CONTEXT_PROVIDER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -58,4 +58,4 @@ class ContextProvider : public cc::ContextProvider {
 
 }  // namespace mus
 
-#endif  // MOJO_CC_CONTEXT_PROVIDER_MOJO_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_CONTEXT_PROVIDER_H_
