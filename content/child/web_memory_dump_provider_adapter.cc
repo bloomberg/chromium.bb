@@ -33,7 +33,7 @@ bool WebMemoryDumpProviderAdapter::OnMemoryDump(
       NOTREACHED();
       return false;
   }
-  WebProcessMemoryDumpImpl web_pmd_impl(pmd);
+  WebProcessMemoryDumpImpl web_pmd_impl(args.level_of_detail, pmd);
 
   return web_memory_dump_provider_->onMemoryDump(level, &web_pmd_impl);
 }

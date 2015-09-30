@@ -8,6 +8,8 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
+#include "base/trace_event/memory_dump_request_args.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebProcessMemoryDump.h"
 
@@ -17,6 +19,10 @@ class MemoryAllocatorDump;
 class ProcessMemoryDump;
 }  // namespace base
 }  // namespace trace_event
+
+namespace skia {
+class SkTraceMemoryDump_Chrome;
+}  // namespace skia
 
 namespace content {
 
@@ -34,6 +40,7 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
 
   // Wraps (without owning) an existing ProcessMemoryDump.
   explicit WebProcessMemoryDumpImpl(
+      base::trace_event::MemoryDumpLevelOfDetail level_of_detail,
       base::trace_event::ProcessMemoryDump* process_memory_dump);
 
   ~WebProcessMemoryDumpImpl() override;
@@ -53,6 +60,11 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
                         int importance) override;
   void AddOwnershipEdge(blink::WebMemoryAllocatorDumpGuid source,
                         blink::WebMemoryAllocatorDumpGuid target) override;
+  virtual void AddSuballocation(
+      blink::WebMemoryAllocatorDumpGuid source,
+      const blink::WebString& targetNodeName) override;
+  virtual SkTraceMemoryDump* CreateDumpAdapterForSkia(
+      const blink::WebString& dumpNamePrefix) override;
 
   const base::trace_event::ProcessMemoryDump* process_memory_dump() const {
     return process_memory_dump_;
@@ -71,6 +83,9 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
   // createMemoryAllocatorDump() calls will be proxied to.
   base::trace_event::ProcessMemoryDump* process_memory_dump_;  // Not owned.
 
+  // TODO(ssid): Remove it once this information is added to ProcessMemoryDump.
+  base::trace_event::MemoryDumpLevelOfDetail level_of_detail_;
+
   // Reverse index of MemoryAllocatorDump -> WebMemoryAllocatorDumpImpl wrapper.
   // By design WebMemoryDumpProvider(s) are not supposed to hold the pointer
   // to the WebProcessMemoryDump passed as argument of the onMemoryDump() call.
@@ -79,6 +94,9 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
   base::ScopedPtrHashMap<base::trace_event::MemoryAllocatorDump*,
                          scoped_ptr<WebMemoryAllocatorDumpImpl>>
       memory_allocator_dumps_;
+
+  // Stores SkTraceMemoryDump for the current ProcessMemoryDump.
+  ScopedVector<skia::SkTraceMemoryDump_Chrome> sk_trace_dump_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebProcessMemoryDumpImpl);
 };

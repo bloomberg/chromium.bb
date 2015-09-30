@@ -6,19 +6,21 @@
 
 #include "base/trace_event/process_memory_dump.h"
 #include "content/child/web_memory_allocator_dump_impl.h"
+#include "skia/ext/SkTraceMemoryDump_chrome.h"
 
 namespace content {
 
 WebProcessMemoryDumpImpl::WebProcessMemoryDumpImpl()
     : owned_process_memory_dump_(
           new base::trace_event::ProcessMemoryDump(nullptr)),
-      process_memory_dump_(owned_process_memory_dump_.get()) {
-}
+      process_memory_dump_(owned_process_memory_dump_.get()),
+      level_of_detail_(base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {}
 
 WebProcessMemoryDumpImpl::WebProcessMemoryDumpImpl(
+    base::trace_event::MemoryDumpLevelOfDetail level_of_detail,
     base::trace_event::ProcessMemoryDump* process_memory_dump)
-    : process_memory_dump_(process_memory_dump) {
-}
+    : process_memory_dump_(process_memory_dump),
+      level_of_detail_(level_of_detail) {}
 
 WebProcessMemoryDumpImpl::~WebProcessMemoryDumpImpl() {
 }
@@ -130,6 +132,21 @@ void WebProcessMemoryDumpImpl::AddOwnershipEdge(
   process_memory_dump_->AddOwnershipEdge(
       base::trace_event::MemoryAllocatorDumpGuid(source),
       base::trace_event::MemoryAllocatorDumpGuid(target));
+}
+
+void WebProcessMemoryDumpImpl::AddSuballocation(
+    blink::WebMemoryAllocatorDumpGuid source,
+    const blink::WebString& targetNodeName) {
+  process_memory_dump_->AddSuballocation(
+      base::trace_event::MemoryAllocatorDumpGuid(source),
+      targetNodeName.utf8());
+}
+
+SkTraceMemoryDump* WebProcessMemoryDumpImpl::CreateDumpAdapterForSkia(
+    const blink::WebString& dumpNamePrefix) {
+  sk_trace_dump_list_.push_back(new skia::SkTraceMemoryDump_Chrome(
+      dumpNamePrefix.utf8(), level_of_detail_, process_memory_dump_));
+  return sk_trace_dump_list_.back();
 }
 
 }  // namespace content
