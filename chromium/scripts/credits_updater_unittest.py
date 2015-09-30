@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import codecs
 import copy
 import credits_updater as cu
 import os
@@ -16,26 +17,30 @@ SOURCE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           os.path.pardir)
 OUTPUT_FILE = 'CREDITS.testing'
 
-# Expected credits for swresample.h
-SWRESAMPLE_H_LICENSE = '''libswresample/swresample.h
+# Expected credits for swresample.h applied with the rot13 encoding. Otherwise
+# license scanners get confused about the license of this file.
+SWRESAMPLE_H_LICENSE_ROT_13 = '''yvofjerfnzcyr/fjerfnzcyr.u
 
-Copyright (C) 2011-2013 Michael Niedermayer (michaelni@gmx.at)
+Pbclevtug (P) 2011-2013 Zvpunry Avrqreznlre (zvpunryav@tzk.ng)
 
-This file is part of libswresample
+Guvf svyr vf cneg bs yvofjerfnzcyr
 
-libswresample is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
+yvofjerfnzcyr vf serr fbsgjner; lbh pna erqvfgevohgr vg naq/be
+zbqvsl vg haqre gur grezf bs gur TAH Yrffre Trareny Choyvp
+Yvprafr nf choyvfurq ol gur Serr Fbsgjner Sbhaqngvba; rvgure
+irefvba 2.1 bs gur Yvprafr, be (ng lbhe bcgvba) nal yngre irefvba.
 
-libswresample is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
+yvofjerfnzcyr vf qvfgevohgrq va gur ubcr gung vg jvyy or hfrshy,
+ohg JVGUBHG NAL JNEENAGL; jvgubhg rira gur vzcyvrq jneenagl bs
+ZREPUNAGNOVYVGL be SVGARFF SBE N CNEGVPHYNE CHECBFR.  Frr gur TAH
+Yrffre Trareny Choyvp Yvprafr sbe zber qrgnvyf.
 
-You should have received a copy of the GNU Lesser General Public
-License along with libswresample; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA'''
+Lbh fubhyq unir erprvirq n pbcl bs gur TAH Yrffre Trareny Choyvp
+Yvprafr nybat jvgu yvofjerfnzcyr; vs abg, jevgr gb gur Serr Fbsgjner
+Sbhaqngvba, Vap., 51 Senaxyva Fgerrg, Svsgu Sybbe, Obfgba, ZN 02110-1301 HFN'''
+
+# The real expected credits for swresample.h.
+SWRESAMPLE_H_LICENSE = codecs.decode(SWRESAMPLE_H_LICENSE_ROT_13, 'rot13')
 
 
 def NewCreditsUpdater():
