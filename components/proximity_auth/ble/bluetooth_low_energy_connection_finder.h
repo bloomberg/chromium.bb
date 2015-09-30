@@ -102,12 +102,6 @@ class BluetoothLowEnergyConnectionFinder
   // Starts a discovery session for |adapter_|.
   void StartDiscoverySession();
 
-  // Callback called when |discovery_session_| is stopped.
-  void OnDiscoverySessionStopped();
-
-  // Callback called when there is an error stopping |discovery_session_|.
-  void OnStopDiscoverySessionError();
-
   // Stops the discovery session given by |discovery_session_|.
   void StopDiscoverySession();
 
@@ -119,7 +113,7 @@ class BluetoothLowEnergyConnectionFinder
   bool HasService(device::BluetoothDevice* device);
 
   // Restarts the discovery session after creating |connection_| fails.
-  void RestartDiscoverySessionWhenReady();
+  void RestartDiscoverySessionAsync();
 
   // Used to invoke |connection_callback_| asynchronously, decoupling the
   // callback invocation from the ConnectionObserver callstack.

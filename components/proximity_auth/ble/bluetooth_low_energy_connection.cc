@@ -349,6 +349,7 @@ void BluetoothLowEnergyConnection::OnGattConnectionCreated(
   DCHECK(sub_status() == SubStatus::WAITING_GATT_CONNECTION);
   PA_LOG(INFO) << "GATT connection with " << gatt_connection->GetDeviceAddress()
                << " created.";
+  PrintTimeElapsed();
 
   gatt_connection_ = gatt_connection.Pass();
   SetSubStatus(SubStatus::WAITING_CHARACTERISTICS);
@@ -377,6 +378,9 @@ void BluetoothLowEnergyConnection::OnCharacteristicsFound(
     const RemoteAttribute& service,
     const RemoteAttribute& to_peripheral_char,
     const RemoteAttribute& from_peripheral_char) {
+  PA_LOG(INFO) << "Remote chacteristics found.";
+  PrintTimeElapsed();
+
   DCHECK(sub_status() == SubStatus::WAITING_CHARACTERISTICS);
   remote_service_ = service;
   to_peripheral_char_ = to_peripheral_char;
@@ -440,6 +444,7 @@ void BluetoothLowEnergyConnection::OnNotifySessionStarted(
   DCHECK(sub_status() == SubStatus::WAITING_NOTIFY_SESSION);
   PA_LOG(INFO) << "Notification session started "
                << notify_session->GetCharacteristicIdentifier();
+  PrintTimeElapsed();
 
   SetSubStatus(SubStatus::NOTIFY_SESSION_READY);
   notify_session_ = notify_session.Pass();
@@ -548,6 +553,10 @@ BluetoothLowEnergyConnection::BuildWriteRequest(
 void BluetoothLowEnergyConnection::ClearWriteRequestsQueue() {
   while (!write_requests_queue_.empty())
     write_requests_queue_.pop();
+}
+
+void BluetoothLowEnergyConnection::PrintTimeElapsed() {
+  PA_LOG(INFO) << "Time elapsed: " << base::TimeTicks::Now() - start_time_;
 }
 
 std::string BluetoothLowEnergyConnection::GetRemoteDeviceAddress() {

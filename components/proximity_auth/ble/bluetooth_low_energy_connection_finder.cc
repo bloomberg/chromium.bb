@@ -189,10 +189,21 @@ void BluetoothLowEnergyConnectionFinder::OnAdapterInitialized(
   adapter_ = adapter;
   adapter_->AddObserver(this);
 
-  // Note: it's not possible to connect with the paired directly, as the
-  // temporary MAC may not be resolved automatically (see crbug.com/495402). The
-  // Bluetooth adapter will fire |OnDeviceChanged| notifications for all
-  // Bluetooth Low Energy devices that are advertising.
+  // This is important for debugging. To eliminate the case where the device was
+  // removed (forgotten) by the user, or BlueZ didn't load the device correctly.
+  if (finder_strategy_ == FIND_PAIRED_DEVICE) {
+    PA_LOG(INFO) << "Looking for paired device: "
+                 << remote_device_.bluetooth_address;
+    for (auto& device : adapter_->GetDevices()) {
+      if (device->IsPaired())
+        PA_LOG(INFO) << device->GetAddress() << " is paired";
+    }
+  }
+
+  // Note: It's possible to connect to the paired directly, so when using
+  // FIND_PAIRED_DEVICE strategy this is not necessary. However, the discovery
+  // doesn't add a lot of latency, and the makes the code path for both
+  // strategies more similar.
   StartDiscoverySession();
 }
 
@@ -227,33 +238,10 @@ void BluetoothLowEnergyConnectionFinder::StartDiscoverySession() {
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BluetoothLowEnergyConnectionFinder::OnDiscoverySessionStopped() {
-  PA_LOG(INFO) << "Discovery session stopped";
-  discovery_session_.reset();
-}
-
-void BluetoothLowEnergyConnectionFinder::OnStopDiscoverySessionError() {
-  PA_LOG(WARNING) << "Error stopping discovery session";
-}
-
 void BluetoothLowEnergyConnectionFinder::StopDiscoverySession() {
   PA_LOG(INFO) << "Stopping discovery session";
-
-  if (!adapter_) {
-    PA_LOG(WARNING) << "Adapter not initialized";
-    return;
-  }
-  if (!discovery_session_ || !discovery_session_->IsActive()) {
-    PA_LOG(INFO) << "No Active discovery session";
-    return;
-  }
-
-  discovery_session_->Stop(
-      base::Bind(&BluetoothLowEnergyConnectionFinder::OnDiscoverySessionStopped,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(
-          &BluetoothLowEnergyConnectionFinder::OnStopDiscoverySessionError,
-          weak_ptr_factory_.GetWeakPtr()));
+  // Destroying the discovery session also stops it.
+  discovery_session_.reset();
 }
 
 scoped_ptr<Connection> BluetoothLowEnergyConnectionFinder::CreateConnection(
@@ -288,29 +276,19 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
                    weak_ptr_factory_.GetWeakPtr()));
   } else if (old_status == Connection::IN_PROGRESS) {
     PA_LOG(WARNING) << "Connection failed. Retrying.";
-    RestartDiscoverySessionWhenReady();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionAsync,
+            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionWhenReady() {
-  PA_LOG(INFO) << "Trying to restart discovery.";
-
-  // To restart scanning for devices, it's necessary to ensure that:
-  // (i) the GATT connection to |remove_device_| is closed;
-  // (ii) there is no pending call to
-  // |device::BluetoothDiscoverySession::Stop()|.
-  // The second condition is satisfied when |OnDiscoveryStopped| is called and
-  // |discovery_session_| is reset.
-  if (!discovery_session_) {
-    PA_LOG(INFO) << "Ready to start discovery.";
-    connection_.reset();
+void BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionAsync() {
+  PA_LOG(INFO) << "Restarting discovery session.";
+  connection_.reset();
+  if (!discovery_session_ || !discovery_session_->IsActive())
     StartDiscoverySession();
-  } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&BluetoothLowEnergyConnectionFinder::
-                                  RestartDiscoverySessionWhenReady,
-                              weak_ptr_factory_.GetWeakPtr()));
-  }
 }
 
 BluetoothDevice* BluetoothLowEnergyConnectionFinder::GetDevice(

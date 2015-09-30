@@ -221,6 +221,9 @@ class BluetoothLowEnergyConnection : public Connection,
   // Clears |write_requests_queue_|.
   void ClearWriteRequestsQueue();
 
+  // Prints the time elapsed since |Connect()| was called.
+  void PrintTimeElapsed();
+
   // Returns the Bluetooth address of the remote device.
   std::string GetRemoteDeviceAddress();
 
