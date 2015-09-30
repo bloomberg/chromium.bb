@@ -9426,7 +9426,8 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "smoke_suite"
+            "smoke_suite",
+            "gce_vm_test"
         ]
     },
     "lakitu-no-vmtest-pre-cq": {
@@ -9490,6 +9491,10 @@
         "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite",
+            "gce_vm_test"
         ]
     },
     "lakitu-release": {
@@ -9512,7 +9517,8 @@
         "sync_chrome": false,
         "upload_gce_images": true,
         "vm_tests": [
-            "smoke_suite"
+            "smoke_suite",
+            "gce_vm_test"
         ]
     },
     "lakitu-tot-chrome-pfq-informational": {
@@ -9688,7 +9694,8 @@
         "sync_chrome": false,
         "upload_gce_images": true,
         "vm_tests": [
-            "smoke_suite"
+            "smoke_suite",
+            "gce_vm_test"
         ]
     },
     "lakitu_mobbuild-tot-chrome-pfq-informational": {
@@ -9800,7 +9807,8 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "smoke_suite"
+            "smoke_suite",
+            "gce_vm_test"
         ]
     },
     "lakitu_next-no-vmtest-pre-cq": {
@@ -9885,7 +9893,8 @@
         "sync_chrome": false,
         "upload_gce_images": true,
         "vm_tests": [
-            "smoke_suite"
+            "smoke_suite",
+            "gce_vm_test"
         ]
     },
     "lakitu_next-tot-chrome-pfq-informational": {
