@@ -4113,17 +4113,17 @@
       'name': 'DisableSSLRecordSplitting',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:18-', 'chrome_os:18-'],
+      'supported_on': ['chrome.*:18-46', 'chrome_os:18-46'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
       'example_value': True,
       'id': 118,
-      'caption': '''Disable SSL record splitting''',
-      'desc': '''Specifies whether SSL record splitting should be disabled. Record splitting is a workaround for a weakness in SSL 3.0 and TLS 1.0 but can cause compatibility issues with some HTTPS servers and proxies.
+      'caption': '''Disable TLS False Start''',
+      'desc': '''Specifies whether the TLS False Start optimization should be disabled. For historical reasons, this policy is named DisableSSLRecordSplitting.
 
-      If the policy is not set, or is set to false, then record splitting will be used on SSL/TLS connections which use CBC ciphersuites.''',
+      If the policy is not set, or is set to false, then TLS False Start will be enabled. If it is set to true, TLS False Start will be disabled.''',
     },
     {
       'name': 'EnableOnlineRevocationChecks',

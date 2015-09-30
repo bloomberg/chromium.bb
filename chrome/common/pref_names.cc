@@ -1252,7 +1252,6 @@ const char kSSLVersionMin[] = "ssl.version_min";
 const char kSSLVersionMax[] = "ssl.version_max";
 const char kSSLVersionFallbackMin[] = "ssl.version_fallback_min";
 const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
-const char kDisableSSLRecordSplitting[] = "ssl.ssl_record_splitting.disabled";
 
 // Boolean that specifies whether or not crash reports are sent
 // over the network for analysis.

@@ -158,7 +158,6 @@ class SSLConfigServiceManagerPref
   StringPrefMember ssl_version_min_;
   StringPrefMember ssl_version_max_;
   StringPrefMember ssl_version_fallback_min_;
-  BooleanPrefMember ssl_record_splitting_disabled_;
 
   // The cached list of disabled SSL cipher suites.
   std::vector<uint16> disabled_cipher_suites_;
@@ -190,8 +189,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
       prefs::kSSLVersionMax, local_state, local_state_callback);
   ssl_version_fallback_min_.Init(
       prefs::kSSLVersionFallbackMin, local_state, local_state_callback);
-  ssl_record_splitting_disabled_.Init(
-      prefs::kDisableSSLRecordSplitting, local_state, local_state_callback);
 
   local_state_change_registrar_.Init(local_state);
   local_state_change_registrar_.Add(
@@ -215,8 +212,6 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kSSLVersionMin, std::string());
   registry->RegisterStringPref(prefs::kSSLVersionMax, std::string());
   registry->RegisterStringPref(prefs::kSSLVersionFallbackMin, std::string());
-  registry->RegisterBooleanPref(prefs::kDisableSSLRecordSplitting,
-                                !default_config.false_start_enabled);
   registry->RegisterListPref(prefs::kCipherSuiteBlacklist);
 }
 
@@ -277,8 +272,6 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     config->version_fallback_min = version_fallback_min;
   }
   config->disabled_cipher_suites = disabled_cipher_suites_;
-  // disabling False Start also happens to disable record splitting.
-  config->false_start_enabled = !ssl_record_splitting_disabled_.GetValue();
 }
 
 void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(
