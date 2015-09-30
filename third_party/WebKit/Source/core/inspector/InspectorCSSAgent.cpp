@@ -78,6 +78,14 @@
 
 namespace {
 
+int s_frontendOperationCounter = 0;
+
+class FrontendOperationScope {
+public:
+    FrontendOperationScope() { ++s_frontendOperationCounter; }
+    ~FrontendOperationScope() { --s_frontendOperationCounter; }
+};
+
 using namespace blink;
 
 String createShorthandValue(Document* document, const String& shorthand, const String& oldText, const String& longhand, const String& newValue)
@@ -864,6 +872,7 @@ void InspectorCSSAgent::getStyleSheetText(ErrorString* errorString, const String
 
 void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String& styleSheetId, const String& text)
 {
+    FrontendOperationScope scope;
     InspectorStyleSheetBase* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
     if (!inspectorStyleSheet) {
         *errorString = "Style sheet with id " + styleSheetId + " not found";
@@ -918,6 +927,7 @@ static bool jsonRangeToSourceRange(ErrorString* errorString, InspectorStyleSheet
 
 void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& selector, RefPtr<TypeBuilder::CSS::SelectorList>& result)
 {
+    FrontendOperationScope scope;
     InspectorStyleSheet* inspectorStyleSheet = assertInspectorStyleSheetForId(errorString, styleSheetId);
     if (!inspectorStyleSheet) {
         *errorString = "Stylesheet not found";
@@ -944,6 +954,7 @@ void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& 
 
 void InspectorCSSAgent::setStyleText(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<TypeBuilder::CSS::CSSStyle>& result)
 {
+    FrontendOperationScope scope;
     InspectorStyleSheetBase* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
     if (!inspectorStyleSheet) {
         *errorString = "Stylesheet not found";
@@ -981,6 +992,7 @@ CSSStyleDeclaration* InspectorCSSAgent::setStyleText(ErrorString* errorString, I
 
 void InspectorCSSAgent::setMediaText(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<TypeBuilder::CSS::CSSMedia>& result)
 {
+    FrontendOperationScope scope;
     InspectorStyleSheet* inspectorStyleSheet = assertInspectorStyleSheetForId(errorString, styleSheetId);
     if (!inspectorStyleSheet) {
         *errorString = "Stylesheet not found";
@@ -1030,6 +1042,7 @@ void InspectorCSSAgent::createStyleSheet(ErrorString* errorString, const String&
 
 void InspectorCSSAgent::addRule(ErrorString* errorString, const String& styleSheetId, const String& ruleText, const RefPtr<JSONObject>& location, RefPtr<TypeBuilder::CSS::CSSRule>& result)
 {
+    FrontendOperationScope scope;
     InspectorStyleSheet* inspectorStyleSheet = assertInspectorStyleSheetForId(errorString, styleSheetId);
     if (!inspectorStyleSheet)
         return;
@@ -1522,6 +1535,8 @@ void InspectorCSSAgent::didModifyDOMAttr(Element* element)
 
 void InspectorCSSAgent::styleSheetChanged(InspectorStyleSheetBase* styleSheet)
 {
+    if (s_frontendOperationCounter)
+        return;
     flushPendingProtocolNotifications();
     frontend()->styleSheetChanged(styleSheet->id());
 }
