@@ -28,6 +28,11 @@ static bool IncrementWorkerRefCountByPid(int process_id) {
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   if (!rph || rph->FastShutdownStarted())
     return false;
+  // TODO(horo): This is a quick fix for crbug.com/531345. We need to revisit
+  // the behavior of ServiceWorker and the timer suspension of background
+  // processes which was intoruced by crrev.com/1133143003.
+  if (static_cast<RenderProcessHostImpl*>(rph)->backgrounded())
+    return false;
 
   static_cast<RenderProcessHostImpl*>(rph)->IncrementWorkerRefCount();
   return true;

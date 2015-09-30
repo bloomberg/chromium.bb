@@ -265,6 +265,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   BluetoothDispatcherHost* GetBluetoothDispatcherHost();
 
+  bool backgrounded() const { return backgrounded_; };
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)
