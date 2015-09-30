@@ -36,7 +36,8 @@ function init() {
     // The crash (use-after-free) is flaky. We have to reload the page a number of times to reproduce the crash.
     // I couldn't find a reliable way to reproduce, such as using gc(), adjusting the scopes of variables and so on.
     // As of now, we can hit a crash by reloading about 50 times.
-    reloadUntil(80);
+    // Reload 30 times here since reloading 80 times caused flaky timeout on Win. See crbug.com/481269.
+    reloadUntil(30);
 }
 
 document.addEventListener("DOMContentLoaded", init, false);
