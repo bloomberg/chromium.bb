@@ -128,7 +128,13 @@ TEST_F(Vp8QuantizerParserTest, InsufficientData) {
 }
 
 // Encode 5 fames for every quantizer value in the range of [4,63].
-TEST_F(Vp8QuantizerParserTest, VariedQuantizer) {
+// crbug.com/537635: disable VariedQuantizer on Thread Sanitizer
+#if defined(THREAD_SANITIZER)
+# define MAYBE_VariedQuantizer DISABLED_VariedQuantizer
+#else
+# define MAYBE_VariedQuantizer VariedQuantizer
+#endif
+TEST_F(Vp8QuantizerParserTest, MAYBE_VariedQuantizer) {
   int decoded_quantizer = -1;
   for (int qp = 4; qp <= 63; ++qp) {
     UpdateQuantizer(qp);
