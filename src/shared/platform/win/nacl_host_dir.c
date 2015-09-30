@@ -66,11 +66,15 @@ int NaClHostDirOpen(struct NaClHostDir  *d,
                     char                *path) {
   int     err;
   int     retval;
+  const char *prefix = path;
 
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDirOpen: 'this' is NULL\n");
   }
 
+  if (strcmp(path, "/") == 0 || strcmp(path, "\\") == 0) {
+    prefix = "";
+  }
 
   /**
     * "path" is an 8-bit char string. Convert to UTF-16 here.
@@ -83,7 +87,7 @@ int NaClHostDirOpen(struct NaClHostDir  *d,
     */
   err = _snwprintf_s(d->pattern,
                      NACL_ARRAY_SIZE(d->pattern),
-                     _TRUNCATE, L"%hs\\*.*", path);
+                     _TRUNCATE, L"%hs\\*.*", prefix);
   if (err < 0) {
     return -NACL_ABI_EOVERFLOW;
   }

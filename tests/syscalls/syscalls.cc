@@ -1251,6 +1251,23 @@ bool test_lseek(const char *test_file) {
   return passed(testname, "all");
 }
 
+// Verify that opendir of the root directory works.  There was a win32 bug
+// that caused this specific case to fail:
+// https://code.google.com/p/nativeclient/issues/detail?id=4328
+bool test_opendir_root() {
+  // TODO(mseaborn): Implement listing directories for unsandboxed mode.
+  if (NONSFI_MODE)
+    return true;
+
+  DIR *d = opendir("/");
+  ASSERT_NE_MSG(d, NULL, "opendir('/') failed");
+  ASSERT_EQ(0, closedir(d));
+
+  d = opendir("");
+  ASSERT_EQ_MSG(d, NULL, "opendir('') failed to fail");
+  return true;
+}
+
 bool test_readdir(const char *test_file) {
   // TODO(mseaborn): Implement listing directories for unsandboxed mode.
   if (NONSFI_MODE)
@@ -1374,6 +1391,7 @@ bool testSuite(const char *test_file) {
   ret &= test_read(test_file);
   ret &= test_write(test_file);
   ret &= test_lseek(test_file);
+  ret &= test_opendir_root();
   ret &= test_readdir(test_file);
   ret &= test_gethostname();
 // glibc support for calling syscalls directly, without the IRT, is limited
