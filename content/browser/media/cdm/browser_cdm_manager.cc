@@ -32,6 +32,7 @@ namespace content {
 
 using media::BrowserCdm;
 using media::MediaKeys;
+using media::ScopedBrowserCdmPtr;
 
 namespace {
 
@@ -541,7 +542,7 @@ void BrowserCdmManager::AddCdm(int render_frame_id,
   scoped_ptr<SimplePromise> promise(new SimplePromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
-  scoped_ptr<BrowserCdm> cdm(media::CreateBrowserCdm(
+  ScopedBrowserCdmPtr cdm(media::CreateBrowserCdm(
       key_system, use_hw_secure_codecs,
       BROWSER_CDM_MANAGER_CB(OnSessionMessage),
       BROWSER_CDM_MANAGER_CB(OnSessionClosed),

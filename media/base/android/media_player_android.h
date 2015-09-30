@@ -102,9 +102,6 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   void AttachListener(jobject j_media_player);
   void DetachListener();
 
-  // Behavior controlled by finch flag.
-  static bool UseMediaThread();
-
  protected:
   MediaPlayerAndroid(int player_id,
                      MediaPlayerManager* manager,

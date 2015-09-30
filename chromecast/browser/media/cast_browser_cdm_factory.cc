@@ -15,7 +15,7 @@
 namespace chromecast {
 namespace media {
 
-scoped_ptr<::media::BrowserCdm> CastBrowserCdmFactory::CreateBrowserCdm(
+::media::ScopedBrowserCdmPtr CastBrowserCdmFactory::CreateBrowserCdm(
     const std::string& key_system_name,
     bool use_hw_secure_codecs,
     const ::media::SessionMessageCB& session_message_cb,
@@ -45,12 +45,12 @@ scoped_ptr<::media::BrowserCdm> CastBrowserCdmFactory::CreateBrowserCdm(
                    ::media::BindToCurrentLoop(legacy_session_error_cb),
                    ::media::BindToCurrentLoop(session_keys_change_cb),
                    ::media::BindToCurrentLoop(session_expiration_update_cb)));
-    return make_scoped_ptr(new BrowserCdmCastUi(
+    return ::media::ScopedBrowserCdmPtr(new BrowserCdmCastUi(
         browser_cdm.Pass(), MediaMessageLoop::GetTaskRunner()));
   }
 
   LOG(INFO) << "No matching key system found.";
-  return scoped_ptr< ::media::BrowserCdm>();
+  return ::media::ScopedBrowserCdmPtr();
 }
 
 scoped_ptr<BrowserCdmCast> CastBrowserCdmFactory::CreatePlatformBrowserCdm(

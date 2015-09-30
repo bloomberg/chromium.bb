@@ -19,7 +19,11 @@ PlayerTrackerImpl::PlayerCallbacks::PlayerCallbacks(
 PlayerTrackerImpl::PlayerCallbacks::~PlayerCallbacks() {
 }
 
-PlayerTrackerImpl::PlayerTrackerImpl() : next_registration_id_(1) {}
+PlayerTrackerImpl::PlayerTrackerImpl() : next_registration_id_(1) {
+  // Enable PlayerTrackerImpl to be created on another thread than it will be
+  // later exclusively used.
+  thread_checker_.DetachFromThread();
+}
 
 PlayerTrackerImpl::~PlayerTrackerImpl() {}
 

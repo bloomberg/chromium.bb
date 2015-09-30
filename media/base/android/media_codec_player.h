@@ -159,9 +159,6 @@ class BrowserCdm;
 class MediaCodecAudioDecoder;
 class MediaCodecVideoDecoder;
 
-// Returns the task runner for the media thread
-MEDIA_EXPORT scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
-
 class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
                                       public DemuxerAndroidClient {
  public:

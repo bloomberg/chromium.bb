@@ -5,6 +5,7 @@
 #include "base/android/build_info.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,17 +77,20 @@ TEST(MediaDrmBridgeTest, IsKeySystemSupported_InvalidKeySystem) {
 }
 
 TEST(MediaDrmBridgeTest, CreateWithoutSessionSupport_Widevine) {
+  base::MessageLoop message_loop_;
   EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(
       MediaDrmBridge::CreateWithoutSessionSupport(kWidevineKeySystem));
 }
 
 // Invalid key system is NOT supported regardless whether MediaDrm is available.
 TEST(MediaDrmBridgeTest, CreateWithoutSessionSupport_InvalidKeySystem) {
+  base::MessageLoop message_loop_;
   EXPECT_FALSE(MediaDrmBridge::CreateWithoutSessionSupport(kInvalidKeySystem));
 }
 
 TEST(MediaDrmBridgeTest, SetSecurityLevel_Widevine) {
-  scoped_ptr<MediaDrmBridge> media_drm_bridge =
+  base::MessageLoop message_loop_;
+  scoped_ptr<MediaDrmBridge, BrowserCdmDeleter> media_drm_bridge =
       MediaDrmBridge::CreateWithoutSessionSupport(kWidevineKeySystem);
   EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(media_drm_bridge);
   if (!media_drm_bridge)

@@ -5,7 +5,7 @@
 #include "content/browser/media/android/browser_demuxer_android.h"
 
 #include "content/common/media/media_player_messages_android.h"
-#include "media/base/android/media_codec_player.h"
+#include "media/base/android/media_task_runner.h"
 #include "media/base/media_switches.h"
 
 namespace content {
@@ -56,7 +56,7 @@ class BrowserDemuxerAndroid::Internal : public media::DemuxerAndroid {
 BrowserDemuxerAndroid::BrowserDemuxerAndroid()
     : BrowserMessageFilter(MediaPlayerMsgStart) {
   task_runner_ =
-      media::MediaPlayerAndroid::UseMediaThread() ?
+      media::UseMediaThreadForMediaPlayback() ?
       media::GetMediaTaskRunner().get() :
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get();
 

@@ -19,7 +19,7 @@ class MEDIA_EXPORT BrowserCdmFactory {
   BrowserCdmFactory() {}
   virtual ~BrowserCdmFactory() {}
 
-  virtual scoped_ptr<BrowserCdm> CreateBrowserCdm(
+  virtual ScopedBrowserCdmPtr CreateBrowserCdm(
       const std::string& key_system,
       bool use_hw_secure_codecs,
       const SessionMessageCB& session_message_cb,
@@ -41,7 +41,7 @@ void SetBrowserCdmFactory(BrowserCdmFactory* factory);
 // |use_hw_secure_codecs| indicates that the CDM should be configured to use
 // hardware-secure codecs (for platforms that support it).
 // TODO(xhwang): Add ifdef for IPC based CDM.
-scoped_ptr<BrowserCdm> MEDIA_EXPORT
+ScopedBrowserCdmPtr MEDIA_EXPORT
 CreateBrowserCdm(const std::string& key_system,
                  bool use_hw_secure_codecs,
                  const SessionMessageCB& session_message_cb,

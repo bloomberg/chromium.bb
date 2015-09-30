@@ -29,6 +29,7 @@
 #include "media/base/android/media_codec_player.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_source_player.h"
+#include "media/base/android/media_task_runner.h"
 #include "media/base/android/media_url_interceptor.h"
 
 using media::MediaCodecPlayer;
@@ -164,7 +165,7 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     }
 
     case MEDIA_PLAYER_TYPE_MEDIA_SOURCE: {
-      if (MediaPlayerAndroid::UseMediaThread()) {
+      if (media::UseMediaThreadForMediaPlayback()) {
         return new MediaCodecPlayer(
             media_player_params.player_id,
             weak_ptr_factory_.GetWeakPtr(),

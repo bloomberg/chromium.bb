@@ -20,7 +20,7 @@ class CastBrowserCdmFactory : public ::media::BrowserCdmFactory {
   ~CastBrowserCdmFactory() override {};
 
   // ::media::BrowserCdmFactory implementation:
-  scoped_ptr<::media::BrowserCdm> CreateBrowserCdm(
+  ::media::ScopedBrowserCdmPtr CreateBrowserCdm(
       const std::string& key_system,
       bool use_hw_secure_codecs,
       const ::media::SessionMessageCB& session_message_cb,

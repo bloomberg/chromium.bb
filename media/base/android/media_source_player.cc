@@ -18,6 +18,7 @@
 #include "media/base/android/audio_decoder_job.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/video_decoder_job.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/timestamp_constants.h"
 
 namespace media {
@@ -258,9 +259,13 @@ void MediaSourcePlayer::OnDemuxerDurationChanged(base::TimeDelta duration) {
   duration_ = duration;
 }
 
-void MediaSourcePlayer::OnMediaCryptoReady() {
+void MediaSourcePlayer::OnMediaCryptoReady(
+    MediaDrmBridge::JavaObjectPtr /* media_crypto */,
+    bool /* needs_protected_surface */) {
+  // Callback parameters are ignored in this player. They are intended for
+  // MediaCodecPlayer which uses a different threading scheme.
   DCHECK(!drm_bridge_->GetMediaCrypto().is_null());
-  drm_bridge_->SetMediaCryptoReadyCB(base::Closure());
+  drm_bridge_->SetMediaCryptoReadyCB(MediaDrmBridge::MediaCryptoReadyCB());
 
   // Retry decoder creation if the decoders are waiting for MediaCrypto.
   RetryDecoderCreation(true, true);
@@ -292,8 +297,9 @@ void MediaSourcePlayer::SetCdm(BrowserCdm* cdm) {
   video_decoder_job_->SetDrmBridge(drm_bridge_);
 
   if (drm_bridge_->GetMediaCrypto().is_null()) {
-    drm_bridge_->SetMediaCryptoReadyCB(
+    MediaDrmBridge::MediaCryptoReadyCB cb = BindToCurrentLoop(
         base::Bind(&MediaSourcePlayer::OnMediaCryptoReady, weak_this_));
+    drm_bridge_->SetMediaCryptoReadyCB(cb);
     return;
   }
 

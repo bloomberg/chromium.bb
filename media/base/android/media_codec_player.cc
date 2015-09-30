@@ -13,6 +13,7 @@
 #include "media/base/android/media_codec_audio_decoder.h"
 #include "media/base/android/media_codec_video_decoder.h"
 #include "media/base/android/media_player_manager.h"
+#include "media/base/android/media_task_runner.h"
 #include "media/base/timestamp_constants.h"
 
 #define RUN_ON_MEDIA_THREAD(METHOD, ...)                                     \
@@ -27,22 +28,6 @@
   } while (0)
 
 namespace media {
-
-class MediaThread : public base::Thread {
- public:
-  MediaThread() : base::Thread("BrowserMediaThread") {
-    Start();
-  }
-};
-
-// Create media thread
-base::LazyInstance<MediaThread>::Leaky
-    g_media_thread = LAZY_INSTANCE_INITIALIZER;
-
-
-scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner() {
-  return g_media_thread.Pointer()->task_runner();
-}
 
 // MediaCodecPlayer implementation.
 

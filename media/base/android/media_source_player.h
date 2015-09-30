@@ -94,7 +94,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
 
   // Callback to notify that MediaCrypto is ready in |drm_bridge_|.
-  void OnMediaCryptoReady();
+  void OnMediaCryptoReady(MediaDrmBridge::JavaObjectPtr media_crypto,
+                          bool needs_protected_surface);
 
   // Handle pending events if all the decoder jobs are not currently decoding.
   void ProcessPendingEvents();

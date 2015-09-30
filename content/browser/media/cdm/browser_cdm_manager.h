@@ -20,16 +20,13 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/permission_status.mojom.h"
 #include "ipc/ipc_message.h"
+#include "media/base/browser_cdm.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
 
 struct CdmHostMsg_CreateSessionAndGenerateRequest_Params;
-
-namespace media {
-class BrowserCdm;
-}
 
 namespace content {
 
@@ -200,7 +197,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   // |cdm_id|.
 
   // Map of managed BrowserCdms.
-  typedef base::ScopedPtrHashMap<uint64, scoped_ptr<media::BrowserCdm>> CdmMap;
+  typedef base::ScopedPtrHashMap<uint64, media::ScopedBrowserCdmPtr> CdmMap;
   CdmMap cdm_map_;
 
   // Map of CDM's security origin.

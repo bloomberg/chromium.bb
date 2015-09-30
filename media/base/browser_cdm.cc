@@ -12,4 +12,9 @@ BrowserCdm::BrowserCdm() {
 BrowserCdm::~BrowserCdm() {
 }
 
+// For most subclasses we can delete on the caller thread.
+void BrowserCdm::DeleteOnCorrectThread() {
+  delete this;
+}
+
 }  // namespace media

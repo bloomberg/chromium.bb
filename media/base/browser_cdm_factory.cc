@@ -21,7 +21,7 @@ void SetBrowserCdmFactory(BrowserCdmFactory* factory) {
   g_cdm_factory = factory;
 }
 
-scoped_ptr<BrowserCdm> CreateBrowserCdm(
+ScopedBrowserCdmPtr CreateBrowserCdm(
     const std::string& key_system,
     bool use_hw_secure_codecs,
     const SessionMessageCB& session_message_cb,
@@ -34,7 +34,7 @@ scoped_ptr<BrowserCdm> CreateBrowserCdm(
     SetBrowserCdmFactory(new BrowserCdmFactoryAndroid);
 #else
     LOG(ERROR) << "Cannot create BrowserCdm: no BrowserCdmFactory available!";
-    return scoped_ptr<BrowserCdm>();
+    return ScopedBrowserCdmPtr();
 #endif
   }
 

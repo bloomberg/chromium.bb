@@ -11,6 +11,7 @@
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_codec_player.h"
 #include "media/base/android/media_player_manager.h"
+#include "media/base/android/media_task_runner.h"
 #include "media/base/android/test_data_factory.h"
 #include "media/base/android/test_statistics.h"
 #include "media/base/timestamp_constants.h"
