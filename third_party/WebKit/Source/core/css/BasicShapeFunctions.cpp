@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/css/BasicShapeFunctions.h"
 
-#include "core/css/CSSBasicShapeValue.h"
+#include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/CSSValuePool.h"
@@ -65,7 +65,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> basicShapeRadiusToCSSValue(CSSV
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSBasicShapeValue> valueForBasicShape(const ComputedStyle& style, const BasicShape* basicShape)
+PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const ComputedStyle& style, const BasicShape* basicShape)
 {
     CSSValuePool& pool = cssValuePool();
     switch (basicShape->type()) {
@@ -194,12 +194,11 @@ static BasicShapeRadius cssValueToBasicShapeRadius(const StyleResolverState& sta
     return BasicShapeRadius(convertToLength(state, radius.get()));
 }
 
-PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const CSSBasicShapeValue& basicShapeValue)
+PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const CSSValue& basicShapeValue)
 {
     RefPtr<BasicShape> basicShape;
 
-    switch (basicShapeValue.type()) {
-    case CSSBasicShapeValue::CSSBasicShapeCircleType: {
+    if (basicShapeValue.isBasicShapeCircleValue()) {
         const CSSBasicShapeCircleValue& circleValue = toCSSBasicShapeCircleValue(basicShapeValue);
         RefPtr<BasicShapeCircle> circle = BasicShapeCircle::create();
 
@@ -208,9 +207,7 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const
         circle->setRadius(cssValueToBasicShapeRadius(state, circleValue.radius()));
 
         basicShape = circle.release();
-        break;
-    }
-    case CSSBasicShapeValue::CSSBasicShapeEllipseType: {
+    } else if (basicShapeValue.isBasicShapeEllipseValue()) {
         const CSSBasicShapeEllipseValue& ellipseValue = toCSSBasicShapeEllipseValue(basicShapeValue);
         RefPtr<BasicShapeEllipse> ellipse = BasicShapeEllipse::create();
 
@@ -220,9 +217,7 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const
         ellipse->setRadiusY(cssValueToBasicShapeRadius(state, ellipseValue.radiusY()));
 
         basicShape = ellipse.release();
-        break;
-    }
-    case CSSBasicShapeValue::CSSBasicShapePolygonType: {
+    } else if (basicShapeValue.isBasicShapePolygonValue()) {
         const CSSBasicShapePolygonValue& polygonValue = toCSSBasicShapePolygonValue(basicShapeValue);
         RefPtr<BasicShapePolygon> polygon = BasicShapePolygon::create();
 
@@ -232,9 +227,7 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const
             polygon->appendPoint(convertToLength(state, values.at(i).get()), convertToLength(state, values.at(i + 1).get()));
 
         basicShape = polygon.release();
-        break;
-    }
-    case CSSBasicShapeValue::CSSBasicShapeInsetType: {
+    } else if (basicShapeValue.isBasicShapeInsetValue()) {
         const CSSBasicShapeInsetValue& rectValue = toCSSBasicShapeInsetValue(basicShapeValue);
         RefPtr<BasicShapeInset> rect = BasicShapeInset::create();
 
@@ -249,10 +242,8 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const
         rect->setBottomLeftRadius(convertToLengthSize(state, rectValue.bottomLeftRadius()));
 
         basicShape = rect.release();
-        break;
-    }
-    default:
-        break;
+    } else {
+        ASSERT_NOT_REACHED();
     }
 
     return basicShape.release();

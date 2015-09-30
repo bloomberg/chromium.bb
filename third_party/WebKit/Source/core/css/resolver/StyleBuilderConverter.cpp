@@ -28,7 +28,7 @@
 #include "core/css/resolver/StyleBuilderConverter.h"
 
 #include "core/css/BasicShapeFunctions.h"
-#include "core/css/CSSBasicShapeValue.h"
+#include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
@@ -816,7 +816,7 @@ PassRefPtrWillBeRawPtr<ShapeValue> StyleBuilderConverter::convertShapeValue(Styl
     for (unsigned i = 0; i < valueList->length(); ++i) {
         const CSSValue& value = *valueList->item(i);
         if (value.isBasicShapeValue()) {
-            shape = basicShapeForValue(state, toCSSBasicShapeValue(value));
+            shape = basicShapeForValue(state, value);
         } else {
             cssBox = CSSBoxType(toCSSPrimitiveValue(value));
         }

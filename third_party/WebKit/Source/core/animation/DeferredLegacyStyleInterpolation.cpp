@@ -7,7 +7,7 @@
 
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
-#include "core/css/CSSBasicShapeValue.h"
+#include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSQuadValue.h"
@@ -48,8 +48,14 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
     // FIXME: should not require resolving styles for inherit/initial/unset.
     if (value.isCSSWideKeyword())
         return true;
-    if (value.isBasicShapeValue())
-        return interpolationRequiresStyleResolve(toCSSBasicShapeValue(value));
+    if (value.isBasicShapeCircleValue())
+        return interpolationRequiresStyleResolve(toCSSBasicShapeCircleValue(value));
+    if (value.isBasicShapeEllipseValue())
+        return interpolationRequiresStyleResolve(toCSSBasicShapeEllipseValue(value));
+    if (value.isBasicShapePolygonValue())
+        return interpolationRequiresStyleResolve(toCSSBasicShapePolygonValue(value));
+    if (value.isBasicShapeInsetValue())
+        return interpolationRequiresStyleResolve(toCSSBasicShapeInsetValue(value));
     if (value.isPrimitiveValue())
         return interpolationRequiresStyleResolve(toCSSPrimitiveValue(value));
     if (value.isQuadValue())
@@ -133,9 +139,27 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
         || interpolationRequiresStyleResolve(pair.second());
 }
 
-bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSBasicShapeValue& shape)
+bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSBasicShapeCircleValue& shape)
 {
-    // FIXME: Should determine the specific shape, and inspect the members.
+    // FIXME: Should inspect the members.
+    return false;
+}
+
+bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSBasicShapeEllipseValue& shape)
+{
+    // FIXME: Should inspect the members.
+    return false;
+}
+
+bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSBasicShapePolygonValue& shape)
+{
+    // FIXME: Should inspect the members.
+    return false;
+}
+
+bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSBasicShapeInsetValue& shape)
+{
+    // FIXME: Should inspect the members.
     return false;
 }
 

@@ -28,7 +28,7 @@
 #include "core/css/parser/CSSPropertyParser.h"
 
 #include "core/StylePropertyShorthand.h"
-#include "core/css/CSSBasicShapeValue.h"
+#include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSCanvasValue.h"
 #include "core/css/CSSContentDistributionValue.h"
@@ -4352,7 +4352,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseBasicShapeAndOrBox()
         valueId = value->id;
         if (value->m_unit == CSSParserValue::Function && !shapeFound) {
             // parseBasicShape already asks for the next value list item.
-            RefPtrWillBeRawPtr<CSSBasicShapeValue> shapeValue = parseBasicShape();
+            RefPtrWillBeRawPtr<CSSValue> shapeValue = parseBasicShape();
             if (!shapeValue)
                 return nullptr;
             list->append(shapeValue.release());
@@ -4373,7 +4373,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseBasicShapeAndOrBox()
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSBasicShapeValue> CSSPropertyParser::parseBasicShape()
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseBasicShape()
 {
     CSSParserValue* value = m_valueList->current();
     ASSERT(value->m_unit == CSSParserValue::Function);
@@ -4382,7 +4382,7 @@ PassRefPtrWillBeRawPtr<CSSBasicShapeValue> CSSPropertyParser::parseBasicShape()
     if (!args)
         return nullptr;
 
-    RefPtrWillBeRawPtr<CSSBasicShapeValue> shape = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> shape = nullptr;
     if (value->function->id == CSSValueCircle)
         shape = parseBasicShapeCircle(args);
     else if (value->function->id == CSSValueEllipse)

@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/css/CSSValue.h"
 
-#include "core/css/CSSBasicShapeValue.h"
+#include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSCanvasValue.h"
 #include "core/css/CSSContentDistributionValue.h"
@@ -95,8 +95,14 @@ bool CSSValue::equals(const CSSValue& other) const
 {
     if (m_classType == other.m_classType) {
         switch (classType()) {
-        case BasicShapeClass:
-            return compareCSSValues<CSSBasicShapeValue>(*this, other);
+        case BasicShapeCircleClass:
+            return compareCSSValues<CSSBasicShapeCircleValue>(*this, other);
+        case BasicShapeEllipseClass:
+            return compareCSSValues<CSSBasicShapeEllipseValue>(*this, other);
+        case BasicShapePolygonClass:
+            return compareCSSValues<CSSBasicShapePolygonValue>(*this, other);
+        case BasicShapeInsetClass:
+            return compareCSSValues<CSSBasicShapeInsetValue>(*this, other);
         case BorderImageSliceClass:
             return compareCSSValues<CSSBorderImageSliceValue>(*this, other);
         case CanvasClass:
@@ -165,8 +171,14 @@ bool CSSValue::equals(const CSSValue& other) const
 String CSSValue::cssText() const
 {
     switch (classType()) {
-    case BasicShapeClass:
-        return toCSSBasicShapeValue(this)->customCSSText();
+    case BasicShapeCircleClass:
+        return toCSSBasicShapeCircleValue(this)->customCSSText();
+    case BasicShapeEllipseClass:
+        return toCSSBasicShapeEllipseValue(this)->customCSSText();
+    case BasicShapePolygonClass:
+        return toCSSBasicShapePolygonValue(this)->customCSSText();
+    case BasicShapeInsetClass:
+        return toCSSBasicShapeInsetValue(this)->customCSSText();
     case BorderImageSliceClass:
         return toCSSBorderImageSliceValue(this)->customCSSText();
     case CanvasClass:
@@ -233,8 +245,17 @@ String CSSValue::cssText() const
 void CSSValue::destroy()
 {
     switch (classType()) {
-    case BasicShapeClass:
-        delete toCSSBasicShapeValue(this);
+    case BasicShapeCircleClass:
+        delete toCSSBasicShapeCircleValue(this);
+        return;
+    case BasicShapeEllipseClass:
+        delete toCSSBasicShapeEllipseValue(this);
+        return;
+    case BasicShapePolygonClass:
+        delete toCSSBasicShapePolygonValue(this);
+        return;
+    case BasicShapeInsetClass:
+        delete toCSSBasicShapeInsetValue(this);
         return;
     case BorderImageSliceClass:
         delete toCSSBorderImageSliceValue(this);
@@ -330,8 +351,17 @@ void CSSValue::destroy()
 void CSSValue::finalizeGarbageCollectedObject()
 {
     switch (classType()) {
-    case BasicShapeClass:
-        toCSSBasicShapeValue(this)->~CSSBasicShapeValue();
+    case BasicShapeCircleClass:
+        toCSSBasicShapeCircleValue(this)->~CSSBasicShapeCircleValue();
+        return;
+    case BasicShapeEllipseClass:
+        toCSSBasicShapeEllipseValue(this)->~CSSBasicShapeEllipseValue();
+        return;
+    case BasicShapePolygonClass:
+        toCSSBasicShapePolygonValue(this)->~CSSBasicShapePolygonValue();
+        return;
+    case BasicShapeInsetClass:
+        toCSSBasicShapeInsetValue(this)->~CSSBasicShapeInsetValue();
         return;
     case BorderImageSliceClass:
         toCSSBorderImageSliceValue(this)->~CSSBorderImageSliceValue();
@@ -427,8 +457,17 @@ void CSSValue::finalizeGarbageCollectedObject()
 DEFINE_TRACE(CSSValue)
 {
     switch (classType()) {
-    case BasicShapeClass:
-        toCSSBasicShapeValue(this)->traceAfterDispatch(visitor);
+    case BasicShapeCircleClass:
+        toCSSBasicShapeCircleValue(this)->traceAfterDispatch(visitor);
+        return;
+    case BasicShapeEllipseClass:
+        toCSSBasicShapeEllipseValue(this)->traceAfterDispatch(visitor);
+        return;
+    case BasicShapePolygonClass:
+        toCSSBasicShapePolygonValue(this)->traceAfterDispatch(visitor);
+        return;
+    case BasicShapeInsetClass:
+        toCSSBasicShapeInsetValue(this)->traceAfterDispatch(visitor);
         return;
     case BorderImageSliceClass:
         toCSSBorderImageSliceValue(this)->traceAfterDispatch(visitor);

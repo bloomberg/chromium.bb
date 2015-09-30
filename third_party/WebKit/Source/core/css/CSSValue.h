@@ -64,7 +64,12 @@ public:
 
     bool isBaseValueList() const { return m_classType == ValueListClass; }
 
-    bool isBasicShapeValue() const { return m_classType == BasicShapeClass; }
+    bool isBasicShapeValue() const { return m_classType >= BasicShapeCircleClass && m_classType <= BasicShapeInsetClass; }
+    bool isBasicShapeCircleValue() const { return m_classType == BasicShapeCircleClass; }
+    bool isBasicShapeEllipseValue() const { return m_classType == BasicShapeEllipseClass; }
+    bool isBasicShapePolygonValue() const { return m_classType == BasicShapePolygonClass; }
+    bool isBasicShapeInsetValue() const { return m_classType == BasicShapeInsetClass; }
+
     bool isBorderImageSliceValue() const { return m_classType == BorderImageSliceClass; }
     bool isCanvasValue() const { return m_classType == CanvasClass; }
     bool isCounterValue() const { return m_classType == CounterClass; }
@@ -115,10 +120,16 @@ protected:
     static const size_t ClassTypeBits = 6;
     enum ClassType {
         PrimitiveClass,
-        BasicShapeClass,
         CounterClass,
         QuadClass,
         ValuePairClass,
+
+        // Basic shape classes.
+        // TODO(sashab): Represent these as a single subclass, BasicShapeClass.
+        BasicShapeCircleClass,
+        BasicShapeEllipseClass,
+        BasicShapePolygonClass,
+        BasicShapeInsetClass,
 
         // Image classes.
         ImageClass,

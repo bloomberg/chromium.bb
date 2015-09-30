@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/css/CSSBasicShapeValue.h"
+#include "core/css/CSSBasicShapeValues.h"
 
 #include "core/css/CSSValuePair.h"
 #include "core/css/CSSValuePool.h"
@@ -38,60 +38,6 @@
 using namespace WTF;
 
 namespace blink {
-
-String CSSBasicShapeValue::customCSSText() const
-{
-    switch (m_type) {
-    case CSSBasicShapeEllipseType:
-        return toCSSBasicShapeEllipseValue(this)->customShapeCSSText();
-    case CSSBasicShapePolygonType:
-        return toCSSBasicShapePolygonValue(this)->customShapeCSSText();
-    case CSSBasicShapeCircleType:
-        return toCSSBasicShapeCircleValue(this)->customShapeCSSText();
-    case CSSBasicShapeInsetType:
-        return toCSSBasicShapeInsetValue(this)->customShapeCSSText();
-    }
-    ASSERT_NOT_REACHED();
-    return String();
-}
-
-bool CSSBasicShapeValue::equals(const CSSBasicShapeValue& other) const
-{
-    if (m_type != other.m_type)
-        return false;
-
-    switch (m_type) {
-    case CSSBasicShapeEllipseType:
-        return toCSSBasicShapeEllipseValue(this)->equals(toCSSBasicShapeEllipseValue(other));
-    case CSSBasicShapePolygonType:
-        return toCSSBasicShapePolygonValue(this)->equals(toCSSBasicShapePolygonValue(other));
-    case CSSBasicShapeCircleType:
-        return toCSSBasicShapeCircleValue(this)->equals(toCSSBasicShapeCircleValue(other));
-    case CSSBasicShapeInsetType:
-        return toCSSBasicShapeInsetValue(this)->equals(toCSSBasicShapeInsetValue(other));
-    }
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
-DEFINE_TRACE_AFTER_DISPATCH(CSSBasicShapeValue)
-{
-    switch (m_type) {
-    case CSSBasicShapeEllipseType:
-        toCSSBasicShapeEllipseValue(this)->traceAfterDispatch(visitor);
-        break;
-    case CSSBasicShapePolygonType:
-        toCSSBasicShapePolygonValue(this)->traceAfterDispatch(visitor);
-        break;
-    case CSSBasicShapeCircleType:
-        toCSSBasicShapeCircleValue(this)->traceAfterDispatch(visitor);
-        break;
-    case CSSBasicShapeInsetType:
-        toCSSBasicShapeInsetValue(this)->traceAfterDispatch(visitor);
-        break;
-    }
-    CSSValue::traceAfterDispatch(visitor);
-}
 
 static String buildCircleString(const String& radius, const String& centerX, const String& centerY)
 {
@@ -157,7 +103,7 @@ static PassRefPtrWillBeRawPtr<CSSValuePair> buildSerializablePositionOffset(Pass
     return CSSValuePair::create(cssValuePool().createValue(side), amount.release(), CSSValuePair::KeepIdenticalValues);
 }
 
-String CSSBasicShapeCircleValue::customShapeCSSText() const
+String CSSBasicShapeCircleValue::customCSSText() const
 {
     RefPtrWillBeRawPtr<CSSValuePair> normalizedCX = buildSerializablePositionOffset(m_centerX, CSSValueLeft);
     RefPtrWillBeRawPtr<CSSValuePair> normalizedCY = buildSerializablePositionOffset(m_centerY, CSSValueTop);
@@ -217,7 +163,7 @@ static String buildEllipseString(const String& radiusX, const String& radiusY, c
     return result.toString();
 }
 
-String CSSBasicShapeEllipseValue::customShapeCSSText() const
+String CSSBasicShapeEllipseValue::customCSSText() const
 {
     RefPtrWillBeRawPtr<CSSValuePair> normalizedCX = buildSerializablePositionOffset(m_centerX, CSSValueLeft);
     RefPtrWillBeRawPtr<CSSValuePair> normalizedCY = buildSerializablePositionOffset(m_centerY, CSSValueTop);
@@ -296,7 +242,7 @@ static String buildPolygonString(const WindRule& windRule, const Vector<String>&
     return result.toString();
 }
 
-String CSSBasicShapePolygonValue::customShapeCSSText() const
+String CSSBasicShapePolygonValue::customCSSText() const
 {
     Vector<String> points;
     points.reserveInitialCapacity(m_values.size());
@@ -403,7 +349,7 @@ static inline void updateCornerRadiusWidthAndHeight(const CSSValuePair* cornerRa
     height = cornerRadius->second().cssText();
 }
 
-String CSSBasicShapeInsetValue::customShapeCSSText() const
+String CSSBasicShapeInsetValue::customCSSText() const
 {
     String topLeftRadiusWidth;
     String topLeftRadiusHeight;

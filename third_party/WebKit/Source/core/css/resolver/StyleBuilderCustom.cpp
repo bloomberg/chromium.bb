@@ -43,7 +43,7 @@
 #include "core/StyleBuilderFunctions.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/BasicShapeFunctions.h"
-#include "core/css/CSSBasicShapeValue.h"
+#include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFunctionValue.h"
@@ -567,7 +567,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitBorderImage(StyleResolver
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolverState& state, CSSValue* value)
 {
     if (value->isBasicShapeValue()) {
-        state.style()->setClipPath(ShapeClipPathOperation::create(basicShapeForValue(state, toCSSBasicShapeValue(*value))));
+        state.style()->setClipPath(ShapeClipPathOperation::create(basicShapeForValue(state, *value)));
     }
     if (value->isPrimitiveValue()) {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);

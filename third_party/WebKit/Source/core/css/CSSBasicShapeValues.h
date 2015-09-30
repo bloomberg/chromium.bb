@@ -27,8 +27,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef CSSBasicShapeValue_h
-#define CSSBasicShapeValue_h
+#ifndef CSSBasicShapeValues_h
+#define CSSBasicShapeValues_h
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
@@ -40,46 +40,11 @@
 
 namespace blink {
 
-// TODO(Oilpan): the GC plugin is not capable of understanding that
-// the traceAfterDispatch() method covers subtypes of CSSBasicShapeValue.
-// Temporarily exempt it from being checked
-class GC_PLUGIN_IGNORE("535448") CORE_EXPORT CSSBasicShapeValue : public CSSValue {
-public:
-    enum Type {
-        CSSBasicShapeEllipseType,
-        CSSBasicShapePolygonType,
-        CSSBasicShapeCircleType,
-        CSSBasicShapeInsetType
-    };
-
-    String customCSSText() const;
-
-    bool equals(const CSSBasicShapeValue& other) const;
-
-    Type type() const { return m_type; }
-    bool isEllipse() const { return m_type == CSSBasicShapeEllipseType; }
-    bool isPolygon() const { return m_type == CSSBasicShapePolygonType; }
-    bool isCircle() const { return m_type == CSSBasicShapeCircleType; }
-    bool isInset() const { return m_type == CSSBasicShapeInsetType; }
-
-    DECLARE_TRACE_AFTER_DISPATCH();
-
-protected:
-    CSSBasicShapeValue(Type type)
-        : CSSValue(BasicShapeClass)
-        , m_type(type)
-    {
-    }
-
-private:
-    Type m_type;
-};
-
-class CSSBasicShapeCircleValue final : public CSSBasicShapeValue {
+class CSSBasicShapeCircleValue final : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSBasicShapeCircleValue> create() { return adoptRefWillBeNoop(new CSSBasicShapeCircleValue); }
 
-    String customShapeCSSText() const;
+    String customCSSText() const;
     bool equals(const CSSBasicShapeCircleValue&) const;
 
     CSSValue* centerX() const { return m_centerX.get(); }
@@ -95,7 +60,7 @@ public:
 
 private:
     CSSBasicShapeCircleValue()
-        : CSSBasicShapeValue(CSSBasicShapeCircleType)
+        : CSSValue(BasicShapeCircleClass)
         { }
 
     RefPtrWillBeMember<CSSValue> m_centerX;
@@ -103,11 +68,11 @@ private:
     RefPtrWillBeMember<CSSPrimitiveValue> m_radius;
 };
 
-class CSSBasicShapeEllipseValue final : public CSSBasicShapeValue {
+class CSSBasicShapeEllipseValue final : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSBasicShapeEllipseValue> create() { return adoptRefWillBeNoop(new CSSBasicShapeEllipseValue); }
 
-    String customShapeCSSText() const;
+    String customCSSText() const;
     bool equals(const CSSBasicShapeEllipseValue&) const;
 
     CSSValue* centerX() const { return m_centerX.get(); }
@@ -125,7 +90,7 @@ public:
 
 private:
     CSSBasicShapeEllipseValue()
-        : CSSBasicShapeValue(CSSBasicShapeEllipseType)
+        : CSSValue(BasicShapeEllipseClass)
         { }
 
     RefPtrWillBeMember<CSSValue> m_centerX;
@@ -134,7 +99,7 @@ private:
     RefPtrWillBeMember<CSSPrimitiveValue> m_radiusY;
 };
 
-class CSSBasicShapePolygonValue final : public CSSBasicShapeValue {
+class CSSBasicShapePolygonValue final : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSBasicShapePolygonValue> create() { return adoptRefWillBeNoop(new CSSBasicShapePolygonValue); }
 
@@ -152,14 +117,14 @@ public:
     void setWindRule(WindRule w) { m_windRule = w; }
     WindRule windRule() const { return m_windRule; }
 
-    String customShapeCSSText() const;
+    String customCSSText() const;
     bool equals(const CSSBasicShapePolygonValue&) const;
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     CSSBasicShapePolygonValue()
-        : CSSBasicShapeValue(CSSBasicShapePolygonType),
+        : CSSValue(BasicShapePolygonClass),
         m_windRule(RULE_NONZERO)
     { }
 
@@ -167,7 +132,7 @@ private:
     WindRule m_windRule;
 };
 
-class CSSBasicShapeInsetValue final : public CSSBasicShapeValue {
+class CSSBasicShapeInsetValue final : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSBasicShapeInsetValue> create() { return adoptRefWillBeNoop(new CSSBasicShapeInsetValue); }
 
@@ -215,14 +180,14 @@ public:
     void setBottomRightRadius(PassRefPtrWillBeRawPtr<CSSValuePair> radius) { m_bottomRightRadius = radius; }
     void setBottomLeftRadius(PassRefPtrWillBeRawPtr<CSSValuePair> radius) { m_bottomLeftRadius = radius; }
 
-    String customShapeCSSText() const;
+    String customCSSText() const;
     bool equals(const CSSBasicShapeInsetValue&) const;
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
     CSSBasicShapeInsetValue()
-        : CSSBasicShapeValue(CSSBasicShapeInsetType)
+        : CSSValue(BasicShapeInsetClass)
         { }
 
     RefPtrWillBeMember<CSSPrimitiveValue> m_top;
@@ -236,13 +201,11 @@ private:
     RefPtrWillBeMember<CSSValuePair> m_bottomLeftRadius;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeValue, isBasicShapeValue());
-
-DEFINE_TYPE_CASTS(CSSBasicShapeCircleValue, CSSBasicShapeValue, shape, shape->isCircle(), shape.isCircle());
-DEFINE_TYPE_CASTS(CSSBasicShapeEllipseValue, CSSBasicShapeValue, shape, shape->isEllipse(), shape.isEllipse());
-DEFINE_TYPE_CASTS(CSSBasicShapePolygonValue, CSSBasicShapeValue, shape, shape->isPolygon(), shape.isPolygon());
-DEFINE_TYPE_CASTS(CSSBasicShapeInsetValue, CSSBasicShapeValue, shape, shape->isInset(), shape.isInset());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeCircleValue, isBasicShapeCircleValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeEllipseValue, isBasicShapeEllipseValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapePolygonValue, isBasicShapePolygonValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeInsetValue, isBasicShapeInsetValue());
 
 } // namespace blink
 
-#endif // CSSBasicShapeValue_h
+#endif // CSSBasicShapeValues_h

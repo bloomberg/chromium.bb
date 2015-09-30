@@ -180,7 +180,7 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSValue> parseShapeProperty(CSSPropertyID propId);
     PassRefPtrWillBeRawPtr<CSSValue> parseBasicShapeAndOrBox();
-    PassRefPtrWillBeRawPtr<CSSBasicShapeValue> parseBasicShape();
+    PassRefPtrWillBeRawPtr<CSSValue> parseBasicShape();
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseShapeRadius(CSSParserValue*);
 
     PassRefPtrWillBeRawPtr<CSSBasicShapeCircleValue> parseBasicShapeCircle(CSSParserValueList* args);
