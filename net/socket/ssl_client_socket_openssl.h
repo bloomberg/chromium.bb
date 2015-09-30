@@ -191,7 +191,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
 
   // Callbacks for operations with the private key.
   int PrivateKeyTypeCallback();
-  int PrivateKeySupportsDigestCallback(const EVP_MD* md);
   size_t PrivateKeyMaxSignatureLenCallback();
   ssl_private_key_result_t PrivateKeySignCallback(uint8_t* out,
                                                   size_t* out_len,
