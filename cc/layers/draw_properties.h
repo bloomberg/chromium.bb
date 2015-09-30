@@ -44,6 +44,9 @@ struct CC_EXPORT DrawProperties {
   // True if the layer can use LCD text.
   bool can_use_lcd_text;
 
+  // True if the layer needs to be clipped by clip_rect.
+  bool is_clipped;
+
   // The layer whose coordinate space this layer draws into. This can be
   // either the same layer (draw_properties_.render_target == this) or an
   // ancestor of this layer.

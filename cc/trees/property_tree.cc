@@ -104,7 +104,8 @@ ClipNodeData::ClipNodeData()
       use_only_parent_clip(false),
       layer_clipping_uses_only_local_clip(false),
       layer_visibility_uses_only_local_clip(false),
-      render_surface_is_clipped(false) {}
+      render_surface_is_clipped(false),
+      layers_are_clipped(false) {}
 
 EffectNodeData::EffectNodeData()
     : opacity(1.f),

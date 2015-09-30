@@ -1949,7 +1949,7 @@ static void CalculateDrawPropertiesInternal(
   // reduce how much would be drawn, and instead it would create unnecessary
   // changes to scissor state affecting GPU performance. Our clip information
   // is used in the recursion below, so we must set it beforehand.
-  DCHECK_EQ(layer_or_ancestor_clips_descendants, layer->is_clipped());
+  layer_draw_properties.is_clipped = layer_or_ancestor_clips_descendants;
   if (layer_or_ancestor_clips_descendants) {
     layer_draw_properties.clip_rect = clip_rect_in_target_space;
   } else {
@@ -2338,6 +2338,7 @@ void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
 
   CHECK_EQ(current_layer->draw_opacity(), draw_properties.opacity);
   CHECK_EQ(current_layer->can_use_lcd_text(), draw_properties.can_use_lcd_text);
+  CHECK_EQ(current_layer->is_clipped(), draw_properties.is_clipped);
   CHECK_EQ(current_layer->screen_space_transform_is_animating(),
            draw_properties.screen_space_transform_is_animating);
 

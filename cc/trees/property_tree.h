@@ -164,6 +164,7 @@ struct CC_EXPORT ClipNodeData {
   bool layer_clipping_uses_only_local_clip : 1;
   bool layer_visibility_uses_only_local_clip : 1;
   bool render_surface_is_clipped : 1;
+  bool layers_are_clipped : 1;
 };
 
 typedef TreeNode<ClipNodeData> ClipNode;

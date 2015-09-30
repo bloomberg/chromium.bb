@@ -43,7 +43,6 @@ struct DataForRecursion {
   bool affected_by_inner_viewport_bounds_delta;
   bool affected_by_outer_viewport_bounds_delta;
   bool should_flatten;
-  bool ancestor_clips_subtree;
   const gfx::Transform* device_transform;
   gfx::Vector2dF scroll_compensation_adjustment;
   int sequence_number;
@@ -100,25 +99,24 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   ClipNode* parent = GetClipParent(data_from_ancestor, layer);
   int parent_id = parent->id;
 
-  bool ancestor_clips_subtree =
-      data_from_ancestor.ancestor_clips_subtree ||
-      (layer->clip_parent() && layer->clip_parent()->is_clipped());
+  bool is_root = !layer->parent();
+  bool ancestor_clips_subtree = is_root || parent->data.layers_are_clipped;
 
-  data_for_children->ancestor_clips_subtree = false;
+  bool layers_are_clipped = false;
   bool has_unclipped_surface = false;
 
   if (layer->has_render_surface()) {
     if (ancestor_clips_subtree && layer->num_unclipped_descendants() > 0)
-      data_for_children->ancestor_clips_subtree = true;
+      layers_are_clipped = true;
     else if (!ancestor_clips_subtree)
       has_unclipped_surface = true;
   } else {
-    data_for_children->ancestor_clips_subtree = ancestor_clips_subtree;
+    layers_are_clipped = ancestor_clips_subtree;
   }
 
   bool layer_clips_subtree = LayerClipsSubtree(layer);
   if (layer_clips_subtree)
-    data_for_children->ancestor_clips_subtree = true;
+    layers_are_clipped = true;
 
   if (has_unclipped_surface) {
     parent_id = kUnclippedRootClipTreeNodeId;
@@ -129,6 +127,8 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
                         ancestor_clips_subtree)) {
     // Unclipped surfaces reset the clip rect.
     data_for_children->clip_tree_parent = parent_id;
+    DCHECK_EQ(layers_are_clipped, data_for_children->clip_tree->Node(parent_id)
+                                      ->data.layers_are_clipped);
   } else {
     LayerType* transform_parent = data_for_children->transform_tree_parent;
     if (layer->position_constraint().is_fixed_position() &&
@@ -171,14 +171,13 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     node.data.render_surface_is_clipped = layer->has_render_surface() &&
                                           ancestor_clips_subtree &&
                                           !layer->num_unclipped_descendants();
+    node.data.layers_are_clipped = layers_are_clipped;
 
     data_for_children->clip_tree_parent =
         data_for_children->clip_tree->Insert(node, parent_id);
   }
 
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
-
-  layer->set_is_clipped(data_for_children->ancestor_clips_subtree);
 
   // TODO(awoloszyn): Right now when we hit a node with a replica, we reset the
   // clip for all children since we may need to draw. We need to figure out a
@@ -533,7 +532,6 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.affected_by_inner_viewport_bounds_delta = false;
   data_for_recursion.affected_by_outer_viewport_bounds_delta = false;
   data_for_recursion.should_flatten = false;
-  data_for_recursion.ancestor_clips_subtree = true;
   data_for_recursion.device_transform = &device_transform;
 
   data_for_recursion.transform_tree->clear();

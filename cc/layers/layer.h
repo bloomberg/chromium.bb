@@ -473,14 +473,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   const gfx::Rect& clip_rect() const { return clip_rect_; }
   void set_clip_rect(const gfx::Rect& rect) { clip_rect_ = rect; }
 
-  void set_is_clipped(bool is_clipped) {
-    if (is_clipped_ == is_clipped)
-      return;
-    is_clipped_ = is_clipped;
-    SetNeedsPushProperties();
-  }
-  bool is_clipped() const { return is_clipped_; }
-
   bool has_render_surface() const {
     return has_render_surface_;
   }
@@ -655,7 +647,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   int num_layer_or_descendants_with_copy_request_;
   gfx::Vector2dF offset_to_transform_parent_;
   bool should_flatten_transform_from_property_tree_ : 1;
-  bool is_clipped_ : 1;
   bool should_scroll_on_main_thread_ : 1;
   bool have_wheel_event_handlers_ : 1;
   bool have_scroll_event_handlers_ : 1;

@@ -57,7 +57,6 @@ Layer::Layer(const LayerSettings& settings)
       property_tree_sequence_number_(-1),
       num_layer_or_descendants_with_copy_request_(0),
       should_flatten_transform_from_property_tree_(false),
-      is_clipped_(false),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
       have_scroll_event_handlers_(false),
@@ -1222,7 +1221,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
       should_flatten_transform_from_property_tree_);
   layer->set_num_layer_or_descendant_with_copy_request(
       num_layer_or_descendants_with_copy_request_);
-  layer->set_is_clipped(is_clipped_);
   layer->set_draw_blend_mode(draw_blend_mode_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())

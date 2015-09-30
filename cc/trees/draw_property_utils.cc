@@ -812,6 +812,8 @@ void ComputeLayerDrawPropertiesUsingPropertyTrees(
       property_trees->transform_tree.Node(layer->transform_tree_index());
   const EffectNode* effect_node =
       property_trees->effect_tree.Node(layer->effect_tree_index());
+  const ClipNode* clip_node =
+      property_trees->clip_tree.Node(layer->clip_tree_index());
 
   draw_properties->target_space_transform =
       DrawTransformFromPropertyTreesInternal(layer, transform_node);
@@ -836,6 +838,7 @@ void ComputeLayerDrawPropertiesUsingPropertyTrees(
   draw_properties->can_use_lcd_text =
       LayerCanUseLcdText(layer, layers_always_allowed_lcd_text,
                          can_use_lcd_text, transform_node, effect_node);
+  draw_properties->is_clipped = clip_node->data.layers_are_clipped;
 
   gfx::Rect bounds_in_target_space = MathUtil::MapEnclosingClippedRect(
       draw_properties->target_space_transform, gfx::Rect(layer->bounds()));

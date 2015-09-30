@@ -196,11 +196,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return should_flatten_transform_from_property_tree_;
   }
 
-  void set_is_clipped(bool is_clipped) {
-    is_clipped_ = is_clipped;
-    SetNeedsPushProperties();
-  }
-  bool is_clipped() const { return is_clipped_; }
+  bool is_clipped() const { return draw_properties_.is_clipped; }
 
   void UpdatePropertyTreeTransform();
   void UpdatePropertyTreeTransformIsAnimated(bool is_animated);
@@ -775,7 +771,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool double_sided_ : 1;
   bool should_flatten_transform_ : 1;
   bool should_flatten_transform_from_property_tree_ : 1;
-  bool is_clipped_ : 1;
 
   // Tracks if drawing-related properties have changed since last redraw.
   bool layer_property_changed_ : 1;
