@@ -233,6 +233,9 @@ void HistoryQuickProviderTest::SetUp() {
   bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(profile_.get()));
   profile_->BlockUntilHistoryIndexIsRefreshed();
+  // History index refresh creates rebuilt tasks to run on history thread.
+  // Block here to make sure that all of them are complete.
+  profile_->BlockUntilHistoryProcessesPendingRequests();
   history_service_ = HistoryServiceFactory::GetForProfile(
       profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   EXPECT_TRUE(history_service_);
@@ -248,6 +251,10 @@ void HistoryQuickProviderTest::SetUp() {
 
 void HistoryQuickProviderTest::TearDown() {
   provider_ = NULL;
+  // History index rebuild task is created from main thread during SetUp,
+  // performed on DB thread and must be deleted on main thread.
+  // Run main loop to process delete task, to prevent leaks.
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void HistoryQuickProviderTest::GetTestData(size_t* data_count,
