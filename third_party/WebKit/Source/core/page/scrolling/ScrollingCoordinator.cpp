@@ -342,13 +342,8 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
 // FIXME: Instead of hardcode here, we should make a setting flag.
 #if OS(MACOSX)
     static const bool platformSupportsCoordinatedScrollbar = ScrollAnimatorMac::canUseCoordinatedScrollbar();
-    static const bool platformSupportsMainFrameOnly = false; // Don't care.
-#elif OS(ANDROID)
-    static const bool platformSupportsCoordinatedScrollbar = true;
-    static const bool platformSupportsMainFrameOnly = false;
 #else
     static const bool platformSupportsCoordinatedScrollbar = true;
-    static const bool platformSupportsMainFrameOnly = true;
 #endif
 
     bool isMainFrame = isForMainFrame(scrollableArea);
@@ -356,8 +351,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
         ? scrollableArea->layerForHorizontalScrollbar()
         : scrollableArea->layerForVerticalScrollbar();
 
-    bool shouldCreateCoordinatedScrollbar = platformSupportsCoordinatedScrollbar && !(platformSupportsMainFrameOnly && !isMainFrame);
-    if (!shouldCreateCoordinatedScrollbar) {
+    if (!platformSupportsCoordinatedScrollbar) {
         if (scrollbarGraphicsLayer) {
             WebLayer* scrollbarLayer = toWebLayer(scrollbarGraphicsLayer);
             scrollbarLayer->setShouldScrollOnMainThread(true);
