@@ -3490,3 +3490,9 @@
    fun:_ZN7content24NavigationControllerImpl17LoadURLWithParamsERKNS_20NavigationController13LoadURLParamsE
    fun:_ZN7content5Shell15LoadURLForFrameERK4GURLRKSs
 }
+{
+   bug=537626
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14message_center*MessageCenterViewTest*
+}
