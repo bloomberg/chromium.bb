@@ -123,6 +123,7 @@ HTMLFrame::HTMLFrame(CreateParams* params)
       id_(params->id),
       web_frame_(nullptr),
       delegate_(params->delegate),
+      pending_navigation_(false),
       weak_factory_(this) {
   if (parent_)
     parent_->children_.push_back(this);
@@ -269,6 +270,16 @@ bool HTMLFrame::HasLocalDescendant() const {
   return false;
 }
 
+void HTMLFrame::LoadRequest(const blink::WebURLRequest& request) {
+  DCHECK(IsLocal());
+
+  DVLOG(2) << "HTMLFrame::LoadRequest this=" << this << " id=" << id_
+           << " URL=" << GURL(request.url());
+
+  pending_navigation_ = false;
+  web_frame_->toWebLocalFrame()->loadRequest(request);
+}
+
 HTMLFrame::~HTMLFrame() {
   DVLOG(2) << "~HTMLFrame this=" << this << " id=" << id_;
 
@@ -374,14 +385,28 @@ blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
     return blink::WebNavigationPolicyCurrentTab;
   }
 
-  // Ask the Frame to handle the navigation. By returning
-  // WebNavigationPolicyIgnore the load is suppressed.
+  // Ask the Frame to handle the navigation. Returning
+  // WebNavigationPolicyHandledByClient to inform blink that the navigation is
+  // being handled.
+  DVLOG(2) << "HTMLFrame::decidePolicyForNavigation calls "
+           << "Frame::RequestNavigate this=" << this << " id=" << id_
+           << " URL=" << GURL(info.urlRequest.url());
+
   mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
   server_->RequestNavigate(
       WebNavigationPolicyToNavigationTarget(info.defaultPolicy), id_,
       url_request.Pass());
 
-  return blink::WebNavigationPolicyIgnore;
+  // TODO(yzshen): crbug.com/532556 If the server side drops the request,
+  // this frame will be in permenant-loading state. We should send a
+  // notification to mark this frame as not loading in that case. We also need
+  // to better keep track of multiple pending navigations.
+  pending_navigation_ = true;
+  return blink::WebNavigationPolicyHandledByClient;
+}
+
+bool HTMLFrame::hasPendingNavigation(blink::WebLocalFrame* frame) {
+  return pending_navigation_;
 }
 
 void HTMLFrame::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
@@ -595,9 +620,12 @@ void HTMLFrame::SwapToRemote() {
   remote_frame->setReplicatedName(state_.name);
   remote_frame->setReplicatedOrigin(state_.origin);
   remote_frame->setReplicatedSandboxFlags(state_.sandbox_flags);
+
   // Tell the frame that it is actually loading. This prevents its parent
   // from prematurely dispatching load event.
   remote_frame->didStartLoading();
+  pending_navigation_ = false;
+
   web_frame_ = remote_frame;
   SetView(nullptr);
   server_.reset();

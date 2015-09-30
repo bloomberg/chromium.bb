@@ -185,7 +185,7 @@ void HTMLDocument::Load() {
   web_request.setURL(url);
   web_request.setExtraData(extra_data.release());
 
-  frame_->web_frame()->toWebLocalFrame()->loadRequest(web_request);
+  frame_->LoadRequest(web_request);
 }
 
 HTMLDocument::BeforeLoadCache* HTMLDocument::GetBeforeLoadCache() {

@@ -147,6 +147,8 @@ class HTMLFrame : public blink::WebFrameClient,
   // Returns true if this or one of the frames descendants is local.
   bool HasLocalDescendant() const;
 
+  void LoadRequest(const blink::WebURLRequest& request);
+
  protected:
   virtual ~HTMLFrame();
 
@@ -167,6 +169,7 @@ class HTMLFrame : public blink::WebFrameClient,
   virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
       const NavigationPolicyInfo& info);
+  virtual bool hasPendingNavigation(blink::WebLocalFrame* frame);
   virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame);
   virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message,
                                       const blink::WebString& source_name,
@@ -331,6 +334,10 @@ class HTMLFrame : public blink::WebFrameClient,
       startup_performance_data_collector_;
 
   scoped_ptr<DevToolsAgentImpl> devtools_agent_;
+
+  // A navigation request has been sent to the frame server side, and we haven't
+  // received response to it.
+  bool pending_navigation_;
 
   base::WeakPtrFactory<HTMLFrame> weak_factory_;
 
