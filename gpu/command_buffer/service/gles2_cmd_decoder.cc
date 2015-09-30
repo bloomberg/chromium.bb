@@ -14327,12 +14327,6 @@ void GLES2DecoderImpl::DoMatrixLoadfCHROMIUM(GLenum matrix_mode,
                                              const GLfloat* matrix) {
   DCHECK(matrix_mode == GL_PATH_PROJECTION_CHROMIUM ||
          matrix_mode == GL_PATH_MODELVIEW_CHROMIUM);
-  if (!features().chromium_path_rendering) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glMatrixLoadfCHROMIUM",
-                       "function not available");
-    return;
-  }
 
   GLfloat* target_matrix = matrix_mode == GL_PATH_PROJECTION_CHROMIUM
                                ? state_.projection_matrix
@@ -14346,13 +14340,6 @@ void GLES2DecoderImpl::DoMatrixLoadfCHROMIUM(GLenum matrix_mode,
 void GLES2DecoderImpl::DoMatrixLoadIdentityCHROMIUM(GLenum matrix_mode) {
   DCHECK(matrix_mode == GL_PATH_PROJECTION_CHROMIUM ||
          matrix_mode == GL_PATH_MODELVIEW_CHROMIUM);
-
-  if (!features().chromium_path_rendering) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glMatrixLoadIdentityCHROMIUM",
-                       "function not available");
-    return;
-  }
 
   GLfloat* target_matrix = matrix_mode == GL_PATH_PROJECTION_CHROMIUM
                                ? state_.projection_matrix
