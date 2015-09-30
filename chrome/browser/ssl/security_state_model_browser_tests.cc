@@ -496,10 +496,4 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, AddedTab) {
                              false /* expect cert status error */);
 }
 
-// TODO(estark): https://crbug.com/530359
-// Test the following cases:
-// - warning SHA1 (2016 expiration)
-// - active mixed content + warning SHA1
-// - broken HTTPS + warning SHA1
-
 }  // namespace

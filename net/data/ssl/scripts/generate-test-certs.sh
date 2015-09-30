@@ -170,6 +170,19 @@ try openssl req -x509 -days 3650 \
     -sha256 \
     -out ../certificates/large_key.pem
 
+## SHA1 certificate expiring in 2016.
+try openssl req -config ../scripts/ee.cnf -sha1 \
+  -newkey rsa:2048 -text -out out/sha1_2016.req
+CA_COMMON_NAME="Test Root CA" \
+  try openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 081030000000Z \
+    -enddate   161230000000Z \
+    -in out/sha1_2016.req \
+    -out ../certificates/sha1_2016.pem \
+    -config ca.cnf
+
 ## Validity too long unit test support.
 try openssl req -config ../scripts/ee.cnf \
   -newkey rsa:2048 -text -out ../certificates/10_year_validity.req

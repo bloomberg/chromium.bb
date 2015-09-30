@@ -21,7 +21,7 @@ unit tests.
 
 - www_us_army_mil_cert.der
 - dod_ca_17_cert.der
-- dod_root_ca_2_cert.der : 
+- dod_root_ca_2_cert.der :
      A certificate chain used for testing certificate imports
 
 - unosoft_hu_cert : Certificate used by X509CertificateTest.UnoSoftCertParsing.
@@ -154,6 +154,9 @@ unit tests.
 
 - punycodetest.pem : A test self-signed server certificate with punycode name.
      The common name is "xn--wgv71a119e.com" (日本語.com)
+
+- sha1_2016.pem
+    Used to test the handling of SHA1 certificates expiring in 2016.
 
 - 10_year_validity.pem
 - 11_year_validity.pem
