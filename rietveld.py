@@ -579,6 +579,9 @@ class JwtOAuth2Rietveld(Rietveld):
 
     self.url = url.rstrip('/')
     bot_url = self.url
+    # TODO(tandrii): remove temp fix due to cert problem: crbug/537763
+    if bot_url.endswith('codereview.chromium.org'):
+      bot_url = 'https://chromiumcodereview.appspot.com'
     if self.url.endswith('googleplex.com'):
       bot_url = self.url + '/bots'
 

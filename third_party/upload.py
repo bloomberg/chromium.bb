@@ -2536,6 +2536,14 @@ def RealMain(argv, data=None):
   payload = urllib.urlencode(payload)
   rpc_server.Send("/" + issue + "/upload_complete/" + (patchset or ""),
                   payload=payload)
+  # TODO(tandrii): remove temp fix due to cert problem: crbug/537763
+  if ("codereview.chromium.org" in response_body and
+      (response_body.startswith("Issue created.") or
+        response_body.startswith("Issue updated."))):
+        print
+        print "NOTE: Due to certificate problems, try equivalent URL:"
+        print "https://chromiumcodereview.appspot.com/%s" % issue
+        print
   return issue, patchset
 
 
