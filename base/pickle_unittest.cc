@@ -233,6 +233,88 @@ TEST(PickleTest, BadLenStr16) {
   EXPECT_FALSE(iter.ReadString16(&outstr));
 }
 
+TEST(PickleTest, PeekNext) {
+  struct CustomHeader : base::Pickle::Header {
+    int cookies[10];
+  };
+
+  Pickle pickle(sizeof(CustomHeader));
+
+  EXPECT_TRUE(pickle.WriteString("Goooooooooooogle"));
+
+  const char* pickle_data = static_cast<const char*>(pickle.data());
+
+  size_t pickle_size;
+
+  // Data range doesn't contain header
+  EXPECT_FALSE(Pickle::PeekNext(
+      sizeof(CustomHeader),
+      pickle_data,
+      pickle_data + sizeof(CustomHeader) - 1,
+      &pickle_size));
+
+  // Data range contains header
+  EXPECT_TRUE(Pickle::PeekNext(
+      sizeof(CustomHeader),
+      pickle_data,
+      pickle_data + sizeof(CustomHeader),
+      &pickle_size));
+  EXPECT_EQ(pickle_size, pickle.size());
+
+  // Data range contains header and some other data
+  EXPECT_TRUE(Pickle::PeekNext(
+      sizeof(CustomHeader),
+      pickle_data,
+      pickle_data + sizeof(CustomHeader) + 1,
+      &pickle_size));
+  EXPECT_EQ(pickle_size, pickle.size());
+
+  // Data range contains full pickle
+  EXPECT_TRUE(Pickle::PeekNext(
+      sizeof(CustomHeader),
+      pickle_data,
+      pickle_data + pickle.size(),
+      &pickle_size));
+  EXPECT_EQ(pickle_size, pickle.size());
+}
+
+TEST(PickleTest, PeekNextOverflow) {
+  struct CustomHeader : base::Pickle::Header {
+    int cookies[10];
+  };
+
+  CustomHeader header;
+
+  // Check if we can wrap around at all
+  if (sizeof(size_t) > sizeof(header.payload_size))
+    return;
+
+  const char* pickle_data = reinterpret_cast<const char*>(&header);
+
+  size_t pickle_size;
+
+  // Wrapping around is detected and reported as maximum size_t value
+  header.payload_size = static_cast<uint32_t>(
+      1 - static_cast<int32_t>(sizeof(CustomHeader)));
+  EXPECT_TRUE(Pickle::PeekNext(
+      sizeof(CustomHeader),
+      pickle_data,
+      pickle_data + sizeof(CustomHeader),
+      &pickle_size));
+  EXPECT_EQ(pickle_size, std::numeric_limits<size_t>::max());
+
+  // Ridiculous pickle sizes are fine (callers are supposed to
+  // verify them)
+  header.payload_size =
+      std::numeric_limits<uint32_t>::max() / 2 - sizeof(CustomHeader);
+  EXPECT_TRUE(Pickle::PeekNext(
+      sizeof(CustomHeader),
+      pickle_data,
+      pickle_data + sizeof(CustomHeader),
+      &pickle_size));
+  EXPECT_EQ(pickle_size, std::numeric_limits<uint32_t>::max() / 2);
+}
+
 TEST(PickleTest, FindNext) {
   Pickle pickle;
   EXPECT_TRUE(pickle.WriteInt(1));

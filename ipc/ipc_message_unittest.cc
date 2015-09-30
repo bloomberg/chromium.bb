@@ -6,6 +6,8 @@
 
 #include <string.h>
 
+#include <limits>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -25,7 +27,7 @@ IPC_MESSAGE_CONTROL1(TestMsgClassI, int)
 
 IPC_SYNC_MESSAGE_CONTROL1_1(TestMsgClassIS, int, std::string)
 
-namespace {
+namespace IPC {
 
 TEST(IPCMessageTest, BasicMessageTest) {
   int v1 = 10;
@@ -115,6 +117,101 @@ TEST(IPCMessageTest, DictionaryValue) {
   EXPECT_FALSE(IPC::ReadParam(&bad_msg, &iter, &output));
 }
 
+TEST(IPCMessageTest, FindNext) {
+  IPC::Message message;
+  EXPECT_TRUE(message.WriteString("Goooooooogle"));
+  EXPECT_TRUE(message.WriteInt(111));
+
+  std::vector<char> message_data(message.size() + 7);
+  memcpy(message_data.data(), message.data(), message.size());
+
+  const char* data_start = message_data.data();
+  const char* data_end = data_start + message.size();
+
+  IPC::Message::NextMessageInfo next;
+
+  // Data range contains the entire message plus some extra bytes
+  IPC::Message::FindNext(data_start, data_end + 1, &next);
+  EXPECT_TRUE(next.message_found);
+  EXPECT_EQ(next.message_size, message.size());
+  EXPECT_EQ(next.pickle_end, data_end);
+  EXPECT_EQ(next.message_end, data_end);
+
+  // Data range exactly contains the entire message
+  IPC::Message::FindNext(data_start, data_end, &next);
+  EXPECT_TRUE(next.message_found);
+  EXPECT_EQ(next.message_size, message.size());
+  EXPECT_EQ(next.pickle_end, data_end);
+  EXPECT_EQ(next.message_end, data_end);
+
+  // Data range doesn't contain the entire message
+  // (but contains the message header)
+  IPC::Message::FindNext(data_start, data_end - 1, &next);
+  EXPECT_FALSE(next.message_found);
+#if USE_ATTACHMENT_BROKER
+  EXPECT_EQ(next.message_size, 0u);
+#else
+  EXPECT_EQ(next.message_size, message.size());
+#endif
+
+  // Data range doesn't contain the message header
+  // (but contains the pickle header)
+  IPC::Message::FindNext(data_start,
+                         data_start + sizeof(IPC::Message::Header) - 1,
+                         &next);
+  EXPECT_FALSE(next.message_found);
+  EXPECT_EQ(next.message_size, 0u);
+
+  // Data range doesn't contain the pickle header
+  IPC::Message::FindNext(data_start,
+                         data_start + sizeof(base::Pickle::Header) - 1,
+                         &next);
+  EXPECT_FALSE(next.message_found);
+  EXPECT_EQ(next.message_size, 0u);
+}
+
+TEST(IPCMessageTest, FindNextOverflow) {
+  IPC::Message message;
+  EXPECT_TRUE(message.WriteString("Data"));
+  EXPECT_TRUE(message.WriteInt(777));
+
+  const char* data_start = reinterpret_cast<const char*>(message.data());
+  const char* data_end = data_start + message.size();
+
+  IPC::Message::NextMessageInfo next;
+
+  // Payload size is negative (defeats 'start + size > end' check)
+  message.header()->payload_size = static_cast<uint32_t>(-1);
+  IPC::Message::FindNext(data_start, data_end, &next);
+  EXPECT_FALSE(next.message_found);
+#if USE_ATTACHMENT_BROKER
+  EXPECT_EQ(next.message_size, 0u);
+#else
+  if (sizeof(size_t) > sizeof(uint32_t)) {
+    // No overflow, just insane message size
+    EXPECT_EQ(next.message_size,
+              message.header()->payload_size + sizeof(IPC::Message::Header));
+  } else {
+    // Actual overflow, reported as max size_t
+    EXPECT_EQ(next.message_size, std::numeric_limits<size_t>::max());
+  }
+#endif
+
+  // Payload size is max positive integer (defeats size < 0 check, while
+  // still potentially causing overflow down the road).
+  message.header()->payload_size = std::numeric_limits<int32_t>::max();
+  IPC::Message::FindNext(data_start, data_end, &next);
+  EXPECT_FALSE(next.message_found);
+#if USE_ATTACHMENT_BROKER
+  EXPECT_EQ(next.message_size, 0u);
+#else
+  EXPECT_EQ(next.message_size,
+            message.header()->payload_size + sizeof(IPC::Message::Header));
+#endif
+}
+
+namespace {
+
 class IPCMessageParameterTest : public testing::Test {
  public:
   IPCMessageParameterTest() : extra_param_("extra_param"), called_(false) {}
@@ -160,6 +257,8 @@ class IPCMessageParameterTest : public testing::Test {
   bool called_;
 };
 
+}  // namespace
+
 TEST_F(IPCMessageParameterTest, EmptyDispatcherWithParam) {
   TestMsgClassEmpty message;
   EXPECT_TRUE(OnMessageReceived(message));
@@ -186,4 +285,4 @@ TEST_F(IPCMessageParameterTest, Sync) {
   EXPECT_EQ(output, std::string("out"));
 }*/
 
-}  // namespace
+}  // namespace IPC

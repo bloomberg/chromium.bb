@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/pickle.h"
 #include "base/trace_event/trace_event.h"
@@ -168,10 +169,14 @@ class IPC_EXPORT Message : public base::Pickle {
 
   // The static method FindNext() returns several pieces of information, which
   // are aggregated into an instance of this struct.
-  struct NextMessageInfo {
+  struct IPC_EXPORT NextMessageInfo {
     NextMessageInfo();
     ~NextMessageInfo();
 
+    // Total message size. Always valid if |message_found| is true.
+    // If |message_found| is false but we could determine message size
+    // from the header, this field is non-zero. Otherwise it's zero.
+    size_t message_size;
     // Whether an entire message was found in the given memory range.
     bool message_found;
     // Only filled in if |message_found| is true.
@@ -313,6 +318,9 @@ class IPC_EXPORT Message : public base::Pickle {
   mutable LogData* log_data_;
   mutable bool dont_log_;
 #endif
+
+  FRIEND_TEST_ALL_PREFIXES(IPCMessageTest, FindNext);
+  FRIEND_TEST_ALL_PREFIXES(IPCMessageTest, FindNextOverflow);
 };
 
 //------------------------------------------------------------------------------

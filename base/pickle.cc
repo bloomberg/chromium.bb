@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include <algorithm>  // for max()
+#include <limits>
 
 #include "base/bits.h"
 #include "base/macros.h"
@@ -338,17 +339,41 @@ size_t Pickle::GetTotalAllocatedSize() const {
 const char* Pickle::FindNext(size_t header_size,
                              const char* start,
                              const char* end) {
+  size_t pickle_size = 0;
+  if (!PeekNext(header_size, start, end, &pickle_size))
+    return NULL;
+
+  if (pickle_size > static_cast<size_t>(end - start))
+    return NULL;
+
+  return start + pickle_size;
+}
+
+// static
+bool Pickle::PeekNext(size_t header_size,
+                      const char* start,
+                      const char* end,
+                      size_t* pickle_size) {
   DCHECK_EQ(header_size, bits::Align(header_size, sizeof(uint32)));
+  DCHECK_GE(header_size, sizeof(Header));
   DCHECK_LE(header_size, static_cast<size_t>(kPayloadUnit));
 
   size_t length = static_cast<size_t>(end - start);
   if (length < sizeof(Header))
-    return NULL;
+    return false;
 
   const Header* hdr = reinterpret_cast<const Header*>(start);
-  if (length < header_size || length - header_size < hdr->payload_size)
-    return NULL;
-  return start + header_size + hdr->payload_size;
+  if (length < header_size)
+    return false;
+
+  if (hdr->payload_size > std::numeric_limits<size_t>::max() - header_size) {
+    // If payload_size causes an overflow, we return maximum possible
+    // pickle size to indicate that.
+    *pickle_size = std::numeric_limits<size_t>::max();
+  } else {
+    *pickle_size = header_size + hdr->payload_size;
+  }
+  return true;
 }
 
 template <size_t length> void Pickle::WriteBytesStatic(const void* data) {

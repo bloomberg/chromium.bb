@@ -4,6 +4,7 @@
 
 #include "build/build_config.h"
 
+#include <limits>
 #include <set>
 
 #include "ipc/attachment_broker.h"
@@ -12,11 +13,12 @@
 #include "ipc/placeholder_brokerable_attachment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if USE_ATTACHMENT_BROKER
 namespace IPC {
 namespace internal {
 
 namespace {
+
+#if USE_ATTACHMENT_BROKER
 
 class MockAttachment : public BrokerableAttachment {
  public:
@@ -52,6 +54,8 @@ class MockAttachmentBroker : public AttachmentBroker {
     NotifyObservers(attachment->GetIdentifier());
   }
 };
+
+#endif  // USE_ATTACHMENT_BROKER
 
 class MockChannelReader : public ChannelReader {
  public:
@@ -92,7 +96,15 @@ class MockChannelReader : public ChannelReader {
   AttachmentBroker* broker_;
 };
 
+class ExposedMessage: public Message {
+ public:
+  using Message::Header;
+  using Message::header;
+};
+
 }  // namespace
+
+#if USE_ATTACHMENT_BROKER
 
 TEST(ChannelReaderTest, AttachmentAlreadyBrokered) {
   MockAttachmentBroker broker;
@@ -129,6 +141,55 @@ TEST(ChannelReaderTest, AttachmentNotYetBrokered) {
   EXPECT_EQ(m, reader.get_last_dispatched_message());
 }
 
+#endif  // USE_ATTACHMENT_BROKER
+
+#if !USE_ATTACHMENT_BROKER
+
+// We can determine message size from its header (and hence resize the buffer)
+// only when attachment broker is not used, see IPC::Message::FindNext().
+
+TEST(ChannelReaderTest, ResizeOverflowBuffer) {
+  MockChannelReader reader;
+
+  ExposedMessage::Header header = {};
+
+  header.payload_size = 128 * 1024;
+  EXPECT_LT(reader.input_overflow_buf_.capacity(), header.payload_size);
+  EXPECT_TRUE(reader.TranslateInputData(
+      reinterpret_cast<const char*>(&header), sizeof(header)));
+
+  // Once message header is available we resize overflow buffer to
+  // fit the entire message.
+  EXPECT_GE(reader.input_overflow_buf_.capacity(), header.payload_size);
+}
+
+TEST(ChannelReaderTest, InvalidMessageSize) {
+  MockChannelReader reader;
+
+  ExposedMessage::Header header = {};
+
+  size_t capacity_before = reader.input_overflow_buf_.capacity();
+
+  // Message is slightly larger than maximum allowed size
+  header.payload_size = Channel::kMaximumMessageSize + 1;
+  EXPECT_FALSE(reader.TranslateInputData(
+      reinterpret_cast<const char*>(&header), sizeof(header)));
+  EXPECT_LE(reader.input_overflow_buf_.capacity(), capacity_before);
+
+  // Payload size is negative, overflow is detected by Pickle::PeekNext()
+  header.payload_size = static_cast<uint32_t>(-1);
+  EXPECT_FALSE(reader.TranslateInputData(
+      reinterpret_cast<const char*>(&header), sizeof(header)));
+  EXPECT_LE(reader.input_overflow_buf_.capacity(), capacity_before);
+
+  // Payload size is maximum int32 value
+  header.payload_size = std::numeric_limits<int32_t>::max();
+  EXPECT_FALSE(reader.TranslateInputData(
+      reinterpret_cast<const char*>(&header), sizeof(header)));
+  EXPECT_LE(reader.input_overflow_buf_.capacity(), capacity_before);
+}
+
+#endif  // !USE_ATTACHMENT_BROKER
+
 }  // namespace internal
 }  // namespace IPC
-#endif  // USE_ATTACHMENT_BROKER

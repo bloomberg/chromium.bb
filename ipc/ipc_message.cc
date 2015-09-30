@@ -137,7 +137,8 @@ void Message::set_received_time(int64_t time) const {
 #endif
 
 Message::NextMessageInfo::NextMessageInfo()
-    : message_found(false), pickle_end(nullptr), message_end(nullptr) {}
+    : message_size(0), message_found(false), pickle_end(nullptr),
+      message_end(nullptr) {}
 Message::NextMessageInfo::~NextMessageInfo() {}
 
 Message::SerializedAttachmentIds
@@ -166,17 +167,28 @@ void Message::FindNext(const char* range_start,
                        const char* range_end,
                        NextMessageInfo* info) {
   DCHECK(info);
-  const char* pickle_end =
-      base::Pickle::FindNext(sizeof(Header), range_start, range_end);
-  if (!pickle_end)
+  info->message_found = false;
+  info->message_size = 0;
+
+  size_t pickle_size = 0;
+  if (!base::Pickle::PeekNext(sizeof(Header),
+                              range_start, range_end, &pickle_size))
     return;
-  info->pickle_end = pickle_end;
+
+  bool have_entire_pickle =
+      static_cast<size_t>(range_end - range_start) >= pickle_size;
 
 #if USE_ATTACHMENT_BROKER
+  // TODO(dskiba): determine message_size when entire pickle is not available
+
+  if (!have_entire_pickle)
+    return;
+
+  const char* pickle_end = range_start + pickle_size;
+
   // The data is not copied.
-  size_t pickle_len = static_cast<size_t>(pickle_end - range_start);
-  Message message(range_start, static_cast<int>(pickle_len));
-  int num_attachments = message.header()->num_brokered_attachments;
+  Message message(range_start, static_cast<int>(pickle_size));
+  size_t num_attachments = message.header()->num_brokered_attachments;
 
   // Check for possible overflows.
   size_t max_size_t = std::numeric_limits<size_t>::max();
@@ -184,12 +196,12 @@ void Message::FindNext(const char* range_start,
     return;
 
   size_t attachment_length = num_attachments * BrokerableAttachment::kNonceSize;
-  if (pickle_len > max_size_t - attachment_length)
+  if (pickle_size > max_size_t - attachment_length)
     return;
 
   // Check whether the range includes the attachments.
   size_t buffer_length = static_cast<size_t>(range_end - range_start);
-  if (buffer_length < attachment_length + pickle_len)
+  if (buffer_length < attachment_length + pickle_size)
     return;
 
   for (int i = 0; i < num_attachments; ++i) {
@@ -201,10 +213,19 @@ void Message::FindNext(const char* range_start,
   }
   info->message_end =
       pickle_end + num_attachments * BrokerableAttachment::kNonceSize;
+  info->message_size = info->message_end - range_start;
 #else
+  info->message_size = pickle_size;
+
+  if (!have_entire_pickle)
+    return;
+
+  const char* pickle_end = range_start + pickle_size;
+
   info->message_end = pickle_end;
 #endif  // USE_ATTACHMENT_BROKER
 
+  info->pickle_end = pickle_end;
   info->message_found = true;
 }
 

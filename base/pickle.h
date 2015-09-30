@@ -271,6 +271,18 @@ class BASE_EXPORT Pickle {
                               const char* range_start,
                               const char* range_end);
 
+  // Parse pickle header and return total size of the pickle. Data range
+  // doesn't need to contain entire pickle.
+  // Returns true if pickle header was found and parsed. Callers must check
+  // returned |pickle_size| for sanity (against maximum message size, etc).
+  // NOTE: when function successfully parses a header, but encounters an
+  // overflow during pickle size calculation, it sets |pickle_size| to the
+  // maximum size_t value and returns true.
+  static bool PeekNext(size_t header_size,
+                       const char* range_start,
+                       const char* range_end,
+                       size_t* pickle_size);
+
   // The allocation granularity of the payload.
   static const int kPayloadUnit;
 
@@ -298,6 +310,8 @@ class BASE_EXPORT Pickle {
 
   FRIEND_TEST_ALL_PREFIXES(PickleTest, DeepCopyResize);
   FRIEND_TEST_ALL_PREFIXES(PickleTest, Resize);
+  FRIEND_TEST_ALL_PREFIXES(PickleTest, PeekNext);
+  FRIEND_TEST_ALL_PREFIXES(PickleTest, PeekNextOverflow);
   FRIEND_TEST_ALL_PREFIXES(PickleTest, FindNext);
   FRIEND_TEST_ALL_PREFIXES(PickleTest, FindNextWithIncompleteHeader);
   FRIEND_TEST_ALL_PREFIXES(PickleTest, FindNextOverflow);

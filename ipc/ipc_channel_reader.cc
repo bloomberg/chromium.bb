@@ -78,16 +78,14 @@ bool ChannelReader::TranslateInputData(const char* input_data,
     p = input_data;
     end = input_data + input_data_len;
   } else {
-    if (input_overflow_buf_.size() + input_data_len >
-        Channel::kMaximumMessageSize) {
-      input_overflow_buf_.clear();
-      LOG(ERROR) << "IPC message is too big";
+    if (!CheckMessageSize(input_overflow_buf_.size() + input_data_len))
       return false;
-    }
     input_overflow_buf_.append(input_data, input_data_len);
     p = input_overflow_buf_.data();
     end = p + input_overflow_buf_.size();
   }
+
+  size_t next_message_size = 0;
 
   // Dispatch all complete messages in the data buffer.
   while (p < end) {
@@ -127,12 +125,26 @@ bool ChannelReader::TranslateInputData(const char* input_data,
       p = info.message_end;
     } else {
       // Last message is partial.
+      next_message_size = info.message_size;
+      if (!CheckMessageSize(next_message_size))
+        return false;
       break;
     }
   }
 
   // Save any partial data in the overflow buffer.
   input_overflow_buf_.assign(p, end - p);
+
+  if (!input_overflow_buf_.empty()) {
+    // We have something in the overflow buffer, which means that we will
+    // append the next data chunk (instead of parsing it directly). So we
+    // resize the buffer to fit the next message, to avoid repeatedly
+    // growing the buffer as we receive all message' data chunks.
+    next_message_size += Channel::kReadBufferSize - 1;
+    if (next_message_size > input_overflow_buf_.capacity()) {
+      input_overflow_buf_.reserve(next_message_size);
+    }
+  }
 
   if (input_overflow_buf_.empty() && !DidEmptyInputBuffers())
     return false;
@@ -247,6 +259,15 @@ void ChannelReader::StopObservingAttachmentBroker() {
 #if USE_ATTACHMENT_BROKER
   GetAttachmentBroker()->RemoveObserver(this);
 #endif  // USE_ATTACHMENT_BROKER
+}
+
+bool ChannelReader::CheckMessageSize(size_t size) {
+  if (size <= Channel::kMaximumMessageSize) {
+    return true;
+  }
+  input_overflow_buf_.clear();
+  LOG(ERROR) << "IPC message is too big: " << size;
+  return false;
 }
 
 }  // namespace internal

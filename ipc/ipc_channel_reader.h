@@ -127,6 +127,8 @@ class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
  private:
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, AttachmentAlreadyBrokered);
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, AttachmentNotYetBrokered);
+  FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, ResizeOverflowBuffer);
+  FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, InvalidMessageSize);
 
   typedef std::set<BrokerableAttachment::AttachmentId> AttachmentIdSet;
 
@@ -155,6 +157,9 @@ class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
   // is not empty.
   void StartObservingAttachmentBroker();
   void StopObservingAttachmentBroker();
+
+  // Checks that |size| is a valid message size. Has side effects if it's not.
+  bool CheckMessageSize(size_t size);
 
   Listener* listener_;
 
