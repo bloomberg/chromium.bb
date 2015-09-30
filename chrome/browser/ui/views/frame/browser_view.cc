@@ -1306,10 +1306,6 @@ void BrowserView::ShowTranslateBubble(
       error_type, is_user_gesture);
 }
 
-bool BrowserView::ShowSessionCrashedBubble() {
-  return SessionCrashedBubbleView::Show(browser_.get());
-}
-
 bool BrowserView::IsProfileResetBubbleSupported() const {
   return true;
 }

@@ -644,10 +644,6 @@ void BrowserWindowCocoa::ShowTranslateBubble(
                                        errorType:error_type];
 }
 
-bool BrowserWindowCocoa::ShowSessionCrashedBubble() {
-  return false;
-}
-
 bool BrowserWindowCocoa::IsProfileResetBubbleSupported() const {
   return false;
 }

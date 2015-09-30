@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_SESSION_CRASHED_BUBBLE_VIEW_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/session_crashed_bubble.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -32,30 +33,29 @@ class Browser;
 // crashed. It also presents an option to enable metrics reporting, if it not
 // enabled already.
 class SessionCrashedBubbleView
-    : public views::BubbleDelegateView,
+    : public SessionCrashedBubble,
+      public views::BubbleDelegateView,
       public views::ButtonListener,
       public views::StyledLabelListener,
       public content::WebContentsObserver,
       public content::NotificationObserver,
       public TabStripModelObserver {
  public:
-  static bool Show(Browser* browser);
-
- private:
   // A helper class that listens to browser removal event.
   class BrowserRemovalObserver;
-
-  SessionCrashedBubbleView(views::View* anchor_view,
-                           Browser* browser,
-                           content::WebContents* web_contents,
-                           bool offer_uma_optin);
-  ~SessionCrashedBubbleView() override;
 
   // Creates and shows the session crashed bubble, with |uma_opted_in_already|
   // indicating whether the user has already opted-in to UMA. It will be called
   // by Show. It takes ownership of |browser_observer|.
   static void ShowForReal(scoped_ptr<BrowserRemovalObserver> browser_observer,
                           bool uma_opted_in_already);
+
+ private:
+  SessionCrashedBubbleView(views::View* anchor_view,
+                           Browser* browser,
+                           content::WebContents* web_contents,
+                           bool offer_uma_optin);
+  ~SessionCrashedBubbleView() override;
 
   // WidgetDelegateView methods.
   views::View* GetInitiallyFocusedView() override;

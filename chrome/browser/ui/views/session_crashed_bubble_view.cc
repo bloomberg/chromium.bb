@@ -138,7 +138,7 @@ class SessionCrashedBubbleView::BrowserRemovalObserver
 };
 
 // static
-bool SessionCrashedBubbleView::Show(Browser* browser) {
+bool SessionCrashedBubble::Show(Browser* browser) {
   if (!IsBubbleUIEnabled())
     return false;
 
@@ -147,8 +147,8 @@ bool SessionCrashedBubbleView::Show(Browser* browser) {
     return true;
 
   // Observes browser removal event and will be deallocated in ShowForReal.
-  scoped_ptr<BrowserRemovalObserver> browser_observer(
-      new BrowserRemovalObserver(browser));
+  scoped_ptr<SessionCrashedBubbleView::BrowserRemovalObserver> browser_observer(
+      new SessionCrashedBubbleView::BrowserRemovalObserver(browser));
 
 // Stats collection only applies to Google Chrome builds.
 #if defined(GOOGLE_CHROME_BUILD)

@@ -164,10 +164,6 @@ gfx::Rect TestBrowserWindow::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }
 
-bool TestBrowserWindow::ShowSessionCrashedBubble() {
-  return false;
-}
-
 bool TestBrowserWindow::IsProfileResetBubbleSupported() const {
   return false;
 }
