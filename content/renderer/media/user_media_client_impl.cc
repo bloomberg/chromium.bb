@@ -654,10 +654,25 @@ void UserMediaClientImpl::OnCreateNativeTracksCompleted(
            << "{request_id = " << request->request_id << "} "
            << "{result = " << result << "})";
 
-  if (result == content::MEDIA_DEVICE_OK)
+  if (result == content::MEDIA_DEVICE_OK) {
     GetUserMediaRequestSucceeded(request->web_stream, request->request);
-  else
+  } else {
     GetUserMediaRequestFailed(request->request, result, result_name);
+
+    blink::WebVector<blink::WebMediaStreamTrack> tracks;
+    request->web_stream.audioTracks(tracks);
+    for (auto& web_track : tracks) {
+      MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
+      if (track)
+        track->Stop();
+    }
+    request->web_stream.videoTracks(tracks);
+    for (auto& web_track : tracks) {
+      MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
+      if (track)
+        track->Stop();
+    }
+  }
 
   DeleteUserMediaRequestInfo(request);
 }
