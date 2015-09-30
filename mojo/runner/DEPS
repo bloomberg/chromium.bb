@@ -3,7 +3,7 @@ include_rules = [
   "+components/mus",
   "+components/mus/gles2",
   "+components/mus/native_viewport",
-  "+components/mus/public",
+  "+components/mus/vm/public",
   "+components/tracing",
   "+crypto",
   "+jni",

@@ -213,7 +213,7 @@ source_set("lib") {
 
   data_deps = [
     "//components/clipboard",
-    "//components/mus",
+    "//components/mus/vm:lib",
     "//mojo/services/network:network",
     "//mojo/services/tracing",
   ]
@@ -359,7 +359,7 @@ mojo_native_application("apptests") {
 
   data_deps = [
     ":html_viewer",
-    "//components/mus",
+    "//components/mus/vm:lib",
   ]
 
   if (is_linux && !is_android) {

@@ -4,7 +4,8 @@
 
 source_set("gles2") {
   visibility = [
-    "//components/mus:lib",
+    "//components/mus:*",
+    "//components/mus/vm:*",
     "//components/mus/surfaces:*",
     "//mojo/runner:lib",  # For android
   ]

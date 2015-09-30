@@ -1,0 +1,171 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+import("//testing/test.gni")
+import("//mojo/public/mojo_application.gni")
+
+source_set("lib") {
+  sources = [
+    "access_policy.h",
+    "access_policy_delegate.h",
+    "client_connection.cc",
+    "client_connection.h",
+    "connection_manager.cc",
+    "connection_manager.h",
+    "connection_manager_delegate.h",
+    "default_access_policy.cc",
+    "default_access_policy.h",
+    "display_manager.cc",
+    "display_manager.h",
+    "display_manager_delegate.h",
+    "display_manager_factory.h",
+    "event_dispatcher.cc",
+    "event_dispatcher.h",
+    "focus_controller.cc",
+    "focus_controller.h",
+    "focus_controller_delegate.h",
+    "server_view.cc",
+    "server_view.h",
+    "server_view_delegate.h",
+    "server_view_drawn_tracker.cc",
+    "server_view_drawn_tracker.h",
+    "server_view_drawn_tracker_observer.h",
+    "server_view_observer.h",
+    "view_coordinate_conversions.cc",
+    "view_coordinate_conversions.h",
+    "view_tree_host_connection.cc",
+    "view_tree_host_connection.h",
+    "view_tree_host_delegate.h",
+    "view_tree_host_impl.cc",
+    "view_tree_host_impl.h",
+    "view_tree_impl.cc",
+    "view_tree_impl.h",
+    "window_manager_access_policy.cc",
+    "window_manager_access_policy.h",
+  ]
+
+  deps = [
+    "//base",
+    "//cc",
+    "//cc/surfaces",
+    "//cc/surfaces:surface_id",
+    "//components/mus/gles2:gles2",
+    "//components/mus/public/cpp:common",
+    "//components/mus/public/interfaces",
+    "//components/mus/surfaces",
+    "//mojo/application/public/cpp",
+    "//mojo/common:common_base",
+    "//mojo/common:tracing_impl",
+    "//mojo/converters/geometry",
+    "//mojo/converters/ime",
+    "//mojo/converters/input_events",
+    "//mojo/converters/surfaces",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
+    "//ui/events",
+    "//ui/events/platform",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl:gl",
+    "//ui/gl:test_support",
+    "//ui/mojo/events:interfaces",
+    "//ui/mojo/geometry:interfaces",
+    "//ui/platform_window:platform_impls",
+    "//ui/platform_window:platform_window",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "test_change_tracker.cc",
+    "test_change_tracker.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/mus/public/cpp",
+    "//components/mus/public/cpp:common",
+    "//components/mus/public/interfaces",
+    "//mojo/common",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
+    "//ui/mojo/geometry:interfaces",
+  ]
+}
+
+group("tests") {
+  testonly = true
+  deps = [
+    ":apptests",
+    ":view_manager_unittests",
+    "//components/mus/public/cpp/tests:mojo_view_manager_lib_unittests",
+  ]
+}
+
+test("view_manager_unittests") {
+  sources = [
+    "focus_controller_unittest.cc",
+    "server_view_drawn_tracker_unittest.cc",
+    "test_server_view_delegate.cc",
+    "test_server_view_delegate.h",
+    "view_coordinate_conversions_unittest.cc",
+    "view_tree_unittest.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    ":lib",
+    "//base",
+    "//base/test:test_config",
+    "//components/mus/surfaces",
+    "//components/mus/public/cpp:common",
+    "//components/mus/public/interfaces",
+    "//mojo/application/public/interfaces",
+    "//mojo/converters/geometry",
+    "//mojo/converters/input_events",
+    "//mojo/converters/transform",
+    "//mojo/environment:chromium",
+    "//mojo/platform_handle",
+    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
+    "//ui/mojo/geometry:interfaces",
+    "//ui/mojo/events:interfaces",
+    "//testing/gtest",
+    "//ui/gfx",
+    "//ui/gfx:test_support",
+    "//ui/gfx/geometry",
+  ]
+
+  if (!is_android) {  # TODO(GYP) Enable on Android when osmesa links.
+    deps += [ "//third_party/mesa:osmesa" ]
+  }
+}
+
+mojo_native_application("apptests") {
+  output_name = "mus_apptests"
+  testonly = true
+
+  sources = [
+    "view_manager_client_apptest.cc",
+    "view_tree_apptest.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    "//base",
+    "//base/test:test_config",
+    "//components/mus/public/cpp",
+    "//components/mus/public/cpp/tests:test_support",
+    "//components/mus/public/interfaces",
+    "//mojo/application/public/cpp:sources",
+    "//mojo/application/public/cpp:test_support",
+    "//ui/mojo/geometry:interfaces",
+    "//ui/mojo/geometry:util",
+  ]
+
+  data_deps = [
+    ":lib",
+  ]
+}

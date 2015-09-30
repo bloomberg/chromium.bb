@@ -36,7 +36,6 @@ mojo_native_application("pdf_viewer") {
 
   data_deps = [
     "//components/clipboard",
-    "//components/mus",
     "//components/resource_provider",
     "//mojo/services/network:network",
   ]

@@ -112,9 +112,9 @@ mojo_native_application("apptests") {
     ":test_support",
     "//base",
     "//base/test:test_config",
-    "//components/mus/public/cpp",
     "//components/mus/public/cpp/tests:test_support",
     "//components/mus/public/interfaces",
+    "//components/mus/public/cpp",
     "//components/web_view/public/cpp",
     "//components/web_view/public/interfaces",
     "//mojo/application/public/cpp:sources",
@@ -127,6 +127,6 @@ mojo_native_application("apptests") {
 
   data_deps = [
     ":web_view",
-    "//components/mus",
+    "//components/mus/vm:lib",
   ]
 }
