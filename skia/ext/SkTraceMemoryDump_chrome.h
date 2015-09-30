@@ -21,7 +21,7 @@ class ProcessMemoryDump;
 
 namespace skia {
 
-class SkTraceMemoryDump_Chrome : public SkTraceMemoryDump {
+class SK_API SkTraceMemoryDump_Chrome : public SkTraceMemoryDump {
  public:
   // This should never outlive the OnMemoryDump call since the
   // ProcessMemoryDump is valid only in that timeframe. Optional
