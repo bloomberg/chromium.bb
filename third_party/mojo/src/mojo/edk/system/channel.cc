@@ -156,11 +156,11 @@ bool Channel::WriteMessage(scoped_ptr<MessageInTransit> message) {
   if (!is_running_) {
     // TODO(vtl): I think this is probably not an error condition, but I should
     // think about it (and the shutdown sequence) more carefully.
-    LOG(WARNING) << "WriteMessage() after shutdown";
+    VLOG(2) << "WriteMessage() after shutdown";
     return false;
   }
 
-  DLOG_IF(WARNING, is_shutting_down_) << "WriteMessage() while shutting down";
+  DVLOG_IF(2, is_shutting_down_) << "WriteMessage() while shutting down";
   return raw_channel_->WriteMessage(message.Pass());
 }
 
@@ -339,7 +339,8 @@ void Channel::OnError(Error error) {
       break;
     case ERROR_READ_BROKEN: {
       MutexLocker locker(&mutex_);
-      LOG_IF(ERROR, !is_shutting_down_)
+      // The other side likely crashed or was killed.
+      VLOG_IF(2, !is_shutting_down_)
           << "RawChannel read error (connection broken)";
       break;
     }
@@ -581,7 +582,7 @@ bool Channel::OnRemoveEndpointAck(ChannelEndpointId local_id) {
 void Channel::HandleRemoteError(const char* error_message) {
   // TODO(vtl): Is this how we really want to handle this? Probably we want to
   // terminate the connection, since it's spewing invalid stuff.
-  LOG(WARNING) << error_message;
+  VLOG(2) << error_message;
 }
 
 void Channel::HandleLocalError(const char* error_message) {
@@ -590,7 +591,7 @@ void Channel::HandleLocalError(const char* error_message) {
   // (endpoint), and notify it that the remote is (effectively) closed.
   // Sometimes we'll want to kill the channel (and notify all the endpoints that
   // their remotes are dead.
-  LOG(WARNING) << error_message;
+  VLOG(2) << error_message;
 }
 
 // Note: |endpoint| being a |scoped_refptr| makes this function safe, since it
