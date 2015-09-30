@@ -27,7 +27,7 @@ config("jingle_unexported_configs") {
 
   include_dirs = [
     "overrides",
-    "../../third_party/webrtc/overrides",
+    "../../third_party/webrtc_overrides",
     "source",
     "../../testing/gtest/include",
     "../../third_party",
@@ -46,7 +46,7 @@ config("jingle_unexported_configs") {
 # From third_party/libjingle/libjingle.gyp's target_defaults.
 config("jingle_public_configs") {
   include_dirs = [
-    "../../third_party/webrtc/overrides",
+    "../../third_party/webrtc_overrides",
     "overrides",
     "source",
     "../../testing/gtest/include",

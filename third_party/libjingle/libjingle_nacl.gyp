@@ -271,7 +271,7 @@
         'include_dirs': [
           './overrides',
           './<(libjingle_source)',
-          '../../third_party/webrtc/overrides',
+          '../../third_party/webrtc_overrides',
           '../../third_party',
           '../../third_party/webrtc',
         ],

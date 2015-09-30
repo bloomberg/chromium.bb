@@ -17,7 +17,7 @@
 // libjingle style logging is used.
 #define LOGGING_INSIDE_WEBRTC
 
-#include "third_party/webrtc/overrides/webrtc/base/logging.h"
+#include "third_party/webrtc_overrides/webrtc/base/logging.h"
 
 #if defined(OS_WIN)
 static const wchar_t* const log_file_name = L"libjingle_logging.log";

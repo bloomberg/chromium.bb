@@ -3,5 +3,5 @@ include_rules = [
   # For video copying, cropping and scaling.
   # TODO(wuchengli): remove this when RTCVideoEncoder supports zero copy.
   "+third_party/libyuv",
+  '+third_party/webrtc_overrides',
 ]
-
