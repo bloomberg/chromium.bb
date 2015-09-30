@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 
-#include "core/layout/svg/LayoutSVGInlineText.h"
+#include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
@@ -165,7 +165,7 @@ static inline void swapItemsInLayoutAttributes(SVGTextLayoutAttributes* firstAtt
     std::swap(itFirst->value, itLast->value);
 }
 
-static inline void findFirstAndLastAttributesInVector(Vector<SVGTextLayoutAttributes*>& attributes, LayoutSVGInlineText* firstContext, LayoutSVGInlineText* lastContext, SVGTextLayoutAttributes*& first, SVGTextLayoutAttributes*& last)
+static inline void findFirstAndLastAttributesInVector(Vector<SVGTextLayoutAttributes*>& attributes, LineLayoutSVGInlineText firstContext, LineLayoutSVGInlineText lastContext, SVGTextLayoutAttributes*& first, SVGTextLayoutAttributes*& last)
 {
     first = 0;
     last = 0;
@@ -208,12 +208,12 @@ static inline void reverseInlineBoxRangeAndValueListsIfNeeded(void* userData, Ve
 
         // Reordering is only necessary for BiDi text that is _absolutely_ positioned.
         if (firstTextBox->len() == 1 && firstTextBox->len() == lastTextBox->len()) {
-            LayoutSVGInlineText& firstContext = toLayoutSVGInlineText(firstTextBox->layoutObject());
-            LayoutSVGInlineText& lastContext = toLayoutSVGInlineText(lastTextBox->layoutObject());
+            LineLayoutSVGInlineText firstContext = LineLayoutSVGInlineText(firstTextBox->lineLayoutItem());
+            LineLayoutSVGInlineText lastContext = LineLayoutSVGInlineText(lastTextBox->lineLayoutItem());
 
             SVGTextLayoutAttributes* firstAttributes = nullptr;
             SVGTextLayoutAttributes* lastAttributes = nullptr;
-            findFirstAndLastAttributesInVector(attributes, &firstContext, &lastContext, firstAttributes, lastAttributes);
+            findFirstAndLastAttributesInVector(attributes, firstContext, lastContext, firstAttributes, lastAttributes);
             swapItemsInLayoutAttributes(firstAttributes, lastAttributes, firstTextBox->start(), lastTextBox->start());
         }
 

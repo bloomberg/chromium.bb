@@ -30,6 +30,17 @@ public:
         return toSVGInlineText()->characterStartsNewTextChunk(position);
     }
 
+    float scalingFactor() const
+    {
+        return toSVGInlineText()->scalingFactor();
+    }
+
+    const Font& scaledFont() const
+    {
+        return toSVGInlineText()->scaledFont();
+    }
+
+
 private:
     LayoutSVGInlineText* toSVGInlineText()
     {

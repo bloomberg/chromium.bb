@@ -31,10 +31,10 @@
 #include "core/layout/svg/SVGLayoutTreeAsText.h"
 
 #include "core/layout/LayoutTreeAsText.h"
+#include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/svg/LayoutSVGGradientStop.h"
 #include "core/layout/svg/LayoutSVGImage.h"
-#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceLinearGradient.h"
@@ -400,9 +400,9 @@ static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textB
     if (fragments.isEmpty())
         return;
 
-    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(textBox->layoutObject());
+    LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText(textBox->lineLayoutItem());
 
-    const SVGComputedStyle& svgStyle = textLayoutObject.style()->svgStyle();
+    const SVGComputedStyle& svgStyle = textLineLayout.style()->svgStyle();
     String text = textBox->lineLayoutItem().text();
 
     unsigned fragmentsSize = fragments.size();

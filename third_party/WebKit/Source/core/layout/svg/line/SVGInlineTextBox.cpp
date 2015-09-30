@@ -30,6 +30,7 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/PointerEventsHitRules.h"
+#include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
@@ -77,12 +78,12 @@ int SVGInlineTextBox::offsetForPosition(LayoutUnit, bool) const
 
 int SVGInlineTextBox::offsetForPositionInFragment(const SVGTextFragment& fragment, LayoutUnit position, bool includePartialGlyphs) const
 {
-    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(this->layoutObject());
+    LineLayoutSVGInlineText lineLayoutItem = LineLayoutSVGInlineText(this->lineLayoutItem());
 
-    float scalingFactor = textLayoutObject.scalingFactor();
+    float scalingFactor = lineLayoutItem.scalingFactor();
     ASSERT(scalingFactor);
 
-    const ComputedStyle& style = textLayoutObject.styleRef();
+    const ComputedStyle& style = lineLayoutItem.styleRef();
 
     TextRun textRun = constructTextRun(style, fragment);
 
@@ -93,7 +94,7 @@ int SVGInlineTextBox::offsetForPositionInFragment(const SVGTextFragment& fragmen
     if (!fragmentTransform.isIdentity())
         textRun.setHorizontalGlyphStretch(narrowPrecisionToFloat(fragmentTransform.xScale()));
 
-    return fragment.characterOffset - start() + textLayoutObject.scaledFont().offsetForPosition(textRun, position * scalingFactor, includePartialGlyphs);
+    return fragment.characterOffset - start() + lineLayoutItem.scaledFont().offsetForPosition(textRun, position * scalingFactor, includePartialGlyphs);
 }
 
 LayoutUnit SVGInlineTextBox::positionForOffset(int) const
@@ -107,12 +108,12 @@ FloatRect SVGInlineTextBox::selectionRectForTextFragment(const SVGTextFragment& 
 {
     ASSERT(startPosition < endPosition);
 
-    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(this->layoutObject());
+    LineLayoutSVGInlineText lineLayoutItem = LineLayoutSVGInlineText(this->lineLayoutItem());
 
-    float scalingFactor = textLayoutObject.scalingFactor();
+    float scalingFactor = lineLayoutItem.scalingFactor();
     ASSERT(scalingFactor);
 
-    const Font& scaledFont = textLayoutObject.scaledFont();
+    const Font& scaledFont = lineLayoutItem.scaledFont();
     const FontMetrics& scaledFontMetrics = scaledFont.fontMetrics();
     FloatPoint textOrigin(fragment.x, fragment.y);
     if (scalingFactor != 1)
@@ -228,12 +229,12 @@ LayoutRect SVGInlineTextBox::calculateBoundaries() const
 {
     LayoutRect textRect;
 
-    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(this->layoutObject());
+    LineLayoutSVGInlineText lineLayoutItem = LineLayoutSVGInlineText(this->lineLayoutItem());
 
-    float scalingFactor = textLayoutObject.scalingFactor();
+    float scalingFactor = lineLayoutItem.scalingFactor();
     ASSERT(scalingFactor);
 
-    LayoutUnit baseline = textLayoutObject.scaledFont().fontMetrics().floatAscent() / scalingFactor;
+    LayoutUnit baseline = lineLayoutItem.scaledFont().fontMetrics().floatAscent() / scalingFactor;
 
     AffineTransform fragmentTransform;
     unsigned textFragmentsSize = m_textFragments.size();
