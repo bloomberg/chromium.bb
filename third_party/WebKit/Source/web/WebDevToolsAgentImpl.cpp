@@ -139,7 +139,7 @@ public:
     {
         // Release render thread if necessary.
         if (s_instance && s_instance->m_running)
-            MainThreadDebugger::instance()->debugger()->continueProgram();
+            s_instance->quitNow();
     }
 
 private:

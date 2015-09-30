@@ -12,8 +12,6 @@
 
 namespace blink {
 
-class V8DebuggerListener;
-
 class CORE_EXPORT V8DebuggerClient {
     WTF_MAKE_FAST_ALLOCATED(V8DebuggerClient);
 public:

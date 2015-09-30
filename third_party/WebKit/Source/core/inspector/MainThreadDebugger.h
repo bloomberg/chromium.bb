@@ -78,8 +78,6 @@ private:
 
     static WTF::Mutex& creationMutex();
 
-    using ListenersMap = HashMap<int, V8DebuggerListener*>;
-    ListenersMap m_listenersMap;
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
     OwnPtr<InspectorTaskRunner> m_taskRunner;
 

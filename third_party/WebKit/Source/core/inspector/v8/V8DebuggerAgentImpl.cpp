@@ -123,10 +123,10 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(v8::Local<v8::O
 
 PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, V8DebuggerAgentImpl::Client* client, int contextGroupId)
 {
-    return adoptPtr(new V8DebuggerAgentImpl(injectedScriptManager, debugger, client, contextGroupId));
+    return adoptPtr(new V8DebuggerAgentImpl(injectedScriptManager, static_cast<V8DebuggerImpl*>(debugger), client, contextGroupId));
 }
 
-V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, V8DebuggerAgentImpl::Client* client, int contextGroupId)
+V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptManager, V8DebuggerImpl* debugger, V8DebuggerAgentImpl::Client* client, int contextGroupId)
     : m_injectedScriptManager(injectedScriptManager)
     , m_debugger(debugger)
     , m_client(client)

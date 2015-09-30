@@ -13,6 +13,7 @@
 #include "core/inspector/PromiseTracker.h"
 #include "core/inspector/v8/ScriptBreakpoint.h"
 #include "core/inspector/v8/V8DebuggerAgent.h"
+#include "core/inspector/v8/V8DebuggerImpl.h"
 #include "core/inspector/v8/V8DebuggerListener.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -35,7 +36,6 @@ class RemoteCallFrameId;
 class ScriptAsyncCallStack;
 class ScriptRegexp;
 class V8AsyncCallTracker;
-class V8Debugger;
 
 typedef String ErrorString;
 
@@ -47,7 +47,7 @@ class CORE_EXPORT V8DebuggerAgentImpl
     WTF_MAKE_NONCOPYABLE(V8DebuggerAgentImpl);
     WTF_MAKE_FAST_ALLOCATED(V8DebuggerAgentImpl);
 public:
-    V8DebuggerAgentImpl(InjectedScriptManager*, V8Debugger*, V8DebuggerAgent::Client*, int contextGroupId);
+    V8DebuggerAgentImpl(InjectedScriptManager*, V8DebuggerImpl*, V8DebuggerAgent::Client*, int contextGroupId);
     ~V8DebuggerAgentImpl() override;
     DECLARE_TRACE();
 
@@ -116,7 +116,7 @@ public:
     void didExecuteScript() override;
 
     bool enabled() override;
-    V8Debugger& debugger() override { return *m_debugger; }
+    V8DebuggerImpl& debugger() override { return *m_debugger; }
 
     void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String& condition = String()) override;
     void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource) override;
@@ -193,7 +193,7 @@ private:
     };
 
     RawPtrWillBeWeakPersistent<InjectedScriptManager> m_injectedScriptManager;
-    V8Debugger* m_debugger;
+    V8DebuggerImpl* m_debugger;
     V8DebuggerAgent::Client* m_client;
     int m_contextGroupId;
     InspectorState* m_state;

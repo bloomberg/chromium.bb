@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
-#include "core/inspector/v8/V8DebuggerListener.h"
 #include "core/workers/WorkerThread.h"
 #include <v8.h>
 
@@ -43,7 +42,6 @@ static const int workerContextGroupId = 1;
 
 WorkerThreadDebugger::WorkerThreadDebugger(WorkerThread* workerThread)
     : ScriptDebuggerBase(v8::Isolate::GetCurrent())
-    , m_listener(nullptr)
     , m_workerThread(workerThread)
 {
 }

@@ -43,7 +43,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/v8/V8DebuggerListener.h"
 #include "core/page/Page.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

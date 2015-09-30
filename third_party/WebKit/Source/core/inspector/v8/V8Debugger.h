@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/InspectorTypeBuilder.h"
-#include "core/inspector/v8/V8DebuggerListener.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
@@ -30,15 +29,9 @@ public:
     virtual bool enabled() const = 0;
 
     // Each v8::Context is a part of a group. The group id is used to find approapriate
-    // V8DebuggerListener to notify about events in the context.
+    // V8DebuggerAgent to notify about events in the context.
     // |contextGroupId| must be non-0.
     static void setContextDebugData(v8::Local<v8::Context>, const String& type, int contextGroupId);
-    virtual void addListener(int contextGroupId, V8DebuggerListener*) = 0;
-    virtual void removeListener(int contextGroupId) = 0;
-
-    virtual String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation) = 0;
-    virtual void removeBreakpoint(const String& breakpointId) = 0;
-    virtual void setBreakpointsActivated(bool) = 0;
 
     enum PauseOnExceptionsState {
         DontPauseOnExceptions,
@@ -48,30 +41,17 @@ public:
     virtual PauseOnExceptionsState pauseOnExceptionsState() = 0;
     virtual void setPauseOnExceptionsState(PauseOnExceptionsState) = 0;
 
+    // TODO: remove these methods once runtime agent is part of the implementation.
     virtual void setPauseOnNextStatement(bool) = 0;
     virtual bool pausingOnNextStatement() = 0;
-    virtual bool canBreakProgram() = 0;
-    virtual void breakProgram() = 0;
-    virtual void continueProgram() = 0;
-    virtual void stepIntoStatement() = 0;
-    virtual void stepOverStatement() = 0;
-    virtual void stepOutOfFunction() = 0;
-    virtual void clearStepping() = 0;
-
-    virtual bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, v8::Global<v8::Object>* newCallFrames, TypeBuilder::OptOutput<bool>* stackChanged) = 0;
-    virtual v8::Local<v8::Object> currentCallFrames() = 0;
-    virtual v8::Local<v8::Object> currentCallFramesForAsyncStack() = 0;
-    virtual PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index) = 0;
-    virtual int frameCount() = 0;
 
     virtual bool isPaused() = 0;
 
+    // TODO: these methods will not be public once InjectedScriptHost is in the implementation.
     virtual v8::Local<v8::Value> functionScopes(v8::Local<v8::Function>) = 0;
     virtual v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&) = 0;
     virtual v8::Local<v8::Value> collectionEntries(v8::Local<v8::Object>&) = 0;
     virtual v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue) = 0;
-
-    virtual v8::Isolate* isolate() const = 0;
 };
 
 } // namespace blink

@@ -54,31 +54,31 @@ public:
 
     bool enabled() const override;
 
-    void addListener(int contextGroupId, V8DebuggerListener*) override;
-    void removeListener(int contextGroupId) override;
+    void addListener(int contextGroupId, V8DebuggerListener*);
+    void removeListener(int contextGroupId);
 
-    String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation) override;
-    void removeBreakpoint(const String& breakpointId) override;
-    void setBreakpointsActivated(bool) override;
+    String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
+    void removeBreakpoint(const String& breakpointId);
+    void setBreakpointsActivated(bool);
 
     PauseOnExceptionsState pauseOnExceptionsState() override;
     void setPauseOnExceptionsState(PauseOnExceptionsState) override;
 
     void setPauseOnNextStatement(bool) override;
     bool pausingOnNextStatement() override;
-    bool canBreakProgram() override;
-    void breakProgram() override;
-    void continueProgram() override;
-    void stepIntoStatement() override;
-    void stepOverStatement() override;
-    void stepOutOfFunction() override;
-    void clearStepping() override;
+    bool canBreakProgram();
+    void breakProgram();
+    void continueProgram();
+    void stepIntoStatement();
+    void stepOverStatement();
+    void stepOutOfFunction();
+    void clearStepping();
 
-    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, v8::Global<v8::Object>* newCallFrames, TypeBuilder::OptOutput<bool>* stackChanged) override;
-    v8::Local<v8::Object> currentCallFrames() override;
-    v8::Local<v8::Object> currentCallFramesForAsyncStack() override;
-    PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index) override;
-    int frameCount() override;
+    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, v8::Global<v8::Object>* newCallFrames, TypeBuilder::OptOutput<bool>* stackChanged);
+    v8::Local<v8::Object> currentCallFrames();
+    v8::Local<v8::Object> currentCallFramesForAsyncStack();
+    PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index);
+    int frameCount();
 
     bool isPaused() override;
 
@@ -87,7 +87,7 @@ public:
     v8::Local<v8::Value> collectionEntries(v8::Local<v8::Object>&) override;
     v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue) override;
 
-    v8::Isolate* isolate() const override { return m_isolate; }
+    v8::Isolate* isolate() const { return m_isolate; }
 
 private:
     void enable();
