@@ -6,6 +6,7 @@ package org.chromium.webview_shell;
 
 import android.os.Environment;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.suitebuilder.annotation.MediumTest;
 
 import junit.framework.ComparisonFailure;
 
@@ -67,17 +68,20 @@ public class WebViewLayoutTest
         return (WebViewLayoutTestRunner) super.getInstrumentation();
     }
 
+    @MediumTest
     public void testSimple() throws Exception {
         runWebViewLayoutTest("experimental/basic-logging.html",
                              "experimental/basic-logging-expected.txt");
     }
 
     // This is a non-failing test because it tends to require frequent rebaselines.
+    @MediumTest
     public void testGlobalInterfaceNoFail() throws Exception {
         runBlinkLayoutTest("webexposed/global-interface-listing.html",
                            "webexposed/global-interface-listing-expected.txt", true);
     }
 
+    @MediumTest
     public void testNoUnexpectedInterfaces() throws Exception {
         ensureJsTestCopied();
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
@@ -101,6 +105,7 @@ public class WebViewLayoutTest
         assertEquals("Unexpected new webview interfaces found", "", newInterfaces.toString());
     }
 
+    @MediumTest
     public void testWebViewExcludedInterfaces() throws Exception {
         ensureJsTestCopied();
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
@@ -130,6 +135,7 @@ public class WebViewLayoutTest
         assertEquals("Unexpected webview interfaces found", "", unexpected.toString());
     }
 
+    @MediumTest
     public void testWebViewIncludedStableInterfaces() throws Exception {
         ensureJsTestCopied();
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
@@ -164,16 +170,19 @@ public class WebViewLayoutTest
 
     // Blink platform API tests
 
+    @MediumTest
     public void testGeolocationCallbacks() throws Exception {
         runWebViewLayoutTest("blink-apis/geolocation/geolocation-permission-callbacks.html",
                 "blink-apis/geolocation/geolocation-permission-callbacks-expected.txt");
     }
 
+    @MediumTest
     public void testMediaStreamApiDenyPermission() throws Exception {
         runWebViewLayoutTest("blink-apis/webrtc/mediastream-permission-denied-callbacks.html",
                 "blink-apis/webrtc/mediastream-permission-denied-callbacks-expected.txt");
     }
 
+    @MediumTest
     public void testMediaStreamApi() throws Exception {
         mTestActivity.setGrantPermission(true);
         runWebViewLayoutTest("blink-apis/webrtc/mediastream-callbacks.html",

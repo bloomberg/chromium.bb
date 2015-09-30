@@ -5,7 +5,10 @@
 package org.chromium.webview_shell;
 
 import android.os.Bundle;
+import android.test.AndroidTestRunner;
 import android.test.InstrumentationTestRunner;
+
+import org.chromium.test.reporter.TestStatusListener;
 
 /**
  * Customized test runner for running instrumentation tests in WebViewBrowserTests.
@@ -24,5 +27,12 @@ public class WebViewLayoutTestRunner extends InstrumentationTestRunner {
 
     public boolean isRebaseline() {
         return mModeArgument != null ? mModeArgument.equals(MODE_REBASELINE) : false;
+    }
+
+    @Override
+    protected AndroidTestRunner getAndroidTestRunner() {
+        AndroidTestRunner runner = super.getAndroidTestRunner();
+        runner.addTestListener(new TestStatusListener(getContext()));
+        return runner;
     }
 }

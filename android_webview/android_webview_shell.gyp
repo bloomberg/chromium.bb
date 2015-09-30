@@ -8,6 +8,8 @@
       'type': 'none',
       'dependencies': [
         '../base/base.gyp:base_java_test_support',
+        '../testing/android/on_device_instrumentation.gyp:broker_java',
+        '../testing/android/on_device_instrumentation.gyp:require_driver_apk',
       ],
       'variables': {
         'apk_name': 'AndroidWebViewShell',
