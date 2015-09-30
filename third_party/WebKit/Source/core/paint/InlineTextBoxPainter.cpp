@@ -488,17 +488,10 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext* context, const Layout
     int selHeight = std::max(0, roundToInt(selectionBottom - selectionTop));
 
     FloatPoint localOrigin(boxRect.x().toFloat(), (boxRect.y() - deltaY).toFloat());
-
-    LayoutUnit selectionWidth = m_inlineTextBox.logicalWidth();
     LayoutRect selectionRect = LayoutRect(font.selectionRectForText(textRun, localOrigin, selHeight, sPos, ePos));
-    if (m_inlineTextBox.hasWrappedSelectionNewline()) {
+    if (m_inlineTextBox.hasWrappedSelectionNewline())
         expandToIncludeNewlineForSelection(selectionRect);
-        // TODO(wkorman): Make this work with RTL and vertical text.
-        selectionWidth += m_inlineTextBox.newlineSpaceWidth();
-    }
-    FloatRect clipRect(localOrigin, FloatSize(selectionWidth.toFloat(), selHeight));
-    // TODO(wkorman): Experiment with not clipping.
-    context->clip(clipRect);
+
     context->fillRect(FloatRect(selectionRect), c);
 }
 
