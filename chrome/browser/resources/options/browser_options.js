@@ -674,7 +674,6 @@ cr.define('options', function() {
             'settings.accessibility',
             updateAccessibilitySettingsButton);
         $('accessibility-learn-more').onclick = function(unused_event) {
-          window.open(loadTimeData.getString('accessibilityLearnMoreURL'));
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_AccessibilityLearnMore']);
         };
