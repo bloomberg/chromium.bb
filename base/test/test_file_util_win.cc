@@ -132,85 +132,21 @@ bool DieFileDie(const FilePath& file, bool recurse) {
 }
 
 bool EvictFileFromSystemCache(const FilePath& file) {
-  // Request exclusive access to the file and overwrite it with no buffering.
   base::win::ScopedHandle file_handle(
       CreateFile(file.value().c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL,
                  OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL));
   if (!file_handle.IsValid())
     return false;
 
-  // Get some attributes to restore later.
+  // Re-write the file time information to trigger cache eviction for the file.
+  // This function previously overwrote the entire file without buffering, but
+  // local experimentation validates this simplified and *much* faster approach:
+  // [1] Sysinternals RamMap no longer lists these files as cached afterwards.
+  // [2] Telemetry performance test startup.cold.blank_page reports sane values.
   BY_HANDLE_FILE_INFORMATION bhi = {0};
   CHECK(::GetFileInformationByHandle(file_handle.Get(), &bhi));
-
-  // Execute in chunks. It could be optimized. We want to do few of these since
-  // these operations will be slow without the cache.
-
-  // Allocate a buffer for the reads and the writes.
-  char* buffer = reinterpret_cast<char*>(VirtualAlloc(NULL,
-                                                      kOneMB,
-                                                      MEM_COMMIT | MEM_RESERVE,
-                                                      PAGE_READWRITE));
-
-  // If the file size isn't a multiple of kOneMB, we'll need special
-  // processing.
-  bool file_is_aligned = true;
-  int total_bytes = 0;
-  DWORD bytes_read, bytes_written;
-  for (;;) {
-    bytes_read = 0;
-    ::ReadFile(file_handle.Get(), buffer, kOneMB, &bytes_read, NULL);
-    if (bytes_read == 0)
-      break;
-
-    if (bytes_read < kOneMB) {
-      // Zero out the remaining part of the buffer.
-      // WriteFile will fail if we provide a buffer size that isn't a
-      // sector multiple, so we'll have to write the entire buffer with
-      // padded zeros and then use SetEndOfFile to truncate the file.
-      ZeroMemory(buffer + bytes_read, kOneMB - bytes_read);
-      file_is_aligned = false;
-    }
-
-    // Move back to the position we just read from.
-    // Note that SetFilePointer will also fail if total_bytes isn't sector
-    // aligned, but that shouldn't happen here.
-    DCHECK_EQ(total_bytes % kOneMB, 0);
-    SetFilePointer(file_handle.Get(), total_bytes, NULL, FILE_BEGIN);
-    if (!::WriteFile(file_handle.Get(), buffer, kOneMB, &bytes_written, NULL) ||
-        bytes_written != kOneMB) {
-      BOOL freed = VirtualFree(buffer, 0, MEM_RELEASE);
-      DCHECK(freed);
-      NOTREACHED();
-      return false;
-    }
-
-    total_bytes += bytes_read;
-
-    // If this is false, then we just processed the last portion of the file.
-    if (!file_is_aligned)
-      break;
-  }
-
-  BOOL freed = VirtualFree(buffer, 0, MEM_RELEASE);
-  DCHECK(freed);
-
-  if (!file_is_aligned) {
-    // The size of the file isn't a multiple of 1 MB, so we'll have
-    // to open the file again, this time without the FILE_FLAG_NO_BUFFERING
-    // flag and use SetEndOfFile to mark EOF.
-    file_handle.Set(NULL);
-    file_handle.Set(CreateFile(file.value().c_str(), GENERIC_WRITE, 0, NULL,
-                               OPEN_EXISTING, 0, NULL));
-    CHECK_NE(SetFilePointer(file_handle.Get(), total_bytes, NULL, FILE_BEGIN),
-             INVALID_SET_FILE_POINTER);
-    CHECK(::SetEndOfFile(file_handle.Get()));
-  }
-
-  // Restore the file attributes.
   CHECK(::SetFileTime(file_handle.Get(), &bhi.ftCreationTime,
                       &bhi.ftLastAccessTime, &bhi.ftLastWriteTime));
-
   return true;
 }
 
