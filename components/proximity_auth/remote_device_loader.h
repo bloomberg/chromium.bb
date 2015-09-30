@@ -17,6 +17,7 @@
 
 namespace proximity_auth {
 
+class ProximityAuthPrefManager;
 class SecureMessageDelegate;
 
 // Loads a collection of RemoteDevice objects from the given ExternalDeviceInfo
@@ -29,11 +30,13 @@ class RemoteDeviceLoader {
   // |user_private_key|: The private key of the user's local device. Used to
   //                     derive the PSK.
   // |secure_message_delegate|: Used to derive each persistent symmetric key.
+  // |pref_manager|: Used to retrieve the Bluetooth address of BLE devices.
   RemoteDeviceLoader(
       const std::vector<cryptauth::ExternalDeviceInfo>& unlock_keys,
       const std::string& user_id,
       const std::string& user_private_key,
-      scoped_ptr<SecureMessageDelegate> secure_message_delegate);
+      scoped_ptr<SecureMessageDelegate> secure_message_delegate,
+      ProximityAuthPrefManager* pref_manager);
 
   ~RemoteDeviceLoader();
 
@@ -59,6 +62,9 @@ class RemoteDeviceLoader {
 
   // Performs the PSK key derivation.
   scoped_ptr<SecureMessageDelegate> secure_message_delegate_;
+
+  // Used to retrieve the address for BLE devices. Not owned.
+  ProximityAuthPrefManager* pref_manager_;
 
   // Invoked when the RemoteDevices are loaded.
   RemoteDeviceCallback callback_;

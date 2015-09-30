@@ -5,8 +5,10 @@
 #include "components/proximity_auth/remote_device_loader.h"
 
 #include "base/bind.h"
+#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/proximity_auth_pref_manager.h"
 
 namespace proximity_auth {
 
@@ -14,11 +16,13 @@ RemoteDeviceLoader::RemoteDeviceLoader(
     const std::vector<cryptauth::ExternalDeviceInfo>& unlock_keys,
     const std::string& user_id,
     const std::string& user_private_key,
-    scoped_ptr<SecureMessageDelegate> secure_message_delegate)
+    scoped_ptr<SecureMessageDelegate> secure_message_delegate,
+    ProximityAuthPrefManager* pref_manager)
     : remaining_unlock_keys_(unlock_keys),
       user_id_(user_id),
       user_private_key_(user_private_key),
       secure_message_delegate_(secure_message_delegate.Pass()),
+      pref_manager_(pref_manager),
       weak_ptr_factory_(this) {}
 
 RemoteDeviceLoader::~RemoteDeviceLoader() {}
@@ -65,9 +69,19 @@ void RemoteDeviceLoader::OnPSKDerived(
   RemoteDevice::BluetoothType bluetooth_type =
       unlock_key.bluetooth_address().empty() ? RemoteDevice::BLUETOOTH_LE
                                              : RemoteDevice::BLUETOOTH_CLASSIC;
+
+  std::string bluetooth_address = unlock_key.bluetooth_address();
+  if (bluetooth_address.empty() && pref_manager_) {
+    std::string b64_public_key;
+    Base64UrlEncode(unlock_key.public_key(), &b64_public_key);
+    bluetooth_address = pref_manager_->GetDeviceAddress(b64_public_key);
+    PA_LOG(INFO) << "The BLE address of " << unlock_key.friendly_device_name()
+                 << " is " << bluetooth_address;
+  }
+
   remote_devices_.push_back(RemoteDevice(
       user_id_, unlock_key.friendly_device_name(), unlock_key.public_key(),
-      bluetooth_type, unlock_key.bluetooth_address(), psk, std::string()));
+      bluetooth_type, bluetooth_address, psk, std::string()));
 
   if (!remaining_unlock_keys_.size())
     callback_.Run(remote_devices_);

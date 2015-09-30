@@ -36,6 +36,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
+#include "components/proximity_auth/proximity_auth_pref_manager.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -283,6 +284,7 @@ void EasyUnlockService::RegisterProfilePrefs(
   proximity_auth::CryptAuthGCMManager::RegisterPrefs(registry);
   proximity_auth::CryptAuthDeviceManager::RegisterPrefs(registry);
   proximity_auth::CryptAuthEnrollmentManager::RegisterPrefs(registry);
+  proximity_auth::ProximityAuthPrefManager::RegisterPrefs(registry);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery))

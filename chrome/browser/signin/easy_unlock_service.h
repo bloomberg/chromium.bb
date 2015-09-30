@@ -108,6 +108,7 @@ class EasyUnlockService : public KeyedService {
   // Gets/Sets the remote devices list.
   virtual const base::ListValue* GetRemoteDevices() const = 0;
   virtual void SetRemoteDevices(const base::ListValue& devices) = 0;
+  virtual void SetRemoteBleDevices(const base::ListValue& devices) = 0;
 
   // Runs the flow for turning Easy unlock off.
   virtual void RunTurnOffFlow() = 0;

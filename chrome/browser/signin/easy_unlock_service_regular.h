@@ -34,6 +34,7 @@ class CryptAuthClient;
 class CryptAuthGCMManager;
 class CryptAuthEnrollmentManager;
 class CryptAuthDeviceManager;
+class ProximityAuthPrefManager;
 }
 
 class EasyUnlockAppManager;
@@ -58,6 +59,10 @@ class EasyUnlockServiceRegular
   // synced devices from CryptAuth.
   proximity_auth::CryptAuthDeviceManager* GetCryptAuthDeviceManager();
 
+  // Returns the ProximityAuthPrefManager, which manages the profile's
+  // prefs for proximity_auth classes.
+  proximity_auth::ProximityAuthPrefManager* GetProximityAuthPrefManager();
+
  private:
   // EasyUnlockService implementation:
   EasyUnlockService::Type GetType() const override;
@@ -68,6 +73,7 @@ class EasyUnlockServiceRegular
   void ClearPermitAccess() override;
   const base::ListValue* GetRemoteDevices() const override;
   void SetRemoteDevices(const base::ListValue& devices) override;
+  void SetRemoteBleDevices(const base::ListValue& devices) override;
   void RunTurnOffFlow() override;
   void ResetTurnOffFlow() override;
   TurnOffFlowStatus GetTurnOffFlowStatus() const override;
@@ -155,6 +161,9 @@ class EasyUnlockServiceRegular
   scoped_ptr<proximity_auth::CryptAuthGCMManager> gcm_manager_;
   scoped_ptr<proximity_auth::CryptAuthEnrollmentManager> enrollment_manager_;
   scoped_ptr<proximity_auth::CryptAuthDeviceManager> device_manager_;
+
+  // Manager responsible for handling the prefs used by proximity_auth classes.
+  scoped_ptr<proximity_auth::ProximityAuthPrefManager> pref_manager_;
 
   base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_;
 

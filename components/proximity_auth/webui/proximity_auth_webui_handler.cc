@@ -338,11 +338,13 @@ void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
         return;
       }
 
+      // TODO(sacomoto): Pass an instance of ProximityAuthPrefManager. This is
+      // used to get the address of BLE devices.
       remote_device_loader_.reset(new RemoteDeviceLoader(
           std::vector<cryptauth::ExternalDeviceInfo>(1, unlock_key),
           proximity_auth_client_->GetAccountId(),
           enrollment_manager->GetUserPrivateKey(),
-          proximity_auth_client_->CreateSecureMessageDelegate()));
+          proximity_auth_client_->CreateSecureMessageDelegate(), nullptr));
       remote_device_loader_->Load(
           base::Bind(&ProximityAuthWebUIHandler::OnRemoteDevicesLoaded,
                      weak_ptr_factory_.GetWeakPtr()));

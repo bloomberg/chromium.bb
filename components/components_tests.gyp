@@ -529,6 +529,7 @@
       'proximity_auth/device_to_device_secure_context_unittest.cc',
       'proximity_auth/logging/logging_unittest.cc',
       'proximity_auth/messenger_impl_unittest.cc',
+      'proximity_auth/proximity_auth_pref_manager_unittest.cc',
       'proximity_auth/proximity_auth_system_unittest.cc',
       'proximity_auth/proximity_monitor_impl_unittest.cc',
       'proximity_auth/remote_device_life_cycle_impl_unittest.cc',

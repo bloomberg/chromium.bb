@@ -673,7 +673,13 @@ bool EasyUnlockPrivateSetRemoteDevicesFunction::RunSync() {
   for (size_t i = 0; i < params->devices.size(); ++i) {
     devices.Append(params->devices[i]->ToValue().release());
   }
-  EasyUnlockService::Get(profile)->SetRemoteDevices(devices);
+  // Store the BLE device if we are trying out the BLE experiment.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
+    EasyUnlockService::Get(profile)->SetRemoteBleDevices(devices);
+  } else {
+    EasyUnlockService::Get(profile)->SetRemoteDevices(devices);
+  }
 
   return true;
 }

@@ -33,6 +33,7 @@
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/cryptauth_enroller_factory_impl.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/proximity_auth_pref_manager.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -87,6 +88,11 @@ EasyUnlockServiceRegular::GetCryptAuthEnrollmentManager() {
 proximity_auth::CryptAuthDeviceManager*
 EasyUnlockServiceRegular::GetCryptAuthDeviceManager() {
   return device_manager_.get();
+}
+
+proximity_auth::ProximityAuthPrefManager*
+EasyUnlockServiceRegular::GetProximityAuthPrefManager() {
+  return pref_manager_.get();
 }
 
 EasyUnlockService::Type EasyUnlockServiceRegular::GetType() const {
@@ -223,6 +229,23 @@ void EasyUnlockServiceRegular::SetRemoteDevices(
 #endif
 }
 
+// This method is called from easyUnlock.setRemoteDevice JS API. It's used
+// here to set the (public key, device address) pair for BLE devices.
+void EasyUnlockServiceRegular::SetRemoteBleDevices(
+    const base::ListValue& devices) {
+  DCHECK(devices.GetSize() == 1);
+  const base::DictionaryValue* dict = nullptr;
+  if (devices.GetDictionary(0, &dict)) {
+    std::string address, public_key;
+    if (dict->GetString("bluetoothAddress", &address) &&
+        dict->GetString("psk", &public_key)) {
+      GetProximityAuthPrefManager()->AddOrUpdateDevice(address, public_key);
+    } else {
+      PA_LOG(ERROR) << "Missing public key or device address";
+    }
+  }
+}
+
 void EasyUnlockServiceRegular::RunTurnOffFlow() {
   if (turn_off_flow_status_ == PENDING)
     return;
@@ -316,8 +339,11 @@ void EasyUnlockServiceRegular::InitializeInternal() {
 
 #if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery))
+          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
     InitializeCryptAuth();
+    pref_manager_.reset(
+        new proximity_auth::ProximityAuthPrefManager(profile()->GetPrefs()));
+  }
 #endif
 
   OnPrefsChanged();
