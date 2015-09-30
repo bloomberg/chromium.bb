@@ -113,17 +113,13 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
 }
 
 void ContextualSearchManager::OnSurroundingTextAvailable(
-    const std::string& before_text,
     const std::string& after_text) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> j_before_text =
-      base::android::ConvertUTF8ToJavaString(env, before_text.c_str());
   base::android::ScopedJavaLocalRef<jstring> j_after_text =
       base::android::ConvertUTF8ToJavaString(env, after_text.c_str());
   Java_ContextualSearchManager_onSurroundingTextAvailable(
       env,
       java_manager_.obj(),
-      j_before_text.obj(),
       j_after_text.obj());
 }
 

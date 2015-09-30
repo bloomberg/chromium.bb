@@ -57,9 +57,8 @@ const char kXssiEscape[] = ")]}'\n";
 const char kDiscourseContextHeaderPrefix[] = "X-Additional-Discourse-Context: ";
 const char kDoPreventPreloadValue[] = "1";
 
-// The number of characters that should be shown on each side of the selected
-// expression.
-const int kSurroundingSizeForUI = 30;
+// The number of characters that should be shown after the selected expression.
+const int kSurroundingSizeForUI = 60;
 
 } // namespace
 
@@ -337,13 +336,6 @@ void ContextualSearchDelegate::SaveSurroundingText(
 void ContextualSearchDelegate::SendSurroundingText(int max_surrounding_chars) {
   const base::string16& surrounding = context_->surrounding_text;
 
-  // Determine the text before the selection.
-  int num_before_characters =
-      std::min(context_->start_offset, max_surrounding_chars);
-  int start_position = context_->start_offset - num_before_characters;
-  base::string16 before_text =
-      surrounding.substr(start_position, num_before_characters);
-
   // Determine the text after the selection.
   int surrounding_length = surrounding.length();  // Cast to int.
   int num_after_characters = std::min(
@@ -351,9 +343,8 @@ void ContextualSearchDelegate::SendSurroundingText(int max_surrounding_chars) {
   base::string16 after_text = surrounding.substr(
       context_->end_offset, num_after_characters);
 
-  base::TrimWhitespace(before_text, base::TRIM_ALL, &before_text);
   base::TrimWhitespace(after_text, base::TRIM_ALL, &after_text);
-  surrounding_callback_.Run(UTF16ToUTF8(before_text), UTF16ToUTF8(after_text));
+  surrounding_callback_.Run(UTF16ToUTF8(after_text));
 }
 
 void ContextualSearchDelegate::SetDiscourseContextAndAddToHeader(

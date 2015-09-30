@@ -643,14 +643,13 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     /**
      * Called when surrounding text is available.
-     * @param beforeText to be shown before the selected word.
      * @param afterText to be shown after the selected word.
      */
     @CalledByNative
-    private void onSurroundingTextAvailable(final String beforeText, final String afterText) {
+    private void onSurroundingTextAvailable(final String afterText) {
         if (mSearchPanelDelegate.isShowing()) {
             mSearchPanelDelegate.displaySearchContext(
-                    mSelectionController.getSelectedText(), beforeText, afterText);
+                    mSelectionController.getSelectedText(), afterText);
         }
     }
 

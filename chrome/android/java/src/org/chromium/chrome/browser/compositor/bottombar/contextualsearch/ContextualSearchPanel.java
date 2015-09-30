@@ -663,9 +663,9 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     }
 
     @Override
-    public void displaySearchContext(String selection, String start, String end) {
+    public void displaySearchContext(String selection, String end) {
         cancelSearchTermResolutionAnimation();
-        getSearchBarControl().setSearchContext(selection, start, end);
+        getSearchBarControl().setSearchContext(selection, end);
         resetSearchBarContextOpacity();
     }
 

@@ -139,10 +139,9 @@ public interface ContextualSearchPanelDelegate {
     /**
      * Shows the search context in the SearchBar.
      * @param selection The portion of the context that represents the user's selection.
-     * @param start The portion of the context from its start to the selection.
-     * @param end The portion of the context the selection to its end.
+     * @param end The portion of the context from the selection to its end.
      */
-    void displaySearchContext(String selection, String start, String end);
+    void displaySearchContext(String selection, String end);
 
     /**
      * Handles showing the resolved search term in the SearchBar.

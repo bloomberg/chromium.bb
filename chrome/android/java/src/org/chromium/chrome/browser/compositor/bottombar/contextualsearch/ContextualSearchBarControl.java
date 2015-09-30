@@ -48,11 +48,10 @@ public class ContextualSearchBarControl {
     /**
      * Sets the search context to display in the control.
      * @param selection The portion of the context that represents the user's selection.
-     * @param start The portion of the context before the selection.
      * @param end The portion of the context after the selection.
      */
-    public void setSearchContext(String selection, String start, String end) {
-        mContextControl.setSearchContext(selection, start, end);
+    public void setSearchContext(String selection, String end) {
+        mContextControl.setSearchContext(selection, end);
     }
 
     /**

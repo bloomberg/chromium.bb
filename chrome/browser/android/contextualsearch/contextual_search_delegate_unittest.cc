@@ -133,7 +133,6 @@ class ContextualSearchDelegateTest : public testing::Test {
   std::string display_text() { return display_text_; }
   std::string alternate_term() { return alternate_term_; }
   bool do_prevent_preload() { return prevent_preload_; }
-  std::string before_text() { return before_text_; }
   std::string after_text() { return after_text_; }
   int start_adjust() { return start_adjust_; }
   int end_adjust() { return end_adjust_; }
@@ -160,9 +159,7 @@ class ContextualSearchDelegateTest : public testing::Test {
     end_adjust_ = end_adjust;
   }
 
-  void recordSurroundingText(const std::string& before_text,
-                             const std::string& after_text) {
-    before_text_ = before_text;
+  void recordSurroundingText(const std::string& after_text) {
     after_text_ = after_text;
   }
 
@@ -181,7 +178,6 @@ class ContextualSearchDelegateTest : public testing::Test {
   bool prevent_preload_;
   int start_adjust_;
   int end_adjust_;
-  std::string before_text_;
   std::string after_text_;
 
   base::MessageLoopForIO io_message_loop_;
@@ -395,7 +391,6 @@ TEST_F(ContextualSearchDelegateTest, SurroundingTextHighMaximum) {
   base::string16 surrounding = base::ASCIIToUTF16("aa bb Bogus dd ee");
   SetSurroundingContext(surrounding, 6, 11);
   delegate_->SendSurroundingText(30);  // High maximum # of surrounding chars.
-  EXPECT_EQ("aa bb", before_text());
   EXPECT_EQ("dd ee", after_text());
 }
 
@@ -404,7 +399,6 @@ TEST_F(ContextualSearchDelegateTest, SurroundingTextLowMaximum) {
   SetSurroundingContext(surrounding, 6, 11);
   delegate_->SendSurroundingText(3);  // Low maximum # of surrounding chars.
   // Whitespaces are trimmed.
-  EXPECT_EQ("bb", before_text());
   EXPECT_EQ("dd", after_text());
 }
 
@@ -412,8 +406,14 @@ TEST_F(ContextualSearchDelegateTest, SurroundingTextNoBeforeText) {
   base::string16 surrounding = base::ASCIIToUTF16("Bogus ee ff gg");
   SetSurroundingContext(surrounding, 0, 5);
   delegate_->SendSurroundingText(5);
-  EXPECT_EQ("", before_text());
   EXPECT_EQ("ee f", after_text());
+}
+
+TEST_F(ContextualSearchDelegateTest, SurroundingTextNoAfterText) {
+  base::string16 surrounding = base::ASCIIToUTF16("aa bb Bogus");
+  SetSurroundingContext(surrounding, 6, 11);
+  delegate_->SendSurroundingText(5);
+  EXPECT_EQ("", after_text());
 }
 
 TEST_F(ContextualSearchDelegateTest, ExtractMentionsStartEnd) {

@@ -58,8 +58,7 @@ class ContextualSearchManager {
                                       int selection_end_adjust);
 
   // Calls back to Java with the surrounding text to be displayed.
-  void OnSurroundingTextAvailable(const std::string& before_text,
-                                  const std::string& after_text);
+  void OnSurroundingTextAvailable(const std::string& after_text);
 
   // Calls back to Java with notification for Icing selection.
   void OnIcingSelectionAvailable(const std::string& encoding,

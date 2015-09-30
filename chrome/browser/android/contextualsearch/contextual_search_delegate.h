@@ -35,8 +35,7 @@ class ContextualSearchDelegate
                               bool,
                               int,
                               int)> SearchTermResolutionCallback;
-  typedef base::Callback<
-      void(const std::string&, const std::string&)> SurroundingTextCallback;
+  typedef base::Callback<void(const std::string&)> SurroundingTextCallback;
   typedef base::Callback<
       void(const base::string16&, int, int)>
       HandleSurroundingsCallback;
@@ -89,6 +88,8 @@ class ContextualSearchDelegate
                            SurroundingTextLowMaximum);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
                            SurroundingTextNoBeforeText);
+  FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
+                           SurroundingTextNoAfterText);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
                            ExtractMentionsStartEnd);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,

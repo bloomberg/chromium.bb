@@ -22,11 +22,6 @@ public class ContextualSearchContextControl extends ContextualSearchInflater {
     private TextView mSelectedText;
 
     /**
-     * The start of the surrounding text View.
-     */
-    private TextView mStartText;
-
-    /**
      * The end of the surrounding text View.
      */
     private TextView mEndText;
@@ -48,13 +43,11 @@ public class ContextualSearchContextControl extends ContextualSearchInflater {
     /**
      * Sets the search context to display in the control.
      * @param selection The portion of the context that represents the user's selection.
-     * @param start The portion of the context before the selection.
      * @param end The portion of the context after the selection.
      */
-    public void setSearchContext(String selection, String start, String end) {
+    public void setSearchContext(String selection, String end) {
         inflate();
 
-        mStartText.setText(sanitizeText(start));
         mSelectedText.setText(sanitizeText(selection));
         mEndText.setText(sanitizeText(end));
 
@@ -67,7 +60,6 @@ public class ContextualSearchContextControl extends ContextualSearchInflater {
 
         View view = getView();
         mSelectedText = (TextView) view.findViewById(R.id.selected_text);
-        mStartText = (TextView) view.findViewById(R.id.surrounding_text_start);
         mEndText = (TextView) view.findViewById(R.id.surrounding_text_end);
     }
 }
