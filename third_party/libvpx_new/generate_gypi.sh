@@ -15,8 +15,6 @@
 # --disable-avx : AVX+AVX2 support is disabled.
 # --only-configs: Excludes generation of GN and GYP files (i.e. only
 #                 configuration headers are generated).
-#
-# !!! It's highly recommended to install yasm before running this script.
 
 export LC_ALL=C
 BASE_DIR=$(pwd)
@@ -50,6 +48,31 @@ function write_license {
   echo "# Use of this source code is governed by a BSD-style license that can be" >> $1
   echo "# found in the LICENSE file." >> $1
   echo "" >> $1
+}
+
+# Search for source files with the same basename in vp8, vp9, and vpx_dsp. The
+# build can support such files but only when they are built into disparate
+# modules. Configuring such modules for both gyp and gn are tricky so avoid the
+# issue at least until vp10 is added.
+function find_duplicates {
+  local readonly duplicate_file_names=$(find \
+    $BASE_DIR/$LIBVPX_SRC_DIR/vp8 \
+    $BASE_DIR/$LIBVPX_SRC_DIR/vp9 \
+    $BASE_DIR/$LIBVPX_SRC_DIR/vpx_dsp \
+    -type f -name \*.c  | xargs -I {} basename {} | sort | uniq -d \
+  )
+
+  if [ -n "${duplicate_file_names}" ]; then
+    echo "WARNING: DUPLICATE FILES FOUND"
+    for file in  ${duplicate_file_names}; do
+      find \
+        $BASE_DIR/$LIBVPX_SRC_DIR/vp8 \
+        $BASE_DIR/$LIBVPX_SRC_DIR/vp9 \
+        $BASE_DIR/$LIBVPX_SRC_DIR/vpx_dsp \
+        -name $file
+    done
+    exit 1
+  fi
 }
 
 # Print gypi boilerplate header.
@@ -419,6 +442,8 @@ function gen_config_files {
   rm -rf vpx_config.*
 }
 
+find_duplicates
+
 echo "Create temporary directory."
 TEMP_DIR="$LIBVPX_SRC_DIR.temp"
 rm -rf $TEMP_DIR
@@ -426,7 +451,7 @@ cp -R $LIBVPX_SRC_DIR $TEMP_DIR
 cd $TEMP_DIR
 
 echo "Generate config files."
-all_platforms="--enable-external-build --enable-postproc --disable-install-srcs --enable-multi-res-encoding --enable-temporal-denoising --disable-unit-tests --disable-install-docs --disable-examples --enable-vp9-temporal-denoising --enable-vp9-postproc --size-limit=16384x16384 $DISABLE_AVX"
+all_platforms="--enable-external-build --enable-postproc --disable-install-srcs --enable-multi-res-encoding --enable-temporal-denoising --disable-unit-tests --disable-install-docs --disable-examples --enable-vp9-temporal-denoising --enable-vp9-postproc --size-limit=16384x16384 $DISABLE_AVX --as=yasm"
 gen_config_files linux/ia32 "--target=x86-linux-gcc --disable-ccache --enable-pic --enable-realtime-only ${all_platforms}"
 gen_config_files linux/x64 "--target=x86_64-linux-gcc --disable-ccache --enable-pic --enable-realtime-only ${all_platforms}"
 gen_config_files linux/arm "--target=armv6-linux-gcc --enable-pic --enable-realtime-only --disable-install-bins --disable-install-libs --disable-edsp ${all_platforms}"
@@ -555,5 +580,15 @@ fi
 echo "Remove temporary directory."
 cd $BASE_DIR
 rm -rf $TEMP_DIR
+
+gn format --in-place $BASE_DIR/BUILD.gn
+gn format --in-place $BASE_DIR/libvpx_srcs.gni
+
+cd $BASE_DIR/$LIBVPX_SRC_DIR
+echo
+echo "Update README.chromium:"
+git log -1 --format="%cd%nCommit: %H" --date=format:"%A %B %d %Y"
+
+cd $BASE_DIR
 
 # TODO(fgalligan): Can we turn on "--enable-realtime-only" for mipsel?
