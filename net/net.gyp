@@ -1535,10 +1535,6 @@
                   '<(PRODUCT_DIR)/net_unittests_apk/assets/natives_blob.bin',
                   '<(PRODUCT_DIR)/net_unittests_apk/assets/snapshot_blob.bin',
                 ],
-                'inputs': [
-                  '<(PRODUCT_DIR)/natives_blob.bin',
-                  '<(PRODUCT_DIR)/snapshot_blob.bin',
-                ],
               }],
             ],
           },

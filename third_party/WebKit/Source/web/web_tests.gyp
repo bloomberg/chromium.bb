@@ -164,10 +164,6 @@
                           '<(PRODUCT_DIR)/content_shell/assets/natives_blob.bin',
                           '<(PRODUCT_DIR)/content_shell/assets/snapshot_blob.bin',
                         ],
-                        'inputs': [
-                          '<(PRODUCT_DIR)/natives_blob.bin',
-                          '<(PRODUCT_DIR)/snapshot_blob.bin',
-                        ],
                       }],
                     ],
                 },
