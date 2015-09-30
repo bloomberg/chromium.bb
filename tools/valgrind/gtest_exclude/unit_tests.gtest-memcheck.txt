@@ -35,3 +35,5 @@ TranslateManagerRenderViewHostTest.FetchLanguagesFromTranslateServer*
 
 # Test fail: https://crbug.com/537064
 ExtensionMessageBubbleTest.*
+DesktopMediaListAshTest.*
+ExtensionTestMessageListenerUnittest.*
