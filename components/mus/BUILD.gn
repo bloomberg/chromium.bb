@@ -58,9 +58,6 @@ source_set("lib") {
     "focus_controller.cc",
     "focus_controller.h",
     "focus_controller_delegate.h",
-    "gesture_manager.cc",
-    "gesture_manager.h",
-    "gesture_manager_delegate.h",
     "mus_app.cc",
     "mus_app.h",
     "server_view.cc",
@@ -150,7 +147,6 @@ group("tests") {
 test("view_manager_unittests") {
   sources = [
     "focus_controller_unittest.cc",
-    "gesture_manager_unittest.cc",
     "server_view_drawn_tracker_unittest.cc",
     "test_server_view_delegate.cc",
     "test_server_view_delegate.h",
@@ -209,5 +205,7 @@ mojo_native_application("apptests") {
     "//ui/mojo/geometry:util",
   ]
 
-  data_deps = [ ":mus" ]
+  data_deps = [
+    ":mus",
+  ]
 }
