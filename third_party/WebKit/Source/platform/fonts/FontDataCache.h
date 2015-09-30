@@ -88,7 +88,7 @@ public:
 private:
     bool purgeLeastRecentlyUsed(int count);
 
-    typedef HashMap<FontPlatformData, pair<RefPtr<SimpleFontData>, unsigned>, FontDataCacheKeyHash, FontDataCacheKeyTraits> Cache;
+    typedef HashMap<FontPlatformData, std::pair<RefPtr<SimpleFontData>, unsigned>, FontDataCacheKeyHash, FontDataCacheKeyTraits> Cache;
     Cache m_cache;
     ListHashSet<RefPtr<SimpleFontData>> m_inactiveFontData;
 };

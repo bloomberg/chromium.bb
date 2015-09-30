@@ -27,7 +27,7 @@
 #include "platform/text/ParserUtilities.h"
 #include "wtf/HashSet.h"
 
-typedef pair<unsigned, unsigned> UnicodeRange;
+typedef std::pair<unsigned, unsigned> UnicodeRange;
 typedef Vector<UnicodeRange> UnicodeRanges;
 
 namespace blink {

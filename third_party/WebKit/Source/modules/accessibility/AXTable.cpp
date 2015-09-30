@@ -531,8 +531,8 @@ AXTableCell* AXTable::cellForColumnAndRow(unsigned column, unsigned row)
             if (!child->isTableCell())
                 continue;
 
-            pair<unsigned, unsigned> columnRange;
-            pair<unsigned, unsigned> rowRange;
+            std::pair<unsigned, unsigned> columnRange;
+            std::pair<unsigned, unsigned> rowRange;
             AXTableCell* tableCellChild = toAXTableCell(child);
             tableCellChild->columnIndexRange(columnRange);
             tableCellChild->rowIndexRange(rowRange);

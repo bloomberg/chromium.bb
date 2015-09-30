@@ -201,7 +201,7 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest, Digest* newDigest, Excep
     return result;
 }
 
-pair<DOMPatchSupport::ResultMap, DOMPatchSupport::ResultMap>
+std::pair<DOMPatchSupport::ResultMap, DOMPatchSupport::ResultMap>
 DOMPatchSupport::diff(const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& oldList, const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& newList)
 {
     ResultMap newMap(newList.size());
@@ -289,7 +289,7 @@ DOMPatchSupport::diff(const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& oldLis
 
 bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& oldList, const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& newList, ExceptionState& exceptionState)
 {
-    pair<ResultMap, ResultMap> resultMaps = diff(oldList, newList);
+    std::pair<ResultMap, ResultMap> resultMaps = diff(oldList, newList);
     ResultMap& oldMap = resultMaps.first;
     ResultMap& newMap = resultMaps.second;
 

@@ -73,7 +73,7 @@ private:
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
 
-    Vector<pair<long, String> > m_pendingEvaluateTestCommands;
+    Vector<std::pair<long, String>> m_pendingEvaluateTestCommands;
 };
 
 } // namespace blink

@@ -382,7 +382,7 @@ private:
 
     // This map holds the collapsed border values for cells with collapsed borders.
     // It is held at LayoutTableSection level to spare memory consumption by table cells.
-    using CellsCollapsedBordersMap = HashMap<pair<const LayoutTableCell*, int>, CollapsedBorderValue>;
+    using CellsCollapsedBordersMap = HashMap<std::pair<const LayoutTableCell*, int>, CollapsedBorderValue>;
     CellsCollapsedBordersMap m_cellsCollapsedBorders;
 };
 

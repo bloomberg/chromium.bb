@@ -81,7 +81,7 @@ AXObject* AXARIAGridCell::parentTable() const
     return parent;
 }
 
-void AXARIAGridCell::rowIndexRange(pair<unsigned, unsigned>& rowRange)
+void AXARIAGridCell::rowIndexRange(std::pair<unsigned, unsigned>& rowRange)
 {
     AXObject* parent = parentObjectUnignored();
     if (!parent)
@@ -111,7 +111,7 @@ void AXARIAGridCell::rowIndexRange(pair<unsigned, unsigned>& rowRange)
     rowRange.second = 1;
 }
 
-void AXARIAGridCell::columnIndexRange(pair<unsigned, unsigned>& columnRange)
+void AXARIAGridCell::columnIndexRange(std::pair<unsigned, unsigned>& columnRange)
 {
     AXObject* parent = parentObjectUnignored();
     if (!parent)

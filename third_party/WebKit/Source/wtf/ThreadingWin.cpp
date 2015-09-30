@@ -84,7 +84,7 @@
  */
 
 #include "config.h"
-#include "Threading.h"
+#include "wtf/Threading.h"
 
 #if OS(WIN)
 
@@ -186,7 +186,7 @@ bool Mutex::tryLock()
     // owned this mutex (see e.g., IconDatabase::getOrCreateIconRecord)
     DWORD result = TryEnterCriticalSection(&m_mutex.m_internalMutex);
 
-    if (result != 0) {       // We got the lock
+    if (result != 0) { // We got the lock
         // If this thread already had the lock, we must unlock and return
         // false since this is a non-recursive mutex. This is to mimic the
         // behavior of POSIX's pthread_mutex_trylock. We don't do this
@@ -236,12 +236,12 @@ bool PlatformCondition::timedWait(PlatformMutex& mutex, DWORD durationMillisecon
 
     int signalsLeft = m_waitersToUnblock;
 
-    if (m_waitersToUnblock)
+    if (m_waitersToUnblock) {
         --m_waitersToUnblock;
-    else if (++m_waitersGone == (INT_MAX / 2)) { // timeout/canceled or spurious semaphore
-        // timeout or spurious wakeup occured, normalize the m_waitersGone count
-        // this may occur if many calls to wait with a timeout are made and
-        // no call to notify_* is made
+    } else if (++m_waitersGone == (INT_MAX / 2)) {
+        // timeout/canceled or spurious semaphore timeout or spurious wakeup
+        // occured, normalize the m_waitersGone count this may occur if many
+        // calls to wait with a timeout are made and no call to notify_* is made
         res = WaitForSingleObject(m_blockLock, INFINITE);
         ASSERT_UNUSED(res, res == WAIT_OBJECT_0);
         m_waitersBlocked -= m_waitersGone;
@@ -258,7 +258,7 @@ bool PlatformCondition::timedWait(PlatformMutex& mutex, DWORD durationMillisecon
         ASSERT_UNUSED(res, res);
     }
 
-    EnterCriticalSection (&mutex.m_internalMutex);
+    EnterCriticalSection(&mutex.m_internalMutex);
     ++mutex.m_recursionCount;
 
     return !timedOut;

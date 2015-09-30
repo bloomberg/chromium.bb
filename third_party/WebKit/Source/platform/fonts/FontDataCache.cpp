@@ -60,7 +60,7 @@ PassRefPtr<SimpleFontData> FontDataCache::get(const FontPlatformData* platformDa
 
     Cache::iterator result = m_cache.find(*platformData);
     if (result == m_cache.end()) {
-        pair<RefPtr<SimpleFontData>, unsigned> newValue(SimpleFontData::create(*platformData), shouldRetain == Retain ? 1 : 0);
+        std::pair<RefPtr<SimpleFontData>, unsigned> newValue(SimpleFontData::create(*platformData), shouldRetain == Retain ? 1 : 0);
         m_cache.set(*platformData, newValue);
         if (shouldRetain == DoNotRetain)
             m_inactiveFontData.add(newValue.first);

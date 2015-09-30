@@ -48,9 +48,7 @@ public:
     }
 
 private:
-    inline Uint32Array(PassRefPtr<ArrayBuffer>,
-                          unsigned byteOffset,
-                          unsigned length);
+    inline Uint32Array(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
     // Make constructor visible to superclass.
     friend class TypedArrayBase<unsigned>;
 };
@@ -60,7 +58,7 @@ PassRefPtr<Uint32Array> Uint32Array::create(unsigned length)
     return TypedArrayBase<unsigned>::create<Uint32Array>(length);
 }
 
-PassRefPtr<Uint32Array> Uint32Array::create(const unsigned int* array, unsigned length)
+PassRefPtr<Uint32Array> Uint32Array::create(const unsigned* array, unsigned length)
 {
     return TypedArrayBase<unsigned>::create<Uint32Array>(array, length);
 }

@@ -26,11 +26,11 @@
 #ifndef PrintStream_h
 #define PrintStream_h
 
-#include <stdarg.h>
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/WTFExport.h"
+#include <stdarg.h>
 
 namespace WTF {
 
@@ -50,13 +50,13 @@ public:
     // the implementation should flush its buffers if it had not done so already.
     virtual void flush();
 
-    template<typename T>
+    template <typename T>
     void print(const T& value)
     {
         printInternal(*this, value);
     }
 
-    template<typename T1, typename... RemainingTypes>
+    template <typename T1, typename... RemainingTypes>
     void print(const T1& value1, const RemainingTypes&... values)
     {
         print(value1);
@@ -80,7 +80,7 @@ WTF_EXPORT void printInternal(PrintStream&, unsigned long long);
 WTF_EXPORT void printInternal(PrintStream&, float);
 WTF_EXPORT void printInternal(PrintStream&, double);
 
-template<typename T>
+template <typename T>
 void printInternal(PrintStream& out, const T& value)
 {
     value.dump(out);
@@ -126,7 +126,7 @@ void printInternal(PrintStream& out, const T& value)
 void dumpCharacter(PrintStream&, char);
 MAKE_PRINT_ADAPTOR(CharacterDump, char, dumpCharacter);
 
-template<typename T>
+template <typename T>
 class PointerDump {
 public:
     PointerDump(const T* ptr)
@@ -141,11 +141,12 @@ public:
         else
             out.print("(null)");
     }
+
 private:
     const T* m_ptr;
 };
 
-template<typename T>
+template <typename T>
 PointerDump<T> pointerDump(const T* ptr) { return PointerDump<T>(ptr); }
 
 } // namespace WTF

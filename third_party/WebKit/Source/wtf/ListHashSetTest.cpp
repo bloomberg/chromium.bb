@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
+#include "wtf/ListHashSet.h"
 
 #include "wtf/LinkedHashSet.h"
-#include "wtf/ListHashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -36,7 +36,7 @@ namespace WTF {
 
 namespace {
 
-template<typename Set>
+template <typename Set>
 void removeFirstHelper()
 {
     Set list;
@@ -76,7 +76,7 @@ TEST(LinkedHashSetTest, RemoveFirst)
     removeFirstHelper<LinkedHashSet<int>>();
 }
 
-template<typename Set>
+template <typename Set>
 void appendOrMoveToLastNewItems()
 {
     Set list;
@@ -110,7 +110,7 @@ TEST(LinkedHashSetTest, AppendOrMoveToLastNewItems)
     appendOrMoveToLastNewItems<LinkedHashSet<int>>();
 }
 
-template<typename Set>
+template <typename Set>
 void appendOrMoveToLastWithDuplicates()
 {
     Set list;
@@ -161,7 +161,7 @@ TEST(LinkedHashSetTest, AppendOrMoveToLastWithDuplicates)
     appendOrMoveToLastWithDuplicates<LinkedHashSet<int>>();
 }
 
-template<typename Set>
+template <typename Set>
 void prependOrMoveToFirstNewItems()
 {
     Set list;
@@ -195,7 +195,7 @@ TEST(LinkedHashSetTest, PrependOrMoveToFirstNewItems)
     prependOrMoveToFirstNewItems<LinkedHashSet<int>>();
 }
 
-template<typename Set>
+template <typename Set>
 void prependOrMoveToLastWithDuplicates()
 {
     Set list;
@@ -264,7 +264,7 @@ private:
 
 int DummyRefCounted::m_refInvokesCount = 0;
 
-template<typename Set>
+template <typename Set>
 void withRefPtr()
 {
     bool isDeleted = false;
@@ -306,7 +306,7 @@ TEST(LinkedHashSetTest, WithRefPtr)
     withRefPtr<LinkedHashSet<RefPtr<DummyRefCounted>>>();
 }
 
-template<typename Set, typename SetRef, typename Iterator>
+template <typename Set, typename SetRef, typename Iterator>
 void findHelper()
 {
     Set set;
@@ -340,7 +340,7 @@ TEST(LinkedHashSetTest, Find)
     findHelper<LinkedHashSet<int>, LinkedHashSet<int>&, LinkedHashSet<int>::iterator>();
 }
 
-template<typename Set>
+template <typename Set>
 void insertBeforeHelper(bool canModifyWhileIterating)
 {
     Set set;
@@ -397,7 +397,7 @@ TEST(LinkedHashSetTest, InsertBefore)
     insertBeforeHelper<LinkedHashSet<int>>(false);
 }
 
-template<typename Set>
+template <typename Set>
 void addReturnIterator(bool canModifyWhileIterating)
 {
     Set set;
@@ -455,7 +455,7 @@ TEST(LinkedHashSetTest, AddReturnIterator)
     addReturnIterator<LinkedHashSet<int>>(false);
 }
 
-template<typename Set>
+template <typename Set>
 void excerciseValuePeekInType()
 {
     Set set;
@@ -537,7 +537,7 @@ struct ComplexityTranslator {
     static bool equal(const Complicated& a, const Simple& b) { return a.m_simple.m_value == b.m_value; }
 };
 
-template<typename Set>
+template <typename Set>
 void translatorTest()
 {
     Set set;
@@ -658,7 +658,7 @@ TEST(ListHashSetTest, WithOwnPtr)
     EXPECT_EQ(ptr2, ownPtr2);
 }
 
-template<typename Set>
+template <typename Set>
 void swapTestHelper()
 {
     int num = 10;

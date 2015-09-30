@@ -131,7 +131,7 @@ private:
     Timer<SMILTimeContainer> m_wakeupTimer;
     Timer<SMILTimeContainer> m_animationPolicyOnceTimer;
 
-    using ElementAttributePair = pair<RawPtrWillBeWeakMember<SVGElement>, QualifiedName>;
+    using ElementAttributePair = std::pair<RawPtrWillBeWeakMember<SVGElement>, QualifiedName>;
     using AnimationsLinkedHashSet = WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<SVGSMILElement>>;
     using GroupedAnimationsMap = WillBeHeapHashMap<ElementAttributePair, OwnPtrWillBeMember<AnimationsLinkedHashSet>>;
     GroupedAnimationsMap m_scheduledAnimations;

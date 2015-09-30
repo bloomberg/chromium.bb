@@ -156,7 +156,7 @@ void ImageResource::allClientsRemoved()
     Resource::allClientsRemoved();
 }
 
-pair<blink::Image*, float> ImageResource::brokenImage(float deviceScaleFactor)
+std::pair<blink::Image*, float> ImageResource::brokenImage(float deviceScaleFactor)
 {
     if (deviceScaleFactor >= 2) {
         DEFINE_STATIC_REF(blink::Image, brokenImageHiRes, (blink::Image::loadPlatformResource("missingImage@2x")));

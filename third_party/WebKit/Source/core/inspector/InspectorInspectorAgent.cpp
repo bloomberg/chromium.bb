@@ -69,7 +69,7 @@ DEFINE_TRACE(InspectorInspectorAgent)
 void InspectorInspectorAgent::enable(ErrorString*)
 {
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, true);
-    for (Vector<pair<long, String>>::iterator it = m_pendingEvaluateTestCommands.begin(); frontend() && it != m_pendingEvaluateTestCommands.end(); ++it)
+    for (Vector<std::pair<long, String>>::iterator it = m_pendingEvaluateTestCommands.begin(); frontend() && it != m_pendingEvaluateTestCommands.end(); ++it)
         frontend()->evaluateForTestInFrontend(static_cast<int>((*it).first), (*it).second);
     m_pendingEvaluateTestCommands.clear();
 }
@@ -104,7 +104,7 @@ void InspectorInspectorAgent::evaluateForTestInFrontend(long callId, const Strin
         frontend()->evaluateForTestInFrontend(static_cast<int>(callId), script);
         frontend()->flush();
     } else {
-        m_pendingEvaluateTestCommands.append(pair<long, String>(callId, script));
+        m_pendingEvaluateTestCommands.append(std::pair<long, String>(callId, script));
     }
 }
 

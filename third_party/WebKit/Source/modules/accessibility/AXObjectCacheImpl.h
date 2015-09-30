@@ -238,7 +238,7 @@ private:
     HashMap<String, OwnPtr<HashSet<AXID>>> m_idToAriaOwnersMapping;
 
     Timer<AXObjectCacheImpl> m_notificationPostTimer;
-    HeapVector<pair<Member<AXObject>, AXNotification>> m_notificationsToPost;
+    HeapVector<std::pair<Member<AXObject>, AXNotification>> m_notificationsToPost;
     void notificationPostTimerFired(Timer<AXObjectCacheImpl>*);
 
     AXObject* focusedImageMapUIElement(HTMLAreaElement*);

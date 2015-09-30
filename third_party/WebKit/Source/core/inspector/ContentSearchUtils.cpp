@@ -56,9 +56,9 @@ static String createSearchRegexSource(const String& text)
     return result.toString();
 }
 
-static Vector<pair<int, String> > getScriptRegexpMatchesByLines(const ScriptRegexp* regex, const String& text)
+static Vector<std::pair<int, String>> getScriptRegexpMatchesByLines(const ScriptRegexp* regex, const String& text)
 {
-    Vector<pair<int, String> > result;
+    Vector<std::pair<int, String>> result;
     if (text.isEmpty())
         return result;
 
@@ -73,7 +73,7 @@ static Vector<pair<int, String> > getScriptRegexpMatchesByLines(const ScriptRege
 
         int matchLength;
         if (regex->match(line, 0, &matchLength) != -1)
-            result.append(pair<int, String>(lineNumber, line));
+            result.append(std::pair<int, String>(lineNumber, line));
 
         start = lineEnd + 1;
     }
@@ -99,7 +99,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> searchInTextB
     RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> result = TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>::create();
 
     OwnPtr<ScriptRegexp> regex = ContentSearchUtils::createSearchRegex(query, caseSensitive, isRegex);
-    Vector<pair<int, String> > matches = getScriptRegexpMatchesByLines(regex.get(), text);
+    Vector<std::pair<int, String>> matches = getScriptRegexpMatchesByLines(regex.get(), text);
 
     for (const auto& match : matches)
         result->addItem(buildObjectForSearchMatch(match.first, match.second));

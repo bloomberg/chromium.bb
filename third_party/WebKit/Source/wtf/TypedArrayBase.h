@@ -90,9 +90,7 @@ protected:
     }
 
     template <class Subclass>
-    static PassRefPtr<Subclass> create(PassRefPtr<ArrayBuffer> buffer,
-                                       unsigned byteOffset,
-                                       unsigned length)
+    static PassRefPtr<Subclass> create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
     {
         RefPtr<ArrayBuffer> buf(buffer);
         RELEASE_ASSERT(verifySubRange<T>(buf, byteOffset, length));

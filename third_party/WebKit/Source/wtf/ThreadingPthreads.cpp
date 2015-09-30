@@ -191,7 +191,7 @@ bool RecursiveMutex::tryLock()
 
 ThreadCondition::ThreadCondition()
 {
-    pthread_cond_init(&m_condition, NULL);
+    pthread_cond_init(&m_condition, nullptr);
 }
 
 ThreadCondition::~ThreadCondition()

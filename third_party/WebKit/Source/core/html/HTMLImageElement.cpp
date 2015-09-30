@@ -363,7 +363,7 @@ void HTMLImageElement::attach(const AttachContext& context)
         LayoutImageResource* layoutImageResource = layoutImage->imageResource();
         if (m_isFallbackImage) {
             float deviceScaleFactor = blink::deviceScaleFactor(layoutImage->frame());
-            pair<Image*, float> brokenImageAndImageScaleFactor = ImageResource::brokenImage(deviceScaleFactor);
+            std::pair<Image*, float> brokenImageAndImageScaleFactor = ImageResource::brokenImage(deviceScaleFactor);
             ImageResource* newImageResource = new ImageResource(brokenImageAndImageScaleFactor.first);
             layoutImage->imageResource()->setImageResource(newImageResource);
         }

@@ -64,7 +64,7 @@ public:
 
     void callDestructor()
     {
-       if (void* data = value())
+        if (void* data = value())
             m_destructor(data);
     }
 

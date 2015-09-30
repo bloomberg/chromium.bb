@@ -58,7 +58,7 @@ void HTTPHeaderMap::adopt(PassOwnPtr<CrossThreadHTTPHeaderMapData> data)
     clear();
     size_t dataSize = data->size();
     for (size_t index = 0; index < dataSize; ++index) {
-        pair<String, String>& header = (*data)[index];
+        std::pair<String, String>& header = (*data)[index];
         set(AtomicString(header.first), AtomicString(header.second));
     }
 }

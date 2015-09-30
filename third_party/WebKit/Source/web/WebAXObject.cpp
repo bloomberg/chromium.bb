@@ -1442,7 +1442,7 @@ unsigned WebAXObject::cellColumnIndex() const
     if (!m_private->isTableCell())
         return 0;
 
-    pair<unsigned, unsigned> columnRange;
+    std::pair<unsigned, unsigned> columnRange;
     toAXTableCell(m_private.get())->columnIndexRange(columnRange);
     return columnRange.first;
 }
@@ -1455,7 +1455,7 @@ unsigned WebAXObject::cellColumnSpan() const
     if (!m_private->isTableCell())
         return 0;
 
-    pair<unsigned, unsigned> columnRange;
+    std::pair<unsigned, unsigned> columnRange;
     toAXTableCell(m_private.get())->columnIndexRange(columnRange);
     return columnRange.second;
 }
@@ -1468,7 +1468,7 @@ unsigned WebAXObject::cellRowIndex() const
     if (!m_private->isTableCell())
         return 0;
 
-    pair<unsigned, unsigned> rowRange;
+    std::pair<unsigned, unsigned> rowRange;
     toAXTableCell(m_private.get())->rowIndexRange(rowRange);
     return rowRange.first;
 }
@@ -1481,7 +1481,7 @@ unsigned WebAXObject::cellRowSpan() const
     if (!m_private->isTableCell())
         return 0;
 
-    pair<unsigned, unsigned> rowRange;
+    std::pair<unsigned, unsigned> rowRange;
     toAXTableCell(m_private.get())->rowIndexRange(rowRange);
     return rowRange.second;
 }

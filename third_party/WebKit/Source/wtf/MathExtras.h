@@ -36,8 +36,8 @@
 #endif
 
 #if OS(OPENBSD)
-#include <sys/types.h>
 #include <machine/ieee.h>
+#include <sys/types.h>
 #endif
 
 const double piDouble = M_PI;
@@ -299,9 +299,9 @@ inline size_t lowestCommonMultiple(size_t a, size_t b)
 // Calculate d % 2^{64}.
 inline void doubleToInteger(double d, unsigned long long& value)
 {
-    if (std::isnan(d) || std::isinf(d))
+    if (std::isnan(d) || std::isinf(d)) {
         value = 0;
-    else {
+    } else {
         // -2^{64} < fmodValue < 2^{64}.
         double fmodValue = fmod(trunc(d), std::numeric_limits<unsigned long long>::max() + 1.0);
         if (fmodValue >= 0) {

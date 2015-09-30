@@ -45,9 +45,9 @@ public:
     ~AXARIAGridCell() override;
 
     // fills in the start location and row span of cell
-    void rowIndexRange(pair<unsigned, unsigned>& rowRange) override;
+    void rowIndexRange(std::pair<unsigned, unsigned>& rowRange) override;
     // fills in the start location and column span of cell
-    void columnIndexRange(pair<unsigned, unsigned>& columnRange) override;
+    void columnIndexRange(std::pair<unsigned, unsigned>& columnRange) override;
     AccessibilityRole scanToDecideHeaderRole() final;
 
 protected:

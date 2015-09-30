@@ -24,16 +24,16 @@
  */
 
 #include "config.h"
-#include "PrintStream.h"
+#include "wtf/PrintStream.h"
 
-#include <stdio.h>
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
+#include <stdio.h>
 
 namespace WTF {
 
-PrintStream::PrintStream() { }
-PrintStream::~PrintStream() { } // Force the vtable to be in this module
+PrintStream::PrintStream() {}
+PrintStream::~PrintStream() {} // Force the vtable to be in this module
 
 void PrintStream::printf(const char* format, ...)
 {

@@ -112,7 +112,7 @@ private:
     Timer<PresentationAttributeCacheCleaner> m_cleanTimer;
 };
 
-static bool attributeNameSort(const pair<StringImpl*, AtomicString>& p1, const pair<StringImpl*, AtomicString>& p2)
+static bool attributeNameSort(const std::pair<StringImpl*, AtomicString>& p1, const std::pair<StringImpl*, AtomicString>& p2)
 {
     // Sort based on the attribute name pointers. It doesn't matter what the order is as long as it is always the same.
     return p1.first < p2.first;

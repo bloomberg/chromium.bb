@@ -26,20 +26,20 @@
 
 namespace WTF {
 
-    struct WTF_EXPORT RefCountedLeakCounter {
-        explicit RefCountedLeakCounter(const char* description);
-        ~RefCountedLeakCounter();
+struct WTF_EXPORT RefCountedLeakCounter {
+    explicit RefCountedLeakCounter(const char* description);
+    ~RefCountedLeakCounter();
 
-        void increment();
-        void decrement();
+    void increment();
+    void decrement();
 
 #if ENABLE(ASSERT)
-    private:
-        volatile int m_count;
-        const char* m_description;
+private:
+    volatile int m_count;
+    const char* m_description;
 #endif
-    };
+};
 
-}  // namespace WTF
+} // namespace WTF
 
 #endif

@@ -161,7 +161,7 @@ AccessibilityRole AXTableCell::determineAccessibilityRole()
     return scanToDecideHeaderRole();
 }
 
-void AXTableCell::rowIndexRange(pair<unsigned, unsigned>& rowRange)
+void AXTableCell::rowIndexRange(std::pair<unsigned, unsigned>& rowRange)
 {
     if (!m_layoutObject || !m_layoutObject->isTableCell())
         return;
@@ -188,7 +188,7 @@ void AXTableCell::rowIndexRange(pair<unsigned, unsigned>& rowRange)
     rowRange.first += rowOffset;
 }
 
-void AXTableCell::columnIndexRange(pair<unsigned, unsigned>& columnRange)
+void AXTableCell::columnIndexRange(std::pair<unsigned, unsigned>& columnRange)
 {
     if (!m_layoutObject || !m_layoutObject->isTableCell())
         return;

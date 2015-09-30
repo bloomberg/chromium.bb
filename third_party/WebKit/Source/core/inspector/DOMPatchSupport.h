@@ -69,7 +69,7 @@ private:
         WillBeHeapVector<OwnPtrWillBeMember<Digest>> m_children;
     };
 
-    typedef WillBeHeapVector<pair<RawPtrWillBeMember<Digest>, size_t>> ResultMap;
+    typedef WillBeHeapVector<std::pair<RawPtrWillBeMember<Digest>, size_t>> ResultMap;
     typedef WillBeHeapHashMap<String, RawPtrWillBeMember<Digest>> UnusedNodesMap;
 
     bool innerPatchNode(Digest* oldNode, Digest* newNode, ExceptionState&);

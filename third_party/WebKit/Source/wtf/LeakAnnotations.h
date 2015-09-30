@@ -55,7 +55,7 @@ namespace WTF {
 extern "C" {
 void __lsan_disable();
 void __lsan_enable();
-void __lsan_ignore_object(const void *p);
+void __lsan_ignore_object(const void* p);
 } // extern "C"
 
 class LeakSanitizerDisabler {
