@@ -1192,7 +1192,7 @@ void AXObjectCacheImpl::postPlatformNotification(AXObject* obj, AXNotification n
     client.postAccessibilityNotification(obj, notification);
 }
 
-void AXObjectCacheImpl::handleFocusedUIElementChanged(Node*, Node* newFocusedNode)
+void AXObjectCacheImpl::handleFocusedUIElementChanged(Node* oldFocusedNode, Node* newFocusedNode)
 {
     if (!newFocusedNode)
         return;
@@ -1205,6 +1205,9 @@ void AXObjectCacheImpl::handleFocusedUIElementChanged(Node*, Node* newFocusedNod
     if (!focusedObject)
         return;
 
+    AXObject* oldFocusedObject = get(oldFocusedNode);
+
+    postPlatformNotification(oldFocusedObject, AXBlur);
     postPlatformNotification(focusedObject, AXFocusedUIElementChanged);
 }
 

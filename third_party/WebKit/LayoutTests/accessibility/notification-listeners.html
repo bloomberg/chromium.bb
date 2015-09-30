@@ -55,7 +55,7 @@ function runTest() {
     document.getElementById("slider").setAttribute("aria-valuenow", "6");
 
     window.setTimeout(function() {
-        shouldBe("selectNotificationCount", "1");
+        shouldBe("selectNotificationCount", "2");
         shouldBe("sliderNotificationCount", "1");
         shouldBe("globalNotificationCount", "2");
 
