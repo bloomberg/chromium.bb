@@ -14,8 +14,10 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.customtabs.ICustomTabsCallback;
 import android.text.TextUtils;
+import android.util.SparseBooleanArray;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.IntentHandler;
@@ -35,6 +37,13 @@ class ClientManager {
     private static final int GOOD_PREDICTION = 1;
     private static final int BAD_PREDICTION = 2;
     private static final int PREDICTION_STATUS_COUNT = 3;
+    // Values for the "CustomTabs.CalledWarmup" UMA histogram. Append-only.
+    @VisibleForTesting static final int NO_SESSION_NO_WARMUP = 0;
+    @VisibleForTesting static final int NO_SESSION_WARMUP = 1;
+    @VisibleForTesting static final int SESSION_NO_WARMUP_ALREADY_CALLED = 2;
+    @VisibleForTesting static final int SESSION_NO_WARMUP_NOT_CALLED = 3;
+    @VisibleForTesting static final int SESSION_WARMUP = 4;
+    @VisibleForTesting static final int SESSION_WARMUP_COUNT = 5;
 
     /** Per-session values. */
     private static class SessionParams {
@@ -88,6 +97,8 @@ class ClientManager {
 
     private final Context mContext;
     private final Map<IBinder, SessionParams> mSessionParams = new HashMap<>();
+    private final SparseBooleanArray mUidHasCalledWarmup = new SparseBooleanArray();
+    private boolean mWarmupHasBeenCalled = false;
 
     public ClientManager(Context context) {
         mContext = context.getApplicationContext();
@@ -132,6 +143,12 @@ class ClientManager {
         return true;
     }
 
+    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
+    public synchronized void recordUidHasCalledWarmup(int uid) {
+        mWarmupHasBeenCalled = true;
+        mUidHasCalledWarmup.put(uid, true);
+    }
+
     /** Updates the client behavior stats and returns whether speculation is allowed.
      *
      * @param session Client session.
@@ -147,6 +164,24 @@ class ClientManager {
         params.setPredictionMetrics(url, SystemClock.elapsedRealtime());
         RequestThrottler throttler = RequestThrottler.getForUid(mContext, uid);
         return throttler.updateStatsAndReturnWhetherAllowed();
+    }
+
+    @VisibleForTesting
+    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
+    synchronized int getWarmupState(IBinder session) {
+        SessionParams params = mSessionParams.get(session);
+        boolean hasValidSession = params != null;
+        boolean hasUidCalledWarmup = hasValidSession && mUidHasCalledWarmup.get(params.uid);
+        int result = mWarmupHasBeenCalled ? NO_SESSION_WARMUP : NO_SESSION_NO_WARMUP;
+        if (hasValidSession) {
+            if (hasUidCalledWarmup) {
+                result = SESSION_WARMUP;
+            } else {
+                result = mWarmupHasBeenCalled ? SESSION_NO_WARMUP_ALREADY_CALLED
+                                              : SESSION_NO_WARMUP_NOT_CALLED;
+            }
+        }
+        return result;
     }
 
     /**
@@ -175,6 +210,8 @@ class ClientManager {
             RecordHistogram.recordCustomTimesHistogram("CustomTabs.PredictionToLaunch",
                     elapsedTimeMs, 1, TimeUnit.MINUTES.toMillis(3), TimeUnit.MILLISECONDS, 100);
         }
+        RecordHistogram.recordEnumeratedHistogram(
+                "CustomTabs.WarmupStateOnLaunch", getWarmupState(session), SESSION_WARMUP_COUNT);
     }
 
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
@@ -261,6 +298,7 @@ class ClientManager {
         SessionParams params = mSessionParams.get(session);
         if (params == null) return;
         mSessionParams.remove(session);
+        mUidHasCalledWarmup.delete(params.uid);
         IBinder binder = params.callback.asBinder();
         binder.unlinkToDeath(params.deathRecipient, 0);
     }

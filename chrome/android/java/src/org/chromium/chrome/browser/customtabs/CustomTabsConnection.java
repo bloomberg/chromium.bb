@@ -132,6 +132,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     public boolean warmup(long flags) {
         // Here and in mayLaunchUrl(), don't do expensive work for background applications.
         if (!isCallerForegroundOrSelf()) return false;
+        mClientManager.recordUidHasCalledWarmup(Binder.getCallingUid());
         if (!mWarmupHasBeenCalled.compareAndSet(false, true)) return true;
         // The call is non-blocking and this must execute on the UI thread, post a task.
         ThreadUtils.postOnUiThread(new Runnable() {

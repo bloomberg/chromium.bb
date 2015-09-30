@@ -5516,6 +5516,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="CustomTabs.WarmupStateOnLaunch" enum="WarmupStateOnLaunch">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Recorded only on Android. Reports whether warmup() has been called when a
+    Custom Tabs Intent is received from an application, and if so, whether the
+    call could be matched with a session.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.AutoLoFiAccuracy"
     enum="DataReductionProxyAutoLoFiAccuracy">
   <owner>bengr@chromium.org</owner>
@@ -73440,6 +73449,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Unknown (unused)"/>
   <int value="4" label="Online"/>
   <int value="5" label="Policy"/>
+</enum>
+
+<enum name="WarmupStateOnLaunch" type="int">
+  <int value="0" label="No Session, No Warmup"/>
+  <int value="1" label="No Session, Warmup"/>
+  <int value="2" label="Session, No Warmup, Warmup called from another UID"/>
+  <int value="3" label="Session, No Warmup"/>
+  <int value="4" label="Session, Warmup"/>
 </enum>
 
 <enum name="WebBluetoothConnectGATTOutcome" type="int">
