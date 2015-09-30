@@ -152,7 +152,7 @@ void V8WrapperInstantiationScope::convertException()
     // TODO(jochen): Currently, Location is the only object for which we can reach this code path. Should be generalized.
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "Location", isolate->GetCurrentContext()->Global(), isolate);
     LocalDOMWindow* callingWindow = callingDOMWindow(isolate);
-    DOMWindow* targetWindow = toFrameIfNotDetached(m_context)->domWindow();
+    DOMWindow* targetWindow = toDOMWindow(m_context);
     exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(callingWindow), targetWindow->crossDomainAccessErrorMessage(callingWindow));
     exceptionState.throwIfNeeded();
 }
