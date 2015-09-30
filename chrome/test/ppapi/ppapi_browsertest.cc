@@ -540,6 +540,10 @@ TEST_PPAPI_NACL(Var)
 
 TEST_PPAPI_NACL(VarResource)
 
+#if defined(__i386__)
+TEST_PPAPI_NACL(NaClIRTStackAlignment)
+#endif
+
 // PostMessage tests.
 #define RUN_POSTMESSAGE_SUBTESTS \
   RunTestViaHTTP( \
