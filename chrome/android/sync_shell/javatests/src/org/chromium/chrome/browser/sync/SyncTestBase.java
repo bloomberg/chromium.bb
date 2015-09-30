@@ -17,8 +17,11 @@ import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.sync.ModelType;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -28,6 +31,16 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TAG = "SyncTestBase";
 
     private static final String CLIENT_ID = "Client_ID";
+
+    private static final Set<Integer> USER_SELECTABLE_TYPES =
+            new HashSet<Integer>(Arrays.asList(new Integer[] {
+                ModelType.AUTOFILL,
+                ModelType.BOOKMARKS,
+                ModelType.PASSWORDS,
+                ModelType.PREFERENCES,
+                ModelType.PROXY_TABS,
+                ModelType.TYPED_URLS,
+            }));
 
     protected SyncTestUtil.SyncTestContext mContext;
     protected SyncController mSyncController;
@@ -161,6 +174,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
             @Override
             public void run() {
                 Set<Integer> preferredTypes = mProfileSyncService.getPreferredDataTypes();
+                preferredTypes.retainAll(USER_SELECTABLE_TYPES);
                 preferredTypes.remove(modelType);
                 mProfileSyncService.setPreferredDataTypes(false, preferredTypes);
             }

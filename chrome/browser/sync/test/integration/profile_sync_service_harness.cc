@@ -133,7 +133,7 @@ void ProfileSyncServiceHarness::SetCredentials(const std::string& username,
 }
 
 bool ProfileSyncServiceHarness::SetupSync() {
-  bool result = SetupSync(syncer::ModelTypeSet::All());
+  bool result = SetupSync(syncer::UserSelectableTypes());
   if (result == false) {
     std::string status = GetServiceStatus();
     LOG(ERROR) << profile_debug_name_
@@ -189,8 +189,7 @@ bool ProfileSyncServiceHarness::SetupSync(
 
   // Choose the datatypes to be synced. If all datatypes are to be synced,
   // set sync_everything to true; otherwise, set it to false.
-  bool sync_everything =
-      synced_datatypes.Equals(syncer::ModelTypeSet::All());
+  bool sync_everything = synced_datatypes.Equals(syncer::UserSelectableTypes());
   service()->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
   // Notify ProfileSyncService that we are done with configuration.
@@ -345,6 +344,7 @@ bool ProfileSyncServiceHarness::EnableSyncForDatatype(
   }
 
   synced_datatypes.Put(syncer::ModelTypeFromInt(datatype));
+  synced_datatypes.RetainAll(syncer::UserSelectableTypes());
   service()->OnUserChoseDatatypes(false, synced_datatypes);
   if (AwaitSyncSetupCompletion()) {
     DVLOG(1) << "EnableSyncForDatatype(): Enabled sync for datatype "

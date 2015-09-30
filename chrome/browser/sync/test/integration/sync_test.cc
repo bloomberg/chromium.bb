@@ -970,9 +970,9 @@ bool SyncTest::EnableEncryption(int index) {
 
   // In order to kick off the encryption we have to reconfigure. Just grab the
   // currently synced types and use them.
-  const syncer::ModelTypeSet synced_datatypes =
-      service->GetPreferredDataTypes();
+  syncer::ModelTypeSet synced_datatypes = service->GetPreferredDataTypes();
   bool sync_everything = synced_datatypes.Equals(syncer::ModelTypeSet::All());
+  synced_datatypes.RetainAll(syncer::UserSelectableTypes());
   service->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
   return AwaitEncryptionComplete(index);
