@@ -272,7 +272,13 @@ TEST_F(QuicEndToEndTest, LargePostWithPacketLoss) {
   CheckResponse(consumer, "HTTP/1.1 200 OK", kResponseBody);
 }
 
-TEST_F(QuicEndToEndTest, UberTest) {
+// crbug.com/536845
+#if defined(THREAD_SANITIZER)
+#define MAYBE_UberTest DISABLED_UberTest
+#else
+#define MAYBE_UberTest UberTest
+#endif
+TEST_F(QuicEndToEndTest, MAYBE_UberTest) {
   // FLAGS_fake_packet_loss_percentage = 30;
 
   const char kResponseBody[] = "some really big response body";
