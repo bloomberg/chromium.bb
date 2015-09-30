@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,15 +31,23 @@ class DurableStorageBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override;
 
  protected:
+  content::RenderFrameHost* GetRenderFrameHost(Browser* browser) {
+    return browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  }
+
   content::RenderFrameHost* GetRenderFrameHost() {
-    return browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+    return GetRenderFrameHost(browser());
+  }
+
+  void Bookmark(Browser* browser) {
+    bookmarks::BookmarkModel* bookmark_model =
+        BookmarkModelFactory::GetForProfile(browser->profile());
+    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
+    bookmarks::AddIfNotBookmarked(bookmark_model, url_, base::ASCIIToUTF16(""));
   }
 
   void Bookmark() {
-    bookmarks::BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForProfile(browser()->profile());
-    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
-    bookmarks::AddIfNotBookmarked(bookmark_model, url_, base::ASCIIToUTF16(""));
+    Bookmark(browser());
   }
 
   GURL url_;
@@ -146,5 +154,22 @@ IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, FirstTabSeesResult) {
   browser()->tab_strip_model()->ActivateTabAt(0, false);
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       GetRenderFrameHost(), "checkPermission()", &permission_string));
+  EXPECT_EQ("granted", permission_string);
+}
+
+IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, Incognito) {
+  Browser* browser = CreateIncognitoBrowser();
+  ui_test_utils::NavigateToURL(browser, url_);
+
+  Bookmark(browser);
+  bool default_box_is_persistent = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(GetRenderFrameHost(browser),
+                                                   "requestPermission()",
+                                                   &default_box_is_persistent));
+  EXPECT_TRUE(default_box_is_persistent);
+
+  std::string permission_string;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      GetRenderFrameHost(browser), "checkPermission()", &permission_string));
   EXPECT_EQ("granted", permission_string);
 }
