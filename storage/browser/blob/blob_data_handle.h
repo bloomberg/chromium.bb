@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "storage/browser/storage_browser_export.h"
@@ -20,9 +19,7 @@ class SequencedTaskRunner;
 namespace storage {
 
 class BlobDataSnapshot;
-class BlobReader;
 class BlobStorageContext;
-class FileSystemContext;
 
 // BlobDataHandle ensures that the underlying blob (keyed by the uuid) remains
 // in the BlobStorageContext's collection while this object is alive. Anything
@@ -39,24 +36,14 @@ class STORAGE_EXPORT BlobDataHandle
   BlobDataHandle(const BlobDataHandle& other);  // May be copied on any thread.
   ~BlobDataHandle() override;                   // May be deleted on any thread.
 
-  // A BlobReader is used to read the data from the blob.  This object is
+  // A BlobDataSnapshot is used to read the data from the blob.  This object is
   // intended to be transient and should not be stored for any extended period
   // of time.
-  scoped_ptr<BlobReader> CreateReader(
-      FileSystemContext* file_system_context,
-      base::SequencedTaskRunner* file_task_runner) const;
-
-  // May be accessed on any thread.
-  const std::string& uuid() const;
-  // May be accessed on any thread.
-  const std::string& content_type() const;
-  // May be accessed on any thread.
-  const std::string& content_disposition() const;
-
   // This call and the destruction of the returned snapshot must be called
   // on the IO thread.
-  // TODO(dmurph): Make this protected, where only the BlobReader can call it.
   scoped_ptr<BlobDataSnapshot> CreateSnapshot() const;
+
+  const std::string& uuid() const;  // May be accessed on any thread.
 
  private:
   // Internal class whose destructor is guarenteed to be called on the IO
@@ -65,11 +52,11 @@ class STORAGE_EXPORT BlobDataHandle
       : public base::RefCountedThreadSafe<BlobDataHandleShared> {
    public:
     BlobDataHandleShared(const std::string& uuid,
-                         const std::string& content_type,
-                         const std::string& content_disposition,
-                         BlobStorageContext* context);
+                         BlobStorageContext* context,
+                         base::SequencedTaskRunner* task_runner);
 
     scoped_ptr<BlobDataSnapshot> CreateSnapshot() const;
+    const std::string& uuid() const;
 
    private:
     friend class base::DeleteHelper<BlobDataHandleShared>;
@@ -79,8 +66,6 @@ class STORAGE_EXPORT BlobDataHandle
     virtual ~BlobDataHandleShared();
 
     const std::string uuid_;
-    const std::string content_type_;
-    const std::string content_disposition_;
     base::WeakPtr<BlobStorageContext> context_;
 
     DISALLOW_COPY_AND_ASSIGN(BlobDataHandleShared);
@@ -88,10 +73,8 @@ class STORAGE_EXPORT BlobDataHandle
 
   friend class BlobStorageContext;
   BlobDataHandle(const std::string& uuid,
-                 const std::string& content_type,
-                 const std::string& content_disposition,
                  BlobStorageContext* context,
-                 base::SequencedTaskRunner* io_task_runner);
+                 base::SequencedTaskRunner* task_runner);
 
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   scoped_refptr<BlobDataHandleShared> shared_;

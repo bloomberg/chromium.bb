@@ -13,6 +13,7 @@ namespace net {
 
 class IOBuffer;
 class UploadBytesElementReader;
+class UploadDiskCacheEntryElementReader;
 class UploadFileElementReader;
 
 // An interface to read an upload data element.
@@ -20,6 +21,11 @@ class NET_EXPORT UploadElementReader {
  public:
   UploadElementReader() {}
   virtual ~UploadElementReader() {}
+
+  // Returns this instance's pointer as UploadDiskCacheEntryElementReader when
+  // possible, otherwise returns nullptr.
+  virtual const UploadDiskCacheEntryElementReader*
+  AsDiskCacheEntryReaderForTests() const;
 
   // Returns this instance's pointer as UploadBytesElementReader when possible,
   // otherwise returns NULL.

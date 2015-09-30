@@ -26,6 +26,7 @@ class URLRequestContext;
 
 namespace storage {
 
+class BlobDataSnapshot;
 class BlobDataHandle;
 class BlobStorageContext;
 
@@ -44,9 +45,6 @@ class STORAGE_EXPORT BlobProtocolHandler
       net::URLRequest* request,
       scoped_ptr<BlobDataHandle> blob_data_handle);
 
-  // This gets the handle on the request if it exists.
-  static BlobDataHandle* GetRequestBlobDataHandle(net::URLRequest* request);
-
   BlobProtocolHandler(
       BlobStorageContext* context,
       storage::FileSystemContext* file_system_context,
@@ -58,7 +56,7 @@ class STORAGE_EXPORT BlobProtocolHandler
       net::NetworkDelegate* network_delegate) const override;
 
  private:
-  BlobDataHandle* LookupBlobHandle(net::URLRequest* request) const;
+  scoped_ptr<BlobDataSnapshot> LookupBlobData(net::URLRequest* request) const;
 
   base::WeakPtr<BlobStorageContext> context_;
   const scoped_refptr<storage::FileSystemContext> file_system_context_;

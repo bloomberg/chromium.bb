@@ -77,9 +77,9 @@ scoped_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromUUID(
   if (entry->flags & EXCEEDED_MEMORY)
     return result.Pass();
   DCHECK(!entry->IsBeingBuilt());
-  result.reset(new BlobDataHandle(uuid, entry->data->content_type(),
-                                  entry->data->content_disposition(), this,
-                                  base::ThreadTaskRunnerHandle::Get().get()));
+  result.reset(
+      new BlobDataHandle(uuid, this,
+                         base::ThreadTaskRunnerHandle::Get().get()));
   return result.Pass();
 }
 
