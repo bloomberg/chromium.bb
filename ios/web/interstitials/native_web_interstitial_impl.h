@@ -19,6 +19,7 @@ class NativeWebInterstitialDelegate;
 class NativeWebInterstitialImpl : public WebInterstitialImpl {
  public:
   NativeWebInterstitialImpl(WebStateImpl* web_state,
+                            bool new_navigation,
                             const GURL& url,
                             scoped_ptr<NativeWebInterstitialDelegate> delegate);
   ~NativeWebInterstitialImpl() override;

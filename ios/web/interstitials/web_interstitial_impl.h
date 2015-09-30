@@ -15,6 +15,7 @@
 
 namespace web {
 
+class NavigationManagerImpl;
 class WebInterstitialDelegate;
 class WebInterstitialFacadeDelegate;
 class WebInterstitialImpl;
@@ -30,7 +31,9 @@ void EvaluateScriptForTesting(WebInterstitialImpl*,
 // embed the interstitial into a WebState.
 class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
  public:
-  WebInterstitialImpl(WebStateImpl* web_state, const GURL& url);
+  WebInterstitialImpl(WebStateImpl* web_state,
+                      bool new_navigation,
+                      const GURL& url);
   ~WebInterstitialImpl() override;
 
   // Returns the transient content view used to display interstitial content.
@@ -71,10 +74,15 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
                                   JavaScriptCompletion completionHandler) = 0;
 
  private:
+  // The navigation manager corresponding to the WebState the interstiatial was
+  // created for.
+  NavigationManagerImpl* navigation_manager_;
   // The URL corresponding to the page that resulted in this interstitial.
   GURL url_;
   // The delegate used to communicate with the InterstitialPageImplsIOS facade.
   WebInterstitialFacadeDelegate* facade_delegate_;
+  // Whether or not to create a new transient entry on display.
+  bool new_navigation_;
   // Whether or not either Proceed() or DontProceed() has been called.
   bool action_taken_;
 

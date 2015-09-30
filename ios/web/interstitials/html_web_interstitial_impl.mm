@@ -62,17 +62,21 @@ namespace web {
 // static
 WebInterstitial* WebInterstitial::CreateHtmlInterstitial(
     WebState* web_state,
+    bool new_navigation,
     const GURL& url,
     scoped_ptr<HtmlWebInterstitialDelegate> delegate) {
   WebStateImpl* web_state_impl = static_cast<WebStateImpl*>(web_state);
-  return new HtmlWebInterstitialImpl(web_state_impl, url, delegate.Pass());
+  return new HtmlWebInterstitialImpl(web_state_impl, new_navigation, url,
+                                     delegate.Pass());
 }
 
 HtmlWebInterstitialImpl::HtmlWebInterstitialImpl(
     WebStateImpl* web_state,
+    bool new_navigation,
     const GURL& url,
     scoped_ptr<HtmlWebInterstitialDelegate> delegate)
-    : WebInterstitialImpl(web_state, url), delegate_(delegate.Pass()) {
+    : WebInterstitialImpl(web_state, new_navigation, url),
+      delegate_(delegate.Pass()) {
   DCHECK(delegate_);
 }
 

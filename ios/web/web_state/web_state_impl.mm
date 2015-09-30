@@ -351,19 +351,6 @@ void WebStateImpl::ShowWebInterstitial(WebInterstitialImpl* interstitial) {
 
 void WebStateImpl::ClearTransientContentView() {
   if (interstitial_) {
-    CRWSessionController* sessionController =
-        navigation_manager_.GetSessionController();
-    web::NavigationItem* currentItem =
-        [sessionController.currentEntry navigationItem];
-    if (currentItem->IsUnsafe()) {
-      // The unsafe page or page with bad SSL cert should be removed from the
-      // history, and, in fact, Safe Browsing and SSL interstitials will do
-      // just that *provided* that it isn't the current page.
-      // So to make this happen, before removing the interstitial, have the
-      // session controller go back one page.
-      [sessionController goBack];
-    }
-    [sessionController discardNonCommittedEntries];
     // Store the currently displayed interstitial in a local variable and reset
     // |interstitial_| early.  This is to prevent an infinite loop, as
     // |DontProceed()| internally calls |ClearTransientContentView()|.

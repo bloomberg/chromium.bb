@@ -34,10 +34,12 @@ class WebInterstitial {
   // manage their own deletion after calling |Show()|.
   static WebInterstitial* CreateHtmlInterstitial(
       WebState* web_state,
+      bool new_navigation,
       const GURL& url,
       scoped_ptr<HtmlWebInterstitialDelegate> delegate);
   static WebInterstitial* CreateNativeInterstitial(
       WebState* web_state,
+      bool new_navigation,
       const GURL& url,
       scoped_ptr<NativeWebInterstitialDelegate> delegate);
 

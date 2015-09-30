@@ -1605,10 +1605,23 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _lastUserInteraction.reset();
   web::RecordAction(UserMetricsAction("Reload"));
   if (self.webView) {
-    // Just as we don't use the WebView native back and forward navigation
-    // (preferring to load the URLs manually) we don't use the native reload.
-    // This ensures state processing and delegate calls are consistent.
-    [self loadCurrentURL];
+    web::NavigationItem* transientItem =
+        _webStateImpl->GetNavigationManagerImpl().GetTransientItem();
+    if (transientItem) {
+      // If there's a transient item, a reload is considered a new navigation to
+      // the transient item's URL (as on other platforms).
+      web::WebLoadParams reloadParams(transientItem->GetURL());
+      reloadParams.transition_type = ui::PAGE_TRANSITION_RELOAD;
+      reloadParams.extra_headers.reset(
+          [transientItem->GetHttpRequestHeaders() copy]);
+      [self loadWithParams:reloadParams];
+    } else {
+      // As with back and forward navigation, load the URL manually instead of
+      // using the web view's reload. This ensures state processing and delegate
+      // calls are consistent.
+      // TODO(eugenebut): revisit this for WKWebView.
+      [self loadCurrentURL];
+    }
   } else {
     [self.nativeController reload];
   }
@@ -1665,11 +1678,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self injectEarlyInjectionScripts];
     [self checkForUnexpectedURLChange];
   }
-  // Discard any outstanding pending entries before adjusting the navigation
-  // index.
-  CRWSessionController* sessionController =
-      _webStateImpl->GetNavigationManagerImpl().GetSessionController();
-  [sessionController discardNonCommittedEntries];
 
   bool wasShowingInterstitial = _webStateImpl->IsShowingWebInterstitial();
 

@@ -81,14 +81,11 @@ struct SSLStatus;
 // TODO(pinkerton): Desktop Chrome broadcasts a notification here, should we?
 - (void)commitPendingEntry;
 
-// Adds a transient entry with the given information. A transient entry will be
+// Adds a transient entry with the given URL. A transient entry will be
 // discarded on any navigation.
 // TODO(stuartmorgan): Make this work more like upstream, where the entry can
-// be made from outside and then handed in, instead of having to pass a bunch
-// of construction params here.
-- (void)addTransientEntry:(const GURL&)url
-                    title:(const base::string16&)title
-                sslStatus:(const web::SSLStatus*)status;
+// be made from outside and then handed in.
+- (void)addTransientEntryWithURL:(const GURL&)URL;
 
 // Creates a new CRWSessionEntry with the given URL and state object. A state
 // object is a serialized generic JavaScript object that contains details of the

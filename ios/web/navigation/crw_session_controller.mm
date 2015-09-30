@@ -308,15 +308,11 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   return [NSString
       stringWithFormat:
           @"id: %@\nname: %@\nlast visit: %f\ncurrent index: %" PRIdNS
-          @"\nprevious index: %" PRIdNS "\n%@\npending: %@\nxCallback:\n%@\n",
-          _tabId,
-          self.windowName,
-          _lastVisitedTimestamp,
-          _currentNavigationIndex,
-          _previousNavigationIndex,
-          _entries,
-          _pendingEntry.get(),
-          _xCallbackParameters];
+          @"\nprevious index: %" PRIdNS "\n%@\npending: %@\ntransient: %@\n"
+          @"xCallback:\n%@\n",
+          _tabId, self.windowName, _lastVisitedTimestamp,
+          _currentNavigationIndex, _previousNavigationIndex, _entries,
+          _pendingEntry.get(), _transientEntry.get(), _xCallbackParameters];
 }
 
 // Returns the current entry in the session list, or the pending entry if there
@@ -424,8 +420,6 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
 }
 
 - (void)updatePendingEntry:(const GURL&)url {
-  [self discardTransientEntry];
-
   // If there is no pending entry, navigation is probably happening within the
   // session history. Don't modify the entry list.
   if (!_pendingEntry)
@@ -433,6 +427,11 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
 
   web::NavigationItemImpl* item = [_pendingEntry navigationItemImpl];
   if (url != item->GetURL()) {
+    // Assume a redirection, and discard any transient entry.
+    // TODO(stuartmorgan): Once the current safe browsing code is gone,
+    // consider making this a DCHECK that there's no transient entry.
+    [self discardTransientEntry];
+
     item->SetURL(url);
     item->SetVirtualURL(url);
     // Redirects (3xx response code), or client side navigation must change
@@ -495,18 +494,9 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
     _navigationManager->OnNavigationItemCommitted();
 }
 
-- (void)addTransientEntry:(const GURL&)url
-                    title:(const base::string16&)title
-                sslStatus:(const web::SSLStatus*)status {
-  // TODO(stuartmorgan): Don't do this; this is here only to preserve the old
-  // behavior from when transient entries were faked with pending entries, so
-  // any actual pending entry had to be committed. This shouldn't be necessary
-  // now, but things may rely on the old behavior and need to be fixed
-  // (crbug.com/524491).
-  [self commitPendingEntry];
-
+- (void)addTransientEntryWithURL:(const GURL&)URL {
   _transientEntry.reset(
-      [[self sessionEntryWithURL:url
+      [[self sessionEntryWithURL:URL
                         referrer:web::Referrer()
                       transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
              useDesktopUserAgent:NO
@@ -514,17 +504,8 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
 
   web::NavigationItem* navigationItem = [_transientEntry navigationItem];
   DCHECK(navigationItem);
-  if (status)
-    navigationItem->GetSSL() = *status;
-  navigationItem->SetTitle(title);
   navigationItem->SetTimestamp(
       _timeSmoother.GetSmoothedTime(base::Time::Now()));
-
-  // This doesn't match upstream, but matches what we've traditionally done and
-  // will hopefully continue to be good enough for as long as we need the
-  // facade.
-  if (_navigationManager)
-    _navigationManager->OnNavigationItemChanged();
 }
 
 - (void)pushNewEntryWithURL:(const GURL&)URL
@@ -647,6 +628,12 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   if ([_entries count] == 0)
     return NO;
 
+  // A transient entry behaves from a user perspective in most ways like a
+  // committed entry, so allow going back from a transient entry as long as
+  // there is something to go back to.
+  if (_transientEntry && [_entries count] > 0)
+    return YES;
+
   NSInteger lastNonRedirectedIndex = _currentNavigationIndex;
   while (lastNonRedirectedIndex >= 0 &&
          ui::PageTransitionIsRedirect(
@@ -672,7 +659,14 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   if (![self canGoBack])
     return;
 
-  [self discardTransientEntry];
+  BOOL hadTransientEntry = _transientEntry != nil;
+
+  [self discardNonCommittedEntries];
+
+  // Going back from a transient entry doesn't require anything beyond
+  // discarding the pending entry.
+  if (hadTransientEntry)
+    return;
 
   web::RecordAction(UserMetricsAction("Back"));
   _previousNavigationIndex = _currentNavigationIndex;

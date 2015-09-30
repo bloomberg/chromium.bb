@@ -24,6 +24,7 @@ class HtmlWebInterstitialImpl;
 class HtmlWebInterstitialImpl : public WebInterstitialImpl {
  public:
   HtmlWebInterstitialImpl(WebStateImpl* web_state,
+                          bool new_navigation,
                           const GURL& url,
                           scoped_ptr<HtmlWebInterstitialDelegate> delegate);
   ~HtmlWebInterstitialImpl() override;
