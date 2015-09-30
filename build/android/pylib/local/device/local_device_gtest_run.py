@@ -21,9 +21,6 @@ _EXTRA_COMMAND_LINE_FILE = (
     'org.chromium.native_test.NativeTestActivity.CommandLineFile')
 _EXTRA_COMMAND_LINE_FLAGS = (
     'org.chromium.native_test.NativeTestActivity.CommandLineFlags')
-_EXTRA_SHARD_NANO_TIMEOUT = (
-    'org.chromium.native_test.NativeTestInstrumentationTestRunner'
-        '.ShardNanoTimeout')
 _EXTRA_TEST_LIST = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner'
         '.TestList')
@@ -72,12 +69,13 @@ class _ApkDelegate(object):
   def Run(self, test, device, flags=None, **kwargs):
     extras = dict(self._extras)
 
-    if 'timeout' in kwargs:
+    if ('timeout' in kwargs
+        and gtest_test_instance.EXTRA_SHARD_NANO_TIMEOUT not in extras):
       # Make sure the instrumentation doesn't kill the test before the
       # scripts do. The provided timeout value is in seconds, but the
       # instrumentation deals with nanoseconds because that's how Android
       # handles time.
-      extras[_EXTRA_SHARD_NANO_TIMEOUT] = int(
+      extras[gtest_test_instance.EXTRA_SHARD_NANO_TIMEOUT] = int(
           kwargs['timeout'] * _SECONDS_TO_NANOS)
 
     with device_temp_file.DeviceTempFile(device.adb) as command_line_file:

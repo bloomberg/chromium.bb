@@ -77,6 +77,9 @@ _EXTRA_NATIVE_TEST_ACTIVITY = (
         'NativeTestActivity')
 _EXTRA_RUN_IN_SUB_THREAD = (
     'org.chromium.native_test.NativeTestActivity.RunInSubThread')
+EXTRA_SHARD_NANO_TIMEOUT = (
+    'org.chromium.native_test.NativeTestInstrumentationTestRunner.'
+        'ShardNanoTimeout')
 _EXTRA_SHARD_SIZE_LIMIT = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner.'
         'ShardSizeLimit')
@@ -156,6 +159,7 @@ class GtestTestInstance(test_instance.TestInstance):
         self._extras[_EXTRA_RUN_IN_SUB_THREAD] = 1
       if self._suite in BROWSER_TEST_SUITES:
         self._extras[_EXTRA_SHARD_SIZE_LIMIT] = 1
+        self._extras[EXTRA_SHARD_NANO_TIMEOUT] = int(60e9)
 
     if not os.path.exists(self._exe_path):
       self._exe_path = None
