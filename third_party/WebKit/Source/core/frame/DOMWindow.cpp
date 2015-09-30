@@ -121,7 +121,9 @@ DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index) const
 
 bool DOMWindow::isCurrentlyDisplayedInFrame() const
 {
-    return frame() && frame()->domWindow() == this && frame()->host();
+    if (frame())
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(frame()->domWindow() == this);
+    return frame() && frame()->host();
 }
 
 bool DOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow, const String& urlString)

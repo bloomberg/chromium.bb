@@ -223,12 +223,12 @@ private:
 
         DECLARE_VIRTUAL_TRACE();
 
-    private:
-        WindowFrameObserver(LocalDOMWindow*, LocalFrame&);
-
         // LocalFrameLifecycleObserver overrides:
         void willDetachFrameHost() override;
         void contextDestroyed() override;
+
+    private:
+        WindowFrameObserver(LocalDOMWindow*, LocalFrame&);
 
         RawPtrWillBeMember<LocalDOMWindow> m_window;
     };

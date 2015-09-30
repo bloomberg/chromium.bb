@@ -1,4 +1,8 @@
 <script>
+    // Capture window.window and window.parent: once this context is navigated, these properties
+    // always return null.
+    var w = window;
+    var p = parent;
     parent.accessFrame = function()
     {
         function normalizeURL(url)
@@ -7,12 +11,12 @@
         }
 
         try {
-            parent.log("document.URL: " + normalizeURL(document.URL));
-            parent.log("window.document.URL: " + normalizeURL(window.document.URL));
-            parent.log("name: " + name);
-            parent.log("window.name: " + window.name);
+            p.log("document.URL: " + normalizeURL(document.URL));
+            p.log("window.document.URL: " + normalizeURL(w.document.URL));
+            p.log("name: " + name);
+            p.log("window.name: " + w.name);
         } catch (e) {
-            parent.log("An exception was thrown: " + e.message);
+            p.log("An exception was thrown: " + e.message);
         }
     }
 

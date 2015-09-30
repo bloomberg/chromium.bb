@@ -523,7 +523,7 @@ void LocalDOMWindow::unregisterProperty(DOMWindowProperty* property)
 
 void LocalDOMWindow::reset()
 {
-    frameDestroyed();
+    m_frameObserver->contextDestroyed();
 
     m_screen = nullptr;
     m_history = nullptr;
@@ -540,8 +540,6 @@ void LocalDOMWindow::reset()
 #if ENABLE(ASSERT)
     m_hasBeenReset = true;
 #endif
-
-    resetLocation();
 
     LocalDOMWindow::notifyContextDestroyed();
 }
@@ -662,17 +660,8 @@ ApplicationCache* LocalDOMWindow::applicationCache() const
 
 Navigator* LocalDOMWindow::navigator() const
 {
-    if (!isCurrentlyDisplayedInFrame() && (!m_navigator || m_navigator->frame())) {
-        // We return a navigator with null frame instead of returning null
-        // pointer as other functions do, in order to allow users to access
-        // functions such as navigator.product.
-        m_navigator = Navigator::create(nullptr);
-    }
     if (!m_navigator)
         m_navigator = Navigator::create(frame());
-    // As described above, when not dispayed in the frame, the returning
-    // navigator should not be associated with the frame.
-    ASSERT(isCurrentlyDisplayedInFrame() || !m_navigator->frame());
     return m_navigator.get();
 }
 
@@ -1387,8 +1376,9 @@ void LocalDOMWindow::dispatchLoadEvent()
         timing.markLoadEventStart();
         dispatchEvent(loadEvent, document());
         timing.markLoadEventEnd();
-    } else
+    } else {
         dispatchEvent(loadEvent, document());
+    }
 
     // For load events, send a separate load event to the enclosing frame only.
     // This is a DOM extension and is independent of bubbling/capturing rules of
@@ -1474,9 +1464,9 @@ PassRefPtrWillBeRawPtr<DOMWindow> LocalDOMWindow::open(const String& urlString, 
     // Get the target frame for the special cases of _top and _parent.
     // In those cases, we schedule a location change right now and return early.
     Frame* targetFrame = nullptr;
-    if (frameName == "_top")
+    if (frameName == "_top") {
         targetFrame = frame()->tree().top();
-    else if (frameName == "_parent") {
+    } else if (frameName == "_parent") {
         if (Frame* parent = frame()->tree().parent())
             targetFrame = parent;
         else
@@ -1530,6 +1520,11 @@ DEFINE_TRACE(LocalDOMWindow)
 
 LocalFrame* LocalDOMWindow::frame() const
 {
+    // If the LocalDOMWindow still has a frame reference, that frame must point
+    // back to this LocalDOMWindow: otherwise, it's easy to get into a situation
+    // where script execution leaks between different LocalDOMWindows.
+    if (m_frameObserver->frame())
+        ASSERT_WITH_SECURITY_IMPLICATION(m_frameObserver->frame()->domWindow() == this);
     return m_frameObserver->frame();
 }
 

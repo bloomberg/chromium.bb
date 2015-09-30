@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+function startTest()
+{
+    t = window.top;
+    t.shouldBe("window", "self");
+    t.shouldBe("window", "frames");
+    t.shouldBe("parent", "top");
+    t.savedClosure = function()
+    {
+        // The normal shouldBeNull() helpers don't work well here, since they don't eval
+        //in the right context.
+        function testProperty(value, name)
+        {
+            if (value === null)
+                t.testPassed(name + " is null.");
+            else
+                t.testFailed(name + " is not null!");
+        }
+        testProperty(window, "window");
+        testProperty(self, "self");
+        testProperty(frames, "frames");
+        testProperty(parent, "parent");
+        testProperty(top, "top");
+    };
+    location = 'data:text/html,<body>Testing...</body>';
+}
+</script>
+</head>
+<body onload="startTest()">
+</body>
+</html>

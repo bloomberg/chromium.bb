@@ -1,6 +1,6 @@
 <html>
 <head>
-<script src="/js-test-resources/js-test.js"></script>
+<script src="../../resources/js-test.js"></script>
 </head>
 <body>
 <script>
@@ -9,24 +9,18 @@ description('This is a regression test for crbug.com/400476. It should not crash
 
 var root = document.documentElement;
 var iframe = root.ownerDocument.createElement('iframe');
-var timeouts = [];
-iframe.onload = iframeOnload;
-root.appendChild(iframe);
-
-function iframeOnload() {
+iframe.onload = function() {
     var defaultView = iframe.contentDocument.defaultView;
     defaultView.onpageshow = onPageShow;
-    iframe.src = null;
-    timeouts[timeouts.length] = window.setTimeout(nextIframeLoaded, 100);
-}
+    window.setTimeout(tryToCrash, 0);
+};
+root.appendChild(iframe);
 
 function onPageShow() {
     eventObj = arguments[0];
 }
 
-function nextIframeLoaded() {
-    timeouts.forEach(window.clearTimeout);
-
+function tryToCrash() {
     // Access of eventObj.path caused the crash.
     // The test is somewhat flaky, in that the test may pass as correct
     // despite the bug being the code. The exact conditions

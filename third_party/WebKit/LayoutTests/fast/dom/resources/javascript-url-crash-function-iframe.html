@@ -15,8 +15,11 @@ function test()
 
 setTimeout(function ()
 {
+    // Capture window.window into a variable, since this property returns null as soon as the
+    // context is navigated.
+    var w = window;
     test();
-    if (window.testRunner)
-        testRunner.notifyDone();
+    if (w.testRunner)
+        w.testRunner.notifyDone();
 }, 0);
 </script>
