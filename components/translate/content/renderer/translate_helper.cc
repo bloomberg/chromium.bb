@@ -33,8 +33,6 @@
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
-#include "third_party/WebKit/public/web/WebView.h"
-#include "third_party/WebKit/public/web/WebWidget.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
 
@@ -48,7 +46,6 @@ using blink::WebScriptSource;
 using blink::WebSecurityOrigin;
 using blink::WebString;
 using blink::WebVector;
-using blink::WebView;
 
 namespace {
 
