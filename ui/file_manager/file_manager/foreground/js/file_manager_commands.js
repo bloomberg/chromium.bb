@@ -419,8 +419,9 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
           '', str('UNMOUNT_FAILED'), null, null, null);
     };
 
-    var volumeInfo = CommandUtil.getElementVolumeInfo(
-        event.target, fileManager);
+    var volumeInfo =
+        CommandUtil.getElementVolumeInfo(event.target, fileManager) ||
+        CommandUtil.getCurrentVolumeInfo(fileManager);
     if (!volumeInfo) {
       errorCallback();
       return;
@@ -436,8 +437,9 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
    * @this {CommandHandler}
    */
   canExecute: function(event, fileManager) {
-    var volumeInfo = CommandUtil.getElementVolumeInfo(
-        event.target, fileManager);
+    var volumeInfo =
+        CommandUtil.getElementVolumeInfo(event.target, fileManager) ||
+        CommandUtil.getCurrentVolumeInfo(fileManager);
     if (!volumeInfo) {
       event.canExecute = false;
       event.command.setHidden(true);
