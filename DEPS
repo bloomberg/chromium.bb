@@ -598,7 +598,7 @@ hooks = [
   },
   {
     # Update LASTCHANGE.blink.
-    'name': 'lastchange',
+    'name': 'lastchange_blink',
     'pattern': '.',
     'action': ['python', 'src/build/util/lastchange.py',
                '--git-hash-only',
