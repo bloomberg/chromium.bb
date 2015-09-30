@@ -270,10 +270,8 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       new ContainerURLRequestContext(file_task_runner_));
   URLRequestContextStorage* storage = context->storage();
 
-  storage->set_http_user_agent_settings(
-      make_scoped_ptr(
-          new StaticHttpUserAgentSettings(accept_language_, user_agent_))
-          .Pass());
+  storage->set_http_user_agent_settings(make_scoped_ptr(
+      new StaticHttpUserAgentSettings(accept_language_, user_agent_)));
 
   if (!network_delegate_)
     network_delegate_.reset(new BasicNetworkDelegate);

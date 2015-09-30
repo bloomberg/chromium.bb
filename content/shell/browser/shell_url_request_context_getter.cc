@@ -91,7 +91,7 @@ ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
 
 scoped_ptr<net::NetworkDelegate>
 ShellURLRequestContextGetter::CreateNetworkDelegate() {
-  return make_scoped_ptr(new ShellNetworkDelegate).Pass();
+  return make_scoped_ptr(new ShellNetworkDelegate);
 }
 
 scoped_ptr<net::ProxyConfigService>
@@ -201,10 +201,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     network_session_params.host_resolver =
         url_request_context_->host_resolver();
 
-    storage_->set_http_transaction_factory(
-        make_scoped_ptr(
-            new net::HttpCache(network_session_params, main_backend))
-            .Pass());
+    storage_->set_http_transaction_factory(make_scoped_ptr(
+        new net::HttpCache(network_session_params, main_backend)));
 
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
         new net::URLRequestJobFactoryImpl());

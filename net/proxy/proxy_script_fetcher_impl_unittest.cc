@@ -61,7 +61,7 @@ class RequestContext : public URLRequestContext {
   RequestContext() : storage_(this) {
     ProxyConfig no_proxy;
     storage_.set_host_resolver(scoped_ptr<HostResolver>(new MockHostResolver));
-    storage_.set_cert_verifier(make_scoped_ptr(new MockCertVerifier).Pass());
+    storage_.set_cert_verifier(make_scoped_ptr(new MockCertVerifier));
     storage_.set_transport_security_state(
         make_scoped_ptr(new TransportSecurityState));
     storage_.set_proxy_service(ProxyService::CreateFixed(no_proxy));

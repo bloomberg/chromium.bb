@@ -123,14 +123,12 @@ void TestURLRequestContext::Init() {
                              base::WorkerPool::GetTaskRunner(true))));
   }
   if (!http_user_agent_settings()) {
-    context_storage_.set_http_user_agent_settings(
-        make_scoped_ptr(
-            new StaticHttpUserAgentSettings("en-us,fr", std::string()))
-            .Pass());
+    context_storage_.set_http_user_agent_settings(make_scoped_ptr(
+        new StaticHttpUserAgentSettings("en-us,fr", std::string())));
   }
   if (!job_factory()) {
     context_storage_.set_job_factory(
-        make_scoped_ptr(new URLRequestJobFactoryImpl()).Pass());
+        make_scoped_ptr(new URLRequestJobFactoryImpl()));
   }
 }
 
