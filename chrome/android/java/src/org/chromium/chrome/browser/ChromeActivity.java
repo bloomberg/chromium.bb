@@ -1375,6 +1375,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (id == R.id.preferences_id) {
             PreferencesLauncher.launchSettingsPage(this, null);
             RecordUserAction.record("MobileMenuSettings");
+        } else if (id == R.id.show_menu) {
+            showAppMenuForKeyboardEvent();
         }
 
         // All the code below assumes currentTab is not null, so return early if it is null.
@@ -1438,8 +1440,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             HelpAndFeedback.getInstance(this)
                     .show(this, helpContextId, currentTab.getProfile(), currentTab.getUrl());
             RecordUserAction.record("MobileMenuFeedback");
-        } else if (id == R.id.show_menu) {
-            showAppMenuForKeyboardEvent();
         } else {
             return false;
         }
