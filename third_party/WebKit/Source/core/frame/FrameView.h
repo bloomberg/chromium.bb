@@ -359,7 +359,7 @@ public:
     bool isScrollCornerVisible() const override;
     bool userInputScrollable(ScrollbarOrientation) const override;
     bool shouldPlaceVerticalScrollbarOnLeft() const override;
-    virtual LayoutRect scrollIntoView(
+    LayoutRect scrollIntoView(
         const LayoutRect& rectInContent,
         const ScrollAlignment& alignX,
         const ScrollAlignment& alignY) override;
@@ -616,6 +616,7 @@ private:
     void scrollContentsIfNeededRecursive();
     void updateStyleAndLayoutIfNeededRecursive();
     void synchronizedPaint(const LayoutRect& interestRect);
+    void synchronizedPaintRecursively(GraphicsLayer*, const LayoutRect& interestRect);
     void compositeForSlimmingPaintV2();
 
     void reset();

@@ -96,6 +96,7 @@
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/text/TextStream.h"
+#include "public/platform/WebDisplayItemList.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
@@ -2448,7 +2449,8 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, cons
 
             ASSERT(!view->hasPendingSelection());
             ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean
-                || (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && lifecycle().state() == DocumentLifecycle::CompositingForSlimmingPaintV2Clean));
+                || (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && lifecycle().state() == DocumentLifecycle::CompositingForSlimmingPaintV2Clean)
+                || (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled() && lifecycle().state() == DocumentLifecycle::PaintClean));
         }
     }
 }
@@ -2460,22 +2462,34 @@ void FrameView::synchronizedPaint(const LayoutRect& interestRect)
 
     LayoutView* view = layoutView();
     ASSERT(view);
+    // TODO(chrishtr): figure out if there can be any GraphicsLayer above this one that draws content.
     GraphicsLayer* rootGraphicsLayer = view->layer()->graphicsLayerBacking();
-
-    // Detached frames can have no root graphics layer.
-    if (!rootGraphicsLayer)
-        return;
-
     lifecycle().advanceTo(DocumentLifecycle::InPaint);
 
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        GraphicsContext context(rootGraphicsLayer->displayItemList());
-        rootGraphicsLayer->paint(context, roundedIntRect(interestRect));
-    } else {
-        // TODO(chrishtr): Implement for V1.
+    // A null graphics layer can occur for painting of SVG images that are not parented into the main frame tree.
+    if (rootGraphicsLayer) {
+        synchronizedPaintRecursively(rootGraphicsLayer, interestRect);
+    }
+    lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+}
+
+void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer, const LayoutRect& interestRect)
+{
+    if (graphicsLayer->needsDisplay()) {
+        // TODO(chrishtr): implement interest rects.
+        GraphicsContext context(graphicsLayer->displayItemList());
+        graphicsLayer->paint(context, roundedIntRect(interestRect));
+
+        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            DisplayListDiff diff;
+            graphicsLayer->commitIfNeeded(diff);
+        }
     }
 
-    lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+    for (auto& child : graphicsLayer->children()) {
+        if (child)
+            synchronizedPaintRecursively(child, interestRect);
+    }
 }
 
 void FrameView::compositeForSlimmingPaintV2()
@@ -2492,7 +2506,7 @@ void FrameView::compositeForSlimmingPaintV2()
     lifecycle().advanceTo(DocumentLifecycle::InCompositingForSlimmingPaintV2);
 
     DisplayListDiff displayListDiff;
-    rootGraphicsLayer->displayItemList()->commitNewDisplayItems(&displayListDiff);
+    rootGraphicsLayer->commitIfNeeded(displayListDiff);
 
     DisplayListCompositingBuilder compositingBuilder(*rootGraphicsLayer->displayItemList(), displayListDiff);
     OwnPtr<CompositedDisplayList> compositedDisplayList = adoptPtr(new CompositedDisplayList());

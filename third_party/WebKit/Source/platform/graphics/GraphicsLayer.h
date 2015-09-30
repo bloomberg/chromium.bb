@@ -39,6 +39,7 @@
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebContentLayer.h"
@@ -189,6 +190,10 @@ public:
 
     void setContentsNeedsDisplay();
 
+    bool needsDisplay() const;
+    // Commites new display items only if m_needsDisplay is true.
+    bool commitIfNeeded(DisplayListDiff&);
+
     void invalidateDisplayItemClient(const DisplayItemClientWrapper&);
 
     // Set that the position/size of the contents (image or video).
@@ -274,6 +279,11 @@ private:
     // Callback from the underlying graphics system to draw layer contents.
     void paintGraphicsLayerContents(GraphicsContext&, const IntRect& clip);
 
+    // Sets m_needsDisplay, but without invalidating the DisplayItemList. This allows us to test
+    // scenarios where paint needs to be re-calculated, but no DisplayItemClients were invalidated
+    // (such as re-paints due to change of interest rect).
+    void setNeedsDisplayWithoutInvalidateForTesting();
+
     // Adds a child without calling updateChildList(), so that adding children
     // can be batched before updating.
     void addChildInternal(GraphicsLayer*);
@@ -327,6 +337,8 @@ private:
     bool m_hasScrollParent : 1;
     bool m_hasClipParent : 1;
 
+    bool m_needsDisplay : 1;
+
     GraphicsLayerPaintingPhase m_paintingPhase;
 
     Vector<GraphicsLayer*> m_children;
@@ -335,8 +347,9 @@ private:
     GraphicsLayer* m_maskLayer; // Reference to mask layer. We don't own this.
     GraphicsLayer* m_contentsClippingMaskLayer; // Reference to clipping mask layer. We don't own this.
 
-    GraphicsLayer* m_replicaLayer; // A layer that replicates this layer. We only allow one, for now.
-                                   // The replica is not parented; this is the primary reference to it.
+    // A layer that replicates this layer. We only allow one, for now.
+    // The replica is not parented; this is the primary reference to it.
+    GraphicsLayer* m_replicaLayer; 
     GraphicsLayer* m_replicatedLayer; // For a replica layer, a reference to the original layer.
     FloatPoint m_replicatedLayerPosition; // For a replica layer, the position of the replica.
 
@@ -362,6 +375,8 @@ private:
     int m_3dRenderingContext;
 
     OwnPtr<DisplayItemList> m_displayItemList;
+
+    friend class DisplayItemListPaintTestForSlimmingPaintV2;
 };
 
 } // namespace blink

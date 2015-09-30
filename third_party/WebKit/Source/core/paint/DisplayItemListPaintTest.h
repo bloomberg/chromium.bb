@@ -51,6 +51,14 @@ public:
 protected:
     LayoutView& layoutView() { return *document().layoutView(); }
     DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
+    void setNeedsDisplayForRoot()
+    {
+        layoutView().layer()->graphicsLayerBacking()->setNeedsDisplay();
+    }
+    void setNeedsDisplayWithoutInvalidationForRoot()
+    {
+        layoutView().layer()->graphicsLayerBacking()->setNeedsDisplayWithoutInvalidateForTesting();
+    }
 
     // Expose some document lifecycle steps for checking new display items before commiting.
     void updateLifecyclePhasesToPaintClean(const LayoutRect& interestRect = LayoutRect::infiniteRect())

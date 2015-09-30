@@ -260,6 +260,7 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
         TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
 
     // Repeated painting should just generate the root cached subsequence.
+    setNeedsDisplayWithoutInvalidationForRoot();
     updateLifecyclePhasesToPaintClean();
     EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 1,
         TestDisplayItem(rootLayer, DisplayItem::CachedSubsequence));
@@ -290,7 +291,7 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInt
         "  <div id='content2' style='position: relative; top: 200px; width: 100px; height: 100px; background-color: green'></div>"
         "</div>"
         "<div id='container3' style='position: absolute; z-index: 2; left: 300px; top: 0; width: 200px; height: 200px; background-color: blue'></div>");
-    rootDisplayItemList().invalidateAll();
+    setNeedsDisplayForRoot();
 
     DeprecatedPaintLayer& rootLayer = *layoutView().layer();
     DeprecatedPaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
@@ -323,6 +324,8 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInt
         TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence),
         TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
 
+    setNeedsDisplayWithoutInvalidationForRoot();
+    
     // Container1 becomes partly in the interest rect, but uses cached subsequence
     // because it was fully painted before;
     // Container2's intersection with the interest rect changes;

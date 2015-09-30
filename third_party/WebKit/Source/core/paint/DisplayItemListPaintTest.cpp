@@ -130,7 +130,6 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, InlineRelayout)
     InlineTextBox& firstTextBox = *text.firstTextBox();
 
     document().view()->updateAllLifecyclePhases();
-
     EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 6,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::BoxDecorationBackground),

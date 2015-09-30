@@ -99,6 +99,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_isRootForIsolatedGroup(false)
     , m_hasScrollParent(false)
     , m_hasClipParent(false)
+    , m_needsDisplay(true)
     , m_paintingPhase(GraphicsLayerPaintAllWithOverflowClip)
     , m_parent(0)
     , m_maskLayer(0)
@@ -962,32 +963,68 @@ void GraphicsLayer::setContentsNeedsDisplay()
     }
 }
 
+void GraphicsLayer::setNeedsDisplayWithoutInvalidateForTesting()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+    if (!drawsContent())
+        return;
+
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+        m_needsDisplay = true;
+}
+
 void GraphicsLayer::setNeedsDisplay()
 {
-    if (drawsContent()) {
-        m_layer->layer()->invalidate();
-        if (isTrackingPaintInvalidations())
-            trackPaintInvalidationRect(FloatRect(FloatPoint(), m_size));
-        for (size_t i = 0; i < m_linkHighlights.size(); ++i)
-            m_linkHighlights[i]->invalidate();
+    if (!drawsContent())
+        return;
 
-        displayItemList()->invalidateAll();
-        if (isTrackingPaintInvalidations())
-            trackPaintInvalidationObject("##ALL##");
+    // TODO(chrishtr): stop invalidating the rects once FrameView::paintRecursively does so.
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+        m_needsDisplay = true;
+
+    m_layer->layer()->invalidate();
+    if (isTrackingPaintInvalidations())
+        trackPaintInvalidationRect(FloatRect(FloatPoint(), m_size));
+    for (size_t i = 0; i < m_linkHighlights.size(); ++i)
+        m_linkHighlights[i]->invalidate();
+
+    displayItemList()->invalidateAll();
+    if (isTrackingPaintInvalidations())
+        trackPaintInvalidationObject("##ALL##");
+}
+
+bool GraphicsLayer::needsDisplay() const
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+    return m_needsDisplay;
+}
+
+bool GraphicsLayer::commitIfNeeded(DisplayListDiff& displayListDiff)
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+    if (m_needsDisplay) {
+        displayItemList()->commitNewDisplayItems(&displayListDiff);
+        m_needsDisplay = false;
+        return true;
     }
+    return false;
 }
 
 void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidationReason invalidationReason)
 {
-    if (drawsContent()) {
-        m_layer->layer()->invalidateRect(rect);
-        if (firstPaintInvalidationTrackingEnabled())
-            m_debugInfo.appendAnnotatedInvalidateRect(rect, invalidationReason);
-        if (isTrackingPaintInvalidations())
-            trackPaintInvalidationRect(rect);
-        for (size_t i = 0; i < m_linkHighlights.size(); ++i)
-            m_linkHighlights[i]->invalidate();
-    }
+    if (!drawsContent())
+        return;
+
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+        m_needsDisplay = true;
+
+    m_layer->layer()->invalidateRect(rect);
+    if (firstPaintInvalidationTrackingEnabled())
+        m_debugInfo.appendAnnotatedInvalidateRect(rect, invalidationReason);
+    if (isTrackingPaintInvalidations())
+        trackPaintInvalidationRect(rect);
+    for (size_t i = 0; i < m_linkHighlights.size(); ++i)
+        m_linkHighlights[i]->invalidate();
 }
 
 void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient)
