@@ -26,5 +26,5 @@ if __name__ == '__main__':
 
   path_to_run_tests = os.path.join(telemetry_dir, 'telemetry', 'testing',
                                    'run_tests.py')
-  argv = ['--top-level-dir', gpu_test_dir] + sys.argv[1:]
+  argv = ['--no-browser', '--top-level-dir', gpu_test_dir] + sys.argv[1:]
   sys.exit(subprocess.call([sys.executable, path_to_run_tests] + argv, env=env))
