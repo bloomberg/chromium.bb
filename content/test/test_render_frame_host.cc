@@ -155,6 +155,13 @@ void TestRenderFrameHost::SimulateNavigationError(const GURL& url,
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
     NavigationRequest* request = frame_tree_node_->navigation_request();
+    CHECK(request);
+    // Simulate a beforeUnload ACK from the renderer if the browser is waiting
+    // for it. If it runs it will update the request state.
+    if (request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE) {
+      static_cast<TestRenderFrameHost*>(frame_tree_node()->current_frame_host())
+          ->SendBeforeUnloadACK(true);
+    }
     TestNavigationURLLoader* url_loader =
         static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
     CHECK(url_loader);
@@ -364,8 +371,10 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
 
   // Simulate a beforeUnload ACK from the renderer if the browser is waiting for
   // it. If it runs it will update the request state.
-  if (request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE)
-    SendBeforeUnloadACK(true);
+  if (request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE) {
+    static_cast<TestRenderFrameHost*>(frame_tree_node()->current_frame_host())
+        ->SendBeforeUnloadACK(true);
+  }
 
   CHECK(request->state() == NavigationRequest::STARTED);
 

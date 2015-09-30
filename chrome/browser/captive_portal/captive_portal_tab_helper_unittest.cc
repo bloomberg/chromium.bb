@@ -5,6 +5,7 @@
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/captive_portal/captive_portal_tab_reloader.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/net_errors.h"
@@ -133,7 +135,13 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
     content::RenderFrameHostTester* rfh_tester =
         content::RenderFrameHostTester::For(rfh);
     rfh_tester->SimulateNavigationError(url, net::ERR_ABORTED);
-    rfh_tester->SimulateNavigationStop();
+    // PlzNavigate: on abort, no renderer will have been associated with the
+    // navigation. Therefore do not simulate a DidStopLoading IPC coming from a
+    // renderer.
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBrowserSideNavigation)) {
+      rfh_tester->SimulateNavigationStop();
+    }
 
     // Make sure that above call resulted in abort, for tests that continue
     // after the abort.
