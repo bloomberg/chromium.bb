@@ -7448,10 +7448,10 @@
       },
       'example_value': {
         'extension1': {
-          'allowCorporateKeyUsage': 'true'
+          'allowCorporateKeyUsage': True
         },
         'extension2': {
-          'allowCorporateKeyUsage': 'false'
+          'allowCorporateKeyUsage': False
         }
       },
       'id': 302,
