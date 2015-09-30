@@ -862,6 +862,10 @@ bool LocalSafeBrowsingDatabaseManager::GetExtendedReporting() {
 void LocalSafeBrowsingDatabaseManager::RequestFullHash(
     SafeBrowsingCheck* check) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!enabled_)
+    return;
+
   bool is_download = check->check_type == safe_browsing_util::BINURL;
   sb_service_->protocol_manager()->GetFullHash(
       check->prefix_hits,
