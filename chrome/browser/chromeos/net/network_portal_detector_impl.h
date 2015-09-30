@@ -66,6 +66,11 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
       bool create_notification_controller);
   ~NetworkPortalDetectorImpl() override;
 
+  // Set the URL to be tested for portal state.
+  void set_portal_test_url(const GURL& portal_test_url) {
+    portal_test_url_ = portal_test_url;
+  }
+
  private:
   friend class ::NetworkingConfigTest;
   friend class NetworkPortalDetectorImplTest;
@@ -224,7 +229,7 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   base::CancelableClosure attempt_timeout_;
 
   // URL that returns a 204 response code when connected to the Internet.
-  GURL test_url_;
+  GURL portal_test_url_;
 
   // Detector for checking default network for a portal state.
   scoped_ptr<captive_portal::CaptivePortalDetector> captive_portal_detector_;
