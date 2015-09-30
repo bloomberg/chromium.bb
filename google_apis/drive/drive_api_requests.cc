@@ -1404,7 +1404,12 @@ std::vector<std::string> BatchUploadRequest::GetExtraRequestHeaders() const {
 }
 
 void BatchUploadRequest::ProcessURLFetchResults(const net::URLFetcher* source) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kUMADriveBatchUploadResponseCode, GetErrorCode());
+  // Return the detailed raw HTTP code if the error code is abstracted
+  // DRIVE_OTHER_ERROR.
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kUMADriveBatchUploadResponseCode,
+                              GetErrorCode() != DRIVE_OTHER_ERROR
+                                  ? GetErrorCode()
+                                  : source->GetResponseCode());
 
   if (!IsSuccessfulDriveApiErrorCode(GetErrorCode())) {
     RunCallbackOnPrematureFailure(GetErrorCode());
