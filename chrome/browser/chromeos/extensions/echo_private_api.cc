@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/ui/echo_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/extensions/api/echo_private.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
@@ -48,9 +49,9 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kEchoCheckedOffers);
 }
 
-} // namespace echo_offer
+}  // namespace echo_offer
 
-} // namespace chromeos
+}  // namespace chromeos
 
 EchoPrivateGetRegistrationCodeFunction::
     EchoPrivateGetRegistrationCodeFunction() {}
@@ -189,8 +190,8 @@ EchoPrivateGetUserConsentFunction::CreateForTest(
 EchoPrivateGetUserConsentFunction::~EchoPrivateGetUserConsentFunction() {}
 
 bool EchoPrivateGetUserConsentFunction::RunAsync() {
-   CheckRedeemOffersAllowed();
-   return true;
+  CheckRedeemOffersAllowed();
+  return true;
 }
 
 void EchoPrivateGetUserConsentFunction::OnAccept() {

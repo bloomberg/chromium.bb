@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
@@ -167,8 +168,8 @@ EphemeralAppLauncher::EphemeralAppLauncher(const std::string& webstore_item_id,
       parent_window_(parent_window),
       dummy_web_contents_(
           WebContents::Create(WebContents::CreateParams(profile))) {
-   if (parent_window_)
-     parent_window_tracker_ = NativeWindowTracker::Create(parent_window);
+  if (parent_window_)
+    parent_window_tracker_ = NativeWindowTracker::Create(parent_window);
 }
 
 EphemeralAppLauncher::EphemeralAppLauncher(const std::string& webstore_item_id,

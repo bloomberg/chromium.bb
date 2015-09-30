@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_api.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/extensions/api/cast_devices_private.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"

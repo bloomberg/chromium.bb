@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -48,7 +49,7 @@ void SimulateGPUCrash(Browser* browser) {
   chrome::Navigate(&params);
 }
 
-} // namespace
+}  // namespace
 
 class WebGLInfoBarTest : public InProcessBrowserTest {
  protected:

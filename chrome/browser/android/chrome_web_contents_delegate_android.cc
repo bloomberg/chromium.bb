@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/android/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
-#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
@@ -167,8 +166,7 @@ blink::WebDisplayMode ChromeWebContentsDelegateAndroid::GetDisplayMode(
 
   return static_cast<blink::WebDisplayMode>(
       Java_ChromeWebContentsDelegateAndroid_getDisplayMode(
-          env, obj.obj())
-    );
+          env, obj.obj()));
 }
 
 void ChromeWebContentsDelegateAndroid::FindReply(

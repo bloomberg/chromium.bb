@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_SINGLETON_TABS_H_
 #define CHROME_BROWSER_UI_SINGLETON_TABS_H_
 
+#include "chrome/browser/ui/browser_navigator_params.h"
+
 class Browser;
 class GURL;
 
@@ -12,8 +14,6 @@ class GURL;
 // metrics within a particular Browser window.
 
 namespace chrome {
-
-struct NavigateParams;
 
 // Core singleton tab API:
 

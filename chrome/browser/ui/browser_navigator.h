@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_NAVIGATOR_H_
 #define CHROME_BROWSER_UI_BROWSER_NAVIGATOR_H_
 
-// TODO(thestig) Forward declare this and do IWYU.
-#include "chrome/browser/ui/browser_navigator_params.h"
-
 class GURL;
 
 namespace content {
@@ -15,6 +12,8 @@ class BrowserContext;
 }
 
 namespace chrome {
+
+struct NavigateParams;
 
 // Navigates according to the configuration specified in |params|.
 void Navigate(NavigateParams* params);

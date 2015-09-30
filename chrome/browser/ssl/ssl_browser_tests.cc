@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -1104,28 +1105,28 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMarkNonSecureAs) {
 
 #if defined(USE_NSS_CERTS)
 class SSLUITestWithClientCert : public SSLUITest {
-  public:
-   SSLUITestWithClientCert() : cert_db_(NULL) {}
+ public:
+  SSLUITestWithClientCert() : cert_db_(NULL) {}
 
-   void SetUpOnMainThread() override {
-     SSLUITest::SetUpOnMainThread();
+  void SetUpOnMainThread() override {
+    SSLUITest::SetUpOnMainThread();
 
-     base::RunLoop loop;
-     GetNSSCertDatabaseForProfile(
-         browser()->profile(),
-         base::Bind(&SSLUITestWithClientCert::DidGetCertDatabase,
-                    base::Unretained(this),
-                    &loop));
-     loop.Run();
-   }
+    base::RunLoop loop;
+    GetNSSCertDatabaseForProfile(
+        browser()->profile(),
+        base::Bind(&SSLUITestWithClientCert::DidGetCertDatabase,
+                   base::Unretained(this),
+                   &loop));
+    loop.Run();
+  }
 
-  protected:
-   void DidGetCertDatabase(base::RunLoop* loop, net::NSSCertDatabase* cert_db) {
-     cert_db_ = cert_db;
-     loop->Quit();
-   }
+ protected:
+  void DidGetCertDatabase(base::RunLoop* loop, net::NSSCertDatabase* cert_db) {
+    cert_db_ = cert_db;
+    loop->Quit();
+  }
 
-   net::NSSCertDatabase* cert_db_;
+  net::NSSCertDatabase* cert_db_;
 };
 
 // SSL client certificate tests are only enabled when using NSS for private key

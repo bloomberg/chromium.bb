@@ -57,7 +57,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -946,6 +945,7 @@ class RequestCounter : public base::SupportsWeakPtr<RequestCounter> {
 
     EXPECT_EQ(expected_count, count_);
   }
+
  private:
   int count_;
   int expected_count_;

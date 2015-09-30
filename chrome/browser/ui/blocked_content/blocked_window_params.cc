@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_BLOCKED_CONTENT_BLOCKED_WINDOW_PARAMS_H_
 #define CHROME_BROWSER_UI_BLOCKED_CONTENT_BLOCKED_WINDOW_PARAMS_H_
 
-#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "content/public/common/referrer.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/base/window_open_disposition.h"

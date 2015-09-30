@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "extensions/common/extension.h"
 #include "ui/app_list/views/app_list_view.h"
 

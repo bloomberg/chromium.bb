@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/pref_names.h"

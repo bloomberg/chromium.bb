@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -67,10 +68,10 @@ const char kTypicalPage[] = "/focus/typical_page.html";
 
 class BrowserFocusTest : public InProcessBrowserTest {
  public:
-   // InProcessBrowserTest overrides:
+  // InProcessBrowserTest overrides:
   void SetUpOnMainThread() override {
      ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-   }
+  }
 
   bool IsViewFocused(ViewID vid) {
     return ui_test_utils::IsViewFocused(browser(), vid);
@@ -439,7 +440,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
 
 // Test forward and reverse focus traversal while an interstitial is showing.
 // Disabled, see http://crbug.com/60973
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusTraversalOnInterstitial) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
+                       DISABLED_FocusTraversalOnInterstitial) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   const GURL url = embedded_test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);

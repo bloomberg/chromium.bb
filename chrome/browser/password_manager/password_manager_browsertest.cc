@@ -19,6 +19,7 @@
 #include "chrome/browser/password_manager/test_password_store_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/login/login_prompt_test_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
