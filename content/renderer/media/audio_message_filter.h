@@ -69,7 +69,7 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   // Received when the browser process has checked authorization to use an
   // audio output device.
   void OnDeviceAuthorized(int stream_id,
-                          bool success,
+                          media::OutputDeviceStatus device_status,
                           const media::AudioParameters& output_params);
 
   // Received when browser process has created an audio output stream.
@@ -84,8 +84,7 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
 
   // Received when the browser process has finished processing a
   // SwitchOutputDevice request
-  void OnOutputDeviceSwitched(int stream_id,
-                              media::SwitchOutputDeviceResult result);
+  void OnOutputDeviceSwitched(int stream_id, media::OutputDeviceStatus result);
 
   // IPC sender for Send(); must only be accessed on |io_task_runner_|.
   IPC::Sender* sender_;

@@ -26,9 +26,10 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
   }
 
   void OnDeviceAuthorized(
-      bool success,
+      media::OutputDeviceStatus device_status,
       const media::AudioParameters& output_params) override {
     device_authorized_received_ = true;
+    device_status_ = device_status;
     output_params_ = output_params;
   }
 
@@ -40,9 +41,9 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
     length_ = length;
   }
 
-  void OnOutputDeviceSwitched(media::SwitchOutputDeviceResult result) override {
+  void OnOutputDeviceSwitched(media::OutputDeviceStatus result) override {
     output_device_switched_received_ = true;
-    switch_output_device_result_ = result;
+    device_status_ = result;
   }
 
   void OnIPCClosed() override {}
@@ -53,6 +54,7 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 
     device_authorized_received_ = false;
     output_params_ = media::AudioParameters();
+    device_status_ = media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL;
 
     created_received_ = false;
     handle_ = base::SharedMemory::NULLHandle();
@@ -62,8 +64,6 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
     volume_ = 0;
 
     output_device_switched_received_ = false;
-    switch_output_device_result_ =
-        media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL;
   }
 
   bool state_changed_received() { return state_changed_received_; }
@@ -71,6 +71,7 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 
   bool device_authorized_received() { return device_authorized_received_; }
   media::AudioParameters output_params() { return output_params_; }
+  media::OutputDeviceStatus device_status() { return device_status_; }
 
   bool created_received() { return created_received_; }
   base::SharedMemoryHandle handle() { return handle_; }
@@ -79,9 +80,6 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
   bool output_device_switched_received() {
     return output_device_switched_received_;
   }
-  media::SwitchOutputDeviceResult switch_output_device_result() {
-    return switch_output_device_result_;
-  }
 
  private:
   bool state_changed_received_;
@@ -89,6 +87,7 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 
   bool device_authorized_received_;
   media::AudioParameters output_params_;
+  media::OutputDeviceStatus device_status_;
 
   bool created_received_;
   base::SharedMemoryHandle handle_;
@@ -98,7 +97,6 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
   double volume_;
 
   bool output_device_switched_received_;
-  media::SwitchOutputDeviceResult switch_output_device_result_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioDelegate);
 };
@@ -132,8 +130,8 @@ TEST(AudioMessageFilterTest, Basic) {
 
   // AudioMsg_NotifyDeviceAuthorized
   EXPECT_FALSE(delegate.device_authorized_received());
-  filter->OnMessageReceived(
-      AudioMsg_NotifyDeviceAuthorized(kStreamId, true, MockOutputParams()));
+  filter->OnMessageReceived(AudioMsg_NotifyDeviceAuthorized(
+      kStreamId, media::OUTPUT_DEVICE_STATUS_OK, MockOutputParams()));
   EXPECT_TRUE(delegate.device_authorized_received());
   EXPECT_TRUE(delegate.output_params().Equals(MockOutputParams()));
   delegate.Reset();
@@ -160,11 +158,9 @@ TEST(AudioMessageFilterTest, Basic) {
 
   // AudioMsg_NotifyOutputDeviceSwitched
   EXPECT_FALSE(delegate.output_device_switched_received());
-  filter->OnOutputDeviceSwitched(kStreamId,
-                                 media::SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS);
+  filter->OnOutputDeviceSwitched(kStreamId, media::OUTPUT_DEVICE_STATUS_OK);
   EXPECT_TRUE(delegate.output_device_switched_received());
-  EXPECT_EQ(media::SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS,
-            delegate.switch_output_device_result());
+  EXPECT_EQ(media::OUTPUT_DEVICE_STATUS_OK, delegate.device_status());
   message_loop.RunUntilIdle();
 
   ipc->CloseStream();

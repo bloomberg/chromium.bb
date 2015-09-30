@@ -6,9 +6,12 @@
 #include "media/base/fake_output_device.h"
 
 namespace media {
-
 MockAudioRendererSink::MockAudioRendererSink()
-    : output_device_(new FakeOutputDevice()) {}
+    : MockAudioRendererSink(OUTPUT_DEVICE_STATUS_OK) {}
+
+MockAudioRendererSink::MockAudioRendererSink(OutputDeviceStatus device_status)
+    : output_device_(new FakeOutputDevice(device_status)) {}
+
 MockAudioRendererSink::~MockAudioRendererSink() {}
 
 void MockAudioRendererSink::Initialize(const AudioParameters& params,

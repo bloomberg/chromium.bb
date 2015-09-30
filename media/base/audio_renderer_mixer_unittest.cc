@@ -73,7 +73,8 @@ class AudioRendererMixerTest
 
   AudioRendererMixer* GetMixer(const AudioParameters& params,
                                const std::string& device_id,
-                               const url::Origin& security_origin) {
+                               const url::Origin& security_origin,
+                               OutputDeviceStatus* device_status) {
     return mixer_.get();
   }
 

@@ -46,7 +46,11 @@ void AudioRendererMixerInput::Start() {
   DCHECK(initialized_);
   DCHECK(!playing_);
   DCHECK(!mixer_);
-  mixer_ = get_mixer_cb_.Run(params_, device_id_, security_origin_);
+  mixer_ = get_mixer_cb_.Run(params_, device_id_, security_origin_, nullptr);
+  if (!mixer_) {
+    callback_->OnRenderError();
+    return;
+  }
 
   // Note: OnRenderError() may be called immediately after this call returns.
   mixer_->AddErrorCallback(error_cb_);
@@ -98,7 +102,7 @@ bool AudioRendererMixerInput::SetVolume(double volume) {
 }
 
 OutputDevice* AudioRendererMixerInput::GetOutputDevice() {
-  return mixer_ ? this : nullptr;
+  return this;
 }
 
 void AudioRendererMixerInput::SwitchOutputDevice(
@@ -106,17 +110,23 @@ void AudioRendererMixerInput::SwitchOutputDevice(
     const url::Origin& security_origin,
     const SwitchOutputDeviceCB& callback) {
   if (!mixer_) {
-    callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL);
+    callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
     return;
   }
 
   if (device_id == device_id_) {
-    callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS);
+    callback.Run(OUTPUT_DEVICE_STATUS_OK);
     return;
   }
 
+  OutputDeviceStatus new_mixer_status = OUTPUT_DEVICE_STATUS_ERROR_INTERNAL;
   AudioRendererMixer* new_mixer =
-      get_mixer_cb_.Run(params_, device_id, security_origin);
+      get_mixer_cb_.Run(params_, device_id, security_origin, &new_mixer_status);
+  if (new_mixer_status != OUTPUT_DEVICE_STATUS_OK) {
+    callback.Run(new_mixer_status);
+    return;
+  }
+
   bool was_playing = playing_;
   Stop();
   device_id_ = device_id;
@@ -127,11 +137,18 @@ void AudioRendererMixerInput::SwitchOutputDevice(
   if (was_playing)
     Play();
 
-  callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS);
+  callback.Run(OUTPUT_DEVICE_STATUS_OK);
 }
 
 AudioParameters AudioRendererMixerInput::GetOutputParameters() {
   return mixer_->GetOutputDevice()->GetOutputParameters();
+}
+
+OutputDeviceStatus AudioRendererMixerInput::GetDeviceStatus() {
+  if (!mixer_)
+    return OUTPUT_DEVICE_STATUS_ERROR_INTERNAL;
+
+  return mixer_->GetOutputDevice()->GetDeviceStatus();
 }
 
 double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,

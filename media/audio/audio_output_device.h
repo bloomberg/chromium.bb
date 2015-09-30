@@ -113,16 +113,17 @@ class MEDIA_EXPORT AudioOutputDevice
                           const url::Origin& security_origin,
                           const SwitchOutputDeviceCB& callback) override;
   AudioParameters GetOutputParameters() override;
+  OutputDeviceStatus GetDeviceStatus() override;
 
   // Methods called on IO thread ----------------------------------------------
   // AudioOutputIPCDelegate methods.
   void OnStateChanged(AudioOutputIPCDelegateState state) override;
-  void OnDeviceAuthorized(bool success,
+  void OnDeviceAuthorized(OutputDeviceStatus device_status,
                           const media::AudioParameters& output_params) override;
   void OnStreamCreated(base::SharedMemoryHandle handle,
                        base::SyncSocket::Handle socket_handle,
                        int length) override;
-  void OnOutputDeviceSwitched(SwitchOutputDeviceResult result) override;
+  void OnOutputDeviceSwitched(OutputDeviceStatus result) override;
   void OnIPCClosed() override;
 
  protected:
@@ -164,7 +165,7 @@ class MEDIA_EXPORT AudioOutputDevice
   void SetCurrentSwitchRequest(const SwitchOutputDeviceCB& callback,
                                const std::string& device_id,
                                const url::Origin& security_origin);
-  void SetOutputParams(const media::AudioParameters& output_params);
+  void SetDeviceStatus(OutputDeviceStatus status);
 
   AudioParameters audio_parameters_;
 
@@ -215,8 +216,9 @@ class MEDIA_EXPORT AudioOutputDevice
   url::Origin current_switch_security_origin_;
   bool switch_output_device_on_start_;
 
-  base::WaitableEvent did_set_output_params_;
+  base::WaitableEvent did_receive_auth_;
   media::AudioParameters output_params_;
+  OutputDeviceStatus device_status_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDevice);
 };

@@ -28,8 +28,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::AudioInputIPCDelegateState,
 IPC_ENUM_TRAITS_MAX_VALUE(media::AudioOutputIPCDelegateState,
                           media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_LAST)
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::SwitchOutputDeviceResult,
-                          media::SWITCH_OUTPUT_DEVICE_RESULT_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(media::OutputDeviceStatus,
+                          media::OUTPUT_DEVICE_STATUS_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::AudioParameters::Format,
                           media::AudioParameters::AUDIO_FORMAT_LAST)
@@ -49,7 +49,7 @@ IPC_STRUCT_END()
 // authorized device.
 IPC_MESSAGE_CONTROL3(AudioMsg_NotifyDeviceAuthorized,
                      int /* stream id */,
-                     bool /* success */,
+                     media::OutputDeviceStatus /* device_status */,
                      media::AudioParameters /* output parameters */)
 
 // Tell the renderer process that an audio stream has been created.
@@ -94,7 +94,7 @@ IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamVolume,
 // update after the renderer has requested a SwitchOutputDevice.
 IPC_MESSAGE_CONTROL2(AudioMsg_NotifyOutputDeviceSwitched,
                      int /* stream id */,
-                     media::SwitchOutputDeviceResult /* result */)
+                     media::OutputDeviceStatus /* result */)
 
 // Messages sent from the renderer to the browser.
 

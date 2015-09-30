@@ -14,6 +14,7 @@ namespace media {
 class FakeOutputDevice : public OutputDevice {
  public:
   FakeOutputDevice();
+  explicit FakeOutputDevice(OutputDeviceStatus status);
   ~FakeOutputDevice() override;
 
   // OutputDevice implementation.
@@ -21,8 +22,10 @@ class FakeOutputDevice : public OutputDevice {
                           const url::Origin& security_origin,
                           const SwitchOutputDeviceCB& callback) override;
   AudioParameters GetOutputParameters() override;
+  OutputDeviceStatus GetDeviceStatus() override;
 
  private:
+  OutputDeviceStatus device_status_;
   DISALLOW_COPY_AND_ASSIGN(FakeOutputDevice);
 };
 

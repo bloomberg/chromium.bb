@@ -73,7 +73,7 @@ void PepperPlatformAudioOutput::OnStateChanged(
     media::AudioOutputIPCDelegateState state) {}
 
 void PepperPlatformAudioOutput::OnDeviceAuthorized(
-    bool success,
+    media::OutputDeviceStatus device_status,
     const media::AudioParameters& output_params) {
   NOTREACHED();
 }
@@ -104,7 +104,7 @@ void PepperPlatformAudioOutput::OnStreamCreated(
 }
 
 void PepperPlatformAudioOutput::OnOutputDeviceSwitched(
-    media::SwitchOutputDeviceResult result) {}
+    media::OutputDeviceStatus result) {}
 
 void PepperPlatformAudioOutput::OnIPCClosed() { ipc_.reset(); }
 

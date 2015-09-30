@@ -21,10 +21,11 @@ class MEDIA_EXPORT AudioRendererMixerInput
       NON_EXPORTED_BASE(public OutputDevice),
       public AudioConverter::InputCallback {
  public:
-  typedef base::Callback<AudioRendererMixer*(
-      const AudioParameters& params,
-      const std::string& device_id,
-      const url::Origin& security_origin)> GetMixerCB;
+  typedef base::Callback<AudioRendererMixer*(const AudioParameters& params,
+                                             const std::string& device_id,
+                                             const url::Origin& security_origin,
+                                             OutputDeviceStatus* device_status)>
+      GetMixerCB;
   typedef base::Callback<void(const AudioParameters& params,
                               const std::string& device_id,
                               const url::Origin& security_origin)>
@@ -50,6 +51,7 @@ class MEDIA_EXPORT AudioRendererMixerInput
                           const url::Origin& security_origin,
                           const SwitchOutputDeviceCB& callback) override;
   AudioParameters GetOutputParameters() override;
+  OutputDeviceStatus GetDeviceStatus() override;
 
   // Called by AudioRendererMixer when an error occurs.
   void OnRenderError();

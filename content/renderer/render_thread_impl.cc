@@ -1430,8 +1430,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
 
 AudioRendererMixerManager* RenderThreadImpl::GetAudioRendererMixerManager() {
   if (!audio_renderer_mixer_manager_) {
-    audio_renderer_mixer_manager_.reset(new AudioRendererMixerManager(
-        GetAudioHardwareConfig()));
+    audio_renderer_mixer_manager_.reset(new AudioRendererMixerManager());
   }
 
   return audio_renderer_mixer_manager_.get();

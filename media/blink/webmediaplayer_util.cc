@@ -199,7 +199,7 @@ class SetSinkIdCallback {
       : web_callback_(other.web_callback_.Pass()) {}
   ~SetSinkIdCallback() {}
   friend void RunSetSinkIdCallback(const SetSinkIdCallback& callback,
-                                   SwitchOutputDeviceResult result);
+                                   OutputDeviceStatus result);
 
  private:
   // Mutable is required so that Pass() can be called in the copy
@@ -208,25 +208,25 @@ class SetSinkIdCallback {
 };
 
 void RunSetSinkIdCallback(const SetSinkIdCallback& callback,
-                          SwitchOutputDeviceResult result) {
+                          OutputDeviceStatus result) {
   DVLOG(1) << __FUNCTION__;
   if (!callback.web_callback_)
     return;
 
   switch (result) {
-    case SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS:
+    case OUTPUT_DEVICE_STATUS_OK:
       callback.web_callback_->onSuccess();
       break;
-    case SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_FOUND:
+    case OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND:
       callback.web_callback_->onError(new blink::WebSetSinkIdError(
           blink::WebSetSinkIdError::ErrorTypeNotFound, "Device not found"));
       break;
-    case SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_AUTHORIZED:
+    case OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED:
       callback.web_callback_->onError(new blink::WebSetSinkIdError(
           blink::WebSetSinkIdError::ErrorTypeSecurity,
           "No permission to access device"));
       break;
-    case SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL:
+    case OUTPUT_DEVICE_STATUS_ERROR_INTERNAL:
       callback.web_callback_->onError(new blink::WebSetSinkIdError(
           blink::WebSetSinkIdError::ErrorTypeAbort,
           "The requested operation could be performed and was aborted"));

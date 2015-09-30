@@ -8,20 +8,29 @@
 
 namespace media {
 
-FakeOutputDevice::FakeOutputDevice() {}
+FakeOutputDevice::FakeOutputDevice()
+    : FakeOutputDevice(OUTPUT_DEVICE_STATUS_OK) {}
+
+FakeOutputDevice::FakeOutputDevice(OutputDeviceStatus device_status)
+    : device_status_(device_status) {}
+
 FakeOutputDevice::~FakeOutputDevice() {}
 
 void FakeOutputDevice::SwitchOutputDevice(
     const std::string& device_id,
     const url::Origin& security_origin,
     const SwitchOutputDeviceCB& callback) {
-  callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS);
+  callback.Run(device_status_);
 }
 
 AudioParameters FakeOutputDevice::GetOutputParameters() {
   return media::AudioParameters(
       media::AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_STEREO,
       media::AudioParameters::kTelephoneSampleRate, 16, 1);
+}
+
+OutputDeviceStatus FakeOutputDevice::GetDeviceStatus() {
+  return device_status_;
 }
 
 }  // namespace media

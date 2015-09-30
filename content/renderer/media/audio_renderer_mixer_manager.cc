@@ -16,11 +16,8 @@
 
 namespace content {
 
-AudioRendererMixerManager::AudioRendererMixerManager(
-    media::AudioHardwareConfig* hardware_config)
-    : hardware_config_(hardware_config),
-      sink_for_testing_(NULL) {
-}
+AudioRendererMixerManager::AudioRendererMixerManager()
+    : sink_for_testing_(nullptr) {}
 
 AudioRendererMixerManager::~AudioRendererMixerManager() {
   // References to AudioRendererMixers may be owned by garbage collected
@@ -54,7 +51,8 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     int source_render_frame_id,
     const media::AudioParameters& params,
     const std::string& device_id,
-    const url::Origin& security_origin) {
+    const url::Origin& security_origin,
+    media::OutputDeviceStatus* device_status) {
   // Effects are not passed through to output creation, so ensure none are set.
   DCHECK_EQ(params.effects(), media::AudioParameters::NO_EFFECTS);
 
@@ -64,6 +62,9 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
 
   AudioRendererMixerMap::iterator it = mixers_.find(key);
   if (it != mixers_.end()) {
+    if (device_status)
+      *device_status = media::OUTPUT_DEVICE_STATUS_OK;
+
     it->second.ref_count++;
     return it->second.mixer;
   }
@@ -74,6 +75,16 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
           : AudioDeviceFactory::NewOutputDevice(source_render_frame_id, 0,
                                                 device_id, security_origin)
                 .get();
+
+  media::OutputDeviceStatus new_device_status =
+      sink->GetOutputDevice()->GetDeviceStatus();
+  if (device_status)
+    *device_status = new_device_status;
+  if (new_device_status != media::OUTPUT_DEVICE_STATUS_OK) {
+    sink->Stop();
+    return nullptr;
+  }
+
   media::AudioParameters hardware_params =
       sink->GetOutputDevice()->GetOutputParameters();
 

@@ -18,6 +18,7 @@ class FakeOutputDevice;
 class MockAudioRendererSink : public AudioRendererSink {
  public:
   MockAudioRendererSink();
+  explicit MockAudioRendererSink(OutputDeviceStatus device_status);
 
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(Stop, void());

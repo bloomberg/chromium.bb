@@ -287,7 +287,7 @@ void WebMediaPlayerMS::setSinkId(const blink::WebString& device_id,
       return;
     }
   }
-  callback.Run(media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL);
+  callback.Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
 }
 
 void WebMediaPlayerMS::setPreload(WebMediaPlayer::Preload preload) {

@@ -54,7 +54,8 @@ AudioOutputDevice::AudioOutputDevice(
       security_origin_(security_origin),
       stopping_hack_(false),
       switch_output_device_on_start_(false),
-      did_set_output_params_(true, false) {
+      did_receive_auth_(true, false),
+      device_status_(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL) {
   CHECK(ipc_);
 
   // The correctness of the code depends on the relative values assigned in the
@@ -86,11 +87,8 @@ AudioOutputDevice::~AudioOutputDevice() {
   // them in the thread where this destructor runs.
   if (!current_switch_callback_.is_null()) {
     base::ResetAndReturn(&current_switch_callback_)
-        .Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL);
+        .Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
   }
-
-  // Unblock any blocked threads waiting for parameters
-  did_set_output_params_.Signal();
 }
 
 void AudioOutputDevice::RequestDeviceAuthorization() {
@@ -155,8 +153,14 @@ void AudioOutputDevice::SwitchOutputDevice(
 
 AudioParameters AudioOutputDevice::GetOutputParameters() {
   CHECK(!task_runner()->BelongsToCurrentThread());
-  did_set_output_params_.Wait();
+  did_receive_auth_.Wait();
   return output_params_;
+}
+
+OutputDeviceStatus AudioOutputDevice::GetDeviceStatus() {
+  CHECK(!task_runner()->BelongsToCurrentThread());
+  did_receive_auth_.Wait();
+  return device_status_;
 }
 
 void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {
@@ -176,7 +180,7 @@ void AudioOutputDevice::CreateStreamOnIOThread(const AudioParameters& params) {
       break;
 
     case IDLE:
-      if (did_set_output_params_.IsSignaled() && device_id_.empty() &&
+      if (did_receive_auth_.IsSignaled() && device_id_.empty() &&
           security_origin_.unique()) {
         state_ = CREATING_STREAM;
         ipc_->CreateStream(this, params);
@@ -267,7 +271,7 @@ void AudioOutputDevice::SwitchOutputDeviceOnIOThread(
 
   // Do not allow concurrent SwitchOutputDevice requests
   if (!current_switch_callback_.is_null()) {
-    callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL);
+    callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
     return;
   }
 
@@ -313,20 +317,33 @@ void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegateState state) {
 }
 
 void AudioOutputDevice::OnDeviceAuthorized(
-    bool success,
+    OutputDeviceStatus device_status,
     const media::AudioParameters& output_params) {
   DCHECK(task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(state_, AUTHORIZING);
 
-  if (success) {
+  // It may happen that a second authorization is received as a result to a
+  // call to Start() after Stop(). If the status for the second authorization
+  // differs from the first, it will not be reflected in |device_status_|
+  // to avoid a race.
+  // This scenario is unlikely. If it occurs, the new value will be
+  // different from OUTPUT_DEVICE_STATUS_OK, so the AudioOutputDevice
+  // will enter the IPC_CLOSED state anyway, which is the safe thing to do.
+  // This is preferable to holding a lock.
+  if (!did_receive_auth_.IsSignaled())
+    device_status_ = device_status;
+
+  if (device_status == OUTPUT_DEVICE_STATUS_OK) {
     state_ = AUTHORIZED;
-    if (!did_set_output_params_.IsSignaled()) {
+    if (!did_receive_auth_.IsSignaled()) {
       output_params_ = output_params;
-      did_set_output_params_.Signal();
+      did_receive_auth_.Signal();
     }
     if (start_on_authorized_)
       CreateStreamOnIOThread(audio_parameters_);
   } else {
+    // Closing IPC forces a Signal(), so no clients are locked waiting
+    // indefinitely after this method returns.
     ipc_->CloseStream();
     OnIPCClosed();
     if (callback_)
@@ -386,10 +403,9 @@ void AudioOutputDevice::OnStreamCreated(
   }
 }
 
-void AudioOutputDevice::OnOutputDeviceSwitched(
-    SwitchOutputDeviceResult result) {
+void AudioOutputDevice::OnOutputDeviceSwitched(OutputDeviceStatus result) {
   DCHECK(task_runner()->BelongsToCurrentThread());
-  if (result == SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS) {
+  if (result == OUTPUT_DEVICE_STATUS_OK) {
     session_id_ = 0;  // Output device is no longer attached to an input device
     device_id_ = current_switch_device_id_;
     security_origin_ = current_switch_security_origin_;
@@ -404,7 +420,7 @@ void AudioOutputDevice::OnIPCClosed() {
   ipc_.reset();
 
   // Signal to unblock any blocked threads waiting for parameters
-  did_set_output_params_.Signal();
+  did_receive_auth_.Signal();
 }
 
 void AudioOutputDevice::WillDestroyCurrentMessageLoop() {

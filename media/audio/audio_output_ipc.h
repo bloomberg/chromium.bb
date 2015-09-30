@@ -37,7 +37,7 @@ class MEDIA_EXPORT AudioOutputIPCDelegate {
   // Called when an authorization request for an output device has been
   // completed
   virtual void OnDeviceAuthorized(
-      bool success,
+      OutputDeviceStatus device_status,
       const media::AudioParameters& output_params) = 0;
 
   // Called when an audio stream has been created.
@@ -53,7 +53,7 @@ class MEDIA_EXPORT AudioOutputIPCDelegate {
                                int length) = 0;
 
   // Called when an attempt to switch the output device has been completed
-  virtual void OnOutputDeviceSwitched(SwitchOutputDeviceResult result) = 0;
+  virtual void OnOutputDeviceSwitched(OutputDeviceStatus result) = 0;
 
   // Called when the AudioOutputIPC object is going away and/or when the IPC
   // channel has been closed and no more ipc requests can be made.

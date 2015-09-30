@@ -389,7 +389,8 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
     return;
 
   if (!IsValidDeviceId(device_id)) {
-    Send(new AudioMsg_NotifyDeviceAuthorized(stream_id, false, DummyParams()));
+    Send(new AudioMsg_NotifyDeviceAuthorized(
+        stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND, DummyParams()));
     return;
   }
 
@@ -410,7 +411,8 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
       output_params.set_effects(info->device.matched_output.effects);
       authorizations_.insert(MakeAuthorizationData(
           stream_id, true, info->device.matched_output_device_id));
-      Send(new AudioMsg_NotifyDeviceAuthorized(stream_id, true, output_params));
+      Send(new AudioMsg_NotifyDeviceAuthorized(
+          stream_id, media::OUTPUT_DEVICE_STATUS_OK, output_params));
       return;
     }
   }
@@ -437,7 +439,9 @@ void AudioRendererHost::OnDeviceAuthorized(int stream_id,
 
   if (!have_access) {
     authorizations_.erase(auth_data);
-    Send(new AudioMsg_NotifyDeviceAuthorized(stream_id, false, DummyParams()));
+    Send(new AudioMsg_NotifyDeviceAuthorized(
+        stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED,
+        DummyParams()));
     return;
   }
 
@@ -460,14 +464,15 @@ void AudioRendererHost::OnDeviceIDTranslated(
 
   if (!device_found) {
     authorizations_.erase(auth_data);
-    Send(new AudioMsg_NotifyDeviceAuthorized(stream_id, false, DummyParams()));
+    Send(new AudioMsg_NotifyDeviceAuthorized(
+        stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND, DummyParams()));
     return;
   }
 
   auth_data->second.first = true;
   auth_data->second.second = device_info.unique_id;
-  Send(new AudioMsg_NotifyDeviceAuthorized(stream_id, true,
-                                           device_info.output_params));
+  Send(new AudioMsg_NotifyDeviceAuthorized(
+      stream_id, media::OUTPUT_DEVICE_STATUS_OK, device_info.output_params));
 }
 
 void AudioRendererHost::OnCreateStream(int stream_id,
@@ -589,11 +594,18 @@ void AudioRendererHost::OnSwitchOutputDevice(
            << ", render_frame_id=" << render_frame_id
            << ", device_id=" << device_id
            << ", security_origin=" << security_origin << ")";
-  if (!LookupById(stream_id) || !IsValidDeviceId(device_id)) {
+  if (!LookupById(stream_id)) {
     Send(new AudioMsg_NotifyOutputDeviceSwitched(
-        stream_id, media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL));
+        stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL));
     return;
   }
+
+  if (!IsValidDeviceId(device_id)) {
+    Send(new AudioMsg_NotifyOutputDeviceSwitched(
+        stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND));
+    return;
+  }
+
   GURL gurl_security_origin = ConvertToGURL(security_origin);
   CheckOutputDeviceAccess(
       render_frame_id, device_id, gurl_security_origin,
@@ -609,14 +621,14 @@ void AudioRendererHost::OnSwitchDeviceAuthorized(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!have_access) {
     Send(new AudioMsg_NotifyOutputDeviceSwitched(
-        stream_id, media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_AUTHORIZED));
+        stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED));
     return;
   }
 
   AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
     Send(new AudioMsg_NotifyOutputDeviceSwitched(
-        stream_id, media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL));
+        stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL));
     return;
   }
 
@@ -643,10 +655,10 @@ void AudioRendererHost::OnSwitchDeviceIDTranslatedAndParamsChecked(
     const AudioOutputDeviceInfo& device_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!success) {
-    media::SwitchOutputDeviceResult result =
+    media::OutputDeviceStatus result =
         device_info.unique_id.empty()
-            ? media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_FOUND
-            : media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL;
+            ? media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND
+            : media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL;
 
     Send(new AudioMsg_NotifyOutputDeviceSwitched(stream_id, result));
     return;
@@ -655,7 +667,7 @@ void AudioRendererHost::OnSwitchDeviceIDTranslatedAndParamsChecked(
   AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
     Send(new AudioMsg_NotifyOutputDeviceSwitched(
-        stream_id, media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL));
+        stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL));
     return;
   }
 
@@ -667,8 +679,8 @@ void AudioRendererHost::OnSwitchDeviceIDTranslatedAndParamsChecked(
 
 void AudioRendererHost::OnDeviceSwitched(int stream_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  Send(new AudioMsg_NotifyOutputDeviceSwitched(
-      stream_id, media::SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS));
+  Send(new AudioMsg_NotifyOutputDeviceSwitched(stream_id,
+                                               media::OUTPUT_DEVICE_STATUS_OK));
 }
 
 void AudioRendererHost::SendErrorMessage(int stream_id) {

@@ -410,7 +410,7 @@ void WebMediaPlayerImpl::setSinkId(const blink::WebString& device_id,
         GURL(frame_->securityOrigin().toString().utf8()));
     output_device->SwitchOutputDevice(device_id_str, security_origin, callback);
   } else {
-    callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL);
+    callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
   }
 }
 

@@ -12,6 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_parameters.h"
+#include "media/base/output_device.h"
 #include "url/origin.h"
 
 namespace media {
@@ -38,11 +39,7 @@ namespace content {
 // via the shared memory.  See http://crbug.com/114700.
 class CONTENT_EXPORT AudioRendererMixerManager {
  public:
-  // Construct an instance using the given audio hardware configuration.  The
-  // provided |hardware_config| is not owned by AudioRendererMixerManager and
-  // must outlive it.
-  explicit AudioRendererMixerManager(
-      media::AudioHardwareConfig* hardware_config);
+  AudioRendererMixerManager();
   ~AudioRendererMixerManager();
 
   // Creates an AudioRendererMixerInput with the proper callbacks necessary to
@@ -70,7 +67,8 @@ class CONTENT_EXPORT AudioRendererMixerManager {
   media::AudioRendererMixer* GetMixer(int source_render_frame_id,
                                       const media::AudioParameters& params,
                                       const std::string& device_id,
-                                      const url::Origin& security_origin);
+                                      const url::Origin& security_origin,
+                                      media::OutputDeviceStatus* device_status);
 
   // Remove a mixer instance given a mixer if the only other reference is held
   // by AudioRendererMixerManager.  Every AudioRendererMixer owner must call
@@ -136,10 +134,6 @@ class CONTENT_EXPORT AudioRendererMixerManager {
   // Active mixers.
   AudioRendererMixerMap mixers_;
   base::Lock mixers_lock_;
-
-  // Audio hardware configuration.  Used to construct output AudioParameters for
-  // each AudioRendererMixer instance.
-  media::AudioHardwareConfig* const hardware_config_;
 
   media::AudioRendererSink* sink_for_testing_;
 
