@@ -19,9 +19,7 @@ function test()
     var fs = new InspectorTest.TestFileSystem("/var/www");
     fs.root.addFile("update-locations-on-filesystem-scss-load.scss", ["a {", "  foo: bar;", "/* COMMENT */", "  font-size: 12px;", "}"].join("\n"));
     fs.addFileMapping(WebInspector.ParsedURL.completeURL(InspectorTest.resourceTreeModel.inspectedPageURL(), "resources/source/"), "/");
-    fs.reportCreated();
-
-    fileSystemCreated();
+    fs.reportCreated(fileSystemCreated);
 
     function fileSystemCreated()
     {

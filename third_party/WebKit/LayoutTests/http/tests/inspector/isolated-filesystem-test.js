@@ -14,13 +14,25 @@ InspectorTest.TestFileSystem = function(fileSystemPath)
 InspectorTest.TestFileSystem._instances = {};
 
 InspectorTest.TestFileSystem.prototype = {
-    reportCreated: function()
+    reportCreated: function(callback)
     {
+        var fileSystemPath = this.fileSystemPath;
         InspectorTest.TestFileSystem._instances[this.fileSystemPath] = this;
         InspectorFrontendHost.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.FileSystemAdded, {
             fileSystem: { fileSystemPath: this.fileSystemPath,
                           fileSystemName: this.fileSystemPath }
         });
+
+        WebInspector.isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, created);
+
+        function created(event)
+        {
+            var fileSystem = event.data;
+            if (fileSystem.path() !== fileSystemPath)
+                return;
+            WebInspector.isolatedFileSystemManager.removeEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, created);
+            callback(fileSystem);
+        }
     },
 
     reportRemoved: function()

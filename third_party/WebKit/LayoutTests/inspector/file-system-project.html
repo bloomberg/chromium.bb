@@ -43,6 +43,24 @@ function test()
         }
     }
 
+    function dumpWorkspaceUISourceCodes()
+    {
+        InspectorTest.addResult("Dumping uiSourceCodes origin URLs:");
+        var uiSourceCodes = InspectorTest.fileSystemUISourceCodes();
+        for (var i = 0; i < uiSourceCodes.length; ++i)
+            InspectorTest.addResult("  - " + uiSourceCodes[i].originURL());
+    }
+
+    function createFileSystem(name, callback)
+    {
+        var fs = new InspectorTest.TestFileSystem(name);
+        fs.root.mkdir("html").addFile("foo.js", "");
+        fs.root.mkdir(".git").addFile("foogit.js", "");
+        fs.root.addFile("bar.js", "");
+        fs.root.mkdir("html2").addFile("foo.js", "");
+        fs.reportCreated(callback.bind(null, fs));
+    }
+
     InspectorTest.runTestSuite([
         function testFileSystems(next)
         {
@@ -51,23 +69,26 @@ function test()
             var fs2 = new InspectorTest.TestFileSystem("/foo/bar");
             InspectorTest.addResult("Adding second file system.");
 
-            fs1.reportCreated();
-            fs2.reportCreated();
-            InspectorTest.addResult("Adding file mappings.");
-            WebInspector.fileSystemMapping.addFileMapping("/var/www", "http://localhost/", "/localhost/");
-            WebInspector.fileSystemMapping.addFileMapping("/foo/bar", "http://www.example.com/", "/");
-
-            InspectorTest.addResult("Adding files to file systems.");
-
-            var localhostDir = fs1.root.mkdir("localhost");
-            localhostDir.addFile("foo.js", "<foo content>");
-            fs1.root.addFile("bar.js", "<bark content>");
-
-            fs2.root.addFile("baz.js", "<bazzz content>");
-
-            InspectorTest.refreshFileSystemProjects(onProjectsRefreshed);
-
             var uiSourceCodes;
+
+            fs1.reportCreated(function() {});
+            fs2.reportCreated(fileSystemCreated);
+
+            function fileSystemCreated()
+            {
+                InspectorTest.addResult("Adding file mappings.");
+                WebInspector.fileSystemMapping.addFileMapping("/var/www", "http://localhost/", "/localhost/");
+                WebInspector.fileSystemMapping.addFileMapping("/foo/bar", "http://www.example.com/", "/");
+
+                InspectorTest.addResult("Adding files to file systems.");
+
+                var localhostDir = fs1.root.mkdir("localhost");
+                localhostDir.addFile("foo.js", "<foo content>");
+                fs1.root.addFile("bar.js", "<bark content>");
+
+                fs2.root.addFile("baz.js", "<bazzz content>");
+                InspectorTest.refreshFileSystemProjects(onProjectsRefreshed);
+            }
 
             function onProjectsRefreshed()
             {
@@ -122,47 +143,68 @@ function test()
             }
         },
 
-        function testFileSystems(next)
+        function testDefaultExcludes(next)
         {
-            function dumpWorkspaceUISourceCodes()
+            createFileSystem("/var/www", dumpExcludes);
+
+            function dumpExcludes(fs)
             {
-                InspectorTest.addResult("Dumping uiSourceCodes origin URLs:");
-                var uiSourceCodes = InspectorTest.fileSystemUISourceCodes();
-                for (var i = 0; i < uiSourceCodes.length; ++i)
-                    InspectorTest.addResult("  - " + uiSourceCodes[i].originURL());
+                InspectorTest.addResult("");
+                InspectorTest.addResult("-- Default excludes --");
+                dumpWorkspaceUISourceCodes();
+                fs.reportRemoved();
+                next();
             }
+        },
 
-            var fs;
-            function createFileSystem(name)
-            {
-                fs = new InspectorTest.TestFileSystem(name);
-                fs.root.mkdir("html").addFile("foo.js", "");
-                fs.root.mkdir(".git").addFile("foogit.js", "");
-                fs.root.addFile("bar.js", "");
-                fs.root.mkdir("html2").addFile("foo.js", "");
-                fs.reportCreated();
-            }
-
-            createFileSystem("/var/www");
-            InspectorTest.addResult("");
-            InspectorTest.addResult("-- Default excludes --");
-            dumpWorkspaceUISourceCodes();
-            fs.reportRemoved();
-
+        function testExcludesSettings(next)
+        {
             WebInspector.settings.createLocalSetting("workspaceExcludedFolders", {}).set({"/var/www2":["/html/"]});
-            createFileSystem("/var/www2");
-            InspectorTest.addResult("");
-            InspectorTest.addResult("-- Excluded /html/ --");
-            dumpWorkspaceUISourceCodes();
-            fs.reportRemoved();
+            createFileSystem("/var/www2", dumpExcludes);
 
-            createFileSystem("/var/www3");
-            InspectorTest.fileSystemUISourceCodes()[0].project().excludeFolder("/html2/");
-            InspectorTest.addResult("");
-            InspectorTest.addResult("-- Excluded /html2/ --");
-            dumpWorkspaceUISourceCodes();
-            fs.reportRemoved();
-            next();
+            function dumpExcludes(fs)
+            {
+                InspectorTest.addResult("");
+                InspectorTest.addResult("-- Excluded /html/ --");
+                dumpWorkspaceUISourceCodes();
+                fs.reportRemoved();
+                next();
+            }
+        },
+
+        function testExcludesViaDelegate(next)
+        {
+            createFileSystem("/var/www3", dumpExcludes);
+
+            function dumpExcludes(fs)
+            {
+                InspectorTest.fileSystemUISourceCodes()[0].project().excludeFolder("/html2/");
+                InspectorTest.addResult("");
+                InspectorTest.addResult("-- Excluded /html2/ --");
+                dumpWorkspaceUISourceCodes();
+                fs.reportRemoved();
+                next();
+            }
+        },
+
+        function testExcludesViaProject(next)
+        {
+            var fs = new InspectorTest.TestFileSystem(name);
+            fs.root.addFile(".devtools", JSON.stringify({excludes:["/html2/"]}));
+            fs.root.mkdir("html").addFile("foo.js", "");
+            fs.root.mkdir(".git").addFile("foogit.js", "");
+            fs.root.addFile("bar.js", "");
+            fs.root.mkdir("html2").addFile("foo.js", "");
+            fs.reportCreated(dumpExcludes);
+
+            function dumpExcludes()
+            {
+                InspectorTest.addResult("");
+                InspectorTest.addResult("-- Excluded /html2/ via .devtools --");
+                dumpWorkspaceUISourceCodes();
+                fs.reportRemoved();
+                next();
+            }
         }
     ]);
 };

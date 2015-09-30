@@ -23,8 +23,12 @@ function test()
             fs.root.addFile("bar.js", "<bar content>");
             InspectorTest.addResult("Adding file system.");
             fs.addFileMapping(WebInspector.ParsedURL.completeURL(InspectorTest.resourceTreeModel.inspectedPageURL(), "resources/"), "/html/");
-            fs.reportCreated();
-            InspectorTest.evaluateInPage("addScript()", didAddScript);
+            fs.reportCreated(fileSystemCreated);
+
+            function fileSystemCreated()
+            {
+                InspectorTest.evaluateInPage("addScript()", didAddScript);
+            }
 
             function didAddScript()
             {

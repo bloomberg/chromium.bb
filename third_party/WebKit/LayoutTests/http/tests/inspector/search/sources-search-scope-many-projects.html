@@ -34,7 +34,11 @@ function test()
     {
         for (var resourceName in resources)
             fs.root.addFile(resourceName, resources[resourceName]);
-        fs.reportCreated();
+        fs.reportCreated(fileSystemCreated);
+    }
+
+    function fileSystemCreated()
+    {
         WebInspector.inspectorView.showViewInDrawer("search");
 
         var uiSourceCodes = InspectorTest.fileSystemUISourceCodes();

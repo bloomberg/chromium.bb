@@ -33,13 +33,18 @@ function test()
             InspectorTest.addResult("Adding file system.");
             var fs = new InspectorTest.TestFileSystem(fileSystemPath);
             fs.root.addFile("foo.css", "#inspected {\n    color: red;\n}\n");
-            fs.reportCreated();
+            fs.reportCreated(fileSystemCreated);
 
-            InspectorTest.addResult("Adding file system mapping.");
-            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-            WebInspector.fileSystemMapping.addFileMapping(fileSystemPath, "http://localhost:8000/inspector/elements/styles/", "/");
-            var uiSourceCode = WebInspector.workspace.uiSourceCode(fileSystemProjectId, "foo.css");
-            InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
+            var uiSourceCode;
+
+            function fileSystemCreated()
+            {
+                InspectorTest.addResult("Adding file system mapping.");
+                var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+                WebInspector.fileSystemMapping.addFileMapping(fileSystemPath, "http://localhost:8000/inspector/elements/styles/", "/");
+                uiSourceCode = WebInspector.workspace.uiSourceCode(fileSystemProjectId, "foo.css");
+                InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
+            }
 
             function didShowScriptSource(sourceFrame)
             {

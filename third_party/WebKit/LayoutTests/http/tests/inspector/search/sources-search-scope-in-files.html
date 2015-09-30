@@ -30,9 +30,13 @@ function test()
     function onAllResourcesLoaded()
     {
         WebInspector.inspectorView.showViewInDrawer("search");
-        fs.reportCreated();
-        InspectorTest.addResult("Total uiSourceCodes: " + WebInspector.workspace.uiSourceCodes().length);
-        InspectorTest.runTestSuite(testSuite);
+        fs.reportCreated(fileSystemCreated);
+
+        function fileSystemCreated()
+        {
+            InspectorTest.addResult("Total uiSourceCodes: " + WebInspector.workspace.uiSourceCodes().length);
+            InspectorTest.runTestSuite(testSuite);
+        }
     }
 
     function populateFileSystem(name)
