@@ -777,7 +777,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
 
 // Test that we don't crash when the page contains an iframe that
 // was handled as a download (http://crbug.com/42212).
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveDownloadableIFrame) {
+// Flaky: https://crbug.com/537530.
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_SaveDownloadableIFrame) {
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath(FILE_PATH_LITERAL("downloads"))
           .AppendASCII("iframe-src-is-a-download.htm"));
