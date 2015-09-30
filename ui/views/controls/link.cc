@@ -96,7 +96,8 @@ void Link::OnMouseCaptureLost() {
 }
 
 bool Link::OnKeyPressed(const ui::KeyEvent& event) {
-  bool activate = ((event.key_code() == ui::VKEY_SPACE) ||
+  bool activate = (((event.key_code() == ui::VKEY_SPACE) &&
+                    (event.flags() & ui::EF_ALT_DOWN) == 0) ||
                    (event.key_code() == ui::VKEY_RETURN));
   if (!activate)
     return false;
