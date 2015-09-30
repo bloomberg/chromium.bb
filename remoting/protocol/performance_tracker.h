@@ -22,7 +22,7 @@ class PerformanceTracker {
  public:
   // Callback that updates UMA custom counts or custom times histograms.
   typedef base::Callback<void(const std::string& histogram_name,
-                              int64 value,
+                              int64_t value,
                               int histogram_min,
                               int histogram_max,
                               int histogram_buckets)>
@@ -30,7 +30,7 @@ class PerformanceTracker {
 
   // Callback that updates UMA enumeration histograms.
   typedef base::Callback<
-      void(const std::string& histogram_name, int64 value, int histogram_max)>
+      void(const std::string& histogram_name, int64_t value, int histogram_max)>
       UpdateUmaEnumHistogramCallback;
 
   PerformanceTracker();

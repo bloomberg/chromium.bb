@@ -20,6 +20,13 @@ const char kVideoPaintLatencyHistogram[] = "Chromoting.Video.PaintLatency";
 const char kVideoFrameRateHistogram[] = "Chromoting.Video.FrameRate";
 const char kVideoPacketRateHistogram[] = "Chromoting.Video.PacketRate";
 const char kVideoBandwidthHistogram[] = "Chromoting.Video.Bandwidth";
+const char kCapturePendingLatencyHistogram[] =
+    "Chromoting.Video.CapturePendingLatency";
+const char kCaptureOverheadHistogram[] = "Chromoting.Video.CaptureOverhead";
+const char kEncodePendingLatencyHistogram[] =
+    "Chromoting.Video.EncodePendingLatency";
+const char kSendPendingLatencyHistogram[] =
+    "Chromoting.Video.SendPendingLatency";
 
 // Custom count and custom time histograms are log-scaled by default. This
 // results in fine-grained buckets at lower values and wider-ranged buckets
@@ -54,6 +61,16 @@ const int kBandwidthHistogramBuckets = 100;
 // boundary value, so set to 101.
 const int kMaxFramesPerSec = 101;
 
+
+void UpdateUmaEnumHistogramStub(const std::string& histogram_name,
+                                int64_t value,
+                                int histogram_max) {}
+
+void UpdateUmaCustomHistogramStub(const std::string& histogram_name,
+                                  int64_t value,
+                                  int histogram_min,
+                                  int histogram_max,
+                                  int histogram_buckets) {}
 }  // namespace
 
 namespace remoting {
@@ -69,7 +86,11 @@ PerformanceTracker::PerformanceTracker()
       video_encode_ms_(kLatencySampleSize),
       video_decode_ms_(kLatencySampleSize),
       video_paint_ms_(kLatencySampleSize),
-      round_trip_ms_(kLatencySampleSize) {}
+      round_trip_ms_(kLatencySampleSize) {
+  uma_custom_counts_updater_ = base::Bind(&UpdateUmaCustomHistogramStub);
+  uma_custom_times_updater_ = base::Bind(&UpdateUmaCustomHistogramStub);
+  uma_enum_histogram_updater_ = base::Bind(&UpdateUmaEnumHistogramStub);
+}
 
 PerformanceTracker::~PerformanceTracker() {}
 
@@ -77,6 +98,10 @@ void PerformanceTracker::SetUpdateUmaCallbacks(
     UpdateUmaCustomHistogramCallback update_uma_custom_counts_callback,
     UpdateUmaCustomHistogramCallback update_uma_custom_times_callback,
     UpdateUmaEnumHistogramCallback update_uma_enum_histogram_callback) {
+  DCHECK(!update_uma_custom_counts_callback.is_null());
+  DCHECK(!update_uma_custom_times_callback.is_null());
+  DCHECK(!update_uma_enum_histogram_callback.is_null());
+
   uma_custom_counts_updater_ = update_uma_custom_counts_callback;
   uma_custom_times_updater_ = update_uma_custom_times_callback;
   uma_enum_histogram_updater_ = update_uma_enum_histogram_callback;
@@ -105,11 +130,10 @@ void PerformanceTracker::RecordVideoPacketStats(const VideoPacket& packet) {
 
     round_trip_ms_.Record(round_trip_latency.InMilliseconds());
 
-    if (!uma_custom_times_updater_.is_null())
-      uma_custom_times_updater_.Run(
-          kRoundTripLatencyHistogram, round_trip_latency.InMilliseconds(),
-          kLatencyHistogramMinMs, kLatencyHistogramMaxMs,
-          kLatencyHistogramBuckets);
+    uma_custom_times_updater_.Run(
+        kRoundTripLatencyHistogram, round_trip_latency.InMilliseconds(),
+        kLatencyHistogramMinMs, kLatencyHistogramMaxMs,
+        kLatencyHistogramBuckets);
   }
 
   // If the packet is empty, there are no other stats to update.
@@ -121,49 +145,71 @@ void PerformanceTracker::RecordVideoPacketStats(const VideoPacket& packet) {
 
   if (packet.has_capture_time_ms()) {
     video_capture_ms_.Record(packet.capture_time_ms());
-    if (!uma_custom_times_updater_.is_null())
-      uma_custom_times_updater_.Run(
-          kVideoCaptureLatencyHistogram, packet.capture_time_ms(),
-          kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
-          kVideoActionsHistogramsBuckets);
+    uma_custom_times_updater_.Run(
+        kVideoCaptureLatencyHistogram, packet.capture_time_ms(),
+        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+        kVideoActionsHistogramsBuckets);
   }
 
   if (packet.has_encode_time_ms()) {
     video_encode_ms_.Record(packet.encode_time_ms());
-    if (!uma_custom_times_updater_.is_null())
-      uma_custom_times_updater_.Run(
-          kVideoEncodeLatencyHistogram, packet.encode_time_ms(),
-          kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
-          kVideoActionsHistogramsBuckets);
+    uma_custom_times_updater_.Run(
+        kVideoEncodeLatencyHistogram, packet.encode_time_ms(),
+        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+        kVideoActionsHistogramsBuckets);
+  }
+
+  if (packet.has_capture_pending_time_ms()) {
+    uma_custom_times_updater_.Run(
+        kCapturePendingLatencyHistogram, packet.capture_pending_time_ms(),
+        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+        kVideoActionsHistogramsBuckets);
+  }
+
+  if (packet.has_capture_overhead_time_ms()) {
+    uma_custom_times_updater_.Run(
+        kCaptureOverheadHistogram, packet.capture_overhead_time_ms(),
+        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+        kVideoActionsHistogramsBuckets);
+  }
+
+  if (packet.has_encode_pending_time_ms()) {
+    uma_custom_times_updater_.Run(
+        kEncodePendingLatencyHistogram, packet.encode_pending_time_ms(),
+        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+        kVideoActionsHistogramsBuckets);
+  }
+
+  if (packet.has_send_pending_time_ms()) {
+    uma_custom_times_updater_.Run(
+        kSendPendingLatencyHistogram, packet.send_pending_time_ms(),
+        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+        kVideoActionsHistogramsBuckets);
   }
 }
 
 void PerformanceTracker::RecordDecodeTime(double value) {
   video_decode_ms_.Record(value);
-  if (!uma_custom_times_updater_.is_null())
-    uma_custom_times_updater_.Run(
-        kVideoDecodeLatencyHistogram, value, kVideoActionsHistogramsMinMs,
-        kVideoActionsHistogramsMaxMs, kVideoActionsHistogramsBuckets);
+  uma_custom_times_updater_.Run(
+      kVideoDecodeLatencyHistogram, value, kVideoActionsHistogramsMinMs,
+      kVideoActionsHistogramsMaxMs, kVideoActionsHistogramsBuckets);
 }
 
 void PerformanceTracker::RecordPaintTime(double value) {
   video_paint_ms_.Record(value);
-  if (!uma_custom_times_updater_.is_null())
-    uma_custom_times_updater_.Run(
-        kVideoPaintLatencyHistogram, value, kVideoActionsHistogramsMinMs,
-        kVideoActionsHistogramsMaxMs, kVideoActionsHistogramsBuckets);
+  uma_custom_times_updater_.Run(
+      kVideoPaintLatencyHistogram, value, kVideoActionsHistogramsMinMs,
+      kVideoActionsHistogramsMaxMs, kVideoActionsHistogramsBuckets);
 }
 
 void PerformanceTracker::UploadRateStatsToUma() {
-  if (!uma_enum_histogram_updater_.is_null()) {
-    uma_enum_histogram_updater_.Run(kVideoFrameRateHistogram,
-                                    video_frame_rate(), kMaxFramesPerSec);
-    uma_enum_histogram_updater_.Run(kVideoPacketRateHistogram,
-                                    video_packet_rate(), kMaxFramesPerSec);
-    uma_custom_counts_updater_.Run(
-        kVideoBandwidthHistogram, video_bandwidth(), kBandwidthHistogramMinBps,
-        kBandwidthHistogramMaxBps, kBandwidthHistogramBuckets);
-  }
+  uma_enum_histogram_updater_.Run(kVideoFrameRateHistogram, video_frame_rate(),
+                                  kMaxFramesPerSec);
+  uma_enum_histogram_updater_.Run(kVideoPacketRateHistogram,
+                                  video_packet_rate(), kMaxFramesPerSec);
+  uma_custom_counts_updater_.Run(
+      kVideoBandwidthHistogram, video_bandwidth(), kBandwidthHistogramMinBps,
+      kBandwidthHistogramMaxBps, kBandwidthHistogramBuckets);
 }
 
 void PerformanceTracker::OnPauseStateChanged(bool paused) {

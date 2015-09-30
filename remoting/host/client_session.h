@@ -122,8 +122,8 @@ class ClientSession
       protocol::ConnectionToClient* connection) override;
   void OnConnectionClosed(protocol::ConnectionToClient* connection,
                           protocol::ErrorCode error) override;
-  void OnEventTimestamp(protocol::ConnectionToClient* connection,
-                        int64 timestamp) override;
+  void OnInputEventReceived(protocol::ConnectionToClient* connection,
+                            int64_t timestamp) override;
   void OnRouteChange(protocol::ConnectionToClient* connection,
                      const std::string& channel_name,
                      const protocol::TransportRoute& route) override;

@@ -4101,6 +4101,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Chromoting.Video.CaptureOverhead" units="ms">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    Amount of time wasted on IPC and threading overhead when capturing a video
+    frame.
+  </summary>
+</histogram>
+
+<histogram name="Chromoting.Video.CapturePendingLatency" units="ms">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    The time from when an input event is received to when the next frame is
+    captured.
+  </summary>
+</histogram>
+
 <histogram name="Chromoting.Video.DecodeLatency" units="ms">
   <owner>anandc@chromium.org</owner>
   <owner>sergeyu@chromium.org</owner>
@@ -4113,6 +4131,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The time to encode a video packet on the host, returned as part of a video
     packet.
+  </summary>
+</histogram>
+
+<histogram name="Chromoting.Video.EncodePendingLatency" units="ms">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    Delay before a newly captured frame is passed to the encoder.
   </summary>
 </histogram>
 
@@ -4146,6 +4172,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The time from an input being sent from the client to a response being
     received by the client after it is processed by the host.
+  </summary>
+</histogram>
+
+<histogram name="Chromoting.Video.SendPendingLatency" units="ms">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    Delay before an encoded video packet is written to the send buffer.
   </summary>
 </histogram>
 

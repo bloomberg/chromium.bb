@@ -404,13 +404,14 @@ void ClientSession::OnConnectionClosed(
   event_handler_->OnSessionClosed(this);
 }
 
-void ClientSession::OnEventTimestamp(protocol::ConnectionToClient* connection,
-                                     int64 timestamp) {
+void ClientSession::OnInputEventReceived(
+    protocol::ConnectionToClient* connection,
+    int64_t event_timestamp) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
 
   if (video_frame_pump_.get())
-    video_frame_pump_->SetLatestEventTimestamp(timestamp);
+    video_frame_pump_->OnInputEventReceived(event_timestamp);
 }
 
 void ClientSession::OnRouteChange(

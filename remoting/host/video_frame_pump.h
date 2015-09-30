@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -82,9 +83,8 @@ class VideoFramePump : public webrtc::DesktopCapturer::Callback {
   // only affects capture scheduling and does not stop/start the capturer.
   void Pause(bool pause);
 
-  // Updates event timestamp from the last event received from the client. This
-  // value is sent back to the client for roundtrip latency estimates.
-  void SetLatestEventTimestamp(int64 latest_event_timestamp);
+  // Called whenever input event is received.
+  void OnInputEventReceived(int64_t event_timestamp);
 
   // Sets whether the video encoder should be requested to encode losslessly,
   // or to use a lossless color space (typically requiring higher bandwidth).
@@ -96,6 +96,33 @@ class VideoFramePump : public webrtc::DesktopCapturer::Callback {
   }
 
  private:
+  struct FrameTimestamps {
+    FrameTimestamps();
+    ~FrameTimestamps();
+
+    // The following two fields are set only for one frame after each incoming
+    // input event. |input_event_client_timestamp| is event timestamp
+    // received from the client. |input_event_received_time| is local time when
+    // the event was received.
+    int64_t input_event_client_timestamp = -1;
+    base::TimeTicks input_event_received_time;
+
+    base::TimeTicks capture_started_time;
+    base::TimeTicks capture_ended_time;
+    base::TimeTicks encode_started_time;
+    base::TimeTicks encode_ended_time;
+    base::TimeTicks can_send_time;
+  };
+
+  struct PacketWithTimestamps {
+    PacketWithTimestamps(scoped_ptr<VideoPacket> packet,
+                         scoped_ptr<FrameTimestamps> timestamps);
+    ~PacketWithTimestamps();
+
+    scoped_ptr<VideoPacket> packet;
+    scoped_ptr<FrameTimestamps> timestamps;
+  };
+
   // webrtc::DesktopCapturer::Callback interface.
   webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
   void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
@@ -103,10 +130,21 @@ class VideoFramePump : public webrtc::DesktopCapturer::Callback {
   // Callback for CaptureScheduler.
   void CaptureNextFrame();
 
-  // Sends encoded frame
-  void SendEncodedFrame(int64 latest_event_timestamp,
-                        base::TimeTicks timestamp,
-                        scoped_ptr<VideoPacket> packet);
+  // Task running on the encoder thread to encode the |frame|.
+  static scoped_ptr<PacketWithTimestamps> EncodeFrame(
+      VideoEncoder* encoder,
+      scoped_ptr<webrtc::DesktopFrame> frame,
+      scoped_ptr<FrameTimestamps> timestamps);
+
+  // Task called when a frame has finished encoding.
+  void OnFrameEncoded(scoped_ptr<PacketWithTimestamps> packet);
+
+  // Sends |packet| to the client.
+  void SendPacket(scoped_ptr<PacketWithTimestamps> packet);
+
+  // Helper called from SendPacket() to calculate timing fields in the |packet|
+  // before sending it.
+  void UpdateFrameTimers(VideoPacket* packet, FrameTimestamps* timestamps);
 
   // Callback passed to |video_stub_|.
   void OnVideoPacketSent();
@@ -137,8 +175,15 @@ class VideoFramePump : public webrtc::DesktopCapturer::Callback {
   // captured.
   CaptureScheduler capture_scheduler_;
 
-  // Number updated by the caller to trace performance.
-  int64 latest_event_timestamp_;
+  // Timestamps for the frame to be captured next.
+  scoped_ptr<FrameTimestamps> next_frame_timestamps_;
+
+  // Timestamps for the frame that's being captured.
+  scoped_ptr<FrameTimestamps> captured_frame_timestamps_;
+
+  bool send_pending_ = false;
+
+  ScopedVector<PacketWithTimestamps> pending_packets_;
 
   base::ThreadChecker thread_checker_;
 

@@ -52,9 +52,9 @@ class ConnectionToClient : public base::NonThreadSafe,
     virtual void OnConnectionClosed(ConnectionToClient* connection,
                                     ErrorCode error) = 0;
 
-    // Called when sequence number is updated.
-    virtual void OnEventTimestamp(ConnectionToClient* connection,
-                                  int64 timestamp) = 0;
+    // Called when a new input event is received.
+    virtual void OnInputEventReceived(ConnectionToClient* connection,
+                                      int64_t timestamp) = 0;
 
     // Called on notification of a route change event, which happens when a
     // channel is connected.
@@ -83,7 +83,7 @@ class ConnectionToClient : public base::NonThreadSafe,
 
   // Callback for HostEventDispatcher to be called with a timestamp for each
   // received event.
-  virtual void OnEventTimestamp(int64 timestamp);
+  virtual void OnInputEventReceived(int64_t timestamp);
 
   // Get the stubs used by the host to transmit messages to the client.
   // The stubs must not be accessed before OnConnectionAuthenticated(), or

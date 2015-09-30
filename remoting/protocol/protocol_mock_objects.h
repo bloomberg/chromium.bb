@@ -81,8 +81,8 @@ class MockConnectionToClientEventHandler
                void(ConnectionToClient* connection));
   MOCK_METHOD2(OnConnectionClosed,
                void(ConnectionToClient* connection, ErrorCode error));
-  MOCK_METHOD2(OnEventTimestamp,
-               void(ConnectionToClient* connection, int64 timestamp));
+  MOCK_METHOD2(OnInputEventReceived,
+               void(ConnectionToClient* connection, int64_t timestamp));
   MOCK_METHOD3(OnRouteChange,
                void(ConnectionToClient* connection,
                     const std::string& channel_name,

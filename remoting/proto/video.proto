@@ -71,6 +71,19 @@ message VideoPacket {
 
   // Frame identifier used to match VideoFrame and VideoAck.
   optional int32 frame_id = 13;
+
+  // Time from when the last event was received until capturing has started.
+  optional int64 capture_pending_time_ms = 14;
+
+  // Total overhead time for IPC and threading when capturing frames.
+  optional int64 capture_overhead_time_ms = 15;
+
+  // Time between when the frame was captured and when encoder started encoding
+  // it.
+  optional int64 encode_pending_time_ms = 16;
+
+  // Time for which the frame is blocked until it's sent to the client.
+  optional int64 send_pending_time_ms = 17;
 }
 
 // VideoAck acknowledges that the frame in the VideoPacket with the same

@@ -57,8 +57,7 @@ VideoEncoderHelper::CreateVideoPacketWithUpdatedRegion(
     }
   }
 
-  // Store the capture time and frame DPI.
-  packet->set_capture_time_ms(frame.capture_time_ms());
+  // Store frame DPI.
   if (!frame.dpi().is_zero()) {
     packet->mutable_format()->set_x_dpi(frame.dpi().x());
     packet->mutable_format()->set_y_dpi(frame.dpi().y());

@@ -270,8 +270,6 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
   if (frame.updated_region().is_empty() && !encode_unchanged_frame_)
     return nullptr;
 
-  base::TimeTicks encode_start_time = base::TimeTicks::Now();
-
   // Create or reconfigure the codec to match the size of |frame|.
   if (!codec_ ||
       (image_ &&
@@ -296,7 +294,7 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
   }
 
   // Do the actual encoding.
-  int timestamp = (encode_start_time - timestamp_base_).InMilliseconds();
+  int timestamp = (base::TimeTicks::Now() - timestamp_base_).InMilliseconds();
   vpx_codec_err_t ret = vpx_codec_encode(
       codec_.get(), image_.get(), timestamp, 1, 0, VPX_DL_REALTIME);
   DCHECK_EQ(ret, VPX_CODEC_OK)
@@ -340,10 +338,6 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
         break;
     }
   }
-
-  // Note the time taken to encode the pixel data.
-  packet->set_encode_time_ms(
-      (base::TimeTicks::Now() - encode_start_time).InMillisecondsRoundedUp());
 
   return packet.Pass();
 }

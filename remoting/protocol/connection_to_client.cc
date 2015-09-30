@@ -46,9 +46,9 @@ void ConnectionToClient::Disconnect() {
   session_->Close();
 }
 
-void ConnectionToClient::OnEventTimestamp(int64 sequence_number) {
+void ConnectionToClient::OnInputEventReceived(int64_t timestamp) {
   DCHECK(CalledOnValidThread());
-  handler_->OnEventTimestamp(this, sequence_number);
+  handler_->OnInputEventReceived(this, timestamp);
 }
 
 VideoStub* ConnectionToClient::video_stub() {
@@ -112,8 +112,8 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
       event_dispatcher_.reset(new HostEventDispatcher());
       event_dispatcher_->Init(session_.get(), session_->config().event_config(),
                               this);
-      event_dispatcher_->set_event_timestamp_callback(base::Bind(
-          &ConnectionToClient::OnEventTimestamp, base::Unretained(this)));
+      event_dispatcher_->set_on_input_event_callback(base::Bind(
+          &ConnectionToClient::OnInputEventReceived, base::Unretained(this)));
 
       video_dispatcher_.reset(new HostVideoDispatcher());
       video_dispatcher_->Init(session_.get(), session_->config().video_config(),

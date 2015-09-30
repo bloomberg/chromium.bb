@@ -36,7 +36,6 @@ TEST(VideoEncoderHelperTest, PropagatesCommonFields) {
   EXPECT_TRUE(packet->format().has_x_dpi());
   EXPECT_TRUE(packet->format().has_y_dpi());
 
-  EXPECT_TRUE(packet->has_capture_time_ms());
   EXPECT_EQ(1, packet->dirty_rects().size());
 
   ASSERT_TRUE(packet->has_use_desktop_shape());

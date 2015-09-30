@@ -19,11 +19,9 @@ HostEventDispatcher::HostEventDispatcher()
       input_stub_(nullptr),
       parser_(base::Bind(&HostEventDispatcher::OnMessageReceived,
                          base::Unretained(this)),
-              reader()) {
-}
+              reader()) {}
 
-HostEventDispatcher::~HostEventDispatcher() {
-}
+HostEventDispatcher::~HostEventDispatcher() {}
 
 void HostEventDispatcher::OnMessageReceived(scoped_ptr<EventMessage> message,
                                             const base::Closure& done_task) {
@@ -31,8 +29,8 @@ void HostEventDispatcher::OnMessageReceived(scoped_ptr<EventMessage> message,
 
   base::ScopedClosureRunner done_runner(done_task);
 
-  if (message->has_timestamp() && !event_timestamp_callback_.is_null())
-    event_timestamp_callback_.Run(message->timestamp());
+  if (!on_input_event_callback_.is_null())
+    on_input_event_callback_.Run(message->timestamp());
 
   if (message->has_key_event()) {
     const KeyEvent& event = message->key_event();
