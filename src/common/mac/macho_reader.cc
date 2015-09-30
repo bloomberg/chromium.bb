@@ -481,7 +481,9 @@ bool Reader::WalkSegmentSections(const Segment &segment,
       reporter_->SectionsMissing(segment.name);
       return false;
     }
-    if ((section.flags & SECTION_TYPE) == S_ZEROFILL) {
+    const uint32_t section_type = section.flags & SECTION_TYPE;
+    if (section_type == S_ZEROFILL || section_type == S_THREAD_LOCAL_ZEROFILL ||
+            section_type == S_GB_ZEROFILL) {
       // Zero-fill sections have a size, but no contents.
       section.contents.start = section.contents.end = NULL;
     } else if (segment.contents.start == NULL &&
