@@ -415,7 +415,7 @@ config("compiler") {
       #"-Wl,--thread-count=4",
     ]
 
-    if (!is_asan && !is_msan && !is_lsan && !is_tsan) {
+    if (!using_sanitizer) {
       # TODO(brettw) common.gypi has this only for target toolset.
       ldflags += [ "-Wl,--icf=all" ]
     }

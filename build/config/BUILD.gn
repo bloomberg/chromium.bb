@@ -168,6 +168,9 @@ config("feature_flags") {
   if (is_msan) {
     defines += [ "MEMORY_SANITIZER" ]
   }
+  if (is_ubsan) {
+    defines += [ "UNDEFINED_SANITIZER" ]
+  }
   if (enable_webrtc) {
     defines += [ "ENABLE_WEBRTC=1" ]
   }

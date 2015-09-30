@@ -21,7 +21,7 @@ if (symbol_level == -1) {
   # Mac and Windows have them separate, so in Release Linux, default them off.
   if (is_debug || !is_linux) {
     symbol_level = 2
-  } else if (is_asan || is_lsan || is_tsan || is_msan) {
+  } else if (using_sanitizer) {
     # Sanitizers require symbols for filename suppressions to work.
     symbol_level = 1
   } else {

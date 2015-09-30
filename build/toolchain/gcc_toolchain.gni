@@ -353,6 +353,7 @@ template("gcc_toolchain") {
         is_msan = false
         is_syzyasan = false
         is_tsan = false
+        is_ubsan = false
       }
     }
 

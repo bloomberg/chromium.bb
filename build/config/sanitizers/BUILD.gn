@@ -8,7 +8,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 # shared_libraries. Unconditionally depend upon this target as it is empty if
 # |is_asan|, |is_lsan|, |is_tsan|, |is_msan| and |use_custom_libcxx| are false.
 group("deps") {
-  if (is_asan || is_lsan || is_tsan || is_msan) {
+  if (is_asan || is_lsan || is_tsan || is_msan || is_ubsan) {
     public_configs = [ ":sanitizer_options_link_helper" ]
     deps = [
       ":options_sources",
@@ -36,6 +36,9 @@ config("sanitizer_options_link_helper") {
   }
   if (is_msan) {
     ldflags += [ "-fsanitize=memory" ]
+  }
+  if (is_ubsan) {
+    ldflags += [ "-fsanitize=undefined" ]
   }
 }
 
@@ -117,6 +120,37 @@ config("default_sanitizer_flags") {
         "-fsanitize=memory",
         "-fsanitize-memory-track-origins=$msan_track_origins",
         "-fsanitize-blacklist=$msan_blacklist_path",
+      ]
+    }
+    if (is_ubsan) {
+      ubsan_blacklist_path =
+          rebase_path("//tools/ubsan/blacklist.txt", root_build_dir)
+      cflags += [
+        # Yasm dies with an "Illegal instruction" error when bounds checking is
+        # enabled. See http://crbug.com/489901
+        # "-fsanitize=bounds",
+        "-fsanitize=float-divide-by-zero",
+        "-fsanitize=integer-divide-by-zero",
+        "-fsanitize=null",
+        "-fsanitize=object-size",
+        "-fsanitize=return",
+        "-fsanitize=returns-nonnull-attribute",
+        "-fsanitize=shift-exponent",
+        "-fsanitize=signed-integer-overflow",
+        "-fsanitize=unreachable",
+        "-fsanitize=vla-bound",
+        "-fsanitize-blacklist=$ubsan_blacklist_path",
+
+        # Employ the experimental PBQP register allocator to avoid slow
+        # compilation on files with too many basic blocks.
+        # See http://crbug.com/426271.
+        "-mllvm",
+        "-regalloc=pbqp",
+
+        # Speculatively use coalescing to slightly improve the code generated
+        # by PBQP regallocator. May increase compile time.
+        "-mllvm",
+        "-pbqp-coalescing",
       ]
     }
     if (is_cfi && !is_nacl) {
