@@ -86,7 +86,7 @@ static bool isPositiveAudioParamTime(double time, ExceptionState& exceptionState
 String AudioParamTimeline::eventToString(const ParamEvent& event)
 {
     // The default arguments for most automation methods is the value and the time.
-    String args = String::number(event.value()) + ", " + String::number(event.time());
+    String args = String::number(event.value()) + ", " + String::number(event.time(), 16);
 
     // Get a nice printable name for the event and update the args if necessary.
     String s;
@@ -103,12 +103,12 @@ String AudioParamTimeline::eventToString(const ParamEvent& event)
     case ParamEvent::SetTarget:
         s = "setTargetAtTime";
         // This has an extra time constant arg
-        args = args + ", " + String::number(event.timeConstant());
+        args = args + ", " + String::number(event.timeConstant(), 16);
         break;
     case ParamEvent::SetValueCurve:
         s = "setValueCurveAtTime";
         // Replace the default arg, using "..." to denote the curve argument.
-        args = "..., " + String::number(event.time()) + ", " + String::number(event.duration());
+        args = "..., " + String::number(event.time(), 16) + ", " + String::number(event.duration(), 16);
         break;
     case ParamEvent::LastType:
         ASSERT_NOT_REACHED();

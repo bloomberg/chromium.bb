@@ -17,8 +17,9 @@ PASS setTargetAtTime(1, 0.037500000000000006, 0.1) did not throw an exception.
 PASS setValueCurveAtTime(curve, 0.05, 0.1) did not throw an exception.
 PASS setValueCurveAtTime(curve, 0.00625, 0.01) threw NotSupportedError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.00625, 0.01) overlaps linearRampToValueAtTime(1, 0.0125).
 PASS setValueCurveAtTime(curve, 0.018750000000000003, 0.01) threw NotSupportedError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.01875, 0.01) overlaps exponentialRampToValue(1, 0.025).
-PASS setValueCurveAtTime(curve, 0.03125, 0.01) threw NotSupportedError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.03125, 0.01) overlaps setTargetAtTime(1, 0.0375, 0.1).
-PASS setValueCurveAtTime(curve, 0.04375, 0.01) threw NotSupportedError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.04375, 0.01) overlaps setValueCurveAtTime(..., 0.05, 0.1).
+PASS setValueCurveAtTime(curve, 0.03125, 0.01) threw NotSupportedError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.03125, 0.01) overlaps setTargetAtTime(1, 0.03750000000000001, 0.1).
+PASS setValueCurveAtTime(curve, 0.043750000000000004, 0.01) threw NotSupportedError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.04375, 0.01) overlaps setValueCurveAtTime(..., 0.05, 0.1).
+PASS setValueCurveAtTime(curve, 0.031415926535897934, 0.01) threw NotSupportedError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.03141592653589793, 0.01) overlaps setTargetAtTime(1, 0.03750000000000001, 0.1).
 PASS setValueCurve overlapping existing automation functions correctly signaled errors.
 
 PASS setValueAtTime(1, 0) did not throw an exception.

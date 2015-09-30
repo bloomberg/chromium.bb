@@ -32,29 +32,29 @@
         // Some time that is known to during the setValueCurveTime interval.
         var automationTime = curveStartTime + duration / 2;
 
-        success = success && Should("setValueCurveAtTime(curve, " + curveStartTime + ", " + duration + ")", function() {
+        success = Should("setValueCurveAtTime(curve, " + curveStartTime + ", " + duration + ")", function() {
           g.gain.setValueCurveAtTime(curve, curveStartTime, duration);
-        }).notThrow();
+        }).notThrow() && success;
 
-        success = success && Should("setValueAtTime(1, " + automationTime + ")", function() {
+        success = Should("setValueAtTime(1, " + automationTime + ")", function() {
           g.gain.setValueAtTime(1, automationTime);
-        }).throw("NotSupportedError");
+        }).throw("NotSupportedError") && success;
 
-        success = success && Should("linearRampToValueAtTime(1, " + automationTime + ")", function() {
+        success = Should("linearRampToValueAtTime(1, " + automationTime + ")", function() {
           g.gain.linearRampToValueAtTime(1, automationTime);
-        }).throw("NotSupportedError");
+        }).throw("NotSupportedError") && success;
 
-        success = success && Should("exponentialRampToValueAtTime(1, " + automationTime + ")", function() {
+        success = Should("exponentialRampToValueAtTime(1, " + automationTime + ")", function() {
           g.gain.exponentialRampToValueAtTime(1, automationTime);
-        }).throw("NotSupportedError");
+        }).throw("NotSupportedError") && success;
 
-        success = success && Should("setTargetAtTime(1, " + automationTime + ", 1)", function() {
+        success = Should("setTargetAtTime(1, " + automationTime + ", 1)", function() {
           g.gain.setTargetAtTime(1, automationTime, 1);
-        }).throw("NotSupportedError");
+        }).throw("NotSupportedError") && success;
 
-        success = success && Should("setValueAtTime(1, " + (curveStartTime + 1.1 * duration) + ")", function() {
+        success = Should("setValueAtTime(1, " + (curveStartTime + 1.1 * duration) + ")", function() {
           g.gain.setValueAtTime(1, curveStartTime + 1.1 * duration);
-        }).notThrow();
+        }).notThrow() && success;
 
         var prefix = "Automation functions overlapping an existing setValueCurveAtTime";
         if (success)
@@ -72,38 +72,44 @@
 
         var curve = new Float32Array(2);
         // Start time and duration for setValueCurveAtTime
-        var startTime = 0
+        var startTime = 0;
         var timeInterval = testDurationSec / 10;
 
         startTime += timeInterval;
-        success = success && Should("linearRampToValueAtTime(1, " + startTime + ")", function () {
+        success = Should("linearRampToValueAtTime(1, " + startTime + ")", function () {
           g.gain.linearRampToValueAtTime(1, startTime);
-        }).notThrow();
+        }).notThrow() && success;
       
         startTime += timeInterval;
-        success = success && Should("exponentialRampToValueAtTime(1, " + startTime + ")", function () {
+        success = Should("exponentialRampToValueAtTime(1, " + startTime + ")", function () {
           g.gain.exponentialRampToValueAtTime(1, startTime);
-        }).notThrow();
+        }).notThrow() && success;
       
         startTime += timeInterval;
-        success = success && Should("setTargetAtTime(1, " + startTime + ", 0.1)", function () {
+        success = Should("setTargetAtTime(1, " + startTime + ", 0.1)", function () {
           g.gain.setTargetAtTime(1, startTime, 0.1);
-        }).notThrow();
+        }).notThrow() && success;
       
         startTime += timeInterval;
-        success = success && Should("setValueCurveAtTime(curve, " + startTime + ", 0.1)", function () {
+        success = Should("setValueCurveAtTime(curve, " + startTime + ", 0.1)", function () {
           g.gain.setValueCurveAtTime(curve, startTime, 0.1);
-        }).notThrow();
+        }).notThrow() && success;
 
         // Now try to setValueCurve that overlaps each of the above automations
         startTime = timeInterval / 2;
 
         for (var k = 0; k < 4; ++k) {
-          success = success && Should("setValueCurveAtTime(curve, " + startTime + ", 0.01)", function () {
-            g.gain.setValueCurveAtTime(curve, startTime, 0.01);
-          }).throw("NotSupportedError");
-          startTime += timeInterval;
+          var time = startTime + timeInterval * k;
+          success = Should("setValueCurveAtTime(curve, " + time + ", 0.01)", function () {
+            g.gain.setValueCurveAtTime(curve, time, 0.01);
+          }).throw("NotSupportedError") && success;
         }
+
+        // One last test that prints out lots of digits for the time.
+        var time = Math.PI / 100;
+        success = Should("setValueCurveAtTime(curve, " + time + ", 0.01)", function () {
+          g.gain.setValueCurveAtTime(curve, time, 0.01);
+        }).throw("NotSupportedError") && success;
 
         var prefix = "setValueCurve overlapping existing automation functions";
         if (success)
