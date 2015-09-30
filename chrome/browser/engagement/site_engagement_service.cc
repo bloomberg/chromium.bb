@@ -58,7 +58,8 @@ const char* SiteEngagementScore::kLastEngagementTimeKey = "lastEngagementTime";
 
 const double SiteEngagementScore::kMaxPoints = 100;
 const double SiteEngagementScore::kMaxPointsPerDay = 5;
-const double SiteEngagementScore::kNavigationPoints = 1;
+const double SiteEngagementScore::kNavigationPoints = 0.5;
+const double SiteEngagementScore::kUserInputPoints = 0.05;
 const int SiteEngagementScore::kDecayPeriodInDays = 7;
 const double SiteEngagementScore::kDecayPoints = 5;
 
@@ -167,27 +168,16 @@ SiteEngagementService::SiteEngagementService(Profile* profile)
 SiteEngagementService::~SiteEngagementService() {
 }
 
-void SiteEngagementService::HandleNavigation(const GURL& url) {
-  HostContentSettingsMap* settings_map =
-    HostContentSettingsMapFactory::GetForProfile(profile_);
-  scoped_ptr<base::DictionaryValue> score_dict =
-      GetScoreDictForOrigin(settings_map, url);
-  SiteEngagementScore score(&clock_, *score_dict);
-
-  score.AddPoints(SiteEngagementScore::kNavigationPoints);
-  if (score.UpdateScoreDict(score_dict.get())) {
-    ContentSettingsPattern pattern(
-        ContentSettingsPattern::FromURLNoWildcard(url));
-    if (!pattern.IsValid())
-      return;
-
-    settings_map->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
-                                    CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-                                    std::string(), score_dict.release());
-  }
+void SiteEngagementService::HandleNavigation(const GURL& url,
+                                             ui::PageTransition transition) {
+  AddPoints(url, SiteEngagementScore::kNavigationPoints);
 }
 
-int SiteEngagementService::GetScore(const GURL& url) {
+void SiteEngagementService::HandleUserInput(const GURL& url) {
+  AddPoints(url, SiteEngagementScore::kUserInputPoints);
+}
+
+double SiteEngagementService::GetScore(const GURL& url) {
   HostContentSettingsMap* settings_map =
     HostContentSettingsMapFactory::GetForProfile(profile_);
   scoped_ptr<base::DictionaryValue> score_dict =
@@ -197,13 +187,13 @@ int SiteEngagementService::GetScore(const GURL& url) {
   return score.Score();
 }
 
-int SiteEngagementService::GetTotalEngagementPoints() {
+double SiteEngagementService::GetTotalEngagementPoints() {
   HostContentSettingsMap* settings_map =
     HostContentSettingsMapFactory::GetForProfile(profile_);
   ContentSettingsForOneType engagement_settings;
   settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
                                       std::string(), &engagement_settings);
-  int total_score = 0;
+  double total_score = 0;
   for (const auto& site : engagement_settings) {
     GURL origin(site.primary_pattern.ToString());
     if (!origin.is_valid())
@@ -217,8 +207,8 @@ int SiteEngagementService::GetTotalEngagementPoints() {
   return total_score;
 }
 
-std::map<GURL, int> SiteEngagementService::GetScoreMap() {
-  std::map<GURL, int> score_map;
+std::map<GURL, double> SiteEngagementService::GetScoreMap() {
+  std::map<GURL, double> score_map;
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
   ContentSettingsForOneType engagement_settings;
@@ -235,4 +225,24 @@ std::map<GURL, int> SiteEngagementService::GetScoreMap() {
     score_map[origin] = score.Score();
   }
   return score_map;
+}
+
+void SiteEngagementService::AddPoints(const GURL& url, double points) {
+  HostContentSettingsMap* settings_map =
+    HostContentSettingsMapFactory::GetForProfile(profile_);
+  scoped_ptr<base::DictionaryValue> score_dict =
+      GetScoreDictForOrigin(settings_map, url);
+  SiteEngagementScore score(&clock_, *score_dict);
+
+  score.AddPoints(points);
+  if (score.UpdateScoreDict(score_dict.get())) {
+    ContentSettingsPattern pattern(
+        ContentSettingsPattern::FromURLNoWildcard(url));
+    if (!pattern.IsValid())
+      return;
+
+    settings_map->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
+                                    CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+                                    std::string(), score_dict.release());
+  }
 }
