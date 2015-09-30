@@ -196,11 +196,6 @@ cr.define('downloads', function() {
     },
 
     /** @private */
-    computeElevation_: function() {
-      return this.isActive_ ? 1 : 0;
-    },
-
-    /** @private */
     computeIsActive_: function() {
       return this.data_.state != downloads.States.CANCELLED &&
              this.data_.state != downloads.States.INTERRUPTED &&

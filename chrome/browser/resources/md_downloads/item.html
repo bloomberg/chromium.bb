@@ -15,8 +15,7 @@
       <h3 id="date">[[computeDate_(data_.since_string, data_.date_string)]]</h3>
     </template>
 
-    <paper-material id="content" on-dragstart="onDragStart_"
-        elevation$="[[computeElevation_(isActive_)]]"
+    <div id="content" on-dragstart="onDragStart_"
         class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]">
       <div id="file-icon-wrapper" class="icon-wrapper">
         <img class="icon" id="file-icon" alt="" hidden$="[[isDangerous_]]">
@@ -97,7 +96,7 @@
 
       <div id="incognito" i18n-values="title:inIncognito"
           hidden$="[[!data_.otr]]"></div>
-    </paper-material>
+    </div>
 
   </template>
   <link rel="import" type="css" href="chrome://resources/css/action_link.css">
