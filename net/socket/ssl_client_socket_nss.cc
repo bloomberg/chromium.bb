@@ -2355,13 +2355,11 @@ void SSLClientSocketNSS::Core::SetChannelIDProvided() {
 }
 
 SSLClientSocketNSS::SSLClientSocketNSS(
-    base::SequencedTaskRunner* nss_task_runner,
     scoped_ptr<ClientSocketHandle> transport_socket,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context)
-    : nss_task_runner_(nss_task_runner),
-      transport_(transport_socket.Pass()),
+    : transport_(transport_socket.Pass()),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       cert_verifier_(context.cert_verifier),
@@ -2688,13 +2686,12 @@ int SSLClientSocketNSS::Init() {
 }
 
 void SSLClientSocketNSS::InitCore() {
+  // TODO(davidben): Both task runners are now always the same. Unwind this code
+  // further, although the entire class is due to be deleted eventually, so it
+  // may not be worth bothering.
   core_ = new Core(base::ThreadTaskRunnerHandle::Get().get(),
-                   nss_task_runner_.get(),
-                   transport_.get(),
-                   host_and_port_,
-                   ssl_config_,
-                   &net_log_,
-                   channel_id_service_);
+                   base::ThreadTaskRunnerHandle::Get().get(), transport_.get(),
+                   host_and_port_, ssl_config_, &net_log_, channel_id_service_);
 }
 
 int SSLClientSocketNSS::InitializeSSLOptions() {

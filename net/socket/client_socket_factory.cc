@@ -5,18 +5,17 @@
 #include "net/socket/client_socket_factory.h"
 
 #include "base/lazy_instance.h"
-#include "base/thread_task_runner_handle.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "net/cert/cert_database.h"
 #include "net/socket/client_socket_handle.h"
-#if defined(USE_OPENSSL)
-#include "net/socket/ssl_client_socket_openssl.h"
-#elif defined(USE_NSS_CERTS) || defined(OS_MACOSX) || defined(OS_WIN)
-#include "net/socket/ssl_client_socket_nss.h"
-#endif
 #include "net/socket/tcp_client_socket.h"
 #include "net/udp/udp_client_socket.h"
+
+#if defined(USE_OPENSSL)
+#include "net/socket/ssl_client_socket_openssl.h"
+#else
+#include "net/socket/ssl_client_socket_nss.h"
+#endif
 
 namespace net {
 
@@ -24,29 +23,10 @@ class X509Certificate;
 
 namespace {
 
-// ChromeOS and Linux may require interaction with smart cards or TPMs, which
-// may cause NSS functions to block for upwards of several seconds. To avoid
-// blocking all activity on the current task runner, such as network or IPC
-// traffic, run NSS SSL functions on a dedicated thread.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-bool g_use_dedicated_nss_thread = true;
-#else
-bool g_use_dedicated_nss_thread = false;
-#endif
-
 class DefaultClientSocketFactory : public ClientSocketFactory,
                                    public CertDatabase::Observer {
  public:
   DefaultClientSocketFactory() {
-    if (g_use_dedicated_nss_thread) {
-      // Use a single thread for the worker pool.
-      worker_pool_ = new base::SequencedWorkerPool(1, "NSS SSL Thread");
-      nss_thread_task_runner_ =
-          worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
-              worker_pool_->GetSequenceToken(),
-              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-    }
-
     CertDatabase::GetInstance()->AddObserver(this);
   }
 
@@ -89,42 +69,17 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) override {
-    // nss_thread_task_runner_ may be NULL if g_use_dedicated_nss_thread is
-    // false or if the dedicated NSS thread failed to start. If so, cause NSS
-    // functions to execute on the current task runner.
-    //
-    // Note: The current task runner is obtained on each call due to unit
-    // tests, which may create and tear down the current thread's TaskRunner
-    // between each test. Because the DefaultClientSocketFactory is leaky, it
-    // may span multiple tests, and thus the current task runner may change
-    // from call to call.
-    scoped_refptr<base::SequencedTaskRunner> nss_task_runner(
-        nss_thread_task_runner_);
-    if (!nss_task_runner.get())
-      nss_task_runner = base::ThreadTaskRunnerHandle::Get();
-
 #if defined(USE_OPENSSL)
     return scoped_ptr<SSLClientSocket>(
         new SSLClientSocketOpenSSL(transport_socket.Pass(), host_and_port,
                                    ssl_config, context));
-#elif defined(USE_NSS_CERTS) || defined(OS_MACOSX) || defined(OS_WIN)
-    return scoped_ptr<SSLClientSocket>(
-        new SSLClientSocketNSS(nss_task_runner.get(),
-                               transport_socket.Pass(),
-                               host_and_port,
-                               ssl_config,
-                               context));
 #else
-    NOTIMPLEMENTED();
-    return scoped_ptr<SSLClientSocket>();
+    return scoped_ptr<SSLClientSocket>(new SSLClientSocketNSS(
+        transport_socket.Pass(), host_and_port, ssl_config, context));
 #endif
   }
 
   void ClearSSLSessionCache() override { SSLClientSocket::ClearSessionCache(); }
-
- private:
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
-  scoped_refptr<base::SequencedTaskRunner> nss_thread_task_runner_;
 };
 
 static base::LazyInstance<DefaultClientSocketFactory>::Leaky

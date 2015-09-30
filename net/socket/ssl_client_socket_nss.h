@@ -30,10 +30,6 @@
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_config_service.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace net {
 
 class BoundNetLog;
@@ -54,14 +50,7 @@ class SSLClientSocketNSS : public SSLClientSocket {
   // authentication is requested, the host_and_port field of SSLCertRequestInfo
   // will be populated with |host_and_port|.  |ssl_config| specifies
   // the SSL settings.
-  //
-  // Because calls to NSS may block, such as due to needing to access slow
-  // hardware or needing to synchronously unlock protected tokens, calls to
-  // NSS may optionally be run on a dedicated thread. If synchronous/blocking
-  // behaviour is desired, for performance or compatibility, the current task
-  // runner should be supplied instead.
-  SSLClientSocketNSS(base::SequencedTaskRunner* nss_task_runner,
-                     scoped_ptr<ClientSocketHandle> transport_socket,
+  SSLClientSocketNSS(scoped_ptr<ClientSocketHandle> transport_socket,
                      const HostPortPair& host_and_port,
                      const SSLConfig& ssl_config,
                      const SSLClientSocketContext& context);
@@ -155,8 +144,6 @@ class SSLClientSocketNSS : public SSLClientSocket {
   // the |ssl_info|.signed_certificate_timestamps list.
   void AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const;
 
-  // The task runner used to perform NSS operations.
-  scoped_refptr<base::SequencedTaskRunner> nss_task_runner_;
   scoped_ptr<ClientSocketHandle> transport_;
   HostPortPair host_and_port_;
   SSLConfig ssl_config_;
