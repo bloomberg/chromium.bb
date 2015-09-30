@@ -7630,7 +7630,7 @@ bool GLES2DecoderImpl::SimulateAttrib0(
 
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
-  if (attrib->divisor())
+  if (feature_info_->feature_flags().angle_instanced_arrays)
     glVertexAttribDivisorANGLE(0, 0);
 
   *simulated = true;
@@ -7649,7 +7649,13 @@ void GLES2DecoderImpl::RestoreStateForAttrib(
         attrib_index, attrib->size(), attrib->type(), attrib->normalized(),
         attrib->gl_stride(), ptr);
   }
-  if (attrib->divisor())
+
+  // Attrib divisors should only be non-zero when the ANGLE_instanced_arrays
+  // extension is available
+  DCHECK(attrib->divisor() == 0 ||
+      feature_info_->feature_flags().angle_instanced_arrays);
+
+  if (feature_info_->feature_flags().angle_instanced_arrays)
     glVertexAttribDivisorANGLE(attrib_index, attrib->divisor());
   glBindBuffer(
       GL_ARRAY_BUFFER, state_.bound_array_buffer.get() ?

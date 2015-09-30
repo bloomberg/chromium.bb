@@ -1027,6 +1027,10 @@ TEST_P(GLES2DecoderGeometryInstancingTest,
   AddExpectationsForSimulatedAttrib0(kNumVertices, kServiceBufferId);
   SetupExpectationsForApplyingDefaultDirtyState();
 
+  EXPECT_CALL(*gl_, VertexAttribDivisorANGLE(0, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+
   EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(GL_TRIANGLES, 0, kNumVertices, 1))
       .Times(1)
       .RetiresOnSaturation();
@@ -1520,6 +1524,10 @@ TEST_P(GLES2DecoderGeometryInstancingTest,
   AddExpectationsForSimulatedAttrib0(kMaxValidIndex + 1, kServiceBufferId);
   SetupExpectationsForApplyingDefaultDirtyState();
 
+  EXPECT_CALL(*gl_, VertexAttribDivisorANGLE(0, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+
   EXPECT_CALL(
       *gl_,
       DrawElementsInstancedANGLE(GL_TRIANGLES,
@@ -1529,6 +1537,7 @@ TEST_P(GLES2DecoderGeometryInstancingTest,
                                  1))
       .Times(1)
       .RetiresOnSaturation();
+
   DrawElementsInstancedANGLE cmd;
   cmd.Init(GL_TRIANGLES,
            kValidIndexRangeCount,
