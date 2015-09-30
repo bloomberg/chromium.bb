@@ -35,6 +35,7 @@ CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
 
 _RETRYABLE_OPERATIONAL_ERROR_CODES = frozenset([
     1053,   # 'Server shutdown in progress'
+    1205,   # 'Lock wait timeout exceeded; try restarting transaction'
     2003,   # 'Can't connect to MySQL server'
     2006,   # Error code 2006 'MySQL server has gone away' indicates that
             # the connection used was closed or dropped
