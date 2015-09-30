@@ -127,10 +127,12 @@ static CSSParserTokenRange consumeFunction(CSSParserTokenRange& range)
 }
 
 class CalcParseScope {
+    STACK_ALLOCATED();
+
 public:
-    CalcParseScope(CSSParserTokenRange& range, ValueRange valueRange = ValueRangeAll)
-    : m_sourceRange(range)
-    , m_range(range)
+    explicit CalcParseScope(CSSParserTokenRange& range, ValueRange valueRange = ValueRangeAll)
+        : m_sourceRange(range)
+        , m_range(range)
     {
         const CSSParserToken& token = range.peek();
         if (token.functionId() == CSSValueCalc || token.functionId() == CSSValueWebkitCalc)
@@ -153,7 +155,7 @@ public:
 private:
     CSSParserTokenRange& m_sourceRange;
     CSSParserTokenRange m_range;
-    RefPtrWillBeRawPtr<CSSCalcValue> m_calcValue;
+    RefPtrWillBeMember<CSSCalcValue> m_calcValue;
 };
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRange& range, CSSParserMode cssParserMode, double minimumValue = std::numeric_limits<int>::min())
