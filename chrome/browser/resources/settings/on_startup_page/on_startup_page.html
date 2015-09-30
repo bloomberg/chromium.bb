@@ -12,7 +12,7 @@
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="on_startup_shared.css">
   <template>
-    <cr-settings-animated-pages id="pages" current-route="{{currentRoute}}"
+    <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="on-startup">
       <neon-animatable id="">
         <div id="locationLabel" i18n-content="onStartup"></div>
@@ -39,7 +39,7 @@
         <cr-settings-startup-urls-page prefs="{{prefs}}">
         </cr-settings-startup-urls-page>
       </neon-animatable>
-    </cr-settings-animated-pages>
+    </settings-animated-pages>
   </template>
   <script src="on_startup_page.js"></script>
 </dom-module>

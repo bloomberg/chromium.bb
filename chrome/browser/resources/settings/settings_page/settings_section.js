@@ -4,20 +4,20 @@
 
 /**
  * @fileoverview
- * 'cr-settings-section' shows a paper material themed section with a header
+ * 'settings-section' shows a paper material themed section with a header
  * which shows its page title.
  *
  * Example:
  *
- *    <cr-settings-section page-title="[[pageTitle]]">
+ *    <settings-section page-title="[[pageTitle]]">
  *      <!-- Insert your section controls here -->
- *    </cr-settings-section>
+ *    </settings-section>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-section
+ * @element settings-section
  */
 Polymer({
-  is: 'cr-settings-section',
+  is: 'settings-section',
 
   behaviors: [
     Polymer.NeonAnimationRunnerBehavior,
@@ -153,7 +153,7 @@ Polymer({
     section.expandContainer.classList.add('expanded');
 
     // This event fires on itself as well, but that is benign.
-    var sections = section.parentNode.querySelectorAll('cr-settings-section');
+    var sections = section.parentNode.querySelectorAll('settings-section');
     for (var i = 0; i < sections.length; ++i) {
       sections[i].fire('expand-animation-complete');
     }

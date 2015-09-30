@@ -11,7 +11,7 @@
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <template>
-    <cr-settings-animated-pages id="pages" current-route="{{currentRoute}}"
+    <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="internet">
       <neon-animatable id="">
         <network-summary on-show-detail="onShowDetail_"
@@ -34,7 +34,7 @@
             on-show-detail="onShowDetail_">
         </cr-settings-internet-known-networks-page>
       </neon-animatable>
-    </cr-settings-animated-pages>
+    </settings-animated-pages>
   </template>
   <script src="internet_page.js"></script>
 </dom-module>

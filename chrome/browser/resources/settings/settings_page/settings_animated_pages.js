@@ -4,21 +4,21 @@
 
 /**
  * @fileoverview
- * 'cr-settings-animated-pages' is a container for a page and animated subpages.
+ * 'settings-animated-pages' is a container for a page and animated subpages.
  * It provides a set of common behaviors and animations.
  *
  * Example:
  *
- *    <cr-settings-animated-pages current-route="{{currentRoute}}"
+ *    <settings-animated-pages current-route="{{currentRoute}}"
           route-root="advanced/privacy" redirect-root-route-to="advanced">
  *      <!-- Insert your section controls here -->
- *    </cr-settings-animated-pages>
+ *    </settings-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-animated-pages
+ * @element settings-animated-pages
  */
 Polymer({
-  is: 'cr-settings-animated-pages',
+  is: 'settings-animated-pages',
 
   properties: {
     /**

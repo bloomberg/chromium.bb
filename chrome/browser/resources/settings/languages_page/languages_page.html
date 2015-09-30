@@ -20,7 +20,7 @@
   <template>
     <cr-settings-languages id="languages" languages="{{languages}}">
     </cr-settings-languages>
-    <cr-settings-animated-pages id="pages" current-route="{{currentRoute}}"
+    <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="languages">
       <neon-animatable id="">
         <h2 i18n-content="languagesListTitle"></h2>
@@ -76,7 +76,7 @@
         <cr-settings-manage-languages-page id="manageLanguagesPage"
             prefs="{{prefs}}"></cr-settings-manage-languages-page>
       </neon-animatable>
-    </cr-settings-animated-pages>
+    </settings-animated-pages>
   </template>
   <script src="languages_page.js"></script>
 </dom-module>
