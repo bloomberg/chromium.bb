@@ -707,12 +707,14 @@ get_file_timestamp () {
 #
 detect_symbol_dir () {
   local SUBDIRS SUBDIR LIST DIR DIR_LIBS TSTAMP
-  # Note: Ninja places debug libraries under out/$BUILDTYPE/lib/, while
-  # Make places then under out/$BUILDTYPE/lib.target.
+  # Make places them under out/$BUILDTYPE/lib.target.
+  # GYP places debug libraries under out/$BUILDTYPE/lib
+  # GN places them under out/$BUILDTYPE/lib.unstripped
   if [ "$1" ]; then
-    SUBDIRS="$1/lib $1/lib.target"
+    SUBDIRS="$1/lib $1/lib.target $1/lib.unstripped"
   else
     SUBDIRS="Release/lib Debug/lib Release/lib.target Debug/lib.target"
+    SUBDIRS+=" Release/lib.unstripped Debug/lib.unstripped"
   fi
   LIST=$TMPDIR/scan-subdirs-$$.txt
   printf "" > "$LIST"

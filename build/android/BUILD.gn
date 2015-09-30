@@ -32,11 +32,26 @@ generate_interface_jar("android_ijar") {
   output_jar = "$root_out_dir/lib.java/android.interface.jar"
 }
 
+# Copy to the lib.unstripped directory so that gdb can easily find it.
+copy("cpplib_unstripped") {
+  _soname = "libc++_shared.so"
+  sources = [
+    "${android_libcpp_root}/libs/${android_app_abi}/${_soname}",
+  ]
+  outputs = [
+    "${root_out_dir}/lib.unstripped/${_soname}",
+  ]
+}
+
 action("cpplib_stripped") {
   _strip_bin = "${android_tool_prefix}strip"
   _soname = "libc++_shared.so"
-  _input_so = "${android_libcpp_root}/libs/${android_app_abi}/${_soname}"
+  _input_so = "${root_out_dir}/lib.unstripped/${_soname}"
   _output_so = "${root_shlib_dir}/${_soname}"
+
+  deps = [
+    ":cpplib_unstripped",
+  ]
 
   script = "//build/gn_run_binary.py"
   inputs = [
