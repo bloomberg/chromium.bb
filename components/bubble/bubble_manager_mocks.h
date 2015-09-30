@@ -40,10 +40,7 @@ class MockBubbleDelegate : public BubbleDelegate {
   MOCK_METHOD1(ShouldClose, bool(BubbleCloseReason reason));
 
   // A scoped_ptr can't be returned in MOCK_METHOD.
-  MOCK_METHOD0(BuildBubbleUiMock, BubbleUi*());
-  scoped_ptr<BubbleUi> BuildBubbleUi() override {
-    return make_scoped_ptr(BuildBubbleUiMock());
-  }
+  scoped_ptr<BubbleUi> BuildBubbleUi() override { return bubble_ui_.Pass(); }
 
   MOCK_METHOD1(UpdateBubbleUi, bool(BubbleUi*));
 
@@ -52,7 +49,12 @@ class MockBubbleDelegate : public BubbleDelegate {
   // To verify destructor call.
   MOCK_METHOD0(Destroyed, void());
 
+  // Will be null after |BubbleManager::ShowBubble| is called.
+  MockBubbleUi* bubble_ui() { return bubble_ui_.get(); }
+
  private:
+  scoped_ptr<MockBubbleUi> bubble_ui_;
+
   DISALLOW_COPY_AND_ASSIGN(MockBubbleDelegate);
 };
 

@@ -8,26 +8,24 @@ MockBubbleUi::MockBubbleUi() {}
 
 MockBubbleUi::~MockBubbleUi() { Destroyed(); }
 
-MockBubbleDelegate::MockBubbleDelegate() {}
+MockBubbleDelegate::MockBubbleDelegate() : bubble_ui_(new MockBubbleUi) {}
 
 MockBubbleDelegate::~MockBubbleDelegate() { Destroyed(); }
 
 // static
 scoped_ptr<MockBubbleDelegate> MockBubbleDelegate::Default() {
   MockBubbleDelegate* delegate = new MockBubbleDelegate;
-  EXPECT_CALL(*delegate, BuildBubbleUiMock())
-      .WillOnce(testing::Return(new MockBubbleUi));
   EXPECT_CALL(*delegate, ShouldClose(testing::_))
       .WillOnce(testing::Return(true));
+  EXPECT_CALL(*delegate, Destroyed());
   return make_scoped_ptr(delegate);
 }
 
 // static
 scoped_ptr<MockBubbleDelegate> MockBubbleDelegate::Stubborn() {
   MockBubbleDelegate* delegate = new MockBubbleDelegate;
-  EXPECT_CALL(*delegate, BuildBubbleUiMock())
-      .WillOnce(testing::Return(new MockBubbleUi));
   EXPECT_CALL(*delegate, ShouldClose(testing::_))
       .WillRepeatedly(testing::Return(false));
+  EXPECT_CALL(*delegate, Destroyed());
   return make_scoped_ptr(delegate);
 }
