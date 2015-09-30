@@ -9,6 +9,7 @@
       '../../third_party/android_tools/sdk/platform-tools/',
       '../../third_party/appurify-python/',
       '../../third_party/requests/',
+      '../../tools/swarming_client/',
       '<(PRODUCT_DIR)/md5sum_bin_host',
       '<(PRODUCT_DIR)/md5sum_dist/',
       'devil/',

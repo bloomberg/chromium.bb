@@ -983,6 +983,27 @@
           ],
         }
       ],
+      'conditions': [
+        ['test_isolation_mode != "noop"',
+          {
+            'targets': [
+              {
+                'target_name': 'breakpad_unittests_apk_run',
+                'type': 'none',
+                'dependencies': [
+                  'breakpad_unittests',
+                ],
+                'includes': [
+                  '../build/isolate.gypi',
+                ],
+                'sources': [
+                  'breakpad_unittests_apk.isolate',
+                ],
+              },
+            ]
+          }
+        ],
+      ],
     }],
   ],
 }
