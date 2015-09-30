@@ -68,7 +68,6 @@ DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, frameCounter, ("Frame"));
 
 Frame::~Frame()
 {
-    m_ownerMagicValue = 0xdeadcafe;
     InstanceCounters::decrementCounter(InstanceCounters::FrameCounter);
     ASSERT(!m_owner);
 #ifndef NDEBUG
@@ -293,14 +292,11 @@ Settings* Frame::settings() const
 Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
     : m_treeNode(this)
     , m_host(host)
-    , m_ownerMagicValue(0xcafecafe)
     , m_owner(owner)
     , m_client(client)
     , m_frameID(generateFrameID())
     , m_isLoading(false)
 {
-    verifyOwnerPointerAndCrashIfNecessary();
-
     InstanceCounters::incrementCounter(InstanceCounters::FrameCounter);
 
     ASSERT(page());
@@ -314,18 +310,6 @@ Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
             toHTMLFrameOwnerElement(m_owner)->setContentFrame(*this);
     } else {
         page()->setMainFrame(this);
-    }
-}
-
-void Frame::verifyOwnerPointerAndCrashIfNecessary()
-{
-    // If this fails the m_owner pointer was likely also overwritten.
-    RELEASE_ASSERT(m_ownerMagicValue == 0xcafecafe);
-
-    // If this fails the m_owner pointer isn't pointing to an HTMLFrameOwnerElement or
-    // it's been destructed.
-    if (HTMLFrameOwnerElement* owner = deprecatedLocalOwner()) {
-        RELEASE_ASSERT(owner->m_magicValue == 0xdecaf);
     }
 }
 
