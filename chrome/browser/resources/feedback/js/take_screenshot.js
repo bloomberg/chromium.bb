@@ -22,7 +22,7 @@ function takeScreenshot(callback) {
       video.pause();
       video.src = '';
 
-      screenshotStream.stop();
+      screenshotStream.getVideoTracks()[0].stop();
       screenshotStream = null;
 
       callback(canvas);
