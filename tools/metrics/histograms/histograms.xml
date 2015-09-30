@@ -29769,6 +29769,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.Timing.NavigationToDOMContentLoadedEventFired"
     units="milliseconds">
   <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <obsolete>
+    deprecated in favor of PageLoad.Timing2.*
+  </obsolete>
   <summary>
     Measures the time from navigation timing's navigation start to the time the
     DOMContentLoaded event is fired, for main frame documents.
@@ -29777,6 +29781,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PageLoad.Timing.NavigationToFirstLayout" units="milliseconds">
   <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <obsolete>
+    deprecated in favor of PageLoad.Timing2.*
+  </obsolete>
   <summary>
     Measures the time from navigation timing's navigation start to the time the
     first layout is performed, for main frame documents.
@@ -29786,6 +29794,39 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.Timing.NavigationToLoadEventFired"
     units="milliseconds">
   <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <obsolete>
+    deprecated in favor of PageLoad.Timing2.*
+  </obsolete>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    load event is fired, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Timing2.NavigationToDOMContentLoadedEventFired"
+    units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    DOMContentLoaded event is fired, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Timing2.NavigationToFirstLayout" units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    first layout is performed, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Timing2.NavigationToLoadEventFired"
+    units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
   <summary>
     Measures the time from navigation timing's navigation start to the time the
     load event is fired, for main frame documents.
@@ -77289,6 +77330,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.LoadType"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadBackgrounded" separator=".">
+  <suffix name="BG"
+      label="Event occurred at least partially in the background"/>
+  <affected-histogram
+      name="PageLoad.Timing2.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstLayout"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToLoadEventFired"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadType">

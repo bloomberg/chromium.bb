@@ -23,12 +23,18 @@ const char kDefaultTestUrlAnchor[] = "https://google.com#samepage";
 const char kDefaultTestUrl2[] = "https://whatever.com";
 
 const char kHistogramNameFirstLayout[] =
-    "PageLoad.Timing.NavigationToFirstLayout";
+    "PageLoad.Timing2.NavigationToFirstLayout";
 const char kHistogramNameDomContent[] =
-    "PageLoad.Timing.NavigationToDOMContentLoadedEventFired";
+    "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired";
 const char kHistogramNameLoad[] =
-    "PageLoad.Timing.NavigationToLoadEventFired";
+    "PageLoad.Timing2.NavigationToLoadEventFired";
 
+const char kBGHistogramNameFirstLayout[] =
+    "PageLoad.Timing2.NavigationToFirstLayout.BG";
+const char kBGHistogramNameDomContent[] =
+    "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired.BG";
+const char kBGHistogramNameLoad[] =
+    "PageLoad.Timing2.NavigationToLoadEventFired.BG";
 }  //  namespace
 
 class MetricsWebContentsObserverTest
@@ -39,6 +45,7 @@ class MetricsWebContentsObserverTest
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     observer_ = make_scoped_ptr(new MetricsWebContentsObserver(web_contents()));
+    observer_->WasShown();
   }
 
   void AssertNoHistogramsLogged() {
@@ -211,4 +218,120 @@ TEST_F(MetricsWebContentsObserverTest, MultipleMetricsAfterCommits) {
                                       1);
 }
 
+TEST_F(MetricsWebContentsObserverTest, BackgroundDifferentHistogram) {
+  base::TimeDelta first_layout = base::TimeDelta::FromSeconds(2);
+
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(
+      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSecondsF());
+  timing.first_layout = first_layout;
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  // Simulate "Open link in new tab."
+  observer_->WasHidden();
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      web_contents()->GetMainFrame());
+
+  // Simulate switching to the tab and making another navigation.
+  observer_->WasShown();
+  AssertNoHistogramsLogged();
+
+  // Navigate again to force histogram recording.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  histogram_tester_.ExpectTotalCount(kBGHistogramNameDomContent, 0);
+  histogram_tester_.ExpectTotalCount(kBGHistogramNameLoad, 0);
+  histogram_tester_.ExpectTotalCount(kBGHistogramNameFirstLayout, 1);
+  histogram_tester_.ExpectBucketCount(kBGHistogramNameFirstLayout,
+                                      first_layout.InMilliseconds(), 1);
+
+  histogram_tester_.ExpectTotalCount(kHistogramNameDomContent, 0);
+  histogram_tester_.ExpectTotalCount(kHistogramNameLoad, 0);
+  histogram_tester_.ExpectTotalCount(kHistogramNameFirstLayout, 0);
+}
+
+TEST_F(MetricsWebContentsObserverTest, OnlyBackgroundLaterEvents) {
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(
+      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSecondsF() - 1);
+
+  timing.response_start = base::TimeDelta::FromMilliseconds(1);
+  timing.dom_content_loaded_event_start = base::TimeDelta::FromMilliseconds(1);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      web_contents()->GetMainFrame());
+
+  // Background the tab, then forground it.
+  observer_->WasHidden();
+  observer_->WasShown();
+  timing.first_layout = base::TimeDelta::FromSeconds(3);
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      web_contents()->GetMainFrame());
+
+  // Navigate again to force histogram recording.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  histogram_tester_.ExpectTotalCount(kBGHistogramNameDomContent, 0);
+  histogram_tester_.ExpectTotalCount(kBGHistogramNameLoad, 0);
+  histogram_tester_.ExpectTotalCount(kBGHistogramNameFirstLayout, 1);
+  histogram_tester_.ExpectBucketCount(kBGHistogramNameFirstLayout,
+                                      timing.first_layout.InMilliseconds(), 1);
+
+  histogram_tester_.ExpectTotalCount(kHistogramNameDomContent, 1);
+  histogram_tester_.ExpectBucketCount(
+      kHistogramNameDomContent,
+      timing.dom_content_loaded_event_start.InMilliseconds(), 1);
+  histogram_tester_.ExpectTotalCount(kHistogramNameLoad, 0);
+  histogram_tester_.ExpectTotalCount(kHistogramNameFirstLayout, 0);
+}
+
+TEST_F(MetricsWebContentsObserverTest, DontBackgroundQuickerLoad) {
+  base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
+
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_layout = first_layout;
+
+  observer_->WasHidden();
+
+  // Open in new tab
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
+
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Switch to the tab
+  observer_->WasShown();
+
+  // Start another provisional load
+  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl2));
+  rfh_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl2));
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      main_rfh());
+  rfh_tester->SimulateNavigationStop();
+
+  // Navigate again to see if the timing updated for a subframe message.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  histogram_tester_.ExpectTotalCount(kHistogramNameDomContent, 0);
+  histogram_tester_.ExpectTotalCount(kHistogramNameLoad, 0);
+  histogram_tester_.ExpectTotalCount(kHistogramNameFirstLayout, 1);
+  histogram_tester_.ExpectBucketCount(kHistogramNameFirstLayout,
+                                      first_layout.InMilliseconds(), 1);
+}
 }  // namespace page_load_metrics

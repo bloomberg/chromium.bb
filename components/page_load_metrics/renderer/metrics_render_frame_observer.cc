@@ -25,7 +25,7 @@ base::TimeDelta ClampDelta(double event, double start) {
   return base::Time::FromDoubleT(event) - base::Time::FromDoubleT(start);
 }
 
-} //  namespace
+}  //  namespace
 
 MetricsRenderFrameObserver::MetricsRenderFrameObserver(
     content::RenderFrame* render_frame)

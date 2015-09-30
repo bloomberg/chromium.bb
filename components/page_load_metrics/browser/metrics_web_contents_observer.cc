@@ -47,16 +47,99 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
   return true;
 }
 
+base::Time WallTimeFromTimeTicks(base::TimeTicks time) {
+  return base::Time::FromDoubleT(
+      (time - base::TimeTicks::UnixEpoch()).InSecondsF());
+}
+
 }  // namespace
+
+#define PAGE_LOAD_HISTOGRAM(name, sample)                           \
+  UMA_HISTOGRAM_CUSTOM_TIMES(name, sample,                          \
+                             base::TimeDelta::FromMilliseconds(10), \
+                             base::TimeDelta::FromMinutes(10), 100)
+
+PageLoadTracker::PageLoadTracker(bool in_foreground)
+    : has_commit_(false), started_in_foreground_(in_foreground) {}
+
+PageLoadTracker::~PageLoadTracker() {
+  if (has_commit_)
+    RecordTimingHistograms();
+}
+
+void PageLoadTracker::WebContentsHidden() {
+  // Only log the first time we background in a given page load.
+  if (background_time_.is_null()) {
+    background_time_ = base::TimeTicks::Now();
+  }
+}
+
+void PageLoadTracker::Commit() {
+  has_commit_ = true;
+}
+
+bool PageLoadTracker::UpdateTiming(const PageLoadTiming& timing) {
+  // Throw away IPCs that are not relevant to the current navigation.
+  if (!timing_.navigation_start.is_null() &&
+      timing_.navigation_start != timing.navigation_start) {
+    // TODO(csharrison) uma log a counter here
+    return false;
+  }
+  if (IsValidPageLoadTiming(timing)) {
+    timing_ = timing;
+    return true;
+  }
+  return false;
+}
+
+void PageLoadTracker::RecordTimingHistograms() {
+  DCHECK(has_commit_);
+  // This method is similar to how blink converts TimeTicks to epoch time.
+  // There may be slight inaccuracies due to inter-process timestamps, but
+  // this solution is the best we have right now.
+  base::TimeDelta background_delta;
+  if (started_in_foreground_) {
+    background_delta = background_time_.is_null()
+        ? base::TimeDelta::Max()
+        : WallTimeFromTimeTicks(background_time_) - timing_.navigation_start;
+  }
+
+  if (!timing_.dom_content_loaded_event_start.is_zero()) {
+    if (timing_.dom_content_loaded_event_start < background_delta) {
+      PAGE_LOAD_HISTOGRAM(
+          "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired",
+          timing_.dom_content_loaded_event_start);
+    } else {
+      PAGE_LOAD_HISTOGRAM(
+          "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired.BG",
+          timing_.dom_content_loaded_event_start);
+    }
+  }
+  if (!timing_.load_event_start.is_zero()) {
+    if (timing_.load_event_start < background_delta) {
+      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToLoadEventFired",
+                          timing_.load_event_start);
+    } else {
+      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToLoadEventFired.BG",
+                          timing_.load_event_start);
+    }
+  }
+  if (!timing_.first_layout.is_zero()) {
+    if (timing_.first_layout < background_delta) {
+      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstLayout",
+                          timing_.first_layout);
+    } else {
+      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstLayout.BG",
+                          timing_.first_layout);
+    }
+  }
+}
 
 MetricsWebContentsObserver::MetricsWebContentsObserver(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents), in_foreground_(false) {}
 
-// This object is tied to a single WebContents for its entire lifetime.
-MetricsWebContentsObserver::~MetricsWebContentsObserver() {
-  RecordTimingHistograms();
-}
+MetricsWebContentsObserver::~MetricsWebContentsObserver() {}
 
 bool MetricsWebContentsObserver::OnMessageReceived(
     const IPC::Message& message,
@@ -71,32 +154,74 @@ bool MetricsWebContentsObserver::OnMessageReceived(
   return handled;
 }
 
+void MetricsWebContentsObserver::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+  // We can have two provisional loads in some cases. E.g. a same-site
+  // navigation can have a concurrent cross-process navigation started
+  // from the omnibox.
+  DCHECK_GT(2ul, provisional_loads_.size());
+  provisional_loads_.insert(
+      navigation_handle, make_scoped_ptr(new PageLoadTracker(in_foreground_)));
+}
+
 void MetricsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  scoped_ptr<PageLoadTracker> finished_nav(
+      provisional_loads_.take_and_erase(navigation_handle));
+  DCHECK(finished_nav);
+
+  // TODO(csharrison) handle the two error cases:
+  // 1. Error pages that replace the previous page.
+  // 2. Error pages that leave the user on the previous page.
+  // For now these cases will be ignored.
   if (!navigation_handle->HasCommitted())
     return;
-  if (navigation_handle->IsInMainFrame() && !navigation_handle->IsSamePage())
-    RecordTimingHistograms();
-  if (IsRelevantNavigation(navigation_handle))
-    current_timing_.reset(new PageLoadTiming());
+
+  // Don't treat a same-page nav as a new page load.
+  if (navigation_handle->IsSamePage())
+    return;
+
+  // Eagerly log the previous UMA even if we don't care about the current
+  // navigation.
+  committed_load_.reset();
+
+  if (!IsRelevantNavigation(navigation_handle))
+    return;
+
+  committed_load_ = finished_nav.Pass();
+  committed_load_->Commit();
 }
 
-// This will occur when the process for the main RenderFrameHost exits.
-// This will happen with a normal exit or a crash.
+void MetricsWebContentsObserver::WasShown() {
+  in_foreground_ = true;
+}
+
+void MetricsWebContentsObserver::WasHidden() {
+  in_foreground_ = false;
+  if (committed_load_)
+    committed_load_->WebContentsHidden();
+  for (const auto& kv : provisional_loads_) {
+    kv.second->WebContentsHidden();
+  }
+}
+
+// This will occur when the process for the main RenderFrameHost exits, either
+// normally or from a crash. We eagerly log data from the last committed load if
+// we have one.
 void MetricsWebContentsObserver::RenderProcessGone(
     base::TerminationStatus status) {
-  RecordTimingHistograms();
+  committed_load_.reset();
 }
-
-#define PAGE_LOAD_HISTOGRAM(name, sample)                           \
-  UMA_HISTOGRAM_CUSTOM_TIMES(name, sample,                          \
-                             base::TimeDelta::FromMilliseconds(10), \
-                             base::TimeDelta::FromMinutes(10), 100);
 
 void MetricsWebContentsObserver::OnTimingUpdated(
     content::RenderFrameHost* render_frame_host,
     const PageLoadTiming& timing) {
-  if (!current_timing_)
+  if (!committed_load_)
     return;
 
   // We may receive notifications from frames that have been navigated away
@@ -110,36 +235,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
   if (!web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS())
     return;
 
-  // Throw away IPCs that are not relevant to the current navigation.
-  if (!current_timing_->navigation_start.is_null() &&
-      timing.navigation_start != current_timing_->navigation_start) {
-    // TODO(csharrison) uma log a counter here
-    return;
-  }
-
-  *current_timing_ = timing;
-}
-
-void MetricsWebContentsObserver::RecordTimingHistograms() {
-  if (!current_timing_ || !IsValidPageLoadTiming(*current_timing_))
-    return;
-
-  if (!current_timing_->dom_content_loaded_event_start.is_zero()) {
-    PAGE_LOAD_HISTOGRAM(
-        "PageLoad.Timing.NavigationToDOMContentLoadedEventFired",
-        current_timing_->dom_content_loaded_event_start);
-  }
-
-  if (!current_timing_->load_event_start.is_zero()) {
-    PAGE_LOAD_HISTOGRAM("PageLoad.Timing.NavigationToLoadEventFired",
-                        current_timing_->load_event_start);
-  }
-
-  if (!current_timing_->first_layout.is_zero()) {
-    PAGE_LOAD_HISTOGRAM("PageLoad.Timing.NavigationToFirstLayout",
-                        current_timing_->first_layout);
-  }
-  current_timing_.reset();
+  committed_load_->UpdateTiming(timing);
 }
 
 bool MetricsWebContentsObserver::IsRelevantNavigation(
