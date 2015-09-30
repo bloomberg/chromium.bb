@@ -126,6 +126,7 @@ const char kTestPrimaryKioskApp[] = "ceobkcclegcliomogfoeoheahogoecgl";
 const char kTestSecondaryApp1[] = "ihplaomghjbeafnpnjkhppmfpnmdihgd";
 const char kTestSecondaryApp2[] = "fiehokkcgaojmbhfhlpiheggjhaedjoc";
 const char kTestSecondaryApp3[] = "aabnpdpieclcikafhdkkpldcaodmfoai";
+const char kTestSecondaryExtension[] = "imlgadjgphbjkaceoiapiephhgeofhic";
 
 // Fake usb stick mount path.
 const char kFakeUsbMountPathUpdatePass[] =
@@ -206,6 +207,17 @@ bool IsAppInstalled(const std::string& app_id) {
           ->extension_service()
           ->GetInstalledExtension(app_id);
   return app != nullptr;
+}
+
+extensions::Manifest::Type GetAppType(const std::string& app_id) {
+  Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
+  DCHECK(app_profile);
+  const extensions::Extension* app =
+      extensions::ExtensionSystem::Get(app_profile)
+          ->extension_service()
+          ->GetInstalledExtension(app_id);
+  DCHECK(app);
+  return app->GetType();
 }
 
 // Helper functions for CanConfigureNetwork mock.
@@ -1278,11 +1290,13 @@ class KioskUpdateTest : public KioskTest {
     std::string id;
     std::string version;
     std::string crx_filename;
+    extensions::Manifest::Type type;
     TestAppInfo() {}
     TestAppInfo(const std::string& id,
                 const std::string& version,
-                const std::string& crx_filename)
-        : id(id), version(version), crx_filename(crx_filename) {}
+                const std::string& crx_filename,
+                extensions::Manifest::Type type)
+        : id(id), version(version), crx_filename(crx_filename), type(type) {}
     ~TestAppInfo() {}
   };
 
@@ -1393,10 +1407,8 @@ class KioskUpdateTest : public KioskTest {
 
     set_test_app_id(primary_app.id);
     fake_cws()->SetNoUpdate(primary_app.id);
-    for (size_t i = 0; i < secondary_apps.size(); ++i) {
-      fake_cws()->SetUpdateCrx(secondary_apps[i].id,
-                               secondary_apps[i].crx_filename,
-                               secondary_apps[i].version);
+    for (const auto& app : secondary_apps) {
+      fake_cws()->SetUpdateCrx(app.id, app.crx_filename, app.version);
     }
 
     // Launch the primary app.
@@ -1407,21 +1419,41 @@ class KioskUpdateTest : public KioskTest {
 
     // Verify the primary app and the secondary apps are all installed.
     EXPECT_EQ(primary_app.version, GetInstalledAppVersion().GetString());
-    for (size_t i = 0; i < secondary_apps.size(); ++i)
-      EXPECT_TRUE(IsAppInstalled(secondary_apps[i].id));
+    for (const auto& app : secondary_apps) {
+      EXPECT_TRUE(IsAppInstalled(app.id));
+      EXPECT_EQ(GetAppType(app.id), app.type);
+    }
   }
 
   void LaunchTestKioskAppWithTwoSecondaryApps() {
     TestAppInfo primary_app(kTestPrimaryKioskApp, "1.0.0",
-                            std::string(kTestPrimaryKioskApp) + "-1.0.0.crx");
+                            std::string(kTestPrimaryKioskApp) + "-1.0.0.crx",
+                            extensions::Manifest::TYPE_PLATFORM_APP);
 
     std::vector<TestAppInfo> secondary_apps;
     TestAppInfo secondary_app_1(kTestSecondaryApp1, "1.0.0",
-                                std::string(kTestSecondaryApp1) + "-1.0.0.crx");
+                                std::string(kTestSecondaryApp1) + "-1.0.0.crx",
+                                extensions::Manifest::TYPE_PLATFORM_APP);
     secondary_apps.push_back(secondary_app_1);
     TestAppInfo secondary_app_2(kTestSecondaryApp2, "1.0.0",
-                                std::string(kTestSecondaryApp2) + "-1.0.0.crx");
+                                std::string(kTestSecondaryApp2) + "-1.0.0.crx",
+                                extensions::Manifest::TYPE_PLATFORM_APP);
     secondary_apps.push_back(secondary_app_2);
+
+    LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
+  }
+
+  void LaunchTestKioskAppWithSeconadayExtension() {
+    TestAppInfo primary_app(kTestPrimaryKioskApp, "24.0.0",
+                            std::string(kTestPrimaryKioskApp) + "-24.0.0.crx",
+                            extensions::Manifest::TYPE_PLATFORM_APP);
+
+    std::vector<TestAppInfo> secondary_apps;
+    TestAppInfo secondary_extension(
+        kTestSecondaryExtension, "1.0.0",
+        std::string(kTestSecondaryExtension) + "-1.0.0.crx",
+        extensions::Manifest::TYPE_EXTENSION);
+    secondary_apps.push_back(secondary_extension);
 
     LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
   }
@@ -1869,6 +1901,10 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskAddOneApp) {
   EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp1));
   EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp2));
   EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp3));
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchKioskAppWithSecondaryExtension) {
+  LaunchTestKioskAppWithSeconadayExtension();
 }
 
 class KioskEnterpriseTest : public KioskTest {

@@ -147,10 +147,13 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
         return true;
     }
   } else if (account_type_ == policy::DeviceLocalAccount::TYPE_KIOSK_APP) {
-    // For single-app kiosk sessions, allow platform apps and shared modules.
+    // For single-app kiosk sessions, allow platform apps, extesions and
+    // shared modules.
     if (extension->GetType() == extensions::Manifest::TYPE_PLATFORM_APP ||
-        extension->GetType() == extensions::Manifest::TYPE_SHARED_MODULE)
+        extension->GetType() == extensions::Manifest::TYPE_SHARED_MODULE ||
+        extension->GetType() == extensions::Manifest::TYPE_EXTENSION) {
       return true;
+    }
   }
 
   // Disallow all other extensions.

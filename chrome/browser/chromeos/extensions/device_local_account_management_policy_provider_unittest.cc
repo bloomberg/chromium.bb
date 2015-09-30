@@ -128,8 +128,8 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
   // kiosk session.
   extension = CreateExternalComponentExtension();
   ASSERT_TRUE(extension.get());
-  EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_NE(base::string16(), error);
+  EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+  EXPECT_EQ(base::string16(), error);
   error.clear();
 
   // Verify that an extension whose type has been whitelisted for use in other
@@ -146,8 +146,8 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
   // session.
   extension = CreateRegularExtension(kWhitelistedId);
   ASSERT_TRUE(extension.get());
-  EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_NE(base::string16(), error);
+  EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+  EXPECT_EQ(base::string16(), error);
   error.clear();
 }
 
