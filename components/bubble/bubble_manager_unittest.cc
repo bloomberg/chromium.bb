@@ -240,14 +240,13 @@ TEST_F(BubbleManagerTest, AllowBubbleChainingOnCloseAll) {
 }
 
 TEST_F(BubbleManagerTest, BubblesDoNotChainOnDestroy) {
-  // Manager will delete |chained_delegate|.
-  MockBubbleDelegate* chained_delegate = new MockBubbleDelegate;
+  scoped_ptr<MockBubbleDelegate> chained_delegate(new MockBubbleDelegate);
   EXPECT_CALL(*chained_delegate->bubble_ui(), Show(testing::_)).Times(0);
   EXPECT_CALL(*chained_delegate, ShouldClose(testing::_)).Times(0);
   EXPECT_CALL(*chained_delegate, DidClose()).Times(0);
 
   manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
-      manager_.get(), make_scoped_ptr(chained_delegate))));
+      manager_.get(), chained_delegate.Pass())));
   manager_.reset();
 }
 
@@ -272,14 +271,13 @@ TEST_F(BubbleManagerTest, BubbleCloseNeverShownIsCalled) {
   EXPECT_CALL(metrics, OnBubbleClosed(testing::_, BUBBLE_CLOSE_FORCED));
   manager_->AddBubbleManagerObserver(&metrics);
 
-  // Manager will delete |chained_delegate|.
-  MockBubbleDelegate* chained_delegate = new MockBubbleDelegate;
+  scoped_ptr<MockBubbleDelegate> chained_delegate(new MockBubbleDelegate);
   EXPECT_CALL(*chained_delegate->bubble_ui(), Show(testing::_)).Times(0);
   EXPECT_CALL(*chained_delegate, ShouldClose(testing::_)).Times(0);
   EXPECT_CALL(*chained_delegate, DidClose()).Times(0);
 
   manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
-      manager_.get(), make_scoped_ptr(chained_delegate))));
+      manager_.get(), chained_delegate.Pass())));
   manager_.reset();
 }
 
