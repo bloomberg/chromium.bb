@@ -35,7 +35,7 @@ source_set("base") {
   configs += [ "//chromecast:config" ]
 
   deps = [
-    ":libcast_media_default",
+    ":libcast_media_1.0",
     "//base",
     "//chromecast/public",
     "//crypto",
@@ -50,9 +50,7 @@ source_set("base") {
   }
 }
 
-shared_library("libcast_media_default") {
-  output_name = "libcast_media_1.0"
-
+shared_library("libcast_media_1.0") {
   sources = [
     "cast_media_default.cc",
   ]

@@ -61,10 +61,6 @@ test("cast_media_unittests") {
   ]
 }
 
-public_deps = [
-  "//chromecast/media/base:libcast_media_default",
-]
-
 # TODO(slan): delete this target once Chromecast M44/earlier is obsolete.
 # See: b/21639416
 shared_library("libffmpegsumo") {
