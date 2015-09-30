@@ -92,6 +92,14 @@ const ContentSettingsInfo* ContentSettingsRegistry::Get(
   return nullptr;
 }
 
+ContentSettingsRegistry::const_iterator ContentSettingsRegistry::begin() const {
+  return const_iterator(content_settings_info_.begin());
+}
+
+ContentSettingsRegistry::const_iterator ContentSettingsRegistry::end() const {
+  return const_iterator(content_settings_info_.end());
+}
+
 void ContentSettingsRegistry::Init() {
   // TODO(raymes): This registration code should not have to be in a single
   // location. It should be possible to register a setting from the code

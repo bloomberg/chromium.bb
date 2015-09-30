@@ -176,18 +176,15 @@ class HostContentSettingsMap : public content_settings::Observer,
   // This should only be called on the UI thread.
   void ClearSettingsForOneType(ContentSettingsType content_type);
 
-  static bool IsValueAllowedForType(PrefService* prefs,
-                                    const base::Value* value,
+  static bool IsValueAllowedForType(const base::Value* value,
                                     ContentSettingsType content_type);
+  // TODO(raymes): Remove |prefs| from the below functions, it's unused.
   static bool IsSettingAllowedForType(PrefService* prefs,
                                       ContentSetting setting,
                                       ContentSettingsType content_type);
   static bool IsDefaultSettingAllowedForType(PrefService* prefs,
                                              ContentSetting setting,
                                              ContentSettingsType content_type);
-
-  // Returns true if the values for content type are of type dictionary/map.
-  static bool ContentTypeHasCompoundValue(ContentSettingsType type);
 
   // RefcountedKeyedService implementation.
   void ShutdownOnUIThread() override;

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -23,28 +24,6 @@ namespace content_settings {
 // methods called from from any thread because all of its public methods are
 // const.
 class WebsiteSettingsRegistry {
- private:
-  // Helper class to iterate over only the values in a map.
-  template <typename IteratorType, typename ReferenceType>
-  class MapValueIterator {
-   public:
-    explicit MapValueIterator(IteratorType iterator) : iterator_(iterator) {}
-
-    bool operator!=(const MapValueIterator& other) const {
-      return iterator_ != other.iterator_;
-    }
-
-    MapValueIterator& operator++() {
-      ++iterator_;
-      return *this;
-    }
-
-    ReferenceType operator*() { return iterator_->second; }
-
-   private:
-    IteratorType iterator_;
-  };
-
  public:
   typedef base::ScopedPtrMap<ContentSettingsType,
                              scoped_ptr<WebsiteSettingsInfo>> Map;

@@ -28,6 +28,27 @@ class RuleIterator;
 
 typedef std::pair<ContentSettingsPattern, ContentSettingsPattern> PatternPair;
 
+// Helper class to iterate over only the values in a map.
+template <typename IteratorType, typename ReferenceType>
+class MapValueIterator {
+ public:
+  explicit MapValueIterator(IteratorType iterator) : iterator_(iterator) {}
+
+  bool operator!=(const MapValueIterator& other) const {
+    return iterator_ != other.iterator_;
+  }
+
+  MapValueIterator& operator++() {
+    ++iterator_;
+    return *this;
+  }
+
+  ReferenceType operator*() { return iterator_->second; }
+
+ private:
+  IteratorType iterator_;
+};
+
 // These constants are copied from extensions/common/extension_constants.h and
 // content/public/common/url_constants.h to avoid complicated dependencies.
 // TODO(vabr): Get these constants through the ContentSettingsClient.

@@ -64,4 +64,24 @@ TEST_F(ContentSettingsRegistryTest, Properties) {
             website_settings_info);
 }
 
+TEST_F(ContentSettingsRegistryTest, Iteration) {
+  // Check that plugins and cookies settings appear once during iteration.
+  bool plugins_found = false;
+  bool cookies_found = false;
+  for (const ContentSettingsInfo* info : *registry()) {
+    ContentSettingsType type = info->website_settings_info()->type();
+    EXPECT_EQ(registry()->Get(type), info);
+    if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+      EXPECT_FALSE(plugins_found);
+      plugins_found = true;
+    } else if (type == CONTENT_SETTINGS_TYPE_COOKIES) {
+      EXPECT_FALSE(cookies_found);
+      cookies_found = true;
+    }
+  }
+
+  EXPECT_TRUE(plugins_found);
+  EXPECT_TRUE(cookies_found);
+}
+
 }  // namespace content_settings

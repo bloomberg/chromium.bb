@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
+#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -26,12 +27,20 @@ class WebsiteSettingsRegistry;
 // const.
 class ContentSettingsRegistry {
  public:
+  using Map =
+      base::ScopedPtrMap<ContentSettingsType, scoped_ptr<ContentSettingsInfo>>;
+  using const_iterator = MapValueIterator<typename Map::const_iterator,
+                                          const ContentSettingsInfo*>;
+
   static ContentSettingsRegistry* GetInstance();
 
   // Reset the instance for use inside tests.
   void ResetForTest();
 
   const ContentSettingsInfo* Get(ContentSettingsType type) const;
+
+  const_iterator begin() const;
+  const_iterator end() const;
 
  private:
   friend class ContentSettingsRegistryTest;
@@ -51,8 +60,7 @@ class ContentSettingsRegistry {
                 WebsiteSettingsInfo::SyncStatus sync_status,
                 const std::vector<std::string>& whitelisted_schemes);
 
-  base::ScopedPtrMap<ContentSettingsType, scoped_ptr<ContentSettingsInfo>>
-      content_settings_info_;
+  Map content_settings_info_;
   WebsiteSettingsRegistry* website_settings_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsRegistry);

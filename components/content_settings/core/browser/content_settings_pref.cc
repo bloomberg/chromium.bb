@@ -25,15 +25,6 @@ const char kSettingPath[] = "setting";
 const char kPerResourceIdentifierPrefName[] = "per_resource";
 const char kLastUsed[] = "last_used";
 
-ContentSetting FixObsoleteCookiePromptMode(ContentSettingsType content_type,
-                                           ContentSetting setting) {
-  if (content_type == CONTENT_SETTINGS_TYPE_COOKIES &&
-      setting == CONTENT_SETTING_ASK) {
-    return CONTENT_SETTING_BLOCK;
-  }
-  return setting;
-}
-
 // If the given content type supports resource identifiers in user preferences,
 // returns true and sets |pref_key| to the key in the content settings
 // dictionary under which per-resource content settings are stored.
@@ -307,28 +298,13 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
         }
       }
     }
-    base::Value* value = NULL;
-    if (HostContentSettingsMap::ContentTypeHasCompoundValue(content_type_)) {
-      const base::DictionaryValue* setting = NULL;
-      // TODO(xians): Handle the non-dictionary types.
-      if (settings_dictionary->GetDictionaryWithoutPathExpansion(
-              kSettingPath, &setting)) {
-        DCHECK(!setting->empty());
-        value = setting->DeepCopy();
-      }
-    } else {
-      int setting = CONTENT_SETTING_DEFAULT;
-      if (settings_dictionary->GetIntegerWithoutPathExpansion(
-              kSettingPath, &setting)) {
-        DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
-        setting = FixObsoleteCookiePromptMode(content_type_,
-                                              ContentSetting(setting));
-        value = new base::FundamentalValue(setting);
-      }
-    }
 
-    if (value != NULL) {
-      scoped_ptr<base::Value> value_ptr(value);
+    const base::Value* value = nullptr;
+    settings_dictionary->GetWithoutPathExpansion(kSettingPath, &value);
+
+    if (value) {
+      DCHECK(
+          HostContentSettingsMap::IsValueAllowedForType(value, content_type_));
       value_map_.SetValue(pattern_pair.first,
                           pattern_pair.second,
                           content_type_,

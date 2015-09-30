@@ -25,9 +25,10 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/content_settings/core/browser/content_settings_info.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
-#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
 #include "content/public/browser/web_contents.h"
@@ -491,12 +492,11 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
 
   // TODO(raymes): Clean up this test so that we don't have such ugly iteration
   // over the content settings.
-  content_settings::WebsiteSettingsRegistry* registry =
-      content_settings::WebsiteSettingsRegistry::GetInstance();
-  for (const content_settings::WebsiteSettingsInfo* info : *registry) {
-    ContentSettingsType content_type = info->type();
-    if (content_type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
-        content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
+  content_settings::ContentSettingsRegistry* registry =
+      content_settings::ContentSettingsRegistry::GetInstance();
+  for (const content_settings::ContentSettingsInfo* info : *registry) {
+    ContentSettingsType content_type = info->website_settings_info()->type();
+    if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
         content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
       // These types are excluded because one can't call
       // GetDefaultContentSetting() for them.
@@ -520,8 +520,7 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
       host_content_settings_map->SetDefaultContentSetting(content_type,
                                                           wildcard_setting);
     }
-    if (!HostContentSettingsMap::ContentTypeHasCompoundValue(content_type) &&
-        HostContentSettingsMap::IsSettingAllowedForType(
+    if (HostContentSettingsMap::IsSettingAllowedForType(
             profile()->GetPrefs(), site_setting, content_type)) {
       host_content_settings_map->SetContentSetting(
           pattern, ContentSettingsPattern::Wildcard(), content_type,
@@ -535,11 +534,9 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
 
   ResetAndWait(ProfileResetter::CONTENT_SETTINGS);
 
-  for (const content_settings::WebsiteSettingsInfo* info : *registry) {
-    ContentSettingsType content_type = info->type();
-    if (HostContentSettingsMap::ContentTypeHasCompoundValue(content_type) ||
-        content_type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
-        content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
+  for (const content_settings::ContentSettingsInfo* info : *registry) {
+    ContentSettingsType content_type = info->website_settings_info()->type();
+    if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
         content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
         content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS)
       continue;
@@ -548,15 +545,9 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
                                                               NULL);
     EXPECT_TRUE(default_settings.count(content_type));
     EXPECT_EQ(default_settings[content_type], default_setting);
-    if (!HostContentSettingsMap::ContentTypeHasCompoundValue(content_type)) {
-      ContentSetting site_setting =
-          host_content_settings_map->GetContentSetting(
-              GURL("example.org"),
-              GURL(),
-              content_type,
-              std::string());
-      EXPECT_EQ(default_setting, site_setting);
-    }
+    ContentSetting site_setting = host_content_settings_map->GetContentSetting(
+        GURL("example.org"), GURL(), content_type, std::string());
+    EXPECT_EQ(default_setting, site_setting);
 
     ContentSettingsForOneType host_settings;
     host_content_settings_map->GetSettingsForOneType(

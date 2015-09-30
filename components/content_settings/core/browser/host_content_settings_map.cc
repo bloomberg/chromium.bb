@@ -173,7 +173,8 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
     const GURL& secondary_url,
     ContentSettingsType content_type,
     const std::string& resource_identifier) const {
-  DCHECK(!ContentTypeHasCompoundValue(content_type));
+  DCHECK(content_settings::ContentSettingsRegistry::GetInstance()->Get(
+      content_type));
   scoped_ptr<base::Value> value = GetWebsiteSetting(
       primary_url, secondary_url, content_type, resource_identifier, NULL);
   return content_settings::ValueToContentSetting(value.get());
@@ -233,7 +234,7 @@ void HostContentSettingsMap::SetWebsiteSetting(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     base::Value* value) {
-  DCHECK(IsValueAllowedForType(prefs_, value, content_type));
+  DCHECK(!value || IsValueAllowedForType(value, content_type));
   DCHECK(SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
   UsedContentSettingsProviders();
@@ -286,7 +287,8 @@ void HostContentSettingsMap::SetContentSetting(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     ContentSetting setting) {
-  DCHECK(!ContentTypeHasCompoundValue(content_type));
+  DCHECK(content_settings::ContentSettingsRegistry::GetInstance()->Get(
+      content_type));
 
   if (setting == CONTENT_SETTING_ALLOW &&
       (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
@@ -394,7 +396,8 @@ void HostContentSettingsMap::AddExceptionForURL(
   // TODO(markusheintz): Until the UI supports pattern pairs, both urls must
   // match.
   DCHECK(primary_url == secondary_url);
-  DCHECK(!ContentTypeHasCompoundValue(content_type));
+  DCHECK(content_settings::ContentSettingsRegistry::GetInstance()->Get(
+      content_type));
 
   // Make sure there is no entry that would override the pattern we are about
   // to insert for exactly this URL.
@@ -422,12 +425,6 @@ void HostContentSettingsMap::ClearSettingsForOneType(
   FlushLossyWebsiteSettings();
 }
 
-bool HostContentSettingsMap::IsValueAllowedForType(
-    PrefService* prefs, const base::Value* value, ContentSettingsType type) {
-  return ContentTypeHasCompoundValue(type) || IsSettingAllowedForType(
-      prefs, content_settings::ValueToContentSetting(value), type);
-}
-
 // static
 bool HostContentSettingsMap::IsDefaultSettingAllowedForType(
     PrefService* prefs,
@@ -452,6 +449,22 @@ bool HostContentSettingsMap::IsDefaultSettingAllowedForType(
 }
 
 // static
+bool HostContentSettingsMap::IsValueAllowedForType(const base::Value* value,
+                                                   ContentSettingsType type) {
+  if (content_settings::ContentSettingsRegistry::GetInstance()->Get(type)) {
+    ContentSetting setting = content_settings::ValueToContentSetting(value);
+    if (setting == CONTENT_SETTING_DEFAULT)
+      return false;
+    return HostContentSettingsMap::IsSettingAllowedForType(nullptr, setting,
+                                                           type);
+  }
+
+  // TODO(raymes): We should permit different types of base::Value for
+  // website settings.
+  return value->GetType() == base::Value::TYPE_DICTIONARY;
+}
+
+// static
 bool HostContentSettingsMap::IsSettingAllowedForType(
     PrefService* prefs,
     ContentSetting setting,
@@ -472,9 +485,11 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     return false;
   }
 
-  // Compound types cannot be mapped to the type |ContentSetting|.
-  if (ContentTypeHasCompoundValue(content_type))
+  // Non content settings cannot be mapped to the type |ContentSetting|.
+  if (!content_settings::ContentSettingsRegistry::GetInstance()->Get(
+          content_type)) {
     return false;
+  }
 
   // DEFAULT, ALLOW and BLOCK are always allowed.
   if (setting == CONTENT_SETTING_DEFAULT ||
@@ -506,20 +521,6 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     default:
       return false;
   }
-}
-
-// static
-bool HostContentSettingsMap::ContentTypeHasCompoundValue(
-    ContentSettingsType type) {
-  // Values for content type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-  // CONTENT_SETTINGS_TYPE_APP_BANNER, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT and
-  // CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS are of type dictionary/map.
-  // Compound types like dictionaries can't be mapped to the type
-  // |ContentSetting|.
-  return (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
-          type == CONTENT_SETTINGS_TYPE_APP_BANNER ||
-          type == CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT ||
-          type == CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS);
 }
 
 void HostContentSettingsMap::OnContentSettingChanged(
@@ -566,10 +567,11 @@ void HostContentSettingsMap::AddSettingsForOneType(
     const content_settings::Rule& rule = rule_iterator->Next();
     ContentSetting setting_value = CONTENT_SETTING_DEFAULT;
     // TODO(bauerb): Return rules as a list of values, not content settings.
-    // Handle the case using compound values for its exceptions and arbitrary
-    // values for its default setting. Here we assume all the exceptions
-    // are granted as |CONTENT_SETTING_ALLOW|.
-    if (ContentTypeHasCompoundValue(content_type) &&
+    // Handle the case using base::Values for its exceptions and default
+    // setting. Here we assume all the exceptions are granted as
+    // |CONTENT_SETTING_ALLOW|.
+    if (!content_settings::ContentSettingsRegistry::GetInstance()->Get(
+            content_type) &&
         rule.value.get() &&
         rule.primary_pattern != ContentSettingsPattern::Wildcard()) {
       setting_value = CONTENT_SETTING_ALLOW;
