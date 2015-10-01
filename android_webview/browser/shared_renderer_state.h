@@ -49,6 +49,7 @@ class SharedRendererState {
   bool ReturnedResourcesEmptyOnUI() const;
   scoped_ptr<ChildFrame> PassUncommittedFrameOnUI();
   void DeleteHardwareRendererOnUI();
+  bool HasFrameOnUI() const;
 
   // RT thread methods.
   gfx::Vector2d GetScrollOffsetOnRT();
@@ -95,6 +96,7 @@ class SharedRendererState {
 
   // Accessed by both UI and RT thread.
   mutable base::Lock lock_;
+  bool hardware_renderer_has_frame_;
   gfx::Vector2d scroll_offset_;
   scoped_ptr<ChildFrame> child_frame_;
   bool inside_hardware_release_;

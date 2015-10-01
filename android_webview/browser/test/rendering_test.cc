@@ -8,6 +8,7 @@
 #include "android_webview/browser/child_frame.h"
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
+#include "cc/output/compositor_frame.h"
 #include "content/public/test/test_synchronous_compositor_android.h"
 
 namespace android_webview {
@@ -62,6 +63,23 @@ void RenderingTest::EndTest() {
 void RenderingTest::QuitMessageLoop() {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_.get());
   message_loop_->QuitWhenIdle();
+}
+
+void RenderingTest::SetCompositorFrame() {
+  DCHECK(compositor_.get());
+  scoped_ptr<cc::CompositorFrame> compositor_frame(new cc::CompositorFrame);
+  scoped_ptr<cc::DelegatedFrameData> frame(new cc::DelegatedFrameData);
+  scoped_ptr<cc::RenderPass> root_pass(cc::RenderPass::Create());
+  gfx::Rect viewport(browser_view_renderer_->size());
+  root_pass->SetNew(cc::RenderPassId(1, 1), viewport, viewport,
+                    gfx::Transform());
+  frame->render_pass_list.push_back(root_pass.Pass());
+  compositor_frame->delegated_frame_data = frame.Pass();
+  compositor_->SetHardwareFrame(compositor_frame.Pass());
+}
+
+void RenderingTest::WillOnDraw() {
+  SetCompositorFrame();
 }
 
 bool RenderingTest::RequestDrawGL(bool wait_for_completion) {

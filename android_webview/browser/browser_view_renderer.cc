@@ -262,7 +262,7 @@ bool BrowserViewRenderer::CompositeHw() {
   if (!frame.get()) {
     TRACE_EVENT_INSTANT0("android_webview", "NoNewFrame",
                          TRACE_EVENT_SCOPE_THREAD);
-    return false;
+    return shared_renderer_state_.HasFrameOnUI();
   }
 
   scoped_ptr<ChildFrame> child_frame = make_scoped_ptr(

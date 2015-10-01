@@ -90,6 +90,7 @@ SharedRendererState::SharedRendererState(
     : ui_loop_(ui_loop),
       browser_view_renderer_(browser_view_renderer),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()),
+      hardware_renderer_has_frame_(false),
       inside_hardware_release_(false),
       weak_factory_on_ui_thread_(this) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
@@ -170,6 +171,8 @@ void SharedRendererState::SetCompositorFrameOnUI(scoped_ptr<ChildFrame> frame) {
 
 scoped_ptr<ChildFrame> SharedRendererState::PassCompositorFrameOnRT() {
   base::AutoLock lock(lock_);
+  hardware_renderer_has_frame_ =
+      hardware_renderer_has_frame_ || child_frame_.get();
   return child_frame_.Pass();
 }
 
@@ -278,6 +281,7 @@ void SharedRendererState::DrawGL(AwDrawGLInfo* draw_info) {
   }
 
   if (IsInsideHardwareRelease()) {
+    hardware_renderer_has_frame_ = false;
     hardware_renderer_.reset();
     // Flush the idle queue in tear down.
     DeferredGpuCommandService::GetInstance()->PerformAllIdleWork();
@@ -340,6 +344,11 @@ void SharedRendererState::ReleaseCompositorResourcesIfNeededOnUI(
     // Flush any invoke functors that's caused by ReleaseHardware.
     browser_view_renderer_->RequestDrawGL(true);
   }
+}
+
+bool SharedRendererState::HasFrameOnUI() const {
+  base::AutoLock lock(lock_);
+  return hardware_renderer_has_frame_ || child_frame_.get();
 }
 
 void SharedRendererState::InitializeHardwareDrawIfNeededOnUI() {

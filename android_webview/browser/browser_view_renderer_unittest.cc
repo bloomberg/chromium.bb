@@ -63,6 +63,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
   }
 
   void WillOnDraw() override {
+    RenderingTest::WillOnDraw();
     // Step 0: A single onDraw on screen. The parent draw constraints
     // of the BVR will updated to be the initial constraints.
     // Step 1: A single onDrraw off screen. The parent draw constraints of the
@@ -142,5 +143,47 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
 };
 
 RENDERING_TEST_F(TestAnimateInAndOutOfScreen);
+
+class CompositorNoFrameTest : public RenderingTest {
+ public:
+  CompositorNoFrameTest() : on_draw_count_(0) {}
+
+  void StartTest() override {
+    browser_view_renderer_->PostInvalidate();
+  }
+
+  void WillOnDraw() override {
+    if (0 == on_draw_count_) {
+      // No frame from compositor.
+    } else if (1 == on_draw_count_) {
+      SetCompositorFrame();
+    } else if (2 == on_draw_count_) {
+      // No frame from compositor.
+    }
+    // There may be trailing invalidates.
+  }
+
+  void DidOnDraw(bool success) override {
+    if (0 == on_draw_count_) {
+      // Should fail as there has been no frames from compositor.
+      EXPECT_FALSE(success);
+      browser_view_renderer_->PostInvalidate();
+    } else if (1 == on_draw_count_) {
+      // Should succeed with frame from compositor.
+      EXPECT_TRUE(success);
+      browser_view_renderer_->PostInvalidate();
+    } else if (2 == on_draw_count_) {
+      // Should still succeed with last frame, even if no frame from compositor.
+      EXPECT_TRUE(success);
+      EndTest();
+    }
+    on_draw_count_++;
+  }
+
+ private:
+  int on_draw_count_;
+};
+
+RENDERING_TEST_F(CompositorNoFrameTest);
 
 }  // namespace android_webview
