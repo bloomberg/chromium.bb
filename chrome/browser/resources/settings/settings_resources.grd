@@ -214,6 +214,17 @@
       <structure name="IDR_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_PAGE_JS"
                  file="languages_page/manage_languages_page.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_LANGUAGES_LANGUAGE_DETAIL_PAGE_CSS"
+                 file="languages_page/language_detail_page.css"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_LANGUAGES_LANGUAGE_DETAIL_PAGE_HTML"
+                 file="languages_page/language_detail_page.html"
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
+      <structure name="IDR_SETTINGS_LANGUAGES_LANGUAGE_DETAIL_PAGE_JS"
+                 file="languages_page/language_detail_page.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_POLICY_CONTROLLABLE_HTML"
                  file="policy_controllable/policy_controllable.html"
                  type="chrome_html" />

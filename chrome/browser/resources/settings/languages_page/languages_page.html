@@ -10,6 +10,7 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
+<link rel="import" href="language_detail_page.html">
 <link rel="import" href="languages.html">
 <link rel="import" href="manage_languages_page.html">
 
@@ -25,13 +26,17 @@
       <neon-animatable id="">
         <h2 i18n-content="languagesListTitle"></h2>
         <div class="item-list">
+          <array-selector id="languageSelector" selected="{{detailLanguage}}"
+              items="{{languages.enabledLanguages}}"></array-selector>
           <template is="dom-repeat" items="{{languages.enabledLanguages}}">
             <paper-item on-tap="onLanguageTap_">
-              <div class="flex">[[item.language.displayName]]</div>
+              <div class="flex" title="[[item.language.nativeDisplayName]]"
+                  >[[item.language.displayName]]</div>
               <iron-icon icon="done"
                   hidden$="[[!isUILanguage_(item.language.code, prefs.intl.app_locale.value)]]">
               </iron-icon>
-              <paper-icon-button icon="settings"></paper-icon-button>
+              <paper-icon-button icon="settings"
+                  on-tap="onShowLanguageDetailTap_"></paper-icon-button>
             </paper-item>
           </template>
         </div>
@@ -57,6 +62,7 @@
           <paper-button i18n-content="manageInputMethods"></paper-button>
         </div>
 </if>
+<if expr="not is_macosx">
         <h2 i18n-content="spellCheckListTitle"></h2>
         <div class="layout vertical">
           <template is="dom-repeat" items="{{languages.enabledLanguages}}">
@@ -69,12 +75,21 @@
         <div class="manage">
           <paper-button i18n-content="manageSpellCheck"></paper-button>
         </div>
+</if>
       </neon-animatable>
       <neon-animatable id="manage-languages">
         <settings-subheader i18n-values="page-title:manageLanguagesPageTitle">
         </settings-subheader>
         <cr-settings-manage-languages-page id="manageLanguagesPage"
             prefs="{{prefs}}"></cr-settings-manage-languages-page>
+      </neon-animatable>
+      <neon-animatable id="language-detail">
+        <settings-subheader id="language-detail-subheader"
+            page-title="[[detailLanguage.language.displayName]]">
+        </settings-subheader>
+        <settings-language-detail-page id="languageDetailPage"
+            prefs="{{prefs}}" detail="[[detailLanguage]]">
+        </settings-language-detail-page>
       </neon-animatable>
     </settings-animated-pages>
   </template>

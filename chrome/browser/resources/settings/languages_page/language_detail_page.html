@@ -1,0 +1,54 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/policy/cr_policy_indicator.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="languages.html">
+
+<if expr="chromeos">
+<link rel="import" href="chrome://resources/html/chromeos/ui_account_tweaks.html">
+</if>
+
+<dom-module id="settings-language-detail-page">
+  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="language_detail_page.css">
+  <template>
+    <cr-settings-languages id="languages" languages="{{languages}}">
+    </cr-settings-languages>
+<if expr="chromeos or is_win">
+    <div id="languageSettings">
+      <label hidden$="[[!detail.language.supportsUI]]">
+        <paper-toggle-button
+            checked="[[isProspectiveUILanguage_(detail.language.code, prefs.intl.app_locale.value)]]"
+            on-change="onUILanguageChange_"
+            disabled$="[[isUILanguageChangeDisabled_(detail.language.code, prefs.intl.app_locale.value)]]">
+        </paper-toggle-button>
+        <span i18n-content="isDisplayedInThisLanguage"
+            hidden$="[[!isCurrentUILanguage_(detail.language.code, prefs.intl.app_locale.value)]]">
+        </span>
+        <span hidden$="[[isCurrentUILanguage_(detail.language.code, prefs.intl.app_locale.value)]]">
+          <span i18n-content="displayInThisLanguage"></span>
+          <paper-button i18n-content="restart" on-tap="onRestartTap_"
+              hidden$="[[!isRestartRequired_(detail.language.code, prefs.intl.app_locale.value)]]">
+          </paper-button>
+        </span>
+        <cr-policy-indicator id="policyIndicator"></cr-policy-indicator>
+      </label>
+      <span i18n-content="cannotBeDisplayedInThisLanguage"
+          hidden$="[[detail.language.supportsUI]]"></span>
+    </div>
+</if>
+    <div hidden$="[[shouldHideTranslate_(detail.language.code, prefs.translate.enabled.value)]]">
+      <paper-checkbox checked="[[detail.state.translateEnabled]]"
+          on-change="onTranslateEnabledChange_"
+          i18n-content="offerToTranslateInThisLanguage"
+          hidden$="[[!detail.language.supportsTranslate]]"
+          disabled="[[isTranslateDisabled_(detail.language.code, languages.translateTarget)]]">
+      </paper-checkbox>
+      <div i18n-content="cannotTranslateInThisLanguage"
+          hidden$="[[detail.language.supportsTranslate]]"></div>
+    </div>
+  </template>
+  <script src="language_detail_page.js"></script>
+</dom-module>

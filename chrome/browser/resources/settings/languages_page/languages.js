@@ -24,7 +24,7 @@
  * @element cr-settings-languages
  */
 
-/** @typedef {{spellCheckEnabled: boolean}} */
+/** @typedef {{spellCheckEnabled: boolean, translateEnabled: boolean}} */
 var LanguageState;
 
 /**
@@ -39,13 +39,32 @@ var LanguageInfo;
  *     preference.
  * @typedef {{
  *      supportedLanguages: !Array<!chrome.languageSettingsPrivate.Language>,
- *      enabledLanguages: !Array<!LanguageInfo>
+ *      enabledLanguages: !Array<!LanguageInfo>,
+ *      translateTarget: string
  *  }}
  */
 var LanguagesModel;
 
 (function() {
 'use strict';
+
+// Translate server treats some language codes the same.
+// See also: components/translate/core/common/translate_util.cc.
+var kLanguageCodeToTranslateCode = {
+  'nb': 'no',
+  'fil': 'tl',
+  'zh-HK': 'zh-TW',
+  'zh-MO': 'zh-TW',
+  'zh-SG': 'zh-CN',
+};
+
+// Some ISO 639 language codes have been renamed, e.g. "he" to "iw", but
+// Translate still uses the old versions. TODO(michaelpg): Chrome does too.
+// Follow up with Translate owners to understand the right thing to do.
+var kTranslateLanguageSynonyms = {
+  'he': 'iw',
+  'jv': 'jw',
+};
 
 /**
  * This element has a reference to the singleton, exposing the singleton's
@@ -105,6 +124,16 @@ Polymer({
       this.singleton_.setUILanguage(languageCode);
   },
 
+  resetUILanguage: function() {
+    if (cr.isWindows || cr.isChromeOS)
+      this.singleton_.resetUILanguage();
+  },
+
+  /** @return {string} */
+  getProspectiveUILanguage: function() {
+    return this.singleton_.getProspectiveUILanguage();
+  },
+
   /** @param {string} languageCode */
   enableLanguage: function(languageCode) {
     this.singleton_.enableLanguage(languageCode);
@@ -113,6 +142,16 @@ Polymer({
   /** @param {string} languageCode */
   disableLanguage: function(languageCode) {
     this.singleton_.disableLanguage(languageCode);
+  },
+
+  /** @param {string} languageCode */
+  enableTranslateLanguage: function(languageCode) {
+    this.singleton_.enableTranslateLanguage(languageCode);
+  },
+
+  /** @param {string} languageCode */
+  disableTranslateLanguage: function(languageCode) {
+    this.singleton_.disableTranslateLanguage(languageCode);
   },
 
   /**
@@ -129,6 +168,14 @@ Polymer({
    */
   toggleSpellCheck: function(languageCode, enable) {
     this.singleton_.toggleSpellCheck(languageCode, enable);
+  },
+
+  /**
+   * @param {string} languageCode
+   * @return {string}
+   */
+  convertLanguageCodeForTranslate: function(languageCode) {
+    return this.singleton_.convertLanguageCodeForTranslate(languageCode);
   },
 });
 
@@ -181,34 +228,61 @@ Polymer({
     'preferredLanguagesPrefChanged_(prefs.' +
         preferredLanguagesPrefName + '.value)',
     'spellCheckDictionariesPrefChanged_(prefs.spellcheck.dictionaries.value.*)',
+    'translateLanguagesPrefChanged_(prefs.translate_blocked_languages.value.*)',
   ],
 
   /** @override */
   created: function() {
-    chrome.languageSettingsPrivate.getLanguageList(function(languageList) {
+    var languageList;
+    var translateTarget;
+
+    // Request language information to populate the model.
+    Promise.all([
       // Wait until prefs are initialized before creating the model, so we can
       // include information about enabled languages.
-      CrSettingsPrefs.initialized.then(function() {
-        this.createModel_(languageList);
-        this.initialized_ = true;
-      }.bind(this));
+      CrSettingsPrefs.initialized,
+
+      // Get the language list.
+      new Promise(function(resolve) {
+        chrome.languageSettingsPrivate.getLanguageList(function(list) {
+          languageList = list;
+          resolve();
+        });
+      }),
+
+      // Get the translate target language.
+      new Promise(function(resolve) {
+        chrome.languageSettingsPrivate.getTranslateTargetLanguage(
+            function(targetLanguageCode) {
+              translateTarget = targetLanguageCode;
+              resolve();
+            });
+      }),
+    ]).then(function() {
+      this.createModel_(languageList, translateTarget);
+      this.initialized_ = true;
     }.bind(this));
   },
 
   /**
-   * Constructs the languages model from the given language list.
+   * Constructs the languages model.
    * @param {!Array<!chrome.languageSettingsPrivate.Language>}
    *     supportedLanguages
+   * @param {string} translateTarget Language code of the default translate
+   *     target language.
    */
-  createModel_: function(supportedLanguages) {
+  createModel_: function(supportedLanguages, translateTarget) {
     // Populate the hash map of supported languages.
     for (var i = 0; i < supportedLanguages.length; i++) {
-      this.supportedLanguageMap_[supportedLanguages[i].code] =
-          supportedLanguages[i];
+      var language = supportedLanguages[i];
+      language.supportsUI = !!language.supportsUI;
+      language.supportsTranslate = !!language.supportsTranslate;
+      language.supportsSpellcheck = !!language.supportsSpellcheck;
+      this.supportedLanguageMap_[language.code] = language;
     }
 
     // Create a list of enabled language info from the supported languages.
-    var enabledLanguages = this.getEnabledLanguages_();
+    var enabledLanguages = this.getEnabledLanguages_(translateTarget);
     // Populate the hash map of enabled languages.
     for (var i = 0; i < enabledLanguages.length; i++) {
       var languageInfo = enabledLanguages[i];
@@ -216,48 +290,64 @@ Polymer({
     }
 
     // Initialize the Polymer languages model.
-    this.languages = {
+    this.languages = /** @type {!LanguagesModel} */({
       supportedLanguages: supportedLanguages,
       enabledLanguages: enabledLanguages,
-    };
+      translateTarget: translateTarget,
+    });
   },
 
   /**
    * Returns a list of LanguageInfos for each enabled language in the supported
    * languages list.
+   * @param {string} translateTarget Language code of the default translate
+   *     target language.
    * @return {!Array<!LanguageInfo>}
    * @private
    */
-  getEnabledLanguages_: function() {
+  getEnabledLanguages_: function(translateTarget) {
     assert(CrSettingsPrefs.isInitialized);
 
     var pref = this.getPref_(preferredLanguagesPrefName);
     var enabledLanguageCodes = pref.value.split(',');
-    var enabledLanguages = [];
-    var spellCheckMap = this.getSpellCheckMap_();
+    var enabledLanguages = /** @type {!Array<!LanguageInfo>} */ [];
+
+    var spellCheckPref = this.getPref_('spellcheck.dictionaries');
+    var spellCheckMap = this.makeMapFromArray_(/** @type {!Array<string>} */(
+        spellCheckPref.value));
+
+    var translateBlockedPref = this.getPref_('translate_blocked_languages');
+    var translateBlockedMap = this.makeMapFromArray_(
+        /** @type {!Array<string>} */(translateBlockedPref.value));
+
     for (var i = 0; i < enabledLanguageCodes.length; i++) {
       var code = enabledLanguageCodes[i];
       var language = this.supportedLanguageMap_[code];
       if (!language)
         continue;
-      var state = {spellCheckEnabled: !!spellCheckMap[code]};
+      var state = {};
+      state.spellCheckEnabled = !!spellCheckMap[code];
+      // Translate is considered disabled if this language maps to any translate
+      // language that is blocked.
+      var translateCode = this.convertLanguageCodeForTranslate(code);
+      state.translateEnabled = language.supportsTranslate &&
+          !translateBlockedMap[translateCode] &&
+          translateCode != translateTarget;
       enabledLanguages.push({language: language, state: state});
     }
     return enabledLanguages;
   },
 
   /**
-   * Creates a map whose keys are languages enabled for spell check.
+   * Creates an object whose keys are the elements of the list.
+   * @param {!Array<string>} list
    * @return {!Object<boolean>}
    */
-  getSpellCheckMap_: function() {
-    assert(CrSettingsPrefs.isInitialized);
-
-    var spellCheckCodes = this.getPref_('spellcheck.dictionaries').value;
-    var spellCheckMap = {};
-    for (var i = 0; i < spellCheckCodes.length; i++)
-      spellCheckMap[spellCheckCodes[i]] = true;
-    return spellCheckMap;
+  makeMapFromArray_: function(list) {
+    var map = {};
+    for (var i = 0; i < list.length; i++)
+      map[list[i]] = true;
+    return map;
   },
 
   /**
@@ -268,7 +358,8 @@ Polymer({
     if (!this.initialized_)
       return;
 
-    var enabledLanguages = this.getEnabledLanguages_();
+    var enabledLanguages =
+        this.getEnabledLanguages_(this.languages.translateTarget);
     // Reset the enabled language map. Do this before notifying of the change
     // via languages.enabledLanguages.
     this.enabledLanguageMap_ = {};
@@ -287,11 +378,29 @@ Polymer({
     if (!this.initialized_)
       return;
 
-    var spellCheckMap = this.getSpellCheckMap_();
+    var spellCheckMap = this.makeMapFromArray_(/** @type {!Array<string>} */(
+        this.getPref_('spellcheck.dictionaries').value));
     for (var i = 0; i < this.languages.enabledLanguages.length; i++) {
       var languageCode = this.languages.enabledLanguages[i].language.code;
       this.set('languages.enabledLanguages.' + i + '.state.spellCheckEnabled',
                !!spellCheckMap[languageCode]);
+    }
+  },
+
+  translateLanguagesPrefChanged_: function() {
+    if (!this.initialized_)
+      return;
+
+    var translateBlockedPref = this.getPref_('translate_blocked_languages');
+    var translateBlockedMap = this.makeMapFromArray_(
+        /** @type {!Array<string>} */(translateBlockedPref.value));
+
+    for (var i = 0; i < this.languages.enabledLanguages.length; i++) {
+      var translateCode = this.convertLanguageCodeForTranslate(
+          this.languages.enabledLanguages[i].language.code);
+      this.set(
+          'languages.enabledLanguages.' + i + '.state.translateEnabled',
+          !translateBlockedMap[translateCode]);
     }
   },
 
@@ -319,12 +428,43 @@ Polymer({
   },
 
   /**
+   * Deletes the given item from the pref at the given key if the item is found.
+   * Asserts if the pref itself is not found or is not an Array type.
+   * @param {string} key
+   * @param {*} item
+   */
+  deletePrefItem_: function(key, item) {
+    assert(this.getPref_(key).type == chrome.settingsPrivate.PrefType.LIST);
+    this.arrayDelete('prefs.' + key + '.value', item);
+  },
+
+  /**
    * Windows and Chrome OS only: Sets the prospective UI language to the chosen
    * language. This dosen't affect the actual UI language until a restart.
    * @param {string} languageCode
    */
   setUILanguage: function(languageCode) {
     chrome.send('setUILanguage', [languageCode]);
+  },
+
+  /**
+   * Windows and Chrome OS only: Resets the prospective UI language back to the
+   * actual UI language.
+   */
+  resetUILanguage: function() {
+    chrome.send('setUILanguage', [navigator.language]);
+  },
+
+  /**
+   * Returns the "prospective" UI language, i.e. the one to be used on next
+   * restart. If the pref is not set, the current UI language is also the
+   * "prospective" language.
+   * @return {string} Language code of the prospective UI language.
+   * @private
+   */
+  getProspectiveUILanguage: function() {
+    return /** @type {string} */(this.getPref_('intl.app_locale').value) ||
+        navigator.language;
   },
 
   /**
@@ -335,12 +475,13 @@ Polymer({
     if (!CrSettingsPrefs.isInitialized)
       return;
 
-    var languageCodes = this.getPref_(preferredLanguagesPrefName).value;
-    var index = languageCodes.split(',').indexOf(languageCode);
-    if (index > -1)
+    var languageCodes =
+        this.getPref_(preferredLanguagesPrefName).value.split(',');
+    if (languageCodes.indexOf(languageCode) > -1)
       return;
-    this.setPrefValue_(preferredLanguagesPrefName,
-                       languageCodes + ',' + languageCode);
+    languageCodes.push(languageCode);
+    chrome.languageSettingsPrivate.setLanguageList(languageCodes);
+    this.disableTranslateLanguage(languageCode);
   },
 
   /**
@@ -352,23 +493,22 @@ Polymer({
       return;
 
     // Cannot disable the UI language.
-    var appLocale = this.getPref_('intl.app_locale').value ||
-                    navigator.language;
-    assert(languageCode != appLocale);
+    assert(languageCode != this.getProspectiveUILanguage());
 
     // Cannot disable the only enabled language.
-    var pref = this.getPref_(preferredLanguagesPrefName);
-    var languageCodes = pref.value.split(',');
+    var languageCodes =
+        this.getPref_(preferredLanguagesPrefName).value.split(',');
     assert(languageCodes.length > 1);
 
     // Remove the language from spell check.
-    this.arrayDelete('prefs.spellcheck.dictionaries.value', languageCode);
+    this.deletePrefItem_('spellcheck.dictionaries', languageCode);
 
     var languageIndex = languageCodes.indexOf(languageCode);
     if (languageIndex == -1)
       return;
     languageCodes.splice(languageIndex, 1);
-    this.setPrefValue_(preferredLanguagesPrefName, languageCodes.join(','));
+    chrome.languageSettingsPrivate.setLanguageList(languageCodes);
+    this.enableTranslateLanguage(languageCode);
   },
 
   /**
@@ -377,6 +517,29 @@ Polymer({
    */
   isEnabled: function(languageCode) {
     return !!this.enabledLanguageMap_[languageCode];
+  },
+
+  /**
+   * Enables translate for the given language by removing the translate
+   * language from the blocked languages preference.
+   * @param {string} languageCode
+   */
+  enableTranslateLanguage: function(languageCode) {
+    languageCode = this.convertLanguageCodeForTranslate(languageCode);
+    this.arrayDelete('prefs.translate_blocked_languages.value', languageCode);
+  },
+
+  /**
+   * Disables translate for the given language by adding the translate
+   * language to the blocked languages preference.
+   * @param {string} languageCode
+   */
+  disableTranslateLanguage: function(languageCode) {
+    languageCode = this.convertLanguageCodeForTranslate(languageCode);
+    if (this.getPref_('translate_blocked_languages').value
+            .indexOf(languageCode) == -1) {
+      this.push('prefs.translate_blocked_languages.value', languageCode);
+    }
   },
 
   /**
@@ -395,6 +558,30 @@ Polymer({
     } else {
       this.arrayDelete('prefs.spellcheck.dictionaries.value', languageCode);
     }
+  },
+
+  /**
+   * Converts the language code for translate. There are some differences
+   * between the language set the Translate server uses and that for
+   * Accept-Language.
+   * @param {string} languageCode
+   * @return {string} The converted language code.
+   * @private
+   */
+  convertLanguageCodeForTranslate: function(languageCode) {
+    if (languageCode in kLanguageCodeToTranslateCode)
+      return kLanguageCodeToTranslateCode[languageCode];
+
+    var main = languageCode.split('-')[0];
+    if (main == 'zh') {
+      // In Translate, general Chinese is not used, and the sub code is
+      // necessary as a language code for the Translate server.
+      return languageCode;
+    }
+    if (main in kTranslateLanguageSynonyms)
+      return kTranslateLanguageSynonyms[main];
+
+    return main;
   },
 });
 })();

@@ -49,6 +49,10 @@ Polymer({
    * @param {!{model: !{item: !LanguageInfo}}} e
    */
   onLanguageTap_: function(e) {
+    // Taps on the paper-icon-button are handled in onShowLanguageDetailTap_.
+    if (e.target.tagName == 'PAPER-ICON-BUTTON')
+      return;
+
     // Set the prospective UI language. This won't take effect until a restart.
     if (e.model.item.language.supportsUI)
       this.$.languages.setUILanguage(e.model.item.language.code);
@@ -81,17 +85,24 @@ Polymer({
   },
 
   /**
-   * @param {string} languageCode The language code identifying a language.
-   * @param {string} appLocale The prospective UI language.
-   * @return {boolean} True if the given language matches the app locale pref
-   *     (which may be different from the actual app locale).
+   * Opens the Language Detail page for the language.
+   * @param {!{model: !{item}}} e
    * @private
    */
-  isUILanguage_: function(languageCode, appLocale) {
-    // Check the current language if the locale pref hasn't been set.
-    if (!appLocale)
-      appLocale = navigator.language;
-    return languageCode == appLocale;
+  onShowLanguageDetailTap_: function(e) {
+    this.$.languageSelector.select(e.model.item);
+    this.$.pages.setSubpageChain(['language-detail']);
+  },
+
+  /**
+   * @param {string} languageCode The language code identifying a language.
+   * @param {string} prospectiveUILanguage The prospective UI language.
+   * @return {boolean} True if the given language matches the prospective UI
+   *     pref (which may be different from the actual UI language).
+   * @private
+   */
+  isUILanguage_: function(languageCode, prospectiveUILanguage) {
+    return languageCode == this.$.languages.getProspectiveUILanguage();
   },
 
   /**

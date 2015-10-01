@@ -14,7 +14,23 @@
         ],
         'externs': [
           '<(EXTERNS_DIR)/chrome_send.js',
-          '../../../../../third_party/closure_compiler/externs/language_settings_private.js'
+          '<(EXTERNS_DIR)/language_settings_private.js',
+        ],
+      },
+      'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
+    {
+      'target_name': 'language_detail_page',
+      'variables': {
+        'depends': [
+          '../../../../../ui/webui/resources/cr_elements/v1_0/policy/cr_policy_indicator.js',
+          '../../../../../ui/webui/resources/js/chromeos/compiled_resources.gyp:ui_account_tweaks',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../prefs/compiled_resources.gyp:prefs',
+          'languages.js',
+        ],
+        'externs': [
+          '<(EXTERNS_DIR)/language_settings_private.js',
         ],
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
@@ -32,7 +48,7 @@
           'languages.js',
         ],
         'externs': [
-          '../../../../../third_party/closure_compiler/externs/language_settings_private.js',
+          '<(EXTERNS_DIR)/language_settings_private.js',
         ],
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],

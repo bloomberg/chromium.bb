@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_MD_SETTINGS_LOCALIZED_STRINGS_PROVIDER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_MD_SETTINGS_LOCALIZED_STRINGS_PROVIDER_H_
 
+class Profile;
+
 namespace content {
 class WebUIDataSource;
 }
@@ -14,7 +16,8 @@ namespace settings {
 // Adds the strings needed by the settings page to |html_source|. This function
 // causes |html_source| to expose a strings.js file from its source which
 // contains a mapping from string's name to its translated value.
-void AddLocalizedStrings(content::WebUIDataSource* html_source);
+void AddLocalizedStrings(content::WebUIDataSource* html_source,
+                         Profile* profile);
 
 }  // namespace settings
 

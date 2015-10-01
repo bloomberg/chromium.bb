@@ -10,4 +10,28 @@
   <message name="IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT" desc="Text alerting the user that synced data is encrypted.">
     For added security, Chromium will encrypt your data.
   </message>
+
+  <!-- Languages Page -->
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE" desc="The label for a language that cannot be used as the UI display language.">
+      Chromium OS cannot be displayed in this language.
+    </message>
+    <message name="IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE" desc="The label for a language that is currently used as the UI display language.">
+      Chromium OS is displayed in this language.
+    </message>
+    <message name="IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE" desc="The label used for a button that changes the UI language.">
+      Display Chromium OS in this language
+    </message>
+  </if>
+  <if expr="not chromeos">
+    <message name="IDS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE" desc="The label for a language that cannot be used as the UI display language.">
+      Chromium cannot be displayed in this language.
+    </message>
+    <message name="IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE" desc="The label for a language that is currently used as the UI display language.">
+      Chromium is displayed in this language.
+    </message>
+    <message name="IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE" desc="The label used for a button that changes the UI language.">
+      Display Chromium in this language
+    </message>
+  </if>
 </grit-part>

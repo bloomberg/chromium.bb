@@ -153,6 +153,13 @@ Polymer({
       subpage: ['manage-languages'],
       subpageTitles: ['manageLanguagesPageTitle'],
     },
+    {
+      url: '/languages/edit',
+      page: 'advanced',
+      section: 'languages',
+      subpage: ['language-detail'],
+      subpageTitles: ['manageLanguagesPageTitle'],
+    },
   ],
 
   /**

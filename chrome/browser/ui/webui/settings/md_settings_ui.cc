@@ -45,7 +45,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                                  kSettingsResources[i].value);
   }
 
-  AddLocalizedStrings(html_source);
+  AddLocalizedStrings(html_source, Profile::FromWebUI(web_ui));
   html_source->SetDefaultResource(IDR_SETTINGS_SETTINGS_HTML);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),

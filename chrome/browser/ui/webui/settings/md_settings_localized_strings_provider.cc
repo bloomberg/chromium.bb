@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -15,6 +16,10 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #endif
 
@@ -91,6 +96,15 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       "a11yExplanation", IDS_SETTINGS_ACCESSIBILITY_EXPLANATION);
   html_source->AddString(
       "a11yLearnMoreUrl", chrome::kChromeAccessibilityHelpURL);
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+void AddAccountUITweaksStrings(content::WebUIDataSource* html_source,
+                               Profile* profile) {
+  base::DictionaryValue localized_values;
+  chromeos::AddAccountUITweaksLocalizedValues(&localized_values, profile);
+  html_source->AddLocalizedStrings(localized_values);
 }
 #endif
 
@@ -264,7 +278,39 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
       "allLanguages", IDS_SETTINGS_LANGUAGES_ALL_LANGUAGES);
   html_source->AddLocalizedString(
       "enabledLanguages", IDS_SETTINGS_LANGUAGES_ENABLED_LANGUAGES);
+  html_source->AddLocalizedString(
+      "cannotBeDisplayedInThisLanguage",
+      IDS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE);
+  html_source->AddLocalizedString(
+      "isDisplayedInThisLanguage",
+      IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE);
+  html_source->AddLocalizedString(
+      "displayInThisLanguage",
+      IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE);
+  html_source->AddLocalizedString(
+      "offerToTranslateInThisLanguage",
+      IDS_OPTIONS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE);
+  html_source->AddLocalizedString(
+      "cannotTranslateInThisLanguage",
+      IDS_OPTIONS_LANGUAGES_CANNOT_TRANSLATE_IN_THIS_LANGUAGE);
+  html_source->AddLocalizedString(
+      "restart",
+      IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON);
 }
+
+#if defined(OS_CHROMEOS)
+void AddMultiProfilesStrings(content::WebUIDataSource* html_source,
+                             Profile* profile) {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  std::string primary_user_email = user_manager->GetPrimaryUser()->email();
+  html_source->AddString("primaryUserEmail", primary_user_email);
+  html_source->AddBoolean("isSecondaryUser",
+                          user && user->email() != primary_user_email);
+}
+#endif
 
 void AddOnStartupStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
@@ -482,28 +528,34 @@ void AddUsersStrings(content::WebUIDataSource* html_source) {
 
 namespace settings {
 
-void AddLocalizedStrings(content::WebUIDataSource* html_source) {
+void AddLocalizedStrings(content::WebUIDataSource* html_source,
+                         Profile* profile) {
   AddCommonStrings(html_source);
 
 #if defined(OS_CHROMEOS)
   AddA11yStrings(html_source);
+  AddAccountUITweaksStrings(html_source, profile);
 #endif
   AddAppearanceStrings(html_source);
   AddCertificateManagerStrings(html_source);
   AddClearBrowsingDataStrings(html_source);
-  AddDownloadsStrings(html_source);
   AddDateTimeStrings(html_source);
+  AddDownloadsStrings(html_source);
 #if defined(OS_CHROMEOS)
   AddInternetStrings(html_source);
 #endif
   AddLanguagesStrings(html_source);
+#if defined(OS_CHROMEOS)
+  AddMultiProfilesStrings(html_source, profile);
+#endif
   AddOnStartupStrings(html_source);
   AddPrivacyStrings(html_source);
-  AddSearchStrings(html_source);
   AddSearchEnginesStrings(html_source);
+  AddSearchStrings(html_source);
   AddSiteSettingsStrings(html_source);
   AddSyncStrings(html_source);
   AddUsersStrings(html_source);
+
   html_source->SetJsonPath(kLocalizedStringsFile);
 }
 

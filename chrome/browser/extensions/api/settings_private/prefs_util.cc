@@ -110,6 +110,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["browser.clear_data.time_period"] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["translate.enabled"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["translate_blocked_languages"] =
+      settings_private::PrefType::PREF_TYPE_LIST;
 
 #if defined(OS_CHROMEOS)
   (*s_whitelist)["cros.accounts.allowBWSI"] =

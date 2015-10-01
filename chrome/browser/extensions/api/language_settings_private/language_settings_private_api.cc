@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/api/language_settings_private.h"
 #include "chrome/common/spellcheck_common.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/common/translate_util.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
@@ -113,9 +114,11 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
       language.display_name_rtl.reset(new bool(true));
     if (locale_set.count(pair.first) > 0)
       language.supports_ui.reset(new bool(true));
-    if (spellcheck_language_set.count(pair.first) > 0)
+    if (spellcheck_language_set.count(language.code) > 0)
       language.supports_spellcheck.reset(new bool(true));
-    if (translate_language_set.count(pair.first) > 0)
+    std::string translate_code = language.code;
+    translate::ToTranslateLanguageSynonym(&translate_code);
+    if (translate_language_set.count(translate_code) > 0)
       language.supports_translate.reset(new bool(true));
 
     language_list->Append(language.ToValue());
