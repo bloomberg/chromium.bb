@@ -63,3 +63,6 @@ Modifications made:
 - Merge http://cgit.freedesktop.org/mesa/mesa/commit/?id=d2458a4
 
 - Statically link libstdc++ in chromecast build
+
+- Merge http://cgit.freedesktop.org/mesa/mesa/commit/?id=5a6ec26
+  Regenerated glsl_lexer.cc using Linux 3.13.0-63 (Ubuntu 14.04), Flex 2.5.39.

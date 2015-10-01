@@ -265,7 +265,7 @@ deps = {
    Var('chromium_git') + '/chromium/cdm.git' + '@' + '7377023e384f296cbb27644eb2c485275f1f92e8', # from svn revision 294518
 
   'src/third_party/mesa/src':
-   Var('chromium_git') + '/chromium/deps/mesa.git' + '@' + '3918dbd3bced7843af396a0ee9f9da081d968806',
+   Var('chromium_git') + '/chromium/deps/mesa.git' + '@' + 'a3dc7d623fbb83a6246adf3d363922ad3909c14c',
 
   'src/third_party/cld_2/src':
     Var('chromium_git') + '/external/github.com/CLD2Owners/cld2.git' + '@' + '84b58a5d7690ebf05a91406f371ce00c3daf31c0',
