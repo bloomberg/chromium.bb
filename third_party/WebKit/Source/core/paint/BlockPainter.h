@@ -21,21 +21,21 @@ class LayoutRect;
 class BlockPainter {
     STACK_ALLOCATED();
 public:
-    BlockPainter(LayoutBlock& block) : m_layoutBlock(block) { }
+    BlockPainter(const LayoutBlock& block) : m_layoutBlock(block) { }
 
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintObject(const PaintInfo&, const LayoutPoint&);
     void paintChildren(const PaintInfo&, const LayoutPoint&);
-    void paintChild(LayoutBox&, const PaintInfo&, const LayoutPoint&);
-    void paintChildAsInlineBlock(LayoutBox&, const PaintInfo&, const LayoutPoint&);
+    void paintChild(const LayoutBox&, const PaintInfo&, const LayoutPoint&);
+    void paintChildAsInlineBlock(const LayoutBox&, const PaintInfo&, const LayoutPoint&);
     void paintOverflowControlsIfNeeded(const PaintInfo&, const LayoutPoint&);
 
     // inline-block elements paint all phases atomically. This function ensures that. Certain other elements
     // (grid items, flex items) require this behavior as well, and this function exists as a helper for them.
     // It is expected that the caller will call this function independent of the value of paintInfo.phase.
-    static void paintAsInlineBlock(LayoutObject&, const PaintInfo&, const LayoutPoint&);
-    static void paintChildrenOfFlexibleBox(LayoutFlexibleBox&, const PaintInfo&, const LayoutPoint& paintOffset);
-    static void paintInlineBox(InlineBox&, const PaintInfo&, const LayoutPoint& paintOffset);
+    static void paintAsInlineBlock(const LayoutObject&, const PaintInfo&, const LayoutPoint&);
+    static void paintChildrenOfFlexibleBox(const LayoutFlexibleBox&, const PaintInfo&, const LayoutPoint& paintOffset);
+    static void paintInlineBox(const InlineBox&, const PaintInfo&, const LayoutPoint& paintOffset);
 
     bool intersectsPaintRect(const PaintInfo&, const LayoutPoint& paintOffset) const;
 
@@ -44,7 +44,7 @@ private:
     void paintCarets(const PaintInfo&, const LayoutPoint&);
     void paintContents(const PaintInfo&, const LayoutPoint&);
 
-    LayoutBlock& m_layoutBlock;
+    const LayoutBlock& m_layoutBlock;
 };
 
 } // namespace blink

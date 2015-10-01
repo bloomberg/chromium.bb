@@ -1966,7 +1966,7 @@ LayoutPoint LayoutGrid::findChildLogicalPosition(const LayoutBox& child, GridSiz
     return LayoutPoint(rowAxisOffset, columnAxisOffsetForChild(child));
 }
 
-void LayoutGrid::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutGrid::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     GridPainter(*this).paintChildren(paintInfo, paintOffset);
 }

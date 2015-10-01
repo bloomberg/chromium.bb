@@ -195,7 +195,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
 
     // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
-    if (styleToUse.outlineStyleIsAuto() && !LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutObject))
+    if (styleToUse.outlineStyleIsAuto() && !LayoutTheme::theme().shouldDrawDefaultFocusRing(m_layoutObject))
         return;
 
     Vector<LayoutRect> outlineRects;

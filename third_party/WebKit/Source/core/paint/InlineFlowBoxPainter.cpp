@@ -100,28 +100,28 @@ void InlineFlowBoxPainter::paintBoxShadow(const PaintInfo& info, const ComputedS
     }
 }
 
-static LayoutRect clipRectForNinePieceImageStrip(InlineFlowBox* box, const NinePieceImage& image, const LayoutRect& paintRect)
+static LayoutRect clipRectForNinePieceImageStrip(const InlineFlowBox& box, const NinePieceImage& image, const LayoutRect& paintRect)
 {
     LayoutRect clipRect(paintRect);
-    const ComputedStyle& style = box->lineLayoutItem().styleRef();
+    const ComputedStyle& style = box.lineLayoutItem().styleRef();
     LayoutRectOutsets outsets = style.imageOutsets(image);
-    if (box->isHorizontal()) {
+    if (box.isHorizontal()) {
         clipRect.setY(paintRect.y() - outsets.top());
         clipRect.setHeight(paintRect.height() + outsets.top() + outsets.bottom());
-        if (box->includeLogicalLeftEdge()) {
+        if (box.includeLogicalLeftEdge()) {
             clipRect.setX(paintRect.x() - outsets.left());
             clipRect.setWidth(paintRect.width() + outsets.left());
         }
-        if (box->includeLogicalRightEdge())
+        if (box.includeLogicalRightEdge())
             clipRect.setWidth(clipRect.width() + outsets.right());
     } else {
         clipRect.setX(paintRect.x() - outsets.left());
         clipRect.setWidth(paintRect.width() + outsets.left() + outsets.right());
-        if (box->includeLogicalLeftEdge()) {
+        if (box.includeLogicalLeftEdge()) {
             clipRect.setY(paintRect.y() - outsets.top());
             clipRect.setHeight(paintRect.height() + outsets.top());
         }
-        if (box->includeLogicalRightEdge())
+        if (box.includeLogicalRightEdge())
             clipRect.setHeight(clipRect.height() + outsets.bottom());
     }
     return clipRect;
@@ -138,16 +138,16 @@ LayoutRect InlineFlowBoxPainter::paintRectForImageStrip(const LayoutPoint& paint
     LayoutUnit logicalOffsetOnLine = 0;
     LayoutUnit totalLogicalWidth;
     if (direction == LTR) {
-        for (InlineFlowBox* curr = m_inlineFlowBox.prevLineBox(); curr; curr = curr->prevLineBox())
+        for (const InlineFlowBox* curr = m_inlineFlowBox.prevLineBox(); curr; curr = curr->prevLineBox())
             logicalOffsetOnLine += curr->logicalWidth();
         totalLogicalWidth = logicalOffsetOnLine;
-        for (InlineFlowBox* curr = &m_inlineFlowBox; curr; curr = curr->nextLineBox())
+        for (const InlineFlowBox* curr = &m_inlineFlowBox; curr; curr = curr->nextLineBox())
             totalLogicalWidth += curr->logicalWidth();
     } else {
-        for (InlineFlowBox* curr = m_inlineFlowBox.nextLineBox(); curr; curr = curr->nextLineBox())
+        for (const InlineFlowBox* curr = m_inlineFlowBox.nextLineBox(); curr; curr = curr->nextLineBox())
             logicalOffsetOnLine += curr->logicalWidth();
         totalLogicalWidth = logicalOffsetOnLine;
-        for (InlineFlowBox* curr = &m_inlineFlowBox; curr; curr = curr->prevLineBox())
+        for (const InlineFlowBox* curr = &m_inlineFlowBox; curr; curr = curr->prevLineBox())
             totalLogicalWidth += curr->logicalWidth();
     }
     LayoutUnit stripX = paintOffset.x() - (m_inlineFlowBox.isHorizontal() ? logicalOffsetOnLine : LayoutUnit());
@@ -175,7 +175,7 @@ InlineFlowBoxPainter::BorderPaintingType InlineFlowBoxPainter::getBorderPaintTyp
             return PaintBordersWithoutClip;
 
         // We have a border image that spans multiple lines.
-        adjustedClipRect = pixelSnappedIntRect(clipRectForNinePieceImageStrip(&m_inlineFlowBox, borderImage, adjustedFrameRect));
+        adjustedClipRect = pixelSnappedIntRect(clipRectForNinePieceImageStrip(m_inlineFlowBox, borderImage, adjustedFrameRect));
         return PaintBordersWithClip;
     }
     return DontPaintBorders;
@@ -295,7 +295,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
         // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
         // but it isn't even clear how this should work at all.
         LayoutRect imageStripPaintRect = paintRectForImageStrip(adjustedPaintOffset, frameRect.size(), LTR);
-        FloatRect clipRect(clipRectForNinePieceImageStrip(&m_inlineFlowBox, maskNinePieceImage, paintRect));
+        FloatRect clipRect(clipRectForNinePieceImageStrip(m_inlineFlowBox, maskNinePieceImage, paintRect));
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
         // TODO(chrishtr): this should be pixel-snapped.
         paintInfo.context->clip(clipRect);

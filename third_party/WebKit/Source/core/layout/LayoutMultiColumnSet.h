@@ -176,7 +176,7 @@ private:
     void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 
-    void paintObject(const PaintInfo&, const LayoutPoint& paintOffset) override;
+    void paintObject(const PaintInfo&, const LayoutPoint& paintOffset) const override;
 
     void addOverflowFromChildren() override;
 

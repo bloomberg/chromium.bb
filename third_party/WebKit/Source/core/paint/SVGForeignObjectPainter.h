@@ -15,11 +15,11 @@ class LayoutSVGForeignObject;
 class SVGForeignObjectPainter {
     STACK_ALLOCATED();
 public:
-    SVGForeignObjectPainter(LayoutSVGForeignObject& layoutSVGForeignObject) : m_layoutSVGForeignObject(layoutSVGForeignObject) { }
+    SVGForeignObjectPainter(const LayoutSVGForeignObject& layoutSVGForeignObject) : m_layoutSVGForeignObject(layoutSVGForeignObject) { }
     void paint(const PaintInfo&);
 
 private:
-    LayoutSVGForeignObject& m_layoutSVGForeignObject;
+    const LayoutSVGForeignObject& m_layoutSVGForeignObject;
 };
 
 } // namespace blink

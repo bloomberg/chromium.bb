@@ -92,7 +92,7 @@ public:
     static const LayoutSVGResourceType s_resourceType = FilterResourceType;
     LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
-    FilterData* getFilterDataForLayoutObject(LayoutObject* object) { return m_filter.get(object); }
+    FilterData* getFilterDataForLayoutObject(const LayoutObject* object) { return m_filter.get(const_cast<LayoutObject*>(object)); }
     void setFilterDataForLayoutObject(LayoutObject* object, PassOwnPtrWillBeRawPtr<FilterData> filterData) { m_filter.set(object, filterData); }
 
 protected:

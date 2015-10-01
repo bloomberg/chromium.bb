@@ -51,7 +51,7 @@ public:
 
     String customCSSText() const;
 
-    PassRefPtr<Image> image(LayoutObject*, const IntSize&);
+    PassRefPtr<Image> image(const LayoutObject*, const IntSize&);
     bool isFixedSize() const { return true; }
     IntSize fixedSize(const LayoutObject*);
 

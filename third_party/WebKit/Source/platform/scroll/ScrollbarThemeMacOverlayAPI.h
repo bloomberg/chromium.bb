@@ -39,30 +39,30 @@ namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeMacOverlayAPI : public ScrollbarThemeMacCommon {
 public:
-    void updateEnabledState(ScrollbarThemeClient*) override;
+    void updateEnabledState(const ScrollbarThemeClient*) override;
     int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
     bool usesOverlayScrollbars() const override;
-    void updateScrollbarOverlayStyle(ScrollbarThemeClient*) override;
+    void updateScrollbarOverlayStyle(const ScrollbarThemeClient*) override;
     ScrollbarButtonsPlacement buttonsPlacement() const override;
 
     void registerScrollbar(ScrollbarThemeClient*) override;
     void unregisterScrollbar(ScrollbarThemeClient*) override;
 
     void setNewPainterForScrollbar(ScrollbarThemeClient*, ScrollbarPainter);
-    ScrollbarPainter painterForScrollbar(ScrollbarThemeClient*);
+    ScrollbarPainter painterForScrollbar(const ScrollbarThemeClient*);
 
-    void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
-    void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    void paintTrackBackground(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) override;
+    void paintThumb(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) override;
 
 protected:
-    IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
-    IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
-    IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    IntRect trackRect(const ScrollbarThemeClient*, bool painting = false) override;
+    IntRect backButtonRect(const ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    IntRect forwardButtonRect(const ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
 
-    bool hasButtons(ScrollbarThemeClient*) override { return false; }
-    bool hasThumb(ScrollbarThemeClient*) override;
+    bool hasButtons(const ScrollbarThemeClient*) override { return false; }
+    bool hasThumb(const ScrollbarThemeClient*) override;
 
-    int minimumThumbLength(ScrollbarThemeClient*) override;
+    int minimumThumbLength(const ScrollbarThemeClient*) override;
 };
 
 }

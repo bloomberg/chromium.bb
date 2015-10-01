@@ -107,7 +107,7 @@ public:
         PageOverlay::Delegate::trace(visitor);
     }
 
-    void paintPageOverlay(WebGraphicsContext* context, const WebSize& webViewSize)
+    void paintPageOverlay(WebGraphicsContext* context, const WebSize& webViewSize) const override
     {
         if (m_overlay->isEmpty())
             return;

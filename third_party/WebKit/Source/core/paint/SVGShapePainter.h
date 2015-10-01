@@ -22,7 +22,7 @@ class LayoutSVGShape;
 class SVGShapePainter {
     STACK_ALLOCATED();
 public:
-    SVGShapePainter(LayoutSVGShape& layoutSVGShape) : m_layoutSVGShape(layoutSVGShape) { }
+    SVGShapePainter(const LayoutSVGShape& layoutSVGShape) : m_layoutSVGShape(layoutSVGShape) { }
 
     void paint(const PaintInfo&);
 
@@ -33,7 +33,7 @@ private:
     void paintMarkers(const PaintInfo&, const FloatRect& boundingBox);
     void paintMarker(const PaintInfo&, LayoutSVGResourceMarker&, const MarkerPosition&, float);
 
-    LayoutSVGShape& m_layoutSVGShape;
+    const LayoutSVGShape& m_layoutSVGShape;
 };
 
 } // namespace blink

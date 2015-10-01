@@ -363,12 +363,12 @@ void LayoutView::computeSelfHitTestRects(Vector<LayoutRect>& rects, const Layout
     rects.append(LayoutRect(LayoutPoint::zero(), LayoutSize(frameView()->contentsSize())));
 }
 
-void LayoutView::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutView::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     ViewPainter(*this).paint(paintInfo, paintOffset);
 }
 
-void LayoutView::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint&)
+void LayoutView::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint&) const
 {
     ViewPainter(*this).paintBoxDecorationBackground(paintInfo);
 }

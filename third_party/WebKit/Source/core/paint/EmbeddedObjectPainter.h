@@ -20,12 +20,12 @@ class TextRun;
 class EmbeddedObjectPainter {
     STACK_ALLOCATED();
 public:
-    EmbeddedObjectPainter(LayoutEmbeddedObject& layoutEmbeddedObject) : m_layoutEmbeddedObject(layoutEmbeddedObject) { }
+    EmbeddedObjectPainter(const LayoutEmbeddedObject& layoutEmbeddedObject) : m_layoutEmbeddedObject(layoutEmbeddedObject) { }
 
     void paintReplaced(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
-    LayoutEmbeddedObject& m_layoutEmbeddedObject;
+    const LayoutEmbeddedObject& m_layoutEmbeddedObject;
 };
 
 } // namespace blink

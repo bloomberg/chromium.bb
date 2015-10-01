@@ -31,12 +31,12 @@
 
 namespace blink {
 
-void EllipsisBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
+void EllipsisBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const
 {
     EllipsisBoxPainter(*this).paint(paintInfo, paintOffset, lineTop, lineBottom);
 }
 
-IntRect EllipsisBox::selectionRect()
+IntRect EllipsisBox::selectionRect() const
 {
     const ComputedStyle& style = lineLayoutItem().styleRef(isFirstLineStyle());
     const Font& font = style.font();

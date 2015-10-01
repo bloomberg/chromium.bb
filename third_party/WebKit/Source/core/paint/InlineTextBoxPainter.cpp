@@ -30,13 +30,13 @@ static InlineTextBoxBlobCacheMap* gTextBlobCache;
 
 static const int misspellingLineThickness = 3;
 
-void InlineTextBoxPainter::removeFromTextBlobCache(InlineTextBox& inlineTextBox)
+void InlineTextBoxPainter::removeFromTextBlobCache(const InlineTextBox& inlineTextBox)
 {
     if (gTextBlobCache)
         gTextBlobCache->remove(&inlineTextBox);
 }
 
-static TextBlobPtr* addToTextBlobCache(InlineTextBox& inlineTextBox)
+static TextBlobPtr* addToTextBlobCache(const InlineTextBox& inlineTextBox)
 {
     if (!gTextBlobCache)
         gTextBlobCache = new InlineTextBoxBlobCacheMap;

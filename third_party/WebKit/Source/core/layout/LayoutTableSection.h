@@ -216,8 +216,10 @@ public:
         CellStruct& c = m_grid[row].row[col];
         return c.primaryCell();
     }
+    const LayoutTableCell* primaryCellAt(unsigned row, unsigned col) const { return const_cast<LayoutTableSection*>(this)->primaryCellAt(row, col); }
 
-    LayoutTableRow* rowLayoutObjectAt(unsigned row) const { return m_grid[row].rowLayoutObject; }
+    LayoutTableRow* rowLayoutObjectAt(unsigned row) { return m_grid[row].rowLayoutObject; }
+    const LayoutTableRow* rowLayoutObjectAt(unsigned row) const { return m_grid[row].rowLayoutObject; }
 
     void appendColumn(unsigned pos);
     void splitColumn(unsigned pos, unsigned first);
@@ -274,15 +276,15 @@ public:
         return createAnonymousWithParent(parent);
     }
 
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
 
     // Flip the rect so it aligns with the coordinates used by the rowPos and columnPos vectors.
     LayoutRect logicalRectForWritingModeAndDirection(const LayoutRect&) const;
 
     CellSpan dirtiedRows(const LayoutRect& paintInvalidationRect) const;
     CellSpan dirtiedColumns(const LayoutRect& paintInvalidationRect) const;
-    HashSet<LayoutTableCell*>& overflowingCells() { return m_overflowingCells; }
-    bool hasMultipleCellLevels() { return m_hasMultipleCellLevels; }
+    const HashSet<LayoutTableCell*>& overflowingCells() const { return m_overflowingCells; }
+    bool hasMultipleCellLevels() const { return m_hasMultipleCellLevels; }
 
     const char* name() const override { return "LayoutTableSection"; }
 

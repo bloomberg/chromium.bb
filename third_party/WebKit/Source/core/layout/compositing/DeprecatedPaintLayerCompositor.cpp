@@ -788,7 +788,7 @@ bool DeprecatedPaintLayerCompositor::needsContentsCompositingLayer(const Depreca
     return layer->stackingNode()->hasNegativeZOrderList();
 }
 
-static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const IntRect& clip)
+static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context, const IntRect& clip)
 {
     if (!scrollbar)
         return;
@@ -805,7 +805,7 @@ static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const
     scrollbar->paint(&context, transformedClip);
 }
 
-void DeprecatedPaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect& clip)
+void DeprecatedPaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect& clip) const
 {
     if (graphicsLayer == layerForHorizontalScrollbar())
         paintScrollbar(m_layoutView.frameView()->horizontalScrollbar(), context, clip);

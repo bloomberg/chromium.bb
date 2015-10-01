@@ -85,7 +85,7 @@ protected:
 
     void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
-    void paint(const PaintInfo&, const LayoutPoint&) final;
+    void paint(const PaintInfo&, const LayoutPoint&) const final;
 
     void layout() override;
     bool updateImageLoadingPriorities() final;
@@ -99,10 +99,10 @@ protected:
 private:
     bool isImage() const override { return true; }
 
-    void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
+    void paintReplaced(const PaintInfo&, const LayoutPoint&) const override;
 
     bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned maxDepthToTest) const final;
-    bool computeBackgroundIsKnownToBeObscured() final;
+    bool computeBackgroundIsKnownToBeObscured() const final;
 
     bool backgroundShouldAlwaysBeClipped() const override { return true; }
 
@@ -111,7 +111,7 @@ private:
     void notifyFinished(Resource*) final;
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) final;
 
-    bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const final;
+    bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, const InlineFlowBox*) const final;
 
     void invalidatePaintAndMarkForLayoutIfNeeded();
     void updateIntrinsicSizeIfNeeded(const LayoutSize&);

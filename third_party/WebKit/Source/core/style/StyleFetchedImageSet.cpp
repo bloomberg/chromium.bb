@@ -124,7 +124,7 @@ void StyleFetchedImageSet::removeClient(LayoutObject* layoutObject)
     m_bestFitImage->removeClient(layoutObject);
 }
 
-PassRefPtr<Image> StyleFetchedImageSet::image(LayoutObject* layoutObject, const IntSize&) const
+PassRefPtr<Image> StyleFetchedImageSet::image(const LayoutObject* layoutObject, const IntSize&) const
 {
     return m_bestFitImage->imageForLayoutObject(layoutObject);
 }

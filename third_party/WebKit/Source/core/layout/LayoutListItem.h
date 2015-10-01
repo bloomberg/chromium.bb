@@ -72,7 +72,7 @@ private:
     void insertedIntoTree() override;
     void willBeRemovedFromTree() override;
 
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
 
     void subtreeDidChange() final;
 

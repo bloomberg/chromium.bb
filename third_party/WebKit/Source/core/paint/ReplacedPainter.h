@@ -16,12 +16,12 @@ class LayoutReplaced;
 class ReplacedPainter {
     STACK_ALLOCATED();
 public:
-    ReplacedPainter(LayoutReplaced& layoutReplaced) : m_layoutReplaced(layoutReplaced) { }
+    ReplacedPainter(const LayoutReplaced& layoutReplaced) : m_layoutReplaced(layoutReplaced) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
 
 private:
-    LayoutReplaced& m_layoutReplaced;
+    const LayoutReplaced& m_layoutReplaced;
 };
 
 } // namespace blink

@@ -393,7 +393,7 @@ public:
     LayoutRect reflectedRect(const LayoutRect&) const;
 
     void layout() override;
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
     LayoutUnit minPreferredLogicalWidth() const override;
@@ -583,12 +583,12 @@ public:
     LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = nullptr) override;
 
     virtual LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
-    LayoutRect clipRect(const LayoutPoint& location);
+    LayoutRect clipRect(const LayoutPoint& location) const;
     virtual bool hasControlClip() const { return false; }
     virtual LayoutRect controlClipRect(const LayoutPoint&) const { return LayoutRect(); }
 
-    virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
-    virtual void paintMask(const PaintInfo&, const LayoutPoint&);
+    virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) const;
+    virtual void paintMask(const PaintInfo&, const LayoutPoint&) const;
     void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
     void logicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& logicalTop, LogicalExtentComputedValues&);
@@ -731,9 +731,9 @@ protected:
 
     // Returns false if it could not cheaply compute the extent (e.g. fixed background), in which case the returned rect may be incorrect.
     // FIXME: make this a const method once the LayoutBox reference in BoxPainter is const.
-    bool getBackgroundPaintedExtent(LayoutRect&);
+    bool getBackgroundPaintedExtent(LayoutRect&) const;
     virtual bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned maxDepthToTest) const;
-    bool computeBackgroundIsKnownToBeObscured() override;
+    bool computeBackgroundIsKnownToBeObscured() const override;
 
     void computePositionedLogicalWidth(LogicalExtentComputedValues&) const;
 

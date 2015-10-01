@@ -122,7 +122,7 @@ void LayoutMultiColumnSpannerPlaceholder::invalidateTreeIfNeeded(PaintInvalidati
     LayoutBox::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
-void LayoutMultiColumnSpannerPlaceholder::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutMultiColumnSpannerPlaceholder::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     if (!m_layoutObjectInFlowThread->hasSelfPaintingLayer())
         m_layoutObjectInFlowThread->paint(paintInfo, paintOffset);

@@ -105,9 +105,9 @@ static bool paintMediaButton(GraphicsContext* context, const IntRect& rect, Imag
     return true;
 }
 
-bool MediaControlsPainter::paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaMuteButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
         return false;
 
@@ -138,9 +138,9 @@ bool MediaControlsPainter::paintMediaMuteButton(LayoutObject* object, const Pain
     return paintMediaButton(paintInfo.context, rect, soundLevel3);
 }
 
-bool MediaControlsPainter::paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaPlayButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
         return false;
 
@@ -153,13 +153,13 @@ bool MediaControlsPainter::paintMediaPlayButton(LayoutObject* object, const Pain
     if (!hasSource(mediaElement))
         return paintMediaButton(paintInfo.context, rect, mediaPlayDisabled, false);
 
-    Image * image = !object->node()->isMediaControlElement() || mediaControlElementType(object->node()) == MediaPlayButton ? mediaPlay : mediaPause;
+    Image * image = !object.node()->isMediaControlElement() || mediaControlElementType(object.node()) == MediaPlayButton ? mediaPlay : mediaPause;
     return paintMediaButton(paintInfo.context, rect, image);
 }
 
-bool MediaControlsPainter::paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaOverlayPlayButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
         return false;
 
@@ -256,9 +256,9 @@ static void paintSliderRangeHighlight(const IntRect& rect, const ComputedStyle& 
     context->restore();
 }
 
-bool MediaControlsPainter::paintMediaSlider(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaSlider(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
         return false;
 
@@ -277,14 +277,14 @@ bool MediaControlsPainter::paintMediaSlider(LayoutObject* object, const PaintInf
     return true;
 }
 
-void MediaControlsPainter::paintMediaSliderInternal(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+void MediaControlsPainter::paintMediaSliderInternal(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     const bool useNewUi = RuntimeEnabledFeatures::newMediaPlaybackUiEnabled();
-    HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
         return;
 
-    const ComputedStyle& style = object->styleRef();
+    const ComputedStyle& style = object.styleRef();
     GraphicsContext* context = paintInfo.context;
 
     // Paint the slider bar in the "no data buffered" state.
@@ -379,12 +379,12 @@ void MediaControlsPainter::adjustMediaSliderThumbPaintSize(const IntRect& rect, 
     rectOut.setHeight(zoomedPaintHeight);
 }
 
-bool MediaControlsPainter::paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaSliderThumb(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    if (!object->node())
+    if (!object.node())
         return false;
 
-    HTMLMediaElement* mediaElement = toParentMediaElement(object->node()->shadowHost());
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object.node()->shadowHost());
     if (!mediaElement)
         return false;
 
@@ -393,19 +393,19 @@ bool MediaControlsPainter::paintMediaSliderThumb(LayoutObject* object, const Pai
 
     Image* mediaSliderThumb = getMediaSliderThumb();
     IntRect paintRect;
-    const ComputedStyle& style = object->styleRef();
+    const ComputedStyle& style = object.styleRef();
     adjustMediaSliderThumbPaintSize(rect, style, paintRect);
     return paintMediaButton(paintInfo.context, paintRect, mediaSliderThumb);
 }
 
-bool MediaControlsPainter::paintMediaVolumeSlider(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaVolumeSlider(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
         return false;
 
     GraphicsContext* context = paintInfo.context;
-    const ComputedStyle& style = object->styleRef();
+    const ComputedStyle& style = object.styleRef();
 
     // Paint the slider bar.
     Color sliderBackgroundColor;
@@ -447,12 +447,12 @@ bool MediaControlsPainter::paintMediaVolumeSlider(LayoutObject* object, const Pa
     return true;
 }
 
-bool MediaControlsPainter::paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaVolumeSliderThumb(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    if (!object->node())
+    if (!object.node())
         return false;
 
-    HTMLMediaElement* mediaElement = toParentMediaElement(object->node()->shadowHost());
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object.node()->shadowHost());
     if (!mediaElement)
         return false;
 
@@ -464,14 +464,14 @@ bool MediaControlsPainter::paintMediaVolumeSliderThumb(LayoutObject* object, con
         "mediaplayerVolumeSliderThumbNew");
 
     IntRect paintRect;
-    const ComputedStyle& style = object->styleRef();
+    const ComputedStyle& style = object.styleRef();
     adjustMediaSliderThumbPaintSize(rect, style, paintRect);
     return paintMediaButton(paintInfo.context, paintRect, mediaVolumeSliderThumb);
 }
 
-bool MediaControlsPainter::paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaFullscreenButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
         return false;
 
@@ -486,14 +486,14 @@ bool MediaControlsPainter::paintMediaFullscreenButton(LayoutObject* object, cons
 
     bool isEnabled = hasSource(mediaElement);
 
-    if (mediaControlElementType(object->node()) == MediaExitFullscreenButton)
+    if (mediaControlElementType(object.node()) == MediaExitFullscreenButton)
         return paintMediaButton(paintInfo.context, rect, mediaExitFullscreenButton, isEnabled);
     return paintMediaButton(paintInfo.context, rect, mediaEnterFullscreenButton, isEnabled);
 }
 
-bool MediaControlsPainter::paintMediaToggleClosedCaptionsButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaToggleClosedCaptionsButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
         return false;
 
@@ -511,9 +511,9 @@ bool MediaControlsPainter::paintMediaToggleClosedCaptionsButton(LayoutObject* ob
     return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionButtonDisabled, isEnabled);
 }
 
-bool MediaControlsPainter::paintMediaCastButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaCastButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
         return false;
 
@@ -527,7 +527,7 @@ bool MediaControlsPainter::paintMediaCastButton(LayoutObject* object, const Pain
 
     bool isEnabled = mediaElement->hasRemoteRoutes();
 
-    switch (mediaControlElementType(object->node())) {
+    switch (mediaControlElementType(object.node())) {
     case MediaCastOnButton:
         return paintMediaButton(paintInfo.context, rect, mediaCastOn, isEnabled);
     case MediaOverlayCastOnButton:

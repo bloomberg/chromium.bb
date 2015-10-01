@@ -64,8 +64,8 @@ public:
         }
         bool operator!=(const Style& other) { return !(*this == other); }
     };
-    static Style textPaintingStyle(LayoutObject&, const ComputedStyle&, const PaintInfo&);
-    static Style selectionPaintingStyle(LayoutObject&, bool haveSelection, const PaintInfo&, const Style& textStyle);
+    static Style textPaintingStyle(const LayoutObject&, const ComputedStyle&, const PaintInfo&);
+    static Style selectionPaintingStyle(const LayoutObject&, bool haveSelection, const PaintInfo&, const Style& textStyle);
 
     enum RotationDirection { Counterclockwise, Clockwise };
     static AffineTransform rotation(const LayoutRect& boxRect, RotationDirection);

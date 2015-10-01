@@ -44,7 +44,7 @@ public:
 
     void layout() override;
 
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
 
 private:
     LayoutReplica();

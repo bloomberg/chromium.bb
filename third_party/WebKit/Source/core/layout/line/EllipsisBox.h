@@ -40,14 +40,14 @@ public:
         setHasVirtualLogicalHeight();
     }
 
-    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) const override;
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
     void setSelectionState(SelectionState s) { m_selectionState = s; }
-    IntRect selectionRect();
+    IntRect selectionRect() const;
 
     LayoutUnit virtualLogicalHeight() const override { return m_height; }
     SelectionState selectionState() const override { return m_selectionState; }
-    const AtomicString& ellipsisStr() { return m_str; }
+    const AtomicString& ellipsisStr() const { return m_str; }
 
     const char* boxName() const override;
 

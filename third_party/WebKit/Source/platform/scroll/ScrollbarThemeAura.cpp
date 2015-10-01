@@ -70,7 +70,7 @@ int ScrollbarThemeAura::scrollbarThickness(ScrollbarControlSize controlSize)
     return scrollbarSize.width();
 }
 
-void ScrollbarThemeAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
+void ScrollbarThemeAura::paintTrackPiece(GraphicsContext* gc, const ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
 {
     DisplayItem::Type displayItemType = trackPiecePartToDisplayItemType(partType);
     if (DrawingRecorder::useCachedDrawingIfPossible(*gc, *scrollbar, displayItemType))
@@ -93,7 +93,7 @@ void ScrollbarThemeAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClie
     Platform::current()->themeEngine()->paint(gc->canvas(), scrollbar->orientation() == HorizontalScrollbar ? WebThemeEngine::PartScrollbarHorizontalTrack : WebThemeEngine::PartScrollbarVerticalTrack, state, WebRect(rect), &extraParams);
 }
 
-void ScrollbarThemeAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
+void ScrollbarThemeAura::paintButton(GraphicsContext* gc, const ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
 {
     WebThemeEngine::Part paintPart;
     WebThemeEngine::State state = WebThemeEngine::StateNormal;
@@ -142,7 +142,7 @@ void ScrollbarThemeAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* 
     Platform::current()->themeEngine()->paint(gc->canvas(), paintPart, state, WebRect(rect), 0);
 }
 
-void ScrollbarThemeAura::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeAura::paintThumb(GraphicsContext* gc, const ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     if (DrawingRecorder::useCachedDrawingIfPossible(*gc, *scrollbar, DisplayItem::ScrollbarThumb))
         return;
@@ -160,7 +160,7 @@ void ScrollbarThemeAura::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* s
     Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? WebThemeEngine::PartScrollbarHorizontalThumb : WebThemeEngine::PartScrollbarVerticalThumb, state, WebRect(rect), 0);
 }
 
-IntSize ScrollbarThemeAura::buttonSize(ScrollbarThemeClient* scrollbar)
+IntSize ScrollbarThemeAura::buttonSize(const ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
         IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarUpArrow);
@@ -172,7 +172,7 @@ IntSize ScrollbarThemeAura::buttonSize(ScrollbarThemeClient* scrollbar)
     return IntSize(scrollbar->width() < 2 * size.width() ? scrollbar->width() / 2 : size.width(), size.height());
 }
 
-int ScrollbarThemeAura::minimumThumbLength(ScrollbarThemeClient* scrollbar)
+int ScrollbarThemeAura::minimumThumbLength(const ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
         IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarVerticalThumb);

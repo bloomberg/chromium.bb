@@ -60,12 +60,12 @@ void ImageQualityController::remove(LayoutObject* layoutObject)
     }
 }
 
-bool ImageQualityController::has(LayoutObject* layoutObject)
+bool ImageQualityController::has(const LayoutObject* layoutObject)
 {
     return gImageQualityController && gImageQualityController->m_objectLayerSizeMap.contains(layoutObject);
 }
 
-InterpolationQuality ImageQualityController::chooseInterpolationQuality(GraphicsContext* context, LayoutObject* object, Image* image, const void* layer, const LayoutSize& layoutSize)
+InterpolationQuality ImageQualityController::chooseInterpolationQuality(GraphicsContext* context, const LayoutObject* object, Image* image, const void* layer, const LayoutSize& layoutSize)
 {
     if (object->style()->imageRendering() == ImageRenderingPixelated)
         return InterpolationNone;
@@ -101,7 +101,7 @@ void ImageQualityController::setTimer(Timer<ImageQualityController>* newTimer)
     m_timer = adoptPtr(newTimer);
 }
 
-void ImageQualityController::removeLayer(LayoutObject* object, LayerSizeMap* innerMap, const void* layer)
+void ImageQualityController::removeLayer(const LayoutObject* object, LayerSizeMap* innerMap, const void* layer)
 {
     if (innerMap) {
         innerMap->remove(layer);
@@ -110,7 +110,7 @@ void ImageQualityController::removeLayer(LayoutObject* object, LayerSizeMap* inn
     }
 }
 
-void ImageQualityController::set(LayoutObject* object, LayerSizeMap* innerMap, const void* layer, const LayoutSize& size)
+void ImageQualityController::set(const LayoutObject* object, LayerSizeMap* innerMap, const void* layer, const LayoutSize& size)
 {
     if (innerMap) {
         innerMap->set(layer, size);
@@ -121,7 +121,7 @@ void ImageQualityController::set(LayoutObject* object, LayerSizeMap* innerMap, c
     }
 }
 
-void ImageQualityController::objectDestroyed(LayoutObject* object)
+void ImageQualityController::objectDestroyed(const LayoutObject* object)
 {
     m_objectLayerSizeMap.remove(object);
     if (m_objectLayerSizeMap.isEmpty()) {
@@ -144,7 +144,8 @@ void ImageQualityController::highQualityRepaintTimerFired(Timer<ImageQualityCont
                 return;
             }
         }
-        layoutObject->setShouldDoFullPaintInvalidation();
+        // TODO(wangxianzhu): Use LayoutObject::mutableForPainting().
+        const_cast<LayoutObject*>(layoutObject)->setShouldDoFullPaintInvalidation();
     }
 
     m_liveResizeOptimizationIsActive = false;
@@ -155,7 +156,7 @@ void ImageQualityController::restartTimer()
     m_timer->startOneShot(cLowQualityTimeThreshold, FROM_HERE);
 }
 
-bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, LayoutObject* object, Image* image, const void *layer, const LayoutSize& layoutSize)
+bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, const LayoutObject* object, Image* image, const void *layer, const LayoutSize& layoutSize)
 {
     // If the image is not a bitmap image, then none of this is relevant and we just paint at high
     // quality.

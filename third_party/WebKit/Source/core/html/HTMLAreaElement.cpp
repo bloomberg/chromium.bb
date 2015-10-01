@@ -92,7 +92,7 @@ bool HTMLAreaElement::pointInArea(LayoutPoint location, const LayoutSize& contai
     return m_region->contains(FloatPoint(location));
 }
 
-Path HTMLAreaElement::computePath(LayoutObject* obj) const
+Path HTMLAreaElement::computePath(const LayoutObject* obj) const
 {
     if (!obj)
         return Path();
@@ -117,7 +117,7 @@ Path HTMLAreaElement::computePath(LayoutObject* obj) const
     return p;
 }
 
-LayoutRect HTMLAreaElement::computeRect(LayoutObject* obj) const
+LayoutRect HTMLAreaElement::computeRect(const LayoutObject* obj) const
 {
     return enclosingLayoutRect(computePath(obj).boundingRect());
 }

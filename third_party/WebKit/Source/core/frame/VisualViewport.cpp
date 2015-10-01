@@ -576,7 +576,7 @@ GraphicsLayer* VisualViewport::layerForVerticalScrollbar() const
     return m_overlayScrollbarVertical.get();
 }
 
-void VisualViewport::paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip)
+void VisualViewport::paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) const
 {
 }
 

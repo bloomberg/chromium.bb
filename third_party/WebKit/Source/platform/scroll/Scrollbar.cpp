@@ -176,7 +176,7 @@ void Scrollbar::updateThumbProportion()
     updateThumb();
 }
 
-void Scrollbar::paint(GraphicsContext* context, const IntRect& damageRect)
+void Scrollbar::paint(GraphicsContext* context, const IntRect& damageRect) const
 {
     if (!frameRect().intersects(damageRect))
         return;

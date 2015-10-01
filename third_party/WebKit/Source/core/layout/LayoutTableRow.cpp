@@ -212,7 +212,7 @@ bool LayoutTableRow::nodeAtPoint(HitTestResult& result, const HitTestLocation& l
     return false;
 }
 
-void LayoutTableRow::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutTableRow::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     TableRowPainter(*this).paint(paintInfo, paintOffset);
 }

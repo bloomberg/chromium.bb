@@ -51,7 +51,7 @@ DEFINE_TRACE(CSSGradientColorStop)
     visitor->trace(m_color);
 }
 
-PassRefPtr<Image> CSSGradientValue::image(LayoutObject* layoutObject, const IntSize& size)
+PassRefPtr<Image> CSSGradientValue::image(const LayoutObject* layoutObject, const IntSize& size)
 {
     if (size.isEmpty())
         return nullptr;

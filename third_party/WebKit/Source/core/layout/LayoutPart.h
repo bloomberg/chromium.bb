@@ -52,14 +52,14 @@ public:
     bool updateWidgetGeometry();
 
     bool isLayoutPart() const final { return true; }
-    virtual void paintContents(const PaintInfo&, const LayoutPoint&);
+    virtual void paintContents(const PaintInfo&, const LayoutPoint&) const;
 
 protected:
     DeprecatedPaintLayerType layerTypeRequired() const override;
 
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
     void layout() override;
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
     CursorDirective getCursor(const LayoutPoint&, Cursor&) const final;
 
     // Overridden to invalidate the child frame if any.

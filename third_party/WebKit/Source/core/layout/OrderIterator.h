@@ -48,9 +48,13 @@ public:
 
     OrderIterator(const LayoutBox*);
 
-    LayoutBox* currentChild() const { return m_currentChild; }
+    LayoutBox* currentChild() { return m_currentChild; }
+    const LayoutBox* currentChild() const { return m_currentChild; }
     LayoutBox* first();
+    const LayoutBox* first() const { return const_cast<OrderIterator*>(this)->first(); }
     LayoutBox* next();
+    const LayoutBox* next() const { return const_cast<OrderIterator*>(this)->next(); }
+
     void reset();
 
 private:

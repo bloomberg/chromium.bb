@@ -159,7 +159,7 @@ class DeprecatedPaintLayerClipper {
     DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerClipper);
 public:
-    explicit DeprecatedPaintLayerClipper(LayoutBoxModelObject&);
+    explicit DeprecatedPaintLayerClipper(const LayoutBoxModelObject&);
 
     void clearClipRectsIncludingDescendants();
     void clearClipRectsIncludingDescendants(ClipRectsCacheSlot);
@@ -202,7 +202,9 @@ private:
     bool shouldRespectOverflowClip(const ClipRectsContext&) const;
 
     // FIXME: Could this be a LayoutBox?
-    LayoutBoxModelObject& m_layoutObject;
+    const LayoutBoxModelObject& m_layoutObject;
+
+    // Lazily created by 'cache() const'.
     mutable OwnPtr<ClipRectsCache> m_cache;
 };
 

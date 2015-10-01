@@ -23,7 +23,7 @@ class ComputedStyle;
 class ObjectPainter {
     STACK_ALLOCATED();
 public:
-    ObjectPainter(LayoutObject& layoutObject) : m_layoutObject(layoutObject) { }
+    ObjectPainter(const LayoutObject& layoutObject) : m_layoutObject(layoutObject) { }
 
     void paintOutline(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintInlineChildrenOutlines(const PaintInfo&, const LayoutPoint& paintOffset);
@@ -41,7 +41,7 @@ private:
     static void drawSolidBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
         BoxSide, Color, int adjacentWidth1, int adjacentWidth2, bool antialias);
 
-    LayoutObject& m_layoutObject;
+    const LayoutObject& m_layoutObject;
 };
 
 } // namespace blink

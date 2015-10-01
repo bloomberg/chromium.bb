@@ -80,7 +80,7 @@ int LayoutFileUploadControl::maxFilenameWidth() const
     return std::max(0, contentBoxRect().pixelSnappedWidth() - uploadButtonWidth - afterButtonSpacing);
 }
 
-void LayoutFileUploadControl::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutFileUploadControl::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     FileUploadControlPainter(*this).paintObject(paintInfo, paintOffset);
 }

@@ -52,7 +52,7 @@ public:
     void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize& containerSize, float) override { m_containerSize = containerSize; }
     void addClient(LayoutObject*) override;
     void removeClient(LayoutObject*) override;
-    PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
+    PassRefPtr<Image> image(const LayoutObject*, const IntSize&) const override;
     bool knownToBeOpaque(const LayoutObject*) const override;
 
     DECLARE_VIRTUAL_TRACE();

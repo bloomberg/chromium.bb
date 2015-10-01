@@ -45,11 +45,11 @@ using namespace HTMLNames;
 
 class Event;
 
-HTMLMediaElement* toParentMediaElement(Node* node)
+const HTMLMediaElement* toParentMediaElement(const Node* node)
 {
     if (!node)
         return nullptr;
-    Node* mediaNode = node->shadowHost();
+    const Node* mediaNode = node->shadowHost();
     if (!mediaNode)
         return nullptr;
     if (!isHTMLMediaElement(mediaNode))
@@ -58,13 +58,13 @@ HTMLMediaElement* toParentMediaElement(Node* node)
     return toHTMLMediaElement(mediaNode);
 }
 
-MediaControlElementType mediaControlElementType(Node* node)
+MediaControlElementType mediaControlElementType(const Node* node)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(node->isMediaControlElement());
-    HTMLElement* element = toHTMLElement(node);
+    const HTMLElement* element = toHTMLElement(node);
     if (isHTMLInputElement(*element))
-        return static_cast<MediaControlInputElement*>(element)->displayType();
-    return static_cast<MediaControlDivElement*>(element)->displayType();
+        return static_cast<const MediaControlInputElement*>(element)->displayType();
+    return static_cast<const MediaControlDivElement*>(element)->displayType();
 }
 
 MediaControlElement::MediaControlElement(MediaControls& mediaControls, MediaControlElementType displayType, HTMLElement* element)

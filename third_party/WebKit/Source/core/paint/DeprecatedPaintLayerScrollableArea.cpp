@@ -404,7 +404,7 @@ void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newS
         // If we're in the middle of layout, we'll just update layers once layout has finished.
         layer()->updateLayerPositionsAfterOverflowScroll(scrollDelta);
         // Update regions, scrolling may change the clip of a particular region.
-        frameView->updateAnnotatedRegions();
+        frameView->updateDocumentAnnotatedRegions();
         frameView->setNeedsUpdateWidgetPositions();
         updateCompositingLayersAfterScroll();
     }
@@ -976,44 +976,44 @@ IntSize DeprecatedPaintLayerScrollableArea::scrollbarOffset(const Scrollbar* scr
     return IntSize();
 }
 
-static inline LayoutObject* layoutObjectForScrollbar(LayoutObject& layoutObject)
+static inline const LayoutObject& layoutObjectForScrollbar(const LayoutObject& layoutObject)
 {
     if (Node* node = layoutObject.node()) {
         if (layoutObject.isLayoutView()) {
             Document& doc = node->document();
             if (Settings* settings = doc.settings()) {
                 if (!settings->allowCustomScrollbarInMainFrame() && layoutObject.frame() && layoutObject.frame()->isMainFrame())
-                    return &layoutObject;
+                    return layoutObject;
             }
 
             // Try the <body> element first as a scrollbar source.
             Element* body = doc.body();
             if (body && body->layoutObject() && body->layoutObject()->style()->hasPseudoStyle(SCROLLBAR))
-                return body->layoutObject();
+                return *body->layoutObject();
 
             // If the <body> didn't have a custom style, then the root element might.
             Element* docElement = doc.documentElement();
             if (docElement && docElement->layoutObject() && docElement->layoutObject()->style()->hasPseudoStyle(SCROLLBAR))
-                return docElement->layoutObject();
+                return *docElement->layoutObject();
 
             // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
             LayoutPart* frameLayoutObject = node->document().frame()->ownerLayoutObject();
             if (frameLayoutObject && frameLayoutObject->style()->hasPseudoStyle(SCROLLBAR))
-                return frameLayoutObject;
+                return *frameLayoutObject;
         }
         if (ShadowRoot* shadowRoot = node->containingShadowRoot()) {
             if (shadowRoot->type() == ShadowRootType::UserAgent)
-                return shadowRoot->host()->layoutObject();
+                return *shadowRoot->host()->layoutObject();
         }
     }
 
-    return &layoutObject;
+    return layoutObject;
 }
 
 bool DeprecatedPaintLayerScrollableArea::needsScrollbarReconstruction() const
 {
-    LayoutObject* actualLayoutObject = layoutObjectForScrollbar(box());
-    bool shouldUseCustom = actualLayoutObject->isBox() && actualLayoutObject->style()->hasPseudoStyle(SCROLLBAR);
+    const LayoutObject& actualLayoutObject = layoutObjectForScrollbar(box());
+    bool shouldUseCustom = actualLayoutObject.isBox() && actualLayoutObject.styleRef().hasPseudoStyle(SCROLLBAR);
     bool hasAnyScrollbar = hasScrollbar();
     bool hasCustom = (hasHorizontalScrollbar() && horizontalScrollbar()->isCustomScrollbar()) || (hasVerticalScrollbar() && verticalScrollbar()->isCustomScrollbar());
     return hasAnyScrollbar && (shouldUseCustom != hasCustom);
@@ -1118,8 +1118,8 @@ void DeprecatedPaintLayerScrollableArea::updateScrollCornerStyle()
     if (!m_scrollCorner && hasOverlayScrollbars())
         return;
 
-    LayoutObject* actualLayoutObject = layoutObjectForScrollbar(box());
-    RefPtr<ComputedStyle> corner = box().hasOverflowClip() ? actualLayoutObject->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), actualLayoutObject->style()) : PassRefPtr<ComputedStyle>(nullptr);
+    const LayoutObject& actualLayoutObject = layoutObjectForScrollbar(box());
+    RefPtr<ComputedStyle> corner = box().hasOverflowClip() ? actualLayoutObject.getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), actualLayoutObject.style()) : PassRefPtr<ComputedStyle>(nullptr);
     if (corner) {
         if (!m_scrollCorner) {
             m_scrollCorner = LayoutScrollbarPart::createAnonymous(&box().document());
@@ -1246,8 +1246,8 @@ void DeprecatedPaintLayerScrollableArea::updateResizerStyle()
     if (!m_resizer && !box().canResize())
         return;
 
-    LayoutObject* actualLayoutObject = layoutObjectForScrollbar(box());
-    RefPtr<ComputedStyle> resizer = box().hasOverflowClip() ? actualLayoutObject->getUncachedPseudoStyle(PseudoStyleRequest(RESIZER), actualLayoutObject->style()) : PassRefPtr<ComputedStyle>(nullptr);
+    const LayoutObject& actualLayoutObject = layoutObjectForScrollbar(box());
+    RefPtr<ComputedStyle> resizer = box().hasOverflowClip() ? actualLayoutObject.getUncachedPseudoStyle(PseudoStyleRequest(RESIZER), actualLayoutObject.style()) : PassRefPtr<ComputedStyle>(nullptr);
     if (resizer) {
         if (!m_resizer) {
             m_resizer = LayoutScrollbarPart::createAnonymous(&box().document());
@@ -1526,14 +1526,14 @@ PassRefPtrWillBeRawPtr<Scrollbar> DeprecatedPaintLayerScrollableArea::ScrollbarM
 {
     ASSERT(orientation == HorizontalScrollbar ? !m_hBarIsAttached : !m_vBarIsAttached);
     RefPtrWillBeRawPtr<Scrollbar> widget = nullptr;
-    LayoutObject* actualLayoutObject = layoutObjectForScrollbar(m_scrollableArea->box());
-    bool hasCustomScrollbarStyle = actualLayoutObject->isBox() && actualLayoutObject->style()->hasPseudoStyle(SCROLLBAR);
+    const LayoutObject& actualLayoutObject = layoutObjectForScrollbar(m_scrollableArea->box());
+    bool hasCustomScrollbarStyle = actualLayoutObject.isBox() && actualLayoutObject.styleRef().hasPseudoStyle(SCROLLBAR);
     if (hasCustomScrollbarStyle) {
-        widget = LayoutScrollbar::createCustomScrollbar(m_scrollableArea.get(), orientation, actualLayoutObject->node());
+        widget = LayoutScrollbar::createCustomScrollbar(m_scrollableArea.get(), orientation, actualLayoutObject.node());
     } else {
         ScrollbarControlSize scrollbarSize = RegularScrollbar;
-        if (actualLayoutObject->style()->hasAppearance())
-            scrollbarSize = LayoutTheme::theme().scrollbarControlSizeForPart(actualLayoutObject->style()->appearance());
+        if (actualLayoutObject.styleRef().hasAppearance())
+            scrollbarSize = LayoutTheme::theme().scrollbarControlSizeForPart(actualLayoutObject.styleRef().appearance());
         widget = Scrollbar::create(m_scrollableArea.get(), orientation, scrollbarSize);
         if (orientation == HorizontalScrollbar)
             m_scrollableArea->didAddScrollbar(widget.get(), HorizontalScrollbar);

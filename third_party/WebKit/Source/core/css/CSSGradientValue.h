@@ -83,7 +83,7 @@ namespace blink {
 
 class CSSGradientValue : public CSSImageGeneratorValue {
 public:
-    PassRefPtr<Image> image(LayoutObject*, const IntSize&);
+    PassRefPtr<Image> image(const LayoutObject*, const IntSize&);
 
     void setFirstX(PassRefPtrWillBeRawPtr<CSSValue> val) { m_firstX = val; }
     void setFirstY(PassRefPtrWillBeRawPtr<CSSValue> val) { m_firstY = val; }

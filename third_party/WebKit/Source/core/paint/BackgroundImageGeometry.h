@@ -27,7 +27,7 @@ public:
 
     void calculate(const LayoutBoxModelObject&, const LayoutBoxModelObject* paintContainer,
         const GlobalPaintFlags, const FillLayer&, const LayoutRect& paintRect,
-        LayoutObject* backgroundObject = nullptr);
+        const LayoutObject* backgroundObject = nullptr);
 
     IntRect destRect() const { return m_destRect; }
     IntSize tileSize() const { return m_tileSize; }

@@ -44,8 +44,8 @@ private:
     void computePreferredLogicalWidths() override;
     bool avoidsFloats() const override { return true; }
 
-    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override;
-    void paintMask(const PaintInfo&, const LayoutPoint&) override;
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) const override;
+    void paintMask(const PaintInfo&, const LayoutPoint&) const override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFieldset, isFieldset());

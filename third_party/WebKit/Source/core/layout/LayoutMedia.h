@@ -66,7 +66,7 @@ private:
     bool isChildAllowed(LayoutObject*, const ComputedStyle&) const final;
 
     bool isImage() const final { return false; }
-    void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
+    void paintReplaced(const PaintInfo&, const LayoutPoint&) const override;
 
     bool backgroundShouldAlwaysBeClipped() const final { return false; }
 

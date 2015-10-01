@@ -15,12 +15,12 @@ class LayoutSVGContainer;
 class SVGContainerPainter {
     STACK_ALLOCATED();
 public:
-    SVGContainerPainter(LayoutSVGContainer& layoutSVGContainer) : m_layoutSVGContainer(layoutSVGContainer) { }
+    SVGContainerPainter(const LayoutSVGContainer& layoutSVGContainer) : m_layoutSVGContainer(layoutSVGContainer) { }
 
     void paint(const PaintInfo&);
 
 private:
-    LayoutSVGContainer& m_layoutSVGContainer;
+    const LayoutSVGContainer& m_layoutSVGContainer;
 };
 
 } // namespace blink

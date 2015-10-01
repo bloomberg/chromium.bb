@@ -316,7 +316,7 @@ unsigned LayoutMultiColumnSet::actualColumnCount() const
     return firstFragmentainerGroup().actualColumnCount();
 }
 
-void LayoutMultiColumnSet::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutMultiColumnSet::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     MultiColumnSetPainter(*this).paintObject(paintInfo, paintOffset);
 }

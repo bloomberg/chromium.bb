@@ -117,8 +117,8 @@ public:
 
     void invalidatePaintForViewAndCompositedLayers();
 
-    void paint(const PaintInfo&, const LayoutPoint&) override;
-    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) const override;
 
     enum SelectionPaintInvalidationMode { PaintInvalidationNewXOROld, PaintInvalidationNewMinusOld };
     void setSelection(LayoutObject* start, int startPos, LayoutObject*, int endPos, SelectionPaintInvalidationMode = PaintInvalidationNewXOROld);

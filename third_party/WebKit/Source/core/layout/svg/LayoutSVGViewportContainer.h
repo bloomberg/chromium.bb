@@ -40,7 +40,7 @@ public:
     void determineIfLayoutSizeChanged() override;
     void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
 
     const char* name() const override { return "LayoutSVGViewportContainer"; }
 

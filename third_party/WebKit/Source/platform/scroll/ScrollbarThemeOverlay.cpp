@@ -73,7 +73,7 @@ bool ScrollbarThemeOverlay::usesOverlayScrollbars() const
     return true;
 }
 
-int ScrollbarThemeOverlay::thumbPosition(ScrollbarThemeClient* scrollbar)
+int ScrollbarThemeOverlay::thumbPosition(const ScrollbarThemeClient* scrollbar)
 {
     if (!scrollbar->totalSize())
         return 0;
@@ -83,7 +83,7 @@ int ScrollbarThemeOverlay::thumbPosition(ScrollbarThemeClient* scrollbar)
     return round(proportion * trackLen);
 }
 
-int ScrollbarThemeOverlay::thumbLength(ScrollbarThemeClient* scrollbar)
+int ScrollbarThemeOverlay::thumbLength(const ScrollbarThemeClient* scrollbar)
 {
     int trackLen = trackLength(scrollbar);
 
@@ -96,22 +96,22 @@ int ScrollbarThemeOverlay::thumbLength(ScrollbarThemeClient* scrollbar)
     return length;
 }
 
-bool ScrollbarThemeOverlay::hasThumb(ScrollbarThemeClient* scrollbar)
+bool ScrollbarThemeOverlay::hasThumb(const ScrollbarThemeClient* scrollbar)
 {
     return true;
 }
 
-IntRect ScrollbarThemeOverlay::backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool)
+IntRect ScrollbarThemeOverlay::backButtonRect(const ScrollbarThemeClient*, ScrollbarPart, bool)
 {
     return IntRect();
 }
 
-IntRect ScrollbarThemeOverlay::forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool)
+IntRect ScrollbarThemeOverlay::forwardButtonRect(const ScrollbarThemeClient*, ScrollbarPart, bool)
 {
     return IntRect();
 }
 
-IntRect ScrollbarThemeOverlay::trackRect(ScrollbarThemeClient* scrollbar, bool)
+IntRect ScrollbarThemeOverlay::trackRect(const ScrollbarThemeClient* scrollbar, bool)
 {
     IntRect rect = scrollbar->frameRect();
     if (scrollbar->orientation() == HorizontalScrollbar)
@@ -121,12 +121,12 @@ IntRect ScrollbarThemeOverlay::trackRect(ScrollbarThemeClient* scrollbar, bool)
     return rect;
 }
 
-int ScrollbarThemeOverlay::thumbThickness(ScrollbarThemeClient*)
+int ScrollbarThemeOverlay::thumbThickness(const ScrollbarThemeClient*)
 {
     return m_thumbThickness;
 }
 
-void ScrollbarThemeOverlay::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeOverlay::paintThumb(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, DisplayItem::ScrollbarThumb))
         return;
@@ -162,7 +162,7 @@ void ScrollbarThemeOverlay::paintThumb(GraphicsContext* context, ScrollbarThemeC
     Platform::current()->themeEngine()->paint(canvas, part, state, WebRect(rect), 0);
 }
 
-ScrollbarPart ScrollbarThemeOverlay::hitTest(ScrollbarThemeClient* scrollbar, const IntPoint& position)
+ScrollbarPart ScrollbarThemeOverlay::hitTest(const ScrollbarThemeClient* scrollbar, const IntPoint& position)
 {
     if (m_allowHitTest == DisallowHitTest)
         return NoPart;

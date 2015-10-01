@@ -66,7 +66,7 @@ static void adjustClipRectsForChildren(const LayoutObject& layoutObject, ClipRec
     }
 }
 
-static void applyClipRects(const ClipRectsContext& context, LayoutObject& layoutObject, LayoutPoint offset, ClipRects& clipRects)
+static void applyClipRects(const ClipRectsContext& context, const LayoutObject& layoutObject, LayoutPoint offset, ClipRects& clipRects)
 {
     ASSERT(layoutObject.hasOverflowClip() || layoutObject.hasClip());
     LayoutView* view = layoutObject.view();
@@ -91,7 +91,7 @@ static void applyClipRects(const ClipRectsContext& context, LayoutObject& layout
     }
 }
 
-DeprecatedPaintLayerClipper::DeprecatedPaintLayerClipper(LayoutBoxModelObject& layoutObject)
+DeprecatedPaintLayerClipper::DeprecatedPaintLayerClipper(const LayoutBoxModelObject& layoutObject)
     : m_layoutObject(layoutObject)
 {
 }

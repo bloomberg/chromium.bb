@@ -84,27 +84,27 @@ void BlockPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& 
         paintChild(*child, paintInfo, paintOffset);
 }
 
-void BlockPainter::paintChild(LayoutBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChild(const LayoutBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint childPoint = m_layoutBlock.flipForWritingModeForChild(&child, paintOffset);
     if (!child.hasSelfPaintingLayer() && !child.isFloating() && !child.isColumnSpanAll())
         child.paint(paintInfo, childPoint);
 }
 
-void BlockPainter::paintChildrenOfFlexibleBox(LayoutFlexibleBox& layoutFlexibleBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChildrenOfFlexibleBox(const LayoutFlexibleBox& layoutFlexibleBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    for (LayoutBox* child = layoutFlexibleBox.orderIterator().first(); child; child = layoutFlexibleBox.orderIterator().next())
+    for (const LayoutBox* child = layoutFlexibleBox.orderIterator().first(); child; child = layoutFlexibleBox.orderIterator().next())
         BlockPainter(layoutFlexibleBox).paintChildAsInlineBlock(*child, paintInfo, paintOffset);
 }
 
-void BlockPainter::paintChildAsInlineBlock(LayoutBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChildAsInlineBlock(const LayoutBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint childPoint = m_layoutBlock.flipForWritingModeForChild(&child, paintOffset);
     if (!child.hasSelfPaintingLayer() && !child.isFloating())
         paintAsInlineBlock(child, paintInfo, childPoint);
 }
 
-void BlockPainter::paintInlineBox(InlineBox& inlineBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintInlineBox(const InlineBox& inlineBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(&inlineBox.layoutObject()) || (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection))
         return;
@@ -116,7 +116,7 @@ void BlockPainter::paintInlineBox(InlineBox& inlineBox, const PaintInfo& paintIn
     paintAsInlineBlock(inlineBox.layoutObject(), paintInfo, childPoint);
 }
 
-void BlockPainter::paintAsInlineBlock(LayoutObject& layoutObject, const PaintInfo& paintInfo, const LayoutPoint& childPoint)
+void BlockPainter::paintAsInlineBlock(const LayoutObject& layoutObject, const PaintInfo& paintInfo, const LayoutPoint& childPoint)
 {
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
         return;
@@ -145,7 +145,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 {
     if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && m_layoutBlock.childrenInline()) {
         if (m_layoutBlock.paintOffsetChanged(paintOffset)) {
-            LineBoxListPainter(*m_layoutBlock.lineBoxes()).invalidateLineBoxPaintOffsets(paintInfo);
+            LineBoxListPainter(m_layoutBlock.lineBoxes()).invalidateLineBoxPaintOffsets(paintInfo);
             paintInfo.context->displayItemList()->invalidatePaintOffset(m_layoutBlock);
         }
         // Set previousPaintOffset here in case that m_layoutBlock paints nothing and no
@@ -277,7 +277,7 @@ void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& 
         if (paintInfo.phase == PaintPhaseChildOutlines)
             ObjectPainter(m_layoutBlock).paintInlineChildrenOutlines(paintInfo, paintOffset);
         else
-            LineBoxListPainter(*m_layoutBlock.lineBoxes()).paint(&m_layoutBlock, paintInfo, paintOffset);
+            LineBoxListPainter(m_layoutBlock.lineBoxes()).paint(m_layoutBlock, paintInfo, paintOffset);
     } else {
         PaintPhase newPhase = (paintInfo.phase == PaintPhaseChildOutlines) ? PaintPhaseOutline : paintInfo.phase;
         newPhase = (newPhase == PaintPhaseChildBlockBackgrounds) ? PaintPhaseChildBlockBackground : newPhase;

@@ -238,12 +238,12 @@ void LayoutPart::layout()
     clearNeedsLayout();
 }
 
-void LayoutPart::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutPart::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     PartPainter(*this).paint(paintInfo, paintOffset);
 }
 
-void LayoutPart::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutPart::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     PartPainter(*this).paintContents(paintInfo, paintOffset);
 }

@@ -94,7 +94,7 @@ void ScrollbarThemeMacCommon::unregisterScrollbar(ScrollbarThemeClient* scrollba
     scrollbarSet().remove(scrollbar);
 }
 
-void ScrollbarThemeMacCommon::paintGivenTickmarks(SkCanvas* canvas, ScrollbarThemeClient* scrollbar, const IntRect& rect, const Vector<IntRect>& tickmarks)
+void ScrollbarThemeMacCommon::paintGivenTickmarks(SkCanvas* canvas, const ScrollbarThemeClient* scrollbar, const IntRect& rect, const Vector<IntRect>& tickmarks)
 {
     if (scrollbar->orientation() != VerticalScrollbar)
         return;
@@ -133,7 +133,7 @@ void ScrollbarThemeMacCommon::paintGivenTickmarks(SkCanvas* canvas, ScrollbarThe
     }
 }
 
-void ScrollbarThemeMacCommon::paintTickmarks(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeMacCommon::paintTickmarks(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     // Note: This is only used for css-styled scrollbars on mac.
     if (scrollbar->orientation() != VerticalScrollbar)
@@ -201,7 +201,7 @@ double ScrollbarThemeMacCommon::autoscrollTimerDelay()
     return gAutoscrollButtonDelay;
 }
 
-bool ScrollbarThemeMacCommon::shouldDragDocumentInsteadOfThumb(ScrollbarThemeClient*, const PlatformMouseEvent& event)
+bool ScrollbarThemeMacCommon::shouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient*, const PlatformMouseEvent& event)
 {
     return event.altKey();
 }

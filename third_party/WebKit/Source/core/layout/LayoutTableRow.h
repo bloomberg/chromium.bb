@@ -148,7 +148,7 @@ private:
         return NoDeprecatedPaintLayer;
     }
 
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
 
     void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 

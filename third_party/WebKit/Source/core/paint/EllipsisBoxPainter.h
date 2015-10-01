@@ -22,7 +22,7 @@ class ComputedStyle;
 class EllipsisBoxPainter {
     STACK_ALLOCATED();
 public:
-    EllipsisBoxPainter(EllipsisBox& ellipsisBox) : m_ellipsisBox(ellipsisBox) { }
+    EllipsisBoxPainter(const EllipsisBox& ellipsisBox) : m_ellipsisBox(ellipsisBox) { }
 
     void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
 
@@ -30,7 +30,7 @@ private:
     void paintEllipsis(const PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle&);
     void paintSelection(GraphicsContext*, const LayoutPoint&, const ComputedStyle&, const Font&);
 
-    EllipsisBox& m_ellipsisBox;
+    const EllipsisBox& m_ellipsisBox;
 };
 
 } // namespace blink

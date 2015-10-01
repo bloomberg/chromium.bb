@@ -186,7 +186,7 @@ void CSSCrossfadeValue::loadSubimages(Document* document)
     m_crossfadeSubimageObserver.setReady(true);
 }
 
-PassRefPtr<Image> CSSCrossfadeValue::image(LayoutObject* layoutObject, const IntSize& size)
+PassRefPtr<Image> CSSCrossfadeValue::image(const LayoutObject* layoutObject, const IntSize& size)
 {
     if (size.isEmpty())
         return nullptr;

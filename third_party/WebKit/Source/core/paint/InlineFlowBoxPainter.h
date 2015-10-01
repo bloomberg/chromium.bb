@@ -26,7 +26,7 @@ class ComputedStyle;
 class InlineFlowBoxPainter {
     STACK_ALLOCATED();
 public:
-    InlineFlowBoxPainter(InlineFlowBox& inlineFlowBox) : m_inlineFlowBox(inlineFlowBox) { }
+    InlineFlowBoxPainter(const InlineFlowBox& inlineFlowBox) : m_inlineFlowBox(inlineFlowBox) { }
     void paint(const PaintInfo&, const LayoutPoint& paintOffset, const LayoutUnit lineTop, const LayoutUnit lineBottom);
 
     LayoutRect frameRectClampedToLineTopAndBottomIfNeeded() const;
@@ -46,7 +46,7 @@ private:
     };
     BorderPaintingType getBorderPaintType(const LayoutRect& adjustedFrameRect, IntRect& adjustedClipRect) const;
 
-    InlineFlowBox& m_inlineFlowBox;
+    const InlineFlowBox& m_inlineFlowBox;
 };
 
 } // namespace blink

@@ -17,7 +17,7 @@
 
 namespace blink {
 
-NinePieceImagePainter::NinePieceImagePainter(LayoutBoxModelObject& layoutObject)
+NinePieceImagePainter::NinePieceImagePainter(const LayoutBoxModelObject& layoutObject)
     : m_layoutObject(layoutObject)
 {
 }

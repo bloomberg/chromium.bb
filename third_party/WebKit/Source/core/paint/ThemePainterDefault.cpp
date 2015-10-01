@@ -49,7 +49,7 @@ bool useMockTheme()
     return LayoutTestSupport::isRunningLayoutTest();
 }
 
-WebThemeEngine::State getWebThemeState(const LayoutObject* o)
+WebThemeEngine::State getWebThemeState(const LayoutObject& o)
 {
     if (!LayoutTheme::isEnabled(o))
         return WebThemeEngine::StateDisabled;
@@ -67,7 +67,7 @@ WebThemeEngine::State getWebThemeState(const LayoutObject* o)
 
 class DirectionFlippingScope {
 public:
-    DirectionFlippingScope(LayoutObject*, const PaintInfo&, const IntRect&);
+    DirectionFlippingScope(const LayoutObject&, const PaintInfo&, const IntRect&);
     ~DirectionFlippingScope();
 
 private:
@@ -75,8 +75,8 @@ private:
     const PaintInfo& m_paintInfo;
 };
 
-DirectionFlippingScope::DirectionFlippingScope(LayoutObject* layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
-    : m_needsFlipping(!layoutObject->styleRef().isLeftToRightDirection())
+DirectionFlippingScope::DirectionFlippingScope(const LayoutObject& layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
+    : m_needsFlipping(!layoutObject.styleRef().isLeftToRightDirection())
     , m_paintInfo(paintInfo)
 {
     if (!m_needsFlipping)
@@ -93,13 +93,13 @@ DirectionFlippingScope::~DirectionFlippingScope()
     m_paintInfo.context->restore();
 }
 
-IntRect determinateProgressValueRectFor(LayoutProgress* layoutProgress, const IntRect& rect)
+IntRect determinateProgressValueRectFor(const LayoutProgress& layoutProgress, const IntRect& rect)
 {
-    int dx = rect.width() * layoutProgress->position();
+    int dx = rect.width() * layoutProgress.position();
     return IntRect(rect.x(), rect.y(), dx, rect.height());
 }
 
-IntRect indeterminateProgressValueRectFor(LayoutProgress* layoutProgress, const IntRect& rect)
+IntRect indeterminateProgressValueRectFor(const LayoutProgress& layoutProgress, const IntRect& rect)
 {
     // Value comes from default of GTK+.
     static const int progressActivityBlocks = 5;
@@ -109,21 +109,21 @@ IntRect indeterminateProgressValueRectFor(LayoutProgress* layoutProgress, const 
     if (movableWidth <= 0)
         return IntRect();
 
-    double progress = layoutProgress->animationProgress();
+    double progress = layoutProgress.animationProgress();
     if (progress < 0.5)
         return IntRect(rect.x() + progress * 2 * movableWidth, rect.y(), valueWidth, rect.height());
     return IntRect(rect.x() + (1.0 - progress) * 2 * movableWidth, rect.y(), valueWidth, rect.height());
 }
 
-IntRect progressValueRectFor(LayoutProgress* layoutProgress, const IntRect& rect)
+IntRect progressValueRectFor(const LayoutProgress& layoutProgress, const IntRect& rect)
 {
-    return layoutProgress->isDeterminate() ? determinateProgressValueRectFor(layoutProgress, rect) : indeterminateProgressValueRectFor(layoutProgress, rect);
+    return layoutProgress.isDeterminate() ? determinateProgressValueRectFor(layoutProgress, rect) : indeterminateProgressValueRectFor(layoutProgress, rect);
 }
 
-IntRect convertToPaintingRect(LayoutObject* inputLayoutObject, const LayoutObject* partLayoutObject, LayoutRect partRect, const IntRect& localOffset)
+IntRect convertToPaintingRect(const LayoutObject& inputLayoutObject, const LayoutObject& partLayoutObject, LayoutRect partRect, const IntRect& localOffset)
 {
     // Compute an offset between the partLayoutObject and the inputLayoutObject.
-    LayoutSize offsetFromInputLayoutObject = -partLayoutObject->offsetFromAncestorContainer(inputLayoutObject);
+    LayoutSize offsetFromInputLayoutObject = -partLayoutObject.offsetFromAncestorContainer(&inputLayoutObject);
     // Move the rect into partLayoutObject's coords.
     partRect.move(offsetFromInputLayoutObject);
     // Account for the local drawing offset.
@@ -134,14 +134,14 @@ IntRect convertToPaintingRect(LayoutObject* inputLayoutObject, const LayoutObjec
 
 } // namespace
 
-bool ThemePainterDefault::paintCheckbox(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool ThemePainterDefault::paintCheckbox(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
     extraParams.button.checked = LayoutTheme::isChecked(o);
     extraParams.button.indeterminate = LayoutTheme::isIndeterminate(o);
 
-    float zoomLevel = o->style()->effectiveZoom();
+    float zoomLevel = o.styleRef().effectiveZoom();
     GraphicsContextStateSaver stateSaver(*i.context, false);
     IntRect unzoomedRect = rect;
     if (zoomLevel != 1) {
@@ -157,7 +157,7 @@ bool ThemePainterDefault::paintCheckbox(LayoutObject* o, const PaintInfo& i, con
     return false;
 }
 
-bool ThemePainterDefault::paintRadio(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool ThemePainterDefault::paintRadio(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -167,27 +167,27 @@ bool ThemePainterDefault::paintRadio(LayoutObject* o, const PaintInfo& i, const 
     return false;
 }
 
-bool ThemePainterDefault::paintButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool ThemePainterDefault::paintButton(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
     extraParams.button.hasBorder = true;
     extraParams.button.backgroundColor = useMockTheme() ? 0xffc0c0c0 : defaultButtonBackgroundColor;
-    if (o->hasBackground())
-        extraParams.button.backgroundColor = o->resolveColor(CSSPropertyBackgroundColor).rgb();
+    if (o.hasBackground())
+        extraParams.button.backgroundColor = o.resolveColor(CSSPropertyBackgroundColor).rgb();
 
     Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartButton, getWebThemeState(o), WebRect(rect), &extraParams);
     return false;
 }
 
-bool ThemePainterDefault::paintTextField(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool ThemePainterDefault::paintTextField(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
 {
     // WebThemeEngine does not handle border rounded corner and background image
     // so return true to draw CSS border and background.
-    if (o->style()->hasBorderRadius() || o->style()->hasBackgroundImage())
+    if (o.styleRef().hasBorderRadius() || o.styleRef().hasBackgroundImage())
         return true;
 
-    ControlPart part = o->style()->appearance();
+    ControlPart part = o.styleRef().appearance();
 
     WebThemeEngine::ExtraParams extraParams;
     extraParams.textField.isTextArea = part == TextAreaPart;
@@ -195,16 +195,16 @@ bool ThemePainterDefault::paintTextField(LayoutObject* o, const PaintInfo& i, co
 
     WebCanvas* canvas = i.context->canvas();
 
-    Color backgroundColor = o->resolveColor(CSSPropertyBackgroundColor);
+    Color backgroundColor = o.resolveColor(CSSPropertyBackgroundColor);
     extraParams.textField.backgroundColor = backgroundColor.rgb();
 
     Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartTextField, getWebThemeState(o), WebRect(rect), &extraParams);
     return false;
 }
 
-bool ThemePainterDefault::paintMenuList(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool ThemePainterDefault::paintMenuList(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
 {
-    if (!o->isBox())
+    if (!o.isBox())
         return false;
 
     const int right = rect.x() + rect.width();
@@ -212,14 +212,14 @@ bool ThemePainterDefault::paintMenuList(LayoutObject* o, const PaintInfo& i, con
 
     WebThemeEngine::ExtraParams extraParams;
     extraParams.menuList.arrowY = middle;
-    const LayoutBox* box = toLayoutBox(o);
+    const LayoutBox& box = toLayoutBox(o);
     // Match Chromium Win behaviour of showing all borders if any are shown.
-    extraParams.menuList.hasBorder = box->borderRight() || box->borderLeft() || box->borderTop() || box->borderBottom();
-    extraParams.menuList.hasBorderRadius = o->style()->hasBorderRadius();
+    extraParams.menuList.hasBorder = box.borderRight() || box.borderLeft() || box.borderTop() || box.borderBottom();
+    extraParams.menuList.hasBorderRadius = o.styleRef().hasBorderRadius();
     // Fallback to transparent if the specified color object is invalid.
     Color backgroundColor(Color::transparent);
-    if (o->hasBackground())
-        backgroundColor = o->resolveColor(CSSPropertyBackgroundColor);
+    if (o.hasBackground())
+        backgroundColor = o.resolveColor(CSSPropertyBackgroundColor);
     extraParams.menuList.backgroundColor = backgroundColor.rgb();
 
     // If we have a background image, don't fill the content area to expose the
@@ -227,18 +227,18 @@ bool ThemePainterDefault::paintMenuList(LayoutObject* o, const PaintInfo& i, con
     // alpha of the color is 0. The API of Windows GDI ignores the alpha.
     // FIXME: the normal Aura theme doesn't care about this, so we should
     // investigate if we really need fillContentArea.
-    extraParams.menuList.fillContentArea = !o->style()->hasBackgroundImage() && backgroundColor.alpha();
+    extraParams.menuList.fillContentArea = !o.styleRef().hasBackgroundImage() && backgroundColor.alpha();
 
     if (useMockTheme()) {
         // The size and position of the drop-down button is different between
         // the mock theme and the regular aura theme.
-        int spacingTop = box->borderTop() + box->paddingTop();
-        int spacingBottom = box->borderBottom() + box->paddingBottom();
-        int spacingRight = box->borderRight() + box->paddingRight();
-        extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
+        int spacingTop = box.borderTop() + box.paddingTop();
+        int spacingBottom = box.borderBottom() + box.paddingBottom();
+        int spacingRight = box.borderRight() + box.paddingRight();
+        extraParams.menuList.arrowX = (o.styleRef().direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
         extraParams.menuList.arrowHeight = rect.height() - spacingBottom - spacingTop;
     } else {
-        extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 7 : right - 13;
+        extraParams.menuList.arrowX = (o.styleRef().direction() == RTL) ? rect.x() + 7 : right - 13;
     }
 
     WebCanvas* canvas = i.context->canvas();
@@ -247,9 +247,9 @@ bool ThemePainterDefault::paintMenuList(LayoutObject* o, const PaintInfo& i, con
     return false;
 }
 
-bool ThemePainterDefault::paintMenuListButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool ThemePainterDefault::paintMenuListButton(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
 {
-    if (!o->isBox())
+    if (!o.isBox())
         return false;
 
     const int right = rect.x() + rect.width();
@@ -258,21 +258,21 @@ bool ThemePainterDefault::paintMenuListButton(LayoutObject* o, const PaintInfo& 
     WebThemeEngine::ExtraParams extraParams;
     extraParams.menuList.arrowY = middle;
     extraParams.menuList.hasBorder = false;
-    extraParams.menuList.hasBorderRadius = o->style()->hasBorderRadius();
+    extraParams.menuList.hasBorderRadius = o.styleRef().hasBorderRadius();
     extraParams.menuList.backgroundColor = Color::transparent;
     extraParams.menuList.fillContentArea = false;
 
     if (useMockTheme()) {
-        const LayoutBox* box = toLayoutBox(o);
+        const LayoutBox& box = toLayoutBox(o);
         // The size and position of the drop-down button is different between
         // the mock theme and the regular aura theme.
-        int spacingTop = box->borderTop() + box->paddingTop();
-        int spacingBottom = box->borderBottom() + box->paddingBottom();
-        int spacingRight = box->borderRight() + box->paddingRight();
-        extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
+        int spacingTop = box.borderTop() + box.paddingTop();
+        int spacingBottom = box.borderBottom() + box.paddingBottom();
+        int spacingRight = box.borderRight() + box.paddingRight();
+        extraParams.menuList.arrowX = (o.styleRef().direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
         extraParams.menuList.arrowHeight = rect.height() - spacingBottom - spacingTop;
     } else {
-        extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 7 : right - 13;
+        extraParams.menuList.arrowX = (o.styleRef().direction() == RTL) ? rect.x() + 7 : right - 13;
     }
 
     WebCanvas* canvas = i.context->canvas();
@@ -281,16 +281,16 @@ bool ThemePainterDefault::paintMenuListButton(LayoutObject* o, const PaintInfo& 
     return false;
 }
 
-bool ThemePainterDefault::paintSliderTrack(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool ThemePainterDefault::paintSliderTrack(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
-    extraParams.slider.vertical = o->style()->appearance() == SliderVerticalPart;
+    extraParams.slider.vertical = o.styleRef().appearance() == SliderVerticalPart;
 
     paintSliderTicks(o, i, rect);
 
     // FIXME: Mock theme doesn't handle zoomed sliders.
-    float zoomLevel = useMockTheme() ? 1 : o->style()->effectiveZoom();
+    float zoomLevel = useMockTheme() ? 1 : o.styleRef().effectiveZoom();
     GraphicsContextStateSaver stateSaver(*i.context, false);
     IntRect unzoomedRect = rect;
     if (zoomLevel != 1) {
@@ -307,15 +307,15 @@ bool ThemePainterDefault::paintSliderTrack(LayoutObject* o, const PaintInfo& i, 
     return false;
 }
 
-bool ThemePainterDefault::paintSliderThumb(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool ThemePainterDefault::paintSliderThumb(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
-    extraParams.slider.vertical = o->style()->appearance() == SliderThumbVerticalPart;
+    extraParams.slider.vertical = o.styleRef().appearance() == SliderThumbVerticalPart;
     extraParams.slider.inDrag = LayoutTheme::isPressed(o);
 
     // FIXME: Mock theme doesn't handle zoomed sliders.
-    float zoomLevel = useMockTheme() ? 1 : o->style()->effectiveZoom();
+    float zoomLevel = useMockTheme() ? 1 : o.styleRef().effectiveZoom();
     GraphicsContextStateSaver stateSaver(*i.context, false);
     IntRect unzoomedRect = rect;
     if (zoomLevel != 1) {
@@ -331,7 +331,7 @@ bool ThemePainterDefault::paintSliderThumb(LayoutObject* o, const PaintInfo& i, 
     return false;
 }
 
-bool ThemePainterDefault::paintInnerSpinButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool ThemePainterDefault::paintInnerSpinButton(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -342,16 +342,16 @@ bool ThemePainterDefault::paintInnerSpinButton(LayoutObject* o, const PaintInfo&
     return false;
 }
 
-bool ThemePainterDefault::paintProgressBar(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool ThemePainterDefault::paintProgressBar(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
 {
-    if (!o->isProgress())
+    if (!o.isProgress())
         return true;
 
-    LayoutProgress* layoutProgress = toLayoutProgress(o);
+    const LayoutProgress& layoutProgress = toLayoutProgress(o);
     IntRect valueRect = progressValueRectFor(layoutProgress, rect);
 
     WebThemeEngine::ExtraParams extraParams;
-    extraParams.progressBar.determinate = layoutProgress->isDeterminate();
+    extraParams.progressBar.determinate = layoutProgress.isDeterminate();
     extraParams.progressBar.valueRectX = valueRect.x();
     extraParams.progressBar.valueRectY = valueRect.y();
     extraParams.progressBar.valueRectWidth = valueRect.width();
@@ -363,34 +363,34 @@ bool ThemePainterDefault::paintProgressBar(LayoutObject* o, const PaintInfo& i, 
     return false;
 }
 
-bool ThemePainterDefault::paintTextArea(LayoutObject* o, const PaintInfo& i, const IntRect& r)
+bool ThemePainterDefault::paintTextArea(const LayoutObject& o, const PaintInfo& i, const IntRect& r)
 {
     return paintTextField(o, i, r);
 }
 
-bool ThemePainterDefault::paintSearchField(LayoutObject* o, const PaintInfo& i, const IntRect& r)
+bool ThemePainterDefault::paintSearchField(const LayoutObject& o, const PaintInfo& i, const IntRect& r)
 {
     return paintTextField(o, i, r);
 }
 
-bool ThemePainterDefault::paintSearchFieldCancelButton(LayoutObject* cancelButtonObject, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterDefault::paintSearchFieldCancelButton(const LayoutObject& cancelButtonObject, const PaintInfo& paintInfo, const IntRect& r)
 {
     // Get the layoutObject of <input> element.
-    if (!cancelButtonObject->node())
+    if (!cancelButtonObject.node())
         return false;
-    Node* input = cancelButtonObject->node()->shadowHost();
-    LayoutObject* baseLayoutObject = input ? input->layoutObject() : cancelButtonObject;
-    if (!baseLayoutObject->isBox())
+    Node* input = cancelButtonObject.node()->shadowHost();
+    const LayoutObject& baseLayoutObject = input ? *input->layoutObject() : cancelButtonObject;
+    if (!baseLayoutObject.isBox())
         return false;
-    LayoutBox* inputLayoutBox = toLayoutBox(baseLayoutObject);
-    LayoutRect inputContentBox = inputLayoutBox->contentBoxRect();
+    const LayoutBox& inputLayoutBox = toLayoutBox(baseLayoutObject);
+    LayoutRect inputContentBox = inputLayoutBox.contentBoxRect();
 
     // Make sure the scaled button stays square and will fit in its parent's box.
     LayoutUnit cancelButtonSize = std::min(inputContentBox.width(), std::min<LayoutUnit>(inputContentBox.height(), r.height()));
     // Calculate cancel button's coordinates relative to the input element.
     // Center the button vertically.  Round up though, so if it has to be one pixel off-center, it will
     // be one pixel closer to the bottom of the field.  This tends to look better with the text.
-    LayoutRect cancelButtonRect(cancelButtonObject->offsetFromAncestorContainer(inputLayoutBox).width(),
+    LayoutRect cancelButtonRect(cancelButtonObject.offsetFromAncestorContainer(&inputLayoutBox).width(),
         inputContentBox.y() + (inputContentBox.height() - cancelButtonSize + 1) / 2,
         cancelButtonSize, cancelButtonSize);
     IntRect paintingRect = convertToPaintingRect(inputLayoutBox, cancelButtonObject, cancelButtonRect, r);
@@ -401,24 +401,24 @@ bool ThemePainterDefault::paintSearchFieldCancelButton(LayoutObject* cancelButto
     return false;
 }
 
-bool ThemePainterDefault::paintSearchFieldResultsDecoration(LayoutObject* magnifierObject, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterDefault::paintSearchFieldResultsDecoration(const LayoutObject& magnifierObject, const PaintInfo& paintInfo, const IntRect& r)
 {
     // Get the layoutObject of <input> element.
-    if (!magnifierObject->node())
+    if (!magnifierObject.node())
         return false;
-    Node* input = magnifierObject->node()->shadowHost();
-    LayoutObject* baseLayoutObject = input ? input->layoutObject() : magnifierObject;
-    if (!baseLayoutObject->isBox())
+    Node* input = magnifierObject.node()->shadowHost();
+    const LayoutObject& baseLayoutObject = input ? *input->layoutObject() : magnifierObject;
+    if (!baseLayoutObject.isBox())
         return false;
-    LayoutBox* inputLayoutBox = toLayoutBox(baseLayoutObject);
-    LayoutRect inputContentBox = inputLayoutBox->contentBoxRect();
+    const LayoutBox& inputLayoutBox = toLayoutBox(baseLayoutObject);
+    LayoutRect inputContentBox = inputLayoutBox.contentBoxRect();
 
     // Make sure the scaled decoration stays square and will fit in its parent's box.
     LayoutUnit magnifierSize = std::min(inputContentBox.width(), std::min<LayoutUnit>(inputContentBox.height(), r.height()));
     // Calculate decoration's coordinates relative to the input element.
     // Center the decoration vertically.  Round up though, so if it has to be one pixel off-center, it will
     // be one pixel closer to the bottom of the field.  This tends to look better with the text.
-    LayoutRect magnifierRect(magnifierObject->offsetFromAncestorContainer(inputLayoutBox).width(),
+    LayoutRect magnifierRect(magnifierObject.offsetFromAncestorContainer(&inputLayoutBox).width(),
         inputContentBox.y() + (inputContentBox.height() - magnifierSize + 1) / 2,
         magnifierSize, magnifierSize);
     IntRect paintingRect = convertToPaintingRect(inputLayoutBox, magnifierObject, magnifierRect, r);

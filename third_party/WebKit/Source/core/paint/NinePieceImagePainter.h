@@ -19,12 +19,12 @@ class NinePieceImage;
 class NinePieceImagePainter {
     STACK_ALLOCATED();
 public:
-    NinePieceImagePainter(LayoutBoxModelObject&);
+    NinePieceImagePainter(const LayoutBoxModelObject&);
 
     bool paint(GraphicsContext*, const LayoutRect&, const ComputedStyle&, const NinePieceImage&, SkXfermode::Mode) const;
 
 private:
-    LayoutBoxModelObject& m_layoutObject;
+    const LayoutBoxModelObject& m_layoutObject;
 };
 
 } // namespace blink

@@ -17,15 +17,15 @@ struct PaintInfo;
 class TableSectionPainter {
     STACK_ALLOCATED();
 public:
-    TableSectionPainter(LayoutTableSection& layoutTableSection) : m_layoutTableSection(layoutTableSection) { }
+    TableSectionPainter(const LayoutTableSection& layoutTableSection) : m_layoutTableSection(layoutTableSection) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
 
 private:
     void paintObject(const PaintInfo&, const LayoutPoint&);
-    void paintCell(LayoutTableCell*, const PaintInfo&, const LayoutPoint&);
+    void paintCell(const LayoutTableCell&, const PaintInfo&, const LayoutPoint&);
 
-    LayoutTableSection& m_layoutTableSection;
+    const LayoutTableSection& m_layoutTableSection;
 };
 
 } // namespace blink

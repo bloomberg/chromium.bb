@@ -521,7 +521,7 @@ void LayoutInline::addChildToContinuation(LayoutObject* newChild, LayoutObject* 
     return beforeChildParent->addChildIgnoringContinuation(newChild, beforeChild);
 }
 
-void LayoutInline::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutInline::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     InlinePainter(*this).paint(paintInfo, paintOffset);
 }

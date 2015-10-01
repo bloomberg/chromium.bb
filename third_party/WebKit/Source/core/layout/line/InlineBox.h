@@ -87,7 +87,7 @@ public:
     void moveInInlineDirection(LayoutUnit delta) { moveInLogicalDirection(LayoutSize(delta, LayoutUnit())); }
     void moveInBlockDirection(LayoutUnit delta) { moveInLogicalDirection(LayoutSize(LayoutUnit(), delta)); }
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
+    virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) const;
     virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom);
 
     // InlineBoxes are allocated out of the rendering partition.
@@ -279,17 +279,17 @@ public:
         return LineLayoutBoxModel(nullptr);
     }
 
-    LayoutPoint locationIncludingFlipping();
+    LayoutPoint locationIncludingFlipping() const;
 
     // Converts from a rect in the logical space of the InlineBox to one in the physical space
     // of the containing block. The logical space of an InlineBox may be transposed for vertical text and
     // flipped for right-to-left text.
-    void logicalRectToPhysicalRect(LayoutRect&);
+    void logicalRectToPhysicalRect(LayoutRect&) const;
 
-    void flipForWritingMode(FloatRect&);
-    FloatPoint flipForWritingMode(const FloatPoint&);
-    void flipForWritingMode(LayoutRect&);
-    LayoutPoint flipForWritingMode(const LayoutPoint&);
+    void flipForWritingMode(FloatRect&) const;
+    FloatPoint flipForWritingMode(const FloatPoint&) const;
+    void flipForWritingMode(LayoutRect&) const;
+    LayoutPoint flipForWritingMode(const LayoutPoint&) const;
 
     bool knownToHaveNoOverflow() const { return m_bitfields.knownToHaveNoOverflow(); }
     void clearKnownToHaveNoOverflow();
@@ -381,7 +381,7 @@ public:
 private:
     // Converts the given (top-left) position from the logical space of the InlineBox to the physical space of the
     // containing block. The size indicates the size of the box whose point is being flipped.
-    LayoutPoint logicalPositionToPhysicalPoint(const LayoutPoint&, const LayoutSize&);
+    LayoutPoint logicalPositionToPhysicalPoint(const LayoutPoint&, const LayoutSize&) const;
 
     InlineBox* m_next; // The next element on the same line as us.
     InlineBox* m_prev; // The previous element on the same line as us.

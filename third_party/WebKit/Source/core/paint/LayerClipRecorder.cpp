@@ -40,7 +40,7 @@ static bool inContainingBlockChain(DeprecatedPaintLayer* startLayer, DeprecatedP
         return true;
 
     LayoutView* view = startLayer->layoutObject()->view();
-    for (LayoutBlock* currentBlock = startLayer->layoutObject()->containingBlock(); currentBlock && currentBlock != view; currentBlock = currentBlock->containingBlock()) {
+    for (const LayoutBlock* currentBlock = startLayer->layoutObject()->containingBlock(); currentBlock &&currentBlock != view; currentBlock = currentBlock->containingBlock()) {
         if (currentBlock->layer() == endLayer)
             return true;
     }

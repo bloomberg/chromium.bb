@@ -74,7 +74,7 @@ public:
     bool popsMenuByArrowKeys() const override { return true; }
     bool popsMenuBySpaceKey() const final { return true; }
 
-    IntSize meterSizeForBounds(const LayoutMeter*, const IntRect&) const override;
+    IntSize meterSizeForBounds(const LayoutMeter&, const IntRect&) const override;
     bool supportsMeter(ControlPart) const override;
 
     // Returns the repeat interval of the animation for the progress bar.
@@ -111,14 +111,14 @@ public:
     IntSize sizeForSystemFont(const ComputedStyle&, const IntSize* sizes) const;
     void setFontFromControlSize(ComputedStyle&, NSControlSize) const;
 
-    void updateCheckedState(NSCell*, const LayoutObject*);
-    void updateEnabledState(NSCell*, const LayoutObject*);
-    void updateFocusedState(NSCell*, const LayoutObject*);
-    void updatePressedState(NSCell*, const LayoutObject*);
+    void updateCheckedState(NSCell*, const LayoutObject&);
+    void updateEnabledState(NSCell*, const LayoutObject&);
+    void updateFocusedState(NSCell*, const LayoutObject&);
+    void updatePressedState(NSCell*, const LayoutObject&);
 
     // Helpers for adjusting appearance and for painting
 
-    void setPopupButtonCellState(const LayoutObject*, const IntRect&);
+    void setPopupButtonCellState(const LayoutObject&, const IntRect&);
     const IntSize* popupButtonSizes() const;
     const int* popupButtonMargins() const;
     const int* popupButtonPadding(NSControlSize) const;
@@ -127,7 +127,7 @@ public:
     const IntSize* searchFieldSizes() const;
     const IntSize* cancelButtonSizes() const;
     const IntSize* resultsButtonSizes() const;
-    void setSearchCellState(LayoutObject*, const IntRect&);
+    void setSearchCellState(const LayoutObject&, const IntRect&);
     void setSearchFieldSize(ComputedStyle&) const;
 
     NSPopUpButtonCell* popupButton() const;
@@ -135,16 +135,16 @@ public:
     NSTextFieldCell* textField() const;
 
     NSLevelIndicatorStyle levelIndicatorStyleFor(ControlPart) const;
-    NSLevelIndicatorCell* levelIndicatorFor(const LayoutMeter*) const;
+    NSLevelIndicatorCell* levelIndicatorFor(const LayoutMeter&) const;
 
     // A view associated to the contained document. Subclasses may not have such a view and return a fake.
-    NSView* documentViewFor(LayoutObject*) const;
+    NSView* documentViewFor(const LayoutObject&) const;
 
     int minimumProgressBarHeight(const ComputedStyle&) const;
     const IntSize* progressBarSizes() const;
     const int* progressBarMargins(NSControlSize) const;
 
-    void updateActiveState(NSCell*, const LayoutObject*);
+    void updateActiveState(NSCell*, const LayoutObject&);
 
     // We estimate the animation rate of a Mac OS X progress bar is 33 fps.
     // Hard code the value here because we haven't found API for it.

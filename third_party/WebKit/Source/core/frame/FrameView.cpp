@@ -210,7 +210,6 @@ void FrameView::reset()
     m_lastViewportSize = IntSize();
     m_lastZoomFactor = 1.0f;
     m_isTrackingPaintInvalidations = s_initialTrackAllPaintInvalidations;
-    m_lastPaintTime = 0;
     m_isPainting = false;
     m_visuallyNonEmptyCharacterCount = 0;
     m_visuallyNonEmptyPixelCount = 0;
@@ -1024,7 +1023,7 @@ void FrameView::layout()
         if (url.isValid() && !url.isAboutBlankURL())
             cache->handleLayoutComplete(document);
     }
-    updateAnnotatedRegions();
+    updateDocumentAnnotatedRegions();
 
     scheduleOrPerformPostLayoutTasks();
 
@@ -2285,7 +2284,7 @@ bool FrameView::scrollAnimatorEnabled() const
     return m_frame->settings() && m_frame->settings()->scrollAnimatorEnabled();
 }
 
-void FrameView::updateAnnotatedRegions()
+void FrameView::updateDocumentAnnotatedRegions() const
 {
     Document* document = m_frame->document();
     if (!document->hasAnnotatedRegions())
@@ -3742,17 +3741,17 @@ ScrollBehavior FrameView::scrollBehaviorStyle() const
     return ScrollBehaviorInstant;
 }
 
-void FrameView::paint(GraphicsContext* context, const IntRect& rect)
+void FrameView::paint(GraphicsContext* context, const IntRect& rect) const
 {
     paint(context, GlobalPaintNormalPhase, rect);
 }
 
-void FrameView::paint(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& rect)
+void FrameView::paint(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& rect) const
 {
     FramePainter(*this).paint(context, globalPaintFlags, rect);
 }
 
-void FrameView::paintContents(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& damageRect)
+void FrameView::paintContents(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& damageRect) const
 {
     FramePainter(*this).paintContents(context, globalPaintFlags, damageRect);
 }
@@ -3905,7 +3904,7 @@ LayoutObject* FrameView::viewportLayoutObject()
     return nullptr;
 }
 
-void FrameView::collectAnnotatedRegions(LayoutObject& layoutObject, Vector<AnnotatedRegionValue>& regions)
+void FrameView::collectAnnotatedRegions(LayoutObject& layoutObject, Vector<AnnotatedRegionValue>& regions) const
 {
     // LayoutTexts don't have their own style, they just use their parent's style,
     // so we don't want to include them.

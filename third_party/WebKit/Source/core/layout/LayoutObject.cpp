@@ -1049,7 +1049,7 @@ IntRect LayoutObject::paintingRootRect(IntRect& topLevelRect)
     return result;
 }
 
-void LayoutObject::paint(const PaintInfo&, const LayoutPoint&)
+void LayoutObject::paint(const PaintInfo&, const LayoutPoint&) const
 {
 }
 

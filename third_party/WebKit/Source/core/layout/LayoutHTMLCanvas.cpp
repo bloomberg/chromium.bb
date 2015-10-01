@@ -48,7 +48,7 @@ DeprecatedPaintLayerType LayoutHTMLCanvas::layerTypeRequired() const
     return NormalDeprecatedPaintLayer;
 }
 
-void LayoutHTMLCanvas::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutHTMLCanvas::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     HTMLCanvasPainter(*this).paintReplaced(paintInfo, paintOffset);
 }

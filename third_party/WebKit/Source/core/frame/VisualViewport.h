@@ -201,7 +201,7 @@ private:
     bool visualViewportSuppliesScrollbars() const;
 
     // GraphicsLayerClient implementation.
-    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override;
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) const override;
     String debugName(const GraphicsLayer*) override;
 
     void setupScrollbar(WebScrollbar::Orientation);

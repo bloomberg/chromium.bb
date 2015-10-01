@@ -67,10 +67,10 @@ enum MediaControlElementType {
     MediaOverlayCastOnButton,
 };
 
-CORE_EXPORT HTMLMediaElement* toParentMediaElement(Node*);
-inline HTMLMediaElement* toParentMediaElement(LayoutObject* layoutObject) { return toParentMediaElement(layoutObject->node()); }
+CORE_EXPORT const HTMLMediaElement* toParentMediaElement(const Node*);
+inline const HTMLMediaElement* toParentMediaElement(const LayoutObject& layoutObject) { return toParentMediaElement(layoutObject.node()); }
 
-CORE_EXPORT MediaControlElementType mediaControlElementType(Node*);
+CORE_EXPORT MediaControlElementType mediaControlElementType(const Node*);
 
 // ----------------------------
 
@@ -85,7 +85,7 @@ public:
     // needed, also.
     void setDoesFit(bool);
 
-    MediaControlElementType displayType() { return m_displayType; }
+    MediaControlElementType displayType() const { return m_displayType; }
 
     DECLARE_VIRTUAL_TRACE();
 

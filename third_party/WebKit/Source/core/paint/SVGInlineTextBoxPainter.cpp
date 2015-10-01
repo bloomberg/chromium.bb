@@ -25,7 +25,7 @@
 
 namespace blink {
 
-static inline bool textShouldBePainted(LayoutSVGInlineText& textLayoutObject)
+static inline bool textShouldBePainted(const LayoutSVGInlineText& textLayoutObject)
 {
     // Font::pixelSize(), returns FontDescription::computedPixelSize(), which returns "int(x + 0.5)".
     // If the absolute font size on screen is below x=0.5, don't render anything.
@@ -103,7 +103,7 @@ void SVGInlineTextBoxPainter::paintTextFragments(const PaintInfo& paintInfo, Lay
     AffineTransform fragmentTransform;
     unsigned textFragmentsSize = m_svgInlineTextBox.textFragments().size();
     for (unsigned i = 0; i < textFragmentsSize; ++i) {
-        SVGTextFragment& fragment = m_svgInlineTextBox.textFragments().at(i);
+        const SVGTextFragment& fragment = m_svgInlineTextBox.textFragments().at(i);
 
         GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
         fragment.buildFragmentTransform(fragmentTransform);
@@ -172,7 +172,7 @@ void SVGInlineTextBoxPainter::paintSelectionBackground(const PaintInfo& paintInf
     AffineTransform fragmentTransform;
     unsigned textFragmentsSize = m_svgInlineTextBox.textFragments().size();
     for (unsigned i = 0; i < textFragmentsSize; ++i) {
-        SVGTextFragment& fragment = m_svgInlineTextBox.textFragments().at(i);
+        const SVGTextFragment& fragment = m_svgInlineTextBox.textFragments().at(i);
 
         fragmentStartPosition = startPosition;
         fragmentEndPosition = endPosition;

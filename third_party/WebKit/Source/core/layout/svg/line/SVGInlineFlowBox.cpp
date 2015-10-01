@@ -28,7 +28,7 @@
 
 namespace blink {
 
-void SVGInlineFlowBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
+void SVGInlineFlowBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit) const
 {
     SVGInlineFlowBoxPainter(*this).paint(paintInfo, paintOffset);
 }

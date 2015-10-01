@@ -51,14 +51,14 @@ void _NSDrawCarbonThemeListBox(NSRect frame, BOOL enabled, BOOL flipped, BOOL al
 
 namespace blink {
 
-bool ThemePainterMac::paintTextField(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterMac::paintTextField(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
     LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, r);
 
 #if __MAC_OS_X_VERSION_MIN_REQUIRED <= 1070
-    bool useNSTextFieldCell = o->style()->hasAppearance()
-        && o->style()->visitedDependentColor(CSSPropertyBackgroundColor) == Color::white
-        && !o->style()->hasBackgroundImage();
+    bool useNSTextFieldCell = o.styleRef().hasAppearance()
+        && o.styleRef().visitedDependentColor(CSSPropertyBackgroundColor) == Color::white
+        && !o.styleRef().hasBackgroundImage();
 
     // We do not use NSTextFieldCell to draw styled text fields on Lion and
     // SnowLeopard because there are a number of bugs on those platforms that
@@ -83,7 +83,7 @@ bool ThemePainterMac::paintTextField(LayoutObject* o, const PaintInfo& paintInfo
     return false;
 }
 
-bool ThemePainterMac::paintCapsLockIndicator(LayoutObject*, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterMac::paintCapsLockIndicator(const LayoutObject&, const PaintInfo& paintInfo, const IntRect& r)
 {
     // This draws the caps lock indicator as it was done by
     // WKDrawCapsLockIndicator.
@@ -144,27 +144,27 @@ bool ThemePainterMac::paintCapsLockIndicator(LayoutObject*, const PaintInfo& pai
     return false;
 }
 
-bool ThemePainterMac::paintTextArea(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterMac::paintTextArea(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
     LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, r);
     _NSDrawCarbonThemeListBox(r, LayoutTheme::isEnabled(o) && !LayoutTheme::isReadOnlyControl(o), YES, YES);
     return false;
 }
 
-bool ThemePainterMac::paintMenuList(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterMac::paintMenuList(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
     m_layoutTheme.setPopupButtonCellState(o, r);
 
     NSPopUpButtonCell* popupButton = m_layoutTheme.popupButton();
 
-    float zoomLevel = o->style()->effectiveZoom();
+    float zoomLevel = o.styleRef().effectiveZoom();
     IntSize size = m_layoutTheme.popupButtonSizes()[[popupButton controlSize]];
     size.setHeight(size.height() * zoomLevel);
     size.setWidth(r.width());
 
     // Now inflate it to account for the shadow.
     IntRect inflatedRect = r;
-    if (r.width() >= m_layoutTheme.minimumMenuListSize(o->styleRef()))
+    if (r.width() >= m_layoutTheme.minimumMenuListSize(o.styleRef()))
         inflatedRect = ThemeMac::inflateRect(inflatedRect, size, m_layoutTheme.popupButtonMargins(), zoomLevel);
 
     LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, ThemeMac::inflateRectForFocusRing(inflatedRect));
@@ -179,16 +179,16 @@ bool ThemePainterMac::paintMenuList(LayoutObject* o, const PaintInfo& paintInfo,
 
     NSView *view = m_layoutTheme.documentViewFor(o);
     [popupButton drawWithFrame:inflatedRect inView:view];
-    if (!ThemeMac::drawWithFrameDrawsFocusRing() && LayoutTheme::isFocused(o) && o->style()->outlineStyleIsAuto())
+    if (!ThemeMac::drawWithFrameDrawsFocusRing() && LayoutTheme::isFocused(o) && o.styleRef().outlineStyleIsAuto())
         [popupButton cr_drawFocusRingWithFrame:inflatedRect inView:view];
     [popupButton setControlView:nil];
 
     return false;
 }
 
-bool ThemePainterMac::paintMeter(LayoutObject* layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
+bool ThemePainterMac::paintMeter(const LayoutObject& layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    if (!layoutObject->isMeter())
+    if (!layoutObject.isMeter())
         return true;
 
     LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, rect);
@@ -201,35 +201,35 @@ bool ThemePainterMac::paintMeter(LayoutObject* layoutObject, const PaintInfo& pa
     return false;
 }
 
-bool ThemePainterMac::paintProgressBar(LayoutObject* layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
+bool ThemePainterMac::paintProgressBar(const LayoutObject& layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    if (!layoutObject->isProgress())
+    if (!layoutObject.isProgress())
         return true;
 
-    float zoomLevel = layoutObject->style()->effectiveZoom();
-    NSControlSize controlSize = m_layoutTheme.controlSizeForFont(layoutObject->styleRef());
+    float zoomLevel = layoutObject.styleRef().effectiveZoom();
+    NSControlSize controlSize = m_layoutTheme.controlSizeForFont(layoutObject.styleRef());
     IntSize size = m_layoutTheme.progressBarSizes()[controlSize];
     size.setHeight(size.height() * zoomLevel);
     size.setWidth(rect.width());
 
     // Now inflate it to account for the shadow.
     IntRect inflatedRect = rect;
-    if (rect.height() <= m_layoutTheme.minimumProgressBarHeight(layoutObject->styleRef()))
+    if (rect.height() <= m_layoutTheme.minimumProgressBarHeight(layoutObject.styleRef()))
         inflatedRect = ThemeMac::inflateRect(inflatedRect, size, m_layoutTheme.progressBarMargins(controlSize), zoomLevel);
 
-    LayoutProgress* layoutProgress = toLayoutProgress(layoutObject);
+    const LayoutProgress& layoutProgress = toLayoutProgress(layoutObject);
     HIThemeTrackDrawInfo trackInfo;
     trackInfo.version = 0;
     if (controlSize == NSRegularControlSize)
-        trackInfo.kind = layoutProgress->position() < 0 ? kThemeLargeIndeterminateBar : kThemeLargeProgressBar;
+        trackInfo.kind = layoutProgress.position() < 0 ? kThemeLargeIndeterminateBar : kThemeLargeProgressBar;
     else
-        trackInfo.kind = layoutProgress->position() < 0 ? kThemeMediumIndeterminateBar : kThemeMediumProgressBar;
+        trackInfo.kind = layoutProgress.position() < 0 ? kThemeMediumIndeterminateBar : kThemeMediumProgressBar;
 
     trackInfo.bounds = IntRect(IntPoint(), inflatedRect.size());
     trackInfo.min = 0;
     trackInfo.max = std::numeric_limits<SInt32>::max();
-    trackInfo.value = lround(layoutProgress->position() * nextafter(trackInfo.max, 0));
-    trackInfo.trackInfo.progress.phase = lround(layoutProgress->animationProgress() * nextafter(LayoutThemeMac::progressAnimationNumFrames, 0));
+    trackInfo.value = lround(layoutProgress.position() * nextafter(trackInfo.max, 0));
+    trackInfo.trackInfo.progress.phase = lround(layoutProgress.animationProgress() * nextafter(LayoutThemeMac::progressAnimationNumFrames, 0));
     trackInfo.attributes = kThemeTrackHorizontal;
     trackInfo.enableState = LayoutTheme::isActive(layoutObject) ? kThemeTrackActive : kThemeTrackInactive;
     trackInfo.reserved = 0;
@@ -246,7 +246,7 @@ bool ThemePainterMac::paintProgressBar(LayoutObject* layoutObject, const PaintIn
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
-    if (!layoutProgress->style()->isLeftToRightDirection()) {
+    if (!layoutProgress.styleRef().isLeftToRightDirection()) {
         paintInfo.context->translate(2 * inflatedRect.x() + inflatedRect.width(), 0);
         paintInfo.context->scale(-1, 1);
     }
@@ -256,26 +256,26 @@ bool ThemePainterMac::paintProgressBar(LayoutObject* layoutObject, const PaintIn
     return false;
 }
 
-bool ThemePainterMac::paintMenuListButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterMac::paintMenuListButton(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    IntRect bounds = IntRect(r.x() + o->style()->borderLeftWidth(),
-                             r.y() + o->style()->borderTopWidth(),
-                             r.width() - o->style()->borderLeftWidth() - o->style()->borderRightWidth(),
-                             r.height() - o->style()->borderTopWidth() - o->style()->borderBottomWidth());
+    IntRect bounds = IntRect(r.x() + o.styleRef().borderLeftWidth(),
+                             r.y() + o.styleRef().borderTopWidth(),
+                             r.width() - o.styleRef().borderLeftWidth() - o.styleRef().borderRightWidth(),
+                             r.height() - o.styleRef().borderTopWidth() - o.styleRef().borderBottomWidth());
     // Since we actually know the size of the control here, we restrict the font
     // scale to make sure the arrows will fit vertically in the bounds
-    float fontScale = std::min(o->style()->fontSize() / LayoutThemeMac::baseFontSize,
+    float fontScale = std::min(o.styleRef().fontSize() / LayoutThemeMac::baseFontSize,
         bounds.height() / (LayoutThemeMac::menuListBaseArrowHeight * 2 + LayoutThemeMac::menuListBaseSpaceBetweenArrows));
     float centerY = bounds.y() + bounds.height() / 2.0f;
     float arrowHeight = LayoutThemeMac::menuListBaseArrowHeight * fontScale;
     float arrowWidth = LayoutThemeMac::menuListBaseArrowWidth * fontScale;
-    float leftEdge = bounds.maxX() - LayoutThemeMac::menuListArrowPaddingRight * o->style()->effectiveZoom() - arrowWidth;
+    float leftEdge = bounds.maxX() - LayoutThemeMac::menuListArrowPaddingRight * o.styleRef().effectiveZoom() - arrowWidth;
     float spaceBetweenArrows = LayoutThemeMac::menuListBaseSpaceBetweenArrows * fontScale;
 
-    if (bounds.width() < arrowWidth + LayoutThemeMac::menuListArrowPaddingLeft * o->style()->effectiveZoom())
+    if (bounds.width() < arrowWidth + LayoutThemeMac::menuListArrowPaddingLeft * o.styleRef().effectiveZoom())
         return false;
 
-    Color color = o->style()->visitedDependentColor(CSSPropertyColor);
+    Color color = o.styleRef().visitedDependentColor(CSSPropertyColor);
 
     FloatPoint arrow1[3];
     arrow1[0] = FloatPoint(leftEdge, centerY - spaceBetweenArrows / 2.0f);
@@ -295,17 +295,17 @@ bool ThemePainterMac::paintMenuListButton(LayoutObject* o, const PaintInfo& pain
     return false;
 }
 
-bool ThemePainterMac::paintSliderTrack(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterMac::paintSliderTrack(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
     paintSliderTicks(o, paintInfo, r);
 
-    float zoomLevel = o->style()->effectiveZoom();
+    float zoomLevel = o.styleRef().effectiveZoom();
     FloatRect unzoomedRect = r;
 
-    if (o->style()->appearance() ==  SliderHorizontalPart || o->style()->appearance() ==  MediaSliderPart) {
+    if (o.styleRef().appearance() ==  SliderHorizontalPart || o.styleRef().appearance() ==  MediaSliderPart) {
         unzoomedRect.setY(ceilf(unzoomedRect.y() + unzoomedRect.height() / 2 - zoomLevel * LayoutThemeMac::sliderTrackWidth / 2));
         unzoomedRect.setHeight(zoomLevel * LayoutThemeMac::sliderTrackWidth);
-    } else if (o->style()->appearance() == SliderVerticalPart) {
+    } else if (o.styleRef().appearance() == SliderVerticalPart) {
         unzoomedRect.setX(ceilf(unzoomedRect.x() + unzoomedRect.width() / 2 - zoomLevel * LayoutThemeMac::sliderTrackWidth / 2));
         unzoomedRect.setWidth(zoomLevel * LayoutThemeMac::sliderTrackWidth);
     }
@@ -339,7 +339,7 @@ bool ThemePainterMac::paintSliderTrack(LayoutObject* o, const PaintInfo& paintIn
     if (!LayoutTheme::isEnabled(o))
         tintColor = Color(255, 255, 255, 128);
 
-    bool isVerticalSlider = o->style()->appearance() == SliderVerticalPart;
+    bool isVerticalSlider = o.styleRef().appearance() == SliderVerticalPart;
 
     int fillRadiusSize = (LayoutThemeMac::sliderTrackWidth - LayoutThemeMac::sliderTrackBorderWidth) / 2;
     IntSize fillRadius(fillRadiusSize, fillRadiusSize);
@@ -372,10 +372,10 @@ bool ThemePainterMac::paintSliderTrack(LayoutObject* o, const PaintInfo& paintIn
 }
 
 
-bool ThemePainterMac::paintSliderThumb(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterMac::paintSliderThumb(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
-    float zoomLevel = o->style()->effectiveZoom();
+    float zoomLevel = o.styleRef().effectiveZoom();
 
     FloatRect unzoomedRect(r.x(), r.y(), LayoutThemeMac::sliderThumbWidth, LayoutThemeMac::sliderThumbHeight);
     if (zoomLevel != 1.0f) {
@@ -460,17 +460,17 @@ static NSControlSize searchFieldControlSizeForFont(const ComputedStyle& style)
     return NSMiniControlSize;
 }
 
-bool ThemePainterMac::paintSearchField(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterMac::paintSearchField(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
     LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, r);
 
     NSSearchFieldCell* search = m_layoutTheme.search();
     m_layoutTheme.setSearchCellState(o, r);
-    [search setControlSize:searchFieldControlSizeForFont(o->styleRef())];
+    [search setControlSize:searchFieldControlSizeForFont(o.styleRef())];
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
-    float zoomLevel = o->style()->effectiveZoom();
+    float zoomLevel = o.styleRef().effectiveZoom();
 
     IntRect unzoomedRect = r;
 
@@ -494,20 +494,20 @@ bool ThemePainterMac::paintSearchField(LayoutObject* o, const PaintInfo& paintIn
     return false;
 }
 
-bool ThemePainterMac::paintSearchFieldCancelButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterMac::paintSearchFieldCancelButton(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    if (!o->node())
+    if (!o.node())
         return false;
-    Element* input = o->node()->shadowHost();
+    Element* input = o.node()->shadowHost();
     if (!input)
-        input = toElement(o->node());
+        input = toElement(o.node());
 
     if (!input->layoutObject()->isBox())
         return false;
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
-    float zoomLevel = o->style()->effectiveZoom();
+    float zoomLevel = o.styleRef().effectiveZoom();
     FloatRect unzoomedRect(r);
     if (zoomLevel != 1.0f) {
         unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
@@ -551,24 +551,24 @@ bool ThemePainterMac::paintSearchFieldCancelButton(LayoutObject* o, const PaintI
     return false;
 }
 
-bool ThemePainterMac::paintSearchFieldDecoration(LayoutObject*, const PaintInfo&, const IntRect&)
+bool ThemePainterMac::paintSearchFieldDecoration(const LayoutObject&, const PaintInfo&, const IntRect&)
 {
     return false;
 }
 
-bool ThemePainterMac::paintSearchFieldResultsDecoration(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterMac::paintSearchFieldResultsDecoration(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    if (!o->node())
+    if (!o.node())
         return false;
-    Node* input = o->node()->shadowHost();
+    Node* input = o.node()->shadowHost();
     if (!input)
-        input = o->node();
+        input = o.node();
     if (!input->layoutObject()->isBox())
         return false;
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
-    float zoomLevel = o->style()->effectiveZoom();
+    float zoomLevel = o.styleRef().effectiveZoom();
     FloatRect unzoomedRect(r);
     if (zoomLevel != 1) {
         unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
@@ -581,8 +581,8 @@ bool ThemePainterMac::paintSearchFieldResultsDecoration(LayoutObject* o, const P
     LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, r);
 
     NSSearchFieldCell* search = m_layoutTheme.search();
-    m_layoutTheme.setSearchCellState(input->layoutObject(), r);
-    [search setControlSize:searchFieldControlSizeForFont(o->styleRef())];
+    m_layoutTheme.setSearchCellState(*input->layoutObject(), r);
+    [search setControlSize:searchFieldControlSizeForFont(o.styleRef())];
     if ([search searchMenuTemplate] != nil)
         [search setSearchMenuTemplate:nil];
 

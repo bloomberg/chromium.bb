@@ -29,33 +29,33 @@ bool FramePainter::s_inPaintContents = false;
 
 void FramePainter::paint(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& rect)
 {
-    frameView().notifyPageThatContentAreaWillPaint();
+    m_frameView.notifyPageThatContentAreaWillPaint();
 
     IntRect documentDirtyRect = rect;
-    IntRect visibleAreaWithoutScrollbars(frameView().location(), frameView().visibleContentRect().size());
+    IntRect visibleAreaWithoutScrollbars(m_frameView.location(), m_frameView.visibleContentRect().size());
     documentDirtyRect.intersect(visibleAreaWithoutScrollbars);
 
     if (!documentDirtyRect.isEmpty()) {
-        TransformRecorder transformRecorder(*context, *frameView().layoutView(),
-            AffineTransform::translation(frameView().x() - frameView().scrollX(), frameView().y() - frameView().scrollY()));
+        TransformRecorder transformRecorder(*context, *m_frameView.layoutView(),
+            AffineTransform::translation(m_frameView.x() - m_frameView.scrollX(), m_frameView.y() - m_frameView.scrollY()));
 
-        ClipRecorder recorder(*context, *frameView().layoutView(), DisplayItem::ClipFrameToVisibleContentRect, LayoutRect(frameView().visibleContentRect()));
+        ClipRecorder recorder(*context, *m_frameView.layoutView(), DisplayItem::ClipFrameToVisibleContentRect, LayoutRect(m_frameView.visibleContentRect()));
 
-        documentDirtyRect.moveBy(-frameView().location() + frameView().scrollPosition());
+        documentDirtyRect.moveBy(-m_frameView.location() + m_frameView.scrollPosition());
         paintContents(context, globalPaintFlags, documentDirtyRect);
     }
 
     // Now paint the scrollbars.
-    if (!frameView().scrollbarsSuppressed() && (frameView().horizontalScrollbar() || frameView().verticalScrollbar())) {
+    if (!m_frameView.scrollbarsSuppressed() && (m_frameView.horizontalScrollbar() || m_frameView.verticalScrollbar())) {
         IntRect scrollViewDirtyRect = rect;
-        IntRect visibleAreaWithScrollbars(frameView().location(), frameView().visibleContentRect(IncludeScrollbars).size());
+        IntRect visibleAreaWithScrollbars(m_frameView.location(), m_frameView.visibleContentRect(IncludeScrollbars).size());
         scrollViewDirtyRect.intersect(visibleAreaWithScrollbars);
-        scrollViewDirtyRect.moveBy(-frameView().location());
+        scrollViewDirtyRect.moveBy(-m_frameView.location());
 
-        TransformRecorder transformRecorder(*context, *frameView().layoutView(),
-            AffineTransform::translation(frameView().x(), frameView().y()));
+        TransformRecorder transformRecorder(*context, *m_frameView.layoutView(),
+            AffineTransform::translation(m_frameView.x(), m_frameView.y()));
 
-        ClipRecorder recorder(*context, *frameView().layoutView(), DisplayItem::ClipFrameScrollbars, LayoutRect(IntPoint(), visibleAreaWithScrollbars.size()));
+        ClipRecorder recorder(*context, *m_frameView.layoutView(), DisplayItem::ClipFrameScrollbars, LayoutRect(IntPoint(), visibleAreaWithScrollbars.size()));
 
         paintScrollbars(context, scrollViewDirtyRect);
     }
@@ -63,36 +63,36 @@ void FramePainter::paint(GraphicsContext* context, const GlobalPaintFlags global
 
 void FramePainter::paintContents(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& rect)
 {
-    Document* document = frameView().frame().document();
+    Document* document = m_frameView.frame().document();
 
 #ifndef NDEBUG
     bool fillWithRed;
     if (document->printing())
         fillWithRed = false; // Printing, don't fill with red (can't remember why).
-    else if (frameView().frame().owner())
+    else if (m_frameView.frame().owner())
         fillWithRed = false; // Subframe, don't fill with red.
-    else if (frameView().isTransparent())
+    else if (m_frameView.isTransparent())
         fillWithRed = false; // Transparent, don't fill with red.
     else if (globalPaintFlags & GlobalPaintSelectionOnly)
         fillWithRed = false; // Selections are transparent, don't fill with red.
-    else if (frameView().nodeToDraw())
+    else if (m_frameView.nodeToDraw())
         fillWithRed = false; // Element images are transparent, don't fill with red.
     else
         fillWithRed = true;
 
-    if (fillWithRed && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, *frameView().layoutView(), DisplayItem::DebugRedFill, LayoutPoint())) {
-        IntRect contentRect(IntPoint(), frameView().contentsSize());
-        LayoutObjectDrawingRecorder drawingRecorder(*context, *frameView().layoutView(), DisplayItem::DebugRedFill, contentRect, LayoutPoint());
+    if (fillWithRed && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, *m_frameView.layoutView(), DisplayItem::DebugRedFill, LayoutPoint())) {
+        IntRect contentRect(IntPoint(), m_frameView.contentsSize());
+        LayoutObjectDrawingRecorder drawingRecorder(*context, *m_frameView.layoutView(), DisplayItem::DebugRedFill, contentRect, LayoutPoint());
     }
 #endif
 
-    LayoutView* layoutView = frameView().layoutView();
+    LayoutView* layoutView = m_frameView.layoutView();
     if (!layoutView) {
         WTF_LOG_ERROR("called FramePainter::paint with nil layoutObject");
         return;
     }
 
-    RELEASE_ASSERT(!frameView().needsLayout());
+    RELEASE_ASSERT(!m_frameView.needsLayout());
     ASSERT(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
     TRACE_EVENT1("devtools.timeline", "Paint", "data", InspectorPaintEvent::data(layoutView, LayoutRect(rect), 0));
@@ -108,11 +108,11 @@ void FramePainter::paintContents(GraphicsContext* context, const GlobalPaintFlag
     if (document->printing())
         localPaintFlags |= GlobalPaintFlattenCompositingLayers | GlobalPaintPrinting;
 
-    ASSERT(!frameView().isPainting());
-    frameView().setIsPainting(true);
+    ASSERT(!m_frameView.isPainting());
+    m_frameView.setIsPainting(true);
 
-    // frameView().nodeToDraw() is used to draw only one element (and its descendants)
-    LayoutObject* layoutObject = frameView().nodeToDraw() ? frameView().nodeToDraw()->layoutObject() : 0;
+    // m_frameView.nodeToDraw() is used to draw only one element (and its descendants)
+    LayoutObject* layoutObject = m_frameView.nodeToDraw() ? m_frameView.nodeToDraw()->layoutObject() : 0;
     DeprecatedPaintLayer* rootLayer = layoutView->layer();
 
 #if ENABLE(ASSERT)
@@ -130,13 +130,11 @@ void FramePainter::paintContents(GraphicsContext* context, const GlobalPaintFlag
     if (rootLayer->containsDirtyOverlayScrollbars())
         layerPainter.paintOverlayScrollbars(context, LayoutRect(rect), localPaintFlags, layoutObject);
 
-    frameView().setIsPainting(false);
-
-    frameView().setLastPaintTime(currentTime());
+    m_frameView.setIsPainting(false);
 
     // Regions may have changed as a result of the visibility/z-index of element changing.
     if (document->annotatedRegionsDirty())
-        frameView().updateAnnotatedRegions();
+        m_frameView.updateDocumentAnnotatedRegions();
 
     if (isTopLevelPainter) {
         // Everything that happens after paintContents completions is considered
@@ -150,48 +148,43 @@ void FramePainter::paintContents(GraphicsContext* context, const GlobalPaintFlag
 
 void FramePainter::paintScrollbars(GraphicsContext* context, const IntRect& rect)
 {
-    if (frameView().horizontalScrollbar() && !frameView().layerForHorizontalScrollbar())
-        paintScrollbar(context, frameView().horizontalScrollbar(), rect);
-    if (frameView().verticalScrollbar() && !frameView().layerForVerticalScrollbar())
-        paintScrollbar(context, frameView().verticalScrollbar(), rect);
+    if (m_frameView.horizontalScrollbar() && !m_frameView.layerForHorizontalScrollbar())
+        paintScrollbar(context, m_frameView.horizontalScrollbar(), rect);
+    if (m_frameView.verticalScrollbar() && !m_frameView.layerForVerticalScrollbar())
+        paintScrollbar(context, m_frameView.verticalScrollbar(), rect);
 
-    if (frameView().layerForScrollCorner())
+    if (m_frameView.layerForScrollCorner())
         return;
 
-    paintScrollCorner(context, frameView().scrollCornerRect());
+    paintScrollCorner(context, m_frameView.scrollCornerRect());
 }
 
 void FramePainter::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
 {
-    if (frameView().scrollCorner()) {
-        bool needsBackground = frameView().frame().isMainFrame();
-        if (needsBackground && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, *frameView().layoutView(), DisplayItem::ScrollbarCorner, LayoutPoint())) {
-            LayoutObjectDrawingRecorder drawingRecorder(*context, *frameView().layoutView(), DisplayItem::ScrollbarCorner, FloatRect(cornerRect), LayoutPoint());
-            context->fillRect(cornerRect, frameView().baseBackgroundColor());
+    if (m_frameView.scrollCorner()) {
+        bool needsBackground = m_frameView.frame().isMainFrame();
+        if (needsBackground && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, *m_frameView.layoutView(), DisplayItem::ScrollbarCorner, LayoutPoint())) {
+            LayoutObjectDrawingRecorder drawingRecorder(*context, *m_frameView.layoutView(), DisplayItem::ScrollbarCorner, FloatRect(cornerRect), LayoutPoint());
+            context->fillRect(cornerRect, m_frameView.baseBackgroundColor());
 
         }
-        ScrollbarPainter::paintIntoRect(frameView().scrollCorner(), context, cornerRect.location(), LayoutRect(cornerRect));
+        ScrollbarPainter::paintIntoRect(*m_frameView.scrollCorner(), context, cornerRect.location(), LayoutRect(cornerRect));
         return;
     }
 
-    ScrollbarTheme::theme()->paintScrollCorner(context, *frameView().layoutView(), cornerRect);
+    ScrollbarTheme::theme()->paintScrollCorner(context, *m_frameView.layoutView(), cornerRect);
 }
 
 void FramePainter::paintScrollbar(GraphicsContext* context, Scrollbar* bar, const IntRect& rect)
 {
-    bool needsBackground = bar->isCustomScrollbar() && frameView().frame().isMainFrame();
+    bool needsBackground = bar->isCustomScrollbar() && m_frameView.frame().isMainFrame();
     if (needsBackground) {
         IntRect toFill = bar->frameRect();
         toFill.intersect(rect);
-        context->fillRect(toFill, frameView().baseBackgroundColor());
+        context->fillRect(toFill, m_frameView.baseBackgroundColor());
     }
 
     bar->paint(context, rect);
-}
-
-FrameView& FramePainter::frameView()
-{
-    return *m_frameView;
 }
 
 } // namespace blink

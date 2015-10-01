@@ -23,11 +23,11 @@ enum RoundedInnerRectClipperBehavior {
 class RoundedInnerRectClipper {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    RoundedInnerRectClipper(LayoutObject&, const PaintInfo&, const LayoutRect&, const FloatRoundedRect& clipRect, RoundedInnerRectClipperBehavior);
+    RoundedInnerRectClipper(const LayoutObject&, const PaintInfo&, const LayoutRect&, const FloatRoundedRect& clipRect, RoundedInnerRectClipperBehavior);
     ~RoundedInnerRectClipper();
 
 private:
-    LayoutObject& m_layoutObject;
+    const LayoutObject& m_layoutObject;
     const PaintInfo& m_paintInfo;
     bool m_useDisplayItemList;
     DisplayItem::Type m_clipType;

@@ -17,14 +17,14 @@ class RootInlineBox;
 class RootInlineBoxPainter {
     STACK_ALLOCATED();
 public:
-    RootInlineBoxPainter(RootInlineBox& rootInlineBox) : m_rootInlineBox(rootInlineBox) { }
+    RootInlineBoxPainter(const RootInlineBox& rootInlineBox) : m_rootInlineBox(rootInlineBox) { }
 
     void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
 
 private:
     void paintEllipsisBox(const PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const;
 
-    RootInlineBox& m_rootInlineBox;
+    const RootInlineBox& m_rootInlineBox;
 };
 
 } // namespace blink

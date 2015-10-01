@@ -37,7 +37,7 @@ public:
 
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectDetailsMarker || LayoutBlockFlow::isOfType(type); }
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
 
     bool isOpen() const;
 };

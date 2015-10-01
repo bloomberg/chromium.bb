@@ -1320,17 +1320,17 @@ void LayoutBlock::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutSc
         layoutScope.setChildNeedsLayout(this);
 }
 
-void LayoutBlock::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutBlock::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     BlockPainter(*this).paint(paintInfo, paintOffset);
 }
 
-void LayoutBlock::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutBlock::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     BlockPainter(*this).paintChildren(paintInfo, paintOffset);
 }
 
-void LayoutBlock::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutBlock::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     BlockPainter(*this).paintObject(paintInfo, paintOffset);
 }
@@ -1655,7 +1655,7 @@ void LayoutBlock::markLinesDirtyInBlockRange(LayoutUnit logicalTop, LayoutUnit l
     }
 }
 
-bool LayoutBlock::isPointInOverflowControl(HitTestResult& result, const LayoutPoint& locationInContainer, const LayoutPoint& accumulatedOffset)
+bool LayoutBlock::isPointInOverflowControl(HitTestResult& result, const LayoutPoint& locationInContainer, const LayoutPoint& accumulatedOffset) const
 {
     if (!scrollsOverflow())
         return false;

@@ -56,9 +56,9 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
 public:
     ~CSSImageGeneratorValue();
 
-    void addClient(LayoutObject*, const IntSize&);
-    void removeClient(LayoutObject*);
-    PassRefPtr<Image> image(LayoutObject*, const IntSize&);
+    void addClient(const LayoutObject*, const IntSize&);
+    void removeClient(const LayoutObject*);
+    PassRefPtr<Image> image(const LayoutObject*, const IntSize&);
 
     bool isFixedSize() const;
     IntSize fixedSize(const LayoutObject*);
@@ -75,7 +75,7 @@ public:
 protected:
     explicit CSSImageGeneratorValue(ClassType);
 
-    Image* getImage(LayoutObject*, const IntSize&);
+    Image* getImage(const LayoutObject*, const IntSize&);
     void putImage(const IntSize&, PassRefPtr<Image>);
     const LayoutObjectSizeCountMap& clients() const { return m_clients; }
 

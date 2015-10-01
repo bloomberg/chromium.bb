@@ -67,7 +67,7 @@ void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement(ScrollbarButtonsPlace
 //     - drawing using WebThemeEngine functions
 //     - drawing tickmarks
 //     - Skia specific changes
-bool ScrollbarThemeMacNonOverlayAPI::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* context, const IntRect& damageRect)
+bool ScrollbarThemeMacNonOverlayAPI::paint(const ScrollbarThemeClient* scrollbar, GraphicsContext* context, const IntRect& damageRect)
 {
     DisplayItem::Type displayItemType = scrollbar->orientation() == HorizontalScrollbar ? DisplayItem::ScrollbarHorizontal : DisplayItem::ScrollbarVertical;
     if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, displayItemType))
@@ -165,7 +165,7 @@ ScrollbarButtonsPlacement ScrollbarThemeMacNonOverlayAPI::buttonsPlacement() con
     return gButtonPlacement;
 }
 
-bool ScrollbarThemeMacNonOverlayAPI::hasButtons(ScrollbarThemeClient* scrollbar)
+bool ScrollbarThemeMacNonOverlayAPI::hasButtons(const ScrollbarThemeClient* scrollbar)
 {
     return scrollbar->enabled() && buttonsPlacement() != ScrollbarButtonsPlacementNone
              && (scrollbar->orientation() == HorizontalScrollbar
@@ -173,7 +173,7 @@ bool ScrollbarThemeMacNonOverlayAPI::hasButtons(ScrollbarThemeClient* scrollbar)
              : scrollbar->height()) >= 2 * (cRealButtonLength[scrollbar->controlSize()] - cButtonHitInset[scrollbar->controlSize()]);
 }
 
-bool ScrollbarThemeMacNonOverlayAPI::hasThumb(ScrollbarThemeClient* scrollbar)
+bool ScrollbarThemeMacNonOverlayAPI::hasThumb(const ScrollbarThemeClient* scrollbar)
 {
     int minLengthForThumb = 2 * cButtonInset[scrollbar->controlSize()] + cThumbMinLength[scrollbar->controlSize()] + 1;
     return scrollbar->enabled() && (scrollbar->orientation() == HorizontalScrollbar ?
@@ -199,7 +199,7 @@ static IntRect buttonRepaintRect(const IntRect& buttonRect, ScrollbarOrientation
     return paintRect;
 }
 
-IntRect ScrollbarThemeMacNonOverlayAPI::backButtonRect(ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool painting)
+IntRect ScrollbarThemeMacNonOverlayAPI::backButtonRect(const ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool painting)
 {
     IntRect result;
 
@@ -233,7 +233,7 @@ IntRect ScrollbarThemeMacNonOverlayAPI::backButtonRect(ScrollbarThemeClient* scr
     return result;
 }
 
-IntRect ScrollbarThemeMacNonOverlayAPI::forwardButtonRect(ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool painting)
+IntRect ScrollbarThemeMacNonOverlayAPI::forwardButtonRect(const ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool painting)
 {
     IntRect result;
 
@@ -273,7 +273,7 @@ IntRect ScrollbarThemeMacNonOverlayAPI::forwardButtonRect(ScrollbarThemeClient* 
     return result;
 }
 
-IntRect ScrollbarThemeMacNonOverlayAPI::trackRect(ScrollbarThemeClient* scrollbar, bool painting)
+IntRect ScrollbarThemeMacNonOverlayAPI::trackRect(const ScrollbarThemeClient* scrollbar, bool painting)
 {
     if (painting || !hasButtons(scrollbar))
         return scrollbar->frameRect();
@@ -310,7 +310,7 @@ IntRect ScrollbarThemeMacNonOverlayAPI::trackRect(ScrollbarThemeClient* scrollba
     return IntRect(scrollbar->x(), scrollbar->y() + startWidth, thickness, scrollbar->height() - totalWidth);
 }
 
-int ScrollbarThemeMacNonOverlayAPI::minimumThumbLength(ScrollbarThemeClient* scrollbar)
+int ScrollbarThemeMacNonOverlayAPI::minimumThumbLength(const ScrollbarThemeClient* scrollbar)
 {
     return cThumbMinLength[scrollbar->controlSize()];
 }

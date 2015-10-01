@@ -44,11 +44,11 @@ public:
 
     void updateMarginsAndContent();
 
-    IntRect getRelativeMarkerRect();
-    LayoutRect localSelectionRect();
+    IntRect getRelativeMarkerRect() const;
+    LayoutRect localSelectionRect() const;
     bool isImage() const override;
-    const StyleImage* image() { return m_image.get(); }
-    const LayoutListItem* listItem() { return m_listItem; }
+    const StyleImage* image() const { return m_image.get(); }
+    const LayoutListItem* listItem() const { return m_listItem; }
 
     static UChar listMarkerSuffix(EListStyleType, int value);
 
@@ -66,7 +66,7 @@ private:
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListMarker || LayoutBox::isOfType(type); }
 
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
 
     void layout() override;
 

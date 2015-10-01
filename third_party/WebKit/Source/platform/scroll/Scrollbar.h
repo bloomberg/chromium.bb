@@ -72,7 +72,7 @@ public:
     void getTickmarks(Vector<IntRect>&) const override;
     bool isScrollableAreaActive() const override;
 
-    IntPoint convertFromContainingWindow(const IntPoint& windowPoint) override { return Widget::convertFromContainingWindow(windowPoint); }
+    IntPoint convertFromContainingWindow(const IntPoint& windowPoint) const override { return Widget::convertFromContainingWindow(windowPoint); }
 
     bool isCustomScrollbar() const override { return false; }
     ScrollbarOrientation orientation() const override { return m_orientation; }
@@ -107,7 +107,7 @@ public:
     void setProportion(int visibleSize, int totalSize);
     void setPressedPos(int p) { m_pressedPos = p; }
 
-    void paint(GraphicsContext*, const IntRect& damageRect) final;
+    void paint(GraphicsContext*, const IntRect& damageRect) const final;
 
     bool isOverlayScrollbar() const override;
     bool shouldParticipateInHitTesting();

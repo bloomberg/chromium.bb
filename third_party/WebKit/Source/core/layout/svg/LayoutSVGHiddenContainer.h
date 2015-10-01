@@ -40,7 +40,7 @@ protected:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGHiddenContainer || LayoutSVGContainer::isOfType(type); }
 
 private:
-    void paint(const PaintInfo&, const LayoutPoint&) final;
+    void paint(const PaintInfo&, const LayoutPoint&) const final;
     LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject*, const PaintInvalidationState* = nullptr) const final { return LayoutRect(); }
     void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const final;
 

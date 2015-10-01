@@ -293,7 +293,7 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren)
     clearNeedsLayout();
 }
 
-void LayoutFlexibleBox::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutFlexibleBox::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     BlockPainter::paintChildrenOfFlexibleBox(*this, paintInfo, paintOffset);
 }
@@ -324,7 +324,7 @@ LayoutUnit LayoutFlexibleBox::clientLogicalBottomAfterRepositioning()
     return std::max(clientLogicalBottom(), maxChildLogicalBottom + paddingAfter());
 }
 
-bool LayoutFlexibleBox::hasOrthogonalFlow(LayoutBox& child) const
+bool LayoutFlexibleBox::hasOrthogonalFlow(const LayoutBox& child) const
 {
     // FIXME: If the child is a flexbox, then we need to check isHorizontalFlow.
     return isHorizontalFlow() != child.isHorizontalWritingMode();
@@ -362,37 +362,37 @@ Length LayoutFlexibleBox::flexBasisForChild(const LayoutBox& child) const
     return flexLength;
 }
 
-LayoutUnit LayoutFlexibleBox::crossAxisExtentForChild(LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::crossAxisExtentForChild(const LayoutBox& child) const
 {
     return isHorizontalFlow() ? child.size().height() : child.size().width();
 }
 
-static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(LayoutBox& child)
+static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(const LayoutBox& child)
 {
     LayoutUnit childIntrinsicContentLogicalHeight = child.intrinsicContentLogicalHeight();
     return child.constrainLogicalHeightByMinMax(childIntrinsicContentLogicalHeight + child.borderAndPaddingLogicalHeight(), childIntrinsicContentLogicalHeight);
 }
 
-LayoutUnit LayoutFlexibleBox::childIntrinsicHeight(LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::childIntrinsicHeight(const LayoutBox& child) const
 {
     if (child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
         return constrainedChildIntrinsicContentLogicalHeight(child);
     return child.size().height();
 }
 
-LayoutUnit LayoutFlexibleBox::childIntrinsicWidth(LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::childIntrinsicWidth(const LayoutBox& child) const
 {
     if (!child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
         return constrainedChildIntrinsicContentLogicalHeight(child);
     return child.size().width();
 }
 
-LayoutUnit LayoutFlexibleBox::crossAxisIntrinsicExtentForChild(LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::crossAxisIntrinsicExtentForChild(const LayoutBox& child) const
 {
     return isHorizontalFlow() ? childIntrinsicHeight(child) : childIntrinsicWidth(child);
 }
 
-LayoutUnit LayoutFlexibleBox::mainAxisExtentForChild(LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::mainAxisExtentForChild(const LayoutBox& child) const
 {
     return isHorizontalFlow() ? child.size().width() : child.size().height();
 }
@@ -426,7 +426,7 @@ LayoutUnit LayoutFlexibleBox::mainAxisContentExtent(LayoutUnit contentLogicalHei
     return contentLogicalWidth();
 }
 
-LayoutUnit LayoutFlexibleBox::computeMainAxisExtentForChild(LayoutBox& child, SizeType sizeType, const Length& size)
+LayoutUnit LayoutFlexibleBox::computeMainAxisExtentForChild(const LayoutBox& child, SizeType sizeType, const Length& size)
 {
     // If we have a horizontal flow, that means the main size is the width.
     // That's the logical width for horizontal writing modes, and the logical height in vertical writing modes.
@@ -552,21 +552,21 @@ LayoutUnit LayoutFlexibleBox::flowAwarePaddingAfter() const
     return paddingTop();
 }
 
-LayoutUnit LayoutFlexibleBox::flowAwareMarginStartForChild(LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::flowAwareMarginStartForChild(const LayoutBox& child) const
 {
     if (isHorizontalFlow())
         return isLeftToRightFlow() ? child.marginLeft() : child.marginRight();
     return isLeftToRightFlow() ? child.marginTop() : child.marginBottom();
 }
 
-LayoutUnit LayoutFlexibleBox::flowAwareMarginEndForChild(LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::flowAwareMarginEndForChild(const LayoutBox& child) const
 {
     if (isHorizontalFlow())
         return isLeftToRightFlow() ? child.marginRight() : child.marginLeft();
     return isLeftToRightFlow() ? child.marginBottom() : child.marginTop();
 }
 
-LayoutUnit LayoutFlexibleBox::flowAwareMarginBeforeForChild(LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::flowAwareMarginBeforeForChild(const LayoutBox& child) const
 {
     switch (transformedWritingMode()) {
     case TopToBottomWritingMode:
@@ -582,7 +582,7 @@ LayoutUnit LayoutFlexibleBox::flowAwareMarginBeforeForChild(LayoutBox& child) co
     return marginTop();
 }
 
-LayoutUnit LayoutFlexibleBox::crossAxisMarginExtentForChild(LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::crossAxisMarginExtentForChild(const LayoutBox& child) const
 {
     return isHorizontalFlow() ? child.marginHeight() : child.marginWidth();
 }
@@ -592,12 +592,12 @@ LayoutUnit LayoutFlexibleBox::crossAxisScrollbarExtent() const
     return isHorizontalFlow() ? horizontalScrollbarHeight() : verticalScrollbarWidth();
 }
 
-LayoutUnit LayoutFlexibleBox::crossAxisScrollbarExtentForChild(LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::crossAxisScrollbarExtentForChild(const LayoutBox& child) const
 {
     return isHorizontalFlow() ? child.horizontalScrollbarHeight() : child.verticalScrollbarWidth();
 }
 
-LayoutPoint LayoutFlexibleBox::flowAwareLocationForChild(LayoutBox& child) const
+LayoutPoint LayoutFlexibleBox::flowAwareLocationForChild(const LayoutBox& child) const
 {
     return isHorizontalFlow() ? child.location() : child.location().transposedPoint();
 }
@@ -610,12 +610,12 @@ void LayoutFlexibleBox::setFlowAwareLocationForChild(LayoutBox& child, const Lay
         child.setLocationAndUpdateOverflowControlsIfNeeded(location.transposedPoint());
 }
 
-LayoutUnit LayoutFlexibleBox::mainAxisBorderAndPaddingExtentForChild(LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::mainAxisBorderAndPaddingExtentForChild(const LayoutBox& child) const
 {
     return isHorizontalFlow() ? child.borderAndPaddingWidth() : child.borderAndPaddingHeight();
 }
 
-bool LayoutFlexibleBox::mainAxisLengthIsDefinite(LayoutBox& child, const Length& flexBasis) const
+bool LayoutFlexibleBox::mainAxisLengthIsDefinite(const LayoutBox& child, const Length& flexBasis) const
 {
     if (flexBasis.isAuto())
         return false;
@@ -627,7 +627,7 @@ bool LayoutFlexibleBox::mainAxisLengthIsDefinite(LayoutBox& child, const Length&
     return true;
 }
 
-bool LayoutFlexibleBox::childFlexBaseSizeRequiresLayout(LayoutBox& child) const
+bool LayoutFlexibleBox::childFlexBaseSizeRequiresLayout(const LayoutBox& child) const
 {
     return !mainAxisLengthIsDefinite(child, flexBasisForChild(child)) && (
         hasOrthogonalFlow(child) || crossAxisOverflowForChild(child) == OAUTO);
@@ -750,21 +750,21 @@ void LayoutFlexibleBox::updateAutoMarginsInMainAxis(LayoutBox& child, LayoutUnit
     }
 }
 
-bool LayoutFlexibleBox::hasAutoMarginsInCrossAxis(LayoutBox& child) const
+bool LayoutFlexibleBox::hasAutoMarginsInCrossAxis(const LayoutBox& child) const
 {
     if (isHorizontalFlow())
         return child.style()->marginTop().isAuto() || child.style()->marginBottom().isAuto();
     return child.style()->marginLeft().isAuto() || child.style()->marginRight().isAuto();
 }
 
-LayoutUnit LayoutFlexibleBox::availableAlignmentSpaceForChild(LayoutUnit lineCrossAxisExtent, LayoutBox& child)
+LayoutUnit LayoutFlexibleBox::availableAlignmentSpaceForChild(LayoutUnit lineCrossAxisExtent, const LayoutBox& child)
 {
     ASSERT(!child.isOutOfFlowPositioned());
     LayoutUnit childCrossExtent = crossAxisMarginExtentForChild(child) + crossAxisExtentForChild(child);
     return lineCrossAxisExtent - childCrossExtent;
 }
 
-LayoutUnit LayoutFlexibleBox::availableAlignmentSpaceForChildBeforeStretching(LayoutUnit lineCrossAxisExtent, LayoutBox& child)
+LayoutUnit LayoutFlexibleBox::availableAlignmentSpaceForChildBeforeStretching(LayoutUnit lineCrossAxisExtent, const LayoutBox& child)
 {
     ASSERT(!child.isOutOfFlowPositioned());
     LayoutUnit childCrossExtent = crossAxisMarginExtentForChild(child) + crossAxisIntrinsicExtentForChild(child);
@@ -825,7 +825,7 @@ bool LayoutFlexibleBox::updateAutoMarginsInCrossAxis(LayoutBox& child, LayoutUni
     return false;
 }
 
-LayoutUnit LayoutFlexibleBox::marginBoxAscentForChild(LayoutBox& child)
+LayoutUnit LayoutFlexibleBox::marginBoxAscentForChild(const LayoutBox& child)
 {
     LayoutUnit ascent = child.firstLineBoxBaseline();
     if (ascent == -1)
@@ -863,7 +863,7 @@ void LayoutFlexibleBox::prepareOrderIteratorAndMargins()
     }
 }
 
-LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, LayoutUnit childSize, bool childShrunk)
+LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child, LayoutUnit childSize, bool childShrunk)
 {
     Length max = isHorizontalFlow() ? child.style()->maxWidth() : child.style()->maxHeight();
     LayoutUnit maxExtent = -1;
@@ -1070,7 +1070,7 @@ void LayoutFlexibleBox::prepareChildForPositionedLayout(LayoutBox& child, Layout
     }
 }
 
-ItemPosition LayoutFlexibleBox::alignmentForChild(LayoutBox& child) const
+ItemPosition LayoutFlexibleBox::alignmentForChild(const LayoutBox& child) const
 {
     ItemPosition align = ComputedStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch);
 
@@ -1116,7 +1116,7 @@ void LayoutFlexibleBox::resetAutoMarginsAndLogicalTopInCrossAxis(LayoutBox& chil
     }
 }
 
-bool LayoutFlexibleBox::needToStretchChildLogicalHeight(LayoutBox& child) const
+bool LayoutFlexibleBox::needToStretchChildLogicalHeight(const LayoutBox& child) const
 {
     // This function is a little bit magical. It relies on the fact that blocks intrinsically
     // "stretch" themselves in their inline axis, i.e. a <div> has an implicit width: 100%.
@@ -1142,14 +1142,14 @@ bool LayoutFlexibleBox::childHasIntrinsicMainAxisSize(const LayoutBox& child) co
     return result;
 }
 
-EOverflow LayoutFlexibleBox::mainAxisOverflowForChild(LayoutBox& child) const
+EOverflow LayoutFlexibleBox::mainAxisOverflowForChild(const LayoutBox& child) const
 {
     if (isHorizontalFlow())
         return child.styleRef().overflowX();
     return child.styleRef().overflowY();
 }
 
-EOverflow LayoutFlexibleBox::crossAxisOverflowForChild(LayoutBox& child) const
+EOverflow LayoutFlexibleBox::crossAxisOverflowForChild(const LayoutBox& child) const
 {
     if (isHorizontalFlow())
         return child.styleRef().overflowY();

@@ -151,7 +151,7 @@ LayoutUnit RootInlineBox::placeEllipsisBox(bool ltr, LayoutUnit blockLeftEdge, L
     return result;
 }
 
-void RootInlineBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
+void RootInlineBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const
 {
     RootInlineBoxPainter(*this).paint(paintInfo, paintOffset, lineTop, lineBottom);
 }

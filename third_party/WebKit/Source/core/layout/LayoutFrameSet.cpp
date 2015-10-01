@@ -60,7 +60,7 @@ HTMLFrameSetElement* LayoutFrameSet::frameSet() const
     return toHTMLFrameSetElement(node());
 }
 
-void LayoutFrameSet::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutFrameSet::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     FrameSetPainter(*this).paint(paintInfo, paintOffset);
 }

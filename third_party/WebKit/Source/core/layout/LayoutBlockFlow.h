@@ -331,8 +331,8 @@ private:
 
     void invalidatePaintForOverhangingFloats(bool paintAllDescendants) final;
     void invalidatePaintForOverflow() final;
-    void paintFloats(const PaintInfo&, const LayoutPoint&, bool preservePhase = false) final;
-    void paintSelection(const PaintInfo&, const LayoutPoint&) final;
+    void paintFloats(const PaintInfo&, const LayoutPoint&, bool preservePhase = false) const final;
+    void paintSelection(const PaintInfo&, const LayoutPoint&) const final;
     virtual void clipOutFloatingObjects(const LayoutBlock*, ClipScope&, const LayoutPoint&, const LayoutSize&) const;
     void clearFloats(EClear);
 
@@ -458,7 +458,7 @@ public:
         bool m_discardMarginAfter : 1;
     };
 
-    FloatingObjects* floatingObjects() { return m_floatingObjects.get(); }
+    const FloatingObjects* floatingObjects() const { return m_floatingObjects.get(); }
 
 
 protected:

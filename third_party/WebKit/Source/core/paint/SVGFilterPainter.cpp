@@ -60,7 +60,7 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
     filterData->m_state = FilterData::ReadyToPaint;
 }
 
-static void paintFilteredContent(LayoutObject& object, GraphicsContext* context, FilterData* filterData)
+static void paintFilteredContent(const LayoutObject& object, GraphicsContext* context, FilterData* filterData)
 {
     ASSERT(filterData->m_state == FilterData::ReadyToPaint);
     ASSERT(filterData->filter->sourceGraphic());
@@ -102,7 +102,7 @@ static void paintFilteredContent(LayoutObject& object, GraphicsContext* context,
     filterData->m_state = FilterData::ReadyToPaint;
 }
 
-GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject& object, SVGFilterRecordingContext& recordingContext)
+GraphicsContext* SVGFilterPainter::prepareEffect(const LayoutObject& object, SVGFilterRecordingContext& recordingContext)
 {
     ASSERT(recordingContext.paintingContext());
 
@@ -149,11 +149,12 @@ GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject& object, SVGFilter
     lastEffect->determineFilterPrimitiveSubregion(ClipToFilterRegion);
 
     FilterData* data = filterData.get();
-    m_filter.setFilterDataForLayoutObject(&object, filterData.release());
+    // TODO(pdr): Can this be moved out of painter?
+    m_filter.setFilterDataForLayoutObject(const_cast<LayoutObject*>(&object), filterData.release());
     return recordingContext.beginContent(data);
 }
 
-void SVGFilterPainter::finishEffect(LayoutObject& object, SVGFilterRecordingContext& recordingContext)
+void SVGFilterPainter::finishEffect(const LayoutObject& object, SVGFilterRecordingContext& recordingContext)
 {
     FilterData* filterData = m_filter.getFilterDataForLayoutObject(&object);
     if (filterData) {

@@ -341,7 +341,7 @@ bool SVGLayoutSupport::filtersForceContainerLayout(LayoutObject* object)
     return true;
 }
 
-bool SVGLayoutSupport::pointInClippingArea(LayoutObject* object, const FloatPoint& point)
+bool SVGLayoutSupport::pointInClippingArea(const LayoutObject* object, const FloatPoint& point)
 {
     ASSERT(object);
 
@@ -357,7 +357,7 @@ bool SVGLayoutSupport::pointInClippingArea(LayoutObject* object, const FloatPoin
     return true;
 }
 
-bool SVGLayoutSupport::transformToUserSpaceAndCheckClipping(LayoutObject* object, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint)
+bool SVGLayoutSupport::transformToUserSpaceAndCheckClipping(const LayoutObject* object, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint)
 {
     if (!localTransform.isInvertible())
         return false;

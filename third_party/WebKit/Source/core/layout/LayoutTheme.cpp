@@ -415,18 +415,18 @@ bool LayoutTheme::isControlStyled(const ComputedStyle& style) const
 void LayoutTheme::addVisualOverflow(const LayoutObject& object, IntRect& borderBox)
 {
 #if USE(NEW_THEME)
-    m_platformTheme->addVisualOverflow(object.style()->appearance(), controlStatesForLayoutObject(&object), object.style()->effectiveZoom(), borderBox);
+    m_platformTheme->addVisualOverflow(object.style()->appearance(), controlStatesForLayoutObject(object), object.style()->effectiveZoom(), borderBox);
 #endif
 }
 
-bool LayoutTheme::shouldDrawDefaultFocusRing(LayoutObject* layoutObject) const
+bool LayoutTheme::shouldDrawDefaultFocusRing(const LayoutObject& layoutObject) const
 {
-    if (supportsFocusRing(layoutObject->styleRef()))
+    if (supportsFocusRing(layoutObject.styleRef()))
         return false;
-    Node* node = layoutObject->node();
+    Node* node = layoutObject.node();
     if (!node)
         return true;
-    if (!layoutObject->styleRef().hasAppearance() && !node->isLink())
+    if (!layoutObject.styleRef().hasAppearance() && !node->isLink())
         return true;
     // We can't use LayoutTheme::isFocused because outline:auto might be
     // specified to non-:focus rulesets.
@@ -445,7 +445,7 @@ bool LayoutTheme::controlStateChanged(LayoutObject& o, ControlState state) const
         return false;
 
     // Assume pressed state is only responded to if the control is enabled.
-    if (state == PressedControlState && !isEnabled(&o))
+    if (state == PressedControlState && !isEnabled(o))
         return false;
 
     o.setShouldDoFullPaintInvalidation();
@@ -453,7 +453,7 @@ bool LayoutTheme::controlStateChanged(LayoutObject& o, ControlState state) const
     return true;
 }
 
-ControlStates LayoutTheme::controlStatesForLayoutObject(const LayoutObject* o)
+ControlStates LayoutTheme::controlStatesForLayoutObject(const LayoutObject& o)
 {
     ControlStates result = 0;
     if (isHovered(o)) {
@@ -466,7 +466,7 @@ ControlStates LayoutTheme::controlStatesForLayoutObject(const LayoutObject* o)
         if (isSpinUpButtonPartPressed(o))
             result |= SpinUpControlState;
     }
-    if (isFocused(o) && o->style()->outlineStyleIsAuto())
+    if (isFocused(o) && o.style()->outlineStyleIsAuto())
         result |= FocusControlState;
     if (isEnabled(o))
         result |= EnabledControlState;
@@ -481,9 +481,9 @@ ControlStates LayoutTheme::controlStatesForLayoutObject(const LayoutObject* o)
     return result;
 }
 
-bool LayoutTheme::isActive(const LayoutObject* o)
+bool LayoutTheme::isActive(const LayoutObject& o)
 {
-    Node* node = o->node();
+    Node* node = o.node();
     if (!node)
         return false;
 
@@ -494,31 +494,31 @@ bool LayoutTheme::isActive(const LayoutObject* o)
     return page->focusController().isActive();
 }
 
-bool LayoutTheme::isChecked(const LayoutObject* o)
+bool LayoutTheme::isChecked(const LayoutObject& o)
 {
-    if (!isHTMLInputElement(o->node()))
+    if (!isHTMLInputElement(o.node()))
         return false;
-    return toHTMLInputElement(o->node())->shouldAppearChecked();
+    return toHTMLInputElement(o.node())->shouldAppearChecked();
 }
 
-bool LayoutTheme::isIndeterminate(const LayoutObject* o)
+bool LayoutTheme::isIndeterminate(const LayoutObject& o)
 {
-    if (!isHTMLInputElement(o->node()))
+    if (!isHTMLInputElement(o.node()))
         return false;
-    return toHTMLInputElement(o->node())->shouldAppearIndeterminate();
+    return toHTMLInputElement(o.node())->shouldAppearIndeterminate();
 }
 
-bool LayoutTheme::isEnabled(const LayoutObject* o)
+bool LayoutTheme::isEnabled(const LayoutObject& o)
 {
-    Node* node = o->node();
+    Node* node = o.node();
     if (!node || !node->isElementNode())
         return true;
     return !toElement(node)->isDisabledFormControl();
 }
 
-bool LayoutTheme::isFocused(const LayoutObject* o)
+bool LayoutTheme::isFocused(const LayoutObject& o)
 {
-    Node* node = o->node();
+    Node* node = o.node();
     if (!node)
         return false;
 
@@ -528,16 +528,16 @@ bool LayoutTheme::isFocused(const LayoutObject* o)
     return node == document.focusedElement() && node->focused() && node->shouldHaveFocusAppearance() && frame && frame->selection().isFocusedAndActive();
 }
 
-bool LayoutTheme::isPressed(const LayoutObject* o)
+bool LayoutTheme::isPressed(const LayoutObject& o)
 {
-    if (!o->node())
+    if (!o.node())
         return false;
-    return o->node()->active();
+    return o.node()->active();
 }
 
-bool LayoutTheme::isSpinUpButtonPartPressed(const LayoutObject* o)
+bool LayoutTheme::isSpinUpButtonPartPressed(const LayoutObject& o)
 {
-    Node* node = o->node();
+    Node* node = o.node();
     if (!node || !node->active() || !node->isElementNode()
         || !toElement(node)->isSpinButtonElement())
         return false;
@@ -545,18 +545,18 @@ bool LayoutTheme::isSpinUpButtonPartPressed(const LayoutObject* o)
     return element->upDownState() == SpinButtonElement::Up;
 }
 
-bool LayoutTheme::isReadOnlyControl(const LayoutObject* o)
+bool LayoutTheme::isReadOnlyControl(const LayoutObject& o)
 {
-    Node* node = o->node();
+    Node* node = o.node();
     if (!node || !node->isElementNode() || !toElement(node)->isFormControlElement())
         return false;
     HTMLFormControlElement* element = toHTMLFormControlElement(node);
     return element->isReadOnly();
 }
 
-bool LayoutTheme::isHovered(const LayoutObject* o)
+bool LayoutTheme::isHovered(const LayoutObject& o)
 {
-    Node* node = o->node();
+    Node* node = o.node();
     if (!node)
         return false;
     if (!node->isElementNode() || !toElement(node)->isSpinButtonElement())
@@ -565,9 +565,9 @@ bool LayoutTheme::isHovered(const LayoutObject* o)
     return element->hovered() && element->upDownState() != SpinButtonElement::Indeterminate;
 }
 
-bool LayoutTheme::isSpinUpButtonPartHovered(const LayoutObject* o)
+bool LayoutTheme::isSpinUpButtonPartHovered(const LayoutObject& o)
 {
-    Node* node = o->node();
+    Node* node = o.node();
     if (!node || !node->isElementNode() || !toElement(node)->isSpinButtonElement())
         return false;
     SpinButtonElement* element = toSpinButtonElement(node);
@@ -619,7 +619,7 @@ void LayoutTheme::adjustMenuListStyle(ComputedStyle&, Element*) const
 {
 }
 
-IntSize LayoutTheme::meterSizeForBounds(const LayoutMeter*, const IntRect& bounds) const
+IntSize LayoutTheme::meterSizeForBounds(const LayoutMeter&, const IntRect& bounds) const
 {
     return bounds.size();
 }

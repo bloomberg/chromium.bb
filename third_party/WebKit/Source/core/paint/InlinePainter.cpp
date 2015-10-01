@@ -46,7 +46,7 @@ void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOf
         return;
     }
 
-    LineBoxListPainter(*m_layoutInline.lineBoxes()).paint(&m_layoutInline, paintInfo, paintOffset);
+    LineBoxListPainter(*m_layoutInline.lineBoxes()).paint(m_layoutInline, paintInfo, paintOffset);
 }
 
 } // namespace blink

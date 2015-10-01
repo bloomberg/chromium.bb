@@ -43,7 +43,7 @@
 namespace blink {
 
 typedef HashMap<const void*, LayoutSize> LayerSizeMap;
-typedef HashMap<LayoutObject*, LayerSizeMap> ObjectLayerSizeMap;
+typedef HashMap<const LayoutObject*, LayerSizeMap> ObjectLayerSizeMap;
 
 class CORE_EXPORT ImageQualityController final {
     WTF_MAKE_NONCOPYABLE(ImageQualityController); WTF_MAKE_FAST_ALLOCATED(ImageQualityController);
@@ -54,17 +54,17 @@ public:
 
     static void remove(LayoutObject*);
 
-    InterpolationQuality chooseInterpolationQuality(GraphicsContext*, LayoutObject*, Image*, const void* layer, const LayoutSize&);
+    InterpolationQuality chooseInterpolationQuality(GraphicsContext*, const LayoutObject*, Image*, const void* layer, const LayoutSize&);
 
 private:
     ImageQualityController();
 
-    static bool has(LayoutObject*);
-    void set(LayoutObject*, LayerSizeMap* innerMap, const void* layer, const LayoutSize&);
+    static bool has(const LayoutObject*);
+    void set(const LayoutObject*, LayerSizeMap* innerMap, const void* layer, const LayoutSize&);
 
-    bool shouldPaintAtLowQuality(GraphicsContext*, LayoutObject*, Image*, const void* layer, const LayoutSize&);
-    void removeLayer(LayoutObject*, LayerSizeMap* innerMap, const void* layer);
-    void objectDestroyed(LayoutObject*);
+    bool shouldPaintAtLowQuality(GraphicsContext*, const LayoutObject*, Image*, const void* layer, const LayoutSize&);
+    void removeLayer(const LayoutObject*, LayerSizeMap* innerMap, const void* layer);
+    void objectDestroyed(const LayoutObject*);
     bool isEmpty() { return m_objectLayerSizeMap.isEmpty(); }
 
     void highQualityRepaintTimerFired(Timer<ImageQualityController>*);

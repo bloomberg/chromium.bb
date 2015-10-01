@@ -179,7 +179,7 @@ public:
 
     void layout() override;
 
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
 
     LayoutUnit cellBaselinePosition() const;
     bool isBaselineAligned() const
@@ -283,10 +283,10 @@ private:
 
     void updateLogicalWidth() override;
 
-    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override;
-    void paintMask(const PaintInfo&, const LayoutPoint&) override;
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) const override;
+    void paintMask(const PaintInfo&, const LayoutPoint&) const override;
 
-    bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const override;
+    bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, const InlineFlowBox*) const override;
 
     LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = nullptr) const override;
     LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;

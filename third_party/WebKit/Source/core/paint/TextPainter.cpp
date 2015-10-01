@@ -116,7 +116,7 @@ static Color textColorForWhiteBackground(Color textColor)
 }
 
 // static
-TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& layoutObject, const ComputedStyle& style, const PaintInfo& paintInfo)
+TextPainter::Style TextPainter::textPaintingStyle(const LayoutObject& layoutObject, const ComputedStyle& style, const PaintInfo& paintInfo)
 {
     TextPainter::Style textStyle;
     bool isPrinting = paintInfo.isPrinting();
@@ -154,7 +154,7 @@ TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& layoutObject, co
     return textStyle;
 }
 
-TextPainter::Style TextPainter::selectionPaintingStyle(LayoutObject& layoutObject, bool haveSelection, const PaintInfo& paintInfo, const TextPainter::Style& textStyle)
+TextPainter::Style TextPainter::selectionPaintingStyle(const LayoutObject& layoutObject, bool haveSelection, const PaintInfo& paintInfo, const TextPainter::Style& textStyle)
 {
     TextPainter::Style selectionStyle = textStyle;
     bool usesTextAsClip = paintInfo.phase == PaintPhaseTextClip;

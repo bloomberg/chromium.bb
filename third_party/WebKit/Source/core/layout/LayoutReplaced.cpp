@@ -106,7 +106,7 @@ void LayoutReplaced::intrinsicSizeChanged()
     setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
 }
 
-void LayoutReplaced::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutReplaced::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     ReplacedPainter(*this).paint(paintInfo, paintOffset);
 }

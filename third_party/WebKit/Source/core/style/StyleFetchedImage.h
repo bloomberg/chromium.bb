@@ -59,7 +59,7 @@ public:
     void addClient(LayoutObject*) override;
     void removeClient(LayoutObject*) override;
     void notifyFinished(Resource*) override;
-    PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
+    PassRefPtr<Image> image(const LayoutObject*, const IntSize&) const override;
     bool knownToBeOpaque(const LayoutObject*) const override;
     ImageResource* cachedImage() const override;
 

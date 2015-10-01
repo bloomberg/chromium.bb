@@ -58,7 +58,7 @@ LayoutDetailsMarker::Orientation LayoutDetailsMarker::orientation() const
     return Right;
 }
 
-void LayoutDetailsMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutDetailsMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     DetailsMarkerPainter(*this).paint(paintInfo, paintOffset);
 }

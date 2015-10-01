@@ -494,7 +494,7 @@ void LayoutThemeMac::addVisualOverflow(const LayoutObject& object, IntRect& rect
     float zoomLevel = object.style()->effectiveZoom();
 
     if (part == MenulistPart) {
-        setPopupButtonCellState(&object, rect);
+        setPopupButtonCellState(object, rect);
         IntSize size = popupButtonSizes()[[popupButton() controlSize]];
         size.setHeight(size.height() * zoomLevel);
         size.setWidth(rect.width());
@@ -504,7 +504,7 @@ void LayoutThemeMac::addVisualOverflow(const LayoutObject& object, IntRect& rect
     }
 }
 
-void LayoutThemeMac::updateCheckedState(NSCell* cell, const LayoutObject* o)
+void LayoutThemeMac::updateCheckedState(NSCell* cell, const LayoutObject& o)
 {
     bool oldIndeterminate = [cell state] == NSMixedState;
     bool indeterminate = isIndeterminate(o);
@@ -520,7 +520,7 @@ void LayoutThemeMac::updateCheckedState(NSCell* cell, const LayoutObject* o)
         [cell setState:checked ? NSOnState : NSOffState];
 }
 
-void LayoutThemeMac::updateEnabledState(NSCell* cell, const LayoutObject* o)
+void LayoutThemeMac::updateEnabledState(NSCell* cell, const LayoutObject& o)
 {
     bool oldEnabled = [cell isEnabled];
     bool enabled = isEnabled(o);
@@ -528,18 +528,18 @@ void LayoutThemeMac::updateEnabledState(NSCell* cell, const LayoutObject* o)
         [cell setEnabled:enabled];
 }
 
-void LayoutThemeMac::updateFocusedState(NSCell* cell, const LayoutObject* o)
+void LayoutThemeMac::updateFocusedState(NSCell* cell, const LayoutObject& o)
 {
     bool oldFocused = [cell showsFirstResponder];
-    bool focused = isFocused(o) && o->style()->outlineStyleIsAuto();
+    bool focused = isFocused(o) && o.styleRef().outlineStyleIsAuto();
     if (focused != oldFocused)
         [cell setShowsFirstResponder:focused];
 }
 
-void LayoutThemeMac::updatePressedState(NSCell* cell, const LayoutObject* o)
+void LayoutThemeMac::updatePressedState(NSCell* cell, const LayoutObject& o)
 {
     bool oldPressed = [cell isHighlighted];
-    bool pressed = o->node() && o->node()->active();
+    bool pressed = o.node() && o.node()->active();
     if (pressed != oldPressed)
         [cell setHighlighted:pressed];
 }
@@ -661,9 +661,9 @@ const int* LayoutThemeMac::popupButtonPadding(NSControlSize size) const
     return padding[size];
 }
 
-IntSize LayoutThemeMac::meterSizeForBounds(const LayoutMeter* layoutMeter, const IntRect& bounds) const
+IntSize LayoutThemeMac::meterSizeForBounds(const LayoutMeter& layoutMeter, const IntRect& bounds) const
 {
-    if (NoControlPart == layoutMeter->style()->appearance())
+    if (NoControlPart == layoutMeter.style()->appearance())
         return bounds.size();
 
     NSLevelIndicatorCell* cell = levelIndicatorFor(layoutMeter);
@@ -703,16 +703,16 @@ NSLevelIndicatorStyle LayoutThemeMac::levelIndicatorStyleFor(ControlPart part) c
     }
 }
 
-NSLevelIndicatorCell* LayoutThemeMac::levelIndicatorFor(const LayoutMeter* layoutMeter) const
+NSLevelIndicatorCell* LayoutThemeMac::levelIndicatorFor(const LayoutMeter& layoutMeter) const
 {
-    const ComputedStyle& style = layoutMeter->styleRef();
+    const ComputedStyle& style = layoutMeter.styleRef();
     ASSERT(style.appearance() != NoControlPart);
 
     if (!m_levelIndicator)
         m_levelIndicator.adoptNS([[NSLevelIndicatorCell alloc] initWithLevelIndicatorStyle:NSContinuousCapacityLevelIndicatorStyle]);
     NSLevelIndicatorCell* cell = m_levelIndicator.get();
 
-    HTMLMeterElement* element = layoutMeter->meterElement();
+    HTMLMeterElement* element = layoutMeter.meterElement();
     double value = element->value();
 
     // Because NSLevelIndicatorCell does not support optimum-in-the-middle type
@@ -872,12 +872,12 @@ void LayoutThemeMac::adjustMenuListButtonStyle(ComputedStyle& style, Element*) c
     style.setLineHeight(ComputedStyle::initialLineHeight());
 }
 
-void LayoutThemeMac::setPopupButtonCellState(const LayoutObject* object, const IntRect& rect)
+void LayoutThemeMac::setPopupButtonCellState(const LayoutObject& object, const IntRect& rect)
 {
     NSPopUpButtonCell* popupButton = this->popupButton();
 
     // Set the control size based off the rectangle we're painting into.
-    setControlSize(popupButton, popupButtonSizes(), rect.size(), object->style()->effectiveZoom());
+    setControlSize(popupButton, popupButtonSizes(), rect.size(), object.styleRef().effectiveZoom());
 
     // Update the various states we respond to.
     updateActiveState(popupButton, object);
@@ -899,7 +899,7 @@ int LayoutThemeMac::minimumMenuListSize(const ComputedStyle& style) const
     return sizeForSystemFont(style, menuListSizes()).width();
 }
 
-void LayoutThemeMac::setSearchCellState(LayoutObject* o, const IntRect&)
+void LayoutThemeMac::setSearchCellState(const LayoutObject& o, const IntRect&)
 {
     NSSearchFieldCell* search = this->search();
 
@@ -1123,7 +1123,7 @@ bool LayoutThemeMac::usesTestModeFocusRingColor() const
     return LayoutTestSupport::isRunningLayoutTest();
 }
 
-NSView* LayoutThemeMac::documentViewFor(LayoutObject*) const
+NSView* LayoutThemeMac::documentViewFor(const LayoutObject&) const
 {
     return FlippedView();
 }
@@ -1137,7 +1137,7 @@ NSView* LayoutThemeMac::documentViewFor(LayoutObject*) const
 // code is called.
 // This function should be called before drawing any NSCell-derived controls,
 // unless you're sure it isn't needed.
-void LayoutThemeMac::updateActiveState(NSCell* cell, const LayoutObject* o)
+void LayoutThemeMac::updateActiveState(NSCell* cell, const LayoutObject& o)
 {
     NSControlTint oldTint = [cell controlTint];
     NSControlTint tint = isActive(o) ? [NSColor currentControlTint] :

@@ -97,7 +97,7 @@ bool LayoutSVGViewportContainer::pointIsInsideViewportClip(const FloatPoint& poi
     return m_viewport.contains(pointInParent);
 }
 
-void LayoutSVGViewportContainer::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutSVGViewportContainer::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     SVGContainerPainter(*this).paint(paintInfo);
 }

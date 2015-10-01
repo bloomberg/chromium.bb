@@ -200,7 +200,7 @@ AffineTransform LayoutSVGShape::nonScalingStrokeTransform() const
     return t;
 }
 
-void LayoutSVGShape::paint(const PaintInfo& paintInfo, const LayoutPoint&)
+void LayoutSVGShape::paint(const PaintInfo& paintInfo, const LayoutPoint&) const
 {
     SVGShapePainter(*this).paint(paintInfo);
 }

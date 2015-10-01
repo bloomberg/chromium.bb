@@ -68,7 +68,7 @@ public:
 
     void offsetRun(int delta);
 
-    unsigned short truncation() { return m_truncation; }
+    unsigned short truncation() const { return m_truncation; }
 
     void markDirty() final;
 
@@ -105,18 +105,18 @@ public:
     TextRun constructTextRunForInspector(const ComputedStyle&, const Font&) const;
     LayoutRect calculateBoundaries() const override { return LayoutRect(x(), y(), width(), height()); }
 
-    virtual LayoutRect localSelectionRect(int startPos, int endPos);
+    virtual LayoutRect localSelectionRect(int startPos, int endPos) const;
     bool isSelected(int startPos, int endPos) const;
     void selectionStartEnd(int& sPos, int& ePos) const;
 
     // These functions both paint markers and update the DocumentMarker's renderedRect.
-    virtual void paintDocumentMarker(GraphicsContext*, const LayoutPoint& boxOrigin, DocumentMarker*, const ComputedStyle&, const Font&, bool grammar);
-    virtual void paintTextMatchMarker(GraphicsContext*, const LayoutPoint& boxOrigin, DocumentMarker*, const ComputedStyle&, const Font&);
+    virtual void paintDocumentMarker(GraphicsContext*, const LayoutPoint& boxOrigin, DocumentMarker*, const ComputedStyle&, const Font&, bool grammar) const;
+    virtual void paintTextMatchMarker(GraphicsContext*, const LayoutPoint& boxOrigin, DocumentMarker*, const ComputedStyle&, const Font&) const;
 
     void move(const LayoutSize&) final;
 
 protected:
-    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) const override;
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 
 private:

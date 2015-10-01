@@ -147,7 +147,7 @@ void LayoutSVGImage::layout()
     clearNeedsLayout();
 }
 
-void LayoutSVGImage::paint(const PaintInfo& paintInfo, const LayoutPoint&)
+void LayoutSVGImage::paint(const PaintInfo& paintInfo, const LayoutPoint&) const
 {
     SVGImagePainter(*this).paint(paintInfo);
 }

@@ -28,14 +28,14 @@ class LayoutTextCombine;
 class InlineTextBoxPainter {
     STACK_ALLOCATED();
 public:
-    InlineTextBoxPainter(InlineTextBox& inlineTextBox) : m_inlineTextBox(inlineTextBox) { }
+    InlineTextBoxPainter(const InlineTextBox& inlineTextBox) : m_inlineTextBox(inlineTextBox) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
     void paintDocumentMarkers(GraphicsContext*, const LayoutPoint& boxOrigin, const ComputedStyle&, const Font&, bool background);
     void paintDocumentMarker(GraphicsContext*, const LayoutPoint& boxOrigin, DocumentMarker*, const ComputedStyle&, const Font&, bool grammar);
     void paintTextMatchMarker(GraphicsContext*, const LayoutPoint& boxOrigin, DocumentMarker*, const ComputedStyle&, const Font&);
 
-    static void removeFromTextBlobCache(InlineTextBox&);
+    static void removeFromTextBlobCache(const InlineTextBox&);
 
 private:
     enum class PaintOptions { Normal, CombinedText };
@@ -51,7 +51,7 @@ private:
     bool shouldPaintTextBox(const PaintInfo&);
     void expandToIncludeNewlineForSelection(LayoutRect&);
 
-    InlineTextBox& m_inlineTextBox;
+    const InlineTextBox& m_inlineTextBox;
 };
 
 } // namespace blink

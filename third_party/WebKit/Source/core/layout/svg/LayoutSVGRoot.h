@@ -82,7 +82,7 @@ private:
     LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
     LayoutUnit computeReplacedLogicalHeight() const override;
     void layout() override;
-    void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
+    void paintReplaced(const PaintInfo&, const LayoutPoint&) const override;
 
     void willBeDestroyed() override;
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;

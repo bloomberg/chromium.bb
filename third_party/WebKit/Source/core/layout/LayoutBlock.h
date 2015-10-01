@@ -294,14 +294,14 @@ protected:
 
     int beforeMarginInLineDirection(LineDirectionMode) const;
 
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
 public:
-    virtual void paintObject(const PaintInfo&, const LayoutPoint&);
-    virtual void paintChildren(const PaintInfo&, const LayoutPoint&);
+    virtual void paintObject(const PaintInfo&, const LayoutPoint&) const;
+    virtual void paintChildren(const PaintInfo&, const LayoutPoint&) const;
 
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
-    virtual void paintFloats(const PaintInfo&, const LayoutPoint&, bool) { }
-    virtual void paintSelection(const PaintInfo&, const LayoutPoint&) { }
+    virtual void paintFloats(const PaintInfo&, const LayoutPoint&, bool) const { }
+    virtual void paintSelection(const PaintInfo&, const LayoutPoint&) const { }
 
 protected:
     virtual void adjustInlineDirectionLineBounds(unsigned /* expansionOpportunityCount */, LayoutUnit& /* logicalLeft */, LayoutUnit& /* logicalWidth */) const { }
@@ -386,7 +386,7 @@ private:
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
     virtual bool hitTestFloats(HitTestResult&, const HitTestLocation&, const LayoutPoint&) { return false; }
 
-    virtual bool isPointInOverflowControl(HitTestResult&, const LayoutPoint& locationInContainer, const LayoutPoint& accumulatedOffset);
+    virtual bool isPointInOverflowControl(HitTestResult&, const LayoutPoint& locationInContainer, const LayoutPoint& accumulatedOffset) const;
 
     void computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const;
 

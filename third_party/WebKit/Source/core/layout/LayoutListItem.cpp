@@ -423,7 +423,7 @@ void LayoutListItem::positionListMarker()
     }
 }
 
-void LayoutListItem::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutListItem::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     if (!logicalHeight() && hasOverflowClip())
         return;

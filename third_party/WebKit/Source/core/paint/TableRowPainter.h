@@ -13,13 +13,13 @@ namespace blink {
 class TableRowPainter {
     STACK_ALLOCATED();
 public:
-    TableRowPainter(LayoutTableRow& layoutTableRow) : m_layoutTableRow(layoutTableRow) { }
+    TableRowPainter(const LayoutTableRow& layoutTableRow) : m_layoutTableRow(layoutTableRow) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
     void paintOutlineForRowIfNeeded(const PaintInfo&, const LayoutPoint&);
 
 private:
-    LayoutTableRow& m_layoutTableRow;
+    const LayoutTableRow& m_layoutTableRow;
 };
 
 } // namespace blink

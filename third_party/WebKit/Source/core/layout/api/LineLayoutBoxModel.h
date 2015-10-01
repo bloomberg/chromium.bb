@@ -153,7 +153,7 @@ public:
         return toBoxModel()->borderAndPaddingLogicalHeight();
     }
 
-    bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* inlineFlowBox = nullptr) const
+    bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, const InlineFlowBox* inlineFlowBox = nullptr) const
     {
         return toBoxModel()->boxShadowShouldBeAppliedToBackground(bleedAvoidance, inlineFlowBox);
     }

@@ -304,9 +304,9 @@ public:
     typedef Vector<CollapsedBorderValue> CollapsedBorderValues;
     void invalidateCollapsedBorders();
 
-    // FIXME: This method should be moved into TablePainter.
+    // TODO(wangxianzhu): This method should be moved into TablePainter.
     const CollapsedBorderValue* currentBorderValue() const { return m_currentBorder; }
-    void setCurrentBorderValue(const CollapsedBorderValue* val) { m_currentBorder = val; }
+    void setCurrentBorderValue(const CollapsedBorderValue* val) const { m_currentBorder = val; }
 
     bool hasSections() const { return m_head || m_foot || m_firstBody; }
 
@@ -330,11 +330,11 @@ public:
     void addColumn(const LayoutTableCol*);
     void removeColumn(const LayoutTableCol*);
 
-    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) final;
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) const final;
 
-    void paintMask(const PaintInfo&, const LayoutPoint&) final;
+    void paintMask(const PaintInfo&, const LayoutPoint&) const final;
 
-    const CollapsedBorderValues& collapsedBorders()
+    const CollapsedBorderValues& collapsedBorders() const
     {
         ASSERT(m_collapsedBordersValid);
         return m_collapsedBorders;
@@ -353,7 +353,7 @@ protected:
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTable || LayoutBlock::isOfType(type); }
 
-    void paintObject(const PaintInfo&, const LayoutPoint&) override;
+    void paintObject(const PaintInfo&, const LayoutPoint&) const override;
     void layout() override;
     void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;
     void computePreferredLogicalWidths() override;
@@ -383,6 +383,10 @@ private:
     void distributeExtraLogicalHeight(int extraLogicalHeight);
 
     void recalcCollapsedBordersIfNeeded();
+
+    // TODO(layout-dev): All mutables in this class (except for m_currentBorder) are lazily updated by recalcSections()
+    // which is called by various getter methods (e.g. borderBefore(), borderAfter()). They allow dirty layout even after
+    // DocumentLifecycle::LayoutClean which seems not proper. crbug.com/538236.
 
     mutable Vector<int> m_columnPos;
 
@@ -435,7 +439,9 @@ private:
 
     // A sorted list of all unique border values that we want to paint.
     CollapsedBorderValues m_collapsedBorders;
-    const CollapsedBorderValue* m_currentBorder;
+    // Used by TablePainter during painting.
+    // TODO(wangxianzhu): Move it into painter.
+    mutable const CollapsedBorderValue* m_currentBorder;
     bool m_collapsedBordersValid : 1;
 
     mutable bool m_hasColElements : 1;

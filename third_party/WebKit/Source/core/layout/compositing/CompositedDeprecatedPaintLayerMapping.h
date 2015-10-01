@@ -146,7 +146,7 @@ public:
 
     // GraphicsLayerClient interface
     void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) override;
-    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) override;
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) const override;
     bool isTrackingPaintInvalidations() const override;
 
 #if ENABLE(ASSERT)
@@ -286,7 +286,7 @@ private:
 
     static bool hasVisibleNonCompositingDescendant(DeprecatedPaintLayer* parent);
 
-    void doPaintTask(const GraphicsLayerPaintInfo&, const PaintLayerFlags&, GraphicsContext*, const IntRect& clip);
+    void doPaintTask(const GraphicsLayerPaintInfo&, const PaintLayerFlags&, GraphicsContext*, const IntRect& clip) const;
 
     // Computes the background clip rect for the given squashed layer, up to any containing layer that is squashed into the
     // same squashing layer and contains this squashed layer's clipping ancestor.

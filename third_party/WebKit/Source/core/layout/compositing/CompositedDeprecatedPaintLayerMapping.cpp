@@ -2100,7 +2100,7 @@ IntRect CompositedDeprecatedPaintLayerMapping::localClipRectForSquashedLayer(con
 }
 
 void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo, const PaintLayerFlags& paintLayerFlags, GraphicsContext* context,
-    const IntRect& clip) // In the coords of rootLayer.
+    const IntRect& clip /* In the coords of rootLayer */) const
 {
     FontCachePurgePreventer fontCachePurgePreventer;
 
@@ -2162,7 +2162,7 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
     }
 }
 
-static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const IntRect& clip)
+static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context, const IntRect& clip)
 {
     if (!scrollbar)
         return;
@@ -2175,7 +2175,7 @@ static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const
 }
 
 // Up-call from compositing layer drawing callback.
-void CompositedDeprecatedPaintLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect& clip)
+void CompositedDeprecatedPaintLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect& clip) const
 {
     // https://code.google.com/p/chromium/issues/detail?id=343772
     DisableCompositingQueryAsserts disabler;

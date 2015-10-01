@@ -109,7 +109,7 @@ void WebPluginContainerImpl::layoutIfNeeded()
     m_webPlugin->layoutIfNeeded();
 }
 
-void WebPluginContainerImpl::paint(GraphicsContext* context, const IntRect& rect)
+void WebPluginContainerImpl::paint(GraphicsContext* context, const IntRect& rect) const
 {
     if (!parent())
         return;

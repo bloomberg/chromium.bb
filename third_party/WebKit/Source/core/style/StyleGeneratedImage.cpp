@@ -89,7 +89,7 @@ void StyleGeneratedImage::removeClient(LayoutObject* layoutObject)
     m_imageGeneratorValue->removeClient(layoutObject);
 }
 
-PassRefPtr<Image> StyleGeneratedImage::image(LayoutObject* layoutObject, const IntSize& size) const
+PassRefPtr<Image> StyleGeneratedImage::image(const LayoutObject* layoutObject, const IntSize& size) const
 {
     return m_imageGeneratorValue->image(layoutObject, size);
 }

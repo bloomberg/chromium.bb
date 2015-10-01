@@ -207,7 +207,7 @@ private:
     unsigned length() const final { return textLength(); }
 
     // See the class comment as to why we shouldn't call this function directly.
-    void paint(const PaintInfo&, const LayoutPoint&) final { ASSERT_NOT_REACHED(); }
+    void paint(const PaintInfo&, const LayoutPoint&) const final { ASSERT_NOT_REACHED(); }
     void layout() final { ASSERT_NOT_REACHED(); }
     bool nodeAtPoint(HitTestResult&, const HitTestLocation&, const LayoutPoint&, HitTestAction) final { ASSERT_NOT_REACHED(); return false; }
 

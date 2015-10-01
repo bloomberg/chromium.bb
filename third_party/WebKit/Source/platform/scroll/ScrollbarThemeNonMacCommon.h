@@ -37,17 +37,17 @@ namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeNonMacCommon : public ScrollbarTheme {
 protected:
-    bool hasButtons(ScrollbarThemeClient*) override { return true; }
-    bool hasThumb(ScrollbarThemeClient*) override;
+    bool hasButtons(const ScrollbarThemeClient*) override { return true; }
+    bool hasThumb(const ScrollbarThemeClient*) override;
 
-    IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
-    IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
-    IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
+    IntRect backButtonRect(const ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    IntRect forwardButtonRect(const ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    IntRect trackRect(const ScrollbarThemeClient*, bool painting = false) override;
 
-    void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
-    void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    void paintTrackBackground(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) override;
+    void paintTickmarks(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) override;
 
-    virtual IntSize buttonSize(ScrollbarThemeClient*) = 0;
+    virtual IntSize buttonSize(const ScrollbarThemeClient*) = 0;
 };
 
 } // namespace blink

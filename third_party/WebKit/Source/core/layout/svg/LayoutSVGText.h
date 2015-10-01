@@ -64,7 +64,7 @@ public:
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGText || LayoutSVGBlock::isOfType(type); }
 
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
     bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
     PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 

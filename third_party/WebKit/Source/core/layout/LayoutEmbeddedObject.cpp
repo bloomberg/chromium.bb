@@ -91,7 +91,7 @@ bool LayoutEmbeddedObject::showsUnavailablePluginIndicator() const
     return m_showsUnavailablePluginIndicator;
 }
 
-void LayoutEmbeddedObject::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutEmbeddedObject::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     Element* element = toElement(node());
     if (!isHTMLPlugInElement(element))
@@ -100,7 +100,7 @@ void LayoutEmbeddedObject::paintContents(const PaintInfo& paintInfo, const Layou
     LayoutPart::paintContents(paintInfo, paintOffset);
 }
 
-void LayoutEmbeddedObject::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutEmbeddedObject::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     if (showsUnavailablePluginIndicator()) {
         LayoutReplaced::paint(paintInfo, paintOffset);
@@ -110,7 +110,7 @@ void LayoutEmbeddedObject::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     LayoutPart::paint(paintInfo, paintOffset);
 }
 
-void LayoutEmbeddedObject::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutEmbeddedObject::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     EmbeddedObjectPainter(*this).paintReplaced(paintInfo, paintOffset);
 }

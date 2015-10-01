@@ -2042,7 +2042,7 @@ ClientRectList* Internals::annotatedRegions(Document* document, bool draggable, 
     }
 
     document->updateLayout();
-    document->view()->updateAnnotatedRegions();
+    document->view()->updateDocumentAnnotatedRegions();
     Vector<AnnotatedRegionValue> regions = document->annotatedRegions();
 
     Vector<FloatQuad> quads;

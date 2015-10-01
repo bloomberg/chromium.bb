@@ -18,17 +18,17 @@
 
 namespace blink {
 
-static void addPDFURLRectsForInlineChildrenRecursively(LayoutObject* layoutObject, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+static void addPDFURLRectsForInlineChildrenRecursively(const LayoutObject& layoutObject, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    for (LayoutObject* child = layoutObject->slowFirstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = layoutObject.slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isLayoutInline() || toLayoutBoxModelObject(child)->hasSelfPaintingLayer())
             continue;
         ObjectPainter(*child).addPDFURLRectIfNeeded(paintInfo, paintOffset);
-        addPDFURLRectsForInlineChildrenRecursively(child, paintInfo, paintOffset);
+        addPDFURLRectsForInlineChildrenRecursively(*child, paintInfo, paintOffset);
     }
 }
 
-void LineBoxListPainter::paint(LayoutBoxModelObject* layoutObject, const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
+void LineBoxListPainter::paint(const LayoutBoxModelObject& layoutObject, const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     ASSERT(paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines);
 
@@ -36,7 +36,7 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* layoutObject, const PaintIn
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseTextClip && paintInfo.phase != PaintPhaseMask)
         return;
 
-    ASSERT(layoutObject->isLayoutBlock() || (layoutObject->isLayoutInline() && layoutObject->hasLayer())); // The only way an inline could paint like this is if it has a layer.
+    ASSERT(layoutObject.isLayoutBlock() || (layoutObject.isLayoutInline() && layoutObject.hasLayer())); // The only way an inline could paint like this is if it has a layer.
 
     // FIXME: When Skia supports annotation rect covering (https://code.google.com/p/skia/issues/detail?id=3872),
     // these rects may be covered line box drawings. Then we may need a dedicated paint phase.
@@ -47,7 +47,7 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* layoutObject, const PaintIn
     if (!m_lineBoxList.firstLineBox())
         return;
 
-    if (!m_lineBoxList.anyLineIntersectsRect(LineLayoutBoxModel(layoutObject), LayoutRect(paintInfo.rect), paintOffset))
+    if (!m_lineBoxList.anyLineIntersectsRect(LineLayoutBoxModel(const_cast<LayoutBoxModelObject*>(&layoutObject)), LayoutRect(paintInfo.rect), paintOffset))
         return;
 
     PaintInfo info(paintInfo);
@@ -56,7 +56,7 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* layoutObject, const PaintIn
     // them. Note that boxes can easily overlap, so we can't make any assumptions
     // based off positions of our first line box or our last line box.
     for (InlineFlowBox* curr = m_lineBoxList.firstLineBox(); curr; curr = curr->nextLineBox()) {
-        if (m_lineBoxList.lineIntersectsDirtyRect(LineLayoutBoxModel(layoutObject), curr, info, paintOffset)) {
+        if (m_lineBoxList.lineIntersectsDirtyRect(LineLayoutBoxModel(const_cast<LayoutBoxModelObject*>(&layoutObject)), curr, info, paintOffset)) {
             RootInlineBox& root = curr->root();
             curr->paint(info, paintOffset, root.lineTop(), root.lineBottom());
         }

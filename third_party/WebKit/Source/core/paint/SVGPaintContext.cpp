@@ -183,7 +183,7 @@ bool SVGPaintContext::isIsolationInstalled() const
     return false;
 }
 
-void SVGPaintContext::paintSubtree(GraphicsContext* context, LayoutObject* item)
+void SVGPaintContext::paintSubtree(GraphicsContext* context, const LayoutObject* item)
 {
     ASSERT(context);
     ASSERT(item);
@@ -193,7 +193,7 @@ void SVGPaintContext::paintSubtree(GraphicsContext* context, LayoutObject* item)
     item->paint(info, IntPoint());
 }
 
-bool SVGPaintContext::paintForLayoutObject(const PaintInfo& paintInfo, const ComputedStyle& style, LayoutObject& layoutObject, LayoutSVGResourceMode resourceMode, SkPaint& paint, const AffineTransform* additionalPaintServerTransform)
+bool SVGPaintContext::paintForLayoutObject(const PaintInfo& paintInfo, const ComputedStyle& style, const LayoutObject& layoutObject, LayoutSVGResourceMode resourceMode, SkPaint& paint, const AffineTransform* additionalPaintServerTransform)
 {
     if (paintInfo.isRenderingClipPathAsMaskImage()) {
         if (resourceMode == ApplyToStrokeMode)

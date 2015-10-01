@@ -138,12 +138,12 @@ bool LayoutVideo::shouldDisplayVideo() const
     return !videoElement()->shouldDisplayPosterImage();
 }
 
-void LayoutVideo::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutVideo::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     VideoPainter(*this).paintReplaced(paintInfo, paintOffset);
 }
 
-bool LayoutVideo::acceleratedRenderingInUse()
+bool LayoutVideo::acceleratedRenderingInUse() const
 {
     WebLayer* webLayer = mediaElement()->platformLayer();
     return webLayer && !webLayer->isOrphan();

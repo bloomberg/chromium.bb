@@ -70,7 +70,7 @@ public:
     void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize&, float) override;
     void addClient(LayoutObject*) override;
     void removeClient(LayoutObject*) override;
-    PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
+    PassRefPtr<Image> image(const LayoutObject*, const IntSize&) const override;
     float imageScaleFactor() const override { return m_imageScaleFactor; }
     bool knownToBeOpaque(const LayoutObject*) const override;
     ImageResource* cachedImage() const override;

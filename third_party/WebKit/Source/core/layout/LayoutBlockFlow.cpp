@@ -2102,12 +2102,12 @@ void LayoutBlockFlow::invalidatePaintForOverflow()
     m_paintInvalidationLogicalBottom = 0;
 }
 
-void LayoutBlockFlow::paintFloats(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, bool preservePhase)
+void LayoutBlockFlow::paintFloats(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, bool preservePhase) const
 {
     BlockFlowPainter(*this).paintFloats(paintInfo, paintOffset, preservePhase);
 }
 
-void LayoutBlockFlow::paintSelection(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutBlockFlow::paintSelection(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     BlockFlowPainter(*this).paintSelection(paintInfo, paintOffset);
 }

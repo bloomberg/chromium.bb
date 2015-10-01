@@ -53,7 +53,7 @@ void LayoutMeter::updateLogicalWidth()
 {
     LayoutBox::updateLogicalWidth();
 
-    IntSize frameSize = LayoutTheme::theme().meterSizeForBounds(this, pixelSnappedIntRect(frameRect()));
+    IntSize frameSize = LayoutTheme::theme().meterSizeForBounds(*this, pixelSnappedIntRect(frameRect()));
     setLogicalWidth(isHorizontalWritingMode() ? frameSize.width() : frameSize.height());
 }
 
@@ -66,7 +66,7 @@ void LayoutMeter::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logi
         frame.setHeight(computedValues.m_extent);
     else
         frame.setWidth(computedValues.m_extent);
-    IntSize frameSize = LayoutTheme::theme().meterSizeForBounds(this, pixelSnappedIntRect(frame));
+    IntSize frameSize = LayoutTheme::theme().meterSizeForBounds(*this, pixelSnappedIntRect(frame));
     computedValues.m_extent = isHorizontalWritingMode() ? frameSize.height() : frameSize.width();
 }
 

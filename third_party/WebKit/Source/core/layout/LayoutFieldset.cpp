@@ -142,12 +142,12 @@ LayoutBox* LayoutFieldset::findInFlowLegend() const
     return nullptr;
 }
 
-void LayoutFieldset::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutFieldset::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     FieldsetPainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
 }
 
-void LayoutFieldset::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutFieldset::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     FieldsetPainter(*this).paintMask(paintInfo, paintOffset);
 }

@@ -48,7 +48,7 @@ public:
     double initialAutoscrollTimerDelay() override;
     double autoscrollTimerDelay() override;
 
-    void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    void paintTickmarks(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) override;
 
     static NSScrollerStyle recommendedScrollerStyle();
 
@@ -59,12 +59,12 @@ public:
 protected:
     int maxOverlapBetweenPages() override { return 40; }
 
-    bool shouldDragDocumentInsteadOfThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) override;
+    bool shouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient*, const PlatformMouseEvent&) override;
     int scrollbarPartToHIPressedState(ScrollbarPart);
 
     virtual void updateButtonPlacement(ScrollbarButtonsPlacement) {}
 
-    void paintGivenTickmarks(SkCanvas*, ScrollbarThemeClient*, const IntRect&, const Vector<IntRect>&);
+    void paintGivenTickmarks(SkCanvas*, const ScrollbarThemeClient*, const IntRect&, const Vector<IntRect>&);
 
     RefPtr<Pattern> m_overhangPattern;
 };

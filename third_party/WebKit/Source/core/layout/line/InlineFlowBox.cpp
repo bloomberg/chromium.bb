@@ -1033,7 +1033,7 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
     return false;
 }
 
-void InlineFlowBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
+void InlineFlowBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const
 {
     InlineFlowBoxPainter(*this).paint(paintInfo, paintOffset, lineTop, lineBottom);
 }

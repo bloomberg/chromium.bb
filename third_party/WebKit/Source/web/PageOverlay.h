@@ -55,7 +55,7 @@ public:
         DEFINE_INLINE_VIRTUAL_TRACE() { }
 
         // Paints page overlay contents.
-        virtual void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) = 0;
+        virtual void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) const = 0;
         virtual ~Delegate() { }
     };
 
@@ -70,7 +70,7 @@ public:
     String debugName() const { return "PageOverlay"; }
 
     // GraphicsLayerClient implementation
-    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override;
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) const override;
     String debugName(const GraphicsLayer*) override;
 
 private:

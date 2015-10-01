@@ -310,7 +310,7 @@ public:
     }
 
 private:
-    void paintPageOverlay(WebGraphicsContext* context, const WebSize& size)
+    void paintPageOverlay(WebGraphicsContext* context, const WebSize& size) const override
     {
         WebFloatRect rect(0, 0, size.width, size.height);
         WebCanvas* canvas = context->beginDrawing(rect);

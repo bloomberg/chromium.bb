@@ -16,13 +16,13 @@ class LayoutFieldset;
 class FieldsetPainter {
     STACK_ALLOCATED();
 public:
-    FieldsetPainter(LayoutFieldset& layoutFieldset) : m_layoutFieldset(layoutFieldset) { }
+    FieldsetPainter(const LayoutFieldset& layoutFieldset) : m_layoutFieldset(layoutFieldset) { }
 
     void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
     void paintMask(const PaintInfo&, const LayoutPoint&);
 
 private:
-    LayoutFieldset& m_layoutFieldset;
+    const LayoutFieldset& m_layoutFieldset;
 };
 
 } // namespace blink

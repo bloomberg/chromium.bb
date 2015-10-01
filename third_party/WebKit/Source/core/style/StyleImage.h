@@ -64,7 +64,7 @@ public:
     virtual void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize&, float) = 0;
     virtual void addClient(LayoutObject*) = 0;
     virtual void removeClient(LayoutObject*) = 0;
-    virtual PassRefPtr<Image> image(LayoutObject*, const IntSize&) const = 0;
+    virtual PassRefPtr<Image> image(const LayoutObject*, const IntSize&) const = 0;
     virtual WrappedImagePtr data() const = 0;
     virtual float imageScaleFactor() const { return 1; }
     virtual bool knownToBeOpaque(const LayoutObject*) const = 0;

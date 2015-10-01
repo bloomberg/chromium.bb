@@ -1168,19 +1168,19 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
     return false;
 }
 
-void LayoutBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     BoxPainter(*this).paint(paintInfo, paintOffset);
 }
 
 
-void LayoutBox::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutBox::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     BoxPainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
 }
 
 
-bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent)
+bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent) const
 {
     ASSERT(hasBackground());
 
@@ -1306,7 +1306,7 @@ bool LayoutBox::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, u
     return false;
 }
 
-bool LayoutBox::computeBackgroundIsKnownToBeObscured()
+bool LayoutBox::computeBackgroundIsKnownToBeObscured() const
 {
     // Test to see if the children trivially obscure the background.
     // FIXME: This test can be much more comprehensive.
@@ -1324,7 +1324,7 @@ bool LayoutBox::computeBackgroundIsKnownToBeObscured()
     return foregroundIsKnownToBeOpaqueInRect(backgroundRect, backgroundObscurationTestMaxDepth);
 }
 
-void LayoutBox::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutBox::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     BoxPainter(*this).paintMask(paintInfo, paintOffset);
 }
@@ -1459,7 +1459,7 @@ void LayoutBox::excludeScrollbars(LayoutRect& rect, OverlayScrollbarSizeRelevanc
     rect.contract(layer()->scrollableArea()->verticalScrollbarWidth(relevancy), layer()->scrollableArea()->horizontalScrollbarHeight(relevancy));
 }
 
-LayoutRect LayoutBox::clipRect(const LayoutPoint& location)
+LayoutRect LayoutBox::clipRect(const LayoutPoint& location) const
 {
     LayoutRect borderBoxRect = this->borderBoxRect();
     LayoutRect clipRect = LayoutRect(borderBoxRect.location() + location, borderBoxRect.size());

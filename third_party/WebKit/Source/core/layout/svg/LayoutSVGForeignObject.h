@@ -48,7 +48,7 @@ public:
 
     bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
 
     void layout() override;
 
@@ -61,7 +61,7 @@ public:
 
     void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 
-    FloatRect viewportRect() { return m_viewport; }
+    FloatRect viewportRect() const { return m_viewport; }
 
 private:
     void updateLogicalWidth() override;

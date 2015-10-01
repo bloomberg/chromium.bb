@@ -133,12 +133,12 @@ void ScrollbarThemeMacOverlayAPI::setNewPainterForScrollbar(ScrollbarThemeClient
     updateScrollbarOverlayStyle(scrollbar);
 }
 
-ScrollbarPainter ScrollbarThemeMacOverlayAPI::painterForScrollbar(ScrollbarThemeClient* scrollbar)
+ScrollbarPainter ScrollbarThemeMacOverlayAPI::painterForScrollbar(const ScrollbarThemeClient* scrollbar)
 {
-    return [scrollbarPainterMap()->get(scrollbar).get() painter];
+    return [scrollbarPainterMap()->get(const_cast<ScrollbarThemeClient*>(scrollbar)).get() painter];
 }
 
-void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect) {
+void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect) {
     if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, DisplayItem::ScrollbarTrackBackground))
         return;
 
@@ -159,7 +159,7 @@ void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext* context,
     [scrollbarPainter drawKnobSlotInRect:trackRect highlight:NO];
 }
 
-void ScrollbarThemeMacOverlayAPI::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect) {
+void ScrollbarThemeMacOverlayAPI::paintThumb(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect) {
     if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, DisplayItem::ScrollbarThumb))
         return;
 
@@ -201,7 +201,7 @@ bool ScrollbarThemeMacOverlayAPI::usesOverlayScrollbars() const
     return recommendedScrollerStyle() == NSScrollerStyleOverlay;
 }
 
-void ScrollbarThemeMacOverlayAPI::updateScrollbarOverlayStyle(ScrollbarThemeClient* scrollbar)
+void ScrollbarThemeMacOverlayAPI::updateScrollbarOverlayStyle(const ScrollbarThemeClient* scrollbar)
 {
     ScrollbarPainter painter = painterForScrollbar(scrollbar);
     switch (scrollbar->scrollbarOverlayStyle()) {
@@ -222,7 +222,7 @@ ScrollbarButtonsPlacement ScrollbarThemeMacOverlayAPI::buttonsPlacement() const
     return ScrollbarButtonsPlacementNone;
 }
 
-bool ScrollbarThemeMacOverlayAPI::hasThumb(ScrollbarThemeClient* scrollbar)
+bool ScrollbarThemeMacOverlayAPI::hasThumb(const ScrollbarThemeClient* scrollbar)
 {
     ScrollbarPainter painter = painterForScrollbar(scrollbar);
     int minLengthForThumb = [painter knobMinLength] + [painter trackOverlapEndInset] + [painter knobOverlapEndInset]
@@ -232,30 +232,30 @@ bool ScrollbarThemeMacOverlayAPI::hasThumb(ScrollbarThemeClient* scrollbar)
              scrollbar->height()) >= minLengthForThumb;
 }
 
-IntRect ScrollbarThemeMacOverlayAPI::backButtonRect(ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool painting)
+IntRect ScrollbarThemeMacOverlayAPI::backButtonRect(const ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool painting)
 {
     ASSERT(buttonsPlacement() == ScrollbarButtonsPlacementNone);
     return IntRect();
 }
 
-IntRect ScrollbarThemeMacOverlayAPI::forwardButtonRect(ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool painting)
+IntRect ScrollbarThemeMacOverlayAPI::forwardButtonRect(const ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool painting)
 {
     ASSERT(buttonsPlacement() == ScrollbarButtonsPlacementNone);
     return IntRect();
 }
 
-IntRect ScrollbarThemeMacOverlayAPI::trackRect(ScrollbarThemeClient* scrollbar, bool painting)
+IntRect ScrollbarThemeMacOverlayAPI::trackRect(const ScrollbarThemeClient* scrollbar, bool painting)
 {
     ASSERT(!hasButtons(scrollbar));
     return scrollbar->frameRect();
 }
 
-int ScrollbarThemeMacOverlayAPI::minimumThumbLength(ScrollbarThemeClient* scrollbar)
+int ScrollbarThemeMacOverlayAPI::minimumThumbLength(const ScrollbarThemeClient* scrollbar)
 {
     return [painterForScrollbar(scrollbar) knobMinLength];
 }
 
-void ScrollbarThemeMacOverlayAPI::updateEnabledState(ScrollbarThemeClient* scrollbar)
+void ScrollbarThemeMacOverlayAPI::updateEnabledState(const ScrollbarThemeClient* scrollbar)
 {
     [painterForScrollbar(scrollbar) setEnabled:scrollbar->enabled()];
 }

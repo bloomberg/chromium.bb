@@ -12,7 +12,7 @@
 
 namespace blink {
 
-RoundedInnerRectClipper::RoundedInnerRectClipper(LayoutObject& layoutObject, const PaintInfo& paintInfo, const LayoutRect& rect, const FloatRoundedRect& clipRect, RoundedInnerRectClipperBehavior behavior)
+RoundedInnerRectClipper::RoundedInnerRectClipper(const LayoutObject& layoutObject, const PaintInfo& paintInfo, const LayoutRect& rect, const FloatRoundedRect& clipRect, RoundedInnerRectClipperBehavior behavior)
     : m_layoutObject(layoutObject)
     , m_paintInfo(paintInfo)
     , m_useDisplayItemList(behavior == ApplyToDisplayListIfEnabled)

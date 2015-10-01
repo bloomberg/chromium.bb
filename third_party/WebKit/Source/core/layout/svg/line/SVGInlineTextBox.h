@@ -39,8 +39,8 @@ public:
     int offsetForPosition(LayoutUnit x, bool includePartialGlyphs = true) const override;
     LayoutUnit positionForOffset(int offset) const override;
 
-    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
-    LayoutRect localSelectionRect(int startPosition, int endPosition) override;
+    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) const override;
+    LayoutRect localSelectionRect(int startPosition, int endPosition) const override;
 
     bool mapStartEndPositionsIntoFragmentCoordinates(const SVGTextFragment&, int& startPosition, int& endPosition) const;
 
@@ -56,12 +56,12 @@ public:
     void setStartsNewTextChunk(bool newTextChunk) { m_startsNewTextChunk = newTextChunk; }
 
     int offsetForPositionInFragment(const SVGTextFragment&, LayoutUnit position, bool includePartialGlyphs) const;
-    FloatRect selectionRectForTextFragment(const SVGTextFragment&, int fragmentStartPosition, int fragmentEndPosition, const ComputedStyle&);
+    FloatRect selectionRectForTextFragment(const SVGTextFragment&, int fragmentStartPosition, int fragmentEndPosition, const ComputedStyle&) const;
     TextRun constructTextRun(const ComputedStyle&, const SVGTextFragment&) const;
 
 private:
-    void paintDocumentMarker(GraphicsContext*, const LayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&, bool) final;
-    void paintTextMatchMarker(GraphicsContext*, const LayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&) final;
+    void paintDocumentMarker(GraphicsContext*, const LayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&, bool) const final;
+    void paintTextMatchMarker(GraphicsContext*, const LayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&) const final;
 
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 

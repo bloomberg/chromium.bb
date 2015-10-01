@@ -69,7 +69,7 @@ void LayoutReplica::computePreferredLogicalWidths()
     clearPreferredLogicalWidthsDirty();
 }
 
-void LayoutReplica::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutReplica::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     ReplicaPainter(*this).paint(paintInfo, paintOffset);
 }

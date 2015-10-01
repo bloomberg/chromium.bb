@@ -40,11 +40,11 @@ public:
     int scrollbarThickness(ScrollbarControlSize) override;
 
 protected:
-    void paintTrackPiece(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) override;
-    void paintButton(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) override;
-    void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
-    IntSize buttonSize(ScrollbarThemeClient*) override;
-    int minimumThumbLength(ScrollbarThemeClient*) override;
+    void paintTrackPiece(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&, ScrollbarPart) override;
+    void paintButton(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&, ScrollbarPart) override;
+    void paintThumb(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) override;
+    IntSize buttonSize(const ScrollbarThemeClient*) override;
+    int minimumThumbLength(const ScrollbarThemeClient*) override;
 };
 
 } // namespace blink

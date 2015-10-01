@@ -48,7 +48,7 @@ bool LayoutSVGForeignObject::isChildAllowed(LayoutObject* child, const ComputedS
     return !child->isSVG() || child->isSVGRoot();
 }
 
-void LayoutSVGForeignObject::paint(const PaintInfo& paintInfo, const LayoutPoint&)
+void LayoutSVGForeignObject::paint(const PaintInfo& paintInfo, const LayoutPoint&) const
 {
     SVGForeignObjectPainter(*this).paint(paintInfo);
 }

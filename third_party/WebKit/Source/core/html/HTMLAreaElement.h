@@ -42,8 +42,8 @@ public:
 
     bool pointInArea(LayoutPoint, const LayoutSize& containerSize);
 
-    LayoutRect computeRect(LayoutObject*) const;
-    Path computePath(LayoutObject*) const;
+    LayoutRect computeRect(const LayoutObject*) const;
+    Path computePath(const LayoutObject*) const;
 
     // The parent map's image.
     HTMLImageElement* imageElement() const;

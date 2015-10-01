@@ -212,12 +212,12 @@ void LayoutImage::notifyFinished(Resource* newImage)
     }
 }
 
-void LayoutImage::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutImage::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     ImagePainter(*this).paintReplaced(paintInfo, paintOffset);
 }
 
-void LayoutImage::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutImage::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     ImagePainter(*this).paint(paintInfo, paintOffset);
 }
@@ -233,7 +233,7 @@ void LayoutImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
     invalidatePaintAndMarkForLayoutIfNeeded();
 }
 
-bool LayoutImage::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox*) const
+bool LayoutImage::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, const InlineFlowBox*) const
 {
     if (!LayoutBoxModelObject::boxShadowShouldBeAppliedToBackground(bleedAvoidance))
         return false;
@@ -267,7 +267,7 @@ bool LayoutImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
     return m_imageResource->cachedImage() && m_imageResource->cachedImage()->currentFrameKnownToBeOpaque(this);
 }
 
-bool LayoutImage::computeBackgroundIsKnownToBeObscured()
+bool LayoutImage::computeBackgroundIsKnownToBeObscured() const
 {
     if (!hasBackground())
         return false;

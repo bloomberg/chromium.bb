@@ -210,7 +210,7 @@ float InlineTextBox::newlineSpaceWidth() const
     return styleToUse.font().spaceWidth();
 }
 
-LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
+LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos) const
 {
     int sPos = std::max(startPos - m_start, 0);
     int ePos = std::min(endPos - m_start, (int)m_len);
@@ -414,7 +414,7 @@ bool InlineTextBox::getEmphasisMarkPosition(const ComputedStyle& style, TextEmph
     return !rubyText || !rubyText->firstLineBox();
 }
 
-void InlineTextBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit /*lineTop*/, LayoutUnit /*lineBottom*/)
+void InlineTextBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit /*lineTop*/, LayoutUnit /*lineBottom*/) const
 {
     InlineTextBoxPainter(*this).paint(paintInfo, paintOffset);
 }
@@ -437,12 +437,12 @@ void InlineTextBox::selectionStartEnd(int& sPos, int& ePos) const
     ePos = std::min(endPos - m_start, (int)m_len);
 }
 
-void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const LayoutPoint& boxOrigin, DocumentMarker* marker, const ComputedStyle& style, const Font& font, bool grammar)
+void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const LayoutPoint& boxOrigin, DocumentMarker* marker, const ComputedStyle& style, const Font& font, bool grammar) const
 {
     InlineTextBoxPainter(*this).paintDocumentMarker(pt, boxOrigin, marker, style, font, grammar);
 }
 
-void InlineTextBox::paintTextMatchMarker(GraphicsContext* pt, const LayoutPoint& boxOrigin, DocumentMarker* marker, const ComputedStyle& style, const Font& font)
+void InlineTextBox::paintTextMatchMarker(GraphicsContext* pt, const LayoutPoint& boxOrigin, DocumentMarker* marker, const ComputedStyle& style, const Font& font) const
 {
     InlineTextBoxPainter(*this).paintTextMatchMarker(pt, boxOrigin, marker, style, font);
 }

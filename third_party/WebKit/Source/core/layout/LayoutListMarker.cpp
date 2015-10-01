@@ -1028,7 +1028,7 @@ bool LayoutListMarker::isImage() const
     return m_image && !m_image->errorOccurred();
 }
 
-LayoutRect LayoutListMarker::localSelectionRect()
+LayoutRect LayoutListMarker::localSelectionRect() const
 {
     InlineBox* box = inlineBoxWrapper();
     if (!box)
@@ -1040,7 +1040,7 @@ LayoutRect LayoutListMarker::localSelectionRect()
     return LayoutRect(newLogicalTop, 0, root.selectionHeight(), size().height());
 }
 
-void LayoutListMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutListMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     ListMarkerPainter(*this).paint(paintInfo, paintOffset);
 }
@@ -1358,7 +1358,7 @@ bool LayoutListMarker::isInside() const
     return m_listItem->notInList() || style()->listStylePosition() == INSIDE;
 }
 
-IntRect LayoutListMarker::getRelativeMarkerRect()
+IntRect LayoutListMarker::getRelativeMarkerRect() const
 {
     if (isImage())
         return IntRect(0, 0, m_image->imageSize(this, style()->effectiveZoom()).width(), m_image->imageSize(this, style()->effectiveZoom()).height());

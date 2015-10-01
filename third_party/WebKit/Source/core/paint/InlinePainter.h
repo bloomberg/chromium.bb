@@ -21,12 +21,12 @@ class LayoutInline;
 class InlinePainter {
     STACK_ALLOCATED();
 public:
-    InlinePainter(LayoutInline& layoutInline) : m_layoutInline(layoutInline) { }
+    InlinePainter(const LayoutInline& layoutInline) : m_layoutInline(layoutInline) { }
 
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
-    LayoutInline& m_layoutInline;
+    const LayoutInline& m_layoutInline;
 };
 
 } // namespace blink

@@ -70,7 +70,7 @@ inline HTMLElement* LayoutTextControlSingleLine::innerSpinButtonElement() const
     return toHTMLElement(inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton()));
 }
 
-void LayoutTextControlSingleLine::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutTextControlSingleLine::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     LayoutTextControl::paint(paintInfo, paintOffset);
 
@@ -90,7 +90,7 @@ void LayoutTextControlSingleLine::paint(const PaintInfo& paintInfo, const Layout
         contentsRect.moveBy(paintOffset + location());
         IntRect snappedRect = pixelSnappedIntRect(contentsRect);
         LayoutObjectDrawingRecorder recorder(*paintInfo.context, *this, paintInfo.phase, snappedRect, paintOffset);
-        LayoutTheme::theme().painter().paintCapsLockIndicator(this, paintInfo, snappedRect);
+        LayoutTheme::theme().painter().paintCapsLockIndicator(*this, paintInfo, snappedRect);
     }
 }
 

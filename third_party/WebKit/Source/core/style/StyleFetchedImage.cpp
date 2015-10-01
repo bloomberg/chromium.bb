@@ -127,7 +127,7 @@ void StyleFetchedImage::notifyFinished(Resource* resource)
     m_document.clear();
 }
 
-PassRefPtr<Image> StyleFetchedImage::image(LayoutObject* layoutObject, const IntSize&) const
+PassRefPtr<Image> StyleFetchedImage::image(const LayoutObject* layoutObject, const IntSize&) const
 {
     return m_image->imageForLayoutObject(layoutObject);
 }

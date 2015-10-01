@@ -170,7 +170,7 @@ void BackgroundImageGeometry::clip(const IntRect& clipRect)
 
 void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const LayoutBoxModelObject* paintContainer,
     const GlobalPaintFlags globalPaintFlags, const FillLayer& fillLayer, const LayoutRect& paintRect,
-    LayoutObject* backgroundObject)
+    const LayoutObject* backgroundObject)
 {
     LayoutUnit left = 0;
     LayoutUnit top = 0;

@@ -45,7 +45,7 @@ public:
 
     bool shouldDisplayVideo() const;
     HTMLVideoElement* videoElement() const;
-    bool acceleratedRenderingInUse();
+    bool acceleratedRenderingInUse() const;
 
     const char* name() const override { return "LayoutVideo"; }
 
@@ -60,7 +60,7 @@ private:
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectVideo || LayoutMedia::isOfType(type); }
 
-    void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
+    void paintReplaced(const PaintInfo&, const LayoutPoint&) const override;
 
     void layout() override;
 

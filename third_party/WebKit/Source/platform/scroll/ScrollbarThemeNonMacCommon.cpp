@@ -35,14 +35,14 @@
 
 namespace blink {
 
-bool ScrollbarThemeNonMacCommon::hasThumb(ScrollbarThemeClient* scrollbar)
+bool ScrollbarThemeNonMacCommon::hasThumb(const ScrollbarThemeClient* scrollbar)
 {
     // This method is just called as a paint-time optimization to see if
     // painting the thumb can be skipped. We don't have to be exact here.
     return thumbLength(scrollbar) > 0;
 }
 
-IntRect ScrollbarThemeNonMacCommon::backButtonRect(ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool)
+IntRect ScrollbarThemeNonMacCommon::backButtonRect(const ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool)
 {
     // Windows and Linux just have single arrows.
     if (part == BackButtonEndPart)
@@ -52,7 +52,7 @@ IntRect ScrollbarThemeNonMacCommon::backButtonRect(ScrollbarThemeClient* scrollb
     return IntRect(scrollbar->x(), scrollbar->y(), size.width(), size.height());
 }
 
-IntRect ScrollbarThemeNonMacCommon::forwardButtonRect(ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool)
+IntRect ScrollbarThemeNonMacCommon::forwardButtonRect(const ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool)
 {
     // Windows and Linux just have single arrows.
     if (part == ForwardButtonStartPart)
@@ -70,7 +70,7 @@ IntRect ScrollbarThemeNonMacCommon::forwardButtonRect(ScrollbarThemeClient* scro
     return IntRect(x, y, size.width(), size.height());
 }
 
-IntRect ScrollbarThemeNonMacCommon::trackRect(ScrollbarThemeClient* scrollbar, bool)
+IntRect ScrollbarThemeNonMacCommon::trackRect(const ScrollbarThemeClient* scrollbar, bool)
 {
     // The track occupies all space between the two buttons.
     IntSize bs = buttonSize(scrollbar);
@@ -85,14 +85,14 @@ IntRect ScrollbarThemeNonMacCommon::trackRect(ScrollbarThemeClient* scrollbar, b
     return IntRect(scrollbar->x(), scrollbar->y() + bs.height(), thickness, scrollbar->height() - 2 * bs.height());
 }
 
-void ScrollbarThemeNonMacCommon::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeNonMacCommon::paintTrackBackground(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     // Just assume a forward track part. We only paint the track as a single piece when there is no thumb.
     if (!hasThumb(scrollbar))
         paintTrackPiece(context, scrollbar, rect, ForwardTrackPart);
 }
 
-void ScrollbarThemeNonMacCommon::paintTickmarks(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeNonMacCommon::paintTickmarks(GraphicsContext* context, const ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     if (scrollbar->orientation() != VerticalScrollbar)
         return;

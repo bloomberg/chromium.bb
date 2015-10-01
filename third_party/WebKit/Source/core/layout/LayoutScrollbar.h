@@ -47,15 +47,16 @@ public:
     LayoutBox* owningLayoutObject() const;
     LayoutBox* owningLayoutObjectWithinFrame() const;
 
-    IntRect buttonRect(ScrollbarPart);
-    IntRect trackRect(int startLength, int endLength);
-    IntRect trackPieceRectWithMargins(ScrollbarPart, const IntRect&);
+    IntRect buttonRect(ScrollbarPart) const;
+    IntRect trackRect(int startLength, int endLength) const;
+    IntRect trackPieceRectWithMargins(ScrollbarPart, const IntRect&) const;
 
-    int minimumThumbLength();
+    int minimumThumbLength() const;
 
     bool isOverlayScrollbar() const override { return false; }
 
     LayoutScrollbarPart* getPart(ScrollbarPart partType) { return m_parts.get(partType); }
+    const LayoutScrollbarPart* getPart(ScrollbarPart partType) const { return m_parts.get(partType); }
 
     void invalidateRect(const IntRect&) override;
 

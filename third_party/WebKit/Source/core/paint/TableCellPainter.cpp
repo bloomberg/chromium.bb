@@ -138,7 +138,7 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     }
 }
 
-void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutObject* backgroundObject)
+void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutObject* backgroundObject)
 {
     if (!paintInfo.shouldPaintWithinRoot(&m_layoutTableCell))
         return;

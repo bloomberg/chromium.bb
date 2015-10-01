@@ -47,7 +47,7 @@ public:
     const char* name() const override { return "LayoutHTMLCanvas"; }
 
 private:
-    void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
+    void paintReplaced(const PaintInfo&, const LayoutPoint&) const override;
     void intrinsicSizeChanged() override { canvasSizeChanged(); }
 
     CompositingReasons additionalCompositingReasons() const override;

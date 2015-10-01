@@ -18,14 +18,14 @@ class LineBoxList;
 class LineBoxListPainter {
     STACK_ALLOCATED();
 public:
-    LineBoxListPainter(LineBoxList& lineBoxList) : m_lineBoxList(lineBoxList) { }
+    LineBoxListPainter(const LineBoxList& lineBoxList) : m_lineBoxList(lineBoxList) { }
 
-    void paint(LayoutBoxModelObject*, const PaintInfo&, const LayoutPoint&) const;
+    void paint(const LayoutBoxModelObject&, const PaintInfo&, const LayoutPoint&) const;
 
     void invalidateLineBoxPaintOffsets(const PaintInfo&) const;
 
 private:
-    LineBoxList& m_lineBoxList;
+    const LineBoxList& m_lineBoxList;
 };
 
 } // namespace blink

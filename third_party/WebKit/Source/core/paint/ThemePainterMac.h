@@ -35,19 +35,19 @@ public:
     ThemePainterMac(LayoutThemeMac& layoutTheme) : m_layoutTheme(layoutTheme) { }
 
 private:
-    bool paintCapsLockIndicator(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    bool paintMeter(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    bool paintTextField(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    bool paintTextArea(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    bool paintMenuList(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    bool paintMenuListButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    bool paintProgressBar(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    bool paintSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    bool paintSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    bool paintSearchField(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    bool paintSearchFieldCancelButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    bool paintSearchFieldDecoration(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    bool paintSearchFieldResultsDecoration(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintCapsLockIndicator(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+    bool paintMeter(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+    bool paintTextField(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+    bool paintTextArea(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+    bool paintMenuList(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+    bool paintMenuListButton(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+    bool paintProgressBar(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+    bool paintSliderTrack(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+    bool paintSliderThumb(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+    bool paintSearchField(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+    bool paintSearchFieldCancelButton(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+    bool paintSearchFieldDecoration(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+    bool paintSearchFieldResultsDecoration(const LayoutObject&, const PaintInfo&, const IntRect&) override;
 
     LayoutThemeMac& m_layoutTheme;
 };

@@ -73,19 +73,19 @@ public:
     }
 
     typedef Vector<LayoutBox*, 1> GridCell;
-    const GridCell& gridCell(int row, int column)
+    const GridCell& gridCell(int row, int column) const
     {
         ASSERT_WITH_SECURITY_IMPLICATION(!m_gridIsDirty);
         return m_grid[row][column];
     }
 
-    const Vector<LayoutBox*>& itemsOverflowingGridArea()
+    const Vector<LayoutBox*>& itemsOverflowingGridArea() const
     {
         ASSERT_WITH_SECURITY_IMPLICATION(!m_gridIsDirty);
         return m_gridItemsOverflowingGridArea;
     }
 
-    int paintIndexForGridItem(const LayoutBox* layoutBox)
+    int paintIndexForGridItem(const LayoutBox* layoutBox) const
     {
         ASSERT_WITH_SECURITY_IMPLICATION(!m_gridIsDirty);
         return m_gridItemsIndexesMap.get(layoutBox);
@@ -158,7 +158,7 @@ private:
 
     void applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection, GridSizingData&, LayoutUnit availableSpace);
 
-    void paintChildren(const PaintInfo&, const LayoutPoint&) override;
+    void paintChildren(const PaintInfo&, const LayoutPoint&) const override;
 
     bool needToStretchChildLogicalHeight(const LayoutBox&) const;
     LayoutUnit childIntrinsicHeight(const LayoutBox&) const;

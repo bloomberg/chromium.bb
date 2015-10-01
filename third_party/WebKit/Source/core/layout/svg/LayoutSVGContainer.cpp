@@ -97,7 +97,7 @@ void LayoutSVGContainer::removeChild(LayoutObject* child)
         descendantIsolationRequirementsChanged(DescendantIsolationNeedsUpdate);
 }
 
-bool LayoutSVGContainer::selfWillPaint()
+bool LayoutSVGContainer::selfWillPaint() const
 {
     SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(this);
     return resources && resources->filter();
@@ -145,7 +145,7 @@ void LayoutSVGContainer::descendantIsolationRequirementsChanged(DescendantIsolat
         parent()->descendantIsolationRequirementsChanged(state);
 }
 
-void LayoutSVGContainer::paint(const PaintInfo& paintInfo, const LayoutPoint&)
+void LayoutSVGContainer::paint(const PaintInfo& paintInfo, const LayoutPoint&) const
 {
     SVGContainerPainter(*this).paint(paintInfo);
 }

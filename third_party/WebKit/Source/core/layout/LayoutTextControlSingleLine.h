@@ -51,7 +51,7 @@ private:
     LayoutRect controlClipRect(const LayoutPoint&) const final;
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextField || LayoutTextControl::isOfType(type); }
 
-    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) const override;
     void layout() override;
 
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) final;

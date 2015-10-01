@@ -1277,7 +1277,7 @@ int LayoutTableSection::firstLineBoxBaseline() const
     return firstLineBaseline;
 }
 
-void LayoutTableSection::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutTableSection::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     TableSectionPainter(*this).paint(paintInfo, paintOffset);
 }

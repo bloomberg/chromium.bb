@@ -198,7 +198,7 @@ bool LayoutSVGRoot::shouldApplyViewportClip() const
         || this->isDocumentElement();
 }
 
-void LayoutSVGRoot::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutSVGRoot::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     SVGRootPainter(*this).paint(paintInfo, paintOffset);
 }

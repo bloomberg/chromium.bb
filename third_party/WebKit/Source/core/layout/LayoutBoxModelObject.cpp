@@ -778,7 +778,7 @@ IntSize LayoutBoxModelObject::calculateImageIntrinsicDimensions(StyleImage* imag
     return positioningAreaSize;
 }
 
-bool LayoutBoxModelObject::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* inlineFlowBox) const
+bool LayoutBoxModelObject::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, const InlineFlowBox* inlineFlowBox) const
 {
     if (bleedAvoidance != BackgroundBleedNone)
         return false;

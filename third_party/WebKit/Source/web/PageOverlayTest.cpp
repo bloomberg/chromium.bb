@@ -76,7 +76,7 @@ class SimpleCanvasOverlay : public PageOverlay::Delegate {
 public:
     SimpleCanvasOverlay(SkColor color) : m_color(color) { }
 
-    void paintPageOverlay(WebGraphicsContext* context, const WebSize& size) override
+    void paintPageOverlay(WebGraphicsContext* context, const WebSize& size) const override
     {
         WebFloatRect rect(0, 0, size.width, size.height);
         WebCanvas* canvas = context->beginDrawing(rect);
@@ -97,7 +97,7 @@ class PrivateGraphicsContextOverlay : public PageOverlay::Delegate {
 public:
     PrivateGraphicsContextOverlay(Color color) : m_color(color) { }
 
-    void paintPageOverlay(WebGraphicsContext* context, const WebSize& size) override
+    void paintPageOverlay(WebGraphicsContext* context, const WebSize& size) const override
     {
         GraphicsContext& graphicsContext = toWebGraphicsContextImpl(context)->graphicsContext();
         if (DrawingRecorder::useCachedDrawingIfPossible(graphicsContext, *this, DisplayItem::PageOverlay))

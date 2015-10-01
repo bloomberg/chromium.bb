@@ -643,7 +643,7 @@ void LayoutTable::addOverflowFromChildren()
         addOverflowFromChild(section);
 }
 
-void LayoutTable::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutTable::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     TablePainter(*this).paintObject(paintInfo, paintOffset);
 }
@@ -665,12 +665,12 @@ void LayoutTable::subtractCaptionRect(LayoutRect& rect) const
     }
 }
 
-void LayoutTable::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutTable::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     TablePainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
 }
 
-void LayoutTable::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutTable::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     TablePainter(*this).paintMask(paintInfo, paintOffset);
 }

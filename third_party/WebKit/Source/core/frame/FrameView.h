@@ -201,7 +201,7 @@ public:
 
     void handleLoadCompleted();
 
-    void updateAnnotatedRegions();
+    void updateDocumentAnnotatedRegions() const;
 
     void restoreScrollbar();
 
@@ -217,12 +217,11 @@ public:
 
     void addPartToUpdate(LayoutEmbeddedObject&);
 
-    void setIsPainting(bool val) { m_isPainting = val; }
+    void setIsPainting(bool val) const { m_isPainting = val; }
     bool isPainting() const;
-    void setLastPaintTime(double val) { m_lastPaintTime = val; }
-    bool hasEverPainted() const { return m_lastPaintTime; }
+
     void setNodeToDraw(Node*);
-    Node* nodeToDraw() { return m_nodeToDraw.get(); }
+    Node* nodeToDraw() const { return m_nodeToDraw.get(); }
 
     Color documentBackgroundColor() const;
 
@@ -383,7 +382,7 @@ public:
     // can be used to obtain those scrollbars.
     Scrollbar* horizontalScrollbar() const override { return m_horizontalScrollbar.get(); }
     Scrollbar* verticalScrollbar() const override { return m_verticalScrollbar.get(); }
-    LayoutScrollbarPart* scrollCorner() { return m_scrollCorner; }
+    LayoutScrollbarPart* scrollCorner() const { return m_scrollCorner; }
 
     void positionScrollbarLayers();
 
@@ -509,9 +508,9 @@ public:
     }
 
     // Widget override. Handles painting of the contents of the view as well as the scrollbars.
-    void paint(GraphicsContext*, const IntRect&) override;
-    void paint(GraphicsContext*, const GlobalPaintFlags, const IntRect&);
-    void paintContents(GraphicsContext*, const GlobalPaintFlags, const IntRect& damageRect);
+    void paint(GraphicsContext*, const IntRect&) const override;
+    void paint(GraphicsContext*, const GlobalPaintFlags, const IntRect&) const;
+    void paintContents(GraphicsContext*, const GlobalPaintFlags, const IntRect& damageRect) const;
 
     // Widget overrides to ensure that our children's visibility status is kept up to date when we get shown and hidden.
     void show() override;
@@ -711,7 +710,7 @@ private:
     // LayoutObject for the viewport-defining element (see Document::viewportDefiningElement).
     LayoutObject* viewportLayoutObject();
 
-    void collectAnnotatedRegions(LayoutObject&, Vector<AnnotatedRegionValue>&);
+    void collectAnnotatedRegions(LayoutObject&, Vector<AnnotatedRegionValue>&) const;
 
     typedef WTF::HashMap <const GraphicsLayer*, Vector<std::pair<int64_t, WebRect>>> GraphicsLayerFrameTimingRequests;
     void updateFrameTimingRequestsIfNeeded();
@@ -764,12 +763,12 @@ private:
 
     bool m_safeToPropagateScrollToParent;
 
-    double m_lastPaintTime;
-
     bool m_isTrackingPaintInvalidations; // Used for testing.
 
     RefPtrWillBeMember<Node> m_nodeToDraw;
-    bool m_isPainting;
+
+    // TODO(wangxianzhu): Use document cycle state for spv2 and synchronzied painting.
+    mutable bool m_isPainting;
 
     unsigned m_visuallyNonEmptyCharacterCount;
     unsigned m_visuallyNonEmptyPixelCount;

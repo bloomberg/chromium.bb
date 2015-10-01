@@ -115,7 +115,7 @@ bool LayoutMedia::isChildAllowed(LayoutObject* child, const ComputedStyle&) cons
     return false;
 }
 
-void LayoutMedia::paintReplaced(const PaintInfo&, const LayoutPoint&)
+void LayoutMedia::paintReplaced(const PaintInfo&, const LayoutPoint&) const
 {
 }
 

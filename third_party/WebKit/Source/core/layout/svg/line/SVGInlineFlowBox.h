@@ -37,7 +37,7 @@ public:
     LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
     void setLogicalHeight(LayoutUnit h) { m_logicalHeight = h; }
 
-    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) const override;
 
     LayoutRect calculateBoundaries() const override;
 

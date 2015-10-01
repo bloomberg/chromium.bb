@@ -605,7 +605,7 @@ public:
         HasBoxDecorationBackgroundMayBeVisible,
     };
     bool hasBoxDecorationBackground() const { return m_bitfields.boxDecorationBackgroundState() != NoBoxDecorationBackground; }
-    bool boxDecorationBackgroundIsKnownToBeObscured();
+    bool boxDecorationBackgroundIsKnownToBeObscured() const;
     bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&) const;
     bool hasBackground() const { return style()->hasBackground(); }
 
@@ -752,7 +752,7 @@ public:
 
     void setHasBoxDecorationBackground(bool);
     void invalidateBackgroundObscurationStatus();
-    virtual bool computeBackgroundIsKnownToBeObscured() { return false; }
+    virtual bool computeBackgroundIsKnownToBeObscured() const { return false; }
 
     void setIsText() { m_bitfields.setIsText(true); }
     void setIsBox() { m_bitfields.setIsBox(true); }
@@ -764,7 +764,7 @@ public:
     void setHasReflection(bool hasReflection) { m_bitfields.setHasReflection(hasReflection); }
 
     // paintOffset is the offset from the origin of the GraphicsContext at which to paint the current object.
-    virtual void paint(const PaintInfo&, const LayoutPoint& paintOffset);
+    virtual void paint(const PaintInfo&, const LayoutPoint& paintOffset) const;
 
     // Subclasses must reimplement this method to compute the size and position
     // of this object and all its descendants.
@@ -1666,7 +1666,8 @@ private:
         // (see ComputedStyle::position).
         unsigned m_positionedState : 2; // PositionedState
         unsigned m_selectionState : 3; // SelectionState
-        unsigned m_boxDecorationBackgroundState : 2; // BoxDecorationBackgroundState
+        // Mutable for getter which lazily update this field.
+        mutable unsigned m_boxDecorationBackgroundState : 2; // BoxDecorationBackgroundState
         unsigned m_fullPaintInvalidationReason : 5; // PaintInvalidationReason
 
     public:
@@ -1687,7 +1688,7 @@ private:
         ALWAYS_INLINE void setSelectionState(SelectionState selectionState) { m_selectionState = selectionState; }
 
         ALWAYS_INLINE BoxDecorationBackgroundState boxDecorationBackgroundState() const { return static_cast<BoxDecorationBackgroundState>(m_boxDecorationBackgroundState); }
-        ALWAYS_INLINE void setBoxDecorationBackgroundState(BoxDecorationBackgroundState s) { m_boxDecorationBackgroundState = s; }
+        ALWAYS_INLINE void setBoxDecorationBackgroundState(BoxDecorationBackgroundState s) const { m_boxDecorationBackgroundState = s; }
 
         PaintInvalidationReason fullPaintInvalidationReason() const { return static_cast<PaintInvalidationReason>(m_fullPaintInvalidationReason); }
         void setFullPaintInvalidationReason(PaintInvalidationReason reason) { m_fullPaintInvalidationReason = reason; }
@@ -1891,7 +1892,7 @@ inline void LayoutObject::invalidateBackgroundObscurationStatus()
     m_bitfields.setBoxDecorationBackgroundState(HasBoxDecorationBackgroundObscurationStatusInvalid);
 }
 
-inline bool LayoutObject::boxDecorationBackgroundIsKnownToBeObscured()
+inline bool LayoutObject::boxDecorationBackgroundIsKnownToBeObscured() const
 {
     if (m_bitfields.boxDecorationBackgroundState() == HasBoxDecorationBackgroundObscurationStatusInvalid) {
         BoxDecorationBackgroundState state = computeBackgroundIsKnownToBeObscured() ? HasBoxDecorationBackgroundKnownToBeObscured : HasBoxDecorationBackgroundMayBeVisible;

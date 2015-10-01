@@ -926,7 +926,7 @@ int LayoutTableCell::borderHalfAfter(bool outer) const
     return 0;
 }
 
-void LayoutTableCell::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutTableCell::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     TableCellPainter(*this).paint(paintInfo, paintOffset);
 }
@@ -982,17 +982,17 @@ void LayoutTableCell::sortBorderValues(LayoutTable::CollapsedBorderValues& borde
         compareBorderValuesForQSort);
 }
 
-void LayoutTableCell::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutTableCell::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     TableCellPainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
 }
 
-void LayoutTableCell::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutTableCell::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     TableCellPainter(*this).paintMask(paintInfo, paintOffset);
 }
 
-bool LayoutTableCell::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const
+bool LayoutTableCell::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, const InlineFlowBox*) const
 {
     return false;
 }

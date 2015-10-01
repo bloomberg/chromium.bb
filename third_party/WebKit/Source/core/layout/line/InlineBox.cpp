@@ -207,7 +207,7 @@ void InlineBox::move(const LayoutSize& delta)
         toLayoutBox(layoutObject()).move(delta.width(), delta.height());
 }
 
-void InlineBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit /* lineTop */, LayoutUnit /* lineBottom */)
+void InlineBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit /* lineTop */, LayoutUnit /* lineBottom */) const
 {
     // Text clips are painted only for the direct inline children of the object that has a text clip style on it, not block children.
     if (paintInfo.phase != PaintPhaseTextClip)
@@ -327,12 +327,12 @@ void InlineBox::clearKnownToHaveNoOverflow()
         parent()->clearKnownToHaveNoOverflow();
 }
 
-LayoutPoint InlineBox::locationIncludingFlipping()
+LayoutPoint InlineBox::locationIncludingFlipping() const
 {
     return logicalPositionToPhysicalPoint(m_topLeft, size());
 }
 
-LayoutPoint InlineBox::logicalPositionToPhysicalPoint(const LayoutPoint& point, const LayoutSize& size)
+LayoutPoint InlineBox::logicalPositionToPhysicalPoint(const LayoutPoint& point, const LayoutSize& size) const
 {
     if (!UNLIKELY(lineLayoutItem().hasFlippedBlocksWritingMode()))
         return LayoutPoint(point.x(), point.y());
@@ -344,7 +344,7 @@ LayoutPoint InlineBox::logicalPositionToPhysicalPoint(const LayoutPoint& point, 
     return LayoutPoint(block.size().width() - size.width() - point.x(), point.y());
 }
 
-void InlineBox::logicalRectToPhysicalRect(LayoutRect& current)
+void InlineBox::logicalRectToPhysicalRect(LayoutRect& current) const
 {
     if (isHorizontal() && !lineLayoutItem().hasFlippedBlocksWritingMode())
         return;
@@ -356,28 +356,28 @@ void InlineBox::logicalRectToPhysicalRect(LayoutRect& current)
     return;
 }
 
-void InlineBox::flipForWritingMode(FloatRect& rect)
+void InlineBox::flipForWritingMode(FloatRect& rect) const
 {
     if (!UNLIKELY(lineLayoutItem().hasFlippedBlocksWritingMode()))
         return;
     root().block().flipForWritingMode(rect);
 }
 
-FloatPoint InlineBox::flipForWritingMode(const FloatPoint& point)
+FloatPoint InlineBox::flipForWritingMode(const FloatPoint& point) const
 {
     if (!UNLIKELY(lineLayoutItem().hasFlippedBlocksWritingMode()))
         return point;
     return root().block().flipForWritingMode(point);
 }
 
-void InlineBox::flipForWritingMode(LayoutRect& rect)
+void InlineBox::flipForWritingMode(LayoutRect& rect) const
 {
     if (!UNLIKELY(lineLayoutItem().hasFlippedBlocksWritingMode()))
         return;
     root().block().flipForWritingMode(rect);
 }
 
-LayoutPoint InlineBox::flipForWritingMode(const LayoutPoint& point)
+LayoutPoint InlineBox::flipForWritingMode(const LayoutPoint& point) const
 {
     if (!UNLIKELY(lineLayoutItem().hasFlippedBlocksWritingMode()))
         return point;
