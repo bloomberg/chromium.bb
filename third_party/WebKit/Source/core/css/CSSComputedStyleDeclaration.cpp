@@ -456,6 +456,9 @@ static void logUnimplementedPropertyID(CSSPropertyID propertyID)
 
 static bool isLayoutDependent(CSSPropertyID propertyID, const ComputedStyle* style, LayoutObject* layoutObject)
 {
+    if (!layoutObject)
+        return false;
+
     // Some properties only depend on layout in certain conditions which
     // are specified in the main switch statement below. So we can avoid
     // forcing layout in those conditions. The conditions in this switch
@@ -470,49 +473,38 @@ static bool isLayoutDependent(CSSPropertyID propertyID, const ComputedStyle* sty
     case CSSPropertyPerspectiveOrigin:
     case CSSPropertyTransform:
     case CSSPropertyTranslate:
-    case CSSPropertyRotate:
-    case CSSPropertyScale:
     case CSSPropertyTransformOrigin:
-    case CSSPropertyMotionPath:
-    case CSSPropertyMotionOffset:
-    case CSSPropertyMotionRotation:
     case CSSPropertyWidth:
-    case CSSPropertyWebkitFilter:
-    case CSSPropertyBackdropFilter:
-    case CSSPropertyX:
-    case CSSPropertyY:
-    case CSSPropertyRx:
-    case CSSPropertyRy:
-        return true;
+        return layoutObject->isBox();
     case CSSPropertyMargin:
-        return layoutObject && layoutObject->isBox()
+        return layoutObject->isBox()
             && (!style || !style->marginBottom().isFixed() || !style->marginTop().isFixed()
                 || !style->marginLeft().isFixed() || !style->marginRight().isFixed());
     case CSSPropertyMarginLeft:
-        return layoutObject && layoutObject->isBox() && (!style || !style->marginLeft().isFixed());
+        return layoutObject->isBox() && (!style || !style->marginLeft().isFixed());
     case CSSPropertyMarginRight:
-        return layoutObject && layoutObject->isBox() && (!style || !style->marginRight().isFixed());
+        return layoutObject->isBox() && (!style || !style->marginRight().isFixed());
     case CSSPropertyMarginTop:
-        return layoutObject && layoutObject->isBox() && (!style || !style->marginTop().isFixed());
+        return layoutObject->isBox() && (!style || !style->marginTop().isFixed());
     case CSSPropertyMarginBottom:
-        return layoutObject && layoutObject->isBox() && (!style || !style->marginBottom().isFixed());
+        return layoutObject->isBox() && (!style || !style->marginBottom().isFixed());
     case CSSPropertyPadding:
-        return layoutObject && layoutObject->isBox()
+        return layoutObject->isBox()
             && (!style || !style->paddingBottom().isFixed() || !style->paddingTop().isFixed()
                 || !style->paddingLeft().isFixed() || !style->paddingRight().isFixed());
     case CSSPropertyPaddingBottom:
-        return layoutObject && layoutObject->isBox() && (!style || !style->paddingBottom().isFixed());
+        return layoutObject->isBox() && (!style || !style->paddingBottom().isFixed());
     case CSSPropertyPaddingLeft:
-        return layoutObject && layoutObject->isBox() && (!style || !style->paddingLeft().isFixed());
+        return layoutObject->isBox() && (!style || !style->paddingLeft().isFixed());
     case CSSPropertyPaddingRight:
-        return layoutObject && layoutObject->isBox() && (!style || !style->paddingRight().isFixed());
+        return layoutObject->isBox() && (!style || !style->paddingRight().isFixed());
     case CSSPropertyPaddingTop:
-        return layoutObject && layoutObject->isBox() && (!style || !style->paddingTop().isFixed());
+        return layoutObject->isBox() && (!style || !style->paddingTop().isFixed());
     case CSSPropertyGridTemplateColumns:
     case CSSPropertyGridTemplateRows:
     case CSSPropertyGridTemplate:
     case CSSPropertyGrid:
-        return layoutObject && layoutObject->isLayoutGrid();
+        return layoutObject->isLayoutGrid();
     default:
         return false;
     }
