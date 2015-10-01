@@ -8,8 +8,10 @@
 #include "base/values.h"
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/test/test_browser_state.h"
+#include "ios/web/public/web_state/global_web_state_observer.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_policy_decider.h"
+#include "ios/web/web_state/global_web_state_event_tracker.h"
 #include "ios/web/web_state/web_state_impl.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -27,6 +29,33 @@ using testing::Return;
 
 namespace web {
 namespace {
+
+// Test observer to check that the GlobalWebStateObserver methods are called as
+// expected.
+class TestGlobalWebStateObserver : public GlobalWebStateObserver {
+ public:
+  TestGlobalWebStateObserver()
+      : GlobalWebStateObserver(),
+        did_start_loading_called_(false),
+        did_stop_loading_called_(false) {}
+
+  // Methods returning true if the corresponding GlobalWebStateObserver method
+  // has been called.
+  bool did_start_loading_called() const { return did_start_loading_called_; }
+  bool did_stop_loading_called() const { return did_stop_loading_called_; }
+
+ private:
+  // GlobalWebStateObserver implementation:
+  void WebStateDidStartLoading(WebState* web_state) override {
+    did_start_loading_called_ = true;
+  }
+  void WebStateDidStopLoading(WebState* web_state) override {
+    did_stop_loading_called_ = true;
+  }
+
+  bool did_start_loading_called_;
+  bool did_stop_loading_called_;
+};
 
 // Test observer to check that the WebStateObserver methods are called as
 // expected.
@@ -231,6 +260,22 @@ TEST_F(WebStateTest, ObserverTest) {
   EXPECT_TRUE(observer->web_state_destroyed_called());
 
   EXPECT_EQ(nullptr, observer->web_state());
+}
+
+// Verifies that GlobalWebStateObservers are called when expected.
+TEST_F(WebStateTest, GlobalObserverTest) {
+  scoped_ptr<TestGlobalWebStateObserver> observer(
+      new TestGlobalWebStateObserver());
+
+  // Test that WebStateDidStartLoading() is called.
+  EXPECT_FALSE(observer->did_start_loading_called());
+  web_state_->SetIsLoading(true);
+  EXPECT_TRUE(observer->did_start_loading_called());
+
+  // Test that WebStateDidStopLoading() is called.
+  EXPECT_FALSE(observer->did_stop_loading_called());
+  web_state_->SetIsLoading(false);
+  EXPECT_TRUE(observer->did_stop_loading_called());
 }
 
 // Verifies that policy deciders are correctly called by the web state.

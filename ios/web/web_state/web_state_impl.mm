@@ -18,6 +18,7 @@
 #include "ios/web/public/web_state/ui/crw_content_view.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_policy_decider.h"
+#include "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #include "ios/web/web_state/web_state_facade_delegate.h"
@@ -34,6 +35,7 @@ WebStateImpl::WebStateImpl(BrowserState* browser_state)
       navigation_manager_(this, browser_state),
       interstitial_(nullptr),
       cache_mode_(net::RequestTracker::CACHE_NORMAL) {
+  GlobalWebStateEventTracker::GetInstance()->OnWebStateCreated(this);
 }
 
 WebStateImpl::~WebStateImpl() {
@@ -129,7 +131,6 @@ bool WebStateImpl::OnScriptCommandReceived(const std::string& command,
 }
 
 void WebStateImpl::SetIsLoading(bool is_loading) {
-  DCHECK(Configured());
   if (is_loading == is_loading_)
     return;
 
