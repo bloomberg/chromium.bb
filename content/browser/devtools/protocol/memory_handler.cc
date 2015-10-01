@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/protocol/memory_handler.h"
 
+#include "base/memory/memory_pressure_listener.h"
+#include "base/strings/stringprintf.h"
 #include "content/browser/memory/memory_pressure_controller.h"
 
 namespace content {
@@ -18,6 +20,23 @@ MemoryHandler::Response MemoryHandler::SetPressureNotificationsSuppressed(
     bool suppressed) {
   content::MemoryPressureController::GetInstance()
       ->SetPressureNotificationsSuppressedInAllProcesses(suppressed);
+  return Response::OK();
+}
+
+MemoryHandler::Response MemoryHandler::SimulatePressureNotification(
+    const std::string& level) {
+  base::MemoryPressureListener::MemoryPressureLevel parsed_level;
+  if (level == kPressureLevelModerate) {
+    parsed_level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
+  } else if (level == kPressureLevelCritical) {
+    parsed_level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
+  } else {
+    return Response::InternalError(base::StringPrintf(
+        "Invalid memory pressure level '%s'", level.c_str()));
+  }
+
+  MemoryPressureController::GetInstance()
+      ->SimulatePressureNotificationInAllProcesses(parsed_level);
   return Response::OK();
 }
 

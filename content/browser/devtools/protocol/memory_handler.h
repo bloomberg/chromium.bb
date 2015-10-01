@@ -18,6 +18,7 @@ class MemoryHandler {
 
   typedef DevToolsProtocolClient::Response Response;
   Response SetPressureNotificationsSuppressed(bool suppressed);
+  Response SimulatePressureNotification(const std::string& level);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MemoryHandler);
