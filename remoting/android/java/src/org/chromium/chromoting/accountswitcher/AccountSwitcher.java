@@ -4,6 +4,7 @@
 
 package org.chromium.chromoting.accountswitcher;
 
+import android.content.Intent;
 import android.view.View;
 
 /** Common interface for account-switcher implementations. */
@@ -72,4 +73,16 @@ public interface AccountSwitcher {
      * that a valid account is selected, or that the list is empty.
      */
     void reloadAccounts();
+
+    /**
+     * This should be called from the controlling activity's onActivityResult() method. It allows
+     * the account-switcher implementation to launch a child Activity and handle the result.
+     */
+    void onActivityResult(int requestCode, int resultCode, Intent data);
+
+    /**
+     * Releases any resources used by the account-switcher. Should be called by the activity's
+     * onDestroy() method.
+     */
+    void destroy();
 }

@@ -4,7 +4,7 @@
 
 package org.chromium.chromoting.accountswitcher;
 
-import android.content.Context;
+import android.app.Activity;
 
 /**
  * Factory class for creating AccountSwitcher implementations. This enables official builds of
@@ -28,12 +28,12 @@ public class AccountSwitcherFactory {
      * Factory method to create an AccountSwitcher. This method returns the public implementation,
      * but it can be overridden to provide an alternative account-switcher implementation. This is
      * called during the Activity's onCreate() handler.
-     * @param context Context used for UI operations.
+     * @param activity Activity used for UI operations.
      * @param callback Callback for receiving notifications from the account-switcher.
      */
-    public AccountSwitcher createAccountSwitcher(Context context,
+    public AccountSwitcher createAccountSwitcher(Activity activity,
             AccountSwitcher.Callback callback) {
-        return new AccountSwitcherBasic(context, callback);
+        return new AccountSwitcherBasic(activity, callback);
     }
 
     /**

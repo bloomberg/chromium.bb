@@ -7,6 +7,7 @@ package org.chromium.chromoting.accountswitcher;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.content.Intent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
@@ -111,5 +112,13 @@ public class AccountSwitcherBasic extends AccountSwitcherBase {
         });
 
         mCallback.onAccountSelected(mSelectedAccount);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    }
+
+    @Override
+    public void destroy() {
     }
 }

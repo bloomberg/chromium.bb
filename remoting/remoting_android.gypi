@@ -5,6 +5,17 @@
 {
   'conditions': [
     ['OS=="android"', {
+      'variables': {
+        # These hooks allow official builds to modify the remoting_apk target:
+        # Official build of remoting_apk pulls in extra code.
+        'remoting_apk_extra_dependencies%': [],
+        # A different ProGuard config for Google Play Services is needed since the one used by
+        # Chromium and Google Chrome strips out code that we need.
+        'remoting_android_google_play_services_javalib%': '../third_party/android_tools/android_tools.gyp:google_play_services_javalib',
+        # Allows official builds to define the ApplicationContext class differently, and provide
+        # different implementations of parts of the product.
+        'remoting_apk_java_in_dir%': 'android/apk',
+      },
       'targets': [
         {
           'target_name': 'remoting_jni_headers',
@@ -110,8 +121,8 @@
             '../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_mediarouter_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
-            '../third_party/android_tools/android_tools.gyp:google_play_services_javalib',
             '../third_party/cardboard-java/cardboard.gyp:cardboard_jar',
+            '<(remoting_android_google_play_services_javalib)',
           ],
           'includes': [ '../build/java.gypi' ],
           'conditions' : [
@@ -131,13 +142,14 @@
             'remoting_apk_manifest',
             'remoting_client_jni',
             'remoting_android_client_java',
+            '<@(remoting_apk_extra_dependencies)',
           ],
           'variables': {
             'apk_name': '<!(python <(version_py_path) -f <(branding_path) -t "@APK_FILE_NAME@")',
             'android_app_version_name': '<(version_full)',
             'android_app_version_code': '<!(python tools/android_version.py <(android_app_version_name))',
             'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/AndroidManifest.xml',
-            'java_in_dir': 'android/apk',
+            'java_in_dir': '<(remoting_apk_java_in_dir)',
             'native_lib_target': 'libremoting_client_jni',
           },
           'includes': [ '../build/java_apk.gypi' ],

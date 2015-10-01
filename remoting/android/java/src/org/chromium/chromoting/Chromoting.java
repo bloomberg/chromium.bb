@@ -301,11 +301,14 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
     public void onDestroy() {
         super.onDestroy();
         JniInterface.disconnectFromHost();
+        mAccountSwitcher.destroy();
     }
 
     /** Called when a child Activity exits and sends a result back to this Activity. */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        mAccountSwitcher.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == OAuthTokenFetcher.REQUEST_CODE_RECOVER_FROM_OAUTH_ERROR) {
             if (resultCode == RESULT_OK) {
                 // User gave OAuth permission to this app (or recovered from any OAuth failure),
