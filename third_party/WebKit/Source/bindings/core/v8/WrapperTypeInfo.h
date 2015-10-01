@@ -140,7 +140,7 @@ struct WrapperTypeInfo {
     void refObject(ScriptWrappable* scriptWrappable) const
     {
         if (isGarbageCollected()) {
-            ThreadState::current()->persistentAllocated();
+            Heap::increaseWrapperCount(1);
         } else {
             ASSERT(refObjectFunction);
             refObjectFunction(scriptWrappable);
@@ -150,7 +150,7 @@ struct WrapperTypeInfo {
     void derefObject(ScriptWrappable* scriptWrappable) const
     {
         if (isGarbageCollected()) {
-            ThreadState::current()->persistentFreed();
+            Heap::decreaseWrapperCount(1);
         } else {
             ASSERT(derefObjectFunction);
             derefObjectFunction(scriptWrappable);
@@ -160,7 +160,7 @@ struct WrapperTypeInfo {
     void derefObject() const
     {
         ASSERT(isGarbageCollected());
-        ThreadState::current()->persistentFreed();
+        Heap::decreaseWrapperCount(1);
     }
 
     void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) const

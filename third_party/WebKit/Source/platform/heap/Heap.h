@@ -262,12 +262,12 @@ public:
     static void decreaseAllocatedSpace(size_t delta) { atomicSubtract(&s_allocatedSpace, static_cast<long>(delta)); }
     static size_t allocatedSpace() { return acquireLoad(&s_allocatedSpace); }
     static size_t objectSizeAtLastGC() { return acquireLoad(&s_objectSizeAtLastGC); }
-    static void increasePersistentCount(size_t delta) { atomicAdd(&s_persistentCount, static_cast<long>(delta)); }
-    static void decreasePersistentCount(size_t delta) { atomicSubtract(&s_persistentCount, static_cast<long>(delta)); }
-    static size_t persistentCount() { return acquireLoad(&s_persistentCount); }
-    static size_t persistentCountAtLastGC() { return acquireLoad(&s_persistentCountAtLastGC); }
-    static void increaseCollectedPersistentCount(size_t delta) { atomicAdd(&s_collectedPersistentCount, static_cast<long>(delta)); }
-    static size_t collectedPersistentCount() { return acquireLoad(&s_collectedPersistentCount); }
+    static void increaseWrapperCount(size_t delta) { atomicAdd(&s_wrapperCount, static_cast<long>(delta)); }
+    static void decreaseWrapperCount(size_t delta) { atomicSubtract(&s_wrapperCount, static_cast<long>(delta)); }
+    static size_t wrapperCount() { return acquireLoad(&s_wrapperCount); }
+    static size_t wrapperCountAtLastGC() { return acquireLoad(&s_wrapperCountAtLastGC); }
+    static void increaseCollectedWrapperCount(size_t delta) { atomicAdd(&s_collectedWrapperCount, static_cast<long>(delta)); }
+    static size_t collectedWrapperCount() { return acquireLoad(&s_collectedWrapperCount); }
     static size_t partitionAllocSizeAtLastGC() { return acquireLoad(&s_partitionAllocSizeAtLastGC); }
 
     static double estimatedMarkingTime();
@@ -314,9 +314,9 @@ private:
     static size_t s_objectSizeAtLastGC;
     static size_t s_markedObjectSize;
     static size_t s_markedObjectSizeAtLastCompleteSweep;
-    static size_t s_persistentCount;
-    static size_t s_persistentCountAtLastGC;
-    static size_t s_collectedPersistentCount;
+    static size_t s_wrapperCount;
+    static size_t s_wrapperCountAtLastGC;
+    static size_t s_collectedWrapperCount;
     static size_t s_partitionAllocSizeAtLastGC;
     static double s_estimatedMarkingTimePerByte;
 

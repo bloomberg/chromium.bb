@@ -165,9 +165,9 @@ void Heap::init()
     s_objectSizeAtLastGC = 0;
     s_markedObjectSize = 0;
     s_markedObjectSizeAtLastCompleteSweep = 0;
-    s_persistentCount = 0;
-    s_persistentCountAtLastGC = 0;
-    s_collectedPersistentCount = 0;
+    s_wrapperCount = 0;
+    s_wrapperCountAtLastGC = 0;
+    s_collectedWrapperCount = 0;
     s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
     s_estimatedMarkingTimePerByte = 0.0;
 
@@ -634,9 +634,9 @@ void Heap::reportMemoryUsageForTracing()
     TRACE_COUNTER1("blink_gc", "Heap::markedObjectSizeAtLastCompleteSweepKB", std::min(Heap::markedObjectSizeAtLastCompleteSweep() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::allocatedSpaceKB", std::min(Heap::allocatedSpace() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::objectSizeAtLastGCKB", std::min(Heap::objectSizeAtLastGC() / 1024, static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1("blink_gc", "Heap::persistentCount", std::min(Heap::persistentCount(), static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1("blink_gc", "Heap::persistentCountAtLastGC", std::min(Heap::persistentCountAtLastGC(), static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1("blink_gc", "Heap::collectedPersistentCount", std::min(Heap::collectedPersistentCount(), static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::wrapperCount", std::min(Heap::wrapperCount(), static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::wrapperCountAtLastGC", std::min(Heap::wrapperCountAtLastGC(), static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::collectedWrapperCount", std::min(Heap::collectedWrapperCount(), static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::partitionAllocSizeAtLastGCKB", std::min(Heap::partitionAllocSizeAtLastGC() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Partitions::totalSizeOfCommittedPagesKB", std::min(WTF::Partitions::totalSizeOfCommittedPages() / 1024, static_cast<size_t>(INT_MAX)));
 }
@@ -757,8 +757,8 @@ void Heap::resetHeapCounters()
     s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
     s_allocatedObjectSize = 0;
     s_markedObjectSize = 0;
-    s_persistentCountAtLastGC = s_persistentCount;
-    s_collectedPersistentCount = 0;
+    s_wrapperCountAtLastGC = s_wrapperCount;
+    s_collectedWrapperCount = 0;
 }
 
 CallbackStack* Heap::s_markingStack;
@@ -775,9 +775,9 @@ size_t Heap::s_allocatedObjectSize = 0;
 size_t Heap::s_objectSizeAtLastGC = 0;
 size_t Heap::s_markedObjectSize = 0;
 size_t Heap::s_markedObjectSizeAtLastCompleteSweep = 0;
-size_t Heap::s_persistentCount = 0;
-size_t Heap::s_persistentCountAtLastGC = 0;
-size_t Heap::s_collectedPersistentCount = 0;
+size_t Heap::s_wrapperCount = 0;
+size_t Heap::s_wrapperCountAtLastGC = 0;
+size_t Heap::s_collectedWrapperCount = 0;
 size_t Heap::s_partitionAllocSizeAtLastGC = 0;
 double Heap::s_estimatedMarkingTimePerByte = 0.0;
 

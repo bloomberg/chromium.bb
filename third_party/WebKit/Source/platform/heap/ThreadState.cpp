@@ -97,8 +97,6 @@ ThreadState::ThreadState()
     , m_sweepForbidden(false)
     , m_noAllocationCount(0)
     , m_gcForbiddenCount(0)
-    , m_persistentAllocated(0)
-    , m_persistentFreed(0)
     , m_vectorBackingHeapIndex(Vector1HeapIndex)
     , m_currentHeapAges(0)
     , m_isTerminating(false)
@@ -558,17 +556,6 @@ CrossThreadPersistentRegion& ThreadState::crossThreadPersistentRegion()
     return persistentRegion;
 }
 
-void ThreadState::updatePersistentCounters()
-{
-    if (m_persistentAllocated >= m_persistentFreed)
-        Heap::increasePersistentCount(m_persistentAllocated - m_persistentFreed);
-    else
-        Heap::decreasePersistentCount(m_persistentFreed - m_persistentAllocated);
-    Heap::increaseCollectedPersistentCount(m_persistentFreed);
-    m_persistentAllocated = 0;
-    m_persistentFreed = 0;
-}
-
 size_t ThreadState::totalMemorySize()
 {
     return Heap::allocatedObjectSize() + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
@@ -576,13 +563,13 @@ size_t ThreadState::totalMemorySize()
 
 size_t ThreadState::estimatedLiveSize(size_t estimationBaseSize, size_t sizeAtLastGC)
 {
-    if (Heap::persistentCountAtLastGC() == 0) {
+    if (Heap::wrapperCountAtLastGC() == 0) {
         // We'll reach here only before hitting the first GC.
         return 0;
     }
 
     // (estimated size) = (estimation base size) - (heap size at the last GC) / (# of persistent handles at the last GC) * (# of persistent handles collected since the last GC);
-    size_t sizeRetainedByCollectedPersistents = static_cast<size_t>(1.0 * sizeAtLastGC / Heap::persistentCountAtLastGC() * Heap::collectedPersistentCount());
+    size_t sizeRetainedByCollectedPersistents = static_cast<size_t>(1.0 * sizeAtLastGC / Heap::wrapperCountAtLastGC() * Heap::collectedWrapperCount());
     if (estimationBaseSize < sizeRetainedByCollectedPersistents)
         return 0;
     return estimationBaseSize - sizeRetainedByCollectedPersistents;
@@ -1003,7 +990,6 @@ void ThreadState::preGC()
     makeConsistentForGC();
     flushHeapDoesNotContainCacheIfNeeded();
     clearHeapAges();
-    updatePersistentCounters();
 }
 
 void ThreadState::postGC(GCType gcType)

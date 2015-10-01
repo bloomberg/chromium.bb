@@ -799,11 +799,6 @@ Address NormalPageHeap::outOfLineAllocate(size_t allocationSize, size_t gcInfoIn
     threadState()->snapshotFreeListIfNecessary();
 #endif
 
-    // Ideally we want to update the persistent count every time a persistent
-    // handle is created or destructed, but that is heavy. So we do the update
-    // only in outOfLineAllocate().
-    threadState()->updatePersistentCounters();
-
     // 1. If this allocation is big enough, allocate a large object.
     if (allocationSize >= largeObjectSizeThreshold) {
         // TODO(sof): support eagerly finalized large objects, if ever needed.

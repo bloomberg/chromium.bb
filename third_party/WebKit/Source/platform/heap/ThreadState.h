@@ -483,19 +483,6 @@ public:
     // A region of PersistentNodes not owned by any particular thread.
     static CrossThreadPersistentRegion& crossThreadPersistentRegion();
 
-    // TODO(haraken): Currently CrossThreadPersistent handles are not counted.
-    // This wouldn't be a big deal because # of CrossThreadPersistents is small,
-    // but should be fixed.
-    void persistentAllocated()
-    {
-        ++m_persistentAllocated;
-    }
-    void persistentFreed()
-    {
-        ++m_persistentFreed;
-    }
-    void updatePersistentCounters();
-
     // Visit local thread stack and trace all pointers conservatively.
     void visitStack(Visitor*);
 
@@ -785,8 +772,6 @@ private:
     bool m_sweepForbidden;
     size_t m_noAllocationCount;
     size_t m_gcForbiddenCount;
-    int m_persistentAllocated;
-    int m_persistentFreed;
     BaseHeap* m_heaps[NumberOfHeaps];
 
     int m_vectorBackingHeapIndex;
