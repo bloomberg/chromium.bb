@@ -16,13 +16,8 @@ class DefaultVideoPlane : public VideoPlane {
  public:
   ~DefaultVideoPlane() override {}
 
-  Size GetScreenResolution() override { return Size(1920, 1080); }
-
   void SetGeometry(const RectF& display_rect,
-                   CoordinateType coordinate_type,
                    Transform transform) override {}
-
-  void OnScreenResolutionChanged(const Size& screen_res) override {}
 };
 
 DefaultVideoPlane* g_video_plane = nullptr;

@@ -7,6 +7,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_process.h"
+#include "chromecast/media/base/video_plane_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -76,6 +77,8 @@ void CastContentWindow::CreateWindowTree(
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, cast_screen);
   if (cast_screen->GetPrimaryDisplay().size() != initial_size)
     cast_screen->UpdateDisplaySize(initial_size);
+  media::VideoPlaneController::GetInstance()->OnGraphicsPlaneResolutionChanged(
+      Size(initial_size.width(), initial_size.height()));
 
   CHECK(aura::Env::GetInstance());
   window_tree_host_.reset(

@@ -27,8 +27,8 @@ source_set("cast") {
 
   deps = [
     "//base",
+    "//chromecast/media/base:message_loop",
     "//chromecast/graphics:libcast_graphics",
-    "//chromecast/media/base:libcast_media_1.0",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/ozone:ozone_base",

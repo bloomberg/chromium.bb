@@ -1,4 +1,4 @@
 include_rules = [
-  "+chromecast/media/base/media_message_loop.h",
+  "+chromecast/media/base/video_plane_controller.h",
   "+chromecast/public"
 ]

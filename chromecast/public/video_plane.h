@@ -24,29 +24,14 @@ class VideoPlane {
     FLIP_VERTICAL,
   };
 
-  enum CoordinateType {
-    // Graphics plane as coordinate type.
-    COORDINATE_TYPE_GRAPHICS_PLANE = 0,
-    // Output display screen as coordinate type.
-    COORDINATE_TYPE_SCREEN_RESOLUTION = 1,
-  };
-
   virtual ~VideoPlane() {}
 
-  // Gets output screen resolution.
-  virtual Size GetScreenResolution() = 0;
-
   // Updates the video plane geometry.
-  // |display_rect| specifies the rectangle that the video should occupy.
-  // |coordinate_type| gives the coordinate space of |display_rect|.
+  // |screen_rect| specifies the rectangle that the video should occupy,
+  // in screen resolution coordinates.
   // |transform| specifies how the video should be transformed within that
   // rectangle.
-  virtual void SetGeometry(const RectF& display_rect,
-                           CoordinateType coordinate_type,
-                           Transform transform) = 0;
-
-  // Notifies VideoPlane that screen resolution has changed.
-  virtual void OnScreenResolutionChanged(const Size& screen_res) = 0;
+  virtual void SetGeometry(const RectF& screen_rect, Transform transform) = 0;
 };
 
 }  // namespace media

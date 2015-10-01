@@ -9,6 +9,27 @@ declare_args() {
   libcast_media_target = ""
 }
 
+source_set("message_loop") {
+  sources = [
+    "media_message_loop.cc",
+    "media_message_loop.h",
+    "video_plane_controller.cc",
+    "video_plane_controller.h",
+  ]
+
+  public_deps = [
+    "//chromecast/public/media",
+  ]
+
+  configs += [ "//chromecast:config" ]
+
+  deps = [
+    "//base",
+    "//chromecast/media:libcast_media",
+    "//chromecast/public",
+  ]
+}
+
 # TODO(slan): See if the dependency on //media can be broken.
 source_set("base") {
   sources = [
@@ -22,14 +43,13 @@ source_set("base") {
     "media_caps.h",
     "media_codec_support.cc",
     "media_codec_support.h",
-    "media_message_loop.cc",
-    "media_message_loop.h",
     "switching_media_renderer.cc",
     "switching_media_renderer.h",
   ]
 
   public_deps = [
     "//chromecast/public/media",
+    ":message_loop",
   ]
 
   configs += [ "//chromecast:config" ]
