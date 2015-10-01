@@ -88,7 +88,7 @@
     },
 
     _disabledChanged: function(disabled) {
-      this.$.progressContainer.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+      this.setAttribute('aria-disabled', disabled ? 'true' : 'false');
     },
 
     _hideSecondaryProgress: function(secondaryRatio) {

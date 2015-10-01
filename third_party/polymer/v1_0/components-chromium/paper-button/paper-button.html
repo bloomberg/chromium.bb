@@ -100,12 +100,12 @@ Custom property | Description | Default
         @apply(--paper-button);
       }
 
-      :host([raised]) #content-wrapper.keyboard-focus {
+      :host([raised]) .keyboard-focus {
         font-weight: bold;
         @apply(--paper-button-raised-keyboard-focus);
       }
 
-      :host(:not([raised])) #content-wrapper.keyboard-focus {
+      :host(:not([raised])) .keyboard-focus {
         font-weight: bold;
         @apply(--paper-button-flat-keyboard-focus);
       }
@@ -139,9 +139,9 @@ Custom property | Description | Default
 
     <paper-ripple></paper-ripple>
 
-    <paper-material  elevation="[[_elevation]]" animated></paper-material>
+    <paper-material elevation="[[_elevation]]" animated=""></paper-material>
 
-    <div id="content-wrapper" class$="[[_computeContentClass(receivedFocusFromKeyboard)]]">
+    <div class$="[[_computeContentClass(receivedFocusFromKeyboard)]]">
       <content></content>
     </div>
 

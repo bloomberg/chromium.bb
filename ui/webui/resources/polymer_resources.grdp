@@ -473,8 +473,8 @@
   <structure name="IDR_POLYMER_1_0_PAPER_ITEM_PAPER_ITEM_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-item/paper-item-extracted.js"
              type="chrome_html" />
-  <structure name="IDR_POLYMER_1_0_PAPER_ITEM_PAPER_ITEM_SHARED_CSS"
-             file="../../../third_party/polymer/v1_0/components-chromium/paper-item/paper-item-shared.css"
+  <structure name="IDR_POLYMER_1_0_PAPER_ITEM_PAPER_ITEM_SHARED_STYLES_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-item/paper-item-shared-styles.html"
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_ITEM_PAPER_ITEM_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-item/paper-item.html"

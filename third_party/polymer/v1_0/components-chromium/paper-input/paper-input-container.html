@@ -190,8 +190,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
 
       .input-content.label-is-floating ::content label,
       .input-content.label-is-floating ::content .paper-input-label {
-        -webkit-transform: translate3d(0, -75%, 0) scale(0.75);
-        transform: translate3d(0, -75%, 0) scale(0.75);
+        -webkit-transform: translateY(-75%) scale(0.75);
+        transform: translateY(-75%) scale(0.75);
         -webkit-transform-origin: left top;
         transform-origin: left top;
         -webkit-transition: -webkit-transform 0.25s;
@@ -229,6 +229,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
         background: transparent;
         border: none;
         color: var(--paper-input-container-input-color, --primary-text-color);
+        -webkit-appearance: none;
 
         @apply(--paper-font-subhead);
         @apply(--paper-input-container-input);

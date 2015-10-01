@@ -568,7 +568,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.1.3';
+Polymer.version = '1.1.4';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();

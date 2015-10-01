@@ -7,7 +7,10 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-behaviors/iron-control-state.html">
+<link rel="import" href="../iron-behaviors/iron-button-state.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="paper-item-shared-styles.html">
 
 <!--
 `<paper-icon-item>` is a convenience element to make an item with icon. It is a non interactive list
@@ -36,33 +39,28 @@ Custom property | Description | Default
 -->
 
 </head><body><dom-module id="paper-icon-item">
-
-  <link rel="import" type="css" href="paper-item-shared.css">
-
-  <style>
-
-    :host {
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
-      @apply(--paper-font-subhead);
-
-      @apply(--paper-item);
-      @apply(--paper-icon-item);
-    }
-
-    .content-icon {
-      width: var(--paper-item-icon-width, 56px);
-    }
-
-  </style>
-
   <template>
+    <style include="paper-item-shared-styles"></style>
+    <style>
+      :host {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--paper-font-subhead);
+
+        @apply(--paper-item);
+        @apply(--paper-icon-item);
+      }
+
+      .content-icon {
+        width: var(--paper-item-icon-width, 56px);
+      }
+    </style>
+
     <div id="contentIcon" class="content-icon layout horizontal center">
       <content select="[item-icon]"></content>
     </div>
     <content></content>
   </template>
 
-</dom-module>
-
+  </dom-module>
 <script src="paper-icon-item-extracted.js"></script></body></html>

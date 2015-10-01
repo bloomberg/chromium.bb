@@ -35,12 +35,12 @@ Custom property | Description | Default
       :host {
         display: inline-block;
         visibility: hidden;
-        float: left;
 
         color: var(--paper-input-container-invalid-color, --google-red-500);
 
         @apply(--paper-font-caption);
         @apply(--paper-input-error);
+        position: absolute;
       }
 
       :host([invalid]) {
@@ -49,7 +49,7 @@ Custom property | Description | Default
     </style>
 
     <content></content>
-
+    
   </template>
 </dom-module>
 

@@ -38,6 +38,8 @@
          * The last selected item. An item is selected if the dropdown menu has
          * a child with class `dropdown-content`, and that child triggers an
          * `iron-select` event with the selected `item` in the `detail`.
+         *
+         * @type {?Object}
          */
         selectedItem: {
           type: Object,
@@ -150,6 +152,15 @@
        */
       _onIronSelect: function(event) {
         this._setSelectedItem(event.detail.item);
+      },
+
+      /**
+       * A handler that is called when `iron-deselect` is fired.
+       *
+       * @param {CustomEvent} event An `iron-deselect` event.
+       */
+      _onIronDeselect: function(event) {
+        this._setSelectedItem(null);
       },
 
       /**
