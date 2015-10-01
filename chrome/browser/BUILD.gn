@@ -796,8 +796,6 @@ source_set("browser") {
   }
 
   if (is_linux) {
-    sources +=
-        rebase_path(gypi_values.chrome_browser_linux_sources, ".", "//chrome")
     if (use_aura) {
       configs += [ "//build/config/linux:dbus" ]
       deps += [

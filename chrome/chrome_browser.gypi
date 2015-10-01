@@ -961,9 +961,6 @@
       'browser/browser_process_platform_part_base.cc',
       'browser/browser_process_platform_part_base.h',
     ],
-    # Desktop Linux and ChromeOS.
-    'chrome_browser_linux_sources': [
-    ],
     # Desktop linux, doesn't count ChromeOS.
     'chrome_browser_linux_desktop_sources': [
       'browser/first_run/upgrade_util.cc',
@@ -3812,7 +3809,6 @@
           ],
         }],
         ['OS=="linux"', {
-          'sources': [ '<@(chrome_browser_linux_sources)' ],
           'conditions': [
             ['use_aura==1', {
               'dependencies': [
