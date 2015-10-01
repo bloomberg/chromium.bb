@@ -352,13 +352,15 @@ TEST_F(HeartbeatSenderTest, HostOSInfo) {
   XmlElement* heartbeat_stanza =
       stanza->FirstNamed(QName(kChromotingXmlNamespace, "heartbeat"));
 
-  std::string os_name =
-      heartbeat_stanza->TextNamed(QName(kChromotingXmlNamespace, "os-name"));
-  EXPECT_TRUE(!os_name.empty());
+  std::string host_os_name =
+      heartbeat_stanza->TextNamed(
+          QName(kChromotingXmlNamespace, "host-os-name"));
+  EXPECT_TRUE(!host_os_name.empty());
 
-  std::string os_version =
-      heartbeat_stanza->TextNamed(QName(kChromotingXmlNamespace, "os-version"));
-  EXPECT_TRUE(!os_version.empty());
+  std::string host_os_version =
+      heartbeat_stanza->TextNamed(
+          QName(kChromotingXmlNamespace, "host-os-version"));
+  EXPECT_TRUE(!host_os_version.empty());
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
   base::RunLoop().RunUntilIdle();

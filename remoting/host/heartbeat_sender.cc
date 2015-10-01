@@ -37,8 +37,8 @@ const char kHostVersionTag[] = "host-version";
 const char kHeartbeatSignatureTag[] = "signature";
 const char kSequenceIdAttr[] = "sequence-id";
 const char kHostOfflineReasonAttr[] = "host-offline-reason";
-const char kHostOperatingSystemNameTag[] = "os-name";
-const char kHostOperatingSystemVersionTag[] = "os-version";
+const char kHostOperatingSystemNameTag[] = "host-os-name";
+const char kHostOperatingSystemVersionTag[] = "host-os-version";
 
 const char kErrorTag[] = "error";
 const char kNotFoundTag[] = "item-not-found";
