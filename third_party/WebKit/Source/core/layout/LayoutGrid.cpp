@@ -1332,6 +1332,10 @@ void LayoutGrid::layoutGridItems()
 
         child->layoutIfNeeded();
 
+        // We need pending layouts to be done in order to compute auto-margins properly.
+        updateAutoMarginsInColumnAxisIfNeeded(*child);
+        updateAutoMarginsInRowAxisIfNeeded(*child);
+
 #if ENABLE(ASSERT)
         const GridCoordinate& coordinate = cachedGridCoordinate(*child);
         ASSERT(coordinate.columns.resolvedInitialPosition.toInt() < sizingData.columnTracks.size());
@@ -1589,15 +1593,10 @@ LayoutUnit LayoutGrid::computeMarginLogicalHeightForChild(const LayoutBox& child
 
 LayoutUnit LayoutGrid::availableAlignmentSpaceForChildBeforeStretching(LayoutUnit gridAreaBreadthForChild, const LayoutBox& child) const
 {
-    LayoutUnit childMarginLogicalHeight = marginLogicalHeightForChild(child);
-
     // Because we want to avoid multiple layouts, stretching logic might be performed before
     // children are laid out, so we can't use the child cached values. Hence, we need to
     // compute margins in order to determine the available height before stretching.
-    if (childMarginLogicalHeight == 0)
-        childMarginLogicalHeight = computeMarginLogicalHeightForChild(child);
-
-    return gridAreaBreadthForChild - childMarginLogicalHeight;
+    return gridAreaBreadthForChild - (child.needsLayout() ? computeMarginLogicalHeightForChild(child) : marginLogicalHeightForChild(child));
 }
 
 // FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
@@ -1641,6 +1640,64 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child)
                 child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
             }
         }
+    }
+}
+
+// TODO(lajava): This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
+bool LayoutGrid::hasAutoMarginsInColumnAxis(const LayoutBox& child) const
+{
+    if (isHorizontalWritingMode())
+        return child.style()->marginTop().isAuto() || child.style()->marginBottom().isAuto();
+    return child.style()->marginLeft().isAuto() || child.style()->marginRight().isAuto();
+}
+
+// TODO(lajava): This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
+bool LayoutGrid::hasAutoMarginsInRowAxis(const LayoutBox& child) const
+{
+    if (isHorizontalWritingMode())
+        return child.style()->marginLeft().isAuto() || child.style()->marginRight().isAuto();
+    return child.style()->marginTop().isAuto() || child.style()->marginBottom().isAuto();
+}
+
+// TODO(lajava): This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
+void LayoutGrid::updateAutoMarginsInRowAxisIfNeeded(LayoutBox& child)
+{
+    ASSERT(!child.isOutOfFlowPositioned());
+
+    LayoutUnit availableAlignmentSpace = child.overrideContainingBlockContentLogicalWidth() - child.logicalWidth();
+    if (availableAlignmentSpace <= 0)
+        return;
+
+    Length marginStart = child.style()->marginStartUsing(style());
+    Length marginEnd = child.style()->marginEndUsing(style());
+    if (marginStart.isAuto() && marginEnd.isAuto()) {
+        child.setMarginStart(availableAlignmentSpace / 2, style());
+        child.setMarginEnd(availableAlignmentSpace / 2, style());
+    } else if (marginStart.isAuto()) {
+        child.setMarginStart(availableAlignmentSpace, style());
+    } else if (marginEnd.isAuto()) {
+        child.setMarginEnd(availableAlignmentSpace, style());
+    }
+}
+
+// TODO(lajava): This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
+void LayoutGrid::updateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child)
+{
+    ASSERT(!child.isOutOfFlowPositioned());
+
+    LayoutUnit availableAlignmentSpace = child.overrideContainingBlockContentLogicalHeight() - child.logicalHeight();
+    if (availableAlignmentSpace <= 0)
+        return;
+
+    Length marginBefore = child.style()->marginBeforeUsing(style());
+    Length marginAfter = child.style()->marginAfterUsing(style());
+    if (marginBefore.isAuto() && marginAfter.isAuto()) {
+        child.setMarginBefore(availableAlignmentSpace / 2, style());
+        child.setMarginAfter(availableAlignmentSpace / 2, style());
+    } else if (marginBefore.isAuto()) {
+        child.setMarginBefore(availableAlignmentSpace, style());
+    } else if (marginAfter.isAuto()) {
+        child.setMarginAfter(availableAlignmentSpace, style());
     }
 }
 
@@ -1741,6 +1798,8 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child) const
     const GridCoordinate& coordinate = cachedGridCoordinate(child);
     LayoutUnit startOfRow = m_rowPositions[coordinate.rows.resolvedInitialPosition.toInt()];
     LayoutUnit startPosition = startOfRow + marginBeforeForChild(child);
+    if (hasAutoMarginsInColumnAxis(child))
+        return startPosition;
     GridAxisPosition axisPosition = columnAxisPositionForChild(child);
     switch (axisPosition) {
     case GridAxisStart:
@@ -1762,6 +1821,8 @@ LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child) const
     const GridCoordinate& coordinate = cachedGridCoordinate(child);
     LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()];
     LayoutUnit startPosition = startOfColumn + marginStartForChild(child);
+    if (hasAutoMarginsInRowAxis(child))
+        return startPosition;
     GridAxisPosition axisPosition = rowAxisPositionForChild(child);
     switch (axisPosition) {
     case GridAxisStart:

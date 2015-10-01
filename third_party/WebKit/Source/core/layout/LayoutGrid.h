@@ -168,6 +168,10 @@ private:
     LayoutUnit computeMarginLogicalHeightForChild(const LayoutBox&) const;
     LayoutUnit availableAlignmentSpaceForChildBeforeStretching(LayoutUnit gridAreaBreadthForChild, const LayoutBox&) const;
     void applyStretchAlignmentToChildIfNeeded(LayoutBox&);
+    bool hasAutoMarginsInColumnAxis(const LayoutBox&) const;
+    bool hasAutoMarginsInRowAxis(const LayoutBox&) const;
+    void updateAutoMarginsInColumnAxisIfNeeded(LayoutBox&);
+    void updateAutoMarginsInRowAxisIfNeeded(LayoutBox&);
 
 #if ENABLE(ASSERT)
     bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection, const Vector<GridTrack>&);
