@@ -25,6 +25,7 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
   LayerTreeImplTest() : output_surface_(FakeOutputSurface::Create3d()) {
     LayerTreeSettings settings;
     settings.layer_transforms_should_scale_layer_contents = true;
+    settings.verify_property_trees = true;
     host_impl_.reset(new FakeLayerTreeHostImpl(
         settings, &proxy_, &shared_bitmap_manager_, &task_graph_runner_));
     EXPECT_TRUE(host_impl_->InitializeRenderer(output_surface_.get()));
