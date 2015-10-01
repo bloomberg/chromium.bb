@@ -1325,7 +1325,7 @@ filelist.handleKeyDown = function(e) {
       prevent = false;
   }
 
-  if (newIndex != -1) {
+  if (newIndex >= 0 && newIndex < sm.length) {
     sm.beginChange();
 
     sm.leadIndex = newIndex;
