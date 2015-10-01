@@ -29,7 +29,9 @@ KeyedServiceProvider::~KeyedServiceProvider() {
 }
 
 void KeyedServiceProvider::AssertKeyedFactoriesBuilt() {
+#if defined(ENABLE_CONFIGURATION_POLICY)
   GetManagedBookmarkServiceFactory();
+#endif
   GetProfileInvalidationProviderFactory();
   GetSyncServiceFactory();
 }

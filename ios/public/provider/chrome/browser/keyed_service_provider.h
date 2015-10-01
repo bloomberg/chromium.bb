@@ -12,9 +12,11 @@ enum class ServiceAccessType;
 
 class KeyedServiceBaseFactory;
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
 namespace bookmarks {
 class ManagedBookmarkService;
 }
+#endif
 
 namespace invalidation {
 class ProfileInvalidationProvider;
@@ -45,6 +47,7 @@ class KeyedServiceProvider {
   // correct.
   void AssertKeyedFactoriesBuilt();
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
   // Returns the bookmarks::ManagedBookmarkService factory for dependencies.
   virtual KeyedServiceBaseFactory* GetManagedBookmarkServiceFactory() = 0;
 
@@ -53,6 +56,7 @@ class KeyedServiceProvider {
   virtual bookmarks::ManagedBookmarkService*
   GetManagedBookmarkServiceForBrowserState(
       ChromeBrowserState* browser_state) = 0;
+#endif
 
   // Returns the sync_driver::SyncService factory for dependencies.
   virtual KeyedServiceBaseFactory* GetSyncServiceFactory() = 0;

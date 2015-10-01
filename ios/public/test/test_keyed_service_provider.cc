@@ -67,6 +67,7 @@ TestKeyedServiceProvider::TestKeyedServiceProvider() {
 TestKeyedServiceProvider::~TestKeyedServiceProvider() {
 }
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
 KeyedServiceBaseFactory*
 TestKeyedServiceProvider::GetManagedBookmarkServiceFactory() {
   return MissingServiceKeyedServiceFactory::GetInstance();
@@ -77,6 +78,7 @@ TestKeyedServiceProvider::GetManagedBookmarkServiceForBrowserState(
     ChromeBrowserState* browser_state) {
   return nullptr;
 }
+#endif
 
 KeyedServiceBaseFactory* TestKeyedServiceProvider::GetSyncServiceFactory() {
   return FakeSyncServiceFactory::GetInstance();
