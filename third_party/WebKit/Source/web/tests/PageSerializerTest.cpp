@@ -496,4 +496,15 @@ TEST_F(PageSerializerTest, NamespaceElementsDontCrash)
     EXPECT_GT(getSerializedData("namespace_element.html", "text/html").length(), 0U);
 }
 
+TEST_F(PageSerializerTest, markOfTheWebDeclaration)
+{
+    EXPECT_EQ("saved from url=(0015)http://foo.com/", PageSerializer::markOfTheWebDeclaration(KURL(ParsedURLString, "http://foo.com")));
+    EXPECT_EQ("saved from url=(0015)http://f-o.com/", PageSerializer::markOfTheWebDeclaration(KURL(ParsedURLString, "http://f-o.com")));
+    EXPECT_EQ("saved from url=(0019)http://foo.com-%2D/", PageSerializer::markOfTheWebDeclaration(KURL(ParsedURLString, "http://foo.com--")));
+    EXPECT_EQ("saved from url=(0024)http://f-%2D.com-%2D%3E/", PageSerializer::markOfTheWebDeclaration(KURL(ParsedURLString, "http://f--.com-->")));
+    EXPECT_EQ("saved from url=(0020)http://foo.com/?-%2D", PageSerializer::markOfTheWebDeclaration(KURL(ParsedURLString, "http://foo.com?--")));
+    EXPECT_EQ("saved from url=(0020)http://foo.com/#-%2D", PageSerializer::markOfTheWebDeclaration(KURL(ParsedURLString, "http://foo.com#--")));
+    EXPECT_EQ("saved from url=(0026)http://foo.com/#bar-%2Dbaz", PageSerializer::markOfTheWebDeclaration(KURL(ParsedURLString, "http://foo.com#bar--baz")));
+}
+
 } // namespace blink

@@ -267,19 +267,23 @@ bool WebPageSerializer::retrieveAllResources(WebView* view,
 
 WebString WebPageSerializer::generateMetaCharsetDeclaration(const WebString& charset)
 {
+    // TODO(yosin) We should call |PageSerializer::metaCharsetDeclarationOf()|.
     String charsetString = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + static_cast<const String&>(charset) + "\">";
     return charsetString;
 }
 
 WebString WebPageSerializer::generateMarkOfTheWebDeclaration(const WebURL& url)
 {
-    return String::format("\n<!-- saved from url=(%04d)%s -->\n",
-                          static_cast<int>(url.spec().length()),
-                          url.spec().data());
+    StringBuilder builder;
+    builder.append("\n<!-- ");
+    builder.append(PageSerializer::markOfTheWebDeclaration(url));
+    builder.append(" -->\n");
+    return builder.toString();
 }
 
 WebString WebPageSerializer::generateBaseTagDeclaration(const WebString& baseTarget)
 {
+    // TODO(yosin) We should call |PageSerializer::baseTagDeclarationOf()|.
     if (baseTarget.isEmpty())
         return String("<base href=\".\">");
     String baseString = "<base href=\".\" target=\"" + static_cast<const String&>(baseTarget) + "\">";

@@ -40,6 +40,7 @@
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebFrame.h"
+#include "public/web/WebPageSerializerClient.h"
 #include "public/web/WebView.h"
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
@@ -48,6 +49,22 @@ using blink::Document;
 using blink::URLTestHelpers::toKURL;
 
 namespace blink {
+
+namespace {
+class SimpleWebPageSerializerClient : public  WebPageSerializerClient {
+public:
+    std::string toString() const { return m_string; }
+
+private:
+    void didSerializeDataForFrame(const WebURL&, const WebCString& data, PageSerializationStatus) final
+    {
+        m_string += data;
+    }
+
+    std::string m_string;
+};
+
+} // namespace
 
 class WebPageSerializerTest : public testing::Test {
 public:
@@ -132,6 +149,20 @@ TEST_F(WebPageSerializerTest, HTMLNodes)
     EXPECT_TRUE(webVectorContains(resources, "http://www.test.com/why_inserted.html"));
     EXPECT_TRUE(webVectorContains(resources, "https://www.secure.com/https.gif"));
     EXPECT_TRUE(webVectorContains(resources, "file://c/my_folder/file.gif"));
+}
+
+TEST_F(WebPageSerializerTest, fromUrlWithMinusMinus)
+{
+    WebURL topFrameURL = toKURL("http://www.test.com?--x--");
+    registerMockedURLLoad(topFrameURL.spec(), WebString::fromUTF8("text_only_page.html"));
+    loadURLInTopFrame(topFrameURL);
+
+    SimpleWebPageSerializerClient serializerClient;
+    WebVector<WebURL> links(&topFrameURL, 1);
+    WebVector<WebString> localPaths(&"local", 1);
+    WebPageSerializer::serialize(webView()->mainFrame()->toWebLocalFrame(), &serializerClient, links, localPaths, "");
+
+    EXPECT_EQ("<!-- saved from url=(0030)http://www.test.com/?-%2Dx-%2D -->", serializerClient.toString().substr(1, 60));
 }
 
 TEST_F(WebPageSerializerTest, MultipleFrames)

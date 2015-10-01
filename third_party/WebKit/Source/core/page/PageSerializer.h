@@ -84,6 +84,8 @@ public:
 
     Delegate* delegate();
 
+    static String markOfTheWebDeclaration(const KURL&);
+
 private:
     void serializeFrame(LocalFrame*);
 
