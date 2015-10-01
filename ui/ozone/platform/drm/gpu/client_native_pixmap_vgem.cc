@@ -39,45 +39,37 @@ ClientNativePixmapVgem::ClientNativePixmapVgem(int vgem_fd,
       stride_(stride),
       data_(nullptr) {
   DCHECK(vgem_bo_handle_);
+  struct drm_mode_map_dumb mmap_arg = {0};
+  mmap_arg.handle = vgem_bo_handle_;
+  size_t map_size = stride_ * size_.height();
+  int ret = drmIoctl(vgem_fd_, DRM_IOCTL_VGEM_MODE_MAP_DUMB, &mmap_arg);
+  if (ret) {
+    PLOG(ERROR) << "fail to map a vgem buffer.";
+    base::TerminateBecauseOutOfMemory(map_size);
+  }
+  DCHECK(mmap_arg.offset);
+
+  data_ = mmap(nullptr, map_size, (PROT_READ | PROT_WRITE), MAP_SHARED,
+               vgem_fd_, mmap_arg.offset);
+  DCHECK_NE(data_, MAP_FAILED);
 }
 
 ClientNativePixmapVgem::~ClientNativePixmapVgem() {
-  DCHECK(!data_);
+  size_t size = stride_ * size_.height();
+  int ret = munmap(data_, size);
+  DCHECK(!ret) << "fail to munmap a vgem buffer.";
+
   struct drm_gem_close close = {0};
   close.handle = vgem_bo_handle_;
-  int ret = drmIoctl(vgem_fd_, DRM_IOCTL_GEM_CLOSE, &close);
+  ret = drmIoctl(vgem_fd_, DRM_IOCTL_GEM_CLOSE, &close);
   DCHECK(!ret) << "fail to free a vgem buffer.";
 }
 
 void* ClientNativePixmapVgem::Map() {
-  TRACE_EVENT0("gpu", "ClientNativePixmapVgem::Map");
-  DCHECK(!data_);
-  struct drm_mode_map_dumb mmap_arg = {0};
-  mmap_arg.handle = vgem_bo_handle_;
-
-  size_t size = stride_ * size_.height();
-  int ret = drmIoctl(vgem_fd_, DRM_IOCTL_VGEM_MODE_MAP_DUMB, &mmap_arg);
-  if (ret) {
-    PLOG(ERROR) << "fail to map a vgem buffer.";
-    base::TerminateBecauseOutOfMemory(size);
-  }
-  DCHECK(mmap_arg.offset);
-
-  data_ = mmap(nullptr, size, (PROT_READ | PROT_WRITE), MAP_SHARED, vgem_fd_,
-               mmap_arg.offset);
-  DCHECK_NE(data_, MAP_FAILED);
   return data_;
 }
 
 void ClientNativePixmapVgem::Unmap() {
-  TRACE_EVENT0("gpu", "ClientNativePixmapVgem::Unmap");
-  DCHECK(data_);
-
-  // TODO(dshwang): keep it consistently mapped, and unmap it in dtor.
-  size_t size = stride_ * size_.height();
-  int ret = munmap(data_, size);
-  DCHECK(!ret) << "fail to munmap a vgem buffer.";
-  data_ = nullptr;
 }
 
 void ClientNativePixmapVgem::GetStride(int* stride) const {
