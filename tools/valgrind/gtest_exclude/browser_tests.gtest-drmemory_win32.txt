@@ -170,6 +170,8 @@ Ser*
 Ses*
 Set*
 Scr*
+# SiteDetailsBrowserTest.ManyIframes times out
+Si*
 Soc*
 Spe*
 SRC*.Pl*
