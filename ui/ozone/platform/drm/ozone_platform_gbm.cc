@@ -155,7 +155,8 @@ class OzonePlatformGbm : public OzonePlatform {
 #if defined(USE_VGEM_MAP)
     static const char kVgemPath[] = "/dev/dri/renderD129";
     base::ScopedFD vgem_fd(open(kVgemPath, O_RDWR | O_CLOEXEC));
-    DCHECK(vgem_fd.is_valid()) << "Failed to open: " << kVgemPath;
+    if (!vgem_fd.is_valid())
+      PLOG(ERROR) << "Failed to open: " << kVgemPath;
     return vgem_fd;
 #endif
     return base::ScopedFD();

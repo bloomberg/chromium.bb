@@ -51,10 +51,12 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
     std::vector<Configuration> configurations(
         kConfigurations, kConfigurations + arraysize(kConfigurations));
 #if defined(USE_VGEM_MAP)
-    configurations.push_back(
-        {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP});
-    configurations.push_back(
-        {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP});
+    if (vgem_fd_.is_valid()) {
+      configurations.push_back(
+          {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP});
+      configurations.push_back(
+          {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP});
+    }
 #endif
     return configurations;
   }
