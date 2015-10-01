@@ -9,6 +9,7 @@ import sys
 import gpu_test_base
 import path_util
 import webgl_conformance_expectations
+import webgl2_conformance_expectations
 
 from telemetry.internal.browser import browser_finder
 from telemetry.page import page_test
@@ -134,6 +135,7 @@ class WebglConformance(gpu_test_base.TestBase):
   def __init__(self):
     super(WebglConformance, self).__init__(max_failures=10)
     self._cached_expectations = None
+    self._webgl_version = 0
 
   @classmethod
   def Name(cls):
@@ -159,6 +161,9 @@ class WebglConformance(gpu_test_base.TestBase):
         (options.webgl2_only == 'true'),
         None)
 
+    self._webgl_version = [
+        int(x) for x in options.webgl_conformance_version.split('.')][0]
+
     ps = StorySet(serving_dirs=[''], base_dir=conformance_path)
 
     expectations = self.GetExpectations()
@@ -168,8 +173,13 @@ class WebglConformance(gpu_test_base.TestBase):
     return ps
 
   def _CreateExpectations(self):
-    return webgl_conformance_expectations.WebGLConformanceExpectations(
-        conformance_path)
+    assert (self._webgl_version == 1 or self._webgl_version == 2)
+    if self._webgl_version == 1:
+      return webgl_conformance_expectations.WebGLConformanceExpectations(
+          conformance_path)
+    else:
+      return webgl2_conformance_expectations.WebGL2ConformanceExpectations(
+          conformance_path)
 
   @staticmethod
   def _ParseTests(path, version, webgl2_only, folder_min_version):
