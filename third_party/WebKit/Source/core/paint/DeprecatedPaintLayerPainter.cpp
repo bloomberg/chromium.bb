@@ -220,27 +220,7 @@ DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintLayer
     if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !m_paintLayer.layoutObject()->isLayoutView() && !m_paintLayer.layoutObject()->isDocumentElement())
         return result;
 
-    Optional<SubsequenceRecorder> subsequenceRecorder;
-
-    bool scrollOffsetAccumulationChanged = paintingInfoArg.scrollOffsetAccumulation != m_paintLayer.previousScrollOffsetAccumulationForPainting();
-    if (scrollOffsetAccumulationChanged)
-        m_paintLayer.setPreviousScrollOffsetAccumulationForPainting(paintingInfoArg.scrollOffsetAccumulation);
-
-    if (!isPaintingOverlayScrollbars
-        && !paintingInfoArg.disableSubsequenceCache
-        && !(paintingInfoArg.globalPaintFlags() & GlobalPaintFlattenCompositingLayers)
-        && !(paintFlags & PaintLayerPaintingReflection)
-        && !(paintFlags & PaintLayerPaintingRootBackgroundOnly)) {
-        if (!scrollOffsetAccumulationChanged && !m_paintLayer.needsRepaint() && SubsequenceRecorder::useCachedSubsequenceIfPossible(*context, m_paintLayer))
-            return result;
-        subsequenceRecorder.emplace(*context, m_paintLayer);
-    }
-
     DeprecatedPaintLayerPaintingInfo paintingInfo = paintingInfoArg;
-
-    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()
-        && (m_paintLayer.layoutObject()->hasOverflowClip() || m_paintLayer.layoutObject()->hasClip()))
-        paintingInfo.disableSubsequenceCache = true;
 
     // Ensure our lists are up-to-date.
     m_paintLayer.stackingNode()->updateLayerListsIfNeeded();
@@ -356,10 +336,7 @@ DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintLayer
         paintChildClippingMaskForFragments(layerFragments, context, localPaintingInfo, paintingRootForLayoutObject, paintFlags);
     }
 
-    // Set subsequence not cacheable if the bounding box of this layer and descendants is not fully contained
-    // by paintRect, because later paintRect changes may expose new contents which will need repainting.
-    if (result == MaybeNotFullyPainted && subsequenceRecorder)
-        subsequenceRecorder->setUncacheable();
+    m_paintLayer.setPreviousScrollOffsetAccumulationForPainting(paintingInfoArg.scrollOffsetAccumulation);
 
     return result;
 }
@@ -492,12 +469,39 @@ DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintChild
     LayerListMutationDetector mutationChecker(m_paintLayer.stackingNode());
 #endif
 
-    IntSize scrollOffsetAccumulation = paintingInfo.scrollOffsetAccumulation;
-    if (m_paintLayer.layoutObject()->hasOverflowClip())
-        scrollOffsetAccumulation += m_paintLayer.layoutBox()->scrolledContentOffset();
-
     DeprecatedPaintLayerStackingNodeIterator iterator(*m_paintLayer.stackingNode(), childrenToVisit);
-    while (DeprecatedPaintLayerStackingNode* child = iterator.next()) {
+    DeprecatedPaintLayerStackingNode* child = iterator.next();
+    if (!child)
+        return result;
+
+    DisplayItem::Type subsequenceType;
+    if (childrenToVisit == NegativeZOrderChildren) {
+        subsequenceType = DisplayItem::SubsequenceNegativeZOrder;
+    } else {
+        ASSERT(childrenToVisit == (NormalFlowChildren | PositiveZOrderChildren));
+        subsequenceType = DisplayItem::SubsequenceNormalFlowAndPositiveZOrder;
+    }
+
+    Optional<SubsequenceRecorder> subsequenceRecorder;
+    if (!paintingInfo.disableSubsequenceCache
+        && !(paintingInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers)
+        && !(paintFlags & PaintLayerPaintingReflection)
+        && !(paintFlags & PaintLayerPaintingRootBackgroundOnly)) {
+        if (!m_paintLayer.needsRepaint()
+            && paintingInfo.scrollOffsetAccumulation == m_paintLayer.previousScrollOffsetAccumulationForPainting()
+            && SubsequenceRecorder::useCachedSubsequenceIfPossible(*context, m_paintLayer, subsequenceType))
+            return result;
+        subsequenceRecorder.emplace(*context, m_paintLayer, subsequenceType);
+    }
+
+    IntSize scrollOffsetAccumulationForChildren = paintingInfo.scrollOffsetAccumulation;
+    if (m_paintLayer.layoutObject()->hasOverflowClip())
+        scrollOffsetAccumulationForChildren += m_paintLayer.layoutBox()->scrolledContentOffset();
+
+    bool disableChildSubsequenceCache = !RuntimeEnabledFeatures::slimmingPaintV2Enabled()
+        && (m_paintLayer.layoutObject()->hasOverflowClip() || m_paintLayer.layoutObject()->hasClip());
+
+    for (; child; child = iterator.next()) {
         DeprecatedPaintLayerPainter childPainter(*child->layer());
         // If this Layer should paint into its own backing or a grouped backing, that will be done via CompositedDeprecatedPaintLayerMapping::paintContents()
         // and CompositedDeprecatedPaintLayerMapping::doPaintTask().
@@ -505,7 +509,8 @@ DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintChild
             continue;
 
         DeprecatedPaintLayerPaintingInfo childPaintingInfo = paintingInfo;
-        childPaintingInfo.scrollOffsetAccumulation = scrollOffsetAccumulation;
+        childPaintingInfo.disableSubsequenceCache = disableChildSubsequenceCache;
+        childPaintingInfo.scrollOffsetAccumulation = scrollOffsetAccumulationForChildren;
         // Rare case: accumulate scroll offset of non-stacking-context ancestors up to m_paintLayer.
         for (DeprecatedPaintLayer* parentLayer = child->layer()->parent(); parentLayer != &m_paintLayer; parentLayer = parentLayer->parent()) {
             if (parentLayer->layoutObject()->hasOverflowClip())
@@ -515,6 +520,12 @@ DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintChild
         if (childPainter.paintLayer(context, childPaintingInfo, paintFlags) == MaybeNotFullyPainted)
             result = MaybeNotFullyPainted;
     }
+
+    // Set subsequence not cacheable if the bounding box of this layer and descendants is not fully contained
+    // by paintRect, because later paintRect changes may expose new contents which will need repainting.
+    if (result == MaybeNotFullyPainted && subsequenceRecorder)
+        subsequenceRecorder->setUncacheable();
+
     return result;
 }
 

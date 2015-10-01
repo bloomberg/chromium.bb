@@ -117,6 +117,15 @@ public:
         } \
     } while (false);
 
+// Shorter names for frequently used display item types in tests.
+const DisplayItem::Type backgroundType = DisplayItem::BoxDecorationBackground;
+const DisplayItem::Type cachedBackgroundType = DisplayItem::drawingTypeToCachedDrawingType(backgroundType);
+const DisplayItem::Type foregroundType = DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground);
+const DisplayItem::Type cachedForegroundType = DisplayItem::drawingTypeToCachedDrawingType(foregroundType);
+const DisplayItem::Type subsequenceType = DisplayItem::SubsequenceNormalFlowAndPositiveZOrder;
+const DisplayItem::Type endSubsequenceType = DisplayItem::subsequenceTypeToEndSubsequenceType(subsequenceType);
+const DisplayItem::Type cachedSubsequenceType = DisplayItem::subsequenceTypeToCachedSubsequenceType(subsequenceType);
+
 } // namespace blink
 
 #endif // DisplayItemListPaintTest_h

@@ -165,9 +165,14 @@ public:
         BeginFixedPositionContainer,
         EndFixedPositionContainer,
 
-        BeginSubsequence,
-        EndSubsequence,
-        CachedSubsequence,
+        SubsequenceFirst,
+        SubsequenceNegativeZOrder = SubsequenceFirst,
+        SubsequenceNormalFlowAndPositiveZOrder,
+        SubsequenceLast = SubsequenceNormalFlowAndPositiveZOrder,
+        EndSubsequenceFirst,
+        EndSubsequenceLast = EndSubsequenceFirst + SubsequenceLast - SubsequenceFirst,
+        CachedSubsequenceFirst,
+        CachedSubsequenceLast = CachedSubsequenceFirst + SubsequenceLast - SubsequenceFirst,
 
         UninitializedType,
         TypeLast = UninitializedType
@@ -228,8 +233,8 @@ public:
     {
         if (isCachedDrawingType(type))
             return cachedDrawingTypeToDrawingType(type);
-        if (type == CachedSubsequence)
-            return BeginSubsequence;
+        if (isCachedSubsequenceType(type))
+            return cachedSubsequenceTypeToSubsequenceType(type);
         return type;
     }
 
@@ -307,11 +312,15 @@ public:
     DEFINE_PAIRED_CATEGORY_METHODS(Scroll, scroll)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(Scroll)
 
-    DEFINE_PAIRED_CATEGORY_METHODS(Transform3D, transform3D);
+    DEFINE_PAIRED_CATEGORY_METHODS(Transform3D, transform3D)
 
-    static bool isCachedType(Type type) { return isCachedDrawingType(type) || type == CachedSubsequence; }
+    DEFINE_PAIRED_CATEGORY_METHODS(Subsequence, subsequence)
+    DEFINE_CATEGORY_METHODS(CachedSubsequence)
+    DEFINE_CONVERSION_METHODS(Subsequence, subsequence, CachedSubsequence, cachedSubsequence)
+
+    static bool isCachedType(Type type) { return isCachedDrawingType(type) || isCachedSubsequenceType(type); }
     bool isCached() const { return isCachedType(m_type); }
-    static bool isCacheableType(Type type) { return isDrawingType(type) || type == BeginSubsequence; }
+    static bool isCacheableType(Type type) { return isDrawingType(type) || isSubsequenceType(type); }
     bool isCacheable() const { return !skippedCache() && isCacheableType(m_type); }
 
     virtual bool isBegin() const { return false; }

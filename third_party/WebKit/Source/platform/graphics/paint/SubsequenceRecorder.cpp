@@ -13,7 +13,7 @@
 
 namespace blink {
 
-bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& context, const DisplayItemClientWrapper& client)
+bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& context, const DisplayItemClientWrapper& client, DisplayItem::Type type)
 {
     if (!RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled())
         return false;
@@ -26,7 +26,7 @@ bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& contex
     if (!context.displayItemList()->clientCacheIsValid(client.displayItemClient()))
         return false;
 
-    context.displayItemList()->createAndAppend<CachedDisplayItem>(client, DisplayItem::CachedSubsequence);
+    context.displayItemList()->createAndAppend<CachedDisplayItem>(client, DisplayItem::subsequenceTypeToCachedSubsequenceType(type));
 
 #if ENABLE(ASSERT)
     // When under-invalidation checking is enabled, we output CachedSubsequence display item
@@ -38,10 +38,11 @@ bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& contex
     return true;
 }
 
-SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client)
+SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client, DisplayItem::Type type)
     : m_displayItemList(context.displayItemList())
     , m_client(client)
     , m_beginSubsequenceIndex(0)
+    , m_type(type)
 {
     if (!RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled())
         return;
@@ -51,7 +52,7 @@ SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const Display
         return;
 
     m_beginSubsequenceIndex = m_displayItemList->newDisplayItems().size();
-    m_displayItemList->createAndAppend<BeginSubsequenceDisplayItem>(m_client);
+    m_displayItemList->createAndAppend<BeginSubsequenceDisplayItem>(m_client, type);
 }
 
 SubsequenceRecorder::~SubsequenceRecorder()
@@ -72,7 +73,7 @@ SubsequenceRecorder::~SubsequenceRecorder()
         }
     }
 
-    m_displayItemList->createAndAppend<EndSubsequenceDisplayItem>(m_client);
+    m_displayItemList->createAndAppend<EndSubsequenceDisplayItem>(m_client, DisplayItem::subsequenceTypeToEndSubsequenceType(m_type));
 }
 
 void SubsequenceRecorder::setUncacheable()
@@ -83,7 +84,7 @@ void SubsequenceRecorder::setUncacheable()
     if (m_displayItemList->displayItemConstructionIsDisabled())
         return;
 
-    ASSERT(m_displayItemList->newDisplayItems()[m_beginSubsequenceIndex].type() == DisplayItem::BeginSubsequence);
+    ASSERT(m_displayItemList->newDisplayItems()[m_beginSubsequenceIndex].isSubsequence());
     m_displayItemList->newDisplayItems()[m_beginSubsequenceIndex].setSkippedCache();
 }
 

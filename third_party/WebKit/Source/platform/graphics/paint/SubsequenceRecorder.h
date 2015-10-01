@@ -5,7 +5,7 @@
 #ifndef SubsequenceRecorder_h
 #define SubsequenceRecorder_h
 
-#include "platform/graphics/paint/DisplayItemClient.h"
+#include "platform/graphics/paint/DisplayItem.h"
 
 namespace blink {
 
@@ -22,9 +22,9 @@ class GraphicsContext;
 //
 class PLATFORM_EXPORT SubsequenceRecorder {
 public:
-    static bool useCachedSubsequenceIfPossible(GraphicsContext&, const DisplayItemClientWrapper&);
+    static bool useCachedSubsequenceIfPossible(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type);
 
-    SubsequenceRecorder(GraphicsContext&, const DisplayItemClientWrapper&);
+    SubsequenceRecorder(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type);
     ~SubsequenceRecorder();
 
     void setUncacheable();
@@ -33,6 +33,7 @@ private:
     DisplayItemList* m_displayItemList;
     DisplayItemClientWrapper m_client;
     size_t m_beginSubsequenceIndex;
+    DisplayItem::Type m_type;
 };
 
 } // namespace blink

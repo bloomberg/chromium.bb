@@ -61,7 +61,7 @@ void DisplayItemList::processNewItem(DisplayItem& displayItem)
     // Verify noop begin/end pairs have been removed.
     if (m_newDisplayItems.size() >= 2 && displayItem.isEnd()) {
         const auto& beginDisplayItem = m_newDisplayItems[m_newDisplayItems.size() - 2];
-        if (beginDisplayItem.isBegin() && beginDisplayItem.type() != DisplayItem::BeginSubsequence && !beginDisplayItem.drawsContent())
+        if (beginDisplayItem.isBegin() && !beginDisplayItem.isSubsequence() && !beginDisplayItem.drawsContent())
             ASSERT(!displayItem.isEndAndPairedWith(beginDisplayItem.type()));
     }
 #endif
@@ -228,9 +228,9 @@ DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(const Di
 
 void DisplayItemList::copyCachedSubsequence(DisplayItems::iterator& currentIt, DisplayItems& updatedList)
 {
-    ASSERT(currentIt->type() == DisplayItem::BeginSubsequence);
+    ASSERT(currentIt->isSubsequence());
     ASSERT(!currentIt->scope());
-    DisplayItem::Id endSubsequenceId(currentIt->client(), DisplayItem::EndSubsequence, 0);
+    DisplayItem::Id endSubsequenceId(currentIt->client(), DisplayItem::subsequenceTypeToEndSubsequenceType(currentIt->type()), 0);
     do {
         // We should always find the EndSubsequence display item.
         ASSERT(currentIt != m_currentDisplayItems.end());
@@ -242,14 +242,14 @@ void DisplayItemList::copyCachedSubsequence(DisplayItems::iterator& currentIt, D
 
 // Update the existing display items by removing invalidated entries, updating
 // repainted ones, and appending new items.
-// - For CachedDisplayItem, copy the corresponding cached DrawingDisplayItem;
-// - For SubsequenceCachedDisplayItem, copy the cached display items between the
-//   corresponding BeginSubsequenceDisplayItem and EndSubsequenceDisplayItem (incl.);
+// - For cached drawing display item, copy the corresponding cached DrawingDisplayItem;
+// - For cached subsequence display item, copy the cached display items between the
+//   corresponding SubsequenceDisplayItem and EndSubsequenceDisplayItem (incl.);
 // - Otherwise, copy the new display item.
 //
 // The algorithm is O(|m_currentDisplayItems| + |m_newDisplayItems|).
-// Coefficients are related to the ratio of out-of-order [Subsequence]CachedDisplayItems
-// and the average number of (Drawing|BeginSubsequence)DisplayItems per client.
+// Coefficients are related to the ratio of out-of-order CachedDisplayItems
+// and the average number of (Drawing|Subsequence)DisplayItems per client.
 //
 // TODO(pdr): Implement the DisplayListDiff algorithm for SlimmingPaintV2.
 void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
@@ -325,9 +325,9 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
                 updatedList.appendByMoving(*currentIt);
                 ++currentIt;
             } else {
-                ASSERT(newDisplayItem.type() == DisplayItem::CachedSubsequence);
+                ASSERT(newDisplayItem.isCachedSubsequence());
                 copyCachedSubsequence(currentIt, updatedList);
-                ASSERT(updatedList.last().type() == DisplayItem::EndSubsequence);
+                ASSERT(updatedList.last().isEndSubsequence());
             }
         } else {
             ASSERT(!newDisplayItem.isDrawing()
@@ -433,7 +433,7 @@ void DisplayItemList::checkUnderInvalidation(DisplayItems::iterator& newIt, Disp
         return;
     }
 
-    ASSERT(newIt->type() == DisplayItem::BeginSubsequence);
+    ASSERT(newIt->isSubsequence());
 
 #ifndef NDEBUG
     CString messagePrefix = String::format("(In CachedSubsequence of %s)", newIt->clientDebugString().utf8().data()).utf8();
@@ -441,7 +441,7 @@ void DisplayItemList::checkUnderInvalidation(DisplayItems::iterator& newIt, Disp
     CString messagePrefix = "(In CachedSubsequence)";
 #endif
 
-    DisplayItem::Id endSubsequenceId(newIt->client(), DisplayItem::EndSubsequence, 0);
+    DisplayItem::Id endSubsequenceId(newIt->client(), DisplayItem::subsequenceTypeToEndSubsequenceType(newIt->type()), 0);
     while (true) {
         ASSERT(newIt != m_newDisplayItems.end());
         if (newIt->isCached())

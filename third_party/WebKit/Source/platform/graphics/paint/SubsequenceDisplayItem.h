@@ -13,19 +13,26 @@ namespace blink {
 
 class BeginSubsequenceDisplayItem final : public PairedBeginDisplayItem {
 public:
-    BeginSubsequenceDisplayItem(const DisplayItemClientWrapper& client)
-        : PairedBeginDisplayItem(client, BeginSubsequence, sizeof(*this))
-    { }
+    BeginSubsequenceDisplayItem(const DisplayItemClientWrapper& client, DisplayItem::Type type)
+        : PairedBeginDisplayItem(client, type, sizeof(*this))
+    {
+        ASSERT(DisplayItem::isSubsequenceType(type));
+    }
 };
 
 class EndSubsequenceDisplayItem final : public PairedEndDisplayItem {
 public:
-    EndSubsequenceDisplayItem(const DisplayItemClientWrapper& client)
-        : PairedEndDisplayItem(client, EndSubsequence, sizeof(*this))
-    { }
+    EndSubsequenceDisplayItem(const DisplayItemClientWrapper& client, DisplayItem::Type type)
+        : PairedEndDisplayItem(client, type, sizeof(*this))
+    {
+        ASSERT(DisplayItem::isEndSubsequenceType(type));
+    }
 
 #if ENABLE(ASSERT)
-    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == BeginSubsequence; }
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final
+    {
+        return otherType == DisplayItem::endSubsequenceTypeToSubsequenceType(type());
+    }
 #endif
 };
 
