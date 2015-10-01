@@ -1241,7 +1241,7 @@ rdp_backend_create(struct weston_compositor *compositor,
 		/* get the socket from RDP_FD var */
 		fd_str = getenv("RDP_FD");
 		if (!fd_str) {
-			weston_log("RDP_FD env variable not set");
+			weston_log("RDP_FD env variable not set\n");
 			goto err_output;
 		}
 
