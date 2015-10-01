@@ -361,7 +361,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       self._isolate_delegate.Remap(
           self._isolate_abs_path, self._isolated_abs_path)
       self._isolate_delegate.MoveOutputDeps()
-      self._data_deps.extend([(constants.ISOLATE_DEPS_DIR, None)])
+      self._data_deps.extend([(self._isolate_delegate.isolate_deps_dir, None)])
 
     # TODO(jbudorick): Convert existing tests that depend on the --test-data
     # mechanism to isolate, then remove this.

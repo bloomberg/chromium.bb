@@ -43,7 +43,7 @@ def GenerateDepsDirUsingIsolate(suite_name, isolate_file_path,
       constants.GetOutDirectory(), '%s.isolated' % suite_name)
   assert os.path.exists(isolate_abs_path), 'Cannot find %s' % isolate_abs_path
 
-  i = isolator.Isolator(constants.ISOLATE_DEPS_DIR)
+  i = isolator.Isolator()
   i.Clear()
   i.Remap(isolate_abs_path, isolated_abs_path)
   # We're relying on the fact that timestamps are preserved
@@ -56,8 +56,8 @@ def GenerateDepsDirUsingIsolate(suite_name, isolate_file_path,
   return i
 
 
-def PushDataDeps(device, device_dir, test_options):
+def PushDataDeps(device, host_dir, device_dir, test_options):
   valgrind_tools.PushFilesForTool(test_options.tool, device)
-  if os.path.exists(constants.ISOLATE_DEPS_DIR):
-    device.PushChangedFiles([(constants.ISOLATE_DEPS_DIR, device_dir)],
+  if os.path.exists(host_dir):
+    device.PushChangedFiles([(host_dir, device_dir)],
                             delete_device_stale=test_options.delete_stale_data)

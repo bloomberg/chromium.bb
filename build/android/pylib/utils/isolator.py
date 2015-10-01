@@ -7,6 +7,7 @@ import glob
 import os
 import shutil
 import sys
+import tempfile
 
 from devil.utils import cmd_helper
 from pylib import constants
@@ -56,13 +57,12 @@ def DefaultConfigVariables():
 class Isolator(object):
   """Manages calls to isolate.py for the android test runner scripts."""
 
-  def __init__(self, isolate_deps_dir):
-    """
-    Args:
-      isolate_deps_dir: The directory in which dependencies specified by
-        isolate are or should be stored.
-    """
-    self._isolate_deps_dir = isolate_deps_dir
+  def __init__(self):
+    self._isolate_deps_dir = tempfile.mkdtemp()
+
+  @property
+  def isolate_deps_dir(self):
+    return self._isolate_deps_dir
 
   def Clear(self):
     """Deletes the isolate dependency directory."""

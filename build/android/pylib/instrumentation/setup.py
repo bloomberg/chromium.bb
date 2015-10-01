@@ -90,17 +90,16 @@ def Setup(test_options, devices):
         _PushDataDeps, test_options)
 
   if test_options.isolate_file_path:
-    i = base_setup.GenerateDepsDirUsingIsolate(test_options.test_apk,
-                                           test_options.isolate_file_path,
-                                           ISOLATE_FILE_PATHS,
-                                           DEPS_EXCLUSION_LIST)
+    isolator = base_setup.GenerateDepsDirUsingIsolate(
+        test_options.test_apk, test_options.isolate_file_path,
+        ISOLATE_FILE_PATHS, DEPS_EXCLUSION_LIST)
     def push_data_deps_to_device_dir(device):
-      base_setup.PushDataDeps(device, device.GetExternalStoragePath(),
-                              test_options)
+      base_setup.PushDataDeps(device, isolator.isolate_deps_dir,
+                              device.GetExternalStoragePath(), test_options)
     device_utils.DeviceUtils.parallel(devices).pMap(
         push_data_deps_to_device_dir)
-    if i:
-      i.Clear()
+    if isolator:
+      isolator.Clear()
 
   device_utils.DeviceUtils.parallel(devices).pMap(
       _PushExtraSuiteDataDeps, test_options.test_apk)

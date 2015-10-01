@@ -22,7 +22,6 @@ keyevent = devil.android.sdk.keyevent
 DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
     os.path.abspath(os.path.join(os.path.dirname(__file__),
                                  os.pardir, os.pardir, os.pardir, os.pardir)))
-ISOLATE_DEPS_DIR = os.path.join(DIR_SOURCE_ROOT, 'isolate_deps_dir')
 
 PackageInfo = collections.namedtuple('PackageInfo',
     ['package', 'activity', 'cmdline_file', 'devtools_socket',

@@ -216,7 +216,8 @@ class GtestTestInstance(test_instance.TestInstance):
       dest_dir = None
       if self._suite == 'breakpad_unittests':
         dest_dir = '/data/local/tmp/'
-      self._data_deps.extend([(constants.ISOLATE_DEPS_DIR, dest_dir)])
+      self._data_deps.extend([
+          (self._isolate_delegate.isolate_deps_dir, dest_dir)])
 
 
   def GetDataDependencies(self):
