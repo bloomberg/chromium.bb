@@ -221,6 +221,7 @@
     { "name": "contributor.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "fi.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "xn--7xa.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "pixel.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
 
     // Other Google-related domains that must use HTTPS.
     { "name": "google", "include_subdomains": true, "mode": "force-https", "pins": "google" },
