@@ -32,6 +32,7 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
       const base::Closure& starvation_cb,
       const base::Closure& drained_requested_cb,
       const base::Closure& stop_done_cb,
+      const base::Closure& waiting_for_decryption_key_cb,
       const base::Closure& error_cb,
       const SetTimeCallback& update_current_time_cb,
       const VideoSizeChangedCallback& video_size_changed_cb,
@@ -42,6 +43,7 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
 
   bool HasStream() const override;
   void SetDemuxerConfigs(const DemuxerConfigs& configs) override;
+  bool IsContentEncrypted() const override;
   void ReleaseDecoderResources() override;
   void ReleaseMediaCodec() override;
 
@@ -51,9 +53,15 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
   // Returns true if there is a video surface to use.
   bool HasVideoSurface() const;
 
+  // Sets whether protected surface is needed for the currently used DRM.
+  void SetProtectedSurfaceRequired(bool value);
+
+  // Returns true if  protected surface is needed.
+  bool IsProtectedSurfaceRequired() const;
+
  protected:
   bool IsCodecReconfigureNeeded(const DemuxerConfigs& next) const override;
-  ConfigStatus ConfigureInternal() override;
+  ConfigStatus ConfigureInternal(jobject media_crypto) override;
   void AssociateCurrentTimeWithPTS(base::TimeDelta pts) override;
   void DissociatePTSFromTime() override;
   void OnOutputFormatChanged() override;
@@ -88,6 +96,9 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
 
   // Video surface that we render to.
   gfx::ScopedJavaSurface surface_;
+
+  // Flags that indicates whether we need protected surface.
+  bool is_protected_surface_required_;
 
   // Reports current playback time to the callee.
   SetTimeCallback update_current_time_cb_;

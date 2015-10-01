@@ -147,10 +147,13 @@ class MediaCodecDecoder {
   //   starvation_cb:
   //     Called when starvation is detected. The decoder state does not change.
   //     The player is supposed to stop and then prefetch the decoder.
-  //   stop_done_cb:
-  //     Called when async stop request is completed.
   //   decoder_drained_cb:
   //     Called when decoder is drained for reconfiguration.
+  //   stop_done_cb:
+  //     Called when async stop request is completed.
+  //   waiting_for_decryption_key_cb:
+  //     Will be executed whenever the key needed to decrypt the stream is not
+  //     available.
   //   error_cb:
   //     Called when a MediaCodec error occurred. If this happens, a player has
   //     to either call ReleaseDecoderResources() or destroy the decoder object.
@@ -162,6 +165,7 @@ class MediaCodecDecoder {
       const base::Closure& starvation_cb,
       const base::Closure& decoder_drained_cb,
       const base::Closure& stop_done_cb,
+      const base::Closure& waiting_for_decryption_key_cb,
       const base::Closure& error_cb,
       const char* decoder_thread_name);
   virtual ~MediaCodecDecoder();
@@ -176,6 +180,10 @@ class MediaCodecDecoder {
 
   // Stores configuration for the use of upcoming Configure()
   virtual void SetDemuxerConfigs(const DemuxerConfigs& configs) = 0;
+
+  // Returns true if the DemuxerConfigs announce that content is encrypted and
+  // that MediaCrypto is required for configuration.
+  virtual bool IsContentEncrypted() const = 0;
 
   // Stops decoder thread, releases the MediaCodecBridge and other resources.
   virtual void ReleaseDecoderResources() = 0;
@@ -193,17 +201,18 @@ class MediaCodecDecoder {
   bool IsCompleted() const;
   bool NotCompletedAndNeedsPreroll() const;
 
+  // Forces reconfiguraton on the next Configure().
+  void SetNeedsReconfigure();
+
   // Sets preroll timestamp and requests preroll.
   void SetPrerollTimestamp(base::TimeDelta preroll_ts);
-
-  base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
 
   // Starts prefetching: accumulates enough data in AccessUnitQueue.
   // Decoder thread is not running.
   void Prefetch(const base::Closure& prefetch_done_cb);
 
   // Configures MediaCodec.
-  ConfigStatus Configure();
+  ConfigStatus Configure(jobject media_crypto);
 
   // Starts the decoder for prerolling. This method starts the decoder thread.
   bool Preroll(const base::Closure& preroll_done_cb);
@@ -254,7 +263,7 @@ class MediaCodecDecoder {
 
   // Does the part of MediaCodecBridge configuration that is specific
   // to audio or video.
-  virtual ConfigStatus ConfigureInternal() = 0;
+  virtual ConfigStatus ConfigureInternal(jobject media_crypto) = 0;
 
   // Associates PTS with device time so we can calculate delays.
   // We use delays for video decoder only.
@@ -388,6 +397,7 @@ class MediaCodecDecoder {
   base::Closure preroll_done_cb_;
   base::Closure decoder_drained_cb_;
   base::Closure stop_done_cb_;
+  base::Closure waiting_for_decryption_key_cb_;
   base::Closure error_cb_;
 
   // Data request callback that is posted by decoder internally.
@@ -411,6 +421,10 @@ class MediaCodecDecoder {
 
   // Flag is set when the EOS is enqueued into MediaCodec. Reset by Flush.
   bool eos_enqueued_;
+
+  // Flag is set when NO_KEY error is received from QueueSecureInputBuffer.
+  // Reset after we stop.
+  bool missing_key_reported_;
 
   // Flag is set when the EOS is received in MediaCodec output. Reset by Flush.
   bool completed_;

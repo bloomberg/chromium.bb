@@ -25,6 +25,7 @@ MediaCodecAudioDecoder::MediaCodecAudioDecoder(
     const base::Closure& starvation_cb,
     const base::Closure& decoder_drained_cb,
     const base::Closure& stop_done_cb,
+    const base::Closure& waiting_for_decryption_key_cb,
     const base::Closure& error_cb,
     const SetTimeCallback& update_current_time_cb)
     : MediaCodecDecoder(media_task_runner,
@@ -32,6 +33,7 @@ MediaCodecAudioDecoder::MediaCodecAudioDecoder(
                         starvation_cb,
                         decoder_drained_cb,
                         stop_done_cb,
+                        waiting_for_decryption_key_cb,
                         error_cb,
                         "AudioDecoder"),
       volume_(-1.0),
@@ -63,6 +65,12 @@ void MediaCodecAudioDecoder::SetDemuxerConfigs(const DemuxerConfigs& configs) {
   configs_ = configs;
   if (!media_codec_bridge_)
     output_sampling_rate_ = configs.audio_sampling_rate;
+}
+
+bool MediaCodecAudioDecoder::IsContentEncrypted() const {
+  // Make sure SetDemuxerConfigs() as been called.
+  DCHECK(configs_.audio_codec != kUnknownAudioCodec);
+  return configs_.is_audio_encrypted;
 }
 
 void MediaCodecAudioDecoder::ReleaseDecoderResources() {
@@ -109,14 +117,15 @@ bool MediaCodecAudioDecoder::IsCodecReconfigureNeeded(
   return configs_.audio_codec != next.audio_codec ||
          configs_.audio_channels != next.audio_channels ||
          configs_.audio_sampling_rate != next.audio_sampling_rate ||
-         next.is_audio_encrypted != next.is_audio_encrypted ||
+         configs_.is_audio_encrypted != next.is_audio_encrypted ||
          configs_.audio_extra_data.size() != next.audio_extra_data.size() ||
          !std::equal(configs_.audio_extra_data.begin(),
                      configs_.audio_extra_data.end(),
                      next.audio_extra_data.begin());
 }
 
-MediaCodecDecoder::ConfigStatus MediaCodecAudioDecoder::ConfigureInternal() {
+MediaCodecDecoder::ConfigStatus MediaCodecAudioDecoder::ConfigureInternal(
+    jobject media_crypto) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   DVLOG(1) << class_name() << "::" << __FUNCTION__;
@@ -141,7 +150,7 @@ MediaCodecDecoder::ConfigStatus MediaCodecAudioDecoder::ConfigureInternal() {
                configs_.audio_codec_delay_ns,
                configs_.audio_seek_preroll_ns,
                true,
-               GetMediaCrypto().obj())) {
+               media_crypto)) {
     DVLOG(0) << class_name() << "::" << __FUNCTION__
              << " failed: cannot start audio codec";
 

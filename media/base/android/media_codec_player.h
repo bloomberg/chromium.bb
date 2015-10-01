@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
 #include "media/base/android/demuxer_android.h"
+#include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
@@ -235,6 +236,8 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
     kStatePlaying,
     kStateStopping,
     kStateWaitingForSurface,
+    kStateWaitingForKey,
+    kStateWaitingForMediaCrypto,
     kStateWaitingForSeek,
     kStateError,
   };
@@ -242,6 +245,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   enum StartStatus {
     kStartOk = 0,
     kStartBrowserSeekRequired,
+    kStartCryptoRequired,
     kStartFailed,
   };
 
@@ -283,6 +287,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   void OnPrerollDone();
   void OnDecoderDrained(DemuxerStream::Type type);
   void OnStopDone(DemuxerStream::Type type);
+  void OnMissingKeyReported(DemuxerStream::Type type);
   void OnError();
   void OnStarvation(DemuxerStream::Type stream_type);
   void OnTimeIntervalUpdate(DemuxerStream::Type stream_type,
@@ -293,6 +298,12 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   // Callbacks from video decoder
   void OnVideoCodecCreated();
   void OnVideoResolutionChanged(const gfx::Size& size);
+
+  // Callbacks from CDM
+  void OnMediaCryptoReady(MediaDrmBridge::JavaObjectPtr media_crypto,
+                          bool needs_protected_surface);
+  void OnKeyAdded();
+  void OnCdmUnset();
 
   // Operations called from the state machine.
   void SetState(PlayerState new_state);
@@ -341,6 +352,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   base::Closure request_resources_cb_;
   TimeUpdateCallback time_update_cb_;
   base::Closure completion_cb_;
+  base::Closure waiting_for_decryption_key_cb_;
   SeekDoneCallback seek_done_cb_;
   ErrorCallback error_cb_;
 
@@ -382,6 +394,20 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
 
   // For testing only.
   DecodersTimeCallback decoders_time_cb_;
+
+  // DRM
+  MediaDrmBridge::JavaObjectPtr media_crypto_;
+
+  MediaDrmBridge* drm_bridge_;
+  int cdm_registration_id_;
+
+  // The flag is set when the player receives the error from decoder that the
+  // decoder needs a new decryption key. Cleared on starting the playback.
+  bool key_is_required_;
+
+  // The flag is set after the new encryption key is added to MediaDrm. Cleared
+  // on starting the playback.
+  bool key_is_added_;
 
   base::WeakPtr<MediaCodecPlayer> media_weak_this_;
   // NOTE: Weak pointers must be invalidated before all other member variables.

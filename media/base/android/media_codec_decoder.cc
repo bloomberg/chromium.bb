@@ -37,6 +37,7 @@ MediaCodecDecoder::MediaCodecDecoder(
     const base::Closure& starvation_cb,
     const base::Closure& decoder_drained_cb,
     const base::Closure& stop_done_cb,
+    const base::Closure& waiting_for_decryption_key_cb,
     const base::Closure& error_cb,
     const char* decoder_thread_name)
     : media_task_runner_(media_task_runner),
@@ -48,10 +49,12 @@ MediaCodecDecoder::MediaCodecDecoder(
       starvation_cb_(starvation_cb),
       decoder_drained_cb_(decoder_drained_cb),
       stop_done_cb_(stop_done_cb),
+      waiting_for_decryption_key_cb_(waiting_for_decryption_key_cb),
       error_cb_(error_cb),
       state_(kStopped),
       is_prepared_(false),
       eos_enqueued_(false),
+      missing_key_reported_(false),
       completed_(false),
       last_frame_posted_(false),
       is_data_request_in_progress_(false),
@@ -91,6 +94,7 @@ void MediaCodecDecoder::Flush() {
     is_incoming_data_invalid_ = true;
 
   eos_enqueued_ = false;
+  missing_key_reported_ = false;
   completed_ = false;
   drain_decoder_ = false;
   au_queue_.Flush();
@@ -179,14 +183,12 @@ void MediaCodecDecoder::SetPrerollTimestamp(base::TimeDelta preroll_timestamp) {
   preroll_timestamp_ = preroll_timestamp;
 }
 
-base::android::ScopedJavaLocalRef<jobject> MediaCodecDecoder::GetMediaCrypto() {
-  base::android::ScopedJavaLocalRef<jobject> media_crypto;
+void MediaCodecDecoder::SetNeedsReconfigure() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  // TODO(timav): implement DRM.
-  // drm_bridge_ is not implemented
-  // if (drm_bridge_)
-  //   media_crypto = drm_bridge_->GetMediaCrypto();
-  return media_crypto;
+  DVLOG(1) << class_name() << "::" << __FUNCTION__;
+
+  needs_reconfigure_ = true;
 }
 
 void MediaCodecDecoder::Prefetch(const base::Closure& prefetch_done_cb) {
@@ -202,7 +204,8 @@ void MediaCodecDecoder::Prefetch(const base::Closure& prefetch_done_cb) {
   PrefetchNextChunk();
 }
 
-MediaCodecDecoder::ConfigStatus MediaCodecDecoder::Configure() {
+MediaCodecDecoder::ConfigStatus MediaCodecDecoder::Configure(
+    jobject media_crypto) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   DVLOG(1) << class_name() << "::" << __FUNCTION__;
@@ -233,7 +236,7 @@ MediaCodecDecoder::ConfigStatus MediaCodecDecoder::Configure() {
     au_info = au_queue_.GetInfo();
   }
 
-  MediaCodecDecoder::ConfigStatus result = ConfigureInternal();
+  MediaCodecDecoder::ConfigStatus result = ConfigureInternal(media_crypto);
 
 #ifndef NDEBUG
   // We check and reset |verify_next_frame_is_key_| on Decoder thread.
@@ -401,6 +404,8 @@ void MediaCodecDecoder::OnLastFrameRendered(bool eos_encountered) {
   SetState(kStopped);
   completed_ = (eos_encountered && !drain_decoder_);
 
+  missing_key_reported_ = false;
+
   // If the stream is completed during preroll we need to report it since
   // another stream might be running and the player waits for two callbacks.
   if (completed_ && !preroll_done_cb_.is_null()) {
@@ -498,6 +503,8 @@ void MediaCodecDecoder::DoEmergencyStop() {
   decoder_thread_.Stop();  // synchronous
 
   SetState(kStopped);
+
+  missing_key_reported_ = false;
 }
 
 void MediaCodecDecoder::CheckLastFrame(bool eos_encountered,
@@ -614,7 +621,13 @@ bool MediaCodecDecoder::EnqueueInputBuffer() {
 
   if (eos_enqueued_) {
     DVLOG(1) << class_name() << "::" << __FUNCTION__
-             << ": eos_enqueued, returning";
+             << ": EOS enqueued, returning";
+    return true;  // Nothing to do
+  }
+
+  if (missing_key_reported_) {
+    DVLOG(1) << class_name() << "::" << __FUNCTION__
+             << ": NO KEY reported, returning";
     return true;  // Nothing to do
   }
 
@@ -694,18 +707,56 @@ bool MediaCodecDecoder::EnqueueInputBuffer() {
   }
 
   DCHECK(unit);
+  DCHECK(!unit->data.empty());
 
-  DVLOG(2) << class_name() << "::" << __FUNCTION__
-           << ": QueueInputBuffer pts:" << unit->timestamp;
+  if (unit->key_id.empty() || unit->iv.empty()) {
+    DVLOG(2) << class_name() << "::" << __FUNCTION__
+             << ": QueueInputBuffer pts:" << unit->timestamp;
 
-  status = media_codec_bridge_->QueueInputBuffer(
-      index, &unit->data[0], unit->data.size(), unit->timestamp);
+    status = media_codec_bridge_->QueueInputBuffer(
+        index, &unit->data[0], unit->data.size(), unit->timestamp);
+  } else {
+    DVLOG(2) << class_name() << "::" << __FUNCTION__
+             << ": QueueSecureInputBuffer pts:" << unit->timestamp
+             << " key_id size:" << unit->key_id.size()
+             << " iv size:" << unit->iv.size()
+             << " subsamples size:" << unit->subsamples.size();
 
-  if (status == MEDIA_CODEC_ERROR) {
-    DVLOG(0) << class_name() << "::" << __FUNCTION__
-             << ": MEDIA_CODEC_ERROR: QueueInputBuffer failed";
-    media_task_runner_->PostTask(FROM_HERE, internal_error_cb_);
-    return false;
+    status = media_codec_bridge_->QueueSecureInputBuffer(
+        index, &unit->data[0], unit->data.size(),
+        reinterpret_cast<const uint8_t*>(&unit->key_id[0]), unit->key_id.size(),
+        reinterpret_cast<const uint8_t*>(&unit->iv[0]), unit->iv.size(),
+        unit->subsamples.empty() ? nullptr : &unit->subsamples[0],
+        unit->subsamples.size(), unit->timestamp);
+  }
+
+  switch (status) {
+    case MEDIA_CODEC_OK:
+      break;
+
+    case MEDIA_CODEC_ERROR:
+      DVLOG(0) << class_name() << "::" << __FUNCTION__
+               << ": MEDIA_CODEC_ERROR: QueueInputBuffer failed";
+      media_task_runner_->PostTask(FROM_HERE, internal_error_cb_);
+      return false;
+
+    case MEDIA_CODEC_NO_KEY:
+      DVLOG(1) << class_name() << "::" << __FUNCTION__
+               << ": MEDIA_CODEC_NO_KEY";
+      media_task_runner_->PostTask(FROM_HERE, waiting_for_decryption_key_cb_);
+
+      // In response to the |waiting_for_decryption_key_cb_| the player will
+      // request to stop decoder. We need to keep running to properly perform
+      // the stop, but prevent enqueuing the same frame over and over again so
+      // we won't generate more |waiting_for_decryption_key_cb_|.
+      missing_key_reported_ = true;
+      return true;
+
+    default:
+      NOTREACHED() << class_name() << "::" << __FUNCTION__
+                   << ": unexpected error code " << status;
+      media_task_runner_->PostTask(FROM_HERE, internal_error_cb_);
+      return false;
   }
 
   // Have successfully queued input buffer, go to next access unit.

@@ -275,6 +275,7 @@ MediaDrmBridge::MediaDrmBridge(
       legacy_session_error_cb_(legacy_session_error_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
+      cdm_promise_adapter_(new CdmPromiseAdapter()),
       ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       use_media_thread_(UseMediaThreadForMediaPlayback()),
       media_weak_factory_(this),
@@ -300,6 +301,9 @@ void MediaDrmBridge::DeleteOnCorrectThread() {
 
   // After the call to Java_MediaDrmBridge_destroy() Java won't call native
   // methods anymore, this is ensured by MediaDrmBridge.java.
+
+  // CdmPromiseAdapter must be destroyed on the UI thread.
+  cdm_promise_adapter_.reset();
 
   // Post deletion onto Media thread if we use it.
   if (use_media_thread_) {
@@ -437,7 +441,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
 
   ScopedJavaLocalRef<jstring> j_mime =
       ConvertUTF8ToJavaString(env, ConvertInitDataType(init_data_type));
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_->SavePromise(promise.Pass());
   Java_MediaDrmBridge_createSessionFromNative(env, j_media_drm_.obj(),
                                               j_init_data.obj(), j_mime.obj(),
                                               j_optional_parameters.obj(),
@@ -464,7 +468,7 @@ void MediaDrmBridge::UpdateSession(
   ScopedJavaLocalRef<jbyteArray> j_session_id = base::android::ToJavaByteArray(
       env, reinterpret_cast<const uint8_t*>(session_id.data()),
       session_id.size());
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_->SavePromise(promise.Pass());
   Java_MediaDrmBridge_updateSession(env, j_media_drm_.obj(), j_session_id.obj(),
                                     j_response.obj(), promise_id);
 }
@@ -476,7 +480,7 @@ void MediaDrmBridge::CloseSession(const std::string& session_id,
   ScopedJavaLocalRef<jbyteArray> j_session_id = base::android::ToJavaByteArray(
       env, reinterpret_cast<const uint8_t*>(session_id.data()),
       session_id.size());
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_->SavePromise(promise.Pass());
   Java_MediaDrmBridge_closeSession(env, j_media_drm_.obj(), j_session_id.obj(),
                                    promise_id);
 }
@@ -555,15 +559,15 @@ void MediaDrmBridge::NotifyMediaCryptoReady(const MediaCryptoReadyCB& cb) {
 void MediaDrmBridge::OnPromiseResolved(JNIEnv* env,
                                        jobject j_media_drm,
                                        jint j_promise_id) {
-  cdm_promise_adapter_.ResolvePromise(j_promise_id);
+  cdm_promise_adapter_->ResolvePromise(j_promise_id);
 }
 
 void MediaDrmBridge::OnPromiseResolvedWithSession(JNIEnv* env,
                                                   jobject j_media_drm,
                                                   jint j_promise_id,
                                                   jbyteArray j_session_id) {
-  cdm_promise_adapter_.ResolvePromise(j_promise_id,
-                                      GetSessionId(env, j_session_id));
+  cdm_promise_adapter_->ResolvePromise(j_promise_id,
+                                       GetSessionId(env, j_session_id));
 }
 
 void MediaDrmBridge::OnPromiseRejected(JNIEnv* env,
@@ -571,8 +575,8 @@ void MediaDrmBridge::OnPromiseRejected(JNIEnv* env,
                                        jint j_promise_id,
                                        jstring j_error_message) {
   std::string error_message = ConvertJavaStringToUTF8(env, j_error_message);
-  cdm_promise_adapter_.RejectPromise(j_promise_id, MediaKeys::UNKNOWN_ERROR, 0,
-                                     error_message);
+  cdm_promise_adapter_->RejectPromise(j_promise_id, MediaKeys::UNKNOWN_ERROR, 0,
+                                      error_message);
 }
 
 void MediaDrmBridge::OnSessionMessage(JNIEnv* env,

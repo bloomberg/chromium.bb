@@ -12,8 +12,10 @@
 #include "base/threading/thread.h"
 #include "media/base/android/media_codec_audio_decoder.h"
 #include "media/base/android/media_codec_video_decoder.h"
+#include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_task_runner.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/timestamp_constants.h"
 
 #define RUN_ON_MEDIA_THREAD(METHOD, ...)                                     \
@@ -47,6 +49,10 @@ MediaCodecPlayer::MediaCodecPlayer(
       interpolator_(&default_tick_clock_),
       pending_start_(false),
       pending_seek_(kNoTimestamp()),
+      drm_bridge_(nullptr),
+      cdm_registration_id_(0),
+      key_is_required_(false),
+      key_is_added_(false),
       media_weak_factory_(this) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
@@ -56,6 +62,8 @@ MediaCodecPlayer::MediaCodecPlayer(
 
   completion_cb_ =
       base::Bind(&MediaPlayerManager::OnPlaybackComplete, manager, player_id);
+  waiting_for_decryption_key_cb_ = base::Bind(
+      &MediaPlayerManager::OnWaitingForDecryptionKey, manager, player_id);
   seek_done_cb_ =
       base::Bind(&MediaPlayerManager::OnSeekComplete, manager, player_id);
   error_cb_ = base::Bind(&MediaPlayerManager::OnError, manager, player_id);
@@ -90,6 +98,11 @@ MediaCodecPlayer::~MediaCodecPlayer()
     video_decoder_->ReleaseDecoderResources();
   if (audio_decoder_)
     audio_decoder_->ReleaseDecoderResources();
+
+  if (drm_bridge_) {
+    DCHECK(cdm_registration_id_);
+    drm_bridge_->UnregisterPlayer(cdm_registration_id_);
+  }
 }
 
 void MediaCodecPlayer::Initialize() {
@@ -134,6 +147,14 @@ void MediaCodecPlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   // ignore the second and subsequent calls.
   if (surface_is_empty && !video_decoder_->HasVideoSurface()) {
     DVLOG(1) << __FUNCTION__ << ": surface already removed, ignoring";
+    return;
+  }
+
+  // Do not set unprotected surface if we know that we need a protected one.
+  // Empty surface means the surface removal and we always allow for it.
+  if (!surface_is_empty && video_decoder_->IsProtectedSurfaceRequired() &&
+      !surface.is_protected()) {
+    DVLOG(0) << __FUNCTION__ << ": surface is not protected, ignoring";
     return;
   }
 
@@ -210,6 +231,8 @@ void MediaCodecPlayer::Start() {
     case kStatePrefetching:
     case kStatePlaying:
     case kStateWaitingForSurface:
+    case kStateWaitingForKey:
+    case kStateWaitingForMediaCrypto:
     case kStateError:
       break;  // Ignore
     default:
@@ -230,6 +253,8 @@ void MediaCodecPlayer::Pause(bool is_media_related_action) {
     case kStateWaitingForPermission:
     case kStatePrefetching:
     case kStateWaitingForSurface:
+    case kStateWaitingForKey:
+    case kStateWaitingForMediaCrypto:
       SetState(kStatePaused);
       StopDecoders();
       break;
@@ -262,6 +287,8 @@ void MediaCodecPlayer::SeekTo(base::TimeDelta timestamp) {
     case kStateWaitingForPermission:
     case kStatePrefetching:
     case kStateWaitingForSurface:
+    case kStateWaitingForKey:
+    case kStateWaitingForMediaCrypto:
       SetState(kStateWaitingForSeek);
       StopDecoders();
       SetPendingStart(true);
@@ -301,6 +328,10 @@ void MediaCodecPlayer::Release() {
 
   if (state_ != kStateWaitingForSeek)
     SetState(kStatePaused);
+
+  // Crear encryption key related flags.
+  key_is_required_ = false;
+  key_is_added_ = false;
 
   base::TimeDelta pending_seek_time = GetPendingSeek();
   if (pending_seek_time != kNoTimestamp()) {
@@ -371,8 +402,39 @@ bool MediaCodecPlayer::IsPlayerReady() {
 }
 
 void MediaCodecPlayer::SetCdm(BrowserCdm* cdm) {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
+  RUN_ON_MEDIA_THREAD(SetCdm, cdm);
+
+  DVLOG(1) << __FUNCTION__;
+
+  // Currently we don't support DRM change during the middle of playback, even
+  // if the player is paused. There is no current plan to support it, see
+  // http://crbug.com/253792.
+  if (state_ != kStatePaused || GetInterpolatedTime() > base::TimeDelta()) {
+    VLOG(0) << "Setting DRM bridge after playback has started is not supported";
+    return;
+  }
+
+  if (drm_bridge_) {
+    NOTREACHED() << "Currently we do not support resetting CDM.";
+    return;
+  }
+
+  DCHECK(cdm);
+  drm_bridge_ = static_cast<MediaDrmBridge*>(cdm);
+
+  DCHECK(drm_bridge_);
+
+  cdm_registration_id_ = drm_bridge_->RegisterPlayer(
+      base::Bind(&MediaCodecPlayer::OnKeyAdded, media_weak_this_),
+      base::Bind(&MediaCodecPlayer::OnCdmUnset, media_weak_this_));
+
+  MediaDrmBridge::MediaCryptoReadyCB cb = BindToCurrentLoop(
+      base::Bind(&MediaCodecPlayer::OnMediaCryptoReady, media_weak_this_));
+
+  // Post back to UI thread.
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(&MediaDrmBridge::SetMediaCryptoReadyCB,
+                                       drm_bridge_->WeakPtrForUIThread(), cb));
 }
 
 // Callbacks from Demuxer.
@@ -633,6 +695,12 @@ void MediaCodecPlayer::OnPrefetchDone() {
     return;
   }
 
+  if (key_is_required_ && !key_is_added_) {
+    SetState(kStateWaitingForKey);
+    ui_task_runner_->PostTask(FROM_HERE, waiting_for_decryption_key_cb_);
+    return;
+  }
+
   SetState(kStatePlaying);
   StartPlaybackOrBrowserSeek();
 }
@@ -746,6 +814,20 @@ void MediaCodecPlayer::OnStopDone(DemuxerStream::Type type) {
     ui_task_runner_->PostTask(FROM_HERE, completion_cb_);
 }
 
+void MediaCodecPlayer::OnMissingKeyReported(DemuxerStream::Type type) {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__ << " " << type;
+
+  // Request stop and restart to pick up the key.
+  key_is_required_ = true;
+
+  if (state_ == kStatePlaying) {
+    SetState(kStateStopping);
+    RequestToStopDecoders();
+    SetPendingStart(true);
+  }
+}
+
 void MediaCodecPlayer::OnError() {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__;
@@ -827,6 +909,79 @@ void MediaCodecPlayer::OnVideoResolutionChanged(const gfx::Size& size) {
   // Update cache and notify manager on UI thread
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(metadata_changed_cb_, kNoTimestamp(), size));
+}
+
+// Callbacks from MediaDrmBridge.
+
+void MediaCodecPlayer::OnMediaCryptoReady(
+    MediaDrmBridge::JavaObjectPtr media_crypto,
+    bool needs_protected_surface) {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__ << " protected surface is "
+           << (needs_protected_surface ? "required" : "not required");
+
+  // We use the parameters that come with this callback every time we call
+  // Configure(). This is possible only if the MediaCrypto object remains valid
+  // and the surface requirement does not change until new SetCdm() is called.
+
+  DCHECK(media_crypto);
+  DCHECK(!media_crypto->is_null());
+
+  media_crypto_ = media_crypto.Pass();
+
+  if (audio_decoder_) {
+    audio_decoder_->SetNeedsReconfigure();
+  }
+
+  if (video_decoder_) {
+    video_decoder_->SetNeedsReconfigure();
+    video_decoder_->SetProtectedSurfaceRequired(needs_protected_surface);
+  }
+
+  if (state_ == kStateWaitingForMediaCrypto) {
+    // Resume start sequence (configure, etc.)
+    SetState(kStatePlaying);
+    StartPlaybackOrBrowserSeek();
+  }
+
+  DVLOG(1) << __FUNCTION__ << " end";
+}
+
+void MediaCodecPlayer::OnKeyAdded() {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__;
+
+  key_is_added_ = true;
+
+  if (state_ == kStateWaitingForKey) {
+    SetState(kStatePlaying);
+    StartPlaybackOrBrowserSeek();
+  }
+}
+
+void MediaCodecPlayer::OnCdmUnset() {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__;
+
+  // This comment is copied from MediaSourcePlayer::OnCdmUnset().
+  // TODO(xhwang): Currently this is only called during teardown. Support full
+  // detachment of CDM during playback. This will be needed when we start to
+  // support setMediaKeys(0) (see http://crbug.com/330324), or when we release
+  // MediaDrm when the video is paused, or when the device goes to sleep (see
+  // http://crbug.com/272421).
+
+  if (audio_decoder_) {
+    audio_decoder_->SetNeedsReconfigure();
+  }
+
+  if (video_decoder_) {
+    video_decoder_->SetProtectedSurfaceRequired(false);
+    video_decoder_->SetNeedsReconfigure();
+  }
+
+  cdm_registration_id_ = 0;
+  drm_bridge_ = nullptr;
+  media_crypto_.reset();
 }
 
 // State machine operations, called on Media thread
@@ -940,6 +1095,10 @@ void MediaCodecPlayer::StartPlaybackOrBrowserSeek() {
   // TODO(timav): consider replacing this method with posting a
   // browser seek task (i.e. generate an event) from StartPlaybackDecoders().
 
+  // Clear encryption key related flags.
+  key_is_required_ = false;
+  key_is_added_ = false;
+
   StartStatus status = StartPlaybackDecoders();
 
   switch (status) {
@@ -949,6 +1108,9 @@ void MediaCodecPlayer::StartPlaybackOrBrowserSeek() {
       SetPendingStart(true);
       StopDecoders();
       RequestDemuxerSeek(GetInterpolatedTime(), true);
+      break;
+    case kStartCryptoRequired:
+      SetState(kStateWaitingForMediaCrypto);
       break;
     case kStartFailed:
       GetMediaTaskRunner()->PostTask(FROM_HERE, internal_error_cb_);
@@ -987,29 +1149,41 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::ConfigureDecoders() {
   // prefetch state and never call this method.
   DCHECK(do_audio || do_video);
 
-  // Start with video: if browser seek is required it would
-  // not make sense to configure audio.
+  const bool need_audio_crypto =
+      do_audio && audio_decoder_->IsContentEncrypted();
+  const bool need_video_crypto =
+      do_video && video_decoder_->IsContentEncrypted();
 
-  if (do_video) {
-    MediaCodecDecoder::ConfigStatus status = video_decoder_->Configure();
-    switch (status) {
-      case MediaCodecDecoder::kConfigOk:
-        break;
-      case MediaCodecDecoder::kConfigKeyFrameRequired:
-        // TODO(timav): post a task or return the status?
-        return kStartBrowserSeekRequired;
-      case MediaCodecDecoder::kConfigFailure:
-        return kStartFailed;
+  // Do we need to create a local ref from the global ref?
+  jobject media_crypto = media_crypto_ ? media_crypto_->obj() : nullptr;
+
+  if (need_audio_crypto || need_video_crypto) {
+    DVLOG(1) << (need_audio_crypto ? " audio" : "")
+             << (need_video_crypto ? " video" : "") << " need(s) encryption";
+    if (!media_crypto) {
+      DVLOG(1) << __FUNCTION__ << ": MediaCrypto is not found, returning";
+      return kStartCryptoRequired;
     }
   }
 
-  if (do_audio) {
-    MediaCodecDecoder::ConfigStatus status = audio_decoder_->Configure();
-    if (status != MediaCodecDecoder::kConfigOk) {
+  // Start with video: if browser seek is required it would not make sense to
+  // configure audio.
+
+  MediaCodecDecoder::ConfigStatus status = MediaCodecDecoder::kConfigOk;
+  if (do_video)
+    status = video_decoder_->Configure(media_crypto);
+
+  if (status == MediaCodecDecoder::kConfigOk && do_audio)
+    status = audio_decoder_->Configure(media_crypto);
+
+  switch (status) {
+    case MediaCodecDecoder::kConfigOk:
+      break;
+    case MediaCodecDecoder::kConfigKeyFrameRequired:
+      return kStartBrowserSeekRequired;
+    case MediaCodecDecoder::kConfigFailure:
       return kStartFailed;
-    }
   }
-
   return kStartOk;
 }
 
@@ -1168,6 +1342,8 @@ void MediaCodecPlayer::CreateDecoders() {
                  DemuxerStream::AUDIO),
       base::Bind(&MediaCodecPlayer::OnStopDone, media_weak_this_,
                  DemuxerStream::AUDIO),
+      base::Bind(&MediaCodecPlayer::OnMissingKeyReported, media_weak_this_,
+                 DemuxerStream::AUDIO),
       internal_error_cb_,
       base::Bind(&MediaCodecPlayer::OnTimeIntervalUpdate, media_weak_this_,
                  DemuxerStream::AUDIO)));
@@ -1180,6 +1356,8 @@ void MediaCodecPlayer::CreateDecoders() {
       base::Bind(&MediaCodecPlayer::OnDecoderDrained, media_weak_this_,
                  DemuxerStream::VIDEO),
       base::Bind(&MediaCodecPlayer::OnStopDone, media_weak_this_,
+                 DemuxerStream::VIDEO),
+      base::Bind(&MediaCodecPlayer::OnMissingKeyReported, media_weak_this_,
                  DemuxerStream::VIDEO),
       internal_error_cb_,
       base::Bind(&MediaCodecPlayer::OnTimeIntervalUpdate, media_weak_this_,
@@ -1217,6 +1395,8 @@ const char* MediaCodecPlayer::AsString(PlayerState state) {
     RETURN_STRING(kStatePlaying);
     RETURN_STRING(kStateStopping);
     RETURN_STRING(kStateWaitingForSurface);
+    RETURN_STRING(kStateWaitingForKey);
+    RETURN_STRING(kStateWaitingForMediaCrypto);
     RETURN_STRING(kStateWaitingForSeek);
     RETURN_STRING(kStateError);
   }

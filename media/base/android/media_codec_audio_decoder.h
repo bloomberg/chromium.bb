@@ -23,6 +23,7 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
       const base::Closure& starvation_cb,
       const base::Closure& decoder_drained_cb,
       const base::Closure& stop_done_cb,
+      const base::Closure& waiting_for_decryption_key_cb,
       const base::Closure& error_cb,
       const SetTimeCallback& update_current_time_cb);
   ~MediaCodecAudioDecoder() override;
@@ -31,6 +32,7 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
 
   bool HasStream() const override;
   void SetDemuxerConfigs(const DemuxerConfigs& configs) override;
+  bool IsContentEncrypted() const override;
   void ReleaseDecoderResources() override;
   void Flush() override;
 
@@ -42,7 +44,7 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
 
  protected:
   bool IsCodecReconfigureNeeded(const DemuxerConfigs& next) const override;
-  ConfigStatus ConfigureInternal() override;
+  ConfigStatus ConfigureInternal(jobject media_crypto) override;
   void OnOutputFormatChanged() override;
   void Render(int buffer_index,
               size_t offset,

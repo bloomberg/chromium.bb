@@ -22,6 +22,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     const base::Closure& starvation_cb,
     const base::Closure& decoder_drained_cb,
     const base::Closure& stop_done_cb,
+    const base::Closure& waiting_for_decryption_key_cb,
     const base::Closure& error_cb,
     const SetTimeCallback& update_current_time_cb,
     const VideoSizeChangedCallback& video_size_changed_cb,
@@ -31,8 +32,10 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
                         starvation_cb,
                         decoder_drained_cb,
                         stop_done_cb,
+                        waiting_for_decryption_key_cb,
                         error_cb,
                         "VideoDecoder"),
+      is_protected_surface_required_(false),
       update_current_time_cb_(update_current_time_cb),
       video_size_changed_cb_(video_size_changed_cb),
       codec_created_cb_(codec_created_cb) {
@@ -64,6 +67,12 @@ void MediaCodecVideoDecoder::SetDemuxerConfigs(const DemuxerConfigs& configs) {
     media_task_runner_->PostTask(
         FROM_HERE, base::Bind(video_size_changed_cb_, video_size_));
   }
+}
+
+bool MediaCodecVideoDecoder::IsContentEncrypted() const {
+  // Make sure SetDemuxerConfigs() as been called.
+  DCHECK(configs_.video_codec != kUnknownVideoCodec);
+  return configs_.is_video_encrypted;
 }
 
 void MediaCodecVideoDecoder::ReleaseDecoderResources() {
@@ -101,6 +110,18 @@ bool MediaCodecVideoDecoder::HasVideoSurface() const {
   return !surface_.IsEmpty();
 }
 
+void MediaCodecVideoDecoder::SetProtectedSurfaceRequired(bool value) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  is_protected_surface_required_ = value;
+}
+
+bool MediaCodecVideoDecoder::IsProtectedSurfaceRequired() const {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  return is_protected_surface_required_;
+}
+
 bool MediaCodecVideoDecoder::IsCodecReconfigureNeeded(
     const DemuxerConfigs& next) const {
   if (always_reconfigure_for_tests_)
@@ -123,7 +144,8 @@ bool MediaCodecVideoDecoder::IsCodecReconfigureNeeded(
                                     next.video_size.height());
 }
 
-MediaCodecDecoder::ConfigStatus MediaCodecVideoDecoder::ConfigureInternal() {
+MediaCodecDecoder::ConfigStatus MediaCodecVideoDecoder::ConfigureInternal(
+    jobject media_crypto) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   DVLOG(1) << class_name() << "::" << __FUNCTION__;
@@ -136,27 +158,23 @@ MediaCodecDecoder::ConfigStatus MediaCodecVideoDecoder::ConfigureInternal() {
 
   if (configs_.video_codec == kUnknownVideoCodec) {
     DVLOG(0) << class_name() << "::" << __FUNCTION__
-             << " configuration parameters are required";
+             << ": configuration parameters are required";
     return kConfigFailure;
   }
-
-  // TODO(timav): implement DRM.
-  // bool is_secure = is_content_encrypted() && drm_bridge() &&
-  //    drm_bridge()->IsProtectedSurfaceRequired();
-
-  bool is_secure = false;  // DRM is not implemented
 
   if (surface_.IsEmpty()) {
-    DVLOG(0) << class_name() << "::" << __FUNCTION__ << " surface required";
+    DVLOG(0) << class_name() << "::" << __FUNCTION__ << ": surface is required";
     return kConfigFailure;
   }
+
+  bool is_secure = IsContentEncrypted() && is_protected_surface_required_;
 
   media_codec_bridge_.reset(VideoCodecBridge::CreateDecoder(
       configs_.video_codec,
       is_secure,
       configs_.video_size,
       surface_.j_surface().obj(),
-      GetMediaCrypto().obj()));
+      media_crypto));
 
   if (!media_codec_bridge_) {
     DVLOG(0) << class_name() << "::" << __FUNCTION__

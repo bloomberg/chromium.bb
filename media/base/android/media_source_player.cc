@@ -265,7 +265,6 @@ void MediaSourcePlayer::OnMediaCryptoReady(
   // Callback parameters are ignored in this player. They are intended for
   // MediaCodecPlayer which uses a different threading scheme.
   DCHECK(!drm_bridge_->GetMediaCrypto().is_null());
-  drm_bridge_->SetMediaCryptoReadyCB(MediaDrmBridge::MediaCryptoReadyCB());
 
   // Retry decoder creation if the decoders are waiting for MediaCrypto.
   RetryDecoderCreation(true, true);

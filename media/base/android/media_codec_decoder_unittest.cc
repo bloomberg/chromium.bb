@@ -183,6 +183,7 @@ class MediaCodecDecoderTest : public testing::Test {
   void OnStarvation() { is_starved_ = true; }
   void OnDecoderDrained() {}
   void OnStopDone() { is_stopped_ = true; }
+  void OnKeyRequired() {}
   void OnError() { DVLOG(0) << "MediaCodecDecoderTest::" << __FUNCTION__; }
   void OnUpdateCurrentTime(base::TimeDelta now_playing,
                            base::TimeDelta last_buffered,
@@ -275,6 +276,7 @@ void MediaCodecDecoderTest::CreateAudioDecoder() {
       base::Bind(&MediaCodecDecoderTest::OnDecoderDrained,
                  base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnStopDone, base::Unretained(this)),
+      base::Bind(&MediaCodecDecoderTest::OnKeyRequired, base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnError, base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnUpdateCurrentTime,
                  base::Unretained(this))));
@@ -291,6 +293,7 @@ void MediaCodecDecoderTest::CreateVideoDecoder() {
       base::Bind(&MediaCodecDecoderTest::OnDecoderDrained,
                  base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnStopDone, base::Unretained(this)),
+      base::Bind(&MediaCodecDecoderTest::OnKeyRequired, base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnError, base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnUpdateCurrentTime,
                  base::Unretained(this)),
@@ -357,7 +360,7 @@ TEST_F(MediaCodecDecoderTest, AudioConfigureNoParams) {
   CreateAudioDecoder();
 
   // Cannot configure without config parameters.
-  EXPECT_EQ(MediaCodecDecoder::kConfigFailure, decoder_->Configure());
+  EXPECT_EQ(MediaCodecDecoder::kConfigFailure, decoder_->Configure(nullptr));
 }
 
 TEST_F(MediaCodecDecoderTest, AudioConfigureValidParams) {
@@ -369,7 +372,7 @@ TEST_F(MediaCodecDecoderTest, AudioConfigureValidParams) {
   scoped_ptr<AudioFactory> factory(new AudioFactory(duration));
   decoder_->SetDemuxerConfigs(factory->GetConfigs());
 
-  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure());
+  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure(nullptr));
 }
 
 TEST_F(MediaCodecDecoderTest, VideoConfigureNoParams) {
@@ -392,7 +395,7 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureNoParams) {
   SetVideoSurface();
 
   // Cannot configure without config parameters.
-  EXPECT_EQ(MediaCodecDecoder::kConfigFailure, decoder_->Configure());
+  EXPECT_EQ(MediaCodecDecoder::kConfigFailure, decoder_->Configure(nullptr));
 }
 
 TEST_F(MediaCodecDecoderTest, VideoConfigureNoSurface) {
@@ -416,7 +419,7 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureNoSurface) {
 
   // Surface is not set, Configure() should fail.
 
-  EXPECT_EQ(MediaCodecDecoder::kConfigFailure, decoder_->Configure());
+  EXPECT_EQ(MediaCodecDecoder::kConfigFailure, decoder_->Configure(nullptr));
 }
 
 TEST_F(MediaCodecDecoderTest, VideoConfigureInvalidSurface) {
@@ -450,7 +453,7 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureInvalidSurface) {
       static_cast<MediaCodecVideoDecoder*>(decoder_.get());
   video_decoder->SetVideoSurface(surface.Pass());
 
-  EXPECT_EQ(MediaCodecDecoder::kConfigFailure, decoder_->Configure());
+  EXPECT_EQ(MediaCodecDecoder::kConfigFailure, decoder_->Configure(nullptr));
 }
 
 TEST_F(MediaCodecDecoderTest, VideoConfigureValidParams) {
@@ -476,7 +479,7 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureValidParams) {
 
   // Now we can expect Configure() to succeed.
 
-  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure());
+  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure(nullptr));
 }
 
 TEST_F(MediaCodecDecoderTest, AudioStartWithoutConfigure) {
@@ -526,7 +529,7 @@ TEST_F(MediaCodecDecoderTest, AudioPlayTillCompletion) {
 
   decoder_->SetDemuxerConfigs(GetConfigs());
 
-  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure());
+  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure(nullptr));
 
   EXPECT_TRUE(decoder_->Start(base::TimeDelta::FromMilliseconds(0)));
 
@@ -570,7 +573,7 @@ TEST_F(MediaCodecDecoderTest, VideoPlayTillCompletion) {
 
   SetVideoSurface();
 
-  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure());
+  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure(nullptr));
 
   EXPECT_TRUE(decoder_->Start(base::TimeDelta::FromMilliseconds(0)));
 
@@ -608,7 +611,7 @@ TEST_F(MediaCodecDecoderTest, VideoStopAndResume) {
 
   SetVideoSurface();
 
-  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure());
+  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure(nullptr));
 
   SetStopRequestAtTime(stop_request_time);
 
@@ -678,7 +681,7 @@ TEST_F(MediaCodecDecoderTest, DISABLED_AudioStarvationAndStop) {
   // Configure.
   decoder_->SetDemuxerConfigs(GetConfigs());
 
-  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure());
+  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure(nullptr));
 
   // Start.
   EXPECT_TRUE(decoder_->Start(base::TimeDelta::FromMilliseconds(0)));
@@ -740,7 +743,7 @@ TEST_F(MediaCodecDecoderTest, VideoFirstUnitIsReconfig) {
   SetVideoSurface();
 
   // Configure.
-  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure());
+  EXPECT_EQ(MediaCodecDecoder::kConfigOk, decoder_->Configure(nullptr));
 
   // Start.
   EXPECT_TRUE(decoder_->Start(base::TimeDelta::FromMilliseconds(0)));

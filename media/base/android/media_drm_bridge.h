@@ -245,7 +245,7 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   // by the Media thread when |use_media_thread_| is true.
   PlayerTrackerImpl player_tracker_;
 
-  CdmPromiseAdapter cdm_promise_adapter_;
+  scoped_ptr<CdmPromiseAdapter> cdm_promise_adapter_;
 
   // Object for posting tasks on UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
