@@ -636,8 +636,10 @@ void TouchEventQueue::OnGestureScrollEvent(
     return;
   }
 
-  if (gesture_event.event.type == blink::WebInputEvent::GestureScrollUpdate)
+  if (gesture_event.event.type == blink::WebInputEvent::GestureScrollUpdate &&
+      gesture_event.event.resendingPluginId == -1) {
     send_touch_events_async_ = true;
+  }
 }
 
 void TouchEventQueue::OnGestureEventAck(
@@ -648,9 +650,12 @@ void TouchEventQueue::OnGestureEventAck(
   // gesture event (or even part of the current sequence).  Worst case, the
   // delay in updating the absorption state will result in minor UI glitches.
   // A valid |pending_async_touchmove_| will be flushed when the next event is
-  // forwarded.
-  if (event.event.type == blink::WebInputEvent::GestureScrollUpdate)
+  // forwarded. Scroll updates that are being resent from a GuestView are
+  // ignored.
+  if (event.event.type == blink::WebInputEvent::GestureScrollUpdate &&
+      event.event.resendingPluginId == -1) {
     send_touch_events_async_ = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
+  }
 }
 
 void TouchEventQueue::OnHasTouchEventHandlers(bool has_handlers) {
