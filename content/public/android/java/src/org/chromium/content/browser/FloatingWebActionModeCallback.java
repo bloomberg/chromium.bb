@@ -4,7 +4,9 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.TargetApi;
 import android.graphics.Rect;
+import android.os.Build;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +16,7 @@ import android.view.View;
  * A wrapper for SelectActionModeCallback that extends ActionMode.Callback2 to
  * support floating ActionModes.
  */
+@TargetApi(Build.VERSION_CODES.M)
 public class FloatingWebActionModeCallback extends ActionMode.Callback2 {
     private final WebActionModeCallback mWrappedCallback;
 
