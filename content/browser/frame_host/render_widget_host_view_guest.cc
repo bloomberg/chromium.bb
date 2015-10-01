@@ -632,14 +632,17 @@ RenderWidgetHostViewGuest::GetOwnerRenderWidgetHostView() const {
 void RenderWidgetHostViewGuest::WheelEventAck(
     const blink::WebMouseWheelEvent& event,
     InputEventAckState ack_result) {
-  if (ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED)
+  if (ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
+      ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
     guest_->ResendEventToEmbedder(event);
+  }
 }
 
 void RenderWidgetHostViewGuest::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  bool not_consumed = INPUT_EVENT_ACK_STATE_NOT_CONSUMED == ack_result;
+  bool not_consumed = ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
+                      ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
   // GestureScrollBegin/End are always consumed by the guest, so we only
   // forward GestureScrollUpdate.
   if (event.type == blink::WebInputEvent::GestureScrollUpdate && not_consumed)

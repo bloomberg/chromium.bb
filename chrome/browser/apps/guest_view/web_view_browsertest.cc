@@ -2538,7 +2538,17 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, LoadWebviewAccessibleResource) {
              "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
 }
 
-class WebViewTouchTest : public WebViewTest {
+class WebViewGuestScrollTest : public WebViewTest,
+                               public ::testing::WithParamInterface<bool> {
+ protected:
+  WebViewGuestScrollTest() {}
+  ~WebViewGuestScrollTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebViewGuestScrollTest);
+};
+
+class WebViewGuestScrollTouchTest : public WebViewGuestScrollTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kTouchEvents,
@@ -2568,8 +2578,18 @@ class ScrollWaiter {
 }  // namespace
 
 // Tests that scrolls bubble from guest to embedder.
-IN_PROC_BROWSER_TEST_F(WebViewTest, TestGuestWheelScrollsBubble) {
+// Create two test instances, one where the guest body is scrollable and the
+// other where the body is not scrollable: fast-path scrolling will generate
+// different ack results in between these two cases.
+INSTANTIATE_TEST_CASE_P(WebViewScrollBubbling,
+                        WebViewGuestScrollTest,
+                        ::testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest, TestGuestWheelScrollsBubble) {
   LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
+
+  if (GetParam())
+    SendMessageToGuestAndWait("set_overflow_hidden", "overflow_is_hidden");
 
   content::WebContents* embedder_contents = GetEmbedderWebContents();
 
@@ -2642,7 +2662,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TestGuestWheelScrollsBubble) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTouchTest, TestGuestGestureScrollsBubble) {
+INSTANTIATE_TEST_CASE_P(WebViewScrollBubbling,
+                        WebViewGuestScrollTouchTest,
+                        ::testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
+                       TestGuestGestureScrollsBubble) {
   // Just in case we're running ChromeOS tests, we need to make sure the
   // debounce interval is set to zero so our back-to-back gesture-scrolls don't
   // get munged together. Since the first scroll will be put on the fast
@@ -2653,6 +2678,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTouchTest, TestGuestGestureScrollsBubble) {
   gesture_config->set_scroll_debounce_interval_in_ms(0);
 
   LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
+
+  if (GetParam())
+    SendMessageToGuestAndWait("set_overflow_hidden", "overflow_is_hidden");
 
   content::WebContents* embedder_contents = GetEmbedderWebContents();
 

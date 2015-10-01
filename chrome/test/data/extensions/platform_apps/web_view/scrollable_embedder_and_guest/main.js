@@ -35,6 +35,9 @@ window.addEventListener('message', function(e) {
       case 'connected':
         chrome.test.sendMessage('WebViewTest.LAUNCHED');
         break;
+      case 'overflow_is_hidden':
+        chrome.test.sendMessage('overflow_is_hidden');
+        break;
     }
 });
 

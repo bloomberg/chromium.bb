@@ -16,6 +16,16 @@ function sendMessageToEmbedder(message) {
   embedder.postMessage(JSON.stringify([message]), '*');
 }
 
+window.onAppCommand = function(command) {
+  LOG('guest::onAppCommand: ' + command);
+  switch (command) {
+    case 'set_overflow_hidden':
+      document.body.style.overflow = 'hidden';
+      sendMessageToEmbedder('overflow_is_hidden');
+      break;
+  };
+};
+
 window.addEventListener('message', function(e) {
   embedder = e.source;
   var data = JSON.parse(e.data);
