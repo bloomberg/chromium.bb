@@ -625,6 +625,9 @@ IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateName, std::string /* name */)
 // new origin.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateOrigin, url::Origin /* origin */)
 
+// Notifies this frame that it lost focus to a frame in another process.
+IPC_MESSAGE_ROUTED0(FrameMsg_ClearFocus)
+
 // Send to the RenderFrame to set text tracks state and style settings.
 // Sent for top-level frames.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,

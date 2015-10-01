@@ -179,6 +179,7 @@ public:
     bool setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines) override;
     void extendSelectionAndDelete(int before, int after) override;
     void setCaretVisible(bool) override;
+    void clearFocus() override;
     int printBegin(const WebPrintParams&, const WebNode& constrainToNode) override;
     float printPage(int pageToPrint, WebCanvas*) override;
     float getPrintPageShrink(int page) override;

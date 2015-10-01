@@ -1817,6 +1817,10 @@ void RenderFrameHostImpl::UpdateOpener() {
   Send(new FrameMsg_UpdateOpener(GetRoutingID(), opener_routing_id));
 }
 
+void RenderFrameHostImpl::ClearFocus() {
+  Send(new FrameMsg_ClearFocus(routing_id_));
+}
+
 void RenderFrameHostImpl::ExtendSelectionAndDelete(size_t before,
                                                    size_t after) {
   Send(new InputMsg_ExtendSelectionAndDelete(routing_id_, before, after));

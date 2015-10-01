@@ -1126,6 +1126,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_CommitNavigation, OnCommitNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
+    IPC_MESSAGE_HANDLER(FrameMsg_ClearFocus, OnClearFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_PostMessageEvent, OnPostMessageEvent)
@@ -1680,6 +1681,10 @@ void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {
 
 void RenderFrameImpl::OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags) {
   frame_->setFrameOwnerSandboxFlags(flags);
+}
+
+void RenderFrameImpl::OnClearFocus() {
+  frame_->clearFocus();
 }
 
 void RenderFrameImpl::OnTextTrackSettingsChanged(

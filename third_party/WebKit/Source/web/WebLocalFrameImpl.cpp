@@ -1360,6 +1360,13 @@ void WebLocalFrameImpl::setCaretVisible(bool visible)
     frame()->selection().setCaretVisible(visible);
 }
 
+void WebLocalFrameImpl::clearFocus()
+{
+    // This uses setFocusedElement rather than setFocusedFrame so that blur
+    // events are properly dispatched on any currently focused elements.
+    frame()->page()->focusController().setFocusedElement(nullptr, nullptr);
+}
+
 VisiblePosition WebLocalFrameImpl::visiblePositionForViewportPoint(const WebPoint& pointInViewport)
 {
     return visiblePositionForContentsPoint(frame()->view()->viewportToContents(pointInViewport), frame());

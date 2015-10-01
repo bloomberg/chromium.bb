@@ -149,6 +149,11 @@ public:
     // the current base, this function will do nothing.
     virtual void moveRangeSelectionExtent(const WebPoint&) = 0;
 
+    // Focus ------------------------------------------------------------------
+
+    // Called when this frame loses focus to a frame in another process.
+    virtual void clearFocus() = 0;
+
     // Content Settings -------------------------------------------------------
 
     virtual void setContentSettingsClient(WebContentSettingsClient*) = 0;

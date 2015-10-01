@@ -710,6 +710,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSnapshotAccessibilityTree(int callback_id);
   void OnUpdateOpener(int opener_routing_id);
   void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);
+  void OnClearFocus();
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
   void OnPostMessageEvent(const FrameMsg_PostMessage_Params& params);

@@ -3446,4 +3446,72 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   navigation_observer.Wait();
 }
 
+// Check that when a cross-process frame acquires focus, the old focused frame
+// loses focus and fires blur events.  Starting on a page with a cross-site
+// subframe, simulate mouse clicks to switch focus from root frame to subframe
+// and then back to root frame.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CrossProcessFocusChangeFiresBlurEvents) {
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/page_with_input_field.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  // Focus the main frame's text field.  The return value "input-focus"
+  // indicates that the focus event was fired correctly.
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(shell()->web_contents(),
+                                            "focusInputField()", &result));
+  EXPECT_EQ(result, "input-focus");
+
+  // The main frame should be focused.
+  EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
+
+  DOMMessageQueue msg_queue;
+
+  // Click on the cross-process subframe.
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.button = blink::WebPointerProperties::ButtonLeft;
+  mouse_event.x = 1;
+  mouse_event.y = 1;
+  RenderWidgetHost* rwh_child =
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
+  rwh_child->ForwardMouseEvent(mouse_event);
+
+  // Check that the main frame lost focus and fired blur event on the input
+  // text field.
+  std::string status;
+  while (msg_queue.WaitForMessage(&status)) {
+    if (status == "\"input-blur\"")
+      break;
+  }
+
+  // The subframe should now be focused.
+  EXPECT_EQ(root->child_at(0), root->frame_tree()->GetFocusedFrame());
+
+  // Click on the root frame.
+  shell()->web_contents()->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+
+  // Check that the subframe lost focus and fired blur event on its
+  // document's body.
+  while (msg_queue.WaitForMessage(&status)) {
+    if (status == "\"document-blur\"")
+      break;
+  }
+
+  // The root frame should be focused again.
+  EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
+}
+
 }  // namespace content

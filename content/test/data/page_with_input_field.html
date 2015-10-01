@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+
+function focusInputField() {
+  var inputField = document.getElementById("text-field");
+  inputField.focus();
+}
+
+function onInputFocus() {
+  domAutomationController.setAutomationId(0);
+  domAutomationController.send("input-focus");
+}
+
+function onInputBlur() {
+  domAutomationController.setAutomationId(0);
+  domAutomationController.send("input-blur");
+}
+
+</script>
+</head>
+
+<body>
+This page has a cross-site iframe and a text input field.
+<input type='text' id='text-field'
+       onfocus="onInputFocus()" onblur="onInputBlur()"><br>
+<iframe id='subframe' src="/cross-site/b.com/page_with_blur.html"></iframe>
+</body>
+</html>
+

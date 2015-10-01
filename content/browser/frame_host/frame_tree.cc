@@ -257,6 +257,17 @@ FrameTreeNode* FrameTree::GetFocusedFrame() {
 }
 
 void FrameTree::SetFocusedFrame(FrameTreeNode* node) {
+  // If the focused frame changed across processes, send a message to the old
+  // focused frame's renderer process to clear focus from that frame and fire
+  // blur events.
+  FrameTreeNode* oldFocusedFrame = GetFocusedFrame();
+  if (oldFocusedFrame &&
+      oldFocusedFrame->current_frame_host()->GetSiteInstance() !=
+          node->current_frame_host()->GetSiteInstance()) {
+    DCHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
+    oldFocusedFrame->current_frame_host()->ClearFocus();
+  }
+
   node->set_last_focus_time(base::TimeTicks::Now());
   focused_frame_tree_node_id_ = node->frame_tree_node_id();
 }
