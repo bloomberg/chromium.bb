@@ -321,7 +321,9 @@ ScriptValue IDBCursor::value(ScriptState* scriptState)
     IDBObjectStore* objectStore = effectiveObjectStore();
     const IDBObjectStoreMetadata& metadata = objectStore->metadata();
     IDBAny* value;
-    if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
+    if (!m_value) {
+        value = IDBAny::createUndefined();
+    } else if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
         RefPtr<IDBValue> idbValue = IDBValue::create(m_value.get(), m_primaryKey, metadata.keyPath);
 #if ENABLE(ASSERT)
         assertPrimaryKeyValidOrInjectable(scriptState, idbValue.get());
