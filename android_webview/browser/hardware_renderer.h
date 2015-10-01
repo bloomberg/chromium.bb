@@ -48,6 +48,8 @@ class HardwareRenderer : public cc::DisplayClient,
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
+  void ReturnResourcesInChildFrame();
+
   SharedRendererState* shared_renderer_state_;
 
   typedef void* EGLContext;

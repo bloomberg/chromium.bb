@@ -68,6 +68,7 @@ HardwareRenderer::~HardwareRenderer() {
   // Reset draw constraints.
   shared_renderer_state_->PostExternalDrawConstraintsToChildCompositorOnRT(
       ParentCompositorDrawConstraints());
+  ReturnResourcesInChildFrame();
 }
 
 void HardwareRenderer::CommitFrame() {
@@ -77,6 +78,8 @@ void HardwareRenderer::CommitFrame() {
       shared_renderer_state_->PassCompositorFrameOnRT();
   if (!child_frame.get())
     return;
+
+  ReturnResourcesInChildFrame();
   child_frame_ = child_frame.Pass();
   DCHECK(child_frame_->frame.get());
   DCHECK(!child_frame_->frame->gl_frame_data);
@@ -204,6 +207,18 @@ void HardwareRenderer::ReturnResources(
 void HardwareRenderer::SetBackingFrameBufferObject(
     int framebuffer_binding_ext) {
   gl_surface_->SetBackingFrameBufferObject(framebuffer_binding_ext);
+}
+
+void HardwareRenderer::ReturnResourcesInChildFrame() {
+  if (child_frame_.get() && child_frame_->frame.get()) {
+    cc::ReturnedResourceArray resources_to_return;
+    cc::TransferableResource::ReturnResources(
+        child_frame_->frame->delegated_frame_data->resource_list,
+        &resources_to_return);
+
+    ReturnResources(resources_to_return);
+  }
+  child_frame_.reset();
 }
 
 }  // namespace android_webview
