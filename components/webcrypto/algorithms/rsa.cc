@@ -8,13 +8,13 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "components/webcrypto/algorithms/util_openssl.h"
+#include "components/webcrypto/algorithms/asymmetric_key_util.h"
+#include "components/webcrypto/algorithms/util.h"
+#include "components/webcrypto/blink_key_handle.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
 #include "components/webcrypto/jwk.h"
-#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
@@ -102,6 +102,26 @@ Status ReadRsaKeyJwk(const CryptoData& key_data,
     return status;
 
   return Status::Success();
+}
+
+// Converts a (big-endian) WebCrypto BigInteger, with or without leading zeros,
+// to unsigned int.
+bool BigIntegerToUint(const uint8_t* data,
+                      size_t data_size,
+                      unsigned int* result) {
+  if (data_size == 0)
+    return false;
+
+  *result = 0;
+  for (size_t i = 0; i < data_size; ++i) {
+    size_t reverse_i = data_size - i - 1;
+
+    if (reverse_i >= sizeof(*result) && data[i])
+      return false;  // Too large for a uint.
+
+    *result |= data[i] << 8 * reverse_i;
+  }
+  return true;
 }
 
 // Creates a blink::WebCryptoAlgorithm having the modulus length and public
@@ -228,6 +248,22 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
                                      extractable, usages, key);
 }
 
+// Converts a BIGNUM to a big endian byte array.
+std::vector<uint8_t> BIGNUMToVector(const BIGNUM* n) {
+  std::vector<uint8_t> v(BN_num_bytes(n));
+  BN_bn2bin(n, vector_as_array(&v));
+  return v;
+}
+
+// Synthesizes an import algorithm given a key algorithm, so that
+// deserialization can re-use the ImportKey*() methods.
+blink::WebCryptoAlgorithm SynthesizeImportAlgorithmForClone(
+    const blink::WebCryptoKeyAlgorithm& algorithm) {
+  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
+      algorithm.id(), new blink::WebCryptoRsaHashedImportParams(
+                          algorithm.rsaHashedParams()->hash()));
+}
+
 }  // namespace
 
 Status RsaHashedAlgorithm::GenerateKey(
@@ -247,12 +283,29 @@ Status RsaHashedAlgorithm::GenerateKey(
   const blink::WebCryptoRsaHashedKeyGenParams* params =
       algorithm.rsaHashedKeyGenParams();
 
+  unsigned int modulus_length_bits = params->modulusLengthBits();
+
+  // Limit the RSA key sizes to:
+  //   * Multiple of 8 bits
+  //   * 256 bits to 16K bits
+  //
+  // These correspond with limitations at the time there was an NSS WebCrypto
+  // implementation. However in practice the upper bound is also helpful
+  // because generating large RSA keys is very slow.
+  if (modulus_length_bits < 256 || modulus_length_bits > 16384 ||
+      (modulus_length_bits % 8) != 0) {
+    return Status::ErrorGenerateRsaUnsupportedModulus();
+  }
+
   unsigned int public_exponent = 0;
-  unsigned int modulus_length_bits = 0;
-  status =
-      GetRsaKeyGenParameters(params, &public_exponent, &modulus_length_bits);
-  if (status.IsError())
-    return status;
+  if (!BigIntegerToUint(params->publicExponent().data(),
+                        params->publicExponent().size(), &public_exponent)) {
+    return Status::ErrorGenerateKeyPublicExponent();
+  }
+
+  // OpenSSL hangs when given bad public exponents. Use a whitelist.
+  if (public_exponent != 3 && public_exponent != 65537)
+    return Status::ErrorGenerateKeyPublicExponent();
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
@@ -380,9 +433,12 @@ Status RsaHashedAlgorithm::ImportKeyJwk(
     return status;
 
   // Once the key type is known, verify the usages.
-  status = CheckKeyCreationUsages(
-      jwk.is_private_key ? all_private_key_usages_ : all_public_key_usages_,
-      usages, !jwk.is_private_key);
+  if (jwk.is_private_key) {
+    status = CheckPrivateKeyCreationUsages(all_private_key_usages_, usages);
+  } else {
+    status = CheckPublicKeyCreationUsages(all_public_key_usages_, usages);
+  }
+
   if (status.IsError())
     return status;
 
@@ -465,11 +521,12 @@ Status RsaHashedAlgorithm::DeserializeKeyForClone(
     blink::WebCryptoKeyUsageMask usages,
     const CryptoData& key_data,
     blink::WebCryptoKey* key) const {
-  blink::WebCryptoAlgorithm import_algorithm = CreateRsaHashedImportAlgorithm(
-      algorithm.id(), algorithm.rsaHashedParams()->hash().id());
+  blink::WebCryptoAlgorithm import_algorithm =
+      SynthesizeImportAlgorithmForClone(algorithm);
 
   Status status;
 
+  // The serialized data will be either SPKI or PKCS8 formatted.
   switch (type) {
     case blink::WebCryptoKeyTypePublic:
       status =

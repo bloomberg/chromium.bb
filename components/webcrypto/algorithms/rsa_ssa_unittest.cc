@@ -4,11 +4,11 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/values.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/algorithms/test_helpers.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"

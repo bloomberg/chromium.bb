@@ -9,12 +9,11 @@
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/secret_key_util.h"
-#include "components/webcrypto/algorithms/util_openssl.h"
+#include "components/webcrypto/algorithms/util.h"
+#include "components/webcrypto/blink_key_handle.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/jwk.h"
-#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/secure_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
@@ -26,7 +25,7 @@ namespace {
 
 Status GetDigestBlockSizeBits(const blink::WebCryptoAlgorithm& algorithm,
                               unsigned int* block_size_bits) {
-  const EVP_MD* md = GetDigest(algorithm.id());
+  const EVP_MD* md = GetDigest(algorithm);
   if (!md)
     return Status::ErrorUnsupported();
   *block_size_bits = static_cast<unsigned int>(8 * EVP_MD_block_size(md));
@@ -89,7 +88,7 @@ Status SignHmac(const std::vector<uint8_t>& raw_key,
                 std::vector<uint8_t>* buffer) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  const EVP_MD* digest_algorithm = GetDigest(hash.id());
+  const EVP_MD* digest_algorithm = GetDigest(hash);
   if (!digest_algorithm)
     return Status::ErrorUnsupported();
   size_t hmac_expected_length = EVP_MD_size(digest_algorithm);
@@ -116,7 +115,7 @@ class HmacImplementation : public AlgorithmImplementation {
                      bool extractable,
                      blink::WebCryptoKeyUsageMask usages,
                      GenerateKeyResult* result) const override {
-    Status status = CheckKeyCreationUsages(kAllKeyUsages, usages, false);
+    Status status = CheckSecretKeyCreationUsages(kAllKeyUsages, usages);
     if (status.IsError())
       return status;
 
@@ -146,7 +145,7 @@ class HmacImplementation : public AlgorithmImplementation {
     switch (format) {
       case blink::WebCryptoKeyFormatRaw:
       case blink::WebCryptoKeyFormatJwk:
-        return CheckKeyCreationUsages(kAllKeyUsages, usages, false);
+        return CheckSecretKeyCreationUsages(kAllKeyUsages, usages);
       default:
         return Status::ErrorUnsupportedImportKeyFormat();
     }

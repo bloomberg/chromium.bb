@@ -11,7 +11,6 @@
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 

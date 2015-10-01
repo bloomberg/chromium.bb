@@ -1,20 +1,16 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/webcrypto/algorithms/util_openssl.h"
+#include "components/webcrypto/algorithms/asymmetric_key_util.h"
 
-#include <openssl/evp.h>
 #include <openssl/pkcs12.h>
-#include <openssl/rand.h>
 
-#include "base/stl_util.h"
-#include "components/webcrypto/algorithm_implementations.h"
+#include "components/webcrypto/algorithms/util.h"
+#include "components/webcrypto/blink_key_handle.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
-#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
 
 namespace webcrypto {
@@ -61,72 +57,6 @@ Status ExportPKeyPkcs8(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
 
 }  // namespace
 
-const EVP_MD* GetDigest(blink::WebCryptoAlgorithmId id) {
-  switch (id) {
-    case blink::WebCryptoAlgorithmIdSha1:
-      return EVP_sha1();
-    case blink::WebCryptoAlgorithmIdSha256:
-      return EVP_sha256();
-    case blink::WebCryptoAlgorithmIdSha384:
-      return EVP_sha384();
-    case blink::WebCryptoAlgorithmIdSha512:
-      return EVP_sha512();
-    default:
-      return NULL;
-  }
-}
-
-Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
-                          const std::vector<uint8_t>& raw_key,
-                          const CryptoData& data,
-                          unsigned int tag_length_bytes,
-                          const CryptoData& iv,
-                          const CryptoData& additional_data,
-                          const EVP_AEAD* aead_alg,
-                          std::vector<uint8_t>* buffer) {
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  EVP_AEAD_CTX ctx;
-
-  if (!aead_alg)
-    return Status::ErrorUnexpected();
-
-  if (!EVP_AEAD_CTX_init(&ctx, aead_alg, vector_as_array(&raw_key),
-                         raw_key.size(), tag_length_bytes, NULL)) {
-    return Status::OperationError();
-  }
-
-  crypto::ScopedOpenSSL<EVP_AEAD_CTX, EVP_AEAD_CTX_cleanup> ctx_cleanup(&ctx);
-
-  size_t len;
-  int ok;
-
-  if (mode == DECRYPT) {
-    if (data.byte_length() < tag_length_bytes)
-      return Status::ErrorDataTooSmall();
-
-    buffer->resize(data.byte_length() - tag_length_bytes);
-
-    ok = EVP_AEAD_CTX_open(&ctx, vector_as_array(buffer), &len, buffer->size(),
-                           iv.bytes(), iv.byte_length(), data.bytes(),
-                           data.byte_length(), additional_data.bytes(),
-                           additional_data.byte_length());
-  } else {
-    // No need to check for unsigned integer overflow here (seal fails if
-    // the output buffer is too small).
-    buffer->resize(data.byte_length() + EVP_AEAD_max_overhead(aead_alg));
-
-    ok = EVP_AEAD_CTX_seal(&ctx, vector_as_array(buffer), &len, buffer->size(),
-                           iv.bytes(), iv.byte_length(), data.bytes(),
-                           data.byte_length(), additional_data.bytes(),
-                           additional_data.byte_length());
-  }
-
-  if (!ok)
-    return Status::OperationError();
-  buffer->resize(len);
-  return Status::Success();
-}
-
 Status CreateWebCryptoPublicKey(crypto::ScopedEVP_PKEY public_key,
                                 const blink::WebCryptoKeyAlgorithm& algorithm,
                                 bool extractable,
@@ -161,6 +91,20 @@ Status CreateWebCryptoPrivateKey(crypto::ScopedEVP_PKEY private_key,
       CreateAsymmetricKeyHandle(private_key.Pass(), pkcs8_data),
       blink::WebCryptoKeyTypePrivate, extractable, algorithm, usages);
   return Status::Success();
+}
+
+Status CheckPrivateKeyCreationUsages(
+    blink::WebCryptoKeyUsageMask all_possible_usages,
+    blink::WebCryptoKeyUsageMask actual_usages) {
+  return CheckKeyCreationUsages(all_possible_usages, actual_usages,
+                                EmptyUsagePolicy::REJECT_EMPTY);
+}
+
+Status CheckPublicKeyCreationUsages(
+    blink::WebCryptoKeyUsageMask all_possible_usages,
+    blink::WebCryptoKeyUsageMask actual_usages) {
+  return CheckKeyCreationUsages(all_possible_usages, actual_usages,
+                                EmptyUsagePolicy::ALLOW_EMPTY);
 }
 
 Status ImportUnverifiedPkeyFromSpki(const CryptoData& key_data,
@@ -200,14 +144,51 @@ Status ImportUnverifiedPkeyFromPkcs8(const CryptoData& key_data,
   return Status::Success();
 }
 
-BIGNUM* CreateBIGNUM(const std::string& n) {
-  return BN_bin2bn(reinterpret_cast<const uint8_t*>(n.data()), n.size(), NULL);
+Status VerifyUsagesBeforeImportAsymmetricKey(
+    blink::WebCryptoKeyFormat format,
+    blink::WebCryptoKeyUsageMask all_public_key_usages,
+    blink::WebCryptoKeyUsageMask all_private_key_usages,
+    blink::WebCryptoKeyUsageMask usages) {
+  switch (format) {
+    case blink::WebCryptoKeyFormatSpki:
+      return CheckPublicKeyCreationUsages(all_public_key_usages, usages);
+    case blink::WebCryptoKeyFormatPkcs8:
+      return CheckPrivateKeyCreationUsages(all_private_key_usages, usages);
+    case blink::WebCryptoKeyFormatJwk: {
+      // The JWK could represent either a public key or private key. The usages
+      // must make sense for one of the two. The usages will be checked again by
+      // ImportKeyJwk() once the key type has been determined.
+      if (CheckPublicKeyCreationUsages(all_public_key_usages, usages)
+              .IsError() &&
+          CheckPrivateKeyCreationUsages(all_private_key_usages, usages)
+              .IsError()) {
+        return Status::ErrorCreateKeyBadUsages();
+      }
+      return Status::Success();
+    }
+    default:
+      return Status::ErrorUnsupportedImportKeyFormat();
+  }
 }
 
-std::vector<uint8_t> BIGNUMToVector(const BIGNUM* n) {
-  std::vector<uint8_t> v(BN_num_bytes(n));
-  BN_bn2bin(n, vector_as_array(&v));
-  return v;
+Status GetUsagesForGenerateAsymmetricKey(
+    blink::WebCryptoKeyUsageMask combined_usages,
+    blink::WebCryptoKeyUsageMask all_public_usages,
+    blink::WebCryptoKeyUsageMask all_private_usages,
+    blink::WebCryptoKeyUsageMask* public_usages,
+    blink::WebCryptoKeyUsageMask* private_usages) {
+  // Ensure that the combined usages is a subset of the total possible usages.
+  Status status =
+      CheckKeyCreationUsages(all_public_usages | all_private_usages,
+                             combined_usages, EmptyUsagePolicy::ALLOW_EMPTY);
+  if (status.IsError())
+    return status;
+
+  *public_usages = combined_usages & all_public_usages;
+  *private_usages = combined_usages & all_private_usages;
+
+  // Ensure that the private key has non-empty usages.
+  return CheckPrivateKeyCreationUsages(all_private_usages, *private_usages);
 }
 
 }  // namespace webcrypto

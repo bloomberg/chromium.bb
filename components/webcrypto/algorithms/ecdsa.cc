@@ -10,12 +10,11 @@
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/ec.h"
-#include "components/webcrypto/algorithms/util_openssl.h"
+#include "components/webcrypto/algorithms/util.h"
+#include "components/webcrypto/blink_key_handle.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
-#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
 #include "crypto/secure_util.h"
@@ -34,7 +33,7 @@ Status GetPKeyAndDigest(const blink::WebCryptoAlgorithm& algorithm,
                         EVP_PKEY** pkey,
                         const EVP_MD** digest) {
   *pkey = GetEVP_PKEY(key);
-  *digest = GetDigest(algorithm.ecdsaParams()->hash().id());
+  *digest = GetDigest(algorithm.ecdsaParams()->hash());
   if (!*digest)
     return Status::ErrorUnsupported();
   return Status::Success();

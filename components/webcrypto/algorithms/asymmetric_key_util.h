@@ -1,43 +1,20 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEBCRYPTO_ALGORITHMS_UTIL_OPENSSL_H_
-#define COMPONENTS_WEBCRYPTO_ALGORITHMS_UTIL_OPENSSL_H_
-
-#include <string>
-#include <vector>
-
-#include <openssl/base.h>
+#ifndef COMPONENTS_WEBCRYPTO_ALGORITHMS_ASYMMETRIC_KEY_UTIL_
+#define COMPONENTS_WEBCRYPTO_ALGORITHMS_ASYMMETRIC_KEY_UTIL_
 
 #include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
+// This file contains functions shared by multiple asymmetric key algorithms.
+
 namespace webcrypto {
 
 class CryptoData;
-class GenerateKeyResult;
 class Status;
-
-// The values of these constants correspond with the "enc" parameter of
-// EVP_CipherInit_ex(), do not change.
-enum EncryptOrDecrypt { DECRYPT = 0, ENCRYPT = 1 };
-
-const EVP_MD* GetDigest(blink::WebCryptoAlgorithmId id);
-
-// Does either encryption or decryption for an AEAD algorithm.
-//   * |mode| controls whether encryption or decryption is done
-//   * |aead_alg| the algorithm (for instance AES-GCM)
-//   * |buffer| where the ciphertext or plaintext is written to.
-Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
-                          const std::vector<uint8_t>& raw_key,
-                          const CryptoData& data,
-                          unsigned int tag_length_bytes,
-                          const CryptoData& iv,
-                          const CryptoData& additional_data,
-                          const EVP_AEAD* aead_alg,
-                          std::vector<uint8_t>* buffer);
 
 // Creates a WebCrypto public key given an EVP_PKEY. This step includes
 // exporting the key to SPKI format, for use by serialization later.
@@ -55,6 +32,19 @@ Status CreateWebCryptoPrivateKey(crypto::ScopedEVP_PKEY private_key,
                                  blink::WebCryptoKeyUsageMask usages,
                                  blink::WebCryptoKey* key);
 
+// Checks that a private key can be created using |actual_usages|, where
+// |all_possible_usages| is the full set of allowed private key usages. Note
+// that private keys are not allowed to have empty usages.
+Status CheckPrivateKeyCreationUsages(
+    blink::WebCryptoKeyUsageMask all_possible_usages,
+    blink::WebCryptoKeyUsageMask actual_usages);
+
+// Checks that a public key can be created using |actual_usages|, where
+// |all_possible_usages| is the full set of allowed public key usages
+Status CheckPublicKeyCreationUsages(
+    blink::WebCryptoKeyUsageMask all_possible_usages,
+    blink::WebCryptoKeyUsageMask actual_usages);
+
 // Imports SPKI bytes to an EVP_PKEY for a public key. The resulting asymmetric
 // key may be invalid, and should be verified using something like
 // RSA_check_key(). The only validation performed by this function is to ensure
@@ -71,12 +61,23 @@ Status ImportUnverifiedPkeyFromPkcs8(const CryptoData& key_data,
                                      int expected_pkey_id,
                                      crypto::ScopedEVP_PKEY* pkey);
 
-// Allocates a new BIGNUM given a std::string big-endian representation.
-BIGNUM* CreateBIGNUM(const std::string& n);
+// Verifies that |usages| is valid when importing a key of the given format.
+Status VerifyUsagesBeforeImportAsymmetricKey(
+    blink::WebCryptoKeyFormat format,
+    blink::WebCryptoKeyUsageMask all_public_key_usages,
+    blink::WebCryptoKeyUsageMask all_private_key_usages,
+    blink::WebCryptoKeyUsageMask usages);
 
-// Converts a BIGNUM to a big endian byte array.
-std::vector<uint8_t> BIGNUMToVector(const BIGNUM* n);
+// Splits the combined usages given to GenerateKey() into the respective usages
+// for the public key and private key. Returns an error if the usages are
+// invalid.
+Status GetUsagesForGenerateAsymmetricKey(
+    blink::WebCryptoKeyUsageMask combined_usages,
+    blink::WebCryptoKeyUsageMask all_public_usages,
+    blink::WebCryptoKeyUsageMask all_private_usages,
+    blink::WebCryptoKeyUsageMask* public_usages,
+    blink::WebCryptoKeyUsageMask* private_usages);
 
 }  // namespace webcrypto
 
-#endif  // COMPONENTS_WEBCRYPTO_ALGORITHMS_UTIL_OPENSSL_H_
+#endif  // COMPONENTS_WEBCRYPTO_ALGORITHMS_ASYMMETRIC_KEY_UTIL_

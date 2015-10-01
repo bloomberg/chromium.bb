@@ -9,10 +9,9 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
-#include "components/webcrypto/algorithms/util_openssl.h"
+#include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
 
@@ -24,9 +23,9 @@ namespace {
 // part of WebCrypto, that allows chunks of data to be streamed in before
 // computing a SHA-* digest (as opposed to ShaImplementation, which computes
 // digests over complete messages)
-class DigestorOpenSsl : public blink::WebCryptoDigestor {
+class DigestorImpl : public blink::WebCryptoDigestor {
  public:
-  explicit DigestorOpenSsl(blink::WebCryptoAlgorithmId algorithm_id)
+  explicit DigestorImpl(blink::WebCryptoAlgorithmId algorithm_id)
       : initialized_(false),
         digest_context_(EVP_MD_CTX_create()),
         algorithm_id_(algorithm_id) {}
@@ -112,7 +111,7 @@ class ShaImplementation : public AlgorithmImplementation {
   Status Digest(const blink::WebCryptoAlgorithm& algorithm,
                 const CryptoData& data,
                 std::vector<uint8_t>* buffer) const override {
-    DigestorOpenSsl digestor(algorithm.id());
+    DigestorImpl digestor(algorithm.id());
     Status error = digestor.ConsumeWithStatus(data.bytes(), data.byte_length());
     // http://crbug.com/366427: the spec does not define any other failures for
     // digest, so none of the subsequent errors are spec compliant.
@@ -130,7 +129,7 @@ scoped_ptr<AlgorithmImplementation> CreateShaImplementation() {
 
 scoped_ptr<blink::WebCryptoDigestor> CreateDigestorImplementation(
     blink::WebCryptoAlgorithmId algorithm) {
-  return scoped_ptr<blink::WebCryptoDigestor>(new DigestorOpenSsl(algorithm));
+  return scoped_ptr<blink::WebCryptoDigestor>(new DigestorImpl(algorithm));
 }
 
 }  // namespace webcrypto

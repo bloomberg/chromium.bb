@@ -217,6 +217,20 @@ blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
 blink::WebCryptoAlgorithm CreateHmacImportAlgorithmNoLength(
     blink::WebCryptoAlgorithmId hash_id);
 
+// Creates a WebCryptoAlgorithm without any parameters.
+blink::WebCryptoAlgorithm CreateAlgorithm(blink::WebCryptoAlgorithmId id);
+
+// Creates an import algorithm for RSA algorithms that take a hash.
+// It is an error to call this with a hash_id that is not a SHA*.
+blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
+    blink::WebCryptoAlgorithmId id,
+    blink::WebCryptoAlgorithmId hash_id);
+
+// Creates an import algorithm for EC keys.
+blink::WebCryptoAlgorithm CreateEcImportAlgorithm(
+    blink::WebCryptoAlgorithmId id,
+    blink::WebCryptoNamedCurve named_curve);
+
 }  // namespace webcrypto
 
 #endif  // COMPONENTS_WEBCRYPTO_ALGORITHMS_TEST_HELPERS_H_

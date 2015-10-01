@@ -4,7 +4,7 @@
 
 #include "components/webcrypto/algorithm_implementation.h"
 
-#include "components/webcrypto/key.h"
+#include "components/webcrypto/blink_key_handle.h"
 #include "components/webcrypto/status.h"
 
 namespace webcrypto {

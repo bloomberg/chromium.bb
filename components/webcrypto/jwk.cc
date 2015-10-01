@@ -12,9 +12,9 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 
 // JSON Web Key Format (JWK) is defined by:
 // http://tools.ietf.org/html/draft-ietf-jose-json-web-key

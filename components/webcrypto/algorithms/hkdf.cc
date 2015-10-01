@@ -9,11 +9,10 @@
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/secret_key_util.h"
-#include "components/webcrypto/algorithms/util_openssl.h"
+#include "components/webcrypto/algorithms/util.h"
+#include "components/webcrypto/blink_key_handle.h"
 #include "components/webcrypto/crypto_data.h"
-#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
@@ -34,7 +33,7 @@ class HkdfImplementation : public AlgorithmImplementation {
       blink::WebCryptoKeyUsageMask usages) const override {
     if (format != blink::WebCryptoKeyFormatRaw)
       return Status::ErrorUnsupportedImportKeyFormat();
-    return CheckKeyCreationUsages(kValidUsages, usages, false);
+    return CheckSecretKeyCreationUsages(kValidUsages, usages);
   }
 
   Status ImportKeyRaw(const CryptoData& key_data,
@@ -59,7 +58,7 @@ class HkdfImplementation : public AlgorithmImplementation {
 
     const blink::WebCryptoHkdfParams* params = algorithm.hkdfParams();
 
-    const EVP_MD* digest_algorithm = GetDigest(params->hash().id());
+    const EVP_MD* digest_algorithm = GetDigest(params->hash());
     if (!digest_algorithm)
       return Status::ErrorUnsupported();
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEBCRYPTO_KEY_H_
-#define COMPONENTS_WEBCRYPTO_KEY_H_
+#ifndef COMPONENTS_WEBCRYPTO_BLINK_KEY_HANDLE_H_
+#define COMPONENTS_WEBCRYPTO_BLINK_KEY_HANDLE_H_
 
 #include <openssl/base.h>
 #include <stdint.h>
@@ -12,6 +12,14 @@
 
 #include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
+
+// Blink keys (blink::WebCryptoKey) have an associated key handle
+// (blink::WebCryptoKeyHandle) used to store custom data. This is where the
+// underlying EVP_PKEY is stored for asymmetric keys, or an std::vector
+// containing the bytes for symmetric keys.
+//
+// This file contains helpers for creating the key handles, and extracting
+// properties from it.
 
 namespace webcrypto {
 
@@ -50,4 +58,4 @@ blink::WebCryptoKeyHandle* CreateAsymmetricKeyHandle(
 
 }  // namespace webcrypto
 
-#endif  // COMPONENTS_WEBCRYPTO_KEY_H_
+#endif  // COMPONENTS_WEBCRYPTO_BLINK_KEY_HANDLE_H_

@@ -21,7 +21,6 @@
 #include "components/webcrypto/generate_key_result.h"
 #include "components/webcrypto/jwk.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 #include "third_party/re2/re2/re2.h"
@@ -661,6 +660,25 @@ blink::WebCryptoAlgorithm CreateHmacImportAlgorithmNoLength(
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdHmac,
       new blink::WebCryptoHmacImportParams(CreateAlgorithm(hash_id), false, 0));
+}
+
+blink::WebCryptoAlgorithm CreateAlgorithm(blink::WebCryptoAlgorithmId id) {
+  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(id, nullptr);
+}
+
+blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
+    blink::WebCryptoAlgorithmId id,
+    blink::WebCryptoAlgorithmId hash_id) {
+  DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
+  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
+      id, new blink::WebCryptoRsaHashedImportParams(CreateAlgorithm(hash_id)));
+}
+
+blink::WebCryptoAlgorithm CreateEcImportAlgorithm(
+    blink::WebCryptoAlgorithmId id,
+    blink::WebCryptoNamedCurve named_curve) {
+  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
+      id, new blink::WebCryptoEcKeyImportParams(named_curve));
 }
 
 }  // namespace webcrypto

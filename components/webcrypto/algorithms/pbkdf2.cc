@@ -5,11 +5,10 @@
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/secret_key_util.h"
-#include "components/webcrypto/algorithms/util_openssl.h"
+#include "components/webcrypto/algorithms/util.h"
+#include "components/webcrypto/blink_key_handle.h"
 #include "components/webcrypto/crypto_data.h"
-#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
@@ -30,7 +29,7 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
       blink::WebCryptoKeyUsageMask usages) const override {
     switch (format) {
       case blink::WebCryptoKeyFormatRaw:
-        return CheckKeyCreationUsages(kAllKeyUsages, usages, false);
+        return CheckSecretKeyCreationUsages(kAllKeyUsages, usages);
       default:
         return Status::ErrorUnsupportedImportKeyFormat();
     }
@@ -64,8 +63,7 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
 
     const blink::WebCryptoPbkdf2Params* params = algorithm.pbkdf2Params();
 
-    const blink::WebCryptoAlgorithm& hash = params->hash();
-    const EVP_MD* digest_algorithm = GetDigest(hash.id());
+    const EVP_MD* digest_algorithm = GetDigest(params->hash());
     if (!digest_algorithm)
       return Status::ErrorUnsupported();
 

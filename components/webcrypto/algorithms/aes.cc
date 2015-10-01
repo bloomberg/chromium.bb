@@ -6,11 +6,10 @@
 
 #include "base/logging.h"
 #include "components/webcrypto/algorithms/secret_key_util.h"
+#include "components/webcrypto/blink_key_handle.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/jwk.h"
-#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 
@@ -29,6 +28,14 @@ std::string MakeJwkAesAlgorithmName(const std::string& suffix,
   if (keylen_bytes == 32)
     return std::string("A256") + suffix;
   return std::string();
+}
+
+// Synthesizes an import algorithm given a key algorithm, so that
+// deserialization can re-use the ImportKey*() methods.
+blink::WebCryptoAlgorithm SynthesizeImportAlgorithmForClone(
+    const blink::WebCryptoKeyAlgorithm& algorithm) {
+  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(algorithm.id(),
+                                                         nullptr);
 }
 
 }  // namespace
@@ -50,7 +57,7 @@ Status AesAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                                  bool extractable,
                                  blink::WebCryptoKeyUsageMask usages,
                                  GenerateKeyResult* result) const {
-  Status status = CheckKeyCreationUsages(all_key_usages_, usages, false);
+  Status status = CheckSecretKeyCreationUsages(all_key_usages_, usages);
   if (status.IsError())
     return status;
 
@@ -74,7 +81,7 @@ Status AesAlgorithm::VerifyKeyUsagesBeforeImportKey(
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
     case blink::WebCryptoKeyFormatJwk:
-      return CheckKeyCreationUsages(all_key_usages_, usages, false);
+      return CheckSecretKeyCreationUsages(all_key_usages_, usages);
     default:
       return Status::ErrorUnsupportedImportKeyFormat();
   }
@@ -164,8 +171,8 @@ Status AesAlgorithm::DeserializeKeyForClone(
     blink::WebCryptoKeyUsageMask usages,
     const CryptoData& key_data,
     blink::WebCryptoKey* key) const {
-  return ImportKeyRaw(key_data, CreateAlgorithm(algorithm.id()), extractable,
-                      usages, key);
+  return ImportKeyRaw(key_data, SynthesizeImportAlgorithmForClone(algorithm),
+                      extractable, usages, key);
 }
 
 Status AesAlgorithm::GetKeyLength(

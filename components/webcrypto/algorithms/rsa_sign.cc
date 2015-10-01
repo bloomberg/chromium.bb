@@ -5,9 +5,9 @@
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithms/rsa_sign.h"
-#include "components/webcrypto/algorithms/util_openssl.h"
+#include "components/webcrypto/algorithms/util.h"
+#include "components/webcrypto/blink_key_handle.h"
 #include "components/webcrypto/crypto_data.h"
-#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
@@ -24,7 +24,7 @@ Status GetPKeyAndDigest(const blink::WebCryptoKey& key,
                         const EVP_MD** digest) {
   *pkey = GetEVP_PKEY(key);
 
-  *digest = GetDigest(key.algorithm().rsaHashedParams()->hash().id());
+  *digest = GetDigest(key.algorithm().rsaHashedParams()->hash());
   if (!*digest)
     return Status::ErrorUnsupported();
 

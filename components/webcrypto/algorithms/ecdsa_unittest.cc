@@ -8,7 +8,6 @@
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/jwk.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 

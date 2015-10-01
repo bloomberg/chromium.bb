@@ -11,13 +11,13 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "components/webcrypto/algorithms/util_openssl.h"
+#include "components/webcrypto/algorithms/asymmetric_key_util.h"
+#include "components/webcrypto/algorithms/util.h"
+#include "components/webcrypto/blink_key_handle.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
 #include "components/webcrypto/jwk.h"
-#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
@@ -209,6 +209,15 @@ Status GetPublicKey(EC_KEY* ec,
   return Status::Success();
 }
 
+// Synthesizes an import algorithm given a key algorithm, so that
+// deserialization can re-use the ImportKey*() methods.
+blink::WebCryptoAlgorithm SynthesizeImportAlgorithmForClone(
+    const blink::WebCryptoKeyAlgorithm& algorithm) {
+  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
+      algorithm.id(), new blink::WebCryptoEcKeyImportParams(
+                          algorithm.ecParams()->namedCurve()));
+}
+
 }  // namespace
 
 Status EcAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
@@ -379,9 +388,12 @@ Status EcAlgorithm::ImportKeyJwk(const CryptoData& key_data,
   bool is_private_key = jwk.HasMember("d");
 
   // Now that the key type is known, verify the usages.
-  status = CheckKeyCreationUsages(
-      is_private_key ? all_private_key_usages_ : all_public_key_usages_, usages,
-      !is_private_key);
+  if (is_private_key) {
+    status = CheckPrivateKeyCreationUsages(all_private_key_usages_, usages);
+  } else {
+    status = CheckPublicKeyCreationUsages(all_public_key_usages_, usages);
+  }
+
   if (status.IsError())
     return status;
 
@@ -525,11 +537,12 @@ Status EcAlgorithm::DeserializeKeyForClone(
     blink::WebCryptoKeyUsageMask usages,
     const CryptoData& key_data,
     blink::WebCryptoKey* key) const {
-  blink::WebCryptoAlgorithm import_algorithm = CreateEcImportAlgorithm(
-      algorithm.id(), algorithm.ecParams()->namedCurve());
+  blink::WebCryptoAlgorithm import_algorithm =
+      SynthesizeImportAlgorithmForClone(algorithm);
 
   Status status;
 
+  // The serialized data will be either SPKI or PKCS8 formatted.
   switch (type) {
     case blink::WebCryptoKeyTypePublic:
       status =

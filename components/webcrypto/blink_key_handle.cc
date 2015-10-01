@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/webcrypto/key.h"
+#include "components/webcrypto/blink_key_handle.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
-#include "components/webcrypto/webcrypto_util.h"
 
 namespace webcrypto {
 

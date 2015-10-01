@@ -30,7 +30,7 @@ Status GenerateWebCryptoSecretKey(const blink::WebCryptoKeyAlgorithm& algorithm,
                                   unsigned int keylen_bits,
                                   GenerateKeyResult* result);
 
-// Creates a WebCrypto secret key given a the raw data. The provided |key_data|
+// Creates a WebCrypto secret key given the raw data. The provided |key_data|
 // will be copied into the new key. This function does not do any validation
 // checks for the provided parameters.
 Status CreateWebCryptoSecretKey(const CryptoData& key_data,
@@ -38,6 +38,11 @@ Status CreateWebCryptoSecretKey(const CryptoData& key_data,
                                 bool extractable,
                                 blink::WebCryptoKeyUsageMask usages,
                                 blink::WebCryptoKey* key);
+
+// Checks that |actual_usages| is a non-empty subset of |all_possible_usages|.
+Status CheckSecretKeyCreationUsages(
+    blink::WebCryptoKeyUsageMask all_possible_usages,
+    blink::WebCryptoKeyUsageMask actual_usages);
 
 // Writes a JWK-formatted symmetric key to |jwk_key_data|.
 //  * raw_key_data: The actual key data
