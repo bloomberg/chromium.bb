@@ -86,8 +86,12 @@ template<unsigned size> void testReserveCapacity();
 template<> void testReserveCapacity<0>() {}
 template<unsigned size> void testReserveCapacity()
 {
-    const unsigned expectedInitialCapacity = HashTableCapacityForSize<size>::value;
     HashSet<int> testSet;
+    HashSet<int> sampleSet;
+    for (size_t i = 0; i < size; ++i) {
+        sampleSet.add(i + 1); // Avoid adding '0'.
+    }
+    const unsigned expectedInitialCapacity = sampleSet.capacity();
 
     // Initial capacity is null.
     EXPECT_EQ(0UL, testSet.capacity());

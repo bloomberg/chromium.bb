@@ -632,6 +632,9 @@ template <typename Key, typename Value, typename Extractor, typename HashFunctio
 void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::reserveCapacityForSize(unsigned newSize)
 {
     unsigned newCapacity = calculateCapacity(newSize);
+    if (newCapacity < KeyTraits::minimumTableSize)
+        newCapacity = KeyTraits::minimumTableSize;
+
     if (newCapacity > capacity()) {
         RELEASE_ASSERT(!static_cast<int>(newCapacity >> 31)); // HashTable capacity should not overflow 32bit int.
         rehash(newCapacity, 0);
