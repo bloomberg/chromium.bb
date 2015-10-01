@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTIONS_CONTAINER_OBSERVER_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTIONS_CONTAINER_OBSERVER_H_
 
+class BrowserActionsContainer;
+
 class BrowserActionsContainerObserver {
  public:
   virtual void OnBrowserActionsContainerAnimationEnded() {}
-  virtual void OnBrowserActionsContainerDestroyed() {}
+  virtual void OnBrowserActionsContainerDestroyed(
+      BrowserActionsContainer* browser_actions_container) {}
   virtual void OnBrowserActionDragDone() {}
 
  protected:

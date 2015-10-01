@@ -45,6 +45,8 @@ class ExtensionToolbarMenuView : public views::ScrollView,
 
  private:
   // BrowserActionsContainerObserver:
+  void OnBrowserActionsContainerDestroyed(
+      BrowserActionsContainer* browser_actions_container) override;
   void OnBrowserActionDragDone() override;
 
   // Closes the |wrench_menu_|.

@@ -95,6 +95,11 @@ void ExtensionToolbarMenuView::set_close_menu_delay_for_testing(int delay) {
   g_close_menu_delay = delay;
 }
 
+void ExtensionToolbarMenuView::OnBrowserActionsContainerDestroyed(
+    BrowserActionsContainer* browser_actions_container) {
+  browser_actions_container_observer_.Remove(browser_actions_container);
+}
+
 void ExtensionToolbarMenuView::OnBrowserActionDragDone() {
   // We need to close the wrench menu if it was just opened for the drag and
   // drop, or if there are no more extensions in the overflow menu after a drag

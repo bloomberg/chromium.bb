@@ -123,9 +123,8 @@ BrowserActionsContainer::~BrowserActionsContainer() {
   // always have cleared the active bubble by now.
   DCHECK(!active_bubble_);
 
-  FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
-                    observers_,
-                    OnBrowserActionsContainerDestroyed());
+  FOR_EACH_OBSERVER(BrowserActionsContainerObserver, observers_,
+                    OnBrowserActionsContainerDestroyed(this));
 
   toolbar_actions_bar_->DeleteActions();
   // All views should be removed as part of ToolbarActionsBar::DeleteActions().
