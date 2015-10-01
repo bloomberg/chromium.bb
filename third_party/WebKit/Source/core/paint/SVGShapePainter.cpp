@@ -17,7 +17,6 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGContainerPainter.h"
 #include "core/paint/SVGPaintContext.h"
-#include "core/paint/ScopeRecorder.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
@@ -194,22 +193,22 @@ void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo, const FloatRect& 
 
     float strokeWidth = m_layoutSVGShape.strokeWidth();
     unsigned size = markerPositions->size();
-    SkPictureBuilder pictureBuilder(boundingBox, nullptr, paintInfo.context);
-    PaintInfo markersPaintInfo(paintInfo);
-    markersPaintInfo.context = &pictureBuilder.context();
-
-    // It's expensive to track the transformed paint cull rect for each
-    // marker so just disable culling. The shape paint call will already be
-    // culled if it is outside the paint info cull rect.
-    markersPaintInfo.rect = LayoutRect::infiniteIntRect();
 
     for (unsigned i = 0; i < size; ++i) {
-        ScopeRecorder scopeRecorder(*markersPaintInfo.context);
-        if (LayoutSVGResourceMarker* marker = SVGMarkerData::markerForType((*markerPositions)[i].type, markerStart, markerMid, markerEnd))
-            paintMarker(markersPaintInfo, *marker, (*markerPositions)[i], strokeWidth);
-    }
+        if (LayoutSVGResourceMarker* marker = SVGMarkerData::markerForType((*markerPositions)[i].type, markerStart, markerMid, markerEnd)) {
+            SkPictureBuilder pictureBuilder(boundingBox, nullptr, paintInfo.context);
+            PaintInfo markerPaintInfo(paintInfo);
+            markerPaintInfo.context = &pictureBuilder.context();
 
-    pictureBuilder.endRecording()->playback(paintInfo.context->canvas());
+            // It's expensive to track the transformed paint cull rect for each
+            // marker so just disable culling. The shape paint call will already
+            // be culled if it is outside the paint info cull rect.
+            markerPaintInfo.rect = LayoutRect::infiniteIntRect();
+
+            paintMarker(markerPaintInfo, *marker, (*markerPositions)[i], strokeWidth);
+            pictureBuilder.endRecording()->playback(paintInfo.context->canvas());
+        }
+    }
 }
 
 void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, LayoutSVGResourceMarker& marker, const MarkerPosition& position, float strokeWidth)
@@ -224,7 +223,6 @@ void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, LayoutSVGResourceM
     Optional<FloatClipRecorder> clipRecorder;
     if (SVGLayoutSupport::isOverflowHidden(&marker))
         clipRecorder.emplace(*paintInfo.context, marker, paintInfo.phase, marker.viewport());
-
     SVGContainerPainter(marker).paint(paintInfo);
 }
 
