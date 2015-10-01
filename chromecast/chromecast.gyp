@@ -13,7 +13,6 @@
     'chromium_code': 1,
     'chromecast_branding%': 'public',
     'disable_display%': 0,
-    'enable_default_cast_graphics%': 1,
     'ozone_platform_cast%': 0,
     'use_chromecast_webui%': 0,
   },
@@ -506,6 +505,18 @@
         },
       ],
     },
+    {
+      'target_name': 'libcast_graphics_1.0',
+      'type': 'shared_library',
+      'dependencies': [
+        'cast_public_api'
+      ],
+      'sources': [
+        'graphics/cast_egl_platform_default.cc',
+        'graphics/graphics_properties_default.cc',
+        'graphics/osd_plane_default.cc'
+      ],
+    }
   ],  # end of targets
 
   # Targets for Android receiver.
@@ -740,22 +751,6 @@
           ],
         },
       ],  # end of targets
-    }],
-    ['enable_default_cast_graphics==1', {
-      'targets': [
-        {
-          'target_name': 'libcast_graphics_1.0',
-          'type': 'shared_library',
-          'dependencies': [
-            'cast_public_api'
-          ],
-          'sources': [
-            'graphics/cast_egl_platform_default.cc',
-            'graphics/graphics_properties_default.cc',
-            'graphics/osd_plane_default.cc'
-          ],
-        }
-      ]
     }],
   ],  # end of conditions
 }

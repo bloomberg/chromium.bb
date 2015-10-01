@@ -13,15 +13,6 @@ declare_args() {
   # True if Chromecast build is targetted for linux desktop.
   is_chromecast_desktop_build = is_linux && target_cpu != "arm"
 
-  # Use the stub graphics lib in //chromecast/graphics. If this is true, the
-  # value of |libcast_graphics_path| is ignored.
-  use_default_cast_graphics =
-      chromecast_branding == "public" || is_chromecast_desktop_build
-
-  # The path to the cast_graphics shared library. Any target pointed to must
-  # be named "libcast_graphics_1.0".
-  libcast_graphics_path = ""
-
   # Use Playready CDMs.
   use_playready = false
 }
