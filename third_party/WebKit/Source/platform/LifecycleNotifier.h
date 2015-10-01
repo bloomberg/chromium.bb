@@ -93,7 +93,6 @@ inline LifecycleNotifier<T, Observer>::~LifecycleNotifier()
 #if !ENABLE(OILPAN)
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
     for (Observer* observer : m_observers) {
-        ASSERT(observer->lifecycleContext() == context());
         observer->clearLifecycleContext();
     }
 #endif
