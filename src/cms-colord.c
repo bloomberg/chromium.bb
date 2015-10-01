@@ -145,7 +145,7 @@ update_device_with_profile_in_idle(struct cms_output *ocms)
 		gchar tmp = '\0';
 		rc = write(cms->writefd, &tmp, 1);
 		if (rc == 0)
-			weston_log("colord: failed to write to pending fd");
+			weston_log("colord: failed to write to pending fd\n");
 	}
 }
 
@@ -375,7 +375,7 @@ colord_dispatch_all_pending(int fd, uint32_t mask, void *data)
 	/* done */
 	rc = read(cms->readfd, &tmp, 1);
 	if (rc == 0)
-		weston_log("colord: failed to read from pending fd");
+		weston_log("colord: failed to read from pending fd\n");
 	return 1;
 }
 
