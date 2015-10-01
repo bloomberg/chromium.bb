@@ -115,9 +115,9 @@ class RunIsolatedTest(RunIsolatedTestBase):
         self.popen_calls.append((args, kwargs))
         self2.returncode = None
 
-      def communicate(self):
+      def wait(self, timeout=None):  # pylint: disable=unused-argument
         self.returncode = 0
-        return ('', None)
+        return self.returncode
 
       def kill(self):
         pass
@@ -186,6 +186,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
         StorageFake(files),
         isolateserver.MemoryCache(),
         False,
+        None,
+        None,
         None,
         None,
         [])
@@ -365,6 +367,8 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           False,
           None,
           None,
+          None,
+          None,
           [])
       self.assertEqual(0, ret)
 
@@ -419,11 +423,11 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
         self2._path = args[-1]
         self2.returncode = None
 
-      def communicate(self):
+      def wait(self, timeout=None):  # pylint: disable=unused-argument
         self.returncode = 0
         with open(self._path, 'wb') as f:
           f.write('generated data\n')
-        return ('', None)
+        return self.returncode
 
       def kill(self):
         pass
@@ -460,13 +464,14 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     self.assertEqual([(sub_cmd, {'detached': True})], self.popen_calls)
     expected = {
       u'exit_code': 0,
+      u'had_hard_timeout': False,
       u'internal_failure': None,
       u'outputs_ref': {
         u'isolated': u'e0a0fffa0910dd09e7ef4c89496116f60317e6c4',
         u'isolatedserver': u'http://localhost:1',
         u'namespace': u'default-gzip',
       },
-      u'version': 1,
+      u'version': 2,
     }
     self.assertEqual(expected, tools.read_json(out))
 

@@ -12,6 +12,7 @@ TODO(maruel): Add VOID and TIMED_OUT support like subprocess2.
 """
 
 import contextlib
+import errno
 import logging
 import os
 import signal
@@ -159,6 +160,18 @@ else:
         fcntl.fcntl(conn, fcntl.F_SETFL, flags)
 
 
+class TimeoutExpired(Exception):
+  """Compatible with python3 subprocess."""
+  def __init__(self, cmd, timeout, output=None):
+    self.cmd = cmd
+    self.timeout = timeout
+    self.output = output
+    super(TimeoutExpired, self).__init__(str(self))
+
+  def __str__(self):
+    return "Command '%s' timed out after %s seconds" % (self.cmd, self.timeout)
+
+
 class Popen(subprocess.Popen):
   """Adds timeout support on stdout and stderr.
 
@@ -197,6 +210,7 @@ class Popen(subprocess.Popen):
         kwargs['preexec_fn'] = lambda: os.setpgid(0, 0)
     with self.popen_lock:
       super(Popen, self).__init__(args, **kwargs)
+    self.args = args
     if self.detached and not subprocess.mswindows:
       self.gid = os.getpgid(self.pid)
 
@@ -209,8 +223,43 @@ class Popen(subprocess.Popen):
     """
     return (self.end or time.time()) - self.start
 
-  def wait(self):
-    ret = super(Popen, self).wait()
+  def wait(self, timeout=None):  # pylint: disable=arguments-differ
+    """Implements python3's timeout support."""
+    if timeout is None:
+      ret = super(Popen, self).wait()
+    else:
+      if subprocess.mswindows:
+        WAIT_TIMEOUT = 258
+        if self.returncode is None:
+          result = subprocess._subprocess.WaitForSingleObject(
+              self._handle, int(timeout * 1000))
+          if result == WAIT_TIMEOUT:
+            raise TimeoutExpired(self.args, timeout)
+          self.returncode = subprocess._subprocess.GetExitCodeProcess(
+              self._handle)
+      else:
+        # If you think the following code is horrible, it's because it is
+        # inspired by python3's stdlib.
+        end = time.time() + timeout
+        delay = 0.001
+        while True:
+          try:
+            pid, sts = subprocess._eintr_retry_call(
+                os.waitpid, self.pid, os.WNOHANG)
+          except OSError as e:
+            if e.errno != errno.ECHILD:
+              raise
+            pid = self.pid
+            sts = 0
+          if pid == self.pid:
+            self._handle_exitstatus(sts)
+            break
+          remaining = end - time.time()
+          if remaining <= 0:
+            raise TimeoutExpired(self.args, timeout)
+          delay = min(delay * 2, remaining, .05)
+          time.sleep(delay)
+      ret = self.returncode
     if not self.end:
       # communicate() uses wait() internally.
       self.end = time.time()
@@ -449,21 +498,3 @@ def set_signal_handler(signals, handler):
   finally:
     for sig, h in previous.iteritems():
       signal.signal(sig, h)
-
-
-@contextlib.contextmanager
-def Popen_with_handler(args, **kwargs):
-  proc = None
-  def handler(signum, _frame):
-    if proc:
-      logging.info('Received signal %d; terminating', signum)
-      # There could be a race condition where the process already exited. Our
-      # subprocess implementation traps this.
-      proc.terminate()
-
-  with set_signal_handler(STOP_SIGNALS, handler):
-    proc = Popen(args, detached=True, **kwargs)
-    try:
-      yield proc
-    finally:
-      proc.kill()

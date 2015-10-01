@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.5.2'
+__version__ = '0.5.3'
 
 import logging
 import optparse
@@ -130,8 +130,12 @@ def process_command(command, out_dir):
   return [fix(arg) for arg in command]
 
 
-def run_command(command, cwd, tmp_dir):
-  """Runs the command, returns the process exit code."""
+def run_command(command, cwd, tmp_dir, hard_timeout, grace_period):
+  """Runs the command.
+
+  Returns:
+    tuple(process exit code, bool if had a hard timeout)
+  """
   logging.info('run_command(%s, %s)' % (command, cwd))
   sys.stdout.flush()
 
@@ -145,11 +149,50 @@ def run_command(command, cwd, tmp_dir):
     pass
   else:
     env['TMP'] = tmp_dir.encode('ascii')
+  exit_code = None
+  had_hard_timeout = False
   with tools.Profiler('RunTest'):
+    proc = None
+    had_signal = []
     try:
-      with subprocess42.Popen_with_handler(command, cwd=cwd, env=env) as p:
-        p.communicate()
-        exit_code = p.returncode
+      # TODO(maruel): This code is imperfect. It doesn't handle well signals
+      # during the download phase and there's short windows were things can go
+      # wrong.
+      def handler(signum, _frame):
+        if proc and not had_signal:
+          logging.info('Received signal %d', signum)
+          had_signal.append(True)
+          raise subprocess42.TimeoutExpired()
+
+      proc = subprocess42.Popen(command, cwd=cwd, env=env, detached=True)
+      with subprocess42.set_signal_handler(subprocess42.STOP_SIGNALS, handler):
+        try:
+          exit_code = proc.wait(hard_timeout or None)
+        except subprocess42.TimeoutExpired:
+          if not had_signal:
+            logging.warning('Hard timeout')
+            had_hard_timeout = True
+          logging.warning('Sending SIGTERM')
+          proc.terminate()
+
+      # Ignore signals in grace period. Forcibly give the grace period to the
+      # child process.
+      if exit_code is None:
+        ignore = lambda *_: None
+        with subprocess42.set_signal_handler(subprocess42.STOP_SIGNALS, ignore):
+          try:
+            exit_code = proc.wait(grace_period or None)
+          except subprocess42.TimeoutExpired:
+            # Now kill for real. The user can distinguish between the
+            # following states:
+            # - signal but process exited within grace period,
+            #   hard_timed_out will be set but the process exit code will be
+            #   script provided.
+            # - processed exited late, exit code will be -9 on posix.
+            logging.warning('Grace exhausted; sending SIGKILL')
+            proc.kill()
+      logging.info('Waiting for proces exit')
+      exit_code = proc.wait()
     except OSError:
       # This is not considered to be an internal error. The executable simply
       # does not exit.
@@ -157,7 +200,7 @@ def run_command(command, cwd, tmp_dir):
   logging.info(
       'Command finished with exit code %d (%s)',
       exit_code, hex(0xffffffff & exit_code))
-  return exit_code
+  return exit_code, had_hard_timeout
 
 
 def delete_and_upload(storage, out_dir, leak_temp_dir):
@@ -207,14 +250,16 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
 
 
 def map_and_run(
-    isolated_hash, storage, cache, leak_temp_dir, root_dir, extra_args):
+    isolated_hash, storage, cache, leak_temp_dir, root_dir, hard_timeout,
+    grace_period, extra_args):
   """Maps and run the command. Returns metadata about the result."""
   # TODO(maruel): Include performance statistics.
   result = {
     'exit_code': None,
+    'had_hard_timeout': False,
     'internal_failure': None,
     'outputs_ref': None,
-    'version': 1,
+    'version': 2,
   }
   if root_dir:
     if not os.path.isdir(root_dir):
@@ -238,8 +283,9 @@ def map_and_run(
     cwd = os.path.normpath(os.path.join(run_dir, bundle.relative_cwd))
     command = bundle.command + extra_args
     file_path.ensure_command_has_abs_path(command, cwd)
-    result['exit_code'] = run_command(
-        process_command(command, out_dir), cwd, tmp_dir)
+    result['exit_code'], result['had_hard_timeout'] = run_command(
+        process_command(command, out_dir), cwd, tmp_dir, hard_timeout,
+        grace_period)
   except Exception as e:
     # An internal error occured. Report accordingly so the swarming task will be
     # retried automatically.
@@ -288,7 +334,7 @@ def map_and_run(
 
 def run_tha_test(
     isolated_hash, storage, cache, leak_temp_dir, result_json, root_dir,
-    extra_args):
+    hard_timeout, grace_period, extra_args):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable from there.
 
@@ -311,6 +357,9 @@ def run_tha_test(
                  exit code is always 0 unless an internal error occured.
     root_dir: directory to the path to use to create the temporary directory. If
               not specified, a random temporary directory is created.
+    hard_timeout: kills the process if it lasts more than this amount of
+                  seconds.
+    grace_period: number of seconds to wait between SIGTERM and SIGKILL.
     extra_args: optional arguments to add to the command stated in the .isolate
                 file.
 
@@ -319,7 +368,8 @@ def run_tha_test(
   """
   # run_isolated exit code. Depends on if result_json is used or not.
   result = map_and_run(
-      isolated_hash, storage, cache, leak_temp_dir, root_dir, extra_args)
+      isolated_hash, storage, cache, leak_temp_dir, root_dir, hard_timeout,
+      grace_period, extra_args)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
   if result_json:
     # We've found tests to delete 'work' when quitting, causing an exception
@@ -355,6 +405,11 @@ def main(args):
       '--json',
       help='dump output metadata to json file. When used, run_isolated returns '
            'non-zero only on internal failure')
+  parser.add_option(
+      '--hard-timeout', type='int', help='Enforce hard timeout in execution')
+  parser.add_option(
+      '--grace-period', type='int',
+      help='Grace period between SIGTERM and SIGKILL')
   data_group = optparse.OptionGroup(parser, 'Data source')
   data_group.add_option(
       '-s', '--isolated',
@@ -389,7 +444,7 @@ def main(args):
     assert storage.hash_algo == cache.hash_algo
     return run_tha_test(
         options.isolated, storage, cache, options.leak_temp_dir, options.json,
-        options.root_dir, args)
+        options.root_dir, options.hard_timeout, options.grace_period, args)
 
 
 if __name__ == '__main__':
