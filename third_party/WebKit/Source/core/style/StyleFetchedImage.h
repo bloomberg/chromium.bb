@@ -42,7 +42,7 @@ public:
     }
     ~StyleFetchedImage() override;
 
-    WrappedImagePtr data() const override { return m_image.get(); }
+    WrappedImagePtr data() const override;
 
     PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
     PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const override;
@@ -61,7 +61,7 @@ public:
     void notifyFinished(Resource*) override;
     PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
     bool knownToBeOpaque(const LayoutObject*) const override;
-    ImageResource* cachedImage() const override { return m_image.get(); }
+    ImageResource* cachedImage() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

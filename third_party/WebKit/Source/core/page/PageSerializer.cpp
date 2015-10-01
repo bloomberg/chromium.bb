@@ -528,8 +528,9 @@ void PageSerializer::retrieveResourcesForCSSValue(CSSValue* cssValue, Document& 
 {
     if (cssValue->isImageValue()) {
         CSSImageValue* imageValue = toCSSImageValue(cssValue);
-        StyleImage* styleImage = imageValue->cachedOrPendingImage();
-        // Non cached-images are just place-holders and do not contain data.
+        if (imageValue->isCachePending())
+            return;
+        StyleImage* styleImage = imageValue->cachedImage();
         if (!styleImage || !styleImage->isImageResource())
             return;
 

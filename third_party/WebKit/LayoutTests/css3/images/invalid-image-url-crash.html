@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<div id="target"></div>
+<script>
+test(() => {
+  target.style.backgroundImage = 'url(filesystem://invalid_url.png)';
+  // Force multiple style recalcs so that the image gets cached and reused.
+  getComputedStyle(target).backgroundImage;
+  target.style.color = 'green';
+  getComputedStyle(target).backgroundImage;
+}, "Don't crash when using cached CSS images with invalid URLs");
+</script>

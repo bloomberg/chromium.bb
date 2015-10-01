@@ -44,6 +44,16 @@ StyleFetchedImage::~StyleFetchedImage()
     m_image->removeClient(this);
 }
 
+WrappedImagePtr StyleFetchedImage::data() const
+{
+    return m_image.get();
+}
+
+ImageResource* StyleFetchedImage::cachedImage() const
+{
+    return m_image.get();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImage::cssValue() const
 {
     return CSSImageValue::create(m_image->url(), const_cast<StyleFetchedImage*>(this));

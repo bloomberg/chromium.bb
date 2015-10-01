@@ -47,6 +47,16 @@ StyleFetchedImageSet::~StyleFetchedImageSet()
     m_bestFitImage->removeClient(this);
 }
 
+WrappedImagePtr StyleFetchedImageSet::data() const
+{
+    return m_bestFitImage.get();
+}
+
+ImageResource* StyleFetchedImageSet::cachedImage() const
+{
+    return m_bestFitImage.get();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImageSet::cssValue() const
 {
     return m_imageSetValue;

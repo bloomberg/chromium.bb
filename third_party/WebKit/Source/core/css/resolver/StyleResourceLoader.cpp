@@ -30,14 +30,14 @@
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/dom/Document.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/layout/svg/ReferenceFilterBuilder.h"
+#include "core/style/ComputedStyle.h"
 #include "core/style/ContentData.h"
 #include "core/style/FillLayer.h"
-#include "core/style/ComputedStyle.h"
 #include "core/style/StyleFetchedImage.h"
 #include "core/style/StyleFetchedImageSet.h"
 #include "core/style/StyleGeneratedImage.h"
 #include "core/style/StylePendingImage.h"
-#include "core/layout/svg/ReferenceFilterBuilder.h"
 
 namespace blink {
 
@@ -80,20 +80,18 @@ void StyleResourceLoader::loadPendingSVGDocuments(ComputedStyle* computedStyle, 
 static PassRefPtrWillBeRawPtr<StyleImage> doLoadPendingImage(Document* document, StylePendingImage* pendingImage, float deviceScaleFactor, const ResourceLoaderOptions& options)
 {
     if (CSSImageValue* imageValue = pendingImage->cssImageValue())
-        return imageValue->cachedImage(document, options);
+        return imageValue->cacheImage(document, options);
 
-    if (CSSImageGeneratorValue* imageGeneratorValue
-        = pendingImage->cssImageGeneratorValue()) {
+    if (CSSImageGeneratorValue* imageGeneratorValue = pendingImage->cssImageGeneratorValue()) {
         imageGeneratorValue->loadSubimages(document);
         return StyleGeneratedImage::create(imageGeneratorValue);
     }
 
-    if (CSSCursorImageValue* cursorImageValue
-        = pendingImage->cssCursorImageValue())
-        return cursorImageValue->cachedImage(document, deviceScaleFactor);
+    if (CSSCursorImageValue* cursorImageValue = pendingImage->cssCursorImageValue())
+        return cursorImageValue->cacheImage(document, deviceScaleFactor);
 
     if (CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue())
-        return imageSetValue->cachedImageSet(document, deviceScaleFactor, options);
+        return imageSetValue->cacheImageSet(document, deviceScaleFactor, options);
 
     return nullptr;
 }
@@ -125,11 +123,8 @@ void StyleResourceLoader::loadPendingImages(ComputedStyle* style, ElementStyleRe
     if (elementStyleResources.pendingImageProperties().isEmpty())
         return;
 
-    PendingImagePropertyMap::const_iterator::Keys end = elementStyleResources.pendingImageProperties().end().keys();
-    for (PendingImagePropertyMap::const_iterator::Keys it = elementStyleResources.pendingImageProperties().begin().keys(); it != end; ++it) {
-        CSSPropertyID currentProperty = *it;
-
-        switch (currentProperty) {
+    for (CSSPropertyID property : elementStyleResources.pendingImageProperties()) {
+        switch (property) {
         case CSSPropertyBackgroundImage: {
             for (FillLayer* backgroundLayer = &style->accessBackgroundLayers(); backgroundLayer; backgroundLayer = backgroundLayer->next()) {
                 if (backgroundLayer->image() && backgroundLayer->image()->isPendingImage())
