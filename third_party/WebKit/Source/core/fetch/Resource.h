@@ -31,6 +31,7 @@
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashCountedSet.h"
@@ -317,8 +318,8 @@ protected:
         bool isScheduled(Resource*) const;
     private:
         ResourceCallback();
-        void timerFired(Timer<ResourceCallback>*);
-        Timer<ResourceCallback> m_callbackTimer;
+        void runTask();
+        OwnPtr<CancellableTaskFactory> m_callbackTaskFactory;
         WillBeHeapHashSet<RawPtrWillBeMember<Resource>> m_resourcesWithPendingClients;
     };
 

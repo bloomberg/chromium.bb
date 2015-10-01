@@ -959,14 +959,14 @@ DEFINE_TRACE(Resource::ResourceCallback)
 }
 
 Resource::ResourceCallback::ResourceCallback()
-    : m_callbackTimer(this, &ResourceCallback::timerFired)
+    : m_callbackTaskFactory(CancellableTaskFactory::create(this, &ResourceCallback::runTask))
 {
 }
 
 void Resource::ResourceCallback::schedule(Resource* resource)
 {
-    if (!m_callbackTimer.isActive())
-        m_callbackTimer.startOneShot(0, FROM_HERE);
+    if (!m_callbackTaskFactory->isPending())
+        Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(FROM_HERE, m_callbackTaskFactory->cancelAndCreate());
     resource->assertAlive();
     m_resourcesWithPendingClients.add(resource);
 }
@@ -975,8 +975,8 @@ void Resource::ResourceCallback::cancel(Resource* resource)
 {
     resource->assertAlive();
     m_resourcesWithPendingClients.remove(resource);
-    if (m_callbackTimer.isActive() && m_resourcesWithPendingClients.isEmpty())
-        m_callbackTimer.stop();
+    if (m_callbackTaskFactory->isPending() && m_resourcesWithPendingClients.isEmpty())
+        m_callbackTaskFactory->cancel();
 }
 
 bool Resource::ResourceCallback::isScheduled(Resource* resource) const
@@ -984,7 +984,7 @@ bool Resource::ResourceCallback::isScheduled(Resource* resource) const
     return m_resourcesWithPendingClients.contains(resource);
 }
 
-void Resource::ResourceCallback::timerFired(Timer<ResourceCallback>*)
+void Resource::ResourceCallback::runTask()
 {
     Vector<ResourcePtr<Resource>> resources;
     for (const RawPtrWillBeMember<Resource>& resource : m_resourcesWithPendingClients)
