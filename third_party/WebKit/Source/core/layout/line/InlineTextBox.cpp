@@ -187,6 +187,14 @@ SelectionState InlineTextBox::selectionState() const
 
 bool InlineTextBox::hasWrappedSelectionNewline() const
 {
+    // TODO(wkorman): We shouldn't need layout at this point and it should
+    // be enforced by DocumentLifecycle. http://crbug.com/537821
+    // Bail out as currently looking up selection state can cause the editing
+    // code can force a re-layout while scrutinizing the editing position, and
+    // InlineTextBox instances are not guaranteed to survive a re-layout.
+    if (lineLayoutItem().needsLayout())
+        return false;
+
     SelectionState state = selectionState();
     return RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled()
         // TODO(wkorman): Remove horizontal and RTL restrictions once operational.
