@@ -98,13 +98,6 @@ const uint32 kPendingPageColor = 0xFFEEEEEE;
 // painting the scrollbars > 60 Hz.
 #define kMaxInitialProgressivePaintTimeMs 10
 
-struct ClipBox {
-  float left;
-  float right;
-  float top;
-  float bottom;
-};
-
 std::vector<uint32_t> GetPageNumbersFromPrintPageNumberRange(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count) {
@@ -356,6 +349,28 @@ double CalculateScaleFactor(bool scale_to_fit,
   return std::min(ratio_x, ratio_y);
 }
 
+// A rect struct for use with FPDF bounding box functions.
+// Remember with PDFs, origin is bottom-left.
+struct ClipBox {
+  float left;
+  float right;
+  float top;
+  float bottom;
+};
+
+// Make the default size to be letter size (8.5" X 11"). We are just following
+// the PDFium way of handling these corner cases. PDFium always consider
+// US-Letter as the default page size.
+void SetDefaultClipBox(bool rotated, ClipBox* clip_box) {
+  const int kDpi = 72;
+  const float kPaperWidth = 8.5 * kDpi;
+  const float kPaperHeight = 11 * kDpi;
+  clip_box->left = 0;
+  clip_box->bottom = 0;
+  clip_box->right = rotated ? kPaperHeight : kPaperWidth;
+  clip_box->top = rotated ? kPaperWidth : kPaperHeight;
+}
+
 // Compute source clip box boundaries based on the crop box / media box of
 // source page and scale factor.
 //
@@ -366,21 +381,29 @@ double CalculateScaleFactor(bool scale_to_fit,
 // |clip_box| out param to hold the computed source clip box values.
 void CalculateClipBoxBoundary(FPDF_PAGE page, double scale_factor, bool rotated,
                               ClipBox* clip_box) {
-  if (!FPDFPage_GetCropBox(page, &clip_box->left, &clip_box->bottom,
-                           &clip_box->right, &clip_box->top)) {
-    if (!FPDFPage_GetMediaBox(page, &clip_box->left, &clip_box->bottom,
-                              &clip_box->right, &clip_box->top)) {
-      // Make the default size to be letter size (8.5" X 11"). We are just
-      // following the PDFium way of handling these corner cases. PDFium always
-      // consider US-Letter as the default page size.
-      float paper_width = 612;
-      float paper_height = 792;
-      clip_box->left = 0;
-      clip_box->bottom = 0;
-      clip_box->right = rotated ? paper_height : paper_width;
-      clip_box->top = rotated ? paper_width : paper_height;
-    }
+  ClipBox media_box;
+  if (!FPDFPage_GetMediaBox(page, &media_box.left, &media_box.bottom,
+                            &media_box.right, &media_box.top)) {
+    SetDefaultClipBox(rotated, &media_box);
   }
+
+  ClipBox crop_box;
+  if (!FPDFPage_GetCropBox(page, &crop_box.left, &crop_box.bottom,
+                          &crop_box.right, &crop_box.top)) {
+    SetDefaultClipBox(rotated, &crop_box);
+  }
+
+  // Clip |media_box| to the size of |crop_box|, but ignore |crop_box| if it is
+  // bigger than |media_box|.
+  clip_box->left =
+      (crop_box.left < media_box.left) ? media_box.left : crop_box.left;
+  clip_box->right =
+      (crop_box.right > media_box.right) ? media_box.right : crop_box.right;
+  clip_box->top = (crop_box.top > media_box.top) ? media_box.top : crop_box.top;
+  clip_box->bottom =
+      (crop_box.bottom < media_box.bottom) ? media_box.bottom : crop_box.bottom;
+
+  // Finally, scale |clip_box|.
   clip_box->left *= scale_factor;
   clip_box->right *= scale_factor;
   clip_box->bottom *= scale_factor;
