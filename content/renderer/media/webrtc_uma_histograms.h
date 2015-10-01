@@ -30,12 +30,14 @@ void LogUserMediaRequestWithNoResult(MediaStreamRequestState state);
 void LogUserMediaRequestResult(MediaStreamRequestResult result);
 
 // Helper enum used for histogramming calls to WebRTC APIs from JavaScript.
+// The entries are linked to UMA values and cannot be changed.
 enum JavaScriptAPIName {
   WEBKIT_GET_USER_MEDIA,
   WEBKIT_PEER_CONNECTION,
   WEBKIT_DEPRECATED_PEER_CONNECTION,
   WEBKIT_RTC_PEER_CONNECTION,
   WEBKIT_GET_MEDIA_DEVICES,
+  WEBKIT_MEDIA_STREAM_RECORDER,
   INVALID_NAME
 };
 

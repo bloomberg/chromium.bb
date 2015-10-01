@@ -51056,6 +51056,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WebRTC.webkitApiCount" enum="JavaScriptAPIName">
   <owner>perkj@chromium.org</owner>
+  <owner>mcasas@chromium.org</owner>
   <summary>Counts number of calls to WebRTC APIs from JavaScript.</summary>
 </histogram>
 
@@ -62363,6 +62364,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="DeprecatedPeerConnection"/>
   <int value="3" label="RTCPeerConnection"/>
   <int value="4" label="GetMediaDevices"/>
+  <int value="5" label="MediaStreamRecorder"/>
 </enum>
 
 <enum name="KeyboardControlEvent" type="int">

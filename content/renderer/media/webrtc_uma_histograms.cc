@@ -64,8 +64,8 @@ void PerSessionWebRTCAPIMetrics::LogUsageOnlyOnce(JavaScriptAPIName api_name) {
 }
 
 void PerSessionWebRTCAPIMetrics::ResetUsage() {
-  for (size_t i = 0; i < arraysize(has_used_api_); ++i)
-    has_used_api_[i] = false;
+  for (bool& has_used_api : has_used_api_)
+    has_used_api = false;
 }
 
 }  // namespace content

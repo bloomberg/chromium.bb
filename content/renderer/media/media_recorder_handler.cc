@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "content/renderer/media/video_track_recorder.h"
+#include "content/renderer/media/webrtc_uma_histograms.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/capture/webm_muxer.h"
@@ -40,6 +41,10 @@ bool MediaRecorderHandler::initialize(
     const blink::WebMediaStream& media_stream,
     const blink::WebString& mimeType) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  // Save histogram data so we can see how much MediaStream Recorder is used.
+  // The histogram counts the number of calls to the JS API.
+  UpdateWebRTCMethodCount(WEBKIT_MEDIA_STREAM_RECORDER);
+
   if (!canSupportMimeType(mimeType)) {
     DLOG(ERROR) << "Can't support type " << mimeType.utf8();
     return false;
