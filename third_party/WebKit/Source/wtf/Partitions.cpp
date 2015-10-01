@@ -38,6 +38,8 @@
 
 namespace WTF {
 
+const char* const Partitions::kAllocatedObjectPoolName = "partition_alloc/allocated_objects";
+
 int Partitions::s_initializationLock = 0;
 bool Partitions::s_initialized = false;
 

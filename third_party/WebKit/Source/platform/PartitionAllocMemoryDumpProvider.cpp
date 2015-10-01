@@ -100,8 +100,7 @@ bool PartitionAllocMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail l
     // This method calls memoryStats.partitionsDumpBucketStats with memory statistics.
     WTF::Partitions::dumpMemoryStats(levelOfDetail == WebMemoryDumpLevelOfDetail::Light, &partitionStatsDumper);
 
-    WebMemoryAllocatorDump* allocatedObjectsDump = memoryDump->createMemoryAllocatorDump(
-        String::format("%s/allocated_objects", kPartitionAllocDumpName));
+    WebMemoryAllocatorDump* allocatedObjectsDump = memoryDump->createMemoryAllocatorDump(String(Partitions::kAllocatedObjectPoolName));
     allocatedObjectsDump->AddScalar("size", "bytes", partitionStatsDumper.totalActiveBytes());
     memoryDump->AddOwnershipEdge(allocatedObjectsDump->guid(), partitionsDump->guid());
 
