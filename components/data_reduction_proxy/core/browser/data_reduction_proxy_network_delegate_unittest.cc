@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/command_line.h"
@@ -24,10 +26,12 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/log/test_net_log.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_server.h"
+#include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
@@ -70,16 +74,12 @@ const Client kClient = Client::UNKNOWN;
 class DataReductionProxyNetworkDelegateTest : public testing::Test {
  public:
   DataReductionProxyNetworkDelegateTest() : context_(true) {
+    context_.set_client_socket_factory(&mock_socket_factory_);
     context_.Init();
-
-    // The |test_job_factory_| takes ownership of the interceptor.
-    test_job_interceptor_ = new net::TestJobInterceptor();
-    EXPECT_TRUE(test_job_factory_.SetProtocolHandler(
-        url::kHttpScheme, make_scoped_ptr(test_job_interceptor_)));
-    context_.set_job_factory(&test_job_factory_);
 
     test_context_ = DataReductionProxyTestContext::Builder()
                         .WithClient(kClient)
+                        .WithMockClientSocketFactory(&mock_socket_factory_)
                         .WithURLRequestContext(&context_)
                         .Build();
 
@@ -130,33 +130,36 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         ->total_original_received_bytes_;
   }
 
+  net::MockClientSocketFactory* mock_socket_factory() {
+    return &mock_socket_factory_;
+  }
+
  protected:
+  // Each line in |response_headers| should end with "\r\n" and not '\0', and
+  // the last line should have a second "\r\n".
+  // An empty |response_headers| is allowed. It works by making this look like
+  // an HTTP/0.9 response, since HTTP/0.9 responses don't have headers.
   scoped_ptr<net::URLRequest> FetchURLRequest(
       const GURL& url,
-      const std::string& raw_response_headers,
-      int64 response_content_length) {
+      const std::string& response_headers,
+      int64_t response_content_length) {
     scoped_ptr<net::URLRequest> request = context_.CreateRequest(
         url, net::IDLE, &delegate_);
 
-    // Create a test job that will fill in the given response headers for the
-    // |fake_request|.
-    scoped_refptr<net::URLRequestTestJob> test_job(
-        new net::URLRequestTestJob(request.get(),
-                                   context_.network_delegate(),
-                                   raw_response_headers, std::string(), true));
-
-    // Configure the interceptor to use the test job to handle the next request.
-    test_job_interceptor_->set_main_intercept_job(test_job.get());
-
-    request->set_received_response_content_length(response_content_length);
-    net::HttpResponseInfo& response_info =
-        const_cast<net::HttpResponseInfo&>(request->response_info());
-    response_info.network_accessed = true;
+    std::string response_content(response_content_length, ' ');
+    net::MockRead initial_mock_reads[] = {
+        net::MockRead(response_headers.c_str()),
+        net::MockRead(response_content.c_str()),
+        net::MockRead(net::SYNCHRONOUS, net::OK),
+    };
+    net::StaticSocketDataProvider initial_socket_data_provider(
+        initial_mock_reads, arraysize(initial_mock_reads), nullptr, 0);
+    mock_socket_factory()->AddSocketDataProvider(&initial_socket_data_provider);
 
     request->Start();
     test_context_->RunUntilIdle();
 
-    if (!raw_response_headers.empty())
+    if (!response_headers.empty())
       EXPECT_TRUE(request->response_headers() != NULL);
 
     return request.Pass();
@@ -184,11 +187,9 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
  private:
   base::MessageLoopForIO message_loop_;
+  net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
-  // |test_job_interceptor_| is owned by |test_job_factory_|.
-  net::TestJobInterceptor* test_job_interceptor_;
-  net::URLRequestJobFactoryImpl test_job_factory_;
 
   net::ProxyConfig config_;
   net::NetworkDelegate* network_delegate_;
@@ -379,19 +380,17 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
 
   set_network_delegate(data_reduction_proxy_network_delegate_.get());
 
-  std::string raw_headers =
-      "HTTP/1.1 200 OK\n"
-      "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
-      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\n"
-      "Via: 1.1 Chrome-Compression-Proxy\n"
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "x-original-content-length: " +
-      base::Int64ToString(kOriginalContentLength) + "\n";
-
-  HeadersToRaw(&raw_headers);
+      base::Int64ToString(kOriginalContentLength) + "\r\n\r\n";
 
   scoped_ptr<net::URLRequest> fake_request(
-      FetchURLRequest(GURL("http://www.google.com/"),
-                      raw_headers, kResponseContentLength));
+      FetchURLRequest(GURL("http://www.google.com/"), response_headers,
+                      kResponseContentLength));
 
   base::TimeDelta freshness_lifetime =
       fake_request->response_info().headers->GetFreshnessLifetimes(
@@ -470,7 +469,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
     config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);
 
     fake_request = (FetchURLRequest(GURL("http://www.example.com/"),
-                                    raw_headers, kResponseContentLength));
+                                    response_headers, kResponseContentLength));
 
     // Histograms are accumulative, so get the sum of all the tests so far.
     int expected_count = 0;
@@ -629,12 +628,18 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternal) {
       base::Int64ToString(kOriginalContentLength) + "\n";
 
   HeadersToRaw(&raw_headers);
+  std::string response_headers =
+      net::HttpUtil::ConvertHeadersBackToHTTPResponse(raw_headers);
 
-  FetchURLRequest(GURL("http://www.google.com/"), raw_headers,
+  FetchURLRequest(GURL("http://www.google.com/"), response_headers,
                   kResponseContentLength);
 
-  EXPECT_EQ(kResponseContentLength, total_received_bytes());
-  EXPECT_EQ(kOriginalContentLength + static_cast<long>(raw_headers.size()),
+  EXPECT_EQ(
+      kResponseContentLength + static_cast<int64_t>(response_headers.size()),
+      total_received_bytes());
+  // Original size computation does not currently take into account that "\r\n"
+  // is removed from each header line.
+  EXPECT_EQ(kOriginalContentLength + static_cast<int64_t>(raw_headers.size()),
             total_original_received_bytes());
 }
 
