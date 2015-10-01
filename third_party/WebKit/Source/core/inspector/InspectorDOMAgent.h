@@ -95,6 +95,7 @@ public:
         virtual void highlightNode(Node*, const InspectorHighlightConfig&, bool omitTooltip) { }
         virtual void highlightQuad(PassOwnPtr<FloatQuad>, const InspectorHighlightConfig&) { }
         virtual void setInspectMode(SearchMode searchMode, PassOwnPtr<InspectorHighlightConfig>) { }
+        virtual void setInspectedNode(Node*) { }
     };
 
     static PassOwnPtrWillBeRawPtr<InspectorDOMAgent> create(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, Client* client)

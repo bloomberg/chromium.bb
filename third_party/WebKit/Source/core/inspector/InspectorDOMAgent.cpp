@@ -2071,6 +2071,8 @@ void InspectorDOMAgent::setInspectedNode(ErrorString* errorString, int nodeId)
     if (!node)
         return;
     m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtrWillBeNoop(new InspectableNode(node)));
+    if (m_client)
+        m_client->setInspectedNode(node);
 }
 
 void InspectorDOMAgent::getRelayoutBoundary(ErrorString* errorString, int nodeId, int* relayoutBoundaryNodeId)

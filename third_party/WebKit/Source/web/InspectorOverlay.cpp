@@ -337,6 +337,18 @@ void InspectorOverlay::setInspectMode(InspectorDOMAgent::SearchMode searchMode, 
     }
 }
 
+void InspectorOverlay::setInspectedNode(Node* node)
+{
+    if (m_inspectMode != InspectorDOMAgent::ShowLayoutEditor || (m_layoutEditor && m_layoutEditor->element() == node))
+        return;
+
+    if (m_layoutEditor) {
+        m_layoutEditor->commitChanges();
+        m_layoutEditor.clear();
+    }
+    initializeLayoutEditorIfNeeded(node);
+}
+
 void InspectorOverlay::highlightQuad(PassOwnPtr<FloatQuad> quad, const InspectorHighlightConfig& highlightConfig)
 {
     m_quadHighlightConfig = highlightConfig;
@@ -725,10 +737,16 @@ void InspectorOverlay::inspect(Node* node)
     if (m_domAgent)
         m_domAgent->inspect(node);
 
+    initializeLayoutEditorIfNeeded(node);
+    if (m_layoutEditor)
+        hideHighlight();
+}
+
+void InspectorOverlay::initializeLayoutEditorIfNeeded(Node* node)
+{
     if (node && node->isElementNode() && m_inspectMode == InspectorDOMAgent::ShowLayoutEditor && !m_layoutEditor) {
         m_layoutEditor = LayoutEditor::create(toElement(node), m_cssAgent, m_domAgent, &overlayMainFrame()->script());
         toChromeClientImpl(m_webViewImpl->page()->chromeClient()).setCursorOverridden(true);
-        hideHighlight();
     }
 }
 

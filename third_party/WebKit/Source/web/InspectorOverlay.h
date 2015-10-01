@@ -114,6 +114,7 @@ private:
     void highlightNode(Node*, const InspectorHighlightConfig&, bool omitTooltip) override;
     void highlightQuad(PassOwnPtr<FloatQuad>, const InspectorHighlightConfig&) override;
     void setInspectMode(InspectorDOMAgent::SearchMode, PassOwnPtr<InspectorHighlightConfig>) override;
+    void setInspectedNode(Node*) override;
 
     void highlightNode(Node*, Node* eventTarget, const InspectorHighlightConfig&, bool omitTooltip);
     bool isEmpty();
@@ -138,6 +139,7 @@ private:
     bool handleMouseMove(const PlatformMouseEvent&);
     bool shouldSearchForNode();
     void inspect(Node*);
+    void initializeLayoutEditorIfNeeded(Node*);
 
     WebViewImpl* m_webViewImpl;
     String m_pausedInDebuggerMessage;
