@@ -318,7 +318,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
         'video-rgba-rgba-unsigned_byte.html',
         ['android', 'android-content-shell'], bug=499555)
-    self.Flaky('conformance/textures/misc/texture-npot-video.html',
+    self.Fail('conformance/textures/misc/texture-npot-video.html',
         ['android', 'android-content-shell'], bug=520638)
     # These are failing on the Nexus 5 and 6
     self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
