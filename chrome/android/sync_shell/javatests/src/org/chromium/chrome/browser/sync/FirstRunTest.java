@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
@@ -32,6 +33,7 @@ public class FirstRunTest extends SyncTestBase {
     // Test that signing in through FirstRun signs in and starts sync.
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest
     public void testFreSignin() throws Exception {
         Account testAccount = setUpTestAccount();
         SyncTestUtil.verifySyncIsSignedOut(mContext);
