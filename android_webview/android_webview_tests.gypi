@@ -229,6 +229,19 @@
       {
         'targets': [
           {
+            'target_name': 'android_webview_test_apk_run',
+            'type': 'none',
+            'dependencies': [
+              'android_webview_test_apk',
+            ],
+            'includes': [
+              '../build/isolate.gypi',
+            ],
+            'sources': [
+              'android_webview_test_apk_run.isolate',
+            ],
+          },
+          {
             'target_name': 'android_webview_unittests_apk_run',
             'type': 'none',
             'dependencies': [
