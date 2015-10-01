@@ -55,3 +55,21 @@ cr-menu-item.providers-menu-item .menu-icon {
 html[dir='rtl'] cr-menu-item.providers-menu-item .menu-icon {
   float: right;
 }
+
+/* Keeps menu visibile while animating. Fade out animation is performed by
+   Javascript. */
+cr-menu[hidden].files-menu.animating {
+  opacity: 1;
+  visibility: visible;
+}
+
+cr-menu.files-menu > cr-menu-item {
+  position: relative;
+}
+
+/* Make ripple size wider to make the animation speed faster since paper-ripple
+   doesn't allow us to change its animation speed. */
+cr-menu.files-menu > cr-menu-item > paper-ripple {
+  left: -25%;
+  width: 150%;
+}

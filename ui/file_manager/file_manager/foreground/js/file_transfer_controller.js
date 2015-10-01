@@ -1047,10 +1047,6 @@ FileTransferController.prototype.cutOrCopyFromDirectoryTree = function(
 
   this.appendCutOrCopyInfo_(clipboardData, effectAllowed, volumeInfo, [entry],
       missingFileContents);
-
-  // Perform ripple animation.
-  var ripple = selectedItem.querySelector('paper-ripple');
-  ripple.simulatedRipple();
 };
 
 /**

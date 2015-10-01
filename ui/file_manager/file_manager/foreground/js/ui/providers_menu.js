@@ -6,6 +6,7 @@ cr.define('cr.ui', function() {
   /**
    * Extends cr.ui.MenuItem with a hi-dpi friendly icon on the left.
    * TODO(mtomasz): Upstream to cr.ui.MenuItem.
+   * TODO(yawano): Merge ProvidersMenuItem to FilesMenuItem.
    * @constructor
    * @extends {cr.ui.MenuItem}
    */

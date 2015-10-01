@@ -149,6 +149,7 @@
 //<include src="ui/file_list_selection_model.js">
 //<include src="ui/file_table.js">
 //<include src="ui/file_table_list.js">
+//<include src="ui/files_menu.js">
 //<include src="ui/gear_menu.js">
 //<include src="ui/list_container.js">
 //<include src="ui/location_line.js">

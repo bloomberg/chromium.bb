@@ -402,6 +402,21 @@ FileManagerUI.prototype.initBanners = function(banners) {
 };
 
 /**
+ * Initialize files menu items. This method must be called after all files menu
+ * items are decorated as cr.ui.MenuItem.
+ */
+FileManagerUI.prototype.decorateFilesMenuItems = function() {
+  var filesMenuItems = document.querySelectorAll(
+      'cr-menu.files-menu > cr-menu-item');
+
+  for (var i = 0; i < filesMenuItems.length; i++) {
+    var filesMenuItem = filesMenuItems[i];
+    assertInstanceof(filesMenuItem, cr.ui.MenuItem);
+    cr.ui.decorate(filesMenuItem, cr.ui.FilesMenuItem);
+  }
+};
+
+/**
  * Relayouts the UI.
  */
 FileManagerUI.prototype.relayout = function() {

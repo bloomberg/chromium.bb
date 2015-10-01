@@ -125,7 +125,8 @@
                i18n-values="label:INSTALL_NEW_EXTENSION_LABEL">
     </commands>
 
-    <cr-menu id="file-context-menu" class="chrome-menu" showShortcuts>
+    <cr-menu id="file-context-menu" class="chrome-menu files-menu"
+             menu-item-selector="cr-menu-item,hr" showShortcuts>
       <cr-menu-item id="default-action-menu-item" command="#default-action"
                 visibleif="full-page" hidden></cr-menu-item>
       <cr-menu-item command="#open-with"
@@ -148,14 +149,16 @@
                 visibleif="saveas-file full-page"></cr-menu-item>
     </cr-menu>
 
-    <cr-menu id="roots-context-menu" class="chrome-menu" >
+    <cr-menu id="roots-context-menu" class="chrome-menu files-menu"
+             menu-item-selector="cr-menu-item">
       <cr-menu-item command="#configure"></cr-menu-item>
       <cr-menu-item command="#unmount"></cr-menu-item>
       <cr-menu-item command="#format"></cr-menu-item>
       <cr-menu-item command="#remove-folder-shortcut"></cr-menu-item>
     </cr-menu>
 
-    <cr-menu id="directory-tree-context-menu" class="chrome-menu" >
+    <cr-menu id="directory-tree-context-menu" class="chrome-menu files-menu"
+             menu-item-selector="cr-menu-item,hr">
       <cr-menu-item command="#create-folder-shortcut"></cr-menu-item>
       <cr-menu-item command="#cut" visibleif="full-page"></cr-menu-item>
       <cr-menu-item command="#copy" visibleif="full-page"></cr-menu-item>
@@ -167,7 +170,8 @@
       <cr-menu-item command="#new-folder" visibleif="saveas-file full-page"></cr-menu-item>
     </cr-menu>
 
-    <cr-menu id="sort-menu" class="chrome-menu" menu-item-selector="cr-menu-item">
+    <cr-menu id="sort-menu" class="chrome-menu files-menu"
+             menu-item-selector="cr-menu-item">
       <cr-menu-item id="sort-menu-sort-by-name"
                     command="#sort-by-name"></cr-menu-item>
       <cr-menu-item id="sort-menu-sort-by-size"
@@ -178,7 +182,7 @@
                     command="#sort-by-date"></cr-menu-item>
     </cr-menu>
 
-    <cr-menu id="gear-menu" class="chrome-menu" showShortcuts
+    <cr-menu id="gear-menu" class="chrome-menu files-menu" showShortcuts
              menu-item-selector="cr-menu-item, hr">
       <cr-menu-item id="gear-menu-newwindow" command="#new-window"></cr-menu-item>
       <cr-menu-item id="gear-menu-newfolder" command="#new-folder"></cr-menu-item>
@@ -208,12 +212,14 @@
       </div>
     </cr-menu>
 
-    <cr-menu id="tasks-menu" class="chrome-menu">
+    <cr-menu id="tasks-menu" class="chrome-menu files-menu"
+             menu-item-selector="cr-menu-item, hr">
     </cr-menu>
 
     <cr-menu id="add-new-services-menu" class="chrome-menu"></cr-menu>
 
-    <cr-menu id="text-context-menu" class="chrome-menu" showShortcuts>
+    <cr-menu id="text-context-menu" class="chrome-menu files-menu" showShortcuts
+             menu-item-selector="cr-menu-item">
       <cr-menu-item command="#cut"></cr-menu-item>
       <cr-menu-item command="#copy"></cr-menu-item>
       <cr-menu-item command="#paste"></cr-menu-item>

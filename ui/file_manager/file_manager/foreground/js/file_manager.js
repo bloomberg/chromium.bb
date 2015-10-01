@@ -535,6 +535,8 @@ FileManager.prototype = /** @struct */ {
             this.document_,
             // Whether to show any welcome banner.
             this.dialogType === DialogType.FULL_PAGE));
+
+    this.ui_.decorateFilesMenuItems();
   };
 
   /**

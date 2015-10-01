@@ -15,7 +15,6 @@ cr.define('cr.ui', function() {
    */
   var ComboButton = cr.ui.define(cr.ui.MenuButton);
 
-
   ComboButton.prototype = {
     __proto__: cr.ui.MenuButton.prototype,
 
@@ -32,6 +31,11 @@ cr.define('cr.ui', function() {
     addDropDownItem: function(item) {
       this.multiple = true;
       var menuitem = this.menu.addMenuItem(item);
+
+      // If menu is files-menu, decorate menu item as FilesMenuItem.
+      if (this.menu.classList.contains('files-menu'))
+        cr.ui.decorate(menuitem, cr.ui.FilesMenuItem);
+
       menuitem.data = item;
       if (item.iconType) {
         menuitem.style.backgroundImage = '';
