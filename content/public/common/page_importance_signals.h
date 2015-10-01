@@ -12,6 +12,8 @@ namespace content {
 // This struct is a subset of Blink's WebPageImportanceSignals, containing only
 // the signals used in Chromium side.
 struct PageImportanceSignals {
+  PageImportanceSignals() : had_form_interaction(false) {}
+
   bool had_form_interaction;
 };
 };
