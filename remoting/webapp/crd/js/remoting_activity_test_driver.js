@@ -23,17 +23,21 @@ var remoting = remoting || {};
 var MockHostList = function() {};
 
 /** @override */
-MockHostList.prototype.refresh = function(callback) {
-  Promise.resolve().then(function() {
-    callback(true);
-  });
+MockHostList.prototype.refreshAndDisplay = function() {
+  return Promise.resolve();
 };
 
 /** @override */
 MockHostList.prototype.getHostForId = function(hostId) {
   var host = new remoting.Host(hostId);
   host.jabberId = 'fake_jabber_id';
+  host.status = 'ONLINE';
   return host;
+};
+
+/** @override */
+MockHostList.prototype.getHostStatusUpdateElapsedTime = function() {
+  return 2000;
 };
 
 /**

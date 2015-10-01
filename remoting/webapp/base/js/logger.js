@@ -41,6 +41,12 @@ remoting.Logger.prototype.setHostOS = function(hostOS) {};
 remoting.Logger.prototype.setHostOSVersion = function(hostOSVersion) {};
 
 /**
+ * @param {number} time Time in milliseconds since the last host status update.
+ * @return {void} Nothing.
+ */
+remoting.Logger.prototype.setHostStatusUpdateElapsedTime = function(time) {};
+
+/**
  * Set the connection type (direct, stun relay).
  *
  * @param {string} connectionType

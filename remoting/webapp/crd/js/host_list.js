@@ -68,18 +68,32 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton,
   /** @private {number} */
   this.webappMajorVersion_ = parseInt(chrome.runtime.getManifest().version, 10);
 
-  this.errorButton_.addEventListener('click',
-                                     this.onErrorClick_.bind(this),
-                                     false);
+  /**
+   * The timestamp (in milliseconds since 01/01/1970) till the last host list
+   * refresh.
+   *
+   * @private {number}
+   */
+  this.lastHostListRefresh_ = 0;
+
+  /** @private {Promise} */
+  this.pendingRefresh_ = null;
+
   var reloadButton = this.loadingIndicator_.firstElementChild;
   /** @type {remoting.HostList} */
   var that = this;
   /** @param {Event} event */
   function refresh(event) {
     event.preventDefault();
-    that.refresh(that.display.bind(that));
+    that.refreshAndDisplay();
   }
-  reloadButton.addEventListener('click', refresh, false);
+
+  /** @private */
+  this.eventHooks_ = new base.Disposables(
+      new base.DomEventHook(reloadButton, 'click', refresh, false),
+      new base.DomEventHook(window, 'focus', this.onFocus_.bind(this), false),
+      new base.DomEventHook(this.errorButton_, 'click',
+                            this.onErrorClick_.bind(this), false));
 };
 
 /**
@@ -139,24 +153,26 @@ remoting.HostList.prototype.getHostIdForName = function(hostName) {
 /**
  * Query the Remoting Directory for the user's list of hosts.
  *
- * @param {function(boolean):void} onDone Callback invoked with true on success
- *     or false on failure.
- * @return {void} Nothing.
+ * @return {Promise} A Promise that resolves when the host list refreshes or
+ *    rejects if it fails.
  */
-remoting.HostList.prototype.refresh = function(onDone) {
+remoting.HostList.prototype.refresh = function() {
   this.loadingIndicator_.classList.add('loading');
-  /** @type {remoting.HostList} */
-  var that = this;
-  /** @param {!remoting.Error} error */
-  var onError = function(error) {
-    that.lastError_ = error;
-    onDone(false);
-  };
-  remoting.HostListApi.getInstance().get().then(function(hosts) {
-    onDone(that.onHostListResponse_(hosts));
-  }).catch(
-    remoting.Error.handler(onError)
-  );
+
+  if (!this.pendingRefresh_) {
+    /** @type {remoting.HostList} */
+    var that = this;
+    this.pendingRefresh_ = remoting.HostListApi.getInstance().get().then(
+      function(hosts) {
+        that.pendingRefresh_ = null;
+        that.onHostListResponse_(hosts);
+      }).catch(function (/** !remoting.Error */ error) {
+        that.pendingRefresh_ = null;
+        that.lastError_ = error;
+        throw error;
+      });
+  }
+  return this.pendingRefresh_;
 };
 
 /**
@@ -170,11 +186,37 @@ remoting.HostList.prototype.refresh = function(onDone) {
  */
 remoting.HostList.prototype.onHostListResponse_ = function(hosts) {
   this.lastError_ = remoting.Error.none();
+  this.lastHostListRefresh_ = Date.now();
   this.hosts_ = hosts;
   this.sortHosts_();
   this.save_();
   this.loadingIndicator_.classList.remove('loading');
   return true;
+};
+
+/**
+ * @return {Promise} A promise that resolves when the host list finishes
+ *    updating its UI.
+ */
+remoting.HostList.prototype.refreshAndDisplay = function() {
+  return this.refresh().then(this.display.bind(this));
+};
+
+/**
+ * Auto refreshes the host list when the current window receives focus.
+ *
+ * @private
+ */
+remoting.HostList.prototype.onFocus_ = function() {
+  // Rate limit the refresh to avoid spamming the directory service.
+  if ((Date.now() - this.lastHostListRefresh_) < 3000) {
+    return;
+  }
+
+  if (remoting.currentMode == remoting.AppMode.IN_SESSION) {
+    return;
+  }
+  this.refreshAndDisplay();
 };
 
 /**
@@ -257,6 +299,13 @@ remoting.HostList.prototype.display = function() {
   if (noHostsRegistered) {
     this.showHostListEmptyMessage_(this.localHostSection_.canChangeState());
   }
+};
+
+/**
+ * @return {number} Time in ms since the last host list refresh
+ */
+remoting.HostList.prototype.getHostStatusUpdateElapsedTime = function() {
+  return Date.now() - this.lastHostListRefresh_;
 };
 
 /**
@@ -349,14 +398,13 @@ remoting.HostList.prototype.unregisterHostById = function(hostId, opt_onDone) {
     return;
   }
 
-  remoting.HostListApi.getInstance().remove(hostId).
-      then(function() {
-        that.refresh(function() {
-          that.display();
-          onDone();
-        });
-      }).
-      catch(this.onError_);
+  remoting.HostListApi.getInstance().remove(hostId).then(
+    this.refresh.bind(this)
+  ).then(
+    this.display.bind(this)
+  ).then(
+    onDone
+  ).catch(this.onError_);
 };
 
 /**
@@ -411,7 +459,7 @@ remoting.HostList.prototype.onErrorClick_ = function() {
   if (this.lastError_.hasTag(remoting.Error.Tag.AUTHENTICATION_FAILED)) {
     remoting.handleAuthFailureAndRelaunch();
   } else {
-    this.refresh(remoting.updateLocalHostState);
+    this.refresh().then(remoting.updateLocalHostState);
   }
 };
 

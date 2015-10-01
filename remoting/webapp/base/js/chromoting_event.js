@@ -89,6 +89,8 @@ remoting.ChromotingEvent = function(type) {
   this.xmpp_error;
   /** @type {remoting.ChromotingEvent.SessionEntryPoint} */
   this.session_entry_point;
+  /** @type {number} */
+  this.host_status_update_elapsed_time;
 
   this.init_();
 };
@@ -171,7 +173,6 @@ remoting.ChromotingEvent.Role = {
 
 /** @enum {number} */
 remoting.ChromotingEvent.Os = {
-  UNKNOWN: 0,
   LINUX: 1,
   CHROMEOS: 2,
   MAC: 3,
@@ -198,16 +199,14 @@ remoting.ChromotingEvent.toOs = function(type) {
       return remoting.ChromotingEvent.Os.MAC
     case 'windows':
       return remoting.ChromotingEvent.Os.WINDOWS;
-    case 'other':
-      return remoting.ChromotingEvent.Os.OTHER;
     case 'android':
       return remoting.ChromotingEvent.Os.ANDROID;
     case 'ios':
       return remoting.ChromotingEvent.Os.IOS;
     default:
-      return remoting.ChromotingEvent.Os.UNKNOWN;
+      return remoting.ChromotingEvent.Os.OTHER;
   }
-}
+};
 
 /** @enum {number} */
 remoting.ChromotingEvent.SessionState = {

@@ -39,7 +39,7 @@ remoting.Host = function(hostId) {
   /** @type {string} */
   this.hostVersion = '';
   /** @type {remoting.ChromotingEvent.Os} */
-  this.hostOS = remoting.ChromotingEvent.Os.UNKNOWN;
+  this.hostOS = remoting.ChromotingEvent.Os.OTHER;
   /** @type {string} */
   this.hostOSVersion = '';
   /** @type {Array<string>} */

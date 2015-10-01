@@ -277,12 +277,8 @@ QUnit.test('HOST_OFFLINE - JID refresh failed', function() {
       onPluginCreated);
   testDriver.mockConnection().pluginFactory().mock$setPluginStatusChanged(
       onStatusChanged);
-  sinon.stub(testDriver.mockHostList(), 'refresh',
-    function(/** function(boolean)*/ callback) {
-      // Fail the refresh.
-      Promise.resolve().then(function(){
-        callback(false);
-      });
+  sinon.stub(testDriver.mockHostList(), 'refreshAndDisplay', function(callback){
+      return Promise.reject();
   });
 
   return testDriver.startTest();

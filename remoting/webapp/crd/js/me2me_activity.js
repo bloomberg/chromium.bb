@@ -90,6 +90,8 @@ remoting.Me2MeActivity.prototype.createLogger_ = function(entryPoint) {
   logger.setHostOS(this.host_.hostOS);
   logger.setHostOSVersion(this.host_.hostOSVersion);
   logger.setLogEntryMode(Mode.ME2ME);
+  logger.setHostStatusUpdateElapsedTime(
+      this.hostList_.getHostStatusUpdateElapsedTime());
   return logger;
 };
 
@@ -172,24 +174,28 @@ remoting.Me2MeActivity.prototype.createCredentialsProvider_ = function() {
  */
 remoting.Me2MeActivity.prototype.reconnectOnHostOffline_ = function(error) {
   var that = this;
-  var onHostListRefresh = function(/** boolean */ success) {
-    if (success) {
-      var host = that.hostList_.getHostForId(that.host_.hostId);
-      var SessionEntryPoint = remoting.ChromotingEvent.SessionEntryPoint;
+  var onHostListRefresh = function() {
+    var host = that.hostList_.getHostForId(that.host_.hostId);
+    var SessionEntryPoint = remoting.ChromotingEvent.SessionEntryPoint;
 
-      // Reconnect if the host's JID changes.
-      if (Boolean(host) && host.jabberId != that.host_.jabberId) {
-        that.host_ = host;
-        that.reconnect_(SessionEntryPoint.AUTO_RECONNECT_ON_HOST_OFFLINE);
-        return;
-      }
+    // Reconnect if the host's JID changes.
+    if (Boolean(host) &&
+        host.jabberId != that.host_.jabberId &&
+        host.status == 'ONLINE') {
+      that.host_ = host;
+      that.reconnect_(SessionEntryPoint.AUTO_RECONNECT_ON_HOST_OFFLINE);
+      return;
     }
     that.showErrorMessage_(error);
   };
 
   this.retryOnHostOffline_ = false;
   // The plugin will be re-created when the host list has been refreshed.
-  this.hostList_.refresh(onHostListRefresh);
+  this.hostList_.refreshAndDisplay().then(
+    onHostListRefresh
+  ).catch(
+    this.showErrorMessage_.bind(this, error)
+  );
 };
 
 /**

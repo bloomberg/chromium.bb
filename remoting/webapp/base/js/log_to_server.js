@@ -299,6 +299,13 @@ remoting.LogToServer.prototype.setHostVersion = function(hostVersion) {
 remoting.LogToServer.prototype.setHostOS = function(hostOS) {};
 
 /**
+ * Stub
+ * @override {remoting.Logger}
+ */
+remoting.LogToServer.prototype.setHostStatusUpdateElapsedTime = function(time) {
+};
+
+/**
  * Stub.
  * @param {string} hostOSVersion Version of the host OS for current session.
  * @return {void} Nothing.
