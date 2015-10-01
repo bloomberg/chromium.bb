@@ -68,7 +68,7 @@ public:
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(ServiceWorkerRegistration::create(m_resolver->executionContext(), handle.release()));
+        m_resolver->resolve(ServiceWorkerRegistration::getOrCreate(m_resolver->executionContext(), handle.release()));
     }
 
     void onError(const WebServiceWorkerError& error) override
@@ -99,7 +99,7 @@ public:
             m_resolver->resolve();
             return;
         }
-        m_resolver->resolve(ServiceWorkerRegistration::create(m_resolver->executionContext(), handle.release()));
+        m_resolver->resolve(ServiceWorkerRegistration::getOrCreate(m_resolver->executionContext(), handle.release()));
     }
 
     void onError(const WebServiceWorkerError& error) override
@@ -156,7 +156,7 @@ public:
         ASSERT(m_ready->state() == ReadyProperty::Pending);
 
         if (m_ready->executionContext() && !m_ready->executionContext()->activeDOMObjectsAreStopped())
-            m_ready->resolve(ServiceWorkerRegistration::create(m_ready->executionContext(), handle.release()));
+            m_ready->resolve(ServiceWorkerRegistration::getOrCreate(m_ready->executionContext(), handle.release()));
     }
 
 private:

@@ -46,7 +46,9 @@ public:
     void setWaiting(WebServiceWorker*) override;
     void setActive(WebServiceWorker*) override;
 
-    static ServiceWorkerRegistration* create(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration::Handle>);
+    // Returns an existing registration object for the handle if it exists.
+    // Otherwise, returns a new registration object.
+    static ServiceWorkerRegistration* getOrCreate(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration::Handle>);
 
     ServiceWorker* installing() { return m_installing; }
     ServiceWorker* waiting() { return m_waiting; }
@@ -92,7 +94,7 @@ public:
     {
         HeapVector<Member<ServiceWorkerRegistration>> registrations;
         for (auto& registration : *webServiceWorkerRegistrations)
-            registrations.append(ServiceWorkerRegistration::create(resolver->executionContext(), registration.release()));
+            registrations.append(ServiceWorkerRegistration::getOrCreate(resolver->executionContext(), registration.release()));
         return registrations;
     }
 };

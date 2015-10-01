@@ -158,7 +158,7 @@ void ServiceWorkerGlobalScope::setRegistration(WebPassOwnPtr<WebServiceWorkerReg
 {
     if (!executionContext())
         return;
-    m_registration = ServiceWorkerRegistration::create(executionContext(), handle.release());
+    m_registration = ServiceWorkerRegistration::getOrCreate(executionContext(), handle.release());
 }
 
 bool ServiceWorkerGlobalScope::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)

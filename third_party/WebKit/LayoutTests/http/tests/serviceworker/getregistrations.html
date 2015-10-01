@@ -45,7 +45,7 @@ promise_test(function(t) {
           return navigator.serviceWorker.getRegistrations();
         })
       .then(function(value) {
-          assert_registration_array_equals(
+          assert_array_equals(
             value,
             registrations,
             'getRegistrations should resolve with array of registrations.');
@@ -68,7 +68,7 @@ promise_test(function(t) {
           return navigator.serviceWorker.getRegistrations();
         })
       .then(function(value) {
-          assert_registration_array_equals(
+          assert_array_equals(
             value,
             registrations,
             'getRegistrations should resolve with array of registrations.');
@@ -128,7 +128,7 @@ promise_test(function(t) {
                     return navigator.serviceWorker.getRegistrations();
                   })
                 .then(function(value) {
-                    assert_registration_array_equals(value, registrations,
+                    assert_array_equals(value, registrations,
                       'getRegistrations should return only the same origin ' +
                       'registrations.');
                     channel.port1.postMessage('unregister');

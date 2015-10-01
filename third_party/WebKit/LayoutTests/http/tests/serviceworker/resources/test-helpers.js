@@ -197,26 +197,3 @@ function login(test, local, remote) {
                           'password2' + suffix, 'cookie2');
       });
 }
-
-// Helper for testing with ServiceWorkerRegistration objects. Compares simple
-// attributes defined on the interfaces.
-function assert_registration_equals(actual, expected, description) {
-  assert_class_string(actual, 'ServiceWorkerRegistration', description);
-  ['scope', 'installing', 'waiting', 'active'].forEach(function(attribute) {
-      assert_equals(actual[attribute], expected[attribute],
-                    description + ' Attributes differ: ' + attribute + '.');
-    });
-}
-
-// Asserts that two arrays |actual| and |expected| contain the same set of
-// ServiceWorkerRegistration as determined by assert_registration_equals(). The
-// corresponding elements must occupy corresponding indices in their respective
-// arrays.
-function assert_registration_array_equals(actual, expected, description) {
-  assert_true(Array.isArray(actual), description);
-  assert_equals(actual.length, expected.length, description);
-  actual.forEach(function(value, index) {
-      assert_registration_equals(value, expected[index],
-                                 description + ' :  object[' + index + ']');
-    });
-}

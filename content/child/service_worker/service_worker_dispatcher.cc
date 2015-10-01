@@ -294,23 +294,56 @@ WebServiceWorkerImpl* ServiceWorkerDispatcher::GetServiceWorker(
 }
 
 scoped_refptr<WebServiceWorkerRegistrationImpl>
-ServiceWorkerDispatcher::CreateRegistration(
+ServiceWorkerDispatcher::GetOrCreateRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
-  return CreateRegistrationInternal(
-      ServiceWorkerRegistrationHandleReference::Create(
-          info, thread_safe_sender_.get()),
-      attrs, false /* adopt_handle */);
+  RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
+  if (found != registrations_.end())
+    return found->second;
+
+  // WebServiceWorkerRegistrationImpl constructor calls
+  // AddServiceWorkerRegistration.
+  scoped_refptr<WebServiceWorkerRegistrationImpl> registration(
+      new WebServiceWorkerRegistrationImpl(
+          ServiceWorkerRegistrationHandleReference::Create(
+              info, thread_safe_sender_.get())));
+
+  bool adopt_handle = false;
+  registration->SetInstalling(GetServiceWorker(attrs.installing, adopt_handle));
+  registration->SetWaiting(GetServiceWorker(attrs.waiting, adopt_handle));
+  registration->SetActive(GetServiceWorker(attrs.active, adopt_handle));
+  return registration.Pass();
 }
 
 scoped_refptr<WebServiceWorkerRegistrationImpl>
-ServiceWorkerDispatcher::AdoptRegistration(
+ServiceWorkerDispatcher::GetOrAdoptRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
-  return CreateRegistrationInternal(
-      ServiceWorkerRegistrationHandleReference::Adopt(
-          info, thread_safe_sender_.get()),
-      attrs, true /* adopt_handle */);
+  RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
+  if (found != registrations_.end()) {
+    ServiceWorkerHandleReference::Adopt(attrs.installing,
+                                        thread_safe_sender_.get());
+    ServiceWorkerHandleReference::Adopt(attrs.waiting,
+                                        thread_safe_sender_.get());
+    ServiceWorkerHandleReference::Adopt(attrs.active,
+                                        thread_safe_sender_.get());
+    ServiceWorkerRegistrationHandleReference::Adopt(info,
+                                                    thread_safe_sender_.get());
+    return found->second;
+  }
+
+  // WebServiceWorkerRegistrationImpl constructor calls
+  // AddServiceWorkerRegistration.
+  scoped_refptr<WebServiceWorkerRegistrationImpl> registration(
+      new WebServiceWorkerRegistrationImpl(
+          ServiceWorkerRegistrationHandleReference::Adopt(
+              info, thread_safe_sender_.get())));
+
+  bool adopt_handle = true;
+  registration->SetInstalling(GetServiceWorker(attrs.installing, adopt_handle));
+  registration->SetWaiting(GetServiceWorker(attrs.waiting, adopt_handle));
+  registration->SetActive(GetServiceWorker(attrs.active, adopt_handle));
+  return registration.Pass();
 }
 
 // We can assume that this message handler is called before the worker context
@@ -372,7 +405,7 @@ void ServiceWorkerDispatcher::OnRegistered(
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(AdoptRegistration(info, attrs)->CreateHandle());
+  callbacks->onSuccess(GetOrAdoptRegistration(info, attrs)->CreateHandle());
   pending_registration_callbacks_.Remove(request_id);
 }
 
@@ -434,7 +467,7 @@ void ServiceWorkerDispatcher::OnDidGetRegistration(
 
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration;
   if (info.handle_id != kInvalidServiceWorkerHandleId)
-    registration = AdoptRegistration(info, attrs);
+    registration = GetOrAdoptRegistration(info, attrs);
 
   callbacks->onSuccess(registration ? registration->CreateHandle() : nullptr);
   pending_get_registration_callbacks_.Remove(request_id);
@@ -472,7 +505,8 @@ void ServiceWorkerDispatcher::OnDidGetRegistrations(
       // WebServiceWorkerGetRegistrationsCallbacks cannot receive an array of
       // WebPassOwnPtr<WebServiceWorkerRegistration::Handle>, so create leaky
       // handles instead.
-      (*registrations)[i] = AdoptRegistration(info, attr)->CreateLeakyHandle();
+      (*registrations)[i] =
+          GetOrAdoptRegistration(info, attr)->CreateLeakyHandle();
     }
   }
 
@@ -499,7 +533,7 @@ void ServiceWorkerDispatcher::OnDidGetRegistrationForReady(
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(AdoptRegistration(info, attrs)->CreateHandle());
+  callbacks->onSuccess(GetOrAdoptRegistration(info, attrs)->CreateHandle());
   get_for_ready_callbacks_.Remove(request_id);
 }
 
@@ -733,21 +767,6 @@ void ServiceWorkerDispatcher::RemoveServiceWorkerRegistration(
     int registration_handle_id) {
   DCHECK(ContainsKey(registrations_, registration_handle_id));
   registrations_.erase(registration_handle_id);
-}
-
-scoped_refptr<WebServiceWorkerRegistrationImpl>
-ServiceWorkerDispatcher::CreateRegistrationInternal(
-    scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref,
-    const ServiceWorkerVersionAttributes& attrs,
-    bool adopt_handle) {
-  // WebServiceWorkerRegistrationImpl constructor calls
-  // AddServiceWorkerRegistration.
-  scoped_refptr<WebServiceWorkerRegistrationImpl> registration(
-      new WebServiceWorkerRegistrationImpl(handle_ref.Pass()));
-  registration->SetInstalling(GetServiceWorker(attrs.installing, adopt_handle));
-  registration->SetWaiting(GetServiceWorker(attrs.waiting, adopt_handle));
-  registration->SetActive(GetServiceWorker(attrs.active, adopt_handle));
-  return registration.Pass();
 }
 
 }  // namespace content

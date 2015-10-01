@@ -133,11 +133,17 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       const ServiceWorkerObjectInfo& info,
       bool adopt_handle);
 
-  // Returns a new registration filled in with version attributes.
-  scoped_refptr<WebServiceWorkerRegistrationImpl> CreateRegistration(
+  // Returns the existing registration or a newly created one. When a new one is
+  // created, increments interprocess references to the registration and its
+  // versions via ServiceWorker(Registration)HandleReference.
+  scoped_refptr<WebServiceWorkerRegistrationImpl> GetOrCreateRegistration(
       const ServiceWorkerRegistrationObjectInfo& info,
       const ServiceWorkerVersionAttributes& attrs);
-  scoped_refptr<WebServiceWorkerRegistrationImpl> AdoptRegistration(
+
+  // Returns the existing registration or a newly created one. Always adopts
+  // interprocess references to the registration and its versions via
+  // ServiceWorker(Registration)HandleReference.
+  scoped_refptr<WebServiceWorkerRegistrationImpl> GetOrAdoptRegistration(
       const ServiceWorkerRegistrationObjectInfo& info,
       const ServiceWorkerVersionAttributes& attrs);
 
@@ -263,11 +269,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       WebServiceWorkerRegistrationImpl* registration);
   void RemoveServiceWorkerRegistration(
       int registration_handle_id);
-
-  scoped_refptr<WebServiceWorkerRegistrationImpl> CreateRegistrationInternal(
-      scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref,
-      const ServiceWorkerVersionAttributes& attrs,
-      bool adopt_handle);
 
   RegistrationCallbackMap pending_registration_callbacks_;
   UpdateCallbackMap pending_update_callbacks_;

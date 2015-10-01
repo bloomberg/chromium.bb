@@ -24,10 +24,9 @@ async_test(function(t) {
           return navigator.serviceWorker.getRegistration(scope);
         })
       .then(function(value) {
-          assert_registration_equals(value, registration);
-          assert_not_equals(
-            value, registration,
-            'getRegistration should resolve to a new registration object');
+          assert_equals(
+              value, registration,
+              'getRegistration should resolve to the same registration object');
           service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -44,7 +43,9 @@ async_test(function(t) {
           return navigator.serviceWorker.getRegistration(documentURL);
         })
       .then(function(value) {
-          assert_registration_equals(value, registration);
+          assert_equals(
+              value, registration,
+              'getRegistration should resolve to the same registration object');
           service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));

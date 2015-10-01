@@ -65,8 +65,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   ServiceWorkerHandle* FindServiceWorkerHandle(int provider_id,
                                                int64 version_id);
 
-  // Creates a new registration handle and registers it.
-  ServiceWorkerRegistrationHandle* CreateRegistrationHandle(
+  // Returns the existing registration handle whose reference count is
+  // incremented or a newly created one if it doesn't exist.
+  ServiceWorkerRegistrationHandle* GetOrCreateRegistrationHandle(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerRegistration* registration);
 
@@ -136,6 +137,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
       const std::vector<TransferredMessagePort>& sent_message_ports);
   void OnServiceWorkerObjectDestroyed(int handle_id);
   void OnTerminateWorker(int handle_id);
+
+  ServiceWorkerRegistrationHandle* FindRegistrationHandle(
+      int provider_id,
+      int64 registration_handle_id);
 
   void GetRegistrationObjectInfoAndVersionAttributes(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
@@ -212,7 +217,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
 
   IDMap<ServiceWorkerHandle, IDMapOwnPointer> handles_;
-  IDMap<ServiceWorkerRegistrationHandle, IDMapOwnPointer> registration_handles_;
+
+  using RegistrationHandleMap =
+      IDMap<ServiceWorkerRegistrationHandle, IDMapOwnPointer>;
+  RegistrationHandleMap registration_handles_;
 
   bool channel_ready_;  // True after BrowserMessageFilter::sender_ != NULL.
   ScopedVector<IPC::Message> pending_messages_;

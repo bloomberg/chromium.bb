@@ -261,16 +261,23 @@ ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindServiceWorkerHandle(
 }
 
 ServiceWorkerRegistrationHandle*
-ServiceWorkerDispatcherHost::CreateRegistrationHandle(
+ServiceWorkerDispatcherHost::GetOrCreateRegistrationHandle(
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerRegistration* registration) {
   DCHECK(provider_host);
-  scoped_ptr<ServiceWorkerRegistrationHandle> handle(
+  ServiceWorkerRegistrationHandle* existing_handle =
+      FindRegistrationHandle(provider_host->provider_id(), registration->id());
+  if (existing_handle) {
+    existing_handle->IncrementRefCount();
+    return existing_handle;
+  }
+
+  scoped_ptr<ServiceWorkerRegistrationHandle> new_handle(
       new ServiceWorkerRegistrationHandle(GetContext()->AsWeakPtr(),
                                           provider_host, registration));
-  ServiceWorkerRegistrationHandle* handle_ptr = handle.get();
-  RegisterServiceWorkerRegistrationHandle(handle.Pass());
-  return handle_ptr;
+  ServiceWorkerRegistrationHandle* new_handle_ptr = new_handle.get();
+  RegisterServiceWorkerRegistrationHandle(new_handle.Pass());
+  return new_handle_ptr;
 }
 
 void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
@@ -789,13 +796,27 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
       kDocumentMainThreadId, provider_id, info, attrs));
 }
 
+ServiceWorkerRegistrationHandle*
+ServiceWorkerDispatcherHost::FindRegistrationHandle(int provider_id,
+                                                    int64 registration_id) {
+  for (RegistrationHandleMap::iterator iter(&registration_handles_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    ServiceWorkerRegistrationHandle* handle = iter.GetCurrentValue();
+    if (handle->provider_id() == provider_id &&
+        handle->registration()->id() == registration_id) {
+      return handle;
+    }
+  }
+  return nullptr;
+}
+
 void ServiceWorkerDispatcherHost::GetRegistrationObjectInfoAndVersionAttributes(
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerRegistration* registration,
     ServiceWorkerRegistrationObjectInfo* info,
     ServiceWorkerVersionAttributes* attrs) {
   ServiceWorkerRegistrationHandle* handle =
-      CreateRegistrationHandle(provider_host, registration);
+      GetOrCreateRegistrationHandle(provider_host, registration);
   *info = handle->GetObjectInfo();
 
   attrs->installing = provider_host->GetOrCreateServiceWorkerHandle(

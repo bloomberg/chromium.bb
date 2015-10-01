@@ -62,12 +62,19 @@ void ServiceWorkerRegistration::setActive(WebServiceWorker* serviceWorker)
     m_active = ServiceWorker::from(executionContext(), serviceWorker);
 }
 
-ServiceWorkerRegistration* ServiceWorkerRegistration::create(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
+ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
 {
     ASSERT(handle);
-    ServiceWorkerRegistration* registration = new ServiceWorkerRegistration(executionContext, handle);
-    registration->suspendIfNeeded();
-    return registration;
+
+    ServiceWorkerRegistration* existingRegistration = static_cast<ServiceWorkerRegistration*>(handle->registration()->proxy());
+    if (existingRegistration) {
+        ASSERT(existingRegistration->executionContext() == executionContext);
+        return existingRegistration;
+    }
+
+    ServiceWorkerRegistration* newRegistration = new ServiceWorkerRegistration(executionContext, handle);
+    newRegistration->suspendIfNeeded();
+    return newRegistration;
 }
 
 String ServiceWorkerRegistration::scope() const
