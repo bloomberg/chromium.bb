@@ -176,8 +176,6 @@ public:
         return *other;
     }
 
-    static void enterNoAllocationScope() { }
-    static void leaveNoAllocationScope() { }
     static void enterGCForbiddenScope() { }
     static void leaveGCForbiddenScope() { }
 

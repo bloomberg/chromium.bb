@@ -161,20 +161,6 @@ public:
         return *other;
     }
 
-    static void enterNoAllocationScope()
-    {
-#if ENABLE(ASSERT)
-        ThreadState::current()->enterNoAllocationScope();
-#endif
-    }
-
-    static void leaveNoAllocationScope()
-    {
-#if ENABLE(ASSERT)
-        ThreadState::current()->leaveNoAllocationScope();
-#endif
-    }
-
     static void enterGCForbiddenScope()
     {
         ThreadState::current()->enterGCForbiddenScope();
