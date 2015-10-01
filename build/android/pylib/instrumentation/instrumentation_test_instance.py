@@ -28,6 +28,8 @@ _ACTIVITY_RESULT_OK = -1
 _DEFAULT_ANNOTATIONS = [
     'Smoke', 'SmallTest', 'MediumTest', 'LargeTest',
     'EnormousTest', 'IntegrationTest']
+_EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS = [
+    'DisabledTest', 'FlakyTest']
 _EXTRA_ENABLE_HTTP_SERVER = (
     'org.chromium.chrome.test.ChromeInstrumentationTestRunner.'
         + 'EnableTestHttpServer')
@@ -267,6 +269,12 @@ class InstrumentationTestInstance(test_instance.TestInstance):
           for a in args.exclude_annotation_str.split(','))
     else:
       self._excluded_annotations = {}
+
+    self._excluded_annotations.update(
+        {
+          a: None for a in _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS
+          if a not in self._annotations
+        })
 
   def _initializeFlagAttributes(self, args):
     self._flags = ['--disable-fre', '--enable-test-intents']

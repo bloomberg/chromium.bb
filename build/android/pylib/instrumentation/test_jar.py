@@ -31,6 +31,8 @@ class TestJar(object):
       ['Smoke', 'SmallTest', 'MediumTest', 'LargeTest', 'EnormousTest',
        'FlakyTest', 'DisabledTest', 'Manual', 'PerfTest', 'HostDrivenTest',
        'IntegrationTest'])
+  _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS = frozenset(
+      ['DisabledTest', 'FlakyTest'])
   _DEFAULT_ANNOTATION = 'SmallTest'
   _PROGUARD_CLASS_RE = re.compile(r'\s*?- Program class:\s*([\S]+)$')
   _PROGUARD_SUPERCLASS_RE = re.compile(r'\s*?  Superclass:\s*([\S]+)$')
@@ -197,9 +199,14 @@ class TestJar(object):
       available_tests = [m for m in self.GetTestMethods()
                          if not self.IsHostDrivenTest(m)]
 
-    if exclude_annotation_list:
-      excluded_tests = self.GetAnnotatedTests(exclude_annotation_list)
-      available_tests = list(set(available_tests) - set(excluded_tests))
+    requested_annotations = set(annotation_filter_list or ())
+    exclude_annotation_list = list(exclude_annotation_list or ())
+
+    exclude_annotation_list.extend([
+        a for a in self._EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS
+        if a not in requested_annotations])
+    excluded_tests = self.GetAnnotatedTests(exclude_annotation_list)
+    available_tests = list(set(available_tests) - set(excluded_tests))
 
     tests = []
     if test_filter:
