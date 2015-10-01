@@ -30,6 +30,9 @@ function MockWindow(width, height, sizer) {
     this.timerCallback = callback;
     return "timerId";
   };
+  this.clearTimeout = function(timerId) {
+    this.timerCallback = null;
+  };
   this.runTimeout = function() {
     if (this.timerCallback)
       this.timerCallback();

@@ -69,6 +69,8 @@ function ToolbarManager(window, toolbar, zoomToolbar) {
   this.sideToolbarAllowedOnly_ = false;
   this.sideToolbarAllowedOnlyTimer_ = null;
 
+  this.keyboardNavigationActive = false;
+
   this.window_.addEventListener('resize', this.resizeDropdowns_.bind(this));
   this.resizeDropdowns_();
 }
@@ -78,6 +80,8 @@ ToolbarManager.prototype = {
   showToolbarsForMouseMove: function(e) {
     this.isMouseNearTopToolbar_ = this.toolbar_ && isMouseNearTopToolbar(e);
     this.isMouseNearSideToolbar_ = isMouseNearSideToolbar(e);
+
+    this.keyboardNavigationActive = false;
 
     // Allow the top toolbar to be shown if the mouse moves away from the side
     // toolbar (as long as the timeout has elapsed).
@@ -110,6 +114,16 @@ ToolbarManager.prototype = {
   },
 
   /**
+   * Show toolbars and mark that navigation is being performed with
+   * tab/shift-tab. This disables toolbar hiding until the mouse is moved or
+   * escape is pressed.
+   */
+  showToolbarsForKeyboardNavigation: function() {
+    this.keyboardNavigationActive = true;
+    this.showToolbars();
+  },
+
+  /**
    * Hide toolbars after a delay, regardless of the position of the mouse.
    * Intended to be called when the mouse has moved out of the parent window.
    */
@@ -131,6 +145,16 @@ ToolbarManager.prototype = {
     if (this.toolbar_ && this.toolbar_.shouldKeepOpen())
       return;
 
+    if (this.keyboardNavigationActive)
+      return;
+
+    // Remove focus to make any visible tooltips disappear -- otherwise they'll
+    // still be visible on screen when the toolbar is off screen.
+    if ((this.toolbar_ && document.activeElement == this.toolbar_) ||
+        document.activeElement == this.zoomToolbar_) {
+      document.activeElement.blur();
+    }
+
     if (this.toolbar_)
       this.toolbar_.hide();
     this.zoomToolbar_.hide();
@@ -141,9 +165,9 @@ ToolbarManager.prototype = {
    */
   hideToolbarsAfterTimeout: function() {
     if (this.toolbarTimeout_)
-      clearTimeout(this.toolbarTimeout_);
-    this.toolbarTimeout_ =
-        setTimeout(this.hideToolbarsIfAllowed.bind(this), HIDE_TIMEOUT);
+      this.window_.clearTimeout(this.toolbarTimeout_);
+    this.toolbarTimeout_ = this.window_.setTimeout(
+        this.hideToolbarsIfAllowed.bind(this), HIDE_TIMEOUT);
   },
 
   /**
@@ -151,8 +175,10 @@ ToolbarManager.prototype = {
    * hides the basic toolbars otherwise.
    */
   hideSingleToolbarLayer: function() {
-    if (!this.toolbar_ || !this.toolbar_.hideDropdowns())
+    if (!this.toolbar_ || !this.toolbar_.hideDropdowns()) {
+      this.keyboardNavigationActive = false;
       this.hideToolbarsIfAllowed();
+    }
   },
 
   /**

@@ -322,6 +322,9 @@ PDFViewer.prototype = {
     }.bind(this);
 
     switch (e.keyCode) {
+      case 9:  // Tab key.
+        this.toolbarManager_.showToolbarsForKeyboardNavigation();
+        return;
       case 27:  // Escape key.
         if (this.isMaterial_ && !this.isPrintPreview_) {
           this.toolbarManager_.hideSingleToolbarLayer();
