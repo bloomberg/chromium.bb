@@ -13,6 +13,7 @@
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBValue.h"
 
+using blink::WebBlobInfo;
 using blink::WebData;
 using blink::WebIDBCallbacks;
 using blink::WebIDBKey;

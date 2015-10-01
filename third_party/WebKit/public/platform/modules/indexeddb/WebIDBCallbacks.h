@@ -32,13 +32,10 @@
 
 namespace blink {
 
-class WebBlobInfo;
-class WebData;
 class WebIDBCursor;
 class WebIDBDatabase;
 class WebIDBDatabaseError;
 class WebIDBKey;
-class WebIDBKeyPath;
 struct WebIDBMetadata;
 struct WebIDBValue;
 
@@ -52,11 +49,8 @@ public:
     virtual void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebIDBValue&) = 0;
     virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) = 0;
     virtual void onSuccess(const WebIDBKey&) = 0;
-    virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) = 0;
     virtual void onSuccess(const WebIDBValue&) = 0;
     virtual void onSuccess(const WebVector<WebIDBValue>&) = 0;
-    // TODO(cmumford): Eliminate redundant onSuccess overloads http://crbug.com/487711
-    virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&, const WebIDBKey&, const WebIDBKeyPath&) = 0;
     virtual void onSuccess(long long) = 0;
     virtual void onSuccess() = 0;
     virtual void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebIDBValue&) = 0;

@@ -37,13 +37,10 @@
 namespace blink {
 
 class IDBRequest;
-class WebBlobInfo;
-class WebData;
 class WebIDBCursor;
 class WebIDBDatabase;
 class WebIDBDatabaseError;
 class WebIDBKey;
-class WebIDBKeyPath;
 struct WebIDBMetadata;
 struct WebIDBValue;
 
@@ -60,10 +57,8 @@ public:
     void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebIDBValue&) override;
     void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) override;
     void onSuccess(const WebIDBKey&) override;
-    void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) override;
     void onSuccess(const WebIDBValue&) override;
     void onSuccess(const WebVector<WebIDBValue>&) override;
-    void onSuccess(const WebData&, const WebVector<WebBlobInfo>&, const WebIDBKey&, const WebIDBKeyPath&) override;
     void onSuccess(long long) override;
     void onSuccess() override;
     void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebIDBValue&) override;

@@ -37,16 +37,8 @@ class MockWebIDBCallbacks : public blink::WebIDBCallbacks {
   MOCK_METHOD2(onSuccess,
                void(blink::WebIDBDatabase*, const blink::WebIDBMetadata&));
   MOCK_METHOD1(onSuccess, void(const blink::WebIDBKey&));
-  MOCK_METHOD2(onSuccess,
-               void(const blink::WebData&,
-                    const blink::WebVector<blink::WebBlobInfo>&));
   MOCK_METHOD1(onSuccess, void(const blink::WebIDBValue&));
   MOCK_METHOD1(onSuccess, void(const blink::WebVector<blink::WebIDBValue>&));
-  MOCK_METHOD4(onSuccess,
-               void(const blink::WebData&,
-                    const blink::WebVector<blink::WebBlobInfo>&,
-                    const blink::WebIDBKey&,
-                    const blink::WebIDBKeyPath&));
   MOCK_METHOD1(onSuccess, void(long long));
   MOCK_METHOD0(onSuccess, void());
   MOCK_METHOD1(onBlocked, void(long long oldVersion));
