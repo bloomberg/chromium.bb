@@ -3450,6 +3450,8 @@ TEST_F(HistoryBackendTest, ExpireHistoryForTimes) {
 
   std::set<base::Time> times;
   times.insert(args[5].time);
+  // Invalid time (outside range), should have no effect.
+  times.insert(base::Time::FromInternalValue(10));
   backend_->ExpireHistoryForTimes(times,
                                   base::Time::FromInternalValue(2),
                                   base::Time::FromInternalValue(8));

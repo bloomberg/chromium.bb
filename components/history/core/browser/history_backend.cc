@@ -2380,13 +2380,6 @@ void HistoryBackend::ExpireHistoryForTimes(const std::set<base::Time>& times,
   if (times.empty() || !db_)
     return;
 
-  DCHECK_GE(*times.begin(), begin_time)
-      << "Min time is before begin time: " << times.begin()->ToJsTime()
-      << " v.s. " << begin_time.ToJsTime();
-  DCHECK_LT(*times.rbegin(), end_time)
-      << "Max time is after end time: " << times.rbegin()->ToJsTime()
-      << " v.s. " << end_time.ToJsTime();
-
   QueryOptions options;
   options.begin_time = begin_time;
   options.end_time = end_time;
