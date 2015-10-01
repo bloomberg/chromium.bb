@@ -195,7 +195,20 @@ bool DocumentLifecycle::canAdvanceTo(State nextState) const
             return true;
         if (nextState == InCompositingUpdate)
             return true;
-        if (nextState == InPaint && RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            if (nextState == InCalcPaintProps)
+                return true;
+        } else {
+            if (nextState == InPaint && RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+                return true;
+        }
+        break;
+    case InCalcPaintProps:
+        if (nextState == CalcPaintPropsClean && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            return true;
+        break;
+    case CalcPaintPropsClean:
+        if (nextState == InPaint && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
             return true;
         break;
     case InPaint:

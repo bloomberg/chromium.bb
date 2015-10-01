@@ -65,6 +65,7 @@ protected:
     {
         document().view()->updateLifecyclePhasesInternal(FrameView::OnlyUpToCompositingCleanPlusScrolling);
         document().view()->invalidateTreeIfNeededRecursive();
+        document().view()->calculatePaintProperties();
         document().view()->synchronizedPaint(interestRect);
     }
     void compositeForSlimmingPaintV2() { document().view()->compositeForSlimmingPaintV2(); }
