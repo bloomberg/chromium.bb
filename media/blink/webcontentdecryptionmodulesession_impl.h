@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/media_keys.h"
+#include "media/blink/new_session_cdm_result_promise.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleSession.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -56,9 +57,10 @@ class WebContentDecryptionModuleSessionImpl
   void OnSessionClosed();
 
  private:
-  // Called when a new session is created.
-  blink::WebContentDecryptionModuleResult::SessionStatus OnSessionInitialized(
-      const std::string& session_id);
+  // Called when a new session is created or loaded. |status| is set as
+  // appropriate, depending on whether the session already exists or not.
+  void OnSessionInitialized(const std::string& session_id,
+                            SessionInitStatus* status);
 
   scoped_refptr<CdmSessionAdapter> adapter_;
 

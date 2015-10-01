@@ -18,7 +18,6 @@
 #include "media/base/media_keys.h"
 #include "media/blink/cdm_result_promise.h"
 #include "media/blink/cdm_session_adapter.h"
-#include "media/blink/new_session_cdm_result_promise.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/key_system_names.h"
@@ -304,7 +303,7 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
           result, adapter_->GetKeySystemUMAPrefix() + kGenerateRequestUMAName,
           base::Bind(
               &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
-              base::Unretained(this)))));
+              weak_ptr_factory_.GetWeakPtr()))));
 }
 
 void WebContentDecryptionModuleSessionImpl::load(
@@ -331,7 +330,7 @@ void WebContentDecryptionModuleSessionImpl::load(
           result, adapter_->GetKeySystemUMAPrefix() + kLoadSessionUMAName,
           base::Bind(
               &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
-              base::Unretained(this)))));
+              weak_ptr_factory_.GetWeakPtr()))));
 }
 
 void WebContentDecryptionModuleSessionImpl::update(
@@ -419,19 +418,22 @@ void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
   client_->close();
 }
 
-blink::WebContentDecryptionModuleResult::SessionStatus
-WebContentDecryptionModuleSessionImpl::OnSessionInitialized(
-    const std::string& session_id) {
+void WebContentDecryptionModuleSessionImpl::OnSessionInitialized(
+    const std::string& session_id,
+    SessionInitStatus* status) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // CDM will return NULL if the session to be loaded can't be found.
-  if (session_id.empty())
-    return blink::WebContentDecryptionModuleResult::SessionNotFound;
+  if (session_id.empty()) {
+    *status = SessionInitStatus::SESSION_NOT_FOUND;
+    return;
+  }
 
   DCHECK(session_id_.empty()) << "Session ID may not be changed once set.";
   session_id_ = session_id;
-  return adapter_->RegisterSession(session_id_, weak_ptr_factory_.GetWeakPtr())
-             ? blink::WebContentDecryptionModuleResult::NewSession
-             : blink::WebContentDecryptionModuleResult::SessionAlreadyExists;
+  *status =
+      adapter_->RegisterSession(session_id_, weak_ptr_factory_.GetWeakPtr())
+          ? SessionInitStatus::NEW_SESSION
+          : SessionInitStatus::SESSION_ALREADY_EXISTS;
 }
 
 }  // namespace media

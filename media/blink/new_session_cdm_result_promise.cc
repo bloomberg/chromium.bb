@@ -10,6 +10,22 @@
 
 namespace media {
 
+static blink::WebContentDecryptionModuleResult::SessionStatus ConvertStatus(
+    SessionInitStatus status) {
+  switch (status) {
+    case SessionInitStatus::UNKNOWN_STATUS:
+      break;
+    case SessionInitStatus::NEW_SESSION:
+      return blink::WebContentDecryptionModuleResult::NewSession;
+    case SessionInitStatus::SESSION_NOT_FOUND:
+      return blink::WebContentDecryptionModuleResult::SessionNotFound;
+    case SessionInitStatus::SESSION_ALREADY_EXISTS:
+      return blink::WebContentDecryptionModuleResult::SessionAlreadyExists;
+  }
+  NOTREACHED();
+  return blink::WebContentDecryptionModuleResult::SessionNotFound;
+}
+
 NewSessionCdmResultPromise::NewSessionCdmResultPromise(
     const blink::WebContentDecryptionModuleResult& result,
     const std::string& uma_name,
@@ -23,11 +39,20 @@ NewSessionCdmResultPromise::~NewSessionCdmResultPromise() {
 }
 
 void NewSessionCdmResultPromise::resolve(const std::string& session_id) {
+  // |new_session_created_cb_| uses a WeakPtr<> and may not do anything
+  // if the session object has been destroyed.
+  SessionInitStatus status = SessionInitStatus::UNKNOWN_STATUS;
+  new_session_created_cb_.Run(session_id, &status);
+
+  if (status == SessionInitStatus::UNKNOWN_STATUS) {
+    reject(MediaKeys::INVALID_STATE_ERROR, 0,
+           "Cannot finish session initialization");
+    return;
+  }
+
   MarkPromiseSettled();
   ReportCdmResultUMA(uma_name_, SUCCESS);
-  blink::WebContentDecryptionModuleResult::SessionStatus status =
-      new_session_created_cb_.Run(session_id);
-  web_cdm_result_.completeWithSession(status);
+  web_cdm_result_.completeWithSession(ConvertStatus(status));
 }
 
 void NewSessionCdmResultPromise::reject(MediaKeys::Exception exception_code,

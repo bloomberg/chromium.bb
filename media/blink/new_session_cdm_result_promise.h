@@ -15,8 +15,23 @@
 
 namespace media {
 
-typedef base::Callback<blink::WebContentDecryptionModuleResult::SessionStatus(
-    const std::string& session_id)> SessionInitializedCB;
+enum class SessionInitStatus {
+  // Error creating the session.
+  UNKNOWN_STATUS,
+
+  // New session has been initialized.
+  NEW_SESSION,
+
+  // CDM could not find the requested session.
+  SESSION_NOT_FOUND,
+
+  // CDM already has a non-closed session that matches the provided
+  // parameters.
+  SESSION_ALREADY_EXISTS
+};
+
+typedef base::Callback<void(const std::string& session_id,
+                            SessionInitStatus* status)> SessionInitializedCB;
 
 // Special class for resolving a new session promise. Resolving a new session
 // promise returns the session ID (as a string), but the blink promise needs
@@ -43,7 +58,7 @@ class MEDIA_EXPORT NewSessionCdmResultPromise
   // UMA name to report result to.
   std::string uma_name_;
 
-  // Called on resolve() to convert the session ID into a SessionStatus to
+  // Called on resolve() to convert the session ID into a SessionInitStatus to
   // be reported to blink.
   SessionInitializedCB new_session_created_cb_;
 
