@@ -168,6 +168,17 @@ template("desktop_remoting_webapp") {
     html_output = main_html_output
   }
 
+  public_session_html = target_name + "_public_session_html"
+  public_session_html_output =
+      "$target_gen_dir/html/$target_name/public_session.html"
+
+  build_webapp_html(public_session_html) {
+    html_template_file = remoting_webapp_template_public_session
+    html_template_include_files = remoting_webapp_public_session_template_files
+    js_files = remoting_webapp_public_session_html_all_js_files
+    html_output = public_session_html_output
+  }
+
   action(target_name) {
     script = "//remoting/webapp/build-webapp.py"
 
@@ -181,6 +192,7 @@ template("desktop_remoting_webapp") {
       message_window_html_output,
       wcs_sandbox_html_output,
       main_html_output,
+      public_session_html_output,
       "$target_gen_dir/credits.html",
     ]
 
@@ -209,15 +221,14 @@ template("desktop_remoting_webapp") {
       ":$background_html",
       ":$message_window_html",
       ":$wcs_sandbox_html",
+      ":$public_session_html",
       ":$main_html",
       "//remoting/resources",
       "//remoting/webapp:credits",
     ]
 
     if (enable_pnacl) {
-      deps += [
-        "//remoting/client/plugin:remoting_client_plugin_newlib(//build/toolchain/nacl:newlib_pnacl)",
-      ]
+      deps += [ "//remoting/client/plugin:remoting_client_plugin_newlib(//build/toolchain/nacl:newlib_pnacl)" ]
     }
 
     # Create a file that contains a list of all the resource files needed

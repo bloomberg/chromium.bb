@@ -91,13 +91,6 @@ remoting.Application.prototype.initGlobalObjects_ = function() {
   remoting.wcsSandbox = new remoting.WcsSandboxContainer(
       sandbox.contentWindow, this.windowMessageDispatcher_);
   remoting.initModalDialogs();
-
-  remoting.testEvents = new base.EventSourceImpl();
-  /** @enum {string} */
-  remoting.testEvents.Names = {
-    uiModeChanged: 'uiModeChanged'
-  };
-  remoting.testEvents.defineEvents(base.values(remoting.testEvents.Names));
 };
 
 /**

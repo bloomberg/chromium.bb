@@ -96,6 +96,25 @@
             '--js', '<@(remoting_webapp_message_window_html_all_js_files)',
           ],
         },
+        {
+          'action_name': 'Build Remoting Webapp public_session.html',
+          'inputs': [
+            'webapp/build-html.py',
+            '<(remoting_webapp_template_public_session)',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/public_session.html',
+          ],
+          'action': [
+            'python', 'webapp/build-html.py',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/public_session.html',
+            '<(remoting_webapp_template_public_session)',
+            '--template-dir', '<(DEPTH)/remoting',
+            '--templates', '<@(remoting_webapp_public_session_template_files)',
+            '--js',
+            '<@(remoting_webapp_public_session_html_all_js_files)',
+          ],
+        },
       ],  # end of actions
     },  # end of target 'remoting_webapp_html'
 

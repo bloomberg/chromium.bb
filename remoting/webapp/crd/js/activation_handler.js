@@ -80,7 +80,7 @@ remoting.ActivationHandler.Ipc = {
  */
 remoting.ActivationHandler.prototype.onContextMenu_ = function(info) {
   if (info.menuItemId == NEW_WINDOW_MENU_ID_) {
-    this.createWindow_();
+    this.launchDefaultSession_();
   }
 };
 
@@ -95,10 +95,15 @@ remoting.ActivationHandler.prototype.onRestart_ = function(id) {
 };
 
 /**
+ * @param {Event} launchData
  * @private
  */
-remoting.ActivationHandler.prototype.onLaunched_ = function() {
-  this.createWindow_();
+remoting.ActivationHandler.prototype.onLaunched_ = function(launchData) {
+  if (launchData['isPublicSession']) {
+    this.launchIt2MeSession_();
+  } else {
+    this.launchDefaultSession_();
+  }
 };
 
 /**
@@ -106,7 +111,7 @@ remoting.ActivationHandler.prototype.onLaunched_ = function() {
  *
  * @private
  */
-remoting.ActivationHandler.prototype.createWindow_ = function() {
+remoting.ActivationHandler.prototype.launchDefaultSession_ = function() {
   this.appLauncher_.launch().then(this.onWindowCreated_.bind(this));
 };
 
@@ -142,6 +147,15 @@ remoting.ActivationHandler.prototype.onWindowClosed_ = function(id) {
   this.windowClosedHooks_.delete(id);
 
   this.raiseEvent(remoting.ActivationHandler.Events.windowClosed, id);
+};
+
+/** @private */
+remoting.ActivationHandler.prototype.launchIt2MeSession_ = function() {
+  chrome.app.window.create("public_session.html", {
+    'width': 570,
+    'height': 300,
+    'resizable': false
+  });
 };
 
 })();

@@ -287,3 +287,12 @@ remoting.showSetupProcessingMessage = function(tag) {
   l10n.localizeElementFromTag(messageDiv, tag);
   remoting.setMode(remoting.AppMode.HOST_SETUP_PROCESSING);
 }
+
+remoting.testEvents = new base.EventSourceImpl();
+
+/** @enum {string} */
+remoting.testEvents.Names = {
+  uiModeChanged: 'uiModeChanged'
+};
+
+remoting.testEvents.defineEvents(base.values(remoting.testEvents.Names));

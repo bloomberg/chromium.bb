@@ -63,6 +63,9 @@ remoting.It2MeHostFacade = function() {
   this.onNatPolicyChanged_ = function() {};
 
   /** @private */
+  this.hostVersion_ = '';
+
+  /** @private */
   this.debugMessageHandler_ =
       new remoting.NativeMessageHostDebugMessageHandler();
 
@@ -205,6 +208,14 @@ remoting.It2MeHostFacade.prototype.getClient = function() {
 };
 
 /**
+ * @return {string}
+ */
+remoting.It2MeHostFacade.prototype.getHostVersion = function() {
+  return this.hostVersion_;
+};
+
+
+/**
  * Handler for incoming messages.
  *
  * @param {Object} message The received message.
@@ -221,8 +232,8 @@ remoting.It2MeHostFacade.prototype.onIncomingMessage_ =
 
   switch (type) {
     case 'helloResponse':
-      var version = base.getStringAttr(message, 'version');
-      console.log('Host version: ', version);
+      this.hostVersion_ = base.getStringAttr(message, 'version');
+      console.log('Host version: ', this.hostVersion_);
       this.initialized_ = true;
       // A "hello" request is sent immediately after the native messaging host
       // is started. We can proceed to the next task once we receive the

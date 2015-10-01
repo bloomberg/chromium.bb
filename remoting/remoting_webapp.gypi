@@ -14,6 +14,7 @@
       '<(SHARED_INTERMEDIATE_DIR)/remoting/credits.html',
       '<(SHARED_INTERMEDIATE_DIR)/remoting/message_window.html',
       '<(SHARED_INTERMEDIATE_DIR)/remoting/wcs_sandbox.html',
+      '<(SHARED_INTERMEDIATE_DIR)/remoting/public_session.html',
     ],
     'dr_webapp_locales_listfile': '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)_locales.txt',
   },

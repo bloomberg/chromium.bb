@@ -36,10 +36,7 @@ var it2meLogger = null;
  * to install them if necessary.
  */
 remoting.tryShare = function() {
-  ensureIT2MeLogger_().then(tryShareWithLogger_);
-};
-
-function tryShareWithLogger_() {
+  ensureIT2MeLogger_();
   it2meLogger.setSessionId();
   it2meLogger.logClientSessionStateChange(
       remoting.ClientSession.State.INITIALIZING, remoting.Error.none(), null);
@@ -79,11 +76,11 @@ function tryShareWithLogger_() {
  */
 remoting.startHostUsingFacade_ = function(hostFacade) {
   console.log('Attempting to share...');
-  setHostVersion_()
-      .then(remoting.identity.getToken.bind(remoting.identity))
-      .then(remoting.tryShareWithToken_.bind(null, hostFacade),
-            remoting.Error.handler(showShareError_));
-}
+  it2meLogger.setHostVersion(hostFacade.getHostVersion());
+  remoting.identity.getToken().then(
+    remoting.tryShareWithToken_.bind(null, hostFacade),
+    remoting.Error.handler(showShareError_));
+};
 
 /**
  * @param {remoting.It2MeHostFacade} hostFacade An initialized
@@ -364,13 +361,10 @@ function onNatTraversalPolicyChanged_(enabled) {
 
 /**
  * Create an IT2Me LogToServer instance if one does not already exist.
- *
- * @return {Promise} Promise that resolves when the host version (if available),
- *     has been set on the logger instance.
  */
 function ensureIT2MeLogger_() {
   if (it2meLogger) {
-    return Promise.resolve();
+    return;
   }
 
   var xmppConnection = new remoting.XmppConnection();
@@ -386,21 +380,6 @@ function ensureIT2MeLogger_() {
       new remoting.BufferedSignalStrategy(xmppConnection);
   it2meLogger = new remoting.LogToServer(bufferedSignalStrategy, true);
   it2meLogger.setLogEntryMode(remoting.ChromotingEvent.Mode.IT2ME);
-
-  return setHostVersion_();
-};
-
-/**
- * @return {Promise} Promise that resolves when the host version (if available),
- *     has been set on the logger instance.
- */
-function setHostVersion_() {
-  return remoting.hostController.getLocalHostVersion().then(
-      function(/** string */ version) {
-        it2meLogger.setHostVersion(version);
-      }).catch(
-        base.doNothing
-      );
-};
+}
 
 })();
