@@ -28,6 +28,7 @@ bool AttachmentBrokerUnprivilegedWin::SendAttachmentToProcess(
       return get_sender()->Send(
           new AttachmentBrokerMsg_DuplicateWinHandle(format));
     }
+    case BrokerableAttachment::MACH_PORT:
     case BrokerableAttachment::PLACEHOLDER:
       NOTREACHED();
       return false;
