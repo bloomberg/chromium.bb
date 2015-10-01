@@ -147,6 +147,7 @@ v8.log
 /components/gcm_driver.xml
 /components/leveldb_proto_test_support.xml
 /components/rappor.xml
+/components/resources/default_100_percent/google_chrome
 /components/search_engines/prepopulated_engines.xml
 /components/suggestions.xml
 /components/variations.xml
