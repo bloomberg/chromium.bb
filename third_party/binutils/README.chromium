@@ -1,6 +1,6 @@
 Name: binutils
 URL: http://www.gnu.org/software/binutils/
-Version: 2.24
+Version: 2.25
 License: GPL v2
 License File: NOT_SHIPPED
 Security Critical: no
@@ -9,21 +9,39 @@ Description:
 This directory contains i386 and amd64 binaries of the binutils tools
 (including gold linker).
 
-They were built from binutils-2.24 using the "build-all.sh" script on a Ubuntu
+They were built from binutils-2.25 using the "build-all.sh" script on a Ubuntu
 Precise.
 
-The script creates chroots for 32bit and 64bit Ubuntu Lucid and then builds
+The script creates chroots for 32bit and 64bit Ubuntu Precise and then builds
 binutils inside the roots.
 
-Local patches:
- * ehframe-race.patch for http://crbug.com/161942 from upstream change
-   https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commit;h=635aa30e3ae9735e362cfd1cda2be9f7b65b32a2
+Version 2.25 was released on Wed, 24 Dec 2014
 
+Local patches:
  * unlock-thin.patch for http://crbug.com/453195 from upstream change
    https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commit;h=2cfbf2fece582c29df348104b28677c38a8301f4
+   (Landed upstream Wed, 4 Feb 2015 - should be in 2.26)
 
  * plugin-dso-fix.patch for http://crbug.com/453195 from upstream change
    https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commit;h=3c537f7fdb11f02f7082749f3f21dfdd2c2025e8
+   (Landed upstream Thu, 5 Feb 2015 - should be in 2.26)
 
  * (build-all.sh|build-one.sh|upload.sh) scripts for building the binutils
    binaries and uploading them to Google storage.
+
+Upgrading:
+
+To upgrade binutils, use the following steps:
+
+ * Update build-all.sh with the new binutil version.
+ * Remove any patches which have been merged upstream from build-all.sh
+ * Update this README.chromium file
+ * Run build-all.sh
+ * Run upload.sh
+ * Wait for goma to have new binutils deployed (see http://go/ma).
+    Please notify {ukai,yyanagisawa,shinyak}@chromium.org and await
+    confirmation.
+ * Commit the change
+
+See https://codereview.chromium.org/1368233002/ for an example upgrade.
+

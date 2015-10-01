@@ -61,5 +61,8 @@ for DIR in $1/*; do
 done
 
 echo "Please commit the new .sha1 to the Chromium repository"
-echo ""
 echo "# git commit"
+echo ""
+echo "Make sure goma is updated with the new binutils *before* landing."
+echo " Notify {ukai,yyanagisawa,shinyak}@chromium.org with the .sha1 files"
+echo " and await confirmation."
