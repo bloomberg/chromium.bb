@@ -655,7 +655,6 @@
       'sync_driver/revisit/offset_tab_matcher_unittest.cc',
       'sync_driver/revisit/sessions_page_revisit_observer_unittest.cc',
       'sync_driver/shared_change_processor_unittest.cc',
-      'sync_driver/sync_policy_handler_unittest.cc',
       'sync_driver/sync_prefs_unittest.cc',
       'sync_driver/sync_stopped_reporter_unittest.cc',
       'sync_driver/sync_util_unittest.cc',
@@ -1355,6 +1354,7 @@
           'sources': [
             '<@(policy_unittest_sources)',
             'search_engines/default_search_policy_handler_unittest.cc',
+            'sync_driver/sync_policy_handler_unittest.cc',
           ],
           'conditions': [
             ['OS=="android"', {

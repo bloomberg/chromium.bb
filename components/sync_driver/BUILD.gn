@@ -212,7 +212,6 @@ source_set("unit_tests") {
     "revisit/offset_tab_matcher_unittest.cc",
     "revisit/sessions_page_revisit_observer_unittest.cc",
     "shared_change_processor_unittest.cc",
-    "sync_policy_handler_unittest.cc",
     "sync_prefs_unittest.cc",
     "sync_stopped_reporter_unittest.cc",
     "sync_util_unittest.cc",
@@ -225,4 +224,8 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (enable_configuration_policy) {
+    sources += [ "sync_policy_handler_unittest.cc" ]
+  }
 }
