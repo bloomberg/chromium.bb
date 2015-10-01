@@ -181,8 +181,8 @@ class OzonePlatformGbm : public OzonePlatform {
         gpu_platform_support_host_.get(), device_manager_.get(),
         event_factory_ozone_->input_controller()));
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
-    overlay_manager_.reset(
-        new DrmOverlayManager(gpu_platform_support_host_.get()));
+    overlay_manager_.reset(new DrmOverlayManager(
+        gpu_platform_support_host_.get(), window_manager_.get()));
   }
 
   void InitializeGPU() override {

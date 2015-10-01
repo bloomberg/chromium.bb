@@ -10,10 +10,12 @@
 namespace ui {
 
 class DrmGpuPlatformSupportHost;
+class DrmWindowHostManager;
 
 class DrmOverlayManager : public OverlayManagerOzone {
  public:
-  DrmOverlayManager(DrmGpuPlatformSupportHost* platform_support_host);
+  DrmOverlayManager(DrmGpuPlatformSupportHost* platform_support_host,
+                    DrmWindowHostManager* manager);
   ~DrmOverlayManager() override;
 
   // OverlayManagerOzone:
@@ -22,6 +24,7 @@ class DrmOverlayManager : public OverlayManagerOzone {
 
  private:
   DrmGpuPlatformSupportHost* platform_support_host_;
+  DrmWindowHostManager* window_manager_;
   bool is_supported_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayManager);

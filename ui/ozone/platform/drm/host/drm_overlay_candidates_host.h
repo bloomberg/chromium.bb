@@ -18,6 +18,7 @@
 namespace ui {
 
 class DrmGpuPlatformSupportHost;
+class DrmWindowHost;
 
 // This is an implementation of OverlayCandidatesOzone where the driver is asked
 // about overlay capabilities via IPC. We have no way of querying abstract
@@ -39,8 +40,8 @@ class DrmOverlayCandidatesHost : public OverlayCandidatesOzone,
   };
 
  public:
-  DrmOverlayCandidatesHost(gfx::AcceleratedWidget widget,
-                           DrmGpuPlatformSupportHost* platform_support);
+  DrmOverlayCandidatesHost(DrmGpuPlatformSupportHost* platform_support,
+                           DrmWindowHost* window);
   ~DrmOverlayCandidatesHost() override;
 
   // OverlayCandidatesOzone:
@@ -53,6 +54,8 @@ class DrmOverlayCandidatesHost : public OverlayCandidatesOzone,
       const base::Callback<void(IPC::Message*)>& sender) override;
   void OnChannelDestroyed(int host_id) override;
   bool OnMessageReceived(const IPC::Message& message) override;
+
+  void ResetCache();
 
  private:
   struct HardwareDisplayPlaneProxy {
@@ -71,10 +74,9 @@ class DrmOverlayCandidatesHost : public OverlayCandidatesOzone,
   uint32_t CalculateCandidateWeight(
       const OverlaySurfaceCandidate& candidate) const;
   void ValidateCandidates(OverlaySurfaceCandidateList* candidates);
-  void ResetCache();
 
-  gfx::AcceleratedWidget widget_;
   DrmGpuPlatformSupportHost* platform_support_;  // Not owned.
+  DrmWindowHost* window_;                        // Not owned.
 
   template <class KeyType, class ValueType>
   struct OverlayMap {

@@ -9,6 +9,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
+#include "ui/ozone/platform/drm/host/drm_window_host.h"
 
 namespace ui {
 
@@ -50,16 +51,18 @@ DrmOverlayCandidatesHost::HardwareDisplayPlaneProxy::
     ~HardwareDisplayPlaneProxy() {}
 
 DrmOverlayCandidatesHost::DrmOverlayCandidatesHost(
-    gfx::AcceleratedWidget widget,
-    DrmGpuPlatformSupportHost* platform_support)
-    : widget_(widget),
-      platform_support_(platform_support),
+    DrmGpuPlatformSupportHost* platform_support,
+    DrmWindowHost* window)
+    : platform_support_(platform_support),
+      window_(window),
       cache_(kMaxCacheSize) {
   platform_support_->RegisterHandler(this);
+  window_->SetOverlayCandidatesHost(this);
 }
 
 DrmOverlayCandidatesHost::~DrmOverlayCandidatesHost() {
   platform_support_->UnregisterHandler(this);
+  window_->SetOverlayCandidatesHost(nullptr);
 }
 
 void DrmOverlayCandidatesHost::CheckOverlaySupport(
@@ -89,8 +92,18 @@ void DrmOverlayCandidatesHost::CheckOverlaySupport(
     auto iter = cache_.Get(lookup);
     if (iter == cache_.end()) {
       lookup.weight = CalculateCandidateWeight(candidate);
-      new_candidates.push_back(lookup);
       cache_.Put(lookup, false);
+      // It is possible that the cc rect we get actually falls off the edge of
+      // the screen. Usually this is prevented via things like status bars
+      // blocking overlaying or cc clipping it, but in case it wasn't properly
+      // clipped (since GL will render this situation fine) just ignore it here.
+      // This should be an extremely rare occurrance.
+      if (lookup.plane_z_order != 0 &&
+          !window_->GetBounds().Contains(lookup.display_rect)) {
+        continue;
+      }
+
+      new_candidates.push_back(lookup);
     } else if (iter->second) {
       force_validation = true;
     }
@@ -140,20 +153,26 @@ bool DrmOverlayCandidatesHost::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void DrmOverlayCandidatesHost::ResetCache() {
+  cache_.Clear();
+  in_use_compatible_params_.clear();
+  hardware_plane_proxy_.clear();
+}
+
 void DrmOverlayCandidatesHost::SendRequest(
     const std::vector<OverlayCheck_Params>& list) {
   if (!platform_support_->IsConnected())
     return;
 
-  platform_support_->Send(
-      new OzoneGpuMsg_CheckOverlayCapabilities(widget_, list));
+  platform_support_->Send(new OzoneGpuMsg_CheckOverlayCapabilities(
+      window_->GetAcceleratedWidget(), list));
 }
 
 void DrmOverlayCandidatesHost::OnOverlayResult(
     bool* handled,
     gfx::AcceleratedWidget widget,
     const std::vector<OverlayCheck_Params>& params) {
-  if (widget != widget_)
+  if (widget != window_->GetAcceleratedWidget())
     return;
 
   *handled = true;
@@ -281,12 +300,6 @@ void DrmOverlayCandidatesHost::ValidateCandidates(
     if (!available_overlays)
       break;
   }
-}
-
-void DrmOverlayCandidatesHost::ResetCache() {
-  cache_.Clear();
-  in_use_compatible_params_.clear();
-  hardware_plane_proxy_.clear();
 }
 
 }  // namespace ui

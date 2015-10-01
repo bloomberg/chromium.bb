@@ -172,16 +172,6 @@ std::vector<OverlayCheck_Params> DrmWindow::TestPageFlip(
   scoped_refptr<DrmDevice> drm = controller_->GetAllocationDrmDevice();
   for (const auto& overlay : overlays) {
     OverlayCheck_Params overlay_params(overlay);
-    // It is possible that the cc rect we get actually falls off the edge of
-    // the screen. Usually this is prevented via things like status bars
-    // blocking overlaying or cc clipping it, but in case it wasn't properly
-    // clipped (since GL will render this situation fine) just ignore it here.
-    // This should be an extremely rare occurrance.
-    if (overlay.plane_z_order != 0 &&
-        !bounds().Contains(overlay.display_rect)) {
-      continue;
-    }
-
     gfx::Size size =
         (overlay.plane_z_order == 0) ? bounds().size() : overlay.buffer_size;
     scoped_refptr<ScanoutBuffer> buffer;
