@@ -103,7 +103,12 @@ GinJavaBridgeDispatcherHost* GinJavaBridgeMessageFilter::FindHost() {
   auto iter = hosts_.find(current_routing_id_);
   if (iter != hosts_.end())
     return iter->second;
-  LOG(ERROR) << "WebView: Unknown frame routing id: " << current_routing_id_;
+  // This is usually OK -- we can receive messages from RenderFrames for
+  // which the corresponding host part has already been destroyed. That means,
+  // any references to Java objects that the host was holding were already
+  // released (with the death of ContentViewCore), so we can just drop such
+  // messages.
+  LOG(WARNING) << "WebView: Unknown frame routing id: " << current_routing_id_;
   return nullptr;
 }
 
