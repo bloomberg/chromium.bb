@@ -988,10 +988,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onPrintPresetOptionsFromDocument_: function(event) {
-      if (event.optionsFromDocument.disableScaling) {
-        this.printTicketStore_.fitToPage.updateValue(null);
+      if (event.optionsFromDocument.disableScaling)
         this.documentInfo_.updateIsScalingDisabled(true);
-      }
 
       if (event.optionsFromDocument.copies > 0 &&
           this.printTicketStore_.copies.isCapabilityAvailable()) {

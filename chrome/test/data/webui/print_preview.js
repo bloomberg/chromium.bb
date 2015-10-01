@@ -465,30 +465,6 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFCapabilities', function() {
   this.waitForAnimationToEnd('other-options-collapsible');
 });
 
-// When the print scaling is disabled for the source "PDF", we show the fit
-// to page option but the state is unchecked by default.
-TEST_F('PrintPreviewWebUITest', 'PrintScalingDisabledForPlugin', function() {
-  this.initialSettings_.isDocumentModifiable_ = false;
-  this.setInitialSettings();
-  this.setLocalDestinations();
-  this.setCapabilities(getCddTemplate("FooDevice"));
-
-  // Indicate that the PDF does not support scaling by default.
-  var printPresetOptionsEvent = new Event(
-      print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS);
-  printPresetOptionsEvent.optionsFromDocument = {disableScaling: true};
-  this.nativeLayer_.dispatchEvent(printPresetOptionsEvent);
-
-  var otherOptions = $('other-options-settings');
-  checkSectionVisible(otherOptions, true);
-  checkElementDisplayed(
-      otherOptions.querySelector('.fit-to-page-container'), true);
-  expectFalse(
-      otherOptions.querySelector('.fit-to-page-checkbox').checked);
-
-  this.waitForAnimationToEnd('other-options-collapsible');
-});
-
 // When the number of copies print preset is set for source 'PDF', we update
 // the copies value if capability is supported by printer.
 TEST_F('PrintPreviewWebUITest', 'CheckNumCopiesPrintPreset', function() {

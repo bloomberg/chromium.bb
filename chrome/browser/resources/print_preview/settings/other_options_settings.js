@@ -169,7 +169,6 @@ cr.define('print_preview', function() {
     /** @override */
     hasCollapsibleContent: function() {
       return this.headerFooterTicketItem_.isCapabilityAvailable() ||
-             this.fitToPageTicketItem_.isCapabilityAvailable() ||
              this.cssBackgroundTicketItem_.isCapabilityAvailable() ||
              this.selectionOnlyTicketItem_.isCapabilityAvailable();
     },
@@ -290,8 +289,7 @@ cr.define('print_preview', function() {
                      this.headerFooterTicketItem_.isCapabilityAvailable() &&
                      !this.collapseContent);
         setIsVisible(this.fitToPageContainer_,
-                     this.fitToPageTicketItem_.isCapabilityAvailable() &&
-                     !this.collapseContent);
+                     this.fitToPageTicketItem_.isCapabilityAvailable());
         setIsVisible(this.duplexContainer_,
                      this.duplexTicketItem_.isCapabilityAvailable());
         setIsVisible(this.cssBackgroundContainer_,
@@ -308,6 +306,7 @@ cr.define('print_preview', function() {
     isSectionVisibleInternal: function() {
       if (this.collapseContent) {
         return this.distillPageTicketItem_.isCapabilityAvailable() ||
+               this.fitToPageTicketItem_.isCapabilityAvailable() ||
                this.duplexTicketItem_.isCapabilityAvailable();
       }
 

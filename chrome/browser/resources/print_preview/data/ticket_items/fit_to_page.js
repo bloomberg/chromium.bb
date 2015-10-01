@@ -8,6 +8,7 @@ cr.define('print_preview.ticket_items', function() {
   /**
    * Fit-to-page ticket item whose value is a {@code boolean} that indicates
    * whether to scale the document to fit the page.
+   * @param {!print_preview.AppState} appState App state to persist item value.
    * @param {!print_preview.DocumentInfo} documentInfo Information about the
    *     document to print.
    * @param {!print_preview.DestinationStore} destinationStore Used to determine
@@ -15,11 +16,11 @@ cr.define('print_preview.ticket_items', function() {
    * @constructor
    * @extends {print_preview.ticket_items.TicketItem}
    */
-  function FitToPage(documentInfo, destinationStore) {
+  function FitToPage(appState, documentInfo, destinationStore) {
     print_preview.ticket_items.TicketItem.call(
         this,
-        null /*appState*/,
-        null /*field*/,
+        appState,
+        print_preview.AppState.Field.IS_FIT_TO_PAGE_ENABLED,
         destinationStore,
         documentInfo);
   };
@@ -42,7 +43,10 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getDefaultValueInternal: function() {
-      return !this.getDocumentInfoInternal().isScalingDisabled;
+      // It's on by default since it is not a document feature, it is rather
+      // a property of the printer, hardware margins limitations. User can
+      // always override it.
+      return true;
     },
 
     /** @override */
