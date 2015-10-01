@@ -594,14 +594,20 @@ async_test(function(t) {
 // HELPERS
 //
 
+var globalPostMessageCounter = 0;
+
 function postMessageTask(f) {
   if ('document' in self) {
-    var l = function() {
-      removeEventListener('message', l);
-      f();
+    var message = 'abusingpostmessageforfunandprofit' + globalPostMessageCounter;
+    globalPostMessageCounter++;
+    var l = function(ev) {
+      if (ev.data === message) {
+        removeEventListener('message', l);
+        f();
+      }
     };
     addEventListener('message', l);
-    postMessage('abusingpostmessageforfunandprofit', '*');
+    postMessage(message, '*');
   } else {
     var channel = new MessageChannel();
     channel.port1.onmessage = function() { channel.port1.close(); f(); };
