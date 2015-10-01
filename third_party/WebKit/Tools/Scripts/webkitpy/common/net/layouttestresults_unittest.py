@@ -86,7 +86,7 @@ class LayoutTestResultsTest(unittest.TestCase):
     "has_pretty_patch": false,
     "fixable": 1220,
     "num_flaky": 0,
-    "blink_revision": "1234",
+    "chromium_revision": "1234",
     "has_wdiff": false
 });"""
 
@@ -98,8 +98,8 @@ class LayoutTestResultsTest(unittest.TestCase):
         self.assertTrue(LayoutTestResults.results_from_string('ADD_RESULTS({"tests":{},"interrupted":true});').run_was_interrupted())
         self.assertFalse(LayoutTestResults.results_from_string('ADD_RESULTS({"tests":{},"interrupted":false});').run_was_interrupted())
 
-    def test_blink_revision(self):
-        self.assertEqual(LayoutTestResults.results_from_string(self.example_full_results_json).blink_revision(), 1234)
+    def test_chromium_revision(self):
+        self.assertEqual(LayoutTestResults.results_from_string(self.example_full_results_json).chromium_revision(), 1234)
 
     def test_actual_results(self):
         results = LayoutTestResults.results_from_string(self.example_full_results_json)

@@ -262,10 +262,10 @@ class PerfTestsRunner(object):
 
     def _generate_results_dict(self, timestamp, description, platform, builder_name, build_number):
         revisions = {}
-        for (name, path) in self._port.repository_paths():
-            scm = SCMDetector(self._host.filesystem, self._host.executive).detect_scm_system(path) or self._host.scm()
-            revision = scm.svn_revision(path)
-            revisions[name] = {'revision': revision, 'timestamp': scm.timestamp_of_revision(path, revision)}
+        path = self._port.repository_path()
+        scm = SCMDetector(self._host.filesystem, self._host.executive).detect_scm_system(path) or self._host.scm()
+        revision = scm.commit_position(path)
+        revisions['chromium'] = {'revision': revision, 'timestamp': scm.timestamp_of_revision(path, revision)}
 
         meta_info = {
             'description': description,

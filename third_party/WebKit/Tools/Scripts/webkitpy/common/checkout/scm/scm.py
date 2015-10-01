@@ -116,11 +116,8 @@ class SCM:
     def display_name(self):
         self._subclass_must_implement()
 
-    def _head_svn_revision(self):
-        return self.svn_revision(self.checkout_root)
-
-    def svn_revision(self, path):
-        """Returns the latest svn revision found in the checkout."""
+    def commit_position(self, path):
+        """Returns the latest chromium commit position found in the checkout."""
         self._subclass_must_implement()
 
     def timestamp_of_revision(self, path, revision):

@@ -1344,10 +1344,9 @@ class Port(object):
     def expectations_files(self):
         return [self.path_to_generic_test_expectations_file()] + self._port_specific_expectations_files()
 
-    def repository_paths(self):
-        """Returns a list of (repository_name, repository_path) tuples of its depending code base."""
-        return [('blink', self.layout_tests_dir()),
-                ('chromium', self.path_from_chromium_base('build'))]
+    def repository_path(self):
+        """Returns the repository path for the chromium code base."""
+        return self.path_from_chromium_base('build')
 
     _WDIFF_DEL = '##WDIFF_DEL##'
     _WDIFF_ADD = '##WDIFF_ADD##'

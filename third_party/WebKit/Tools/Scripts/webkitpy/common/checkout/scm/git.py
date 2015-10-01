@@ -186,15 +186,18 @@ class Git(SCM):
         # git 1.7.0.4 (and earlier) didn't support the separate arg.
         return self._run_git(['log', '-1', '--grep=' + grep_str, '--date=iso', self.find_checkout_root(path)])
 
-    def svn_revision(self, path):
-        git_log = self.most_recent_log_matching('git-svn-id:', path)
-        match = re.search("^\s*git-svn-id:.*@(?P<svn_revision>\d+)\ ", git_log, re.MULTILINE)
+    def _commit_position_from_git_log(self, git_log):
+        match = re.search("^\s*Cr-Commit-Position:.*@\{#(?P<commit_position>\d+)\}", git_log, re.MULTILINE)
         if not match:
             return ""
-        return str(match.group('svn_revision'))
+        return str(match.group('commit_position'))
+
+    def commit_position(self, path):
+        git_log = self.most_recent_log_matching('Cr-Commit-Position:', path)
+        return self._commit_position_from_git_log(git_log)
 
     def timestamp_of_revision(self, path, revision):
-        git_log = self.most_recent_log_matching('git-svn-id:.*@%s' % revision, path)
+        git_log = self.most_recent_log_matching('Cr-Commit-Position:.*@\{%s\}' % revision, path)
         match = re.search("^Date:\s*(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) ([+-])(\d{2})(\d{2})$", git_log, re.MULTILINE)
         if not match:
             return ""
@@ -207,13 +210,6 @@ class Git(SCM):
         sign = 1 if match.group(7) == '+' else -1
         time_without_timezone = time_with_timezone - datetime.timedelta(hours=sign * int(match.group(8)), minutes=int(match.group(9)))
         return time_without_timezone.strftime('%Y-%m-%dT%H:%M:%SZ')
-
-    def _prepend_svn_revision(self, diff):
-        revision = self._head_svn_revision()
-        if not revision:
-            return diff
-
-        return "Subversion Revision: " + revision + '\n' + diff
 
     def create_patch(self, git_commit=None, changed_files=None):
         """Returns a byte array (str()) representing the patch file.
@@ -231,15 +227,12 @@ class Git(SCM):
         command = [self.executable_name, 'diff', '--binary', '--no-color', "--no-ext-diff", "--full-index", "--no-renames", order, self._merge_base(git_commit), "--"]
         if changed_files:
             command += changed_files
-        return self._prepend_svn_revision(self._run(command, decode_output=False, cwd=self.checkout_root))
+        return self._run(command, decode_output=False, cwd=self.checkout_root)
 
     @memoized
-    def svn_revision_from_git_commit(self, git_commit):
-        # git svn find-rev always exits 0, even when the revision or commit is not found.
-        try:
-            return int(self._run_git(['svn', 'find-rev', git_commit]).rstrip())
-        except ValueError, e:
-            return None
+    def commit_position_from_git_commit(self, git_commit):
+        git_log = self.git_commit_detail(git_commit)
+        return self._commit_position_from_git_log(git_log)
 
     def checkout_branch(self, name):
         self._run_git(['checkout', '-q', name])
@@ -263,17 +256,10 @@ class Git(SCM):
 
     def _remote_branch_ref(self):
         # Use references so that we can avoid collisions, e.g. we don't want to operate on refs/heads/trunk if it exists.
-        remote_branch_refs = self.read_git_config('svn-remote.svn.fetch', cwd=self.checkout_root, executive=self._executive)
-        if not remote_branch_refs:
-            remote_master_ref = 'refs/remotes/origin/master'
-            if not self._branch_ref_exists(remote_master_ref):
-                raise ScriptError(message="Can't find a branch to diff against. svn-remote.svn.fetch is not in the git config and %s does not exist" % remote_master_ref)
-            return remote_master_ref
-
-        # FIXME: What's the right behavior when there are multiple svn-remotes listed?
-        # For now, just use the first one.
-        first_remote_branch_ref = remote_branch_refs.split('\n')[0]
-        return first_remote_branch_ref.split(':')[1]
+        remote_master_ref = 'refs/remotes/origin/master'
+        if not self._branch_ref_exists(remote_master_ref):
+            raise ScriptError(message="Can't find a branch to diff against. %s does not exist" % remote_master_ref)
+        return remote_master_ref
 
     def commit_locally_with_message(self, message, commit_all_working_directory_changes=True):
         command = ['commit', '-F', '-']

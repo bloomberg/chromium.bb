@@ -890,7 +890,6 @@ class TestAnalyzeBaselines(_BaseTestCase):
 
 
 class TestAutoRebaseline(_BaseTestCase):
-    SVN_REMOTE_CMD = ['git', 'config', '--local', '--get-regexp', '^svn-remote\\.']
     command_constructor = AutoRebaseline
 
     def _write_test_file(self, port, path, contents):
@@ -945,6 +944,7 @@ class TestAutoRebaseline(_BaseTestCase):
         self.assertEqual(self.command.tests_to_rebaseline(self.tool, min_revision, print_revisions=False), (
                 set(['path/to/rebaseline-without-bug-number.html', 'path/to/rebaseline-with-modifiers.html', 'path/to/rebaseline-without-modifiers.html']),
                 5678,
+                '624c3081c0',
                 'foobarbaz1@chromium.org',
                 set(['24182', '234']),
                 True))
@@ -965,6 +965,7 @@ class TestAutoRebaseline(_BaseTestCase):
         self.assertEqual(self.command.tests_to_rebaseline(self.tool, min_revision, print_revisions=False), (
                 set(expected_list_of_tests),
                 5678,
+                '624c3081c0',
                 'foobarbaz1@chromium.org',
                 set(['24182']),
                 True))
@@ -972,20 +973,21 @@ class TestAutoRebaseline(_BaseTestCase):
     def test_commit_message(self):
         author = "foo@chromium.org"
         revision = 1234
+        commit = "abcd567"
         bugs = set()
-        self.assertEqual(self.command.commit_message(author, revision, bugs),
+        self.assertEqual(self.command.commit_message(author, revision, commit, bugs),
             """Auto-rebaseline for r1234
 
-http://src.chromium.org/viewvc/blink?view=revision&revision=1234
+https://chromium.googlesource.com/chromium/src/+/abcd567
 
 TBR=foo@chromium.org
 """)
 
         bugs = set(["234", "345"])
-        self.assertEqual(self.command.commit_message(author, revision, bugs),
+        self.assertEqual(self.command.commit_message(author, revision, commit, bugs),
             """Auto-rebaseline for r1234
 
-http://src.chromium.org/viewvc/blink?view=revision&revision=1234
+https://chromium.googlesource.com/chromium/src/+/abcd567
 
 BUG=234,345
 TBR=foo@chromium.org
@@ -1060,8 +1062,7 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
         self._write_test_file(test_port, 'fast/dom/prototype-strawberry.html', "Dummy test contents")
         self._write_test_file(test_port, 'fast/dom/prototype-chocolate.html', "Dummy test contents")
 
-        self.tool.executive = MockLineRemovingExecutive(
-            should_return_zero_when_run=set(self.SVN_REMOTE_CMD))
+        self.tool.executive = MockLineRemovingExecutive()
 
         old_exact_matches = builders._exact_matches
         try:
@@ -1079,7 +1080,6 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
             self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
 
             self.assertEqual(self.tool.executive.calls, [
-                self.SVN_REMOTE_CMD,
                 [
                     ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-chocolate.html'],
                     ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'png', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-strawberry.html'],
@@ -1101,7 +1101,6 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
                 ['git', 'pull'],
                 ['git', 'cl', 'dcommit', '-f'],
                 ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
-                ['git', 'cl', 'set_close'],
             ])
 
             # The mac ports should both be removed since they're the only ones in builders._exact_matches.
@@ -1160,13 +1159,11 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
             self.command.SECONDS_BEFORE_GIVING_UP = 0
             self.command.tree_status = lambda: 'open'
-            self.tool.executive = MockExecutive(
-                should_return_zero_when_run=set(self.SVN_REMOTE_CMD))
+            self.tool.executive = MockExecutive()
             self.tool.executive.calls = []
             self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
 
             self.assertEqual(self.tool.executive.calls, [
-                self.SVN_REMOTE_CMD,
                 [
                     ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-taco.html'],
                 ],
@@ -1214,8 +1211,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
         self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
 
-        self.tool.executive = MockLineRemovingExecutive(
-            should_return_zero_when_run=set(self.SVN_REMOTE_CMD))
+        self.tool.executive = MockLineRemovingExecutive()
 
         old_exact_matches = builders._exact_matches
         try:
@@ -1227,13 +1223,11 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             self.command.tree_status = lambda: 'open'
             self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [
-                self.SVN_REMOTE_CMD,
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
                 ['git', 'cl', 'dcommit', '-f'],
                 ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
-                ['git', 'cl', 'set_close'],
             ])
 
             # The mac ports should both be removed since they're the only ones in builders._exact_matches.
@@ -1243,7 +1237,7 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
         finally:
             builders._exact_matches = old_exact_matches
 
-    def test_execute_setup_git_svn(self):
+    def test_execute_use_alternate_rebaseline_branch(self):
         def blame(path):
             return """
 6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-04-28 04:52:41 +0000   13) Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
@@ -1287,78 +1281,14 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             }
 
             self.command.tree_status = lambda: 'open'
-            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
-            self.assertEqual(self.tool.executive.calls, [
-                self.SVN_REMOTE_CMD,
-                ['git', 'auto-svn'],
-                [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
-                ['git', 'cl', 'upload', '-f'],
-                ['git', 'pull'],
-                ['git', 'cl', 'dcommit', '-f'],
-                ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
-            ])
-
-            self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """
-Bug(foo) [ Linux Mac XP ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
-""")
-        finally:
-            builders._exact_matches = old_exact_matches
-
-    def test_execute_use_alternate_rebaseline_branch(self):
-        def blame(path):
-            return """
-6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-04-28 04:52:41 +0000   13) Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
-"""
-        self.tool.scm().blame = blame
-
-        test_port = self._setup_test_port()
-
-        old_builder_data = self.command.builder_data
-
-        def builder_data():
-            self.command._builder_data['MOCK Win'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "fast": {
-            "dom": {
-                "prototype-taco.html": {
-                    "expected": "FAIL",
-                    "actual": "PASS",
-                    "is_unexpected": true
-                }
-            }
-        }
-    }
-});""")
-            return self.command._builder_data
-
-        self.command.builder_data = builder_data
-
-        self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
-Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
-""")
-
-        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
-
-        self.tool.executive = MockLineRemovingExecutive(
-            should_return_zero_when_run=set(self.SVN_REMOTE_CMD))
-
-        old_exact_matches = builders._exact_matches
-        try:
-            builders._exact_matches = {
-                "MOCK Win": {"port_name": "test-win-win7", "specifiers": set(["mock-specifier"])},
-            }
-
-            self.command.tree_status = lambda: 'open'
             webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = lambda x: 'auto-rebaseline-temporary-branch'
             self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [
-                self.SVN_REMOTE_CMD,
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
                 ['git', 'cl', 'dcommit', '-f'],
                 ['git', 'config', 'branch.auto-rebaseline-alt-temporary-branch.rietveldissue'],
-                ['git', 'cl', 'set_close'],
             ])
 
             self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """
@@ -1402,8 +1332,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
         self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
 
-        self.tool.executive = MockLineRemovingExecutive(
-            should_return_zero_when_run=set(self.SVN_REMOTE_CMD))
+        self.tool.executive = MockLineRemovingExecutive()
 
         old_exact_matches = builders._exact_matches
         try:
@@ -1415,13 +1344,11 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = lambda x: 'auto-rebaseline-alt-temporary-branch'
             self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [
-                self.SVN_REMOTE_CMD,
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
                 ['git', 'cl', 'dcommit', '-f'],
                 ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
-                ['git', 'cl', 'set_close'],
             ])
 
             self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """

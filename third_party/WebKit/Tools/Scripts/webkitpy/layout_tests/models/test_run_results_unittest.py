@@ -178,7 +178,7 @@ class SummarizedResultsTest(unittest.TestCase):
         host = MockHost(initialize_scm_by_default=False)
         self.port = host.port_factory.get(port_name='test')
 
-    def test_no_svn_revision(self):
+    def test_no_chromium_revision(self):
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
         self.assertNotIn('revision', summary)
 
@@ -192,10 +192,10 @@ class SummarizedResultsTest(unittest.TestCase):
         summary = summarized_results(self.port, expected=False, passing=True, flaky=False)
         self.assertEquals(summary['num_failures_by_type'], {'CRASH': 0, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 5, 'REBASELINE': 0, 'SKIP': 1, 'SLOW': 0, 'TIMEOUT': 0, 'IMAGE+TEXT': 0, 'LEAK': 0, 'FAIL': 0, 'AUDIO': 0, 'WONTFIX': 0})
 
-    def test_svn_revision(self):
+    def test_chromium_revision(self):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
-        self.assertNotEquals(summary['blink_revision'], '')
+        self.assertNotEquals(summary['chromium_revision'], '')
 
     def test_bug_entry(self):
         self.port._options.builder_name = 'dummy builder'

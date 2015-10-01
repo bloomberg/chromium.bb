@@ -166,14 +166,6 @@ def _interpret_test_failures(failures):
     return test_dict
 
 
-def _chromium_commit_position(scm, path):
-    log = scm.most_recent_log_matching('Cr-Commit-Position:', path)
-    match = re.search('^\s*Cr-Commit-Position:.*@\{#(?P<commit_position>\d+)\}', log, re.MULTILINE)
-    if not match:
-        return ""
-    return str(match.group('commit_position'))
-
-
 def summarize_results(port_obj, expectations, initial_results,
                       all_retry_results, enabled_pixel_tests_in_retry,
                       only_include_failing=False):
@@ -339,22 +331,16 @@ def summarize_results(port_obj, expectations, initial_results,
     results['builder_name'] = port_obj.get_option('builder_name')
 
     # Don't do this by default since it takes >100ms.
-    # It's only used for uploading data to the flakiness dashboard.
+    # It's only used for rebaselining and uploading data to the flakiness dashboard.
     results['chromium_revision'] = ''
-    results['blink_revision'] = ''
     if port_obj.get_option('builder_name'):
-        for (name, path) in port_obj.repository_paths():
-            scm = port_obj.host.scm_for_path(path)
-            if scm:
-                if name.lower() == 'chromium':
-                    rev = _chromium_commit_position(scm, path)
-                else:
-                    rev = scm.svn_revision(path)
-            if rev:
-                results[name.lower() + '_revision'] = rev
-            else:
-                _log.warn('Failed to determine svn revision for %s, '
-                          'leaving "%s_revision" key blank in full_results.json.'
-                          % (path, name))
+        path = port_obj.repository_path()
+        scm = port_obj.host.scm_for_path(path)
+        if scm:
+            results['chromium_revision'] = scm.commit_position(path)
+        else:
+            _log.warn('Failed to determine chromium commit position for %s, '
+                      'leaving "chromium_revision" key blank in full_results.json.'
+                      % path)
 
     return results

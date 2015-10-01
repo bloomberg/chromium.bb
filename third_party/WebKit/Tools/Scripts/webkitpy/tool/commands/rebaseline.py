@@ -335,7 +335,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 if builder_results:
                     self._builder_data[builder_name] = builder_results
                 else:
-                    _log.warning("No result for builder '%s'" % builder_name)
+                    raise Exception("No result for builder %s." % builder_name)
         return self._builder_data
 
     # The release builders cycle much faster than the debug ones and cover all the platforms.
@@ -688,7 +688,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 return []
             revisions.append({
                 "builder": result.builder_name(),
-                "revision": result.blink_revision(),
+                "revision": result.chromium_revision(),
             })
         return revisions
 
@@ -698,6 +698,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
         tests = set()
         revision = None
+        commit = None
         author = None
         bugs = set()
         has_any_needs_rebaseline_lines = False
@@ -716,20 +717,21 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             parsed_line = re.match("^(\S*)[^(]*\((\S*).*?([^ ]*)\ \[[^[]*$", line_without_comments)
 
             commit_hash = parsed_line.group(1)
-            svn_revision = tool.scm().svn_revision_from_git_commit(commit_hash)
+            commit_position = tool.scm().commit_position_from_git_commit(commit_hash)
 
             test = parsed_line.group(3)
             if print_revisions:
-                _log.info("%s is waiting for r%s" % (test, svn_revision))
+                _log.info("%s is waiting for r%s" % (test, commit_position))
 
-            if not svn_revision or svn_revision > min_revision:
+            if not commit_position or commit_position > min_revision:
                 continue
 
-            if revision and svn_revision != revision:
+            if revision and commit_position != revision:
                 continue
 
             if not revision:
-                revision = svn_revision
+                revision = commit_position
+                commit = commit_hash
                 author = parsed_line.group(2)
 
             bugs.update(re.findall("crbug\.com\/(\d+)", line_without_comments))
@@ -739,12 +741,12 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 _log.info("Too many tests to rebaseline in one patch. Doing the first %d." % self.MAX_LINES_TO_REBASELINE)
                 break
 
-        return tests, revision, author, bugs, has_any_needs_rebaseline_lines
+        return tests, revision, commit, author, bugs, has_any_needs_rebaseline_lines
 
-    def link_to_patch(self, revision):
-        return "http://src.chromium.org/viewvc/blink?view=revision&revision=" + str(revision)
+    def link_to_patch(self, commit):
+        return "https://chromium.googlesource.com/chromium/src/+/" + commit
 
-    def commit_message(self, author, revision, bugs):
+    def commit_message(self, author, revision, commit, bugs):
         bug_string = ""
         if bugs:
             bug_string = "BUG=%s\n" % ",".join(bugs)
@@ -754,7 +756,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 %s
 
 %sTBR=%s
-""" % (revision, self.link_to_patch(revision), bug_string, author)
+""" % (revision, self.link_to_patch(commit), bug_string, author)
 
     def get_test_prefix_list(self, tests):
         test_prefix_list = {}
@@ -823,7 +825,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             return
 
         min_revision = int(min([item["revision"] for item in revision_data]))
-        tests, revision, author, bugs, has_any_needs_rebaseline_lines = self.tests_to_rebaseline(tool, min_revision, print_revisions=options.verbose)
+        tests, revision, commit, author, bugs, has_any_needs_rebaseline_lines = self.tests_to_rebaseline(tool, min_revision, print_revisions=options.verbose)
 
         if options.verbose:
             _log.info("Min revision across all bots is %s." % min_revision)
@@ -846,12 +848,6 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         old_branch_name_or_ref = ''
         rebaseline_branch_name = self.AUTO_REBASELINE_BRANCH_NAME
         try:
-            # Setup git-svn for dcommit if necessary.
-            if tool.executive.run_command(
-                    ['git', 'config', '--local', '--get-regexp', r'^svn-remote\.'],
-                    return_exit_code=True):
-                tool.executive.run_command(['git', 'auto-svn'])
-
             # Save the current branch name and checkout a clean branch for the patch.
             old_branch_name_or_ref = _get_branch_name_or_ref(tool)
             if old_branch_name_or_ref == self.AUTO_REBASELINE_BRANCH_NAME:
@@ -864,7 +860,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             if test_prefix_list:
                 self._rebaseline(options, test_prefix_list)
 
-            tool.scm().commit_locally_with_message(self.commit_message(author, revision, bugs))
+            tool.scm().commit_locally_with_message(self.commit_message(author, revision, commit, bugs))
 
             # FIXME: It would be nice if we could dcommit the patch without uploading, but still
             # go through all the precommit hooks. For rebaselines with lots of files, uploading

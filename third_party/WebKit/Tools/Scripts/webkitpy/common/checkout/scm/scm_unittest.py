@@ -340,11 +340,6 @@ class GitTest(SCMTestBase):
         self._chdir(self.untracking_checkout_path)
         self.assertRaises(ScriptError, self.untracking_scm._remote_branch_ref)
 
-    def test_multiple_remotes(self):
-        self._run(['git', 'config', '--add', 'svn-remote.svn.fetch', 'trunk:remote1'])
-        self._run(['git', 'config', '--add', 'svn-remote.svn.fetch', 'trunk:remote2'])
-        self.assertEqual(self.tracking_scm._remote_branch_ref(), 'remote1')
-
     def test_create_patch(self):
         self._write_text_file('test_file_commit1', 'contents')
         self._run(['git', 'add', 'test_file_commit1'])
@@ -362,6 +357,23 @@ class GitTest(SCMTestBase):
         scm = self.tracking_scm
         scm.move('foo_file', 'bar_file')
         scm.commit_locally_with_message('message')
+
+    def test_commit_position_from_git_log(self):
+        git_log = """
+commit 624c3081c0
+Author: foobarbaz1 <foobarbaz1@chromium.org>
+Date:   Mon Sep 28 19:10:30 2015 -0700
+
+    Test foo bar baz qux 123.
+
+    BUG=000000
+
+    Review URL: https://codereview.chromium.org/999999999
+
+    Cr-Commit-Position: refs/heads/master@{#1234567}
+"""
+        scm = self.tracking_scm
+        self.assertEqual(scm._commit_position_from_git_log(git_log), 1234567)
 
 
 class GitSVNTest(SCMTestBase):

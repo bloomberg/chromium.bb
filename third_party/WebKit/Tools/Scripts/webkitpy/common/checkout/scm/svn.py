@@ -180,9 +180,6 @@ class SVN(SCM):
     def display_name(self):
         return "svn"
 
-    def svn_revision(self, path):
-        return self.value_from_svn_info(path, 'Revision')
-
     def timestamp_of_revision(self, path, revision):
         # We use --xml to get timestamps like 2013-02-08T08:18:04.964409Z
         repository_root = self.value_from_svn_info(self.checkout_root, 'Repository Root')

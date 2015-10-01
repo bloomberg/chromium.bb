@@ -106,8 +106,8 @@ class LayoutTestResults(object):
     def builder_name(self):
         return self._results["builder_name"]
 
-    def blink_revision(self):
-        return int(self._results["blink_revision"])
+    def chromium_revision(self):
+        return int(self._results["chromium_revision"])
 
     def actual_results(self, test):
         result = result_for_test(self._results["tests"], test)
