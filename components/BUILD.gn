@@ -308,6 +308,7 @@ test("components_unittests") {
     "//components/search_engines:unit_tests",
     "//components/undo:unit_tests",
     "//components/leveldb_proto:unit_tests",
+    "//components/suggestions:unit_tests",
   ]
 
   if (!is_ios) {
@@ -381,7 +382,6 @@ test("components_unittests") {
       "//components/search:unit_tests",
       "//components/search_provider_logos:unit_tests",
       "//components/signin/core/browser:unit_tests",
-      "//components/suggestions:unit_tests",
       "//components/sync_driver:unit_tests",
       "//components/translate/core/browser:unit_tests",
       "//components/translate/core/common:unit_tests",
