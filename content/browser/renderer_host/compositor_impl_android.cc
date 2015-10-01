@@ -67,7 +67,8 @@ namespace content {
 
 namespace {
 
-const unsigned int kMaxSwapBuffers = 2U;
+const unsigned int kMaxUiSwapBuffers = 1U;
+const unsigned int kMaxDisplaySwapBuffers = 1U;
 
 // Used to override capabilities_.adjust_deadline_for_parent to false
 class OutputSurfaceWithoutParent : public cc::OutputSurface,
@@ -85,7 +86,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
             base::Bind(&OutputSurfaceWithoutParent::OnSwapBuffersCompleted,
                        base::Unretained(this))) {
     capabilities_.adjust_deadline_for_parent = false;
-    capabilities_.max_frames_pending = 2;
+    capabilities_.max_frames_pending = kMaxDisplaySwapBuffers;
   }
 
   ~OutputSurfaceWithoutParent() override { compositor_->RemoveObserver(this); }
@@ -329,11 +330,11 @@ void CompositorImpl::Composite(CompositingTrigger trigger) {
   DCHECK(needs_composite_);
   DCHECK(!DidCompositeThisFrame());
 
-  DCHECK_LE(pending_swapbuffers_, kMaxSwapBuffers);
+  DCHECK_LE(pending_swapbuffers_, kMaxUiSwapBuffers);
   // Swap Ack accounting is unreliable if the OutputSurface was lost.
   // In that case still attempt to composite, which will cause creation of a
   // new OutputSurface and reset pending_swapbuffers_.
-  if (pending_swapbuffers_ == kMaxSwapBuffers &&
+  if (pending_swapbuffers_ == kMaxUiSwapBuffers &&
       !host_->output_surface_lost()) {
     TRACE_EVENT0("compositor", "CompositorImpl_SwapLimit");
     return;
@@ -730,7 +731,7 @@ void CompositorImpl::DidPostSwapBuffers() {
 void CompositorImpl::DidCompleteSwapBuffers() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidCompleteSwapBuffers");
   DCHECK_GT(pending_swapbuffers_, 0U);
-  if (pending_swapbuffers_-- == kMaxSwapBuffers && needs_composite_)
+  if (pending_swapbuffers_-- == kMaxUiSwapBuffers && needs_composite_)
     PostComposite(COMPOSITE_IMMEDIATELY);
   client_->OnSwapBuffersCompleted(pending_swapbuffers_);
 }
