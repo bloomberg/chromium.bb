@@ -30756,7 +30756,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Platform.IntelMaxMicroArchitecture"
     enum="IntelMaxMicroArchitecture">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>fbarchard@chromium.org</owner>
   <summary>
     The maximum supported micro-architecture on an Intel platform.  This value
     is logged at program start time.
@@ -62276,7 +62276,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="SSE3"/>
   <int value="4" label="SSSE3"/>
   <int value="5" label="SSE4.1"/>
-  <int value="6" label="SSE4.3"/>
+  <int value="6" label="SSE4.2"/>
   <int value="7" label="AVX"/>
 </enum>
 
