@@ -149,11 +149,6 @@ public class ProfileSyncService {
         return PassphraseType.fromInternalValue(passphraseType);
     }
 
-    public boolean isSyncKeystoreMigrationDone() {
-        assert isBackendInitialized();
-        return nativeIsSyncKeystoreMigrationDone(mNativeProfileSyncServiceAndroid);
-    }
-
     /**
      * Returns true if the current explicit passphrase time is defined.
      */
@@ -516,7 +511,6 @@ public class ProfileSyncService {
     private native String nativeGetCurrentSignedInAccountText(long nativeProfileSyncServiceAndroid);
     private native String nativeGetSyncEnterCustomPassphraseBodyText(
             long nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsSyncKeystoreMigrationDone(long nativeProfileSyncServiceAndroid);
     private native int[] nativeGetActiveDataTypes(long nativeProfileSyncServiceAndroid);
     private native int[] nativeGetPreferredDataTypes(long nativeProfileSyncServiceAndroid);
     private native void nativeSetPreferredDataTypes(
