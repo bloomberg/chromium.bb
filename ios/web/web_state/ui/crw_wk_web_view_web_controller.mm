@@ -1147,20 +1147,22 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // navigation failure and do nothing. If the URL does not match, assume it is
   // a non-document-changing URL change, and handle accordingly.
   //
-  // If |isLoading| is YES, then it could either be case 1, or it could be
-  // case 2 on a page that hasn't finished loading yet. If the domain of the
-  // new URL matches the last committed URL, then check window.location.href,
-  // and if it matches, trust it. The domain check ensures that if a site
-  // somehow corrupts window.location.href it can't do a redirect to a
-  // slow-loading target page while it is still loading to spoof the domain.
-  // On a document-changing URL change, the window.location.href will match the
-  // previous URL at this stage, not the web view's current URL.
+  // If |isLoading| is YES, then it could either be case 1 (if the load phase is
+  // web::LOAD_REQUESTED), or it could be case 2 on a page that hasn't finished
+  // loading yet. If the domain of the new URL matches the last committed URL,
+  // then check window.location.href, and if it matches, trust it. The domain
+  // check ensures that if a site somehow corrupts window.location.href it can't
+  // do a redirect to a slow-loading target page while it is still loading to
+  // spoof the domain. On a document-changing URL change, the
+  // window.location.href will match the previous URL at this stage, not the web
+  // view's current URL.
   if (![_wkWebView isLoading]) {
     if (_documentURL == url)
       return;
     [self URLDidChangeWithoutDocumentChange:url];
   } else if (!_documentURL.host().empty() &&
-             _documentURL.host() == url.host()) {
+             _documentURL.host() == url.host() &&
+             self.loadPhase != web::LOAD_REQUESTED) {
     [_wkWebView evaluateJavaScript:@"window.location.href"
                  completionHandler:^(id result, NSError* error) {
                      // If the web view has gone away, or the location
