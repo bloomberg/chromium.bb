@@ -1879,8 +1879,7 @@ bool InitializeAccessibilityTreeSearch(
         ui::AX_ATTR_CAN_SET_VALUE);
   }
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute] &&
-      ([[self role] isEqualToString:NSAccessibilityTextFieldRole] ||
-       [[self role] isEqualToString:NSAccessibilityTextAreaRole]))
+      browserAccessibility_->IsEditableText())
     return YES;
 
   return NO;
