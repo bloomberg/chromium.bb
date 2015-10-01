@@ -4,8 +4,8 @@
 
 #include "components/proximity_auth/screenlock_bridge.h"
 
-#include "base/logging.h"
 #include "base/strings/string16.h"
+#include "components/proximity_auth/logging/logging.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -131,6 +131,7 @@ void ScreenlockBridge::SetLockHandler(LockHandler* lock_handler) {
   else
     screen_type = lock_handler->GetScreenType();
 
+  focused_user_id_ = std::string();
   lock_handler_ = lock_handler;
   if (lock_handler_)
     FOR_EACH_OBSERVER(Observer, observers_, OnScreenDidLock(screen_type));
@@ -141,8 +142,13 @@ void ScreenlockBridge::SetLockHandler(LockHandler* lock_handler) {
 void ScreenlockBridge::SetFocusedUser(const std::string& user_id) {
   if (user_id == focused_user_id_)
     return;
+  PA_LOG(INFO) << "Focused user changed to " << user_id;
   focused_user_id_ = user_id;
   FOR_EACH_OBSERVER(Observer, observers_, OnFocusedUserChanged(user_id));
+}
+
+std::string ScreenlockBridge::GetFocusedUser() {
+  return focused_user_id_;
 }
 
 bool ScreenlockBridge::IsLocked() const {

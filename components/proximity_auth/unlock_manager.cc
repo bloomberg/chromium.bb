@@ -80,7 +80,6 @@ UnlockManager::UnlockManager(ScreenlockType screenlock_type,
                              ProximityAuthClient* proximity_auth_client)
     : screenlock_type_(screenlock_type),
       life_cycle_(nullptr),
-      messenger_(nullptr),
       proximity_monitor_(proximity_monitor.Pass()),
       proximity_auth_client_(proximity_auth_client),
       is_locked_(false),
@@ -113,8 +112,8 @@ UnlockManager::UnlockManager(ScreenlockType screenlock_type,
 }
 
 UnlockManager::~UnlockManager() {
-  if (messenger_)
-    messenger_->RemoveObserver(this);
+  if (GetMessenger())
+    GetMessenger()->RemoveObserver(this);
 
   ScreenlockBridge::Get()->RemoveObserver(this);
 
@@ -134,15 +133,13 @@ bool UnlockManager::IsUnlockAllowed() {
               RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED &&
           proximity_monitor_->IsUnlockAllowed() &&
           (screenlock_type_ != ScreenlockType::SIGN_IN ||
-           (messenger_ && messenger_->SupportsSignIn())));
+           (GetMessenger() && GetMessenger()->SupportsSignIn())));
 }
 
 void UnlockManager::SetRemoteDeviceLifeCycle(
     RemoteDeviceLifeCycle* life_cycle) {
-  if (messenger_) {
-    messenger_->RemoveObserver(this);
-    messenger_ = nullptr;
-  }
+  if (GetMessenger())
+    GetMessenger()->RemoveObserver(this);
 
   life_cycle_ = life_cycle;
   if (life_cycle_)
@@ -157,10 +154,8 @@ void UnlockManager::OnLifeCycleStateChanged() {
                << static_cast<int>(state);
 
   remote_screenlock_state_.reset();
-  if (state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
-    messenger_ = life_cycle_->GetMessenger();
-    messenger_->AddObserver(this);
-  }
+  if (state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED)
+    GetMessenger()->AddObserver(this);
 
   if (state == RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED)
     SetWakingUpState(false);
@@ -209,7 +204,7 @@ void UnlockManager::OnDecryptResponse(scoped_ptr<std::string> decrypted_bytes) {
     AcceptAuthAttempt(false);
   } else {
     sign_in_secret_ = decrypted_bytes.Pass();
-    messenger_->DispatchUnlockEvent();
+    GetMessenger()->DispatchUnlockEvent();
   }
 }
 
@@ -223,14 +218,13 @@ void UnlockManager::OnUnlockResponse(bool success) {
   PA_LOG(INFO) << "[Unlock] Unlock response from remote device: "
                << (success ? "success" : "failure");
   if (success)
-    messenger_->DispatchUnlockEvent();
+    GetMessenger()->DispatchUnlockEvent();
   else
     AcceptAuthAttempt(false);
 }
 
 void UnlockManager::OnDisconnected() {
-  messenger_->RemoveObserver(this);
-  messenger_ = nullptr;
+  GetMessenger()->RemoveObserver(this);
 }
 
 void UnlockManager::OnScreenDidLock(
@@ -316,12 +310,12 @@ void UnlockManager::OnAuthAttempted(
   if (screenlock_type_ == ScreenlockType::SIGN_IN) {
     SendSignInChallenge();
   } else {
-    if (messenger_->SupportsSignIn()) {
-      messenger_->RequestUnlock();
+    if (GetMessenger()->SupportsSignIn()) {
+      GetMessenger()->RequestUnlock();
     } else {
       PA_LOG(INFO) << "[Unlock] Protocol v3.1 not supported, skipping "
                    << "request_unlock.";
-      messenger_->DispatchUnlockEvent();
+      GetMessenger()->DispatchUnlockEvent();
     }
   }
 }
@@ -349,8 +343,9 @@ ScreenlockState UnlockManager::GetScreenlockState() {
   if (!bluetooth_adapter_ || !bluetooth_adapter_->IsPowered())
     return ScreenlockState::NO_BLUETOOTH;
 
-  if (screenlock_type_ == ScreenlockType::SIGN_IN && messenger_ &&
-      !messenger_->SupportsSignIn())
+  Messenger* messenger = GetMessenger();
+  if (screenlock_type_ == ScreenlockType::SIGN_IN && messenger &&
+      !messenger->SupportsSignIn())
     return ScreenlockState::PHONE_UNSUPPORTED;
 
   // If the RSSI is too low, then the remote device is nowhere near the local
@@ -466,6 +461,14 @@ UnlockManager::GetScreenlockStateFromRemoteUpdate(RemoteStatusUpdate update) {
 
   NOTREACHED();
   return RemoteScreenlockState::UNKNOWN;
+}
+
+Messenger* UnlockManager::GetMessenger() {
+  // TODO(tengs): We should use a weak pointer to hold the Messenger instance
+  // instead.
+  if (!life_cycle_)
+    return nullptr;
+  return life_cycle_->GetMessenger();
 }
 
 }  // namespace proximity_auth

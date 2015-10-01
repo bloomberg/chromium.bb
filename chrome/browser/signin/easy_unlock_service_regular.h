@@ -13,6 +13,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/time/time.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
+#include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -31,10 +32,11 @@ class ToggleEasyUnlockResponse;
 
 namespace proximity_auth {
 class CryptAuthClient;
-class CryptAuthGCMManager;
-class CryptAuthEnrollmentManager;
 class CryptAuthDeviceManager;
+class CryptAuthEnrollmentManager;
+class CryptAuthGCMManager;
 class ProximityAuthPrefManager;
+class RemoteDeviceLoader;
 }
 
 class EasyUnlockAppManager;
@@ -46,6 +48,7 @@ class Profile;
 class EasyUnlockServiceRegular
     : public EasyUnlockService,
       public proximity_auth::ScreenlockBridge::Observer,
+      public proximity_auth::CryptAuthDeviceManager::Observer,
       public OAuth2TokenService::Observer {
  public:
   explicit EasyUnlockServiceRegular(Profile* profile);
@@ -64,6 +67,14 @@ class EasyUnlockServiceRegular
   proximity_auth::ProximityAuthPrefManager* GetProximityAuthPrefManager();
 
  private:
+  // Loads the RemoteDevice instances that will be supplied to
+  // ProximityAuthSystem.
+  void LoadRemoteDevices();
+
+  // Called when |remote_device_loader_| completes.
+  void OnRemoteDevicesLoaded(
+      const std::vector<proximity_auth::RemoteDevice>& remote_devices);
+
   // EasyUnlockService implementation:
   EasyUnlockService::Type GetType() const override;
   std::string GetUserEmail() const override;
@@ -88,10 +99,16 @@ class EasyUnlockServiceRegular
   void ShutdownInternal() override;
   bool IsAllowedInternal() const override;
   void OnWillFinalizeUnlock(bool success) override;
-  void OnSuspendDone() override;
+  void OnSuspendDoneInternal() override;
 
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
+
+  // CryptAuthDeviceManager::Observer:
+  void OnSyncFinished(
+      proximity_auth::CryptAuthDeviceManager::SyncResult sync_result,
+      proximity_auth::CryptAuthDeviceManager::DeviceChangeResult
+          device_change_result) override;
 
   // proximity_auth::ScreenlockBridge::Observer implementation:
   void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
@@ -164,6 +181,15 @@ class EasyUnlockServiceRegular
 
   // Manager responsible for handling the prefs used by proximity_auth classes.
   scoped_ptr<proximity_auth::ProximityAuthPrefManager> pref_manager_;
+
+  // Loads the RemoteDevice instances from CryptAuth and local data.
+  scoped_ptr<proximity_auth::RemoteDeviceLoader> remote_device_loader_;
+
+  // If a new RemoteDevice was synced while the screen is locked, we defer
+  // loading the RemoteDevice until the screen is unlocked. For security,
+  // this deferment prevents the lock screen from being changed by a network
+  // event.
+  bool deferring_device_load_;
 
   base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_;
 

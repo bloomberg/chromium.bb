@@ -156,6 +156,7 @@ class ScreenlockBridge {
 
   void SetLockHandler(LockHandler* lock_handler);
   void SetFocusedUser(const std::string& user_id);
+  std::string GetFocusedUser();
 
   bool IsLocked() const;
   void Lock();

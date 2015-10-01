@@ -85,6 +85,10 @@ class MessengerImpl : public Messenger, public ConnectionObserver {
   // response.
   void HandleUnlockResponseMessage(const base::DictionaryValue& message);
 
+  // For iOS, we need to poll the phone every few seconds to keep the app alive
+  // in the background. This function starts the poll loop.
+  void PollScreenStateForIOS();
+
   // ConnectionObserver:
   void OnConnectionStatusChanged(Connection* connection,
                                  Connection::Status old_status,
