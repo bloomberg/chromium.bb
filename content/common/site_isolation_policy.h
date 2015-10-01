@@ -25,9 +25,8 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // that only matter for cross-process iframes, to protect the default
   // behavior.
   //
-  // Note: Since cross-process frames will soon be possible by default (e.g. for
-  // <iframe src="http://..."> in an extension process), usage should be limited
-  // to temporary stop-gaps.
+  // Note: Since cross-process frames will soon be possible by default, usage
+  // should be limited to temporary stop-gaps.
   //
   // Instead of calling this method, prefer to examine object state to see
   // whether a particular frame happens to have a cross-process relationship
@@ -35,17 +34,15 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // particular site merits protection.
   static bool AreCrossProcessFramesPossible();
 
-  // Returns true if pages loaded from |url|'s site ought to be handled only by
-  // a renderer process isolated from other sites. If --site-per-process is on
-  // the command line, this is true for all sites.
+  // Returns true if pages loaded from |effective_url| ought to be handled only
+  // by a renderer process isolated from other sites. If --site-per-process is
+  // on the command line, this is true for all sites. In other site isolation
+  // modes, only a subset of sites will require dedicated processes.
   //
-  // Eventually, this function will be made to return true for only some schemes
-  // (e.g. extensions) or a whitelist of sites that we should protect for this
-  // user.
-  //
-  // Although |url| is currently ignored, callers can assume for now that they
-  // can pass a full URL here -- they needn't canonicalize it to a site.
-  static bool DoesSiteRequireDedicatedProcess(const GURL& url);
+  // |effective_url| must be an effective URL -- practically speaking, that
+  // means that this function should only be called on the UI thread in the
+  // browser process.
+  static bool DoesSiteRequireDedicatedProcess(const GURL& effective_url);
 
   // Returns true if navigation and history code should maintain per-frame
   // navigation entries. This is an in-progress feature related to site

@@ -87,7 +87,9 @@ void OnCrossSiteResponseHelper(const CrossSiteResponseParams& params) {
 }
 
 // Returns whether a transfer is needed by doing a check on the UI thread.
-bool CheckNavigationPolicyOnUI(GURL url, int process_id, int render_frame_id) {
+bool CheckNavigationPolicyOnUI(GURL real_url,
+                               int process_id,
+                               int render_frame_id) {
   CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
   RenderFrameHostImpl* rfh =
       RenderFrameHostImpl::FromID(process_id, render_frame_id);
@@ -105,18 +107,22 @@ bool CheckNavigationPolicyOnUI(GURL url, int process_id, int render_frame_id) {
   if (web_contents->GetBrowserPluginGuest())
     return false;
 
+  GURL effective_url = SiteInstanceImpl::GetEffectiveURL(
+      rfh->GetSiteInstance()->GetBrowserContext(), real_url);
+
   // TODO(nasko, nick): These following --site-per-process checks are
   // overly simplistic. Update them to match all the cases
   // considered by RenderFrameHostManager::DetermineSiteInstanceForURL.
   if (SiteInstance::IsSameWebSite(rfh->GetSiteInstance()->GetBrowserContext(),
-                                  rfh->GetSiteInstance()->GetSiteURL(), url)) {
+                                  rfh->GetSiteInstance()->GetSiteURL(),
+                                  real_url)) {
     return false;  // The same site, no transition needed.
   }
 
   // The sites differ. If either one requires a dedicated process,
   // then a transfer is needed.
   return rfh->GetSiteInstance()->RequiresDedicatedProcess() ||
-         SiteIsolationPolicy::DoesSiteRequireDedicatedProcess(url);
+         SiteIsolationPolicy::DoesSiteRequireDedicatedProcess(effective_url);
 }
 
 }  // namespace

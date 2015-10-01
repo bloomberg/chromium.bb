@@ -771,7 +771,5 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(2, 1)));
 
-  // TODO(nick): http://crbug.com/535073 ought to mean that the next line is 2.
-  // But it's actually 1. Figure out why.
-  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(1));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(2));
 }

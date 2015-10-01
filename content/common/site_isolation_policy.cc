@@ -56,11 +56,12 @@ bool SiteIsolationPolicy::AreCrossProcessFramesPossible() {
 }
 
 // static
-bool SiteIsolationPolicy::DoesSiteRequireDedicatedProcess(const GURL& gurl) {
+bool SiteIsolationPolicy::DoesSiteRequireDedicatedProcess(
+    const GURL& effective_url) {
   const SiteIsolationWhitelist& whitelist = g_site_isolation_whitelist.Get();
   return whitelist.should_isolate_all_sites() ||
          (!whitelist.isolated_schemes().empty() &&
-          whitelist.isolated_schemes().count(gurl.scheme()));
+          whitelist.isolated_schemes().count(effective_url.scheme()));
 }
 
 // static
