@@ -324,10 +324,9 @@ bool CSSPropertyParser::validWidthOrHeight(CSSParserValue* value, Units unitless
         if (m_context.useCounter()) {
             switch (value->id) {
             case CSSValueIntrinsic:
-                m_context.useCounter()->count(UseCounter::LegacyCSSValueIntrinsic);
-                break;
             case CSSValueMinIntrinsic:
-                m_context.useCounter()->count(UseCounter::LegacyCSSValueMinIntrinsic);
+                // These two will be counted in StyleAdjuster because they emit a deprecation
+                // message, and we don't have access to a Document/LocalFrame here.
                 break;
             case CSSValueWebkitMinContent:
                 m_context.useCounter()->count(UseCounter::CSSValuePrefixedMinContent);
