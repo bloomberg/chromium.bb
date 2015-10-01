@@ -536,7 +536,8 @@ public:
     ScriptableDocumentParser* scriptableDocumentParser() const;
 
     bool printing() const { return m_printing; }
-    void setPrinting(bool p) { m_printing = p; }
+    void setPrinting(bool isPrinting) { m_printing = isPrinting; }
+    bool wasPrinting() const { return m_wasPrinting; }
 
     bool paginatedForScreen() const { return m_paginatedForScreen; }
     void setPaginatedForScreen(bool p) { m_paginatedForScreen = p; }
@@ -1194,6 +1195,7 @@ private:
     RefPtrWillBeMember<CSSStyleSheet> m_elemSheet;
 
     bool m_printing;
+    bool m_wasPrinting;
     bool m_paginatedForScreen;
 
     CompatibilityMode m_compatibilityMode;

@@ -543,6 +543,9 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update, const 
     if (!animatingElement)
         return;
 
+    if (animatingElement->document().printing() || animatingElement->document().wasPrinting())
+        return;
+
     ElementAnimations* elementAnimations = animatingElement->elementAnimations();
     const TransitionMap* activeTransitions = elementAnimations ? &elementAnimations->cssAnimations().m_transitions : nullptr;
     const CSSTransitionData* transitionData = style.transitions();

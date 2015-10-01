@@ -385,6 +385,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_contextFeatures(ContextFeatures::defaultSwitch())
     , m_wellFormed(false)
     , m_printing(false)
+    , m_wasPrinting(false)
     , m_paginatedForScreen(false)
     , m_compatibilityMode(NoQuirksMode)
     , m_compatibilityModeLocked(false)
@@ -1834,6 +1835,8 @@ void Document::updateStyle(StyleRecalcChange change)
     // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
     styleEngine().resetCSSFeatureFlags(resolver.ensureUpdatedRuleFeatureSet());
     resolver.clearStyleSharingList();
+
+    m_wasPrinting = m_printing;
 
     ASSERT(!needsStyleRecalc());
     ASSERT(!childNeedsStyleRecalc());
