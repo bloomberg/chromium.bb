@@ -234,18 +234,6 @@ source_set("test_support") {
   }
 }
 
-group("telemetry_binary_deps") {
-  data_deps = []
-
-  if (is_win) {
-    data_deps += [ "//content/shell:crash_service" ]
-  }
-
-  data = [
-    "//tools/perf/core/binary_dependencies.json",
-  ]
-}
-
 if (!is_android) {
   import("//third_party/protobuf/proto_library.gni")
 
@@ -627,10 +615,6 @@ if (!is_android) {
   }
 
   group("telemetry_gpu_test") {
-    deps = [
-      "//tools/telemetry:telemetry_test_support",
-      ":telemetry_binary_deps",
-    ]
     data_deps = [
       # TODO(kbr): this used to be "//chrome". Had to change this to
       # chrome_initial temporarily to work around crbug.com/536192.
@@ -649,6 +633,18 @@ if (!is_android) {
       # For webgl_conformance
       "//third_party/webgl/",
       "//content/test/gpu/run_gpu_test.py",
+
+      # Generic telemetry deps
+      # TODO(GYP): These should probably be specified somewhere else
+      # and pulled in via a deps entry.
+      "//build/android/devil/",
+      "//build/android/pylib/",
+      "//build/util/",
+      "//third_party/WebKit/PerformanceTests/resources/jquery.tablesorter.min.js",
+      "//third_party/WebKit/PerformanceTests/resources/statistics.js",
+      "//third_party/flot/jquery.flot.min.js",
+      "//third_party/webpagereplay/",
+      "//tools/telemetry/",
     ]
 
     if (is_win && (symbol_level == 1 || symbol_level == 2)) {

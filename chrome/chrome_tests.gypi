@@ -3227,19 +3227,6 @@
                 ],
               },
             },
-	    {
-	      'target_name': 'telemetry_gpu_unittests_run',
-	      'type': 'none',
-	      'dependencies': [
-                '../content/content_shell_and_tests.gyp:telemetry_base',
-	      ],
-	      'includes': [
-	        '../build/isolate.gypi',
-	      ],
-	      'sources': [
-	        'telemetry_gpu_unittests.isolate',
-	      ],
-	    },
             {
               'target_name': 'telemetry_chrome_test_base',
               'type': 'none',
@@ -3255,11 +3242,6 @@
                 ['OS=="mac"', {
                   'dependencies': [
                     '../third_party/crashpad/crashpad/tools/tools.gyp:crashpad_database_util',
-                  ],
-                }],
-                ['OS=="win"', {
-                  'dependencies': [
-                    'chrome.gyp:crash_service',
                   ],
                 }],
               ],
