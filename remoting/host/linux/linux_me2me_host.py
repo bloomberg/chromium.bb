@@ -631,7 +631,10 @@ def locate_executable(exe_name):
     paths_to_try = [ SCRIPT_DIR ]
   else:
     paths_to_try = map(lambda p: os.path.join(SCRIPT_DIR, p),
-                       [".", "../../../out/Debug", "../../../out/Release" ])
+                       [".",
+                        "../../../out/Debug",
+                        "../../../out/Default",
+                        "../../../out/Release"])
   for path in paths_to_try:
     exe_path = os.path.join(path, exe_name)
     if os.path.exists(exe_path):
