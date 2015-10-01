@@ -15,10 +15,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/flags_ui/flags_ui_pref_names.h"
+#include "components/flags_ui/pref_service_flags_storage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
@@ -305,7 +305,8 @@ static Experiment kExperiments[] = {
 class AboutFlagsTest : public ::testing::Test {
  protected:
   AboutFlagsTest() : flags_storage_(&prefs_) {
-    prefs_.registry()->RegisterListPref(prefs::kEnabledLabsExperiments);
+    prefs_.registry()->RegisterListPref(
+        flags_ui::prefs::kEnabledLabsExperiments);
     testing::ClearState();
   }
 
@@ -324,7 +325,7 @@ class AboutFlagsTest : public ::testing::Test {
   void TearDown() override { testing::SetExperiments(NULL, 0); }
 
   TestingPrefServiceSimple prefs_;
-  PrefServiceFlagsStorage flags_storage_;
+  flags_ui::PrefServiceFlagsStorage flags_storage_;
 };
 
 
@@ -370,8 +371,8 @@ TEST_F(AboutFlagsTest, AddTwoFlagsRemoveOne) {
   SetExperimentEnabled(&flags_storage_, kFlags1, true);
   SetExperimentEnabled(&flags_storage_, kFlags2, true);
 
-  const base::ListValue* experiments_list = prefs_.GetList(
-      prefs::kEnabledLabsExperiments);
+  const base::ListValue* experiments_list =
+      prefs_.GetList(flags_ui::prefs::kEnabledLabsExperiments);
   ASSERT_TRUE(experiments_list != NULL);
 
   ASSERT_EQ(2u, experiments_list->GetSize());
@@ -387,7 +388,7 @@ TEST_F(AboutFlagsTest, AddTwoFlagsRemoveOne) {
   // Remove one experiment, check the other's still around.
   SetExperimentEnabled(&flags_storage_, kFlags2, false);
 
-  experiments_list = prefs_.GetList(prefs::kEnabledLabsExperiments);
+  experiments_list = prefs_.GetList(flags_ui::prefs::kEnabledLabsExperiments);
   ASSERT_TRUE(experiments_list != NULL);
   ASSERT_EQ(1u, experiments_list->GetSize());
   ASSERT_TRUE(experiments_list->GetString(0, &s0));
@@ -398,14 +399,14 @@ TEST_F(AboutFlagsTest, AddTwoFlagsRemoveBoth) {
   // Add two experiments, check the pref exists.
   SetExperimentEnabled(&flags_storage_, kFlags1, true);
   SetExperimentEnabled(&flags_storage_, kFlags2, true);
-  const base::ListValue* experiments_list = prefs_.GetList(
-      prefs::kEnabledLabsExperiments);
+  const base::ListValue* experiments_list =
+      prefs_.GetList(flags_ui::prefs::kEnabledLabsExperiments);
   ASSERT_TRUE(experiments_list != NULL);
 
   // Remove both, the pref should have been removed completely.
   SetExperimentEnabled(&flags_storage_, kFlags1, false);
   SetExperimentEnabled(&flags_storage_, kFlags2, false);
-  experiments_list = prefs_.GetList(prefs::kEnabledLabsExperiments);
+  experiments_list = prefs_.GetList(flags_ui::prefs::kEnabledLabsExperiments);
   EXPECT_TRUE(experiments_list == NULL || experiments_list->GetSize() == 0);
 }
 
@@ -542,7 +543,7 @@ TEST_F(AboutFlagsTest, PersistAndPrune) {
 
   // Experiment 3 should show still be persisted in preferences though.
   const base::ListValue* experiments_list =
-      prefs_.GetList(prefs::kEnabledLabsExperiments);
+      prefs_.GetList(flags_ui::prefs::kEnabledLabsExperiments);
   ASSERT_TRUE(experiments_list);
   EXPECT_EQ(2U, experiments_list->GetSize());
   std::string s0;
@@ -599,7 +600,7 @@ TEST_F(AboutFlagsTest, CheckValues) {
 
   // And it should persist.
   const base::ListValue* experiments_list =
-      prefs_.GetList(prefs::kEnabledLabsExperiments);
+      prefs_.GetList(flags_ui::prefs::kEnabledLabsExperiments);
   ASSERT_TRUE(experiments_list);
   EXPECT_EQ(2U, experiments_list->GetSize());
   std::string s0;

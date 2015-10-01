@@ -16,12 +16,13 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/flags_ui/flags_ui_constants.h"
+#include "components/flags_ui/flags_ui_pref_names.h"
+#include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -123,7 +124,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
   // Initializes the DOM handler with the provided flags storage and flags
   // access. If there were flags experiments requested from javascript before
   // this was called, it calls |HandleRequestFlagsExperiments| again.
-  void Init(about_flags::FlagsStorage* flags_storage,
+  void Init(flags_ui::FlagsStorage* flags_storage,
             about_flags::FlagAccess access);
 
   // WebUIMessageHandler implementation.
@@ -142,7 +143,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
   void HandleResetAllFlags(const base::ListValue* args);
 
  private:
-  scoped_ptr<about_flags::FlagsStorage> flags_storage_;
+  scoped_ptr<flags_ui::FlagsStorage> flags_storage_;
   about_flags::FlagAccess access_;
   bool flags_experiments_requested_;
 
@@ -168,7 +169,7 @@ void FlagsDOMHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void FlagsDOMHandler::Init(about_flags::FlagsStorage* flags_storage,
+void FlagsDOMHandler::Init(flags_ui::FlagsStorage* flags_storage,
                            about_flags::FlagAccess access) {
   flags_storage_.reset(flags_storage);
   access_ = access;
@@ -286,7 +287,7 @@ void FinishInitialization(base::WeakPtr<FlagsUI> flags_ui,
                       about_flags::kOwnerAccessToFlags);
   } else {
     dom_handler->Init(
-        new about_flags::PrefServiceFlagsStorage(profile->GetPrefs()),
+        new flags_ui::PrefServiceFlagsStorage(profile->GetPrefs()),
         about_flags::kGeneralAccessFlagsOnly);
   }
 }
@@ -322,9 +323,9 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
                          false /* current_user_is_owner */);
   }
 #else
-  handler->Init(new about_flags::PrefServiceFlagsStorage(
-                    g_browser_process->local_state()),
-                about_flags::kOwnerAccessToFlags);
+  handler->Init(
+      new flags_ui::PrefServiceFlagsStorage(g_browser_process->local_state()),
+      about_flags::kOwnerAccessToFlags);
 #endif
 
   // Set up the about:flags source.
@@ -343,13 +344,13 @@ base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes(
 
 // static
 void FlagsUI::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kEnabledLabsExperiments);
+  registry->RegisterListPref(flags_ui::prefs::kEnabledLabsExperiments);
 }
 
 #if defined(OS_CHROMEOS)
 // static
 void FlagsUI::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kEnabledLabsExperiments);
+  registry->RegisterListPref(flags_ui::prefs::kEnabledLabsExperiments);
 }
 
 #endif

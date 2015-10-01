@@ -42,6 +42,7 @@ source_set("chromeos") {
     "//ash:ash_with_content",
     "//build/linux:fontconfig",
     "//components/drive",
+    "//components/flags_ui",
     "//components/login",
     "//components/session_manager/core",
     "//components/user_manager",

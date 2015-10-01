@@ -21,9 +21,11 @@ namespace base {
 class ListValue;
 }
 
-namespace about_flags {
-
+namespace flags_ui {
 class FlagsStorage;
+}
+
+namespace about_flags {
 
 // Experiment is used internally by about_flags to describe an experiment (and
 // for testing).
@@ -116,7 +118,7 @@ enum SentinelsMode { kNoSentinels, kAddSentinels };
 
 // Reads the Labs |prefs| (called "Labs" for historical reasons) and adds the
 // commandline flags belonging to the active experiments to |command_line|.
-void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
+void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line,
                             SentinelsMode sentinels);
 
@@ -138,7 +140,7 @@ enum FlagAccess { kGeneralAccessFlagsOnly, kOwnerAccessToFlags };
 // Get the list of experiments. Experiments that are available on the current
 // platform are appended to |supported_experiments|; all other experiments are
 // appended to |unsupported_experiments|.
-void GetFlagsExperimentsData(FlagsStorage* flags_storage,
+void GetFlagsExperimentsData(flags_ui::FlagsStorage* flags_storage,
                              FlagAccess access,
                              base::ListValue* supported_experiments,
                              base::ListValue* unsupported_experiments);
@@ -147,7 +149,7 @@ void GetFlagsExperimentsData(FlagsStorage* flags_storage,
 bool IsRestartNeededToCommitChanges();
 
 // Enables or disables the experiment with id |internal_name|.
-void SetExperimentEnabled(FlagsStorage* flags_storage,
+void SetExperimentEnabled(flags_ui::FlagsStorage* flags_storage,
                           const std::string& internal_name,
                           bool enable);
 
@@ -157,7 +159,7 @@ void RemoveFlagsSwitches(
     std::map<std::string, base::CommandLine::StringType>* switch_list);
 
 // Reset all flags to the default state by clearing all flags.
-void ResetAllFlags(FlagsStorage* flags_storage);
+void ResetAllFlags(flags_ui::FlagsStorage* flags_storage);
 
 // Returns the value for the current platform. This is one of the values defined
 // by the OS enum above.
@@ -166,7 +168,7 @@ int GetCurrentPlatform();
 
 // Sends UMA stats about experimental flag usage. This should be called once per
 // startup.
-void RecordUMAStatistics(FlagsStorage* flags_storage);
+void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage);
 
 // Returns the UMA id for the specified switch name.
 base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name);

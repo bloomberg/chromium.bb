@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/ownership/owner_settings_service.h"
 
 namespace chromeos {
@@ -19,13 +20,13 @@ namespace about_flags {
 OwnerFlagsStorage::OwnerFlagsStorage(
     PrefService* prefs,
     ownership::OwnerSettingsService* owner_settings_service)
-    : ::about_flags::PrefServiceFlagsStorage(prefs),
+    : ::flags_ui::PrefServiceFlagsStorage(prefs),
       owner_settings_service_(owner_settings_service) {
   // Make this code more unit test friendly.
   if (g_browser_process->local_state()) {
     const base::ListValue* legacy_experiments =
         g_browser_process->local_state()->GetList(
-            prefs::kEnabledLabsExperiments);
+            flags_ui::prefs::kEnabledLabsExperiments);
     if (!legacy_experiments->empty()) {
       // If there are any flags set in local state migrate them to the owner's
       // prefs and device settings.
@@ -34,14 +35,15 @@ OwnerFlagsStorage::OwnerFlagsStorage(
            it != legacy_experiments->end(); ++it) {
         std::string experiment_name;
         if (!(*it)->GetAsString(&experiment_name)) {
-          LOG(WARNING) << "Invalid entry in " << prefs::kEnabledLabsExperiments;
+          LOG(WARNING) << "Invalid entry in "
+                       << flags_ui::prefs::kEnabledLabsExperiments;
           continue;
         }
         flags.insert(experiment_name);
       }
       SetFlags(flags);
       g_browser_process->local_state()->ClearPref(
-          prefs::kEnabledLabsExperiments);
+          flags_ui::prefs::kEnabledLabsExperiments);
     }
   }
 }

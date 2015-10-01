@@ -481,7 +481,6 @@
       'browser/file_select_helper.cc',
       'browser/file_select_helper.h',
       'browser/file_select_helper_mac.mm',
-      'browser/flags_storage.h',
       'browser/fullscreen.h',
       'browser/fullscreen_chromeos.cc',
       'browser/fullscreen_mac.mm',
@@ -662,8 +661,6 @@
       'browser/platform_util_internal.h',
       'browser/platform_util_mac.mm',
       'browser/platform_util_win.cc',
-      'browser/pref_service_flags_storage.cc',
-      'browser/pref_service_flags_storage.h',
       'browser/prefetch/prefetch.cc',
       'browser/prefetch/prefetch.h',
       'browser/prefetch/prefetch_field_trial.cc',
@@ -1229,10 +1226,10 @@
       'browser/profile_resetter/resettable_settings_snapshot.cc',
       'browser/profile_resetter/resettable_settings_snapshot.h',
       'browser/profile_resetter/triggered_profile_resetter.cc',
-      'browser/profile_resetter/triggered_profile_resetter_win.cc',
       'browser/profile_resetter/triggered_profile_resetter.h',
       'browser/profile_resetter/triggered_profile_resetter_factory.cc',
       'browser/profile_resetter/triggered_profile_resetter_factory.h',
+      'browser/profile_resetter/triggered_profile_resetter_win.cc',
       'browser/profiles/avatar_menu.cc',
       'browser/profiles/avatar_menu.h',
       'browser/profiles/profile_shortcut_manager.cc',
@@ -2059,9 +2056,9 @@
     ],
     # Used on Mac and Android platforms.
     'chrome_browser_password_manager_mac_android_sources': [
+      'browser/password_manager/password_manager_infobar_delegate.cc',
       'browser/password_manager/save_password_infobar_delegate.cc',
       'browser/password_manager/save_password_infobar_delegate.h',
-      'browser/password_manager/password_manager_infobar_delegate.cc',
       'browser/password_manager/password_manager_infobar_delegate.h'
     ],
     'chrome_browser_permissions_sources': [
@@ -3222,6 +3219,7 @@
             '../components/components.gyp:dom_distiller_content_browser',
             '../components/components.gyp:error_page_common',
             '../components/components.gyp:favicon_content',
+            '../components/components.gyp:flags_ui',
             '../components/components.gyp:guest_view_browser',
             '../components/components.gyp:history_content_browser',
             '../components/components.gyp:keyed_service_content',

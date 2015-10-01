@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREF_SERVICE_FLAGS_STORAGE_H_
-#define CHROME_BROWSER_PREF_SERVICE_FLAGS_STORAGE_H_
+#ifndef COMPONENTS_FLAGS_UI_PREF_SERVICE_FLAGS_STORAGE_H_
+#define COMPONENTS_FLAGS_UI_PREF_SERVICE_FLAGS_STORAGE_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/flags_storage.h"
+#include "components/flags_ui/flags_storage.h"
 
 class PrefService;
 
-namespace about_flags {
+namespace flags_ui {
 
 // Implements the FlagsStorage interface with a PrefService backend.
 // This is the implementation used on desktop Chrome for all users.
 class PrefServiceFlagsStorage : public FlagsStorage {
  public:
-  explicit PrefServiceFlagsStorage(PrefService *prefs);
+  explicit PrefServiceFlagsStorage(PrefService* prefs);
   ~PrefServiceFlagsStorage() override;
 
   std::set<std::string> GetFlags() override;
@@ -26,6 +26,6 @@ class PrefServiceFlagsStorage : public FlagsStorage {
   PrefService* prefs_;
 };
 
-}  // namespace about_flags
+}  // namespace flags_ui
 
-#endif  // CHROME_BROWSER_PREF_SERVICE_FLAGS_STORAGE_H_
+#endif  // COMPONENTS_FLAGS_UI_PREF_SERVICE_FLAGS_STORAGE_H_

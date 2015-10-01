@@ -41,6 +41,7 @@ include_rules = [
   "+components/favicon",
   "+components/favicon_base",
   "+components/feedback",
+  "+components/flags_ui",
   "+components/gcm_driver",
   "+components/google",
   "+components/grit",

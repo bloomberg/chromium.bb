@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_OWNER_FLAGS_STORAGE_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/pref_service_flags_storage.h"
+#include "components/flags_ui/pref_service_flags_storage.h"
 
 namespace ownership {
 class OwnerSettingsService;
@@ -19,7 +19,7 @@ namespace about_flags {
 // Implements the FlagsStorage interface for the owner flags. It inherits from
 // PrefServiceFlagsStorage but extends it with storing the flags in the signed
 // settings as well which effectively applies them to the login session as well.
-class OwnerFlagsStorage : public ::about_flags::PrefServiceFlagsStorage {
+class OwnerFlagsStorage : public ::flags_ui::PrefServiceFlagsStorage {
  public:
   OwnerFlagsStorage(PrefService* prefs,
                     ownership::OwnerSettingsService* owner_settings_service);

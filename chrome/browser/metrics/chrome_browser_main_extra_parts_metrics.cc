@@ -18,8 +18,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/mac/bluetooth_utility.h"
-#include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/shell_integration.h"
+#include "components/flags_ui/pref_service_flags_storage.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
@@ -300,7 +300,7 @@ void ChromeBrowserMainExtraPartsMetrics::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
-  about_flags::PrefServiceFlagsStorage flags_storage_(
+  flags_ui::PrefServiceFlagsStorage flags_storage_(
       g_browser_process->local_state());
   about_flags::RecordUMAStatistics(&flags_storage_);
 }

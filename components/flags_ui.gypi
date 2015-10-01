@@ -15,6 +15,11 @@
         # Note: sources list duplicated in GN build.
         'flags_ui/flags_ui_constants.cc',
         'flags_ui/flags_ui_constants.h',
+        'flags_ui/flags_ui_pref_names.cc',
+        'flags_ui/flags_ui_pref_names.h',
+        'flags_ui/flags_storage.h',
+        'flags_ui/pref_service_flags_storage.cc',
+        'flags_ui/pref_service_flags_storage.h',
       ],
     },
   ],

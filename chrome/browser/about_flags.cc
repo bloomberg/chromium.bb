@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
-#include "chrome/browser/flags_storage.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,6 +28,7 @@
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_switches.h"
+#include "components/flags_ui/flags_storage.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/offline_pages/offline_page_switches.h"
@@ -2111,17 +2111,16 @@ size_t num_experiments = arraysize(kExperiments);
 class FlagsState {
  public:
   FlagsState() : needs_restart_(false) {}
-  void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
+  void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                               base::CommandLine* command_line,
                               SentinelsMode sentinels);
   bool IsRestartNeededToCommitChanges();
-  void SetExperimentEnabled(
-      FlagsStorage* flags_storage,
-      const std::string& internal_name,
-      bool enable);
+  void SetExperimentEnabled(flags_ui::FlagsStorage* flags_storage,
+                            const std::string& internal_name,
+                            bool enable);
   void RemoveFlagsSwitches(
       std::map<std::string, base::CommandLine::StringType>* switch_list);
-  void ResetAllFlags(FlagsStorage* flags_storage);
+  void ResetAllFlags(flags_ui::FlagsStorage* flags_storage);
   void reset();
 
   // Returns the singleton instance of this class
@@ -2181,7 +2180,7 @@ bool ValidateExperiment(const Experiment& e) {
 // Removes all experiments from prefs::kEnabledLabsExperiments that are
 // unknown, to prevent this list to become very long as experiments are added
 // and removed.
-void SanitizeList(FlagsStorage* flags_storage) {
+void SanitizeList(flags_ui::FlagsStorage* flags_storage) {
   std::set<std::string> known_experiments;
   for (size_t i = 0; i < num_experiments; ++i) {
     DCHECK(ValidateExperiment(experiments[i]));
@@ -2198,8 +2197,8 @@ void SanitizeList(FlagsStorage* flags_storage) {
     flags_storage->SetFlags(new_enabled_experiments);
 }
 
-void GetSanitizedEnabledFlags(
-    FlagsStorage* flags_storage, std::set<std::string>* result) {
+void GetSanitizedEnabledFlags(flags_ui::FlagsStorage* flags_storage,
+                              std::set<std::string>* result) {
   SanitizeList(flags_storage);
   *result = flags_storage->GetFlags();
 }
@@ -2269,7 +2268,8 @@ bool SkipConditionalExperiment(const Experiment& experiment) {
 // Variant of GetSanitizedEnabledFlags that also removes any flags that aren't
 // enabled on the current platform.
 void GetSanitizedEnabledFlagsForCurrentPlatform(
-    FlagsStorage* flags_storage, std::set<std::string>* result) {
+    flags_ui::FlagsStorage* flags_storage,
+    std::set<std::string>* result) {
   GetSanitizedEnabledFlags(flags_storage, result);
 
   // Filter out any experiments that aren't enabled on the current platform.  We
@@ -2360,7 +2360,7 @@ base::string16 Experiment::DescriptionForChoice(int index) const {
   return l10n_util::GetStringUTF16(description_id);
 }
 
-void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
+void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line,
                             SentinelsMode sentinels) {
   FlagsState::GetInstance()->ConvertFlagsToSwitches(flags_storage,
@@ -2396,7 +2396,7 @@ bool AreSwitchesIdenticalToCurrentCommandLine(
   return result;
 }
 
-void GetFlagsExperimentsData(FlagsStorage* flags_storage,
+void GetFlagsExperimentsData(flags_ui::FlagsStorage* flags_storage,
                              FlagAccess access,
                              base::ListValue* supported_experiments,
                              base::ListValue* unsupported_experiments) {
@@ -2461,7 +2461,7 @@ bool IsRestartNeededToCommitChanges() {
   return FlagsState::GetInstance()->IsRestartNeededToCommitChanges();
 }
 
-void SetExperimentEnabled(FlagsStorage* flags_storage,
+void SetExperimentEnabled(flags_ui::FlagsStorage* flags_storage,
                           const std::string& internal_name,
                           bool enable) {
   FlagsState::GetInstance()->SetExperimentEnabled(flags_storage,
@@ -2473,7 +2473,7 @@ void RemoveFlagsSwitches(
   FlagsState::GetInstance()->RemoveFlagsSwitches(switch_list);
 }
 
-void ResetAllFlags(FlagsStorage* flags_storage) {
+void ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
   FlagsState::GetInstance()->ResetAllFlags(flags_storage);
 }
 
@@ -2493,7 +2493,7 @@ int GetCurrentPlatform() {
 #endif
 }
 
-void RecordUMAStatistics(FlagsStorage* flags_storage) {
+void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage) {
   std::set<std::string> flags = flags_storage->GetFlags();
   for (const std::string& flag : flags) {
     std::string action("AboutFlags_");
@@ -2555,7 +2555,7 @@ void SetFlagToSwitchMapping(const std::string& key,
   (*name_to_switch_map)[key] = std::make_pair(switch_name, switch_value);
 }
 
-void FlagsState::ConvertFlagsToSwitches(FlagsStorage* flags_storage,
+void FlagsState::ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                                         base::CommandLine* command_line,
                                         SentinelsMode sentinels) {
   if (command_line->HasSwitch(switches::kNoExperiments))
@@ -2625,7 +2625,7 @@ bool FlagsState::IsRestartNeededToCommitChanges() {
   return needs_restart_;
 }
 
-void FlagsState::SetExperimentEnabled(FlagsStorage* flags_storage,
+void FlagsState::SetExperimentEnabled(flags_ui::FlagsStorage* flags_storage,
                                       const std::string& internal_name,
                                       bool enable) {
   size_t at_index = internal_name.find(testing::kMultiSeparator);
@@ -2697,7 +2697,7 @@ void FlagsState::RemoveFlagsSwitches(
     switch_list->erase(entry.first);
 }
 
-void FlagsState::ResetAllFlags(FlagsStorage* flags_storage) {
+void FlagsState::ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
   needs_restart_ = true;
 
   std::set<std::string> no_experiments;

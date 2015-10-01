@@ -12,7 +12,6 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -477,7 +477,7 @@ void EnableNewProfileManagementPreview(Profile* profile) {
       NULL,  // not used with ENABLE_DISABLE_VALUE type
       3
   };
-  about_flags::PrefServiceFlagsStorage flags_storage(
+  flags_ui::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
   about_flags::SetExperimentEnabled(
       &flags_storage,
@@ -494,7 +494,7 @@ void EnableNewProfileManagementPreview(Profile* profile) {
 }
 
 void DisableNewProfileManagementPreview(Profile* profile) {
-  about_flags::PrefServiceFlagsStorage flags_storage(
+  flags_ui::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
   about_flags::SetExperimentEnabled(
       &flags_storage,

@@ -2,27 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/pref_service_flags_storage.h"
+#include "components/flags_ui/pref_service_flags_storage.h"
 
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
+#include "components/flags_ui/flags_ui_pref_names.h"
 
-namespace about_flags {
+namespace flags_ui {
 
-PrefServiceFlagsStorage::PrefServiceFlagsStorage(
-    PrefService *prefs) : prefs_(prefs) {}
+PrefServiceFlagsStorage::PrefServiceFlagsStorage(PrefService* prefs)
+    : prefs_(prefs) {}
 
 PrefServiceFlagsStorage::~PrefServiceFlagsStorage() {}
 
 std::set<std::string> PrefServiceFlagsStorage::GetFlags() {
-  const base::ListValue* enabled_experiments = prefs_->GetList(
-      prefs::kEnabledLabsExperiments);
+  const base::ListValue* enabled_experiments =
+      prefs_->GetList(prefs::kEnabledLabsExperiments);
   std::set<std::string> flags;
   for (base::ListValue::const_iterator it = enabled_experiments->begin();
-       it != enabled_experiments->end();
-       ++it) {
+       it != enabled_experiments->end(); ++it) {
     std::string experiment_name;
     if (!(*it)->GetAsString(&experiment_name)) {
       LOG(WARNING) << "Invalid entry in " << prefs::kEnabledLabsExperiments;
@@ -46,4 +45,4 @@ bool PrefServiceFlagsStorage::SetFlags(const std::set<std::string>& flags) {
   return true;
 }
 
-}  // namespace about_flags
+}  // namespace flags_ui

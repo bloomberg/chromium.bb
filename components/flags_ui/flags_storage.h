@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FLAGS_STORAGE_H_
-#define CHROME_BROWSER_FLAGS_STORAGE_H_
+#ifndef COMPONENTS_FLAGS_UI_FLAGS_STORAGE_H_
+#define COMPONENTS_FLAGS_UI_FLAGS_STORAGE_H_
 
 #include <set>
 #include <string>
 
-namespace about_flags {
+namespace flags_ui {
 
 // Base class for flags storage implementations.  Enables the about_flags
 // functions to store and retrieve data from various sources like PrefService
@@ -23,6 +23,6 @@ class FlagsStorage {
   virtual bool SetFlags(const std::set<std::string>& flags) = 0;
 };
 
-}  // namespace about_flags
+}  // namespace flags_ui
 
-#endif  // CHROME_BROWSER_FLAGS_STORAGE_H_
+#endif  // COMPONENTS_FLAGS_UI_FLAGS_STORAGE_H_
