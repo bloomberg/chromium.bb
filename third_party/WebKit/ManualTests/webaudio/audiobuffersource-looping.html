@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+  <head>
+    <title>AudioBufferSource with Looping Enabled then Disabled</title>
+    <script>
+      var context = new AudioContext();
+      // Launch countdown example
+      var url = "http://www.nasa.gov/mp3/590318main_ringtone_135_launch.mp3";
+
+      function enableButtons()
+      {
+        document.getElementById("Original").disabled = false;
+        document.getElementById("Test").disabled = false;
+      }
+
+      function disableButtons()
+      {
+        document.getElementById("Original").disabled = true;
+        document.getElementById("Test").disabled = true;
+      }
+
+      function playClip(loopEndTime) {
+        disableButtons();
+
+        var request = new XMLHttpRequest();
+        request.open("GET", url, true);
+        request.responseType = "arraybuffer";
+        request.onload = function () {
+          context.decodeAudioData(
+            request.response,
+            function (buffer) {
+              var source = context.createBufferSource();
+              source.buffer = buffer;
+              source.connect(context.destination);
+              source.onended = enableButtons;
+              source.start();
+              // If a loopEndTime is given, enable looping and stop looping after loopEndTime ms.
+              if (loopEndTime) {
+                // These limits were selected to cause the word "eight" to be repeated in the given
+                // URL.  If the URL is updated these values probably need to be changed.
+                source.loopStart = 2.2;
+                source.loopEnd = 3;
+                source.loop = true;
+
+                setTimeout(function () {
+                    source.loop = false;
+                  },
+                  loopEndTime);
+              }
+            },
+            function () {
+              alert("Could not get audio clip");
+            });
+        };
+        request.send();
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>AudioBufferSource with looping enabled then disabled</h1>
+    <p>
+      This tests an AudioBufferSource node is not prematurely stopped if looping is enabled for the
+      buffer and then disabled.  This can't be tested in an offline context until suspend/resume
+      support is added for an offline context.
+    </p>
+
+    <p>Press "Original" to play the clip in its entirety (15 sec).</p>
+
+    <p>
+      Press "Test" to run the test.  A part of the clip will be looped for a while and then looping
+      will be turned off.  (You should hear "eight" repeated about four times.)  The rest of the
+      clip should be heard in its entirety.  The onended event should also be fired, enabling the
+      buttons again.  If the buttons are not enabled, the test has failed.  File a new bug at <a
+      href="http://crbug.com/new">crbug.com/new</a>.
+    </p>
+
+    <button id="Original" onclick="playClip()">Original</button>
+    <button id="Test" onclick="playClip(5000)">Test</button>
+  </body>
+</html>

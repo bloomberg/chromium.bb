@@ -67,7 +67,11 @@ public:
     // and with how it's described in the specification, the proper attribute name is .loop
     // The old attribute is kept for backwards compatibility.
     bool loop() const { return m_isLooping; }
-    void setLoop(bool looping) { m_isLooping = looping; }
+    void setLoop(bool looping)
+    {
+        m_isLooping = looping;
+        m_didSetLooping = m_didSetLooping || looping;
+    }
 
     // Loop times in seconds.
     double loopStart() const { return m_loopStart; }
@@ -115,6 +119,9 @@ private:
     // If m_isLooping is false, then this node will be done playing and become inactive after it reaches the end of the sample data in the buffer.
     // If true, it will wrap around to the start of the buffer each time it reaches the end.
     bool m_isLooping;
+
+    // True if the source .loop attribute was ever set.
+    bool m_didSetLooping;
 
     double m_loopStart;
     double m_loopEnd;
