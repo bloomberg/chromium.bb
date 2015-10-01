@@ -8,7 +8,9 @@
 namespace chromecast {
 namespace media {
 
-CmaMediaPipelineClient::CmaMediaPipelineClient() {}
+CmaMediaPipelineClient::CmaMediaPipelineClient() : media_pipeline_count_(0) {
+  thread_checker_.DetachFromThread();
+}
 
 CmaMediaPipelineClient::~CmaMediaPipelineClient() {}
 
@@ -19,11 +21,19 @@ CmaMediaPipelineClient::CreateMediaPipelineBackend(
 }
 
 void CmaMediaPipelineClient::OnMediaPipelineBackendCreated() {
-  NotifyResourceAcquired();
+  DCHECK(thread_checker_.CalledOnValidThread());
+  media_pipeline_count_++;
+
+  if (media_pipeline_count_ == 1)
+    NotifyResourceAcquired();
 }
 
 void CmaMediaPipelineClient::OnMediaPipelineBackendDestroyed() {
-  NotifyResourceReleased(CastResource::kResourceNone);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  media_pipeline_count_--;
+
+  if (media_pipeline_count_ == 0)
+    NotifyResourceReleased(CastResource::kResourceNone);
 }
 
 void CmaMediaPipelineClient::ReleaseResource(CastResource::Resource resource) {

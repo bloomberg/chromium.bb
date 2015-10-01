@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "chromecast/base/cast_resource.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
@@ -33,6 +34,11 @@ class CmaMediaPipelineClient : public base::RefCounted<CmaMediaPipelineClient>,
 
  private:
   friend class base::RefCounted<CmaMediaPipelineClient>;
+
+  // Number of created media pipelines
+  size_t media_pipeline_count_;
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(CmaMediaPipelineClient);
 };
 }
