@@ -63,6 +63,7 @@
     "chrome/app/resources/locale_settings_linux.grd": "Not UI strings; localized separately",
     "chrome/app/resources/locale_settings_mac.grd": "Not UI strings; localized separately",
     "chrome/app/resources/locale_settings_win.grd": "Not UI strings; localized separately",
+    "chrome/app/settings_strings.grd": "Work in progress; to be localized later in development (late 2015)",
     "chromecast/app/resources/chromecast_settings.grd": "Not UI strings; localized separately",
     "cloud_print/service/win/service_resources.grd": "Separate release process",
     "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": "Separate release process",

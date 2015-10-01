@@ -115,6 +115,9 @@
   "content/app/strings/content_strings.grd": {
     "messages": [18900],
   },
+  "chrome/app/settings_strings.grd": {
+    "messages": [20000],
+  },
   "components/policy/resources/policy_templates.grd": {
     "structures": [20400],
     "messages": [20410],

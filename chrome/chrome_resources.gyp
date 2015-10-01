@@ -270,6 +270,14 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+        {
+          # GN version: //chrome/app:settings_strings
+          'action_name': 'generate_settings_strings',
+          'variables': {
+            'grit_grd_file': 'app/settings_strings.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
       ],
     },
     {

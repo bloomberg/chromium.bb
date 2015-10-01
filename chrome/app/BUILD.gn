@@ -296,6 +296,21 @@ grit("chromium_strings") {
   ]
 }
 
+# GYP version: chrome/settings_strings.gyp:settings_strings
+#              (generate_settings_strings action)
+grit("settings_strings") {
+  source = "settings_strings.grd"
+  output_dir = "$root_gen_dir/chrome"
+  use_qualified_include = true
+  outputs = [
+    "grit/settings_strings.h",
+
+    # The settings strings are not being treated as strings because they are
+    # not translated (English only), this should change in late 2015.
+    "settings_strings.pak",
+  ]
+}
+
 source_set("test_support") {
   testonly = true
   visibility = [ "//chrome/test:test_support" ]

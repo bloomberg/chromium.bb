@@ -191,9 +191,6 @@ are declared in build/common.gypi.
       <!-- Bookmarks specific strings -->
       <part file="bookmarks_strings.grdp" />
 
-      <!-- Settings specific strings -->
-      <part file="settings_strings.grdp" />
-
       <!-- ChromeOS-specific strings -->
       <if expr="chromeos">
         <part file="chromeos_strings.grdp" />

@@ -31,11 +31,16 @@ template("_repack_one_locale") {
       "${root_gen_dir}/components/strings/components_strings_${locale}.pak",
     ]
     deps = [
-      "//chrome/app/resources:platform_locale_settings",
       "//chrome/app:generated_resources",
       "//chrome/app/resources:locale_settings",
+      "//chrome/app/resources:platform_locale_settings",
       "//components/strings:components_strings",
     ]
+
+    # The settings strings are not being treated as strings because they are
+    # not translated (English only), this should change in late 2015.
+    sources += [ "${root_gen_dir}/chrome/settings_strings.pak" ]
+    deps += [ "//chrome/app:settings_strings" ]
 
     if (use_ash) {
       sources += [ "${root_gen_dir}/ash/strings/ash_strings_${locale}.pak" ]
