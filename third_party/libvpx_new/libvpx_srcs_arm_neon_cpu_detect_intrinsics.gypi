@@ -81,7 +81,7 @@
         }],
       ],
       'cflags': [ '-mfpu=neon', ],
-      'xcode_settings': { 'OTHER_CFLAGS': [ '-mfpu=neon' ] },
+      'asmflags': [ '-mfpu=neon', ],
     },
   ],
 }

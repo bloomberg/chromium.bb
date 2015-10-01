@@ -215,7 +215,7 @@ if (current_cpu == "arm") {
     configs += [ ":libvpx_config" ]
     configs += [ ":libvpx_warnings" ]
     if (cpu_arch_full == "arm-neon" || cpu_arch_full == "arm-neon-cpu-detect") {
-      cflags = [ "-mfpu=neon" ]
+      asmflags = [ "-mfpu=neon" ]
     }
     deps = [
       ":convert_arm_assembly",

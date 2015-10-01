@@ -160,10 +160,13 @@ function write_target_definition {
   echo "          ]," >> "$2"
   echo "        }]," >> "$2"
   echo "      ]," >> "$2"
-  fi
+  echo "      'cflags': [ '-m$4', ]," >> "$2"
+  echo "      'asmflags': [ '-m$4', ]," >> "$2"
+  else
   echo "      'cflags': [ '-m$4', ]," >> "$2"
   echo "      'xcode_settings': { 'OTHER_CFLAGS': [ '-m$4' ] }," >> "$2"
-if [[ -z $DISABLE_AVX && $4 == avx2 ]]; then
+  fi
+  if [[ -z $DISABLE_AVX && $4 == avx2 ]]; then
   echo "      'msvs_settings': {" >> "$2"
   echo "        'VCCLCompilerTool': {" >> "$2"
   echo "          'EnableEnhancedInstructionSet': '5', # /arch:AVX2" >> "$2"
