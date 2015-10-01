@@ -434,6 +434,7 @@ void DoLaunchChildTestProcess(
 
 }  // namespace
 
+const char kGTestBreakOnFailure[] = "gtest_break_on_failure";
 const char kGTestFilterFlag[] = "gtest_filter";
 const char kGTestHelpFlag[]   = "gtest_help";
 const char kGTestListTestsFlag[] = "gtest_list_tests";
@@ -967,7 +968,10 @@ void TestLauncher::RunTests() {
 }
 
 void TestLauncher::RunTestIteration() {
-  if (cycles_ == 0) {
+  const bool stop_on_failure =
+      CommandLine::ForCurrentProcess()->HasSwitch(kGTestBreakOnFailure);
+  if (cycles_ == 0 ||
+      (stop_on_failure && test_success_count_ != test_finished_count_)) {
     MessageLoop::current()->Quit();
     return;
   }
