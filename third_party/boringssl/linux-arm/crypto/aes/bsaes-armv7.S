@@ -47,7 +47,6 @@
 @
 @					<ard.biesheuvel@linaro.org>
 
-#if defined(__arm__)
 #ifndef __KERNEL__
 # include <openssl/arm_arch.h>
 
@@ -2574,6 +2573,5 @@ bsaes_xts_decrypt:
 	ldmia	sp!, {r4,r5,r6,r7,r8,r9,r10, pc}	@ return
 
 .size	bsaes_xts_decrypt,.-bsaes_xts_decrypt
-#endif
 #endif
 #endif

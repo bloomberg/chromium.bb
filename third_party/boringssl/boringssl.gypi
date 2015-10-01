@@ -202,7 +202,6 @@
       'src/crypto/poly1305/poly1305.c',
       'src/crypto/poly1305/poly1305_arm.c',
       'src/crypto/poly1305/poly1305_vec.c',
-      'src/crypto/rand/hwrand.c',
       'src/crypto/rand/rand.c',
       'src/crypto/rand/urandom.c',
       'src/crypto/rand/windows.c',
