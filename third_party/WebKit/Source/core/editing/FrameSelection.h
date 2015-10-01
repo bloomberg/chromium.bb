@@ -177,7 +177,7 @@ public:
     void didMergeTextNodes(const Text& oldNode, unsigned offset);
     void didSplitTextNode(const Text& oldNode);
 
-    bool isApperanceDirty() const;
+    bool isAppearanceDirty() const;
     void commitAppearanceIfNeeded(LayoutView&);
     void updateAppearance(ResetCaretBlinkOption = None);
     void setCaretVisible(bool caretIsVisible) { setCaretVisibility(caretIsVisible ? Visible : Hidden); }

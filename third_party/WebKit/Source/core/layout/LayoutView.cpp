@@ -764,7 +764,7 @@ void LayoutView::clearSelection()
 
 bool LayoutView::hasPendingSelection() const
 {
-    return m_frameView->frame().selection().isApperanceDirty();
+    return m_frameView->frame().selection().isAppearanceDirty();
 }
 
 void LayoutView::commitPendingSelection()

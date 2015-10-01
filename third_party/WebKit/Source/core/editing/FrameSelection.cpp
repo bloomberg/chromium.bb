@@ -959,7 +959,7 @@ inline static bool shouldStopBlinkingDueToTypingCommand(LocalFrame* frame)
     return frame->editor().lastEditCommand() && frame->editor().lastEditCommand()->shouldStopCaretBlinking();
 }
 
-bool FrameSelection::isApperanceDirty() const
+bool FrameSelection::isAppearanceDirty() const
 {
     return m_pendingSelection->hasPendingSelection();
 }
