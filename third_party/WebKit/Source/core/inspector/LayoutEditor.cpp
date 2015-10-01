@@ -193,6 +193,12 @@ void buildMediaListChain(CSSRule* rule, Vector<String>& mediaArray)
     }
 }
 
+float roundValue(float value, CSSPrimitiveValue::UnitType unitType)
+{
+    float roundTo = unitType == CSSPrimitiveValue::UnitType::Pixels ? 1 : 0.05;
+    return round(value / roundTo) * roundTo;
+}
+
 } // namespace
 
 LayoutEditor::LayoutEditor(Element* element, InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent, ScriptController* scriptController)
@@ -329,7 +335,7 @@ void LayoutEditor::overlayPropertyChanged(float cssDelta)
 {
     if (m_changingProperty && m_factor) {
         float newValue = cssDelta / m_factor + m_propertyInitialValue;
-        newValue = newValue >= 0 ? newValue : 0;
+        newValue = newValue >= 0 ? roundValue(newValue, m_valueUnitType) : 0;
         m_isDirty |= setCSSPropertyValueInCurrentRule(truncateZeroes(String::format("%.2f", newValue)) + CSSPrimitiveValue::unitTypeToString(m_valueUnitType));
     }
 }

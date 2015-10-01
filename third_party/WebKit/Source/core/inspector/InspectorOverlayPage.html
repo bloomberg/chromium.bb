@@ -963,6 +963,7 @@ LayoutEditor.prototype = {
         document.addEventListener("mousemove", this._boundDragMove);
         document.addEventListener("mouseup", this._boundDragEnd);
         InspectorOverlayHost.startPropertyChange(anchorInfo.propertyName);
+        this._preciseDrag = !!event.shiftKey;
         this._draggedPropertyName = anchorInfo.propertyName;
         this._showLabels(anchorInfo.type, anchorInfo.propertyName);
     },
@@ -974,7 +975,18 @@ LayoutEditor.prototype = {
             return;
         }
         event.preventDefault();
-        InspectorOverlayHost.changeProperty(this._calculateDelta(deltaVector, new Point(event.screenX - mouseDownPoint.x, event.screenY - mouseDownPoint.y)));
+        if (this._preciseDrag !== event.shiftKey) {
+            InspectorOverlayHost.endPropertyChange();
+            document.removeEventListener("mousemove", this._boundDragMove);
+            mouseDownPoint = new Point(event.screenX, event.screenY);
+            this._boundDragMove = this._onDragMove.bind(this, mouseDownPoint, deltaVector);
+            document.addEventListener("mousemove", this._boundDragMove);
+            this._preciseDrag = event.shiftKey;
+            InspectorOverlayHost.startPropertyChange(this._draggedPropertyName);
+        }
+
+        var preciseFactor = this._preciseDrag ? 5 : 1;
+        InspectorOverlayHost.changeProperty(this._calculateDelta(deltaVector, new Point(event.screenX - mouseDownPoint.x, event.screenY - mouseDownPoint.y)) / preciseFactor);
     },
 
     _onDragEnd: function(event)
@@ -984,6 +996,7 @@ LayoutEditor.prototype = {
         delete this._boundDragMove;
         delete this._boundDragEnd;
         delete this._draggedPropertyName;
+        delete this._preciseDrag;
         event.preventDefault();
         InspectorOverlayHost.endPropertyChange();
         this._resetLabelCanvas();
