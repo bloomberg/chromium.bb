@@ -18,8 +18,8 @@ namespace media {
 namespace cast {
 
 namespace {
-const int kWidth = 320;
-const int kHeight = 240;
+const int kWidth = 32;
+const int kHeight = 32;
 const int kFrameRate = 10;
 const int kQp = 20;
 
@@ -80,9 +80,9 @@ class Vp8QuantizerParserTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(Vp8QuantizerParserTest);
 };
 
-// Encode 5 frames to test the cases with insufficient data input.
+// Encode 3 frames to test the cases with insufficient data input.
 TEST_F(Vp8QuantizerParserTest, InsufficientData) {
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 3; ++i) {
     scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
     const uint8* encoded_data =
         reinterpret_cast<const uint8*>(encoded_frame->data.data());
@@ -127,18 +127,12 @@ TEST_F(Vp8QuantizerParserTest, InsufficientData) {
   }
 }
 
-// Encode 5 fames for every quantizer value in the range of [4,63].
-// crbug.com/537635: disable VariedQuantizer on Thread Sanitizer
-#if defined(THREAD_SANITIZER)
-# define MAYBE_VariedQuantizer DISABLED_VariedQuantizer
-#else
-# define MAYBE_VariedQuantizer VariedQuantizer
-#endif
-TEST_F(Vp8QuantizerParserTest, MAYBE_VariedQuantizer) {
+// Encode 3 fames for every quantizer value in the range of [4,63].
+TEST_F(Vp8QuantizerParserTest, VariedQuantizer) {
   int decoded_quantizer = -1;
-  for (int qp = 4; qp <= 63; ++qp) {
+  for (int qp = 4; qp <= 63; qp += 10) {
     UpdateQuantizer(qp);
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 3; ++i) {
       scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
       EncodeOneFrame(encoded_frame.get());
       decoded_quantizer = ParseVp8HeaderQuantizer(
