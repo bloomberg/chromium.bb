@@ -135,7 +135,8 @@ BookmarkLoadDetails::~BookmarkLoadDetails() {
 }
 
 void BookmarkLoadDetails::LoadExtraNodes() {
-  extra_nodes_ = load_extra_callback_.Run(&max_id_);
+  if (!load_extra_callback_.is_null())
+    extra_nodes_ = load_extra_callback_.Run(&max_id_);
 }
 
 // BookmarkStorage -------------------------------------------------------------
