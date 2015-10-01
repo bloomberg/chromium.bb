@@ -8,12 +8,15 @@
 #include "base/environment.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
-#include "base/process/process_metrics.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_sender.h"
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/process/port_provider_mac.h"
+#endif
 
 namespace base {
 class CommandLine;
@@ -83,8 +86,8 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   virtual ServiceRegistry* GetServiceRegistry() = 0;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Returns a PortProvider used to get process metrics for child processes.
-  static base::ProcessMetrics::PortProvider* GetPortProvider();
+  // Returns a PortProvider used to get the task port for child processes.
+  static base::PortProvider* GetPortProvider();
 #endif
 };
 

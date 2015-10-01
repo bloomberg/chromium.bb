@@ -19,6 +19,7 @@
 
 #if defined(OS_MACOSX)
 #include <mach/mach.h>
+#include "base/process/port_provider_mac.h"
 #endif
 
 namespace base {
@@ -101,16 +102,6 @@ class BASE_EXPORT ProcessMetrics {
 #if !defined(OS_MACOSX) || defined(OS_IOS)
   static ProcessMetrics* CreateProcessMetrics(ProcessHandle process);
 #else
-  class PortProvider {
-   public:
-    virtual ~PortProvider() {}
-
-    // Should return the mach task for |process| if possible, or else
-    // |MACH_PORT_NULL|. Only processes that this returns tasks for will have
-    // metrics on OS X (except for the current process, which always gets
-    // metrics).
-    virtual mach_port_t TaskForPid(ProcessHandle process) const = 0;
-  };
 
   // The port provider needs to outlive the ProcessMetrics object returned by
   // this function. If NULL is passed as provider, the returned object

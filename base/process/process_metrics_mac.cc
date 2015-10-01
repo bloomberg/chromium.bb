@@ -91,7 +91,7 @@ SystemMemoryInfoKB::SystemMemoryInfoKB() {
 // static
 ProcessMetrics* ProcessMetrics::CreateProcessMetrics(
     ProcessHandle process,
-    ProcessMetrics::PortProvider* port_provider) {
+    PortProvider* port_provider) {
   return new ProcessMetrics(process, port_provider);
 }
 
@@ -330,7 +330,7 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
 }
 
 ProcessMetrics::ProcessMetrics(ProcessHandle process,
-                               ProcessMetrics::PortProvider* port_provider)
+                               PortProvider* port_provider)
     : process_(process),
       last_system_time_(0),
       last_absolute_idle_wakeups_(0),

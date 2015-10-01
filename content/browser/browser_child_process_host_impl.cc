@@ -84,7 +84,7 @@ BrowserChildProcessHost* BrowserChildProcessHost::FromID(int child_process_id) {
 }
 
 #if defined(OS_MACOSX)
-base::ProcessMetrics::PortProvider* BrowserChildProcessHost::GetPortProvider() {
+base::PortProvider* BrowserChildProcessHost::GetPortProvider() {
   return MachBroker::GetInstance();
 }
 #endif
