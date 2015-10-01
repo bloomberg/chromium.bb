@@ -34,7 +34,7 @@ public class FirstRunTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     @DisabledTest
-    public void testFreSignin() throws Exception {
+    public void disabledTestFreSignin() throws Exception {
         Account testAccount = setUpTestAccount();
         SyncTestUtil.verifySyncIsSignedOut(mContext);
         assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
