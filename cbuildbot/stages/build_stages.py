@@ -205,17 +205,14 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
           self._build_root, toolchain_boards=[self._current_board],
           usepkg=usepkg_toolchain)
 
-    # Only update the board if we need to do so.
-    chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
-    board_path = os.path.join(chroot_path, 'build', self._current_board)
-    if not os.path.isdir(board_path) or self._run.config.board_replace:
-      usepkg = self._run.config.usepkg_build_packages
-      commands.SetupBoard(
-          self._build_root, board=self._current_board, usepkg=usepkg,
-          chrome_binhost_only=self._run.config.chrome_binhost_only,
-          force=self._run.config.board_replace,
-          extra_env=self._portage_extra_env, chroot_upgrade=False,
-          profile=self._run.options.profile or self._run.config.profile)
+    # Always update the board.
+    usepkg = self._run.config.usepkg_build_packages
+    commands.SetupBoard(
+        self._build_root, board=self._current_board, usepkg=usepkg,
+        chrome_binhost_only=self._run.config.chrome_binhost_only,
+        force=self._run.config.board_replace,
+        extra_env=self._portage_extra_env, chroot_upgrade=False,
+        profile=self._run.options.profile or self._run.config.profile)
 
 
 class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,

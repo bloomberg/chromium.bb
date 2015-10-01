@@ -95,7 +95,7 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
     self._Run(dir_exists)
     self.assertCommandContains(['./update_chroot'])
     cmd = ['./setup_board', '--board=%s' % self._current_board, '--nousepkg']
-    self.assertCommandContains(cmd, expected=not dir_exists)
+    self.assertCommandContains(cmd)
     cmd = ['./setup_board', '--skip_chroot_upgrade']
     self.assertCommandContains(cmd)
 
@@ -118,30 +118,12 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
                        self._run.options.latest_toolchain)
     self.assertCommandContains(['./update_chroot', '--nousepkg'],
                                expected=update_nousepkg)
-    run_setup_board = not dir_exists or self._run.config.board_replace
-    self.assertCommandContains(['./setup_board'], expected=run_setup_board)
+    self.assertCommandContains(['./setup_board'])
     cmd = ['./setup_board', '--skip_chroot_upgrade']
-    self.assertCommandContains(cmd, expected=run_setup_board)
+    self.assertCommandContains(cmd)
     cmd = ['./setup_board', '--nousepkg']
     self.assertCommandContains(
-        cmd,
-        expected=run_setup_board and not self._run.config.usepkg_build_packages)
-
-  def testBinBuildWithBoard(self):
-    """Tests whether we don't create the board when it's there."""
-    self._PrepareBin()
-    self._RunBin(dir_exists=True)
-
-  def testBinBuildWithBoardReplace(self):
-    """Tests whether we don't create the board when it's there."""
-    self._PrepareBin()
-    self._run.config.board_replace = True
-    self._RunBin(dir_exists=True)
-
-  def testBinBuildWithMissingBoard(self):
-    """Tests whether we create the board when it's missing."""
-    self._PrepareBin()
-    self._RunBin(dir_exists=False)
+        cmd, not self._run.config.usepkg_build_packages)
 
   def testBinBuildWithLatestToolchain(self):
     """Tests whether we use --nousepkg for creating the board."""
