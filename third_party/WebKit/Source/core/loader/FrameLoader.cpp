@@ -238,7 +238,7 @@ void FrameLoader::saveScrollState()
         return;
 
     // Shouldn't clobber anything if we might still restore later.
-    if (needsHistoryItemRestore(m_loadType) && !documentLoader()->initialScrollState().wasScrolledByUser)
+    if (needsHistoryItemRestore(m_loadType) && m_documentLoader && !m_documentLoader->initialScrollState().wasScrolledByUser)
         return;
 
     if (ScrollableArea* layoutScrollableArea = m_frame->view()->layoutViewportScrollableArea())
