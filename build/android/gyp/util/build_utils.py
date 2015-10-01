@@ -28,6 +28,7 @@ COLORAMA_ROOT = os.path.join(CHROMIUM_SRC,
 AAPT_IGNORE_PATTERN = ('!OWNERS:!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:' +
                        '!CVS:!thumbs.db:!picasa.ini:!*~:!*.d.stamp')
 HERMETIC_TIMESTAMP = (2001, 1, 1, 0, 0, 0)
+HERMETIC_FILE_ATTR = (0644 << 16L)
 
 
 @contextlib.contextmanager
@@ -243,6 +244,7 @@ def DoZip(inputs, output, base_dir=None):
     for zip_path, fs_path in input_tuples:
       CheckZipPath(zip_path)
       zipinfo = zipfile.ZipInfo(filename=zip_path, date_time=HERMETIC_TIMESTAMP)
+      zipinfo.external_attr = HERMETIC_FILE_ATTR
       with file(fs_path) as f:
         contents = f.read()
       outfile.writestr(zipinfo, contents)
@@ -275,6 +277,7 @@ def MergeZips(output, inputs, exclude_patterns=None, path_transform=None):
           if not already_added and not MatchesGlob(dst_name, exclude_patterns):
             zipinfo = zipfile.ZipInfo(filename=dst_name,
                                       date_time=HERMETIC_TIMESTAMP)
+            zipinfo.external_attr = HERMETIC_FILE_ATTR
             out_zip.writestr(zipinfo, in_zip.read(name))
             added_names.add(dst_name)
 
