@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_CHROME_WEB_CONTENTS_DELEGATE_ANDROID_H_
-#define CHROME_BROWSER_ANDROID_CHROME_WEB_CONTENTS_DELEGATE_ANDROID_H_
+#ifndef CHROME_BROWSER_ANDROID_TAB_WEB_CONTENTS_DELEGATE_ANDROID_H_
+#define CHROME_BROWSER_ANDROID_TAB_WEB_CONTENTS_DELEGATE_ANDROID_H_
 
 #include <jni.h>
 
@@ -31,12 +31,12 @@ namespace android {
 // Chromium Android specific WebContentsDelegate.
 // Should contain any WebContentsDelegate implementations required by
 // the Chromium Android port but not to be shared with WebView.
-class ChromeWebContentsDelegateAndroid
+class TabWebContentsDelegateAndroid
     : public web_contents_delegate_android::WebContentsDelegateAndroid,
       public content::NotificationObserver {
  public:
-  ChromeWebContentsDelegateAndroid(JNIEnv* env, jobject obj);
-  ~ChromeWebContentsDelegateAndroid() override;
+  TabWebContentsDelegateAndroid(JNIEnv* env, jobject obj);
+  ~TabWebContentsDelegateAndroid() override;
 
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
@@ -97,9 +97,9 @@ class ChromeWebContentsDelegateAndroid
 };
 
 // Register the native methods through JNI.
-bool RegisterChromeWebContentsDelegateAndroid(JNIEnv* env);
+bool RegisterTabWebContentsDelegateAndroid(JNIEnv* env);
 
 }  // namespace android
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_ANDROID_CHROME_WEB_CONTENTS_DELEGATE_ANDROID_H_
+#endif  // CHROME_BROWSER_ANDROID_TAB_WEB_CONTENTS_DELEGATE_ANDROID_H_

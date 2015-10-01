@@ -198,7 +198,7 @@ public class WebappModeTest extends MultiActivityTestBase {
 
         if (viaActivateContents) {
             // Bring it back via the Tab.
-            activity.getActivityTab().getChromeWebContentsDelegateAndroid().activateContents();
+            activity.getActivityTab().getTabWebContentsDelegateAndroid().activateContents();
         } else {
             // Bring the WebappActivity back via an Intent.
             int webappTabId = activity.getActivityTab().getId();

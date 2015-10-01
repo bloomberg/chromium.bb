@@ -101,7 +101,7 @@ public class WebappActivity extends FullScreenActivity {
 
         mWebContentsObserver = createWebContentsObserver();
         getActivityTab().addObserver(createTabObserver());
-        getActivityTab().getChromeWebContentsDelegateAndroid().setDisplayMode(
+        getActivityTab().getTabWebContentsDelegateAndroid().setDisplayMode(
                 (int) WebDisplayMode.Standalone);
     }
 

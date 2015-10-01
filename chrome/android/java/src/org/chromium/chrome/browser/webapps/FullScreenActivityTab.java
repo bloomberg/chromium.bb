@@ -28,8 +28,8 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
+import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -312,8 +312,7 @@ public class FullScreenActivityTab extends ChromeTab {
         return new FullScreenTabWebContentsDelegateAndroid(this, mActivity);
     }
 
-    private class FullScreenTabWebContentsDelegateAndroid
-            extends TabChromeWebContentsDelegateAndroid {
+    private class FullScreenTabWebContentsDelegateAndroid extends TabWebContentsDelegateAndroid {
         public FullScreenTabWebContentsDelegateAndroid(Tab tab, ChromeActivity activity) {
             super(tab, activity);
         }

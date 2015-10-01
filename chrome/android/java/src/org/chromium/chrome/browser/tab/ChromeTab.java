@@ -333,7 +333,7 @@ public class ChromeTab extends Tab {
 
             // The data reduction proxy can only be set to pass through mode via loading an image in
             // a new tab. We squirrel away whether pass through mode was set, and check it in:
-            // @see ChromeWebContentsDelegateAndroid#onLoadStopped()
+            // @see TabWebContentsDelegateAndroid#onLoadStopped()
             mLastPageLoadHasSpdyProxyPassthroughHeaders = false;
             if (TextUtils.equals(params.getVerbatimHeaders(), PAGESPEED_PASSTHROUGH_HEADERS)) {
                 mLastPageLoadHasSpdyProxyPassthroughHeaders = true;

@@ -18,10 +18,10 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabUma;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
+import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
@@ -145,9 +145,8 @@ public class DocumentTab extends ChromeTab {
     /**
      * A web contents delegate for handling opening new windows in Document mode.
      */
-    public class DocumentTabChromeWebContentsDelegateAndroid
-            extends TabChromeWebContentsDelegateAndroid {
-        public DocumentTabChromeWebContentsDelegateAndroid(Tab tab, ChromeActivity activity) {
+    public class DocumentTabWebContentsDelegateAndroid extends TabWebContentsDelegateAndroid {
+        public DocumentTabWebContentsDelegateAndroid(Tab tab, ChromeActivity activity) {
             super(tab, activity);
         }
 
@@ -162,8 +161,8 @@ public class DocumentTab extends ChromeTab {
     }
 
     @Override
-    protected TabChromeWebContentsDelegateAndroid createWebContentsDelegate() {
-        return new DocumentTabChromeWebContentsDelegateAndroid(this, mActivity);
+    protected TabWebContentsDelegateAndroid createWebContentsDelegate() {
+        return new DocumentTabWebContentsDelegateAndroid(this, mActivity);
     }
 
     /**

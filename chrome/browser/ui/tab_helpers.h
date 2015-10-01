@@ -13,7 +13,7 @@ namespace chrome {
 class BrowserTabStripModelDelegate;
 
 namespace android {
-class ChromeWebContentsDelegateAndroid;
+class TabWebContentsDelegateAndroid;
 }
 }
 
@@ -41,7 +41,7 @@ class TabHelpers {
 
   // These are the Android equivalents of the two classes above.
   friend class TabAndroid;
-  friend class chrome::android::ChromeWebContentsDelegateAndroid;
+  friend class chrome::android::TabWebContentsDelegateAndroid;
 
   // chrome::Navigate creates WebContents that are destined for the tab strip,
   // and that might have WebUI that immediately calls back into random tab

@@ -147,7 +147,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             @Override
             public void run() {
                 getActivity().getActivityTab()
-                        .getChromeWebContentsDelegateAndroid().onLoadStarted();
+                        .getTabWebContentsDelegateAndroid().onLoadStarted();
             }
         });
         checkForBrandColor(Color.parseColor(BRAND_COLOR_1));

@@ -36,7 +36,7 @@ struct NavigateParams;
 
 namespace chrome {
 namespace android {
-class ChromeWebContentsDelegateAndroid;
+class TabWebContentsDelegateAndroid;
 class TabContentManager;
 }
 }
@@ -255,7 +255,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   chrome::android::TabContentManager* tab_content_manager_;
 
   scoped_ptr<content::WebContents> web_contents_;
-  scoped_ptr<chrome::android::ChromeWebContentsDelegateAndroid>
+  scoped_ptr<chrome::android::TabWebContentsDelegateAndroid>
       web_contents_delegate_;
 
   scoped_ptr<browser_sync::SyncedTabDelegateAndroid> synced_tab_delegate_;

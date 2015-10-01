@@ -20,10 +20,10 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.PrerenderTestHelper;
@@ -82,8 +82,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
         Tab tab = getActivity().getActivityTab();
-        final ChromeWebContentsDelegateAndroid delegate =
-                tab.getChromeWebContentsDelegateAndroid();
+        final TabWebContentsDelegateAndroid delegate = tab.getTabWebContentsDelegateAndroid();
 
         assertTrue(waitForFullscreenFlag(tab, false));
         assertTrue(waitForPersistentFullscreen(delegate, false));
@@ -106,8 +105,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
         final Tab tab = getActivity().getActivityTab();
-        final ChromeWebContentsDelegateAndroid delegate =
-                tab.getChromeWebContentsDelegateAndroid();
+        final TabWebContentsDelegateAndroid delegate = tab.getTabWebContentsDelegateAndroid();
 
         assertTrue(waitForFullscreenFlag(tab, false));
         assertTrue(waitForPersistentFullscreen(delegate, false));
@@ -145,8 +143,8 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
         Tab tab = getActivity().getActivityTab();
         View view = tab.getView();
-        final ChromeWebContentsDelegateAndroid delegate =
-                tab.getChromeWebContentsDelegateAndroid();
+        final TabWebContentsDelegateAndroid delegate =
+                tab.getTabWebContentsDelegateAndroid();
 
         singleClickView(view);
         waitForPersistentFullscreen(delegate, true);
@@ -277,8 +275,8 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         scrollTopControls(false);
 
         Tab tab = getActivity().getActivityTab();
-        final ChromeWebContentsDelegateAndroid delegate =
-                tab.getChromeWebContentsDelegateAndroid();
+        final TabWebContentsDelegateAndroid delegate =
+                tab.getTabWebContentsDelegateAndroid();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -388,7 +386,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         assertEquals(expectedPosition, waitForTopControlsPosition(expectedPosition));
     }
 
-    private void togglePersistentFullscreen(final ChromeWebContentsDelegateAndroid delegate,
+    private void togglePersistentFullscreen(final TabWebContentsDelegateAndroid delegate,
             final boolean state) {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -429,7 +427,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private boolean waitForPersistentFullscreen(final ChromeWebContentsDelegateAndroid delegate,
+    private boolean waitForPersistentFullscreen(final TabWebContentsDelegateAndroid delegate,
             final boolean state) throws InterruptedException {
         return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override

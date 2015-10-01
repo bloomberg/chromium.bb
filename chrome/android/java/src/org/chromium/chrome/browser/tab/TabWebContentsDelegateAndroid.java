@@ -9,6 +9,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
@@ -18,13 +19,16 @@ import android.view.View;
 
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList.RewindableIterator;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.RepostFormWarningDialog;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
+import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
+import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
@@ -33,21 +37,41 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.WindowOpenDisposition;
 
 /**
- * A basic {@link ChromeWebContentsDelegateAndroid} that forwards some calls to the registered
+ * A basic {@link TabWebContentsDelegateAndroid} that forwards some calls to the registered
  * {@link TabObserver}s.
  */
-public class TabChromeWebContentsDelegateAndroid
-        extends ChromeWebContentsDelegateAndroid {
+public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
+    /**
+     * Listener to be notified when a find result is received.
+     */
+    public interface FindResultListener {
+        public void onFindResult(FindNotificationDetails result);
+    }
+
+    /**
+     * Listener to be notified when the rects corresponding to find matches are received.
+     */
+    public interface FindMatchRectsListener {
+        public void onFindMatchRects(FindMatchRectsDetails result);
+    }
+
     /** Used for logging. */
     private static final String TAG = "WebContentsDelegate";
 
     private final Tab mTab;
     private final ChromeActivity mActivity;
+
+    private FindResultListener mFindResultListener;
+
+    private FindMatchRectsListener mFindMatchRectsListener = null;
+
+    private int mDisplayMode = WebDisplayMode.Browser;
 
     protected Handler mHandler;
     private final Runnable mCloseContentsRunnable = new Runnable() {
@@ -80,10 +104,78 @@ public class TabChromeWebContentsDelegateAndroid
         }
     };
 
-    public TabChromeWebContentsDelegateAndroid(Tab tab, ChromeActivity activity) {
+    public TabWebContentsDelegateAndroid(Tab tab, ChromeActivity activity) {
         mTab = tab;
         mActivity = activity;
         mHandler = new Handler();
+    }
+
+    /**
+     * Sets the current display mode which can be queried using media queries.
+     * @param displayMode A value from {@link org.chromium.blink_public.platform.WebDisplayMode}.
+     */
+    public void setDisplayMode(int displayMode) {
+        mDisplayMode = displayMode;
+    }
+
+    @CalledByNative
+    private int getDisplayMode() {
+        return mDisplayMode;
+    }
+
+    @CalledByNative
+    private void onFindResultAvailable(FindNotificationDetails result) {
+        if (mFindResultListener != null) {
+            mFindResultListener.onFindResult(result);
+        }
+    }
+
+    @CalledByNative
+    private void onFindMatchRectsAvailable(FindMatchRectsDetails result) {
+        if (mFindMatchRectsListener != null) {
+            mFindMatchRectsListener.onFindMatchRects(result);
+        }
+    }
+
+    /** Register to receive the results of startFinding calls. */
+    public void setFindResultListener(FindResultListener listener) {
+        mFindResultListener = listener;
+    }
+
+    /** Register to receive the results of requestFindMatchRects calls. */
+    public void setFindMatchRectsListener(FindMatchRectsListener listener) {
+        mFindMatchRectsListener = listener;
+    }
+
+    // Helper functions used to create types that are part of the public interface
+    @CalledByNative
+    private static Rect createRect(int x, int y, int right, int bottom) {
+        return new Rect(x, y, right, bottom);
+    }
+
+    @CalledByNative
+    private static RectF createRectF(float x, float y, float right, float bottom) {
+        return new RectF(x, y, right, bottom);
+    }
+
+    @CalledByNative
+    private static FindNotificationDetails createFindNotificationDetails(
+            int numberOfMatches, Rect rendererSelectionRect,
+            int activeMatchOrdinal, boolean finalUpdate) {
+        return new FindNotificationDetails(numberOfMatches, rendererSelectionRect,
+                activeMatchOrdinal, finalUpdate);
+    }
+
+    @CalledByNative
+    private static FindMatchRectsDetails createFindMatchRectsDetails(
+            int version, int numRects, RectF activeRect) {
+        return new FindMatchRectsDetails(version, numRects, activeRect);
+    }
+
+    @CalledByNative
+    private static void setMatchRectByIndex(
+            FindMatchRectsDetails findMatchRectsDetails, int index, RectF rect) {
+        findMatchRectsDetails.rects[index] = rect;
     }
 
     @Override
@@ -227,7 +319,7 @@ public class TabChromeWebContentsDelegateAndroid
         return mActivity.getTabModelSelector().getModel(mTab.isIncognito());
     }
 
-    @Override
+    @CalledByNative
     public boolean shouldResumeRequestsForCreatedWindow() {
         // Pause the WebContents if an Activity has to be created for it first.
         TabCreator tabCreator = mActivity.getTabCreator(mTab.isIncognito());
@@ -235,7 +327,7 @@ public class TabChromeWebContentsDelegateAndroid
         return !tabCreator.createsTabsAsynchronously();
     }
 
-    @Override
+    @CalledByNative
     public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
             int disposition, Rect initialPosition, boolean userGesture) {
         assert mWebContentsUrlMapping.first == webContents;
@@ -385,15 +477,18 @@ public class TabChromeWebContentsDelegateAndroid
      * @return Whether audio is being captured.
      */
     private boolean isCapturingAudio() {
-        return !mTab.isClosing()
-                && ChromeWebContentsDelegateAndroid.nativeIsCapturingAudio(mTab.getWebContents());
+        return !mTab.isClosing() && nativeIsCapturingAudio(mTab.getWebContents());
     }
 
     /**
      * @return Whether video is being captured.
      */
     private boolean isCapturingVideo() {
-        return !mTab.isClosing()
-                && ChromeWebContentsDelegateAndroid.nativeIsCapturingVideo(mTab.getWebContents());
+        return !mTab.isClosing() && nativeIsCapturingVideo(mTab.getWebContents());
     }
+
+    private static native void nativeOnRendererUnresponsive(WebContents webContents);
+    private static native void nativeOnRendererResponsive(WebContents webContents);
+    private static native boolean nativeIsCapturingAudio(WebContents webContents);
+    private static native boolean nativeIsCapturingVideo(WebContents webContents);
 }

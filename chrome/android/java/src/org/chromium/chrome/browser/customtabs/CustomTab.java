@@ -34,8 +34,8 @@ import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab.TabIdManager;
+import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -346,8 +346,8 @@ public class CustomTab extends ChromeTab {
     }
 
     @Override
-    protected TabChromeWebContentsDelegateAndroid createWebContentsDelegate() {
-        return new TabChromeWebContentsDelegateAndroid(this, mActivity) {
+    protected TabWebContentsDelegateAndroid createWebContentsDelegate() {
+        return new TabWebContentsDelegateAndroid(this, mActivity) {
             private String mTargetUrl;
 
             @Override

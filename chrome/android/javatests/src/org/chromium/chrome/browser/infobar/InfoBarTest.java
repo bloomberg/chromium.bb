@@ -168,7 +168,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_HUNG_RENDERER_INFOBAR);
                 getActivity()
                         .getActivityTab()
-                        .getChromeWebContentsDelegateAndroid()
+                        .getTabWebContentsDelegateAndroid()
                         .rendererUnresponsive();
             }
         });
@@ -186,7 +186,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             public void run() {
                 getActivity()
                         .getActivityTab()
-                        .getChromeWebContentsDelegateAndroid()
+                        .getTabWebContentsDelegateAndroid()
                         .rendererResponsive();
             }
         });
@@ -211,7 +211,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_HUNG_RENDERER_INFOBAR);
                 getActivity()
                         .getActivityTab()
-                        .getChromeWebContentsDelegateAndroid()
+                        .getTabWebContentsDelegateAndroid()
                         .rendererUnresponsive();
             }
         });

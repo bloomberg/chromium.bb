@@ -25,13 +25,13 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.findinpage.FindInPageBridge;
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
 import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -45,8 +45,8 @@ import org.chromium.ui.UiUtils;
 
 /** A toolbar providing find in page functionality. */
 public class FindToolbar extends LinearLayout
-        implements ChromeWebContentsDelegateAndroid.FindResultListener,
-                   ChromeWebContentsDelegateAndroid.FindMatchRectsListener {
+        implements TabWebContentsDelegateAndroid.FindResultListener,
+                   TabWebContentsDelegateAndroid.FindMatchRectsListener {
     private static final long ACCESSIBLE_ANNOUNCEMENT_DELAY_MILLIS = 500;
 
     // Toolbar UI
@@ -486,8 +486,8 @@ public class FindToolbar extends LinearLayout
         mCurrentTab = mTabModelSelector.getCurrentTab();
         mCurrentTab.addObserver(mTabObserver);
         mFindInPageBridge = new FindInPageBridge(mCurrentTab.getWebContents());
-        mCurrentTab.getChromeWebContentsDelegateAndroid().setFindResultListener(this);
-        mCurrentTab.getChromeWebContentsDelegateAndroid().setFindMatchRectsListener(this);
+        mCurrentTab.getTabWebContentsDelegateAndroid().setFindResultListener(this);
+        mCurrentTab.getTabWebContentsDelegateAndroid().setFindMatchRectsListener(this);
         initializeFindText();
         mFindQuery.requestFocus();
         // The keyboard doesn't show itself automatically.
@@ -524,8 +524,8 @@ public class FindToolbar extends LinearLayout
             model.removeObserver(mTabModelObserver);
         }
 
-        mCurrentTab.getChromeWebContentsDelegateAndroid().setFindResultListener(null);
-        mCurrentTab.getChromeWebContentsDelegateAndroid().setFindMatchRectsListener(null);
+        mCurrentTab.getTabWebContentsDelegateAndroid().setFindResultListener(null);
+        mCurrentTab.getTabWebContentsDelegateAndroid().setFindMatchRectsListener(null);
         mCurrentTab.removeObserver(mTabObserver);
 
         UiUtils.hideKeyboard(mFindQuery);

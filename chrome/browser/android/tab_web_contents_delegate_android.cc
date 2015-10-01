@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/chrome_web_contents_delegate_android.h"
+#include "chrome/browser/android/tab_web_contents_delegate_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -34,7 +34,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_params.h"
-#include "jni/ChromeWebContentsDelegateAndroid_jni.h"
+#include "jni/TabWebContentsDelegateAndroid_jni.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -55,7 +55,7 @@ ScopedJavaLocalRef<jobject> CreateJavaRectF(
     JNIEnv* env,
     const gfx::RectF& rect) {
   return ScopedJavaLocalRef<jobject>(
-      Java_ChromeWebContentsDelegateAndroid_createRectF(env,
+      Java_TabWebContentsDelegateAndroid_createRectF(env,
                                                         rect.x(),
                                                         rect.y(),
                                                         rect.right(),
@@ -66,7 +66,7 @@ ScopedJavaLocalRef<jobject> CreateJavaRect(
     JNIEnv* env,
     const gfx::Rect& rect) {
   return ScopedJavaLocalRef<jobject>(
-      Java_ChromeWebContentsDelegateAndroid_createRect(
+      Java_TabWebContentsDelegateAndroid_createRect(
           env,
           static_cast<int>(rect.x()),
           static_cast<int>(rect.y()),
@@ -89,21 +89,21 @@ infobars::InfoBar* FindHungRendererInfoBar(InfoBarService* infobar_service) {
 namespace chrome {
 namespace android {
 
-ChromeWebContentsDelegateAndroid::ChromeWebContentsDelegateAndroid(JNIEnv* env,
+TabWebContentsDelegateAndroid::TabWebContentsDelegateAndroid(JNIEnv* env,
                                                                    jobject obj)
     : WebContentsDelegateAndroid(env, obj) {
 }
 
-ChromeWebContentsDelegateAndroid::~ChromeWebContentsDelegateAndroid() {
+TabWebContentsDelegateAndroid::~TabWebContentsDelegateAndroid() {
   notification_registrar_.RemoveAll();
 }
 
 // Register native methods.
-bool RegisterChromeWebContentsDelegateAndroid(JNIEnv* env) {
+bool RegisterTabWebContentsDelegateAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void ChromeWebContentsDelegateAndroid::LoadingStateChanged(
+void TabWebContentsDelegateAndroid::LoadingStateChanged(
     WebContents* source, bool to_different_document) {
   bool has_stopped = source == NULL || !source->IsLoading();
   WebContentsDelegateAndroid::LoadingStateChanged(
@@ -111,14 +111,14 @@ void ChromeWebContentsDelegateAndroid::LoadingStateChanged(
   LoadProgressChanged(source, has_stopped ? 1 : 0);
 }
 
-void ChromeWebContentsDelegateAndroid::RunFileChooser(
+void TabWebContentsDelegateAndroid::RunFileChooser(
     WebContents* web_contents,
     const FileChooserParams& params) {
   FileSelectHelper::RunFileChooser(web_contents, params);
 }
 
 scoped_ptr<BluetoothChooser>
-ChromeWebContentsDelegateAndroid::RunBluetoothChooser(
+TabWebContentsDelegateAndroid::RunBluetoothChooser(
     content::WebContents* web_contents,
     const BluetoothChooser::EventHandler& event_handler,
     const GURL& origin) {
@@ -126,7 +126,7 @@ ChromeWebContentsDelegateAndroid::RunBluetoothChooser(
       new BluetoothChooserAndroid(web_contents, event_handler, origin));
 }
 
-void ChromeWebContentsDelegateAndroid::CloseContents(
+void TabWebContentsDelegateAndroid::CloseContents(
     WebContents* web_contents) {
   // Prevent dangling registrations assigned to closed web contents.
   if (notification_registrar_.IsRegistered(this,
@@ -140,7 +140,7 @@ void ChromeWebContentsDelegateAndroid::CloseContents(
   WebContentsDelegateAndroid::CloseContents(web_contents);
 }
 
-void ChromeWebContentsDelegateAndroid::Observe(
+void TabWebContentsDelegateAndroid::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -156,7 +156,7 @@ void ChromeWebContentsDelegateAndroid::Observe(
   }
 }
 
-blink::WebDisplayMode ChromeWebContentsDelegateAndroid::GetDisplayMode(
+blink::WebDisplayMode TabWebContentsDelegateAndroid::GetDisplayMode(
     const WebContents* web_contents) const {
   JNIEnv* env = base::android::AttachCurrentThread();
 
@@ -165,11 +165,11 @@ blink::WebDisplayMode ChromeWebContentsDelegateAndroid::GetDisplayMode(
     return blink::WebDisplayModeUndefined;
 
   return static_cast<blink::WebDisplayMode>(
-      Java_ChromeWebContentsDelegateAndroid_getDisplayMode(
+      Java_TabWebContentsDelegateAndroid_getDisplayMode(
           env, obj.obj()));
 }
 
-void ChromeWebContentsDelegateAndroid::FindReply(
+void TabWebContentsDelegateAndroid::FindReply(
     WebContents* web_contents,
     int request_id,
     int number_of_matches,
@@ -192,7 +192,7 @@ void ChromeWebContentsDelegateAndroid::FindReply(
                                    final_update);
 }
 
-void ChromeWebContentsDelegateAndroid::OnFindResultAvailable(
+void TabWebContentsDelegateAndroid::OnFindResultAvailable(
     WebContents* web_contents,
     const FindNotificationDetails* find_result) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -205,20 +205,20 @@ void ChromeWebContentsDelegateAndroid::OnFindResultAvailable(
 
   // Create the details object.
   ScopedJavaLocalRef<jobject> details_object =
-      Java_ChromeWebContentsDelegateAndroid_createFindNotificationDetails(
+      Java_TabWebContentsDelegateAndroid_createFindNotificationDetails(
           env,
           find_result->number_of_matches(),
           selection_rect.obj(),
           find_result->active_match_ordinal(),
           find_result->final_update());
 
-  Java_ChromeWebContentsDelegateAndroid_onFindResultAvailable(
+  Java_TabWebContentsDelegateAndroid_onFindResultAvailable(
       env,
       obj.obj(),
       details_object.obj());
 }
 
-void ChromeWebContentsDelegateAndroid::FindMatchRectsReply(
+void TabWebContentsDelegateAndroid::FindMatchRectsReply(
     WebContents* web_contents,
     int version,
     const std::vector<gfx::RectF>& rects,
@@ -230,7 +230,7 @@ void ChromeWebContentsDelegateAndroid::FindMatchRectsReply(
 
   // Create the details object.
   ScopedJavaLocalRef<jobject> details_object =
-      Java_ChromeWebContentsDelegateAndroid_createFindMatchRectsDetails(
+      Java_TabWebContentsDelegateAndroid_createFindMatchRectsDetails(
           env,
           version,
           rects.size(),
@@ -238,26 +238,26 @@ void ChromeWebContentsDelegateAndroid::FindMatchRectsReply(
 
   // Add the rects
   for (size_t i = 0; i < rects.size(); ++i) {
-      Java_ChromeWebContentsDelegateAndroid_setMatchRectByIndex(
+      Java_TabWebContentsDelegateAndroid_setMatchRectByIndex(
           env,
           details_object.obj(),
           i,
           CreateJavaRectF(env, rects[i]).obj());
   }
 
-  Java_ChromeWebContentsDelegateAndroid_onFindMatchRectsAvailable(
+  Java_TabWebContentsDelegateAndroid_onFindMatchRectsAvailable(
       env,
       obj.obj(),
       details_object.obj());
 }
 
 content::JavaScriptDialogManager*
-ChromeWebContentsDelegateAndroid::GetJavaScriptDialogManager(
+TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
     WebContents* source) {
   return app_modal::JavaScriptDialogManager::GetInstance();
 }
 
-void ChromeWebContentsDelegateAndroid::RequestMediaAccessPermission(
+void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
@@ -265,7 +265,7 @@ void ChromeWebContentsDelegateAndroid::RequestMediaAccessPermission(
       web_contents, request, callback, NULL);
 }
 
-bool ChromeWebContentsDelegateAndroid::CheckMediaAccessPermission(
+bool TabWebContentsDelegateAndroid::CheckMediaAccessPermission(
     content::WebContents* web_contents,
     const GURL& security_origin,
     content::MediaStreamType type) {
@@ -273,7 +273,7 @@ bool ChromeWebContentsDelegateAndroid::CheckMediaAccessPermission(
       ->CheckMediaAccessPermission(web_contents, security_origin, type);
 }
 
-bool ChromeWebContentsDelegateAndroid::RequestPpapiBrokerPermission(
+bool TabWebContentsDelegateAndroid::RequestPpapiBrokerPermission(
     WebContents* web_contents,
     const GURL& url,
     const base::FilePath& plugin_path,
@@ -287,7 +287,7 @@ bool ChromeWebContentsDelegateAndroid::RequestPpapiBrokerPermission(
 #endif
 }
 
-WebContents* ChromeWebContentsDelegateAndroid::OpenURLFromTab(
+WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
     WebContents* source,
     const content::OpenURLParams& params) {
   WindowOpenDisposition disposition = params.disposition;
@@ -342,18 +342,18 @@ WebContents* ChromeWebContentsDelegateAndroid::OpenURLFromTab(
   return WebContentsDelegateAndroid::OpenURLFromTab(source, params);
 }
 
-bool ChromeWebContentsDelegateAndroid::ShouldResumeRequestsForCreatedWindow() {
+bool TabWebContentsDelegateAndroid::ShouldResumeRequestsForCreatedWindow() {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return true;
 
-  return Java_ChromeWebContentsDelegateAndroid_shouldResumeRequestsForCreatedWindow(
+  return Java_TabWebContentsDelegateAndroid_shouldResumeRequestsForCreatedWindow(
       env,
       obj.obj());
 }
 
-void ChromeWebContentsDelegateAndroid::AddNewContents(
+void TabWebContentsDelegateAndroid::AddNewContents(
     WebContents* source,
     WebContents* new_contents,
     WindowOpenDisposition disposition,
@@ -378,7 +378,7 @@ void ChromeWebContentsDelegateAndroid::AddNewContents(
     if (new_contents)
       jnew_contents = new_contents->GetJavaWebContents();
 
-    handled = Java_ChromeWebContentsDelegateAndroid_addNewContents(
+    handled = Java_TabWebContentsDelegateAndroid_addNewContents(
         env,
         obj.obj(),
         jsource.obj(),

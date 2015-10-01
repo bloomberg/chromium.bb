@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.AccessibilityUtil;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.NativePage;
@@ -206,7 +205,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     // Content layer Observers and Delegates
     private ContentViewClient mContentViewClient;
     private WebContentsObserver mWebContentsObserver;
-    private TabChromeWebContentsDelegateAndroid mWebContentsDelegate;
+    private TabWebContentsDelegateAndroid mWebContentsDelegate;
 
     /**
      * If this tab was opened from another tab, store the id of the tab that
@@ -1138,7 +1137,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return a value between 0 and 100 reflecting what percentage of the page load is complete.
      */
     public int getProgress() {
-        ChromeWebContentsDelegateAndroid delegate = getChromeWebContentsDelegateAndroid();
+        TabWebContentsDelegateAndroid delegate = getTabWebContentsDelegateAndroid();
         if (delegate == null) return 0;
         return isLoading() ? delegate.getMostRecentProgress() : 100;
     }
@@ -2201,10 +2200,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     /**
      * A helper method to allow subclasses to build their own delegate.
-     * @return An instance of a {@link TabChromeWebContentsDelegateAndroid}.
+     * @return An instance of a {@link TabWebContentsDelegateAndroid}.
      */
-    protected TabChromeWebContentsDelegateAndroid createWebContentsDelegate() {
-        return new TabChromeWebContentsDelegateAndroid(this, mActivity);
+    protected TabWebContentsDelegateAndroid createWebContentsDelegate() {
+        return new TabWebContentsDelegateAndroid(this, mActivity);
     }
 
     /**
@@ -2232,9 +2231,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * @return The current {@link ChromeWebContentsDelegateAndroid} instance.
+     * @return The current {@link TabWebContentsDelegateAndroid} instance.
      */
-    public ChromeWebContentsDelegateAndroid getChromeWebContentsDelegateAndroid() {
+    public TabWebContentsDelegateAndroid getTabWebContentsDelegateAndroid() {
         return mWebContentsDelegate;
     }
 
@@ -2965,7 +2964,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native void nativeInit();
     private native void nativeDestroy(long nativeTabAndroid);
     private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
-            ContentViewCore contentViewCore, ChromeWebContentsDelegateAndroid delegate,
+            ContentViewCore contentViewCore, TabWebContentsDelegateAndroid delegate,
             ContextMenuPopulator contextMenuPopulator);
     private native void nativeDestroyWebContents(long nativeTabAndroid, boolean deleteNative);
     private native Profile nativeGetProfileAndroid(long nativeTabAndroid);

@@ -108,7 +108,7 @@ public class WebappLauncherActivity extends Activity {
             if (webappActivity.getActivityTab() != null
                     && webappActivity.getActivityTab().getId() == tabId) {
                 Tab tab = webappActivity.getActivityTab();
-                tab.getChromeWebContentsDelegateAndroid().activateContents();
+                tab.getTabWebContentsDelegateAndroid().activateContents();
                 return true;
             }
         }
