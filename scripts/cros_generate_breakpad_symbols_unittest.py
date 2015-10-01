@@ -244,7 +244,7 @@ class GenerateSymbolTest(cros_test_lib.MockTempDirTestCase):
     """Normal run -- given an ELF and a debug file"""
     ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbol(
         self.elf_file, self.debug_file, self.breakpad_dir)
-    self.assertEqual(ret, 0)
+    self.assertEqual(ret, self.sym_file)
     self.assertEqual(self.rc_mock.call_count, 1)
     self.assertCommandArgs(0, ['dump_syms', self.elf_file, self.debug_dir])
     self.assertExists(self.sym_file)
@@ -256,7 +256,7 @@ class GenerateSymbolTest(cros_test_lib.MockTempDirTestCase):
     ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbol(
         self.elf_file, breakpad_dir=self.breakpad_dir,
         strip_cfi=True, num_errors=num_errors)
-    self.assertEqual(ret, 0)
+    self.assertEqual(ret, self.sym_file)
     self.assertEqual(num_errors.value, 0)
     self.assertCommandArgs(0, ['dump_syms', '-c', self.elf_file])
     self.assertEqual(self.rc_mock.call_count, 1)
@@ -266,7 +266,7 @@ class GenerateSymbolTest(cros_test_lib.MockTempDirTestCase):
     """Normal run -- given just an ELF"""
     ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbol(
         self.elf_file, breakpad_dir=self.breakpad_dir)
-    self.assertEqual(ret, 0)
+    self.assertEqual(ret, self.sym_file)
     self.assertCommandArgs(0, ['dump_syms', self.elf_file])
     self.assertEqual(self.rc_mock.call_count, 1)
     self.assertExists(self.sym_file)
@@ -277,8 +277,8 @@ class GenerateSymbolTest(cros_test_lib.MockTempDirTestCase):
       mock_access.return_value = False
       ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbol(
           self.elf_file, breakpad_dir=self.breakpad_dir)
-      self.assertEqual(ret, 0)
-      self.assertCommandArgs(0, ['sudo', '--', 'dump_syms', self.elf_file])
+    self.assertEqual(ret, self.sym_file)
+    self.assertCommandArgs(0, ['sudo', '--', 'dump_syms', self.elf_file])
 
   def testLargeDebugFail(self):
     """Running w/large .debug failed, but retry worked"""
@@ -286,7 +286,7 @@ class GenerateSymbolTest(cros_test_lib.MockTempDirTestCase):
                               returncode=1)
     ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbol(
         self.elf_file, self.debug_file, self.breakpad_dir)
-    self.assertEqual(ret, 0)
+    self.assertEqual(ret, self.sym_file)
     self.assertEqual(self.rc_mock.call_count, 2)
     self.assertCommandArgs(0, ['dump_syms', self.elf_file, self.debug_dir])
     self.assertCommandArgs(
@@ -302,7 +302,7 @@ class GenerateSymbolTest(cros_test_lib.MockTempDirTestCase):
                               returncode=1)
     ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbol(
         self.elf_file, self.debug_file, self.breakpad_dir)
-    self.assertEqual(ret, 0)
+    self.assertEqual(ret, self.sym_file)
     self.assertEqual(self.rc_mock.call_count, 3)
     self.assertCommandArgs(0, ['dump_syms', self.elf_file, self.debug_dir])
     self.assertCommandArgs(

@@ -76,7 +76,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
     dump_syms_cmd: Command to use for dumping symbols.
 
   Returns:
-    The number of errors that were encountered.
+    The name of symbol file written out.
   """
   assert breakpad_dir
   if num_errors is None:
@@ -151,7 +151,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
     os.chmod(sym_file, 0o644)
     temp.delete = False
 
-  return num_errors.value
+  return sym_file
 
 
 def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
