@@ -164,6 +164,9 @@ class ExtensionsBrowserClient {
   // Return true if the system is run in forced app mode.
   virtual bool IsRunningInForcedAppMode() = 0;
 
+  // Return true if the user is logged in as a public session.
+  virtual bool IsLoggedInAsPublicAccount() = 0;
+
   // Returns the embedder's ApiActivityMonitor for |context|. Returns NULL if
   // the embedder does not monitor extension API activity.
   virtual ApiActivityMonitor* GetApiActivityMonitor(

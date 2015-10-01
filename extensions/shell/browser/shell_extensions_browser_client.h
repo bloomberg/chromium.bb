@@ -67,6 +67,7 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool DidVersionUpdate(content::BrowserContext* context) override;
   void PermitExternalProtocolHandler() override;
   bool IsRunningInForcedAppMode() override;
+  bool IsLoggedInAsPublicAccount() override;
   ApiActivityMonitor* GetApiActivityMonitor(
       content::BrowserContext* context) override;
   ExtensionSystemProvider* GetExtensionSystemFactory() override;

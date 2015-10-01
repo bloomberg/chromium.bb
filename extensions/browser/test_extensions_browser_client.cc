@@ -142,6 +142,10 @@ void TestExtensionsBrowserClient::PermitExternalProtocolHandler() {
 
 bool TestExtensionsBrowserClient::IsRunningInForcedAppMode() { return false; }
 
+bool TestExtensionsBrowserClient::IsLoggedInAsPublicAccount() {
+  return false;
+}
+
 ApiActivityMonitor* TestExtensionsBrowserClient::GetApiActivityMonitor(
     BrowserContext* context) {
   return NULL;

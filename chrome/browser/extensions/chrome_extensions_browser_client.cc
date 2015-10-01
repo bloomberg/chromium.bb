@@ -50,6 +50,7 @@
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/user_manager/user_manager.h"
 #else
 #include "extensions/browser/updater/null_extension_cache.h"
 #endif
@@ -223,6 +224,14 @@ void ChromeExtensionsBrowserClient::PermitExternalProtocolHandler() {
 
 bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return chrome::IsRunningInForcedAppMode();
+}
+
+bool ChromeExtensionsBrowserClient::IsLoggedInAsPublicAccount() {
+#if defined(OS_CHROMEOS)
+  return user_manager::UserManager::Get()->IsLoggedInAsPublicAccount();
+#else
+  return false;
+#endif
 }
 
 ApiActivityMonitor* ChromeExtensionsBrowserClient::GetApiActivityMonitor(

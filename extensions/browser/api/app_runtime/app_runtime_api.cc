@@ -52,6 +52,11 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
   launch_data->SetBoolean(
       "isKioskSession",
       ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode());
+
+  launch_data->SetBoolean(
+      "isPublicSession",
+      ExtensionsBrowserClient::Get()->IsLoggedInAsPublicAccount());
+
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(launch_data.release());
   scoped_ptr<Event> event(new Event(events::APP_RUNTIME_ON_LAUNCHED,

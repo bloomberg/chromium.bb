@@ -63,6 +63,11 @@ namespace app.runtime {
     // kiosk session</a>.
     boolean? isKioskSession;
 
+    // Whether the app is being launched in a <a
+    // href="https://support.google.com/chrome/a/answer/3017014">Chrome OS
+    // public session</a>.
+    boolean? isPublicSession;
+
     // Where the app is launched from.
     LaunchSource? source;
   };
