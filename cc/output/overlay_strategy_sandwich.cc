@@ -117,7 +117,7 @@ OverlayResult OverlayStrategySandwich::TryOverlay(
   // Check for support.
   capability_checker->CheckOverlaySupport(&new_candidate_list);
   for (const OverlayCandidate& candidate : new_candidate_list) {
-    if (candidate.plane_z_order > 0 && !candidate.overlay_handled)
+    if (!candidate.overlay_handled)
       return DID_NOT_CREATE_OVERLAY;
   }
 

@@ -32,10 +32,8 @@ void BrowserCompositorOverlayCandidateValidatorMac::CheckOverlaySupport(
   if (software_mirror_active_)
     return;
 
-  for (size_t i = 0; i < surfaces->size(); ++i) {
-    if (surfaces->at(i).plane_z_order > 0)
-      surfaces->at(i).overlay_handled = true;
-  }
+  for (size_t i = 0; i < surfaces->size(); ++i)
+    surfaces->at(i).overlay_handled = true;
 }
 
 void BrowserCompositorOverlayCandidateValidatorMac::SetSoftwareMirrorMode(

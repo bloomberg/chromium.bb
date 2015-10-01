@@ -307,6 +307,8 @@
         'output/overlay_candidate_validator.h',
         'output/overlay_processor.cc',
         'output/overlay_processor.h',
+        'output/overlay_strategy_all_or_nothing.cc',
+        'output/overlay_strategy_all_or_nothing.h',
         'output/overlay_strategy_common.cc',
         'output/overlay_strategy_common.h',
         'output/overlay_strategy_sandwich.cc',

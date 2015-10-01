@@ -53,18 +53,6 @@ class CC_EXPORT OverlayStrategyCommon : public OverlayProcessor::Strategy {
   // an overlay.
   static bool IsInvisibleQuad(const DrawQuad* draw_quad);
 
- protected:
-  // Returns true if |draw_quad| is of a known quad type and contains an
-  // overlayable resource.
-  bool GetCandidateQuadInfo(const DrawQuad& draw_quad,
-                            OverlayCandidate* quad_info);
-  bool GetTextureQuadInfo(const TextureDrawQuad& quad,
-                          OverlayCandidate* quad_info);
-  bool GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
-                        OverlayCandidate* quad_info);
-  bool GetIOSurfaceQuadInfo(const IOSurfaceDrawQuad& quad,
-                            OverlayCandidate* quad_info);
-
  private:
   OverlayCandidateValidator* capability_checker_;
   scoped_ptr<OverlayStrategyCommonDelegate> delegate_;

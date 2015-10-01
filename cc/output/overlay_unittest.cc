@@ -10,6 +10,7 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/output/overlay_processor.h"
+#include "cc/output/overlay_strategy_all_or_nothing.h"
 #include "cc/output/overlay_strategy_sandwich.h"
 #include "cc/output/overlay_strategy_single_on_top.h"
 #include "cc/output/overlay_strategy_underlay.h"
@@ -109,6 +110,18 @@ class SandwichOverlayValidator : public OverlayCandidateValidator {
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
     strategies->push_back(make_scoped_ptr(
         new OverlayStrategyCommon(this, new OverlayStrategySandwich)));
+  }
+  void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
+    for (OverlayCandidate& candidate : *surfaces)
+      candidate.overlay_handled = true;
+  }
+};
+
+class AllOrNothingOverlayValidator : public OverlayCandidateValidator {
+ public:
+  void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
+    strategies->push_back(
+        make_scoped_ptr(new OverlayStrategyAllOrNothing(this)));
   }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
     for (OverlayCandidate& candidate : *surfaces)
@@ -343,6 +356,7 @@ class OverlayTest : public testing::Test {
 typedef OverlayTest<SingleOnTopOverlayValidator> SingleOverlayOnTopTest;
 typedef OverlayTest<UnderlayOverlayValidator> UnderlayTest;
 typedef OverlayTest<SandwichOverlayValidator> SandwichTest;
+typedef OverlayTest<AllOrNothingOverlayValidator> AllOrNothingOverlayTest;
 
 TEST(OverlayTest, NoOverlaysByDefault) {
   scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
@@ -1169,6 +1183,57 @@ TEST_F(UnderlayTest, AllowOnTop) {
   EXPECT_EQ(-1, candidate_list[1].plane_z_order);
   // The overlay quad should have changed to a SOLID_COLOR quad.
   EXPECT_EQ(pass_list[0]->quad_list.front()->material, DrawQuad::SOLID_COLOR);
+}
+
+TEST_F(AllOrNothingOverlayTest, SuccessfulOverlappingOverlays) {
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+
+  // Add two overlapping candidates.
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(),
+                        kOverlayTopLeftRect);
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(),
+                        kOverlayRect);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+  OverlayCandidateList candidates;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidates);
+
+  // Both quads should become overlays.
+  EXPECT_EQ(2u, candidates.size());
+  EXPECT_EQ(-1, candidates[0].plane_z_order);
+  EXPECT_EQ(-2, candidates[1].plane_z_order);
+  EXPECT_EQ(gfx::RectF(kOverlayTopLeftRect), candidates[0].display_rect);
+  EXPECT_EQ(gfx::RectF(kOverlayRect), candidates[1].display_rect);
+
+  // All quads should be gone.
+  EXPECT_TRUE(pass_list.back()->quad_list.empty());
+}
+
+TEST_F(AllOrNothingOverlayTest, RejectQuadWithTransform) {
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(),
+                        kOverlayTopLeftRect);
+
+  // Add a rotated quad that can't be promoted into overlay.
+  SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+  shared_state->opacity = 1.f;
+  shared_state->quad_to_target_transform.Rotate(90);
+  CreateSolidColorQuadAt(shared_state, SK_ColorBLACK, pass.get(),
+                         kOverlayBottomRightRect);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+  OverlayCandidateList candidates;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidates);
+
+  // No quads should become overlays.
+  EXPECT_EQ(0u, candidates.size());
+  EXPECT_EQ(2u, pass_list.back()->quad_list.size());
 }
 
 class OverlayInfoRendererGL : public GLRenderer {

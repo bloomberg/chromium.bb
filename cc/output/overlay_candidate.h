@@ -21,18 +21,16 @@ class Rect;
 
 namespace cc {
 
+class DrawQuad;
+class IOSurfaceDrawQuad;
+class StreamVideoDrawQuad;
+class TextureDrawQuad;
+
 class CC_EXPORT OverlayCandidate {
  public:
-  static gfx::OverlayTransform GetOverlayTransform(
-      const gfx::Transform& quad_transform,
-      bool y_flipped);
-  // Apply transform |delta| to |in| and return the resulting transform,
-  // or OVERLAY_TRANSFORM_INVALID.
-  static gfx::OverlayTransform ModifyTransform(gfx::OverlayTransform in,
-                                               gfx::OverlayTransform delta);
-  static gfx::RectF GetOverlayRect(const gfx::Transform& quad_transform,
-                                   const gfx::Rect& rect);
-
+  // Returns true and fills in |candidate| if |draw_quad| is of a known quad
+  // type and contains an overlayable resource.
+  static bool FromDrawQuad(const DrawQuad* quad, OverlayCandidate* candidate);
   OverlayCandidate();
   ~OverlayCandidate();
 
@@ -65,6 +63,14 @@ class CC_EXPORT OverlayCandidate {
   // To be modified by the implementer if this candidate can go into
   // an overlay.
   bool overlay_handled;
+
+ private:
+  static bool FromTextureQuad(const TextureDrawQuad* quad,
+                              OverlayCandidate* candidate);
+  static bool FromStreamVideoQuad(const StreamVideoDrawQuad* quad,
+                                  OverlayCandidate* candidate);
+  static bool FromIOSurfaceQuad(const IOSurfaceDrawQuad* quad,
+                                OverlayCandidate* candidate);
 };
 
 typedef std::vector<OverlayCandidate> OverlayCandidateList;
