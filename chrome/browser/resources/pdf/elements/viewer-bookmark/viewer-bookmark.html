@@ -7,9 +7,10 @@
   <template>
     <div id="item" on-click="onClick">
       <paper-ripple></paper-ripple>
-      <iron-icon id="expand" icon="chevron-right" on-click="toggleChildren">
-      </iron-icon>
-      <span id="title">{{bookmark.title}}</span>
+      <paper-icon-button id="expand" icon="chevron-right"
+          on-click="toggleChildren">
+      </paper-icon-button>
+      <span id="title" tabindex="0">{{bookmark.title}}</span>
     </div>
     <!-- dom-if will stamp the complex bookmark tree lazily as individual nodes
       are opened. -->

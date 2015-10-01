@@ -36,10 +36,12 @@ void AddStringsForIdentity(base::DictionaryValue* dict) {
 void AddStringsForPdf(base::DictionaryValue* dict) {
   SetL10nString(dict, "passwordPrompt", IDS_PDF_NEED_PASSWORD);
   SetL10nString(dict, "passwordSubmit", IDS_PDF_PASSWORD_SUBMIT);
+  SetL10nString(dict, "passwordInvalid", IDS_PDF_PASSWORD_INVALID);
   SetL10nString(dict, "pageLoading", IDS_PDF_PAGE_LOADING);
   SetL10nString(dict, "pageLoadFailed", IDS_PDF_PAGE_LOAD_FAILED);
   SetL10nString(dict, "pageReload", IDS_PDF_PAGE_RELOAD_BUTTON);
   SetL10nString(dict, "bookmarks", IDS_PDF_BOOKMARKS);
+  SetL10nString(dict, "labelPageNumber", IDS_PDF_LABEL_PAGE_NUMBER);
   SetL10nString(dict, "tooltipRotateCW", IDS_PDF_TOOLTIP_ROTATE_CW);
   SetL10nString(dict, "tooltipRotateCCW", IDS_PDF_TOOLTIP_ROTATE_CCW);
   SetL10nString(dict, "tooltipSave", IDS_PDF_TOOLTIP_SAVE);

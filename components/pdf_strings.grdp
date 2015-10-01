@@ -7,6 +7,9 @@
     <message name="IDS_PDF_PASSWORD_SUBMIT" desc="Button label for the buton to submit the PDF password form">
       Submit
     </message>
+    <message name="IDS_PDF_PASSWORD_INVALID" desc="Error message when an invalid password is entered">
+      Incorrect password
+    </message>
 
     <message name="IDS_PDF_PAGE_LOADING" desc="A message displayed on the PDF page while page is loading.">
       Loading...
@@ -45,6 +48,9 @@
     </message>
     <message name="IDS_PDF_TOOLTIP_ZOOM_OUT" desc="Button tooltip for the button which zooms out a PDF, so that the document appears smaller">
       Zoom out
+    </message>
+    <message name="IDS_PDF_LABEL_PAGE_NUMBER" desc="Label for the input field containing the current page number">
+      Page number
     </message>
   </if>
 </grit-part>

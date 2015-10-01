@@ -26,6 +26,7 @@
 #expand {
   --iron-icon-height: 16px;
   --iron-icon-width: 16px;
+  --paper-icon-button-ink-color: var(--paper-grey-900);
   height: 16px;
   min-width: 16px;
   padding: 6px;

@@ -27,7 +27,8 @@
 
         <div class="flex-1" id="pageselector-container">
           <viewer-page-selector id="pageselector" class="invisible"
-              doc-length="{{docLength}}" page-no="{{pageNo}}">
+              doc-length="{{docLength}}" page-no="{{pageNo}}"
+              strings="{{strings}}">
           </viewer-page-selector>
         </div>
 
@@ -42,24 +43,27 @@
           </viewer-toolbar-dropdown>
 
           <paper-icon-button id="rotate-right" icon="image:rotate-right"
-              on-click="rotateRight"></paper-icon-button>
+              on-click="rotateRight" alt="{{strings.tooltipRotateCW}}">
+          </paper-icon-button>
           <paper-tooltip
               for="rotate-right">{{strings.tooltipRotateCW}}</paper-tooltip>
 
           <paper-icon-button id="rotate-left" icon="image:rotate-left"
-              on-click="rotateLeft"></paper-icon-button>
+              on-click="rotateLeft" alt="{{strings.tooltipRotateCCW}}">
+          </paper-icon-button>
           <paper-tooltip
               for="rotate-left">{{strings.tooltipRotateCCW}}</paper-tooltip>
 
           <paper-icon-button id="save" icon="save"
-              on-click="save"></paper-icon-button>
+              on-click="save" alt="{{strings.tooltipSave}}"></paper-icon-button>
           <paper-tooltip for="save">{{strings.tooltipSave}}</paper-tooltip>
 
           <!-- toolbar_manager_test crashes in blink code if the tooltip is
             last. TODO(tsergeant): Rearrange when this is fixed -->
           <paper-tooltip for="print">{{strings.tooltipPrint}}</paper-tooltip>
           <paper-icon-button id="print" icon="print"
-              on-click="print"></paper-icon-button>
+              on-click="print" alt="{{strings.tooltipPrint}}">
+          </paper-icon-button>
         </div>
       </div>
     </paper-toolbar>

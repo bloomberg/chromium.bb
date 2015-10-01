@@ -32,7 +32,23 @@
         type: Boolean,
         reflectToAttribute: true,
         value: false
+      },
+
+      keyEventTarget: {
+        type: Object,
+        value: function() {
+          return this.$.item;
+        }
       }
+    },
+
+    behaviors: [
+      Polymer.IronA11yKeysBehavior
+    ],
+
+    keyBindings: {
+      'enter': 'onEnter_',
+      'space': 'onSpace_'
     },
 
     bookmarkChanged_: function() {
@@ -49,6 +65,21 @@
     onClick: function() {
       if (this.bookmark.hasOwnProperty('page'))
         this.fire('change-page', {page: this.bookmark.page});
+    },
+
+    onEnter_: function(e) {
+      // Don't allow events which have propagated up from the expand button to
+      // trigger a click.
+      if (e.detail.keyboardEvent.target != this.$.expand)
+        this.onClick();
+    },
+
+    onSpace_: function(e) {
+      // paper-icon-button stops propagation of space events, so there's no need
+      // to check the event source here.
+      this.onClick();
+      // Prevent default space scroll behavior.
+      e.detail.keyboardEvent.preventDefault();
     },
 
     toggleChildren: function(e) {

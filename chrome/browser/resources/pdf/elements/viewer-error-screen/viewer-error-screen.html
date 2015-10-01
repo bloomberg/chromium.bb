@@ -11,7 +11,9 @@
       <div id="load-failed-message"
           class="last-item">{{strings.pageLoadFailed}}</div>
       <div class="buttons" hidden$="{{!reloadFn}}">
-        <paper-button on-click="reload">{{strings.pageReload}}</paper-button>
+        <paper-button on-click="reload" autofocus>
+          <span>{{strings.pageReload}}</span>
+        </paper-button>
       </div>
     </paper-dialog>
   </template>

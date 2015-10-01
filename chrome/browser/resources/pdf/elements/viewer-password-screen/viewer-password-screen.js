@@ -8,6 +8,8 @@ Polymer({
   properties: {
     strings: Object,
 
+    invalid: Boolean,
+
     active: {
       type: Boolean,
       value: false,
@@ -26,7 +28,7 @@ Polymer({
   deny: function() {
     this.$.password.disabled = false;
     this.$.submit.disabled = false;
-    this.$['password-container'].invalid = true;
+    this.invalid = true;
     this.$.password.focus();
     this.$.password.select();
   },

@@ -9,9 +9,11 @@
   <link rel="import" type="css" href="viewer-toolbar-dropdown.css">
   <template>
     <div on-click="toggleDropdown" id="icon">
-      <paper-icon-button icon="[[dropdownIcon]]"></paper-icon-button>
+      <paper-icon-button id="main-icon" icon="[[dropdownIcon]]"
+          alt="{{header}}">
+      </paper-icon-button>
       <iron-icon icon="arrow-drop-down" id="arrow"></iron-icon>
-      <paper-tooltip>{{header}}</paper-tooltip>
+      <paper-tooltip for="main-icon">{{header}}</paper-tooltip>
     </div>
 
     <div id="container">

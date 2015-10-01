@@ -581,8 +581,8 @@ PDFViewer.prototype = {
       if (this.materialToolbar_)
         this.materialToolbar_.strings = strings;
       this.zoomToolbar_.strings = strings;
+      document.documentElement.lang = strings['language'];
       document.dir = strings['textdirection'];
-      document.lang = strings['language'];
     } else {
       this.passwordScreen_.text = strings.passwordPrompt;
       this.progressBar_.text = strings.pageLoading;
