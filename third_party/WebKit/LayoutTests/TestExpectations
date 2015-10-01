@@ -40,7 +40,7 @@ crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-tbody-border
 
 crbug.com/536138 virtual/spv2/paint/invalidation/repaint-subsequence-on-ancestor-clip-change.html [ ImageOnlyFailure ]
 
-crbug.com/537172 [ SnowLeopard XP ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ ImageOnlyFailure ]
+crbug.com/537172 [ SnowLeopard XP Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ ImageOnlyFailure ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
@@ -1532,7 +1532,7 @@ crbug.com/521730 [ Win10 ] svg/batik/text/verticalText.svg [ ImageOnlyFailure Im
 crbug.com/521730 [ Win10 ] svg/carto.net/combobox.svg [ ImageOnlyFailure Timeout ImageOnlyFailure ImageOnlyFailure ]
 crbug.com/521730 [ Win10 ] svg/css/text-gradient-shadow.svg [ ImageOnlyFailure ImageOnlyFailure ImageOnlyFailure Timeout ]
 crbug.com/521730 [ Win10 ] compositing/plugins/invalidate_rect.html [ Crash ]
-crbug.com/521730 [ Win10 ] compositing/squashing/squashing-print.html [ Crash ]
+crbug.com/521730 [ Win10 ] compositing/squashing/squashing-print.html [ Crash ImageOnlyFailure ]
 crbug.com/521730 [ Win10 ] fast/replaced/no-focus-ring-embed.html [ Crash ]
 crbug.com/521730 [ Win10 ] fast/replaced/no-focus-ring-object.html [ Crash ]
 crbug.com/521730 [ Win10 ] fast/text-autosizing/print-autosizing.html [ Crash ]
