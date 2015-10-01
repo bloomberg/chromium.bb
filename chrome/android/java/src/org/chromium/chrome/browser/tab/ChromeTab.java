@@ -17,12 +17,10 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
-import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
-import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -32,7 +30,6 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -43,11 +40,6 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class ChromeTab extends Tab {
     public static final int NTP_TAB_ID = -2;
-
-    private static final String TAG = "cr.ChromeTab";
-
-    // URL didFailLoad error code. Should match the value in net_error_list.h.
-    public static final int BLOCKED_BY_ADMINISTRATOR = -22;
 
     /** The maximum amount of time to wait for a page to load before entering fullscreen.  -1 means
      *  wait until the page finishes loading. */
@@ -178,73 +170,6 @@ public class ChromeTab extends Tab {
         return (ChromeTab) tab;
     }
 
-    private WebContentsObserver createWebContentsObserver(WebContents webContents) {
-        return new WebContentsObserver(webContents) {
-            @Override
-            public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
-                PolicyAuditor auditor =
-                        ((ChromeApplication) getApplicationContext()).getPolicyAuditor();
-                auditor.notifyAuditEvent(
-                        getApplicationContext(), AuditEvent.OPEN_URL_SUCCESS, validatedUrl, "");
-            }
-
-            @Override
-            public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
-                    String description, String failingUrl, boolean wasIgnoredByHandler) {
-                PolicyAuditor auditor =
-                        ((ChromeApplication) getApplicationContext()).getPolicyAuditor();
-                auditor.notifyAuditEvent(getApplicationContext(), AuditEvent.OPEN_URL_FAILURE,
-                        failingUrl, description);
-                if (errorCode == BLOCKED_BY_ADMINISTRATOR) {
-                    auditor.notifyAuditEvent(
-                            getApplicationContext(), AuditEvent.OPEN_URL_BLOCKED, failingUrl, "");
-                }
-            }
-
-            @Override
-            public void didCommitProvisionalLoadForFrame(
-                    long frameId, boolean isMainFrame, String url, int transitionType) {
-                if (!isMainFrame) return;
-
-                mIsNativePageCommitPending = false;
-                boolean isReload = (transitionType == PageTransition.RELOAD);
-                if (!maybeShowNativePage(url, isReload)) {
-                    showRenderedPage();
-                }
-
-                mHandler.removeMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD);
-                mHandler.sendEmptyMessageDelayed(
-                        MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, MAX_FULLSCREEN_LOAD_DELAY_MS);
-                updateFullscreenEnabledState();
-
-                if (getInterceptNavigationDelegate() != null) {
-                    getInterceptNavigationDelegate().maybeUpdateNavigationHistory();
-                }
-            }
-
-            @Override
-            public void didAttachInterstitialPage() {
-                PolicyAuditor auditor =
-                        ((ChromeApplication) getApplicationContext()).getPolicyAuditor();
-                auditor.notifyCertificateFailure(getWebContents(), getApplicationContext());
-            }
-
-            @Override
-            public void didDetachInterstitialPage() {
-                if (!maybeShowNativePage(getUrl(), false)) {
-                    showRenderedPage();
-                }
-            }
-
-            @Override
-            public void destroy() {
-                MediaCaptureNotificationService.updateMediaNotificationForTab(
-                        getApplicationContext(), getId(), false, false, getUrl());
-                super.destroy();
-            }
-        };
-    }
-
     @Override
     protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
         mIsFullscreenWaitingForLoad = !DomDistillerUrlUtils.isDistilledPage(validatedUrl);
@@ -310,7 +235,7 @@ public class ChromeTab extends Tab {
         try {
             TraceEvent.begin("ChromeTab.setContentViewCore");
             super.setContentViewCore(cvc);
-            mWebContentsObserver = createWebContentsObserver(cvc.getWebContents());
+            mWebContentsObserver = new TabWebContentsObserver(cvc.getWebContents(), this);
 
             setInterceptNavigationDelegate(createInterceptNavigationDelegate());
 
@@ -482,7 +407,7 @@ public class ChromeTab extends Tab {
      * @param isReload Whether the current navigation is a reload.
      * @return True, if a native page was displayed for url.
      */
-    private boolean maybeShowNativePage(String url, boolean isReload) {
+    boolean maybeShowNativePage(String url, boolean isReload) {
         NativePage candidateForReuse = isReload ? null : getNativePage();
         NativePage nativePage = NativePageFactory.createNativePageForURL(url, candidateForReuse,
                 this, mActivity.getTabModelSelector(), mActivity);
@@ -493,6 +418,24 @@ public class ChromeTab extends Tab {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Update internal Tab state when provisional load gets committed.
+     * @param url The URL that was loaded.
+     * @param transitionType The transition type to the current URL.
+     */
+    void handleDidCommitProvisonalLoadForFrame(String url, int transitionType) {
+        mIsNativePageCommitPending = false;
+        boolean isReload = (transitionType == PageTransition.RELOAD);
+        if (!maybeShowNativePage(url, isReload)) {
+            showRenderedPage();
+        }
+
+        mHandler.removeMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD);
+        mHandler.sendEmptyMessageDelayed(
+                MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, MAX_FULLSCREEN_LOAD_DELAY_MS);
+        updateFullscreenEnabledState();
     }
 
     // TODO(dtrainor): Port more methods to the observer.
