@@ -21,7 +21,8 @@ struct MEDIA_EXPORT CdmKeyInformation {
     OUTPUT_RESTRICTED = 3,
     OUTPUT_DOWNSCALED = 4,
     KEY_STATUS_PENDING = 5,
-    KEY_STATUS_MAX = KEY_STATUS_PENDING
+    RELEASED = 6,
+    KEY_STATUS_MAX = RELEASED
   };
 
   CdmKeyInformation();

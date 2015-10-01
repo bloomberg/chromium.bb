@@ -75,6 +75,8 @@ static blink::WebEncryptedMediaKeyInformation::KeyStatus convertStatus(
           OutputDownscaled;
     case media::CdmKeyInformation::KEY_STATUS_PENDING:
       return blink::WebEncryptedMediaKeyInformation::KeyStatus::StatusPending;
+    case media::CdmKeyInformation::RELEASED:
+      return blink::WebEncryptedMediaKeyInformation::KeyStatus::Released;
   }
 
   NOTREACHED();

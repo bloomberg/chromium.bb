@@ -262,7 +262,7 @@ deps = {
    Var('chromium_git') + '/chromium/deps/opus.git' + '@' + 'cae696156f1e60006e39821e79a1811ae1933c69',
 
   'src/media/cdm/ppapi/api':
-   Var('chromium_git') + '/chromium/cdm.git' + '@' + '7377023e384f296cbb27644eb2c485275f1f92e8', # from svn revision 294518
+   Var('chromium_git') + '/chromium/cdm.git' + '@' + 'a4773c3cec827c3a880e8a2c22e43a287ced0d20',
 
   'src/third_party/mesa/src':
    Var('chromium_git') + '/chromium/deps/mesa.git' + '@' + 'a3dc7d623fbb83a6246adf3d363922ad3909c14c',
