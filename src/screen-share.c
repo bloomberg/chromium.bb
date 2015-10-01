@@ -438,13 +438,13 @@ shared_output_get_shm_buffer(struct shared_output *so)
 
 	fd = os_create_anonymous_file(height * stride);
 	if (fd < 0) {
-		weston_log("os_create_anonymous_file: %m");
+		weston_log("os_create_anonymous_file: %m\n");
 		return NULL;
 	}
 
 	data = mmap(NULL, height * stride, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	if (data == MAP_FAILED) {
-		weston_log("mmap: %m");
+		weston_log("mmap: %m\n");
 		goto out_close;
 	}
 
@@ -914,7 +914,7 @@ shared_output_create(struct weston_output *output, int parent_fd)
 	so->parent.surface =
 		wl_compositor_create_surface(so->parent.compositor);
 	if (!so->parent.surface) {
-		weston_log("Screen share failed: %m");
+		weston_log("Screen share failed: %m\n");
 		goto err_display;
 	}
 
@@ -924,7 +924,7 @@ shared_output_create(struct weston_output *output, int parent_fd)
 							      so->parent.output,
 							      output->current_mode->refresh);
 	if (!so->parent.mode_feedback) {
-		weston_log("Screen share failed: %m");
+		weston_log("Screen share failed: %m\n");
 		goto err_display;
 	}
 	_wl_fullscreen_shell_mode_feedback_add_listener(so->parent.mode_feedback,
@@ -938,7 +938,7 @@ shared_output_create(struct weston_output *output, int parent_fd)
 		wl_event_loop_add_fd(loop, epoll_fd, WL_EVENT_READABLE,
 				     shared_output_handle_event, so);
 	if (!so->event_source) {
-		weston_log("Screen share failed: %m");
+		weston_log("Screen share failed: %m\n");
 		goto err_display;
 	}
 
