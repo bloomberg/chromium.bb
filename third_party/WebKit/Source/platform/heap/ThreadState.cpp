@@ -683,7 +683,7 @@ void ThreadState::scheduleV8FollowupGCIfNeeded(V8GCType gcType)
         schedulePreciseGC();
         return;
     }
-    if (gcType == V8MinorGC) {
+    if (gcType == V8MajorGC) {
         scheduleIdleGC();
         return;
     }
