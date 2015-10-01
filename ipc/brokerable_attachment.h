@@ -58,6 +58,7 @@ class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
   enum BrokerableType {
     PLACEHOLDER,
     WIN_HANDLE,
+    MACH_PORT,
   };
 
   // The identifier is unique across all Chrome processes.
