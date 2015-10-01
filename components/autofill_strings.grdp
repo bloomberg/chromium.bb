@@ -103,12 +103,13 @@
     Country
   </message>
 
-  <message name="IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE" desc="The title for form elements when annotated with Autofill predictions.">
-    heuristic type: <ph name="HEURISTIC_TYPE">$1<ex>NAME_FIRST</ex></ph>
+  <message translateable="false" name="IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE" desc="The title for form elements when annotated with Autofill predictions.">
+    overall type: <ph name="OVERALL_TYPE">$1<ex>NAME_FIRST</ex></ph>
     server type: <ph name="SERVER_TYPE">$2<ex>NAME_FIRST</ex></ph>
-    field signature: <ph name="FIELD_SIGNATURE">$3<ex>12345678</ex></ph>
-    form signature: <ph name="FORM_SIGNATURE">$4<ex>1234567812345678</ex></ph>
-    experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
+    heuristic type: <ph name="HEURISTIC_TYPE">$3<ex>NAME_FIRST</ex></ph>
+    field signature: <ph name="FIELD_SIGNATURE">$4<ex>12345678</ex></ph>
+    form signature: <ph name="FORM_SIGNATURE">$5<ex>1234567812345678</ex></ph>
+    experiment id: "<ph name="EXPERIMENT_ID">$6<ex>ar1</ex></ph>"
   </message>
 
   <!-- Autofill dialog: legal documents -->
