@@ -88,6 +88,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       frame_timing_requests_dirty_(false),
       visited_(false),
       layer_or_descendant_is_drawn_(false),
+      layer_or_descendant_has_input_handler_(false),
       sorted_for_recursion_(false) {
   DCHECK_GT(layer_id_, 0);
   DCHECK(layer_tree_impl_);

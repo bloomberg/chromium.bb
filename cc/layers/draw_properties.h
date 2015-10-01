@@ -68,9 +68,6 @@ struct CC_EXPORT DrawProperties {
   // does not include our clip children because they are clipped by us.
   size_t num_unclipped_descendants;
 
-  // If true, the layer or one of its descendants has a wheel or touch handler.
-  bool layer_or_descendant_has_input_handler;
-
   // This is true if the layer has any direct child that has a scroll parent.
   // This layer will not be the scroll parent in this case. This information
   // lets us avoid work in CalculateDrawPropertiesInternal -- if none of our

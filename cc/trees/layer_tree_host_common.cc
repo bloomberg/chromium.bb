@@ -574,7 +574,7 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
 
   // We cannot skip the the subtree if a descendant has a wheel or touch handler
   // or the hit testing code will break (it requires fresh transforms, etc).
-  if (layer->draw_properties().layer_or_descendant_has_input_handler)
+  if (layer->layer_or_descendant_has_input_handler())
     return false;
 
   // If the layer is not drawn, then skip it and its subtree.
@@ -1266,8 +1266,8 @@ static void PreCalculateMetaInformationInternal(
 
   layer->draw_properties().num_unclipped_descendants =
       recursive_data->num_unclipped_descendants;
-  layer->draw_properties().layer_or_descendant_has_input_handler =
-      (recursive_data->num_layer_or_descendants_with_input_handler != 0);
+  layer->set_layer_or_descendant_has_input_handler(
+      (recursive_data->num_layer_or_descendants_with_input_handler != 0));
   // TODO(enne): this should be synced from the main thread, so is only
   // for tests constructing layers on the compositor thread.
   layer->set_num_layer_or_descendant_with_copy_request(

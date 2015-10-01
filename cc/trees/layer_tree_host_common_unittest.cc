@@ -7591,18 +7591,15 @@ TEST_F(LayerTreeHostCommonTest, InputHandlersRecursiveUpdateTest) {
   SetLayerPropertiesForTesting(child, identity, gfx::Point3F(), gfx::PointF(),
                                gfx::Size(100, 100), true, false, false);
 
-  EXPECT_EQ(root->draw_properties().layer_or_descendant_has_input_handler,
-            false);
+  EXPECT_EQ(root->layer_or_descendant_has_input_handler(), false);
 
   child->SetHaveWheelEventHandlers(true);
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(root->draw_properties().layer_or_descendant_has_input_handler,
-            true);
+  EXPECT_EQ(root->layer_or_descendant_has_input_handler(), true);
 
   child->SetHaveWheelEventHandlers(false);
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(root->draw_properties().layer_or_descendant_has_input_handler,
-            false);
+  EXPECT_EQ(root->layer_or_descendant_has_input_handler(), false);
 }
 
 TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {
@@ -7879,6 +7876,33 @@ TEST_F(LayerTreeHostCommonTest, UnclippedClipParent) {
   EXPECT_FALSE(clip_parent->is_clipped());
   EXPECT_TRUE(render_surface->is_clipped());
   EXPECT_FALSE(clip_child->is_clipped());
+}
+
+TEST_F(LayerTreeHostCommonTest, LayerWithInputHandlerAndZeroOpacity) {
+  LayerImpl* root = root_layer();
+  LayerImpl* render_surface = AddChild<LayerImpl>(root);
+  LayerImpl* test_layer = AddChild<LayerImpl>(render_surface);
+
+  const gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(render_surface, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(test_layer, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false,
+                               false);
+
+  render_surface->SetMasksToBounds(true);
+  test_layer->SetDrawsContent(true);
+  test_layer->SetOpacity(0);
+  test_layer->SetHaveWheelEventHandlers(true);
+
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(20, 20), test_layer->drawable_content_rect());
+  EXPECT_EQ(gfx::RectF(20, 20),
+            render_surface->render_surface()->DrawableContentRect());
 }
 
 TEST_F(LayerTreeHostCommonTest,

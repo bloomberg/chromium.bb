@@ -13,7 +13,6 @@ DrawProperties::DrawProperties()
       is_clipped(false),
       render_target(nullptr),
       num_unclipped_descendants(0),
-      layer_or_descendant_has_input_handler(false),
       has_child_with_a_scroll_parent(false),
       last_drawn_render_surface_layer_list_id(0),
       maximum_animation_contents_scale(0.f),
