@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
 declare_args() {
@@ -18,8 +19,9 @@ declare_args() {
 assert(symbol_level >= -1 && symbol_level <= 2, "Invalid symbol_level")
 if (symbol_level == -1) {
   # Linux is slowed by having symbols as part of the target binary, whereas
-  # Mac and Windows have them separate, so in Release Linux, default them off.
-  if (is_debug || !is_linux) {
+  # Mac and Windows have them separate, so in Release Linux, default them off,
+  # but keep them on for Official builds.
+  if (!is_linux || (is_debug || is_official_build)) {
     symbol_level = 2
   } else if (using_sanitizer) {
     # Sanitizers require symbols for filename suppressions to work.
