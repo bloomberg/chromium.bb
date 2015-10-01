@@ -523,8 +523,10 @@ void ShapeResult::fallbackFonts(HashSet<const SimpleFontData*>* fallback) const
     ASSERT(fallback);
     ASSERT(m_primaryFont);
     for (unsigned i = 0; i < m_runs.size(); ++i) {
-        if (m_runs[i] && m_runs[i]->m_fontData != m_primaryFont)
+        if (m_runs[i] && m_runs[i]->m_fontData != m_primaryFont
+            && !m_runs[i]->m_fontData->isTextOrientationFallbackOf(m_primaryFont.get())) {
             fallback->add(m_runs[i]->m_fontData.get());
+        }
     }
 }
 

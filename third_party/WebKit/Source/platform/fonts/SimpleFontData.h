@@ -81,6 +81,7 @@ public:
 
     bool hasVerticalGlyphs() const { return m_hasVerticalGlyphs; }
     bool isTextOrientationFallback() const { return m_isTextOrientationFallback; }
+    bool isTextOrientationFallbackOf(const SimpleFontData*) const;
 
     FontMetrics& fontMetrics() { return m_fontMetrics; }
     const FontMetrics& fontMetrics() const { return m_fontMetrics; }

@@ -57,10 +57,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-va
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-002.html [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-003.html [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-transitions-2/transitioncancel-001.html [ Failure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-002.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-003.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-008.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-009.xht [ ImageOnlyFailure ]
 crbug.com/418091 [ SnowLeopard Debug ] fast/text/aat-morx.html [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] svg/hixie/perf/005.xml [ ImageOnlyFailure ]
 crbug.com/463358 [ Mac Linux Debug ] svg/hixie/perf/006.xml [ ImageOnlyFailure ]
@@ -586,6 +582,10 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrin
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001x.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001.html [ Skip ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001e.html [ Failure ]
+
+# These tests pass but images do not match because of wrong half-leading in vertical-lr
+crbug.com/537080 imported/csswg-test/css-writing-modes-3/vertical-alignment-003.xht [ ImageOnlyFailure ]
+crbug.com/537080 imported/csswg-test/css-writing-modes-3/vertical-alignment-009.xht [ ImageOnlyFailure ]
 
 # These tests pass but images do not match because of position: absolute in vertical flow bug
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/block-flow-direction-009.xht [ ImageOnlyFailure ]

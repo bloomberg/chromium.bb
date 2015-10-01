@@ -365,6 +365,14 @@ PassRefPtr<SimpleFontData> SimpleFontData::emphasisMarkFontData(const FontDescri
     return m_derivedFontData->emphasisMark;
 }
 
+bool SimpleFontData::isTextOrientationFallbackOf(const SimpleFontData* fontData) const
+{
+    if (!isTextOrientationFallback() || !fontData->m_derivedFontData)
+        return false;
+    return fontData->m_derivedFontData->uprightOrientation == this
+        || fontData->m_derivedFontData->verticalRightOrientation == this;
+}
+
 PassOwnPtr<SimpleFontData::DerivedFontData> SimpleFontData::DerivedFontData::create(bool forCustomFont)
 {
     return adoptPtr(new DerivedFontData(forCustomFont));
