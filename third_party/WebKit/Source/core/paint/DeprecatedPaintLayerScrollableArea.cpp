@@ -680,7 +680,7 @@ void DeprecatedPaintLayerScrollableArea::updateScrollDimensions(DoubleSize& scro
             setHasHorizontalScrollbar(true);
         if (box().hasAutoVerticalScrollbar())
             setHasVerticalScrollbar(hasVerticalOverflow);
-        else if (box().style()->overflowX() == OSCROLL)
+        else if (box().style()->overflowY() == OSCROLL)
             setHasVerticalScrollbar(true);
     }
 }
