@@ -100,7 +100,7 @@ class BaselineOptimizer(object):
             baseline_name_without_virtual = baseline_name[len(virtual_suite.name) + 1:]
         else:
             baseline_name_without_virtual = baseline_name
-        return self._filesystem.join(self._scm.checkout_root, directory, baseline_name_without_virtual)
+        return self._filesystem.join(self._webkit_base, directory, baseline_name_without_virtual)
 
     def read_results_by_directory(self, baseline_name):
         results_by_directory = {}
@@ -211,7 +211,7 @@ class BaselineOptimizer(object):
         platform_dir = self.ROOT_LAYOUT_TESTS_DIRECTORY + self._filesystem.sep + 'platform' + self._filesystem.sep
         if filename.startswith(platform_dir):
             return filename.replace(platform_dir, '').split(self._filesystem.sep)[0]
-        platform_dir = self._filesystem.join(self._scm.checkout_root, platform_dir)
+        platform_dir = self._filesystem.join(self._webkit_base, platform_dir)
         if filename.startswith(platform_dir):
             return filename.replace(platform_dir, '').split(self._filesystem.sep)[0]
         return '(generic)'

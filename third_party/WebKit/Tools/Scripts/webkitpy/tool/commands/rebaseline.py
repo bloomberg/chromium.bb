@@ -953,7 +953,7 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
         try:
             old_branch_name_or_ref = _get_branch_name_or_ref(self._tool)
             self._run_logged_command(['git', 'pull'])
-            rebaseline_command = [self._tool.filesystem.join(self._tool.scm().checkout_root, 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline']
+            rebaseline_command = [self._tool.filesystem.join(self._tool.scm().checkout_root, 'third_party', 'WebKit', 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline']
             if self._verbose:
                 rebaseline_command.append('--verbose')
             self._run_logged_command(rebaseline_command)

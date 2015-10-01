@@ -34,7 +34,7 @@ class MockSCM(object):
     executable_name = "MockSCM"
 
     def __init__(self, filesystem=None, executive=None):
-        self.checkout_root = "/mock-checkout/third_party/WebKit"
+        self.checkout_root = "/mock-checkout"
         self.added_paths = set()
         self._filesystem = filesystem or MockFileSystem()
         self._executive = executive or MockExecutive()
