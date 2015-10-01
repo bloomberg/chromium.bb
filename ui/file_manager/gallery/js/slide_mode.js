@@ -187,6 +187,11 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
   this.active_ = false;
 
   /**
+   * @private {Gallery.SubMode}
+   */
+  this.subMode_ = Gallery.SubMode.BROWSE;
+
+  /**
    * @type {boolean}
    * @private
    */
@@ -440,16 +445,6 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @const
    */
   this.touchHandlers_ = new TouchHandler(this.imageContainer_, this);
-
-  /**
-   * @private {!ChromeVoxStateWatcher}
-   * @const
-   */
-  this.chromeVoxStateWatcher_ = new ChromeVoxStateWatcher();
-  this.chromeVoxStateWatcher_.addEventListener('chromevox-navigation-begin',
-      this.onChromeVoxNavigationBegin_.bind(this));
-  this.chromeVoxStateWatcher_.addEventListener('chromevox-navigation-end',
-      this.onChromeVoxNavigationEnd_.bind(this));
 }
 
 /**
@@ -517,23 +512,6 @@ SlideMode.getEditorWarningMessage = function(
  * SlideMode extends cr.EventTarget.
  */
 SlideMode.prototype.__proto__ = cr.EventTarget.prototype;
-
-/**
- * Handles chromevox-navigation-begin event. While user is navigating with
- * ChromeVox, we should not hide the tools.
- * @private
- */
-SlideMode.prototype.onChromeVoxNavigationBegin_ = function() {
-  this.dimmableUIController_.setDisabled(true);
-};
-
-/**
- * Handles chromevox-navigation-end event.
- * @private
- */
-SlideMode.prototype.onChromeVoxNavigationEnd_ = function() {
-  this.dimmableUIController_.setDisabled(false);
-};
 
 /**
  * Handles exit-clicked event.
@@ -1449,6 +1427,8 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
   this.dimmableUIController_.setCursorOutOfTools();
 
   this.resumeSlideshow_(opt_interval);
+
+  this.setSubMode_(Gallery.SubMode.SLIDESHOW);
 };
 
 /**
@@ -1480,6 +1460,8 @@ SlideMode.prototype.stopSlideshow_ = function(opt_event) {
 
   // Re-enable touch operation.
   this.touchHandlers_.enabled = true;
+
+  this.setSubMode_(Gallery.SubMode.BROWSE);
 };
 
 /**
@@ -1558,6 +1540,30 @@ SlideMode.prototype.stopEditing_ = function() {
 };
 
 /**
+ * Sets current sub mode.
+ * @param {Gallery.SubMode} subMode
+ * @private
+ */
+SlideMode.prototype.setSubMode_ = function(subMode) {
+  if (this.subMode_ === subMode)
+    return;
+
+  this.subMode_ = subMode;
+
+  var event = new Event('sub-mode-change');
+  event.subMode = this.subMode_;
+  this.dispatchEvent(event);
+};
+
+/**
+ * Returns current sub mode.
+ * @return {Gallery.SubMode}
+ */
+SlideMode.prototype.getSubMode = function() {
+  return this.subMode_;
+};
+
+/**
  * Activate/deactivate editor.
  * @param {Event=} opt_event Event.
  */
@@ -1586,7 +1592,6 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
     this.imageView_.applyViewportChange();
 
     this.touchHandlers_.enabled = false;
-    this.dimmableUIController_.setDisabled(true);
 
     // Show editor warning message.
     SlideMode.getEditorWarningMessage(
@@ -1608,6 +1613,8 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
       this.setOverwriteBubbleCount_(count + 1);
       this.bubble_.hidden = false;
     }.bind(this));
+
+    this.setSubMode_(Gallery.SubMode.EDIT);
   } else {
     this.editor_.getPrompt().hide();
     this.editor_.leaveMode(false /* not to switch mode */);
@@ -1619,7 +1626,8 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
     this.bubble_.hidden = true;
 
     this.touchHandlers_.enabled = true;
-    this.dimmableUIController_.setDisabled(false);
+
+    this.setSubMode_(Gallery.SubMode.BROWSE);
   }
 };
 

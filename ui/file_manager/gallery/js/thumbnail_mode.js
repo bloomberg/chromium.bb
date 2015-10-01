@@ -11,6 +11,7 @@
  * @param {function()} changeToSlideModeCallback A callback to be called to
  *     change to slide mode.
  * @constructor
+ * @extends {cr.EventTarget}
  * @struct
  */
 function ThumbnailMode(container, errorBanner, dataModel, selectionModel,
@@ -41,16 +42,29 @@ function ThumbnailMode(container, errorBanner, dataModel, selectionModel,
 }
 
 /**
- * Return name of this mode.
+ * Mode must extend cr.EventTarget.
+ */
+ThumbnailMode.prototype.__proto__ = cr.EventTarget.prototype;
+
+/**
+ * Returns name of this mode.
  * @return {string} Mode name.
  */
 ThumbnailMode.prototype.getName = function() { return 'thumbnail'; };
 
 /**
- * Return title of this mode.
+ * Returns title of this mode.
  * @return {string} Mode title.
  */
 ThumbnailMode.prototype.getTitle = function() { return 'GALLERY_THUMBNAIL'; };
+
+/**
+ * Returns current sub mode.
+ * @return {Gallery.SubMode}
+ */
+ThumbnailMode.prototype.getSubMode = function() {
+  return Gallery.SubMode.BROWSE;
+};
 
 /**
  * Executes an action. An action is executed immediately since this mode does

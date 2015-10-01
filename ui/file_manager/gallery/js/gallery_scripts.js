@@ -72,7 +72,6 @@
 //<include src="image_editor/image_encoder.js">
 //<include src="image_editor/exif_encoder.js">
 
-//<include src="chromevox_state_watcher.js">
 //<include src="dimmable_ui_controller.js">
 //<include src="entry_list_watcher.js">
 //<include src="error_banner.js">

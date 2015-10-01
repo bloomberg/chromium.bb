@@ -4,7 +4,7 @@
 
 /**
  * Dimmable UI Controller.
- * @param {!HTMLElement} container Container.
+ * @param {!HTMLElement} container
  * @constructor
  * @struct
  */
@@ -33,6 +33,16 @@ function DimmableUIController(container) {
   /**
    * @private {boolean}
    */
+  this.isInAvailableMode_ = false;
+
+  /**
+   * @private {boolean}
+   */
+  this.spokenFeedbackEnabled_ = false;
+
+  /**
+   * @private {boolean}
+   */
   this.disabled_ = false;
 
   /**
@@ -57,6 +67,11 @@ function DimmableUIController(container) {
   this.container_.addEventListener('touchend', this.onTouchend_.bind(this));
   this.container_.addEventListener('touchcancel',
       this.onTouchcancel_.bind(this));
+
+  chrome.accessibilityFeatures.spokenFeedback.onChange.addListener(
+      this.onGetOrChangedSpokenFeedbackConfiguration_.bind(this));
+  chrome.accessibilityFeatures.spokenFeedback.get({},
+      this.onGetOrChangedSpokenFeedbackConfiguration_.bind(this));
 }
 
 /**
@@ -70,6 +85,19 @@ DimmableUIController.DEFAULT_TIMEOUT = 3000; // ms
  * @const {number}
  */
 DimmableUIController.TAP_DURATION = 300; // ms
+
+/**
+ * Sets current mode of Gallery.
+ * @param {Gallery.Mode} mode
+ * @param {Gallery.SubMode} subMode
+ */
+DimmableUIController.prototype.setCurrentMode = function(mode, subMode) {
+  this.isInAvailableMode_ = mode === Gallery.Mode.SLIDE &&
+      (subMode === Gallery.SubMode.BROWSE ||
+       subMode === Gallery.SubMode.SLIDESHOW);
+
+  this.updateAvailability_();
+};
 
 /**
  * Handles click event.
@@ -180,6 +208,7 @@ DimmableUIController.prototype.onMouseout_ = function() {
  * Returns true if element is a part of tools.
  * @param {!HTMLElement} element A html element.
  * @return {boolean} True if element is a part of tools.
+ * @private
  */
 DimmableUIController.prototype.isPartOfTools_ = function(element) {
   for (var i = 0; i < this.tools_.length; i++) {
@@ -205,6 +234,7 @@ DimmableUIController.prototype.toggle_ = function() {
 /**
  * Returns true if UI is visible.
  * @return {boolean} True if UI is visible.
+ * @private
  */
 DimmableUIController.prototype.isToolsVisible_ = function() {
   return this.container_.hasAttribute('tools');
@@ -213,6 +243,7 @@ DimmableUIController.prototype.isToolsVisible_ = function() {
 /**
  * Shows UI.
  * @param {boolean} show True to show UI.
+ * @private
  */
 DimmableUIController.prototype.show_ = function(show) {
   if (show)
@@ -223,6 +254,7 @@ DimmableUIController.prototype.show_ = function(show) {
 
 /**
  * Clears current timeout.
+ * @private
  */
 DimmableUIController.prototype.clearTimeout_ = function() {
   if (!this.timeoutId_)
@@ -235,6 +267,7 @@ DimmableUIController.prototype.clearTimeout_ = function() {
 /**
  * Extends current timeout.
  * @param {number=} opt_timeout Timeout.
+ * @private
  */
 DimmableUIController.prototype.extendTimeout_ = function(opt_timeout) {
   this.clearTimeout_();
@@ -245,6 +278,7 @@ DimmableUIController.prototype.extendTimeout_ = function(opt_timeout) {
 
 /**
  * Handles timeout.
+ * @private
  */
 DimmableUIController.prototype.onTimeout_ = function() {
   // If mouse cursor is on tools, extend timeout.
@@ -254,6 +288,17 @@ DimmableUIController.prototype.onTimeout_ = function() {
   }
 
   this.show_(false /* hide */);
+};
+
+/**
+ * Updates availability of this controller with spoken feedback configuration.
+ * @param {Object} details
+ * @private
+ */
+DimmableUIController.prototype.onGetOrChangedSpokenFeedbackConfiguration_ =
+    function(details) {
+  this.spokenFeedbackEnabled_ = !!details.value;
+  this.updateAvailability_();
 };
 
 /**
@@ -285,13 +330,15 @@ DimmableUIController.prototype.kick = function(opt_timeout) {
 };
 
 /**
- * Disables this controller.
- * When disabled, the UI is fixed to visible.
- * When enabled, the UI becomes visible with timeout.
- *
- * @param {boolean} disabled True to disable.
+ * Updates availability.
+ * @private
  */
-DimmableUIController.prototype.setDisabled = function(disabled) {
+DimmableUIController.prototype.updateAvailability_ = function() {
+  var disabled = !this.isInAvailableMode_ || this.spokenFeedbackEnabled_;
+
+  if (this.disabled_ === disabled)
+    return;
+
   this.disabled_ = disabled;
 
   if (this.disabled_) {

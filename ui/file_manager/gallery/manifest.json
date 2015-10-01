@@ -17,6 +17,7 @@
     "256": "images/icon256.png"
   },
   "permissions": [
+    "accessibilityFeatures.read",
     "app.window.fullscreen.overrideEsc",
     "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj",
     "chrome://extension-icon/",

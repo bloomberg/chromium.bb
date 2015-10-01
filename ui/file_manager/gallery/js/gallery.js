@@ -157,9 +157,6 @@ function Gallery(volumeManager) {
                                   this.toggleMode_.bind(this),
                                   str,
                                   this.dimmableUIController_);
-  this.slideMode_.addEventListener('image-displayed', function() {
-    cr.dispatchSimpleEvent(this, 'image-displayed');
-  }.bind(this));
 
   /**
    * @private {!HTMLElement}
@@ -210,12 +207,13 @@ function Gallery(volumeManager) {
   // We must call this method after elements of all tools have been attached to
   // the DOM.
   this.dimmableUIController_.setTools(document.querySelectorAll('.tool'));
-}
 
-/**
- * Gallery extends cr.EventTarget.
- */
-Gallery.prototype.__proto__ = cr.EventTarget.prototype;
+  /**
+   * @private {function(!Event)}
+   * @const
+   */
+  this.onSubModeChangedBound_ = this.onSubModeChanged_.bind(this);
+}
 
 /**
  * Tools fade-out timeout in milliseconds.
@@ -246,6 +244,26 @@ Gallery.MOSAIC_BACKGROUND_INIT_DELAY = 1000;
  */
 Gallery.PREFETCH_PROPERTY_NAMES =
     ['imageWidth', 'imageHeight', 'imageRotation', 'size', 'present'];
+
+/**
+ * Modes in Gallery.
+ * @enum {string}
+ */
+Gallery.Mode = {
+  SLIDE: 'slide',
+  THUMBNAIL: 'thumbnail'
+};
+
+/**
+ * Sub modes in Gallery.
+ * @enum {string}
+ * TODO(yawano): Remove sub modes by extracting them as modes.
+ */
+Gallery.SubMode = {
+  BROWSE: 'browse',
+  EDIT: 'edit',
+  SLIDESHOW: 'slideshow'
+};
 
 /**
  * Closes gallery when a volume containing the selected item is unmounted.
@@ -382,7 +400,6 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
         // Do the initialization for each mode.
         if (shouldShowThumbnail) {
           self.thumbnailMode_.show();
-          cr.dispatchSimpleEvent(self, 'loaded');
         } else {
           self.slideMode_.enter(
               null,
@@ -390,9 +407,7 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
                 // Flash the toolbar briefly to show it is there.
                 self.dimmableUIController_.kick(Gallery.FIRST_FADE_TIMEOUT);
               },
-              function() {
-                cr.dispatchSimpleEvent(self, 'loaded');
-              });
+              function() {});
         }
         self.initialized_ = true;
       }
@@ -424,21 +439,61 @@ Gallery.prototype.onUserAction_ = function() {
 };
 
 /**
+ * Returns the current mode.
+ * @return {Gallery.Mode}
+ */
+Gallery.prototype.getCurrentMode = function() {
+  switch (/** @type {(SlideMode|ThumbnailMode)} */ (this.currentMode_)) {
+    case this.slideMode_:
+      return Gallery.Mode.SLIDE;
+    case this.thumbnailMode_:
+      return Gallery.Mode.THUMBNAIL;
+    default:
+      assertNotReached();
+  }
+};
+
+/**
+ * Returns sub mode of current mode. If current mode is not set yet, null is
+ * returned.
+ * @return {Gallery.SubMode}
+ */
+Gallery.prototype.getCurrentSubMode = function() {
+  assert(this.currentMode_);
+  return this.currentMode_.getSubMode();
+};
+
+/**
  * Sets the current mode, update the UI.
  * @param {!(SlideMode|ThumbnailMode)} mode Current mode.
  * @private
- *
- * TODO(yawano): Since this method is confusing with changeCurrentMode_. Rename
- *     or remove this method.
  */
 Gallery.prototype.setCurrentMode_ = function(mode) {
   if (mode !== this.slideMode_ && mode !== this.thumbnailMode_)
     console.error('Invalid Gallery mode');
 
+  if (this.currentMode_) {
+    this.currentMode_.removeEventListener(
+        'sub-mode-change', this.onSubModeChangedBound_);
+  }
   this.currentMode_ = mode;
+  this.currentMode_.addEventListener(
+      'sub-mode-change', this.onSubModeChangedBound_);
+
+  this.dimmableUIController_.setCurrentMode(
+      this.getCurrentMode(), this.getCurrentSubMode());
+
   this.container_.setAttribute('mode', this.currentMode_.getName());
-  this.dimmableUIController_.setDisabled(this.currentMode_ !== this.slideMode_);
   this.updateSelectionAndState_();
+};
+
+/**
+ * Handles sub-mode-change event.
+ * @private
+ */
+Gallery.prototype.onSubModeChanged_ = function() {
+  this.dimmableUIController_.setCurrentMode(
+      this.getCurrentMode(), this.getCurrentSubMode());
 };
 
 /**
@@ -466,6 +521,7 @@ Gallery.prototype.onChangeToSlideMode_ = function() {
  * Change current mode.
  * @param {!(SlideMode|ThumbnailMode)} mode Target mode.
  * @param {Event=} opt_event Event that caused this call.
+ * @return {!Promise} Resolved when mode has been changed.
  * @private
  */
 Gallery.prototype.changeCurrentMode_ = function(mode, opt_event) {
