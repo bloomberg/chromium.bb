@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/toolbar/wrench_menu_observer.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "components/ui/zoom/zoom_event_manager.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -670,13 +671,17 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
       WebContents* selected_tab =
           menu()->browser_->tab_strip_model()->GetActiveWebContents();
       if (selected_tab) {
-        int min_percent = selected_tab->GetMinimumZoomPercent();
-        int max_percent = selected_tab->GetMaximumZoomPercent();
-
-        int step = (max_percent - min_percent) / 10;
-        for (int i = min_percent; i <= max_percent; i += step) {
+        auto zoom_controller =
+            ui_zoom::ZoomController::FromWebContents(selected_tab);
+        DCHECK(zoom_controller);
+        // Enumerate all zoom factors that can be used in PageZoom::Zoom.
+        std::vector<double> zoom_factors = ui_zoom::PageZoom::PresetZoomFactors(
+            zoom_controller->GetZoomPercent());
+        for (auto zoom : zoom_factors) {
           int w = gfx::GetStringWidth(
-              l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, i), font_list);
+              l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT,
+                                            static_cast<int>(zoom * 100 + 0.5)),
+              font_list);
           max_w = std::max(w, max_w);
         }
       } else {
