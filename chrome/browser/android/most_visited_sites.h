@@ -38,7 +38,6 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
  public:
   explicit MostVisitedSites(Profile* profile);
   void Destroy(JNIEnv* env, jobject obj);
-  void OnLoadingComplete(JNIEnv* env, jobject obj);
   void SetMostVisitedURLsObserver(JNIEnv* env,
                                   jobject obj,
                                   jobject j_observer,
@@ -49,7 +48,14 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
                        jobject j_callback);
 
   void BlacklistUrl(JNIEnv* env, jobject obj, jstring j_url);
-  void RecordOpenedMostVisitedItem(JNIEnv* env, jobject obj, jint index);
+  void RecordTileTypeMetrics(JNIEnv* env,
+                             jobject obj,
+                             jintArray jtile_types,
+                             jboolean is_icon_mode);
+  void RecordOpenedMostVisitedItem(JNIEnv* env,
+                                   jobject obj,
+                                   jint index,
+                                   jint tile_type);
 
   // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
@@ -194,16 +200,6 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   // Whether we have recorded one-shot UMA metrics such as impressions. They are
   // recorded once both the previous flags are true.
   bool recorded_uma_;
-
-  // Counters for UMA metrics.
-
-  // Number of tiles using a local thumbnail image for this NTP session.
-  int num_local_thumbs_;
-  // Number of tiles for which a server thumbnail is provided.
-  int num_server_thumbs_;
-  // Number of tiles for which no thumbnail is found/specified.
-  // In this case a gray tile is used as the main tile.
-  int num_empty_thumbs_;
 
   ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
 

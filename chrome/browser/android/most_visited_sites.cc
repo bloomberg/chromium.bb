@@ -56,18 +56,6 @@ using suggestions::SyncState;
 
 namespace {
 
-// Total number of tiles displayed.
-const char kNumTilesHistogramName[] = "NewTabPage.NumberOfTiles";
-// Tracking thumbnails.
-const char kNumLocalThumbnailTilesHistogramName[] =
-    "NewTabPage.NumberOfThumbnailTiles";
-const char kNumEmptyTilesHistogramName[] = "NewTabPage.NumberOfGrayTiles";
-const char kNumServerTilesHistogramName[] = "NewTabPage.NumberOfExternalTiles";
-
-// Format for tile clicks histogram.
-const char kOpenedItemHistogramFormat[] = "NewTabPage.MostVisited.%s";
-// Format for tile impressions histogram.
-const char kImpressionHistogramFormat[] = "NewTabPage.SuggestionsImpression.%s";
 // Identifiers for the various tile sources.
 const char kHistogramClientName[] = "client";
 const char kHistogramServerName[] = "server";
@@ -75,6 +63,31 @@ const char kHistogramServerFormat[] = "server%d";
 const char kHistogramPopularName[] = "popular";
 
 const char kPopularSitesFieldTrialName[] = "NTPPopularSites";
+
+// The visual type of a most visited tile.
+//
+// These values must stay in sync with the MostVisitedTileType enum
+// in histograms.xml.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp
+enum MostVisitedTileType {
+    // The icon or thumbnail hasn't loaded yet.
+    NONE,
+    // The item displays a site's actual favicon or touch icon.
+    ICON_REAL,
+    // The item displays a color derived from the site's favicon or touch icon.
+    ICON_COLOR,
+    // The item displays a default gray box in place of an icon.
+    ICON_DEFAULT,
+    // The item displays a locally-captured thumbnail of the site content.
+    THUMBNAIL_LOCAL,
+    // The item displays a server-provided thumbnail of the site content.
+    THUMBNAIL_SERVER,
+    // The item displays a default graphic in place of a thumbnail.
+    THUMBNAIL_DEFAULT,
+    NUM_TILE_TYPES,
+};
 
 scoped_ptr<SkBitmap> MaybeFetchLocalThumbnail(
     const GURL& url,
@@ -206,7 +219,6 @@ std::string MostVisitedSites::Suggestion::GetSourceHistogramName() const {
 MostVisitedSites::MostVisitedSites(Profile* profile)
     : profile_(profile), num_sites_(0), received_most_visited_sites_(false),
       received_popular_sites_(false), recorded_uma_(false),
-      num_local_thumbs_(0), num_server_thumbs_(0), num_empty_thumbs_(0),
       scoped_observer_(this), weak_ptr_factory_(this) {
   // Register the debugging page for the Suggestions Service and the thumbnails
   // debugging page.
@@ -232,10 +244,6 @@ MostVisitedSites::~MostVisitedSites() {
 
 void MostVisitedSites::Destroy(JNIEnv* env, jobject obj) {
   delete this;
-}
-
-void MostVisitedSites::OnLoadingComplete(JNIEnv* env, jobject obj) {
-  RecordThumbnailUMAMetrics();
 }
 
 void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
@@ -343,18 +351,10 @@ void MostVisitedSites::OnObtainedThumbnail(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_bitmap;
-  if (bitmap) {
+  if (bitmap)
     j_bitmap = gfx::ConvertToJavaBitmap(bitmap);
-    if (is_local_thumbnail) {
-      ++num_local_thumbs_;
-    } else {
-      ++num_server_thumbs_;
-    }
-  } else {
-    ++num_empty_thumbs_;
-  }
   Java_ThumbnailCallback_onMostVisitedURLsThumbnailAvailable(
-      env, j_callback->obj(), j_bitmap.obj());
+      env, j_callback->obj(), j_bitmap.obj(), is_local_thumbnail);
 }
 
 void MostVisitedSites::BlacklistUrl(JNIEnv* env,
@@ -379,15 +379,56 @@ void MostVisitedSites::BlacklistUrl(JNIEnv* env,
   }
 }
 
+void MostVisitedSites::RecordTileTypeMetrics(JNIEnv* env,
+                                             jobject obj,
+                                             jintArray jtile_types,
+                                             jboolean is_icon_mode) {
+  std::vector<int> tile_types;
+  base::android::JavaIntArrayToIntVector(env, jtile_types, &tile_types);
+  DCHECK_EQ(current_suggestions_.size(), tile_types.size());
+
+  int counts_per_type[NUM_TILE_TYPES] = {0};
+  for (size_t i = 0; i < tile_types.size(); ++i) {
+    int tile_type = tile_types[i];
+    ++counts_per_type[tile_type];
+    std::string histogram = base::StringPrintf(
+        "NewTabPage.TileType.%s",
+        current_suggestions_[i]->GetSourceHistogramName().c_str());
+    LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
+  }
+
+  if (is_icon_mode) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsReal",
+                                counts_per_type[ICON_REAL]);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsColor",
+                                counts_per_type[ICON_COLOR]);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsGray",
+                                counts_per_type[ICON_DEFAULT]);
+  } else {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfThumbnailTiles",
+                                counts_per_type[THUMBNAIL_LOCAL]);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfExternalTiles",
+                                counts_per_type[THUMBNAIL_SERVER]);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfGrayTiles",
+                                counts_per_type[THUMBNAIL_DEFAULT]);
+  }
+}
+
 void MostVisitedSites::RecordOpenedMostVisitedItem(JNIEnv* env,
                                                    jobject obj,
-                                                   jint index) {
+                                                   jint index,
+                                                   jint tile_type) {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, static_cast<int>(current_suggestions_.size()));
   std::string histogram = base::StringPrintf(
-      kOpenedItemHistogramFormat,
+      "NewTabPage.MostVisited.%s",
       current_suggestions_[index]->GetSourceHistogramName().c_str());
   LogHistogramEvent(histogram, index, num_sites_);
+
+  histogram = base::StringPrintf(
+      "NewTabPage.TileTypeClicked.%s",
+      current_suggestions_[index]->GetSourceHistogramName().c_str());
+  LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
 }
 
 void MostVisitedSites::OnStateChanged() {
@@ -667,7 +708,7 @@ void MostVisitedSites::NotifyMostVisitedURLsObserver() {
   if (received_most_visited_sites_ && received_popular_sites_ &&
       !recorded_uma_) {
     RecordImpressionUMAMetrics();
-    UMA_HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, num_suggestions);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles", num_suggestions);
     recorded_uma_ = true;
   }
   std::vector<base::string16> titles;
@@ -710,20 +751,10 @@ void MostVisitedSites::OnPopularSitesAvailable(bool success) {
   QueryMostVisitedURLs();
 }
 
-void MostVisitedSites::RecordThumbnailUMAMetrics() {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kNumLocalThumbnailTilesHistogramName,
-                              num_local_thumbs_);
-  num_local_thumbs_ = 0;
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kNumEmptyTilesHistogramName, num_empty_thumbs_);
-  num_empty_thumbs_ = 0;
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kNumServerTilesHistogramName, num_server_thumbs_);
-  num_server_thumbs_ = 0;
-}
-
 void MostVisitedSites::RecordImpressionUMAMetrics() {
   for (size_t i = 0; i < current_suggestions_.size(); i++) {
     std::string histogram = base::StringPrintf(
-        kImpressionHistogramFormat,
+        "NewTabPage.SuggestionsImpression.%s",
         current_suggestions_[i]->GetSourceHistogramName().c_str());
     LogHistogramEvent(histogram, static_cast<int>(i), num_sites_);
   }
@@ -736,7 +767,7 @@ void MostVisitedSites::TopSitesChanged(history::TopSites* top_sites,
                                        ChangeReason change_reason) {
   if (mv_source_ == TOP_SITES) {
     // The displayed suggestions are invalidated.
-    QueryMostVisitedURLs();
+    InitiateTopSitesQuery();
   }
 }
 

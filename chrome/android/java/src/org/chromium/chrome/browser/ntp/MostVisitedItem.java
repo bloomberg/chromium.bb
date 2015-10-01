@@ -20,12 +20,6 @@ import android.view.View.OnCreateContextMenuListener;
 public class MostVisitedItem implements OnCreateContextMenuListener,
         MenuItem.OnMenuItemClickListener, OnClickListener {
 
-    private MostVisitedItemManager mManager;
-    private String mTitle;
-    private String mUrl;
-    private int mIndex;
-    private View mView;
-
     /**
      * Interface for an object that handles callbacks from a MostVisitedItem.
      */
@@ -52,6 +46,13 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
         boolean onMenuItemClick(int menuId, MostVisitedItem item);
     }
 
+    private MostVisitedItemManager mManager;
+    private String mTitle;
+    private String mUrl;
+    private int mIndex;
+    private int mTileType;
+    private View mView;
+
     /**
      * Constructs a MostVisitedItem with the given manager, title, URL, index, and view.
      *
@@ -59,15 +60,21 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
      * @param title The title of the page.
      * @param url The URL of the page.
      * @param index The index of this item in the list of most visited items.
-     * @param view The View that will display the item. The MostVisitedItem will handle clicks
-     *             on this view.
      */
-    public MostVisitedItem(MostVisitedItemManager manager, String title, String url, int index,
-            View view) {
+    public MostVisitedItem(MostVisitedItemManager manager, String title, String url, int index) {
         mManager = manager;
         mTitle = title;
         mUrl = url;
         mIndex = index;
+        mTileType = MostVisitedTileType.NONE;
+    }
+
+    /**
+     * Sets the view that will display this item. MostVisitedItem will handle clicks on the view.
+     * This should be called exactly once.
+     */
+    public void initView(View view) {
+        assert mView == null;
         mView = view;
         mView.setOnClickListener(this);
         mView.setOnCreateContextMenuListener(this);
@@ -106,6 +113,22 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
      */
     public void setIndex(int index) {
         mIndex = index;
+    }
+
+    /**
+     * @return The visual type of this most visited item. Valid values are listed in
+     *         {@link MostVisitedTileType}.
+     */
+    public int getTileType() {
+        return mTileType;
+    }
+
+    /**
+     * Sets the visual type of this most visited item. Valid values are listed in
+     * {@link MostVisitedTileType}.
+     */
+    public void setTileType(int type) {
+        mTileType = type;
     }
 
     @Override

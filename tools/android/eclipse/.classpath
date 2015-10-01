@@ -120,6 +120,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/media_android_captureapitype"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/media_android_imageformat"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/model_type_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/most_visited_tile_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/navigation_controller_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/net_request_priority_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/network_change_notifier_types_java"/>

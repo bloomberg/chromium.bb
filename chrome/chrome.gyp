@@ -574,6 +574,7 @@
             'profile_account_management_metrics_java',
             'content_setting_java',
             'content_settings_type_java',
+            'most_visited_tile_type_java',
             'page_info_connection_type_java',
             'resource_id_java',
             'tab_load_status_java',

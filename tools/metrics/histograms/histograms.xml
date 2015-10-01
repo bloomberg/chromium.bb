@@ -28500,6 +28500,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.TileType" enum="MostVisitedTileType">
+  <owner>newt@chromium.org</owner>
+  <summary>
+    The visual type of each most visited tile displayed on the new tab page,
+    e.g. actual thumbnail or placeholder thumbnail. This is recorded for each
+    most visited item when the NTP is opened.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.TileTypeClicked" enum="MostVisitedTileType">
+  <owner>newt@chromium.org</owner>
+  <summary>
+    The visual type of the most visited item that the user clicked on, e.g.
+    actual thumbnail or placeholder thumbnail.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.URLState" enum="NewTabURLState">
   <owner>beaudoin@chromium.org</owner>
   <summary>
@@ -64958,6 +64975,29 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="ntdll.dll"/>
 </enum>
 
+<enum name="MostVisitedTileType" type="int">
+  <summary>The visual type of a most visited tile on the new tab page.</summary>
+  <int value="0" label="None">The icon or thumbnail hasn't loaded yet.</int>
+  <int value="1" label="IconReal">
+    The item displays a site's actual favicon or touch icon.
+  </int>
+  <int value="2" label="IconColor">
+    The item displays a color derived from the site's favicon or touch icon.
+  </int>
+  <int value="3" label="IconDefault">
+    The item displays a default gray box in place of an icon.
+  </int>
+  <int value="4" label="ThumbnailLocal">
+    The item displays a locally-captured thumbnail of the site content.
+  </int>
+  <int value="5" label="ThumbnailServer">
+    The item displays a server-provided thumbnail of the site content.
+  </int>
+  <int value="6" label="ThumbnailDefault">
+    The item displays a default graphic in place of a thumbnail.
+  </int>
+</enum>
+
 <enum name="MouseEventFollowedByClick" type="int">
   <int value="0" label="Missed event before click"/>
   <int value="1" label="Caught event before click"/>
@@ -77217,6 +77257,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="server11" label="Suggestions coming from server source 11."/>
   <affected-histogram name="NewTabPage.MostVisited"/>
   <affected-histogram name="NewTabPage.SuggestionsImpression"/>
+  <affected-histogram name="NewTabPage.TileType"/>
+  <affected-histogram name="NewTabPage.TileTypeClicked"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NewTabPageTimings" separator=".">

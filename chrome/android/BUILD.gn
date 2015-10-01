@@ -186,6 +186,7 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
   sources = [
     "//chrome/browser/android/activity_type_ids.h",
     "//chrome/browser/android/feedback/connectivity_checker.cc",
+    "//chrome/browser/android/most_visited_sites.cc",
     "//chrome/browser/android/shortcut_info.h",
     "//chrome/browser/android/tab_android.h",
     "//chrome/browser/profiles/profile_metrics.h",
@@ -195,6 +196,7 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
   outputs = [
     "org/chromium/chrome/browser/ActivityTypeIds.java",
     "org/chromium/chrome/browser/feedback/ConnectivityCheckResult.java",
+    "org/chromium/chrome/browser/ntp/MostVisitedTileType.java",
     "org/chromium/chrome/browser/ShortcutSource.java",
     "org/chromium/chrome/browser/TabLoadStatus.java",
     "org/chromium/chrome/browser/profiles/ProfileAccountManagementMetrics.java",

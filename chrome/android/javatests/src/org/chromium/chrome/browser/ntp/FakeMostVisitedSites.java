@@ -49,7 +49,7 @@ public class FakeMostVisitedSites extends MostVisitedSites {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                callback.onMostVisitedURLsThumbnailAvailable(null);
+                callback.onMostVisitedURLsThumbnailAvailable(null, true);
             }
         });
     }
@@ -67,7 +67,12 @@ public class FakeMostVisitedSites extends MostVisitedSites {
     }
 
     @Override
-    public void recordOpenedMostVisitedItem(int index) {
+    public void recordTileTypeMetrics(int[] tileTypes, boolean isIconMode) {
+        // Metrics are stubbed out.
+    }
+
+    @Override
+    public void recordOpenedMostVisitedItem(int index, int tileType) {
         //  Metrics are stubbed out.
     }
 }

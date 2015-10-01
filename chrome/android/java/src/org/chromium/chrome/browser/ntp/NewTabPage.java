@@ -17,10 +17,13 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.CommandLine;
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
@@ -63,7 +66,10 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 public class NewTabPage
         implements NativePage, InvalidationAwareThumbnailProvider, TemplateUrlServiceObserver {
 
-    // The number of times that an opt-out promo will be shown.
+    private static final String ICON_NTP_FIELD_TRIAL_NAME = "IconNTP";
+    private static final String ICON_NTP_ENABLED_PREFIX = "Enabled";
+
+    // The number of times that the document-mode opt-out promo will be shown.
     private static final int MAX_OPT_OUT_PROMO_COUNT = 10;
 
     // MostVisitedItem Context menu item IDs.
@@ -87,6 +93,7 @@ public class NewTabPage
     private LargeIconBridge mLargeIconBridge;
     private LogoBridge mLogoBridge;
     private boolean mSearchProviderHasLogo;
+    private boolean mIsIconMode;
     private final boolean mOptOutPromoShown;
     private String mOnLogoClickUrl;
     private String mAnimatedLogoUrl;
@@ -199,7 +206,7 @@ public class NewTabPage
                     NewTabPageView.MAX_MOST_VISITED_SITES);
             RecordHistogram.recordMediumTimesHistogram("NewTabPage.MostVisitedTime",
                     System.nanoTime() - mConstructedTimeNs, TimeUnit.NANOSECONDS);
-            mMostVisitedSites.recordOpenedMostVisitedItem(item.getIndex());
+            mMostVisitedSites.recordOpenedMostVisitedItem(item.getIndex(), item.getTileType());
         }
 
         private void recordDocumentOptOutPromoClick(int which) {
@@ -385,14 +392,19 @@ public class NewTabPage
         }
 
         @Override
-        public void onLoadingComplete() {
+        public void onLoadingComplete(MostVisitedItem[] items) {
             long loadTimeMs = (System.nanoTime() - mConstructedTimeNs) / 1000000;
             RecordHistogram.recordTimesHistogram(
                     "Tab.NewTabOnload", loadTimeMs, TimeUnit.MILLISECONDS);
             mIsLoaded = true;
 
             if (mIsDestroyed) return;
-            mMostVisitedSites.onLoadingComplete();
+
+            int tileTypes[] = new int[items.length];
+            for (int i = 0; i < items.length; i++) {
+                tileTypes[i] = items[i].getTileType();
+            }
+            mMostVisitedSites.recordTileTypeMetrics(tileTypes, mIsIconMode);
         }
     };
 
@@ -425,8 +437,9 @@ public class NewTabPage
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page, null);
+        mIsIconMode = isIconNtpEnabled();
         mNewTabPageView.initialize(mNewTabPageManager, isInSingleUrlBarMode(activity),
-                mSearchProviderHasLogo);
+                mSearchProviderHasLogo, mIsIconMode);
     }
 
     private static MostVisitedSites buildMostVisitedSites(Profile profile) {
@@ -435,6 +448,15 @@ public class NewTabPage
         } else {
             return new MostVisitedSites(profile);
         }
+    }
+
+    private boolean isIconNtpEnabled() {
+        // Query the field trial state first, to ensure that UMA reports the correct group.
+        String fieldTrialGroup = FieldTrialList.findFullName(ICON_NTP_FIELD_TRIAL_NAME);
+        CommandLine commandLine = CommandLine.getInstance();
+        if (commandLine.hasSwitch(ChromeSwitches.DISABLE_ICON_NTP)) return false;
+        if (commandLine.hasSwitch(ChromeSwitches.ENABLE_ICON_NTP)) return true;
+        return fieldTrialGroup.startsWith(ICON_NTP_ENABLED_PREFIX);
     }
 
     /** @return The view container for the new tab page. */
