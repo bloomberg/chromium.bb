@@ -40,6 +40,7 @@ ReadableStream::ReadableStream(UnderlyingSource* source)
     , m_isStarted(false)
     , m_isDraining(false)
     , m_isPulling(false)
+    , m_isDisturbed(false)
     , m_state(Readable)
 {
 }
@@ -99,6 +100,7 @@ ScriptPromise ReadableStream::cancel(ScriptState* scriptState, ScriptValue reaso
 {
     if (m_reader)
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "this stream is locked to a ReadableStreamReader"));
+    setIsDisturbed();
     if (m_state == Closed)
         return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
     if (m_state == Errored)

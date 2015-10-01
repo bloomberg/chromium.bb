@@ -175,6 +175,7 @@ TEST_F(ReadableStreamTest, Start)
     EXPECT_FALSE(stream->isStarted());
     EXPECT_FALSE(stream->isDraining());
     EXPECT_FALSE(stream->isPulling());
+    EXPECT_FALSE(stream->isDisturbed());
     EXPECT_EQ(stream->stateInternal(), ReadableStream::Readable);
 
     checkpoint.Call(0);
@@ -273,7 +274,9 @@ TEST_F(ReadableStreamTest, ReadQueue)
     EXPECT_FALSE(stream->isPulling());
 
     checkpoint.Call(0);
+    EXPECT_FALSE(stream->isDisturbed());
     stream->readInternal(queue);
+    EXPECT_TRUE(stream->isDisturbed());
     checkpoint.Call(1);
     ASSERT_EQ(2u, queue.size());
 
@@ -324,7 +327,9 @@ TEST_F(ReadableStreamTest, CancelWhenClosed)
     stream->close();
     EXPECT_EQ(ReadableStream::Closed, stream->stateInternal());
 
+    EXPECT_FALSE(stream->isDisturbed());
     ScriptPromise promise = stream->cancel(scriptState(), ScriptValue());
+    EXPECT_TRUE(stream->isDisturbed());
     EXPECT_EQ(ReadableStream::Closed, stream->stateInternal());
 
     promise.then(createCaptor(&onFulfilled), createCaptor(&onRejected));
@@ -345,7 +350,9 @@ TEST_F(ReadableStreamTest, CancelWhenErrored)
     stream->error(DOMException::create(NotFoundError, "error"));
     EXPECT_EQ(ReadableStream::Errored, stream->stateInternal());
 
+    EXPECT_FALSE(stream->isDisturbed());
     ScriptPromise promise = stream->cancel(scriptState(), ScriptValue());
+    EXPECT_TRUE(stream->isDisturbed());
     EXPECT_EQ(ReadableStream::Errored, stream->stateInternal());
 
     promise.then(createCaptor(&onFulfilled), createCaptor(&onRejected));
@@ -375,7 +382,9 @@ TEST_F(ReadableStreamTest, CancelWhenReadable)
     stream->enqueue("hello");
     EXPECT_EQ(ReadableStream::Readable, stream->stateInternal());
 
+    EXPECT_FALSE(stream->isDisturbed());
     ScriptPromise cancelResult = stream->cancel(scriptState(), reason);
+    EXPECT_TRUE(stream->isDisturbed());
     cancelResult.then(createCaptor(&onCancelFulfilled), createCaptor(&onCancelRejected));
 
     EXPECT_NE(promise, cancelResult);
@@ -401,7 +410,9 @@ TEST_F(ReadableStreamTest, CancelWhenLocked)
     EXPECT_FALSE(exceptionState.hadException());
     EXPECT_EQ(ReadableStream::Readable, stream->stateInternal());
 
+    EXPECT_FALSE(stream->isDisturbed());
     stream->cancel(scriptState(), ScriptValue(scriptState(), v8::Undefined(isolate()))).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
+    EXPECT_FALSE(stream->isDisturbed());
 
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());

@@ -69,6 +69,9 @@ public:
     bool isLocked() const { return m_reader; }
     bool isLockedTo(const ReadableStreamReader* reader) const { return m_reader == reader; }
 
+    bool isDisturbed() const { return m_isDisturbed; }
+    void setIsDisturbed() { m_isDisturbed = true; }
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -92,6 +95,7 @@ private:
     bool m_isStarted;
     bool m_isDraining;
     bool m_isPulling;
+    bool m_isDisturbed;
     State m_state;
 
     Member<DOMException> m_exception;
