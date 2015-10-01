@@ -76,7 +76,7 @@ public:
         InCompositingForSlimmingPaintV2,
         CompositingForSlimmingPaintV2Clean,
 
-        // Once the document starts shuting down, we cannot return
+        // Once the document starts shutting down, we cannot return
         // to the style/layout/compositing states.
         Stopping,
         Stopped,

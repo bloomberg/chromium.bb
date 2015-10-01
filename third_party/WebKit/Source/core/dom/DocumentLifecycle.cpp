@@ -165,7 +165,7 @@ bool DocumentLifecycle::canAdvanceTo(State nextState) const
             return true;
         if (nextState == InPerformLayout)
             return true;
-        // We can redundant arrive in the layout clean state. This situation
+        // We can redundantly arrive in the layout clean state. This situation
         // can happen when we call layout recursively and we unwind the stack.
         if (nextState == LayoutClean)
             return true;
