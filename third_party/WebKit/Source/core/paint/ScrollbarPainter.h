@@ -21,13 +21,13 @@ class ScrollbarPainter {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ScrollbarPainter);
 public:
-    explicit ScrollbarPainter(const LayoutScrollbar& layoutScrollbar) : m_layoutScrollbar(layoutScrollbar) { }
+    explicit ScrollbarPainter(const LayoutScrollbar& layoutScrollbar) : m_layoutScrollbar(&layoutScrollbar) { }
 
     void paintPart(GraphicsContext*, ScrollbarPart, const IntRect&);
     static void paintIntoRect(const LayoutScrollbarPart&, GraphicsContext*, const LayoutPoint& paintOffset, const LayoutRect&);
 
 private:
-    const LayoutScrollbar& m_layoutScrollbar;
+    RawPtrWillBeMember<const LayoutScrollbar> m_layoutScrollbar;
 };
 
 } // namespace blink

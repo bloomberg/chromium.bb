@@ -15,10 +15,10 @@ namespace blink {
 
 void ScrollbarPainter::paintPart(GraphicsContext* graphicsContext, ScrollbarPart partType, const IntRect& rect)
 {
-    const LayoutScrollbarPart* partLayoutObject = m_layoutScrollbar.getPart(partType);
+    const LayoutScrollbarPart* partLayoutObject = m_layoutScrollbar->getPart(partType);
     if (!partLayoutObject)
         return;
-    paintIntoRect(*partLayoutObject, graphicsContext, m_layoutScrollbar.location(), LayoutRect(rect));
+    paintIntoRect(*partLayoutObject, graphicsContext, m_layoutScrollbar->location(), LayoutRect(rect));
 }
 
 void ScrollbarPainter::paintIntoRect(const LayoutScrollbarPart& layoutScrollbarPart, GraphicsContext* graphicsContext, const LayoutPoint& paintOffset, const LayoutRect& rect)
