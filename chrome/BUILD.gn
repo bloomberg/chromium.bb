@@ -48,7 +48,7 @@ if (!is_android) {
       ":chrome_initial",
     ]
     if (is_win) {
-      deps += [ ":reorder_imports" ]
+      public_deps += [ ":reorder_imports" ]
     }
   }
 
