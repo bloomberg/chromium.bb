@@ -624,16 +624,6 @@ bool ThreadState::judgeGCThreshold(size_t allocatedObjectSizeThreshold, double h
     return heapGrowingRate() >= heapGrowingRateThreshold || partitionAllocGrowingRate() >= heapGrowingRateThreshold;
 }
 
-bool ThreadState::shouldForceMemoryPressureGC()
-{
-    if (totalMemorySize() < 300 * 1024 * 1024)
-        return false;
-
-    // If we're consuming too much memory, trigger a conservative GC
-    // aggressively. This is a safe guard to avoid OOM.
-    return judgeGCThreshold(0, 1.5);
-}
-
 bool ThreadState::shouldScheduleIdleGC()
 {
     if (gcState() != NoGCScheduled)
@@ -670,16 +660,17 @@ bool ThreadState::shouldForceConservativeGC()
     return judgeGCThreshold(32 * 1024 * 1024, 5.0);
 }
 
-bool ThreadState::forceMemoryPressureGCIfNeeded()
+// If we're consuming too much memory, trigger a conservative GC
+// aggressively. This is a safe guard to avoid OOM.
+bool ThreadState::shouldForceMemoryPressureGC()
 {
-    if (!shouldForceMemoryPressureGC())
-        return false;
-    completeSweep();
-    if (!shouldForceMemoryPressureGC())
+    if (totalMemorySize() < 300 * 1024 * 1024)
         return false;
 
-    Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
-    return true;
+    if (!judgeGCThreshold(0, 1.5))
+        return false;
+    completeSweep();
+    return judgeGCThreshold(0, 1.5);
 }
 
 void ThreadState::scheduleV8FollowupGCIfNeeded(V8GCType gcType)
@@ -692,17 +683,23 @@ void ThreadState::scheduleV8FollowupGCIfNeeded(V8GCType gcType)
 
     // If V8 has acted on a memory pressure signal and performed a major GC,
     // follow up, if needed.
-    if (gcType == V8MajorGC && forceMemoryPressureGCIfNeeded())
+    if (gcType == V8MajorGC && shouldForceMemoryPressureGC()) {
+        Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
         return;
+    }
 
     if (isSweepingInProgress())
         return;
     ASSERT(!sweepForbidden());
 
-    if (shouldScheduleV8FollowupGC())
+    if (shouldScheduleV8FollowupGC()) {
         schedulePreciseGC();
-    else if (gcType == V8MinorGC)
+        return;
+    }
+    if (gcType == V8MinorGC) {
         scheduleIdleGC();
+        return;
+    }
 }
 
 void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
@@ -753,10 +750,14 @@ void ThreadState::scheduleGCIfNeeded()
         Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
         return;
     }
-    if (shouldSchedulePreciseGC())
+    if (shouldSchedulePreciseGC()) {
         schedulePreciseGC();
-    else if (shouldScheduleIdleGC())
+        return;
+    }
+    if (shouldScheduleIdleGC()) {
         scheduleIdleGC();
+        return;
+    }
 }
 
 void ThreadState::performIdleGC(double deadlineSeconds)
