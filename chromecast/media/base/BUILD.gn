@@ -25,7 +25,7 @@ source_set("message_loop") {
 
   deps = [
     "//base",
-    "//chromecast/media:libcast_media",
+    "//chromecast/media/base:libcast_media_1.0",
     "//chromecast/public",
   ]
 }
