@@ -94,9 +94,7 @@ CryptAuthDeviceManager::CryptAuthDeviceManager(
       client_factory_(client_factory.Pass()),
       gcm_manager_(gcm_manager),
       pref_service_(pref_service),
-      weak_ptr_factory_(this) {
-  UpdateUnlockKeysFromPrefs();
-}
+      weak_ptr_factory_(this) {}
 
 CryptAuthDeviceManager::~CryptAuthDeviceManager() {
   gcm_manager_->RemoveObserver(this);
@@ -114,6 +112,8 @@ void CryptAuthDeviceManager::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void CryptAuthDeviceManager::Start() {
+  UpdateUnlockKeysFromPrefs();
+
   gcm_manager_->AddObserver(this);
 
   base::Time last_successful_sync = GetLastSyncTime();

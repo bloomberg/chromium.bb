@@ -39,8 +39,6 @@ class PrefRegistrySyncable;
 
 namespace proximity_auth {
 class ProximityAuthBleSystem;
-class ProximityAuthSystem;
-struct RemoteDevice;
 }
 
 class EasyUnlockAppManager;
@@ -243,7 +241,7 @@ class EasyUnlockService : public KeyedService {
   virtual void OnWillFinalizeUnlock(bool success) = 0;
 
   // Called when the local device resumes after a suspend.
-  virtual void OnSuspendDoneInternal() = 0;
+  virtual void OnSuspendDone() = 0;
 
   // KeyedService override:
   void Shutdown() override;
@@ -296,12 +294,6 @@ class EasyUnlockService : public KeyedService {
   // according to the current state of the service.
   EasyUnlockAuthEvent GetPasswordAuthEvent() const;
 
-  // Called by subclasses when the remote device allowed to unlock the screen
-  // changes. If |remote_device| is not null, then |proximity_auth_system_| will
-  // be recreated with the new remote device. Otherwise,
-  // |proximity_auth_system_| will be destroyed if no |remote_device| is set.
-  void OnRemoteDeviceChanged(const proximity_auth::RemoteDevice* remote_device);
-
  private:
   // A class to detect whether a bluetooth adapter is present.
   class BluetoothDetector;
@@ -330,9 +322,6 @@ class EasyUnlockService : public KeyedService {
   // Updates the service to state for handling system suspend.
   void PrepareForSuspend();
 
-  // Called when the system resumes from a suspended state.
-  void OnSuspendDone();
-
   void EnsureTpmKeyPresentIfNeeded();
 
   Profile* const profile_;
@@ -348,16 +337,12 @@ class EasyUnlockService : public KeyedService {
   // progress.
   scoped_ptr<EasyUnlockAuthAttempt> auth_attempt_;
 
-  // Detects when the system Bluetooth adapter status changes.
   scoped_ptr<BluetoothDetector> bluetooth_detector_;
 
-  // Handles connecting, authenticating, and updating the UI on the lock/sign-in
-  // screen. After a |RemoteDevice| instance is provided, this object will
-  // handle the rest.
-  // TODO(tengs): This object is intended as a replacement of the background
-  // page of the easy_unlock Chrome app. We are in the process of removing the
-  // app in favor of |proximity_auth_system_|.
-  scoped_ptr<proximity_auth::ProximityAuthSystem> proximity_auth_system_;
+  // The proximity auth over Bluetooth Low Energy system. This is main entry
+  // point to bootstap Smart Lock to discover phones over Bluetooth Low
+  // Energy.
+  scoped_ptr<proximity_auth::ProximityAuthBleSystem> proximity_auth_ble_system_;
 
 #if defined(OS_CHROMEOS)
   // Monitors suspend and wake state of ChromeOS.

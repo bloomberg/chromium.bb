@@ -105,10 +105,6 @@ cryptauth::DeviceClassifier ChromeProximityAuthClient::GetDeviceClassifier() {
 }
 
 std::string ChromeProximityAuthClient::GetAccountId() {
-  // There is no SigninManager for the login profile.
-  if (!SigninManagerFactory::GetForProfile(profile_))
-    return std::string();
-
   return SigninManagerFactory::GetForProfile(profile_)
       ->GetAuthenticatedAccountId();
 }

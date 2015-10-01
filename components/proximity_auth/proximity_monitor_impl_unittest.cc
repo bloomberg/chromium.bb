@@ -38,8 +38,9 @@ const char kPersistentSymmetricKey[] = "PSK";
 class TestProximityMonitorImpl : public ProximityMonitorImpl {
  public:
   explicit TestProximityMonitorImpl(const RemoteDevice& remote_device,
-                                    scoped_ptr<base::TickClock> clock)
-      : ProximityMonitorImpl(remote_device, clock.Pass()) {}
+                                    scoped_ptr<base::TickClock> clock,
+                                    ProximityMonitorObserver* observer)
+      : ProximityMonitorImpl(remote_device, clock.Pass(), observer) {}
   ~TestProximityMonitorImpl() override {}
 
   using ProximityMonitorImpl::SetStrategy;
@@ -89,14 +90,14 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
                               kBluetoothAddress,
                               kPersistentSymmetricKey,
                               std::string()),
-                 make_scoped_ptr(clock_)),
+                 make_scoped_ptr(clock_),
+                 &observer_),
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {
     ON_CALL(*bluetooth_adapter_, GetDevice(kBluetoothAddress))
         .WillByDefault(Return(&remote_bluetooth_device_));
     ON_CALL(remote_bluetooth_device_, GetConnectionInfo(_))
         .WillByDefault(SaveArg<0>(&connection_info_callback_));
-    monitor_.AddObserver(&observer_);
   }
   ~ProximityAuthProximityMonitorImplTest() override {}
 
@@ -543,8 +544,7 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
       kPersistentSymmetricKey, std::string());
 
   scoped_ptr<base::TickClock> clock(new base::SimpleTestTickClock());
-  ProximityMonitorImpl monitor(unnamed_remote_device, clock.Pass());
-  monitor.AddObserver(&observer_);
+  ProximityMonitorImpl monitor(unnamed_remote_device, clock.Pass(), &observer_);
   monitor.Start();
   ProvideConnectionInfo({127, 127, 127});
 

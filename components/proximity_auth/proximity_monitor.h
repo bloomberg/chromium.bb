@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_PROXIMITY_MONITOR_H
 #define COMPONENTS_PROXIMITY_AUTH_PROXIMITY_MONITOR_H
 
-#include "components/proximity_auth/proximity_monitor_observer.h"
-
 namespace proximity_auth {
 
 // An interface that is responsible for tracking whether the remote device is
@@ -40,12 +38,6 @@ class ProximityMonitor {
   // Records the current proximity measurements to UMA. This should be called
   // when the user successfully authenticates using proximity auth.
   virtual void RecordProximityMetricsOnAuthSuccess() = 0;
-
-  // Adds an observer.
-  virtual void AddObserver(ProximityMonitorObserver* observer) = 0;
-
-  // Removes an observer.
-  virtual void RemoveObserver(ProximityMonitorObserver* observer) = 0;
 };
 
 }  // namespace proximity_auth

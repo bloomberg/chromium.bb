@@ -118,7 +118,15 @@ bool EasyUnlockAuthAttempt::Start() {
 
   state_ = STATE_RUNNING;
 
-  if (!app_manager_->SendAuthAttemptEvent()) {
+  // We need this workaround for ProximityAuthBleSystem, which is already
+  // notified in EasyUnlockService. No notification is sent when only the
+  // |kEnableBluetoothLowEnergyDiscovery| flag is set, and
+  // |app_manager_->SendAuthAttemptEvent()| returns false. As a result, the auth
+  // attempt will always fail.
+  // TODO(sacomoto): Remove this when it's not needed anymore.
+  if (!app_manager_->SendAuthAttemptEvent() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
     Cancel(user_id_);
     return false;
   }

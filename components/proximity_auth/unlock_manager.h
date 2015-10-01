@@ -62,6 +62,7 @@ class UnlockManager : public MessengerObserver,
   // Called when the life cycle's state changes.
   void OnLifeCycleStateChanged();
 
+ protected:
   // Called when the user pod is clicked for an authentication attempt of type
   // |auth_type|.
   // Exposed for testing.
@@ -134,11 +135,6 @@ class UnlockManager : public MessengerObserver,
   RemoteScreenlockState GetScreenlockStateFromRemoteUpdate(
       RemoteStatusUpdate update);
 
-  // Returns the Messenger instance associated with |life_cycle_|. This function
-  // will return nullptr if |life_cycle_| is not set or the remote device is not
-  // yet authenticated.
-  Messenger* GetMessenger();
-
   // Whether |this| manager is being used for sign-in or session unlock.
   const ScreenlockType screenlock_type_;
 
@@ -149,6 +145,12 @@ class UnlockManager : public MessengerObserver,
   // Controls the proximity auth flow logic for a remote device. Not owned, and
   // expcted to outlive |this| instance.
   RemoteDeviceLifeCycle* life_cycle_;
+
+  // The messenger used to communicate with the remote device once a secure
+  // channel
+  // is established. Null if no secure channel has been established yet. Not
+  // owned, and expected to outlive |this| instance.
+  Messenger* messenger_;
 
   // Tracks whether the remote device is currently in close enough proximity to
   // the local device to allow unlocking.

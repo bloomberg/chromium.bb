@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "components/proximity_auth/proximity_monitor.h"
 #include "components/proximity_auth/remote_device.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -32,7 +31,8 @@ class ProximityMonitorImpl : public ProximityMonitor {
  public:
   // The |observer| is not owned, and must outlive |this| instance.
   ProximityMonitorImpl(const RemoteDevice& remote_device,
-                       scoped_ptr<base::TickClock> clock);
+                       scoped_ptr<base::TickClock> clock,
+                       ProximityMonitorObserver* observer);
   ~ProximityMonitorImpl() override;
 
   // ProximityMonitor:
@@ -42,8 +42,6 @@ class ProximityMonitorImpl : public ProximityMonitor {
   bool IsUnlockAllowed() const override;
   bool IsInRssiRange() const override;
   void RecordProximityMetricsOnAuthSuccess() override;
-  void AddObserver(ProximityMonitorObserver* observer) override;
-  void RemoveObserver(ProximityMonitorObserver* observer) override;
 
  protected:
   // Sets the proximity detection strategy. Exposed for testing.
@@ -99,14 +97,13 @@ class ProximityMonitorImpl : public ProximityMonitor {
       const device::BluetoothDevice::ConnectionInfo& connection_info);
 
   // Checks whether the proximity state has changed based on the current
-  // samples. Notifies |observers_| on a change.
+  // samples. Notifies the |observer_| on a change.
   void CheckForProximityStateChange();
 
-  // The remote device being monitored.
   const RemoteDevice remote_device_;
 
-  // The observers attached to the ProximityMonitor.
-  base::ObserverList<ProximityMonitorObserver> observers_;
+  // The |observer_| is not owned, and must outlive |this| instance.
+  ProximityMonitorObserver* observer_;
 
   // The Bluetooth adapter that will be polled for connection info.
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;

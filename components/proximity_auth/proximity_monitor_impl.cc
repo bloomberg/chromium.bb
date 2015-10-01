@@ -32,8 +32,10 @@ const int kRssiThreshold = -5;
 const double kRssiSampleWeight = 0.3;
 
 ProximityMonitorImpl::ProximityMonitorImpl(const RemoteDevice& remote_device,
-                                           scoped_ptr<base::TickClock> clock)
+                                           scoped_ptr<base::TickClock> clock,
+                                           ProximityMonitorObserver* observer)
     : remote_device_(remote_device),
+      observer_(observer),
       strategy_(Strategy::NONE),
       remote_device_is_in_proximity_(false),
       is_active_(false),
@@ -108,14 +110,6 @@ void ProximityMonitorImpl::RecordProximityMetricsOnAuthSuccess() {
   metrics::RecordAuthProximityTransmitPowerDelta(last_transmit_power_delta);
   metrics::RecordAuthProximityTimeSinceLastZeroRssi(time_since_last_zero_rssi);
   metrics::RecordAuthProximityRemoteDeviceModelHash(remote_device_model);
-}
-
-void ProximityMonitorImpl::AddObserver(ProximityMonitorObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ProximityMonitorImpl::RemoveObserver(ProximityMonitorObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void ProximityMonitorImpl::SetStrategy(Strategy strategy) {
@@ -218,10 +212,8 @@ void ProximityMonitorImpl::OnConnectionInfo(
 }
 
 void ProximityMonitorImpl::ClearProximityState() {
-  if (is_active_ && remote_device_is_in_proximity_) {
-    FOR_EACH_OBSERVER(ProximityMonitorObserver, observers_,
-                      OnProximityStateChanged());
-  }
+  if (is_active_ && remote_device_is_in_proximity_)
+    observer_->OnProximityStateChanged();
 
   remote_device_is_in_proximity_ = false;
   rssi_rolling_average_.reset();
@@ -271,8 +263,7 @@ void ProximityMonitorImpl::CheckForProximityStateChange() {
     PA_LOG(INFO) << "[Proximity] Updated proximity state: "
                  << (is_now_in_proximity ? "proximate" : "distant");
     remote_device_is_in_proximity_ = is_now_in_proximity;
-    FOR_EACH_OBSERVER(ProximityMonitorObserver, observers_,
-                      OnProximityStateChanged());
+    observer_->OnProximityStateChanged();
   }
 }
 

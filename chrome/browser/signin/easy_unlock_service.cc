@@ -31,13 +31,12 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/proximity_auth/ble/proximity_auth_ble_system.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
-#include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
-#include "components/proximity_auth/proximity_auth_system.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -285,10 +284,11 @@ void EasyUnlockService::RegisterProfilePrefs(
   proximity_auth::CryptAuthGCMManager::RegisterPrefs(registry);
   proximity_auth::CryptAuthDeviceManager::RegisterPrefs(registry);
   proximity_auth::CryptAuthEnrollmentManager::RegisterPrefs(registry);
+  proximity_auth::ProximityAuthPrefManager::RegisterPrefs(registry);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery))
-    proximity_auth::ProximityAuthPrefManager::RegisterPrefs(registry);
+    proximity_auth::ProximityAuthBleSystem::RegisterPrefs(registry);
 }
 
 // static
@@ -527,14 +527,14 @@ void EasyUnlockService::AttemptAuth(const std::string& user_id,
   if (!auth_attempt_->Start())
     auth_attempt_.reset();
 
-  // TODO(tengs): We notify ProximityAuthSystem whenever unlock attempts are
+  // TODO(tengs): We notify ProximityAuthBleSystem whenever unlock attempts are
   // attempted. However, we ideally should refactor the auth attempt logic to
   // the proximity_auth component.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery) &&
       auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK &&
-      proximity_auth_system_) {
-    proximity_auth_system_->OnAuthAttempted(user_id);
+      proximity_auth_ble_system_) {
+    proximity_auth_ble_system_->OnAuthAttempted(user_id);
   }
 }
 
@@ -651,7 +651,6 @@ void EasyUnlockService::Shutdown() {
 
   ResetScreenlockState();
   bluetooth_detector_.reset();
-  proximity_auth_system_.reset();
 #if defined(OS_CHROMEOS)
   power_monitor_.reset();
 #endif
@@ -672,6 +671,16 @@ void EasyUnlockService::UpdateAppState() {
     app_manager_->LoadApp();
     NotifyUserUpdated();
 
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery) &&
+        GetType() == EasyUnlockService::TYPE_REGULAR &&
+        !proximity_auth_ble_system_) {
+      proximity_auth_ble_system_.reset(
+          new proximity_auth::ProximityAuthBleSystem(
+              proximity_auth::ScreenlockBridge::Get(), &proximity_auth_client_,
+              profile_->GetPrefs()));
+    }
+
 #if defined(OS_CHROMEOS)
     if (!power_monitor_)
       power_monitor_.reset(new PowerMonitor(this));
@@ -690,7 +699,7 @@ void EasyUnlockService::UpdateAppState() {
     if (!bluetooth_waking_up) {
       app_manager_->DisableAppIfLoaded();
       ResetScreenlockState();
-      proximity_auth_system_.reset();
+      proximity_auth_ble_system_.reset();
 #if defined(OS_CHROMEOS)
       power_monitor_.reset();
 #endif
@@ -832,23 +841,6 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
   return EASY_UNLOCK_AUTH_EVENT_COUNT;
 }
 
-void EasyUnlockService::OnRemoteDeviceChanged(
-    const proximity_auth::RemoteDevice* remote_device) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery))
-    return;
-
-  if (remote_device) {
-    PA_LOG(INFO) << "Remote device changed, recreating ProximityAuthSystem.";
-    proximity_auth_system_.reset(new proximity_auth::ProximityAuthSystem(
-        *remote_device, proximity_auth_client()));
-    proximity_auth_system_->Start();
-  } else {
-    PA_LOG(INFO) << "Remote device removed, destroying ProximityAuthSystem.";
-    proximity_auth_system_.reset();
-  }
-}
-
 #if defined(OS_CHROMEOS)
 void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
     const std::string& user_id,
@@ -882,13 +874,6 @@ void EasyUnlockService::PrepareForSuspend() {
   app_manager_->DisableAppIfLoaded();
   if (screenlock_state_handler_ && screenlock_state_handler_->IsActive())
     UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING);
-  if (proximity_auth_system_)
-    proximity_auth_system_->OnSuspend();
-}
-
-void EasyUnlockService::OnSuspendDone() {
-  if (proximity_auth_system_)
-    proximity_auth_system_->OnSuspendDone();
 }
 
 void EasyUnlockService::EnsureTpmKeyPresentIfNeeded() {

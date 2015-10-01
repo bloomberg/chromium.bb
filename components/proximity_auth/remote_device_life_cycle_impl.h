@@ -80,11 +80,23 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   // The current state in the life cycle.
   RemoteDeviceLifeCycle::State state_;
 
-  // Observers added to the life cycle. Configured as NOTIFY_EXISTING_ONLY.
+  // Observers added to the life cycle.
   base::ObserverList<Observer> observers_;
+
+  // Rate limits Bluetooth connections to the same device. Used to in the
+  // created ConnectionFinder.
+  scoped_ptr<BluetoothThrottler> bluetooth_throttler_;
+
+  // Used in the FINDING_CONNECTION state to establish a connection to the
+  // remote device.
+  scoped_ptr<ConnectionFinder> connection_finder_;
 
   // The connection that is established by |connection_finder_|.
   scoped_ptr<Connection> connection_;
+
+  // Authenticates the remote device after it is connected. Used in the
+  // AUTHENTICATING state.
+  scoped_ptr<Authenticator> authenticator_;
 
   // Context for encrypting and decrypting messages. Created after
   // authentication succeeds. Ownership is eventually passed to |messenger_|.
@@ -93,18 +105,6 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   // The messenger for sending and receiving messages in the
   // SECURE_CHANNEL_ESTABLISHED state.
   scoped_ptr<Messenger> messenger_;
-
-  // Authenticates the remote device after it is connected. Used in the
-  // AUTHENTICATING state.
-  scoped_ptr<Authenticator> authenticator_;
-
-  // Used in the FINDING_CONNECTION state to establish a connection to the
-  // remote device.
-  scoped_ptr<ConnectionFinder> connection_finder_;
-
-  // Rate limits Bluetooth connections to the same device. Used to in the
-  // created ConnectionFinder.
-  scoped_ptr<BluetoothThrottler> bluetooth_throttler_;
 
   // After authentication fails, this timer waits for a period of time before
   // retrying the connection.

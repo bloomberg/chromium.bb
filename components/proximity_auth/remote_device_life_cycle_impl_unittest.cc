@@ -86,13 +86,8 @@ class FakeConnectionFinder : public ConnectionFinder {
 
 class FakeAuthenticator : public Authenticator {
  public:
-  FakeAuthenticator(Connection* connection) : connection_(connection) {}
-  ~FakeAuthenticator() override {
-    // This object should be destroyed immediately after authentication is
-    // complete in order not to outlive the underlying connection.
-    EXPECT_FALSE(callback_.is_null());
-    EXPECT_EQ(std::string(), connection_->remote_device().public_key);
-  }
+  FakeAuthenticator() {}
+  ~FakeAuthenticator() override {}
 
   void OnAuthenticationResult(Authenticator::Result result) {
     ASSERT_FALSE(callback_.is_null());
@@ -108,8 +103,6 @@ class FakeAuthenticator : public Authenticator {
     ASSERT_TRUE(callback_.is_null());
     callback_ = callback;
   }
-
-  Connection* connection_;
 
   AuthenticationCallback callback_;
 
@@ -137,9 +130,7 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
   }
 
   scoped_ptr<Authenticator> CreateAuthenticator() override {
-    EXPECT_TRUE(connection_finder_);
-    scoped_ptr<FakeAuthenticator> scoped_authenticator(
-        new FakeAuthenticator(connection_finder_->connection()));
+    scoped_ptr<FakeAuthenticator> scoped_authenticator(new FakeAuthenticator());
     authenticator_ = scoped_authenticator.get();
     return scoped_authenticator.Pass();
   }

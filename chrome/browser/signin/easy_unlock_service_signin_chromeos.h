@@ -85,7 +85,7 @@ class EasyUnlockServiceSignin
   void ShutdownInternal() override;
   bool IsAllowedInternal() const override;
   void OnWillFinalizeUnlock(bool success) override;
-  void OnSuspendDoneInternal() override;
+  void OnSuspendDone() override;
 
   // proximity_auth::ScreenlockBridge::Observer implementation:
   void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
