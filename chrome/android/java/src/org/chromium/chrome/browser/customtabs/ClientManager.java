@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /** Manages the clients' state for Custom Tabs. This class is threadsafe. */
+@SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
 class ClientManager {
     // Values for the "CustomTabs.PredictionStatus" UMA histogram. Append-only.
     private static final int NO_PREDICTION = 0;
@@ -143,7 +144,9 @@ class ClientManager {
         return true;
     }
 
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
+    /**
+     * Records that {@link CustomTabsConnection#warmup(long)} has been called from the given uid.
+     */
     public synchronized void recordUidHasCalledWarmup(int uid) {
         mWarmupHasBeenCalled = true;
         mUidHasCalledWarmup.put(uid, true);
@@ -156,7 +159,6 @@ class ClientManager {
      * @param url Predicted URL.
      * @return true if speculation is allowed.
      */
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     public synchronized boolean updateStatsAndReturnWhetherAllowed(
             IBinder session, int uid, String url) {
         SessionParams params = mSessionParams.get(session);
@@ -167,7 +169,6 @@ class ClientManager {
     }
 
     @VisibleForTesting
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     synchronized int getWarmupState(IBinder session) {
         SessionParams params = mSessionParams.get(session);
         boolean hasValidSession = params != null;
@@ -187,7 +188,6 @@ class ClientManager {
     /**
      * Registers that a client has launched a URL inside a Custom Tab.
      */
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     public synchronized void registerLaunch(IBinder session, String url) {
         int outcome = NO_PREDICTION;
         long elapsedTimeMs = -1;
@@ -214,20 +214,23 @@ class ClientManager {
                 "CustomTabs.WarmupStateOnLaunch", getWarmupState(session), SESSION_WARMUP_COUNT);
     }
 
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
+    /**
+     * @return The referrer that is associated with the client owning given session.
+     */
     public synchronized Referrer getReferrerForSession(IBinder session) {
         SessionParams params = mSessionParams.get(session);
         return params != null ? params.referrer : null;
     }
 
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
+    /**
+     * @return The callback {@link IBinder} for the given session.
+     */
     public synchronized ICustomTabsCallback getCallbackForSession(IBinder session) {
         SessionParams params = mSessionParams.get(session);
         return params != null ? params.callback : null;
     }
 
     /** Tries to bind to a client to keep it alive, and returns true for success. */
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     public synchronized boolean keepAliveForSession(IBinder session, Intent intent) {
         // When an application is bound to a service, its priority is raised to
         // be at least equal to the application's one. This binds to a dummy
@@ -263,7 +266,6 @@ class ClientManager {
     }
 
     /** Unbind from the KeepAlive service for a client. */
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     public synchronized void dontKeepAliveForSession(IBinder session) {
         SessionParams params = mSessionParams.get(session);
         if (params == null || params.getKeepAliveConnection() == null) return;
@@ -272,28 +274,29 @@ class ClientManager {
         mContext.unbindService(connection);
     }
 
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
+    /** See {@link RequestThrottler#isPrerenderingAllowed()} */
     public synchronized boolean isPrerenderingAllowed(int uid) {
         return RequestThrottler.getForUid(mContext, uid).isPrerenderingAllowed();
     }
 
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
+    /** See {@link RequestThrottler#registerPrerenderRequest(String)} */
     public synchronized void registerPrerenderRequest(int uid, String url) {
         RequestThrottler.getForUid(mContext, uid).registerPrerenderRequest(url);
     }
 
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
+    /** See {@link RequestThrottler#reset()} */
     public synchronized void resetThrottling(int uid) {
         RequestThrottler.getForUid(mContext, uid).reset();
     }
 
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
+    /**
+     * Cleans up all data associated with all sessions.
+     */
     public synchronized void cleanupAll() {
         List<IBinder> sessions = new ArrayList<>(mSessionParams.keySet());
         for (IBinder session : sessions) cleanupSession(session);
     }
 
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     private synchronized void cleanupSession(IBinder session) {
         SessionParams params = mSessionParams.get(session);
         if (params == null) return;
