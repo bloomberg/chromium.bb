@@ -13,6 +13,7 @@ import os
 import cloud_storage_test_base
 import gpu_test_base
 import maps_expectations
+import path_util
 
 from telemetry.core import util
 from telemetry.page import page_test
@@ -100,7 +101,7 @@ class Maps(cloud_storage_test_base.TestBase):
 
   def CreateStorySet(self, options):
     story_set_path = os.path.join(
-        util.GetChromiumSrcDir(), 'content', 'test', 'gpu', 'page_sets')
+        path_util.GetChromiumSrcDir(), 'content', 'test', 'gpu', 'page_sets')
     ps = story_set_module.StorySet(
         archive_data_file='data/maps.json',
         base_dir=story_set_path,

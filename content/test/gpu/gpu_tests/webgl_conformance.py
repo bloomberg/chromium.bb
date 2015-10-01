@@ -7,9 +7,9 @@ import os
 import sys
 
 import gpu_test_base
+import path_util
 import webgl_conformance_expectations
 
-from telemetry.core import util
 from telemetry.internal.browser import browser_finder
 from telemetry.page import page_test
 from telemetry.page import shared_page_state
@@ -17,7 +17,7 @@ from telemetry.story.story_set import StorySet
 
 
 conformance_path = os.path.join(
-    util.GetChromiumSrcDir(),
+    path_util.GetChromiumSrcDir(),
     'third_party', 'webgl', 'src', 'sdk', 'tests')
 
 conformance_harness_script = r"""

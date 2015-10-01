@@ -4,11 +4,11 @@
 import os
 import unittest
 
-from telemetry.core import util
 from telemetry.testing import fakes
 
 import fake_win_amd_gpu_info
 import gpu_test_base
+import path_util
 import webgl_conformance_expectations
 
 class FakeWindowsPlatform(fakes.FakePlatform):
@@ -50,7 +50,7 @@ class WebGLConformanceExpectationsTest(unittest.TestCase):
     expectations = webgl_conformance_expectations.\
                    WebGLConformanceExpectations(
                      os.path.join(
-                       util.GetChromiumSrcDir(),
+                       path_util.GetChromiumSrcDir(),
                        'third_party', 'webgl', 'src', 'sdk', 'tests'))
     page = FakePage(
       'conformance/glsl/constructors/glsl-construct-vec-mat-index.html',

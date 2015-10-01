@@ -6,6 +6,7 @@ import time
 
 import context_lost_expectations
 import gpu_test_base
+import path_util
 
 from telemetry.core import exceptions
 from telemetry.core import util
@@ -13,7 +14,7 @@ from telemetry.page import page_test
 from telemetry.story import story_set as story_set_module
 
 data_path = os.path.join(
-    util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
+    path_util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
 
 wait_timeout = 60  # seconds
 
