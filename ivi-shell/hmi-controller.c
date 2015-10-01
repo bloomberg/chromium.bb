@@ -1780,7 +1780,7 @@ controller_module_init(struct weston_compositor *ec,
 	struct wl_event_loop *loop = NULL;
 
 	if (interface_version < sizeof(struct ivi_controller_interface)) {
-		weston_log("ivi-shell: version mismatch of controller interface");
+		weston_log("ivi-shell: version mismatch of controller interface\n");
 		return -1;
 	}
 
