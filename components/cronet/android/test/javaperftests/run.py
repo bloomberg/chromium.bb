@@ -43,8 +43,8 @@ import urllib
 REPOSITORY_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..', '..', '..'))
 
-sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools/telemetry'))
-sys.path.append(os.path.join(REPOSITORY_ROOT, 'build/android'))
+sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools', 'telemetry'))
+sys.path.append(os.path.join(REPOSITORY_ROOT, 'build', 'android'))
 
 import lighttpd_server
 from pylib import constants
@@ -304,9 +304,14 @@ def main():
   # allow benchmark_runner to in turn open this file up and find the
   # CronetPerfTestBenchmark class to run the benchmark.
   top_level_dir = os.path.dirname(os.path.realpath(__file__))
+  # The perf config file is required to continue using dependencies on the
+  # Chromium checkout in Telemetry.
+  perf_config_file = os.path.join(REPOSITORY_ROOT, 'tools', 'perf', 'core',
+      'binary_dependencies.json')
   runner_config = benchmark_runner.ProjectConfig(
       top_level_dir=top_level_dir,
-      benchmark_dirs=[top_level_dir])
+      benchmark_dirs=[top_level_dir],
+      client_config=perf_config_file)
   sys.argv.insert(1, 'run')
   sys.argv.insert(2, 'run.CronetPerfTestBenchmark')
   sys.argv.insert(3, '--android-rndis')
