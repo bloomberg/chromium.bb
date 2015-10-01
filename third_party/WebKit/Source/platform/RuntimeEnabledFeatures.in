@@ -99,7 +99,7 @@ Media status=stable
 MediaCapture
 MediaController depends_on=Media, status=experimental
 MediaDevices status=stable
-MediaRecorder status=test
+MediaRecorder status=experimental
 MediaSession
 MediaSource status=stable
 MediaSourceExperimental depends_on=MediaSource, status=experimental
