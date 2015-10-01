@@ -20,19 +20,19 @@ static inline String implicitNamedGridLineForSide(const String& lineName, GridPo
     return lineName + ((side == ColumnStartSide || side == RowStartSide) ? "-start" : "-end");
 }
 
-static bool isValidNamedLineOrArea(const String& lineName, const ComputedStyle& style, GridPositionSide side)
+bool GridResolvedPosition::isValidNamedLineOrArea(const String& lineName, const ComputedStyle& style, GridPositionSide side)
 {
     const NamedGridLinesMap& gridLineNames = gridLinesForSide(style, side);
 
     return gridLineNames.contains(implicitNamedGridLineForSide(lineName, side)) || gridLineNames.contains(lineName);
 }
 
-static GridPositionSide calculateInitialPositionSide(GridTrackSizingDirection direction)
+GridPositionSide GridResolvedPosition::initialPositionSide(GridTrackSizingDirection direction)
 {
     return (direction == ForColumns) ? ColumnStartSide : RowStartSide;
 }
 
-static GridPositionSide calculateFinalPositionSide(GridTrackSizingDirection direction)
+GridPositionSide GridResolvedPosition::finalPositionSide(GridTrackSizingDirection direction)
 {
     return (direction == ForColumns) ? ColumnEndSide : RowEndSide;
 }
@@ -41,8 +41,6 @@ void GridResolvedPosition::initialAndFinalPositionsFromStyle(const ComputedStyle
 {
     initialPosition = (direction == ForColumns) ? gridItem.style()->gridColumnStart() : gridItem.style()->gridRowStart();
     finalPosition = (direction == ForColumns) ? gridItem.style()->gridColumnEnd() : gridItem.style()->gridRowEnd();
-    GridPositionSide initialPositionSide = calculateInitialPositionSide(direction);
-    GridPositionSide finalPositionSide = calculateFinalPositionSide(direction);
 
     // We must handle the placement error handling code here instead of in the StyleAdjuster because we don't want to
     // overwrite the specified values.
@@ -51,10 +49,10 @@ void GridResolvedPosition::initialAndFinalPositionsFromStyle(const ComputedStyle
 
     // Try to early detect the case of non existing named grid lines. This way we could assume later that
     // GridResolvedPosition::resolveGrisPositionFromStyle() always return a valid resolved position.
-    if (initialPosition.isNamedGridArea() && !isValidNamedLineOrArea(initialPosition.namedGridLine(), gridContainerStyle, initialPositionSide))
+    if (initialPosition.isNamedGridArea() && !isValidNamedLineOrArea(initialPosition.namedGridLine(), gridContainerStyle, initialPositionSide(direction)))
         initialPosition.setAutoPosition();
 
-    if (finalPosition.isNamedGridArea() && !isValidNamedLineOrArea(finalPosition.namedGridLine(), gridContainerStyle, finalPositionSide))
+    if (finalPosition.isNamedGridArea() && !isValidNamedLineOrArea(finalPosition.namedGridLine(), gridContainerStyle, finalPositionSide(direction)))
         finalPosition.setAutoPosition();
 
     // If the grid item has an automatic position and a grid span for a named line in a given dimension, instead treat the grid span as one.
@@ -69,7 +67,7 @@ GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(con
     GridPosition initialPosition, finalPosition;
     initialAndFinalPositionsFromStyle(gridContainerStyle, gridItem, direction, initialPosition, finalPosition);
 
-    GridPositionSide finalPositionSide = calculateFinalPositionSide(direction);
+    GridPositionSide finalSide = finalPositionSide(direction);
 
     // This method will only be used when both positions need to be resolved against the opposite one.
     ASSERT(initialPosition.shouldBeResolvedAgainstOppositePosition() && finalPosition.shouldBeResolvedAgainstOppositePosition());
@@ -77,9 +75,9 @@ GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(con
     GridResolvedPosition resolvedFinalPosition = resolvedInitialPosition;
 
     if (initialPosition.isSpan())
-        return *resolveGridPositionAgainstOppositePosition(gridContainerStyle, resolvedInitialPosition, initialPosition, finalPositionSide);
+        return *resolveGridPositionAgainstOppositePosition(gridContainerStyle, resolvedInitialPosition, initialPosition, finalSide);
     if (finalPosition.isSpan())
-        return *resolveGridPositionAgainstOppositePosition(gridContainerStyle, resolvedInitialPosition, finalPosition, finalPositionSide);
+        return *resolveGridPositionAgainstOppositePosition(gridContainerStyle, resolvedInitialPosition, finalPosition, finalSide);
 
     return GridSpan(resolvedInitialPosition, resolvedFinalPosition);
 }
@@ -89,8 +87,8 @@ PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const C
     GridPosition initialPosition, finalPosition;
     initialAndFinalPositionsFromStyle(gridContainerStyle, gridItem, direction, initialPosition, finalPosition);
 
-    GridPositionSide initialPositionSide = calculateInitialPositionSide(direction);
-    GridPositionSide finalPositionSide = calculateFinalPositionSide(direction);
+    GridPositionSide initialSide = initialPositionSide(direction);
+    GridPositionSide finalSide = finalPositionSide(direction);
 
     if (initialPosition.shouldBeResolvedAgainstOppositePosition() && finalPosition.shouldBeResolvedAgainstOppositePosition()) {
         // We can't get our grid positions without running the auto placement algorithm.
@@ -99,18 +97,18 @@ PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const C
 
     if (initialPosition.shouldBeResolvedAgainstOppositePosition()) {
         // Infer the position from the final position ('auto / 1' or 'span 2 / 3' case).
-        GridResolvedPosition finalResolvedPosition = resolveGridPositionFromStyle(gridContainerStyle, finalPosition, finalPositionSide);
-        return resolveGridPositionAgainstOppositePosition(gridContainerStyle, finalResolvedPosition, initialPosition, initialPositionSide);
+        GridResolvedPosition finalResolvedPosition = resolveGridPositionFromStyle(gridContainerStyle, finalPosition, finalSide);
+        return resolveGridPositionAgainstOppositePosition(gridContainerStyle, finalResolvedPosition, initialPosition, initialSide);
     }
 
     if (finalPosition.shouldBeResolvedAgainstOppositePosition()) {
         // Infer our position from the initial position ('1 / auto' or '3 / span 2' case).
-        GridResolvedPosition initialResolvedPosition = resolveGridPositionFromStyle(gridContainerStyle, initialPosition, initialPositionSide);
-        return resolveGridPositionAgainstOppositePosition(gridContainerStyle, initialResolvedPosition, finalPosition, finalPositionSide);
+        GridResolvedPosition initialResolvedPosition = resolveGridPositionFromStyle(gridContainerStyle, initialPosition, initialSide);
+        return resolveGridPositionAgainstOppositePosition(gridContainerStyle, initialResolvedPosition, finalPosition, finalSide);
     }
 
-    GridResolvedPosition resolvedInitialPosition = resolveGridPositionFromStyle(gridContainerStyle, initialPosition, initialPositionSide);
-    GridResolvedPosition resolvedFinalPosition = resolveGridPositionFromStyle(gridContainerStyle, finalPosition, finalPositionSide);
+    GridResolvedPosition resolvedInitialPosition = resolveGridPositionFromStyle(gridContainerStyle, initialPosition, initialSide);
+    GridResolvedPosition resolvedFinalPosition = resolveGridPositionFromStyle(gridContainerStyle, finalPosition, finalSide);
 
     // If 'grid-after' specifies a line at or before that specified by 'grid-before', it computes to 'span 1'.
     if (resolvedFinalPosition < resolvedInitialPosition)

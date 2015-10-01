@@ -1381,7 +1381,6 @@ void LayoutGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayout
             continue;
         }
 
-        // FIXME: Detect properly if start/end is auto for inexistent named grid lines.
         LayoutUnit columnOffset = LayoutUnit();
         LayoutUnit columnBreadth = LayoutUnit();
         offsetAndBreadthForPositionedChild(*child, ForColumns, columnOffset, columnBreadth);
@@ -1409,8 +1408,10 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         return;
     }
 
-    bool startIsAuto = (direction == ForColumns) ? child.style()->gridColumnStart().isAuto() : child.style()->gridRowStart().isAuto();
-    bool endIsAuto = (direction == ForColumns) ? child.style()->gridColumnEnd().isAuto() : child.style()->gridRowEnd().isAuto();
+    GridPosition startPosition = (direction == ForColumns) ? child.style()->gridColumnStart() : child.style()->gridRowStart();
+    GridPosition endPosition = (direction == ForColumns) ? child.style()->gridColumnEnd() : child.style()->gridRowEnd();
+    bool startIsAuto = startPosition.isAuto() || (startPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(startPosition.namedGridLine(), styleRef(), GridResolvedPosition::initialPositionSide(direction)));
+    bool endIsAuto = endPosition.isAuto() || (endPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(endPosition.namedGridLine(), styleRef(), GridResolvedPosition::finalPositionSide(direction)));
 
     GridResolvedPosition firstPosition = GridResolvedPosition(0);
     GridResolvedPosition initialPosition = startIsAuto ? firstPosition : positions->resolvedInitialPosition;
