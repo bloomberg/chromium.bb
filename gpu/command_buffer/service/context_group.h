@@ -251,8 +251,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   bool QueryGLFeatureU(GLenum pname, GLint min_required, uint32* v);
   bool HaveContexts();
 
-  ContextType context_type_;
-
   scoped_refptr<MailboxManager> mailbox_manager_;
   scoped_refptr<MemoryTracker> memory_tracker_;
   scoped_refptr<ShaderTranslatorCache> shader_translator_cache_;
@@ -308,5 +306,3 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_CONTEXT_GROUP_H_
-
-

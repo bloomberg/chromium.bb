@@ -66,7 +66,7 @@ class QueryManagerTest : public GpuServiceTest {
     EXPECT_CALL(*decoder_.get(), GetGLContext())
       .WillRepeatedly(Return(GetGLContext()));
     scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-    feature_info->Initialize();
+    feature_info->InitializeForTesting();
     manager_.reset(new QueryManager(decoder_.get(), feature_info.get()));
   }
 
@@ -504,7 +504,7 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery2) {
       gl_.get(),
       "GL_ARB_occlusion_query2");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize();
+  feature_info->InitializeForTesting();
   scoped_ptr<QueryManager> manager(
       new QueryManager(decoder_.get(), feature_info.get()));
 
@@ -538,7 +538,7 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery) {
       gl_.get(),
       "GL_ARB_occlusion_query");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize();
+  feature_info->InitializeForTesting();
   scoped_ptr<QueryManager> manager(
       new QueryManager(decoder_.get(), feature_info.get()));
 
@@ -571,7 +571,7 @@ TEST_F(QueryManagerTest, ARBOcclusionPauseResume) {
       gl_.get(),
       "GL_ARB_occlusion_query");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize();
+  feature_info->InitializeForTesting();
   scoped_ptr<QueryManager> manager(
       new QueryManager(decoder_.get(), feature_info.get()));
 
@@ -914,7 +914,7 @@ TEST_F(QueryManagerTest, GetErrorQuery) {
 
   TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), "");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize();
+  feature_info->InitializeForTesting();
   scoped_ptr<QueryManager> manager(
       new QueryManager(decoder_.get(), feature_info.get()));
 

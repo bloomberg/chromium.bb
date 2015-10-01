@@ -110,12 +110,17 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   FeatureInfo(const base::CommandLine& command_line);
 
   // Initializes the feature information. Needs a current GL context.
-  bool Initialize();
-  bool Initialize(const DisallowedFeatures& disallowed_features);
+  bool Initialize(ContextType context_type,
+                  const DisallowedFeatures& disallowed_features);
+
+  // Helper that defaults to no disallowed features and a GLES2 context.
+  bool InitializeForTesting();
 
   const Validators* validators() const {
     return &validators_;
   }
+
+  ContextType context_type() const { return context_type_; }
 
   const std::string& extensions() const {
     return extensions_;
@@ -148,6 +153,8 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
            workarounds_.use_virtualized_gl_contexts;
   }
 
+  bool IsWebGLContext() const;
+
  private:
   friend class base::RefCounted<FeatureInfo>;
   friend class BufferManagerClientSideArraysTest;
@@ -161,6 +168,8 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   Validators validators_;
 
   DisallowedFeatures disallowed_features_;
+
+  ContextType context_type_;
 
   // The extensions string returned by glGetString(GL_EXTENSIONS);
   std::string extensions_;

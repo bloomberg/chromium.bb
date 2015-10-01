@@ -27,7 +27,7 @@ class BufferManagerTestBase : public GpuServiceTest {
     GpuServiceTest::SetUp();
     if (feature_info) {
       TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), extensions);
-      feature_info->Initialize();
+      feature_info->InitializeForTesting();
     }
     error_state_.reset(new MockErrorState());
     manager_.reset(new BufferManager(memory_tracker, feature_info));

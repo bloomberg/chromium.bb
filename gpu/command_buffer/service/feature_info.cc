@@ -231,18 +231,21 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
       command_line->HasSwitch(switches::kDisableGLSLTranslator);
 
   unsafe_es3_apis_enabled_ = false;
+
+  // Default context_type_ to a GLES2 Context.
+  context_type_ = CONTEXT_TYPE_OPENGLES2;
 }
 
-bool FeatureInfo::Initialize() {
-  disallowed_features_ = DisallowedFeatures();
-  InitializeFeatures();
-  return true;
-}
-
-bool FeatureInfo::Initialize(const DisallowedFeatures& disallowed_features) {
+bool FeatureInfo::Initialize(ContextType context_type,
+                             const DisallowedFeatures& disallowed_features) {
   disallowed_features_ = disallowed_features;
+  context_type_ = context_type;
   InitializeFeatures();
   return true;
+}
+
+bool FeatureInfo::InitializeForTesting() {
+  return Initialize(CONTEXT_TYPE_OPENGLES2, DisallowedFeatures());
 }
 
 bool IsGL_REDSupportedOnFBOs() {
@@ -698,7 +701,15 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   // Check for multisample support
-  if (!workarounds_.disable_chromium_framebuffer_multisample) {
+
+  // crbug.com/527565 - On some GPUs, MSAA does not perform acceptably for
+  // rasterization. We disable it on non-WebGL contexts. For WebGL contexts
+  // we leave it up to the site to decide whether to enable MSAA.
+  bool disable_all_multisample =
+      workarounds_.disable_msaa_on_non_webgl_contexts && !IsWebGLContext();
+
+  if (!disable_all_multisample &&
+      !workarounds_.disable_chromium_framebuffer_multisample) {
     bool ext_has_multisample =
         extensions.Contains("GL_EXT_framebuffer_multisample") ||
         gl_version_info_->is_es3 ||
@@ -720,7 +731,8 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
-  if (!workarounds_.disable_multisampled_render_to_texture) {
+  if (!disable_all_multisample &&
+      !workarounds_.disable_multisampled_render_to_texture) {
     if (extensions.Contains("GL_EXT_multisampled_render_to_texture")) {
       feature_flags_.multisampled_render_to_texture = true;
     } else if (extensions.Contains("GL_IMG_multisampled_render_to_texture")) {
@@ -1191,6 +1203,21 @@ void FeatureInfo::EnableES3Validators() {
   }
 
   unsafe_es3_apis_enabled_ = true;
+}
+
+bool FeatureInfo::IsWebGLContext() const {
+  // Switch statement to cause a compile-time error if we miss a case.
+  switch (context_type_) {
+    case CONTEXT_TYPE_WEBGL1:
+    case CONTEXT_TYPE_WEBGL2:
+      return true;
+    case CONTEXT_TYPE_OPENGLES2:
+    case CONTEXT_TYPE_OPENGLES3:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 void FeatureInfo::AddExtensionString(const char* s) {

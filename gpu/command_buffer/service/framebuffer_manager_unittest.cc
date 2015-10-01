@@ -143,7 +143,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
     GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(gl_.get(),
         extensions, "", gl_version);
-    feature_info_->Initialize();
+    feature_info_->InitializeForTesting();
     manager_.CreateFramebuffer(kClient1Id, kService1Id);
     error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
     framebuffer_ = manager_.GetFramebuffer(kClient1Id);

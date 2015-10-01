@@ -101,7 +101,7 @@ class TextureManagerTest : public GpuServiceTest {
                         bool enable_es3) {
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), gl_extensions, "", gl_version);
-    feature_info_->Initialize();
+    feature_info_->InitializeForTesting();
     if (enable_es3) {
       EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS, _))
           .WillOnce(SetArgPointee<1>(8))
@@ -444,7 +444,7 @@ TEST_F(TextureManagerTest, ValidForTargetNPOT) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_npot");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize();
+  feature_info->InitializeForTesting();
   TextureManager manager(NULL,
                          feature_info.get(),
                          kMaxTextureSize,
@@ -486,7 +486,7 @@ class TextureTestBase : public GpuServiceTest {
     if (!extensions.empty()) {
       TestHelper::SetupFeatureInfoInitExpectations(gl_.get(),
                                                    extensions.c_str());
-      feature_info_->Initialize();
+      feature_info_->InitializeForTesting();
     }
 
     manager_.reset(new TextureManager(memory_tracker,
@@ -779,7 +779,7 @@ TEST_F(TextureTest, NPOT2DNPOTOK) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_npot");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize();
+  feature_info->InitializeForTesting();
   TextureManager manager(NULL,
                          feature_info.get(),
                          kMaxTextureSize,
@@ -1049,7 +1049,7 @@ TEST_F(TextureTest, FloatNotLinear) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_float");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize();
+  feature_info->InitializeForTesting();
   TextureManager manager(NULL,
                          feature_info.get(),
                          kMaxTextureSize,
@@ -1081,7 +1081,7 @@ TEST_F(TextureTest, FloatLinear) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_float GL_OES_texture_float_linear");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize();
+  feature_info->InitializeForTesting();
   TextureManager manager(NULL,
                          feature_info.get(),
                          kMaxTextureSize,
@@ -1105,7 +1105,7 @@ TEST_F(TextureTest, HalfFloatNotLinear) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_half_float");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize();
+  feature_info->InitializeForTesting();
   TextureManager manager(NULL,
                          feature_info.get(),
                          kMaxTextureSize,
@@ -1137,7 +1137,7 @@ TEST_F(TextureTest, HalfFloatLinear) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_half_float GL_OES_texture_half_float_linear");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize();
+  feature_info->InitializeForTesting();
   TextureManager manager(NULL,
                          feature_info.get(),
                          kMaxTextureSize,
@@ -1161,7 +1161,7 @@ TEST_F(TextureTest, EGLImageExternal) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_EGL_image_external");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize();
+  feature_info->InitializeForTesting();
   TextureManager manager(NULL,
                          feature_info.get(),
                          kMaxTextureSize,
@@ -1183,7 +1183,7 @@ TEST_F(TextureTest, DepthTexture) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_ANGLE_depth_texture");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize();
+  feature_info->InitializeForTesting();
   TextureManager manager(NULL,
                          feature_info.get(),
                          kMaxTextureSize,

@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.25",
+  "version": "8.26",
   "entries": [
     {
       "id": 1,
@@ -1542,6 +1542,16 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_texture_storage"
+      ]
+    },
+    {
+      "id": 132,
+      "description": "On Intel GPUs MSAA performance is not acceptable for GPU rasterization",
+      "cr_bugs": [527565],
+      "vendor_id": "0x8086",
+      "multi_gpu_category": "active",
+      "features": [
+        "disable_msaa_on_non_webgl_contexts"
       ]
     }
   ]

@@ -841,11 +841,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
     return true;
   }
 
-  bool IsWebGLContext() const {
-    return context_type_ == CONTEXT_TYPE_WEBGL1 ||
-           context_type_ == CONTEXT_TYPE_WEBGL2;
-  }
-
   bool IsOffscreenBufferMultisampled() const {
     return offscreen_target_samples_ > 1;
   }
@@ -2623,8 +2618,6 @@ bool GLES2DecoderImpl::Initialize(
   if (!attrib_parser.Parse(attribs))
     return false;
 
-  context_type_ = attrib_parser.context_type;
-
   surfaceless_ = surface->IsSurfaceless() && !offscreen;
 
   set_initialized();
@@ -2674,18 +2667,19 @@ bool GLES2DecoderImpl::Initialize(
   }
 
   disallowed_features_ = disallowed_features;
-  if (context_type_ == CONTEXT_TYPE_WEBGL1) {
+  if (attrib_parser.context_type == CONTEXT_TYPE_WEBGL1) {
     disallowed_features_.npot_support = true;
   }
 
-  if (!group_->Initialize(this, context_type_, disallowed_features_)) {
+  if (!group_->Initialize(this, attrib_parser.context_type,
+                          disallowed_features_)) {
     group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
     Destroy(true);
     return false;
   }
   CHECK_GL_ERROR();
-  if (context_type_ == CONTEXT_TYPE_WEBGL2 ||
-      context_type_ == CONTEXT_TYPE_OPENGLES3) {
+  if (feature_info_->context_type() == CONTEXT_TYPE_WEBGL2 ||
+      feature_info_->context_type() == CONTEXT_TYPE_OPENGLES3) {
     if (!feature_info_->IsES3Capable()) {
       LOG(ERROR) << "Underlying driver does not support ES3.";
       Destroy(true);
@@ -3226,7 +3220,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.FragmentPrecisionHigh =
       PrecisionMeetsSpecForHighpFloat(range[0], range[1], precision);
 
-  if (IsWebGLContext()) {
+  if (feature_info_->IsWebGLContext()) {
     resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
     resources.EXT_frag_depth = frag_depth_explicitly_enabled_;
     resources.EXT_draw_buffers = draw_buffers_explicitly_enabled_;
@@ -3253,7 +3247,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   }
 
   ShShaderSpec shader_spec;
-  switch (context_type_) {
+  switch (feature_info_->context_type()) {
     case CONTEXT_TYPE_WEBGL1:
       shader_spec = SH_WEBGL_SPEC;
       break;
@@ -9006,7 +9000,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
       }
       break;
   }
-  if (!IsWebGLContext()) {
+  if (!feature_info_->IsWebGLContext()) {
     accepted_formats.push_back(GL_BGRA_EXT);
     accepted_types.push_back(GL_UNSIGNED_BYTE);
   }
@@ -9507,7 +9501,7 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32 immediate_data_size,
     case GL_VENDOR:
       // Return the unmasked VENDOR/RENDERER string for WebGL contexts.
       // They are used by WEBGL_debug_renderer_info.
-      if (!IsWebGLContext())
+      if (!feature_info_->IsWebGLContext())
         str = "Chromium";
       else
         str = reinterpret_cast<const char*>(glGetString(name));
@@ -9516,7 +9510,7 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32 immediate_data_size,
       {
         // For WebGL contexts, strip out the OES derivatives and
         // EXT frag depth extensions if they have not been enabled.
-        if (IsWebGLContext()) {
+        if (feature_info_->IsWebGLContext()) {
           extensions = feature_info_->extensions();
           if (!derivatives_explicitly_enabled_) {
             size_t offset = extensions.find(kOESDerivativeExtension);
@@ -11963,7 +11957,7 @@ error::Error GLES2DecoderImpl::HandleGetRequestableExtensionsCHROMIUM(
           cmd_data);
   Bucket* bucket = CreateBucket(c.bucket_id);
   scoped_refptr<FeatureInfo> info(new FeatureInfo());
-  info->Initialize(disallowed_features_);
+  info->Initialize(feature_info_->context_type(), disallowed_features_);
   bucket->SetFromString(info->extensions().c_str());
   return error::kNoError;
 }
@@ -11986,7 +11980,7 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   bool desire_frag_depth = false;
   bool desire_draw_buffers = false;
   bool desire_shader_texture_lod = false;
-  if (IsWebGLContext()) {
+  if (feature_info_->IsWebGLContext()) {
     desire_standard_derivatives =
         feature_str.find("GL_OES_standard_derivatives") != std::string::npos;
     desire_frag_depth =
