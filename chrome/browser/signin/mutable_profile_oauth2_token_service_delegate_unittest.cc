@@ -428,6 +428,46 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RetryBackoff) {
   EXPECT_EQ(1, access_token_failure_count_);
 }
 
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ResetBackoff) {
+  oauth2_service_delegate_->UpdateCredentials(kEmail, "refreshToken");
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            signin_error_controller_.auth_error());
+
+  GoogleServiceAuthError authfail(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+  oauth2_service_delegate_->UpdateAuthError(kEmail, authfail);
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            signin_error_controller_.auth_error());
+
+  // Create a "success" fetch we don't expect to get called just yet.
+  factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                           GetValidTokenResponse("token", 3600), net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
+
+  // Transient error will repeat until backoff period expires.
+  EXPECT_EQ(0, access_token_success_count_);
+  EXPECT_EQ(0, access_token_failure_count_);
+  std::vector<std::string> scope_list;
+  scope_list.push_back("scope");
+  scoped_ptr<OAuth2AccessTokenFetcher> fetcher1(
+      oauth2_service_delegate_->CreateAccessTokenFetcher(
+          kEmail, oauth2_service_delegate_->GetRequestContext(), this));
+  fetcher1->Start("foo", "bar", scope_list);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, access_token_success_count_);
+  EXPECT_EQ(1, access_token_failure_count_);
+
+  // Notify of network change and ensure that request now runs.
+  oauth2_service_delegate_->OnNetworkChanged(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  scoped_ptr<OAuth2AccessTokenFetcher> fetcher2(
+      oauth2_service_delegate_->CreateAccessTokenFetcher(
+          kEmail, oauth2_service_delegate_->GetRequestContext(), this));
+  fetcher2->Start("foo", "bar", scope_list);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, access_token_success_count_);
+  EXPECT_EQ(1, access_token_failure_count_);
+}
+
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, CanonicalizeAccountId) {
   std::map<std::string, std::string> tokens;
   tokens["AccountId-user@gmail.com"] = "refresh_token";

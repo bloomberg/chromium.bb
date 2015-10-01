@@ -142,12 +142,14 @@ MutableProfileOAuth2TokenServiceDelegate::
   backoff_policy_.maximum_backoff_ms = 15 * 60 * 1000;
   backoff_policy_.entry_lifetime_ms = -1;
   backoff_policy_.always_use_initial_delay = false;
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 MutableProfileOAuth2TokenServiceDelegate::
     ~MutableProfileOAuth2TokenServiceDelegate() {
   VLOG(1) << "MutablePO2TS::~MutablePO2TS";
   DCHECK(server_revokes_.empty());
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 OAuth2AccessTokenFetcher*
@@ -506,4 +508,11 @@ void MutableProfileOAuth2TokenServiceDelegate::Shutdown() {
   server_revokes_.clear();
   CancelWebTokenFetch();
   refresh_tokens_.clear();
+}
+
+void MutableProfileOAuth2TokenServiceDelegate::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  // If our network has changed, reset the backoff timer so that errors caused
+  // by a previous lack of network connectivity don't prevent new requests.
+  backoff_entry_.Reset();
 }
