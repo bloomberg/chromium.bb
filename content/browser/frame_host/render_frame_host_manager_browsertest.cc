@@ -2062,4 +2062,57 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, UpdateOpener) {
   EXPECT_EQ(bar_root, foo_root->opener());
 }
 
+// Tests that when a popup is opened, which is then navigated cross-process and
+// back, it can be still accessed through the original window reference in
+// JavaScript. See https://crbug.com/537657
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       PopupKeepsWindowReferenceCrossProcesAndBack) {
+  StartServer();
+
+  // Load a page with links that open in a new window.
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/click-noreferrer-links.html",
+      foo_host_port_,
+      &replacement_path));
+  NavigateToURL(shell(), test_server()->GetURL(replacement_path));
+
+  // Click a target=foo link to open a popup.
+  ShellAddedObserver new_shell_observer;
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "window.domAutomationController.send(clickSameSiteTargetedLink());",
+      &success));
+  EXPECT_TRUE(success);
+  Shell* new_shell = new_shell_observer.GetShell();
+  EXPECT_TRUE(new_shell->web_contents()->HasOpener());
+
+  // Wait for the navigation in the popup to finish, if it hasn't.
+  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_EQ("/files/navigate_opener.html",
+            new_shell->web_contents()->GetLastCommittedURL().path());
+
+  // Capture the window reference, so we can check that accessing its location
+  // works after navigating cross-process and back.
+  GURL expected_url = new_shell->web_contents()->GetLastCommittedURL();
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "saveWindowReference();"));
+
+  // Now navigate the popup to a different site and then go back.
+  NavigateToURL(new_shell, GetCrossSiteURL("files/title1.html"));
+  TestNavigationObserver back_nav_load_observer(new_shell->web_contents());
+  new_shell->web_contents()->GetController().GoBack();
+  back_nav_load_observer.Wait();
+
+  // Check that the location.href window attribute is accessible and is correct.
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell()->web_contents(),
+      "window.domAutomationController.send(getLastOpenedWindowLocation());",
+      &result));
+  EXPECT_EQ(expected_url.spec(), result);
+}
+
+
 }  // namespace content

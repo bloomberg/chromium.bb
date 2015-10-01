@@ -83,6 +83,16 @@
     // Change the title to generate a notification.
     document.title = event.data;
   }
+
+  var last_opened_window = undefined;
+  function saveWindowReference() {
+    // Grab a reference to the existing foo window into a global variable
+    // for later testing.
+    last_opened_window = window.open("", "foo");
+  }
+  function getLastOpenedWindowLocation() {
+    return last_opened_window.location.href;
+  }
  </script>
  </head>
 
