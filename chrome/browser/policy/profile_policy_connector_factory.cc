@@ -100,10 +100,10 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
     bool force_immediate_load) {
   DCHECK(connectors_.find(context) == connectors_.end());
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
   SchemaRegistry* schema_registry = nullptr;
   CloudPolicyManager* user_cloud_policy_manager = nullptr;
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   schema_registry =
       SchemaRegistryServiceFactory::GetForContext(context)->registry();
 
