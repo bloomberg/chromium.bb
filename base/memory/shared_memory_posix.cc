@@ -177,12 +177,16 @@ bool SharedMemory::CreateAndMapAnonymous(size_t size) {
 
 #if !defined(OS_ANDROID)
 // static
-int SharedMemory::GetSizeFromSharedMemoryHandle(
-    const SharedMemoryHandle& handle) {
+bool SharedMemory::GetSizeFromSharedMemoryHandle(
+    const SharedMemoryHandle& handle,
+    size_t* size) {
   struct stat st;
   if (fstat(handle.fd, &st) != 0)
-    return -1;
-  return st.st_size;
+    return false;
+  if (st.st_size < 0)
+    return false;
+  *size = st.st_size;
+  return true;
 }
 
 // Chromium mostly only uses the unique/private shmem as specified by

@@ -73,9 +73,10 @@ bool TransportDIB::Map() {
   if (memory())
     return true;
 
-  int size = base::SharedMemory::GetSizeFromSharedMemoryHandle(
-      shared_memory_.handle());
-  if (size == -1 || !shared_memory_.Map(size))
+  size_t size;
+  bool success = base::SharedMemory::GetSizeFromSharedMemoryHandle(
+      shared_memory_.handle(), &size);
+  if (!success || !shared_memory_.Map(size))
     return false;
 
   size_ = size;
