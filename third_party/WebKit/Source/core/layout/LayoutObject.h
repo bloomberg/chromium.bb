@@ -1471,6 +1471,25 @@ private:
         };
 
     public:
+        // LayoutObjectBitfields holds all the boolean values for LayoutObject.
+        //
+        // This is done to promote better packing on LayoutObject (at the
+        // expense of preventing bit field packing for the subclasses). Classes
+        // concerned about packing and memory use should hoist their boolean to
+        // this class. See below the field from sub-classes (e.g.
+        // childrenInline).
+        //
+        // Some of those booleans are caches of ComputedStyle values (e.g.
+        // positionState). This enables better memory locality and thus better
+        // performance.
+        //
+        // This class is an artifact of the WebKit era where LayoutObject wasn't
+        // allowed to grow and each sub-class was strictly monitored for memory
+        // increase. Our measurements indicate that the size of LayoutObject and
+        // subsequent classes do not impact memory or speed in a significant
+        // manner. This is based on growing LayoutObject in
+        // https://codereview.chromium.org/44673003 and subsequent relaxations
+        // of the memory constraints on layout objects.
         LayoutObjectBitfields(Node* node)
             : m_selfNeedsLayout(false)
             , m_needsPositionedMovementLayout(false)
@@ -1579,6 +1598,9 @@ private:
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateSelection, ShouldInvalidateSelection); // TODO(wangxianzhu): Remove for slimming paint v2.
         ADD_BOOLEAN_BITFIELD(neededLayoutBecauseOfChildren, NeededLayoutBecauseOfChildren); // TODO(wangxianzhu): Remove for slimming paint v2.
+
+        // This boolean is the cached value of 'float'
+        // (see ComputedStyle::isFloating).
         ADD_BOOLEAN_BITFIELD(floating, Floating);
 
         ADD_BOOLEAN_BITFIELD(isAnonymous, IsAnonymous);
@@ -1588,7 +1610,7 @@ private:
         // This boolean represents whether the LayoutObject is 'inline-level'
         // (a CSS concept). Inline-level boxes are laid out inside a line. If
         // unset, the box is 'block-level' and thus stack on top of its
-        // siblings (think of paragraph).
+        // siblings (think of paragraphs).
         ADD_BOOLEAN_BITFIELD(isInline, IsInline);
 
         ADD_BOOLEAN_BITFIELD(isReplaced, IsReplaced);
@@ -1596,7 +1618,16 @@ private:
         ADD_BOOLEAN_BITFIELD(isDragging, IsDragging);
 
         ADD_BOOLEAN_BITFIELD(hasLayer, HasLayer);
-        ADD_BOOLEAN_BITFIELD(hasOverflowClip, HasOverflowClip); // Set in the case of overflow:auto/scroll/hidden
+
+        // This boolean is set if overflow != 'visible'.
+        // This means that this object may need an overflow clip to be applied
+        // at paint time to its visual overflow (see OverflowModel for more
+        // details).
+        // Only set for LayoutBoxes and descendants.
+        ADD_BOOLEAN_BITFIELD(hasOverflowClip, HasOverflowClip);
+
+        // This boolean is the cached value from
+        // ComputedStyle::hasTransformRelatedProperty.
         ADD_BOOLEAN_BITFIELD(hasTransformRelatedProperty, HasTransformRelatedProperty);
         ADD_BOOLEAN_BITFIELD(hasReflection, HasReflection);
 
@@ -1631,6 +1662,8 @@ private:
         ADD_BOOLEAN_BITFIELD(isSlowRepaintObject, IsSlowRepaintObject);
 
     private:
+        // This is the cached 'position' value of this object
+        // (see ComputedStyle::position).
         unsigned m_positionedState : 2; // PositionedState
         unsigned m_selectionState : 3; // SelectionState
         unsigned m_boxDecorationBackgroundState : 2; // BoxDecorationBackgroundState
