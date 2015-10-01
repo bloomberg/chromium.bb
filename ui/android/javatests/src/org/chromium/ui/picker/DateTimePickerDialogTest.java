@@ -12,6 +12,8 @@ import android.widget.TimePicker;
  * Tests for DateTimePickerDialog.
  */
 public class DateTimePickerDialogTest extends InstrumentationTestCase {
+    //TODO(tkent): fix deprecation warnings crbug.com/537037
+    @SuppressWarnings("deprecation")
     @SmallTest
     public void testOnTimeChanged() {
         int september = 8;

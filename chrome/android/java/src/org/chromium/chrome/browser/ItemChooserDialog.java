@@ -204,7 +204,7 @@ public class ItemChooserDialog {
             } else {
                 view.setBackground(null);
                 if (!isEnabled(position)) {
-                    view.setTextColor(getContext().getResources().getColor(
+                    view.setTextColor(ApiCompatibilityUtils.getColor(getContext().getResources(),
                             R.color.primary_text_disabled_material_light));
                 } else {
                     view.setTextColor(mDefaultTextColor);

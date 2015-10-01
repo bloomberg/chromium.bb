@@ -1415,6 +1415,8 @@
           'type': 'none',
           'variables': {
             'java_in_dir': '../net/test/android/javatests',
+            # TODO(jbudorick): remove chromium_code: 0 line once crbug.com/488192 is fixed.
+            'chromium_code': 0,
           },
           'dependencies': [
             'net_java',

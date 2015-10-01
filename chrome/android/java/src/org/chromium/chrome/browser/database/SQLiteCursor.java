@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 package org.chromium.chrome.browser.database;
 
 import android.database.AbstractCursor;
@@ -16,6 +15,8 @@ import java.sql.Types;
 /**
  * This class exposes the query result from native side.
  */
+// TODO(michaelbai): fix deprecation warnings crbug.com/528085
+@SuppressWarnings("deprecation")
 public class SQLiteCursor extends AbstractCursor {
     private static final String TAG = "SQLiteCursor";
     // Used by JNI.

@@ -335,8 +335,7 @@ def main(argv):
         ])
 
   if options.chromium_code:
-    # TODO(aurimas): re-enable '-Xlint:deprecation' checks once they are fixed.
-    javac_cmd.extend(['-Xlint:unchecked'])
+    javac_cmd.extend(['-Xlint:unchecked', '-Xlint:deprecation'])
   else:
     # XDignore.symbol.file makes javac compile against rt.jar instead of
     # ct.sym. This means that using a java internal package/class will not

@@ -160,6 +160,8 @@ public class ChromeSigninUtils {
     /**
      * Removes all Google accounts from the OS.
      */
+    // TODO(jbudorick): fix deprecation warnings crbug.com/537352
+    @SuppressWarnings("deprecation")
     public void removeAllGoogleAccountsFromOs() {
         for (Account acct : mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE)) {
             mAccountManager.removeAccount(acct, null, null);
@@ -196,6 +198,7 @@ public class ChromeSigninUtils {
             }
         }
 
+        @Override
         public void run(AccountManagerFuture<Bundle> future) {
             Bundle resultBundle;
             try {

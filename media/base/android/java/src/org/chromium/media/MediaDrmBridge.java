@@ -946,6 +946,8 @@ public class MediaDrmBridge {
         });
     }
 
+    // TODO(xhwang): fix deprecation warnings crbug.com/527916
+    @SuppressWarnings("deprecation")
     private class EventListener implements MediaDrm.OnEventListener {
         @Override
         public void onEvent(

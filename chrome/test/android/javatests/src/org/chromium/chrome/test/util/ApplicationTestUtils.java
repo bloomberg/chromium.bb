@@ -30,6 +30,8 @@ public class ApplicationTestUtils {
 
     private static PowerManager.WakeLock sWakeLock = null;
 
+    // TODO(jbudorick): fix deprecation warning crbug.com/537347
+    @SuppressWarnings("deprecation")
     public static void setUp(Context context, boolean clearAppData, boolean checkHttpServer)
             throws Exception {
         if (clearAppData) {

@@ -22,6 +22,8 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+// TODO(tkent): fix deprecation warnings crbug.com/537037
+@SuppressWarnings("deprecation")
 public class DateTimePickerDialog extends AlertDialog implements OnClickListener,
         OnDateChangedListener, OnTimeChangedListener {
     private final DatePicker mDatePicker;

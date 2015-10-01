@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.bookmark;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -160,9 +161,17 @@ public class AsyncTaskFragment extends Fragment {
         }
     }
 
+    // TODO: remove this than we only support Build.VERSION_CODES.M and newer.
+    @SuppressWarnings("deprecation")
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        showDialog();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
         showDialog();
     }
 

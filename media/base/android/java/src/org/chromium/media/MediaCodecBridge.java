@@ -790,6 +790,8 @@ class MediaCodecBridge {
         }
     }
 
+    // TODO(xhwang): fix deprecation warnings crbug.com/527916
+    @SuppressWarnings("deprecation")
     private int getAudioFormat(int channelCount) {
         switch (channelCount) {
             case 1:

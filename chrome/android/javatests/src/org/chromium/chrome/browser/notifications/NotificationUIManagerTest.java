@@ -41,6 +41,8 @@ import java.util.concurrent.TimeoutException;
  */
 // TODO(peter): remove @SuppressLint once crbug.com/501900 is fixed.
 @SuppressLint("NewApi")
+// TODO(peter): fix deprecation warnings crbug.com/528076
+@SuppressWarnings("deprecation")
 public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String NOTIFICATION_TEST_PAGE =
             TestHttpServerClient.getUrl("chrome/test/data/notifications/android_test.html");

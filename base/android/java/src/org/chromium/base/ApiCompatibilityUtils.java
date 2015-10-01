@@ -436,4 +436,16 @@ public class ApiCompatibilityUtils {
             return res.getColorStateList(id);
         }
     }
+
+    /**
+     * @see android.widget.TextView#setTextAppearance(int id).
+     */
+    @SuppressWarnings("deprecation")
+    public static void setTextAppearance(TextView view, int id) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            view.setTextAppearance(id);
+        } else {
+            view.setTextAppearance(view.getContext(), id);
+        }
+    }
 }

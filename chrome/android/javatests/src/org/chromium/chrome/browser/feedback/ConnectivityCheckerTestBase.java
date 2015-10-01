@@ -7,14 +7,6 @@ package org.chromium.chrome.browser.feedback;
 import android.os.Handler;
 import android.os.HandlerThread;
 
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpStatus;
-import org.apache.http.HttpVersion;
-import org.apache.http.message.BasicHttpResponse;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.params.HttpParams;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.net.test.BaseHttpTestServer;
 
@@ -27,6 +19,8 @@ import java.net.Socket;
  * It includes a {@link ConnectivityTestServer} which is set up and torn down automatically
  * for tests.
  */
+// TODO(nyquist): fix deprecation warnings crbug.com/537053
+@SuppressWarnings("deprecation")
 public class ConnectivityCheckerTestBase extends NativeLibraryTestBase {
     static final int TIMEOUT_MS = 5000;
     /**
@@ -116,15 +110,17 @@ public class ConnectivityCheckerTestBase extends NativeLibraryTestBase {
         }
 
         @Override
-        protected HttpParams getConnectionParams() {
-            HttpParams httpParams = new BasicHttpParams();
-            httpParams.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+        protected org.apache.http.params.HttpParams getConnectionParams() {
+            org.apache.http.params.HttpParams httpParams =
+                    new org.apache.http.params.BasicHttpParams();
+            httpParams.setParameter(org.apache.http.params.CoreProtocolPNames.PROTOCOL_VERSION,
+                    org.apache.http.HttpVersion.HTTP_1_1);
             return httpParams;
         }
 
         @Override
-        protected void handleGet(HttpRequest request, HttpResponseCallback callback)
-                throws HttpException {
+        protected void handleGet(org.apache.http.HttpRequest request, HttpResponseCallback callback)
+                throws org.apache.http.HttpException {
             String requestPath = request.getRequestLine().getUri();
             if (GENERATE_204_SLOW_PATH.equals(requestPath)) {
                 sendDelayedResponse(callback, requestPath);
@@ -149,22 +145,23 @@ public class ConnectivityCheckerTestBase extends NativeLibraryTestBase {
         private void sendResponse(HttpResponseCallback callback, String requestPath) {
             int httpStatus = getStatusCodeFromRequestPath(requestPath);
             String reason = String.valueOf(httpStatus);
-            callback.onResponse(new BasicHttpResponse(HttpVersion.HTTP_1_1, httpStatus, reason));
+            callback.onResponse(new org.apache.http.message.BasicHttpResponse(
+                    org.apache.http.HttpVersion.HTTP_1_1, httpStatus, reason));
         }
 
         private int getStatusCodeFromRequestPath(String requestPath) {
             switch (requestPath) {
                 case GENERATE_200_PATH:
-                    return HttpStatus.SC_OK;
+                    return org.apache.http.HttpStatus.SC_OK;
                 case GENERATE_204_PATH: // Intentional fall through.
                 case GENERATE_204_SLOW_PATH:
-                    return HttpStatus.SC_NO_CONTENT;
+                    return org.apache.http.HttpStatus.SC_NO_CONTENT;
                 case GENERATE_302_PATH:
-                    return HttpStatus.SC_MOVED_TEMPORARILY;
+                    return org.apache.http.HttpStatus.SC_MOVED_TEMPORARILY;
                 case GENERATE_404_PATH:
-                    return HttpStatus.SC_NOT_FOUND;
+                    return org.apache.http.HttpStatus.SC_NOT_FOUND;
                 default:
-                    return HttpStatus.SC_INTERNAL_SERVER_ERROR;
+                    return org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
             }
         }
     }

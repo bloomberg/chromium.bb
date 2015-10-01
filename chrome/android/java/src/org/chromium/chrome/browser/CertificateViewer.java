@@ -77,7 +77,7 @@ class CertificateViewer implements OnItemSelectedListener {
 
         TextView title = new TextView(mContext);
         title.setText(R.string.certtitle);
-        title.setTextAppearance(mContext, android.R.style.TextAppearance_Large);
+        ApiCompatibilityUtils.setTextAppearance(title, android.R.style.TextAppearance_Large);
         title.setTypeface(title.getTypeface(), Typeface.BOLD);
         title.setPadding(mPadding, mPadding, mPadding, mPadding / 2);
         dialogContainer.addView(title);

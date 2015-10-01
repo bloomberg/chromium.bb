@@ -87,7 +87,7 @@ public class TextBubble
                                                          : android.R.style.Animation);
 
         mTooltipText = new TextView(context);
-        mTooltipText.setTextAppearance(context,
+        ApiCompatibilityUtils.setTextAppearance(mTooltipText,
                 (res.containsKey(TEXT_STYLE_ID) ? res.getInt(TEXT_STYLE_ID) : R.style.info_bubble));
 
         setContentView(mTooltipText);
