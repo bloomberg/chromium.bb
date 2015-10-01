@@ -96,6 +96,22 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideImagesOnDrive) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       TraverseSlideThumbnailsOnDownloads) {
+  set_test_case_name("traverseSlideThumbnailsOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideThumbnailsOnDownloads) {
+  set_test_case_name("traverseSlideThumbnailsOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideThumbnailsOnDrive) {
+  set_test_case_name("traverseSlideThumbnailsOnDrive");
+  StartTest();
+}
+
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageOnDownloads) {
   set_test_case_name("renameImageOnDownloads");
   StartTest();
