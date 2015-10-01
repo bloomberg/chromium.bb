@@ -4,6 +4,7 @@
 
 #include "ipc/attachment_broker_unprivileged.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_endpoint.h"
 
@@ -20,6 +21,12 @@ void AttachmentBrokerUnprivileged::DesignateBrokerCommunicationChannel(
   DCHECK(!sender_);
   sender_ = endpoint;
   endpoint->SetAttachmentBrokerEndpoint(true);
+}
+
+void AttachmentBrokerUnprivileged::LogError(UMAError error) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "IPC.AttachmentBrokerUnprivileged.BrokerAttachmentError", error,
+      ERROR_MAX);
 }
 
 }  // namespace IPC

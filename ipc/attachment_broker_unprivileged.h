@@ -27,6 +27,21 @@ class IPC_EXPORT AttachmentBrokerUnprivileged : public IPC::AttachmentBroker {
  protected:
   IPC::Sender* get_sender() { return sender_; }
 
+  // Errors that can be reported by subclasses.
+  // These match tools/metrics/histograms.xml.
+  // This enum is append-only.
+  enum UMAError {
+    // The brokerable attachment was successfully processed.
+    SUCCESS = 0,
+    // The brokerable attachment's destination was not the process that received
+    // the attachment.
+    WRONG_DESTINATION = 1,
+    ERROR_MAX
+  };
+
+  // Emits an UMA metric.
+  void LogError(UMAError error);
+
  private:
   // |sender_| is used to send Messages to the privileged broker process.
   // |sender_| must live at least as long as this instance.

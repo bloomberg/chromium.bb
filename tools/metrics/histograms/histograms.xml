@@ -16280,6 +16280,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="IPC.AttachmentBrokerUnprivileged.BrokerAttachmentError"
+    enum="IPCAttachmentBrokerUnprivilegedBrokerAttachmentError">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    Errors that an unprivileged attachment broker encounters while trying to
+    broker attachments.
+  </summary>
+</histogram>
+
 <histogram name="Keyboard.KeystrokeDeltas" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -62347,6 +62356,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </int>
   <int value="2" label="NO_DESTINATION">
     The brokerable attachment did not have a destination process.
+  </int>
+</enum>
+
+<enum name="IPCAttachmentBrokerUnprivilegedBrokerAttachmentError" type="int">
+  <int value="0" label="SUCCESS">
+    The brokerable attachment was successfully processed.
+  </int>
+  <int value="1" label="DESTINATION_NOT_FOUND">
+    The brokerable attachment's destination was not the process that received
+    the attachment.
   </int>
 </enum>
 
