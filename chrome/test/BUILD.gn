@@ -1884,8 +1884,6 @@ if (!is_android) {
               ".",
               "//chrome")
       deps += [
-        #'browser/safe_browsing/incident_reporting/verifier_test/verifier_unittest.gyp:verifier_test_dll_1',  TODO(GYP) bug 512919
-        #'browser/safe_browsing/incident_reporting/verifier_test/verifier_unittest.gyp:verifier_test_dll_2',  TODO(GYP) bug 512919
         "//chrome:other_version",
         "//chrome_elf:blacklist_test_dll_1",
         "//chrome/installer/util:strings",
@@ -1893,6 +1891,10 @@ if (!is_android) {
         "//third_party/isimpledom",
         "//third_party/wtl",
         "//ui/resources",
+      ]
+      data_deps += [
+        "//chrome/browser/safe_browsing/incident_reporting/verifier_test:verifier_test_dll_1",
+        "//chrome/browser/safe_browsing/incident_reporting/verifier_test:verifier_test_dll_2",
       ]
 
       libs = [

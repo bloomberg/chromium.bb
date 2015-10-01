@@ -7,6 +7,7 @@
   },
   'targets': [
     {
+      # GN version: //chrome/browser/safe_browsing/incident_reporting/verifier_test:verifier_test_dll_1
       'target_name': 'verifier_test_dll_1',
       'type': 'loadable_module',
       'sources': [
@@ -15,6 +16,7 @@
       ],
     },
     {
+      # GN version: //chrome/browser/safe_browsing/incident_reporting/verifier_test:verifier_test_dll_2
       'target_name': 'verifier_test_dll_2',
       'type': 'loadable_module',
       'sources': [
