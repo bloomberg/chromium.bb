@@ -132,9 +132,10 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
       button_view_(nullptr),
       browser_fullscreen_exit_accelerator_(accelerator) {
   views::BubbleBorder::Shadow shadow_type = views::BubbleBorder::BIG_SHADOW;
-#if defined(OS_CHROMEOS)
-  // Use a smaller shadow on ChromeOS as the shadow assets can overlap
-  // each other in a fullscreen notification bubble. crbug.com/462983.
+#if defined(OS_LINUX)
+  // Use a smaller shadow on Linux (including ChromeOS) as the shadow assets can
+  // overlap each other in a fullscreen notification bubble.
+  // See http://crbug.com/462983.
   shadow_type = views::BubbleBorder::SMALL_SHADOW;
 #endif
   scoped_ptr<views::BubbleBorder> bubble_border(
