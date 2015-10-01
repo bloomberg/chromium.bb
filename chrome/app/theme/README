@@ -24,11 +24,6 @@ Windows ICO icons should be in the following format:
 If you are creating an ICO from a set of PNGs of different sizes, the following
 process (using ImageMagick and GIMP) satisfies the above conditions:
 
-**IMPORTANT**: There is an issue with GIMP generating sub-optimal ICO files
-(see http://crbug.com/526622#c35); therefore if you are creating or updating
-icons using the below process, please add mgiuca@chromium.org as a reviewer.
-TODO(mgiuca): Update the tools/process to work around the problem.
-
 1. Convert each of the smaller images to 8-bit. With ImageMagick:
 
     for f in FILENAME-??.png; \
@@ -46,4 +41,5 @@ TODO(mgiuca): Update the tools/process to work around the problem.
 4. Run src/tools/resources/optimize-ico-files.py on the resulting .ico file.
 
 You can also run src/tools/resources/optimize-ico-files.py on existing .ico
-files. This will run a basic PNG optimization pass.
+files. This will run a basic PNG optimization pass and fix up any broken image
+masks (http://crbug.com/534679).

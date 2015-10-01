@@ -17,6 +17,7 @@ image, it will not get smaller. 256x256 icons should be PNG-formatted first.
 
 import argparse
 import logging
+import math
 import os
 import StringIO
 import struct
@@ -83,6 +84,73 @@ def OptimizePng(png_data, optimization_level=None):
       os.unlink(png_filename)
     os.rmdir(temp_dir)
 
+def ComputeANDMaskFromAlpha(image_data, width, height):
+  """Compute an AND mask from 32-bit BGRA image data."""
+  and_bytes = []
+  for y in range(height):
+    bit_count = 0
+    current_byte = 0
+    for x in range(width):
+      alpha = image_data[(y * width + x) * 4 + 3]
+      current_byte <<= 1
+      if ord(alpha) == 0:
+        current_byte |= 1
+      bit_count += 1
+      if bit_count == 8:
+        and_bytes.append(current_byte)
+        bit_count = 0
+        current_byte = 0
+
+    # At the end of a row, pad the current byte.
+    if bit_count > 0:
+      current_byte <<= (8 - bit_count)
+      and_bytes.append(current_byte)
+    # And keep padding until a multiple of 4 bytes.
+    while len(and_bytes) % 4 != 0:
+      and_bytes.append(0)
+
+  and_bytes = ''.join(map(chr, and_bytes))
+  return and_bytes
+
+def RebuildANDMask(iconimage):
+  """Rebuild the AND mask in an icon image.
+
+  GIMP (<=2.8.14) creates a bad AND mask on 32-bit icon images (pixels with <50%
+  opacity are marked as transparent, which end up looking black on Windows). So,
+  if this is a 32-bit image, throw the mask away and recompute it from the alpha
+  data. (See: https://bugzilla.gnome.org/show_bug.cgi?id=755200)
+
+  Args:
+    iconimage: Bytes of an icon image (the BMP data for an entry in an ICO
+      file). Must be in BMP format, not PNG. Does not need to be 32-bit (if it
+      is not 32-bit, this is a no-op).
+
+  Returns:
+    An updated |iconimage|, with the AND mask re-computed using
+    ComputeANDMaskFromAlpha.
+  """
+  # Parse BITMAPINFOHEADER.
+  (_, width, height, _, bpp, _, _, _, _, num_colors, _) = struct.unpack(
+      '<LLLHHLLLLLL', iconimage[:40])
+
+  if bpp != 32:
+    # No alpha channel, so the mask cannot be "wrong" (it is the only source of
+    # transparency information).
+    return iconimage
+
+  height /= 2
+  xor_size = int(math.ceil(width * bpp / 32.0)) * 4 * height
+
+  # num_colors can be 0, implying 2^bpp colors.
+  xor_palette_size = (num_colors or (1 << bpp if bpp < 24 else 0)) * 4
+  xor_data = iconimage[40 + xor_palette_size :
+                       40 + xor_palette_size + xor_size]
+
+  and_data = ComputeANDMaskFromAlpha(xor_data, width, height)
+
+  # Replace the AND mask in the original icon data.
+  return iconimage[:40 + xor_palette_size + xor_size] + and_data
+
 def OptimizeIcoFile(infile, outfile, optimization_level=None):
   """Read an ICO file, optimize its PNGs, and write the output to outfile.
 
@@ -123,11 +191,17 @@ def OptimizeIcoFile(infile, outfile, optimization_level=None):
 
     if entry_is_png:
       icon_data = OptimizePng(icon_data, optimization_level=optimization_level)
-    elif width >= 256 or height >= 256:
-      # TODO(mgiuca): Automatically convert large BMP images to PNGs.
-      logging.warning('Entry #%d is a large image in uncompressed BMP format. '
-                      'Please manually convert to PNG format before running '
-                      'this utility.', i + 1)
+    else:
+      new_icon_data = RebuildANDMask(icon_data)
+      if new_icon_data != icon_data:
+        logging.info('  * Rebuilt AND mask for this image from alpha channel.')
+        icon_data = new_icon_data
+
+      if width >= 256 or height >= 256:
+        # TODO(mgiuca): Automatically convert large BMP images to PNGs.
+        logging.warning('Entry #%d is a large image in uncompressed BMP '
+                        'format. Please manually convert to PNG format before '
+                        'running this utility.', i + 1)
 
     new_size = len(icon_data)
     current_offset += new_size
@@ -167,13 +241,16 @@ def main(args=None):
     OptimizeIcoFile(file, buf, args.optimization_level)
 
     new_length = len(buf.getvalue())
+
+    # Always write (even if file size not reduced), because we make other fixes
+    # such as regenerating the AND mask.
+    file.truncate(new_length)
+    file.seek(0)
+    file.write(buf.getvalue())
+
     if new_length >= old_length:
       logging.info('%s : Could not reduce file size.', file.name)
     else:
-      file.truncate(new_length)
-      file.seek(0)
-      file.write(buf.getvalue())
-
       saving = old_length - new_length
       saving_percent = float(saving) / old_length
       logging.info('%s : %d => %d (%d bytes : %d %%)', file.name, old_length,
