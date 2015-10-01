@@ -41,20 +41,21 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  let expected = {
+    name: 'NotFoundError',
+    message: 'Characteristic not found in device.'
+  };
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => Promise.all(
-      [service.getCharacteristic(battery_level.alias),
-       service.getCharacteristic(battery_level.name),
-       service.getCharacteristic(battery_level.uuid)]))
-    .then(characteristics => {
-      characteristics.forEach(characteristic => {
-        assert_equals(characteristic, null,
-                      'Non existent characteristic should return null.');
-      });
-    });
-}, 'Request for wrong characteristic. Should return null.');
+      [assert_promise_rejects_with_message(
+        service.getCharacteristic(battery_level.alias), expected),
+       assert_promise_rejects_with_message(
+         service.getCharacteristic(battery_level.name), expected),
+       assert_promise_rejects_with_message(
+         service.getCharacteristic(battery_level.uuid), expected)]));
+}, 'Request for wrong characteristic. Reject with NotFoundError.');
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');

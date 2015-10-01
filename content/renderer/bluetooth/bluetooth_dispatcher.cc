@@ -294,16 +294,6 @@ void BluetoothDispatcher::OnGetPrimaryServiceError(int thread_id,
                                                    WebBluetoothError error) {
   DCHECK(pending_primary_service_requests_.Lookup(request_id)) << request_id;
 
-  // Since we couldn't find the service return null. See Step 3 of
-  // getPrimaryService algorithm:
-  // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattremoteserver-getprimaryservice
-  if (error == WebBluetoothError::ServiceNotFound) {
-    pending_primary_service_requests_.Lookup(request_id)
-        ->callbacks->onSuccess(nullptr);
-    pending_primary_service_requests_.Remove(request_id);
-    return;
-  }
-
   pending_primary_service_requests_.Lookup(request_id)
       ->callbacks->onError(WebBluetoothError(error));
   pending_primary_service_requests_.Remove(request_id);
@@ -330,16 +320,9 @@ void BluetoothDispatcher::OnGetCharacteristicError(int thread_id,
                                                    WebBluetoothError error) {
   DCHECK(pending_characteristic_requests_.Lookup(request_id)) << request_id;
 
-  // Since we couldn't find the characteristic return null. See Step 3 of
-  // getCharacteristic algorithm:
-  // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattservice-getcharacteristic
-  if (error == WebBluetoothError::CharacteristicNotFound) {
-    pending_characteristic_requests_.Lookup(request_id)
-        ->callbacks->onSuccess(nullptr);
-  } else {
-    pending_characteristic_requests_.Lookup(request_id)
-        ->callbacks->onError(WebBluetoothError(error));
-  }
+  pending_characteristic_requests_.Lookup(request_id)
+      ->callbacks->onError(WebBluetoothError(error));
+
   pending_characteristic_requests_.Remove(request_id);
 }
 

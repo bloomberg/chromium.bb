@@ -24,19 +24,20 @@ promise_test(() => {
 
 promise_test(function() {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  let expected = {
+    name: 'NotFoundError',
+    message: 'Service not found in device.'
+  };
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
     .then(gattServer => Promise.all(
-      [gattServer.getPrimaryService(heart_rate.alias),
-       gattServer.getPrimaryService(heart_rate.name),
-       gattServer.getPrimaryService(heart_rate.uuid)]))
-    .then(services => {
-      services.forEach(service => {
-        assert_equals(service, null,
-                      'Non existent services should return null.');
-      });
-    });
-}, 'Request for wrong service. Should return null.');
+      [assert_promise_rejects_with_message(
+        gattServer.getPrimaryService(heart_rate.alias), expected),
+       assert_promise_rejects_with_message(
+         gattServer.getPrimaryService(heart_rate.name), expected),
+       assert_promise_rejects_with_message(
+         gattServer.getPrimaryService(heart_rate.uuid), expected)]));
+}, 'Request for wrong service. Reject with NotFoundError.');
 
 promise_test(function() {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
