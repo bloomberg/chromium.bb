@@ -794,13 +794,7 @@ template <> struct HashTableBucketInitializer<true> {
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
 inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::initializeBucket(ValueType& bucket)
 {
-    // The key and value cannot be initialied atomically, and it would be wrong
-    // to have a GC when only one was initialized and the other still contained
-    // garbage (eg. from a previous use of the same slot).  Therefore we forbid
-    // a GC while both the key and the value are initialized.
-    Allocator::enterGCForbiddenScope();
     HashTableBucketInitializer<Traits::emptyValueIsZero>::template initialize<Traits>(bucket);
-    Allocator::leaveGCForbiddenScope();
 }
 
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
