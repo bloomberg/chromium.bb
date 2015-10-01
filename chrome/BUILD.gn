@@ -44,7 +44,7 @@ if (is_win) {
 
 if (!is_android) {
   group("chrome") {
-    deps = [
+    public_deps = [
       ":chrome_initial",
     ]
     if (is_win) {

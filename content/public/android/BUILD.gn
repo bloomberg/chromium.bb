@@ -169,7 +169,7 @@ generate_jni("content_jni_headers") {
 }
 
 group("jni") {
-  deps = [
+  public_deps = [
     ":content_jni_headers",
     ":jar_jni",
   ]

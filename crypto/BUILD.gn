@@ -329,11 +329,11 @@ config("platform_config") {
 # on the current SSL library should just depend on this.
 group("platform") {
   if (use_openssl) {
-    deps = [
+    public_deps = [
       "//third_party/boringssl",
     ]
   } else {
-    deps = [
+    public_deps = [
       "//net/third_party/nss/ssl:libssl",
     ]
   }
@@ -358,7 +358,7 @@ group("platform") {
       public_configs += [ "//third_party/nss:system_nss_no_ssl_config" ]
     } else {
       # Non-Linux platforms use the hermetic NSS from the tree.
-      public_deps = [
+      public_deps += [
         "//third_party/nss:nspr",
         "//third_party/nss:nss",
       ]
