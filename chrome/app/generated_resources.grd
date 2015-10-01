@@ -1786,6 +1786,14 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         Access to this resource was forbidden by the server.
       </message>
 
+      <message name="IDS_DOWNLOAD_NOTIFICATION_LABEL_OPEN_WHEN_COMPLETE"
+               desc="Download notifications: Label for 'Open when download is complete' action button on notification">
+        Open when done
+      </message>
+      <message name="IDS_DOWNLOAD_NOTIFICATION_LABEL_OPEN"
+               desc="Download notifications: Label for 'Open download' action button on notification">
+        Open
+      </message>
       <!-- Download Shelf Items -->
       <message name="IDS_DOWNLOAD_STATUS_STARTING"
                desc="When starting a download, let the user know we're starting the download.">

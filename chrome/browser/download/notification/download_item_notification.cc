@@ -684,9 +684,9 @@ base::string16 DownloadItemNotification::GetCommandLabel(
   switch (command) {
     case DownloadCommands::OPEN_WHEN_COMPLETE:
       if (item_ && !item_->IsDone())
-        id = IDS_DOWNLOAD_STATUS_OPEN_WHEN_COMPLETE;
+        id = IDS_DOWNLOAD_NOTIFICATION_LABEL_OPEN_WHEN_COMPLETE;
       else
-        id = IDS_DOWNLOAD_STATUS_OPEN_WHEN_COMPLETE;
+        id = IDS_DOWNLOAD_NOTIFICATION_LABEL_OPEN;
       break;
     case DownloadCommands::PAUSE:
       // Only for non menu.
