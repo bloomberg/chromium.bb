@@ -571,7 +571,6 @@ private:
         ThreadState* state = ThreadState::current();
         ASSERT(state->checkThread());
         m_persistentNode = state->persistentRegion()->allocatePersistentNode(this, TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline);
-        state->persistentAllocated();
 #if ENABLE(ASSERT)
         m_state = state;
 #endif
@@ -584,7 +583,6 @@ private:
         // Persistent handle must be created and destructed in the same thread.
         ASSERT(m_state == state);
         state->persistentRegion()->freePersistentNode(m_persistentNode);
-        state->persistentFreed();
     }
 
     PersistentNode* m_persistentNode;
