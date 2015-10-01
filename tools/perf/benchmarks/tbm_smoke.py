@@ -4,6 +4,7 @@
 
 from core import perf_benchmark
 
+from telemetry import benchmark
 from telemetry.timeline import tracing_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
@@ -13,6 +14,7 @@ import page_sets
 TIMELINE_REQUIRED_CATEGORY = 'blink.console'
 
 
+@benchmark.Disabled('reference')
 class TbmSmoke(perf_benchmark.PerfBenchmark):
   """Timeline based measurement benchmark to test TBM Everywhere."""
   # TODO(eakuefner): Remove this benchmark once crbug.com/461101 is closed.
