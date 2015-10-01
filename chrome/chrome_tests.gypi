@@ -110,6 +110,7 @@
       'browser/download/download_danger_prompt_browsertest.cc',
       'browser/download/download_started_animation_browsertest.cc',
       'browser/download/save_page_browsertest.cc',
+      'browser/engagement/site_engagement_service_browsertest.cc',
       'browser/errorpage_browsertest.cc',
       'browser/extensions/active_script_controller_browsertest.cc',
       'browser/extensions/active_tab_apitest.cc',
