@@ -82,7 +82,8 @@ bool CreateIconFile(const SkBitmap& bitmap,
   // save it as the temporary file.
   gfx::ImageFamily image_family;
   image_family.Add(gfx::Image::CreateFrom1xBitmap(bitmap));
-  if (!IconUtil::CreateIconFileFromImageFamily(image_family, path))
+  if (!IconUtil::CreateIconFileFromImageFamily(image_family, path,
+                                               IconUtil::NORMAL_WRITE))
     return false;
 
   // Add this icon file to the list and return its absolute path.

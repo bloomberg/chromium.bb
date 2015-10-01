@@ -8,6 +8,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/resource_util.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_handle.h"
@@ -452,7 +453,8 @@ SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,
 // static
 bool IconUtil::CreateIconFileFromImageFamily(
     const gfx::ImageFamily& image_family,
-    const base::FilePath& icon_path) {
+    const base::FilePath& icon_path,
+    WriteType write_type) {
   // Creating a set of bitmaps corresponding to the icon images we'll end up
   // storing in the icon file. Each bitmap is created by resizing the most
   // appropriate image from |image_family| to the desired size.
@@ -516,8 +518,19 @@ bool IconUtil::CreateIconFileFromImageFamily(
 
   DCHECK_EQ(offset, buffer_size);
 
-  std::string data(buffer.begin(), buffer.end());
-  return base::ImportantFileWriter::WriteFileAtomically(icon_path, data);
+  if (write_type == NORMAL_WRITE) {
+    auto saved_size =
+        base::WriteFile(icon_path, reinterpret_cast<const char*>(&buffer[0]),
+                        static_cast<int>(buffer.size()));
+    if (saved_size == static_cast<int>(buffer.size()))
+      return true;
+    bool delete_success = base::DeleteFile(icon_path, false);
+    DCHECK(delete_success);
+    return false;
+  } else {
+    std::string data(buffer.begin(), buffer.end());
+    return base::ImportantFileWriter::WriteFileAtomically(icon_path, data);
+  }
 }
 
 bool IconUtil::PixelsHaveAlpha(const uint32* pixels, size_t num_pixels) {
