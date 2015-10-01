@@ -359,11 +359,6 @@ class USER_MANAGER_EXPORT UserManager {
                                        const std::string& path,
                                        const int in_value) = 0;
 
-  // Returns true if user's canonical email was found.
-  // Returns it in |out_email|.
-  virtual bool GetKnownUserCanonicalEmail(const UserID& user_id,
-                                          std::string* out_email) = 0;
-
   // Updates |gaia_id| for user with |user_id|.
   // TODO(antrim): Update this once UserID contains GAIA ID.
   virtual void UpdateGaiaID(const UserID& user_id,

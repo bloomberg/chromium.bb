@@ -1145,11 +1145,6 @@ void UserManagerBase::SetKnownUserIntegerPref(const UserID& user_id,
   UpdateKnownUserPrefs(user_id, dict, false);
 }
 
-bool UserManagerBase::GetKnownUserCanonicalEmail(const UserID& user_id,
-                                                 std::string* out_email) {
-  return GetKnownUserStringPref(user_id, kCanonicalEmail, out_email);
-}
-
 void UserManagerBase::UpdateGaiaID(const UserID& user_id,
                                    const std::string& gaia_id) {
   SetKnownUserStringPref(user_id, kGAIAIdKey, gaia_id);

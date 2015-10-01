@@ -39,7 +39,6 @@ class OobeBaseTest : public ExtensionApiTest {
 
   static const char kFakeUserEmail[];
   static const char kFakeUserPassword[];
-  static const char kFakeUserGaiaId[];
 
   // FakeGaia is configured to return these cookies for kFakeUserEmail.
   static const char kFakeSIDCookie[];
