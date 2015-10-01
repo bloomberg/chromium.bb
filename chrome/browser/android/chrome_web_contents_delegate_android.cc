@@ -400,6 +400,11 @@ void ChromeWebContentsDelegateAndroid::AddNewContents(
 void OnRendererUnresponsive(JNIEnv* env,
                             const JavaParamRef<jclass>& clazz,
                             const JavaParamRef<jobject>& java_web_contents) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHungRendererInfoBar)) {
+    return;
+  }
+
   content::WebContents* web_contents =
         content::WebContents::FromJavaWebContents(java_web_contents);
   InfoBarService* infobar_service =

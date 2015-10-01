@@ -52,14 +52,14 @@ int HungRendererInfoBarDelegate::GetIconId() const {
 }
 
 base::string16 HungRendererInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetPluralStringFUTF16(IDS_BROWSER_HANGMONITOR_RENDERER, 1);
+  return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_INFOBAR);
 }
 
 base::string16 HungRendererInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK)
-                                       ? IDS_BROWSER_HANGMONITOR_RENDERER_END
-                                       : IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);
+  return l10n_util::GetStringUTF16(
+      (button == BUTTON_OK) ? IDS_BROWSER_HANGMONITOR_RENDERER_INFOBAR_END
+                            : IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);
 }
 
 bool HungRendererInfoBarDelegate::Accept() {

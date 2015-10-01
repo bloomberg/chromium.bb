@@ -1166,6 +1166,10 @@ const char kEnableDomDistillerButtonAnimation[] =
 // Enables chrome hosted mode for Android.
 const char kEnableHostedMode[] = "enable-hosted-mode";
 
+// Enables a hung renderer InfoBar allowing the user to close or wait on
+// unresponsive web content.
+const char kEnableHungRendererInfoBar[] = "enable-hung-renderer-infobar";
+
 // Specifies Android phone page loading progress bar animation.
 const char kProgressBarAnimation[]          = "progress-bar-animation";
 

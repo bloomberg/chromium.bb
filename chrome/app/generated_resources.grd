@@ -7321,8 +7321,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_BROWSER_HANGMONITOR_RENDERER" desc="A renderer has hung. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
         {NUM_PAGES, plural,
-        =1 {This page has become unresponsive. You can wait for it to become responsive or kill it.}
+        =1 {The following page has become unresponsive. You can wait for it to become responsive or kill it.}
         other {The following pages have become unresponsive. You can wait for them to become responsive or kill them.}}
+      </message>
+      <message name="IDS_BROWSER_HANGMONITOR_RENDERER_INFOBAR" desc="The text of the infobar notifying the user that the renderer is unresponsive.">
+        The page has become unresponsive. You can wait for it to become responsive or close it.
+      </message>
+      <message name="IDS_BROWSER_HANGMONITOR_RENDERER_INFOBAR_END" desc="The label of the 'close' button for the hung renderer infobar">
+        Close
       </message>
       <message name="IDS_BROWSER_HANGMONITOR_RENDERER_WAIT" desc="The label of the 'wait' button">
         Wait

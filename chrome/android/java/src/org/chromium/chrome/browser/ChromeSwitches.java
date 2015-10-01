@@ -182,6 +182,12 @@ public abstract class ChromeSwitches {
     public static final String ENABLE_THEME_COLOR_IN_TABBED_MODE =
             "enable-theme-color-in-tabbed-mode";
 
+    /**
+     * Enables hung renderer InfoBar activation for unresponsive web content.
+     * Native switch - switches::kEnableHungRendererInfoBar
+     */
+    public static final String ENABLE_HUNG_RENDERER_INFOBAR = "enable-hung-renderer-infobar";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }

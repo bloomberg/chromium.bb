@@ -9,10 +9,12 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -163,6 +165,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_HUNG_RENDERER_INFOBAR);
                 getActivity()
                         .getActivityTab()
                         .getChromeWebContentsDelegateAndroid()
@@ -205,6 +208,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_HUNG_RENDERER_INFOBAR);
                 getActivity()
                         .getActivityTab()
                         .getChromeWebContentsDelegateAndroid()
