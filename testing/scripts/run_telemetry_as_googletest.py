@@ -9,7 +9,7 @@ This script attempts to emulate the contract of gtest-style tests
 invoked via recipes. The main contract is that the caller passes the
 argument:
 
-  --test-launcher-summary-output=[FILENAME]
+  --isolated-script-test-output=[FILENAME]
 
 json is written to that file in the format produced by
 common.parse_common_test_results.
@@ -31,7 +31,7 @@ import common
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
-    '--test-launcher-summary-output',
+    '--isolated-script-test-output',
     type=argparse.FileType('w'),
     required=True)
   args, rest_args = parser.parse_known_args()
@@ -49,7 +49,7 @@ def main():
         'valid': bool(rc <= common.MAX_FAILURES_EXIT_STATUS and
                       ((rc == 0) or failures)),
         'failures': failures.keys(),
-    }, args.test_launcher_summary_output)
+    }, args.isolated_script_test_output)
 
   return rc
 

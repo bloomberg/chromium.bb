@@ -661,6 +661,39 @@ if (!is_android) {
     }
   }
 
+  group("telemetry_gpu_unittests_run") {
+    testonly = true
+    deps = [
+      ":telemetry_gpu_unittests",
+    ]
+  }
+
+  group("telemetry_gpu_unittests") {
+    data = [
+      # TODO(kbr): refactor the telemetry dependencies more cleanly.
+      "//content/test/gpu/",
+      "//content/test/data/gpu/",
+
+      # For GpuProcess.video
+      "//content/test/data/media/bear.ogv",
+
+      # For webgl_conformance_expectations_unittest
+      "//third_party/webgl/src/sdk/tests/",
+
+      # Generic telemetry deps
+      "//third_party/catapult/",
+      "//build/android/devil/",
+      "//build/android/pylib/",
+      "//build/util/",
+      "//tools/telemetry/",
+
+      # From telemetry_gpu_unittests.isolate
+      "//third_party/typ/",
+      "//testing/scripts/common.py",
+      "//testing/scripts/run_telemetry_as_googletest.py",
+    ]
+  }
+
   # TODO(GYP): Delete this after we've converted everything to GN.
   # The _run targets exist only for compatibility w/ GYP.
   group("tab_capture_end2end_tests_run") {

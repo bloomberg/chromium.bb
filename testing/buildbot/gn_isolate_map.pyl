@@ -17,7 +17,7 @@
 # "windowed_test_launcher"
 # : the test is a gtest-based test that uses the 'brave-new-test-launcher'
 #   from //base/test:test_support and needs to run under Xvfb if run on
-#   an X11-based platform (use_x11=true).                         
+#   an X11-based platform (use_x11=true).
 #  "console_test_launcher"
 #  : the test is a gtest-based test that uses the 'brave-new-test-launcher'
 #    from //base/test:test_support but does not need Xvfb.
@@ -379,6 +379,15 @@
     "label": "//chrome/test:telemetry_gpu_test",
     "type": "script",
     "script": "//content/test/gpu/run_gpu_test.py",
+  },
+  "telemetry_gpu_unittests": {
+    "label": "//chrome/test:telemetry_gpu_unittests",
+    "type": "script",
+    "script": "//testing/scripts/run_telemetry_as_googletest.py",
+    "args": [
+      "../../content/test/gpu/run_unittests.py",
+      "-v",
+    ],
   },
   "ui_base_unittests": {
     "label": "//ui/base:ui_base_unittests",
