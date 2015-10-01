@@ -98,20 +98,20 @@ static EDisplay equivalentBlockDisplay(EDisplay display, bool isFloating, bool s
     return BLOCK;
 }
 
-static bool isOutermostSVGElement(const Element* e)
+static bool isOutermostSVGElement(const Element* element)
 {
-    return e && e->isSVGElement() && toSVGElement(*e).isOutermostSVGSVGElement();
+    return element && element->isSVGElement() && toSVGElement(*element).isOutermostSVGSVGElement();
 }
 
 // CSS requires text-decoration to be reset at each DOM element for
 // inline blocks, inline tables, shadow DOM crossings, floating elements,
 // and absolute or relatively positioned elements. Outermost <svg> roots are
 // considered to be atomic inline-level.
-static bool doesNotInheritTextDecoration(const ComputedStyle& style, const Element* e)
+static bool doesNotInheritTextDecoration(const ComputedStyle& style, const Element* element)
 {
     return style.display() == INLINE_TABLE
-        || style.display() == INLINE_BLOCK || style.display() == INLINE_BOX || isAtShadowBoundary(e)
-        || style.isFloating() || style.hasOutOfFlowPosition() || isOutermostSVGElement(e);
+        || style.display() == INLINE_BLOCK || style.display() == INLINE_BOX || isAtShadowBoundary(element)
+        || style.isFloating() || style.hasOutOfFlowPosition() || isOutermostSVGElement(element);
 }
 
 // FIXME: This helper is only needed because pseudoStyleForElement passes a null
@@ -158,25 +158,25 @@ static bool hasWillChangeThatCreatesStackingContext(const ComputedStyle& style)
     return false;
 }
 
-void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyle& parentStyle, Element *e)
+void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyle& parentStyle, Element* element)
 {
     if (style.display() != NONE) {
-        if (e && e->isHTMLElement())
-            adjustStyleForHTMLElement(style, parentStyle, toHTMLElement(*e));
+        if (element && element->isHTMLElement())
+            adjustStyleForHTMLElement(style, parentStyle, toHTMLElement(*element));
 
         // Per the spec, position 'static' and 'relative' in the top layer compute to 'absolute'.
-        if (isInTopLayer(e, style) && (style.position() == StaticPosition || style.position() == RelativePosition))
+        if (isInTopLayer(element, style) && (style.position() == StaticPosition || style.position() == RelativePosition))
             style.setPosition(AbsolutePosition);
 
         // Absolute/fixed positioned elements, floating elements and the document element need block-like outside display.
-        if (style.hasOutOfFlowPosition() || style.isFloating() || (e && e->document().documentElement() == e))
+        if (style.hasOutOfFlowPosition() || style.isFloating() || (element && element->document().documentElement() == element))
             style.setDisplay(equivalentBlockDisplay(style.display(), style.isFloating(), !m_useQuirksModeStyles));
 
         // We don't adjust the first letter style earlier because we may change the display setting in
         // adjustStyeForTagName() above.
         adjustStyleForFirstLetter(style);
 
-        adjustStyleForDisplay(style, parentStyle, e ? &e->document() : 0);
+        adjustStyleForDisplay(style, parentStyle, element ? &element->document() : 0);
     } else {
         adjustStyleForFirstLetter(style);
     }
@@ -188,7 +188,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
     // Auto z-index becomes 0 for the root element and transparent objects. This prevents
     // cases where objects that should be blended as a single unit end up with a non-transparent
     // object wedged in between them. Auto z-index also becomes 0 for objects that specify transforms/masks/reflections.
-    if (style.hasAutoZIndex() && ((e && e->document().documentElement() == e)
+    if (style.hasAutoZIndex() && ((element && element->document().documentElement() == element)
         || style.hasOpacity()
         || style.hasTransformRelatedProperty()
         || style.hasMask()
@@ -198,11 +198,11 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         || style.hasBlendMode()
         || style.hasIsolation()
         || style.position() == FixedPosition
-        || isInTopLayer(e, style)
+        || isInTopLayer(element, style)
         || hasWillChangeThatCreatesStackingContext(style)))
         style.setZIndex(0);
 
-    if (doesNotInheritTextDecoration(style, e))
+    if (doesNotInheritTextDecoration(style, element))
         style.clearAppliedTextDecorations();
 
     style.applyTextDecorations();
@@ -216,7 +216,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
 
     // Let the theme also have a crack at adjusting the style.
     if (style.hasAppearance())
-        LayoutTheme::theme().adjustStyle(style, e);
+        LayoutTheme::theme().adjustStyle(style, element);
 
     // If we have first-letter pseudo style, transitions, or animations, do not share this style.
     if (style.hasPseudoStyle(FIRST_LETTER) || style.transitions() || style.animations())
@@ -228,23 +228,23 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         || style.hasFilter()))
         style.setTransformStyle3D(TransformStyle3DFlat);
 
-    bool isSVGElement = e && e->isSVGElement();
+    bool isSVGElement = element && element->isSVGElement();
     if (isSVGElement) {
         // Only the root <svg> element in an SVG document fragment tree honors css position
-        if (!(isSVGSVGElement(*e) && e->parentNode() && !e->parentNode()->isSVGElement()))
+        if (!(isSVGSVGElement(*element) && element->parentNode() && !element->parentNode()->isSVGElement()))
             style.setPosition(ComputedStyle::initialPosition());
 
         // SVG text layout code expects us to be a block-level style element.
-        if ((isSVGForeignObjectElement(*e) || isSVGTextElement(*e)) && style.isDisplayInlineType())
+        if ((isSVGForeignObjectElement(*element) || isSVGTextElement(*element)) && style.isDisplayInlineType())
             style.setDisplay(BLOCK);
 
         // Columns don't apply to svg text elements.
-        if (isSVGTextElement(*e))
+        if (isSVGTextElement(*element))
             style.clearMultiCol();
     }
     adjustStyleForAlignment(style, parentStyle);
 
-    if (e) {
+    if (element) {
         if ((style.width().type() == Intrinsic)
             | (style.minWidth().type() == Intrinsic)
             | (style.maxWidth().type() == Intrinsic)
@@ -252,7 +252,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
             | (style.minHeight().type() == Intrinsic)
             | (style.maxHeight().type() == Intrinsic)
             | (style.flexBasis().type() == Intrinsic)) {
-            UseCounter::countDeprecation(e->document(), UseCounter::LegacyCSSValueIntrinsic);
+            UseCounter::countDeprecation(element->document(), UseCounter::LegacyCSSValueIntrinsic);
         }
         if ((style.width().type() == MinIntrinsic)
             | (style.minWidth().type() == MinIntrinsic)
@@ -261,7 +261,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
             | (style.minHeight().type() == MinIntrinsic)
             | (style.maxHeight().type() == MinIntrinsic)
             | (style.flexBasis().type() == MinIntrinsic)) {
-            UseCounter::countDeprecation(e->document(), UseCounter::LegacyCSSValueMinIntrinsic);
+            UseCounter::countDeprecation(element->document(), UseCounter::LegacyCSSValueMinIntrinsic);
         }
     }
 }
