@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_INTERCEPTED_REQUEST_DATA_H_
-#define ANDROID_WEBVIEW_BROWSER_INTERCEPTED_REQUEST_DATA_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_NET_AW_WEB_RESOURCE_RESPONSE_H_
+#define ANDROID_WEBVIEW_BROWSER_NET_AW_WEB_RESOURCE_RESPONSE_H_
 
 #include <string>
 
@@ -14,7 +14,6 @@ namespace net {
 class HttpResponseHeaders;
 class NetworkDelegate;
 class URLRequest;
-class URLRequestJob;
 }
 
 namespace android_webview {
@@ -39,15 +38,6 @@ class AwWebResourceResponse {
       JNIEnv* env,
       net::HttpResponseHeaders* headers) const = 0;
 
-  // This creates a URLRequestJob for the |request| wich will read data from
-  // the |aw_web_resource_response| structure (instead of going to the network
-  // or to the cache).
-  // The newly created job takes ownership of |aw_web_resource_response|.
-  static net::URLRequestJob* CreateJobFor(
-      scoped_ptr<AwWebResourceResponse> aw_web_resource_response,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate);
-
  protected:
   AwWebResourceResponse() {}
 
@@ -57,4 +47,4 @@ class AwWebResourceResponse {
 
 } // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_INTERCEPTED_REQUEST_DATA_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_NET_AW_WEB_RESOURCE_RESPONSE_H_

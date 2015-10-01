@@ -40,8 +40,8 @@ public abstract class AwContentsIoThreadClient {
     @CalledByNative
     public abstract void newLoginRequest(String realm, String account, String args);
 
-    public abstract AwWebResourceResponse shouldInterceptRequest(
-            AwContentsClient.AwWebResourceRequest request);
+    @CalledByNative
+    public abstract AwContentsBackgroundThreadClient getBackgroundThreadClient();
 
     public abstract void onReceivedError(AwContentsClient.AwWebResourceRequest request,
             AwContentsClient.AwWebResourceError error);
@@ -50,23 +50,6 @@ public abstract class AwContentsIoThreadClient {
             AwWebResourceResponse response);
 
     // Protected methods ---------------------------------------------------------------------------
-
-    @CalledByNative
-    protected AwWebResourceResponse shouldInterceptRequest(String url, boolean isMainFrame,
-            boolean hasUserGesture, String method, String[] requestHeaderNames,
-            String[] requestHeaderValues) {
-        AwContentsClient.AwWebResourceRequest request =
-                new AwContentsClient.AwWebResourceRequest();
-        request.url = url;
-        request.isMainFrame = isMainFrame;
-        request.hasUserGesture = hasUserGesture;
-        request.method = method;
-        request.requestHeaders = new HashMap<String, String>(requestHeaderNames.length);
-        for (int i = 0; i < requestHeaderNames.length; ++i) {
-            request.requestHeaders.put(requestHeaderNames[i], requestHeaderValues[i]);
-        }
-        return shouldInterceptRequest(request);
-    }
 
     @CalledByNative
     protected void onReceivedError(

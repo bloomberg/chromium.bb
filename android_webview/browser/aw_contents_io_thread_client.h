@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 
 class GURL;
@@ -69,8 +70,11 @@ class AwContentsIoThreadClient {
                               int child_render_frame_id);
 
   // This method is called on the IO thread only.
-  virtual scoped_ptr<AwWebResourceResponse> ShouldInterceptRequest(
-      const net::URLRequest* request) = 0;
+  typedef base::Callback<void(scoped_ptr<AwWebResourceResponse>)>
+      ShouldInterceptRequestResultCallback;
+  virtual void ShouldInterceptRequestAsync(
+      const net::URLRequest* request,
+      const ShouldInterceptRequestResultCallback callback) = 0;
 
   // Retrieve the AllowContentAccess setting value of this AwContents.
   // This method is called on the IO thread only.

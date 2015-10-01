@@ -5,7 +5,7 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_INTERCEPTED_REQUEST_DATA_IMPL_H_
 #define ANDROID_WEBVIEW_NATIVE_INTERCEPTED_REQUEST_DATA_IMPL_H_
 
-#include "android_webview/browser/aw_web_resource_response.h"
+#include "android_webview/browser/net/aw_web_resource_response.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

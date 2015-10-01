@@ -220,6 +220,7 @@ public class AwContents implements SmartClipProvider,
     private AwWebContentsObserver mWebContentsObserver;
     private final AwContentsClientBridge mContentsClientBridge;
     private final AwWebContentsDelegateAdapter mWebContentsDelegate;
+    private final AwContentsBackgroundThreadClient mBackgroundThreadClient;
     private final AwContentsIoThreadClient mIoThreadClient;
     private final InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private InternalAccessDelegate mInternalAccessAdapter;
@@ -375,30 +376,8 @@ public class AwContents implements SmartClipProvider,
         }
 
         @Override
-        public AwWebResourceResponse shouldInterceptRequest(
-                AwContentsClient.AwWebResourceRequest request) {
-            String url = request.url;
-            AwWebResourceResponse awWebResourceResponse;
-            // Return the response directly if the url is default video poster url.
-            awWebResourceResponse = mDefaultVideoPosterRequestHandler.shouldInterceptRequest(url);
-            if (awWebResourceResponse != null) return awWebResourceResponse;
-
-            awWebResourceResponse = mContentsClient.shouldInterceptRequest(request);
-
-            if (awWebResourceResponse == null) {
-                mContentsClient.getCallbackHelper().postOnLoadResource(url);
-            }
-
-            if (awWebResourceResponse != null && awWebResourceResponse.getData() == null) {
-                // In this case the intercepted URLRequest job will simulate an empty response
-                // which doesn't trigger the onReceivedError callback. For WebViewClassic
-                // compatibility we synthesize that callback. http://crbug.com/180950
-                mContentsClient.getCallbackHelper().postOnReceivedError(
-                        request,
-                        /* error description filled in by the glue layer */
-                        new AwContentsClient.AwWebResourceError());
-            }
-            return awWebResourceResponse;
+        public AwContentsBackgroundThreadClient getBackgroundThreadClient() {
+            return mBackgroundThreadClient;
         }
 
         @Override
@@ -462,6 +441,37 @@ public class AwContents implements SmartClipProvider,
         public void onReceivedHttpError(AwContentsClient.AwWebResourceRequest request,
                 AwWebResourceResponse response) {
             mContentsClient.getCallbackHelper().postOnReceivedHttpError(request, response);
+        }
+    }
+
+    private class BackgroundThreadClientImpl extends AwContentsBackgroundThreadClient {
+        // All methods are called on the background thread.
+
+        @Override
+        public AwWebResourceResponse shouldInterceptRequest(
+                AwContentsClient.AwWebResourceRequest request) {
+            String url = request.url;
+            AwWebResourceResponse awWebResourceResponse;
+            // Return the response directly if the url is default video poster url.
+            awWebResourceResponse = mDefaultVideoPosterRequestHandler.shouldInterceptRequest(url);
+            if (awWebResourceResponse != null) return awWebResourceResponse;
+
+            awWebResourceResponse = mContentsClient.shouldInterceptRequest(request);
+
+            if (awWebResourceResponse == null) {
+                mContentsClient.getCallbackHelper().postOnLoadResource(url);
+            }
+
+            if (awWebResourceResponse != null && awWebResourceResponse.getData() == null) {
+                // In this case the intercepted URLRequest job will simulate an empty response
+                // which doesn't trigger the onReceivedError callback. For WebViewClassic
+                // compatibility we synthesize that callback. http://crbug.com/180950
+                mContentsClient.getCallbackHelper().postOnReceivedError(
+                        request,
+                        /* error description filled in by the glue layer */
+                        new AwContentsClient.AwWebResourceError());
+            }
+            return awWebResourceResponse;
         }
     }
 
@@ -693,6 +703,7 @@ public class AwContents implements SmartClipProvider,
         mContentsClientBridge = new AwContentsClientBridge(mContext, contentsClient,
                 mBrowserContext.getKeyStore(), AwContentsStatics.getClientCertLookupTable());
         mZoomControls = new AwZoomControls(this);
+        mBackgroundThreadClient = new BackgroundThreadClientImpl();
         mIoThreadClient = new IoThreadClientImpl();
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
 

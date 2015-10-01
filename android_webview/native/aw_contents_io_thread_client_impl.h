@@ -47,8 +47,9 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   // Implementation of AwContentsIoThreadClient.
   bool PendingAssociation() const override;
   CacheMode GetCacheMode() const override;
-  scoped_ptr<AwWebResourceResponse> ShouldInterceptRequest(
-      const net::URLRequest* request) override;
+  void ShouldInterceptRequestAsync(
+      const net::URLRequest* request,
+      const ShouldInterceptRequestResultCallback callback) override;
   bool ShouldBlockContentUrls() const override;
   bool ShouldBlockFileUrls() const override;
   bool ShouldAcceptThirdPartyCookies() const override;
@@ -69,6 +70,7 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
  private:
   bool pending_association_;
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
+  base::android::ScopedJavaGlobalRef<jobject> bg_thread_client_object_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContentsIoThreadClientImpl);
 };

@@ -95,6 +95,17 @@ AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
   DCHECK(delegate_);
 }
 
+AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    scoped_ptr<DelegateObtainer> delegate_obtainer,
+    bool)
+    : URLRequestJob(request, network_delegate),
+      delegate_obtainer_(delegate_obtainer.Pass()),
+      weak_factory_(this) {
+  DCHECK(delegate_obtainer_);
+}
+
 AndroidStreamReaderURLRequestJob::~AndroidStreamReaderURLRequestJob() {
 }
 
@@ -123,25 +134,15 @@ void OpenInputStreamOnWorkerThread(
 
 void AndroidStreamReaderURLRequestJob::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Start reading asynchronously so that all error reporting and data
-  // callbacks happen as they would for network requests.
-  SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING,
-                                  net::ERR_IO_PENDING));
-
-  // This could be done in the InputStreamReader but would force more
-  // complex synchronization in the delegate.
-  GetWorkerThreadRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &OpenInputStreamOnWorkerThread,
-          base::MessageLoop::current()->task_runner(),
-          // This is intentional - the job could be deleted while the callback
-          // is executing on the background thread.
-          // The delegate will be "returned" to the job once the InputStream
-          // open attempt is completed.
-          base::Passed(&delegate_), request()->url(),
-          base::Bind(&AndroidStreamReaderURLRequestJob::OnInputStreamOpened,
-                     weak_factory_.GetWeakPtr())));
+  if (!delegate_) {
+    DCHECK(delegate_obtainer_);
+    delegate_obtainer_->ObtainDelegate(
+        request(),
+        base::Bind(&AndroidStreamReaderURLRequestJob::DelegateObtained,
+                   weak_factory_.GetWeakPtr()));
+  } else {
+    DoStart();
+  }
 }
 
 void AndroidStreamReaderURLRequestJob::Kill() {
@@ -288,6 +289,41 @@ bool AndroidStreamReaderURLRequestJob::GetCharset(std::string* charset) {
 
   return delegate_->GetCharset(
       env, request(), input_stream_reader_wrapper_->input_stream(), charset);
+}
+
+void AndroidStreamReaderURLRequestJob::DelegateObtained(
+    scoped_ptr<Delegate> delegate) {
+  DCHECK(!delegate_);
+  delegate_obtainer_.reset();
+  if (delegate) {
+    delegate_.swap(delegate);
+    DoStart();
+  } else {
+    NotifyRestartRequired();
+  }
+}
+
+void AndroidStreamReaderURLRequestJob::DoStart() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Start reading asynchronously so that all error reporting and data
+  // callbacks happen as they would for network requests.
+  SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING,
+                                  net::ERR_IO_PENDING));
+
+  // This could be done in the InputStreamReader but would force more
+  // complex synchronization in the delegate.
+  GetWorkerThreadRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &OpenInputStreamOnWorkerThread,
+          base::MessageLoop::current()->task_runner(),
+          // This is intentional - the job could be deleted while the callback
+          // is executing on the background thread.
+          // The delegate will be "returned" to the job once the InputStream
+          // open attempt is completed.
+          base::Passed(&delegate_), request()->url(),
+          base::Bind(&AndroidStreamReaderURLRequestJob::OnInputStreamOpened,
+                     weak_factory_.GetWeakPtr())));
 }
 
 void AndroidStreamReaderURLRequestJob::HeadersComplete(
