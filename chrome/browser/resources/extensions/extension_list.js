@@ -7,6 +7,8 @@
 cr.define('extensions', function() {
   'use strict';
 
+  var ExtensionType = chrome.developerPrivate.ExtensionType;
+
   /**
    * @param {string} name The name of the template to clone.
    * @return {!Element} The freshly cloned template.
@@ -136,12 +138,6 @@ cr.define('extensions', function() {
      * @private {boolean}
      */
     permissionsPromptIsShowing_: false,
-
-    /**
-     * Necessary to only show the butterbar once.
-     * @private {boolean}
-     */
-    butterbarShown_: false,
 
     /**
      * Whether or not any initial navigation (like scrolling to an extension,
@@ -498,14 +494,8 @@ cr.define('extensions', function() {
                           function(e) {
         var butterBar = wrapper.querySelector('.butter-bar');
         var checked = e.target.checked;
-        if (!this.butterbarShown_) {
-          butterBar.hidden = !checked ||
-              extension.type ==
-                  chrome.developerPrivate.ExtensionType.HOSTED_APP;
-          this.butterbarShown_ = !butterBar.hidden;
-        } else {
-          butterBar.hidden = true;
-        }
+        butterBar.hidden = !checked ||
+            extension.type == ExtensionType.HOSTED_APP;
         chrome.developerPrivate.updateExtensionConfiguration({
           extensionId: extension.id,
           incognitoAccess: e.target.checked
@@ -651,11 +641,11 @@ cr.define('extensions', function() {
         incognito.disabled = !extension.incognitoAccess.isEnabled;
         incognito.checked = extension.incognitoAccess.isActive;
       });
-
-      // Hide butterBar if incognito is not enabled for the extension.
-      var butterBar = wrapper.querySelector('.butter-bar');
-      butterBar.hidden =
-          butterBar.hidden || !extension.incognitoAccess.isEnabled;
+      var showButterBar = isActive &&
+            extension.incognitoAccess.isActive &&
+            extension.type != ExtensionType.HOSTED_APP;
+      // The 'allow in incognito' butter bar.
+      this.updateVisibility_(wrapper, '.butter-bar', showButterBar);
 
       // The 'collect errors' checkbox. This should only be visible if the
       // error console is enabled - we can detect this by the existence of the
@@ -711,8 +701,8 @@ cr.define('extensions', function() {
       // The 'Launch' link.
       this.updateVisibility_(
           wrapper, '.launch-link',
-          isUnpacked && extension.type ==
-                            chrome.developerPrivate.ExtensionType.PLATFORM_APP);
+          isUnpacked && extension.type == ExtensionType.PLATFORM_APP &&
+              isActive);
 
       // The 'Errors' link.
       var hasErrors = extension.runtimeErrors.length > 0 ||
@@ -895,7 +885,9 @@ cr.define('extensions', function() {
               (view.incognito ?
                   ' ' + loadTimeData.getString('viewIncognito') : '') +
               (view.renderProcessId == -1 ?
-                  ' ' + loadTimeData.getString('viewInactive') : '');
+                  ' ' + loadTimeData.getString('viewInactive') : '') +
+              (view.isIframe ?
+                  ' ' + loadTimeData.getString('viewIframe') : '');
           link.textContent = label;
           link.clickHandler = function(e) {
             chrome.developerPrivate.openDevTools({

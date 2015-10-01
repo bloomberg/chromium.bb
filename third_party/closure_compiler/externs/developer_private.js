@@ -219,6 +219,7 @@ var HomePage;
  *   renderProcessId: number,
  *   renderViewId: number,
  *   incognito: boolean,
+ *   isIframe: boolean,
  *   type: !chrome.developerPrivate.ViewType
  * }}
  * @see https://developer.chrome.com/extensions/developerPrivate#type-ExtensionView

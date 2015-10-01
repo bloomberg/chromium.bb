@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
 
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "content/public/browser/render_frame_host.h"
@@ -17,6 +18,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -34,6 +36,7 @@ InspectableViewsFinder::View InspectableViewsFinder::ConstructView(
     int render_process_id,
     int render_frame_id,
     bool incognito,
+    bool is_iframe,
     ViewType type) {
   linked_ptr<api::developer_private::ExtensionView> view(
       new api::developer_private::ExtensionView());
@@ -43,6 +46,7 @@ InspectableViewsFinder::View InspectableViewsFinder::ConstructView(
   // reasons, but it's not a high priority to change.
   view->render_view_id = render_frame_id;
   view->incognito = incognito;
+  view->is_iframe = is_iframe;
   switch (type) {
     case VIEW_TYPE_APP_WINDOW:
       view->type = api::developer_private::VIEW_TYPE_APP_WINDOW;
@@ -111,7 +115,16 @@ void InspectableViewsFinder::GetViewsForExtensionForProfile(
   if (!is_incognito)
     GetAppWindowViewsForExtension(extension, result);
   // Include a link to start the lazy background page, if applicable.
-  if (BackgroundInfo::HasLazyBackgroundPage(&extension) &&
+  bool include_lazy_background = true;
+  // Don't include the lazy background page for incognito if the extension isn't
+  // enabled incognito or doesn't have a separate background page in incognito.
+  if (is_incognito &&
+      (!util::IsIncognitoEnabled(extension.id(), profile) ||
+       !IncognitoInfo::IsSplitMode(&extension))) {
+    include_lazy_background = false;
+  }
+  if (include_lazy_background &&
+      BackgroundInfo::HasLazyBackgroundPage(&extension) &&
       is_enabled &&
       !process_manager->GetBackgroundHostForExtension(extension.id())) {
     result->push_back(ConstructView(
@@ -119,6 +132,7 @@ void InspectableViewsFinder::GetViewsForExtensionForProfile(
         -1,
         -1,
         is_incognito,
+        false,
         VIEW_TYPE_EXTENSION_BACKGROUND_PAGE));
   }
 }
@@ -149,9 +163,10 @@ void InspectableViewsFinder::GetViewsForExtensionProcess(
         url = extension_host->initial_url();
     }
 
+    bool is_iframe = web_contents->GetMainFrame() != host;
     content::RenderProcessHost* process = host->GetProcess();
     result->push_back(ConstructView(url, process->GetID(), host->GetRoutingID(),
-                                    is_incognito, host_type));
+                                    is_incognito, is_iframe, host_type));
   }
 }
 
@@ -177,7 +192,7 @@ void InspectableViewsFinder::GetAppWindowViewsForExtension(
     content::RenderProcessHost* process = web_contents->GetRenderProcessHost();
     result->push_back(ConstructView(
         url, process->GetID(), web_contents->GetMainFrame()->GetRoutingID(),
-        false, GetViewType(web_contents)));
+        false, false, GetViewType(web_contents)));
   }
 }
 

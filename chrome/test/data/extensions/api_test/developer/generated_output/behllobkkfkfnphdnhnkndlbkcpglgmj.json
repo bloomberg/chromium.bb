@@ -43,12 +43,14 @@
    "userMayModify": true,
    "version": "1.0.0.0",
    "views": [ {
-      "incognito": false,
+      "isIframe": false,
+      "incognito": true,
       "renderProcessId": 42,
       "renderViewId": 88,
       "type": "TAB_CONTENTS",
       "url": "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/bar.html"
    }, {
+      "isIframe": true,
       "incognito": false,
       "renderProcessId": 0,
       "renderViewId": 0,

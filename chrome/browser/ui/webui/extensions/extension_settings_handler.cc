@@ -94,6 +94,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_INCOGNITO));
   source->AddString("viewInactive",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_INACTIVE));
+  source->AddString("viewIframe",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_IFRAME));
   source->AddString("backgroundPage",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_BACKGROUND_PAGE));
   source->AddString("extensionSettingsEnable",

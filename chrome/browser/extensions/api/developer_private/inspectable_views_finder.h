@@ -39,6 +39,7 @@ class InspectableViewsFinder {
                             int render_process_id,
                             int render_view_id,
                             bool incognito,
+                            bool is_iframe,
                             ViewType type);
 
   // Return a list of inspectable views for the given |extension|.

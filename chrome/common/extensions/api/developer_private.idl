@@ -154,6 +154,7 @@ namespace developerPrivate {
     // This actually refers to a render frame.
     long renderViewId;
     boolean incognito;
+    boolean isIframe;
     ViewType type;
   };
 
