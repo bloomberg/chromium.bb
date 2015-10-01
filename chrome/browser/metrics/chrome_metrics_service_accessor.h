@@ -24,7 +24,6 @@ class FlashDOMHandler;
 
 namespace component_updater {
 class ComponentUpdateService;
-void RegisterSwReporterComponent(ComponentUpdateService* cus);
 }
 
 namespace domain_reliability {
@@ -67,8 +66,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class BrowserProcessImpl;
   friend class ChromeExtensionDownloaderFactory;
   friend class ChromeRenderMessageFilter;
-  friend void component_updater::RegisterSwReporterComponent(
-      component_updater::ComponentUpdateService* cus);
   friend class DataReductionProxyChromeSettings;
   friend class domain_reliability::DomainReliabilityServiceFactory;
   friend class extensions::MetricsPrivateGetIsCrashReportingEnabledFunction;

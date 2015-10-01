@@ -54,6 +54,10 @@ bool IsInSRTPromptFieldTrialGroups();
 // elevation icon, i.e., the SRT won't ask for elevation on startup.
 bool SRTPromptNeedsElevationIcon();
 
+// Returns true if this Chrome is in a field trial group which enables running
+// the SwReporter.
+bool IsSwReporterEnabled();
+
 // Returns the correct SRT download URL for the current field trial.
 const char* GetSRTDownloadURL();
 

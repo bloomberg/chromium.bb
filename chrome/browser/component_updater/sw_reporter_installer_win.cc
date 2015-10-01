@@ -26,7 +26,6 @@
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/safe_browsing/srt_fetcher_win.h"
 #include "chrome/browser/safe_browsing/srt_field_trial_win.h"
 #include "components/component_updater/component_updater_paths.h"
@@ -235,14 +234,8 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
 }  // namespace
 
 void RegisterSwReporterComponent(ComponentUpdateService* cus) {
-  // The Sw reporter doesn't need to run if the user isn't reporting metrics and
-  // isn't in the SRTPrompt field trial "On" group.
-  // TODO(mad): Reconsider this check to assure equal performance for metrics
-  // enabled and not enabled users crbug.com/533484
-  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() &&
-      !safe_browsing::IsInSRTPromptFieldTrialGroups()) {
+  if (!safe_browsing::IsSwReporterEnabled())
     return;
-  }
 
   // Check if we have information from Cleaner and record UMA statistics.
   base::string16 cleaner_key_name(kSoftwareRemovalToolRegistryKey);

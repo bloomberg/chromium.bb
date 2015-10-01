@@ -6,6 +6,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_util.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace {
@@ -18,6 +19,9 @@ const char kSRTPromptSeedParam[] = "Seed";
 
 const char kSRTElevationTrial[] = "SRTElevation";
 const char kSRTElevationAsNeededGroup[] = "AsNeeded";
+
+const char kSRTReporterTrial[] = "srt_reporter";
+const char kSRTReporterOffGroup[] = "Off";
 
 // The download links of the Software Removal Tool.
 const char kMainSRTDownloadURL[] =
@@ -32,18 +36,27 @@ const char kCanarySRTDownloadURL[] =
 namespace safe_browsing {
 
 bool IsInSRTPromptFieldTrialGroups() {
-  return base::FieldTrialList::FindFullName(kSRTPromptTrial) !=
-         kSRTPromptOffGroup;
+  return !base::StartsWith(base::FieldTrialList::FindFullName(kSRTPromptTrial),
+                           kSRTPromptOffGroup, base::CompareCase::SENSITIVE);
 }
 
 bool SRTPromptNeedsElevationIcon() {
-  return base::FieldTrialList::FindFullName(kSRTElevationTrial) !=
-         kSRTElevationAsNeededGroup;
+  return !base::StartsWith(
+      base::FieldTrialList::FindFullName(kSRTElevationTrial),
+      kSRTElevationAsNeededGroup, base::CompareCase::SENSITIVE);
+}
+
+bool IsSwReporterEnabled() {
+  return !base::StartsWith(
+      base::FieldTrialList::FindFullName(kSRTReporterTrial),
+      kSRTReporterOffGroup, base::CompareCase::SENSITIVE);
 }
 
 const char* GetSRTDownloadURL() {
-  if (base::FieldTrialList::FindFullName(kSRTPromptTrial) == kSRTCanaryGroup)
+  if (base::StartsWith(base::FieldTrialList::FindFullName(kSRTPromptTrial),
+                       kSRTCanaryGroup, base::CompareCase::SENSITIVE)) {
     return kCanarySRTDownloadURL;
+  }
   return kMainSRTDownloadURL;
 }
 
