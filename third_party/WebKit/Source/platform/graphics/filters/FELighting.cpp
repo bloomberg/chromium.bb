@@ -61,6 +61,9 @@ FloatRect FELighting::mapPaintRect(const FloatRect& rect, bool)
 
 PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder* builder)
 {
+    if (!m_lightSource)
+        return createTransparentBlack(builder);
+
     SkImageFilter::CropRect rect = getCropRect(builder ? builder->cropOffset() : FloatSize());
     Color lightColor = adaptColorToOperatingColorSpace(m_lightingColor);
     RefPtr<SkImageFilter> input(builder ? builder->build(inputEffect(0), operatingColorSpace()) : nullptr);

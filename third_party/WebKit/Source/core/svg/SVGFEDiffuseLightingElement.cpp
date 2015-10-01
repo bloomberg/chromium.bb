@@ -126,10 +126,6 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilte
     if (!input1)
         return nullptr;
 
-    SVGFELightElement* lightNode = SVGFELightElement::findLightElement(*this);
-    if (!lightNode)
-        return nullptr;
-
     LayoutObject* layoutObject = this->layoutObject();
     if (!layoutObject)
         return nullptr;
@@ -137,8 +133,13 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilte
     ASSERT(layoutObject->style());
     Color color = layoutObject->style()->svgStyle().lightingColor();
 
-    RefPtr<LightSource> lightSource = lightNode->lightSource(filter);
-    RefPtrWillBeRawPtr<FilterEffect> effect = FEDiffuseLighting::create(filter, color, m_surfaceScale->currentValue()->value(), m_diffuseConstant->currentValue()->value(),
+    const SVGFELightElement* lightNode = SVGFELightElement::findLightElement(*this);
+    RefPtr<LightSource> lightSource = lightNode ? lightNode->lightSource(filter) : nullptr;
+
+    RefPtrWillBeRawPtr<FilterEffect> effect = FEDiffuseLighting::create(filter,
+        color,
+        m_surfaceScale->currentValue()->value(),
+        m_diffuseConstant->currentValue()->value(),
         lightSource.release());
     effect->inputEffects().append(input1);
     return effect.release();

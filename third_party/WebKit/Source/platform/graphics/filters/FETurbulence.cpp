@@ -149,6 +149,9 @@ SkShader* FETurbulence::createShader()
 
 PassRefPtr<SkImageFilter> FETurbulence::createImageFilter(SkiaImageFilterBuilder* builder)
 {
+    if (m_baseFrequencyX < 0 || m_baseFrequencyY < 0)
+        return createTransparentBlack(builder);
+
     SkAutoTUnref<SkShader> shader(createShader());
     SkImageFilter::CropRect rect = getCropRect(builder->cropOffset());
     return adoptRef(SkRectShaderImageFilter::Create(shader, &rect));

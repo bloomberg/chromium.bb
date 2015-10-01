@@ -80,7 +80,7 @@ bool SVGFETurbulenceElement::setFilterEffectAttribute(FilterEffect* effect, cons
     if (attrName == SVGNames::typeAttr)
         return turbulence->setType(m_type->currentValue()->enumValue());
     if (attrName == SVGNames::stitchTilesAttr)
-        return turbulence->setStitchTiles(m_stitchTiles->currentValue()->enumValue());
+        return turbulence->setStitchTiles(m_stitchTiles->currentValue()->enumValue() == SVG_STITCHTYPE_STITCH);
     if (attrName == SVGNames::baseFrequencyAttr) {
         bool baseFrequencyXChanged = turbulence->setBaseFrequencyX(baseFrequencyX()->currentValue()->value());
         bool baseFrequencyYChanged = turbulence->setBaseFrequencyY(baseFrequencyY()->currentValue()->value());
@@ -112,9 +112,13 @@ void SVGFETurbulenceElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFETurbulenceElement::build(SVGFilterBuilder*, Filter* filter)
 {
-    if (baseFrequencyX()->currentValue()->value() < 0 || baseFrequencyY()->currentValue()->value() < 0)
-        return nullptr;
-    return FETurbulence::create(filter, m_type->currentValue()->enumValue(), baseFrequencyX()->currentValue()->value(), baseFrequencyY()->currentValue()->value(), m_numOctaves->currentValue()->value(), m_seed->currentValue()->value(), m_stitchTiles->currentValue()->enumValue() == SVG_STITCHTYPE_STITCH);
+    return FETurbulence::create(filter,
+        m_type->currentValue()->enumValue(),
+        baseFrequencyX()->currentValue()->value(),
+        baseFrequencyY()->currentValue()->value(),
+        m_numOctaves->currentValue()->value(),
+        m_seed->currentValue()->value(),
+        m_stitchTiles->currentValue()->enumValue() == SVG_STITCHTYPE_STITCH);
 }
 
 } // namespace blink
