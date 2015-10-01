@@ -51,6 +51,7 @@
 #include "content/public/common/process_type.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/browser_resources.h"
+#include "grit/components_resources.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
@@ -938,9 +939,9 @@ void AboutUIHTMLSource::StartDataRequest(
   if (source_name_ == chrome::kChromeUIChromeURLsHost) {
     response = ChromeURLs();
   } else if (source_name_ == chrome::kChromeUICreditsHost) {
-    int idr = IDR_CREDITS_HTML;
+    int idr = IDR_ABOUT_UI_CREDITS_HTML;
     if (path == kCreditsJsPath)
-      idr = IDR_CREDITS_JS;
+      idr = IDR_ABOUT_UI_CREDITS_JS;
 #if defined(OS_CHROMEOS)
     else if (path == kKeyboardUtilsPath)
       idr = IDR_KEYBOARD_UTILS_JS;

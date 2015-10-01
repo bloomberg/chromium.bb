@@ -8,6 +8,7 @@
   </outputs>
   <release seq="1">
     <includes>
+      <part file="about_ui_resources.grdp" />
       <part file="data_reduction_proxy_resources.grdp" />
       <part file="dom_distiller_resources.grdp" />
       <part file="flags_ui_resources.grdp" />

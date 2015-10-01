@@ -110,8 +110,6 @@
       </if>
       <include name="IDR_CRASHES_HTML" file="resources\crashes.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_CRASHES_JS" file="resources\crashes.js" type="BINDATA" />
-      <include name="IDR_CREDITS_HTML" file="${about_credits_file}" use_base_dir="false" type="BINDATA" />
-      <include name="IDR_CREDITS_JS" file="resources\about_credits.js" type="BINDATA" />
       <if expr="not is_ios">
         <include name="IDR_DEVTOOLS_DISCOVERY_PAGE_HTML" file="devtools\frontend\devtools_discovery_page.html" type="BINDATA"/>
       </if>

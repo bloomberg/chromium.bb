@@ -4,6 +4,8 @@
 
 import("//tools/grit/grit_rule.gni")
 
+about_credits_file = "$target_gen_dir/about_credits.html"
+
 # GYP version: components/components_resources.gyp:components_resources
 group("resources") {
   public_deps = [
@@ -24,6 +26,15 @@ grit("components_resources") {
     "components_resources.pak",
   ]
   output_dir = "$root_gen_dir/components"
+
+  grit_flags = [
+    "-E",
+    "about_credits_file=" + rebase_path(about_credits_file, root_build_dir),
+  ]
+
+  deps = [
+    ":about_credits",
+  ]
 }
 
 # GYP version: components/components_resources.gyp
@@ -42,4 +53,27 @@ grit("components_scaled_resources") {
     "components_resources_material_200_percent.pak",
   ]
   output_dir = "$root_gen_dir/components"
+}
+
+# GYP version: components/components_resources.gyp:about_credits
+action("about_credits") {
+  script = "//tools/licenses.py"
+
+  inputs = [
+    # This is not a complete list. TODO(phajdan.jr, dbeam): licenses.py needs to
+    # generate a .d file with all the licenses/credits that about:credits uses.
+    # Then about:credits will automatically rebuild when one of them changes.
+    # See: depfile in gn's documentation (gn help depfile).
+    "../about_ui/resources/about_credits.tmpl",
+    "../about_ui/resources/about_credits_entry.tmpl",
+  ]
+
+  outputs = [
+    about_credits_file,
+  ]
+
+  args = [
+    "credits",
+    rebase_path(about_credits_file, root_build_dir),
+  ]
 }

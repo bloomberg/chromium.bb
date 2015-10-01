@@ -439,10 +439,10 @@ def GenerateCredits(file_template_file, entry_template_file, output_file):
     third_party_dirs = FindThirdPartyDirs(PRUNE_PATHS, root)
 
     if not file_template_file:
-        file_template_file = os.path.join(root, 'chrome', 'browser',
+        file_template_file = os.path.join(root, 'components', 'about_ui',
                                           'resources', 'about_credits.tmpl')
     if not entry_template_file:
-        entry_template_file = os.path.join(root, 'chrome', 'browser',
+        entry_template_file = os.path.join(root, 'components', 'about_ui',
                                            'resources',
                                            'about_credits_entry.tmpl')
 

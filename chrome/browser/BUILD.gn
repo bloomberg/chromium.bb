@@ -26,7 +26,6 @@ declare_args() {
   enable_hotwording = is_chrome_branded && is_chromeos
 }
 
-about_credits_file = "$target_gen_dir/about_credits.html"
 additional_modules_list_file =
     "$root_gen_dir/chrome/browser/internal/additional_modules_list.txt"
 
@@ -930,8 +929,6 @@ grit("resources") {
 
   grit_flags = [
     "-E",
-    "about_credits_file=" + rebase_path(about_credits_file, root_build_dir),
-    "-E",
     "additional_modules_list_file=" +
         rebase_path(additional_modules_list_file, root_build_dir),
     "-E",
@@ -939,36 +936,12 @@ grit("resources") {
   ]
 
   deps = [
-    ":about_credits",
     ":chrome_internal_resources_gen",
 
     # Depend only on the generated mojo bindings since we read the .mojom.js
     # file, rather than the whole mojo target which will link the C++ bindings.
     "//chrome/browser/ui/webui/engagement:mojo_bindings__generator",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings__generator",
-  ]
-}
-
-# GYP version: chrome/chrome_resource.gyp:about_credits
-action("about_credits") {
-  script = "//tools/licenses.py"
-
-  inputs = [
-    # This is not a complete list. TODO(phajdan.jr, dbeam): licenses.py needs to
-    # generate a .d file with all the licenses/credits that about:credits uses.
-    # Then about:credits will automatically rebuild when one of them changes.
-    # See: depfile in gn's documentation (gn help depfile).
-    "resources/about_credits.tmpl",
-    "resources/about_credits_entry.tmpl",
-  ]
-
-  outputs = [
-    about_credits_file,
-  ]
-
-  args = [
-    "credits",
-    rebase_path(about_credits_file, root_build_dir),
   ]
 }
 
