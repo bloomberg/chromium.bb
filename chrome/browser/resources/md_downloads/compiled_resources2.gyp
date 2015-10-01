@@ -13,6 +13,11 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'constants',
+      'dependencies': ['<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr'],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'focus_row',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
@@ -48,6 +53,11 @@
         '<(EXTERNS_GYP):chrome_send',
         '../downloads/compiled_resources2.gyp:externs',
       ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'throttled_icon_loader',
+      'dependencies': ['<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr'],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

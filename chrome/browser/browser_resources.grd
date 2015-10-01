@@ -119,13 +119,13 @@
       <include name="IDR_DOMAIN_RELIABILITY_INTERNALS_CSS" file="resources\domain_reliability_internals.css" type="BINDATA" />
       <include name="IDR_DOMAIN_RELIABILITY_INTERNALS_JS" file="resources\domain_reliability_internals.js" type="BINDATA" />
       <if expr="not is_android">
-        <include name="IDR_DOWNLOADS_CONSTANTS_HTML" file="resources\downloads\constants.html" type="BINDATA" />
-        <include name="IDR_DOWNLOADS_CONSTANTS_JS" file="resources\downloads\constants.js" type="BINDATA" />
+        <include name="IDR_DOWNLOADS_CONSTANTS_HTML" file="resources\md_downloads\constants.html" type="BINDATA" />
+        <include name="IDR_DOWNLOADS_CONSTANTS_JS" file="resources\md_downloads\constants.js" type="BINDATA" />
         <include name="IDR_DOWNLOADS_FOCUS_ROW_JS" file="resources\downloads\focus_row.js" type="BINDATA" />
         <include name="IDR_DOWNLOADS_ITEM_VIEW_JS" file="resources\downloads\item_view.js" type="BINDATA" />
         <include name="IDR_DOWNLOADS_MANAGER_JS" file="resources\downloads\manager.js" type="BINDATA" />
-        <include name="IDR_DOWNLOADS_THROTTLED_ICON_LOADER_HTML" file="resources\downloads\throttled_icon_loader.html" type="BINDATA" />
-        <include name="IDR_DOWNLOADS_THROTTLED_ICON_LOADER_JS" file="resources\downloads\throttled_icon_loader.js" type="BINDATA" />
+        <include name="IDR_DOWNLOADS_THROTTLED_ICON_LOADER_HTML" file="resources\md_downloads\throttled_icon_loader.html" type="BINDATA" />
+        <include name="IDR_DOWNLOADS_THROTTLED_ICON_LOADER_JS" file="resources\md_downloads\throttled_icon_loader.js" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML" file="resources\md_downloads\action_service.html" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_JS" file="resources\md_downloads\action_service.js" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_FOCUS_ROW_HTML" file="resources\md_downloads\focus_row.html" type="BINDATA" />
