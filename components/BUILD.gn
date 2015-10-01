@@ -34,6 +34,7 @@ group("all_components") {
     "//components/strings",
     "//components/leveldb_proto",
     "//components/pref_registry",
+    "//components/omnibox/browser",
   ]
 
   if (!is_ios) {
@@ -93,7 +94,6 @@ group("all_components") {
       "//components/network_hints/renderer",
       "//components/network_time",
       "//components/offline_pages",
-      "//components/omnibox/browser",
       "//components/onc",
       "//components/open_from_clipboard",
       "//components/os_crypt",
@@ -309,6 +309,7 @@ test("components_unittests") {
     "//components/undo:unit_tests",
     "//components/leveldb_proto:unit_tests",
     "//components/suggestions:unit_tests",
+    "//components/omnibox/browser:unit_tests",
   ]
 
   if (!is_ios) {
@@ -365,7 +366,6 @@ test("components_unittests") {
       "//components/mime_util:unit_tests",
       "//components/network_time:unit_tests",
       "//components/offline_pages:unit_tests",
-      "//components/omnibox/browser:unit_tests",
       "//components/open_from_clipboard:unit_tests",
       "//components/os_crypt:unit_tests",
       "//components/packed_ct_ev_whitelist:unit_tests",
