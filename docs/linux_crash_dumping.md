@@ -116,12 +116,7 @@ display the sad tab.
 
 ## How to test Breakpad support in Chromium
 
-*   Build Chromium with the gyp option `-Dlinux_breakpad=1`.
-
-    ```shell
-    ./build/gyp_chromium -Dlinux_breakpad=1
-    ninja -C out/Debug chrome
-    ```
+*   Build Chromium as normal.
 *   Run the browser with the environment variable
     [CHROME_HEADLESS=1](https://crbug.com/19663). This enables crash dumping but
     prevents crash dumps from being uploaded and deleted.
@@ -129,7 +124,7 @@ display the sad tab.
     ```shell
     env CHROME_HEADLESS=1 ./out/Debug/chrome-wrapper
     ```
-*   Visit the special URL `about:crash` to trigger a crash in the renderer
+*   Visit the special URL `chrome://crash` to trigger a crash in the renderer
     process.
 *   A crash dump file should appear in the directory
     `~/.config/chromium/Crash Reports`.

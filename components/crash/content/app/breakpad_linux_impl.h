@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 // Internal header file for the Linux breakpad implementation. This file is
-// shared between crash_handler_host_linux.cc and breakpad_linux.cc. It should
-// only be used in files compiled with linux_breakpad=1.
+// shared between crash_handler_host_linux.cc and breakpad_linux.cc.
 
 #ifndef COMPONENTS_CRASH_CONTENT_APP_BREAKPAD_LINUX_IMPL_H_
 #define COMPONENTS_CRASH_CONTENT_APP_BREAKPAD_LINUX_IMPL_H_
