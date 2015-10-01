@@ -7,6 +7,8 @@ PASS ctx.lineDashOffset is 0
 PASS lineDash[0] is 15
 PASS lineDash[1] is 10
 PASS ctx.lineDashOffset is 5
+PASS lineDash[0] is 0
+PASS lineDash[1] is 0
 PASS lineDash[0] is 5
 PASS lineDash[1] is 10
 PASS lineDash[2] is 15
@@ -40,6 +42,10 @@ PASS getPixel(115,40) is [0,0,0,0]
 PASS getPixel(105,40) is [0,255,0,255]
 PASS getPixel(90,35) is [0,0,0,0]
 PASS getPixel(90,25) is [0,255,0,255]
+PASS getPixel(130,10) is [0,255,0,255]
+PASS getPixel(130,15) is [0,255,0,255]
+PASS getPixel(130,25) is [0,255,0,255]
+PASS getPixel(130,35) is [0,255,0,255]
 PASS successfullyParsed is true
 
 TEST COMPLETE

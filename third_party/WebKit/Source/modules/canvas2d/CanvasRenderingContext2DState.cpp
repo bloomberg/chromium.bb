@@ -199,12 +199,21 @@ void CanvasRenderingContext2DState::setLineDash(const Vector<float>& dash)
     m_lineDashDirty = true;
 }
 
+static bool hasANonZeroElement(const Vector<float>& lineDash)
+{
+    for (size_t i = 0; i < lineDash.size(); i++) {
+        if (lineDash[i] != 0.0f)
+            return true;
+    }
+    return false;
+}
+
 void CanvasRenderingContext2DState::updateLineDash() const
 {
     if (!m_lineDashDirty)
         return;
 
-    if (m_lineDash.size() == 0) {
+    if (!hasANonZeroElement(m_lineDash)) {
         m_strokePaint.setPathEffect(0);
     } else {
         RefPtr<SkPathEffect> dashPathEffect = adoptRef(SkDashPathEffect::Create(m_lineDash.data(), m_lineDash.size(), m_lineDashOffset));

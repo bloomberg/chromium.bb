@@ -39,6 +39,12 @@ shouldBe('lineDash[0]', '15');
 shouldBe('lineDash[1]', '10');
 shouldBe('ctx.lineDashOffset', '5');
 
+// Verify setting line dash to sequence of nulls is interpreted as zeros
+ctx.setLineDash([null, null]);
+lineDash = ctx.getLineDash();
+shouldBe('lineDash[0]', '0');
+shouldBe('lineDash[1]', '0');
+
 // Set dash style to even number
 ctx.setLineDash([5, 10, 15]);
 ctx.strokeRect(20, 20, 120, 120);
@@ -104,3 +110,11 @@ pixelShouldBe(105, 40, [0, 255, 0, 255]);
 pixelShouldBe(90, 35, [0, 0, 0, 0]);
 pixelShouldBe(90, 25, [0, 255, 0, 255]);
 
+// Verify that all zero dash sequence results in no dashing
+ctx.setLineDash([0, 0]);
+ctx.lineDashOffset = 0;
+ctx.strokeRect(130.5, 10.5, 30, 30);
+pixelShouldBe(130, 10, [0, 255, 0, 255]);
+pixelShouldBe(130, 15, [0, 255, 0, 255]);
+pixelShouldBe(130, 25, [0, 255, 0, 255]);
+pixelShouldBe(130, 35, [0, 255, 0, 255]);
