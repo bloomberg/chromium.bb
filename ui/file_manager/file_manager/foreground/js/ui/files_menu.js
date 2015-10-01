@@ -7,6 +7,8 @@ cr.define('cr.ui', function() {
    * Menu item with ripple animation.
    * @constructor
    * @extends {cr.ui.MenuItem}
+   *
+   * TODO(mtomasz): Upstream to cr.ui.MenuItem.
    */
   var FilesMenuItem = cr.ui.define(cr.ui.MenuItem);
 
@@ -31,6 +33,11 @@ cr.define('cr.ui', function() {
     /**
      * @private {HTMLElement}
      */
+    iconStart_: null,
+
+    /**
+     * @private {HTMLElement}
+     */
     ripple_: null,
 
     /**
@@ -41,10 +48,15 @@ cr.define('cr.ui', function() {
           document.createElement('span'), HTMLElement);
       this.label_.textContent = this.textContent;
 
+      this.iconStart_ = assertInstanceof(
+          document.createElement('div'), HTMLElement);
+      this.iconStart_.classList.add('icon', 'start');
+
       this.ripple_ = assertInstanceof(
           document.createElement('paper-ripple'), HTMLElement);
 
       this.textContent = '';
+      this.appendChild(this.iconStart_);
       this.appendChild(this.label_);
       this.appendChild(this.ripple_);
 
@@ -149,6 +161,20 @@ cr.define('cr.ui', function() {
      */
     set label(value) {
       this.label_.textContent = value;
+    },
+
+    /**
+     * @return {string}
+     */
+    get iconStartImage() {
+      return this.iconStart_.style.backgroundImage;
+    },
+
+    /**
+     * @param {string} value
+     */
+    set iconStartImage(value) {
+      this.iconStart_.setAttribute('style', 'background-image: ' + value);
     }
   };
 

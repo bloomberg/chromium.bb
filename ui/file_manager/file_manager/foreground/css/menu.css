@@ -41,21 +41,6 @@ html[dir='rtl'] cr-menu > [shortcutText]::after {
   float: left;
 }
 
-/* Icon on the left of the item label for cr.ui.ProvidersMenuItem.
-   TODO(mtomasz): Upstream to cr.ui.MenuItem. */
-cr-menu-item.providers-menu-item .menu-icon {
-  -webkit-margin-end: 8px;
-  background: no-repeat 0 center;
-  display: inline-block;
-  float: left;
-  height: 32px;
-  width: 16px;
-}
-
-html[dir='rtl'] cr-menu-item.providers-menu-item .menu-icon {
-  float: right;
-}
-
 /* Keeps menu visibile while animating. Fade out animation is performed by
    Javascript. */
 cr-menu[hidden].files-menu.animating {
@@ -67,9 +52,37 @@ cr-menu.files-menu > cr-menu-item {
   position: relative;
 }
 
+/* Icon on the left of the item label for cr.ui.FilesMenuItem.
+   TODO(mtomasz): Upstream to cr.ui.MenuItem. */
+cr-menu.files-menu.has-icon-start cr-menu-item .icon.start {
+  -webkit-margin-end: 8px;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: inline-block;
+  height: 16px;
+  vertical-align: middle;
+  width: 16px;
+}
+
+cr-menu.files-menu:not(.has-icon-start) cr-menu-item .icon.start {
+  display: none;
+}
+
+cr-menu.files-menu > cr-menu-item > .icon {
+  position: relative;
+  z-index: 1;
+}
+
+cr-menu.files-menu > cr-menu-item > span {
+  position: relative;
+  vertical-align: middle;
+  z-index: 1;
+}
+
 /* Make ripple size wider to make the animation speed faster since paper-ripple
    doesn't allow us to change its animation speed. */
 cr-menu.files-menu > cr-menu-item > paper-ripple {
   left: -25%;
   width: 150%;
+  z-index: 0;
 }
