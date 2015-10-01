@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
@@ -16,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 namespace {
@@ -26,6 +28,15 @@ const double kScoreDelta = 0.001;
 // Delta within which to consider internal time values equal. Internal time
 // values are in microseconds, so this delta comes out at one second.
 const double kTimeDelta = 1000000;
+
+scoped_ptr<ContentSettingsForOneType> GetEngagementContentSettings(
+    HostContentSettingsMap* settings_map) {
+  scoped_ptr<ContentSettingsForOneType> engagement_settings(
+      new ContentSettingsForOneType);
+  settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+                                      std::string(), engagement_settings.get());
+  return engagement_settings.Pass();
+}
 
 bool DoublesConsideredDifferent(double value1, double value2, double delta) {
   double abs_difference = fabs(value1 - value2);
@@ -162,7 +173,12 @@ bool SiteEngagementService::IsEnabled() {
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
-    : profile_(profile) {
+    : SiteEngagementService(profile, make_scoped_ptr(new base::DefaultClock)) {
+  content::BrowserThread::PostAfterStartupTask(
+      FROM_HERE, content::BrowserThread::GetMessageLoopProxyForThread(
+                     content::BrowserThread::UI),
+      base::Bind(&SiteEngagementService::CleanupEngagementScores,
+                 weak_factory_.GetWeakPtr()));
 }
 
 SiteEngagementService::~SiteEngagementService() {
@@ -182,7 +198,7 @@ double SiteEngagementService::GetScore(const GURL& url) {
     HostContentSettingsMapFactory::GetForProfile(profile_);
   scoped_ptr<base::DictionaryValue> score_dict =
       GetScoreDictForOrigin(settings_map, url);
-  SiteEngagementScore score(&clock_, *score_dict);
+  SiteEngagementScore score(clock_.get(), *score_dict);
 
   return score.Score();
 }
@@ -190,49 +206,54 @@ double SiteEngagementService::GetScore(const GURL& url) {
 double SiteEngagementService::GetTotalEngagementPoints() {
   HostContentSettingsMap* settings_map =
     HostContentSettingsMapFactory::GetForProfile(profile_);
-  ContentSettingsForOneType engagement_settings;
-  settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-                                      std::string(), &engagement_settings);
+  scoped_ptr<ContentSettingsForOneType> engagement_settings =
+      GetEngagementContentSettings(settings_map);
+
   double total_score = 0;
-  for (const auto& site : engagement_settings) {
+  for (const auto& site : *engagement_settings) {
     GURL origin(site.primary_pattern.ToString());
     if (!origin.is_valid())
       continue;
 
     scoped_ptr<base::DictionaryValue> score_dict =
         GetScoreDictForOrigin(settings_map, origin);
-    SiteEngagementScore score(&clock_, *score_dict);
+    SiteEngagementScore score(clock_.get(), *score_dict);
     total_score += score.Score();
   }
   return total_score;
 }
 
 std::map<GURL, double> SiteEngagementService::GetScoreMap() {
-  std::map<GURL, double> score_map;
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
-  ContentSettingsForOneType engagement_settings;
-  settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-                                      std::string(), &engagement_settings);
-  for (const auto& site : engagement_settings) {
+  scoped_ptr<ContentSettingsForOneType> engagement_settings =
+      GetEngagementContentSettings(settings_map);
+
+  std::map<GURL, double> score_map;
+  for (const auto& site : *engagement_settings) {
     GURL origin(site.primary_pattern.ToString());
     if (!origin.is_valid())
       continue;
 
     scoped_ptr<base::DictionaryValue> score_dict =
         GetScoreDictForOrigin(settings_map, origin);
-    SiteEngagementScore score(&clock_, *score_dict);
+    SiteEngagementScore score(clock_.get(), *score_dict);
     score_map[origin] = score.Score();
   }
+
   return score_map;
 }
+
+SiteEngagementService::SiteEngagementService(Profile* profile,
+                                             scoped_ptr<base::Clock> clock)
+    : profile_(profile), clock_(clock.Pass()), weak_factory_(this) {}
 
 void SiteEngagementService::AddPoints(const GURL& url, double points) {
   HostContentSettingsMap* settings_map =
     HostContentSettingsMapFactory::GetForProfile(profile_);
   scoped_ptr<base::DictionaryValue> score_dict =
       GetScoreDictForOrigin(settings_map, url);
-  SiteEngagementScore score(&clock_, *score_dict);
+  SiteEngagementScore score(clock_.get(), *score_dict);
 
   score.AddPoints(points);
   if (score.UpdateScoreDict(score_dict.get())) {
@@ -246,3 +267,26 @@ void SiteEngagementService::AddPoints(const GURL& url, double points) {
                                     std::string(), score_dict.release());
   }
 }
+
+void SiteEngagementService::CleanupEngagementScores() {
+  HostContentSettingsMap* settings_map =
+    HostContentSettingsMapFactory::GetForProfile(profile_);
+  scoped_ptr<ContentSettingsForOneType> engagement_settings =
+      GetEngagementContentSettings(settings_map);
+
+  for (const auto& site : *engagement_settings) {
+    GURL origin(site.primary_pattern.ToString());
+    if (origin.is_valid()) {
+      scoped_ptr<base::DictionaryValue> score_dict =
+          GetScoreDictForOrigin(settings_map, origin);
+      SiteEngagementScore score(clock_.get(), *score_dict);
+      if (score.Score() != 0)
+        continue;
+    }
+
+    settings_map->SetWebsiteSetting(
+        site.primary_pattern, ContentSettingsPattern::Wildcard(),
+        CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(), nullptr);
+  }
+}
+

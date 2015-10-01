@@ -7,14 +7,16 @@
 
 #include <map>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/time/default_clock.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/page_transition_types.h"
 
 namespace base {
 class DictionaryValue;
+class Clock;
 }
 
 class GURL;
@@ -134,14 +136,23 @@ class SiteEngagementService : public KeyedService,
   double GetTotalEngagementPoints() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CleanupEngagementScores);
+
+  // Only used in tests.
+  SiteEngagementService(Profile* profile, scoped_ptr<base::Clock> clock);
+
   // Adds the specified number of points to the given origin, respecting the
   // maximum limits for the day and overall.
   void AddPoints(const GURL& url, double points);
 
+  void CleanupEngagementScores();
+
   Profile* profile_;
 
   // The clock used to vend times.
-  base::DefaultClock clock_;
+  scoped_ptr<base::Clock> clock_;
+
+  base::WeakPtrFactory<SiteEngagementService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementService);
 };

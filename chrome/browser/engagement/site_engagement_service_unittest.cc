@@ -409,3 +409,71 @@ TEST_F(SiteEngagementServiceTest, GetTotalUserInputPoints) {
   EXPECT_DOUBLE_EQ(0.15, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.3, service->GetTotalEngagementPoints());
 }
+
+// Expect that sites that have reached zero engagement are cleaned up.
+TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  scoped_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), make_scoped_ptr(clock)));
+
+  base::Time current_day = GetReferenceTime();
+  clock->SetNow(current_day);
+
+  // The https and http versions of www.google.com should be separate.
+  GURL url1("https://www.google.com/");
+  GURL url2("http://www.google.com/");
+
+  EXPECT_EQ(0, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+
+  // Add the maximum number of points for one day.
+  service->AddPoints(url1, 5.0);
+  EXPECT_EQ(5.0, service->GetScore(url1));
+  service->AddPoints(url2, 5.0);
+  EXPECT_EQ(5.0, service->GetScore(url2));
+
+  // Add more points by moving to another day.
+  clock->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(1));
+
+  service->AddPoints(url1, 5.0);
+  EXPECT_EQ(10.0, service->GetScore(url1));
+
+  {
+    // Decay one origin to zero by advancing time and expect the engagement
+    // score to be cleaned up. The other score was changed a day later so it
+    // will not have decayed at all.
+    clock->SetNow(
+        GetReferenceTime() +
+        base::TimeDelta::FromDays(SiteEngagementScore::kDecayPeriodInDays));
+
+    std::map<GURL, double> score_map = service->GetScoreMap();
+    EXPECT_EQ(2u, score_map.size());
+    EXPECT_EQ(10, score_map[url1]);
+    EXPECT_EQ(0, score_map[url2]);
+
+    service->CleanupEngagementScores();
+
+    score_map = service->GetScoreMap();
+    EXPECT_EQ(1u, score_map.size());
+    EXPECT_EQ(10, score_map[url1]);
+    EXPECT_EQ(0, service->GetScore(url2));
+  }
+
+  {
+    // Decay the other origin to zero by advancing time and expect the
+    // engagement score to be cleaned up.
+    clock->SetNow(
+        GetReferenceTime() +
+        base::TimeDelta::FromDays(3 * SiteEngagementScore::kDecayPeriodInDays));
+
+    std::map<GURL, double> score_map = service->GetScoreMap();
+    EXPECT_EQ(1u, score_map.size());
+    EXPECT_EQ(0, score_map[url1]);
+
+    service->CleanupEngagementScores();
+
+    score_map = service->GetScoreMap();
+    EXPECT_EQ(0u, score_map.size());
+    EXPECT_EQ(0, service->GetScore(url1));
+  }
+}
