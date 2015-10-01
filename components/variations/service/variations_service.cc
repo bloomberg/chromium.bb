@@ -48,6 +48,9 @@ const int kMaxRetrySeedFetch = 5;
 // For the HTTP date headers, the resolution of the server time is 1 second.
 const int64 kServerTimeResolutionMs = 1000;
 
+// Maximum age permitted for a variations seed, in days.
+const int kMaxVariationsSeedAgeDays = 30;
+
 // Wrapper around channel checking, used to enable channel mocking for
 // testing. If the current browser channel is not UNKNOWN, this will return
 // that channel value. Otherwise, if the fake channel flag is provided, this
@@ -128,6 +131,20 @@ enum ResourceRequestsAllowedState {
 void RecordRequestsAllowedHistogram(ResourceRequestsAllowedState state) {
   UMA_HISTOGRAM_ENUMERATION("Variations.ResourceRequestsAllowed", state,
                             RESOURCE_REQUESTS_ALLOWED_ENUM_SIZE);
+}
+
+enum VariationsSeedExpiry {
+  VARIATIONS_SEED_EXPIRY_NOT_EXPIRED,
+  VARIATIONS_SEED_EXPIRY_FETCH_TIME_MISSING,
+  VARIATIONS_SEED_EXPIRY_EXPIRED,
+  VARIATIONS_SEED_EXPIRY_ENUM_SIZE,
+};
+
+// Records UMA histogram with the result of the variations seed expiry check.
+void RecordCreateTrialsSeedExpiry(VariationsSeedExpiry expiry_check_result) {
+  UMA_HISTOGRAM_ENUMERATION("Variations.CreateTrials.SeedExpiry",
+                            expiry_check_result,
+                            VARIATIONS_SEED_EXPIRY_ENUM_SIZE);
 }
 
 // Converts ResourceRequestAllowedNotifier::State to the corresponding
@@ -217,6 +234,9 @@ VariationsService::VariationsService(
       resource_request_allowed_notifier_(notifier.Pass()),
       request_count_(0),
       weak_ptr_factory_(this) {
+  DCHECK(client_.get());
+  DCHECK(resource_request_allowed_notifier_.get());
+
   resource_request_allowed_notifier_->Init(this);
 }
 
@@ -229,8 +249,27 @@ bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
   create_trials_from_seed_called_ = true;
 
   variations::VariationsSeed seed;
-  if (!seed_store_.LoadSeed(&seed))
+  if (!LoadSeed(&seed))
     return false;
+
+  const int64 last_fetch_time_internal =
+      local_state_->GetInt64(prefs::kVariationsLastFetchTime);
+  const base::Time last_fetch_time =
+      base::Time::FromInternalValue(last_fetch_time_internal);
+  if (last_fetch_time.is_null()) {
+    // If the last fetch time is missing and we have a seed, then this must be
+    // the first run of Chrome. Store the current time as the last fetch time.
+    RecordLastFetchTime();
+    RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_FETCH_TIME_MISSING);
+  } else {
+    // Reject the seed if it is more than 30 days old.
+    const base::TimeDelta seed_age = base::Time::Now() - last_fetch_time;
+    if (seed_age.InDays() > kMaxVariationsSeedAgeDays) {
+      RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_EXPIRED);
+      return false;
+    }
+    RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_NOT_EXPIRED);
+  }
 
   const base::Version current_version(version_info::GetVersionNumber());
   if (!current_version.IsValid())
@@ -259,42 +298,12 @@ bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
 
   // Log the "freshness" of the seed that was just used. The freshness is the
   // time between the last successful seed download and now.
-  const int64 last_fetch_time_internal =
-      local_state_->GetInt64(prefs::kVariationsLastFetchTime);
   if (last_fetch_time_internal) {
     const base::TimeDelta delta =
         now - base::Time::FromInternalValue(last_fetch_time_internal);
     // Log the value in number of minutes.
     UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.SeedFreshness", delta.InMinutes(),
         1, base::TimeDelta::FromDays(30).InMinutes(), 50);
-  }
-
-  // Log the skew between the seed date and the system clock/build time to
-  // analyze whether either could be used to make old variations seeds expire
-  // after some time.
-  const int64 seed_date_internal =
-      local_state_->GetInt64(prefs::kVariationsSeedDate);
-  if (seed_date_internal) {
-    const base::Time seed_date =
-        base::Time::FromInternalValue(seed_date_internal);
-    const int system_clock_delta_days = (now - seed_date).InDays();
-    if (system_clock_delta_days < 0) {
-      UMA_HISTOGRAM_COUNTS_100("Variations.SeedDateSkew.SystemClockBehindBy",
-                               -system_clock_delta_days);
-    } else {
-      UMA_HISTOGRAM_COUNTS_100("Variations.SeedDateSkew.SystemClockAheadBy",
-                               system_clock_delta_days);
-    }
-
-    const int build_time_delta_days =
-        (base::GetBuildTime() - seed_date).InDays();
-    if (build_time_delta_days < 0) {
-      UMA_HISTOGRAM_COUNTS_100("Variations.SeedDateSkew.BuildTimeBehindBy",
-                               -build_time_delta_days);
-    } else {
-      UMA_HISTOGRAM_COUNTS_100("Variations.SeedDateSkew.BuildTimeAheadBy",
-                               build_time_delta_days);
-    }
   }
 
   return true;
@@ -523,6 +532,10 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
       base::Bind(&VariationsService::PerformSimulationWithVersion,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&seed)));
   return true;
+}
+
+bool VariationsService::LoadSeed(VariationsSeed* seed) {
+  return seed_store_.LoadSeed(seed);
 }
 
 void VariationsService::FetchVariationsSeed() {

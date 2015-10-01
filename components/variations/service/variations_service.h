@@ -207,6 +207,11 @@ class VariationsService
     LOAD_COUNTRY_MAX,
   };
 
+  // Loads the seed from the variations store into |seed|. If successfull,
+  // |seed| will contain the loaded data and true is returned. Set as virtual
+  // so that it can be overridden by tests.
+  virtual bool LoadSeed(VariationsSeed* seed);
+
   // Checks if prerequisites for fetching the Variations seed are met, and if
   // so, performs the actual fetch using |DoActualFetch|.
   void FetchVariationsSeed();

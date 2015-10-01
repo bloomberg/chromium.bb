@@ -48596,6 +48596,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>TBD</summary>
 </histogram>
 
+<histogram name="Variations.CreateTrials.SeedExpiry"
+    enum="VariationsSeedExpiry">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    The result of verifying if the variations seed is expired, recorded before
+    trials are created from the seed. Expired seeds are treated as not existing.
+  </summary>
+</histogram>
+
 <histogram name="Variations.DisabledNoEntropyProvider" enum="BooleanHit">
   <obsolete>
     Deprecated 1/2013. No longer tracked.
@@ -48723,6 +48733,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Variations.SeedDateSkew.BuildTimeAheadBy" units="days">
   <owner>gab@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 9/2015.
+  </obsolete>
   <summary>
     Logged on startup when creating field trials from the variations seed if the
     build time is ahead of or within 24 hours of the kVariationsSeedDate. Used
@@ -48733,6 +48746,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Variations.SeedDateSkew.BuildTimeBehindBy" units="days">
   <owner>gab@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 9/2015.
+  </obsolete>
   <summary>
     Logged on startup when creating field trials from the variations seed if the
     build time is behind the kVariationsSeedDate by a day or more. Used as an
@@ -48743,6 +48759,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Variations.SeedDateSkew.SystemClockAheadBy" units="days">
   <owner>gab@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 9/2015.
+  </obsolete>
   <summary>
     Logged on startup when creating field trials from the variations seed if the
     system clock is ahead of or within 24 hours of the kVariationsSeedDate. Used
@@ -48753,6 +48772,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Variations.SeedDateSkew.SystemClockBehindBy" units="days">
   <owner>gab@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 9/2015.
+  </obsolete>
   <summary>
     Logged on startup when creating field trials from the variations seed if the
     system clock is behind the kVariationsSeedDate by a day or more. Used as an
@@ -73185,6 +73207,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="Seed Corrupt Base64 Data"/>
   <int value="5" label="Seed Corrupt Protobuf"/>
   <int value="6" label="Seed Corrupt Gzip Data"/>
+</enum>
+
+<enum name="VariationsSeedExpiry" type="int">
+  <int value="0" label="Not Expired"/>
+  <int value="1" label="Fetch Time Missing"/>
+  <int value="2" label="Expired"/>
 </enum>
 
 <enum name="VariationsSeedStoreResult" type="int">
