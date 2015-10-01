@@ -1841,24 +1841,27 @@ static void CalculateDrawPropertiesInternal(
 
     layer_or_ancestor_clips_descendants = false;
     bool subtree_is_clipped_by_surface_bounds = false;
-    if (ancestor_clips_subtree) {
-      // It may be the layer or the surface doing the clipping of the subtree,
-      // but in either case, we'll be clipping to the projected clip rect of our
-      // ancestor.
-      gfx::Transform inverse_surface_draw_transform(
-          gfx::Transform::kSkipInitialization);
-      if (!render_surface->draw_transform().GetInverse(
-              &inverse_surface_draw_transform)) {
-        // TODO(shawnsingh): Either we need to handle uninvertible transforms
-        // here, or DCHECK that the transform is invertible.
-      }
+    // It may be the layer or the surface doing the clipping of the subtree,
+    // but in either case, we'll be clipping to the projected clip rect of our
+    // ancestor.
+    gfx::Transform inverse_surface_draw_transform(
+        gfx::Transform::kSkipInitialization);
+    if (!render_surface->draw_transform().GetInverse(
+            &inverse_surface_draw_transform)) {
+      // TODO(shawnsingh): Either we need to handle uninvertible transforms
+      // here, or DCHECK that the transform is invertible.
+    }
 
-      gfx::Rect surface_clip_rect_in_target_space = gfx::IntersectRects(
-          data_from_ancestor.clip_rect_of_target_surface_in_target_space,
+    gfx::Rect surface_clip_rect_in_target_space =
+        data_from_ancestor.clip_rect_of_target_surface_in_target_space;
+    if (ancestor_clips_subtree)
+      surface_clip_rect_in_target_space.Intersect(
           ancestor_clip_rect_in_target_space);
-      gfx::Rect projected_surface_rect = MathUtil::ProjectEnclosingClippedRect(
-          inverse_surface_draw_transform, surface_clip_rect_in_target_space);
+    gfx::Rect projected_surface_rect = MathUtil::ProjectEnclosingClippedRect(
+        inverse_surface_draw_transform, surface_clip_rect_in_target_space);
+    clip_rect_of_target_surface_in_target_space = projected_surface_rect;
 
+    if (ancestor_clips_subtree) {
       if (layer_draw_properties.num_unclipped_descendants > 0u) {
         // If we have unclipped descendants, we cannot count on the render
         // surface's bounds clipping our subtree: the unclipped descendants
@@ -1877,7 +1880,6 @@ static void CalculateDrawPropertiesInternal(
         // expressed in the space where this surface draws, i.e. the same space
         // as clip_rect_from_ancestor_in_ancestor_target_space.
         render_surface->SetClipRect(ancestor_clip_rect_in_target_space);
-        clip_rect_of_target_surface_in_target_space = projected_surface_rect;
         subtree_is_clipped_by_surface_bounds = true;
       }
     }
@@ -1891,8 +1893,6 @@ static void CalculateDrawPropertiesInternal(
     render_surface->SetIsClipped(subtree_is_clipped_by_surface_bounds);
     if (!subtree_is_clipped_by_surface_bounds) {
       render_surface->SetClipRect(gfx::Rect());
-      clip_rect_of_target_surface_in_target_space =
-          data_from_ancestor.clip_rect_of_target_surface_in_target_space;
     }
 
     // If the new render surface is drawn translucent or with a non-integral

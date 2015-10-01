@@ -7907,5 +7907,37 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(50, 50), test_layer->clip_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
+  LayerImpl* root = root_layer();
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(root);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(render_surface1);
+  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface2);
+
+  const gfx::Transform identity_matrix;
+  clip_child->SetClipParent(root);
+  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  clip_children->insert(clip_child);
+  root->SetClipChildren(clip_children.release());
+  root->SetMasksToBounds(true);
+  render_surface1->SetDrawsContent(true);
+  render_surface2->SetDrawsContent(true);
+
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(render_surface1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(10, 10), gfx::Size(30, 30), true,
+                               false, true);
+  SetLayerPropertiesForTesting(render_surface2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(clip_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               false);
+  ExecuteCalculateDrawProperties(root);
+
+  EXPECT_EQ(gfx::Rect(-10, -10, 30, 30), render_surface2->clip_rect());
+}
+
 }  // namespace
 }  // namespace cc
