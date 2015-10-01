@@ -8,7 +8,7 @@ PASS AudioContext.length is 0
 PASS AutocompleteErrorEvent.length is 1
 PASS Blob.length is 0
 PASS CloseEvent.length is 1
-FAIL CustomEvent.length should be 1. Was 0.
+PASS CustomEvent.length is 1
 FAIL DOMFormData.length should be 0. Threw exception ReferenceError: DOMFormData is not defined
 PASS DOMParser.length is 0
 PASS DataView.length is 3

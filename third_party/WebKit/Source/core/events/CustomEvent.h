@@ -55,7 +55,8 @@ public:
     const AtomicString& interfaceName() const override;
 
     SerializedScriptValue* serializedDetail() { return m_serializedDetail.get(); }
-    void setSerializedDetail(PassRefPtr<SerializedScriptValue> serializedDetail) { m_serializedDetail = serializedDetail; }
+
+    ScriptValue detail() const { return m_detail; }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -63,6 +64,7 @@ private:
     CustomEvent();
     CustomEvent(const AtomicString& type, const CustomEventInit& initializer);
 
+    ScriptValue m_detail;
     RefPtr<SerializedScriptValue> m_serializedDetail;
 };
 

@@ -26,9 +26,7 @@
 // https://dom.spec.whatwg.org/#interface-customevent
 
 [
-    // TODO(bashi): Don't use CustomConstructor. Constructor should be:
-    // Constructor(DOMString type, optional CustomEventInit eventInitDict),
-    CustomConstructor,
+    Constructor(DOMString type, optional CustomEventInit eventInitDict),
     Exposed=(Window,Worker),
 ] interface CustomEvent : Event {
     [Custom=Getter] readonly attribute any detail;
