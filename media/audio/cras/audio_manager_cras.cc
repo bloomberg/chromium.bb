@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
 #include "chromeos/audio/audio_device.h"
@@ -42,6 +43,11 @@ const int kDefaultInputBufferSize = 1024;
 const char kBeamformingOnUniqueId[] = "beamforming-on";
 const char kBeamformingOffUniqueId[] = "beamforming-off";
 
+bool IsBeamformingDefaultedOn() {
+  return base::FieldTrialList::FindFullName("ChromebookBeamforming") ==
+         "Enabled";
+}
+
 void AddDefaultDevice(AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
 
@@ -53,13 +59,22 @@ void AddDefaultDevice(AudioDeviceNames* device_names) {
 // Adds the beamforming on and off devices to |device_names|.
 void AddBeamformingDevices(AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
-
-  device_names->push_back(AudioDeviceName(
+  const AudioDeviceName beamforming_on_device(
       GetLocalizedStringUTF8(BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME),
-      kBeamformingOnUniqueId));
-  device_names->push_back(AudioDeviceName(
+      kBeamformingOnUniqueId);
+  const AudioDeviceName beamforming_off_device(
       GetLocalizedStringUTF8(BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME),
-      kBeamformingOffUniqueId));
+      kBeamformingOffUniqueId);
+
+  if (IsBeamformingDefaultedOn()) {
+    // Users in the experiment will have the "beamforming on" device appear
+    // first in the list. This causes it to be selected by default.
+    device_names->push_back(beamforming_on_device);
+    device_names->push_back(beamforming_off_device);
+  } else {
+    device_names->push_back(beamforming_off_device);
+    device_names->push_back(beamforming_on_device);
+  }
 }
 
 // Returns a mic positions string if the machine has a beamforming capable
