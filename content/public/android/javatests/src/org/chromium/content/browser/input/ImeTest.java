@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
@@ -247,53 +246,6 @@ public class ImeTest extends ContentShellTestBase {
                 return newCount == mInputMethodManagerWrapper.getShowSoftInputCounter();
             }
         }));
-    }
-
-    @SmallTest
-    @Feature({"TextInput"})
-    public void testAttachDetachPhysicalKeyboard() throws Exception {
-        final int showCount = mInputMethodManagerWrapper.getShowSoftInputCounter();
-        final int hideCount = mInputMethodManagerWrapper.getHideSoftInputCounter();
-
-        // Attaching physical keyboard.
-        Configuration hardKeyboardConfig =
-                new Configuration(mContentViewCore.getContext().getResources().getConfiguration());
-        hardKeyboardConfig.keyboard = Configuration.KEYBOARD_QWERTY;
-        hardKeyboardConfig.keyboardHidden = Configuration.KEYBOARDHIDDEN_YES;
-        hardKeyboardConfig.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_NO;
-        onConfigurationChanged(hardKeyboardConfig);
-
-        // Make sure that we try to hide soft keyboard. This is triggered by
-        // View#onConfigurationChanged().
-        assertTrue("Base hideCount: " + hideCount + ", actual hideCount: "
-                        + mInputMethodManagerWrapper.getHideSoftInputCounter(),
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mInputMethodManagerWrapper.getHideSoftInputCounter()
-                                == hideCount + 1;
-                    }
-                }));
-
-        // Detaching physical keyboard.
-        Configuration softKeyboardConfig =
-                new Configuration(mContentViewCore.getContext().getResources().getConfiguration());
-        softKeyboardConfig.keyboard = Configuration.KEYBOARD_NOKEYS;
-        softKeyboardConfig.keyboardHidden = Configuration.KEYBOARDHIDDEN_NO;
-        softKeyboardConfig.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_YES;
-        onConfigurationChanged(softKeyboardConfig);
-
-        // Make sure that we try to show soft keyboard. This is triggered by
-        // ContentViewCore#onConfigurationChanged().
-        assertTrue("Base showCount: " + showCount + ", actual showCount: "
-                        + mInputMethodManagerWrapper.getShowSoftInputCounter(),
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mInputMethodManagerWrapper.getShowSoftInputCounter()
-                                == showCount + 1;
-                    }
-                }));
     }
 
     /*
@@ -1270,15 +1222,6 @@ public class ImeTest extends ContentShellTestBase {
         // When we focus another element, the connection may be recreated.
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
         waitAndVerifyStatesAndCalls(0, "", 0, 0, -1, -1);
-    }
-
-    private void onConfigurationChanged(final Configuration config) {
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mContentViewCore.onConfigurationChanged(config);
-            }
-        });
     }
 
     private static class TestAdapterInputConnectionFactory extends
