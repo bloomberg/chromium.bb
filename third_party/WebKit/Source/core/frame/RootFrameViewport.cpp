@@ -98,8 +98,7 @@ LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, co
     // We want to move the rect into the viewport that excludes the scrollbars so we intersect
     // the visual viewport with the scrollbar-excluded frameView content rect. However, we don't
     // use visibleContentRect directly since it floors the scroll position. Instead, we use
-    // FrameView::scrollPositionDouble and construct a LayoutRect from that (the FrameView size
-    // is always integer sized.
+    // ScrollAnimator::currentPosition and construct a LayoutRect from that.
 
     LayoutRect frameRectInContent = LayoutRect(
         layoutViewport().scrollAnimator()->currentPosition(),
@@ -108,26 +107,11 @@ LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, co
         scrollOffsetFromScrollAnimators(),
         visualViewport().visibleContentRect().size());
 
+    // Intersect layout and visual rects to exclude the scrollbar from the view rect.
     LayoutRect viewRectInContent = intersection(visualRectInContent, frameRectInContent);
     LayoutRect targetViewport =
         ScrollAlignment::getRectToExpose(viewRectInContent, rectInContent, alignX, alignY);
-
-    // visualViewport.scrollIntoView will attempt to center the given rect within the viewport
-    // so to prevent it from adjusting r's coordinates the rect must match the viewport's size
-    // i.e. add the subtracted scrollbars from above back in.
-    // FIXME: This is hacky and required because getRectToExpose doesn't naturally account
-    // for the two viewports. crbug.com/449340.
-    targetViewport.setSize(LayoutSize(visualViewport().visibleContentRect().size()));
-
-    // Snap the visible rect to layout units to match the calculated target viewport rect.
-    FloatRect visible(LayoutRect(visualViewport().scrollPositionDouble(), visualViewport().visibleContentRect().size()));
-
-    float centeringOffsetX = (visible.width() - targetViewport.width()) / 2;
-    float centeringOffsetY = (visible.height() - targetViewport.height()) / 2;
-
-    DoublePoint targetOffset(
-        targetViewport.x() - centeringOffsetX,
-        targetViewport.y() - centeringOffsetY);
+    DoublePoint targetOffset(targetViewport.x(), targetViewport.y());
 
     setScrollPosition(targetOffset, ProgrammaticScroll);
 
