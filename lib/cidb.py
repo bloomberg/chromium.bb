@@ -33,7 +33,7 @@ from chromite.lib import retry_stats
 CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
                                    'migrations')
 
-_RETRYABLE_OPERATIONAL_ERROR_CODES = (
+_RETRYABLE_OPERATIONAL_ERROR_CODES = frozenset([
     1053,   # 'Server shutdown in progress'
     2003,   # 'Can't connect to MySQL server'
     2006,   # Error code 2006 'MySQL server has gone away' indicates that
@@ -44,7 +44,7 @@ _RETRYABLE_OPERATIONAL_ERROR_CODES = (
             # whether the query completed before or after the connection
             # lost.
     2026,   # 'SSL connection error: unknown error number'
-)
+])
 
 
 def _IsRetryableException(e):
@@ -64,14 +64,23 @@ def _IsRetryableException(e):
   # on the exception name. See crbug.com/483654
   if 'OperationalError' in str(type(e)):
     # Unwrap the error till we get to the error raised by the DB backend.
+    # Record each error_code that we encounter along the way.
     e_orig = e
-    while hasattr(e_orig, 'orig'):
-      e_orig = e_orig.orig
-    error_code = e_orig.args[0] if len(e_orig.args) > 0 else -1
-    if error_code in _RETRYABLE_OPERATIONAL_ERROR_CODES:
-      if error_code != 2006:
+    encountered_error_codes = set()
+    while e_orig:
+      if len(e_orig.args) and isinstance(e_orig.args[0], int):
+        encountered_error_codes.add(e_orig.args[0])
+      e_orig = getattr(e_orig, 'orig', None)
+
+    if encountered_error_codes & _RETRYABLE_OPERATIONAL_ERROR_CODES:
+      # Suppress logging of error code 2006 retries. They are routine and
+      # expected, and logging them confuses people.
+      if not 2006 in encountered_error_codes:
         logging.info('RETRYING cidb query due to %s.', e)
       return True
+    else:
+      logging.info('None of error codes encountered %s are-retryable.',
+                   encountered_error_codes)
 
   return False
 
