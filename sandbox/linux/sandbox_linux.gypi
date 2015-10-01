@@ -107,6 +107,17 @@
         'sandbox_linux_test_sources.gypi',
       ],
       'type': 'executable',
+      'conditions': [
+        [ 'OS == "android"', {
+          'variables': {
+            'test_type': 'gtest',
+            'test_suite_name': '<(_target_name)',
+          },
+          'includes': [
+            '../../build/android/test_runner.gypi',
+          ],
+        }]
+      ]
     },
     {
       # This target is the shared library used by Android APK (i.e.
