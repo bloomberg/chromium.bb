@@ -118,27 +118,29 @@ void PerformanceTracker::RecordVideoPacketStats(const VideoPacket& packet) {
   // Record this received packet, even if it is empty.
   video_packet_rate_.Record(1);
 
-  // Record the RTT, even for empty packets, otherwise input events that
-  // do not cause an on-screen change can give very large, bogus RTTs.
-  if (packet.has_latest_event_timestamp() &&
-      packet.latest_event_timestamp() > latest_input_event_timestamp_) {
-    latest_input_event_timestamp_ = packet.latest_event_timestamp();
-
-    base::TimeDelta round_trip_latency =
-        base::Time::Now() -
-        base::Time::FromInternalValue(packet.latest_event_timestamp());
-
-    round_trip_ms_.Record(round_trip_latency.InMilliseconds());
-
-    uma_custom_times_updater_.Run(
-        kRoundTripLatencyHistogram, round_trip_latency.InMilliseconds(),
-        kLatencyHistogramMinMs, kLatencyHistogramMaxMs,
-        kLatencyHistogramBuckets);
+  FrameTimestamps timestamps;
+  timestamps.time_received = base::TimeTicks::Now();
+  if (packet.has_latest_event_timestamp()) {
+    base::TimeTicks timestamp =
+        base::TimeTicks::FromInternalValue(packet.latest_event_timestamp());
+    // Only use latest_event_timestamp field if it has changed from the
+    // previous frame.
+    if (timestamp > latest_event_timestamp_) {
+      timestamps.latest_event_timestamp = timestamp;
+      latest_event_timestamp_ = timestamp;
+    }
   }
 
   // If the packet is empty, there are no other stats to update.
-  if (!packet.data().size())
+  if (!packet.data().size()) {
+    // Record the RTT, even for empty packets, otherwise input events that
+    // do not cause an on-screen change can give very large, bogus RTTs.
+    RecordRoundTripLatency(timestamps);
     return;
+  }
+
+  DCHECK(packet.has_frame_id());
+  frame_timestamps_[packet.frame_id()] = timestamps;
 
   video_frame_rate_.Record(1);
   video_bandwidth_.Record(packet.data().size());
@@ -188,18 +190,55 @@ void PerformanceTracker::RecordVideoPacketStats(const VideoPacket& packet) {
   }
 }
 
-void PerformanceTracker::RecordDecodeTime(double value) {
-  video_decode_ms_.Record(value);
+void PerformanceTracker::OnFrameDecoded(int32_t frame_id) {
+  FramesTimestampsMap::iterator it = frame_timestamps_.find(frame_id);
+  DCHECK(it != frame_timestamps_.end());
+  it->second.time_decoded = base::TimeTicks::Now();
+  base::TimeDelta delay = it->second.time_decoded - it->second.time_received;
+
+  video_decode_ms_.Record(delay.InMilliseconds());
   uma_custom_times_updater_.Run(
-      kVideoDecodeLatencyHistogram, value, kVideoActionsHistogramsMinMs,
-      kVideoActionsHistogramsMaxMs, kVideoActionsHistogramsBuckets);
+      kVideoDecodeLatencyHistogram, delay.InMilliseconds(),
+      kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+      kVideoActionsHistogramsBuckets);
 }
 
-void PerformanceTracker::RecordPaintTime(double value) {
-  video_paint_ms_.Record(value);
+void PerformanceTracker::OnFramePainted(int32_t frame_id) {
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  while (!frame_timestamps_.empty() &&
+         frame_timestamps_.begin()->first <= frame_id) {
+    FrameTimestamps& timestamps = frame_timestamps_.begin()->second;
+
+    // time_decoded may be null if OnFrameDecoded() was never called, e.g. if
+    // the frame was dropped or decoding has failed.
+    if (!timestamps.time_decoded.is_null()) {
+      base::TimeDelta delay = now - timestamps.time_decoded;
+      video_paint_ms_.Record(delay.InMilliseconds());
+      uma_custom_times_updater_.Run(
+          kVideoPaintLatencyHistogram, delay.InMilliseconds(),
+          kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+          kVideoActionsHistogramsBuckets);
+    }
+
+    RecordRoundTripLatency(timestamps);
+    frame_timestamps_.erase(frame_timestamps_.begin());
+  }
+}
+
+void PerformanceTracker::RecordRoundTripLatency(
+    const FrameTimestamps& timestamps) {
+  if (timestamps.latest_event_timestamp.is_null())
+    return;
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta round_trip_latency =
+      now - timestamps.latest_event_timestamp;
+
+  round_trip_ms_.Record(round_trip_latency.InMilliseconds());
   uma_custom_times_updater_.Run(
-      kVideoPaintLatencyHistogram, value, kVideoActionsHistogramsMinMs,
-      kVideoActionsHistogramsMaxMs, kVideoActionsHistogramsBuckets);
+      kRoundTripLatencyHistogram, round_trip_latency.InMilliseconds(),
+      kLatencyHistogramMinMs, kLatencyHistogramMaxMs, kLatencyHistogramBuckets);
 }
 
 void PerformanceTracker::UploadRateStatsToUma() {

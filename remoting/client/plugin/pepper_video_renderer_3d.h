@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time/time.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/video_decoder.h"
@@ -52,13 +51,6 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
  private:
   class PendingPacket;
   class Picture;
-
-  struct FrameDecodeTimestamp {
-    FrameDecodeTimestamp(uint32_t frame_id,
-                         base::TimeTicks decode_started_time);
-    uint32_t frame_id;
-    base::TimeTicks decode_started_time;
-  };
 
   // Callback for pp::VideoDecoder::Initialize().
   void OnInitialized(int32_t result);
@@ -113,14 +105,9 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
   bool get_picture_pending_ = false;
   bool paint_pending_ = false;
 
-  uint32_t latest_frame_id_ = 0;
-
   // Queue of packets that that have been received, but haven't been passed to
   // the decoder yet.
   std::deque<PendingPacket*> pending_packets_;
-
-  // Timestamps for all frames currently being processed by the decoder.
-  std::deque<FrameDecodeTimestamp> frame_decode_timestamps_;
 
   // The current picture shown on the screen or being rendered. Must be deleted
   // before |video_decoder_|.
@@ -133,9 +120,6 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
 
   // Set to true if the screen has been resized and needs to be repainted.
   bool force_repaint_ = false;
-
-  // Time the last paint operation was started.
-  base::TimeTicks latest_paint_started_time_;
 
   // The texture type for which |shader_program| was initialized. Can be either
   // 0, GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE_ARB or GL_TEXTURE_EXTERNAL_OES. 0

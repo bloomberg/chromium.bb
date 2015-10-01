@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_PERFORMANCE_TRACKER_H_
 #define REMOTING_PROTOCOL_PERFORMANCE_TRACKER_H_
 
+#include <map>
+
 #include "base/callback.h"
 #include "base/timer/timer.h"
 #include "remoting/base/rate_counter.h"
@@ -53,8 +55,12 @@ class PerformanceTracker {
   // Record stats for a video-packet.
   void RecordVideoPacketStats(const VideoPacket& packet);
 
-  void RecordDecodeTime(double value);
-  void RecordPaintTime(double value);
+  // Helpers to track decode and paint time. If the render drops some frames
+  // before they are painted then OnFramePainted() records paint time when the
+  // following frame is rendered. OnFramePainted() may be called multiple times,
+  // in which case all calls after the first one are ignored.
+  void OnFrameDecoded(int32_t frame_id);
+  void OnFramePainted(int32_t frame_id);
 
   // Sets callbacks in ChromotingInstance to update a UMA custom counts, custom
   // times or enum histogram.
@@ -66,6 +72,18 @@ class PerformanceTracker {
   void OnPauseStateChanged(bool paused);
 
  private:
+  struct FrameTimestamps {
+    // Set to null for frames that were not sent after a fresh input event.
+    base::TimeTicks latest_event_timestamp;
+
+    base::TimeTicks time_received;
+    base::TimeTicks time_decoded;
+  };
+  typedef std::map<int32_t, FrameTimestamps> FramesTimestampsMap;
+
+  // Helper to record input roundtrip latency after a frame has been painted.
+  void RecordRoundTripLatency(const FrameTimestamps& timestamps);
+
   // Updates frame-rate, packet-rate and bandwidth UMA statistics.
   void UploadRateStatsToUma();
 
@@ -97,8 +115,11 @@ class PerformanceTracker {
   UpdateUmaCustomHistogramCallback uma_custom_times_updater_;
   UpdateUmaEnumHistogramCallback uma_enum_histogram_updater_;
 
-  // The latest input timestamp that a VideoPacket was seen annotated with.
-  int64_t latest_input_event_timestamp_ = 0;
+  // The latest event timestamp that a VideoPacket was seen annotated with.
+  base::TimeTicks latest_event_timestamp_;
+
+  // Stores timestamps for the frames that are currently being processed.
+  FramesTimestampsMap frame_timestamps_;
 
   bool is_paused_ = false;
 

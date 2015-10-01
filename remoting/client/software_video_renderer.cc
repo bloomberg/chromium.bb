@@ -149,25 +149,23 @@ void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
       consumer_->AllocateFrame(source_size_);
   frame->set_dpi(source_dpi_);
 
+  int32_t frame_id = packet->frame_id();
   base::PostTaskAndReplyWithResult(
       decode_task_runner_.get(), FROM_HERE,
       base::Bind(&DoDecodeFrame, decoder_.get(), base::Passed(&packet),
                  base::Passed(&frame)),
       base::Bind(&SoftwareVideoRenderer::RenderFrame,
-                 weak_factory_.GetWeakPtr(), base::TimeTicks::Now(),
-                 done_runner.Release()));
+                 weak_factory_.GetWeakPtr(), frame_id, done_runner.Release()));
 }
 
 void SoftwareVideoRenderer::RenderFrame(
-    base::TimeTicks decode_start_time,
+    int32_t frame_id,
     const base::Closure& done,
     scoped_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (perf_tracker_) {
-    perf_tracker_->RecordDecodeTime(
-        (base::TimeTicks::Now() - decode_start_time).InMilliseconds());
-  }
+  if (perf_tracker_)
+    perf_tracker_->OnFrameDecoded(frame_id);
 
   if (!frame) {
     if (!done.is_null())
@@ -175,20 +173,17 @@ void SoftwareVideoRenderer::RenderFrame(
     return;
   }
 
-  consumer_->DrawFrame(
-      frame.Pass(),
-      base::Bind(&SoftwareVideoRenderer::OnFrameRendered,
-                 weak_factory_.GetWeakPtr(), base::TimeTicks::Now(), done));
+  consumer_->DrawFrame(frame.Pass(),
+                       base::Bind(&SoftwareVideoRenderer::OnFrameRendered,
+                                  weak_factory_.GetWeakPtr(), frame_id, done));
 }
 
-void SoftwareVideoRenderer::OnFrameRendered(base::TimeTicks paint_start_time,
+void SoftwareVideoRenderer::OnFrameRendered(int32_t frame_id,
                                             const base::Closure& done) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (perf_tracker_) {
-    perf_tracker_->RecordPaintTime(
-        (base::TimeTicks::Now() - paint_start_time).InMilliseconds());
-  }
+  if (perf_tracker_)
+    perf_tracker_->OnFramePainted(frame_id);
 
   if (!done.is_null())
     done.Run();

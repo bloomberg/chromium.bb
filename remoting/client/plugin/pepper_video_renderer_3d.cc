@@ -54,11 +54,6 @@ class PepperVideoRenderer3D::Picture {
   PP_VideoPicture picture_;
 };
 
-PepperVideoRenderer3D::FrameDecodeTimestamp::FrameDecodeTimestamp(
-    uint32_t frame_id,
-    base::TimeTicks decode_started_time)
-    : frame_id(frame_id), decode_started_time(decode_started_time) {}
-
 PepperVideoRenderer3D::PepperVideoRenderer3D() : callback_factory_(this) {}
 
 PepperVideoRenderer3D::~PepperVideoRenderer3D() {
@@ -265,14 +260,10 @@ void PepperVideoRenderer3D::DecodeNextPacket() {
   if (!initialization_finished_ || decode_pending_ || pending_packets_.empty())
     return;
 
-  ++latest_frame_id_;
-  frame_decode_timestamps_.push_back(
-      FrameDecodeTimestamp(latest_frame_id_, base::TimeTicks::Now()));
-
   const VideoPacket* packet = pending_packets_.front()->packet();
 
   int32_t result = video_decoder_.Decode(
-      latest_frame_id_, packet->data().size(), packet->data().data(),
+      packet->frame_id(), packet->data().size(), packet->data().data(),
       callback_factory_.NewCallback(&PepperVideoRenderer3D::OnDecodeDone));
   CHECK_EQ(result, PP_OK_COMPLETIONPENDING);
   decode_pending_ = true;
@@ -317,21 +308,7 @@ void PepperVideoRenderer3D::OnPictureReady(int32_t result,
     return;
   }
 
-  CHECK(!frame_decode_timestamps_.empty());
-  const FrameDecodeTimestamp& frame_timer = frame_decode_timestamps_.front();
-
-  if (picture.decode_id != frame_timer.frame_id) {
-    LOG(ERROR)
-        << "Received a video packet that didn't contain a complete frame.";
-    event_handler_->OnVideoDecodeError();
-    return;
-  }
-
-  base::TimeDelta decode_time =
-      base::TimeTicks::Now() - frame_timer.decode_started_time;
-  perf_tracker_->RecordDecodeTime(decode_time.InMilliseconds());
-
-  frame_decode_timestamps_.pop_front();
+  perf_tracker_->OnFrameDecoded(picture.decode_id);
 
   next_picture_.reset(new Picture(&video_decoder_, picture));
 
@@ -348,7 +325,6 @@ void PepperVideoRenderer3D::PaintIfNeeded() {
     current_picture_ = next_picture_.Pass();
 
   force_repaint_ = false;
-  latest_paint_started_time_ = base::TimeTicks::Now();
 
   const PP_VideoPicture& picture = current_picture_->picture();
   PP_Resource graphics_3d = graphics_.pp_resource();
@@ -409,9 +385,7 @@ void PepperVideoRenderer3D::OnPaintDone(int32_t result) {
   CHECK_EQ(result, PP_OK) << "Graphics3D::SwapBuffers() failed";
 
   paint_pending_ = false;
-  base::TimeDelta paint_time =
-      base::TimeTicks::Now() - latest_paint_started_time_;
-  perf_tracker_->RecordPaintTime(paint_time.InMilliseconds());
+  perf_tracker_->OnFramePainted(current_picture_->picture().decode_id);
   PaintIfNeeded();
 }
 

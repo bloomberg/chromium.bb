@@ -292,18 +292,6 @@ void ChromotingJniInstance::SendClientMessage(const std::string& type,
   client_->host_stub()->DeliverClientMessage(extension_message);
 }
 
-void ChromotingJniInstance::RecordPaintTime(int64 paint_time_ms) {
-  if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
-    jni_runtime_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingJniInstance::RecordPaintTime, this,
-                              paint_time_ms));
-    return;
-  }
-
-  if (stats_logging_enabled_)
-    perf_tracker_->RecordPaintTime(paint_time_ms);
-}
-
 void ChromotingJniInstance::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {

@@ -93,10 +93,6 @@ class ChromotingJniInstance
 
   void SendClientMessage(const std::string& type, const std::string& data);
 
-  // Records paint time for statistics logging, if enabled. May be called from
-  // any thread.
-  void RecordPaintTime(int64 paint_time_ms);
-
   // ClientUserInterface implementation.
   void OnConnectionState(protocol::ConnectionToHost::State state,
                          protocol::ErrorCode error) override;

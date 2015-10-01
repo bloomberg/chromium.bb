@@ -55,11 +55,10 @@ class SoftwareVideoRenderer : public VideoRenderer,
                           const base::Closure& done) override;
 
  private:
-  void RenderFrame(base::TimeTicks decode_start_time,
-                 const base::Closure& done,
-                 scoped_ptr<webrtc::DesktopFrame> frame);
-  void OnFrameRendered(base::TimeTicks paint_start_time,
-                       const base::Closure& done);
+  void RenderFrame(int32_t frame_id,
+                   const base::Closure& done,
+                   scoped_ptr<webrtc::DesktopFrame> frame);
+  void OnFrameRendered(int32_t frame_id, const base::Closure& done);
 
   scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;
   FrameConsumer* consumer_;
