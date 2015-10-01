@@ -75,24 +75,6 @@ static bool determineSelectorScopes(const CSSSelectorList& selectorList, HashSet
     return true;
 }
 
-static bool hasDistributedRule(StyleSheetContents* styleSheetContents)
-{
-    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& rules = styleSheetContents->childRules();
-    for (unsigned i = 0; i < rules.size(); i++) {
-        const StyleRuleBase* rule = rules[i].get();
-        if (!rule->isStyleRule())
-            continue;
-
-        const StyleRule* styleRule = toStyleRule(rule);
-        const CSSSelectorList& selectorList = styleRule->selectorList();
-        for (size_t selectorIndex = 0; selectorIndex != kNotFound; selectorIndex = selectorList.indexOfNextSelectorAfter(selectorIndex)) {
-            if (selectorList.hasShadowDistributedAt(selectorIndex))
-                return true;
-        }
-    }
-    return false;
-}
-
 static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
 {
     // This funciton is conservative. We only return false when we know that
@@ -139,11 +121,8 @@ void StyleSheetInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* style
             return;
     }
 
-    if (m_treeScope->rootNode().isShadowRoot()) {
-        if (hasDistributedRule(styleSheetContents))
-            m_hasDistributedRules = true;
+    if (m_treeScope->rootNode().isShadowRoot())
         return;
-    }
 
     const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& rules = styleSheetContents->childRules();
     for (unsigned i = 0; i < rules.size(); i++) {
@@ -177,23 +156,13 @@ static bool elementMatchesSelectorScopes(const Element* element, const HashSet<S
     return false;
 }
 
-static ContainerNode* outermostShadowHost(ContainerNode& host)
-{
-    ContainerNode* outerHost = &host;
-    while (outerHost->isInShadowTree())
-        outerHost = outerHost->containingShadowRoot()->host();
-    return outerHost;
-}
-
 void StyleSheetInvalidationAnalysis::invalidateStyle()
 {
     ASSERT(!m_dirtiesAllStyle);
 
     if (m_treeScope->rootNode().isShadowRoot()) {
-        ContainerNode* invalidationRoot = toShadowRoot(m_treeScope->rootNode()).host();
-        if (m_hasDistributedRules)
-            invalidationRoot = outermostShadowHost(*invalidationRoot);
-        invalidationRoot->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
+        ContainerNode* shadowHost = toShadowRoot(m_treeScope->rootNode()).host();
+        shadowHost->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
         return;
     }
 

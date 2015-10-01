@@ -38,7 +38,7 @@
     root2.appendChild(sheet);
 
     if (window.internals)
-        shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "5");
+        shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "3");
 
     shouldBeEqualToString("getComputedStyle(outerSpan).color", "rgb(0, 128, 0)");
 </script>
