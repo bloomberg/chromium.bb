@@ -107,7 +107,7 @@ NSColor* HelpLinkColor() {
                      withFont:[self textFont]
                  messageColor:HelpTextColor()];
     [helpTextView_ addLinkRange:controller_->HelpTextLinkRange().ToNSRange()
-                       withName:@""
+                        withURL:@"about:blank"  // using a link here is bad ui
                       linkColor:HelpLinkColor()];
     [helpTextView_ setDelegate:self];
     [helpTextView_ setDrawsBackground:YES];

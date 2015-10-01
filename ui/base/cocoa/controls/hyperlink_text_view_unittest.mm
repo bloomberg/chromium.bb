@@ -90,8 +90,8 @@ TEST_F(HyperlinkTextViewTest, TestAddLinkRange) {
        messageColor:[NSColor blackColor]];
 
   NSColor* blue = [NSColor blueColor];
-  [view_ addLinkRange:NSMakeRange(4,3) withName:@"Name:Two" linkColor:blue];
-  [view_ addLinkRange:NSMakeRange(14,4) withName:@"Name:Four" linkColor:blue];
+  [view_ addLinkRange:NSMakeRange(4,3) withURL:@"http://2" linkColor:blue];
+  [view_ addLinkRange:NSMakeRange(14,4) withURL:@"http://4" linkColor:blue];
 
   NSDictionary* attributes;
   NSRange rangeLimit = NSMakeRange(0, [message length]);
@@ -104,7 +104,7 @@ TEST_F(HyperlinkTextViewTest, TestAddLinkRange) {
   EXPECT_NSEQ(GetDefaultTextAttributes(), attributes);
 
   NSMutableDictionary* linkAttributes = GetDefaultLinkAttributes();
-  [linkAttributes setObject:@"Name:Two" forKey:NSLinkAttributeName];
+  [linkAttributes setObject:@"http://2" forKey:NSLinkAttributeName];
   attributes = [[view_ textStorage] attributesAtIndex:4
                                 longestEffectiveRange:&range
                                               inRange:rangeLimit];
@@ -119,7 +119,7 @@ TEST_F(HyperlinkTextViewTest, TestAddLinkRange) {
   EXPECT_EQ(7U, range.length);
   EXPECT_NSEQ(GetDefaultTextAttributes(), attributes);
 
-  [linkAttributes setObject:@"Name:Four" forKey:NSLinkAttributeName];
+  [linkAttributes setObject:@"http://4" forKey:NSLinkAttributeName];
   attributes = [[view_ textStorage] attributesAtIndex:14
                                 longestEffectiveRange:&range
                                               inRange:rangeLimit];

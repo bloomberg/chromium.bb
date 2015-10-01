@@ -92,7 +92,7 @@ const int kFontSize = 11;
                withFont:font
            messageColor:gfx::SkColorToDeviceNSColor(kTextColor)];
   [textView_ addLinkRange:NSMakeRange(offset, [nsLinkText length])
-                 withName:@""
+                  withURL:@"about:blank"  // using a link here is bad ui
                 linkColor:linkColor];
   [textView_ setRefusesFirstResponder:YES];
   [[textView_ textContainer] setLineFragmentPadding:0.0];

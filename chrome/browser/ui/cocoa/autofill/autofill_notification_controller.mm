@@ -86,11 +86,11 @@
                  withFont:[NSFont labelFontOfSize:[[textview_ font] pointSize]]
              messageColor:textColor];
     if (!notification->link_range().is_empty()) {
+      linkURL_ = notification->link_url();
       [textview_ setDelegate:self];
       [textview_ addLinkRange:notification->link_range().ToNSRange()
-                     withName:self
+                      withURL:base::SysUTF8ToNSString(linkURL_.spec())
                     linkColor:[NSColor blueColor]];
-      linkURL_ = notification->link_url();
     }
 
     tooltipController_.reset([[AutofillTooltipController alloc]

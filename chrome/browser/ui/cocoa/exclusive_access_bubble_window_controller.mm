@@ -244,7 +244,7 @@ const float kHideDuration = 0.7;
                   messageColor:[NSColor blackColor]];
   if ([exitLinkText length] != 0) {
     [exitLabel_.get() addLinkRange:NSMakeRange(0, [exitLinkText length])
-                          withName:@""
+                           withURL:@"about:blank"  // using link here is bad ui
                          linkColor:[NSColor blueColor]];
   }
   [exitLabel_.get() setAlignment:NSRightTextAlignment];

@@ -214,7 +214,7 @@ void ShowConfirmBubble(gfx::NativeWindow window,
     base::scoped_nsobject<NSAttributedString> whiteSpace(
         [[NSAttributedString alloc] initWithString:@" "]);
     [attributedMessage.get() appendAttributedString:whiteSpace.get()];
-    [attributes setObject:[NSString string]
+    [attributes setObject:[controller_ linkURL]
                    forKey:NSLinkAttributeName];
     base::scoped_nsobject<NSAttributedString> attributedLink(
         [[NSAttributedString alloc] initWithString:linkText

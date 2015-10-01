@@ -26,7 +26,7 @@
         gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
     HyperlinkTextView* view = (HyperlinkTextView*)label_.get();
     [view addLinkRange:linkRange.ToNSRange()
-              withName:@""
+               withURL:@"about:blank"  // using a link here is bad ui
              linkColor:linkColor];
   }
 }

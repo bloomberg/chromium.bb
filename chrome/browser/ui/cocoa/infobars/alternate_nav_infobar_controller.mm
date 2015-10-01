@@ -38,7 +38,7 @@
           withFont:font
       messageColor:[NSColor blackColor]];
   [view addLinkRange:NSMakeRange(offset, link.length())
-            withName:@""
+             withURL:base::SysUTF8ToNSString(delegate->GetLinkURL().spec())
            linkColor:[NSColor blueColor]];
 }
 

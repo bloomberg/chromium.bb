@@ -109,7 +109,7 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
     NSColor* linkColor =
         gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
     [titleView addLinkRange:titleBrandLinkRange
-                   withName:@""
+                    withURL:@"about:blank"  // using a link here is bad ui
                   linkColor:linkColor];
     [titleView.get() setDelegate:self];
 

@@ -4,6 +4,7 @@
 
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 
+#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "ui/base/cocoa/nsview_additions.h"
 
@@ -122,13 +123,19 @@ const float kTextBaselineShift = -1.0;
 }
 
 - (void)addLinkRange:(NSRange)range
-            withName:(id)name
+             withURL:(NSString*)url
            linkColor:(NSColor*)linkColor {
+  // When the NSLinkAttributeName attribute is used, AppKit makes the link
+  // draggable. If no URL is provided, dropping it on the tab strip will crash
+  // <http://crbug.com/528228>. Require that a URL is used, and that only a URL
+  // is used.
+  DCHECK_GT([url length], 0u);
+  DCHECK([NSURL URLWithString:url]);
   NSDictionary* attributes = @{
     NSForegroundColorAttributeName : linkColor,
     NSUnderlineStyleAttributeName : @(YES),
     NSCursorAttributeName : [NSCursor pointingHandCursor],
-    NSLinkAttributeName : name,
+    NSLinkAttributeName : url,
     NSUnderlineStyleAttributeName : @(NSSingleUnderlineStyle)
   };
 

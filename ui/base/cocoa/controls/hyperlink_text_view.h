@@ -26,10 +26,9 @@ UI_BASE_EXPORT
           withFont:(NSFont*)font
       messageColor:(NSColor*)messageColor;
 
-// Marks a |range| within the given message as link, associating it with
-// a |name| that is passed to the delegate's textView:clickedOnLink:atIndex:.
+// Marks a |range| within the given message as link.
 - (void)addLinkRange:(NSRange)range
-            withName:(id)name
+             withURL:(NSString*)url
            linkColor:(NSColor*)linkColor;
 
 // This is NO (by default) if the view rejects first responder status.

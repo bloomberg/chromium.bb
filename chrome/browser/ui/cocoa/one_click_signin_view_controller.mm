@@ -256,7 +256,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
                       messageColor:[NSColor blackColor]];
   [informativeTextView_ addLinkRange:NSMakeRange(learnMoreOffset,
                                                  [learnMoreText length])
-                            withName:@""
+                             withURL:@(chrome::kChromeSyncLearnMoreURL)
                            linkColor:linkColor];
 
   // Make the "Advanced" link font as large as the "Learn More" link.

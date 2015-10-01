@@ -126,7 +126,7 @@
     NSColor* linkColor =
         gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
     [view addLinkRange:NSMakeRange(linkOffset, linkLength)
-              withName:@""
+               withURL:base::SysUTF8ToNSString(delegate->GetLinkURL().spec())
              linkColor:linkColor];
   }
 }

@@ -373,7 +373,7 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
     HyperlinkTextView* view = promo_.get();
     [view setMessage:message withFont:font messageColor:[NSColor blackColor]];
     [view addLinkRange:NSMakeRange(0, [link length])
-              withName:@""
+               withURL:@"about:blank"  // using a link here is bad ui
              linkColor:gfx::SkColorToCalibratedNSColor(
                            chrome_style::GetLinkColor())];
 

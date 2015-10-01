@@ -175,7 +175,7 @@ NSTextView* BuildFixedWidthTextViewWithLink(
                withFont:[NSFont labelFontOfSize:kTextFontSize]
            messageColor:[NSColor blackColor]];
   [text_view addLinkRange:NSMakeRange(link_offset, [link length])
-                 withName:@""
+                  withURL:@"about:blank"  // using a link here is bad ui
                 linkColor:link_color];
 
   // Removes the underlining from the link.
