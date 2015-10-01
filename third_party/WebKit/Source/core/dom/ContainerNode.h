@@ -211,8 +211,6 @@ public:
     // node that is of the type CDATA_SECTION_NODE, TEXT_NODE or COMMENT_NODE has changed its value.
     virtual void childrenChanged(const ChildrenChange&);
 
-    void disconnectDescendantFrames();
-
     DECLARE_VIRTUAL_TRACE();
 
 protected:

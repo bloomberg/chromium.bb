@@ -539,11 +539,6 @@ void ContainerNode::addChildNodesToDeletionQueue(Node*& head, Node*& tail, Conta
 }
 #endif
 
-void ContainerNode::disconnectDescendantFrames()
-{
-    ChildFrameDisconnector(*this).disconnect();
-}
-
 DEFINE_TRACE(ContainerNode)
 {
     visitor->trace(m_firstChild);
