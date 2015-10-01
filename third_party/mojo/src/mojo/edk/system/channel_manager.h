@@ -118,6 +118,12 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
   ConnectionManager* connection_manager() const { return connection_manager_; }
 
  private:
+  // Used by |ShutdownChannel()|. Called on the I/O thread.
+  void ShutdownChannelHelper(
+      ChannelId channel_id,
+      const base::Closure& callback,
+      scoped_refptr<base::TaskRunner> callback_thread_task_runner);
+
   // Used by |Shutdown()|. Called on the I/O thread.
   void ShutdownHelper(
       const base::Closure& callback,

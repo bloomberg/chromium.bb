@@ -15,23 +15,6 @@
 namespace mojo {
 namespace system {
 
-namespace {
-
-void ShutdownChannelHelper(
-    scoped_refptr<Channel> channel,
-    const base::Closure& callback,
-    scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
-  channel->Shutdown();
-  if (callback_thread_task_runner) {
-    bool ok = callback_thread_task_runner->PostTask(FROM_HERE, callback);
-    DCHECK(ok);
-  } else {
-    callback.Run();
-  }
-}
-
-}  // namespace
-
 ChannelManager::ChannelManager(
     embedder::PlatformSupport* platform_support,
     scoped_refptr<base::TaskRunner> io_thread_task_runner,
@@ -143,19 +126,25 @@ void ChannelManager::ShutdownChannel(
     ChannelId channel_id,
     const base::Closure& callback,
     scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
-  scoped_refptr<Channel> channel;
-  {
-    MutexLocker locker(&mutex_);
-    auto it = channels_.find(channel_id);
-    DCHECK(it != channels_.end());
-    channel.swap(it->second);
-    channels_.erase(it);
-  }
-  channel->WillShutdownSoon();
+  WillShutdownChannel(channel_id);
   bool ok = io_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ShutdownChannelHelper, channel, callback,
-                            callback_thread_task_runner));
+      FROM_HERE, base::Bind(
+          &ChannelManager::ShutdownChannelHelper, base::Unretained(this),
+          channel_id, callback, callback_thread_task_runner));
   DCHECK(ok);
+}
+
+void ChannelManager::ShutdownChannelHelper(
+    ChannelId channel_id,
+    const base::Closure& callback,
+    scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
+  ShutdownChannelOnIOThread(channel_id);
+  if (callback_thread_task_runner) {
+    bool ok = callback_thread_task_runner->PostTask(FROM_HERE, callback);
+    DCHECK(ok);
+  } else {
+    callback.Run();
+  }
 }
 
 void ChannelManager::ShutdownHelper(
