@@ -5,17 +5,21 @@
 import os
 import sys
 
-sys.path.append(os.path.join(
-    os.path.dirname(__file__), os.pardir, os.pardir, 'telemetry'))
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+TOP_LEVEL_DIR = os.path.normpath(os.path.join(THIS_DIR, os.pardir))
+TELEMETRY_DIR = os.path.normpath(os.path.join(
+    TOP_LEVEL_DIR, os.pardir, 'telemetry'))
+
+sys.path.append(TELEMETRY_DIR)
 from telemetry import benchmark_runner
 
-top_level_dir = os.path.dirname(os.path.realpath(
-    os.path.join(__file__, os.pardir)))
+binary_dependencies_file = os.path.join(THIS_DIR, 'binary_dependencies.json')
 
 config = benchmark_runner.ProjectConfig(
-    top_level_dir=top_level_dir,
-    benchmark_dirs=[os.path.join(top_level_dir, 'benchmarks')])
+    top_level_dir=TOP_LEVEL_DIR,
+    benchmark_dirs=[os.path.join(TOP_LEVEL_DIR, 'benchmarks')],
+    client_config=binary_dependencies_file)
 
-config.telemetry_dir = os.path.realpath(os.path.join(
-    top_level_dir, os.pardir, 'telemetry'))
+config.telemetry_dir = TELEMETRY_DIR
 

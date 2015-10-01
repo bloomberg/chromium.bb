@@ -24,7 +24,11 @@ if __name__ == '__main__':
   else:
     env['PYTHONPATH'] = telemetry_dir
 
-  path_to_run_tests = os.path.join(telemetry_dir, 'telemetry', 'testing',
-                                   'run_tests.py')
-  argv = ['--no-browser', '--top-level-dir', gpu_test_dir] + sys.argv[1:]
+  path_to_run_tests = os.path.realpath(os.path.join(
+      telemetry_dir, 'telemetry', 'testing', 'run_tests.py'))
+  client_config = os.path.realpath(os.path.join(
+      gpu_test_dir, os.pardir, os.pardir, os.pardir, 'tools', 'perf',
+      'core', 'binary_dependencies.json'))
+  argv = ['--no-browser', '--top-level-dir', gpu_test_dir,
+          '--client-config', client_config] + sys.argv[1:]
   sys.exit(subprocess.call([sys.executable, path_to_run_tests] + argv, env=env))
