@@ -27,7 +27,7 @@ public:
     void set{{feature.name}}Enabled(bool isEnabled) { RuntimeEnabledFeatures::set{{feature.name}}Enabled(isEnabled); }
     If we do that, we also need to respect Internals::resetToConsistentState.
 #}
-    {% for feature in features if not feature.custom %}
+    {% for feature in standard_features %}
     {% filter enable_conditional(feature.condition) %}
     bool {{feature.first_lowered_name}}Enabled() { return RuntimeEnabledFeatures::{{feature.first_lowered_name}}Enabled(); }
     {% endfilter %}

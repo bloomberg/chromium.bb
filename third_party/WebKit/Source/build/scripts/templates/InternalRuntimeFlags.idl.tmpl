@@ -4,7 +4,7 @@
 [
     GarbageCollected,
 ] interface InternalRuntimeFlags {
-    {% for feature in features if not feature.custom %}
+    {% for feature in standard_features %}
 {#
     Currently assuming that runtime flags cannot be changed after startup
     it's possible that some can be and should be conditionally readonly.

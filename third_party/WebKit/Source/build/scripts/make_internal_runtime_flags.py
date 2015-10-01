@@ -54,6 +54,7 @@ class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
     def generate_idl(self):
         return {
             'features': self._features,
+            'standard_features': self._standard_features,
         }
 
     @template_expander.use_jinja(class_name + '.h.tmpl', filters=filters)
@@ -61,6 +62,7 @@ class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
         return {
             'features': self._features,
             'feature_sets': self._feature_sets(),
+            'standard_features': self._standard_features,
         }
 
 

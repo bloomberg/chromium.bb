@@ -72,26 +72,27 @@ class RuntimeFeatureWriter(in_generator.Writer):
             for dependant_name in feature['depends_on']:
                 enabled_condition += ' && is%sEnabled' % dependant_name
             feature['enabled_condition'] = enabled_condition
-        self._non_custom_features = filter(lambda feature: not feature['custom'], self._features)
+        self._standard_features = [feature for feature in self._features if not feature['custom']]
 
     def _feature_sets(self):
         # Another way to think of the status levels is as "sets of features"
         # which is how we're referring to them in this generator.
         return list(self.valid_values['status'])
 
-    @template_expander.use_jinja(class_name + '.h.tmpl', filters=filters)
-    def generate_header(self):
+    def _template_inputs(self):
         return {
             'features': self._features,
             'feature_sets': self._feature_sets(),
+            'standard_features': self._standard_features,
         }
+
+    @template_expander.use_jinja(class_name + '.h.tmpl', filters=filters)
+    def generate_header(self):
+        return self._template_inputs()
 
     @template_expander.use_jinja(class_name + '.cpp.tmpl', filters=filters)
     def generate_implementation(self):
-        return {
-            'features': self._features,
-            'feature_sets': self._feature_sets(),
-        }
+        return self._template_inputs()
 
 
 if __name__ == '__main__':

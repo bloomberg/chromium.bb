@@ -199,10 +199,15 @@ Internals::~Internals()
 {
 }
 
+static RuntimeEnabledFeatures::Backup* sFeaturesBackup = nullptr;
+
 void Internals::resetToConsistentState(Page* page)
 {
     ASSERT(page);
 
+    if (!sFeaturesBackup)
+        sFeaturesBackup = new RuntimeEnabledFeatures::Backup;
+    sFeaturesBackup->restore();
     page->setDeviceScaleFactor(1);
     page->setIsCursorVisible(true);
     page->setPageScaleFactor(1);
