@@ -730,9 +730,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         validPrimitive = (id == CSSValueAuto || validWidthOrHeight(value, unitless));
         break;
 
-    case CSSPropertyFontSize:
-        return parseFontSize(important);
-
     case CSSPropertyVerticalAlign:
         // baseline | sub | super | top | text-top | middle | bottom | text-bottom |
         // <percentage> | <length> | inherit
@@ -1415,6 +1412,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyLetterSpacing:
     case CSSPropertyWordSpacing:
     case CSSPropertyTabSize:
+    case CSSPropertyFontSize:
         validPrimitive = false;
         break;
 

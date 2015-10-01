@@ -126,11 +126,12 @@ static CSSParserTokenRange consumeFunction(CSSParserTokenRange& range)
     return contents;
 }
 
-class CalcParseScope {
+// TODO(rwlbuis): consider pulling in the parsing logic from CSSCalculationValue.cpp.
+class CalcParser {
     STACK_ALLOCATED();
 
 public:
-    explicit CalcParseScope(CSSParserTokenRange& range, ValueRange valueRange = ValueRangeAll)
+    explicit CalcParser(CSSParserTokenRange& range, ValueRange valueRange = ValueRangeAll)
         : m_sourceRange(range)
         , m_range(range)
     {
@@ -140,13 +141,17 @@ public:
     }
 
     const CSSCalcValue* value() const { return m_calcValue.get(); }
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> releaseValue()
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeValue()
     {
+        if (!m_calcValue)
+            return nullptr;
         m_sourceRange = m_range;
         return CSSPrimitiveValue::create(m_calcValue.release());
     }
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> releaseNumber()
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeNumber()
     {
+        if (!m_calcValue)
+            return nullptr;
         m_sourceRange = m_range;
         CSSPrimitiveValue::UnitType unitType = m_calcValue->isInt() ? CSSPrimitiveValue::UnitType::Integer : CSSPrimitiveValue::UnitType::Number;
         return cssValuePool().createValue(m_calcValue->doubleValue(), unitType);
@@ -166,14 +171,14 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRa
             return nullptr;
         return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), token.unitType());
     }
-    CalcParseScope calcScope(range);
-    if (const CSSCalcValue* calculation = calcScope.value()) {
+    CalcParser calcParser(range);
+    if (const CSSCalcValue* calculation = calcParser.value()) {
         if (calculation->category() != CalcNumber || !calculation->isInt())
             return nullptr;
         double value = calculation->doubleValue();
         if (value < minimumValue)
             return nullptr;
-        return calcScope.releaseNumber();
+        return calcParser.consumeNumber();
     }
     return nullptr;
 }
@@ -223,11 +228,26 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRan
             return nullptr;
         return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Pixels);
     }
-    CalcParseScope calcScope(range, valueRange);
-    if (const CSSCalcValue* calculation = calcScope.value()) {
-        if (calculation->category() != CalcLength)
+    CalcParser calcParser(range, valueRange);
+    if (calcParser.value() && calcParser.value()->category() == CalcLength)
+        return calcParser.consumeValue();
+    return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLengthOrPercent(CSSParserTokenRange& range, CSSParserMode cssParserMode, ValueRange valueRange, UnitlessQuirk unitless = UnitlessQuirk::Forbid)
+{
+    const CSSParserToken& token = range.peek();
+    if (token.type() == DimensionToken || token.type() == NumberToken)
+        return consumeLength(range, cssParserMode, valueRange, unitless);
+    if (token.type() == PercentageToken) {
+        if (valueRange == ValueRangeNonNegative && token.numericValue() < 0)
             return nullptr;
-        return calcScope.releaseValue();
+        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Percentage);
+    }
+    CalcParser calcParser(range, valueRange);
+    if (const CSSCalcValue* calculation = calcParser.value()) {
+        if (calculation->category() == CalcLength || calculation->category() == CalcPercent || calculation->category() == CalcPercentLength)
+            return calcParser.consumeValue();
     }
     return nullptr;
 }
@@ -518,6 +538,13 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTabSize(CSSParserTokenRange& rang
     return consumeLength(range, cssParserMode, ValueRangeNonNegative);
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFontSize(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().id() >= CSSValueXxSmall && range.peek().id() <= CSSValueLarger)
+        return consumeIdent(range);
+    return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative, UnitlessQuirk::Allow);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -545,6 +572,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeSpacing(m_range, m_context.mode());
     case CSSPropertyTabSize:
         return consumeTabSize(m_range, m_context.mode());
+    case CSSPropertyFontSize:
+        return consumeFontSize(m_range, m_context.mode());
     default:
         return nullptr;
     }
