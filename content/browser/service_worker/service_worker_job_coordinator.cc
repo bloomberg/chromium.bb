@@ -130,12 +130,14 @@ void ServiceWorkerJobCoordinator::Update(
   job_queues_[registration->pattern()].Push(
       make_scoped_ptr<ServiceWorkerRegisterJobBase>(
           new ServiceWorkerRegisterJob(context_, registration,
-                                       force_bypass_cache)));
+                                       force_bypass_cache,
+                                       false /* skip_script_comparison */)));
 }
 
 void ServiceWorkerJobCoordinator::Update(
     ServiceWorkerRegistration* registration,
     bool force_bypass_cache,
+    bool skip_script_comparison,
     ServiceWorkerProviderHost* provider_host,
     const ServiceWorkerRegisterJob::RegistrationCallback& callback) {
   DCHECK(registration);
@@ -144,7 +146,8 @@ void ServiceWorkerJobCoordinator::Update(
       job_queues_[registration->pattern()].Push(
           make_scoped_ptr<ServiceWorkerRegisterJobBase>(
               new ServiceWorkerRegisterJob(context_, registration,
-                                           force_bypass_cache))));
+                                           force_bypass_cache,
+                                           skip_script_comparison))));
   queued_job->AddCallback(callback, provider_host);
 }
 

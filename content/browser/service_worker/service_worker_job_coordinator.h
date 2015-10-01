@@ -40,6 +40,7 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
 
   void Update(ServiceWorkerRegistration* registration,
               bool force_bypass_cache,
+              bool skip_script_comparison,
               ServiceWorkerProviderHost* provider_host,
               const ServiceWorkerRegisterJob::RegistrationCallback& callback);
 

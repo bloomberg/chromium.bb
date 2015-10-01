@@ -44,14 +44,15 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(false),
+      skip_script_comparison_(false),
       promise_resolved_status_(SERVICE_WORKER_OK),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRegistration* registration,
-    bool force_bypass_cache)
+    bool force_bypass_cache,
+    bool skip_script_comparison)
     : context_(context),
       job_type_(UPDATE_JOB),
       pattern_(registration->pattern()),
@@ -61,6 +62,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(force_bypass_cache),
+      skip_script_comparison_(skip_script_comparison),
       promise_resolved_status_(SERVICE_WORKER_OK),
       weak_factory_(this) {
   internal_.registration = registration;
@@ -330,6 +332,7 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
                                            context_->storage()->NewVersionId(),
                                            context_));
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
+  new_version()->set_skip_script_comparison(skip_script_comparison_);
   new_version()->StartWorker(
       base::Bind(&ServiceWorkerRegisterJob::OnStartWorkerFinished,
                  weak_factory_.GetWeakPtr()));

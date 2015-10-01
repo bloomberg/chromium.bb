@@ -331,7 +331,8 @@ void ServiceWorkerWriteToCacheJob::Start() {
         net::URLRequestStatus::FAILED, net::ERR_FAILED));
     return;
   }
-  if (incumbent_response_id_ != kInvalidServiceWorkerResourceId) {
+  if (incumbent_response_id_ != kInvalidServiceWorkerResourceId &&
+      !version_->skip_script_comparison()) {
     scoped_ptr<ServiceWorkerResponseReader> incumbent_reader =
         context_->storage()->CreateResponseReader(incumbent_response_id_);
     consumer_.reset(new Comparer(this, incumbent_reader.Pass()));

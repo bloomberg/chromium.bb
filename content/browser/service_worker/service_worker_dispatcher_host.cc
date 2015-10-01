@@ -440,9 +440,10 @@ void ServiceWorkerDispatcherHost::OnUpdateServiceWorker(int thread_id,
   // The spec says, "update() pings the server for an updated version of this
   // script without consulting caches", so set |force_bypass_cache| to true.
   GetContext()->UpdateServiceWorker(
-      registration, true, /* force_bypass_cache */
-      provider_host, base::Bind(&ServiceWorkerDispatcherHost::UpdateComplete,
-                                this, thread_id, provider_id, request_id));
+      registration, true /* force_bypass_cache */,
+      false /* skip_script_comparison */, provider_host,
+      base::Bind(&ServiceWorkerDispatcherHost::UpdateComplete, this, thread_id,
+                 provider_id, request_id));
 }
 
 void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(

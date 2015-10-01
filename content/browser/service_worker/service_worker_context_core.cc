@@ -333,6 +333,7 @@ void ServiceWorkerContextCore::UpdateServiceWorker(
 void ServiceWorkerContextCore::UpdateServiceWorker(
     ServiceWorkerRegistration* registration,
     bool force_bypass_cache,
+    bool skip_script_comparison,
     ServiceWorkerProviderHost* provider_host,
     const UpdateCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -342,7 +343,8 @@ void ServiceWorkerContextCore::UpdateServiceWorker(
     return;
   }
 
-  job_coordinator_->Update(registration, force_bypass_cache, provider_host,
+  job_coordinator_->Update(registration, force_bypass_cache,
+                           skip_script_comparison, provider_host,
                            base::Bind(&ServiceWorkerContextCore::UpdateComplete,
                                       AsWeakPtr(), callback));
 }

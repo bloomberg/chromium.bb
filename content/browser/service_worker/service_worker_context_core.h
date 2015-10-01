@@ -187,6 +187,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                            bool force_bypass_cache);
   void UpdateServiceWorker(ServiceWorkerRegistration* registration,
                            bool force_bypass_cache,
+                           bool skip_script_comparison,
                            ServiceWorkerProviderHost* provider_host,
                            const UpdateCallback& callback);
 

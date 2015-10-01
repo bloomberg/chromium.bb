@@ -309,11 +309,16 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool skip_waiting() const { return skip_waiting_; }
   void set_skip_waiting(bool skip_waiting) { skip_waiting_ = skip_waiting; }
 
-  bool force_bypass_cache_for_scripts() {
+  bool force_bypass_cache_for_scripts() const {
     return force_bypass_cache_for_scripts_;
   }
   void set_force_bypass_cache_for_scripts(bool force_bypass_cache_for_scripts) {
     force_bypass_cache_for_scripts_ = force_bypass_cache_for_scripts;
+  }
+
+  bool skip_script_comparison() const { return skip_script_comparison_; }
+  void set_skip_script_comparison(bool skip_script_comparison) {
+    skip_script_comparison_ = skip_script_comparison;
   }
 
   void SetDevToolsAttached(bool attached);
@@ -619,6 +624,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool skip_waiting_ = false;
   bool skip_recording_startup_time_ = false;
   bool force_bypass_cache_for_scripts_ = false;
+  bool skip_script_comparison_ = false;
   bool is_update_scheduled_ = false;
   bool in_dtor_ = false;
 

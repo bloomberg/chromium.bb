@@ -201,7 +201,8 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
   if (need_to_update) {
     force_update_started_ = true;
     context_->UpdateServiceWorker(
-        registration.get(), true /* force_bypass_cache */, provider_host_.get(),
+        registration.get(), true /* force_bypass_cache */,
+        true /* skip_script_comparison */, provider_host_.get(),
         base::Bind(&self::DidUpdateRegistration, weak_factory_.GetWeakPtr(),
                    registration));
     return;
