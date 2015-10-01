@@ -928,8 +928,6 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
                 accept_languages));
       }
     }
-  } else if (results_value) {
-    NOTREACHED() << "Failed to parse JSON response.";
   }
   results_info_value_.SetBoolean("hasSyncedResults", results_value != NULL);
   if (!query_task_tracker_.HasTrackedTasks())
