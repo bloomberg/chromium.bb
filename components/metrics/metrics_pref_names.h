@@ -18,9 +18,11 @@ extern const char kMetricsMachineId[];
 extern const char kMetricsOngoingLogs[];
 extern const char kMetricsResetIds[];
 
-// For finding out whether metrics and crash reporting is enabled use
-// ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() instead of
-// reading this pref directly.
+// For finding out whether metrics and crash reporting is enabled use the
+// relevant embedder-specific subclass of MetricsServiceAccessor instead of
+// reading this pref directly; see the comments on metrics_service_accessor.h.
+// (NOTE: If within //chrome, use
+// ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()).
 extern const char kMetricsReportingEnabled[];
 extern const char kMetricsReportingEnabledTimestamp[];
 extern const char kMetricsSessionID[];

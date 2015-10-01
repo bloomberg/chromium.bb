@@ -4,10 +4,37 @@
 
 #include "components/metrics/metrics_service_accessor.h"
 
+#include "base/base_switches.h"
+#include "base/command_line.h"
+#include "base/prefs/pref_service.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/variations/metrics_util.h"
 
 namespace metrics {
+
+// static
+bool MetricsServiceAccessor::IsMetricsReportingEnabled(
+    PrefService* pref_service) {
+  return IsMetricsReportingEnabledWithPrefValue(
+      pref_service->GetBoolean(prefs::kMetricsReportingEnabled));
+}
+
+// static
+bool MetricsServiceAccessor::IsMetricsReportingEnabledWithPrefValue(
+    bool enabled_in_prefs) {
+#if defined(GOOGLE_CHROME_BUILD)
+  // In official builds, disable metrics when reporting field trials are
+  // forced; otherwise, use the value of the user's preference to determine
+  // whether to enable metrics reporting.
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kForceFieldTrials) &&
+         enabled_in_prefs;
+#else
+  // In non-official builds, disable metrics reporting completely.
+  return false;
+#endif  // defined(GOOGLE_CHROME_BUILD)
+}
 
 // static
 bool MetricsServiceAccessor::RegisterSyntheticFieldTrial(

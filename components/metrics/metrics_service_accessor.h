@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 
+class PrefService;
+
 namespace metrics {
 
 class MetricsService;
@@ -22,6 +24,22 @@ class MetricsServiceAccessor {
   // Constructor declared as protected to enable inheritance. Descendants should
   // disallow instantiation.
   MetricsServiceAccessor() {}
+
+  // Returns whether metrics reporting is enabled, using the value of the
+  // kMetricsReportingEnabled pref in |pref_service| to determine whether user
+  // has enabled reporting.
+  // NOTE: This method currently does not return the correct value on ChromeOS
+  // and Android due to http://crbug.com/362192 and http://crbug.com/532084. See
+  // ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled().
+  static bool IsMetricsReportingEnabled(PrefService* pref_service);
+
+  // Returns whether metrics reporting is enabled, using the value of
+  // |enabled_in_prefs| to determine whether the user has enabled reporting.
+  // Exists because kMetricsReportingEnabled is currently not used on all
+  // platforms.
+  // TODO(gayane): Consolidate metric prefs on all platforms and eliminate this
+  // method.  http://crbug.com/362192, http://crbug.com/532084
+  static bool IsMetricsReportingEnabledWithPrefValue(bool enabled_in_prefs);
 
   // Registers a field trial name and group with |metrics_service| (if not
   // null), to be used to annotate a UMA report with a particular configuration

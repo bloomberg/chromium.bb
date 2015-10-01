@@ -15,7 +15,6 @@
 
 class BrowserProcessImpl;
 class ChromeExtensionDownloaderFactory;
-class PrefService;
 class Profile;
 
 namespace {
@@ -93,24 +92,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   // TODO(gayane): Consolidate metric prefs on all platforms.
   // http://crbug.com/362192,  http://crbug.com/532084
   static bool IsMetricsAndCrashReportingEnabled();
-
-  // TODO(blundell): Componentize the below two functions into
-  // metrics::MetricsServiceAccessor.
-  // Returns whether metrics reporting is enabled, using the value of the
-  // kMetricsReportingEnabled pref in |pref_service| to determine whether user
-  // has enabled reporting.
-  // NOTE: This method currently does not return the correct value on ChromeOS
-  // and Android due to http://crbug.com/362192 and http://crbug.com/532084. See
-  // ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled().
-  static bool IsMetricsReportingEnabled(PrefService* pref_service);
-
-  // Returns whether metrics reporting is enabled, using the value of
-  // |enabled_in_prefs| to determine whether the user has enabled reporting.
-  // Exists because kMetricsReportingEnabled is currently not used on all
-  // platforms.
-  // TODO(gayane): Consolidate metric prefs on all platforms and eliminate this
-  // method.  http://crbug.com/362192, http://crbug.com/532084
-  static bool IsMetricsReportingEnabledWithPrefValue(bool enabled_in_prefs);
 
   // Calls metrics::MetricsServiceAccessor::RegisterSyntheticFieldTrial() with
   // g_browser_process->metrics_service(). See that function's declaration for
