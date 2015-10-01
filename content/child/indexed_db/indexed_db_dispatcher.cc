@@ -544,7 +544,10 @@ void IndexedDBDispatcher::OnSuccessStringList(
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
 
-static void PrepareWebValue(const IndexedDBMsg_ReturnValue& value,
+// Populate some WebIDBValue members (data & blob info) from the supplied
+// value message (IndexedDBMsg_Value or one that includes it).
+template <class IndexedDBMsgValueType>
+static void PrepareWebValue(const IndexedDBMsgValueType& value,
                             WebIDBValue* web_value) {
   if (value.bits.empty())
     return;
@@ -564,6 +567,11 @@ static void PrepareWebValue(const IndexedDBMsg_ReturnValue& value,
   }
 
   web_value->webBlobInfo.swap(local_blob_info);
+}
+
+static void PrepareReturnWebValue(const IndexedDBMsg_ReturnValue& value,
+                                  WebIDBValue* web_value) {
+  PrepareWebValue(value, web_value);
   web_value->primaryKey = WebIDBKeyBuilder::Build(value.primary_key);
   web_value->keyPath = WebIDBKeyPathBuilder::Build(value.key_path);
 }
@@ -600,7 +608,7 @@ void IndexedDBDispatcher::OnSuccessArray(
   int32 ipc_callbacks_id = p.ipc_callbacks_id;
   blink::WebVector<WebIDBValue> web_values(p.values.size());
   for (size_t i = 0; i < p.values.size(); ++i)
-    PrepareWebValue(p.values[i], &web_values[i]);
+    PrepareReturnWebValue(p.values[i], &web_values[i]);
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
   DCHECK(callbacks);
   callbacks->onSuccess(web_values);
@@ -615,7 +623,7 @@ void IndexedDBDispatcher::OnSuccessValue(
   if (!callbacks)
     return;
   WebIDBValue web_value;
-  PrepareWebValue(params.value, &web_value);
+  PrepareReturnWebValue(params.value, &web_value);
   if (params.value.primary_key.IsValid()) {
     web_value.primaryKey = WebIDBKeyBuilder::Build(params.value.primary_key);
     web_value.keyPath = WebIDBKeyPathBuilder::Build(params.value.key_path);
@@ -653,9 +661,8 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(
   int32 ipc_object_id = p.ipc_cursor_id;
   const IndexedDBKey& key = p.key;
   const IndexedDBKey& primary_key = p.primary_key;
-  WebData web_value;
-  WebVector<WebBlobInfo> web_blob_info;
-  PrepareWebValueAndBlobInfo(p.value, &web_value, &web_blob_info);
+  WebIDBValue web_value;
+  PrepareWebValue(p.value, &web_value);
 
   DCHECK(cursor_transaction_ids_.find(ipc_callbacks_id) !=
          cursor_transaction_ids_.end());
@@ -669,11 +676,8 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(
   WebIDBCursorImpl* cursor = new WebIDBCursorImpl(
       ipc_object_id, transaction_id, thread_safe_sender_.get());
   cursors_[ipc_object_id] = cursor;
-  callbacks->onSuccess(cursor,
-                       WebIDBKeyBuilder::Build(key),
-                       WebIDBKeyBuilder::Build(primary_key),
-                       web_value,
-                       web_blob_info);
+  callbacks->onSuccess(cursor, WebIDBKeyBuilder::Build(key),
+                       WebIDBKeyBuilder::Build(primary_key), web_value);
 
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
@@ -693,13 +697,10 @@ void IndexedDBDispatcher::OnSuccessCursorContinue(
   if (!callbacks)
     return;
 
-  WebData web_value;
-  WebVector<WebBlobInfo> web_blob_info;
-  PrepareWebValueAndBlobInfo(p.value, &web_value, &web_blob_info);
+  WebIDBValue web_value;
+  PrepareWebValue(p.value, &web_value);
   callbacks->onSuccess(WebIDBKeyBuilder::Build(key),
-                       WebIDBKeyBuilder::Build(primary_key),
-                       web_value,
-                       web_blob_info);
+                       WebIDBKeyBuilder::Build(primary_key), web_value);
 
   pending_callbacks_.Remove(ipc_callbacks_id);
 }

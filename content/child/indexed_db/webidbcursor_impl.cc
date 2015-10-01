@@ -11,10 +11,12 @@
 #include "content/child/indexed_db/indexed_db_key_builders.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBValue.h"
 
 using blink::WebData;
 using blink::WebIDBCallbacks;
 using blink::WebIDBKey;
+using blink::WebIDBValue;
 
 namespace content {
 
@@ -161,8 +163,7 @@ void WebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
 
   IndexedDBKey key = prefetch_keys_.front();
   IndexedDBKey primary_key = prefetch_primary_keys_.front();
-  WebData value = prefetch_values_.front();
-  blink::WebVector<blink::WebBlobInfo> blob_info = prefetch_blob_info_.front();
+  WebIDBValue value(prefetch_values_.front(), prefetch_blob_info_.front());
 
   prefetch_keys_.pop_front();
   prefetch_primary_keys_.pop_front();
@@ -181,9 +182,7 @@ void WebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
   }
 
   callbacks->onSuccess(WebIDBKeyBuilder::Build(key),
-                       WebIDBKeyBuilder::Build(primary_key),
-                       value,
-                       blob_info);
+                       WebIDBKeyBuilder::Build(primary_key), value);
 }
 
 void WebIDBCursorImpl::ResetPrefetchCache() {

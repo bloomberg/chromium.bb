@@ -49,7 +49,7 @@ public:
     // Pointers transfer ownership.
     virtual void onError(const WebIDBDatabaseError&) = 0;
     virtual void onSuccess(const WebVector<WebString>&) = 0;
-    virtual void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) = 0;
+    virtual void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebIDBValue&) = 0;
     virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) = 0;
     virtual void onSuccess(const WebIDBKey&) = 0;
     virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) = 0;
@@ -59,7 +59,7 @@ public:
     virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&, const WebIDBKey&, const WebIDBKeyPath&) = 0;
     virtual void onSuccess(long long) = 0;
     virtual void onSuccess() = 0;
-    virtual void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) = 0;
+    virtual void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebIDBValue&) = 0;
     virtual void onBlocked(long long oldVersion) = 0;
     virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, unsigned short dataLoss, WebString dataLossMessage) = 0;
 };

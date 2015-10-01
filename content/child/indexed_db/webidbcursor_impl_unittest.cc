@@ -20,6 +20,7 @@ using blink::WebData;
 using blink::WebIDBCallbacks;
 using blink::WebIDBKey;
 using blink::WebIDBKeyTypeNumber;
+using blink::WebIDBValue;
 using blink::WebVector;
 using testing::StrictMock;
 
@@ -102,12 +103,11 @@ class MockContinueCallbacks : public StrictMock<MockWebIDBCallbacks> {
 
   void onSuccess(const WebIDBKey& key,
                  const WebIDBKey& primaryKey,
-                 const WebData& value,
-                 const WebVector<WebBlobInfo>& webBlobInfo) override {
+                 const WebIDBValue& value) override {
     if (key_)
       *key_ = IndexedDBKeyBuilder::Build(key);
     if (web_blob_info_)
-      *web_blob_info_ = webBlobInfo;
+      *web_blob_info_ = value.webBlobInfo;
   }
 
  private:

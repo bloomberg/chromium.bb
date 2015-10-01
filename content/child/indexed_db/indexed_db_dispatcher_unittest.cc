@@ -155,10 +155,11 @@ TEST_F(IndexedDBDispatcherTest, CursorTransactionId) {
     auto callbacks = new StrictMock<MockWebIDBCallbacks>();
     // Reference first param (cursor) to keep it alive.
     // TODO(cmumford): Cleanup (and below) once std::addressof() is allowed.
-    ON_CALL(*callbacks, onSuccess(_, _, _, _, _))
+    ON_CALL(*callbacks, onSuccess(testing::A<WebIDBCursor*>(), _, _, _))
         .WillByDefault(WithArgs<0>(Invoke(&cursor.operator=(nullptr),
                                           &scoped_ptr<WebIDBCursor>::reset)));
-    EXPECT_CALL(*callbacks, onSuccess(_, _, _, _, _)).Times(1);
+    EXPECT_CALL(*callbacks, onSuccess(testing::A<WebIDBCursor*>(), _, _, _))
+        .Times(1);
 
     // Make a cursor request. This should record the transaction id.
     dispatcher.RequestIDBDatabaseOpenCursor(

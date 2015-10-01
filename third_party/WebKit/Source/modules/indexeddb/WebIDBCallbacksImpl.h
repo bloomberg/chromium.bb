@@ -57,7 +57,7 @@ public:
     // Pointers transfer ownership.
     void onError(const WebIDBDatabaseError&) override;
     void onSuccess(const WebVector<WebString>&) override;
-    void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) override;
+    void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebIDBValue&) override;
     void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) override;
     void onSuccess(const WebIDBKey&) override;
     void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) override;
@@ -66,7 +66,7 @@ public:
     void onSuccess(const WebData&, const WebVector<WebBlobInfo>&, const WebIDBKey&, const WebIDBKeyPath&) override;
     void onSuccess(long long) override;
     void onSuccess() override;
-    void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) override;
+    void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebIDBValue&) override;
     void onBlocked(long long oldVersion) override;
     void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, unsigned short dataLoss, WebString dataLossMessage) override;
 
