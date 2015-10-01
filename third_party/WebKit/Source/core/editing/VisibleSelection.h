@@ -63,47 +63,6 @@ class CORE_EXPORT VisibleSelection {
     DISALLOW_ALLOCATION();
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(VisibleSelection);
 public:
-    class InDOMTree {
-        STATIC_ONLY(InDOMTree);
-    public:
-        using PositionType = Position;
-        using Strategy = EditingStrategy;
-
-        static EphemeralRange asRange(const VisibleSelection&);
-        static bool equalSelections(const VisibleSelection&, const VisibleSelection&);
-        static PositionType selectionBase(const VisibleSelection& selection) { return selection.base(); }
-        static PositionType selectionExtent(const VisibleSelection& selection) { return selection.extent(); }
-        static PositionType selectionStart(const VisibleSelection& selection) { return selection.start(); }
-        static PositionType selectionEnd(const VisibleSelection& selection) { return selection.end(); }
-        static SelectionType selectionType(const VisibleSelection& selection) { return selection.selectionType(); }
-        static VisiblePosition selectionVisibleStart(const VisibleSelection& selection) { return selection.visibleStart(); }
-        static VisiblePosition selectionVisibleEnd(const VisibleSelection& selection) { return selection.visibleEnd(); }
-    };
-
-    class InComposedTree {
-        STATIC_ONLY(InComposedTree);
-    public:
-        using PositionType = PositionInComposedTree;
-        using Strategy = EditingInComposedTreeStrategy;
-
-        static EphemeralRangeInComposedTree asRange(const VisibleSelection&);
-        static bool equalSelections(const VisibleSelection&, const VisibleSelection&);
-        static bool isRange(const VisibleSelection& selection) { return selectionType(selection) == RangeSelection; }
-        static PositionType selectionBase(const VisibleSelection& selection) { return selection.baseInComposedTree(); }
-        static PositionType selectionExtent(const VisibleSelection& selection) { return selection.extentInComposedTree(); }
-        static PositionType selectionStart(const VisibleSelection& selection) { return selection.startInComposedTree(); }
-        static PositionType selectionEnd(const VisibleSelection& selection) { return selection.endInComposedTree(); }
-        static SelectionType selectionType(const VisibleSelection& selection) { return selection.selectionTypeInComposedTree(); }
-        static VisiblePosition selectionVisibleStart(const VisibleSelection& selection)
-        {
-            return createVisiblePositionInDOMTree(selectionStart(selection), isRange(selection) ? TextAffinity::Downstream : selection.affinity());
-        }
-        static VisiblePosition selectionVisibleEnd(const VisibleSelection& selection)
-        {
-            return createVisiblePositionInDOMTree(selectionEnd(selection), isRange(selection) ? TextAffinity::Upstream : selection.affinity());
-        }
-    };
-
     VisibleSelection();
 
     VisibleSelection(const Position&, TextAffinity, bool isDirectional = false);
@@ -321,15 +280,8 @@ extern template class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate<Editing
 #pragma GCC diagnostic pop
 #endif
 
-inline bool equalSelectionsInDOMTree(const VisibleSelection& selection1, const VisibleSelection& selection2)
-{
-    return VisibleSelection::InDOMTree::equalSelections(selection1, selection2);
-}
-
-inline bool equalSelectionsInComposedTree(const VisibleSelection& selection1, const VisibleSelection& selection2)
-{
-    return VisibleSelection::InComposedTree::equalSelections(selection1, selection2);
-}
+bool equalSelectionsInDOMTree(const VisibleSelection&, const VisibleSelection&);
+bool equalSelectionsInComposedTree(const VisibleSelection&, const VisibleSelection&);
 
 // We don't yet support multi-range selections, so we only ever have one range
 // to return.

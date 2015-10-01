@@ -1103,16 +1103,6 @@ void VisibleSelection::validatePositionsIfNeeded()
         validate();
 }
 
-EphemeralRange VisibleSelection::InDOMTree::asRange(const VisibleSelection& selection)
-{
-    return EphemeralRange(selectionStart(selection), selectionEnd(selection));
-}
-
-EphemeralRangeInComposedTree VisibleSelection::InComposedTree::asRange(const VisibleSelection& selection)
-{
-    return EphemeralRangeInComposedTree(selectionStart(selection), selectionEnd(selection));
-}
-
 template <typename Strategy>
 static bool equalSelectionsAlgorithm(const VisibleSelection& selection1, const VisibleSelection& selection2)
 {
@@ -1122,20 +1112,23 @@ static bool equalSelectionsAlgorithm(const VisibleSelection& selection1, const V
     if (selection1.isNone())
         return selection2.isNone();
 
-    return Strategy::selectionStart(selection1) == Strategy::selectionStart(selection2)
-        && Strategy::selectionEnd(selection1) == Strategy::selectionEnd(selection2)
-        && Strategy::selectionBase(selection1) == Strategy::selectionBase(selection2)
-        && Strategy::selectionExtent(selection1) == Strategy::selectionExtent(selection2);
+    const VisibleSelectionTemplate<Strategy> selectionWrapper1(selection1);
+    const VisibleSelectionTemplate<Strategy> selectionWrapper2(selection2);
+
+    return selectionWrapper1.start() == selectionWrapper2.start()
+        && selectionWrapper1.end() == selectionWrapper2.end()
+        && selectionWrapper1.base() == selectionWrapper2.base()
+        && selectionWrapper1.extent() == selectionWrapper2.extent();
 }
 
-bool VisibleSelection::InDOMTree::equalSelections(const VisibleSelection& selection1, const VisibleSelection& selection2)
+bool equalSelectionsInDOMTree(const VisibleSelection& selection1, const VisibleSelection& selection2)
 {
-    return equalSelectionsAlgorithm<InDOMTree>(selection1, selection2);
+    return equalSelectionsAlgorithm<EditingStrategy>(selection1, selection2);
 }
 
-bool VisibleSelection::InComposedTree::equalSelections(const VisibleSelection& selection1, const VisibleSelection& selection2)
+bool equalSelectionsInComposedTree(const VisibleSelection& selection1, const VisibleSelection& selection2)
 {
-    return equalSelectionsAlgorithm<InComposedTree>(selection1, selection2);
+    return equalSelectionsAlgorithm<EditingInComposedTreeStrategy>(selection1, selection2);
 }
 
 // ----
