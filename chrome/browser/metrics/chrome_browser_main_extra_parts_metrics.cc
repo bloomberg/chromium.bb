@@ -136,13 +136,13 @@ void RecordStartupMetricsOnBlockingPool() {
   GoogleUpdateSettings::RecordChromeUpdatePolicyHistograms();
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   bluetooth_utility::BluetoothAvailability availability =
       bluetooth_utility::GetBluetoothAvailability();
   UMA_HISTOGRAM_ENUMERATION("OSX.BluetoothAvailability",
                             availability,
                             bluetooth_utility::BLUETOOTH_AVAILABILITY_COUNT);
-#endif   // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif   // defined(OS_MACOSX)
 
   // Record whether Chrome is the default browser or not.
   ShellIntegration::DefaultWebClientState default_state =
@@ -327,9 +327,9 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   RecordTouchEventState();
 #endif  // defined(USE_OZONE) || defined(USE_X11)
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   RecordMacMetrics();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MACOSX)
 
   const int kStartupMetricsGatheringDelaySeconds = 45;
   content::BrowserThread::GetBlockingPool()->PostDelayedTask(
@@ -363,9 +363,11 @@ void ChromeBrowserMainExtraPartsMetrics::OnDisplayMetricsChanged(
     uint32_t changed_metrics) {
 }
 
+#if !defined(OS_ANDROID)
 void ChromeBrowserMainExtraPartsMetrics::ProfilerFinishedCollectingMetrics() {
   first_web_contents_profiler_.reset();
 }
+#endif  // !defined(OS_ANDROID)
 
 void ChromeBrowserMainExtraPartsMetrics::EmitDisplaysChangedMetric() {
   int display_count = gfx::Screen::GetNativeScreen()->GetNumDisplays();

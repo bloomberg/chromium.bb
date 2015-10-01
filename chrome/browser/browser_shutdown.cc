@@ -21,7 +21,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -37,6 +36,10 @@
 #if defined(OS_WIN)
 #include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#include "chrome/browser/first_run/upgrade_util.h"
 #endif
 
 #if defined(ENABLE_RLZ)
@@ -246,7 +249,7 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
 
 #if defined(OS_WIN)
     upgrade_util::RelaunchChromeWithMode(*new_cl.get(), g_relaunch_mode);
-#else
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
     upgrade_util::RelaunchChromeBrowser(*new_cl.get());
 #endif  // defined(OS_WIN)
 

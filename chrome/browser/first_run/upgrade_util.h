@@ -7,11 +7,13 @@
 
 #include "build/build_config.h"
 
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#error Not used on Android or ChromeOS
+#endif
+
 #if defined(OS_WIN)
 #include <string>
 #endif
-
-#if !defined(OS_CHROMEOS)
 
 namespace base {
 class CommandLine;
@@ -45,7 +47,7 @@ RelaunchMode RelaunchModeStringToEnum(const std::string& relaunch_mode);
 bool RelaunchChromeWithMode(const base::CommandLine& command_line,
                             const RelaunchMode& relaunch_mode);
 
-#endif
+#endif  // defined(OS_WIN)
 
 #if !defined(OS_MACOSX)
 
@@ -65,7 +67,5 @@ bool IsUpdatePendingRestart();
 #endif  // !defined(OS_MACOSX)
 
 }  // namespace upgrade_util
-
-#endif  // !defined(OS_CHROMEOS)
 
 #endif  // CHROME_BROWSER_FIRST_RUN_UPGRADE_UTIL_H_

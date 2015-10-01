@@ -56,7 +56,6 @@
 #include "chrome/browser/component_updater/widevine_cdm_component_installer.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/gpu/three_d_api_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -208,6 +207,10 @@
 #include "chrome/common/media/media_resource_provider.h"
 #include "media/base/media_resources.h"
 #endif  // !defined(OS_IOS)
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#include "chrome/browser/first_run/upgrade_util.h"
+#endif
 
 #if !defined(DISABLE_NACL)
 #include "chrome/browser/component_updater/pnacl_component_installer.h"

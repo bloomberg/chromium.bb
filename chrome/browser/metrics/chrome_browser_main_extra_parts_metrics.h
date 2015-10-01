@@ -9,8 +9,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
-#include "chrome/browser/metrics/first_web_contents_profiler.h"
 #include "ui/gfx/display_observer.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/metrics/first_web_contents_profiler.h"
+#endif  // !defined(OS_ANDROID)
 
 class ChromeBrowserMainParts;
 
@@ -24,8 +27,10 @@ class InputDeviceEventObserver;
 
 class ChromeBrowserMainExtraPartsMetrics
     : public ChromeBrowserMainExtraParts,
-      public gfx::DisplayObserver,
-      public FirstWebContentsProfiler::Delegate {
+#if !defined(OS_ANDROID)
+      public FirstWebContentsProfiler::Delegate,
+#endif  // !defined(OS_ANDROID)
+      public gfx::DisplayObserver {
  public:
   ChromeBrowserMainExtraPartsMetrics();
   ~ChromeBrowserMainExtraPartsMetrics() override;
@@ -36,10 +41,10 @@ class ChromeBrowserMainExtraPartsMetrics
   void PostBrowserStart() override;
 
  private:
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   // Records Mac specific metrics.
   void RecordMacMetrics();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MACOSX)
 
   // DisplayObserver overrides.
   void OnDisplayAdded(const gfx::Display& new_display) override;
@@ -47,8 +52,10 @@ class ChromeBrowserMainExtraPartsMetrics
   void OnDisplayMetricsChanged(const gfx::Display& display,
                                uint32_t changed_metrics) override;
 
+#if !defined(OS_ANDROID)
   // FirstWebContentsProfilerDelegate overrides.
   void ProfilerFinishedCollectingMetrics() override;
+#endif  // !defined(OS_ANDROID)
 
   // If the number of displays has changed, emit a UMA metric.
   void EmitDisplaysChangedMetric();
@@ -60,8 +67,10 @@ class ChromeBrowserMainExtraPartsMetrics
   // screen.
   bool is_screen_observer_;
 
+#if !defined(OS_ANDROID)
   // Measures start up performance of the first active web contents.
   scoped_ptr<FirstWebContentsProfiler> first_web_contents_profiler_;
+#endif  // !defined(OS_ANDROID)
 
 #if defined(USE_OZONE) || defined(USE_X11)
   scoped_ptr<ui::InputDeviceEventObserver> input_device_event_observer_;
