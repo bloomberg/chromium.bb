@@ -1632,11 +1632,9 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
 // The return value means 'swallow event' (was handled), as for other handle* functions.
 bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targetedEvent, InputDeviceCapabilities* sourceCapabilities)
 {
-    const PlatformMouseEvent& mouseEvent = targetedEvent.event();
-
     // If clicking on a frame scrollbar, do not mess up with content focus.
-    if (FrameView* view = m_frame->view()) {
-        if (view->scrollbarAtRootFramePoint(mouseEvent.position()))
+    if (targetedEvent.hitTestResult().scrollbar() && m_frame->contentLayoutObject()) {
+        if (targetedEvent.hitTestResult().scrollbar()->scrollableArea() == m_frame->contentLayoutObject()->scrollableArea())
             return false;
     }
 
