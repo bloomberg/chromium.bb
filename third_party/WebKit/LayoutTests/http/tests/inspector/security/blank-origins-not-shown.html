@@ -1,0 +1,27 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script>
+var initialize_SecurityTest = function() {
+    InspectorTest.preloadPanel("security");
+}
+
+function test()
+{
+    var targets = WebInspector.targetManager.targets();
+    var request1 = new WebInspector.NetworkRequest(targets[0], 0, "https://foo.test/foo.jpg", "https://foo.test", 0, 0, null);
+    targets[0].model(WebInspector.NetworkManager).dispatchEventToListeners(WebInspector.NetworkManager.EventTypes.RequestFinished, request1);
+    var request2 = new WebInspector.NetworkRequest(targets[0], 0, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAKCAYAAABmBXS+AAAAPElEQVR42mNgQAMZGRn/GfABkIIdO3b8x6kQpgAEsCpEVgADKAqxKcBQCCLwARRFIBodYygiyiSCighhAO4e2jskhrm3AAAAAElFTkSuQmCC", "https://foo.test", 0, 0, null);
+    targets[0].model(WebInspector.NetworkManager).dispatchEventToListeners(WebInspector.NetworkManager.EventTypes.RequestFinished, request2);
+
+    var originTitles = WebInspector.SecurityPanel._instance()._sidebarOriginSection.childrenListElement.getElementsByClassName("title");
+    for (var i = 0; i < originTitles.length; i++)
+        InspectorTest.dumpDeepInnerHTML(originTitles[i]);
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that blank origins aren't shown in the security panel origins list.</p>
+</body>
+</html>

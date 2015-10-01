@@ -1,0 +1,6 @@
+Tests that blank origins aren't shown in the security panel origins list.
+
+<SPAN class=title >
+https://foo.test
+</SPAN>
+
