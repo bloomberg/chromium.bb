@@ -4,6 +4,7 @@
 {
   'variables': {
     'chromium_code': 1,
+    'system_webview_package_name%': 'com.android.webview',
   },
   'targets': [
     {
@@ -421,6 +422,7 @@
         'android_sdk_jar': '../third_party/android_platform/webview/frameworks_6.0.jar',
         'java_in_dir': '../build/android/empty',
         'resource_dir': 'apk/java/res',
+        'android_manifest_template_vars': ['package=<(system_webview_package_name)'],
       },
       'includes': [ 'apk/system_webview_apk_common.gypi' ],
     },
