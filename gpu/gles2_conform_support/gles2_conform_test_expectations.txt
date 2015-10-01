@@ -31,6 +31,7 @@
 517966 WIN OPENGL : GL2FixedTests_depth_buffer_clear_input_run = FAIL
 517966 WIN OPENGL : GL2FixedTests_stencil_plane_clear_input_run = FAIL
 517966 WIN OPENGL : GL2FixedTests_user_clip_planes_input_run = FAIL
+517966 WIN OPENGL : GL2Tests_framebuffer_objects_input_run = FAIL
 
 490149 WIN OPENGL INTEL : GL2ExtensionTests_dFdy_input_run = FAIL
 490149 WIN OPENGL INTEL : GL2Tests_fixed_data_type_input_run = FAIL
