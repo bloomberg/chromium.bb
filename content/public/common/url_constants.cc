@@ -55,6 +55,7 @@ const char kChromeUIServiceWorkerInternalsURL[] =
 const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
 
 const char kChromeUINetworkViewCacheURL[] = "chrome://view-http-cache/";
+const char kChromeUIResourcesURL[] = "chrome://resources/";
 const char kChromeUIShorthangURL[] = "chrome://shorthang";
 
 // This URL is loaded when a page is swapped out and replaced by a page in a

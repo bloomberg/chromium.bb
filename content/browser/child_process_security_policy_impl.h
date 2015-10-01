@@ -60,6 +60,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                                const std::string& filesystem_id) override;
   void GrantDeleteFromFileSystem(int child_id,
                                  const std::string& filesystem_id) override;
+  void GrantOrigin(int child_id, const url::Origin& origin) override;
   void GrantScheme(int child_id, const std::string& scheme) override;
   bool CanReadFile(int child_id, const base::FilePath& file) override;
   bool CanCreateReadWriteFile(int child_id,

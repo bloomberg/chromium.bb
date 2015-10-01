@@ -16,6 +16,7 @@
 #include "storage/common/fileapi/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -695,6 +696,46 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace) {
   EXPECT_FALSE(p->CanRequestURL(kRendererID, url));
   EXPECT_FALSE(p->CanReadFile(kRendererID, file));
   EXPECT_FALSE(p->HasWebUIBindings(kRendererID));
+}
+
+// Test the granting of origin permissions, and their interactions with
+// granting scheme permissions.
+TEST_F(ChildProcessSecurityPolicyTest, OriginGranting) {
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  p->Add(kRendererID);
+
+  GURL url_foo1("chrome://foo/resource1");
+  GURL url_foo2("chrome://foo/resource2");
+  GURL url_bar("chrome://bar/resource3");
+
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, url_foo1));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, url_foo2));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, url_bar));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, url_foo1));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, url_foo2));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, url_bar));
+
+  p->GrantOrigin(kRendererID, url::Origin(url_foo1));
+
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, url_foo1));
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, url_foo2));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, url_bar));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, url_foo1));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, url_foo2));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, url_bar));
+
+  p->GrantScheme(kRendererID, kChromeUIScheme);
+
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, url_foo1));
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, url_foo2));
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, url_bar));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, url_foo1));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, url_foo2));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, url_bar));
+
+  p->Remove(kRendererID);
 }
 
 }  // namespace content

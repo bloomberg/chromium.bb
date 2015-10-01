@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class FilePath;
@@ -126,6 +127,10 @@ class ChildProcessSecurityPolicy {
   // granting more general create and write permissions.
   virtual void GrantDeleteFromFileSystem(int child_id,
                                          const std::string& filesystem_id) = 0;
+
+  // Grants the child process the capability to access URLs with the provided
+  // origin.
+  virtual void GrantOrigin(int child_id, const url::Origin& origin) = 0;
 
   // Grants the child process the capability to access URLs of the provided
   // scheme.

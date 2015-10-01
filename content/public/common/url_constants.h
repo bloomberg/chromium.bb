@@ -63,6 +63,7 @@ CONTENT_EXPORT extern const char kUnreachableWebDataURL[];
 
 // Full about URLs (including schemes).
 CONTENT_EXPORT extern const char kChromeUINetworkViewCacheURL[];
+CONTENT_EXPORT extern const char kChromeUIResourcesURL[];
 CONTENT_EXPORT extern const char kChromeUIShorthangURL[];
 
 // Special URL used to swap out a view being rendered by another process.

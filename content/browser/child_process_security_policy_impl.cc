@@ -4,6 +4,8 @@
 
 #include "content/browser/child_process_security_policy_impl.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -87,6 +89,11 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
                          file_permissions_.size());
   }
 
+  // Grant permission to request URLs with the specified origin.
+  void GrantOrigin(const url::Origin& origin) {
+    origin_set_.insert(origin);
+  }
+
   // Grant permission to request URLs with the specified scheme.
   void GrantScheme(const std::string& scheme) {
     scheme_policy_[scheme] = true;
@@ -168,10 +175,15 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
   // Determine whether permission has been granted to commit |url|.
   bool CanCommitURL(const GURL& url) {
-    // Having permission to a scheme implies permssion to all of its URLs.
-    SchemeMap::const_iterator judgment(scheme_policy_.find(url.scheme()));
-    if (judgment != scheme_policy_.end())
-      return judgment->second;
+    // Having permission to a scheme implies permission to all of its URLs.
+    SchemeMap::const_iterator scheme_judgment(
+        scheme_policy_.find(url.scheme()));
+    if (scheme_judgment != scheme_policy_.end())
+      return scheme_judgment->second;
+
+    // Otherwise, check for permission for specific origin.
+    if (ContainsKey(origin_set_, url::Origin(url)))
+      return true;
 
     // file:// URLs are more granular.  The child may have been given
     // permission to a specific file but not the file:// scheme in general.
@@ -242,6 +254,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
  private:
   typedef std::map<std::string, bool> SchemeMap;
+  typedef std::set<url::Origin> OriginSet;
 
   typedef int FilePermissionFlags;  // bit-set of base::File::Flags
   typedef std::map<base::FilePath, FilePermissionFlags> FileMap;
@@ -254,6 +267,10 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   // If a scheme is not present in the map, then it has never been granted
   // or revoked.
   SchemeMap scheme_policy_;
+
+  // The set of URL origins to which the child process has been granted
+  // permission.
+  OriginSet origin_set_;
 
   // The set of files the child process is permited to upload to the web.
   FileMap file_permissions_;
@@ -501,6 +518,17 @@ void ChildProcessSecurityPolicyImpl::GrantSendMidiSysExMessage(int child_id) {
     return;
 
   state->second->GrantPermissionForMidiSysEx();
+}
+
+void ChildProcessSecurityPolicyImpl::GrantOrigin(int child_id,
+                                                 const url::Origin& origin) {
+  base::AutoLock lock(lock_);
+
+  SecurityStateMap::iterator state = security_state_.find(child_id);
+  if (state == security_state_.end())
+    return;
+
+  state->second->GrantOrigin(origin);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantScheme(int child_id,
