@@ -87,6 +87,11 @@ public abstract class ChromeSwitches {
      */
     public static final String DISABLE_LOFI_SNACKBAR = "disable-lo-fi-snackbar";
 
+    /**
+     * Enable Physical Web feature.
+     */
+    public static final String ENABLE_PHYSICAL_WEB = "enable-physical-web";
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////

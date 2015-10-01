@@ -39,6 +39,10 @@ public class NotificationConstants {
      * Unique identifier for the "Signed in to Chrome" notification.
      */
     public static final int NOTIFICATION_ID_SIGNED_IN = 2;
+    /**
+     * Unique identifier for the Physical Web notification.
+     */
+    public static final int NOTIFICATION_ID_PHYSICAL_WEB = 3;
 
     /**
      * Separator used to separate the notification origin from additional data such as the

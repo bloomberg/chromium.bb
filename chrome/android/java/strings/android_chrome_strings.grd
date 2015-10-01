@@ -2279,6 +2279,12 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
         Client side certificate selection is not supported by the operating system.
       </message>
 
+      <!-- Physical Web strings -->
+      <message name="IDS_PHYSICAL_WEB_NOTIFICATION_TITLE" desc="Description of quantity of discovered URLs nearby.">
+        {NUM_URLS, plural,
+         =1 {1 URL nearby}
+         other {# URLs nearby}}
+      </message>
     </messages>
   </release>
 </grit>

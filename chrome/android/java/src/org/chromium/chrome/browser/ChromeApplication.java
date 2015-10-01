@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.notifications.NotificationUIManager;
 import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.omaha.UpdateInfoBarHelper;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.physicalweb.PhysicalWebBleClient;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.preferences.AccessibilityPreferences;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -695,6 +696,13 @@ public class ChromeApplication extends ContentApplication {
      */
     public CustomTabsConnection createCustomTabsConnection() {
         return new CustomTabsConnection(this);
+    }
+
+    /**
+     * @return A new PhysicalWebBleClient instance.
+     */
+    public PhysicalWebBleClient createPhysicalWebBleClient() {
+        return new PhysicalWebBleClient();
     }
 
     /**
