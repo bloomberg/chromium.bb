@@ -153,7 +153,7 @@ class UTCFormatter(logging.Formatter):
       return "%s.%03d" % (t, record.msecs)
 
 
-class Filter(logging.Filter):
+class Filter(object):
   """Adds fields used by the infra-specific formatter.
 
   Fields added:

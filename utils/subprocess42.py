@@ -454,8 +454,11 @@ def set_signal_handler(signals, handler):
 @contextlib.contextmanager
 def Popen_with_handler(args, **kwargs):
   proc = None
-  def handler(_signum, _frame):
+  def handler(signum, _frame):
     if proc:
+      logging.info('Received signal %d; terminating', signum)
+      # There could be a race condition where the process already exited. Our
+      # subprocess implementation traps this.
       proc.terminate()
 
   with set_signal_handler(STOP_SIGNALS, handler):
