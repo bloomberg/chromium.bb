@@ -22,6 +22,7 @@
 #include "device/bluetooth/dbus/fake_bluetooth_media_transport_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using bluez::FakeBluetoothMediaTransportClient;
 using dbus::ObjectPath;
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
@@ -88,22 +89,23 @@ class BluetoothAudioSinkChromeOSTest : public testing::Test {
 
     fake_media_ = static_cast<bluez::FakeBluetoothMediaClient*>(
         bluez::BluezDBusManager::Get()->GetBluetoothMediaClient());
-    fake_transport_ = static_cast<bluez::FakeBluetoothMediaTransportClient*>(
+    fake_transport_ = static_cast<FakeBluetoothMediaTransportClient*>(
         bluez::BluezDBusManager::Get()->GetBluetoothMediaTransportClient());
 
     // Initiates Delegate::TransportProperties with default values.
-    properties_.device = ObjectPath(
-        bluez::FakeBluetoothMediaTransportClient::kTransportDevicePath);
+    properties_.device =
+        ObjectPath(FakeBluetoothMediaTransportClient::kTransportDevicePath);
     properties_.uuid = bluez::BluetoothMediaClient::kBluetoothAudioSinkUUID;
-    properties_.codec =
-        bluez::FakeBluetoothMediaTransportClient::kTransportCodec;
-    properties_.configuration =
-        bluez::FakeBluetoothMediaTransportClient::kTransportConfiguration;
+    properties_.codec = FakeBluetoothMediaTransportClient::kTransportCodec;
+    properties_.configuration = std::vector<uint8_t>(
+        FakeBluetoothMediaTransportClient::kTransportConfiguration,
+        FakeBluetoothMediaTransportClient::kTransportConfiguration +
+            FakeBluetoothMediaTransportClient::kTransportConfigurationLength);
     properties_.state = bluez::BluetoothMediaTransportClient::kStateIdle;
-    properties_.delay.reset(new uint16_t(
-        bluez::FakeBluetoothMediaTransportClient::kTransportDelay));
-    properties_.volume.reset(new uint16_t(
-        bluez::FakeBluetoothMediaTransportClient::kTransportVolume));
+    properties_.delay.reset(
+        new uint16_t(FakeBluetoothMediaTransportClient::kTransportDelay));
+    properties_.volume.reset(
+        new uint16_t(FakeBluetoothMediaTransportClient::kTransportVolume));
 
     GetAdapter();
   }
@@ -234,7 +236,7 @@ class BluetoothAudioSinkChromeOSTest : public testing::Test {
   base::MessageLoopForIO message_loop_;
 
   bluez::FakeBluetoothMediaClient* fake_media_;
-  bluez::FakeBluetoothMediaTransportClient* fake_transport_;
+  FakeBluetoothMediaTransportClient* fake_transport_;
   bluez::FakeBluetoothMediaEndpointServiceProvider* media_endpoint_;
   scoped_ptr<TestAudioSinkObserver> observer_;
   scoped_refptr<BluetoothAdapter> adapter_;
@@ -786,7 +788,7 @@ TEST_F(BluetoothAudioSinkChromeOSTest, VolumeChanged) {
   // |kTransportVolume| is the initial volume of the transport, and this
   // value is propagated to the audio sink via SetConfiguration.
   EXPECT_EQ(audio_sink_->GetVolume(),
-            bluez::FakeBluetoothMediaTransportClient::kTransportVolume);
+            FakeBluetoothMediaTransportClient::kTransportVolume);
 
   // Changes volume to a valid level.
   fake_transport_->SetVolume(media_endpoint_->object_path(), 100);
@@ -844,7 +846,7 @@ TEST_F(BluetoothAudioSinkChromeOSTest, AcquireFD) {
   EXPECT_EQ(observer_->total_read_, data_one.size());
   EXPECT_EQ(observer_->data_, data_one);
   EXPECT_EQ(observer_->read_mtu_,
-            bluez::FakeBluetoothMediaTransportClient::kDefaultReadMtu);
+            FakeBluetoothMediaTransportClient::kDefaultReadMtu);
 }
 
 // Tests the case where the remote device pauses and resume audio streaming.
@@ -881,7 +883,7 @@ TEST_F(BluetoothAudioSinkChromeOSTest, PauseAndResume) {
 
   EXPECT_EQ(observer_->data_, data_one);
   EXPECT_EQ(observer_->read_mtu_,
-            bluez::FakeBluetoothMediaTransportClient::kDefaultReadMtu);
+            FakeBluetoothMediaTransportClient::kDefaultReadMtu);
   EXPECT_EQ(observer_->state_changed_count_, 3);
   EXPECT_EQ(observer_->total_read_, data_one.size());
 
@@ -901,7 +903,7 @@ TEST_F(BluetoothAudioSinkChromeOSTest, PauseAndResume) {
 
   EXPECT_EQ(observer_->data_, data_two);
   EXPECT_EQ(observer_->read_mtu_,
-            bluez::FakeBluetoothMediaTransportClient::kDefaultReadMtu);
+            FakeBluetoothMediaTransportClient::kDefaultReadMtu);
   EXPECT_EQ(observer_->state_changed_count_, 6);
   EXPECT_EQ(observer_->total_read_, data_two.size());
 }
@@ -939,7 +941,7 @@ TEST_F(BluetoothAudioSinkChromeOSTest, ContinuouslyStreaming) {
 
   EXPECT_EQ(observer_->data_, data_one);
   EXPECT_EQ(observer_->read_mtu_,
-            bluez::FakeBluetoothMediaTransportClient::kDefaultReadMtu);
+            FakeBluetoothMediaTransportClient::kDefaultReadMtu);
   EXPECT_EQ(observer_->state_changed_count_, 3);
   EXPECT_EQ(observer_->total_read_, data_one.size());
 
@@ -950,7 +952,7 @@ TEST_F(BluetoothAudioSinkChromeOSTest, ContinuouslyStreaming) {
 
   EXPECT_EQ(observer_->data_, data_two);
   EXPECT_EQ(observer_->read_mtu_,
-            bluez::FakeBluetoothMediaTransportClient::kDefaultReadMtu);
+            FakeBluetoothMediaTransportClient::kDefaultReadMtu);
   EXPECT_EQ(observer_->state_changed_count_, 3);
   EXPECT_EQ(observer_->total_read_, data_one.size() + data_two.size());
 }

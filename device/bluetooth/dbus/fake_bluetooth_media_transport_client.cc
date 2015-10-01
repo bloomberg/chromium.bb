@@ -41,6 +41,9 @@ ObjectPath GenerateTransportPath() {
   return ObjectPath(path.str());
 }
 
+#define UINT8_VECTOR_FROM_ARRAY(array) \
+  std::vector<uint8_t>(array, array + arraysize(array))
+
 }  // namespace
 
 namespace bluez {
@@ -49,9 +52,10 @@ namespace bluez {
 const char FakeBluetoothMediaTransportClient::kTransportDevicePath[] =
     "/fake_audio_source";
 const uint8_t FakeBluetoothMediaTransportClient::kTransportCodec = 0x00;
-const std::vector<uint8_t>
-    FakeBluetoothMediaTransportClient::kTransportConfiguration = {0x21, 0x15,
-                                                                  0x33, 0x2C};
+const uint8_t FakeBluetoothMediaTransportClient::kTransportConfiguration[] = {
+    0x21, 0x15, 0x33, 0x2C};
+const uint8_t FakeBluetoothMediaTransportClient::kTransportConfigurationLength =
+    arraysize(FakeBluetoothMediaTransportClient::kTransportConfiguration);
 const uint16_t FakeBluetoothMediaTransportClient::kTransportDelay = 5;
 const uint16_t FakeBluetoothMediaTransportClient::kTransportVolume = 50;
 const uint16_t FakeBluetoothMediaTransportClient::kDefaultReadMtu = 20;
@@ -169,7 +173,8 @@ void FakeBluetoothMediaTransportClient::SetValid(
     properties->uuid.ReplaceValue(
         BluetoothMediaClient::kBluetoothAudioSinkUUID);
     properties->codec.ReplaceValue(kTransportCodec);
-    properties->configuration.ReplaceValue(kTransportConfiguration);
+    properties->configuration.ReplaceValue(
+        UINT8_VECTOR_FROM_ARRAY(kTransportConfiguration));
     properties->state.ReplaceValue(BluetoothMediaTransportClient::kStateIdle);
     properties->delay.ReplaceValue(kTransportDelay);
     properties->volume.ReplaceValue(kTransportVolume);
