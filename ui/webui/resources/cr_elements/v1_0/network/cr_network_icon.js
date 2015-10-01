@@ -120,8 +120,7 @@ Polymer({
 
     this.networkType = null;
     this.iconType_ = getIconTypeFromNetworkType(this.networkState.Type);
-    var strength = /** @type {number} */ (
-        CrOnc.getActiveTypeValue(this.networkState, 'SignalStrength') || 0);
+    var strength = CrOnc.getSignalStrength(this.networkState);
     var params = /** @type {NetworkIconParamType} */ {
       showBadges: true,
       showDisconnected: !this.isListItem,
@@ -243,19 +242,18 @@ Polymer({
         (params.showBadges && networkState) ? networkState.Type : '';
     if (type == CrOnc.Type.WI_FI) {
       this.roaming_ = false;
-      var security = CrOnc.getActiveTypeValue(networkState, 'Security');
+      var security = networkState.WiFi ? networkState.WiFi.Security : '';
       this.secure_ = !!security && security != 'None';
       this.technology_ = '';
     } else if (type == CrOnc.Type.WI_MAX) {
       this.roaming_ = false;
       this.secure_ = false;
       this.technology_ = '4g';
-    } else if (type == CrOnc.Type.CELLULAR) {
-      this.roaming_ = CrOnc.getActiveTypeValue(networkState, 'RoamingState') ==
-                      CrOnc.RoamingState.ROAMING;
+    } else if (type == CrOnc.Type.CELLULAR && networkState.Cellular) {
+      this.roaming_ =
+          networkState.Cellular.RoamingState == CrOnc.RoamingState.ROAMING;
       this.secure_ = false;
-      var oncTechnology =
-          CrOnc.getActiveTypeValue(networkState, 'NetworkTechnology');
+      var oncTechnology = networkState.Cellular.NetworkTechnology;
       switch (oncTechnology) {
         case CrOnc.NetworkTechnology.CDMA1XRTT:
           this.technology_ = '1x';

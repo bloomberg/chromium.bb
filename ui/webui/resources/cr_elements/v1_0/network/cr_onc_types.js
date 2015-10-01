@@ -20,30 +20,27 @@ var CrOnc = {};
 /** @typedef {chrome.networkingPrivate.NetworkStateProperties} */
 CrOnc.NetworkStateProperties;
 
-/** @typedef {chrome.networkingPrivate.NetworkProperties} */
+/** @typedef {chrome.networkingPrivate.ManagedProperties} */
 CrOnc.NetworkProperties;
 
 /** @typedef {string|number|boolean|Object|Array<Object>} */
 CrOnc.NetworkPropertyType;
 
 /**
- * TODO(stevenjb): Eliminate this when we switch to using
- * chrome.networkingPrivate.ManagedProperties once defined.
+ * Generic managed property type. This should match any of the basic managed
+ * types in chrome.networkingPrivate, e.g. networkingPrivate.ManagedBoolean.
  * @typedef {{
- *   Active: CrOnc.NetworkPropertyType,
- *   Effective: CrOnc.NetworkPropertyType,
- *   UserPolicy: CrOnc.NetworkPropertyType,
- *   DevicePolicy: CrOnc.NetworkPropertyType,
- *   UserSetting: CrOnc.NetworkPropertyType,
- *   SharedSetting: CrOnc.NetworkPropertyType,
- *   UserEditable: boolean,
- *   DeviceEditable: boolean
+ *   Active: (!CrOnc.NetworkPropertyType|undefined),
+ *   Effective: (string|undefined),
+ *   UserPolicy: (!CrOnc.NetworkPropertyType|undefined),
+ *   DevicePolicy: (!CrOnc.NetworkPropertyType|undefined),
+ *   UserSetting: (!CrOnc.NetworkPropertyType|undefined),
+ *   SharedSetting: (!CrOnc.NetworkPropertyType|undefined),
+ *   UserEditable: (boolean|undefined),
+ *   DeviceEditable: (boolean|undefined)
  * }}
  */
 CrOnc.ManagedProperty;
-
-/** @typedef {CrOnc.NetworkPropertyType|!CrOnc.ManagedProperty} */
-CrOnc.ManagedNetworkStateProperty;
 
 /** @typedef {chrome.networkingPrivate.SIMLockStatus} */
 CrOnc.SIMLockStatus;
@@ -144,9 +141,10 @@ CrOnc.Source = {
 };
 
 /**
- * Helper function to retrieve the active ONC property value.
- * @param {!CrOnc.ManagedNetworkStateProperty|undefined} property The property,
- *     which may be a managed dictionary or the property itself.
+ * Helper function to retrieve the active ONC property value from a managed
+ * dictionary.
+ * @param {!CrOnc.ManagedProperty|undefined} property The managed dictionary
+ *     for the property if it exists or undefined.
  * @return {!CrOnc.NetworkPropertyType|undefined} The active property value
  *     if it exists, otherwise undefined.
  */
@@ -154,11 +152,13 @@ CrOnc.getActiveValue = function(property) {
   if (property == undefined)
     return undefined;
 
-  // If this is not a dictionary, return the value.
-  if (Array.isArray(property) || typeof property != 'object')
-    return /** @type {!CrOnc.NetworkPropertyType} */ (property);
+  if (typeof property != 'object') {
+    console.error('getActiveValue called on non object: ' +
+                  JSON.stringify(property));
+    return undefined;
+  }
 
-  // Otherwise return the Active value if it exists.
+  // Return the Active value if it exists.
   if ('Active' in property)
     return property['Active'];
 
@@ -175,23 +175,29 @@ CrOnc.getActiveValue = function(property) {
 };
 
 /**
- * Calls getActiveValue with '{state.Type}.key', e.g. WiFi.AutoConnect.
- * @param {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}
- *     properties The ONC network properties or state properties.
- * @param {string} key The type property key, e.g. 'AutoConnect'.
- * @return {!CrOnc.ManagedNetworkStateProperty|undefined} The property value or
- *     dictionary if it exists, otherwise undefined.
+ * Converts a managed ONC dictionary into an unmanaged dictionary (i.e. a
+ * dictionary of active values).
+ * NOTE: This is not intended to be used with dictionaries that contain
+ * nested dictionaries. This will fail and return undefined in that case.
+ * @param {!Object|undefined} properties A managed ONC dictionary
+ * @return {!Object|undefined} An unmanaged version of |properties|.
  */
-CrOnc.getActiveTypeValue = function(properties, key) {
-  var typeDict = properties[properties.Type];
-  if (!typeDict) {
-    // An 'Ethernet' dictionary will only be present for EAP ethernet networks,
-    // so don't log an error when Type == Ethernet.
-    if (properties.Type != chrome.networkingPrivate.NetworkType.ETHERNET)
-      console.error('Network properties missing for:', properties.GUID);
+CrOnc.getSimpleActiveProperties = function(properties) {
+  'use strict';
+  if (!properties)
     return undefined;
+  var result = {};
+  var keys = Object.keys(properties);
+  for (let k of keys) {
+    var prop = CrOnc.getActiveValue(properties[k]);
+    if (prop == undefined) {
+      console.error('getSimpleActiveProperties called on invalid ONC object:',
+                    JSON.stringify(properties));
+      return undefined;
+    }
+    result[k] = prop;
   }
-  return CrOnc.getActiveValue(typeDict[key]);
+  return result;
 };
 
 /**
@@ -204,42 +210,80 @@ CrOnc.getActiveTypeValue = function(properties, key) {
  */
 CrOnc.getIPConfigForType = function(properties, type) {
   'use strict';
-  var result;
+  /** @type {!CrOnc.IPConfigProperties|undefined} */ var ipConfig = undefined;
   var ipConfigs = properties.IPConfigs;
   if (ipConfigs) {
     for (let i = 0; i < ipConfigs.length; ++i) {
-      let ipConfig = ipConfigs[i];
-      if (ipConfig.Type == type) {
-        result = ipConfig;
+      ipConfig = ipConfigs[i];
+      if (ipConfig.Type == type)
         break;
-      }
     }
   }
   if (type != CrOnc.IPType.IPV4)
-    return result;
+    return ipConfig;
 
-  var staticIpConfig = properties.StaticIPConfig;
+  var staticIpConfig =
+      /** @type {!CrOnc.IPConfigProperties|undefined} */(
+          CrOnc.getSimpleActiveProperties(properties.StaticIPConfig));
   if (!staticIpConfig)
-    return result;
+    return ipConfig;
 
   // If there is no entry in IPConfigs for |type|, return the static config.
-  if (!result)
+  if (!ipConfig)
     return staticIpConfig;
 
   // Otherwise, merge the appropriate static values into the result.
   if (staticIpConfig.IPAddress &&
       CrOnc.getActiveValue(properties.IPAddressConfigType) == 'Static') {
-    result.Gateway = staticIpConfig.Gateway;
-    result.IPAddress = staticIpConfig.IPAddress;
-    result.RoutingPrefix = staticIpConfig.RoutingPrefix;
-    result.Type = staticIpConfig.Type;
+    ipConfig.Gateway = staticIpConfig.Gateway;
+    ipConfig.IPAddress = staticIpConfig.IPAddress;
+    ipConfig.RoutingPrefix = staticIpConfig.RoutingPrefix;
+    ipConfig.Type = staticIpConfig.Type;
   }
   if (staticIpConfig.NameServers &&
       CrOnc.getActiveValue(properties.NameServersConfigType) == 'Static') {
-    result.NameServers = staticIpConfig.NameServers;
+    ipConfig.NameServers = staticIpConfig.NameServers;
   }
-  return result;
+  return ipConfig;
 };
+
+/**
+ * Gets the SignalStrength value from |properties| based on properties.Type.
+ * @param {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}
+ *     properties The ONC network properties or state properties.
+ * @return {number} The signal strength value if it exists or 0.
+ */
+CrOnc.getSignalStrength = function(properties) {
+  var type = properties.Type;
+  if (type == CrOnc.Type.CELLULAR && properties.Cellular)
+    return properties.Cellular.SignalStrength || 0;
+  else if (type == CrOnc.Type.WI_FI && properties.WiFi)
+    return properties.WiFi.SignalStrength || 0;
+  else if (type == CrOnc.Type.WI_MAX && properties.WiMAX)
+    return properties.WiMAX.SignalStrength || 0;
+  return 0;
+}
+
+/**
+ * Gets the AutoConnect value from |properties| based on properties.Type.
+ * @param {!CrOnc.NetworkProperties|undefined}
+ *     properties The ONC network properties or state properties.
+ * @return {boolean} The AutoConnect value if it exists or false.
+ */
+CrOnc.getAutoConnect = function(properties) {
+  var type = properties.Type;
+  /** @type {!chrome.networkingPrivate.ManagedBoolean|undefined} */
+  var autoconnect;
+  if (type == CrOnc.Type.CELLULAR && properties.Cellular)
+    autoconnect = properties.Cellular.AutoConnect;
+  else if (type == CrOnc.Type.VPN && properties.VPN)
+    autoconnect = properties.VPN.AutoConnect;
+  else if (type == CrOnc.Type.WI_FI && properties.WiFi)
+    autoconnect = properties.WiFi.AutoConnect;
+  else if (type == CrOnc.Type.WI_MAX && properties.WiMAX)
+    autoconnect = properties.WiMAX.AutoConnect;
+  return !!CrOnc.getActiveValue(autoconnect);
+}
 
 /**
  * @param {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}

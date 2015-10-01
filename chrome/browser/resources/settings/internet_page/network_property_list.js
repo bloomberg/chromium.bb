@@ -60,7 +60,8 @@ Polymer({
     var curValue = this.get(field, this.propertyDict);
     if (typeof curValue == 'object') {
       // Extract the property from an ONC managed dictionary.
-      curValue = CrOnc.getActiveValue(/** @type {!Object} */(curValue));
+      curValue =
+          CrOnc.getActiveValue(/** @type {!CrOnc.ManagedProperty} */(curValue));
     }
     var newValue = event.target.value;
     if (newValue == curValue)
@@ -145,7 +146,8 @@ Polymer({
       return '';
     if (typeof value == 'object') {
       // Extract the property from an ONC managed dictionary
-      value = CrOnc.getActiveValue(/** @type {!Object} */(value));
+      value =
+          CrOnc.getActiveValue(/** @type {!CrOnc.ManagedProperty} */(value));
     }
     // TODO(stevenjb): Localize.
     if (typeof value == 'number' || typeof value == 'boolean')

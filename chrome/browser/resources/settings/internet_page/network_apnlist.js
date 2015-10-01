@@ -87,12 +87,16 @@ Polymer({
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
 
-    var activeApn;
+    /** @type {!CrOnc.APNProperties|undefined} */ var activeApn;
     var cellular = this.networkProperties.Cellular;
-    if (cellular.APN && cellular.APN.AccessPointName)
-      activeApn = cellular.APN;
-    else if (cellular.LastGoodAPN && cellular.LastGoodAPN.AccessPointName)
+    /** @type {!chrome.networkingPrivate.ManagedAPNProperties|undefined} */ var
+        apn = cellular.APN;
+    if (apn && apn.AccessPointName) {
+      activeApn = /** @type {!CrOnc.APNProperties|undefined} */(
+          CrOnc.getSimpleActiveProperties(apn));
+    } else if (cellular.LastGoodAPN && cellular.LastGoodAPN.AccessPointName) {
       activeApn = cellular.LastGoodAPN;
+    }
     this.setApnSelectList_(activeApn);
   },
 
@@ -158,7 +162,12 @@ Polymer({
   getApnList_: function() {
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return [];
-    return this.networkProperties.Cellular.APNList || [];
+    /** @type {!chrome.networkingPrivate.ManagedAPNList|undefined} */ var
+        apnlist = this.networkProperties.Cellular.APNList;
+    if (!apnlist)
+      return [];
+    return /** @type {!Array<!CrOnc.APNProperties>} */ (
+        CrOnc.getActiveValue(apnlist));
   },
 
   /**

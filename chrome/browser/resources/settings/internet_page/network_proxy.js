@@ -108,23 +108,35 @@ Polymer({
     if (!this.networkProperties)
       return;
 
-    var defaultProxy = this.createDefaultProxySettings_();
-    var proxy = this.networkProperties.ProxySettings || {};
-
-    // Ensure that all proxy settings object properties are specified.
-    proxy.ExcludeDomains = proxy.ExcludeDomains || this.savedExcludeDomains_ ||
-                           defaultProxy.ExcludeDomains;
-    proxy.Manual = proxy.Manual || this.savedManual_ ||
-        /** @type {CrOnc.ManualProxySettings} */({});
-    proxy.Manual.HTTPProxy =
-        proxy.Manual.HTTPProxy || defaultProxy.Manual.HTTPProxy;
-    proxy.Manual.SecureHTTPProxy =
-        proxy.Manual.SecureHTTPProxy || defaultProxy.Manual.SecureHTTPProxy;
-    proxy.Manual.FTPProxy =
-        proxy.Manual.FTPProxy || defaultProxy.Manual.FTPProxy;
-    proxy.Manual.SOCKS = proxy.Manual.SOCKS || defaultProxy.Manual.SOCKS;
-    proxy.PAC = proxy.PAC || defaultProxy.PAC;
-    proxy.Type = proxy.Type || defaultProxy.Type;
+    /** @type {!CrOnc.ProxySettings} */
+    var proxy = this.createDefaultProxySettings_();
+    /** @type {!chrome.networkingPrivate.ManagedProxySettings|undefined} */
+    var proxySettings = this.networkProperties.ProxySettings;
+    if (proxySettings) {
+      proxy.Type = /** @type {!CrOnc.ProxySettingsType} */(
+          CrOnc.getActiveValue(proxySettings.Type));
+      if (proxySettings.Manual) {
+        proxy.Manual.HTTPProxy = /** @type {!CrOnc.ProxyLocation|undefined} */(
+            CrOnc.getSimpleActiveProperties(proxySettings.Manual.HTTPProxy));
+        proxy.Manual.SecureHTTPProxy =
+            /** @type {!CrOnc.ProxyLocation|undefined} */(
+                CrOnc.getSimpleActiveProperties(
+                    proxySettings.Manual.SecureHTTPProxy));
+        proxy.Manual.FTPProxy = /** @type {!CrOnc.ProxyLocation|undefined} */(
+            CrOnc.getSimpleActiveProperties(proxySettings.Manual.FTPProxy));
+        proxy.Manual.SOCKS = /** @type {!CrOnc.ProxyLocation|undefined} */(
+            CrOnc.getSimpleActiveProperties(proxySettings.Manual.SOCKS));
+      }
+      if (proxySettings.ExcludeDomains) {
+        proxy.ExcludeDomains = /** @type {!Array<string>|undefined} */(
+            CrOnc.getActiveValue(proxySettings.ExcludeDomains));
+      }
+      proxy.PAC = /** @type {string|undefined} */(
+          CrOnc.getActiveValue(proxySettings.PAC));
+    }
+    // Use saved ExcludeDomanains and Manual if not defined.
+    proxy.ExcludeDomains = proxy.ExcludeDomains || this.savedExcludeDomains_;
+    proxy.Manual = proxy.Manual || this.savedManual_;
 
     this.set('proxy', proxy);
     this.$.selectType.value = proxy.Type;

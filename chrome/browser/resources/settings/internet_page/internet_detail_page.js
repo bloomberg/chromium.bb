@@ -117,14 +117,14 @@ Polymer({
       return;
 
     // Update autoConnect if it has changed. Default value is false.
-    var autoConnect = /** @type {boolean} */(
-        CrOnc.getActiveTypeValue(this.networkProperties, 'AutoConnect')) ||
-            false;
+    var autoConnect = CrOnc.getAutoConnect(this.networkProperties);
     if (autoConnect != this.autoConnect)
       this.autoConnect = autoConnect;
 
     // Update preferNetwork if it has changed. Default value is false.
-    var preferNetwork = this.networkProperties.Priority > 0;
+    var priority = /** @type {number} */(CrOnc.getActiveValue(
+        this.networkProperties.Priority) || 0);
+    var preferNetwork = priority > 0;
     if (preferNetwork != this.preferNetwork)
       this.preferNetwork = preferNetwork;
 
@@ -173,7 +173,7 @@ Polymer({
   getNetworkDetails_: function() {
     if (!this.guid)
       return;
-    chrome.networkingPrivate.getProperties(
+    chrome.networkingPrivate.getManagedProperties(
         this.guid, this.getPropertiesCallback_.bind(this));
   },
 
@@ -224,7 +224,8 @@ Polymer({
    * @private
    */
   getStateName_: function(properties) {
-    return (properties && properties.Name) || '';
+    return /** @type {string} */(CrOnc.getActiveValue(
+      this.networkProperties.Name) || '');
   },
 
   /**
@@ -295,13 +296,12 @@ Polymer({
 
     // Only show for connected networks or LTE networks with a valid MDN.
     if (!this.isConnectedState_(properties)) {
-      var technology = /** @type {CrOnc.NetworkTechnology|undefined} */(
-          CrOnc.getActiveValue(properties.Cellular.NetworkTechnology));
+      var technology = properties.Cellular.NetworkTechnology;
       if (technology != CrOnc.NetworkTechnology.LTE &&
           technology != CrOnc.NetworkTechnology.LTE_ADVANCED) {
         return false;
       }
-      if (!CrOnc.getActiveValue(properties.Cellular.MDN))
+      if (!properties.Cellular.MDN)
         return false;
     }
 
@@ -658,7 +658,7 @@ Polymer({
   showCellularSim_: function(properties) {
     if (!properties || properties.Type != 'Cellular' || !properties.Cellular)
       return false;
-    return CrOnc.getActiveValue(properties.Cellular.Family) == 'GSM';
+    return properties.Cellular.Family == 'GSM';
   },
 
   /**
