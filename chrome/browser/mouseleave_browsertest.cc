@@ -79,7 +79,7 @@ class MouseLeaveTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(MouseLeaveTest);
 };
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
 // OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
 // OS_LINUX: http://crbug.com/133361.
 // OS_WIN: http://crbug.com/419468
