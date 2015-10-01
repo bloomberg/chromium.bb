@@ -49,7 +49,7 @@ class ClientManager {
     /** Per-session values. */
     private static class SessionParams {
         public final int uid;
-        public final Referrer referrer;
+        public final String packageName;
         public final ICustomTabsCallback callback;
         public final IBinder.DeathRecipient deathRecipient;
         private ServiceConnection mKeepAliveConnection = null;
@@ -59,16 +59,16 @@ class ClientManager {
         public SessionParams(Context context, int uid, ICustomTabsCallback callback,
                 IBinder.DeathRecipient deathRecipient) {
             this.uid = uid;
-            referrer = constructReferrer(context, uid);
+            packageName = getPackageName(context, uid);
             this.callback = callback;
             this.deathRecipient = deathRecipient;
         }
 
-        private static Referrer constructReferrer(Context context, int uid) {
+        private static String getPackageName(Context context, int uid) {
             PackageManager packageManager = context.getPackageManager();
             String[] packageList = packageManager.getPackagesForUid(uid);
             if (packageList.length != 1 || TextUtils.isEmpty(packageList[0])) return null;
-            return IntentHandler.constructValidReferrerForAuthority(packageList[0]);
+            return packageList[0];
         }
 
         public ServiceConnection getKeepAliveConnection() {
@@ -219,7 +219,17 @@ class ClientManager {
      */
     public synchronized Referrer getReferrerForSession(IBinder session) {
         SessionParams params = mSessionParams.get(session);
-        return params != null ? params.referrer : null;
+        if (params == null) return null;
+        final String packageName = params.packageName;
+        return IntentHandler.constructValidReferrerForAuthority(packageName);
+    }
+
+    /**
+     * @return The package name associated with the client owning the given session.
+     */
+    public synchronized String getClientPackageNameForSession(IBinder session) {
+        SessionParams params = mSessionParams.get(session);
+        return params == null ? null : params.packageName;
     }
 
     /**

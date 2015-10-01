@@ -323,8 +323,14 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         return null;
     }
 
+    /** See {@link ClientManager#getReferrerForSession(IBinder)} */
     public Referrer getReferrerForSession(IBinder session) {
         return mClientManager.getReferrerForSession(session);
+    }
+
+    /** See {@link ClientManager#getClientPackageNameForSession(IBinder)} */
+    public String getClientPackageNameForSession(IBinder session) {
+        return mClientManager.getClientPackageNameForSession(session);
     }
 
     /**

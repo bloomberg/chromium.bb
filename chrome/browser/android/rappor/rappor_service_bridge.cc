@@ -24,6 +24,16 @@ void SampleDomainAndRegistryFromURL(JNIEnv* env,
                                           metric, gurl);
 }
 
+void SampleString(JNIEnv* env,
+                  const JavaParamRef<jclass>& caller,
+                  const JavaParamRef<jstring>& j_metric,
+                  const JavaParamRef<jstring>& j_value) {
+  std::string metric(base::android::ConvertJavaStringToUTF8(env, j_metric));
+  std::string value(base::android::ConvertJavaStringToUTF8(env, j_value));
+  rappor::SampleString(g_browser_process->rappor_service(),
+                       metric, rappor::UMA_RAPPOR_TYPE, value);
+}
+
 bool RegisterRapporServiceBridge(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

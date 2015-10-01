@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
+import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -234,7 +235,21 @@ public class CustomTabActivity extends ChromeActivity {
         };
         loadUrlInCurrentTab(new LoadUrlParams(url),
                 IntentHandler.getTimestampFromIntent(getIntent()));
+        recordClientPackageName();
         super.finishNativeInitialization();
+    }
+
+    private void recordClientPackageName() {
+        final String packageName = CustomTabsConnection.getInstance(getApplication())
+                .getClientPackageNameForSession(mSession);
+        if (TextUtils.isEmpty(packageName) || packageName.contains(getPackageName())) return;
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                RapporServiceBridge.sampleString(
+                        "CustomTabs.ServiceClient.PackageName", packageName);
+            }
+        });
     }
 
     @Override
