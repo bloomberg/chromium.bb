@@ -10,8 +10,7 @@ import page_sets
 from telemetry import benchmark
 
 # Disabled on Win due to crbug.com/416502.
-# Disabled on Linux due to crbug.com/537620.
-@benchmark.Disabled('win', 'linux')
+@benchmark.Disabled('win')
 class V8Top25(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics on the while scrolling down the top 25 web pages.
 
