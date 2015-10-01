@@ -513,8 +513,6 @@
     #
     'test_nacl_source_files': [
       # Test cases (PLEASE KEEP THIS SECTION IN ALPHABETICAL ORDER)
-      'tests/test_nacl_irt_stack_alignment.cc',
-      'tests/test_nacl_irt_stack_alignment.h',
       'tests/test_tcp_server_socket_private_disallowed.cc',
       'tests/test_tcp_socket_private_disallowed.cc',
       'tests/test_udp_socket_private_disallowed.cc',
