@@ -193,8 +193,8 @@ class GaiaCookieManagerService : public KeyedService,
     return &external_cc_result_fetcher_;
   }
 
-  void set_list_accounts_fetched_once_for_testing(bool fetched) {
-    list_accounts_fetched_once_ = fetched;
+  void set_list_accounts_stale_for_testing(bool stale) {
+    list_accounts_stale_ = stale;
   }
 
  private:
@@ -276,7 +276,7 @@ class GaiaCookieManagerService : public KeyedService,
 
   std::vector<gaia::ListedAccount> listed_accounts_;
 
-  bool list_accounts_fetched_once_;
+  bool list_accounts_stale_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaCookieManagerService);
 };

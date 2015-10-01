@@ -283,8 +283,7 @@ GaiaCookieManagerService::GaiaCookieManagerService(
       fetcher_retries_(0),
       source_(source),
       external_cc_result_fetched_(false),
-      list_accounts_fetched_once_(false) {
-}
+      list_accounts_stale_(true) {}
 
 GaiaCookieManagerService::~GaiaCookieManagerService() {
   CancelAll();
@@ -343,23 +342,24 @@ bool GaiaCookieManagerService::ListAccounts(
   DCHECK(accounts);
   accounts->clear();
 
-  // There is a fetch currently executing (the results being provided in the
-  // parameter don't align with the fetches that have been started), or the list
-  // of accounts haven't been fetched even once.
-  if (!requests_.empty())
-    return false;
+  if (!list_accounts_stale_) {
+    accounts->assign(listed_accounts_.begin(), listed_accounts_.end());
+    return true;
+  }
 
-  if (!list_accounts_fetched_once_) {
+  if (requests_.empty()) {
     fetcher_retries_ = 0;
     requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest());
     signin_client_->DelayNetworkCall(
         base::Bind(&GaiaCookieManagerService::StartFetchingListAccounts,
                    base::Unretained(this)));
-    return false;
+  } else if (std::find_if(requests_.begin(), requests_.end(),
+                          [](const GaiaCookieRequest& request) {
+                            return request.request_type() == LIST_ACCOUNTS;
+                          }) == requests_.end()) {
+    requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest());
   }
-
-  accounts->assign(listed_accounts_.begin(), listed_accounts_.end());
-  return true;
+  return false;
 }
 
 void GaiaCookieManagerService::LogOutAllAccounts() {
@@ -443,6 +443,8 @@ void GaiaCookieManagerService::OnCookieChanged(
     signin_client_->DelayNetworkCall(
         base::Bind(&GaiaCookieManagerService::StartFetchingListAccounts,
                    base::Unretained(this)));
+  } else {
+    list_accounts_stale_ = true;
   }
 }
 
@@ -549,7 +551,7 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
         signin_client_->GetPrefs(), account.gaia_id, account.email);
   }
 
-  list_accounts_fetched_once_ = true;
+  list_accounts_stale_ = false;
   HandleNextRequest();
   // HandleNextRequest before sending out the notification because some
   // services, in response to OnGaiaAccountsInCookieUpdated, may try in return

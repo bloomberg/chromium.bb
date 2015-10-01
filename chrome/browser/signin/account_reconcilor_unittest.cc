@@ -631,7 +631,7 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookieTwice) {
   // Do another pass after I've added a third account to the token service
   cookie_manager_service()->SetListAccountsResponseTwoAccounts(
       "user@gmail.com", "12345", "other@gmail.com", "67890");
-  cookie_manager_service()->set_list_accounts_fetched_once_for_testing(false);
+  cookie_manager_service()->set_list_accounts_stale_for_testing(true);
 
   // This will cause the reconcilor to fire.
   token_service()->UpdateCredentials(account_id3, "refresh_token");
