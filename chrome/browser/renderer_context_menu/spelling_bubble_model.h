@@ -31,6 +31,7 @@ class SpellingBubbleModel : public ConfirmBubbleModel {
   void Accept() override;
   void Cancel() override;
   base::string16 GetLinkText() const override;
+  GURL GetLinkURL() const override;
   void LinkClicked() override;
 
  private:

@@ -48,7 +48,7 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
   base::string16 GetLinkText() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
+  GURL GetLinkURL() const override;
 
   void DispatchCallback(bool result);
 

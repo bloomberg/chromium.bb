@@ -51,6 +51,10 @@
   return base::SysUTF16ToNSString(model_->GetLinkText());
 }
 
+- (NSString*)linkURL {
+  return base::SysUTF8ToNSString(model_->GetLinkURL().spec());
+}
+
 - (NSString*)okButtonText {
   return base::SysUTF16ToNSString(
       model_->GetButtonLabel(ConfirmBubbleModel::BUTTON_OK));

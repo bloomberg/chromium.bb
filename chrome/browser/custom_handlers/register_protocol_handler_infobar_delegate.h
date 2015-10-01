@@ -40,6 +40,7 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
   base::string16 GetLinkText() const override;
+  GURL GetLinkURL() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
   // Returns a user-friendly name for the protocol of this protocol handler.

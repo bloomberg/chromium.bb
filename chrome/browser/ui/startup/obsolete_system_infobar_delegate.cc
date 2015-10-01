@@ -54,17 +54,10 @@ base::string16 ObsoleteSystemInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-bool ObsoleteSystemInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
+GURL ObsoleteSystemInfoBarDelegate::GetLinkURL() const {
 #if defined(OS_MACOSX)
-          GURL(chrome::kMac32BitDeprecationURL),
+  return GURL(chrome::kMac32BitDeprecationURL);
 #else
-          GURL("https://support.google.com/chrome/answer/95411"),
+  return GURL("https://support.google.com/chrome/answer/95411");
 #endif
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
-  return false;
 }

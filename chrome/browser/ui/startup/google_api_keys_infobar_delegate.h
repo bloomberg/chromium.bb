@@ -26,7 +26,7 @@ class GoogleApiKeysInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetLinkText() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
+  GURL GetLinkURL() const override;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleApiKeysInfoBarDelegate);
 };

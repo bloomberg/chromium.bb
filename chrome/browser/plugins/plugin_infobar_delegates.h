@@ -53,7 +53,7 @@ class OutdatedPluginInfoBarDelegate : public ConfirmInfoBarDelegate,
   bool Accept() override;
   bool Cancel() override;
   base::string16 GetLinkText() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
+  GURL GetLinkURL() const override;
 
   // PluginInstallerObserver:
   void DownloadStarted() override;
@@ -106,7 +106,7 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   base::string16 GetLinkText() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
+  GURL GetLinkURL() const override;
 
   const Mode mode_;
   const base::string16 name_;

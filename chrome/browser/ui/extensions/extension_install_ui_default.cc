@@ -87,7 +87,7 @@ class ErrorInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetLinkText() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
+  GURL GetLinkURL() const override;
 
   extensions::CrxInstallError error_;
 
@@ -123,14 +123,8 @@ base::string16 ErrorInfoBarDelegate::GetLinkText() const {
              : base::string16();
 }
 
-bool ErrorInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
-          GURL("https://support.google.com/chrome_webstore/?p=crx_warning"),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
-  return false;
+GURL ErrorInfoBarDelegate::GetLinkURL() const {
+  return GURL("https://support.google.com/chrome_webstore/?p=crx_warning");
 }
 
 }  // namespace

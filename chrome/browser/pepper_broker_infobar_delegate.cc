@@ -130,15 +130,8 @@ base::string16 PepperBrokerInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-bool PepperBrokerInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  GURL learn_more_url("https://support.google.com/chrome/?p=ib_pepper_broker");
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
-          learn_more_url, content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
-  return false;
+GURL PepperBrokerInfoBarDelegate::GetLinkURL() const {
+  return GURL("https://support.google.com/chrome/?p=ib_pepper_broker");
 }
 
 void PepperBrokerInfoBarDelegate::DispatchCallback(bool result) {

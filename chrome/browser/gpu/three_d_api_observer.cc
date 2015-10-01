@@ -46,7 +46,7 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
   base::string16 GetLinkText() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
+  GURL GetLinkURL() const override;
 
   GURL url_;
   content::ThreeDAPIType requester_;
@@ -149,14 +149,8 @@ base::string16 ThreeDAPIInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-bool ThreeDAPIInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
-          GURL("https://support.google.com/chrome/?p=ib_webgl"),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
-  return false;
+GURL ThreeDAPIInfoBarDelegate::GetLinkURL() const {
+  return GURL("https://support.google.com/chrome/?p=ib_webgl");
 }
 
 

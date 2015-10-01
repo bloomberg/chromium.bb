@@ -35,6 +35,7 @@ class ConfirmBubbleModel;
 - (NSString*)title;
 - (NSString*)messageText;
 - (NSString*)linkText;
+- (NSString*)linkURL;
 - (NSString*)okButtonText;
 - (NSString*)cancelButtonText;
 - (BOOL)hasOkButton;

@@ -57,13 +57,6 @@ base::string16 ProtectedMediaIdentifierInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-bool ProtectedMediaIdentifierInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  InfoBarService::WebContentsFromInfoBar(infobar())
-      ->OpenURL(content::OpenURLParams(
-          GURL(chrome::kEnhancedPlaybackNotificationLearnMoreURL),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
-  return false; // Do not dismiss the info bar.
+GURL ProtectedMediaIdentifierInfoBarDelegate::GetLinkURL() const {
+  return GURL(chrome::kEnhancedPlaybackNotificationLearnMoreURL);
 }

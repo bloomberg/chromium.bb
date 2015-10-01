@@ -28,6 +28,7 @@ class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
 
   base::string16 GetMessageTextWithOffset(size_t* link_offset) const;
   base::string16 GetLinkText() const;
+  GURL GetLinkURL() const;
   bool LinkClicked(WindowOpenDisposition disposition);
 
  private:

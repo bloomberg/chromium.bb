@@ -77,7 +77,6 @@ class ChromeAutofillClient
   void DidFillOrPreviewField(const base::string16& autofilled_value,
                              const base::string16& profile_full_name) override;
   void OnFirstUserGestureObserved() override;
-  void LinkClicked(const GURL& url, WindowOpenDisposition disposition) override;
   bool IsContextSecure(const GURL& form_origin) override;
 
   // content::WebContentsObserver implementation.

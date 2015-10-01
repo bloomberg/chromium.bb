@@ -177,11 +177,6 @@ void AwAutofillClient::OnFirstUserGestureObserved() {
   NOTIMPLEMENTED();
 }
 
-void AwAutofillClient::LinkClicked(const GURL& url,
-                                   WindowOpenDisposition disposition) {
-  NOTIMPLEMENTED();
-}
-
 bool AwAutofillClient::IsContextSecure(const GURL& form_origin) {
   content::SSLStatus ssl_status;
   content::NavigationEntry* navigation_entry =

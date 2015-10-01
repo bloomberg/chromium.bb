@@ -107,12 +107,8 @@ base::string16 AutofillCCInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-bool AutofillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  autofill_client_->LinkClicked(
-      GURL(kHelpURL),
-      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition);
-
-  return false;
+GURL AutofillCCInfoBarDelegate::GetLinkURL() const {
+  return GURL(kHelpURL);
 }
 
 }  // namespace autofill

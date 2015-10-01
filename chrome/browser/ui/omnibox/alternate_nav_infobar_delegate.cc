@@ -63,6 +63,10 @@ base::string16 AlternateNavInfoBarDelegate::GetLinkText() const {
   return base::UTF8ToUTF16(match_.destination_url.spec());
 }
 
+GURL AlternateNavInfoBarDelegate::GetLinkURL() const {
+  return match_.destination_url;
+}
+
 bool AlternateNavInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   // Tell the shortcuts backend to remove the shortcut it added for the original

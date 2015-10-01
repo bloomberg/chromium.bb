@@ -59,10 +59,13 @@ base::string16 SpellingBubbleModel::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
+GURL SpellingBubbleModel::GetLinkURL() const {
+  return GURL(chrome::kPrivacyLearnMoreURL);
+}
+
 void SpellingBubbleModel::LinkClicked() {
-  OpenURLParams params(
-      GURL(chrome::kPrivacyLearnMoreURL), Referrer(), NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK, false);
+  OpenURLParams params(GetLinkURL(), Referrer(), NEW_FOREGROUND_TAB,
+                       ui::PAGE_TRANSITION_LINK, false);
   web_contents_->OpenURL(params);
 }
 

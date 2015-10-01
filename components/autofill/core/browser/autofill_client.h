@@ -171,10 +171,6 @@ class AutofillClient {
   // Informs the client that a user gesture has been observed.
   virtual void OnFirstUserGestureObserved() = 0;
 
-  // Opens |url| with the supplied |disposition|.
-  virtual void LinkClicked(const GURL& url,
-                           WindowOpenDisposition disposition) = 0;
-
   // If the context is secure.
   virtual bool IsContextSecure(const GURL& form_origin) = 0;
 };

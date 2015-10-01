@@ -11,6 +11,7 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace content {
 struct LoadCommittedDetails;
@@ -50,6 +51,7 @@ class InfoBarService : public infobars::InfoBarManager,
   // and turn the method override private.
   scoped_ptr<infobars::InfoBar> CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate> delegate) override;
+  void OpenURL(const GURL& url, WindowOpenDisposition disposition) override;
 
  private:
   friend class content::WebContentsUserData<InfoBarService>;

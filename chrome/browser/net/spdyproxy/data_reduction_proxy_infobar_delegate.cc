@@ -58,13 +58,12 @@ int DataReductionProxyInfoBarDelegate::GetButtons() const {
   return BUTTON_NONE;
 }
 
+GURL DataReductionProxyInfoBarDelegate::GetLinkURL() const {
+  return GURL(link_url_);
+}
+
 bool DataReductionProxyInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
-          GURL(link_url_),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
+  ConfirmInfoBarDelegate::LinkClicked(disposition);
   return true;
 }

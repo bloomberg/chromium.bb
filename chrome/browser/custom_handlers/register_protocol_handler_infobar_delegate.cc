@@ -113,17 +113,15 @@ base::string16 RegisterProtocolHandlerInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
+GURL RegisterProtocolHandlerInfoBarDelegate::GetLinkURL() const {
+  return GURL(chrome::kLearnMoreRegisterProtocolHandlerURL);
+}
+
 bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   content::RecordAction(
       base::UserMetricsAction("RegisterProtocolHandler.InfoBar_LearnMore"));
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
-          GURL(chrome::kLearnMoreRegisterProtocolHandlerURL),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
-  return false;
+  return ConfirmInfoBarDelegate::LinkClicked(disposition);
 }
 
 base::string16 RegisterProtocolHandlerInfoBarDelegate::GetProtocolName(

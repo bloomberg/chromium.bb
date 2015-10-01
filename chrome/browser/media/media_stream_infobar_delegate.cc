@@ -141,14 +141,6 @@ base::string16 MediaStreamInfoBarDelegate::GetLinkText() const {
   return base::string16();
 }
 
-bool MediaStreamInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
-          GURL(chrome::kMediaAccessLearnMoreUrl),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
-
-  return false;  // Do not dismiss the info bar.
+GURL MediaStreamInfoBarDelegate::GetLinkURL() const {
+  return GURL(chrome::kMediaAccessLearnMoreUrl);
 }

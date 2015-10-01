@@ -80,6 +80,7 @@ class NPAPIRemovalInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetLinkText() const override;
+  GURL GetLinkURL() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
   base::string16 plugin_name_;
@@ -165,14 +166,14 @@ base::string16 NPAPIRemovalInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
+GURL NPAPIRemovalInfoBarDelegate::GetLinkURL() const {
+  return GURL(kLearnMoreUrl);
+}
+
 bool NPAPIRemovalInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  InfoBarService::WebContentsFromInfoBar(infobar())
-      ->OpenURL(content::OpenURLParams(
-          GURL(kLearnMoreUrl), content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
   content::RecordAction(UserMetricsAction("NPAPIRemovalInfobar.LearnMore"));
+  ConfirmInfoBarDelegate::LinkClicked(disposition);
   return true;
 }
 

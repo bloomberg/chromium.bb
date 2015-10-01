@@ -101,10 +101,6 @@ void TestAutofillClient::DidFillOrPreviewField(
 void TestAutofillClient::OnFirstUserGestureObserved() {
 }
 
-void TestAutofillClient::LinkClicked(const GURL& url,
-                                     WindowOpenDisposition disposition) {
-}
-
 bool TestAutofillClient::IsContextSecure(const GURL& form_origin) {
   return is_context_secure_;
 }

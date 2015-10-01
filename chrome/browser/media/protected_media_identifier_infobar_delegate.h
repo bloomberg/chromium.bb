@@ -35,7 +35,7 @@ class ProtectedMediaIdentifierInfoBarDelegate
   int GetIconId() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetLinkText() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
+  GURL GetLinkURL() const override;
 
   GURL requesting_frame_;
   std::string display_languages_;

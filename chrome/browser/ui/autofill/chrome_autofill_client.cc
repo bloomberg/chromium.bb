@@ -296,12 +296,6 @@ void ChromeAutofillClient::OnFirstUserGestureObserved() {
       new AutofillMsg_FirstUserGestureObservedInTab(routing_id()));
 }
 
-void ChromeAutofillClient::LinkClicked(const GURL& url,
-                                       WindowOpenDisposition disposition) {
-  web_contents()->OpenURL(content::OpenURLParams(
-      url, content::Referrer(), disposition, ui::PAGE_TRANSITION_LINK, false));
-}
-
 bool ChromeAutofillClient::IsContextSecure(const GURL& form_origin) {
   content::SSLStatus ssl_status;
   content::NavigationEntry* navigation_entry =

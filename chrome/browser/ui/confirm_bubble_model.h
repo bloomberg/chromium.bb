@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "url/gurl.h"
 
 namespace gfx {
 class Image;
@@ -49,10 +50,13 @@ class ConfirmBubbleModel {
   virtual void Cancel();
 
   // Returns the text of the link to be displayed, if any. Otherwise returns
-  // and empty string.
+  // an empty string.
   virtual base::string16 GetLinkText() const;
 
-  // Called when the Link is clicked.
+  // Returns the URL of the link to be displayed.
+  virtual GURL GetLinkURL() const;
+
+  // Called when the link is clicked.
   virtual void LinkClicked();
 
  private:

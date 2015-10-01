@@ -50,12 +50,6 @@ base::string16 NaClInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-bool NaClInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
-          GURL("https://support.google.com/chrome/?p=ib_nacl"),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
-  return false;
+GURL NaClInfoBarDelegate::GetLinkURL() const {
+  return GURL("https://support.google.com/chrome/?p=ib_nacl");
 }

@@ -40,14 +40,13 @@ base::string16 PasswordManagerInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 
+GURL PasswordManagerInfoBarDelegate::GetLinkURL() const {
+  return GURL(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK_PAGE));
+}
+
 bool PasswordManagerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  InfoBarService::WebContentsFromInfoBar(infobar())
-      ->OpenURL(content::OpenURLParams(
-          GURL(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK_PAGE)),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
+  ConfirmInfoBarDelegate::LinkClicked(disposition);
   return true;
 }
 

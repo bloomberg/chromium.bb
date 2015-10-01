@@ -165,9 +165,4 @@ void AutofillClientIOS::OnFirstUserGestureObserved() {
   NOTIMPLEMENTED();
 }
 
-void AutofillClientIOS::LinkClicked(const GURL& url,
-                                    WindowOpenDisposition disposition) {
-  NOTIMPLEMENTED();
-}
-
 }  // namespace autofill

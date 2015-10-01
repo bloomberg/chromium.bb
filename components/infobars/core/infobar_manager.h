@@ -12,6 +12,7 @@
 #include "components/infobars/core/infobar_delegate.h"
 
 class ConfirmInfoBarDelegate;
+class GURL;
 
 namespace content {
 class WebContents;
@@ -99,6 +100,9 @@ class InfoBarManager {
   // Returns a confirm infobar that owns |delegate|.
   virtual scoped_ptr<infobars::InfoBar> CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate> delegate) = 0;
+
+  // Opens a URL according to the specified |disposition|.
+  virtual void OpenURL(const GURL& url, WindowOpenDisposition disposition) = 0;
 
  protected:
   // Notifies the observer in |observer_list_|.

@@ -41,6 +41,7 @@ class DataReductionProxyInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool ShouldExpire(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
+  GURL GetLinkURL() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
   std::string link_url_;

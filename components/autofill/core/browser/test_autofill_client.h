@@ -55,7 +55,6 @@ class TestAutofillClient : public AutofillClient {
   void DidFillOrPreviewField(const base::string16& autofilled_value,
                              const base::string16& profile_full_name) override;
   void OnFirstUserGestureObserved() override;
-  void LinkClicked(const GURL& url, WindowOpenDisposition disposition) override;
   bool IsContextSecure(const GURL& form_origin) override;
 
   void set_is_context_secure(bool is_context_secure) {

@@ -152,15 +152,8 @@ base::string16 OutdatedPluginInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-bool OutdatedPluginInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.LearnMore"));
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
-          GURL(chrome::kOutdatedPluginLearnMoreURL), content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
-  return false;
+GURL OutdatedPluginInfoBarDelegate::GetLinkURL() const {
+  return GURL(chrome::kOutdatedPluginLearnMoreURL);
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadStarted() {
@@ -277,20 +270,11 @@ base::string16 PluginMetroModeInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-bool PluginMetroModeInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  // TODO(shrikant): We may need to change language a little at following
-  // support URLs. With new approach we will just restart for both missing
-  // and not missing mode.
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
-          GURL((mode_ == MISSING_PLUGIN) ?
-              "https://support.google.com/chrome/?p=ib_display_in_desktop" :
-              "https://support.google.com/chrome/?p=ib_redirect_to_desktop"),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
-  return false;
+GURL PluginMetroModeInfoBarDelegate::GetLinkURL() const {
+  return GURL(
+      (mode_ == MISSING_PLUGIN)
+          ? "https://support.google.com/chrome/?p=ib_display_in_desktop"
+          : "https://support.google.com/chrome/?p=ib_redirect_to_desktop");
 }
 
 #endif  // defined(OS_WIN)

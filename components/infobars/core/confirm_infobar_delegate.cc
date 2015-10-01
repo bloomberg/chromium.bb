@@ -45,8 +45,13 @@ base::string16 ConfirmInfoBarDelegate::GetLinkText() const {
   return base::string16();
 }
 
+GURL ConfirmInfoBarDelegate::GetLinkURL() const {
+  return GURL();
+}
+
 bool ConfirmInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  return true;
+  infobar()->owner()->OpenURL(GetLinkURL(), disposition);
+  return false;
 }
 
 ConfirmInfoBarDelegate::ConfirmInfoBarDelegate()
