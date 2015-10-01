@@ -138,12 +138,20 @@ FFMPEG_TEST_CASE(Cr444546,
                  "security/444546.mp4",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
+FFMPEG_TEST_CASE(Cr447860,
+                 "security/447860.webm",
+                 PIPELINE_OK,
+                 PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr449958,
                  "security/449958.webm",
                  PIPELINE_OK,
                  PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr536601,
                  "security/536601.m4a",
+                 PIPELINE_OK,
+                 PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr532967,
+                 "security/532967.webm",
                  PIPELINE_OK,
                  PIPELINE_OK);
 
