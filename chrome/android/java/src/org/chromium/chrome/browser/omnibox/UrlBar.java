@@ -35,6 +35,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlUtilities;
+import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout.OmniboxLivenessListener;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.widget.VerticallyFixedEditText;
@@ -360,6 +361,8 @@ public class UrlBar extends VerticallyFixedEditText {
             mFirstFocusTimeMs = SystemClock.elapsedRealtime();
             if (mOmniboxLivenessListener != null) mOmniboxLivenessListener.onOmniboxFocused();
         }
+
+        if (focused) StartupMetrics.getInstance().recordFocusedOmnibox();
     }
 
     /**

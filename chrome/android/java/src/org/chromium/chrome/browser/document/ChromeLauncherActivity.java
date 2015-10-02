@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.LaunchHistogram;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
+import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.notifications.NotificationUIManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -306,6 +307,7 @@ public class ChromeLauncherActivity extends Activity
         }
 
         maybePrefetchDnsInBackground();
+        StartupMetrics.getInstance().updateIntent(getIntent());
 
         boolean hasUserGesture =
                 IntentWithGesturesHandler.getInstance().getUserGestureAndClear(getIntent());

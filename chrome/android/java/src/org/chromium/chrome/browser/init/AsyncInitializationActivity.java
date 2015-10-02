@@ -228,6 +228,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     protected void onNewIntent(Intent intent) {
         if (intent == null) return;
         mNativeInitializationController.onNewIntent(intent);
+        setIntent(intent);
     }
 
     @Override

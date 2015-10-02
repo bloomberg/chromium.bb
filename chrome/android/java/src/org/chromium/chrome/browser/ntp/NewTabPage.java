@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconAvailabilityCall
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.ntp.BookmarksPage.BookmarkSelectedListener;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
@@ -397,6 +398,7 @@ public class NewTabPage
             RecordHistogram.recordTimesHistogram(
                     "Tab.NewTabOnload", loadTimeMs, TimeUnit.MILLISECONDS);
             mIsLoaded = true;
+            StartupMetrics.getInstance().recordOpenedNTP();
 
             if (mIsDestroyed) return;
 

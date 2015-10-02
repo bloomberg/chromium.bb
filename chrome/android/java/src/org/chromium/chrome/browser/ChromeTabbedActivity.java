@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
+import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.omaha.OmahaClient;
@@ -297,6 +298,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     public void onResumeWithNative() {
         super.onResumeWithNative();
         CookiesFetcher.restoreCookies(this);
+        StartupMetrics.getInstance().recordHistogram(false);
     }
 
     @Override
@@ -315,6 +317,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         } catch (IllegalArgumentException e) {
             // This may happen when onStop get called very early in UI test.
         }
+        StartupMetrics.getInstance().recordHistogram(true);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        StartupMetrics.getInstance().updateIntent(getIntent());
     }
 
     @Override
@@ -922,6 +931,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 getCompositorViewHolder().hideKeyboard(new Runnable() {
                     @Override
                     public void run() {
+                        StartupMetrics.getInstance().recordOpenedBookmarks();
                         if (!EnhancedBookmarkUtils.showEnhancedBookmarkIfEnabled(
                                 ChromeTabbedActivity.this)) {
                             currentTab.loadUrl(new LoadUrlParams(
@@ -1265,6 +1275,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
         if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
         ApiCompatibilityUtils.setStatusBarColor(getWindow(), Color.BLACK);
+        StartupMetrics.getInstance().recordOpenedTabSwitcher();
     }
 
     @Override

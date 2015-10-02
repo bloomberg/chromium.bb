@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.document.DocumentTab.DocumentTabObserver;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -319,6 +320,12 @@ public class DocumentActivity extends ChromeActivity {
         ChromeLauncherActivity.sendExceptionCount();
     }
 
+    @Override
+    public void onStopWithNative() {
+        super.onStopWithNative();
+        StartupMetrics.getInstance().recordHistogram(true);
+    }
+
     private void handleDocumentUma() {
         if (mRecordedStartupUma) {
             DocumentUma.recordStartedBy(
@@ -372,6 +379,7 @@ public class DocumentActivity extends ChromeActivity {
             }
             mDocumentTab.show(TabSelectionType.FROM_USER);
         }
+        StartupMetrics.getInstance().recordHistogram(false);
     }
 
     @Override
@@ -704,6 +712,7 @@ public class DocumentActivity extends ChromeActivity {
                 }
             }, MENU_EXIT_ANIMATION_WAIT_MS);
         } else if (id == R.id.all_bookmarks_menu_id) {
+            StartupMetrics.getInstance().recordOpenedBookmarks();
             if (!EnhancedBookmarkUtils.showEnhancedBookmarkIfEnabled(this)) {
                 NewTabPage.launchBookmarksDialog(this, mDocumentTab, getTabModelSelector());
             }
