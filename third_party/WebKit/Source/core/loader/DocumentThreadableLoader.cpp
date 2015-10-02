@@ -340,9 +340,9 @@ void DocumentThreadableLoader::clear()
     if (!m_async)
         return;
 
-    clearResource();
     m_timeoutTimer.stop();
     m_requestStartedSeconds = 0.0;
+    clearResource();
 }
 
 // In this method, we can clear |request| to tell content::WebURLLoaderImpl of
