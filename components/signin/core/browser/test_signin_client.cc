@@ -79,10 +79,6 @@ TestSigninClient::AddCookieChangedCallback(
       new SigninClient::CookieChangedSubscription);
 }
 
-bool TestSigninClient::UpdateAccountInfo(AccountInfo* out_account_info) {
-  return false;
-}
-
 bool TestSigninClient::IsFirstRun() const {
   return false;
 }

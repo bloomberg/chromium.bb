@@ -187,10 +187,6 @@ void AccountTrackerService::StartTrackingAccount(
     state.info.is_child_account = false;
     accounts_.insert(make_pair(account_id, state));
   }
-
-  // If the info is already available on the client, might as well use it.
-  if (signin_client_->UpdateAccountInfo(&accounts_[account_id].info))
-    SaveToPrefs(accounts_[account_id]);
 }
 
 void AccountTrackerService::StopTrackingAccount(const std::string& account_id) {

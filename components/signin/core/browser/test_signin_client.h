@@ -72,8 +72,6 @@ class TestSigninClient : public SigninClient {
       const std::string& name,
       const net::CookieStore::CookieChangedCallback& callback) override;
 
-  bool UpdateAccountInfo(AccountInfo* out_account_info) override;
-
   void set_are_signin_cookies_allowed(bool value) {
     are_signin_cookies_allowed_ = value;
   }

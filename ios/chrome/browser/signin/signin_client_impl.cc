@@ -161,44 +161,6 @@ void SigninClientImpl::OnSignedIn(const std::string& account_id,
   }
 }
 
-// TODO(msarda): http://crbug.com/522454 The account info is seeded by the token
-// service each timea new account is added. Remove the method
-// UpdateAccountInfo| as it is now obsolete.
-bool SigninClientImpl::UpdateAccountInfo(AccountInfo* out_account_info) {
-  DCHECK(!out_account_info->account_id.empty());
-  ProfileOAuth2TokenServiceIOSProvider* provider =
-      ios::GetChromeBrowserProvider()
-          ->GetProfileOAuth2TokenServiceIOSProvider();
-  ProfileOAuth2TokenServiceIOSProvider::AccountInfo account_info;
-  if (!out_account_info->gaia.empty()) {
-    account_info = provider->GetAccountInfoForGaia(out_account_info->gaia);
-  } else if (!out_account_info->email.empty()) {
-    account_info = provider->GetAccountInfoForEmail(out_account_info->email);
-  }
-  if (account_info.gaia.empty()) {
-    // There is no account information for this account, so there is nothing
-    // to be updated here.
-    return false;
-  }
-
-  bool updated = false;
-  if (out_account_info->gaia.empty()) {
-    out_account_info->gaia = account_info.gaia;
-    updated = true;
-  } else if (out_account_info->gaia != account_info.gaia) {
-    // The GAIA id of an account never changes. Avoid updating the wrong
-    // account if this occurs somehow.
-    NOTREACHED() << "out_account_info->gaia = '" << out_account_info->gaia
-                 << "' ; account_info.gaia = '" << account_info.gaia << "'";
-    return false;
-  }
-  if (out_account_info->email != account_info.email) {
-    out_account_info->email = account_info.email;
-    updated = true;
-  }
-  return updated;
-}
-
 void SigninClientImpl::OnErrorChanged() {
   ios::BrowserStateInfoCache* cache = GetApplicationContext()
                                           ->GetChromeBrowserStateManager()

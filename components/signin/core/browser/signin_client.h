@@ -110,15 +110,6 @@ class SigninClient : public KeyedService {
   virtual void RemoveContentSettingsObserver(
       content_settings::Observer* observer) = 0;
 
-  // Allows this sign-in client to update the account info before attempting
-  // to fetch it from GAIA. This avoids fetching the account info from
-  // GAIA when the data it already available on the client.
-  // |out_account_info->account_id| is not-empty and corresponds to an existing
-  // account.
-  //
-  // Returns true if |out_account_info| was updated.
-  virtual bool UpdateAccountInfo(AccountInfo* out_account_info) = 0;
-
   // Execute |callback| if and when there is a network connection.
   virtual void DelayNetworkCall(const base::Closure& callback) = 0;
 
