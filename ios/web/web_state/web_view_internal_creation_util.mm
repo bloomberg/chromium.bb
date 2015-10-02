@@ -187,6 +187,10 @@ WKWebView* CreateWKWebView(CGRect frame,
 #endif
   PostWKWebViewCreation(result, browser_state);
 
+  // By default the web view uses a very sluggish scroll speed. Set it to a more
+  // reasonable value.
+  result.scrollView.decelerationRate = UIScrollViewDecelerationRateNormal;
+
   return result;
 }
 
