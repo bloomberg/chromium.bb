@@ -57,6 +57,7 @@ void AudioManagerAlsa::ShowLinuxAudioInputSettings() {
       break;
     case base::nix::DESKTOP_ENVIRONMENT_KDE3:
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
+    case base::nix::DESKTOP_ENVIRONMENT_KDE5:
       command_line.SetProgram(base::FilePath("kmix"));
       break;
     case base::nix::DESKTOP_ENVIRONMENT_UNITY:

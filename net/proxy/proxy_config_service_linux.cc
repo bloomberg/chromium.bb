@@ -885,7 +885,8 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
         // KDE3 always uses .kde for its configuration.
         base::FilePath kde_path = base::FilePath(home).Append(".kde");
         kde_config_dir_ = KDEHomeToConfigPath(kde_path);
-      } else {
+      } else if (base::nix::GetDesktopEnvironment(env_var_getter) ==
+                 base::nix::DESKTOP_ENVIRONMENT_KDE4) {
         // Some distributions patch KDE4 to use .kde4 instead of .kde, so that
         // both can be installed side-by-side. Sadly they don't all do this, and
         // they don't always do this: some distributions have started switching
@@ -917,6 +918,9 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
         } else {
           kde_config_dir_ = KDEHomeToConfigPath(kde3_path);
         }
+      } else {
+        // KDE 5 migrated to ~/.config for storing kioslaverc.
+        kde_config_dir_ = base::FilePath(home).Append(".config");
       }
     }
   }
@@ -1551,6 +1555,7 @@ ProxyConfigServiceLinux::Delegate::Delegate(base::Environment* env_var_getter)
       break;
     case base::nix::DESKTOP_ENVIRONMENT_KDE3:
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
+    case base::nix::DESKTOP_ENVIRONMENT_KDE5:
       setting_getter_.reset(new SettingGetterImplKDE(env_var_getter));
       break;
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:

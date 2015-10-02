@@ -34,9 +34,10 @@ const char* kGNOME2ProxyConfigCommand[] = {"gnome-network-properties", NULL};
 // has this but it doesn't do the same thing. See below where we use it.
 const char* kGNOME3ProxyConfigCommand[] = {"gnome-control-center", "network",
                                            NULL};
-// KDE3 and KDE4 are only slightly different, but incompatible. Go figure.
+// KDE3, 4, and 5 are only slightly different, but incompatible. Go figure.
 const char* kKDE3ProxyConfigCommand[] = {"kcmshell", "proxy", NULL};
 const char* kKDE4ProxyConfigCommand[] = {"kcmshell4", "proxy", NULL};
+const char* kKDE5ProxyConfigCommand[] = {"kcmshell5", "proxy", NULL};
 
 // The URL for Linux proxy configuration help when not running under a
 // supported desktop environment.
@@ -134,6 +135,10 @@ void DetectAndStartProxyConfigUtil(int render_process_id,
 
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
       launched = StartProxyConfigUtil(kKDE4ProxyConfigCommand);
+      break;
+
+    case base::nix::DESKTOP_ENVIRONMENT_KDE5:
+      launched = StartProxyConfigUtil(kKDE5ProxyConfigCommand);
       break;
 
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:

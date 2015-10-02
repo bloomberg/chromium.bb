@@ -505,6 +505,7 @@ views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
+    case base::nix::DESKTOP_ENVIRONMENT_KDE5:
       // Starting with KDE 4.4, windows' titlebars can be dragged with the
       // middle mouse button to create tab groups. We don't support that in
       // Chrome, but at least avoid lowering windows in response to middle
@@ -674,6 +675,7 @@ bool Gtk2UI::GetDefaultUsesSystemTheme() const {
       return true;
     case base::nix::DESKTOP_ENVIRONMENT_KDE3:
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
+    case base::nix::DESKTOP_ENVIRONMENT_KDE5:
     case base::nix::DESKTOP_ENVIRONMENT_OTHER:
       return false;
   }

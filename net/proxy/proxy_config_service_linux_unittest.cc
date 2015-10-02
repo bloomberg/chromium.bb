@@ -36,6 +36,7 @@ struct EnvVarValues {
   // environment variable name exactly.
   const char *DESKTOP_SESSION, *HOME,
       *KDEHOME, *KDE_SESSION_VERSION,
+      *XDG_CURRENT_DESKTOP,
       *auto_proxy, *all_proxy,
       *http_proxy, *https_proxy, *ftp_proxy,
       *SOCKS_SERVER, *SOCKS_VERSION,
@@ -91,6 +92,7 @@ class MockEnvironment : public base::Environment {
     ENTRY(HOME);
     ENTRY(KDEHOME);
     ENTRY(KDE_SESSION_VERSION);
+    ENTRY(XDG_CURRENT_DESKTOP);
     ENTRY(auto_proxy);
     ENTRY(all_proxy);
     ENTRY(http_proxy);
@@ -354,6 +356,7 @@ class ProxyConfigServiceLinuxTest : public PlatformTest {
     // Set up a temporary KDE home directory.
     std::string prefix("ProxyConfigServiceLinuxTest_user_home");
     base::CreateNewTempDirectory(prefix, &user_home_);
+    config_home_ = user_home_.Append(FILE_PATH_LITERAL(".config"));
     kde_home_ = user_home_.Append(FILE_PATH_LITERAL(".kde"));
     base::FilePath path = kde_home_.Append(FILE_PATH_LITERAL("share"));
     path = path.Append(FILE_PATH_LITERAL("config"));
@@ -364,6 +367,8 @@ class ProxyConfigServiceLinuxTest : public PlatformTest {
     path = kde4_home_.Append(FILE_PATH_LITERAL("share"));
     kde4_config_ = path.Append(FILE_PATH_LITERAL("config"));
     kioslaverc4_ = kde4_config_.Append(FILE_PATH_LITERAL("kioslaverc"));
+    // Set up paths for KDE 5
+    kioslaverc5_ = config_home_.Append(FILE_PATH_LITERAL("kioslaverc"));
   }
 
   void TearDown() override {
@@ -373,6 +378,7 @@ class ProxyConfigServiceLinuxTest : public PlatformTest {
   }
 
   base::FilePath user_home_;
+  base::FilePath config_home_;
   // KDE3 paths.
   base::FilePath kde_home_;
   base::FilePath kioslaverc_;
@@ -380,6 +386,8 @@ class ProxyConfigServiceLinuxTest : public PlatformTest {
   base::FilePath kde4_home_;
   base::FilePath kde4_config_;
   base::FilePath kioslaverc4_;
+  // KDE5 paths.
+  base::FilePath kioslaverc5_;
 };
 
 // Builds an identifier for each test in an array.
@@ -719,6 +727,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         NULL,  // auto_proxy
         NULL,  // all_proxy
         NULL, NULL, NULL,  // per-proto proxies
@@ -740,6 +749,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         "",    // auto_proxy
         NULL,  // all_proxy
         NULL, NULL, NULL,  // per-proto proxies
@@ -761,6 +771,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         "http://wpad/wpad.dat",  // auto_proxy
         NULL,  // all_proxy
         NULL, NULL, NULL,  // per-proto proxies
@@ -782,6 +793,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         "wpad.dat",  // auto_proxy
         NULL,  // all_proxy
         NULL, NULL, NULL,  // per-proto proxies
@@ -803,6 +815,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         NULL,  // auto_proxy
         "www.google.com",  // all_proxy
         NULL, NULL, NULL,  // per-proto proxies
@@ -826,6 +839,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         NULL,  // auto_proxy
         "www.google.com:99",  // all_proxy
         NULL, NULL, NULL,  // per-proto proxies
@@ -849,6 +863,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         NULL,  // auto_proxy
         "http://www.google.com:99",  // all_proxy
         NULL, NULL, NULL,  // per-proto proxies
@@ -872,6 +887,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         NULL,  // auto_proxy
         NULL,  // all_proxy
         "www.google.com:80", "www.foo.com:110", "ftp.foo.com:121",  // per-proto
@@ -897,6 +913,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         NULL,  // auto_proxy
         "",  // all_proxy
         NULL, NULL, NULL,  // per-proto proxies
@@ -920,6 +937,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         NULL,  // auto_proxy
         "",  // all_proxy
         NULL, NULL, NULL,  // per-proto proxies
@@ -943,6 +961,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         NULL,  // auto_proxy
         "",  // all_proxy
         NULL, NULL, NULL,  // per-proto proxies
@@ -966,6 +985,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         NULL,  // auto_proxy
         "www.google.com",  // all_proxy
         NULL, NULL, NULL,  // per-proto
@@ -1465,6 +1485,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEConfigParser) {
         NULL,  // HOME
         NULL,  // KDEHOME
         NULL,  // KDE_SESSION_VERSION
+        NULL,  // XDG_CURRENT_DESKTOP
         NULL,  // auto_proxy
         NULL,  // all_proxy
         "www.normal.com",  // http_proxy
@@ -1521,6 +1542,14 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
   std::string slaverc4 = "[Proxy Settings]\nProxyType=2\n"
                              "Proxy Config Script=http://wpad/wpad.dat\n";
   GURL slaverc4_pac_url("http://wpad/wpad.dat");
+  // Basic HTTP proxy setting.
+  std::string slaverc5 =
+      "[Proxy Settings]\nProxyType=1\nhttpProxy=www.google.com 80\n";
+  ProxyRulesExpectation slaverc5_rules =
+      ProxyRulesExpectation::PerScheme("www.google.com:80",  // http
+                                       "",                   // https
+                                       "",                   // ftp
+                                       "");                  // bypass rules
 
   // Overwrite the .kde kioslaverc file.
   base::WriteFile(kioslaverc_, slaverc3.c_str(), slaverc3.length());
@@ -1608,6 +1637,26 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
               sync_config_getter.SyncGetLatestProxyConfig(&config));
     EXPECT_TRUE(config.auto_detect());
     EXPECT_EQ(GURL(), config.pac_url());
+  }
+
+  // For KDE 5 create ${HOME}/.config and put a kioslaverc in the directory.
+  base::CreateDirectory(config_home_);
+  base::WriteFile(kioslaverc5_, slaverc5.c_str(), slaverc5.length());
+  CHECK(base::PathExists(kioslaverc5_));
+
+  {
+    SCOPED_TRACE("KDE5, .kde and .kde4 present, use .config");
+    MockEnvironment* env = new MockEnvironment;
+    env->values.XDG_CURRENT_DESKTOP = "KDE";
+    env->values.KDE_SESSION_VERSION = "5";
+    env->values.HOME = user_home_.value().c_str();
+    SynchConfigGetter sync_config_getter(new ProxyConfigServiceLinux(env));
+    ProxyConfig config;
+    sync_config_getter.SetupAndInitialFetch();
+    EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
+              sync_config_getter.SyncGetLatestProxyConfig(&config));
+    EXPECT_FALSE(config.auto_detect());
+    EXPECT_TRUE(slaverc5_rules.Matches(config.proxy_rules()));
   }
 }
 

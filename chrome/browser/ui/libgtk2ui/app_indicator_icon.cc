@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/nix/xdg_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -94,6 +93,7 @@ void EnsureMethodsLoaded() {
   base::nix::DesktopEnvironment environment =
       base::nix::GetDesktopEnvironment(env.get());
   if (environment != base::nix::DESKTOP_ENVIRONMENT_KDE4 &&
+      environment != base::nix::DESKTOP_ENVIRONMENT_KDE5 &&
       environment != base::nix::DESKTOP_ENVIRONMENT_UNITY) {
     return;
   }
@@ -161,14 +161,12 @@ AppIndicatorIcon::AppIndicatorIcon(std::string id,
                                    const gfx::ImageSkia& image,
                                    const base::string16& tool_tip)
     : id_(id),
-      using_kde4_(false),
       icon_(NULL),
       menu_model_(NULL),
       icon_change_count_(0),
       weak_factory_(this) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  using_kde4_ = base::nix::GetDesktopEnvironment(env.get()) ==
-      base::nix::DESKTOP_ENVIRONMENT_KDE4;
+  desktop_env_ = base::nix::GetDesktopEnvironment(env.get());
 
   EnsureMethodsLoaded();
   tool_tip_ = base::UTF16ToUTF8(tool_tip);
@@ -204,7 +202,8 @@ void AppIndicatorIcon::SetImage(const gfx::ImageSkia& image) {
       content::BrowserThread::GetBlockingPool()
           ->GetTaskRunnerWithShutdownBehavior(
                 base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-  if (using_kde4_) {
+  if (desktop_env_ == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||
+      desktop_env_ == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
     base::PostTaskAndReplyWithResult(
         task_runner.get(), FROM_HERE,
         base::Bind(AppIndicatorIcon::WriteKDE4TempImageOnWorkerThread,

@@ -35,8 +35,10 @@ const char* const kDesktopXFCE = "xfce";
 const char* const kXdgDesktopGNOME = "GNOME";
 const char* const kXdgDesktopKDE = "KDE";
 const char* const kXdgDesktopUnity = "Unity";
+const char* const kKDESessionKDE5 = "5";
 
 const char kDesktopSession[] = "DESKTOP_SESSION";
+const char kKDESession[] = "KDE_SESSION_VERSION";
 const char kXdgDesktop[] = "XDG_CURRENT_DESKTOP";
 
 }  // namespace
@@ -105,6 +107,17 @@ TEST(XDGUtilTest, GetXdgDesktopGnomeFallback) {
                       Return(true)));
 
   EXPECT_EQ(DESKTOP_ENVIRONMENT_GNOME, GetDesktopEnvironment(&getter));
+}
+
+TEST(XDGUtilTest, GetXdgDesktopKDE5) {
+  MockEnvironment getter;
+  EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
+  EXPECT_CALL(getter, GetVar(StrEq(kXdgDesktop), _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(kXdgDesktopKDE), Return(true)));
+  EXPECT_CALL(getter, GetVar(StrEq(kKDESession), _))
+        .WillOnce(DoAll(SetArgumentPointee<1>(kKDESessionKDE5), Return(true)));
+
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_KDE5, GetDesktopEnvironment(&getter));
 }
 
 TEST(XDGUtilTest, GetXdgDesktopKDE4) {

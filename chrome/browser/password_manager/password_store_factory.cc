@@ -292,7 +292,8 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
   LocalProfileId id = GetLocalProfileId(prefs);
 
   scoped_ptr<PasswordStoreX::NativeBackend> backend;
-  if (used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE4) {
+  if (used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||
+      used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
     // KDE3 didn't use DBus, which our KWallet store uses.
     VLOG(1) << "Trying KWallet for password storage.";
     backend.reset(new NativeBackendKWallet(id));
@@ -387,7 +388,8 @@ void PasswordStoreFactory::RecordBackendStatistics(
     const std::string& command_line_flag,
     LinuxBackendUsed used_backend) {
   LinuxBackendUsage usage = OTHER_PLAINTEXT;
-  if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE4) {
+  if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||
+      desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
     if (command_line_flag == "kwallet") {
       usage = used_backend == KWALLET ? KDE_KWALLETFLAG_KWALLET
                                       : KDE_KWALLETFLAG_PLAINTEXT;

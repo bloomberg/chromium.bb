@@ -156,7 +156,7 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
                                           const std::string& output,
                                           int exit_code, void* params);
 
-  // Should be either DESKTOP_ENVIRONMENT_KDE3 or DESKTOP_ENVIRONMENT_KDE4.
+  // Should be either DESKTOP_ENVIRONMENT_KDE3, KDE4, or KDE5.
   base::nix::DesktopEnvironment desktop_;
 
   // The set of all parent windows for which we are currently running
@@ -195,7 +195,8 @@ SelectFileDialogImplKDE::SelectFileDialogImplKDE(
     : SelectFileDialogImpl(listener, policy),
       desktop_(desktop) {
   DCHECK(desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE3 ||
-         desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE4);
+         desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||
+         desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE5);
 }
 
 SelectFileDialogImplKDE::~SelectFileDialogImplKDE() {

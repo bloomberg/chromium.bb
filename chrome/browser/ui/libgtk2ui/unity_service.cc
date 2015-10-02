@@ -65,7 +65,8 @@ void EnsureMethodsLoaded() {
 
   // The "icon-tasks" KDE task manager also honors Unity Launcher API.
   if (desktop_env != base::nix::DESKTOP_ENVIRONMENT_UNITY &&
-      desktop_env != base::nix::DESKTOP_ENVIRONMENT_KDE4)
+      desktop_env != base::nix::DESKTOP_ENVIRONMENT_KDE4 &&
+      desktop_env != base::nix::DESKTOP_ENVIRONMENT_KDE5)
     return;
 
   // Ubuntu still hasn't given us a nice libunity.so symlink.

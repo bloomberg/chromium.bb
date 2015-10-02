@@ -35,7 +35,7 @@ namespace {
 enum DBusAPI {
   NO_API,           // Disable. No supported API available.
   GNOME_API,        // Use the GNOME API. (Supports more features.)
-  FREEDESKTOP_API,  // Use the FreeDesktop API, for KDE4 and XFCE.
+  FREEDESKTOP_API,  // Use the FreeDesktop API, for KDE4, KDE5, and XFCE.
 };
 
 // Inhibit flags defined in the org.gnome.SessionManager interface.
@@ -368,6 +368,7 @@ DBusAPI PowerSaveBlockerImpl::Delegate::SelectAPI() {
       break;
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
+    case base::nix::DESKTOP_ENVIRONMENT_KDE5:
       if (DPMSEnabled())
         return FREEDESKTOP_API;
       break;

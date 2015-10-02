@@ -45,7 +45,8 @@ ui::SelectFileDialog* SelectFileDialogImpl::Create(
     base::nix::DesktopEnvironment desktop =
         base::nix::GetDesktopEnvironment(env.get());
     if (desktop == base::nix::DESKTOP_ENVIRONMENT_KDE3 ||
-        desktop == base::nix::DESKTOP_ENVIRONMENT_KDE4) {
+        desktop == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||
+        desktop == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
       // Check to see if the user dislikes the KDE file dialog.
       if (!env->HasVar("NO_CHROME_KDE_FILE_DIALOG")) {
         // Check to see if the KDE dialog works.
