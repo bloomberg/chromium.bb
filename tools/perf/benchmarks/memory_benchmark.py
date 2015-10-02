@@ -35,8 +35,6 @@ class _MemoryBenchmark(perf_benchmark.PerfBenchmark):
 class MemoryHealthPlan(_MemoryBenchmark):
   """Timeline based benchmark for the Memory Health Plan."""
 
-  _RE_BENCHMARK_VALUES = re.compile('(fore|back)ground-memory_')
-
   page_set = page_sets.MemoryHealthStory
 
   @classmethod
@@ -46,8 +44,9 @@ class MemoryHealthPlan(_MemoryBenchmark):
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
     # TODO(perezju): Do not ignore baidu failures http://crbug.com/538143
-    return (bool(cls._RE_BENCHMARK_VALUES.match(value.name)) and
-            not ('baidu' in value.page.name and value.values is None))
+    return (value.tir_label in ['foreground', 'background']
+            and value.name.startswith('memory_')
+            and not ('baidu' in value.page.name and value.values is None))
 
 
 # TODO(bashi): Workaround for http://crbug.com/532075
@@ -57,7 +56,7 @@ class RendererMemoryBlinkMemoryMobile(_MemoryBenchmark):
   """Timeline based benchmark for measuring memory consumption on mobile
   sites on which blink's memory consumption is relatively high."""
 
-  _RE_RENDERER_VALUES = re.compile('.+-memory_.+_renderer')
+  _RE_RENDERER_VALUES = re.compile('memory_.+_renderer')
 
   page_set = page_sets.BlinkMemoryMobilePageSet
 
