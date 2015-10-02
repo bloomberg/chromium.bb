@@ -32,6 +32,7 @@
     "neon-animation": "PolymerElements/neon-animation#^1.0.0",
     "paper-behaviors": "PolymerElements/paper-behaviors#^1.0.0",
     "paper-button": "PolymerElements/paper-button#^1.0.0",
+    "paper-card": "PolymerElements/paper-card",
     "paper-checkbox": "PolymerElements/paper-checkbox#^1.0.0",
     "paper-dialog": "PolymerElements/paper-dialog#^1.0.0",
     "paper-dialog-behavior": "PolymerElements/paper-dialog-behavior#^1.0.0",
