@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "content/browser/background_sync/background_sync_manager.h"
+#include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_registration_handle.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -92,25 +93,26 @@ void OneShotPendingOnIOThread(
                       callback));
 }
 
+}  // namespace
+
 class BackgroundSyncBrowserTest : public ContentBrowserTest {
  public:
   BackgroundSyncBrowserTest() {}
   ~BackgroundSyncBrowserTest() override {}
 
   void SetUp() override {
-    NetworkChangeNotifier::SetTestNotificationsOnly(true);
-
-#if defined(OS_CHROMEOS)
-    // ChromeOS's NetworkChangeNotifier doesn't get created in
-    // content_browsertests, so make one now.
-    net::NetworkChangeNotifier::CreateMock();
-#endif
-
+    BackgroundSyncNetworkObserver::SetIgnoreNetworkChangeNotifierForTests(true);
     ContentBrowserTest::SetUp();
   }
 
   void SetIncognitoMode(bool incognito) {
     shell_ = incognito ? CreateOffTheRecordBrowser() : shell();
+  }
+
+  BackgroundSyncContext* GetSyncContextFromShell(Shell* shell) {
+    StoragePartition* storage = BrowserContext::GetDefaultStoragePartition(
+        shell_->web_contents()->GetBrowserContext());
+    return storage->GetBackgroundSyncContext();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -128,9 +130,9 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
         base::FilePath(FILE_PATH_LITERAL("content/test/data/"))));
     ASSERT_TRUE(https_server_->Start());
 
-    SetOnline(true);
-
     SetIncognitoMode(false);
+
+    SetOnline(true);
 
     ASSERT_TRUE(LoadTestPage(kDefaultTestURL));
 
@@ -148,7 +150,13 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
                                                   script, result);
   }
 
+  // This runs asynchronously on the IO thread, but we don't need to wait for it
+  // to complete before running a background sync operation, since those also
+  // run on the IO thread.
   void SetOnline(bool online);
+  void SetOnlineOnIOThread(
+      const scoped_refptr<BackgroundSyncContext>& sync_context,
+      bool online);
 
   // Returns true if the one-shot sync with tag is currently pending. Fails
   // (assertion failure) if the tag isn't registered.
@@ -175,14 +183,28 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
 };
 
 void BackgroundSyncBrowserTest::SetOnline(bool online) {
+  ASSERT_TRUE(shell_);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&BackgroundSyncBrowserTest::SetOnlineOnIOThread,
+                 base::Unretained(this),
+                 base::Unretained(GetSyncContextFromShell(shell_)), online));
+  base::RunLoop().RunUntilIdle();
+}
+
+void BackgroundSyncBrowserTest::SetOnlineOnIOThread(
+    const scoped_refptr<BackgroundSyncContext>& sync_context,
+    bool online) {
+  BackgroundSyncManager* sync_manager = sync_context->background_sync_manager();
+  BackgroundSyncNetworkObserver* network_observer =
+      sync_manager->GetNetworkObserverForTesting();
   if (online) {
-    NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+    network_observer->NotifyManagerIfNetworkChanged(
         NetworkChangeNotifier::CONNECTION_WIFI);
   } else {
-    NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+    network_observer->NotifyManagerIfNetworkChanged(
         NetworkChangeNotifier::CONNECTION_NONE);
   }
-  base::RunLoop().RunUntilIdle();
 }
 
 bool BackgroundSyncBrowserTest::OneShotPending(const std::string& tag) {
@@ -512,7 +534,5 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallDoneAfterSyncFails) {
   EXPECT_TRUE(PopConsole("ok - delay rejected"));
   EXPECT_TRUE(NotifyWhenDoneImmediateOneShot("ok - delay result: false"));
 }
-
-}  // namespace
 
 }  // namespace content

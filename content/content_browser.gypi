@@ -346,6 +346,8 @@
       'browser/android/animation_utils.h',
       'browser/android/background_sync_launcher_android.cc',
       'browser/android/background_sync_launcher_android.h',
+      'browser/android/background_sync_network_observer_android.cc',
+      'browser/android/background_sync_network_observer_android.h',
       'browser/android/browser_jni_registrar.cc',
       'browser/android/browser_jni_registrar.h',
       'browser/android/browser_startup_controller.cc',
