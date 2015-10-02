@@ -87,13 +87,4 @@ PermissionsData::AccessType ExtensionInjectionHost::CanExecuteOnFrame(
   return access;
 }
 
-bool ExtensionInjectionHost::ShouldNotifyBrowserOfInjection() const {
-  // We notify the browser of any injection if the extension has no withheld
-  // permissions (i.e., the permissions weren't restricted), but would have
-  // otherwise been affected by the scripts-require-action feature.
-  return extension_->permissions_data()->withheld_permissions().IsEmpty() &&
-         PermissionsData::ScriptsMayRequireActionForExtension(
-             extension_, extension_->permissions_data()->active_permissions());
-}
-
 }  // namespace extensions

@@ -65,24 +65,6 @@ void ActiveScriptController::OnActiveTabPermissionGranted(
   RunPendingForExtension(extension);
 }
 
-void ActiveScriptController::OnAdInjectionDetected(
-    const std::set<std::string>& ad_injectors) {
-  // We're only interested in data if there are ad injectors detected.
-  if (ad_injectors.empty())
-    return;
-
-  size_t num_preventable_ad_injectors =
-      base::STLSetIntersection<std::set<std::string> >(
-          ad_injectors, permitted_extensions_).size();
-
-  UMA_HISTOGRAM_COUNTS_100(
-      "Extensions.ActiveScriptController.PreventableAdInjectors",
-      num_preventable_ad_injectors);
-  UMA_HISTOGRAM_COUNTS_100(
-      "Extensions.ActiveScriptController.UnpreventableAdInjectors",
-      ad_injectors.size() - num_preventable_ad_injectors);
-}
-
 void ActiveScriptController::AlwaysRunOnVisibleOrigin(
     const Extension* extension) {
   const GURL& url = web_contents()->GetVisibleURL();
@@ -222,17 +204,6 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
   // scripts. Ignore the request.
   if (!extension)
     return;
-
-  // If the request id is -1, that signals that the content script has already
-  // ran (because this feature is not enabled). Add the extension to the list of
-  // permitted extensions (for metrics), and return immediately.
-  if (request_id == -1) {
-    if (PermissionsData::ScriptsMayRequireActionForExtension(
-            extension, extension->permissions_data()->active_permissions())) {
-      permitted_extensions_.insert(extension->id());
-    }
-    return;
-  }
 
   ++num_page_requests_;
 

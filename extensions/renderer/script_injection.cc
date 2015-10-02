@@ -140,7 +140,7 @@ ScriptInjection::InjectionResult ScriptInjection::TryToInject(
       NotifyWillNotInject(ScriptInjector::NOT_ALLOWED);
       return INJECTION_FINISHED;  // We're done.
     case PermissionsData::ACCESS_WITHHELD:
-      SendInjectionMessage(true /* request permission */);
+      RequestPermissionFromBrowser();
       return INJECTION_WAITING;  // Wait around for permission.
     case PermissionsData::ACCESS_ALLOWED:
       InjectionResult result = Inject(scripts_run_info);
@@ -169,10 +169,10 @@ void ScriptInjection::OnHostRemoved() {
   injection_host_.reset(nullptr);
 }
 
-void ScriptInjection::SendInjectionMessage(bool request_permission) {
+void ScriptInjection::RequestPermissionFromBrowser() {
   // If we are just notifying the browser of the injection, then send an
   // invalid request (which is treated like a notification).
-  request_id_ = request_permission ? g_next_pending_id++ : kInvalidRequestId;
+  request_id_ = g_next_pending_id++;
   render_frame_->Send(new ExtensionHostMsg_RequestScriptInjectionPermission(
       render_frame_->GetRoutingID(),
       host_id().id(),
@@ -191,9 +191,6 @@ ScriptInjection::InjectionResult ScriptInjection::Inject(
   DCHECK(injection_host_);
   DCHECK(scripts_run_info);
   DCHECK(!complete_);
-
-  if (injection_host_->ShouldNotifyBrowserOfInjection())
-    SendInjectionMessage(false /* don't request permission */);
 
   bool should_inject_js = injector_->ShouldInjectJs(run_location_);
   bool should_inject_css = injector_->ShouldInjectCss(run_location_);

@@ -32,9 +32,3 @@ extensions::PermissionsData::AccessType WebUIInjectionHost::CanExecuteOnFrame(
   // Content scripts are allowed to inject on webviews created by WebUI.
   return extensions::PermissionsData::AccessType::ACCESS_ALLOWED;
 }
-
-bool WebUIInjectionHost::ShouldNotifyBrowserOfInjection() const {
-  // We don't notify browser of any injection made from WebUI, since the
-  // decision for injection is made in the render.
-  return false;
-}

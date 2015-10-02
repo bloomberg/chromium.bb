@@ -53,9 +53,6 @@ class ActiveScriptController : public content::WebContentsObserver,
   // extension.
   void OnActiveTabPermissionGranted(const Extension* extension);
 
-  // Notifies the ActiveScriptController of detected ad injection.
-  void OnAdInjectionDetected(const std::set<std::string>& ad_injectors);
-
   // Adds the visible origin to |extension|'s active permissions, granting
   // |extension| permission to always run script injections on the origin.
   void AlwaysRunOnVisibleOrigin(const Extension* extension);

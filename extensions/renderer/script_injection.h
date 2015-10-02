@@ -83,9 +83,8 @@ class ScriptInjection {
   int64 request_id() const { return request_id_; }
 
  private:
-  // Sends a message to the browser, either that the script injection would
-  // like to inject, or to notify the browser that it is currently injecting.
-  void SendInjectionMessage(bool request_permission);
+  // Sends a message to the browser to request permission to inject.
+  void RequestPermissionFromBrowser();
 
   // Injects the script. Returns INJECTION_FINISHED if injection has finished,
   // otherwise INJECTION_BLOCKED.

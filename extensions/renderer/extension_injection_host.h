@@ -33,7 +33,6 @@ class ExtensionInjectionHost : public InjectionHost {
       content::RenderFrame* render_frame,
       int tab_id,
       bool is_declarative) const override;
-  bool ShouldNotifyBrowserOfInjection() const override;
 
   const Extension* extension_;
 
