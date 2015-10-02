@@ -62354,6 +62354,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5" label="SSE4.1"/>
   <int value="6" label="SSE4.2"/>
   <int value="7" label="AVX"/>
+  <int value="8" label="AVX2"/>
 </enum>
 
 <enum name="InterruptReason" type="int">

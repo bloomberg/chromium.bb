@@ -44,6 +44,7 @@ CPU::CPU()
     has_sse42_(false),
     has_avx_(false),
     has_avx_hardware_(false),
+    has_avx2_(false),
     has_aesni_(false),
     has_non_stop_time_stamp_counter_(false),
     has_broken_neon_(false),
@@ -72,7 +73,7 @@ void __cpuid(int cpu_info[4], int info_type) {
 
 void __cpuid(int cpu_info[4], int info_type) {
   __asm__ volatile (
-    "cpuid \n\t"
+    "cpuid\n"
     : "=a"(cpu_info[0]), "=b"(cpu_info[1]), "=c"(cpu_info[2]), "=d"(cpu_info[3])
     : "a"(info_type)
   );
@@ -85,7 +86,8 @@ void __cpuid(int cpu_info[4], int info_type) {
 uint64 _xgetbv(uint32 xcr) {
   uint32 eax, edx;
 
-  __asm__ volatile ("xgetbv" : "=a" (eax), "=d" (edx) : "c" (xcr));
+  __asm__ volatile (
+    "xgetbv" : "=a"(eax), "=d"(edx) : "c"(xcr));
   return (static_cast<uint64>(edx) << 32) | eax;
 }
 
@@ -110,7 +112,7 @@ class LazyCpuInfoValue {
              revision = 0;
     const struct {
       const char key[17];
-      unsigned *result;
+      unsigned int* result;
     } kUnsignedValues[] = {
       {"CPU implementer", &implementer},
       {"CPU architecture", &architecture},
@@ -156,7 +158,7 @@ class LazyCpuInfoValue {
 
           // The string may have leading "0x" or not, so we use strtoul to
           // handle that.
-          char *endptr;
+          char* endptr;
           std::string value(value_sp.as_string());
           unsigned long int result = strtoul(value.c_str(), &endptr, 0);
           if (*endptr == 0 && result <= UINT_MAX) {
@@ -211,7 +213,11 @@ void CPU::Initialize() {
 
   // Interpret CPU feature information.
   if (num_ids > 0) {
+    int cpu_info7[4] = {0};
     __cpuid(cpu_info, 1);
+    if (num_ids >= 7) {
+      __cpuid(cpu_info7, 7);
+    }
     signature_ = cpu_info[0];
     stepping_ = cpu_info[0] & 0xf;
     model_ = ((cpu_info[0] >> 4) & 0xf) + ((cpu_info[0] >> 12) & 0xf0);
@@ -244,6 +250,7 @@ void CPU::Initialize() {
         (cpu_info[2] & 0x08000000) != 0 /* OSXSAVE */ &&
         (_xgetbv(0) & 6) == 6 /* XSAVE enabled by kernel */;
     has_aesni_ = (cpu_info[2] & 0x02000000) != 0;
+    has_avx2_ = has_avx_ && (cpu_info7[1] & 0x00000020) != 0;
   }
 
   // Get the brand string of the cpu.
@@ -275,6 +282,7 @@ void CPU::Initialize() {
 }
 
 CPU::IntelMicroArchitecture CPU::GetIntelMicroArchitecture() const {
+  if (has_avx2()) return AVX2;
   if (has_avx()) return AVX;
   if (has_sse42()) return SSE42;
   if (has_sse41()) return SSE41;

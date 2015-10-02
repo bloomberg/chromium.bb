@@ -26,6 +26,7 @@ class BASE_EXPORT CPU {
     SSE41,
     SSE42,
     AVX,
+    AVX2,
     MAX_INTEL_MICRO_ARCHITECTURE
   };
 
@@ -46,6 +47,7 @@ class BASE_EXPORT CPU {
   bool has_sse41() const { return has_sse41_; }
   bool has_sse42() const { return has_sse42_; }
   bool has_avx() const { return has_avx_; }
+  bool has_avx2() const { return has_avx2_; }
   // has_avx_hardware returns true when AVX is present in the CPU. This might
   // differ from the value of |has_avx()| because |has_avx()| also tests for
   // operating system support needed to actually call AVX instuctions.
@@ -84,6 +86,7 @@ class BASE_EXPORT CPU {
   bool has_sse42_;
   bool has_avx_;
   bool has_avx_hardware_;
+  bool has_avx2_;
   bool has_aesni_;
   bool has_non_stop_time_stamp_counter_;
   bool has_broken_neon_;

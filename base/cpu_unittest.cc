@@ -7,6 +7,11 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if _MSC_VER >= 1700
+// C4752: found Intel(R) Advanced Vector Extensions; consider using /arch:AVX.
+#pragma warning(disable: 4752)
+#endif
+
 // Tests whether we can run extended instructions represented by the CPU
 // information. This test actually executes some extended instructions (such as
 // MMX, SSE, etc.) supported by the CPU and sees we can run them without
@@ -17,57 +22,20 @@ TEST(CPU, RunExtendedInstructions) {
   // Retrieve the CPU information.
   base::CPU cpu;
 
-// TODO(jschuh): crbug.com/168866 Find a way to enable this on Win64.
-#if defined(OS_WIN) && !defined(_M_X64)
   ASSERT_TRUE(cpu.has_mmx());
+  ASSERT_TRUE(cpu.has_sse());
+  ASSERT_TRUE(cpu.has_sse2());
 
-  // Execute an MMX instruction.
-  __asm emms;
-
-  if (cpu.has_sse()) {
-    // Execute an SSE instruction.
-    __asm xorps xmm0, xmm0;
-  }
-
-  if (cpu.has_sse2()) {
-    // Execute an SSE 2 instruction.
-    __asm psrldq xmm0, 0;
-  }
-
-  if (cpu.has_sse3()) {
-    // Execute an SSE 3 instruction.
-    __asm addsubpd xmm0, xmm0;
-  }
-
-  if (cpu.has_ssse3()) {
-    // Execute a Supplimental SSE 3 instruction.
-    __asm psignb xmm0, xmm0;
-  }
-
-  if (cpu.has_sse41()) {
-    // Execute an SSE 4.1 instruction.
-    __asm pmuldq xmm0, xmm0;
-  }
-
-  if (cpu.has_sse42()) {
-    // Execute an SSE 4.2 instruction.
-    __asm crc32 eax, eax;
-  }
-#elif defined(OS_POSIX) && defined(__x86_64__)
-  ASSERT_TRUE(cpu.has_mmx());
-
+// TODO(fbarchard): consider enabling for clangcl.
+#if defined(COMPILER_GCC)
   // Execute an MMX instruction.
   __asm__ __volatile__("emms\n" : : : "mm0");
 
-  if (cpu.has_sse()) {
-    // Execute an SSE instruction.
-    __asm__ __volatile__("xorps %%xmm0, %%xmm0\n" : : : "xmm0");
-  }
+  // Execute an SSE instruction.
+  __asm__ __volatile__("xorps %%xmm0, %%xmm0\n" : : : "xmm0");
 
-  if (cpu.has_sse2()) {
-    // Execute an SSE 2 instruction.
-    __asm__ __volatile__("psrldq $0, %%xmm0\n" : : : "xmm0");
-  }
+  // Execute an SSE 2 instruction.
+  __asm__ __volatile__("psrldq $0, %%xmm0\n" : : : "xmm0");
 
   if (cpu.has_sse3()) {
     // Execute an SSE 3 instruction.
@@ -88,6 +56,61 @@ TEST(CPU, RunExtendedInstructions) {
     // Execute an SSE 4.2 instruction.
     __asm__ __volatile__("crc32 %%eax, %%eax\n" : : : "eax");
   }
-#endif
-#endif
+
+  if (cpu.has_avx()) {
+    // Execute an AVX instruction.
+    __asm__ __volatile__("vzeroupper\n" : : : "xmm0");
+  }
+
+  if (cpu.has_avx2()) {
+    // Execute an AVX 2 instruction.
+    __asm__ __volatile__("vpunpcklbw %%ymm0, %%ymm0, %%ymm0\n" : : : "xmm0");
+  }
+
+// TODO(jschuh): crbug.com/168866 Find a way to enable this on Win64.
+#elif defined(COMPILER_MSVC) && defined(ARCH_CPU_32_BITS)
+
+  // Execute an MMX instruction.
+  __asm emms;
+
+  // Execute an SSE instruction.
+  __asm xorps xmm0, xmm0;
+
+  // Execute an SSE 2 instruction.
+  __asm psrldq xmm0, 0;
+
+  if (cpu.has_sse3()) {
+    // Execute an SSE 3 instruction.
+    __asm addsubpd xmm0, xmm0;
+  }
+
+  if (cpu.has_ssse3()) {
+    // Execute a Supplimental SSE 3 instruction.
+    __asm psignb xmm0, xmm0;
+  }
+
+  if (cpu.has_sse41()) {
+    // Execute an SSE 4.1 instruction.
+    __asm pmuldq xmm0, xmm0;
+  }
+
+  if (cpu.has_sse42()) {
+    // Execute an SSE 4.2 instruction.
+    __asm crc32 eax, eax;
+  }
+
+// Visual C 2012 required for AVX.
+#if _MSC_VER >= 1700
+  if (cpu.has_avx()) {
+    // Execute an AVX instruction.
+    __asm vzeroupper;
+  }
+
+  if (cpu.has_avx2()) {
+    // Execute an AVX 2 instruction.
+    __asm vpunpcklbw ymm0, ymm0, ymm0
+  }
+#endif  // _MSC_VER >= 1700
+#endif  // defined(COMPILER_GCC)
+#endif  // defined(ARCH_CPU_X86_FAMILY)
 }
