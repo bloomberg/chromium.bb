@@ -66,6 +66,7 @@ using content::RenderViewHost;
 
 #define MAYBE_PPAPI_NACL(test_name) DISABLED_##test_name
 
+#define TEST_PPAPI_NACL_NATIVE(test_name)
 #define TEST_PPAPI_NACL(test_name)
 #define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name)
 #define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name)
@@ -75,11 +76,15 @@ using content::RenderViewHost;
 
 #define MAYBE_PPAPI_NACL(test_name) test_name
 
-// NaCl based PPAPI tests
-#define TEST_PPAPI_NACL(test_name) \
+// NaCl based PPAPI tests (direct-to-native NaCl only, no PNaCl)
+#define TEST_PPAPI_NACL_NATIVE(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    } \
+    }
+
+// NaCl based PPAPI tests
+#define TEST_PPAPI_NACL(test_name) \
+    TEST_PPAPI_NACL_NATIVE(test_name)                       \
     IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     } \
@@ -539,6 +544,10 @@ TEST_PPAPI_NACL(DISABLED_Scrollbar)
 TEST_PPAPI_NACL(Var)
 
 TEST_PPAPI_NACL(VarResource)
+
+#if defined(__i386__)
+TEST_PPAPI_NACL_NATIVE(NaClIRTStackAlignment)
+#endif
 
 // PostMessage tests.
 #define RUN_POSTMESSAGE_SUBTESTS \
