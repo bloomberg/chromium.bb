@@ -141,3 +141,5 @@ crbug.com/506756 inspector/console/only-one-deprecation-warning.html [ Leak ]
 # Untriaged but known leaks of ActiveDOMObject (Web Audio).
 # -----------------------------------------------------------------
 crbug.com/506757 webaudio/mediastreamaudiodestinationnode.html [ Leak ]
+
+crbug.com/538524 editing/selection/modify-crash.html [ Leak ]
