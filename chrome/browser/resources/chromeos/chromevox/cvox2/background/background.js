@@ -62,7 +62,7 @@ Background = function() {
    * @type {ChromeVoxMode}
    * @private
    */
-  this.mode_ = ChromeVoxMode.CLASSIC;
+  this.mode_ = ChromeVoxMode.COMPAT;
 
   /** @type {!ClassicCompatibility} @private */
   this.compat_ = new ClassicCompatibility();
@@ -721,10 +721,12 @@ Background.prototype = {
     if (mode === ChromeVoxMode.NEXT ||
         mode === ChromeVoxMode.COMPAT ||
         mode === ChromeVoxMode.FORCE_NEXT) {
-      if (!chrome.commands.onCommand.hasListener(this.onGotCommand))
+      if (chrome.commands &&
+          !chrome.commands.onCommand.hasListener(this.onGotCommand))
         chrome.commands.onCommand.addListener(this.onGotCommand);
     } else {
-      if (chrome.commands.onCommand.hasListener(this.onGotCommand))
+      if (chrome.commands &&
+          chrome.commands.onCommand.hasListener(this.onGotCommand))
         chrome.commands.onCommand.removeListener(this.onGotCommand);
     }
 

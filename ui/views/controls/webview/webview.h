@@ -147,7 +147,7 @@ class WEBVIEW_EXPORT WebView : public View,
   void AttachWebContents();
   void DetachWebContents();
   void ReattachForFullscreenChange(bool enter_fullscreen);
-  void NotifyMaybeTextInputClientAndAccessibilityChanged();
+  void NotifyAccessibilityWebContentsChanged();
 
   // Create a regular or test web contents (based on whether we're running
   // in a unit test or not).
