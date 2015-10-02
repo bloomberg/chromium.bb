@@ -119,6 +119,11 @@
     "args": ["--root-layer-scrolls"]
   },
   {
+    "prefix": "rootlayerscrolls",
+    "base": "scrollbars",
+    "args": ["--root-layer-scrolls"]
+  },
+  {
     "prefix": "scroll_customization",
     "base": "fast/scroll-behavior",
     "args": ["--enable-blink-features=ScrollCustomization"]
