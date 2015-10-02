@@ -90,14 +90,14 @@ Polymer({
   /**
    * Saved Manual properties so that switching to another type does not loose
    * any set properties while the UI is open.
-   * @type {CrOnc.ManualProxySettings|undefined}
+   * @type {!CrOnc.ManualProxySettings|undefined}
    */
   savedManual_: undefined,
 
   /**
    * Saved ExcludeDomains properties so that switching to a non-Manual type does
    * not loose any set exclusions while the UI is open.
-   * @type {Array<string>|undefined}
+   * @type {!Array<string>|undefined}
    */
   savedExcludeDomains_: undefined,
 
