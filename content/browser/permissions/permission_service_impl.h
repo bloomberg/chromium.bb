@@ -48,6 +48,8 @@ class PermissionServiceImpl : public PermissionService {
                    const PermissionStatusCallback& callback);
     ~PendingRequest();
 
+    // Request ID received from the PermissionManager.
+    int id;
     PermissionType permission;
     GURL origin;
     PermissionStatusCallback callback;

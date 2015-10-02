@@ -19,17 +19,23 @@ class RenderFrameHost;
 // management for the content layer.
 class CONTENT_EXPORT PermissionManager {
  public:
+  // Constant retured when registering and subscribing if
+  // cancelling/unsubscribing at a later stage would have no effect.
+  static const int kNoPendingOperation = -1;
+
   virtual ~PermissionManager() = default;
 
-  // Requests a permission on behalf of a frame identified by render_frame_host.
-  // The |request_id| is an identifier that can later be used if the request is
-  // cancelled (see CancelPermissionRequest).
+  // Requests a permission on behalf of a frame identified by
+  // render_frame_host.
   // When the permission request is handled, whether it failed, timed out or
   // succeeded, the |callback| will be run.
-  virtual void RequestPermission(
+  // Returns a request id which can be used to cancel the permission (see
+  // CancelPermissionRequest). This can be kNoPendingOperation if
+  // there is no further need to cancel the permission in which case |callback|
+  // was invoked.
+  virtual int RequestPermission(
       PermissionType permission,
       RenderFrameHost* render_frame_host,
-      int request_id,
       const GURL& requesting_origin,
       bool user_gesture,
       const base::Callback<void(PermissionStatus)>& callback) = 0;
@@ -63,7 +69,8 @@ class CONTENT_EXPORT PermissionManager {
 
   // Runs the given |callback| whenever the |permission| associated with the
   // pair { requesting_origin, embedding_origin } changes.
-  // Returns the subscription_id to be used to unsubscribe.
+  // Returns the subscription_id to be used to unsubscribe. Can be
+  // kNoPendingOperation if the subscribe was not successful.
   virtual int SubscribePermissionStatusChange(
       PermissionType permission,
       const GURL& requesting_origin,
@@ -72,7 +79,9 @@ class CONTENT_EXPORT PermissionManager {
 
   // Unregisters from permission status change notifications.
   // The |subscription_id| must match the value returned by the
-  // SubscribePermissionStatusChange call.
+  // SubscribePermissionStatusChange call. Unsubscribing
+  // an already unsubscribed |subscription_id| or providing the
+  // |subscription_id| kNoPendingOperation is a no-op.
   virtual void UnsubscribePermissionStatusChange(int subscription_id) = 0;
 };
 

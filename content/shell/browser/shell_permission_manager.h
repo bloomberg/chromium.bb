@@ -17,10 +17,9 @@ class ShellPermissionManager : public PermissionManager {
   ~ShellPermissionManager() override;
 
   // PermissionManager implementation.
-  void RequestPermission(
+  int RequestPermission(
       PermissionType permission,
       RenderFrameHost* render_frame_host,
-      int request_id,
       const GURL& requesting_origin,
       bool user_gesture,
       const base::Callback<void(PermissionStatus)>& callback) override;

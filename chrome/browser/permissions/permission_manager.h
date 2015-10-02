@@ -8,7 +8,9 @@
 #include "base/callback_forward.h"
 #include "base/id_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/permission_manager.h"
 
@@ -28,10 +30,9 @@ class PermissionManager : public KeyedService,
   ~PermissionManager() override;
 
   // content::PermissionManager implementation.
-  void RequestPermission(
+  int RequestPermission(
       content::PermissionType permission,
       content::RenderFrameHost* render_frame_host,
-      int request_id,
       const GURL& requesting_origin,
       bool user_gesture,
       const base::Callback<void(content::PermissionStatus)>& callback) override;
@@ -57,8 +58,16 @@ class PermissionManager : public KeyedService,
   void UnsubscribePermissionStatusChange(int subscription_id) override;
 
  private:
+  struct PendingRequest;
+  using PendingRequestsMap = IDMap<PendingRequest, IDMapOwnPointer>;
+
   struct Subscription;
   using SubscriptionsMap = IDMap<Subscription, IDMapOwnPointer>;
+
+  void OnPermissionRequestResponse(
+      int request_id,
+      const base::Callback<void(content::PermissionStatus)>& callback,
+      ContentSetting content_setting);
 
   // Not all WebContents are able to display permission requests. If the PBM
   // is required but missing for |web_contents|, don't pass along the request.
@@ -71,7 +80,10 @@ class PermissionManager : public KeyedService,
                                std::string resource_identifier) override;
 
   Profile* profile_;
+  PendingRequestsMap pending_requests_;
   SubscriptionsMap subscriptions_;
+
+  base::WeakPtrFactory<PermissionManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionManager);
 };

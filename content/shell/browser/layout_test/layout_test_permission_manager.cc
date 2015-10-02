@@ -61,10 +61,9 @@ LayoutTestPermissionManager::LayoutTestPermissionManager()
 LayoutTestPermissionManager::~LayoutTestPermissionManager() {
 }
 
-void LayoutTestPermissionManager::RequestPermission(
+int LayoutTestPermissionManager::RequestPermission(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
-    int request_id,
     const GURL& requesting_origin,
     bool user_gesture,
     const base::Callback<void(PermissionStatus)>& callback) {
@@ -74,6 +73,7 @@ void LayoutTestPermissionManager::RequestPermission(
       permission, requesting_origin,
       WebContents::FromRenderFrameHost(render_frame_host)
           ->GetLastCommittedURL().GetOrigin()));
+  return kNoPendingOperation;
 }
 
 void LayoutTestPermissionManager::CancelPermissionRequest(

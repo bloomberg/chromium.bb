@@ -21,10 +21,9 @@ class LayoutTestPermissionManager : public PermissionManager {
   ~LayoutTestPermissionManager() override;
 
   // PermissionManager overrides.
-  void RequestPermission(
+  int RequestPermission(
       PermissionType permission,
       RenderFrameHost* render_frame_host,
-      int request_id,
       const GURL& requesting_origin,
       bool user_gesture,
       const base::Callback<void(PermissionStatus)>& callback) override;

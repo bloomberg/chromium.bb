@@ -45,7 +45,8 @@ PermissionServiceImpl::PendingRequest::PendingRequest(
     PermissionType permission,
     const GURL& origin,
     const PermissionStatusCallback& callback)
-    : permission(permission),
+    : id(PermissionManager::kNoPendingOperation),
+      permission(permission),
       origin(origin),
       callback(callback) {
 }
@@ -117,18 +118,25 @@ void PermissionServiceImpl::RequestPermission(
   }
 
   PermissionType permission_type = PermissionNameToPermissionType(permission);
-  int request_id = pending_requests_.Add(
+  int pending_request_id = pending_requests_.Add(
       new PendingRequest(permission_type, GURL(origin), callback));
 
-  browser_context->GetPermissionManager()->RequestPermission(
+  int id = browser_context->GetPermissionManager()->RequestPermission(
       permission_type,
       context_->render_frame_host(),
-      request_id,
       GURL(origin),
       user_gesture, // TODO(mlamouri): should be removed (crbug.com/423770)
       base::Bind(&PermissionServiceImpl::OnRequestPermissionResponse,
                  weak_factory_.GetWeakPtr(),
-                 request_id));
+                 pending_request_id));
+
+  // Check if the request still exists. It might have been removed by the
+  // callback if it was run synchronously.
+  PendingRequest* pending_request = pending_requests_.Lookup(
+      pending_request_id);
+  if (!pending_request)
+      return;
+  pending_request->id = id;
 }
 
 void PermissionServiceImpl::RequestPermissions(

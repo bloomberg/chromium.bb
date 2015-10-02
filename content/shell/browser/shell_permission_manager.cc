@@ -16,15 +16,15 @@ ShellPermissionManager::ShellPermissionManager()
 ShellPermissionManager::~ShellPermissionManager() {
 }
 
-void ShellPermissionManager::RequestPermission(
+int ShellPermissionManager::RequestPermission(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
-    int request_id,
     const GURL& requesting_origin,
     bool user_gesture,
     const base::Callback<void(PermissionStatus)>& callback) {
   callback.Run(permission == PermissionType::GEOLOCATION
                    ? PERMISSION_STATUS_GRANTED : PERMISSION_STATUS_DENIED);
+  return kNoPendingOperation;
 }
 
 void ShellPermissionManager::CancelPermissionRequest(
@@ -58,7 +58,7 @@ int ShellPermissionManager::SubscribePermissionStatusChange(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const base::Callback<void(PermissionStatus)>& callback) {
-  return -1;
+  return kNoPendingOperation;
 }
 
 void ShellPermissionManager::UnsubscribePermissionStatusChange(
