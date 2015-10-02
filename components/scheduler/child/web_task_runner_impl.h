@@ -34,6 +34,7 @@ class SCHEDULER_EXPORT WebTaskRunnerImpl : public blink::WebTaskRunner {
   void postDelayedTask(const blink::WebTraceLocation& web_location,
                        blink::WebTaskRunner::Task* task,
                        double delayMs) override;
+  blink::WebTaskRunner* clone() override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

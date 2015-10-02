@@ -28,11 +28,14 @@ public:
 
     // Schedule a task to be run on the the associated WebThread.
     // Takes ownership of |Task|. Can be called from any thread.
-    virtual void postTask(const WebTraceLocation&, Task*) {}
+    virtual void postTask(const WebTraceLocation&, Task*) = 0;
 
     // Schedule a task to be run after |delayMs| on the the associated WebThread.
     // Takes ownership of |Task|. Can be called from any thread.
-    virtual void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) {}
+    virtual void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) = 0;
+
+    // Returns a clone of the WebTaskRunner.
+    virtual WebTaskRunner* clone() = 0;
 
 #ifdef INSIDE_BLINK
     // Helpers for posting bound functions as tasks.

@@ -37,6 +37,7 @@
 namespace blink {
 
 class WebData;
+class WebTaskRunner;
 class WebThreadedDataReceiver;
 class WebURLLoaderClient;
 class WebURLResponse;
@@ -78,6 +79,10 @@ public:
     // of the data receiver is assumed by the WebURLLoader and the receiver should
     // be deleted on the main thread when no longer needed.
     virtual bool attachThreadedDataReceiver(WebThreadedDataReceiver*) { return false; }
+
+    // Sets the task runner for which any loading tasks should be posted on.
+    // Takes ownership of the WebTaskRunner.
+    virtual void setLoadingTaskRunner(WebTaskRunner*) = 0;
 };
 
 } // namespace blink

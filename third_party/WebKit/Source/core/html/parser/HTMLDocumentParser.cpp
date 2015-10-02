@@ -50,6 +50,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "wtf/RefCounted.h"
@@ -143,7 +144,8 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, bool reportErrors
     , m_tokenizer(syncPolicy == ForceSynchronousParsing ? HTMLTokenizer::create(m_options) : nullptr)
     , m_scriptRunner(HTMLScriptRunner::create(&document, this))
     , m_treeBuilder(HTMLTreeBuilder::create(this, &document, parserContentPolicy(), reportErrors, m_options))
-    , m_parserScheduler(HTMLParserScheduler::create(this))
+    , m_loadingTaskRunner(adoptPtr(document.loadingTaskRunner()->clone()))
+    , m_parserScheduler(HTMLParserScheduler::create(this, m_loadingTaskRunner.get()))
     , m_xssAuditorDelegate(&document)
     , m_weakFactory(this)
     , m_preloader(HTMLResourcePreloader::create(document))
@@ -166,6 +168,7 @@ HTMLDocumentParser::HTMLDocumentParser(DocumentFragment* fragment, Element* cont
     , m_token(adoptPtr(new HTMLToken))
     , m_tokenizer(HTMLTokenizer::create(m_options))
     , m_treeBuilder(HTMLTreeBuilder::create(this, fragment, contextElement, this->parserContentPolicy(), m_options))
+    , m_loadingTaskRunner(adoptPtr(fragment->document().loadingTaskRunner()->clone()))
     , m_xssAuditorDelegate(&fragment->document())
     , m_weakFactory(this)
     , m_shouldUseThreading(false)
@@ -801,7 +804,7 @@ void HTMLDocumentParser::startBackgroundParser()
     ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());
     ASSERT(config->preloadScanner->isSafeToSendToAnotherThread());
     HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::start, reference.release(), config.release(),
-        AllowCrossThreadAccess(Platform::current()->currentThread()->scheduler())));
+        AllowCrossThreadAccess(m_loadingTaskRunner.get())));
 }
 
 void HTMLDocumentParser::stopBackgroundParser()

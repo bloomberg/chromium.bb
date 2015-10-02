@@ -72,7 +72,7 @@ public:
     explicit MockWebTaskRunner(Deque<OwnPtr<WebTaskRunner::Task>>* tasks) : m_tasks(tasks) { }
     ~MockWebTaskRunner() override { }
 
-    virtual void postTask(const WebTraceLocation&, Task* task)
+    void postTask(const WebTraceLocation&, Task* task) override
     {
         m_tasks->append(adoptPtr(task));
     }
@@ -80,6 +80,12 @@ public:
     void postDelayedTask(const WebTraceLocation&, Task* task, double delayMs) override
     {
         ASSERT_NOT_REACHED();
+    }
+
+    WebTaskRunner* clone() override
+    {
+        ASSERT_NOT_REACHED();
+        return nullptr;
     }
 
     Deque<OwnPtr<WebTaskRunner::Task>>* m_tasks; // NOT OWNED

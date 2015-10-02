@@ -64,6 +64,7 @@
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "public/platform/WebFrameScheduler.h"
 
 #include <algorithm>
 
@@ -730,6 +731,11 @@ ResourceLoadPriority FrameFetchContext::modifyPriorityForExperiments(ResourceLoa
     // Clamp priority
     modifiedPriority = std::min(static_cast<int>(ResourceLoadPriorityHighest), std::max(static_cast<int>(ResourceLoadPriorityLowest), modifiedPriority));
     return static_cast<ResourceLoadPriority>(modifiedPriority);
+}
+
+WebTaskRunner* FrameFetchContext::loadingTaskRunner() const
+{
+    return frame()->frameScheduler()->loadingTaskRunner();
 }
 
 DEFINE_TRACE(FrameFetchContext)

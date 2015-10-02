@@ -109,6 +109,8 @@ public:
     void countClientHintsResourceWidth() override;
     void countClientHintsViewportWidth() override;
 
+    WebTaskRunner* loadingTaskRunner() const override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

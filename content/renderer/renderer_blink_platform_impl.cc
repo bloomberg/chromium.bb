@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "cc/blink/context_provider_web_context.h"
 #include "components/scheduler/child/web_scheduler_impl.h"
+#include "components/scheduler/child/web_task_runner_impl.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "components/url_formatter/url_formatter.h"
@@ -32,6 +33,7 @@
 #include "content/child/simple_webmimeregistry_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_database_observer_impl.h"
+#include "content/child/web_url_loader_impl.h"
 #include "content/child/webblobregistry_impl.h"
 #include "content/child/webfileutilities_impl.h"
 #include "content/child/webmessageportchannel_impl.h"
@@ -237,6 +239,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
       default_task_runner_(renderer_scheduler->DefaultTaskRunner()),
+      loading_task_runner_(renderer_scheduler->LoadingTaskRunner()),
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl) {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   if (g_sandbox_enabled && sandboxEnabled()) {
@@ -272,6 +275,19 @@ void RendererBlinkPlatformImpl::Shutdown() {
 }
 
 //------------------------------------------------------------------------------
+
+blink::WebURLLoader* RendererBlinkPlatformImpl::createURLLoader() {
+  ChildThreadImpl* child_thread = ChildThreadImpl::current();
+  // There may be no child thread in RenderViewTests.  These tests can still use
+  // data URLs to bypass the ResourceDispatcher.
+  scoped_ptr<scheduler::WebTaskRunnerImpl> task_runner(
+      new scheduler::WebTaskRunnerImpl(
+        loading_task_runner_->BelongsToCurrentThread()
+            ? loading_task_runner_ : base::ThreadTaskRunnerHandle::Get()));
+  return new content::WebURLLoaderImpl(
+      child_thread ? child_thread->resource_dispatcher() : NULL,
+      task_runner.Pass());
+}
 
 blink::WebThread* RendererBlinkPlatformImpl::currentThread() {
   if (main_thread_->isCurrentThread())

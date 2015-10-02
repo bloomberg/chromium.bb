@@ -50,6 +50,7 @@
 #include "core/svg/SVGScriptElement.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebFrameScheduler.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
@@ -259,7 +260,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         if (frame) {
             ScriptState* scriptState = ScriptState::forMainWorld(frame);
             if (scriptState->contextIsValid())
-                ScriptStreamer::startStreaming(m_pendingScript, PendingScript::Async, frame->settings(), scriptState);
+                ScriptStreamer::startStreaming(m_pendingScript, PendingScript::Async, frame->settings(), scriptState, frame->frameScheduler()->loadingTaskRunner());
         }
         contextDocument->scriptRunner()->queueScriptForExecution(this, ScriptRunner::ASYNC_EXECUTION);
         // Note that watchForLoad can immediately call notifyFinished.

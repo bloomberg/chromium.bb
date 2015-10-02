@@ -187,6 +187,7 @@ private:
     OwnPtrWillBeMember<HTMLTreeBuilder> m_treeBuilder;
     OwnPtr<HTMLPreloadScanner> m_preloadScanner;
     OwnPtr<HTMLPreloadScanner> m_insertionPreloadScanner;
+    OwnPtr<WebTaskRunner> m_loadingTaskRunner;
     OwnPtr<HTMLParserScheduler> m_parserScheduler;
     HTMLSourceTracker m_sourceTracker;
     TextPosition m_textPosition;
