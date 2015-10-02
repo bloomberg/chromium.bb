@@ -203,9 +203,7 @@ def main():
     print('Downloading patch from %s' % issue_url)
     try:
       patchset = obj.get_patch(issue_to_apply, patchset_to_apply)
-    except urllib2.URLError:
-      logging.exception('failed to fetch the patch for issue %d, patchset %d.',
-                        issue_to_apply, patchset_to_apply)
+    except urllib2.HTTPError:
       print(
           'Failed to fetch the patch for issue %d, patchset %d.\n'
           'Try visiting %s/%d') % (
@@ -287,6 +285,10 @@ if __name__ == "__main__":
   fix_encoding.fix_encoding()
   try:
     sys.exit(main())
+  except urllib2.URLError:
+    # Weird flakiness of GAE, see http://crbug.com/537417
+    logging.exception('failed to fetch something from Rietveld')
+    sys.exit(3)
   except KeyboardInterrupt:
     sys.stderr.write('interrupted\n')
     sys.exit(1)
