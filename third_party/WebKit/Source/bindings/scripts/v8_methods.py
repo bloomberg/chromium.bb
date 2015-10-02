@@ -48,8 +48,6 @@ from v8_utilities import (has_extended_attribute_value, is_unforgeable,
 CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
     'DoNotCheckSecurity',
     'DoNotCheckSignature',
-    'NotEnumerable',
-    'Unforgeable',
 ])
 
 
@@ -140,8 +138,6 @@ def method_context(interface, method, is_visible=True):
         # TODO(yukishiino): Retire has_custom_registration flag.  Should be
         # replaced with V8DOMConfiguration::PropertyLocationConfiguration.
         'has_custom_registration':
-            is_static or
-            is_unforgeable(interface, method) or
             v8_utilities.has_extended_attribute(
                 method, CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES),
         'has_exception_state':

@@ -82,8 +82,8 @@ public:
 
     v8::Local<v8::Function> constructorForType(const WrapperTypeInfo* type)
     {
-        v8::Local<v8::Function> function = m_constructorMap.Get(type);
-        return (!function.IsEmpty()) ? function : constructorForTypeSlowCase(type);
+        v8::Local<v8::Function> interfaceObject = m_constructorMap.Get(type);
+        return (!interfaceObject.IsEmpty()) ? interfaceObject : constructorForTypeSlowCase(type);
     }
 
     v8::Local<v8::Object> prototypeForType(const WrapperTypeInfo*);

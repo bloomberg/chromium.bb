@@ -83,11 +83,11 @@ v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(const Wra
     ASSERT(!m_errorPrototype.isEmpty());
 
     v8::Context::Scope scope(context());
-    v8::Local<v8::Function> function = constructorForType(type);
-    if (function.IsEmpty())
+    v8::Local<v8::Function> interfaceObject = constructorForType(type);
+    if (interfaceObject.IsEmpty())
         return v8::Local<v8::Object>();
     v8::Local<v8::Object> instanceTemplate;
-    if (!V8ObjectConstructor::newInstance(m_isolate, function).ToLocal(&instanceTemplate))
+    if (!V8ObjectConstructor::newInstance(m_isolate, interfaceObject).ToLocal(&instanceTemplate))
         return v8::Local<v8::Object>();
     m_wrapperBoilerplates.Set(type, instanceTemplate);
     return instanceTemplate->Clone();
@@ -102,33 +102,33 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
     // We shouldn't reach this point for the types that are implemented in v8 such as typed arrays and
     // hence don't have domTemplateFunction.
     ASSERT(type->domTemplateFunction);
-    v8::Local<v8::FunctionTemplate> functionTemplate = type->domTemplate(m_isolate);
+    v8::Local<v8::FunctionTemplate> interfaceTemplate = type->domTemplate(m_isolate);
     // Getting the function might fail if we're running out of stack or memory.
-    v8::Local<v8::Function> function;
-    if (!functionTemplate->GetFunction(currentContext).ToLocal(&function))
+    v8::Local<v8::Function> interfaceObject;
+    if (!interfaceTemplate->GetFunction(currentContext).ToLocal(&interfaceObject))
         return v8::Local<v8::Function>();
 
     if (type->parentClass) {
         v8::Local<v8::Object> prototypeTemplate = constructorForType(type->parentClass);
         if (prototypeTemplate.IsEmpty())
             return v8::Local<v8::Function>();
-        if (!v8CallBoolean(function->SetPrototype(currentContext, prototypeTemplate)))
+        if (!v8CallBoolean(interfaceObject->SetPrototype(currentContext, prototypeTemplate)))
             return v8::Local<v8::Function>();
     }
 
-    v8::Local<v8::Object> prototypeObject = function->Get(currentContext, v8AtomicString(m_isolate, "prototype")).ToLocalChecked().As<v8::Object>();
+    v8::Local<v8::Object> prototypeObject = interfaceObject->Get(currentContext, v8AtomicString(m_isolate, "prototype")).ToLocalChecked().As<v8::Object>();
     if (prototypeObject->InternalFieldCount() == v8PrototypeInternalFieldcount
         && type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeObjectPrototype)
         prototypeObject->SetAlignedPointerInInternalField(v8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
-    type->preparePrototypeObject(m_isolate, prototypeObject, functionTemplate);
+    type->preparePrototypeAndInterfaceObject(m_isolate, prototypeObject, interfaceObject, interfaceTemplate);
     if (type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeExceptionPrototype) {
         if (!v8CallBoolean(prototypeObject->SetPrototype(currentContext, m_errorPrototype.newLocal(m_isolate))))
             return v8::Local<v8::Function>();
     }
 
-    m_constructorMap.Set(type, function);
+    m_constructorMap.Set(type, interfaceObject);
 
-    return function;
+    return interfaceObject;
 }
 
 v8::Local<v8::Object> V8PerContextData::prototypeForType(const WrapperTypeInfo* type)

@@ -167,11 +167,11 @@ public:
     static void installConditionallyEnabledProperties(v8::Local<v8::Object>, v8::Isolate*){% if has_conditional_attributes %};
     {% else %} { }
     {% endif %}
-    static void preparePrototypeObject(v8::Isolate*, v8::Local<v8::Object> prototypeObject, v8::Local<v8::FunctionTemplate> interfaceTemplate){% if unscopeables or has_conditional_attributes_on_prototype or conditionally_enabled_methods %};
+    static void preparePrototypeAndInterfaceObject(v8::Isolate*, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate){% if unscopeables or has_conditional_attributes_on_prototype or conditionally_enabled_methods %};
     {% else %} { }
     {% endif %}
     {% if has_partial_interface %}
-    {{exported}}static void updateWrapperTypeInfo(InstallTemplateFunction, PreparePrototypeObjectFunction);
+    {{exported}}static void updateWrapperTypeInfo(InstallTemplateFunction, PreparePrototypeAndInterfaceObjectFunction);
     {{exported}}static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate>, v8::Isolate*);
     {% for method in methods if method.overloads and method.overloads.has_partial_overloads %}
     {{exported}}static void register{{method.name | blink_capitalize}}MethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
