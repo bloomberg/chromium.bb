@@ -78,6 +78,12 @@ class BubbleManager {
   // Show any bubbles that were added to |show_queue_|.
   void ShowPendingBubbles();
 
+  // All bubbles will get a close event for the specified |reason| if |match| is
+  // nullptr, otherwise only the bubble held by |match| will get a close event.
+  // Any bubble that is closed will also be deleted.
+  bool CloseAllMatchingBubbles(BubbleController* match,
+                               BubbleCloseReason reason);
+
   base::ObserverList<BubbleManagerObserver> observers_;
 
   // Verify that functions that affect the UI are done on the same thread.

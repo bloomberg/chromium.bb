@@ -10,11 +10,20 @@
 
 namespace {
 
+// A "show chain" happens when a bubble decides to show another bubble on close.
+// All bubbles must be iterated to handle a close event. If a bubble shows
+// another bubble while it's being closed, the iterator can get messed up.
 class ChainShowBubbleDelegate : public MockBubbleDelegate {
  public:
+  // |chained_bubble| can be nullptr if not interested in getting a reference to
+  // the chained bubble.
   ChainShowBubbleDelegate(BubbleManager* manager,
-                          scoped_ptr<BubbleDelegate> delegate)
-      : manager_(manager), delegate_(delegate.Pass()), closed_(false) {
+                          scoped_ptr<BubbleDelegate> delegate,
+                          BubbleReference* chained_bubble)
+      : manager_(manager),
+        delegate_(delegate.Pass()),
+        chained_bubble_(chained_bubble),
+        closed_(false) {
     EXPECT_CALL(*this, ShouldClose(testing::_)).WillOnce(testing::Return(true));
   }
 
@@ -22,16 +31,40 @@ class ChainShowBubbleDelegate : public MockBubbleDelegate {
 
   void DidClose() override {
     MockBubbleDelegate::DidClose();
-    manager_->ShowBubble(delegate_.Pass());
+    BubbleReference ref = manager_->ShowBubble(delegate_.Pass());
+    if (chained_bubble_)
+      *chained_bubble_ = ref;
     closed_ = true;
   }
 
  private:
   BubbleManager* manager_;
   scoped_ptr<BubbleDelegate> delegate_;
+  BubbleReference* chained_bubble_;
   bool closed_;
 
   DISALLOW_COPY_AND_ASSIGN(ChainShowBubbleDelegate);
+};
+
+// A "close chain" happens when a close event is received while another close
+// event is in progress. Ex: Closing the BubbleUi will hide the bubble, causing
+// it to lose focus, which causes another close event. This test simulates this
+// by sending a close event during the |DidClose| method of a BubbleDelegate.
+// Similarly to the show chain, a close chain can mess up the iterator.
+class ChainCloseBubbleDelegate : public MockBubbleDelegate {
+ public:
+  ChainCloseBubbleDelegate(BubbleManager* manager) : manager_(manager) {}
+
+  ~ChainCloseBubbleDelegate() override {}
+
+  void DidClose() override {
+    manager_->CloseAllBubbles(BUBBLE_CLOSE_FOCUS_LOST);
+  }
+
+ private:
+  BubbleManager* manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChainCloseBubbleDelegate);
 };
 
 class MockBubbleManagerObserver : public BubbleManager::BubbleManagerObserver {
@@ -202,6 +235,22 @@ TEST_F(BubbleManagerTest, CloseAllInvalidatesMixAppropriately) {
   ASSERT_FALSE(normal_ref3);
 }
 
+TEST_F(BubbleManagerTest, CloseBubbleShouldOnlylCloseSelf) {
+  BubbleReference ref1 = manager_->ShowBubble(MockBubbleDelegate::Default());
+  BubbleReference ref2 = manager_->ShowBubble(MockBubbleDelegate::Default());
+  BubbleReference ref3 = manager_->ShowBubble(MockBubbleDelegate::Default());
+
+  EXPECT_TRUE(ref1);
+  EXPECT_TRUE(ref2);
+  EXPECT_TRUE(ref3);
+
+  ref2->CloseBubble(BUBBLE_CLOSE_FOCUS_LOST);
+
+  EXPECT_TRUE(ref1);
+  EXPECT_FALSE(ref2);
+  EXPECT_TRUE(ref3);
+}
+
 TEST_F(BubbleManagerTest, UpdateAllShouldWorkWithoutBubbles) {
   // Manager shouldn't crash if bubbles have never been added.
   manager_->UpdateAllBubbleAnchors();
@@ -226,27 +275,48 @@ TEST_F(BubbleManagerTest, CloseAllShouldWorkWithoutBubbles) {
   manager_->CloseAllBubbles(BUBBLE_CLOSE_FOCUS_LOST);
 }
 
+// This test validates that it's possible to show another bubble when
+// |CloseBubble| is called.
 TEST_F(BubbleManagerTest, AllowBubbleChainingOnClose) {
+  BubbleReference chained_bubble;
   BubbleReference ref =
       manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
-          manager_.get(), MockBubbleDelegate::Default())));
+          manager_.get(), MockBubbleDelegate::Default(), &chained_bubble)));
+  ASSERT_FALSE(chained_bubble);  // Bubble not yet visible.
   ASSERT_TRUE(manager_->CloseBubble(ref, BUBBLE_CLOSE_FORCED));
+  ASSERT_TRUE(chained_bubble);  // Bubble is now visible.
 }
 
+// This test validates that it's possible to show another bubble when
+// |CloseAllBubbles| is called.
 TEST_F(BubbleManagerTest, AllowBubbleChainingOnCloseAll) {
-  manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
-      manager_.get(), MockBubbleDelegate::Default())));
+  BubbleReference chained_bubble;
+  BubbleReference ref =
+      manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
+          manager_.get(), MockBubbleDelegate::Default(), &chained_bubble)));
+  ASSERT_FALSE(chained_bubble);  // Bubble not yet visible.
   manager_->CloseAllBubbles(BUBBLE_CLOSE_FORCED);
+  ASSERT_TRUE(chained_bubble);  // Bubble is now visible.
 }
 
+// This test validates that a show chain will not happen in the destructor.
+// While chaining is during the normal life span of the manager, it should NOT
+// happen when the manager is being destroyed.
 TEST_F(BubbleManagerTest, BubblesDoNotChainOnDestroy) {
+  MockBubbleManagerObserver metrics;
+  // |chained_delegate| should never be shown.
+  EXPECT_CALL(metrics, OnBubbleNeverShown(testing::_));
+  // The ChainShowBubbleDelegate should be closed when the manager is destroyed.
+  EXPECT_CALL(metrics, OnBubbleClosed(testing::_, BUBBLE_CLOSE_FORCED));
+  manager_->AddBubbleManagerObserver(&metrics);
+
   scoped_ptr<MockBubbleDelegate> chained_delegate(new MockBubbleDelegate);
   EXPECT_CALL(*chained_delegate->bubble_ui(), Show(testing::_)).Times(0);
   EXPECT_CALL(*chained_delegate, ShouldClose(testing::_)).Times(0);
   EXPECT_CALL(*chained_delegate, DidClose()).Times(0);
 
   manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
-      manager_.get(), chained_delegate.Pass())));
+      manager_.get(), chained_delegate.Pass(), nullptr)));
   manager_.reset();
 }
 
@@ -263,22 +333,74 @@ TEST_F(BubbleManagerTest, BubbleCloseReasonIsCalled) {
   manager_.reset();
 }
 
-TEST_F(BubbleManagerTest, BubbleCloseNeverShownIsCalled) {
-  MockBubbleManagerObserver metrics;
-  // |chained_delegate| should never be shown.
-  EXPECT_CALL(metrics, OnBubbleNeverShown(testing::_));
-  // The ChainShowBubbleDelegate should be closed when the manager is destroyed.
-  EXPECT_CALL(metrics, OnBubbleClosed(testing::_, BUBBLE_CLOSE_FORCED));
-  manager_->AddBubbleManagerObserver(&metrics);
+// In a close chain, it should be possible for the bubble in the second close
+// event to close.
+TEST_F(BubbleManagerTest, BubbleCloseChainCloseClose) {
+  scoped_ptr<ChainCloseBubbleDelegate> closing_bubble(
+      new ChainCloseBubbleDelegate(manager_.get()));
+  EXPECT_CALL(*closing_bubble, ShouldClose(testing::_))
+      .WillOnce(testing::Return(true));
 
-  scoped_ptr<MockBubbleDelegate> chained_delegate(new MockBubbleDelegate);
-  EXPECT_CALL(*chained_delegate->bubble_ui(), Show(testing::_)).Times(0);
-  EXPECT_CALL(*chained_delegate, ShouldClose(testing::_)).Times(0);
-  EXPECT_CALL(*chained_delegate, DidClose()).Times(0);
+  BubbleReference other_bubble_ref =
+      manager_->ShowBubble(MockBubbleDelegate::Default());
 
-  manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
-      manager_.get(), chained_delegate.Pass())));
-  manager_.reset();
+  BubbleReference closing_bubble_ref =
+      manager_->ShowBubble(closing_bubble.Pass());
+
+  EXPECT_TRUE(other_bubble_ref);
+  EXPECT_TRUE(closing_bubble_ref);
+
+  closing_bubble_ref->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
+
+  EXPECT_FALSE(other_bubble_ref);
+  EXPECT_FALSE(closing_bubble_ref);
+}
+
+// In a close chain, it should be possible for the bubble in the second close
+// event to remain open because close is a request.
+TEST_F(BubbleManagerTest, BubbleCloseChainCloseNoClose) {
+  scoped_ptr<ChainCloseBubbleDelegate> closing_bubble(
+      new ChainCloseBubbleDelegate(manager_.get()));
+  EXPECT_CALL(*closing_bubble, ShouldClose(testing::_))
+      .WillOnce(testing::Return(true));
+
+  BubbleReference other_bubble_ref =
+      manager_->ShowBubble(MockBubbleDelegate::Stubborn());
+
+  BubbleReference closing_bubble_ref =
+      manager_->ShowBubble(closing_bubble.Pass());
+
+  EXPECT_TRUE(other_bubble_ref);
+  EXPECT_TRUE(closing_bubble_ref);
+
+  closing_bubble_ref->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
+
+  EXPECT_TRUE(other_bubble_ref);
+  EXPECT_FALSE(closing_bubble_ref);
+}
+
+// This test is a sanity check. |closing_bubble| will attempt to close all other
+// bubbles if it's closed, but it doesn't want to close. Sending a close request
+// should keep it open without starting a close chain.
+TEST_F(BubbleManagerTest, BubbleCloseChainNoCloseNoClose) {
+  scoped_ptr<ChainCloseBubbleDelegate> closing_bubble(
+      new ChainCloseBubbleDelegate(manager_.get()));
+  EXPECT_CALL(*closing_bubble, ShouldClose(testing::_))
+      .WillRepeatedly(testing::Return(false));
+
+  BubbleReference other_bubble_ref =
+      manager_->ShowBubble(MockBubbleDelegate::Default());
+
+  BubbleReference closing_bubble_ref =
+      manager_->ShowBubble(closing_bubble.Pass());
+
+  EXPECT_TRUE(other_bubble_ref);
+  EXPECT_TRUE(closing_bubble_ref);
+
+  closing_bubble_ref->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
+
+  EXPECT_TRUE(other_bubble_ref);
+  EXPECT_TRUE(closing_bubble_ref);
 }
 
 }  // namespace

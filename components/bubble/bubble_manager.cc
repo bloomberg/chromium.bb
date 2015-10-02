@@ -44,51 +44,15 @@ BubbleReference BubbleManager::ShowBubble(scoped_ptr<BubbleDelegate> bubble) {
 bool BubbleManager::CloseBubble(BubbleReference bubble,
                                 BubbleCloseReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(manager_state_, QUEUE_BUBBLES);
-  if (manager_state_ == SHOW_BUBBLES)
-    manager_state_ = QUEUE_BUBBLES;
-
-  for (auto iter = controllers_.begin(); iter != controllers_.end(); ++iter) {
-    if (*iter == bubble.get()) {
-      bool closed = (*iter)->ShouldClose(reason);
-      if (closed) {
-        (*iter)->DoClose();
-        FOR_EACH_OBSERVER(BubbleManagerObserver, observers_,
-                          OnBubbleClosed((*iter)->AsWeakPtr(), reason));
-        iter = controllers_.erase(iter);
-      }
-      ShowPendingBubbles();
-      return closed;
-    }
-  }
-
-  // Attempting to close a bubble that is already closed or that this manager
-  // doesn't own is a bug.
-  NOTREACHED();
-  return false;
+  return CloseAllMatchingBubbles(bubble.get(), reason);
 }
 
 void BubbleManager::CloseAllBubbles(BubbleCloseReason reason) {
   // The following close reasons don't make sense for multiple bubbles:
   DCHECK_NE(reason, BUBBLE_CLOSE_ACCEPTED);
   DCHECK_NE(reason, BUBBLE_CLOSE_CANCELED);
-
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(manager_state_, QUEUE_BUBBLES);
-  if (manager_state_ == SHOW_BUBBLES)
-    manager_state_ = QUEUE_BUBBLES;
-
-  for (auto iter = controllers_.begin(); iter != controllers_.end();) {
-    bool closed = (*iter)->ShouldClose(reason);
-    if (closed) {
-      (*iter)->DoClose();
-      FOR_EACH_OBSERVER(BubbleManagerObserver, observers_,
-                        OnBubbleClosed((*iter)->AsWeakPtr(), reason));
-    }
-    iter = closed ? controllers_.erase(iter) : iter + 1;
-  }
-
-  ShowPendingBubbles();
+  CloseAllMatchingBubbles(nullptr, reason);
 }
 
 void BubbleManager::UpdateAllBubbleAnchors() {
@@ -136,4 +100,27 @@ void BubbleManager::ShowPendingBubbles() {
     // Clear the queue if bubbles can't be shown.
     show_queue_.clear();
   }
+}
+
+bool BubbleManager::CloseAllMatchingBubbles(BubbleController* match,
+                                            BubbleCloseReason reason) {
+  ScopedVector<BubbleController> close_queue;
+
+  for (auto iter = controllers_.begin(); iter != controllers_.end();) {
+    if ((!match || match == *iter) && (*iter)->ShouldClose(reason)) {
+      close_queue.push_back(*iter);
+      iter = controllers_.weak_erase(iter);
+    } else {
+      ++iter;
+    }
+  }
+
+  for (auto controller : close_queue) {
+    controller->DoClose();
+
+    FOR_EACH_OBSERVER(BubbleManagerObserver, observers_,
+                      OnBubbleClosed(controller->AsWeakPtr(), reason));
+  }
+
+  return !close_queue.empty();
 }
