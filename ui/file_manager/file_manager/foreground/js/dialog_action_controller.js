@@ -422,13 +422,9 @@ DialogActionController.prototype.onFileSelectionChanged_ = function() {
     this.dialogFooter_.filenameInput.value = selection.entries[0].name;
   }
 
-  selection.completeInit().then(function() {
-    if (this.fileSelectionHandler_.selection !== selection)
-      return;
-    this.updateOkButton_();
-    if (!this.dialogFooter_.okButton.disabled)
-      util.testSendMessage('dialog-ready');
-  }.bind(this));
+  this.updateOkButton_();
+  if (!this.dialogFooter_.okButton.disabled)
+    util.testSendMessage('dialog-ready');
 };
 
 /**

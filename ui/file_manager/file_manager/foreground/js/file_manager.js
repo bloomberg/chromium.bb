@@ -326,6 +326,12 @@ FileManager.prototype = /** @struct */ {
     return this.providersModel_;
   },
   /**
+   * @return {MetadataModel}
+   */
+  get metadataModel() {
+    return this.metadataModel_;
+  },
+  /**
    * @return {DirectoryTree}
    */
   get directoryTree() {
@@ -962,11 +968,12 @@ FileManager.prototype = /** @struct */ {
     // Create task controller.
     this.taskController_ = new TaskController(
         this.dialogType,
+        this.volumeManager_,
         this.ui_,
         this.metadataModel_,
+        this.directoryModel_,
         this.selectionHandler_,
-        this.metadataUpdateController_,
-        function() { return new FileTasks(this); }.bind(this));
+        this.metadataUpdateController_);
 
     // Create search controller.
     this.searchController_ = new SearchController(
@@ -1378,13 +1385,6 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.getCurrentList = function() {
     return this.ui.listContainer.currentList;
-  };
-
-  /**
-   * @return {!MetadataModel}
-   */
-  FileManager.prototype.getMetadataModel = function() {
-    return assert(this.metadataModel_);
   };
 
   /**

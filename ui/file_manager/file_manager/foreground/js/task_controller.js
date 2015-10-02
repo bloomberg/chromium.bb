@@ -4,42 +4,51 @@
 
 /**
  * @param {DialogType} dialogType
+ * @param {!VolumeManagerWrapper} volumeManager
  * @param {!FileManagerUI} ui
  * @param {!MetadataModel} metadataModel
+ * @param {!DirectoryModel} directoryModel
  * @param {!FileSelectionHandler} selectionHandler
  * @param {!MetadataUpdateController} metadataUpdateController
- * @param {function():!FileTasks} createTask
  * @constructor
  * @struct
  */
 function TaskController(
-    dialogType, ui, metadataModel, selectionHandler,
-    metadataUpdateController, createTask) {
+    dialogType, volumeManager, ui, metadataModel, directoryModel,
+    selectionHandler, metadataUpdateController) {
   /**
-   * @type {DialogType}
+   * @private {DialogType}
    * @const
-   * @private
    */
   this.dialogType_ = dialogType;
 
   /**
-   * @type {!FileManagerUI}
+   * @private {!VolumeManagerWrapper}
    * @const
-   * @private
+   */
+  this.volumeManager_ = volumeManager;
+
+  /**
+   * @private {!FileManagerUI}
+   * @const
    */
   this.ui_ = ui;
 
   /**
-   * @type {!MetadataModel}
+   * @private {!MetadataModel}
    * @const
-   * @private
    */
   this.metadataModel_ = metadataModel;
 
   /**
-   * @type {!FileSelectionHandler}
+   * @private {!DirectoryModel}
    * @const
-   * @private
+   */
+  this.directoryModel_ = directoryModel;
+
+  /**
+   * @private {!FileSelectionHandler}
+   * @const
    */
   this.selectionHandler_ = selectionHandler;
 
@@ -49,15 +58,6 @@ function TaskController(
    * @private
    */
   this.metadataUpdateController_ = metadataUpdateController;
-
-  /**
-   * @type {function():!FileTasks}
-   * @const
-   * @private
-   * TODO(hirono): Remove this after removing dependency for FileManager from
-   * FileTasks.
-   */
-  this.createTask_ = createTask;
 
   /**
    * @private {boolean}
@@ -77,12 +77,17 @@ function TaskController(
       document.querySelector('#default-action'), cr.ui.Command);
 
   /**
-   * @type {!cr.ui.Command}
+   * @private {!cr.ui.Command}
    * @const
-   * @private
    */
   this.openWithCommand_ =
       assertInstanceof(document.querySelector('#open-with'), cr.ui.Command);
+
+  /**
+   * @public {!FileTasks}
+   */
+  this.tasks = new FileTasks(
+      this.volumeManager_, this.metadataModel_, this.directoryModel_, this.ui_);
 
   ui.taskMenuButton.addEventListener(
       'select', this.onTaskItemClicked_.bind(this));
@@ -124,11 +129,8 @@ TaskController.createTemporaryDisabledActionItem_ = function() {
  */
 TaskController.prototype.dispatchSelectionAction = function() {
   if (this.dialogType_ == DialogType.FULL_PAGE) {
-    var selection = this.selectionHandler_.selection;
-    var tasks = selection.tasks;
-    var mimeTypes = selection.mimeTypes;
-    if (tasks)
-      tasks.executeDefault();
+    if (this.tasks)
+      this.tasks.executeDefault();
     return true;
   }
   if (!this.ui_.dialogFooter.okButton.disabled) {
@@ -145,8 +147,7 @@ TaskController.prototype.dispatchSelectionAction = function() {
  * @private
  */
 TaskController.prototype.onTaskItemClicked_ = function(event) {
-  var selection = this.selectionHandler_.selection;
-  if (!selection.tasks)
+  if (!this.tasks)
     return;
 
   switch (event.item.action) {
@@ -154,9 +155,10 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
       this.ui_.taskMenuButton.showMenu(false);
       break;
     case FileTasks.TaskMenuButtonActions.RunTask:
-      selection.tasks.execute(event.item.task.taskId);
+      this.tasks.execute(event.item.task.taskId);
       break;
     case FileTasks.TaskMenuButtonActions.ChangeDefaultAction:
+      var selection = this.selectionHandler_.selection;
       var extensions = [];
 
       for (var i = 0; i < selection.entries.length; i++) {
@@ -176,7 +178,7 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
       }
 
       // Change default was clicked. We should open "change default" dialog.
-      selection.tasks.showTaskPicker(
+      this.tasks.showTaskPicker(
           this.ui_.defaultTaskPicker,
           loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
           strf('CHANGE_DEFAULT_CAPTION', format),
@@ -191,6 +193,7 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
 /**
  * Sets the given task as default, when this task is applicable.
  *
+ * @param {!FileSelection} selection File selection.
  * @param {Object} task Task to set as default.
  * @private
  */
@@ -198,15 +201,17 @@ TaskController.prototype.changeDefaultTask_ = function(selection, task) {
   chrome.fileManagerPrivate.setDefaultTask(
       task.taskId,
       selection.entries,
-      selection.mimeTypes,
+      assert(selection.mimeTypes),
       util.checkAPIError);
   this.metadataUpdateController_.refreshCurrentDirectoryMetadata();
 
   // Update task menu button unless the task button was updated other selection.
   if (this.selectionHandler_.selection === selection) {
-    selection.tasks = this.createTask_();
-    selection.tasks.init(selection.entries, selection.mimeTypes);
-    selection.tasks.display(this.ui_.taskMenuButton);
+    this.tasks = new FileTasks(
+        this.volumeManager_, this.metadataModel_, this.directoryModel_,
+        this.ui_);
+    this.tasks.init(selection.entries, selection.mimeTypes);
+    this.tasks.display(this.ui_.taskMenuButton);
   }
   this.selectionHandler_.onFileSelectionChanged();
 };
@@ -215,54 +220,8 @@ TaskController.prototype.changeDefaultTask_ = function(selection, task) {
  * Executes default action.
  */
 TaskController.prototype.executeDefaultAction = function() {
-  var tasks = this.selectionHandler_.selection.tasks;
-  if (tasks)
-    tasks.execute(this.ui_.fileContextMenu.defaultActionMenuItem.taskId);
-};
-
-/**
- * Opens the suggest file dialog.
- *
- * @param {Entry} entry Entry of the file.
- * @param {function()} onSuccess Success callback.
- * @param {function()} onCancelled User-cancelled callback.
- * @param {function()} onFailure Failure callback.
- * @private
- */
-TaskController.prototype.openSuggestAppsDialog =
-    function(entry, onSuccess, onCancelled, onFailure) {
-  if (!entry) {
-    onFailure();
-    return;
-  }
-
-  this.getMimeType_(entry).then(function(mimeType) {
-    var basename = entry.name;
-    var splitted = util.splitExtension(basename);
-    var extension = splitted[1];
-
-    // Returns with failure if the file has neither extension nor MIME type.
-    if (!extension || !mimeType) {
-      onFailure();
-      return;
-    }
-
-    var onDialogClosed = function(result, itemId) {
-      switch (result) {
-        case SuggestAppsDialog.Result.SUCCESS:
-          onSuccess();
-          break;
-        case SuggestAppsDialog.Result.FAILED:
-          onFailure();
-          break;
-        default:
-          onCancelled();
-      }
-    };
-
-    this.ui_.suggestAppsDialog.showByExtensionAndMime(
-        extension, mimeType, onDialogClosed);
-  }.bind(this));
+  if (this.tasks)
+    this.tasks.execute(this.ui_.fileContextMenu.defaultActionMenuItem.taskId);
 };
 
 /**
@@ -297,6 +256,9 @@ TaskController.prototype.getMimeType_ = function(entry) {
  */
 TaskController.prototype.onSelectionChanged_ = function() {
   var selection = this.selectionHandler_.selection;
+  this.tasks = new FileTasks(
+      this.volumeManager_, this.metadataModel_, this.directoryModel_,
+      this.ui_);
   // Caller of update context menu action items.
   // FileSelectionHandler.EventType.CHANGE
   if (this.dialogType_ === DialogType.FULL_PAGE &&
@@ -321,12 +283,17 @@ TaskController.prototype.onSelectionChangeThrottled_ = function() {
   var selection = this.selectionHandler_.selection;
   if (this.dialogType_ === DialogType.FULL_PAGE &&
       selection.directoryCount === 0 && selection.fileCount > 0) {
-    selection.completeInit().then(function() {
+    selection.computeAdditional(this.metadataModel_).then(function() {
       if (this.selectionHandler_.selection !== selection)
         return;
-      selection.tasks.display(this.ui_.taskMenuButton);
-      this.updateContextMenuActionItems_(
-          assert(selection.tasks.getTaskItems()));
+      this.tasks.init(selection.entries, assert(selection.mimeTypes)).then(
+          function() {
+            if (this.selectionHandler_.selection !== selection)
+              return;
+            this.tasks.display(this.ui_.taskMenuButton);
+            this.updateContextMenuActionItems_(
+                assert(this.tasks.getTaskItems()));
+          }.bind(this));
     }.bind(this));
   } else {
     this.ui_.taskMenuButton.hidden = true;
@@ -395,7 +362,9 @@ TaskController.prototype.doEntryAction = function(entry) {
   if (this.dialogType_ == DialogType.FULL_PAGE) {
     this.metadataModel_.get([entry], ['contentMimeType']).then(
         function(props) {
-          var tasks = this.createTask_();
+          var tasks = new FileTasks(
+              this.volumeManager_, this.metadataModel_, this.directoryModel_,
+              this.ui_);
           tasks.init([entry], [props[0].contentMimeType || '']);
           tasks.executeDefault();
         }.bind(this));

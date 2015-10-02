@@ -43,27 +43,20 @@ function testDoEntryAction(callback) {
   var controller = new TaskController(
       DialogType.FULL_PAGE,
       {
+        getDriveConnectionState: function() {
+          return VolumeManagerCommon.DriveConnectionType.ONLINE;
+        }
+      },
+      {
         taskMenuButton: document.createElement('button'),
         fileContextMenu: {
           defaultActionMenuItem: document.createElement('div')
         }
       },
       new MockMetadataModel({}),
+      {},
       new cr.EventTarget(),
-      null,
-      function() {
-        return new FileTasks({
-          volumeManager: {
-            getDriveConnectionState: function() {
-              return VolumeManagerCommon.DriveConnectionType.ONLINE;
-            }
-          },
-          isOnDrive: function() {
-            return true;
-          },
-          getMetadataModel: function() {}
-        });
-      });
+      null);
 
   controller.doEntryAction(fileSystem.entries['/test.png']);
   reportPromise(new Promise(function(fulfill) {
@@ -71,114 +64,4 @@ function testDoEntryAction(callback) {
   }).then(function(info) {
     assertEquals("handler-extension-id|file|play", info);
   }), callback);
-}
-
-/**
- * Test case for openSuggestAppsDialog with an entry which has external type of
- * metadata.
- */
-function testOpenSuggestAppsDialogWithMetadata(callback) {
-  var showByExtensionAndMimeIsCalled = new Promise(function(resolve, reject) {
-    var fileSystem = new MockFileSystem('volumeId');
-    var entry = new MockFileEntry(fileSystem, '/test.rtf');
-
-    var controller = new TaskController(
-        DialogType.FULL_PAGE,
-        {
-          taskMenuButton: document.createElement('button'),
-          fileContextMenu: {
-            defaultActionMenuItem: document.createElement('div')
-          },
-          suggestAppsDialog: {
-            showByExtensionAndMime: function(
-                extension, mimeType, onDialogClosed) {
-              assertEquals('.rtf', extension);
-              assertEquals('application/rtf', mimeType);
-              resolve();
-            }
-          }
-        },
-        new MockMetadataModel({contentMimeType: 'application/rtf'}),
-        new cr.EventTarget(),
-        null,
-        null);
-
-    controller.openSuggestAppsDialog(
-        entry, function() {}, function() {}, function() {});
-  });
-
-  reportPromise(showByExtensionAndMimeIsCalled, callback);
-}
-
-/**
- * Test case for openSuggestAppsDialog with an entry which doesn't have external
- * type of metadata.
- */
-function testOpenSuggestAppsDialogWithoutMetadata(callback) {
-  window.chrome.fileManagerPrivate = {
-    getMimeType: function(entry, callback) {
-      callback('application/rtf');
-    }
-  };
-
-  var showByExtensionAndMimeIsCalled = new Promise(function(resolve, reject) {
-    var fileSystem = new MockFileSystem('volumeId');
-    var entry = new MockFileEntry(fileSystem, '/test.rtf');
-
-    var controller = new TaskController(
-        DialogType.FULL_PAGE,
-        {
-          taskMenuButton: document.createElement('button'),
-          fileContextMenu: {
-            defaultActionMenuItem: document.createElement('div')
-          },
-          suggestAppsDialog: {
-            showByExtensionAndMime: function(
-                extension, mimeType, onDialogClosed) {
-              assertEquals('.rtf', extension);
-              assertEquals('application/rtf', mimeType);
-              resolve();
-            }
-          }
-        },
-        new MockMetadataModel({}),
-        new cr.EventTarget(),
-        null,
-        null);
-
-    controller.openSuggestAppsDialog(
-        entry, function() {}, function() {}, function() {});
-  });
-
-  reportPromise(showByExtensionAndMimeIsCalled, callback);
-}
-
-/**
- * Test case for openSuggestAppsDialog with an entry which doesn't have
- * extensiion. Since both extension and MIME type are required for
- * openSuggestAppsDialogopen, onFalure should be called for this test case.
- */
-function testOpenSuggestAppsDialogFailure(callback) {
-  var onFailureIsCalled = new Promise(function(resolve, reject) {
-    var fileSystem = new MockFileSystem('volumeId');
-    var entry = new MockFileEntry(fileSystem, '/test');
-
-    var controller = new TaskController(
-        DialogType.FULL_PAGE,
-        {
-          taskMenuButton: document.createElement('button'),
-          fileContextMenu: {
-            defaultActionMenuItem: document.createElement('div')
-          }
-        },
-        new MockMetadataModel({contentMimeType: 'image/png'}),
-        new cr.EventTarget(),
-        null,
-        null);
-
-    controller.openSuggestAppsDialog(
-        entry, function() {}, function() {}, resolve);
-  });
-
-  reportPromise(onFailureIsCalled, callback);
 }

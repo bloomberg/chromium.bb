@@ -183,7 +183,7 @@ CommandUtil.getPinTargetEntries = function() {
     hasDirectory = hasDirectory || entry.isDirectory;
     if (!entry || hasDirectory)
       return false;
-    var metadata = fileManager.getMetadataModel().getCache(
+    var metadata = fileManager.metadataModel.getCache(
         [entry], ['hosted', 'pinned'])[0];
     if (metadata.hosted)
       return false;
@@ -1023,7 +1023,7 @@ CommandHandler.COMMANDS_['open-with'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   execute: function(event, fileManager) {
-    var tasks = fileManager.getSelection().tasks;
+    var tasks = fileManager.taskController.tasks;
     if (tasks) {
       tasks.showTaskPicker(fileManager.ui.defaultTaskPicker,
           str('OPEN_WITH_BUTTON_LABEL'),
@@ -1112,7 +1112,7 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
       return;
     var currentEntry;
     var error = false;
-    var metadataModel = fileManager.getMetadataModel();
+    var metadataModel = fileManager.metadataModel;
     var steps = {
       // Pick an entry and pin it.
       start: function() {

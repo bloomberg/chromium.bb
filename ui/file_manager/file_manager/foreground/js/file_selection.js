@@ -4,88 +4,60 @@
 
 /**
  * The current selection object.
- *
- * @param {!FileManager} fileManager FileManager instance.
- * @param {!Array<number>} indexes Selected indexes.
+ * @param {!Array<number>} indexes
+ * @param {!Array<Entry>} entries
  * @constructor
  * @struct
  */
-function FileSelection(fileManager, indexes) {
+function FileSelection(indexes, entries) {
   /**
-   * @type {!FileManager}
-   * @private
-   * @const
-   */
-  this.fileManager_ = fileManager;
-
-  /**
-   * @type {!Array<number>}
+   * @public {!Array<number>}
    * @const
    */
   this.indexes = indexes;
 
   /**
-   * @type {!Array<!Entry>}
+   * @public {!Array<!Entry>}
    * @const
    */
-  this.entries = [];
+  this.entries = entries;
 
   /**
-   * @type {number}
+   * @public {!Array<string>}
+   */
+  this.mimeTypes = [];
+
+  /**
+   * @public {number}
    */
   this.totalCount = 0;
 
   /**
-   * @type {number}
+   * @public {number}
    */
   this.fileCount = 0;
 
   /**
-   * @type {number}
+   * @public {number}
    */
   this.directoryCount = 0;
 
   /**
-   * @type {boolean}
+   * @public {boolean}
    */
-  this.allDriveFilesPresent = false;
+  this.allFilesPresent = false;
 
   /**
-   * @type {?string}
+   * @public {?string}
    */
   this.iconType = null;
 
   /**
-   * @type {boolean}
-   * @private
+   * @type {Promise<boolean>}
    */
-  this.mustBeHidden_ = false;
+  this.additionalPromise_ = null;
 
-  /**
-   * @type {Array<string>}
-   */
-  this.mimeTypes = null;
-
-  /**
-   * @type {!FileTasks}
-   */
-  this.tasks = new FileTasks(this.fileManager_);
-
-  /**
-   * @type {Promise}
-   * @private
-   */
-  this.asyncInitPromise_ = null;
-
-  // Synchronously compute what we can.
-  for (var i = 0; i < this.indexes.length; i++) {
-    var entry = /** @type {!Entry} */
-        (fileManager.getFileList().item(this.indexes[i]));
-    if (!entry)
-      continue;
-
-    this.entries.push(entry);
-
+  entries.forEach(function(entry) {
     if (this.iconType == null) {
       this.iconType = FileType.getIcon(entry);
     } else if (this.iconType != 'unknown') {
@@ -100,41 +72,38 @@ function FileSelection(fileManager, indexes) {
       this.directoryCount += 1;
     }
     this.totalCount++;
+  }.bind(this));
+};
+
+FileSelection.prototype.computeAdditional = function(metadataModel) {
+  if (!this.additionalPromise_) {
+    this.additionalPromise_ = metadataModel.get(
+      this.entries,
+      FileSelection.METADATA_PREFETCH_PROPERTY_NAMES)
+      .then(function(props) {
+        var present = props.filter(function(p) {
+          // If no availableOffline property, then assume it's available.
+          return !('availableOffline' in p)  || p.availableOffline;
+        });
+        this.allFilesPresent = present.length === props.length;
+        this.mimeTypes = props.map(function(value) {
+          return value.contentMimeType || '';
+        });
+        return true;
+      }.bind(this));
   }
-}
+  return this.additionalPromise_;
+};
 
 /**
- * Metadata property names used by FileSelection.
- * These metadata is expected to be cached to accelerate completeInit() of
- * FileSelection. crbug.com/458915.
+ * These metadata is expected to be cached to accelerate computeAdditional.
+ * See: crbug.com/458915.
  * @const {!Array<string>}
  */
 FileSelection.METADATA_PREFETCH_PROPERTY_NAMES = [
   'availableOffline',
   'contentMimeType',
 ];
-
-/**
- * Computes data required to get file tasks and requests the tasks.
- * @return {!Promise}
- */
-FileSelection.prototype.completeInit = function() {
-  if (!this.asyncInitPromise_) {
-    this.asyncInitPromise_ = this.fileManager_.getMetadataModel().get(
-        this.entries, ['availableOffline', 'contentMimeType']
-    ).then(function(props) {
-      var present = props.filter(function(p) { return p.availableOffline; });
-      this.allDriveFilesPresent = present.length == props.length;
-      // Collect all of the mime types and push that info into the
-      // selection.
-      this.mimeTypes = props.map(function(value) {
-        return value.contentMimeType || '';
-      });
-      return this.tasks.init(this.entries, this.mimeTypes);
-    }.bind(this));
-  }
-  return this.asyncInitPromise_;
-};
 
 /**
  * This object encapsulates everything related to current selection.
@@ -148,7 +117,7 @@ function FileSelectionHandler(fileManager) {
   cr.EventTarget.call(this);
 
   this.fileManager_ = fileManager;
-  this.selection = new FileSelection(this.fileManager_, []);
+  this.selection = new FileSelection([], []);
 
   /**
    * @private
@@ -215,8 +184,11 @@ FileSelectionHandler.prototype.__proto__ = cr.EventTarget.prototype;
 FileSelectionHandler.prototype.onFileSelectionChanged = function() {
   var indexes =
       this.fileManager_.getCurrentList().selectionModel.selectedIndexes;
-  var selection = new FileSelection(this.fileManager_, indexes);
-  this.selection = selection;
+  var entries = indexes.map(function(index) {
+    return /** @type {!Entry} */ (
+        this.fileManager_.getFileList().item(index));
+  }.bind(this));
+  this.selection = new FileSelection(indexes, entries);
 
   if (this.selectionUpdateTimer_) {
     clearTimeout(this.selectionUpdateTimer_);
@@ -239,9 +211,10 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function() {
   }
   this.lastFileSelectionTime_ = now;
 
+  var selection = this.selection;
   this.selectionUpdateTimer_ = setTimeout(function() {
     this.selectionUpdateTimer_ = null;
-    if (this.selection == selection)
+    if (this.selection === selection)
       this.updateFileSelectionAsync_(selection);
   }.bind(this), updateDelay);
 
@@ -257,6 +230,9 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function() {
 FileSelectionHandler.prototype.updateFileSelectionAsync_ = function(selection) {
   if (this.selection !== selection)
     return;
+
+  // Calculate all additional and heavy properties.
+  selection.computeAdditional(this.fileManager_.metadataModel);
 
   // Sync the commands availability.
   if (this.fileManager_.commandHandler)
@@ -274,5 +250,5 @@ FileSelectionHandler.prototype.isAvailable = function() {
   return !this.fileManager_.isOnDrive() ||
       this.fileManager_.volumeManager.getDriveConnectionState().type !==
           VolumeManagerCommon.DriveConnectionType.OFFLINE ||
-      this.selection.allDriveFilesPresent;
+      this.selection.allFilesPresent;
 };
