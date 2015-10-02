@@ -146,18 +146,18 @@ config("runtime_library") {
   defines = [ "__GNU_SOURCE=1" ]  # Necessary for clone().
   ldflags = [ "-nostdlib" ]
   lib_dirs = [ "$android_libcpp_root/libs/$android_app_abi" ]
-  libs = [
+
+  # The libc++ runtime library (must come first).
+  if (is_component_build) {
+    libs = [ "c++_shared" ]
+  } else {
+    libs = [ "c++_static" ]
+  }
+  libs += [
     "c",
     "dl",
     "m",
   ]
-
-  # The libc++ runtime library.
-  if (is_component_build) {
-    libs += [ "c++_shared" ]
-  } else {
-    libs += [ "c++_static" ]
-  }
 
   if (is_clang) {
     # Work around incompatibilities between bionic and clang headers.
