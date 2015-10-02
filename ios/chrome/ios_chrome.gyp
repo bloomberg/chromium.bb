@@ -281,6 +281,8 @@
         'browser/memory/memory_metrics.h',
         'browser/metrics/field_trial_synchronizer.cc',
         'browser/metrics/field_trial_synchronizer.h',
+        'browser/metrics/ios_chrome_stability_metrics_provider.h',
+        'browser/metrics/ios_chrome_stability_metrics_provider.cc',
         'browser/metrics/ios_stability_metrics_provider.h',
         'browser/metrics/ios_stability_metrics_provider.mm',
         'browser/metrics/previous_session_info.h',
