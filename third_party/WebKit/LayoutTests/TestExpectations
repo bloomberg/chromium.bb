@@ -24,11 +24,6 @@ crbug.com/524236 virtual/spv2/paint/invalidation/spv2/repaint-tile-clipped-as-te
 crbug.com/524236 virtual/spv2/paint/invalidation/spv2/updating-scrolling-content-as-text.html [ Failure ]
 crbug.com/524236 virtual/spv2/paint/invalidation/spv2/scrolling-without-painting-as-text.html [ Failure ]
 
-crbug.com/524134 virtual/spv2/paint/invalidation/spv2/selection-change-in-iframe-with-relative-parent.html [ NeedsRebaseline ]
-crbug.com/524134 virtual/spv2/paint/invalidation/spv2/selection-within-composited-scroller.html [ NeedsRebaseline ]
-crbug.com/524134 virtual/spv2/paint/invalidation/spv2/percent-size-image-resize-container.html [ NeedsRebaseline ]
-crbug.com/524134 virtual/spv2/paint/invalidation/spv2/image-resize.html [ NeedsRebaseline ]
-
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-cell-append.html [ ImageOnlyFailure ]
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-cell-remove.html [ ImageOnlyFailure ]
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-cell-border-width.html [ ImageOnlyFailure ]
