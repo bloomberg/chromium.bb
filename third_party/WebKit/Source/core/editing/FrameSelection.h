@@ -107,11 +107,15 @@ public:
     void moveTo(const Position&, TextAffinity, EUserTriggered = NotUserTriggered);
 
     template <typename Strategy>
-    VisibleSelectionTemplate<Strategy> visibleSelection() const;
+    const VisibleSelectionTemplate<Strategy>& visibleSelection() const;
 
     const VisibleSelection& selection() const;
     void setSelection(const VisibleSelection&, SetSelectionOptions = CloseTyping | ClearTypingStyle, CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded, TextGranularity = CharacterGranularity);
+    void setSelection(const VisibleSelectionInComposedTree&, SetSelectionOptions = CloseTyping | ClearTypingStyle, CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded, TextGranularity = CharacterGranularity);
+    // TODO(yosin) We should get rid of two parameters version of
+    // |setSelection()| to avoid conflict of four parameters version.
     void setSelection(const VisibleSelection& selection, TextGranularity granularity) { setSelection(selection, CloseTyping | ClearTypingStyle, CursorAlignOnScroll::IfNeeded, granularity); }
+    void setSelection(const VisibleSelectionInComposedTree& selection, TextGranularity granularity) { setSelection(selection, CloseTyping | ClearTypingStyle, CursorAlignOnScroll::IfNeeded, granularity); }
     // TODO(yosin) We should get rid of |Range| version of |setSelectedRagne()|
     // for Oilpan.
     bool setSelectedRange(Range*, TextAffinity, SelectionDirectionalMode = SelectionDirectionalMode::NonDirectional, SetSelectionOptions = CloseTyping | ClearTypingStyle);
@@ -210,6 +214,7 @@ public:
 
     enum EndPointsAdjustmentMode { AdjustEndpointsAtBidiBoundary, DoNotAdjsutEndpoints };
     void setNonDirectionalSelectionIfNeeded(const VisibleSelection&, TextGranularity, EndPointsAdjustmentMode = DoNotAdjsutEndpoints);
+    void setNonDirectionalSelectionIfNeeded(const VisibleSelectionInComposedTree&, TextGranularity, EndPointsAdjustmentMode = DoNotAdjsutEndpoints);
     void setFocusedNodeIfNeeded();
     void notifyLayoutObjectOfSelectionChange(EUserTriggered);
 
@@ -241,13 +246,16 @@ private:
     template <typename Strategy>
     VisiblePositionTemplate<Strategy> originalBase() const;
     void setOriginalBase(const VisiblePosition& newBase) { m_originalBase = newBase; }
-    void setOriginalBase(const VisiblePositionInComposedTree&);
+    void setOriginalBase(const VisiblePositionInComposedTree& newBase) { m_originalBaseInComposedTree = newBase; }
 
     template <typename Strategy>
     bool containsAlgorithm(const LayoutPoint&);
 
     template <typename Strategy>
     void setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSelectionTemplate<Strategy>&, TextGranularity, EndPointsAdjustmentMode);
+
+    template <typename Strategy>
+    void setSelectionAlgorithm(const VisibleSelectionTemplate<Strategy>&, SetSelectionOptions, CursorAlignOnScroll, TextGranularity);
 
     void respondToNodeModification(Node&, bool baseRemoved, bool extentRemoved, bool startRemoved, bool endRemoved);
 
@@ -266,7 +274,8 @@ private:
 
     void updateSelectionIfNeeded(const Position& base, const Position& extent, const Position& start, const Position& end);
 
-    VisibleSelection validateSelection(const VisibleSelection&);
+    template <typename Strategy>
+    VisibleSelectionTemplate<Strategy> validateSelection(const VisibleSelectionTemplate<Strategy>&);
 
     GranularityStrategy* granularityStrategy();
 
@@ -274,7 +283,9 @@ private:
     const OwnPtrWillBeMember<PendingSelection> m_pendingSelection;
     const OwnPtrWillBeMember<SelectionEditor> m_selectionEditor;
 
-    VisiblePosition m_originalBase; // Used to store base before the adjustment at bidi boundary
+    // Used to store base before the adjustment at bidi boundary
+    VisiblePosition m_originalBase;
+    VisiblePositionInComposedTree m_originalBaseInComposedTree;
     TextGranularity m_granularity;
 
     RefPtrWillBeMember<Node> m_previousCaretNode; // The last node which painted the caret. Retained for clearing the old caret when it moves.

@@ -68,6 +68,87 @@ LocalFrame* SelectionEditor::frame() const
     return m_frameSelection->frame();
 }
 
+template <>
+const VisibleSelection& SelectionEditor::visibleSelection<EditingStrategy>() const
+{
+    return m_selection;
+}
+
+template <>
+const VisibleSelectionInComposedTree& SelectionEditor::visibleSelection<EditingInComposedTreeStrategy>() const
+{
+    return m_selectionInComposedTree;
+}
+
+void SelectionEditor::setVisibleSelection(const VisibleSelection& newSelection)
+{
+    m_selection = newSelection;
+    adjustVisibleSelectionInCompsoedTree();
+}
+
+void SelectionEditor::setVisibleSelection(const VisibleSelectionInComposedTree& newSelection)
+{
+    m_selectionInComposedTree = newSelection;
+    adjustVisibleSelectionInDOMTree();
+}
+
+// Updates |m_selectionInComposedTree| to match with |m_selection|.
+void SelectionEditor::adjustVisibleSelectionInCompsoedTree()
+{
+    if (m_selection.isNone()) {
+        m_selectionInComposedTree = VisibleSelectionInComposedTree();
+        return;
+    }
+
+    const PositionInComposedTree base = toPositionInComposedTree(m_selection.base());
+    const PositionInComposedTree extent = toPositionInComposedTree(m_selection.extent());
+    const PositionInComposedTree position1 = toPositionInComposedTree(m_selection.start());
+    const PositionInComposedTree position2 = toPositionInComposedTree(m_selection.end());
+    position1.anchorNode()->updateDistribution();
+    position2.anchorNode()->updateDistribution();
+    if (position1.compareTo(position2) <= 0) {
+        m_selectionInComposedTree = VisibleSelectionInComposedTree::createWithoutValidation(base, position1, extent, position2, m_selection.affinity(), m_selection.isDirectional());
+        return;
+    }
+    m_selectionInComposedTree = VisibleSelectionInComposedTree::createWithoutValidation(base, position2, extent, position1, m_selection.affinity(), m_selection.isDirectional());
+}
+
+static bool isCrossingShadowBoundaries(const VisibleSelectionInComposedTree& selection)
+{
+    if (!selection.isRange())
+        return false;
+    TreeScope& treeScope = selection.base().anchorNode()->treeScope();
+    return selection.extent().anchorNode()->treeScope() != treeScope
+        || selection.start().anchorNode()->treeScope() != treeScope
+        || selection.end().anchorNode()->treeScope() != treeScope;
+}
+
+void SelectionEditor::adjustVisibleSelectionInDOMTree()
+{
+    if (m_selectionInComposedTree.isNone()) {
+        m_selection = VisibleSelection();
+        return;
+    }
+
+    const Position base = toPositionInDOMTree(m_selectionInComposedTree.base());
+    const Position extent = toPositionInDOMTree(m_selectionInComposedTree.extent());
+
+    if (isCrossingShadowBoundaries(m_selectionInComposedTree)) {
+        m_selection = VisibleSelection(base, extent);
+        return;
+    }
+
+    const Position start = toPositionInDOMTree(m_selectionInComposedTree.start());
+    const Position end = toPositionInDOMTree(m_selectionInComposedTree.end());
+    const TextAffinity affinity = m_selectionInComposedTree.affinity();
+    const bool isDirectional = m_selectionInComposedTree.isDirectional();
+    if (start.compareTo(end) <= 0) {
+        m_selection = VisibleSelection::createWithoutValidation(base, start, extent, end, affinity, isDirectional);
+        return;
+    }
+    m_selection = VisibleSelection::createWithoutValidation(base, end, extent, start, affinity, isDirectional);
+}
+
 void SelectionEditor::resetXPosForVerticalArrowNavigation()
 {
     m_xPosForVerticalArrowNavigation = NoXPosForVerticalArrowNavigation();
@@ -76,11 +157,13 @@ void SelectionEditor::resetXPosForVerticalArrowNavigation()
 void SelectionEditor::setIsDirectional(bool isDirectional)
 {
     m_selection.setIsDirectional(isDirectional);
+    m_selectionInComposedTree.setIsDirectional(isDirectional);
 }
 
 void SelectionEditor::setWithoutValidation(const Position& start, const Position& end)
 {
     m_selection.setWithoutValidation(start, end);
+    adjustVisibleSelectionInCompsoedTree();
 }
 
 TextDirection SelectionEditor::directionOfEnclosingBlock()
@@ -849,6 +932,7 @@ DEFINE_TRACE(SelectionEditor)
 {
     visitor->trace(m_frameSelection);
     visitor->trace(m_selection);
+    visitor->trace(m_selectionInComposedTree);
     visitor->trace(m_logicalRange);
     VisibleSelectionChangeObserver::trace(visitor);
 }

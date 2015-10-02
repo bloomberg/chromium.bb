@@ -59,53 +59,50 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
-class CORE_EXPORT VisibleSelection {
+template <typename Strategy>
+class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
     DISALLOW_ALLOCATION();
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(VisibleSelection);
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(VisibleSelectionTemplate);
 public:
-    VisibleSelection();
+    VisibleSelectionTemplate();
+    VisibleSelectionTemplate(const PositionTemplate<Strategy>&, TextAffinity, bool isDirectional = false);
+    VisibleSelectionTemplate(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
+    explicit VisibleSelectionTemplate(const EphemeralRangeTemplate<Strategy>&, TextAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
 
-    VisibleSelection(const Position&, TextAffinity, bool isDirectional = false);
-    VisibleSelection(const Position& base, const Position& extent, TextAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
-    VisibleSelection(const PositionInComposedTree& base, const PositionInComposedTree& extent, TextAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
+    explicit VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>&, bool isDirectional = false);
+    VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>&, const VisiblePositionTemplate<Strategy>&, bool isDirectional = false);
 
-    explicit VisibleSelection(const EphemeralRange&, TextAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
+    explicit VisibleSelectionTemplate(const PositionWithAffinityTemplate<Strategy>&, bool isDirectional = false);
 
-    explicit VisibleSelection(const PositionWithAffinity&, bool isDirectional = false);
-    explicit VisibleSelection(const VisiblePosition&, bool isDirectional = false);
-    VisibleSelection(const VisiblePosition&, const VisiblePosition&, bool isDirectional = false);
+    static VisibleSelectionTemplate<Strategy> createWithoutValidation(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextAffinity, bool isDirectional);
 
-    VisibleSelection(const VisibleSelection&);
-    VisibleSelection& operator=(const VisibleSelection&);
+    VisibleSelectionTemplate(const VisibleSelectionTemplate&);
+    VisibleSelectionTemplate& operator=(const VisibleSelectionTemplate&);
 
-    static VisibleSelection selectionFromContentsOfNode(Node*);
+    static VisibleSelectionTemplate selectionFromContentsOfNode(Node*);
 
     SelectionType selectionType() const { return m_selectionType; }
-    SelectionType selectionTypeInComposedTree() const;
 
     void setAffinity(TextAffinity affinity) { m_affinity = affinity; }
     TextAffinity affinity() const { return m_affinity; }
 
-    void setBase(const Position&);
-    void setBase(const PositionInComposedTree&);
-    void setBase(const VisiblePosition&);
-    void setExtent(const Position&);
-    void setExtent(const PositionInComposedTree&);
-    void setExtent(const VisiblePosition&);
+    void setBase(const PositionTemplate<Strategy>&);
+    void setBase(const VisiblePositionTemplate<Strategy>&);
+    void setExtent(const PositionTemplate<Strategy>&);
+    void setExtent(const VisiblePositionTemplate<Strategy>&);
 
-    Position base() const { return m_base; }
-    Position extent() const { return m_extent; }
-    Position start() const { return m_start; }
-    Position end() const { return m_end; }
-    PositionInComposedTree baseInComposedTree() const;
-    PositionInComposedTree extentInComposedTree() const;
-    PositionInComposedTree startInComposedTree() const;
-    PositionInComposedTree endInComposedTree() const;
+    PositionTemplate<Strategy> base() const { return m_base; }
+    PositionTemplate<Strategy> extent() const { return m_extent; }
+    PositionTemplate<Strategy> start() const { return m_start; }
+    PositionTemplate<Strategy> end() const { return m_end; }
 
-    VisiblePosition visibleStart() const { return createVisiblePosition(m_start, isRange() ? TextAffinity::Downstream : affinity()); }
-    VisiblePosition visibleEnd() const { return createVisiblePosition(m_end, isRange() ? TextAffinity::Upstream : affinity()); }
-    VisiblePosition visibleBase() const { return createVisiblePosition(m_base, isRange() ? (isBaseFirst() ? TextAffinity::Upstream : TextAffinity::Downstream) : affinity()); }
-    VisiblePosition visibleExtent() const { return createVisiblePosition(m_extent, isRange() ? (isBaseFirst() ? TextAffinity::Downstream : TextAffinity::Upstream) : affinity()); }
+    VisiblePositionTemplate<Strategy> visibleStart() const { return createVisiblePosition(m_start, isRange() ? TextAffinity::Downstream : affinity()); }
+    VisiblePositionTemplate<Strategy> visibleEnd() const { return createVisiblePosition(m_end, isRange() ? TextAffinity::Upstream : affinity()); }
+    VisiblePositionTemplate<Strategy> visibleBase() const { return createVisiblePosition(m_base, isRange() ? (isBaseFirst() ? TextAffinity::Upstream : TextAffinity::Downstream) : affinity()); }
+    VisiblePositionTemplate<Strategy> visibleExtent() const { return createVisiblePosition(m_extent, isRange() ? (isBaseFirst() ? TextAffinity::Downstream : TextAffinity::Upstream) : affinity()); }
+
+    bool operator==(const VisibleSelectionTemplate&) const;
+    bool operator!=(const VisibleSelectionTemplate& other) const { return !operator==(other); }
 
     bool isNone() const { return selectionType() == NoSelection; }
     bool isCaret() const { return selectionType() == CaretSelection; }
@@ -113,8 +110,6 @@ public:
     bool isCaretOrRange() const { return selectionType() != NoSelection; }
     bool isNonOrphanedRange() const { return isRange() && !start().isOrphan() && !end().isOrphan(); }
     bool isNonOrphanedCaretOrRange() const { return isCaretOrRange() && !start().isOrphan() && !end().isOrphan(); }
-    static SelectionType selectionType(const Position& start, const Position& end);
-    static SelectionType selectionType(const PositionInComposedTree& start, const PositionInComposedTree& end);
 
     bool isBaseFirst() const { return m_baseIsFirst; }
     bool isDirectional() const { return m_isDirectional; }
@@ -123,13 +118,12 @@ public:
     void appendTrailingWhitespace();
 
     bool expandUsingGranularity(TextGranularity);
-    bool expandUsingGranularityInComposedTree(TextGranularity);
 
     // TODO(yosin) Most callers probably don't want these functions, but
     // are using them for historical reasons. |toNormalizedEphemeralRange()|
     // contracts the range around text, and moves the caret most backward
     // visually equivalent position before returning the range/positions.
-    EphemeralRange toNormalizedEphemeralRange() const;
+    EphemeralRangeTemplate<Strategy> toNormalizedEphemeralRange() const;
 
     Element* rootEditableElement() const;
     bool isContentEditable() const;
@@ -139,18 +133,24 @@ public:
     // ShadowRoot node for new shadow trees, or 0 for non-shadow trees.
     Node* nonBoundaryShadowTreeRootNode() const;
 
-    VisiblePosition visiblePositionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const;
-    PositionWithAffinity positionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const;
+    VisiblePositionTemplate<Strategy> visiblePositionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const;
+    PositionWithAffinityTemplate<Strategy> positionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const;
 
     bool isValidFor(const Document&) const;
-    void setWithoutValidation(const Position&, const Position&);
-    void setWithoutValidation(const PositionInComposedTree&, const PositionInComposedTree&);
+    void setWithoutValidation(const PositionTemplate<Strategy>&, const PositionTemplate<Strategy>&);
 
     void setChangeObserver(VisibleSelectionChangeObserver&);
     void clearChangeObserver();
     void didChange(); // Fire the change observer, if any.
 
-    DECLARE_TRACE();
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_base);
+        visitor->trace(m_extent);
+        visitor->trace(m_start);
+        visitor->trace(m_end);
+        visitor->trace(m_changeObserver);
+    }
 
     void validatePositionsIfNeeded();
 
@@ -164,16 +164,14 @@ public:
     void setEndRespectingGranularity(TextGranularity, EWordSide = RightWordIfOnBoundary);
 
 private:
+    VisibleSelectionTemplate(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextAffinity, bool isDirectional);
+
     void validate(TextGranularity = CharacterGranularity);
-    void resetPositionsInComposedTree();
 
     // Support methods for validate()
     void setBaseAndExtentToDeepEquivalents();
     void adjustSelectionToAvoidCrossingShadowBoundaries();
-    void adjustSelectionToAvoidCrossingSelectionBoundaryInComposedTree();
-    bool isBaseFirstInComposedTree() const;
     void adjustSelectionToAvoidCrossingEditingBoundaries();
-    void adjustStartAndEndInComposedTree();
     void updateSelectionType();
 
     // We need to store these as Positions because VisibleSelection is
@@ -181,21 +179,14 @@ private:
     // undoing the command. We need to be able to create a selection that, while
     // currently invalid, will be valid once the changes are undone.
 
-    Position m_base; // Where the first click happened
-    Position m_extent; // Where the end click happened
-    Position m_start; // Leftmost position when expanded to respect granularity
-    Position m_end; // Rightmost position when expanded to respect granularity
-
-    // TODO(hajimehoshi, yosin): The members m_*InComposedTree are now always
-    // computed from the respective positions at validate(). To have selections
-    // work on the composed tree more accurately, we need to compute the DOM
-    // positions from the composed tree positions. To do this, we need to add
-    // considable amount of fixes (including EditingUtilities.cpp,
-    // VisibleUnit.cpp, and VisiblePosition.cpp). We'll do that in the future.
-    PositionInComposedTree m_baseInComposedTree;
-    PositionInComposedTree m_extentInComposedTree;
-    PositionInComposedTree m_startInComposedTree;
-    PositionInComposedTree m_endInComposedTree;
+    // Where the first click happened
+    PositionTemplate<Strategy> m_base;
+    // Where the end click happened
+    PositionTemplate<Strategy> m_extent;
+    // Leftmost position when expanded to respect granularity
+    PositionTemplate<Strategy> m_start;
+    // Rightmost position when expanded to respect granularity
+    PositionTemplate<Strategy> m_end;
 
     TextAffinity m_affinity; // the upstream/downstream affinity of the caret
 
@@ -209,79 +200,15 @@ private:
     bool m_isDirectional : 1; // Non-directional ignores m_baseIsFirst and selection always extends on shift + arrow key.
 };
 
-#if COMPILER(GCC)
-// Clang and GCC don't agree on how attributes should work for explicitly
-// instantiated templates. GCC ignores attributes on explicit instantiations
-// (and emits a warning) while Clang requires the visiblity attribute on the
-// explicit instantiations for them to be visible to other compilation units.
-// Hopefully clang and GCC agree one day, and this can be cleaned up:
-// https://llvm.org/bugs/show_bug.cgi?id=24815
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wattributes"
-#endif
+extern template class CORE_EXTERN_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingInComposedTreeStrategy>;
 
-// TODO(yosin) This is transition version |VisibleSelectionTemplate| for
-// getting rid of |VisibleSelection::InDOMTree| and |InComposedTree|.
-// Final version of |VisibleSelectionTemplate| will replace |VisibleSelection|.
-template <typename Strategy>
-class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate final {
-    STACK_ALLOCATED();
-public:
-    VisibleSelectionTemplate(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity = TextAffinity::Downstream);
-    VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>& base, const VisiblePositionTemplate<Strategy>& extent);
-    explicit VisibleSelectionTemplate(const VisibleSelection&);
-    explicit VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>&);
-    VisibleSelectionTemplate();
+using VisibleSelection = VisibleSelectionTemplate<EditingStrategy>;
+using VisibleSelectionInComposedTree = VisibleSelectionTemplate<EditingInComposedTreeStrategy>;
 
-    operator const VisibleSelection&() const { return m_visibleSelection; }
-
-    TextAffinity affinity() const { return m_visibleSelection.affinity(); }
-    PositionTemplate<Strategy> base() const;
-    PositionTemplate<Strategy> extent() const;
-    PositionTemplate<Strategy> start() const;
-    PositionTemplate<Strategy> end() const;
-    SelectionType selectionType() const { return m_visibleSelection.selectionType(); }
-    VisiblePositionTemplate<Strategy> visibleStart() const;
-    VisiblePositionTemplate<Strategy> visibleEnd() const;
-
-    bool operator==(const VisibleSelectionTemplate&) const;
-
-    bool isCaretOrRange() const { return m_visibleSelection.isCaretOrRange(); }
-    bool isDirectional() const { return m_visibleSelection.isDirectional(); }
-    bool isRange() const { return m_visibleSelection.isRange(); }
-    bool isValidFor(const Document& document) const { return m_visibleSelection.isValidFor(document); }
-
-    EphemeralRangeTemplate<Strategy> toNormalizedEphemeralRange() const;
-
-    void setBase(const PositionTemplate<Strategy>&);
-    void setBase(const VisiblePositionTemplate<Strategy>&);
-    void setExtent(const PositionTemplate<Strategy>&);
-    void setExtent(const VisiblePositionTemplate<Strategy>&);
-    void setIsDirectional(bool isDirectional) { m_visibleSelection.setIsDirectional(isDirectional); }
-    void setWithoutValidation(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent);
-
-    void appendTrailingWhitespace();
-    bool expandUsingGranularity(TextGranularity);
-    static VisibleSelectionTemplate<Strategy> selectionFromContentsOfNode(Node*);
-
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_visibleSelection);
-    }
-
-private:
-    VisibleSelection m_visibleSelection;
-};
-
-extern template class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate<EditingStrategy>;
-extern template class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate<EditingInComposedTreeStrategy>;
-
-#if COMPILER(GCC)
-#pragma GCC diagnostic pop
-#endif
-
+// TODO(yosin): We should use |operator==()| instead of
+// |equalSelectionsInDOMTree()|.
 bool equalSelectionsInDOMTree(const VisibleSelection&, const VisibleSelection&);
-bool equalSelectionsInComposedTree(const VisibleSelection&, const VisibleSelection&);
 
 // We don't yet support multi-range selections, so we only ever have one range
 // to return.
@@ -296,6 +223,8 @@ CORE_EXPORT PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection&);
 // Outside the WebCore namespace for ease of invocation from gdb.
 void showTree(const blink::VisibleSelection&);
 void showTree(const blink::VisibleSelection*);
+void showTree(const blink::VisibleSelectionInComposedTree&);
+void showTree(const blink::VisibleSelectionInComposedTree*);
 #endif
 
 #endif // VisibleSelection_h

@@ -55,8 +55,10 @@ public:
     bool modify(EAlteration, SelectionDirection, TextGranularity, EUserTriggered);
     bool modify(EAlteration, unsigned verticalDistance, VerticalDirection, EUserTriggered, CursorAlignOnScroll);
 
-    const VisibleSelection& visibleSelection() const { return m_selection; }
-    void setVisibleSelection(const VisibleSelection& selection) { m_selection = selection; }
+    template <typename Strategy>
+    const VisibleSelectionTemplate<Strategy>& visibleSelection() const;
+    void setVisibleSelection(const VisibleSelection&);
+    void setVisibleSelection(const VisibleSelectionInComposedTree&);
 
     void setIsDirectional(bool);
     void setWithoutValidation(const Position& start, const Position& end);
@@ -82,6 +84,9 @@ private:
     enum EPositionType { START, END, BASE, EXTENT }; // NOLINT
 
     LocalFrame* frame() const;
+
+    void adjustVisibleSelectionInCompsoedTree();
+    void adjustVisibleSelectionInDOMTree();
 
     TextDirection directionOfEnclosingBlock();
     TextDirection directionOfSelection();
@@ -110,6 +115,7 @@ private:
 
     LayoutUnit m_xPosForVerticalArrowNavigation;
     VisibleSelection m_selection;
+    VisibleSelectionInComposedTree m_selectionInComposedTree;
     bool m_observingVisibleSelection;
 
     // The range specified by the user, which may not be visually canonicalized

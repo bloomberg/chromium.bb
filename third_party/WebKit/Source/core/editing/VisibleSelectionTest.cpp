@@ -18,21 +18,8 @@
 
 namespace blink {
 
-using VisibleSelectionInComposedTree = VisibleSelectionTemplate<EditingInComposedTreeStrategy>;
-
 class VisibleSelectionTest : public EditingTestBase {
 protected:
-    // Helper function to set the VisibleSelection base/extent.
-    void setSelection(VisibleSelection& selection, int base) { setSelection(selection, base, base); }
-
-    // Helper function to set the VisibleSelection base/extent.
-    void setSelection(VisibleSelection& selection, int base, int extend)
-    {
-        Node* node = document().body()->firstChild();
-        selection.setBase(Position(node, base));
-        selection.setExtent(Position(node, extend));
-    }
-
     // Helper function to set the VisibleSelection base/extent.
     template <typename Strategy>
     void setSelection(VisibleSelectionTemplate<Strategy>& selection, int base)
@@ -74,7 +61,6 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     Node* three = shadowRoot->getElementById("three")->firstChild();
     Node* four = shadowRoot->getElementById("four")->firstChild();
     Node* five = shadowRoot->getElementById("five")->firstChild();
-    Node* space = shadowRoot->getElementById("space")->firstChild();
 
     VisibleSelection selection;
     VisibleSelectionInComposedTree selectionInComposedTree;
@@ -92,10 +78,8 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
 
     EXPECT_EQ(PositionInComposedTree(one, 1), selectionInComposedTree.base());
     EXPECT_EQ(PositionInComposedTree(one, 1), selectionInComposedTree.extent());
-    // TODO(yosin) Once we have full version of VisibleSelectionInComposedTree
-    // we should change them (one, 0) - (five, 5).
-    EXPECT_EQ(PositionInComposedTree(four, 0), selectionInComposedTree.start());
-    EXPECT_EQ(PositionInComposedTree(space, 1), selectionInComposedTree.end());
+    EXPECT_EQ(PositionInComposedTree(one, 0), selectionInComposedTree.start());
+    EXPECT_EQ(PositionInComposedTree(five, 5), selectionInComposedTree.end());
 
     // From a position at distributed node
     selection = VisibleSelection(createVisiblePosition(Position(two, 1)));
@@ -110,10 +94,8 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
 
     EXPECT_EQ(PositionInComposedTree(two, 1), selectionInComposedTree.base());
     EXPECT_EQ(PositionInComposedTree(two, 1), selectionInComposedTree.extent());
-    // TODO(yosin) Once we have full version of VisibleSelectionInComposedTree
-    // we should change them (three, 0) - (four, 4).
-    EXPECT_EQ(PositionInComposedTree(four, 0), selectionInComposedTree.start());
-    EXPECT_EQ(PositionInComposedTree(space, 1), selectionInComposedTree.end());
+    EXPECT_EQ(PositionInComposedTree(three, 0), selectionInComposedTree.start());
+    EXPECT_EQ(PositionInComposedTree(four, 4), selectionInComposedTree.end());
 
     // From a position at node in shadow tree
     selection = VisibleSelection(createVisiblePosition(Position(three, 1)));
@@ -174,7 +156,9 @@ TEST_F(VisibleSelectionTest, Initialisation)
     setSelection(selectionInComposedTree, 0);
 
     EXPECT_FALSE(selection.isNone());
+    EXPECT_FALSE(selectionInComposedTree.isNone());
     EXPECT_TRUE(selection.isCaret());
+    EXPECT_TRUE(selectionInComposedTree.isCaret());
 
     RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
     EXPECT_EQ(0, range->startOffset());
@@ -196,7 +180,7 @@ TEST_F(VisibleSelectionTest, ShadowCrossing)
     RefPtrWillBeRawPtr<Element> six = shadowRoot->querySelector("#s6", ASSERT_NO_EXCEPTION);
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(shadowRoot.get()));
-    VisibleSelectionInComposedTree selectionInComposedTree(selection);
+    VisibleSelectionInComposedTree selectionInComposedTree(PositionInComposedTree::firstPositionInNode(one.get()), PositionInComposedTree::lastPositionInNode(host.get()));
 
     EXPECT_EQ(Position(host.get(), PositionAnchorType::BeforeAnchor), selection.start());
     EXPECT_EQ(Position(one->firstChild(), 0), selection.end());
@@ -217,7 +201,7 @@ TEST_F(VisibleSelectionTest, ShadowDistributedNodes)
     RefPtrWillBeRawPtr<Element> five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(two.get()));
-    VisibleSelectionInComposedTree selectionInComposedTree(selection);
+    VisibleSelectionInComposedTree selectionInComposedTree(PositionInComposedTree::firstPositionInNode(one.get()), PositionInComposedTree::lastPositionInNode(two.get()));
 
     EXPECT_EQ(Position(one->firstChild(), 0), selection.start());
     EXPECT_EQ(Position(two->firstChild(), 2), selection.end());
@@ -248,12 +232,12 @@ TEST_F(VisibleSelectionTest, ShadowNested)
     RefPtrWillBeRawPtr<Element> eight = shadowRoot2->querySelector("#s8", ASSERT_NO_EXCEPTION);
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(shadowRoot2.get()));
-    VisibleSelectionInComposedTree selectionInComposedTree(selection);
+    VisibleSelectionInComposedTree selectionInComposedTree(PositionInComposedTree::firstPositionInNode(one.get()), PositionInComposedTree::afterNode(eight.get()));
 
     EXPECT_EQ(Position(host.get(), PositionAnchorType::BeforeAnchor), selection.start());
     EXPECT_EQ(Position(one->firstChild(), 0), selection.end());
     EXPECT_EQ(PositionInComposedTree(eight->firstChild(), 2), selectionInComposedTree.start());
-    EXPECT_EQ(PositionInComposedTree(one->firstChild(), 0), selectionInComposedTree.end());
+    EXPECT_EQ(PositionInComposedTree(eight->firstChild(), 2), selectionInComposedTree.end());
 }
 
 TEST_F(VisibleSelectionTest, WordGranularity)

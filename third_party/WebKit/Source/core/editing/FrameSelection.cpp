@@ -121,24 +121,22 @@ VisiblePosition FrameSelection::originalBase<EditingStrategy>() const
 template <>
 VisiblePositionInComposedTree FrameSelection::originalBase<EditingInComposedTreeStrategy>() const
 {
-    return createVisiblePosition(toPositionInComposedTree(m_originalBase.deepEquivalent()), m_originalBase.affinity());
+    return m_originalBaseInComposedTree;
 }
 
-void FrameSelection::setOriginalBase(const VisiblePositionInComposedTree& newBase)
+// TODO(yosin): To avoid undefined symbols in clang, we explicitly
+// have specialized version of |FrameSelection::visibleSelection<Strategy>|
+// before |FrameSelection::selection()| which refers this.
+template <>
+const VisibleSelection& FrameSelection::visibleSelection<EditingStrategy>() const
 {
-    m_originalBase = createVisiblePosition(toPositionInDOMTree(newBase.deepEquivalent()), newBase.affinity());
+    return m_selectionEditor->visibleSelection<EditingStrategy>();
 }
 
 template <>
-VisibleSelectionTemplate<EditingStrategy> FrameSelection::visibleSelection<EditingStrategy>() const
+const VisibleSelectionInComposedTree& FrameSelection::visibleSelection<EditingInComposedTreeStrategy>() const
 {
-    return VisibleSelectionTemplate<EditingStrategy>(selection());
-}
-
-template <>
-VisibleSelectionTemplate<EditingInComposedTreeStrategy> FrameSelection::visibleSelection<EditingInComposedTreeStrategy>() const
-{
-    return VisibleSelectionTemplate<EditingInComposedTreeStrategy>(selection());
+    return m_selectionEditor->visibleSelection<EditingInComposedTreeStrategy>();
 }
 
 Element* FrameSelection::rootEditableElementOrDocumentElement() const
@@ -159,7 +157,7 @@ ContainerNode* FrameSelection::rootEditableElementOrTreeScopeRootNode() const
 
 const VisibleSelection& FrameSelection::selection() const
 {
-    return m_selectionEditor->visibleSelection();
+    return visibleSelection<EditingStrategy>();
 }
 
 void FrameSelection::moveTo(const VisiblePosition &pos, EUserTriggered userTriggered, CursorAlignOnScroll align)
@@ -227,7 +225,7 @@ void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSe
     bool isDirectional = shouldAlwaysUseDirectionalSelection(m_frame) || newSelection.isDirectional();
 
     const VisiblePositionTemplate<Strategy> originalBase = this->originalBase<Strategy>();
-    const VisiblePositionTemplate<Strategy> base = m_originalBase.isNotNull() ? originalBase : createVisiblePosition(newSelection.base());
+    const VisiblePositionTemplate<Strategy> base = originalBase.isNotNull() ? originalBase : createVisiblePosition(newSelection.base());
     VisiblePositionTemplate<Strategy> newBase = base;
     const VisiblePositionTemplate<Strategy> extent = createVisiblePosition(newSelection.extent());
     VisiblePositionTemplate<Strategy> newExtent = extent;
@@ -254,19 +252,16 @@ void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSe
 
 void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelection& passedNewSelection, TextGranularity granularity, EndPointsAdjustmentMode endpointsAdjustmentMode)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return setNonDirectionalSelectionIfNeededAlgorithm<EditingInComposedTreeStrategy>(VisibleSelectionTemplate<EditingInComposedTreeStrategy>(passedNewSelection), granularity, endpointsAdjustmentMode);
-    setNonDirectionalSelectionIfNeededAlgorithm<EditingStrategy>(VisibleSelectionTemplate<EditingStrategy>(passedNewSelection), granularity, endpointsAdjustmentMode);
+    setNonDirectionalSelectionIfNeededAlgorithm<EditingStrategy>(passedNewSelection, granularity, endpointsAdjustmentMode);
 }
 
-static bool areEquivalentSelections(const VisibleSelection& selection1, const VisibleSelection& selection2)
+void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelectionInComposedTree& passedNewSelection, TextGranularity granularity, EndPointsAdjustmentMode endpointsAdjustmentMode)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return equalSelectionsInComposedTree(selection1, selection2);
-    return equalSelectionsInDOMTree(selection1, selection2);
+    setNonDirectionalSelectionIfNeededAlgorithm<EditingInComposedTreeStrategy>(passedNewSelection, granularity, endpointsAdjustmentMode);
 }
 
-void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelectionOptions options, CursorAlignOnScroll align, TextGranularity granularity)
+template <typename Strategy>
+void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strategy>& newSelection, SetSelectionOptions options, CursorAlignOnScroll align, TextGranularity granularity)
 {
     if (m_granularityStrategy && (options & FrameSelection::DoNotClearStrategy) == 0)
         m_granularityStrategy->Clear();
@@ -274,7 +269,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     bool shouldClearTypingStyle = options & ClearTypingStyle;
     EUserTriggered userTriggered = selectionOptionsToUserTriggered(options);
 
-    VisibleSelection s = validateSelection(newSelection);
+    VisibleSelectionTemplate<Strategy> s = validateSelection(newSelection);
     if (shouldAlwaysUseDirectionalSelection(m_frame))
         s.setIsDirectional(true);
 
@@ -283,8 +278,9 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
         return;
     }
 
-    // <http://bugs.webkit.org/show_bug.cgi?id=23464>: Infinite recursion at FrameSelection::setSelection
-    // if document->frame() == m_frame we can get into an infinite loop
+    // <http://bugs.webkit.org/show_bug.cgi?id=23464>: Infinite recursion at
+    // |FrameSelection::setSelection|
+    // if |document->frame()| == |m_frame| we can get into an infinite loop
     if (s.base().anchorNode()) {
         Document& document = *s.base().document();
         // TODO(hajimehoshi): validateSelection already checks if the selection
@@ -292,9 +288,11 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
         if (document.frame() && document.frame() != m_frame && document != m_frame->document()) {
             RefPtrWillBeRawPtr<LocalFrame> guard(document.frame());
             document.frame()->selection().setSelection(s, options, align, granularity);
-            // It's possible that during the above set selection, this FrameSelection has been modified by
-            // selectFrameElementInParentIfFullySelected, but that the selection is no longer valid since
-            // the frame is about to be destroyed. If this is the case, clear our selection.
+            // It's possible that during the above set selection, this
+            // |FrameSelection| has been modified by
+            // |selectFrameElementInParentIfFullySelected|, but that the
+            // selection is no longer valid since the frame is about to be
+            // destroyed. If this is the case, clear our selection.
             if (!guard->host() && !selection().isNonOrphanedCaretOrRange())
                 clear();
             return;
@@ -309,14 +307,16 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     if (shouldClearTypingStyle)
         clearTypingStyle();
 
-    if (areEquivalentSelections(selection(), s)) {
-        // Even if selection was not changed, selection offsets may have been changed.
+    if (m_selectionEditor->visibleSelection<Strategy>() == s) {
+        // Even if selection was not changed, selection offsets may have been
+        // changed.
         m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
         notifyLayoutObjectOfSelectionChange(userTriggered);
         return;
     }
 
-    VisibleSelection oldSelection = selection();
+    const VisibleSelectionTemplate<Strategy> oldSelection = visibleSelection<Strategy>();
+    const VisibleSelection oldSelectionInDOMTree = selection();
 
     m_selectionEditor->setVisibleSelection(s);
     setCaretRectNeedsUpdate();
@@ -340,11 +340,11 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     // boundary, selection for the DOM tree is shrunk while that for the
     // composed tree is not. Additionally, this case occurs in some edge cases.
     // See also: editing/pasteboard/4076267-3.html
-    if (equalSelectionsInDOMTree(oldSelection, selection())) {
+    if (oldSelection == m_selectionEditor->visibleSelection<Strategy>()) {
         m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
         return;
     }
-    m_frame->editor().respondToChangedSelection(oldSelection, options);
+    m_frame->editor().respondToChangedSelection(oldSelectionInDOMTree, options);
     if (userTriggered == UserTriggered) {
         ScrollAlignment alignment;
 
@@ -360,6 +360,16 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     notifyCompositorForSelectionChange();
     notifyEventHandlerForSelectionChange();
     m_frame->localDOMWindow()->enqueueDocumentEvent(Event::create(EventTypeNames::selectionchange));
+}
+
+void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelectionOptions options, CursorAlignOnScroll align, TextGranularity granularity)
+{
+    setSelectionAlgorithm<EditingStrategy>(newSelection, options, align, granularity);
+}
+
+void FrameSelection::setSelection(const VisibleSelectionInComposedTree& newSelection, SetSelectionOptions options, CursorAlignOnScroll align, TextGranularity granularity)
+{
+    setSelectionAlgorithm<EditingInComposedTreeStrategy>(newSelection, options, align, granularity);
 }
 
 static bool removingNodeRemovesPosition(Node& node, const Position& position)
@@ -1261,20 +1271,21 @@ void FrameSelection::setShouldShowBlockCursor(bool shouldShowBlockCursor)
     updateAppearance();
 }
 
-VisibleSelection FrameSelection::validateSelection(const VisibleSelection& selection)
+template <typename Strategy>
+VisibleSelectionTemplate<Strategy> FrameSelection::validateSelection(const VisibleSelectionTemplate<Strategy>& selection)
 {
     if (!m_frame || selection.isNone())
         return selection;
 
-    Position base = selection.base();
-    Position extent = selection.extent();
+    const PositionTemplate<Strategy> base = selection.base();
+    const PositionTemplate<Strategy> extent = selection.extent();
     bool isBaseValid = base.document() == m_frame->document();
     bool isExtentValid = extent.document() == m_frame->document();
 
     if (isBaseValid && isExtentValid)
         return selection;
 
-    VisibleSelection newSelection;
+    VisibleSelectionTemplate<Strategy> newSelection;
     if (isBaseValid) {
         newSelection.setWithoutValidation(base, base);
     } else if (isExtentValid) {
