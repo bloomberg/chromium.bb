@@ -147,7 +147,7 @@ SharedMemoryHandle SharedMemory::NULLHandle() {
 // static
 void SharedMemory::CloseHandle(const SharedMemoryHandle& handle) {
   DCHECK_GE(handle.fd, 0);
-  if (close(handle.fd) < 0)
+  if (IGNORE_EINTR(close(handle.fd)) < 0)
     DPLOG(ERROR) << "close";
 }
 
@@ -392,12 +392,12 @@ SharedMemoryHandle SharedMemory::handle() const {
 
 void SharedMemory::Close() {
   if (mapped_file_ > 0) {
-    if (close(mapped_file_) < 0)
+    if (IGNORE_EINTR(close(mapped_file_)) < 0)
       PLOG(ERROR) << "close";
     mapped_file_ = -1;
   }
   if (readonly_mapped_file_ > 0) {
-    if (close(readonly_mapped_file_) < 0)
+    if (IGNORE_EINTR(close(readonly_mapped_file_)) < 0)
       PLOG(ERROR) << "close";
     readonly_mapped_file_ = -1;
   }

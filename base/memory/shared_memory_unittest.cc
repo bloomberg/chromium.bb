@@ -409,6 +409,7 @@ TEST(SharedMemoryTest, ShareToSelf) {
       contents,
       StringPiece(static_cast<const char*>(shared.memory()), contents.size()));
 
+  shared_handle = SharedMemoryHandle();
   ASSERT_TRUE(shmem.ShareToProcess(GetCurrentProcessHandle(), &shared_handle));
   SharedMemory readonly(shared_handle, /*readonly=*/true);
 

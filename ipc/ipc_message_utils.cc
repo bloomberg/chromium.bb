@@ -548,8 +548,14 @@ void ParamTraits<base::SharedMemoryHandle>::Write(Message* m,
                                                   const param_type& p) {
   m->WriteInt(p.GetType());
 
-  if (p.GetType() == base::SharedMemoryHandle::POSIX)
-    ParamTraits<base::FileDescriptor>::Write(m, p.GetFileDescriptor());
+  switch (p.GetType()) {
+    case base::SharedMemoryHandle::POSIX:
+      ParamTraits<base::FileDescriptor>::Write(m, p.GetFileDescriptor());
+      break;
+    case base::SharedMemoryHandle::MACH:
+      // TODO(erikchen): Implement me. http://crbug.com/535711
+      break;
+  }
 }
 
 bool ParamTraits<base::SharedMemoryHandle>::Read(const Message* m,
@@ -566,33 +572,44 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const Message* m,
       shm_type = static_cast<base::SharedMemoryHandle::Type>(type);
       break;
     }
-    default:
+    default: {
       return false;
+    }
   }
 
-  if (shm_type == base::SharedMemoryHandle::POSIX) {
-    base::FileDescriptor file_descriptor;
+  switch (shm_type) {
+    case base::SharedMemoryHandle::POSIX: {
+      base::FileDescriptor file_descriptor;
 
-    bool success =
-        ParamTraits<base::FileDescriptor>::Read(m, iter, &file_descriptor);
-    if (!success)
-      return false;
+      bool success =
+          ParamTraits<base::FileDescriptor>::Read(m, iter, &file_descriptor);
+      if (!success)
+        return false;
 
-    *r = base::SharedMemoryHandle(file_descriptor.fd,
-                                  file_descriptor.auto_close);
-    return true;
+      *r = base::SharedMemoryHandle(file_descriptor.fd,
+                                    file_descriptor.auto_close);
+      return true;
+    }
+    case base::SharedMemoryHandle::MACH: {
+      // TODO(erikchen): Implement me. http://crbug.com/535711
+      return true;
+    }
   }
-
-  return true;
 }
 
 void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
                                                 std::string* l) {
-  if (p.GetType() == base::SharedMemoryHandle::POSIX) {
-    l->append(base::StringPrintf("Mechanism POSIX Fd"));
-    ParamTraits<base::FileDescriptor>::Log(p.GetFileDescriptor(), l);
+  switch (p.GetType()) {
+    case base::SharedMemoryHandle::POSIX:
+      l->append("POSIX Fd: ");
+      ParamTraits<base::FileDescriptor>::Log(p.GetFileDescriptor(), l);
+      break;
+    case base::SharedMemoryHandle::MACH:
+      // TODO(erikchen): Implement me. http://crbug.com/535711
+      break;
   }
 }
+
 #elif defined(OS_WIN)
 void ParamTraits<base::SharedMemoryHandle>::Write(Message* m,
                                                   const param_type& p) {

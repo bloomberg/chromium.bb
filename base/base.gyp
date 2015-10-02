@@ -531,6 +531,7 @@
         'memory/scoped_ptr_unittest.nc',
         'memory/scoped_vector_unittest.cc',
         'memory/shared_memory_unittest.cc',
+        'memory/shared_memory_mac_unittest.cc',
         'memory/singleton_unittest.cc',
         'memory/weak_ptr_unittest.cc',
         'memory/weak_ptr_unittest.nc',

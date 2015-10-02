@@ -265,7 +265,9 @@ class BASE_EXPORT SharedMemory {
  private:
 #if defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_ANDROID)
   bool PrepareMapFile(ScopedFILE fp, ScopedFD readonly);
+#if !(defined(OS_MACOSX) && !defined(OS_IOS))
   bool FilePathForMemoryName(const std::string& mem_name, FilePath* path);
+#endif
 #endif  // defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_ANDROID)
   enum ShareMode {
     SHARE_READONLY,
@@ -279,6 +281,15 @@ class BASE_EXPORT SharedMemory {
 #if defined(OS_WIN)
   std::wstring       name_;
   HANDLE             mapped_file_;
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  // The OS primitive that backs the shared memory region.
+  SharedMemoryHandle shm_;
+
+  // The mechanism by which the memory is mapped. Only valid if |memory_| is not
+  // |nullptr|.
+  SharedMemoryHandle::Type mapped_memory_mechanism_;
+
+  int readonly_mapped_file_;
 #elif defined(OS_POSIX)
   int                mapped_file_;
   int                readonly_mapped_file_;
