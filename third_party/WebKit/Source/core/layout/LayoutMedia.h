@@ -60,7 +60,7 @@ private:
     LayoutObjectChildList* virtualChildren() final { return children(); }
     const LayoutObjectChildList* virtualChildren() const final { return children(); }
 
-    DeprecatedPaintLayerType layerTypeRequired() const override { return NormalDeprecatedPaintLayer; }
+    PaintLayerType layerTypeRequired() const override { return NormalPaintLayer; }
 
     bool canHaveChildren() const final { return true; }
     bool isChildAllowed(LayoutObject*, const ComputedStyle&) const final;

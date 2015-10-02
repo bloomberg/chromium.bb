@@ -38,7 +38,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
-#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -272,8 +272,8 @@ bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoi
 //  |       +- *pageScaleLayer
 //  |           +- *innerViewportScrollLayer
 //  |               +-- overflowControlsHostLayer (root layer)
-//  |                   +-- outerViewportContainerLayer (fixed pos container) [frame container layer in DeprecatedPaintLayerCompositor]
-//  |                   |   +-- outerViewportScrollLayer [frame scroll layer in DeprecatedPaintLayerCompositor]
+//  |                   +-- outerViewportContainerLayer (fixed pos container) [frame container layer in PaintLayerCompositor]
+//  |                   |   +-- outerViewportScrollLayer [frame scroll layer in PaintLayerCompositor]
 //  |                   |       +-- content layers ...
 //  +- horizontalScrollbarLayer
 //  +- verticalScrollbarLayer
@@ -400,7 +400,7 @@ void VisualViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView)
 
     ASSERT(frameHost().page().deprecatedLocalMainFrame()->contentLayoutObject());
 
-    DeprecatedPaintLayerCompositor* compositor = frameHost().page().deprecatedLocalMainFrame()->contentLayoutObject()->compositor();
+    PaintLayerCompositor* compositor = frameHost().page().deprecatedLocalMainFrame()->contentLayoutObject()->compositor();
     // Get the outer viewport scroll layer.
     WebLayer* scrollLayer = compositor->scrollLayer() ? compositor->scrollLayer()->platformLayer() : 0;
 

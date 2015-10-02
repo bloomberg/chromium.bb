@@ -28,8 +28,8 @@
 
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
-#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/GridPainter.h"
+#include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/GridCoordinate.h"
 #include "platform/LengthFunctions.h"
@@ -1366,7 +1366,7 @@ void LayoutGrid::prepareChildForPositionedLayout(LayoutBox& child)
     ASSERT(child.isOutOfFlowPositioned());
     child.containingBlock()->insertPositionedObject(&child);
 
-    DeprecatedPaintLayer* childLayer = child.layer();
+    PaintLayer* childLayer = child.layer();
     childLayer->setStaticInlinePosition(borderAndPaddingStart());
     childLayer->setStaticBlockPosition(borderAndPaddingBefore());
 }
@@ -1445,7 +1445,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
 
     if (child.parent() == this && !startIsAuto) {
         // If column/row start is "auto" the static position has been already set in prepareChildForPositionedLayout().
-        DeprecatedPaintLayer* childLayer = child.layer();
+        PaintLayer* childLayer = child.layer();
         if (direction == ForColumns)
             childLayer->setStaticInlinePosition(borderStart() + offset);
         else

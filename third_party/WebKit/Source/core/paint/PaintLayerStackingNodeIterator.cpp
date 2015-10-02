@@ -29,16 +29,16 @@
  */
 
 #include "config.h"
-#include "core/paint/DeprecatedPaintLayerStackingNodeIterator.h"
+#include "core/paint/PaintLayerStackingNodeIterator.h"
 
 // FIXME: We should build our primitive on top of
 // DeprecatedLayerStackingNode and remove this include.
-#include "core/paint/DeprecatedPaintLayer.h"
-#include "core/paint/DeprecatedPaintLayerStackingNode.h"
+#include "core/paint/PaintLayer.h"
+#include "core/paint/PaintLayerStackingNode.h"
 
 namespace blink {
 
-DeprecatedPaintLayerStackingNodeIterator::DeprecatedPaintLayerStackingNodeIterator(const DeprecatedPaintLayerStackingNode& root, unsigned whichChildren)
+PaintLayerStackingNodeIterator::PaintLayerStackingNodeIterator(const PaintLayerStackingNode& root, unsigned whichChildren)
     : m_root(root)
     , m_remainingChildren(whichChildren)
     , m_index(0)
@@ -46,10 +46,10 @@ DeprecatedPaintLayerStackingNodeIterator::DeprecatedPaintLayerStackingNodeIterat
     m_currentNormalFlowChild = root.layer()->firstChild();
 }
 
-DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeIterator::next()
+PaintLayerStackingNode* PaintLayerStackingNodeIterator::next()
 {
     if (m_remainingChildren & NegativeZOrderChildren) {
-        Vector<DeprecatedPaintLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
+        Vector<PaintLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
         if (negZOrderList && m_index < negZOrderList->size())
             return negZOrderList->at(m_index++);
 
@@ -60,7 +60,7 @@ DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeIterator::next
     if (m_remainingChildren & NormalFlowChildren) {
         for (; m_currentNormalFlowChild; m_currentNormalFlowChild = m_currentNormalFlowChild->nextSibling()) {
             if (!m_currentNormalFlowChild->stackingNode()->isTreatedAsOrStackingContext() && !m_currentNormalFlowChild->isReflection()) {
-                DeprecatedPaintLayer* normalFlowChild = m_currentNormalFlowChild;
+                PaintLayer* normalFlowChild = m_currentNormalFlowChild;
                 m_currentNormalFlowChild = m_currentNormalFlowChild->nextSibling();
                 return normalFlowChild->stackingNode();
             }
@@ -72,7 +72,7 @@ DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeIterator::next
     }
 
     if (m_remainingChildren & PositiveZOrderChildren) {
-        Vector<DeprecatedPaintLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
+        Vector<PaintLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
         if (posZOrderList && m_index < posZOrderList->size())
             return posZOrderList->at(m_index++);
 
@@ -83,10 +83,10 @@ DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeIterator::next
     return 0;
 }
 
-DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeReverseIterator::next()
+PaintLayerStackingNode* PaintLayerStackingNodeReverseIterator::next()
 {
     if (m_remainingChildren & NegativeZOrderChildren) {
-        Vector<DeprecatedPaintLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
+        Vector<PaintLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
         if (negZOrderList && m_index >= 0)
             return negZOrderList->at(m_index--);
 
@@ -97,7 +97,7 @@ DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeReverseIterato
     if (m_remainingChildren & NormalFlowChildren) {
         for (; m_currentNormalFlowChild; m_currentNormalFlowChild = m_currentNormalFlowChild->previousSibling()) {
             if (!m_currentNormalFlowChild->stackingNode()->isTreatedAsOrStackingContext() && !m_currentNormalFlowChild->isReflection()) {
-                DeprecatedPaintLayer* normalFlowChild = m_currentNormalFlowChild;
+                PaintLayer* normalFlowChild = m_currentNormalFlowChild;
                 m_currentNormalFlowChild = m_currentNormalFlowChild->previousSibling();
                 return normalFlowChild->stackingNode();
             }
@@ -108,7 +108,7 @@ DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeReverseIterato
     }
 
     if (m_remainingChildren & PositiveZOrderChildren) {
-        Vector<DeprecatedPaintLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
+        Vector<PaintLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
         if (posZOrderList && m_index >= 0)
             return posZOrderList->at(m_index--);
 
@@ -119,10 +119,10 @@ DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeReverseIterato
     return 0;
 }
 
-void DeprecatedPaintLayerStackingNodeReverseIterator::setIndexToLastItem()
+void PaintLayerStackingNodeReverseIterator::setIndexToLastItem()
 {
     if (m_remainingChildren & NegativeZOrderChildren) {
-        Vector<DeprecatedPaintLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
+        Vector<PaintLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
         if (negZOrderList) {
             m_index  = negZOrderList->size() - 1;
             return;
@@ -137,7 +137,7 @@ void DeprecatedPaintLayerStackingNodeReverseIterator::setIndexToLastItem()
     }
 
     if (m_remainingChildren & PositiveZOrderChildren) {
-        Vector<DeprecatedPaintLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
+        Vector<PaintLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
         if (posZOrderList) {
             m_index = posZOrderList->size() - 1;
             return;

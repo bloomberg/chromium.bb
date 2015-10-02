@@ -12,10 +12,10 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
-#include "core/paint/DeprecatedPaintLayer.h"
-#include "core/paint/DeprecatedPaintLayerPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/PaintLayer.h"
+#include "core/paint/PaintLayerPainter.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/fonts/FontCache.h"
@@ -113,14 +113,14 @@ void FramePainter::paintContents(GraphicsContext* context, const GlobalPaintFlag
 
     // frameView().nodeToDraw() is used to draw only one element (and its descendants)
     LayoutObject* layoutObject = frameView().nodeToDraw() ? frameView().nodeToDraw()->layoutObject() : 0;
-    DeprecatedPaintLayer* rootLayer = layoutView->layer();
+    PaintLayer* rootLayer = layoutView->layer();
 
 #if ENABLE(ASSERT)
     layoutView->assertSubtreeIsLaidOut();
     LayoutObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(*rootLayer->layoutObject());
 #endif
 
-    DeprecatedPaintLayerPainter layerPainter(*rootLayer);
+    PaintLayerPainter layerPainter(*rootLayer);
 
     float deviceScaleFactor = blink::deviceScaleFactor(rootLayer->layoutObject()->frame());
     context->setDeviceScaleFactor(deviceScaleFactor);

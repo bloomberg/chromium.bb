@@ -41,12 +41,12 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef DeprecatedPaintLayerScrollableArea_h
-#define DeprecatedPaintLayerScrollableArea_h
+#ifndef PaintLayerScrollableArea_h
+#define PaintLayerScrollableArea_h
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
-#include "core/paint/DeprecatedPaintLayerFragment.h"
+#include "core/paint/PaintLayerFragment.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollableArea.h"
 
@@ -59,12 +59,12 @@ enum ResizerHitTestType {
 
 class PlatformEvent;
 class LayoutBox;
-class DeprecatedPaintLayer;
+class PaintLayer;
 class LayoutScrollbarPart;
 
-class CORE_EXPORT DeprecatedPaintLayerScrollableArea final : public NoBaseWillBeGarbageCollectedFinalized<DeprecatedPaintLayerScrollableArea>, public ScrollableArea {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DeprecatedPaintLayerScrollableArea);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeprecatedPaintLayerScrollableArea);
+class CORE_EXPORT PaintLayerScrollableArea final : public NoBaseWillBeGarbageCollectedFinalized<PaintLayerScrollableArea>, public ScrollableArea {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PaintLayerScrollableArea);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PaintLayerScrollableArea);
     friend class Internals;
 
 private:
@@ -82,7 +82,7 @@ private:
         // re-added before multi-pass layout finishes, the previously "deleted" scrollbar will
         // be restored, rather than constructing a new one.
     public:
-        ScrollbarManager(DeprecatedPaintLayerScrollableArea&);
+        ScrollbarManager(PaintLayerScrollableArea&);
 
         void dispose();
 
@@ -108,7 +108,7 @@ private:
         void destroyScrollbar(ScrollbarOrientation, bool invalidate = false);
 
     private:
-        RawPtrWillBeMember<DeprecatedPaintLayerScrollableArea> m_scrollableArea;
+        RawPtrWillBeMember<PaintLayerScrollableArea> m_scrollableArea;
         RefPtrWillBeMember<Scrollbar> m_hBar;
         RefPtrWillBeMember<Scrollbar> m_vBar;
         unsigned m_canDetachScrollbars: 1;
@@ -118,13 +118,13 @@ private:
 
 public:
     // FIXME: We should pass in the LayoutBox but this opens a window
-    // for crashers during DeprecatedPaintLayer setup (see crbug.com/368062).
-    static PassOwnPtrWillBeRawPtr<DeprecatedPaintLayerScrollableArea> create(DeprecatedPaintLayer& layer)
+    // for crashers during PaintLayer setup (see crbug.com/368062).
+    static PassOwnPtrWillBeRawPtr<PaintLayerScrollableArea> create(PaintLayer& layer)
     {
-        return adoptPtrWillBeNoop(new DeprecatedPaintLayerScrollableArea(layer));
+        return adoptPtrWillBeNoop(new PaintLayerScrollableArea(layer));
     }
 
-    ~DeprecatedPaintLayerScrollableArea() override;
+    ~PaintLayerScrollableArea() override;
     void dispose();
 
     bool hasHorizontalScrollbar() const { return horizontalScrollbar(); }
@@ -243,7 +243,7 @@ public:
     bool isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType) const;
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
 
-    bool hitTestResizerInFragments(const DeprecatedPaintLayerFragments&, const HitTestLocation&) const;
+    bool hitTestResizerInFragments(const PaintLayerFragments&, const HitTestLocation&) const;
 
     LayoutRect scrollIntoView(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY) override;
 
@@ -265,13 +265,13 @@ public:
 
     // These are used during compositing updates to determine if the overflow
     // controls need to be repositioned in the GraphicsLayer tree.
-    void setTopmostScrollChild(DeprecatedPaintLayer*);
-    DeprecatedPaintLayer* topmostScrollChild() const { ASSERT(!m_nextTopmostScrollChild); return m_topmostScrollChild; }
+    void setTopmostScrollChild(PaintLayer*);
+    PaintLayer* topmostScrollChild() const { ASSERT(!m_nextTopmostScrollChild); return m_topmostScrollChild; }
 
     IntRect resizerCornerRect(const IntRect&, ResizerHitTestType) const;
 
     LayoutBox& box() const;
-    DeprecatedPaintLayer* layer() const;
+    PaintLayer* layer() const;
 
     LayoutScrollbarPart* resizer() { return m_resizer; }
 
@@ -284,7 +284,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit DeprecatedPaintLayerScrollableArea(DeprecatedPaintLayer&);
+    explicit PaintLayerScrollableArea(PaintLayer&);
 
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
@@ -317,7 +317,7 @@ private:
 
     void updateCompositingLayersAfterScroll();
 
-    DeprecatedPaintLayer& m_layer;
+    PaintLayer& m_layer;
 
     // Keeps track of whether the layer is currently resizing, so events can cause resizing to start and stop.
     unsigned m_inResizeMode : 1;
@@ -325,8 +325,8 @@ private:
 
     unsigned m_inOverflowRelayout : 1;
 
-    DeprecatedPaintLayer* m_nextTopmostScrollChild;
-    DeprecatedPaintLayer* m_topmostScrollChild;
+    PaintLayer* m_nextTopmostScrollChild;
+    PaintLayer* m_topmostScrollChild;
 
     // FIXME: once cc can handle composited scrolling with clip paths, we will
     // no longer need this bit.

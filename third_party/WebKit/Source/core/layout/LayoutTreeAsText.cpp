@@ -44,7 +44,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/svg/LayoutSVGContainer.h"
 #include "core/layout/svg/LayoutSVGGradientStop.h"
@@ -55,7 +55,7 @@
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutTreeAsText.h"
 #include "core/page/PrintContext.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/LayoutUnit.h"
 #include "wtf/HexNumber.h"
 #include "wtf/Vector.h"
@@ -542,7 +542,7 @@ void write(TextStream& ts, const LayoutObject& o, int indent, LayoutAsTextBehavi
             LayoutView* root = view->layoutView();
             if (root) {
                 root->document().updateLayout();
-                DeprecatedPaintLayer* layer = root->layer();
+                PaintLayer* layer = root->layer();
                 if (layer)
                     LayoutTreeAsText::writeLayers(ts, layer, layer, layer->rect(), indent + 1, behavior);
             }
@@ -556,7 +556,7 @@ enum LayerPaintPhase {
     LayerPaintPhaseForeground = 1
 };
 
-static void write(TextStream& ts, DeprecatedPaintLayer& layer,
+static void write(TextStream& ts, PaintLayer& layer,
     const LayoutRect& layerBounds, const LayoutRect& backgroundClipRect, const LayoutRect& clipRect,
     LayerPaintPhase paintPhase = LayerPaintPhaseAll, int indent = 0, LayoutAsTextBehavior behavior = LayoutAsTextBehaviorNormal)
 {
@@ -623,11 +623,11 @@ static void write(TextStream& ts, DeprecatedPaintLayer& layer,
         ts << " blendMode: " << compositeOperatorName(CompositeSourceOver, layer.layoutObject()->style()->blendMode());
 
     if (behavior & LayoutAsTextShowCompositedLayers) {
-        if (layer.hasCompositedDeprecatedPaintLayerMapping()) {
+        if (layer.hasCompositedLayerMapping()) {
             ts << " (composited, bounds="
-                << layer.compositedDeprecatedPaintLayerMapping()->compositedBounds()
+                << layer.compositedLayerMapping()->compositedBounds()
                 << ", drawsContent="
-                << layer.compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->drawsContent()
+                << layer.compositedLayerMapping()->mainGraphicsLayer()->drawsContent()
                 << (layer.shouldIsolateCompositedDescendants() ? ", isolatesCompositedBlending" : "")
                 << ")";
         }
@@ -639,16 +639,16 @@ static void write(TextStream& ts, DeprecatedPaintLayer& layer,
         write(ts, *layer.layoutObject(), indent + 1, behavior);
 }
 
-static Vector<DeprecatedPaintLayerStackingNode*> normalFlowListFor(DeprecatedPaintLayerStackingNode* node)
+static Vector<PaintLayerStackingNode*> normalFlowListFor(PaintLayerStackingNode* node)
 {
-    DeprecatedPaintLayerStackingNodeIterator it(*node, NormalFlowChildren);
-    Vector<DeprecatedPaintLayerStackingNode*> vector;
-    while (DeprecatedPaintLayerStackingNode* normalFlowChild = it.next())
+    PaintLayerStackingNodeIterator it(*node, NormalFlowChildren);
+    Vector<PaintLayerStackingNode*> vector;
+    while (PaintLayerStackingNode* normalFlowChild = it.next())
         vector.append(normalFlowChild);
     return vector;
 }
 
-void LayoutTreeAsText::writeLayers(TextStream& ts, const DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* layer,
+void LayoutTreeAsText::writeLayers(TextStream& ts, const PaintLayer* rootLayer, PaintLayer* layer,
     const LayoutRect& paintRect, int indent, LayoutAsTextBehavior behavior)
 {
     // Calculate the clip rects we should use.
@@ -663,7 +663,7 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const DeprecatedPaintLayer* r
     layer->convertToLayerCoords(rootLayer, offsetFromRoot);
     bool shouldPaint = (behavior & LayoutAsTextShowAllLayers) ? true : layer->intersectsDamageRect(layerBounds, damageRect.rect(), offsetFromRoot);
 
-    Vector<DeprecatedPaintLayerStackingNode*>* negList = layer->stackingNode()->negZOrderList();
+    Vector<PaintLayerStackingNode*>* negList = layer->stackingNode()->negZOrderList();
     bool paintsBackgroundSeparately = negList && negList->size() > 0;
     if (shouldPaint && paintsBackgroundSeparately)
         write(ts, *layer, layerBounds, damageRect.rect(), clipRectToApply.rect(), LayerPaintPhaseBackground, indent, behavior);
@@ -682,7 +682,7 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const DeprecatedPaintLayer* r
     if (shouldPaint)
         write(ts, *layer, layerBounds, damageRect.rect(), clipRectToApply.rect(), paintsBackgroundSeparately ? LayerPaintPhaseForeground : LayerPaintPhaseAll, indent, behavior);
 
-    Vector<DeprecatedPaintLayerStackingNode*> normalFlowList = normalFlowListFor(layer->stackingNode());
+    Vector<PaintLayerStackingNode*> normalFlowList = normalFlowListFor(layer->stackingNode());
     if (!normalFlowList.isEmpty()) {
         int currIndent = indent;
         if (behavior & LayoutAsTextShowLayerNesting) {
@@ -694,7 +694,7 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const DeprecatedPaintLayer* r
             writeLayers(ts, rootLayer, normalFlowList.at(i)->layer(), paintRect, currIndent, behavior);
     }
 
-    if (Vector<DeprecatedPaintLayerStackingNode*>* posList = layer->stackingNode()->posZOrderList()) {
+    if (Vector<PaintLayerStackingNode*>* posList = layer->stackingNode()->posZOrderList()) {
         int currIndent = indent;
         if (behavior & LayoutAsTextShowLayerNesting) {
             writeIndent(ts, indent);
@@ -770,7 +770,7 @@ static String externalRepresentation(LayoutBox* layoutObject, LayoutAsTextBehavi
     if (!layoutObject->hasLayer())
         return ts.release();
 
-    DeprecatedPaintLayer* layer = layoutObject->layer();
+    PaintLayer* layer = layoutObject->layer();
     LayoutTreeAsText::writeLayers(ts, layer, layer, layer->rect(), 0, behavior);
     writeSelection(ts, layoutObject);
     return ts.release();

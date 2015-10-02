@@ -42,34 +42,34 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef DeprecatedPaintLayerReflectionInfo_h
-#define DeprecatedPaintLayerReflectionInfo_h
+#ifndef PaintLayerReflectionInfo_h
+#define PaintLayerReflectionInfo_h
 
 #include "core/layout/LayoutBoxModelObject.h"
-#include "core/paint/DeprecatedPaintLayerPainter.h"
+#include "core/paint/PaintLayerPainter.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class DeprecatedPaintLayer;
+class PaintLayer;
 class LayoutReplica;
 
-class DeprecatedPaintLayerReflectionInfo {
-    WTF_MAKE_FAST_ALLOCATED(DeprecatedPaintLayerReflectionInfo);
-    WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerReflectionInfo);
+class PaintLayerReflectionInfo {
+    WTF_MAKE_FAST_ALLOCATED(PaintLayerReflectionInfo);
+    WTF_MAKE_NONCOPYABLE(PaintLayerReflectionInfo);
 public:
-    explicit DeprecatedPaintLayerReflectionInfo(LayoutBox&);
+    explicit PaintLayerReflectionInfo(LayoutBox&);
     void destroy();
 
     LayoutReplica* reflection() const { return m_reflection; }
-    DeprecatedPaintLayer* reflectionLayer() const;
+    PaintLayer* reflectionLayer() const;
 
     bool isPaintingInsideReflection() const { return m_isPaintingInsideReflection; }
 
     void updateAfterStyleChange(const ComputedStyle* oldStyle);
 
-    void paint(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags);
+    void paint(GraphicsContext*, const PaintLayerPaintingInfo&, PaintLayerFlags);
 
 private:
     LayoutBox& box() { return *m_box; }
@@ -84,4 +84,4 @@ private:
 
 } // namespace blink
 
-#endif // DeprecatedPaintLayerReflectinInfo_h
+#endif // PaintLayerReflectinInfo_h

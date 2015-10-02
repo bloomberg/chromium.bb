@@ -4,8 +4,8 @@
 
 #include "config.h"
 
-#include "core/paint/DeprecatedPaintLayerPainter.h"
 #include "core/paint/DisplayItemListPaintTest.h"
+#include "core/paint/PaintLayerPainter.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
@@ -27,21 +27,21 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
         "</table>");
 
     LayoutView& layoutView = *document().layoutView();
-    DeprecatedPaintLayer& rootLayer = *layoutView.layer();
+    PaintLayer& rootLayer = *layoutView.layer();
     LayoutObject& cell1 = *document().getElementById("cell1")->layoutObject();
     LayoutObject& cell2 = *document().getElementById("cell2")->layoutObject();
 
     GraphicsContext context(&rootDisplayItemList());
-    DeprecatedPaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 200, 200), GlobalPaintNormalPhase, LayoutSize());
-    DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 200, 200), GlobalPaintNormalPhase, LayoutSize());
+    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromContainers));
 
-    DeprecatedPaintLayerPaintingInfo paintingInfo1(&rootLayer, LayoutRect(0, 300, 200, 200), GlobalPaintNormalPhase, LayoutSize());
-    DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo1, PaintLayerPaintingCompositingAllPhases);
+    PaintLayerPaintingInfo paintingInfo1(&rootLayer, LayoutRect(0, 300, 200, 200), GlobalPaintNormalPhase, LayoutSize());
+    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo1, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,

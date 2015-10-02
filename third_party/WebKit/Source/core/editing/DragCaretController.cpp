@@ -28,7 +28,7 @@
 
 #include "core/editing/EditingUtilities.h"
 #include "core/layout/LayoutView.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 
 namespace blink {
 

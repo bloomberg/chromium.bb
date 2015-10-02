@@ -14,7 +14,7 @@
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/Page.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/geometry/DoublePoint.h"
@@ -151,7 +151,7 @@ public:
 
     WebLayer* getRootScrollLayer()
     {
-        DeprecatedPaintLayerCompositor* compositor = frame()->contentLayoutObject()->compositor();
+        PaintLayerCompositor* compositor = frame()->contentLayoutObject()->compositor();
         ASSERT(compositor);
         ASSERT(compositor->scrollLayer());
 
@@ -1644,7 +1644,7 @@ TEST_P(ParameterizedVisualViewportTest, AccessibilityHitTestWhileZoomedIn)
     webViewImpl()->setVisualViewportOffset(WebFloatPoint(200, 230));
     frameView.layoutViewportScrollableArea()->setScrollPosition(DoublePoint(400, 1100), ProgrammaticScroll);
 
-    // FIXME(504057): DeprecatedPaintLayerScrollableArea dirties the compositing state.
+    // FIXME(504057): PaintLayerScrollableArea dirties the compositing state.
     forceFullCompositingUpdate();
 
     // Because of where the visual viewport is located, this should hit the bottom right

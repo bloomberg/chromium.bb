@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeprecatedPaintLayerFragment_h
-#define DeprecatedPaintLayerFragment_h
+#ifndef PaintLayerFragment_h
+#define PaintLayerFragment_h
 
 #include "core/layout/ClipRect.h"
 #include "wtf/Allocator.h"
@@ -32,7 +32,7 @@
 
 namespace blink {
 
-// DeprecatedPaintLayerFragment is the representation of a fragment.
+// PaintLayerFragment is the representation of a fragment.
 // https://drafts.csswg.org/css-break/#fragment
 //
 // Fragments are a paint/hit-testing only concept in Blink.
@@ -41,9 +41,9 @@ namespace blink {
 // fragments are called "paginated fragments". Note that this is a Blink
 // vocabulary extension and doesn't come from the specification.
 //
-// The fragments are collected by calling DeprecatedPaintLayer::collectFragments
+// The fragments are collected by calling PaintLayer::collectFragments
 // on every box once per paint/hit-testing operation.
-struct DeprecatedPaintLayerFragment {
+struct PaintLayerFragment {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     void setRects(const LayoutRect& bounds, const ClipRect& background, const ClipRect& foreground)
@@ -69,8 +69,8 @@ public:
 
     // Set on all fragments.
     //
-    // The DeprecatedPaintLayer's size in the associated ClipRectsContext's
-    // rootLayer coordinate system. See DeprecatedPaintLayer::m_size for the
+    // The PaintLayer's size in the associated ClipRectsContext's
+    // rootLayer coordinate system. See PaintLayer::m_size for the
     // exact rectangle.
     //
     // TODO(jchaffraix): We should store the rootLayer here to ensure we don't
@@ -86,7 +86,7 @@ public:
     // and any overflow clips or 'clip' properties. It is also intersected with
     // |paginationClip| if it is present.
     //
-    // See DeprecatedPaintLayerClipper::calculateRects.
+    // See PaintLayerClipper::calculateRects.
     ClipRect backgroundRect;
 
     // Set on all fragments.
@@ -100,7 +100,7 @@ public:
     // to the intersected rectangle. It is also intersected with
     // |paginationClip| if it is present.
     //
-    // See DeprecatedPaintLayerClipper::calculateRects.
+    // See PaintLayerClipper::calculateRects.
     ClipRect foregroundRect;
 
     // Only set on paginated fragments.
@@ -119,8 +119,8 @@ public:
     LayoutRect paginationClip;
 };
 
-typedef Vector<DeprecatedPaintLayerFragment, 1> DeprecatedPaintLayerFragments;
+typedef Vector<PaintLayerFragment, 1> PaintLayerFragments;
 
 } // namespace blink
 
-#endif // DeprecatedPaintLayerFragment_h
+#endif // PaintLayerFragment_h

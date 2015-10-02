@@ -51,8 +51,8 @@ namespace blink {
 
 class AutoscrollController;
 class DataTransfer;
-class DeprecatedPaintLayer;
-class DeprecatedPaintLayerScrollableArea;
+class PaintLayer;
+class PaintLayerScrollableArea;
 class Document;
 class DragState;
 class Element;
@@ -256,7 +256,7 @@ private:
     bool isCursorVisible() const;
     void updateCursor();
 
-    ScrollableArea* associatedScrollableArea(const DeprecatedPaintLayer*) const;
+    ScrollableArea* associatedScrollableArea(const PaintLayer*) const;
 
     // Scrolls the elements of the DOM tree. Returns true if a node was scrolled.
     // False if we reached the root and couldn't scroll anything.
@@ -367,7 +367,7 @@ private:
 
     bool m_svgPan;
 
-    RawPtrWillBeMember<DeprecatedPaintLayerScrollableArea> m_resizeScrollableArea;
+    RawPtrWillBeMember<PaintLayerScrollableArea> m_resizeScrollableArea;
 
     RefPtrWillBeMember<Node> m_capturingMouseEventsNode;
     bool m_eventHandlerWillResetCapturingMouseEventsNode;

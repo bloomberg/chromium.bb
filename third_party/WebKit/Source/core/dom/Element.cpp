@@ -116,7 +116,7 @@
 #include "core/page/scrolling/ScrollCustomizationCallbacks.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "core/page/scrolling/ScrollStateCallback.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -1888,7 +1888,7 @@ void Element::setNeedsCompositingUpdate()
         return;
     layoutObject->layer()->setNeedsCompositingInputsUpdate();
     // Changes in the return value of requiresAcceleratedCompositing change if
-    // the DeprecatedPaintLayer is self-painting.
+    // the PaintLayer is self-painting.
     layoutObject->layer()->updateSelfPaintingLayer();
 }
 

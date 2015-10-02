@@ -28,10 +28,10 @@
 #include "core/layout/compositing/CompositingRequirementsUpdater.h"
 
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
-#include "core/paint/DeprecatedPaintLayer.h"
-#include "core/paint/DeprecatedPaintLayerStackingNode.h"
-#include "core/paint/DeprecatedPaintLayerStackingNodeIterator.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/paint/PaintLayer.h"
+#include "core/paint/PaintLayerStackingNode.h"
+#include "core/paint/PaintLayerStackingNodeIterator.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
@@ -79,7 +79,7 @@ public:
         beginNewOverlapTestingContext();
     }
 
-    void add(DeprecatedPaintLayer* layer, const IntRect& bounds)
+    void add(PaintLayer* layer, const IntRect& bounds)
     {
         ASSERT(!layer->isRootLayer());
         if (bounds.isEmpty())
@@ -124,7 +124,7 @@ private:
 
 class CompositingRequirementsUpdater::RecursionData {
 public:
-    explicit RecursionData(DeprecatedPaintLayer* compositingAncestor)
+    explicit RecursionData(PaintLayer* compositingAncestor)
         : m_compositingAncestor(compositingAncestor)
         , m_subtreeIsCompositing(false)
         , m_hasUnisolatedCompositedBlendingDescendant(false)
@@ -133,7 +133,7 @@ public:
     {
     }
 
-    DeprecatedPaintLayer* m_compositingAncestor;
+    PaintLayer* m_compositingAncestor;
     bool m_subtreeIsCompositing;
     bool m_hasUnisolatedCompositedBlendingDescendant;
     bool m_testingOverlap;
@@ -150,7 +150,7 @@ static bool requiresCompositingOrSquashing(CompositingReasons reasons)
     return reasons != CompositingReasonNone;
 }
 
-static CompositingReasons subtreeReasonsForCompositing(DeprecatedPaintLayer* layer, bool hasCompositedDescendants, bool has3DTransformedDescendants)
+static CompositingReasons subtreeReasonsForCompositing(PaintLayer* layer, bool hasCompositedDescendants, bool has3DTransformedDescendants)
 {
     CompositingReasons subtreeReasons = CompositingReasonNone;
 
@@ -188,7 +188,7 @@ CompositingRequirementsUpdater::~CompositingRequirementsUpdater()
 {
 }
 
-void CompositingRequirementsUpdater::update(DeprecatedPaintLayer* root)
+void CompositingRequirementsUpdater::update(PaintLayer* root)
 {
     TRACE_EVENT0("blink", "CompositingRequirementsUpdater::updateRecursive");
 
@@ -202,22 +202,22 @@ void CompositingRequirementsUpdater::update(DeprecatedPaintLayer* root)
     // of them dynamically, we are requiring a full tree walk. This
     // should be removed as soon as proper overlap testing based on
     // scrolling and animation bounds is implemented (crbug.com/252472).
-    Vector<DeprecatedPaintLayer*> unclippedDescendants;
+    Vector<PaintLayer*> unclippedDescendants;
     IntRect absoluteDecendantBoundingBox;
     updateRecursive(0, root, overlapTestRequestMap, recursionData, saw3DTransform, unclippedDescendants, absoluteDecendantBoundingBox);
 }
 
-void CompositingRequirementsUpdater::updateRecursive(DeprecatedPaintLayer* ancestorLayer, DeprecatedPaintLayer* layer, OverlapMap& overlapMap, RecursionData& currentRecursionData, bool& descendantHas3DTransform, Vector<DeprecatedPaintLayer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox)
+void CompositingRequirementsUpdater::updateRecursive(PaintLayer* ancestorLayer, PaintLayer* layer, OverlapMap& overlapMap, RecursionData& currentRecursionData, bool& descendantHas3DTransform, Vector<PaintLayer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox)
 {
-    DeprecatedPaintLayerCompositor* compositor = m_layoutView.compositor();
+    PaintLayerCompositor* compositor = m_layoutView.compositor();
 
     layer->stackingNode()->updateLayerListsIfNeeded();
 
     CompositingReasons reasonsToComposite = CompositingReasonNone;
     CompositingReasons directReasons = m_compositingReasonFinder.directReasons(layer);
 
-    // Video is special. It's the only DeprecatedPaintLayer type that can both have
-    // DeprecatedPaintLayer children and whose children can't use its backing to render
+    // Video is special. It's the only PaintLayer type that can both have
+    // PaintLayer children and whose children can't use its backing to render
     // into. These children (the controls) always need to be promoted into their
     // own layers to draw on top of the accelerated video.
     if (currentRecursionData.m_compositingAncestor && currentRecursionData.m_compositingAncestor->layoutObject()->isVideo())
@@ -244,7 +244,7 @@ void CompositingRequirementsUpdater::updateRecursive(DeprecatedPaintLayer* ances
             // both opaque and may only have an integer translation as its
             // transform. Both opacity and screen space transform are inherited
             // properties, so this cannot be determined from local information.
-            layer->scrollableArea()->updateNeedsCompositedScrolling(DeprecatedPaintLayerScrollableArea::IgnoreLCDText);
+            layer->scrollableArea()->updateNeedsCompositedScrolling(PaintLayerScrollableArea::IgnoreLCDText);
             if (layer->needsCompositedScrolling())
                 reasonsToComposite |= CompositingReasonOverflowScrollingTouch;
         }
@@ -261,7 +261,7 @@ void CompositingRequirementsUpdater::updateRecursive(DeprecatedPaintLayer* ances
     if (currentRecursionData.m_hasCompositedScrollingAncestor) {
         Vector<size_t> unclippedDescendantsToRemove;
         for (size_t i = 0; i < unclippedDescendants.size(); i++) {
-            DeprecatedPaintLayer* unclippedDescendant = unclippedDescendants.at(i);
+            PaintLayer* unclippedDescendant = unclippedDescendants.at(i);
             // If we've reached the containing block of one of the unclipped
             // descendants, that element is no longer relevant to whether or not we
             // should opt in. Unfortunately we can't easily remove from the list
@@ -319,8 +319,8 @@ void CompositingRequirementsUpdater::updateRecursive(DeprecatedPaintLayer* ances
     bool willHaveForegroundLayer = false;
 
     if (layer->stackingNode()->isStackingContext()) {
-        DeprecatedPaintLayerStackingNodeIterator iterator(*layer->stackingNode(), NegativeZOrderChildren);
-        while (DeprecatedPaintLayerStackingNode* curNode = iterator.next()) {
+        PaintLayerStackingNodeIterator iterator(*layer->stackingNode(), NegativeZOrderChildren);
+        while (PaintLayerStackingNode* curNode = iterator.next()) {
             IntRect absoluteChildDecendantBoundingBox;
             updateRecursive(layer, curNode->layer(), overlapMap, childRecursionData, anyDescendantHas3DTransform, unclippedDescendants, absoluteChildDecendantBoundingBox);
             absoluteDecendantBoundingBox.unite(absoluteChildDecendantBoundingBox);
@@ -361,8 +361,8 @@ void CompositingRequirementsUpdater::updateRecursive(DeprecatedPaintLayer* ances
         childRecursionData.m_testingOverlap = true;
     }
 
-    DeprecatedPaintLayerStackingNodeIterator iterator(*layer->stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
-    while (DeprecatedPaintLayerStackingNode* curNode = iterator.next()) {
+    PaintLayerStackingNodeIterator iterator(*layer->stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
+    while (PaintLayerStackingNode* curNode = iterator.next()) {
         IntRect absoluteChildDecendantBoundingBox;
         updateRecursive(layer, curNode->layer(), overlapMap, childRecursionData, anyDescendantHas3DTransform, unclippedDescendants, absoluteChildDecendantBoundingBox);
         absoluteDecendantBoundingBox.unite(absoluteChildDecendantBoundingBox);
@@ -420,7 +420,7 @@ void CompositingRequirementsUpdater::updateRecursive(DeprecatedPaintLayer* ances
         // If the original layer is composited, the reflection needs to be, too.
         if (layer->reflectionInfo()) {
             // FIXME: Shouldn't we call computeCompositingRequirements to handle a reflection overlapping with another layoutObject?
-            DeprecatedPaintLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
+            PaintLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
             CompositingReasons reflectionCompositingReason = willBeCompositedOrSquashed ? CompositingReasonReflectionOfCompositedParent : CompositingReasonNone;
             reflectionLayer->setCompositingReasons(reflectionCompositingReason, CompositingReasonReflectionOfCompositedParent);
         }

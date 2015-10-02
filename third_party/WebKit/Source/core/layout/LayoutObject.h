@@ -65,7 +65,7 @@ class LayoutBoxModelObject;
 class LayoutBlock;
 class LayoutFlowThread;
 class LayoutGeometryMap;
-class DeprecatedPaintLayer;
+class PaintLayer;
 class LayoutMultiColumnSpannerPlaceholder;
 class LayoutView;
 class TransformState;
@@ -110,7 +110,7 @@ struct AnnotatedRegionValue {
     bool draggable;
 };
 
-typedef WTF::HashMap<const DeprecatedPaintLayer*, Vector<LayoutRect>> LayerHitTestRects;
+typedef WTF::HashMap<const PaintLayer*, Vector<LayoutRect>> LayerHitTestRects;
 
 #ifndef NDEBUG
 const int showTreeCharacterOffset = 39;
@@ -210,11 +210,11 @@ public:
     // The following six functions are used when the layout tree hierarchy changes to make sure layers get
     // properly added and removed.  Since containership can be implemented by any subclass, and since a hierarchy
     // can contain a mixture of boxes and other object types, these functions need to be in the base class.
-    DeprecatedPaintLayer* enclosingLayer() const;
-    void addLayers(DeprecatedPaintLayer* parentLayer);
-    void removeLayers(DeprecatedPaintLayer* parentLayer);
-    void moveLayers(DeprecatedPaintLayer* oldParent, DeprecatedPaintLayer* newParent);
-    DeprecatedPaintLayer* findNextLayer(DeprecatedPaintLayer* parentLayer, LayoutObject* startPoint, bool checkParent = true);
+    PaintLayer* enclosingLayer() const;
+    void addLayers(PaintLayer* parentLayer);
+    void removeLayers(PaintLayer* parentLayer);
+    void moveLayers(PaintLayer* oldParent, PaintLayer* newParent);
+    PaintLayer* findNextLayer(PaintLayer* parentLayer, LayoutObject* startPoint, bool checkParent = true);
 
     // Scrolling is a LayoutBox concept, however some code just cares about recursively scrolling our enclosing ScrollableArea(s).
     bool scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX = ScrollAlignment::alignCenterIfNeeded, const ScrollAlignment& alignY = ScrollAlignment::alignCenterIfNeeded);
@@ -882,7 +882,7 @@ public:
     FloatPoint localToContainerPoint(const FloatPoint&, const LayoutBoxModelObject* paintInvalidationContainer, MapCoordinatesFlags = 0, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const;
 
     // Convert a local point into the coordinate system of backing coordinates. Also returns the backing layer if needed.
-    FloatPoint localToInvalidationBackingPoint(const LayoutPoint&, DeprecatedPaintLayer** backingLayer = nullptr);
+    FloatPoint localToInvalidationBackingPoint(const LayoutPoint&, PaintLayer** backingLayer = nullptr);
 
     // Return the offset from the container() layoutObject (excluding transforms). In multi-column layout,
     // different offsets apply at different points, so return the offset that applies to the given point.
@@ -1336,7 +1336,7 @@ protected:
     // containerRect is a rect that has already been added for the currentLayer which is likely to
     // be a container for child elements. Any rect wholly contained by containerRect can be
     // skipped.
-    virtual void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const;
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const PaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const;
 
     // Add hit-test rects for this layoutObject only to the provided list. layerOffset is the offset
     // of this layoutObject within the current layer that should be used for each result.

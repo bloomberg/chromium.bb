@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeprecatedPaintLayerCompositor_h
-#define DeprecatedPaintLayerCompositor_h
+#ifndef PaintLayerCompositor_h
+#define PaintLayerCompositor_h
 
 #include "core/CoreExport.h"
 #include "core/layout/compositing/CompositingReasonFinder.h"
@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class DeprecatedPaintLayer;
+class PaintLayer;
 class DocumentLifecycle;
 class GraphicsLayer;
 class GraphicsLayerFactory;
@@ -51,24 +51,24 @@ enum CompositingUpdateType {
 
 enum CompositingStateTransitionType {
     NoCompositingStateChange,
-    AllocateOwnCompositedDeprecatedPaintLayerMapping,
-    RemoveOwnCompositedDeprecatedPaintLayerMapping,
+    AllocateOwnCompositedLayerMapping,
+    RemoveOwnCompositedLayerMapping,
     PutInSquashingLayer,
     RemoveFromSquashingLayer
 };
 
-// DeprecatedPaintLayerCompositor manages the hierarchy of
+// PaintLayerCompositor manages the hierarchy of
 // composited Layers. It determines which Layers
 // become compositing, and creates and maintains a hierarchy of
 // GraphicsLayers based on the Layer painting order.
 //
-// There is one DeprecatedPaintLayerCompositor per LayoutView.
+// There is one PaintLayerCompositor per LayoutView.
 
-class CORE_EXPORT DeprecatedPaintLayerCompositor final : public GraphicsLayerClient {
-    WTF_MAKE_FAST_ALLOCATED(DeprecatedPaintLayerCompositor);
+class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
+    WTF_MAKE_FAST_ALLOCATED(PaintLayerCompositor);
 public:
-    explicit DeprecatedPaintLayerCompositor(LayoutView&);
-    ~DeprecatedPaintLayerCompositor() override;
+    explicit PaintLayerCompositor(LayoutView&);
+    ~PaintLayerCompositor() override;
 
     void updateIfNeededRecursive();
 
@@ -96,23 +96,23 @@ public:
 
     void didLayout();
 
-    // Whether layer's compositedDeprecatedPaintLayerMapping needs a GraphicsLayer to clip z-order children of the given Layer.
-    bool clipsCompositingDescendants(const DeprecatedPaintLayer*) const;
+    // Whether layer's compositedLayerMapping needs a GraphicsLayer to clip z-order children of the given Layer.
+    bool clipsCompositingDescendants(const PaintLayer*) const;
 
     // Whether the given layer needs an extra 'contents' layer.
-    bool needsContentsCompositingLayer(const DeprecatedPaintLayer*) const;
+    bool needsContentsCompositingLayer(const PaintLayer*) const;
 
     bool supportsFixedRootBackgroundCompositing() const;
-    bool needsFixedRootBackgroundLayer(const DeprecatedPaintLayer*) const;
+    bool needsFixedRootBackgroundLayer(const PaintLayer*) const;
     GraphicsLayer* fixedRootBackgroundLayer() const;
     void setNeedsUpdateFixedBackground() { m_needsUpdateFixedBackground = true; }
 
     // Issue paint invalidations of the appropriate layers when the given Layer starts or stops being composited.
-    void paintInvalidationOnCompositingChange(DeprecatedPaintLayer*);
+    void paintInvalidationOnCompositingChange(PaintLayer*);
 
     void fullyInvalidatePaint();
 
-    DeprecatedPaintLayer* rootLayer() const;
+    PaintLayer* rootLayer() const;
     GraphicsLayer* rootGraphicsLayer() const;
     GraphicsLayer* frameScrollLayer() const;
     GraphicsLayer* scrollLayer() const;
@@ -134,7 +134,7 @@ public:
 
     void setIsInWindow(bool);
 
-    static DeprecatedPaintLayerCompositor* frameContentsCompositor(LayoutPart*);
+    static PaintLayerCompositor* frameContentsCompositor(LayoutPart*);
     // Return true if the layers changed.
     static bool parentFrameContentLayers(LayoutPart*);
 
@@ -145,7 +145,7 @@ public:
     void frameViewScrollbarsExistenceDidChange();
     void rootFixedBackgroundsChanged();
 
-    bool scrollingLayerDidChange(DeprecatedPaintLayer*);
+    bool scrollingLayerDidChange(PaintLayer*);
 
     String layerTreeAsText(LayerTreeFlags);
 
@@ -162,16 +162,16 @@ public:
     bool needsUpdateDescendantDependentFlags() const { return m_needsUpdateDescendantDependentFlags; }
     void setNeedsUpdateDescendantDependentFlags() { m_needsUpdateDescendantDependentFlags = true; }
 
-    void updatePotentialCompositingReasonsFromStyle(DeprecatedPaintLayer*);
+    void updatePotentialCompositingReasonsFromStyle(PaintLayer*);
 
     // Whether the layer could ever be composited.
-    bool canBeComposited(const DeprecatedPaintLayer*) const;
+    bool canBeComposited(const PaintLayer*) const;
 
-    // FIXME: Move allocateOrClearCompositedDeprecatedPaintLayerMapping to CompositingLayerAssigner once we've fixed
+    // FIXME: Move allocateOrClearCompositedLayerMapping to CompositingLayerAssigner once we've fixed
     // the compositing chicken/egg issues.
-    bool allocateOrClearCompositedDeprecatedPaintLayerMapping(DeprecatedPaintLayer*, CompositingStateTransitionType compositedLayerUpdate);
+    bool allocateOrClearCompositedLayerMapping(PaintLayer*, CompositingStateTransitionType compositedLayerUpdate);
 
-    void updateDirectCompositingReasons(DeprecatedPaintLayer*);
+    void updateDirectCompositingReasons(PaintLayer*);
 
     bool inOverlayFullscreenVideo() const { return m_inOverlayFullscreenVideo; }
 
@@ -253,4 +253,4 @@ private:
 
 } // namespace blink
 
-#endif // DeprecatedPaintLayerCompositor_h
+#endif // PaintLayerCompositor_h

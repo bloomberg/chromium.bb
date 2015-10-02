@@ -41,8 +41,8 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatBox.h"
 #include "public/platform/Platform.h"
@@ -343,7 +343,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, in
 
     const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
 
-    DeprecatedPaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
+    PaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
     ASSERT(layer);
 
     Vector<OwnPtr<WebCompositorAnimation>> animations;
@@ -355,7 +355,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, in
             WebCompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
             ASSERT(compositorPlayer);
             compositorPlayer->addAnimation(compositorAnimation.leakPtr());
-        } else if (!layer->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->addAnimation(compositorAnimation.release())) {
+        } else if (!layer->compositedLayerMapping()->mainGraphicsLayer()->addAnimation(compositorAnimation.release())) {
             // FIXME: We should know ahead of time whether these animations can be started.
             for (int startedAnimationId : startedAnimationIds)
                 cancelAnimationOnCompositor(element, animation, startedAnimationId);
@@ -383,7 +383,7 @@ void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, c
         ASSERT(compositorPlayer);
         compositorPlayer->removeAnimation(id);
     } else {
-        toLayoutBoxModelObject(element.layoutObject())->layer()->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->removeAnimation(id);
+        toLayoutBoxModelObject(element.layoutObject())->layer()->compositedLayerMapping()->mainGraphicsLayer()->removeAnimation(id);
     }
 }
 
@@ -402,7 +402,7 @@ void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& e
         ASSERT(compositorPlayer);
         compositorPlayer->pauseAnimation(id, pauseTime);
     } else {
-        toLayoutBoxModelObject(element.layoutObject())->layer()->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->pauseAnimation(id, pauseTime);
+        toLayoutBoxModelObject(element.layoutObject())->layer()->compositedLayerMapping()->mainGraphicsLayer()->pauseAnimation(id, pauseTime);
     }
 }
 
@@ -417,14 +417,14 @@ bool CompositorAnimations::canAttachCompositedLayers(const Element& element, con
     if (!element.layoutObject() || !element.layoutObject()->isBoxModelObject())
         return false;
 
-    DeprecatedPaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
+    PaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
 
     if (!layer || !layer->isAllowedToQueryCompositingState()
-        || !layer->compositedDeprecatedPaintLayerMapping()
-        || !layer->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer())
+        || !layer->compositedLayerMapping()
+        || !layer->compositedLayerMapping()->mainGraphicsLayer())
         return false;
 
-    if (!layer->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->platformLayer())
+    if (!layer->compositedLayerMapping()->mainGraphicsLayer()->platformLayer())
         return false;
 
     return true;
@@ -434,14 +434,14 @@ void CompositorAnimations::attachCompositedLayers(const Element& element, const 
 {
     ASSERT(element.layoutObject());
 
-    DeprecatedPaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
+    PaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
     ASSERT(layer);
 
     WebCompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
     ASSERT(compositorPlayer);
 
-    ASSERT(layer->compositedDeprecatedPaintLayerMapping());
-    compositorPlayer->attachLayer(layer->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->platformLayer());
+    ASSERT(layer->compositedLayerMapping());
+    compositorPlayer->attachLayer(layer->compositedLayerMapping()->mainGraphicsLayer()->platformLayer());
 }
 
 // -----------------------------------------------------------------------

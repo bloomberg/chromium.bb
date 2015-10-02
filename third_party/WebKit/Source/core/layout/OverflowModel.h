@@ -65,7 +65,7 @@ namespace blink {
 // example for this is positioned objects that can be anywhere on the page and
 // could artificially inflate the visual overflow.
 // TODO(jchaffraix): Explain the interaction with the content visual overflow
-// code path (BoxPainter) and DeprecatedPaintLayerClipper.
+// code path (BoxPainter) and PaintLayerClipper.
 //
 // This object is allocated only when some of these fields have non-default
 // values in the owning box. Care should be taken to use LayoutBox adder

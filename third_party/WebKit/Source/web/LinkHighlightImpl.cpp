@@ -33,8 +33,8 @@
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -163,7 +163,7 @@ static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpace
         point = targetLayoutObject->frame()->view()->contentsToRootFrame(point);
         point = paintInvalidationContainer->frame()->view()->rootFrameToContents(point);
         FloatPoint floatPoint = paintInvalidationContainer->absoluteToLocal(point, UseTransforms);
-        DeprecatedPaintLayer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, floatPoint);
+        PaintLayer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, floatPoint);
 
         switch (i) {
         case 0: compositedSpaceQuad.setP1(floatPoint); break;
@@ -214,7 +214,7 @@ bool LinkHighlightImpl::computeHighlightLayerPathAndPosition(const LayoutBoxMode
     // FIXME: This is defensive code to avoid crashes such as those described in
     // crbug.com/440887. This should be cleaned up once we fix the root cause of
     // of the paint invalidation container not being composited.
-    if (!paintInvalidationContainer->layer()->compositedDeprecatedPaintLayerMapping() && !paintInvalidationContainer->layer()->groupedMapping())
+    if (!paintInvalidationContainer->layer()->compositedLayerMapping() && !paintInvalidationContainer->layer()->groupedMapping())
         return false;
 
     // Get quads for node in absolute coordinates.

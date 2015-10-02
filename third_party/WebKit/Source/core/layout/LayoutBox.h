@@ -82,7 +82,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 public:
     explicit LayoutBox(ContainerNode*);
 
-    DeprecatedPaintLayerType layerTypeRequired() const override;
+    PaintLayerType layerTypeRequired() const override;
 
     bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const override;
 
@@ -597,7 +597,7 @@ public:
 
     void removeFloatingOrPositionedChildFromBlockLists();
 
-    DeprecatedPaintLayer* enclosingFloatPaintingLayer() const;
+    PaintLayer* enclosingFloatPaintingLayer() const;
 
     virtual int firstLineBoxBaseline() const { return -1; }
     virtual int inlineBlockBaseline(LineDirectionMode) const { return -1; } // Returns -1 if we should skip this box when computing the baseline of an inline-block.
@@ -747,7 +747,7 @@ protected:
 
     LayoutObject* splitAnonymousBoxesAroundChild(LayoutObject* beforeChild);
 
-    void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
+    void addLayerHitTestRects(LayerHitTestRects&, const PaintLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
     void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
 
     PaintInvalidationReason paintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,

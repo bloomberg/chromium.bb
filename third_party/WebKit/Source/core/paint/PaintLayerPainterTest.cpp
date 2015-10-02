@@ -9,10 +9,10 @@
 
 namespace blink {
 
-using DeprecatedPaintLayerPainterTest = DisplayItemListPaintTest;
-using DeprecatedPaintLayerPainterTestForSlimmingPaintV2 = DisplayItemListPaintTestForSlimmingPaintV2;
+using PaintLayerPainterTest = DisplayItemListPaintTest;
+using PaintLayerPainterTestForSlimmingPaintV2 = DisplayItemListPaintTestForSlimmingPaintV2;
 
-TEST_F(DeprecatedPaintLayerPainterTest, CachedSubsequence)
+TEST_F(PaintLayerPainterTest, CachedSubsequence)
 {
     RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(true);
 
@@ -25,18 +25,18 @@ TEST_F(DeprecatedPaintLayerPainterTest, CachedSubsequence)
         "</div>");
     document().view()->updateAllLifecyclePhases();
 
-    DeprecatedPaintLayer& rootLayer = *layoutView().layer();
-    DeprecatedPaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
+    PaintLayer& rootLayer = *layoutView().layer();
+    PaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
     LayoutObject& container1 = *document().getElementById("container1")->layoutObject();
-    DeprecatedPaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
+    PaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
     LayoutObject& content1 = *document().getElementById("content1")->layoutObject();
     LayoutObject& container2 = *document().getElementById("container2")->layoutObject();
-    DeprecatedPaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
+    PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
     LayoutObject& content2 = *document().getElementById("content2")->layoutObject();
 
     GraphicsContext context(&rootDisplayItemList());
-    DeprecatedPaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
-    DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
+    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
@@ -56,7 +56,7 @@ TEST_F(DeprecatedPaintLayerPainterTest, CachedSubsequence)
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
     document().view()->updateAllLifecyclePhases();
-    DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 11,
         TestDisplayItem(layoutView(), cachedBackgroundType),
@@ -89,7 +89,7 @@ TEST_F(DeprecatedPaintLayerPainterTest, CachedSubsequence)
         TestDisplayItem(rootLayer, endSubsequenceType));
 
     // Repeated painting should just generate the root cached subsequence.
-    DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 2,
         TestDisplayItem(layoutView(), cachedBackgroundType),
         TestDisplayItem(rootLayer, cachedSubsequenceType));
@@ -112,7 +112,7 @@ TEST_F(DeprecatedPaintLayerPainterTest, CachedSubsequence)
         TestDisplayItem(rootLayer, endSubsequenceType));
 }
 
-TEST_F(DeprecatedPaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
+TEST_F(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
 {
     RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(true);
 
@@ -129,22 +129,22 @@ TEST_F(DeprecatedPaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
         "</div>");
     rootDisplayItemList().invalidateAll();
 
-    DeprecatedPaintLayer& rootLayer = *layoutView().layer();
-    DeprecatedPaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
+    PaintLayer& rootLayer = *layoutView().layer();
+    PaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
     LayoutObject& container1 = *document().getElementById("container1")->layoutObject();
-    DeprecatedPaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
+    PaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
     LayoutObject& content1 = *document().getElementById("content1")->layoutObject();
     LayoutObject& container2 = *document().getElementById("container2")->layoutObject();
-    DeprecatedPaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
+    PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
     LayoutObject& content2a = *document().getElementById("content2a")->layoutObject();
     LayoutObject& container3 = *document().getElementById("container3")->layoutObject();
-    DeprecatedPaintLayer& container3Layer = *toLayoutBoxModelObject(container3).layer();
+    PaintLayer& container3Layer = *toLayoutBoxModelObject(container3).layer();
     LayoutObject& content3 = *document().getElementById("content3")->layoutObject();
 
     document().view()->updateAllLifecyclePhases();
     GraphicsContext context(&rootDisplayItemList());
-    DeprecatedPaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 400, 300), GlobalPaintNormalPhase, LayoutSize());
-    DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 400, 300), GlobalPaintNormalPhase, LayoutSize());
+    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
 
     // Container1 is fully in the interest rect;
@@ -175,8 +175,8 @@ TEST_F(DeprecatedPaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     // Container2's intersection with the interest rect changes;
     // Content2b is out of the interest rect and outputs nothing;
     // Container3 becomes out of the interest rect and outputs nothing.
-    DeprecatedPaintLayerPaintingInfo paintingInfo1(&rootLayer, LayoutRect(0, 100, 300, 300), GlobalPaintNormalPhase, LayoutSize());
-    DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo1, PaintLayerPaintingCompositingAllPhases);
+    PaintLayerPaintingInfo paintingInfo1(&rootLayer, LayoutRect(0, 100, 300, 300), GlobalPaintNormalPhase, LayoutSize());
+    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo1, PaintLayerPaintingCompositingAllPhases);
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 11,
         TestDisplayItem(layoutView(), cachedBackgroundType),
@@ -209,7 +209,7 @@ TEST_F(DeprecatedPaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
         TestDisplayItem(rootLayer, endSubsequenceType));
 }
 
-TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
+TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
 {
     setBodyInnerHTML(
         "<div id='container1' style='position: relative; z-index: 1; width: 200px; height: 200px; background-color: blue'>"
@@ -220,13 +220,13 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
         "</div>");
     document().view()->updateAllLifecyclePhases();
 
-    DeprecatedPaintLayer& rootLayer = *layoutView().layer();
-    DeprecatedPaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
+    PaintLayer& rootLayer = *layoutView().layer();
+    PaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
     LayoutObject& container1 = *document().getElementById("container1")->layoutObject();
-    DeprecatedPaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
+    PaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
     LayoutObject& content1 = *document().getElementById("content1")->layoutObject();
     LayoutObject& container2 = *document().getElementById("container2")->layoutObject();
-    DeprecatedPaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
+    PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
     LayoutObject& content2 = *document().getElementById("content2")->layoutObject();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 13,
@@ -302,7 +302,7 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
         TestDisplayItem(rootLayer, endSubsequenceType));
 }
 
-TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInterestRectChange)
+TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInterestRectChange)
 {
     setBodyInnerHTML(
         "<div id='container1' style='position: relative; z-index: 1; width: 200px; height: 200px; background-color: blue'>"
@@ -317,16 +317,16 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInt
         "</div>");
     setNeedsDisplayForRoot();
 
-    DeprecatedPaintLayer& rootLayer = *layoutView().layer();
-    DeprecatedPaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
+    PaintLayer& rootLayer = *layoutView().layer();
+    PaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
     LayoutObject& container1 = *document().getElementById("container1")->layoutObject();
-    DeprecatedPaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
+    PaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
     LayoutObject& content1 = *document().getElementById("content1")->layoutObject();
     LayoutObject& container2 = *document().getElementById("container2")->layoutObject();
-    DeprecatedPaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
+    PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
     LayoutObject& content2a = *document().getElementById("content2a")->layoutObject();
     LayoutObject& container3 = *document().getElementById("container3")->layoutObject();
-    DeprecatedPaintLayer& container3Layer = *toLayoutBoxModelObject(container3).layer();
+    PaintLayer& container3Layer = *toLayoutBoxModelObject(container3).layer();
     LayoutObject& content3 = *document().getElementById("content3")->layoutObject();
 
     document().view()->updateAllLifecyclePhases(LayoutRect(0, 0, 400, 300));

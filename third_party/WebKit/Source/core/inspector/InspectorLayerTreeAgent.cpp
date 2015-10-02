@@ -44,8 +44,8 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
-#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/CompositingReasons.h"
@@ -207,7 +207,7 @@ void InspectorLayerTreeAgent::didPaint(LayoutObject*, const GraphicsLayer* graph
 
 PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTreeAgent::buildLayerTree()
 {
-    DeprecatedPaintLayerCompositor* compositor = deprecatedPaintLayerCompositor();
+    PaintLayerCompositor* compositor = deprecatedPaintLayerCompositor();
     if (!compositor || !compositor->inCompositingMode())
         return nullptr;
 
@@ -218,21 +218,21 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTre
     return layers.release();
 }
 
-void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(DeprecatedPaintLayer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
+void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(PaintLayer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
 {
-    if (root->hasCompositedDeprecatedPaintLayerMapping()) {
+    if (root->hasCompositedLayerMapping()) {
         if (Node* node = root->layoutObject()->generatingNode()) {
-            GraphicsLayer* graphicsLayer = root->compositedDeprecatedPaintLayerMapping()->childForSuperlayers();
+            GraphicsLayer* graphicsLayer = root->compositedLayerMapping()->childForSuperlayers();
             layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(), idForNode(node));
         }
     }
-    for (DeprecatedPaintLayer* child = root->firstChild(); child; child = child->nextSibling())
+    for (PaintLayer* child = root->firstChild(); child; child = child->nextSibling())
         buildLayerIdToNodeIdMap(child, layerIdToNodeIdMap);
     if (!root->layoutObject()->isLayoutIFrame())
         return;
     FrameView* childFrameView = toFrameView(toLayoutPart(root->layoutObject())->widget());
     if (LayoutView* childLayoutView = childFrameView->layoutView()) {
-        if (DeprecatedPaintLayerCompositor* childCompositor = childLayoutView->compositor())
+        if (PaintLayerCompositor* childCompositor = childLayoutView->compositor())
             buildLayerIdToNodeIdMap(childCompositor->rootLayer(), layerIdToNodeIdMap);
     }
 }
@@ -254,10 +254,10 @@ int InspectorLayerTreeAgent::idForNode(Node* node)
     return DOMNodeIds::idForNode(node);
 }
 
-DeprecatedPaintLayerCompositor* InspectorLayerTreeAgent::deprecatedPaintLayerCompositor()
+PaintLayerCompositor* InspectorLayerTreeAgent::deprecatedPaintLayerCompositor()
 {
     LayoutView* layoutView = m_pageAgent->inspectedFrame()->contentLayoutObject();
-    DeprecatedPaintLayerCompositor* compositor = layoutView ? layoutView->compositor() : nullptr;
+    PaintLayerCompositor* compositor = layoutView ? layoutView->compositor() : nullptr;
     return compositor;
 }
 
@@ -289,7 +289,7 @@ GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString, cons
         *errorString = "Invalid layer id";
         return nullptr;
     }
-    DeprecatedPaintLayerCompositor* compositor = deprecatedPaintLayerCompositor();
+    PaintLayerCompositor* compositor = deprecatedPaintLayerCompositor();
     if (!compositor) {
         *errorString = "Not in compositing mode";
         return nullptr;

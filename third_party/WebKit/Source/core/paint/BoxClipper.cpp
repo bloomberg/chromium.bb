@@ -6,8 +6,8 @@
 #include "core/paint/BoxClipper.h"
 
 #include "core/layout/LayoutBox.h"
-#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"

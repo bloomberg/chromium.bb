@@ -55,7 +55,7 @@ public:
     virtual void paintContents(const PaintInfo&, const LayoutPoint&) const;
 
 protected:
-    DeprecatedPaintLayerType layerTypeRequired() const override;
+    PaintLayerType layerTypeRequired() const override;
 
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
     void layout() override;

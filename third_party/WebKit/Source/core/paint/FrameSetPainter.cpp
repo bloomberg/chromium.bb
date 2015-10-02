@@ -116,7 +116,7 @@ void FrameSetPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoin
     size_t cols = m_layoutFrameSet.columns().m_sizes.size();
     for (size_t r = 0; r < rows; r++) {
         for (size_t c = 0; c < cols; c++) {
-            // Self-painting layers are painted during the DeprecatedPaintLayer paint recursion, not LayoutObject.
+            // Self-painting layers are painted during the PaintLayer paint recursion, not LayoutObject.
             if (!child->isBoxModelObject() || !toLayoutBoxModelObject(child)->hasSelfPaintingLayer())
                 child->paint(paintInfo, adjustedPaintOffset);
             child = child->nextSibling();

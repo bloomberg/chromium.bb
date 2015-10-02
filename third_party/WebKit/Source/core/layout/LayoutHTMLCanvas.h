@@ -37,7 +37,7 @@ public:
     explicit LayoutHTMLCanvas(HTMLCanvasElement*);
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCanvas || LayoutReplaced::isOfType(type); }
-    DeprecatedPaintLayerType layerTypeRequired() const override;
+    PaintLayerType layerTypeRequired() const override;
     PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject&) final;
 
     void canvasSizeChanged();

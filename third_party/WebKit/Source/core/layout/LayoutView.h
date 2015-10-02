@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class DeprecatedPaintLayerCompositor;
+class PaintLayerCompositor;
 class LayoutQuote;
 
 // LayoutView is the root of the layout tree and the Document's LayoutObject.
@@ -77,7 +77,7 @@ public:
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutView || LayoutBlockFlow::isOfType(type); }
 
-    DeprecatedPaintLayerType layerTypeRequired() const override { return NormalDeprecatedPaintLayer; }
+    PaintLayerType layerTypeRequired() const override { return NormalPaintLayer; }
 
     bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
@@ -157,7 +157,7 @@ public:
     // Notification that this view moved into or out of a native window.
     void setIsInWindow(bool);
 
-    DeprecatedPaintLayerCompositor* compositor();
+    PaintLayerCompositor* compositor();
     bool usesCompositing() const;
 
     // TODO(trchen): All pinch-zoom implementation should now use compositor raster scale based zooming,
@@ -251,7 +251,7 @@ private:
     // See the class comment for more details.
     LayoutState* m_layoutState;
 
-    OwnPtr<DeprecatedPaintLayerCompositor> m_compositor;
+    OwnPtr<PaintLayerCompositor> m_compositor;
     RefPtr<IntervalArena> m_intervalArena;
 
     LayoutQuote* m_layoutQuoteHead;

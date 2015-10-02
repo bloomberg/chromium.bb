@@ -42,7 +42,7 @@
  */
 
 #include "config.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
@@ -65,8 +65,8 @@
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
-#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/page/Page.h"
@@ -99,7 +99,7 @@ static CompositingQueryMode gCompositingQueryMode =
 
 using namespace HTMLNames;
 
-DeprecatedPaintLayer::DeprecatedPaintLayer(LayoutBoxModelObject* layoutObject, DeprecatedPaintLayerType type)
+PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject, PaintLayerType type)
     : m_layerType(type)
     , m_hasSelfPaintingLayerDescendant(false)
     , m_hasSelfPaintingLayerDescendantDirty(false)
@@ -150,7 +150,7 @@ DeprecatedPaintLayer::DeprecatedPaintLayer(LayoutBoxModelObject* layoutObject, D
     updateScrollableArea();
 }
 
-DeprecatedPaintLayer::~DeprecatedPaintLayer()
+PaintLayer::~PaintLayer()
 {
     if (layoutObject()->frame() && layoutObject()->frame()->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = layoutObject()->frame()->page()->scrollingCoordinator())
@@ -167,7 +167,7 @@ DeprecatedPaintLayer::~DeprecatedPaintLayer()
     // Child layers will be deleted by their corresponding layout objects, so
     // we don't need to delete them ourselves.
 
-    clearCompositedDeprecatedPaintLayerMapping(true);
+    clearCompositedLayerMapping(true);
 
     if (m_reflectionInfo)
         m_reflectionInfo->destroy();
@@ -176,21 +176,21 @@ DeprecatedPaintLayer::~DeprecatedPaintLayer()
         m_scrollableArea->dispose();
 }
 
-String DeprecatedPaintLayer::debugName() const
+String PaintLayer::debugName() const
 {
     if (isReflection())
         return layoutObject()->parent()->debugName() + " (reflection)";
     return layoutObject()->debugName();
 }
 
-DeprecatedPaintLayerCompositor* DeprecatedPaintLayer::compositor() const
+PaintLayerCompositor* PaintLayer::compositor() const
 {
     if (!layoutObject()->view())
         return 0;
     return layoutObject()->view()->compositor();
 }
 
-void DeprecatedPaintLayer::contentChanged(ContentChangeType changeType)
+void PaintLayer::contentChanged(ContentChangeType changeType)
 {
     // updateLayerCompositingState will query compositingReasons for accelerated overflow scrolling.
     // This is tripped by LayoutTests/compositing/content-changed-chicken-egg.html
@@ -206,47 +206,47 @@ void DeprecatedPaintLayer::contentChanged(ContentChangeType changeType)
         // GraphicsLayer::setContentsToPlatformLayer with the new platform
         // layer for this canvas.
         // See http://crbug.com/349195
-        if (hasCompositedDeprecatedPaintLayerMapping())
-            compositedDeprecatedPaintLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
+        if (hasCompositedLayerMapping())
+            compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
     }
 
-    if (m_compositedDeprecatedPaintLayerMapping)
-        m_compositedDeprecatedPaintLayerMapping->contentChanged(changeType);
+    if (m_compositedLayerMapping)
+        m_compositedLayerMapping->contentChanged(changeType);
 }
 
-bool DeprecatedPaintLayer::paintsWithFilters() const
+bool PaintLayer::paintsWithFilters() const
 {
     if (!layoutObject()->hasFilter())
         return false;
 
     // https://code.google.com/p/chromium/issues/detail?id=343759
     DisableCompositingQueryAsserts disabler;
-    return !m_compositedDeprecatedPaintLayerMapping || compositingState() != PaintsIntoOwnBacking;
+    return !m_compositedLayerMapping || compositingState() != PaintsIntoOwnBacking;
 }
 
-bool DeprecatedPaintLayer::paintsWithBackdropFilters() const
+bool PaintLayer::paintsWithBackdropFilters() const
 {
     if (!layoutObject()->hasBackdropFilter())
         return false;
 
     // https://code.google.com/p/chromium/issues/detail?id=343759
     DisableCompositingQueryAsserts disabler;
-    return !m_compositedDeprecatedPaintLayerMapping || compositingState() != PaintsIntoOwnBacking;
+    return !m_compositedLayerMapping || compositingState() != PaintsIntoOwnBacking;
 }
 
-LayoutSize DeprecatedPaintLayer::subpixelAccumulation() const
+LayoutSize PaintLayer::subpixelAccumulation() const
 {
     return m_subpixelAccumulation;
 }
 
-void DeprecatedPaintLayer::setSubpixelAccumulation(const LayoutSize& size)
+void PaintLayer::setSubpixelAccumulation(const LayoutSize& size)
 {
     m_subpixelAccumulation = size;
 }
 
-void DeprecatedPaintLayer::updateLayerPositionsAfterLayout()
+void PaintLayer::updateLayerPositionsAfterLayout()
 {
-    TRACE_EVENT0("blink,benchmark", "DeprecatedPaintLayer::updateLayerPositionsAfterLayout");
+    TRACE_EVENT0("blink,benchmark", "PaintLayer::updateLayerPositionsAfterLayout");
 
     m_clipper.clearClipRectsIncludingDescendants();
     updateLayerPositionRecursive();
@@ -259,14 +259,14 @@ void DeprecatedPaintLayer::updateLayerPositionsAfterLayout()
     }
 }
 
-void DeprecatedPaintLayer::updateLayerPositionRecursive()
+void PaintLayer::updateLayerPositionRecursive()
 {
     updateLayerPosition();
 
     if (m_reflectionInfo)
         m_reflectionInfo->reflection()->layout();
 
-    // FIXME(400589): We would like to do this in DeprecatedPaintLayerScrollableArea::updateAfterLayout,
+    // FIXME(400589): We would like to do this in PaintLayerScrollableArea::updateAfterLayout,
     // but it depends on the size computed by updateLayerPosition.
     if (m_scrollableArea) {
         if (ScrollAnimator* scrollAnimator = m_scrollableArea->existingScrollAnimator())
@@ -278,17 +278,17 @@ void DeprecatedPaintLayer::updateLayerPositionRecursive()
     // flags and depending on us to update them.
     updateDescendantDependentFlags();
 
-    for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling())
+    for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
         child->updateLayerPositionRecursive();
 }
 
-void DeprecatedPaintLayer::updateHasSelfPaintingLayerDescendant() const
+void PaintLayer::updateHasSelfPaintingLayerDescendant() const
 {
     ASSERT(m_hasSelfPaintingLayerDescendantDirty);
 
     m_hasSelfPaintingLayerDescendant = false;
 
-    for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling()) {
+    for (PaintLayer* child = firstChild(); child; child = child->nextSibling()) {
         if (child->isSelfPaintingLayer() || child->hasSelfPaintingLayerDescendant()) {
             m_hasSelfPaintingLayerDescendant = true;
             break;
@@ -298,9 +298,9 @@ void DeprecatedPaintLayer::updateHasSelfPaintingLayerDescendant() const
     m_hasSelfPaintingLayerDescendantDirty = false;
 }
 
-void DeprecatedPaintLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus()
+void PaintLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus()
 {
-    for (DeprecatedPaintLayer* layer = this; layer; layer = layer->parent()) {
+    for (PaintLayer* layer = this; layer; layer = layer->parent()) {
         layer->m_hasSelfPaintingLayerDescendantDirty = true;
         // If we have reached a self-painting layer, we know our parent should have a self-painting descendant
         // in this case, there is no need to dirty our ancestors further.
@@ -311,25 +311,25 @@ void DeprecatedPaintLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatu
     }
 }
 
-bool DeprecatedPaintLayer::scrollsWithViewport() const
+bool PaintLayer::scrollsWithViewport() const
 {
     return layoutObject()->style()->position() == FixedPosition && layoutObject()->containerForFixedPosition() == layoutObject()->view();
 }
 
-bool DeprecatedPaintLayer::scrollsWithRespectTo(const DeprecatedPaintLayer* other) const
+bool PaintLayer::scrollsWithRespectTo(const PaintLayer* other) const
 {
     if (scrollsWithViewport() != other->scrollsWithViewport())
         return true;
     return ancestorScrollingLayer() != other->ancestorScrollingLayer();
 }
 
-void DeprecatedPaintLayer::updateLayerPositionsAfterOverflowScroll(const DoubleSize& scrollDelta)
+void PaintLayer::updateLayerPositionsAfterOverflowScroll(const DoubleSize& scrollDelta)
 {
     m_clipper.clearClipRectsIncludingDescendants();
     updateLayerPositionsAfterScrollRecursive(scrollDelta, isPaintInvalidationContainer());
 }
 
-void DeprecatedPaintLayer::updateLayerPositionsAfterScrollRecursive(const DoubleSize& scrollDelta, bool paintInvalidationContainerWasScrolled)
+void PaintLayer::updateLayerPositionsAfterScrollRecursive(const DoubleSize& scrollDelta, bool paintInvalidationContainerWasScrolled)
 {
     updateLayerPosition();
     if (paintInvalidationContainerWasScrolled && !isPaintInvalidationContainer()) {
@@ -340,13 +340,13 @@ void DeprecatedPaintLayer::updateLayerPositionsAfterScrollRecursive(const Double
         // the coordinate space of the scrolling content layer, so that they need no adjustment.
         m_layoutObject->adjustPreviousPaintInvalidationForScrollIfNeeded(scrollDelta);
     }
-    for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling()) {
+    for (PaintLayer* child = firstChild(); child; child = child->nextSibling()) {
         child->updateLayerPositionsAfterScrollRecursive(scrollDelta,
             paintInvalidationContainerWasScrolled && !child->isPaintInvalidationContainer());
     }
 }
 
-void DeprecatedPaintLayer::updateTransformationMatrix()
+void PaintLayer::updateTransformationMatrix()
 {
     if (m_transform) {
         LayoutBox* box = layoutBox();
@@ -357,7 +357,7 @@ void DeprecatedPaintLayer::updateTransformationMatrix()
     }
 }
 
-void DeprecatedPaintLayer::updateTransform(const ComputedStyle* oldStyle, const ComputedStyle& newStyle)
+void PaintLayer::updateTransform(const ComputedStyle* oldStyle, const ComputedStyle& newStyle)
 {
     if (oldStyle && newStyle.transformDataEquivalent(*oldStyle))
         return;
@@ -374,7 +374,7 @@ void DeprecatedPaintLayer::updateTransform(const ComputedStyle* oldStyle, const 
         else
             m_transform.clear();
 
-        // DeprecatedPaintLayers with transforms act as clip rects roots, so clear the cached clip rects here.
+        // PaintLayers with transforms act as clip rects roots, so clear the cached clip rects here.
         m_clipper.clearClipRectsIncludingDescendants();
     } else if (hasTransform) {
         m_clipper.clearClipRectsIncludingDescendants(AbsoluteClipRects);
@@ -386,34 +386,34 @@ void DeprecatedPaintLayer::updateTransform(const ComputedStyle* oldStyle, const 
         dirty3DTransformedDescendantStatus();
 }
 
-static DeprecatedPaintLayer* enclosingLayerForContainingBlock(DeprecatedPaintLayer* layer)
+static PaintLayer* enclosingLayerForContainingBlock(PaintLayer* layer)
 {
     if (LayoutObject* containingBlock = layer->layoutObject()->containingBlock())
         return containingBlock->enclosingLayer();
     return 0;
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::renderingContextRoot()
+PaintLayer* PaintLayer::renderingContextRoot()
 {
-    DeprecatedPaintLayer* renderingContext = 0;
+    PaintLayer* renderingContext = 0;
 
     if (shouldPreserve3D())
         renderingContext = this;
 
-    for (DeprecatedPaintLayer* current = enclosingLayerForContainingBlock(this); current && current->shouldPreserve3D(); current = enclosingLayerForContainingBlock(current))
+    for (PaintLayer* current = enclosingLayerForContainingBlock(this); current && current->shouldPreserve3D(); current = enclosingLayerForContainingBlock(current))
         renderingContext = current;
 
     return renderingContext;
 }
 
-TransformationMatrix DeprecatedPaintLayer::currentTransform() const
+TransformationMatrix PaintLayer::currentTransform() const
 {
     if (!m_transform)
         return TransformationMatrix();
     return *m_transform;
 }
 
-TransformationMatrix DeprecatedPaintLayer::renderableTransform(GlobalPaintFlags globalPaintFlags) const
+TransformationMatrix PaintLayer::renderableTransform(GlobalPaintFlags globalPaintFlags) const
 {
     if (!m_transform)
         return TransformationMatrix();
@@ -429,9 +429,9 @@ TransformationMatrix DeprecatedPaintLayer::renderableTransform(GlobalPaintFlags 
 
 // Convert a bounding box from flow thread coordinates, relative to |layer|, to visual coordinates, relative to |ancestorLayer|.
 // See http://www.chromium.org/developers/design-documents/multi-column-layout for more info on these coordinate types.
-static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const DeprecatedPaintLayer* layer, const DeprecatedPaintLayer* ancestorLayer, LayoutRect& rect)
+static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const PaintLayer* layer, const PaintLayer* ancestorLayer, LayoutRect& rect)
 {
-    DeprecatedPaintLayer* paginationLayer = layer->enclosingPaginationLayer();
+    PaintLayer* paginationLayer = layer->enclosingPaginationLayer();
     ASSERT(paginationLayer);
     LayoutFlowThread* flowThread = toLayoutFlowThread(paginationLayer->layoutObject());
 
@@ -455,7 +455,7 @@ static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const DeprecatedP
     rect.moveBy(-ancestorLayer->visualOffsetFromAncestor(paginationLayer));
 }
 
-void DeprecatedPaintLayer::updatePaginationRecursive(bool needsPaginationUpdate)
+void PaintLayer::updatePaginationRecursive(bool needsPaginationUpdate)
 {
     m_enclosingPaginationLayer = 0;
 
@@ -472,18 +472,18 @@ void DeprecatedPaintLayer::updatePaginationRecursive(bool needsPaginationUpdate)
             m_enclosingPaginationLayer = containingFlowThread->layer();
     }
 
-    for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling())
+    for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
         child->updatePaginationRecursive(needsPaginationUpdate);
 }
 
-void DeprecatedPaintLayer::clearPaginationRecursive()
+void PaintLayer::clearPaginationRecursive()
 {
     m_enclosingPaginationLayer = 0;
-    for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling())
+    for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
         child->clearPaginationRecursive();
 }
 
-LayoutPoint DeprecatedPaintLayer::positionFromPaintInvalidationBacking(const LayoutObject* layoutObject, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutPoint PaintLayer::positionFromPaintInvalidationBacking(const LayoutObject* layoutObject, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     FloatPoint point = layoutObject->localToContainerPoint(FloatPoint(), paintInvalidationContainer, 0, 0, paintInvalidationState);
 
@@ -494,11 +494,11 @@ LayoutPoint DeprecatedPaintLayer::positionFromPaintInvalidationBacking(const Lay
     return LayoutPoint(point);
 }
 
-void DeprecatedPaintLayer::mapPointToPaintBackingCoordinates(const LayoutBoxModelObject* paintInvalidationContainer, FloatPoint& point)
+void PaintLayer::mapPointToPaintBackingCoordinates(const LayoutBoxModelObject* paintInvalidationContainer, FloatPoint& point)
 {
-    DeprecatedPaintLayer* paintInvalidationLayer = paintInvalidationContainer->layer();
+    PaintLayer* paintInvalidationLayer = paintInvalidationContainer->layer();
     if (!paintInvalidationLayer->groupedMapping()) {
-        point.move(paintInvalidationLayer->compositedDeprecatedPaintLayerMapping()->contentOffsetInCompositingLayer());
+        point.move(paintInvalidationLayer->compositedLayerMapping()->contentOffsetInCompositingLayer());
         return;
     }
 
@@ -513,11 +513,11 @@ void DeprecatedPaintLayer::mapPointToPaintBackingCoordinates(const LayoutBoxMode
     point.moveBy(-paintInvalidationLayer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
-void DeprecatedPaintLayer::mapRectToPaintBackingCoordinates(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect)
+void PaintLayer::mapRectToPaintBackingCoordinates(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect)
 {
-    DeprecatedPaintLayer* paintInvalidationLayer = paintInvalidationContainer->layer();
+    PaintLayer* paintInvalidationLayer = paintInvalidationContainer->layer();
     if (!paintInvalidationLayer->groupedMapping()) {
-        rect.move(paintInvalidationLayer->compositedDeprecatedPaintLayerMapping()->contentOffsetInCompositingLayer());
+        rect.move(paintInvalidationLayer->compositedLayerMapping()->contentOffsetInCompositingLayer());
         return;
     }
 
@@ -532,7 +532,7 @@ void DeprecatedPaintLayer::mapRectToPaintBackingCoordinates(const LayoutBoxModel
     rect.moveBy(-paintInvalidationLayer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
-void DeprecatedPaintLayer::mapRectToPaintInvalidationBacking(const LayoutObject* layoutObject, const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState)
+void PaintLayer::mapRectToPaintInvalidationBacking(const LayoutObject* layoutObject, const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState)
 {
     if (!paintInvalidationContainer->layer()->groupedMapping()) {
         layoutObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
@@ -548,7 +548,7 @@ void DeprecatedPaintLayer::mapRectToPaintInvalidationBacking(const LayoutObject*
     mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
 }
 
-LayoutRect DeprecatedPaintLayer::computePaintInvalidationRect(const LayoutObject* layoutObject, const DeprecatedPaintLayer* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutRect PaintLayer::computePaintInvalidationRect(const LayoutObject* layoutObject, const PaintLayer* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     if (!paintInvalidationContainer->groupedMapping())
         return layoutObject->computePaintInvalidationRect(paintInvalidationContainer->layoutObject(), paintInvalidationState);
@@ -558,7 +558,7 @@ LayoutRect DeprecatedPaintLayer::computePaintInvalidationRect(const LayoutObject
     return rect;
 }
 
-void DeprecatedPaintLayer::dirtyVisibleContentStatus()
+void PaintLayer::dirtyVisibleContentStatus()
 {
     compositor()->setNeedsUpdateDescendantDependentFlags();
     m_visibleContentStatusDirty = true;
@@ -569,7 +569,7 @@ void DeprecatedPaintLayer::dirtyVisibleContentStatus()
         parent()->dirtyVisibleContentStatus();
 }
 
-void DeprecatedPaintLayer::potentiallyDirtyVisibleContentStatus(EVisibility visibility)
+void PaintLayer::potentiallyDirtyVisibleContentStatus(EVisibility visibility)
 {
     if (m_visibleContentStatusDirty)
         return;
@@ -578,11 +578,11 @@ void DeprecatedPaintLayer::potentiallyDirtyVisibleContentStatus(EVisibility visi
     dirtyVisibleContentStatus();
 }
 
-void DeprecatedPaintLayer::dirtyAncestorChainVisibleDescendantStatus()
+void PaintLayer::dirtyAncestorChainVisibleDescendantStatus()
 {
     compositor()->setNeedsUpdateDescendantDependentFlags();
 
-    for (DeprecatedPaintLayer* layer = this; layer; layer = layer->parent()) {
+    for (PaintLayer* layer = this; layer; layer = layer->parent()) {
         if (layer->m_visibleDescendantStatusDirty)
             break;
         layer->m_visibleDescendantStatusDirty = true;
@@ -591,9 +591,9 @@ void DeprecatedPaintLayer::dirtyAncestorChainVisibleDescendantStatus()
 
 // FIXME: this is quite brute-force. We could be more efficient if we were to
 // track state and update it as appropriate as changes are made in the layout tree.
-void DeprecatedPaintLayer::updateScrollingStateAfterCompositingChange()
+void PaintLayer::updateScrollingStateAfterCompositingChange()
 {
-    TRACE_EVENT0("blink", "DeprecatedPaintLayer::updateScrollingStateAfterCompositingChange");
+    TRACE_EVENT0("blink", "PaintLayer::updateScrollingStateAfterCompositingChange");
     m_hasVisibleNonLayerContent = false;
     for (LayoutObject* r = layoutObject()->slowFirstChild(); r; r = r->nextSibling()) {
         if (!r->hasLayer()) {
@@ -603,7 +603,7 @@ void DeprecatedPaintLayer::updateScrollingStateAfterCompositingChange()
     }
 
     m_hasNonCompositedChild = false;
-    for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling()) {
+    for (PaintLayer* child = firstChild(); child; child = child->nextSibling()) {
         if (child->compositingState() == NotComposited) {
             m_hasNonCompositedChild = true;
             return;
@@ -611,12 +611,12 @@ void DeprecatedPaintLayer::updateScrollingStateAfterCompositingChange()
     }
 }
 
-void DeprecatedPaintLayer::updateDescendantDependentFlags()
+void PaintLayer::updateDescendantDependentFlags()
 {
     if (m_visibleDescendantStatusDirty) {
         m_hasVisibleDescendant = false;
 
-        for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling()) {
+        for (PaintLayer* child = firstChild(); child; child = child->nextSibling()) {
             child->updateDescendantDependentFlags();
 
             if (child->m_hasVisibleContent || child->m_hasVisibleDescendant) {
@@ -670,9 +670,9 @@ void DeprecatedPaintLayer::updateDescendantDependentFlags()
     }
 }
 
-void DeprecatedPaintLayer::dirty3DTransformedDescendantStatus()
+void PaintLayer::dirty3DTransformedDescendantStatus()
 {
-    DeprecatedPaintLayerStackingNode* stackingNode = m_stackingNode->ancestorStackingContextNode();
+    PaintLayerStackingNode* stackingNode = m_stackingNode->ancestorStackingContextNode();
     if (!stackingNode)
         return;
 
@@ -687,7 +687,7 @@ void DeprecatedPaintLayer::dirty3DTransformedDescendantStatus()
 }
 
 // Return true if this layer or any preserve-3d descendants have 3d.
-bool DeprecatedPaintLayer::update3DTransformedDescendantStatus()
+bool PaintLayer::update3DTransformedDescendantStatus()
 {
     if (m_3DTransformedDescendantStatusDirty) {
         m_has3DTransformedDescendant = false;
@@ -696,8 +696,8 @@ bool DeprecatedPaintLayer::update3DTransformedDescendantStatus()
 
         // Transformed or preserve-3d descendants can only be in the z-order lists, not
         // in the normal flow list, so we only need to check those.
-        DeprecatedPaintLayerStackingNodeIterator iterator(*m_stackingNode.get(), PositiveZOrderChildren | NegativeZOrderChildren);
-        while (DeprecatedPaintLayerStackingNode* node = iterator.next())
+        PaintLayerStackingNodeIterator iterator(*m_stackingNode.get(), PositiveZOrderChildren | NegativeZOrderChildren);
+        while (PaintLayerStackingNode* node = iterator.next())
             m_has3DTransformedDescendant |= node->layer()->update3DTransformedDescendantStatus();
 
         m_3DTransformedDescendantStatusDirty = false;
@@ -711,7 +711,7 @@ bool DeprecatedPaintLayer::update3DTransformedDescendantStatus()
     return has3DTransform();
 }
 
-bool DeprecatedPaintLayer::updateLayerPosition()
+bool PaintLayer::updateLayerPosition()
 {
     LayoutPoint localPoint;
     LayoutPoint inlineBoundingBoxOffset; // We don't put this into the Layer x/y for inlines, so we need to subtract it out when done.
@@ -746,7 +746,7 @@ bool DeprecatedPaintLayer::updateLayerPosition()
     }
 
     // Subtract our parent's scroll offset.
-    if (DeprecatedPaintLayer* positionedParent = layoutObject()->isOutOfFlowPositioned() ? enclosingPositionedAncestor() : nullptr) {
+    if (PaintLayer* positionedParent = layoutObject()->isOutOfFlowPositioned() ? enclosingPositionedAncestor() : nullptr) {
         // For positioned layers, we subtract out the enclosing positioned layer's scroll offset.
         if (positionedParent->layoutObject()->hasOverflowClip()) {
             IntSize offset = positionedParent->layoutBox()->scrolledContentOffset();
@@ -787,7 +787,7 @@ bool DeprecatedPaintLayer::updateLayerPosition()
     return positionOrOffsetChanged;
 }
 
-TransformationMatrix DeprecatedPaintLayer::perspectiveTransform() const
+TransformationMatrix PaintLayer::perspectiveTransform() const
 {
     if (!layoutObject()->hasTransformRelatedProperty())
         return TransformationMatrix();
@@ -801,7 +801,7 @@ TransformationMatrix DeprecatedPaintLayer::perspectiveTransform() const
     return t;
 }
 
-FloatPoint DeprecatedPaintLayer::perspectiveOrigin() const
+FloatPoint PaintLayer::perspectiveOrigin() const
 {
     if (!layoutObject()->hasTransformRelatedProperty())
         return FloatPoint();
@@ -812,18 +812,18 @@ FloatPoint DeprecatedPaintLayer::perspectiveOrigin() const
     return FloatPoint(floatValueForLength(style.perspectiveOriginX(), borderBox.width().toFloat()), floatValueForLength(style.perspectiveOriginY(), borderBox.height().toFloat()));
 }
 
-static inline bool isFixedPositionedContainer(DeprecatedPaintLayer* layer)
+static inline bool isFixedPositionedContainer(PaintLayer* layer)
 {
     return layer->isRootLayer() || layer->hasTransformRelatedProperty();
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingPositionedAncestor(const DeprecatedPaintLayer* ancestor, bool* skippedAncestor) const
+PaintLayer* PaintLayer::enclosingPositionedAncestor(const PaintLayer* ancestor, bool* skippedAncestor) const
 {
     ASSERT(!ancestor || skippedAncestor); // If we have specified an ancestor, surely the caller needs to know whether we skipped it.
     if (skippedAncestor)
         *skippedAncestor = false;
     if (layoutObject()->style()->position() == FixedPosition) {
-        DeprecatedPaintLayer* curr = parent();
+        PaintLayer* curr = parent();
         while (curr && !isFixedPositionedContainer(curr)) {
             if (skippedAncestor && curr == ancestor)
                 *skippedAncestor = true;
@@ -833,7 +833,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingPositionedAncestor(const De
         return curr;
     }
 
-    DeprecatedPaintLayer* curr = parent();
+    PaintLayer* curr = parent();
     while (curr && !curr->isPositionedContainer()) {
         if (skippedAncestor && curr == ancestor)
             *skippedAncestor = true;
@@ -843,16 +843,16 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingPositionedAncestor(const De
     return curr;
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingTransformedAncestor() const
+PaintLayer* PaintLayer::enclosingTransformedAncestor() const
 {
-    DeprecatedPaintLayer* curr = parent();
+    PaintLayer* curr = parent();
     while (curr && !curr->isRootLayer() && !curr->layoutObject()->hasTransformRelatedProperty())
         curr = curr->parent();
 
     return curr;
 }
 
-LayoutPoint DeprecatedPaintLayer::computeOffsetFromTransformedAncestor() const
+LayoutPoint PaintLayer::computeOffsetFromTransformedAncestor() const
 {
     const AncestorDependentCompositingInputs& properties = ancestorDependentCompositingInputs();
 
@@ -863,30 +863,30 @@ LayoutPoint DeprecatedPaintLayer::computeOffsetFromTransformedAncestor() const
     return LayoutPoint(transformState.lastPlanarPoint());
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::compositingContainer() const
+PaintLayer* PaintLayer::compositingContainer() const
 {
     if (!stackingNode()->isTreatedAsOrStackingContext())
         return parent();
-    if (DeprecatedPaintLayerStackingNode* ancestorStackingNode = stackingNode()->ancestorStackingContextNode())
+    if (PaintLayerStackingNode* ancestorStackingNode = stackingNode()->ancestorStackingContextNode())
         return ancestorStackingNode->layer();
     return nullptr;
 }
 
-bool DeprecatedPaintLayer::isPaintInvalidationContainer() const
+bool PaintLayer::isPaintInvalidationContainer() const
 {
     return compositingState() == PaintsIntoOwnBacking || compositingState() == PaintsIntoGroupedBacking;
 }
 
 // Note: enclosingCompositingLayer does not include squashed layers. Compositing stacking children of squashed layers
 // receive graphics layers that are parented to the compositing ancestor of the squashed layer.
-DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingLayerWithCompositedDeprecatedPaintLayerMapping(IncludeSelfOrNot includeSelf) const
+PaintLayer* PaintLayer::enclosingLayerWithCompositedLayerMapping(IncludeSelfOrNot includeSelf) const
 {
     ASSERT(isAllowedToQueryCompositingState());
 
     if ((includeSelf == IncludeSelf) && compositingState() != NotComposited && compositingState() != PaintsIntoGroupedBacking)
-        return const_cast<DeprecatedPaintLayer*>(this);
+        return const_cast<PaintLayer*>(this);
 
-    for (DeprecatedPaintLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
+    for (PaintLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
         if (curr->compositingState() != NotComposited && curr->compositingState() != PaintsIntoGroupedBacking)
             return curr;
     }
@@ -896,10 +896,10 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingLayerWithCompositedDeprecat
 
 // Return the enclosingCompositedLayerForPaintInvalidation for the given Layer
 // including crossing frame boundaries.
-DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingLayerForPaintInvalidationCrossingFrameBoundaries() const
+PaintLayer* PaintLayer::enclosingLayerForPaintInvalidationCrossingFrameBoundaries() const
 {
-    const DeprecatedPaintLayer* layer = this;
-    DeprecatedPaintLayer* compositedLayer = 0;
+    const PaintLayer* layer = this;
+    PaintLayer* compositedLayer = 0;
     while (!compositedLayer) {
         compositedLayer = layer->enclosingLayerForPaintInvalidation();
         if (!compositedLayer) {
@@ -912,14 +912,14 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingLayerForPaintInvalidationCr
     return compositedLayer;
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingLayerForPaintInvalidation() const
+PaintLayer* PaintLayer::enclosingLayerForPaintInvalidation() const
 {
     ASSERT(isAllowedToQueryCompositingState());
 
     if (isPaintInvalidationContainer())
-        return const_cast<DeprecatedPaintLayer*>(this);
+        return const_cast<PaintLayer*>(this);
 
-    for (DeprecatedPaintLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
+    for (PaintLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
         if (curr->isPaintInvalidationContainer())
             return curr;
     }
@@ -927,30 +927,30 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingLayerForPaintInvalidation()
     return nullptr;
 }
 
-void DeprecatedPaintLayer::setNeedsCompositingInputsUpdate()
+void PaintLayer::setNeedsCompositingInputsUpdate()
 {
     m_needsAncestorDependentCompositingInputsUpdate = true;
     m_needsDescendantDependentCompositingInputsUpdate = true;
 
-    for (DeprecatedPaintLayer* current = this; current && !current->m_childNeedsCompositingInputsUpdate; current = current->parent())
+    for (PaintLayer* current = this; current && !current->m_childNeedsCompositingInputsUpdate; current = current->parent())
         current->m_childNeedsCompositingInputsUpdate = true;
 
     compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 }
 
-void DeprecatedPaintLayer::updateAncestorDependentCompositingInputs(const AncestorDependentCompositingInputs& compositingInputs)
+void PaintLayer::updateAncestorDependentCompositingInputs(const AncestorDependentCompositingInputs& compositingInputs)
 {
     m_ancestorDependentCompositingInputs = compositingInputs;
     m_needsAncestorDependentCompositingInputsUpdate = false;
 }
 
-void DeprecatedPaintLayer::updateDescendantDependentCompositingInputs(const DescendantDependentCompositingInputs& compositingInputs)
+void PaintLayer::updateDescendantDependentCompositingInputs(const DescendantDependentCompositingInputs& compositingInputs)
 {
     m_descendantDependentCompositingInputs = compositingInputs;
     m_needsDescendantDependentCompositingInputsUpdate = false;
 }
 
-void DeprecatedPaintLayer::didUpdateCompositingInputs()
+void PaintLayer::didUpdateCompositingInputs()
 {
     ASSERT(!needsCompositingInputsUpdate());
     m_childNeedsCompositingInputsUpdate = false;
@@ -958,7 +958,7 @@ void DeprecatedPaintLayer::didUpdateCompositingInputs()
         m_scrollableArea->updateNeedsCompositedScrolling();
 }
 
-bool DeprecatedPaintLayer::hasNonIsolatedDescendantWithBlendMode() const
+bool PaintLayer::hasNonIsolatedDescendantWithBlendMode() const
 {
     if (descendantDependentCompositingInputs().hasNonIsolatedDescendantWithBlendMode)
         return true;
@@ -967,38 +967,38 @@ bool DeprecatedPaintLayer::hasNonIsolatedDescendantWithBlendMode() const
     return false;
 }
 
-void DeprecatedPaintLayer::setCompositingReasons(CompositingReasons reasons, CompositingReasons mask)
+void PaintLayer::setCompositingReasons(CompositingReasons reasons, CompositingReasons mask)
 {
     if ((compositingReasons() & mask) == (reasons & mask))
         return;
     m_compositingReasons = (reasons & mask) | (compositingReasons() & ~mask);
 }
 
-void DeprecatedPaintLayer::setHasCompositingDescendant(bool hasCompositingDescendant)
+void PaintLayer::setHasCompositingDescendant(bool hasCompositingDescendant)
 {
     if (m_hasCompositingDescendant == static_cast<unsigned>(hasCompositingDescendant))
         return;
 
     m_hasCompositingDescendant = hasCompositingDescendant;
 
-    if (hasCompositedDeprecatedPaintLayerMapping())
-        compositedDeprecatedPaintLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
+    if (hasCompositedLayerMapping())
+        compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
 }
 
-void DeprecatedPaintLayer::setShouldIsolateCompositedDescendants(bool shouldIsolateCompositedDescendants)
+void PaintLayer::setShouldIsolateCompositedDescendants(bool shouldIsolateCompositedDescendants)
 {
     if (m_shouldIsolateCompositedDescendants == static_cast<unsigned>(shouldIsolateCompositedDescendants))
         return;
 
     m_shouldIsolateCompositedDescendants = shouldIsolateCompositedDescendants;
 
-    if (hasCompositedDeprecatedPaintLayerMapping())
-        compositedDeprecatedPaintLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
+    if (hasCompositedLayerMapping())
+        compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
 }
 
-bool DeprecatedPaintLayer::hasAncestorWithFilterOutsets() const
+bool PaintLayer::hasAncestorWithFilterOutsets() const
 {
-    for (const DeprecatedPaintLayer* curr = this; curr; curr = curr->parent()) {
+    for (const PaintLayer* curr = this; curr; curr = curr->parent()) {
         LayoutBoxModelObject* layoutObject = curr->layoutObject();
         if (layoutObject->style()->hasFilterOutsets())
             return true;
@@ -1006,17 +1006,17 @@ bool DeprecatedPaintLayer::hasAncestorWithFilterOutsets() const
     return false;
 }
 
-static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, const DeprecatedPaintLayer* layer, const DeprecatedPaintLayer* rootLayer,
-    DeprecatedPaintLayer::TransparencyClipBoxBehavior transparencyBehavior, const LayoutSize& subPixelAccumulation, GlobalPaintFlags globalPaintFlags)
+static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, const PaintLayer* layer, const PaintLayer* rootLayer,
+    PaintLayer::TransparencyClipBoxBehavior transparencyBehavior, const LayoutSize& subPixelAccumulation, GlobalPaintFlags globalPaintFlags)
 {
     // If we have a mask, then the clip is limited to the border box area (and there is
     // no need to examine child layers).
     if (!layer->layoutObject()->hasMask()) {
         // Note: we don't have to walk z-order lists since transparent elements always establish
         // a stacking container. This means we can just walk the layer tree directly.
-        for (DeprecatedPaintLayer* curr = layer->firstChild(); curr; curr = curr->nextSibling()) {
+        for (PaintLayer* curr = layer->firstChild(); curr; curr = curr->nextSibling()) {
             if (!layer->reflectionInfo() || layer->reflectionInfo()->reflectionLayer() != curr)
-                clipRect.unite(DeprecatedPaintLayer::transparencyClipBox(curr, rootLayer, transparencyBehavior, DeprecatedPaintLayer::DescendantsOfTransparencyClipBox, subPixelAccumulation, globalPaintFlags));
+                clipRect.unite(PaintLayer::transparencyClipBox(curr, rootLayer, transparencyBehavior, PaintLayer::DescendantsOfTransparencyClipBox, subPixelAccumulation, globalPaintFlags));
         }
     }
 
@@ -1033,7 +1033,7 @@ static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, cons
     }
 }
 
-LayoutRect DeprecatedPaintLayer::transparencyClipBox(const DeprecatedPaintLayer* layer, const DeprecatedPaintLayer* rootLayer, TransparencyClipBoxBehavior transparencyBehavior,
+LayoutRect PaintLayer::transparencyClipBox(const PaintLayer* layer, const PaintLayer* rootLayer, TransparencyClipBoxBehavior transparencyBehavior,
     TransparencyClipBoxMode transparencyMode, const LayoutSize& subPixelAccumulation, GlobalPaintFlags globalPaintFlags)
 {
     // FIXME: Although this function completely ignores CSS-imposed clipping, we did already intersect with the
@@ -1044,8 +1044,8 @@ LayoutRect DeprecatedPaintLayer::transparencyClipBox(const DeprecatedPaintLayer*
         || (transparencyBehavior == HitTestingTransparencyClipBox && layer->hasTransformRelatedProperty()))) {
         // The best we can do here is to use enclosed bounding boxes to establish a "fuzzy" enough clip to encompass
         // the transformed layer and all of its children.
-        const DeprecatedPaintLayer* paginationLayer = transparencyMode == DescendantsOfTransparencyClipBox ? layer->enclosingPaginationLayer() : 0;
-        const DeprecatedPaintLayer* rootLayerForTransform = paginationLayer ? paginationLayer : rootLayer;
+        const PaintLayer* paginationLayer = transparencyMode == DescendantsOfTransparencyClipBox ? layer->enclosingPaginationLayer() : 0;
+        const PaintLayer* rootLayerForTransform = paginationLayer ? paginationLayer : rootLayer;
         LayoutPoint delta;
         layer->convertToLayerCoords(rootLayerForTransform, delta);
 
@@ -1084,24 +1084,24 @@ LayoutRect DeprecatedPaintLayer::transparencyClipBox(const DeprecatedPaintLayer*
     return clipRect;
 }
 
-LayoutRect DeprecatedPaintLayer::paintingExtent(const DeprecatedPaintLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, GlobalPaintFlags globalPaintFlags)
+LayoutRect PaintLayer::paintingExtent(const PaintLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, GlobalPaintFlags globalPaintFlags)
 {
     return intersection(transparencyClipBox(this, rootLayer, PaintingTransparencyClipBox, RootOfTransparencyClipBox, subPixelAccumulation, globalPaintFlags), paintDirtyRect);
 }
 
-void* DeprecatedPaintLayer::operator new(size_t sz)
+void* PaintLayer::operator new(size_t sz)
 {
     return partitionAlloc(WTF::Partitions::layoutPartition(), sz);
 }
 
-void DeprecatedPaintLayer::operator delete(void* ptr)
+void PaintLayer::operator delete(void* ptr)
 {
     partitionFree(ptr);
 }
 
-void DeprecatedPaintLayer::addChild(DeprecatedPaintLayer* child, DeprecatedPaintLayer* beforeChild)
+void PaintLayer::addChild(PaintLayer* child, PaintLayer* beforeChild)
 {
-    DeprecatedPaintLayer* prevSibling = beforeChild ? beforeChild->previousSibling() : lastChild();
+    PaintLayer* prevSibling = beforeChild ? beforeChild->previousSibling() : lastChild();
     if (prevSibling) {
         child->setPreviousSibling(prevSibling);
         prevSibling->setNextSibling(child);
@@ -1144,7 +1144,7 @@ void DeprecatedPaintLayer::addChild(DeprecatedPaintLayer* child, DeprecatedPaint
     child->updateDescendantDependentFlags();
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::removeChild(DeprecatedPaintLayer* oldChild)
+PaintLayer* PaintLayer::removeChild(PaintLayer* oldChild)
 {
     if (oldChild->previousSibling())
         oldChild->previousSibling()->setNextSibling(oldChild->nextSibling());
@@ -1189,7 +1189,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::removeChild(DeprecatedPaintLayer* ol
     return oldChild;
 }
 
-void DeprecatedPaintLayer::removeOnlyThisLayer()
+void PaintLayer::removeOnlyThisLayer()
 {
     if (!m_parent)
         return;
@@ -1208,7 +1208,7 @@ void DeprecatedPaintLayer::removeOnlyThisLayer()
 
     m_clipper.clearClipRectsIncludingDescendants();
 
-    DeprecatedPaintLayer* nextSib = nextSibling();
+    PaintLayer* nextSib = nextSibling();
 
     // Remove the child reflection layer before moving other child layers.
     // The reflection layer should not be moved to the parent.
@@ -1216,9 +1216,9 @@ void DeprecatedPaintLayer::removeOnlyThisLayer()
         removeChild(m_reflectionInfo->reflectionLayer());
 
     // Now walk our kids and reattach them to our parent.
-    DeprecatedPaintLayer* current = m_first;
+    PaintLayer* current = m_first;
     while (current) {
-        DeprecatedPaintLayer* next = current->nextSibling();
+        PaintLayer* next = current->nextSibling();
         removeChild(current);
         m_parent->addChild(current, nextSib);
 
@@ -1232,14 +1232,14 @@ void DeprecatedPaintLayer::removeOnlyThisLayer()
     m_layoutObject->destroyLayer();
 }
 
-void DeprecatedPaintLayer::insertOnlyThisLayer()
+void PaintLayer::insertOnlyThisLayer()
 {
     if (!m_parent && layoutObject()->parent()) {
         // We need to connect ourselves when our layoutObject() has a parent.
         // Find our enclosingLayer and add ourselves.
-        DeprecatedPaintLayer* parentLayer = layoutObject()->parent()->enclosingLayer();
+        PaintLayer* parentLayer = layoutObject()->parent()->enclosingLayer();
         ASSERT(parentLayer);
-        DeprecatedPaintLayer* beforeChild = !parentLayer->reflectionInfo() || parentLayer->reflectionInfo()->reflectionLayer() != this ? layoutObject()->parent()->findNextLayer(parentLayer, layoutObject()) : 0;
+        PaintLayer* beforeChild = !parentLayer->reflectionInfo() || parentLayer->reflectionInfo()->reflectionLayer() != this ? layoutObject()->parent()->findNextLayer(parentLayer, layoutObject()) : 0;
         parentLayer->addChild(this, beforeChild);
     }
 
@@ -1252,7 +1252,7 @@ void DeprecatedPaintLayer::insertOnlyThisLayer()
 }
 
 // Returns the layer reached on the walk up towards the ancestor.
-static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const DeprecatedPaintLayer* layer, const DeprecatedPaintLayer* ancestorLayer, LayoutPoint& location)
+static inline const PaintLayer* accumulateOffsetTowardsAncestor(const PaintLayer* layer, const PaintLayer* ancestorLayer, LayoutPoint& location)
 {
     ASSERT(ancestorLayer != layer);
 
@@ -1267,7 +1267,7 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
         return ancestorLayer;
     }
 
-    DeprecatedPaintLayer* parentLayer;
+    PaintLayer* parentLayer;
     if (position == AbsolutePosition || position == FixedPosition) {
         bool foundAncestorFirst;
         parentLayer = layer->enclosingPositionedAncestor(ancestorLayer, &foundAncestorFirst);
@@ -1301,29 +1301,29 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
     return parentLayer;
 }
 
-void DeprecatedPaintLayer::convertToLayerCoords(const DeprecatedPaintLayer* ancestorLayer, LayoutPoint& location) const
+void PaintLayer::convertToLayerCoords(const PaintLayer* ancestorLayer, LayoutPoint& location) const
 {
     if (ancestorLayer == this)
         return;
 
-    const DeprecatedPaintLayer* currLayer = this;
+    const PaintLayer* currLayer = this;
     while (currLayer && currLayer != ancestorLayer)
         currLayer = accumulateOffsetTowardsAncestor(currLayer, ancestorLayer, location);
 }
 
-void DeprecatedPaintLayer::convertToLayerCoords(const DeprecatedPaintLayer* ancestorLayer, LayoutRect& rect) const
+void PaintLayer::convertToLayerCoords(const PaintLayer* ancestorLayer, LayoutRect& rect) const
 {
     LayoutPoint delta;
     convertToLayerCoords(ancestorLayer, delta);
     rect.moveBy(delta);
 }
 
-LayoutPoint DeprecatedPaintLayer::visualOffsetFromAncestor(const DeprecatedPaintLayer* ancestorLayer) const
+LayoutPoint PaintLayer::visualOffsetFromAncestor(const PaintLayer* ancestorLayer) const
 {
     LayoutPoint offset;
     if (ancestorLayer == this)
         return offset;
-    DeprecatedPaintLayer* paginationLayer = enclosingPaginationLayer();
+    PaintLayer* paginationLayer = enclosingPaginationLayer();
     if (paginationLayer == this)
         paginationLayer = parent()->enclosingPaginationLayer();
     if (!paginationLayer) {
@@ -1347,17 +1347,17 @@ LayoutPoint DeprecatedPaintLayer::visualOffsetFromAncestor(const DeprecatedPaint
     return offset;
 }
 
-void DeprecatedPaintLayer::didUpdateNeedsCompositedScrolling()
+void PaintLayer::didUpdateNeedsCompositedScrolling()
 {
     updateSelfPaintingLayer();
 }
 
-void DeprecatedPaintLayer::updateReflectionInfo(const ComputedStyle* oldStyle)
+void PaintLayer::updateReflectionInfo(const ComputedStyle* oldStyle)
 {
     ASSERT(!oldStyle || !layoutObject()->style()->reflectionDataEquivalent(oldStyle));
     if (layoutObject()->hasReflection()) {
         if (!m_reflectionInfo)
-            m_reflectionInfo = adoptPtr(new DeprecatedPaintLayerReflectionInfo(*layoutBox()));
+            m_reflectionInfo = adoptPtr(new PaintLayerReflectionInfo(*layoutBox()));
         m_reflectionInfo->updateAfterStyleChange(oldStyle);
     } else if (m_reflectionInfo) {
         m_reflectionInfo->destroy();
@@ -1365,30 +1365,30 @@ void DeprecatedPaintLayer::updateReflectionInfo(const ComputedStyle* oldStyle)
     }
 }
 
-void DeprecatedPaintLayer::updateStackingNode()
+void PaintLayer::updateStackingNode()
 {
     ASSERT(!m_stackingNode);
     if (requiresStackingNode())
-        m_stackingNode = adoptPtr(new DeprecatedPaintLayerStackingNode(this));
+        m_stackingNode = adoptPtr(new PaintLayerStackingNode(this));
     else
         m_stackingNode = nullptr;
 }
 
-void DeprecatedPaintLayer::updateScrollableArea()
+void PaintLayer::updateScrollableArea()
 {
     ASSERT(!m_scrollableArea);
     if (requiresScrollableArea())
-        m_scrollableArea = DeprecatedPaintLayerScrollableArea::create(*this);
+        m_scrollableArea = PaintLayerScrollableArea::create(*this);
 }
 
-bool DeprecatedPaintLayer::hasOverflowControls() const
+bool PaintLayer::hasOverflowControls() const
 {
     return m_scrollableArea && (m_scrollableArea->hasScrollbar() || m_scrollableArea->scrollCorner() || layoutObject()->style()->resize() != RESIZE_NONE);
 }
 
-void DeprecatedPaintLayer::appendSingleFragmentIgnoringPagination(DeprecatedPaintLayerFragments& fragments, const DeprecatedPaintLayer* rootLayer, const LayoutRect& dirtyRect, ClipRectsCacheSlot clipRectsCacheSlot, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy, ShouldRespectOverflowClip respectOverflowClip, const LayoutPoint* offsetFromRoot, const LayoutSize& subPixelAccumulation)
+void PaintLayer::appendSingleFragmentIgnoringPagination(PaintLayerFragments& fragments, const PaintLayer* rootLayer, const LayoutRect& dirtyRect, ClipRectsCacheSlot clipRectsCacheSlot, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy, ShouldRespectOverflowClip respectOverflowClip, const LayoutPoint* offsetFromRoot, const LayoutSize& subPixelAccumulation)
 {
-    DeprecatedPaintLayerFragment fragment;
+    PaintLayerFragment fragment;
     ClipRectsContext clipRectsContext(rootLayer, clipRectsCacheSlot, inOverlayScrollbarSizeRelevancy, subPixelAccumulation);
     if (respectOverflowClip == IgnoreOverflowClip)
         clipRectsContext.setIgnoreOverflowClip();
@@ -1396,7 +1396,7 @@ void DeprecatedPaintLayer::appendSingleFragmentIgnoringPagination(DeprecatedPain
     fragments.append(fragment);
 }
 
-void DeprecatedPaintLayer::collectFragments(DeprecatedPaintLayerFragments& fragments, const DeprecatedPaintLayer* rootLayer, const LayoutRect& dirtyRect,
+void PaintLayer::collectFragments(PaintLayerFragments& fragments, const PaintLayer* rootLayer, const LayoutRect& dirtyRect,
     ClipRectsCacheSlot clipRectsCacheSlot, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy, ShouldRespectOverflowClip respectOverflowClip, const LayoutPoint* offsetFromRoot,
     const LayoutSize& subPixelAccumulation, const LayoutRect* layerBoundingBox)
 {
@@ -1448,8 +1448,8 @@ void DeprecatedPaintLayer::collectFragments(DeprecatedPaintLayerFragments& fragm
 
     // Get the parent clip rects of the pagination layer, since we need to intersect with that when painting column contents.
     ClipRect ancestorClipRect = dirtyRect;
-    if (const DeprecatedPaintLayer* paginationParentLayer = enclosingPaginationLayer()->parent()) {
-        const DeprecatedPaintLayer* ancestorLayer = rootLayerIsInsidePaginationLayer ? paginationParentLayer : rootLayer;
+    if (const PaintLayer* paginationParentLayer = enclosingPaginationLayer()->parent()) {
+        const PaintLayer* ancestorLayer = rootLayerIsInsidePaginationLayer ? paginationParentLayer : rootLayer;
         ClipRectsContext clipRectsContext(ancestorLayer, clipRectsCacheSlot, inOverlayScrollbarSizeRelevancy);
         if (respectOverflowClip == IgnoreOverflowClip)
             clipRectsContext.setIgnoreOverflowClip();
@@ -1461,7 +1461,7 @@ void DeprecatedPaintLayer::collectFragments(DeprecatedPaintLayerFragments& fragm
 
     const LayoutSize subPixelAccumulationIfNeeded = offsetFromRoot ? subPixelAccumulation : LayoutSize();
     for (size_t i = 0; i < fragments.size(); ++i) {
-        DeprecatedPaintLayerFragment& fragment = fragments.at(i);
+        PaintLayerFragment& fragment = fragments.at(i);
 
         // Set our four rects with all clipping applied that was internal to the flow thread.
         fragment.setRects(layerBoundsInFlowThread, backgroundRectInFlowThread, foregroundRectInFlowThread);
@@ -1488,7 +1488,7 @@ static inline LayoutRect frameVisibleRect(LayoutObject* layoutObject)
     return LayoutRect(frameView->visibleContentRect());
 }
 
-bool DeprecatedPaintLayer::hitTest(HitTestResult& result)
+bool PaintLayer::hitTest(HitTestResult& result)
 {
     ASSERT(isSelfPaintingLayer() || hasSelfPaintingLayerDescendant());
 
@@ -1504,7 +1504,7 @@ bool DeprecatedPaintLayer::hitTest(HitTestResult& result)
     if (request.ignoreClipping())
         hitTestArea.unite(LayoutRect(layoutObject()->view()->documentRect()));
 
-    DeprecatedPaintLayer* insideLayer = hitTestLayer(this, 0, result, hitTestArea, hitTestLocation, false);
+    PaintLayer* insideLayer = hitTestLayer(this, 0, result, hitTestArea, hitTestLocation, false);
     if (!insideLayer && isRootLayer()) {
         IntRect hitRect = hitTestLocation.boundingBox();
         bool fallback = false;
@@ -1544,7 +1544,7 @@ bool DeprecatedPaintLayer::hitTest(HitTestResult& result)
     return insideLayer;
 }
 
-Node* DeprecatedPaintLayer::enclosingElement() const
+Node* PaintLayer::enclosingElement() const
 {
     for (LayoutObject* r = layoutObject(); r; r = r->parent()) {
         if (Node* e = r->node())
@@ -1554,7 +1554,7 @@ Node* DeprecatedPaintLayer::enclosingElement() const
     return 0;
 }
 
-bool DeprecatedPaintLayer::isInTopLayer() const
+bool PaintLayer::isInTopLayer() const
 {
     Node* node = layoutObject()->node();
     return node && node->isElementNode() && toElement(node)->isInTopLayer();
@@ -1577,7 +1577,7 @@ static double computeZOffset(const HitTestingTransformState& transformState)
     return backmappedPoint.z();
 }
 
-PassRefPtr<HitTestingTransformState> DeprecatedPaintLayer::createLocalTransformState(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer,
+PassRefPtr<HitTestingTransformState> PaintLayer::createLocalTransformState(PaintLayer* rootLayer, PaintLayer* containerLayer,
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation,
     const HitTestingTransformState* containerTransformState,
     const LayoutPoint& translationOffset) const
@@ -1609,7 +1609,7 @@ PassRefPtr<HitTestingTransformState> DeprecatedPaintLayer::createLocalTransformS
 }
 
 
-static bool isHitCandidate(const DeprecatedPaintLayer* hitLayer, bool canDepthSort, double* zOffset, const HitTestingTransformState* transformState)
+static bool isHitCandidate(const PaintLayer* hitLayer, bool canDepthSort, double* zOffset, const HitTestingTransformState* transformState)
 {
     if (!hitLayer)
         return false;
@@ -1641,7 +1641,7 @@ static bool isHitCandidate(const DeprecatedPaintLayer* hitLayer, bool canDepthSo
 //
 // If zOffset is non-null (which indicates that the caller wants z offset information),
 //  *zOffset on return is the z offset of the hit point relative to the containing flattening layer.
-DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult& result,
+PaintLayer* PaintLayer::hitTestLayer(PaintLayer* rootLayer, PaintLayer* containerLayer, HitTestResult& result,
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, bool appliedTransform,
     const HitTestingTransformState* transformState, double* zOffset)
 {
@@ -1718,10 +1718,10 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
     }
 
     // This variable tracks which layer the mouse ends up being inside.
-    DeprecatedPaintLayer* candidateLayer = 0;
+    PaintLayer* candidateLayer = 0;
 
     // Begin by walking our list of positive layers from highest z-index down to the lowest z-index.
-    DeprecatedPaintLayer* hitLayer = hitTestChildren(PositiveZOrderChildren, rootLayer, result, hitTestRect, hitTestLocation,
+    PaintLayer* hitLayer = hitTestChildren(PositiveZOrderChildren, rootLayer, result, hitTestRect, hitTestLocation,
         localTransformState.get(), zOffsetForDescendantsPtr, zOffset, unflattenedTransformState.get(), depthSortDescendants);
     if (hitLayer) {
         if (!depthSortDescendants)
@@ -1739,7 +1739,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
     }
 
     // Collect the fragments. This will compute the clip rectangles for each layer fragment.
-    DeprecatedPaintLayerFragments layerFragments;
+    PaintLayerFragments layerFragments;
     if (appliedTransform)
         appendSingleFragmentIgnoringPagination(layerFragments, rootLayer, hitTestRect, clipRectsCacheSlot, IncludeOverlayScrollbarSize);
     else
@@ -1802,14 +1802,14 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayer(DeprecatedPaintLayer* r
     return 0;
 }
 
-bool DeprecatedPaintLayer::hitTestContentsForFragments(const DeprecatedPaintLayerFragments& layerFragments, HitTestResult& result,
+bool PaintLayer::hitTestContentsForFragments(const PaintLayerFragments& layerFragments, HitTestResult& result,
     const HitTestLocation& hitTestLocation, HitTestFilter hitTestFilter, bool& insideClipRect) const
 {
     if (layerFragments.isEmpty())
         return false;
 
     for (int i = layerFragments.size() - 1; i >= 0; --i) {
-        const DeprecatedPaintLayerFragment& fragment = layerFragments.at(i);
+        const PaintLayerFragment& fragment = layerFragments.at(i);
         if ((hitTestFilter == HitTestSelf && !fragment.backgroundRect.intersects(hitTestLocation))
             || (hitTestFilter == HitTestDescendants && !fragment.foregroundRect.intersects(hitTestLocation)))
             continue;
@@ -1821,18 +1821,18 @@ bool DeprecatedPaintLayer::hitTestContentsForFragments(const DeprecatedPaintLaye
     return false;
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestTransformedLayerInFragments(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult& result,
+PaintLayer* PaintLayer::hitTestTransformedLayerInFragments(PaintLayer* rootLayer, PaintLayer* containerLayer, HitTestResult& result,
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, const HitTestingTransformState* transformState, double* zOffset, ClipRectsCacheSlot clipRectsCacheSlot)
 {
-    DeprecatedPaintLayerFragments enclosingPaginationFragments;
+    PaintLayerFragments enclosingPaginationFragments;
     LayoutPoint offsetOfPaginationLayerFromRoot;
     // FIXME: We're missing a sub-pixel offset here crbug.com/348728
-    LayoutRect transformedExtent = transparencyClipBox(this, enclosingPaginationLayer(), HitTestingTransparencyClipBox, DeprecatedPaintLayer::RootOfTransparencyClipBox, LayoutSize());
+    LayoutRect transformedExtent = transparencyClipBox(this, enclosingPaginationLayer(), HitTestingTransparencyClipBox, PaintLayer::RootOfTransparencyClipBox, LayoutSize());
     enclosingPaginationLayer()->collectFragments(enclosingPaginationFragments, rootLayer, hitTestRect,
         clipRectsCacheSlot, IncludeOverlayScrollbarSize, RespectOverflowClip, &offsetOfPaginationLayerFromRoot, LayoutSize(), &transformedExtent);
 
     for (int i = enclosingPaginationFragments.size() - 1; i >= 0; --i) {
-        const DeprecatedPaintLayerFragment& fragment = enclosingPaginationFragments.at(i);
+        const PaintLayerFragment& fragment = enclosingPaginationFragments.at(i);
 
         // Apply the page/column clip for this fragment, as well as any clips established by layers in between us and
         // the enclosing pagination layer.
@@ -1849,7 +1849,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestTransformedLayerInFragments(D
         if (!hitTestLocation.intersects(clipRect))
             continue;
 
-        DeprecatedPaintLayer* hitLayer = hitTestLayerByApplyingTransform(rootLayer, containerLayer, result, hitTestRect, hitTestLocation,
+        PaintLayer* hitLayer = hitTestLayerByApplyingTransform(rootLayer, containerLayer, result, hitTestRect, hitTestLocation,
             transformState, zOffset, fragment.paginationOffset);
         if (hitLayer)
             return hitLayer;
@@ -1858,7 +1858,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestTransformedLayerInFragments(D
     return 0;
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayerByApplyingTransform(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult& result,
+PaintLayer* PaintLayer::hitTestLayerByApplyingTransform(PaintLayer* rootLayer, PaintLayer* containerLayer, HitTestResult& result,
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, const HitTestingTransformState* transformState, double* zOffset,
     const LayoutPoint& translationOffset)
 {
@@ -1888,7 +1888,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestLayerByApplyingTransform(Depr
     return hitTestLayer(this, containerLayer, result, localHitTestRect, newHitTestLocation, true, newTransformState.get(), zOffset);
 }
 
-bool DeprecatedPaintLayer::hitTestContents(HitTestResult& result, const LayoutRect& layerBounds, const HitTestLocation& hitTestLocation, HitTestFilter hitTestFilter) const
+bool PaintLayer::hitTestContents(HitTestResult& result, const LayoutRect& layerBounds, const HitTestLocation& hitTestLocation, HitTestFilter hitTestFilter) const
 {
     ASSERT(isSelfPaintingLayer() || hasSelfPaintingLayerDescendant());
 
@@ -1923,7 +1923,7 @@ bool DeprecatedPaintLayer::hitTestContents(HitTestResult& result, const LayoutRe
     return true;
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildren(ChildrenIteration childrentoVisit, DeprecatedPaintLayer* rootLayer,
+PaintLayer* PaintLayer::hitTestChildren(ChildrenIteration childrentoVisit, PaintLayer* rootLayer,
     HitTestResult& result,
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation,
     const HitTestingTransformState* transformState,
@@ -1934,11 +1934,11 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildren(ChildrenIteration ch
     if (!hasSelfPaintingLayerDescendant())
         return 0;
 
-    DeprecatedPaintLayer* resultLayer = 0;
-    DeprecatedPaintLayerStackingNodeReverseIterator iterator(*m_stackingNode, childrentoVisit);
-    while (DeprecatedPaintLayerStackingNode* child = iterator.next()) {
-        DeprecatedPaintLayer* childLayer = child->layer();
-        DeprecatedPaintLayer* hitLayer = 0;
+    PaintLayer* resultLayer = 0;
+    PaintLayerStackingNodeReverseIterator iterator(*m_stackingNode, childrentoVisit);
+    while (PaintLayerStackingNode* child = iterator.next()) {
+        PaintLayer* childLayer = child->layer();
+        PaintLayer* hitLayer = 0;
         HitTestResult tempResult(result.hitTestRequest(), result.hitTestLocation());
         hitLayer = childLayer->hitTestLayer(rootLayer, this, tempResult, hitTestRect, hitTestLocation, false, transformState, zOffsetForDescendants);
 
@@ -1960,7 +1960,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildren(ChildrenIteration ch
     return resultLayer;
 }
 
-void DeprecatedPaintLayer::blockSelectionGapsBoundsChanged()
+void PaintLayer::blockSelectionGapsBoundsChanged()
 {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
@@ -1968,7 +1968,7 @@ void DeprecatedPaintLayer::blockSelectionGapsBoundsChanged()
     setNeedsCompositingInputsUpdate();
 }
 
-void DeprecatedPaintLayer::addBlockSelectionGapsBounds(const LayoutRect& bounds)
+void PaintLayer::addBlockSelectionGapsBounds(const LayoutRect& bounds)
 {
     if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
         return;
@@ -1976,22 +1976,22 @@ void DeprecatedPaintLayer::addBlockSelectionGapsBounds(const LayoutRect& bounds)
     blockSelectionGapsBoundsChanged();
 }
 
-void DeprecatedPaintLayer::clearBlockSelectionGapsBounds()
+void PaintLayer::clearBlockSelectionGapsBounds()
 {
     if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
         return;
     m_blockSelectionGapsBounds = IntRect();
-    for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling())
+    for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
         child->clearBlockSelectionGapsBounds();
     blockSelectionGapsBoundsChanged();
 }
 
-void DeprecatedPaintLayer::invalidatePaintForBlockSelectionGaps()
+void PaintLayer::invalidatePaintForBlockSelectionGaps()
 {
     if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
         return;
 
-    for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling()) {
+    for (PaintLayer* child = firstChild(); child; child = child->nextSibling()) {
         // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
         DisablePaintInvalidationStateAsserts disabler;
         child->invalidatePaintForBlockSelectionGaps();
@@ -2016,7 +2016,7 @@ void DeprecatedPaintLayer::invalidatePaintForBlockSelectionGaps()
     }
 }
 
-IntRect DeprecatedPaintLayer::blockSelectionGapsBounds() const
+IntRect PaintLayer::blockSelectionGapsBounds() const
 {
     if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
         return IntRect();
@@ -2030,7 +2030,7 @@ IntRect DeprecatedPaintLayer::blockSelectionGapsBounds() const
     return pixelSnappedIntRect(gapRects);
 }
 
-bool DeprecatedPaintLayer::hasBlockSelectionGapBounds() const
+bool PaintLayer::hasBlockSelectionGapBounds() const
 {
     if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
         return false;
@@ -2045,7 +2045,7 @@ bool DeprecatedPaintLayer::hasBlockSelectionGapBounds() const
     return toLayoutBlock(layoutObject())->shouldPaintSelectionGaps();
 }
 
-bool DeprecatedPaintLayer::intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const LayoutPoint& offsetFromRoot) const
+bool PaintLayer::intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const LayoutPoint& offsetFromRoot) const
 {
     // Always examine the canvas and the root.
     // FIXME: Could eliminate the isDocumentElement() check if we fix background painting so that the LayoutView
@@ -2067,7 +2067,7 @@ bool DeprecatedPaintLayer::intersectsDamageRect(const LayoutRect& layerBounds, c
     return physicalBoundingBox(offsetFromRoot).intersects(damageRect);
 }
 
-LayoutRect DeprecatedPaintLayer::logicalBoundingBox() const
+LayoutRect PaintLayer::logicalBoundingBox() const
 {
     return layoutObject()->visualOverflowRect();
 }
@@ -2082,21 +2082,21 @@ static inline LayoutRect flippedLogicalBoundingBox(LayoutRect boundingBox, Layou
     return result;
 }
 
-LayoutRect DeprecatedPaintLayer::physicalBoundingBox(const DeprecatedPaintLayer* ancestorLayer) const
+LayoutRect PaintLayer::physicalBoundingBox(const PaintLayer* ancestorLayer) const
 {
     LayoutPoint offsetFromRoot;
     convertToLayerCoords(ancestorLayer, offsetFromRoot);
     return physicalBoundingBox(offsetFromRoot);
 }
 
-LayoutRect DeprecatedPaintLayer::physicalBoundingBox(const LayoutPoint& offsetFromRoot) const
+LayoutRect PaintLayer::physicalBoundingBox(const LayoutPoint& offsetFromRoot) const
 {
     LayoutRect result = flippedLogicalBoundingBox(logicalBoundingBox(), layoutObject());
     result.moveBy(offsetFromRoot);
     return result;
 }
 
-LayoutRect DeprecatedPaintLayer::fragmentsBoundingBox(const DeprecatedPaintLayer* ancestorLayer) const
+LayoutRect PaintLayer::fragmentsBoundingBox(const PaintLayer* ancestorLayer) const
 {
     if (!enclosingPaginationLayer())
         return physicalBoundingBox(ancestorLayer);
@@ -2106,26 +2106,26 @@ LayoutRect DeprecatedPaintLayer::fragmentsBoundingBox(const DeprecatedPaintLayer
     return result;
 }
 
-LayoutRect DeprecatedPaintLayer::boundingBoxForCompositingOverlapTest() const
+LayoutRect PaintLayer::boundingBoxForCompositingOverlapTest() const
 {
     // Apply NeverIncludeTransformForAncestorLayer, because the geometry map in CompositingInputsUpdater will take care of applying the
     // transform of |this| (== the ancestorLayer argument to boundingBoxForCompositing).
     return overlapBoundsIncludeChildren() ? boundingBoxForCompositing(this, NeverIncludeTransformForAncestorLayer) : fragmentsBoundingBox(this);
 }
 
-static void expandRectForReflectionAndStackingChildren(const DeprecatedPaintLayer* ancestorLayer, LayoutRect& result)
+static void expandRectForReflectionAndStackingChildren(const PaintLayer* ancestorLayer, LayoutRect& result)
 {
-    if (ancestorLayer->reflectionInfo() && !ancestorLayer->reflectionInfo()->reflectionLayer()->hasCompositedDeprecatedPaintLayerMapping())
+    if (ancestorLayer->reflectionInfo() && !ancestorLayer->reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping())
         result.unite(ancestorLayer->reflectionInfo()->reflectionLayer()->boundingBoxForCompositing(ancestorLayer));
 
     ASSERT(ancestorLayer->stackingNode()->isStackingContext() || !ancestorLayer->stackingNode()->hasPositiveZOrderList());
 
 #if ENABLE(ASSERT)
-    LayerListMutationDetector mutationChecker(const_cast<DeprecatedPaintLayer*>(ancestorLayer)->stackingNode());
+    LayerListMutationDetector mutationChecker(const_cast<PaintLayer*>(ancestorLayer)->stackingNode());
 #endif
 
-    DeprecatedPaintLayerStackingNodeIterator iterator(*ancestorLayer->stackingNode(), AllChildren);
-    while (DeprecatedPaintLayerStackingNode* node = iterator.next()) {
+    PaintLayerStackingNodeIterator iterator(*ancestorLayer->stackingNode(), AllChildren);
+    while (PaintLayerStackingNode* node = iterator.next()) {
         // Here we exclude both directly composited layers and squashing layers
         // because those Layers don't paint into the graphics layer
         // for this Layer. For example, the bounds of squashed Layers
@@ -2137,11 +2137,11 @@ static void expandRectForReflectionAndStackingChildren(const DeprecatedPaintLaye
     }
 }
 
-LayoutRect DeprecatedPaintLayer::physicalBoundingBoxIncludingReflectionAndStackingChildren(const LayoutPoint& offsetFromRoot) const
+LayoutRect PaintLayer::physicalBoundingBoxIncludingReflectionAndStackingChildren(const LayoutPoint& offsetFromRoot) const
 {
     LayoutRect result = physicalBoundingBox(LayoutPoint());
 
-    const_cast<DeprecatedPaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
+    const_cast<PaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
     expandRectForReflectionAndStackingChildren(this, result);
 
@@ -2149,7 +2149,7 @@ LayoutRect DeprecatedPaintLayer::physicalBoundingBoxIncludingReflectionAndStacki
     return result;
 }
 
-LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaintLayer* ancestorLayer, CalculateBoundsOptions options) const
+LayoutRect PaintLayer::boundingBoxForCompositing(const PaintLayer* ancestorLayer, CalculateBoundsOptions options) const
 {
     if (!isSelfPaintingLayer())
         return LayoutRect();
@@ -2176,14 +2176,14 @@ LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaint
     if (result == LayoutRect(LayoutRect::infiniteIntRect())) {
         result = physicalBoundingBox(LayoutPoint());
 
-        const_cast<DeprecatedPaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
+        const_cast<PaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
         // Reflections are implemented with Layers that hang off of the reflected layer. However,
         // the reflection layer subtree does not include the subtree of the parent Layer, so
         // a recursive computation of stacking children yields no results. This breaks cases when there are stacking
         // children of the parent, that need to be included in reflected composited bounds.
         // Fix this by including composited bounds of stacking children of the reflected Layer.
-        if (hasCompositedDeprecatedPaintLayerMapping() && parent() && parent()->reflectionInfo() && parent()->reflectionInfo()->reflectionLayer() == this)
+        if (hasCompositedLayerMapping() && parent() && parent()->reflectionInfo() && parent()->reflectionInfo()->reflectionLayer() == this)
             expandRectForReflectionAndStackingChildren(parent(), result);
         else
             expandRectForReflectionAndStackingChildren(this, result);
@@ -2207,7 +2207,7 @@ LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaint
     return result;
 }
 
-CompositingState DeprecatedPaintLayer::compositingState() const
+CompositingState PaintLayer::compositingState() const
 {
     ASSERT(isAllowedToQueryCompositingState());
 
@@ -2215,30 +2215,30 @@ CompositingState DeprecatedPaintLayer::compositingState() const
     // can get out of sync from the real actual compositing state.
 
     if (m_groupedMapping) {
-        ASSERT(!m_compositedDeprecatedPaintLayerMapping);
+        ASSERT(!m_compositedLayerMapping);
         return PaintsIntoGroupedBacking;
     }
 
-    if (!m_compositedDeprecatedPaintLayerMapping)
+    if (!m_compositedLayerMapping)
         return NotComposited;
 
     return PaintsIntoOwnBacking;
 }
 
-bool DeprecatedPaintLayer::isAllowedToQueryCompositingState() const
+bool PaintLayer::isAllowedToQueryCompositingState() const
 {
     if (gCompositingQueryMode == CompositingQueriesAreAllowed || RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return true;
     return layoutObject()->document().lifecycle().state() >= DocumentLifecycle::InCompositingUpdate;
 }
 
-CompositedDeprecatedPaintLayerMapping* DeprecatedPaintLayer::compositedDeprecatedPaintLayerMapping() const
+CompositedLayerMapping* PaintLayer::compositedLayerMapping() const
 {
     ASSERT(isAllowedToQueryCompositingState());
-    return m_compositedDeprecatedPaintLayerMapping.get();
+    return m_compositedLayerMapping.get();
 }
 
-GraphicsLayer* DeprecatedPaintLayer::graphicsLayerBacking() const
+GraphicsLayer* PaintLayer::graphicsLayerBacking() const
 {
     switch (compositingState()) {
     case NotComposited:
@@ -2246,11 +2246,11 @@ GraphicsLayer* DeprecatedPaintLayer::graphicsLayerBacking() const
     case PaintsIntoGroupedBacking:
         return groupedMapping()->squashingLayer();
     default:
-        return compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer();
+        return compositedLayerMapping()->mainGraphicsLayer();
     }
 }
 
-GraphicsLayer* DeprecatedPaintLayer::graphicsLayerBackingForScrolling() const
+GraphicsLayer* PaintLayer::graphicsLayerBackingForScrolling() const
 {
     switch (compositingState()) {
     case NotComposited:
@@ -2258,39 +2258,39 @@ GraphicsLayer* DeprecatedPaintLayer::graphicsLayerBackingForScrolling() const
     case PaintsIntoGroupedBacking:
         return groupedMapping()->squashingLayer();
     default:
-        return compositedDeprecatedPaintLayerMapping()->scrollingContentsLayer() ? compositedDeprecatedPaintLayerMapping()->scrollingContentsLayer() : compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer();
+        return compositedLayerMapping()->scrollingContentsLayer() ? compositedLayerMapping()->scrollingContentsLayer() : compositedLayerMapping()->mainGraphicsLayer();
     }
 }
 
-void DeprecatedPaintLayer::ensureCompositedDeprecatedPaintLayerMapping()
+void PaintLayer::ensureCompositedLayerMapping()
 {
-    if (m_compositedDeprecatedPaintLayerMapping)
+    if (m_compositedLayerMapping)
         return;
 
-    m_compositedDeprecatedPaintLayerMapping = adoptPtr(new CompositedDeprecatedPaintLayerMapping(*this));
-    m_compositedDeprecatedPaintLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
+    m_compositedLayerMapping = adoptPtr(new CompositedLayerMapping(*this));
+    m_compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 
     updateOrRemoveFilterEffectBuilder();
 }
 
-void DeprecatedPaintLayer::clearCompositedDeprecatedPaintLayerMapping(bool layerBeingDestroyed)
+void PaintLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
 {
     if (!layerBeingDestroyed) {
         // We need to make sure our decendants get a geometry update. In principle,
         // we could call setNeedsGraphicsLayerUpdate on our children, but that would
         // require walking the z-order lists to find them. Instead, we over-invalidate
         // by marking our parent as needing a geometry update.
-        if (DeprecatedPaintLayer* compositingParent = enclosingLayerWithCompositedDeprecatedPaintLayerMapping(ExcludeSelf))
-            compositingParent->compositedDeprecatedPaintLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
+        if (PaintLayer* compositingParent = enclosingLayerWithCompositedLayerMapping(ExcludeSelf))
+            compositingParent->compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
     }
 
-    m_compositedDeprecatedPaintLayerMapping.clear();
+    m_compositedLayerMapping.clear();
 
     if (!layerBeingDestroyed)
         updateOrRemoveFilterEffectBuilder();
 }
 
-void DeprecatedPaintLayer::setGroupedMapping(CompositedDeprecatedPaintLayerMapping* groupedMapping, SetGroupMappingOptions options)
+void PaintLayer::setGroupedMapping(CompositedLayerMapping* groupedMapping, SetGroupMappingOptions options)
 {
     if (groupedMapping == m_groupedMapping)
         return;
@@ -2305,22 +2305,22 @@ void DeprecatedPaintLayer::setGroupedMapping(CompositedDeprecatedPaintLayerMappi
         m_groupedMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 }
 
-bool DeprecatedPaintLayer::hasCompositedMask() const
+bool PaintLayer::hasCompositedMask() const
 {
-    return m_compositedDeprecatedPaintLayerMapping && m_compositedDeprecatedPaintLayerMapping->hasMaskLayer();
+    return m_compositedLayerMapping && m_compositedLayerMapping->hasMaskLayer();
 }
 
-bool DeprecatedPaintLayer::hasCompositedClippingMask() const
+bool PaintLayer::hasCompositedClippingMask() const
 {
-    return m_compositedDeprecatedPaintLayerMapping && m_compositedDeprecatedPaintLayerMapping->hasChildClippingMaskLayer();
+    return m_compositedLayerMapping && m_compositedLayerMapping->hasChildClippingMaskLayer();
 }
 
-bool DeprecatedPaintLayer::paintsWithTransform(GlobalPaintFlags globalPaintFlags) const
+bool PaintLayer::paintsWithTransform(GlobalPaintFlags globalPaintFlags) const
 {
     return (transform() || layoutObject()->style()->position() == FixedPosition) && ((globalPaintFlags & GlobalPaintFlattenCompositingLayers) || compositingState() != PaintsIntoOwnBacking);
 }
 
-bool DeprecatedPaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
+bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
 {
     if (!isSelfPaintingLayer() && !hasSelfPaintingLayerDescendant())
         return false;
@@ -2359,11 +2359,11 @@ bool DeprecatedPaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& l
     return childBackgroundIsKnownToBeOpaqueInRect(localRect);
 }
 
-bool DeprecatedPaintLayer::childBackgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
+bool PaintLayer::childBackgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
 {
-    DeprecatedPaintLayerStackingNodeReverseIterator revertseIterator(*m_stackingNode, PositiveZOrderChildren | NormalFlowChildren | NegativeZOrderChildren);
-    while (DeprecatedPaintLayerStackingNode* child = revertseIterator.next()) {
-        const DeprecatedPaintLayer* childLayer = child->layer();
+    PaintLayerStackingNodeReverseIterator revertseIterator(*m_stackingNode, PositiveZOrderChildren | NormalFlowChildren | NegativeZOrderChildren);
+    while (PaintLayerStackingNode* child = revertseIterator.next()) {
+        const PaintLayer* childLayer = child->layer();
         // Stop at composited paint boundaries.
         if (childLayer->isPaintInvalidationContainer())
             continue;
@@ -2382,16 +2382,16 @@ bool DeprecatedPaintLayer::childBackgroundIsKnownToBeOpaqueInRect(const LayoutRe
     return false;
 }
 
-bool DeprecatedPaintLayer::shouldBeSelfPaintingLayer() const
+bool PaintLayer::shouldBeSelfPaintingLayer() const
 {
     if (layoutObject()->isLayoutPart() && toLayoutPart(layoutObject())->requiresAcceleratedCompositing())
         return true;
-    return m_layerType == NormalDeprecatedPaintLayer
+    return m_layerType == NormalPaintLayer
         || (m_scrollableArea && m_scrollableArea->hasOverlayScrollbars())
         || needsCompositedScrolling();
 }
 
-void DeprecatedPaintLayer::updateSelfPaintingLayer()
+void PaintLayer::updateSelfPaintingLayer()
 {
     bool isSelfPaintingLayer = shouldBeSelfPaintingLayer();
     if (this->isSelfPaintingLayer() == isSelfPaintingLayer)
@@ -2403,7 +2403,7 @@ void DeprecatedPaintLayer::updateSelfPaintingLayer()
         parent()->dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 }
 
-bool DeprecatedPaintLayer::hasNonEmptyChildLayoutObjects() const
+bool PaintLayer::hasNonEmptyChildLayoutObjects() const
 {
     // Some HTML can cause whitespace text nodes to have layoutObjects, like:
     // <div>
@@ -2422,12 +2422,12 @@ bool DeprecatedPaintLayer::hasNonEmptyChildLayoutObjects() const
     return false;
 }
 
-bool DeprecatedPaintLayer::hasBoxDecorationsOrBackground() const
+bool PaintLayer::hasBoxDecorationsOrBackground() const
 {
     return layoutObject()->style()->hasBoxDecorations() || layoutObject()->style()->hasBackground();
 }
 
-bool DeprecatedPaintLayer::hasVisibleBoxDecorations() const
+bool PaintLayer::hasVisibleBoxDecorations() const
 {
     if (!hasVisibleContent())
         return false;
@@ -2435,7 +2435,7 @@ bool DeprecatedPaintLayer::hasVisibleBoxDecorations() const
     return hasBoxDecorationsOrBackground() || hasOverflowControls();
 }
 
-void DeprecatedPaintLayer::updateFilters(const ComputedStyle* oldStyle, const ComputedStyle& newStyle)
+void PaintLayer::updateFilters(const ComputedStyle* oldStyle, const ComputedStyle& newStyle)
 {
     if (!newStyle.hasFilter() && (!oldStyle || !oldStyle->hasFilter()))
         return;
@@ -2444,7 +2444,7 @@ void DeprecatedPaintLayer::updateFilters(const ComputedStyle* oldStyle, const Co
     updateOrRemoveFilterEffectBuilder();
 }
 
-bool DeprecatedPaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const ComputedStyle* oldStyle)
+bool PaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     CompositingReasons oldPotentialCompositingReasonsFromStyle = m_potentialCompositingReasonsFromStyle;
     compositor()->updatePotentialCompositingReasonsFromStyle(this);
@@ -2473,7 +2473,7 @@ bool DeprecatedPaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, 
     // scheduleSVGFilterLayerUpdateHack().
     if (layoutObject()->node() && layoutObject()->node()->svgFilterNeedsLayerUpdate())
         return false;
-    if (!m_compositedDeprecatedPaintLayerMapping)
+    if (!m_compositedLayerMapping)
         return false;
 
     // To cut off almost all the work in the compositing update for
@@ -2503,7 +2503,7 @@ bool DeprecatedPaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, 
     // that just handles transforms and opacity. GraphicsLayerUpdateLocal
     // will also program bounds, clips, and many other properties that could
     // not possibly have changed.
-    m_compositedDeprecatedPaintLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
+    m_compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
     compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterGeometryChange);
 
     if (m_scrollableArea)
@@ -2512,7 +2512,7 @@ bool DeprecatedPaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, 
     return true;
 }
 
-void DeprecatedPaintLayer::styleChanged(StyleDifference diff, const ComputedStyle* oldStyle)
+void PaintLayer::styleChanged(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     if (attemptDirectCompositingUpdate(diff, oldStyle))
         return;
@@ -2540,9 +2540,9 @@ void DeprecatedPaintLayer::styleChanged(StyleDifference diff, const ComputedStyl
     setNeedsCompositingInputsUpdate();
 }
 
-bool DeprecatedPaintLayer::scrollsOverflow() const
+bool PaintLayer::scrollsOverflow() const
 {
-    if (DeprecatedPaintLayerScrollableArea* scrollableArea = this->scrollableArea())
+    if (PaintLayerScrollableArea* scrollableArea = this->scrollableArea())
         return scrollableArea->scrollsOverflow();
 
     return false;
@@ -2569,17 +2569,17 @@ FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOpera
 
 } // unnamed namespace
 
-FilterOperations DeprecatedPaintLayer::computeFilterOperations(const ComputedStyle& style)
+FilterOperations PaintLayer::computeFilterOperations(const ComputedStyle& style)
 {
     return computeFilterOperationsHandleReferenceFilters(style.filter(), style.effectiveZoom(), enclosingElement());
 }
 
-FilterOperations DeprecatedPaintLayer::computeBackdropFilterOperations(const ComputedStyle& style)
+FilterOperations PaintLayer::computeBackdropFilterOperations(const ComputedStyle& style)
 {
     return computeFilterOperationsHandleReferenceFilters(style.backdropFilter(), style.effectiveZoom(), enclosingElement());
 }
 
-void DeprecatedPaintLayer::updateOrRemoveFilterClients()
+void PaintLayer::updateOrRemoveFilterClients()
 {
     if (!hasFilter()) {
         removeFilterInfoIfNeeded();
@@ -2592,7 +2592,7 @@ void DeprecatedPaintLayer::updateOrRemoveFilterClients()
         filterInfo()->removeReferenceFilterClients();
 }
 
-void DeprecatedPaintLayer::updateOrRemoveFilterEffectBuilder()
+void PaintLayer::updateOrRemoveFilterEffectBuilder()
 {
     // FilterEffectBuilder is only used to render the filters in software mode,
     // so we always need to run updateOrRemoveFilterEffectBuilder after the composited
@@ -2600,13 +2600,13 @@ void DeprecatedPaintLayer::updateOrRemoveFilterEffectBuilder()
     if (!paintsWithFilters()) {
         // Don't delete the whole filter info here, because we might use it
         // for loading CSS shader files.
-        if (DeprecatedPaintLayerFilterInfo* filterInfo = this->filterInfo())
+        if (PaintLayerFilterInfo* filterInfo = this->filterInfo())
             filterInfo->setBuilder(nullptr);
 
         return;
     }
 
-    DeprecatedPaintLayerFilterInfo* filterInfo = ensureFilterInfo();
+    PaintLayerFilterInfo* filterInfo = ensureFilterInfo();
     if (!filterInfo->builder())
         filterInfo->setBuilder(FilterEffectBuilder::create());
 
@@ -2617,7 +2617,7 @@ void DeprecatedPaintLayer::updateOrRemoveFilterEffectBuilder()
         filterInfo->setBuilder(nullptr);
 }
 
-void DeprecatedPaintLayer::filterNeedsPaintInvalidation()
+void PaintLayer::filterNeedsPaintInvalidation()
 {
     {
         DeprecatedScheduleStyleRecalcDuringLayout marker(layoutObject()->document().lifecycle());
@@ -2631,14 +2631,14 @@ void DeprecatedPaintLayer::filterNeedsPaintInvalidation()
     layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
-void DeprecatedPaintLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
+void PaintLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
 {
     computeSelfHitTestRects(rects);
-    for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling())
+    for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
         child->addLayerHitTestRects(rects);
 }
 
-void DeprecatedPaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const
+void PaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const
 {
     if (!size().isEmpty()) {
         Vector<LayoutRect> rect;
@@ -2654,7 +2654,7 @@ void DeprecatedPaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) con
                 rect.append(m_scrollableArea->overflowRect());
 
             rects.set(this, rect);
-            if (const DeprecatedPaintLayer* parentLayer = parent()) {
+            if (const PaintLayer* parentLayer = parent()) {
                 LayerHitTestRects::iterator iter = rects.find(parentLayer);
                 if (iter == rects.end()) {
                     rects.add(parentLayer, Vector<LayoutRect>()).storedValue->value.append(physicalBoundingBox(parentLayer));
@@ -2669,9 +2669,9 @@ void DeprecatedPaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) con
     }
 }
 
-void DeprecatedPaintLayer::setNeedsRepaint()
+void PaintLayer::setNeedsRepaint()
 {
-    DeprecatedPaintLayer* layer = this;
+    PaintLayer* layer = this;
     while (layer && !layer->isSelfPaintingLayer() && !layer->hasSelfPaintingLayerDescendant())
         layer = layer->parent();
 
@@ -2686,7 +2686,7 @@ void DeprecatedPaintLayer::setNeedsRepaint()
     layer->markAncestorChainForNeedsRepaint();
 }
 
-void DeprecatedPaintLayer::markAncestorChainForNeedsRepaint()
+void PaintLayer::markAncestorChainForNeedsRepaint()
 {
     // Need to access compositingState(). We've ensured correct flag setting when compositingState() changes.
     DisableCompositingQueryAsserts disabler;
@@ -2694,9 +2694,9 @@ void DeprecatedPaintLayer::markAncestorChainForNeedsRepaint()
     if (compositingState() != NotComposited)
         return;
 
-    DeprecatedPaintLayer* layer = this;
+    PaintLayer* layer = this;
     while (true) {
-        DeprecatedPaintLayer* container = layer->parent();
+        PaintLayer* container = layer->parent();
         if (!container) {
             LayoutObject* owner = layer->layoutObject()->frame()->ownerLayoutObject();
             if (!owner)
@@ -2721,7 +2721,7 @@ DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
 
 #ifndef NDEBUG
 // FIXME: Rename?
-void showLayerTree(const blink::DeprecatedPaintLayer* layer)
+void showLayerTree(const blink::PaintLayer* layer)
 {
     if (!layer) {
         fprintf(stderr, "Cannot showLayerTree. Root is (nil)\n");

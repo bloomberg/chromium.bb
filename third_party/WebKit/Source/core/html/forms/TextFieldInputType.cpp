@@ -51,7 +51,7 @@
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/ChromeClient.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "wtf/text/WTFString.h"
 
@@ -230,9 +230,9 @@ void TextFieldInputType::forwardEvent(Event* event)
         LayoutTextControlSingleLine* layoutTextControl = toLayoutTextControlSingleLine(element().layoutObject());
         if (event->type() == EventTypeNames::blur) {
             if (LayoutBox* innerEditorLayoutObject = element().innerEditorElement()->layoutBox()) {
-                // FIXME: This class has no need to know about DeprecatedPaintLayer!
-                if (DeprecatedPaintLayer* innerLayer = innerEditorLayoutObject->layer()) {
-                    if (DeprecatedPaintLayerScrollableArea* innerScrollableArea = innerLayer->scrollableArea()) {
+                // FIXME: This class has no need to know about PaintLayer!
+                if (PaintLayer* innerLayer = innerEditorLayoutObject->layer()) {
+                    if (PaintLayerScrollableArea* innerScrollableArea = innerLayer->scrollableArea()) {
                         IntSize scrollOffset(!layoutTextControl->style()->isLeftToRightDirection() ? innerScrollableArea->scrollWidth().toInt() : 0, 0);
                         innerScrollableArea->scrollToOffset(scrollOffset, ScrollOffsetClamped);
                     }

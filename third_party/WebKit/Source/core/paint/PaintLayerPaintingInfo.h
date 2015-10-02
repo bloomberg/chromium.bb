@@ -42,8 +42,8 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef DeprecatedPaintLayerPaintingInfo_h
-#define DeprecatedPaintLayerPaintingInfo_h
+#ifndef PaintLayerPaintingInfo_h
+#define PaintLayerPaintingInfo_h
 
 #include "core/paint/PaintPhase.h"
 #include "platform/geometry/LayoutRect.h"
@@ -51,7 +51,7 @@
 
 namespace blink {
 
-class DeprecatedPaintLayer;
+class PaintLayer;
 class LayoutObject;
 
 enum PaintLayerFlag {
@@ -75,9 +75,9 @@ enum PaintLayerFlag {
 
 typedef unsigned PaintLayerFlags;
 
-struct DeprecatedPaintLayerPaintingInfo {
+struct PaintLayerPaintingInfo {
     STACK_ALLOCATED();
-    DeprecatedPaintLayerPaintingInfo(DeprecatedPaintLayer* inRootLayer, const LayoutRect& inDirtyRect,
+    PaintLayerPaintingInfo(PaintLayer* inRootLayer, const LayoutRect& inDirtyRect,
         GlobalPaintFlags globalPaintFlags, const LayoutSize& inSubPixelAccumulation,
         LayoutObject* inPaintingRoot = 0)
         : rootLayer(inRootLayer)
@@ -93,7 +93,7 @@ struct DeprecatedPaintLayerPaintingInfo {
     GlobalPaintFlags globalPaintFlags() const { return m_globalPaintFlags; }
 
     // TODO(jchaffraix): We should encapsulate all these fields.
-    DeprecatedPaintLayer* rootLayer;
+    PaintLayer* rootLayer;
     LayoutObject* paintingRoot; // only paint descendants of this object
     LayoutRect paintDirtyRect; // relative to rootLayer;
     LayoutSize subPixelAccumulation;
@@ -109,4 +109,4 @@ private:
 
 } // namespace blink
 
-#endif // DeprecatedPaintLayerPaintingInfo_h
+#endif // PaintLayerPaintingInfo_h

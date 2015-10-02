@@ -153,7 +153,7 @@ public:
 
     LayoutRect fragmentsBoundingBox(const LayoutRect& boundingBoxInFlowThread) const;
 
-    void collectLayerFragments(DeprecatedPaintLayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
+    void collectLayerFragments(PaintLayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
 
     LayoutUnit columnGap() const;
 

@@ -11,9 +11,9 @@
 #include "core/layout/LayoutView.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
@@ -85,7 +85,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     if (!rootObject || !rootObject->isBox()) {
         backgroundRenderable = false;
     } else if (rootObject->hasLayer()) {
-        const DeprecatedPaintLayer& rootLayer = *toLayoutBoxModelObject(rootObject)->layer();
+        const PaintLayer& rootLayer = *toLayoutBoxModelObject(rootObject)->layer();
         LayoutPoint offset;
         rootLayer.convertToLayerCoords(nullptr, offset);
         transform.translate(offset.x(), offset.y());

@@ -28,7 +28,7 @@
 
 // TODO(jchaffraix): Once we unify PaintBehavior and PaintLayerFlags, we should move
 // PaintLayerFlags to PaintPhase and rename it. Thus removing the need for this #include.
-#include "core/paint/DeprecatedPaintLayerPaintingInfo.h"
+#include "core/paint/PaintLayerPaintingInfo.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"

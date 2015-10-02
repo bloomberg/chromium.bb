@@ -42,7 +42,7 @@
  */
 
 #include "config.h"
-#include "core/paint/DeprecatedPaintLayerScrollableArea.h"
+#include "core/paint/PaintLayerScrollableArea.h"
 
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/AXObjectCache.h"
@@ -61,13 +61,13 @@
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
-#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/paint/DeprecatedPaintLayerFragment.h"
+#include "core/paint/PaintLayerFragment.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -80,7 +80,7 @@ namespace blink {
 
 const int ResizerControlExpandRatioForTouch = 2;
 
-DeprecatedPaintLayerScrollableArea::DeprecatedPaintLayerScrollableArea(DeprecatedPaintLayer& layer)
+PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
     : m_layer(layer)
     , m_inResizeMode(false)
     , m_scrollsOverflow(false)
@@ -107,12 +107,12 @@ DeprecatedPaintLayerScrollableArea::DeprecatedPaintLayerScrollableArea(Deprecate
     updateResizerAreaSet();
 }
 
-DeprecatedPaintLayerScrollableArea::~DeprecatedPaintLayerScrollableArea()
+PaintLayerScrollableArea::~PaintLayerScrollableArea()
 {
     ASSERT(m_hasBeenDisposed);
 }
 
-void DeprecatedPaintLayerScrollableArea::dispose()
+void PaintLayerScrollableArea::dispose()
 {
     if (inResizeMode() && !box().documentBeingDestroyed()) {
         if (LocalFrame* frame = box().frame())
@@ -157,49 +157,49 @@ void DeprecatedPaintLayerScrollableArea::dispose()
 #endif
 }
 
-DEFINE_TRACE(DeprecatedPaintLayerScrollableArea)
+DEFINE_TRACE(PaintLayerScrollableArea)
 {
     visitor->trace(m_scrollbarManager);
     ScrollableArea::trace(visitor);
 }
 
-HostWindow* DeprecatedPaintLayerScrollableArea::hostWindow() const
+HostWindow* PaintLayerScrollableArea::hostWindow() const
 {
     if (Page* page = box().frame()->page())
         return &page->chromeClient();
     return nullptr;
 }
 
-GraphicsLayer* DeprecatedPaintLayerScrollableArea::layerForScrolling() const
+GraphicsLayer* PaintLayerScrollableArea::layerForScrolling() const
 {
-    return layer()->hasCompositedDeprecatedPaintLayerMapping() ? layer()->compositedDeprecatedPaintLayerMapping()->scrollingContentsLayer() : 0;
+    return layer()->hasCompositedLayerMapping() ? layer()->compositedLayerMapping()->scrollingContentsLayer() : 0;
 }
 
-GraphicsLayer* DeprecatedPaintLayerScrollableArea::layerForHorizontalScrollbar() const
-{
-    // See crbug.com/343132.
-    DisableCompositingQueryAsserts disabler;
-
-    return layer()->hasCompositedDeprecatedPaintLayerMapping() ? layer()->compositedDeprecatedPaintLayerMapping()->layerForHorizontalScrollbar() : 0;
-}
-
-GraphicsLayer* DeprecatedPaintLayerScrollableArea::layerForVerticalScrollbar() const
+GraphicsLayer* PaintLayerScrollableArea::layerForHorizontalScrollbar() const
 {
     // See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
 
-    return layer()->hasCompositedDeprecatedPaintLayerMapping() ? layer()->compositedDeprecatedPaintLayerMapping()->layerForVerticalScrollbar() : 0;
+    return layer()->hasCompositedLayerMapping() ? layer()->compositedLayerMapping()->layerForHorizontalScrollbar() : 0;
 }
 
-GraphicsLayer* DeprecatedPaintLayerScrollableArea::layerForScrollCorner() const
+GraphicsLayer* PaintLayerScrollableArea::layerForVerticalScrollbar() const
 {
     // See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
 
-    return layer()->hasCompositedDeprecatedPaintLayerMapping() ? layer()->compositedDeprecatedPaintLayerMapping()->layerForScrollCorner() : 0;
+    return layer()->hasCompositedLayerMapping() ? layer()->compositedLayerMapping()->layerForVerticalScrollbar() : 0;
 }
 
-void DeprecatedPaintLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
+GraphicsLayer* PaintLayerScrollableArea::layerForScrollCorner() const
+{
+    // See crbug.com/343132.
+    DisableCompositingQueryAsserts disabler;
+
+    return layer()->hasCompositedLayerMapping() ? layer()->compositedLayerMapping()->layerForScrollCorner() : 0;
+}
+
+void PaintLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
 {
     // See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
@@ -238,7 +238,7 @@ void DeprecatedPaintLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scro
     }
 }
 
-void DeprecatedPaintLayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)
+void PaintLayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)
 {
     ASSERT(!layerForScrollCorner());
 
@@ -256,7 +256,7 @@ void DeprecatedPaintLayerScrollableArea::invalidateScrollCornerRect(const IntRec
     }
 }
 
-bool DeprecatedPaintLayerScrollableArea::shouldUseIntegerScrollOffset() const
+bool PaintLayerScrollableArea::shouldUseIntegerScrollOffset() const
 {
     Frame* frame = box().frame();
     if (frame->settings() && !frame->settings()->preferCompositingToLCDTextEnabled())
@@ -265,13 +265,13 @@ bool DeprecatedPaintLayerScrollableArea::shouldUseIntegerScrollOffset() const
     return ScrollableArea::shouldUseIntegerScrollOffset();
 }
 
-bool DeprecatedPaintLayerScrollableArea::isActive() const
+bool PaintLayerScrollableArea::isActive() const
 {
     Page* page = box().frame()->page();
     return page && page->focusController().isActive();
 }
 
-bool DeprecatedPaintLayerScrollableArea::isScrollCornerVisible() const
+bool PaintLayerScrollableArea::isScrollCornerVisible() const
 {
     return !scrollCornerRect().isEmpty();
 }
@@ -308,7 +308,7 @@ static IntRect cornerRect(const ComputedStyle& style, const Scrollbar* horizonta
 }
 
 
-IntRect DeprecatedPaintLayerScrollableArea::scrollCornerRect() const
+IntRect PaintLayerScrollableArea::scrollCornerRect() const
 {
     // We have a scrollbar corner when a scrollbar is visible and not filling the entire length of the box.
     // This happens when:
@@ -322,7 +322,7 @@ IntRect DeprecatedPaintLayerScrollableArea::scrollCornerRect() const
     return IntRect();
 }
 
-IntRect DeprecatedPaintLayerScrollableArea::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntRect& scrollbarRect) const
+IntRect PaintLayerScrollableArea::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntRect& scrollbarRect) const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -334,7 +334,7 @@ IntRect DeprecatedPaintLayerScrollableArea::convertFromScrollbarToContainingView
     return view->frameView()->convertFromLayoutObject(box(), rect);
 }
 
-IntRect DeprecatedPaintLayerScrollableArea::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
+IntRect PaintLayerScrollableArea::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -345,7 +345,7 @@ IntRect DeprecatedPaintLayerScrollableArea::convertFromContainingViewToScrollbar
     return rect;
 }
 
-IntPoint DeprecatedPaintLayerScrollableArea::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntPoint& scrollbarPoint) const
+IntPoint PaintLayerScrollableArea::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntPoint& scrollbarPoint) const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -356,7 +356,7 @@ IntPoint DeprecatedPaintLayerScrollableArea::convertFromScrollbarToContainingVie
     return view->frameView()->convertFromLayoutObject(box(), point);
 }
 
-IntPoint DeprecatedPaintLayerScrollableArea::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
+IntPoint PaintLayerScrollableArea::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -368,18 +368,18 @@ IntPoint DeprecatedPaintLayerScrollableArea::convertFromContainingViewToScrollba
     return point;
 }
 
-int DeprecatedPaintLayerScrollableArea::scrollSize(ScrollbarOrientation orientation) const
+int PaintLayerScrollableArea::scrollSize(ScrollbarOrientation orientation) const
 {
     IntSize scrollDimensions = maximumScrollPosition() - minimumScrollPosition();
     return (orientation == HorizontalScrollbar) ? scrollDimensions.width() : scrollDimensions.height();
 }
 
-void DeprecatedPaintLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset, ScrollType scrollType)
+void PaintLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset, ScrollType scrollType)
 {
     setScrollOffset(DoublePoint(newScrollOffset), scrollType);
 }
 
-void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset, ScrollType)
+void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset, ScrollType)
 {
     if (scrollOffset() == toDoubleSize(newScrollOffset))
         return;
@@ -460,22 +460,22 @@ void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newS
     frameView->clearScrollAnchor();
 }
 
-IntPoint DeprecatedPaintLayerScrollableArea::scrollPosition() const
+IntPoint PaintLayerScrollableArea::scrollPosition() const
 {
     return IntPoint(flooredIntSize(m_scrollOffset));
 }
 
-DoublePoint DeprecatedPaintLayerScrollableArea::scrollPositionDouble() const
+DoublePoint PaintLayerScrollableArea::scrollPositionDouble() const
 {
     return DoublePoint(m_scrollOffset);
 }
 
-IntPoint DeprecatedPaintLayerScrollableArea::minimumScrollPosition() const
+IntPoint PaintLayerScrollableArea::minimumScrollPosition() const
 {
     return -scrollOrigin();
 }
 
-IntPoint DeprecatedPaintLayerScrollableArea::maximumScrollPosition() const
+IntPoint PaintLayerScrollableArea::maximumScrollPosition() const
 {
     IntSize contentSize;
     IntSize visibleSize;
@@ -490,7 +490,7 @@ IntPoint DeprecatedPaintLayerScrollableArea::maximumScrollPosition() const
     return -scrollOrigin() + (contentSize - visibleSize);
 }
 
-IntRect DeprecatedPaintLayerScrollableArea::visibleContentRect(IncludeScrollbarsInRect scrollbarInclusion) const
+IntRect PaintLayerScrollableArea::visibleContentRect(IncludeScrollbarsInRect scrollbarInclusion) const
 {
     int verticalScrollbarWidth = 0;
     int horizontalScrollbarHeight = 0;
@@ -503,34 +503,34 @@ IntRect DeprecatedPaintLayerScrollableArea::visibleContentRect(IncludeScrollbars
         IntSize(max(0, layer()->size().width() - verticalScrollbarWidth), max(0, layer()->size().height() - horizontalScrollbarHeight)));
 }
 
-int DeprecatedPaintLayerScrollableArea::visibleHeight() const
+int PaintLayerScrollableArea::visibleHeight() const
 {
     return layer()->size().height();
 }
 
-int DeprecatedPaintLayerScrollableArea::visibleWidth() const
+int PaintLayerScrollableArea::visibleWidth() const
 {
     return layer()->size().width();
 }
 
-IntSize DeprecatedPaintLayerScrollableArea::contentsSize() const
+IntSize PaintLayerScrollableArea::contentsSize() const
 {
     return IntSize(scrollWidth(), scrollHeight());
 }
 
-IntPoint DeprecatedPaintLayerScrollableArea::lastKnownMousePosition() const
+IntPoint PaintLayerScrollableArea::lastKnownMousePosition() const
 {
     return box().frame() ? box().frame()->eventHandler().lastKnownMousePosition() : IntPoint();
 }
 
-bool DeprecatedPaintLayerScrollableArea::scrollAnimatorEnabled() const
+bool PaintLayerScrollableArea::scrollAnimatorEnabled() const
 {
     if (Settings* settings = box().frame()->settings())
         return settings->scrollAnimatorEnabled();
     return false;
 }
 
-bool DeprecatedPaintLayerScrollableArea::shouldSuspendScrollAnimations() const
+bool PaintLayerScrollableArea::shouldSuspendScrollAnimations() const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -538,13 +538,13 @@ bool DeprecatedPaintLayerScrollableArea::shouldSuspendScrollAnimations() const
     return view->frameView()->shouldSuspendScrollAnimations();
 }
 
-void DeprecatedPaintLayerScrollableArea::scrollbarVisibilityChanged()
+void PaintLayerScrollableArea::scrollbarVisibilityChanged()
 {
     if (LayoutView* view = box().view())
         return view->clearHitTestCache();
 }
 
-bool DeprecatedPaintLayerScrollableArea::scrollbarsCanBeActive() const
+bool PaintLayerScrollableArea::scrollbarsCanBeActive() const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -552,12 +552,12 @@ bool DeprecatedPaintLayerScrollableArea::scrollbarsCanBeActive() const
     return view->frameView()->scrollbarsCanBeActive();
 }
 
-IntRect DeprecatedPaintLayerScrollableArea::scrollableAreaBoundingBox() const
+IntRect PaintLayerScrollableArea::scrollableAreaBoundingBox() const
 {
     return box().absoluteBoundingBoxRect();
 }
 
-void DeprecatedPaintLayerScrollableArea::registerForAnimation()
+void PaintLayerScrollableArea::registerForAnimation()
 {
     if (LocalFrame* frame = box().frame()) {
         if (FrameView* frameView = frame->view())
@@ -565,7 +565,7 @@ void DeprecatedPaintLayerScrollableArea::registerForAnimation()
     }
 }
 
-void DeprecatedPaintLayerScrollableArea::deregisterForAnimation()
+void PaintLayerScrollableArea::deregisterForAnimation()
 {
     if (LocalFrame* frame = box().frame()) {
         if (FrameView* frameView = frame->view())
@@ -573,7 +573,7 @@ void DeprecatedPaintLayerScrollableArea::deregisterForAnimation()
     }
 }
 
-bool DeprecatedPaintLayerScrollableArea::userInputScrollable(ScrollbarOrientation orientation) const
+bool PaintLayerScrollableArea::userInputScrollable(ScrollbarOrientation orientation) const
 {
     if (box().isIntrinsicallyScrollable(orientation))
         return true;
@@ -583,12 +583,12 @@ bool DeprecatedPaintLayerScrollableArea::userInputScrollable(ScrollbarOrientatio
     return (overflowStyle == OSCROLL || overflowStyle == OAUTO || overflowStyle == OOVERLAY);
 }
 
-bool DeprecatedPaintLayerScrollableArea::shouldPlaceVerticalScrollbarOnLeft() const
+bool PaintLayerScrollableArea::shouldPlaceVerticalScrollbarOnLeft() const
 {
     return box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft();
 }
 
-int DeprecatedPaintLayerScrollableArea::pageStep(ScrollbarOrientation orientation) const
+int PaintLayerScrollableArea::pageStep(ScrollbarOrientation orientation) const
 {
     int length = (orientation == HorizontalScrollbar) ?
         box().pixelSnappedClientWidth() : box().pixelSnappedClientHeight();
@@ -598,37 +598,37 @@ int DeprecatedPaintLayerScrollableArea::pageStep(ScrollbarOrientation orientatio
     return max(pageStep, 1);
 }
 
-LayoutBox& DeprecatedPaintLayerScrollableArea::box() const
+LayoutBox& PaintLayerScrollableArea::box() const
 {
     return *m_layer.layoutBox();
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayerScrollableArea::layer() const
+PaintLayer* PaintLayerScrollableArea::layer() const
 {
     return &m_layer;
 }
 
-LayoutUnit DeprecatedPaintLayerScrollableArea::scrollWidth() const
+LayoutUnit PaintLayerScrollableArea::scrollWidth() const
 {
     return m_overflowRect.width();
 }
 
-LayoutUnit DeprecatedPaintLayerScrollableArea::scrollHeight() const
+LayoutUnit PaintLayerScrollableArea::scrollHeight() const
 {
     return m_overflowRect.height();
 }
 
-int DeprecatedPaintLayerScrollableArea::pixelSnappedScrollWidth() const
+int PaintLayerScrollableArea::pixelSnappedScrollWidth() const
 {
     return snapSizeToPixel(scrollWidth(), box().clientLeft() + box().location().x());
 }
 
-int DeprecatedPaintLayerScrollableArea::pixelSnappedScrollHeight() const
+int PaintLayerScrollableArea::pixelSnappedScrollHeight() const
 {
     return snapSizeToPixel(scrollHeight(), box().clientTop() + box().location().y());
 }
 
-void DeprecatedPaintLayerScrollableArea::computeScrollDimensions()
+void PaintLayerScrollableArea::computeScrollDimensions()
 {
     m_overflowRect = box().layoutOverflowRect();
     box().flipForWritingMode(m_overflowRect);
@@ -638,7 +638,7 @@ void DeprecatedPaintLayerScrollableArea::computeScrollDimensions()
     setScrollOrigin(IntPoint(-scrollableLeftOverflow, -scrollableTopOverflow));
 }
 
-void DeprecatedPaintLayerScrollableArea::scrollToPosition(const DoublePoint& scrollPosition, ScrollOffsetClamping clamp, ScrollBehavior scrollBehavior)
+void PaintLayerScrollableArea::scrollToPosition(const DoublePoint& scrollPosition, ScrollOffsetClamping clamp, ScrollBehavior scrollBehavior)
 {
     cancelProgrammaticScrollAnimation();
 
@@ -647,7 +647,7 @@ void DeprecatedPaintLayerScrollableArea::scrollToPosition(const DoublePoint& scr
         ScrollableArea::setScrollPosition(newScrollPosition, ProgrammaticScroll, scrollBehavior);
 }
 
-void DeprecatedPaintLayerScrollableArea::updateScrollDimensions(DoubleSize& scrollOffset, bool& autoHorizontalScrollBarChanged, bool& autoVerticalScrollBarChanged)
+void PaintLayerScrollableArea::updateScrollDimensions(DoubleSize& scrollOffset, bool& autoHorizontalScrollBarChanged, bool& autoVerticalScrollBarChanged)
 {
     ASSERT(box().hasOverflowClip());
 
@@ -685,7 +685,7 @@ void DeprecatedPaintLayerScrollableArea::updateScrollDimensions(DoubleSize& scro
     }
 }
 
-void DeprecatedPaintLayerScrollableArea::finalizeScrollDimensions(const DoubleSize& originalScrollOffset, bool autoHorizontalScrollBarChanged, bool autoVerticalScrollBarChanged)
+void PaintLayerScrollableArea::finalizeScrollDimensions(const DoubleSize& originalScrollOffset, bool autoHorizontalScrollBarChanged, bool autoVerticalScrollBarChanged)
 {
     ASSERT(box().hasOverflowClip());
 
@@ -773,7 +773,7 @@ void DeprecatedPaintLayerScrollableArea::finalizeScrollDimensions(const DoubleSi
     positionOverflowControls();
 }
 
-void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
+void PaintLayerScrollableArea::updateAfterLayout()
 {
     DoubleSize originalScrollOffset;
     bool autoHorizontalScrollBarChanged;
@@ -782,27 +782,27 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
     finalizeScrollDimensions(originalScrollOffset, autoHorizontalScrollBarChanged, autoVerticalScrollBarChanged);
 }
 
-ScrollBehavior DeprecatedPaintLayerScrollableArea::scrollBehaviorStyle() const
+ScrollBehavior PaintLayerScrollableArea::scrollBehaviorStyle() const
 {
     return box().style()->scrollBehavior();
 }
 
-bool DeprecatedPaintLayerScrollableArea::hasHorizontalOverflow() const
+bool PaintLayerScrollableArea::hasHorizontalOverflow() const
 {
     return pixelSnappedScrollWidth() > box().pixelSnappedClientWidth();
 }
 
-bool DeprecatedPaintLayerScrollableArea::hasVerticalOverflow() const
+bool PaintLayerScrollableArea::hasVerticalOverflow() const
 {
     return pixelSnappedScrollHeight() > box().pixelSnappedClientHeight();
 }
 
-bool DeprecatedPaintLayerScrollableArea::hasScrollableHorizontalOverflow() const
+bool PaintLayerScrollableArea::hasScrollableHorizontalOverflow() const
 {
     return hasHorizontalOverflow() && box().scrollsOverflowX();
 }
 
-bool DeprecatedPaintLayerScrollableArea::hasScrollableVerticalOverflow() const
+bool PaintLayerScrollableArea::hasScrollableVerticalOverflow() const
 {
     return hasVerticalOverflow() && box().scrollsOverflowY();
 }
@@ -818,7 +818,7 @@ static bool overflowDefinesAutomaticScrollbar(EOverflow overflow)
 }
 
 // This function returns true if the given box requires overflow scrollbars (as
-// opposed to the 'viewport' scrollbars managed by the DeprecatedPaintLayerCompositor).
+// opposed to the 'viewport' scrollbars managed by the PaintLayerCompositor).
 // FIXME: we should use the same scrolling machinery for both the viewport and
 // overflow. Currently, we need to avoid producing scrollbars here if they'll be
 // handled externally in the RLC.
@@ -828,7 +828,7 @@ static bool canHaveOverflowScrollbars(const LayoutBox& box)
     return (rootLayerScrolls || !box.isLayoutView()) && box.document().viewportDefiningElement() != box.node();
 }
 
-void DeprecatedPaintLayerScrollableArea::updateAfterStyleChange(const ComputedStyle* oldStyle)
+void PaintLayerScrollableArea::updateAfterStyleChange(const ComputedStyle* oldStyle)
 {
     // Don't do this on first style recalc, before layout has ever happened.
     if (!overflowRect().size().isZero())
@@ -894,7 +894,7 @@ void DeprecatedPaintLayerScrollableArea::updateAfterStyleChange(const ComputedSt
     updateResizerStyle();
 }
 
-bool DeprecatedPaintLayerScrollableArea::updateAfterCompositingChange()
+bool PaintLayerScrollableArea::updateAfterCompositingChange()
 {
     layer()->updateScrollingStateAfterCompositingChange();
     const bool layersChanged = m_topmostScrollChild != m_nextTopmostScrollChild;
@@ -903,7 +903,7 @@ bool DeprecatedPaintLayerScrollableArea::updateAfterCompositingChange()
     return layersChanged;
 }
 
-void DeprecatedPaintLayerScrollableArea::updateAfterOverflowRecalc()
+void PaintLayerScrollableArea::updateAfterOverflowRecalc()
 {
     computeScrollDimensions();
     if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar()) {
@@ -923,7 +923,7 @@ void DeprecatedPaintLayerScrollableArea::updateAfterOverflowRecalc()
         box().setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
 }
 
-IntRect DeprecatedPaintLayerScrollableArea::rectForHorizontalScrollbar(const IntRect& borderBoxRect) const
+IntRect PaintLayerScrollableArea::rectForHorizontalScrollbar(const IntRect& borderBoxRect) const
 {
     if (!hasHorizontalScrollbar())
         return IntRect();
@@ -936,7 +936,7 @@ IntRect DeprecatedPaintLayerScrollableArea::rectForHorizontalScrollbar(const Int
         horizontalScrollbar()->height());
 }
 
-IntRect DeprecatedPaintLayerScrollableArea::rectForVerticalScrollbar(const IntRect& borderBoxRect) const
+IntRect PaintLayerScrollableArea::rectForVerticalScrollbar(const IntRect& borderBoxRect) const
 {
     if (!hasVerticalScrollbar())
         return IntRect();
@@ -949,14 +949,14 @@ IntRect DeprecatedPaintLayerScrollableArea::rectForVerticalScrollbar(const IntRe
         borderBoxRect.height() - (box().borderTop() + box().borderBottom()) - scrollCorner.height());
 }
 
-LayoutUnit DeprecatedPaintLayerScrollableArea::verticalScrollbarStart(int minX, int maxX) const
+LayoutUnit PaintLayerScrollableArea::verticalScrollbarStart(int minX, int maxX) const
 {
     if (box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         return minX + box().borderLeft();
     return maxX - box().borderRight() - verticalScrollbar()->width();
 }
 
-LayoutUnit DeprecatedPaintLayerScrollableArea::horizontalScrollbarStart(int minX) const
+LayoutUnit PaintLayerScrollableArea::horizontalScrollbarStart(int minX) const
 {
     int x = minX + box().borderLeft();
     if (box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
@@ -964,7 +964,7 @@ LayoutUnit DeprecatedPaintLayerScrollableArea::horizontalScrollbarStart(int minX
     return x;
 }
 
-IntSize DeprecatedPaintLayerScrollableArea::scrollbarOffset(const Scrollbar* scrollbar) const
+IntSize PaintLayerScrollableArea::scrollbarOffset(const Scrollbar* scrollbar) const
 {
     if (scrollbar == verticalScrollbar())
         return IntSize(verticalScrollbarStart(0, box().size().width()), box().borderTop());
@@ -1010,7 +1010,7 @@ static inline const LayoutObject& layoutObjectForScrollbar(const LayoutObject& l
     return layoutObject;
 }
 
-bool DeprecatedPaintLayerScrollableArea::needsScrollbarReconstruction() const
+bool PaintLayerScrollableArea::needsScrollbarReconstruction() const
 {
     const LayoutObject& actualLayoutObject = layoutObjectForScrollbar(box());
     bool shouldUseCustom = actualLayoutObject.isBox() && actualLayoutObject.styleRef().hasPseudoStyle(SCROLLBAR);
@@ -1019,7 +1019,7 @@ bool DeprecatedPaintLayerScrollableArea::needsScrollbarReconstruction() const
     return hasAnyScrollbar && (shouldUseCustom != hasCustom);
 }
 
-void DeprecatedPaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar)
+void PaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar)
 {
     if (hasScrollbar == hasHorizontalScrollbar())
         return;
@@ -1045,7 +1045,7 @@ void DeprecatedPaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrol
         box().document().setAnnotatedRegionsDirty(true);
 }
 
-void DeprecatedPaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar)
+void PaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar)
 {
     if (hasScrollbar == hasVerticalScrollbar())
         return;
@@ -1071,21 +1071,21 @@ void DeprecatedPaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollb
         box().document().setAnnotatedRegionsDirty(true);
 }
 
-int DeprecatedPaintLayerScrollableArea::verticalScrollbarWidth(OverlayScrollbarSizeRelevancy relevancy) const
+int PaintLayerScrollableArea::verticalScrollbarWidth(OverlayScrollbarSizeRelevancy relevancy) const
 {
     if (!hasVerticalScrollbar() || (verticalScrollbar()->isOverlayScrollbar() && (relevancy == IgnoreOverlayScrollbarSize || !verticalScrollbar()->shouldParticipateInHitTesting())))
         return 0;
     return verticalScrollbar()->width();
 }
 
-int DeprecatedPaintLayerScrollableArea::horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy relevancy) const
+int PaintLayerScrollableArea::horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy relevancy) const
 {
     if (!hasHorizontalScrollbar() || (horizontalScrollbar()->isOverlayScrollbar() && (relevancy == IgnoreOverlayScrollbarSize || !horizontalScrollbar()->shouldParticipateInHitTesting())))
         return 0;
     return horizontalScrollbar()->height();
 }
 
-void DeprecatedPaintLayerScrollableArea::positionOverflowControls()
+void PaintLayerScrollableArea::positionOverflowControls()
 {
     if (!hasScrollbar() && !box().canResize())
         return;
@@ -1107,11 +1107,11 @@ void DeprecatedPaintLayerScrollableArea::positionOverflowControls()
     // FIXME, this should eventually be removed, once we are certain that composited
     // controls get correctly positioned on a compositor update. For now, conservatively
     // leaving this unchanged.
-    if (layer()->hasCompositedDeprecatedPaintLayerMapping())
-        layer()->compositedDeprecatedPaintLayerMapping()->positionOverflowControlsLayers();
+    if (layer()->hasCompositedLayerMapping())
+        layer()->compositedLayerMapping()->positionOverflowControlsLayers();
 }
 
-void DeprecatedPaintLayerScrollableArea::updateScrollCornerStyle()
+void PaintLayerScrollableArea::updateScrollCornerStyle()
 {
     if (!m_scrollCorner && !hasScrollbar())
         return;
@@ -1132,7 +1132,7 @@ void DeprecatedPaintLayerScrollableArea::updateScrollCornerStyle()
     }
 }
 
-bool DeprecatedPaintLayerScrollableArea::hitTestOverflowControls(HitTestResult& result, const IntPoint& localPoint)
+bool PaintLayerScrollableArea::hitTestOverflowControls(HitTestResult& result, const IntPoint& localPoint)
 {
     if (!hasScrollbar() && !box().canResize())
         return false;
@@ -1173,7 +1173,7 @@ bool DeprecatedPaintLayerScrollableArea::hitTestOverflowControls(HitTestResult& 
     return false;
 }
 
-IntRect DeprecatedPaintLayerScrollableArea::resizerCornerRect(const IntRect& bounds, ResizerHitTestType resizerHitTestType) const
+IntRect PaintLayerScrollableArea::resizerCornerRect(const IntRect& bounds, ResizerHitTestType resizerHitTestType) const
 {
     if (box().style()->resize() == RESIZE_NONE)
         return IntRect();
@@ -1192,7 +1192,7 @@ IntRect DeprecatedPaintLayerScrollableArea::resizerCornerRect(const IntRect& bou
     return corner;
 }
 
-IntRect DeprecatedPaintLayerScrollableArea::scrollCornerAndResizerRect() const
+IntRect PaintLayerScrollableArea::scrollCornerAndResizerRect() const
 {
     IntRect scrollCornerAndResizer = scrollCornerRect();
     if (scrollCornerAndResizer.isEmpty())
@@ -1200,7 +1200,7 @@ IntRect DeprecatedPaintLayerScrollableArea::scrollCornerAndResizerRect() const
     return scrollCornerAndResizer;
 }
 
-bool DeprecatedPaintLayerScrollableArea::isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType resizerHitTestType) const
+bool PaintLayerScrollableArea::isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType resizerHitTestType) const
 {
     if (!box().canResize())
         return false;
@@ -1210,7 +1210,7 @@ bool DeprecatedPaintLayerScrollableArea::isPointInResizeControl(const IntPoint& 
     return resizerCornerRect(localBounds, resizerHitTestType).contains(localPoint);
 }
 
-bool DeprecatedPaintLayerScrollableArea::hitTestResizerInFragments(const DeprecatedPaintLayerFragments& layerFragments, const HitTestLocation& hitTestLocation) const
+bool PaintLayerScrollableArea::hitTestResizerInFragments(const PaintLayerFragments& layerFragments, const HitTestLocation& hitTestLocation) const
 {
     if (!box().canResize())
         return false;
@@ -1219,7 +1219,7 @@ bool DeprecatedPaintLayerScrollableArea::hitTestResizerInFragments(const Depreca
         return false;
 
     for (int i = layerFragments.size() - 1; i >= 0; --i) {
-        const DeprecatedPaintLayerFragment& fragment = layerFragments.at(i);
+        const PaintLayerFragment& fragment = layerFragments.at(i);
         if (fragment.backgroundRect.intersects(hitTestLocation) && resizerCornerRect(pixelSnappedIntRect(fragment.layerBounds), ResizerForPointer).contains(hitTestLocation.roundedPoint()))
             return true;
     }
@@ -1227,7 +1227,7 @@ bool DeprecatedPaintLayerScrollableArea::hitTestResizerInFragments(const Depreca
     return false;
 }
 
-void DeprecatedPaintLayerScrollableArea::updateResizerAreaSet()
+void PaintLayerScrollableArea::updateResizerAreaSet()
 {
     LocalFrame* frame = box().frame();
     if (!frame)
@@ -1241,7 +1241,7 @@ void DeprecatedPaintLayerScrollableArea::updateResizerAreaSet()
         frameView->removeResizerArea(box());
 }
 
-void DeprecatedPaintLayerScrollableArea::updateResizerStyle()
+void PaintLayerScrollableArea::updateResizerStyle()
 {
     if (!m_resizer && !box().canResize())
         return;
@@ -1260,7 +1260,7 @@ void DeprecatedPaintLayerScrollableArea::updateResizerStyle()
     }
 }
 
-IntSize DeprecatedPaintLayerScrollableArea::offsetFromResizeCorner(const IntPoint& absolutePoint) const
+IntSize PaintLayerScrollableArea::offsetFromResizeCorner(const IntPoint& absolutePoint) const
 {
     // Currently the resize corner is either the bottom right corner or the bottom left corner.
     // FIXME: This assumes the location is 0, 0. Is this guaranteed to always be the case?
@@ -1272,7 +1272,7 @@ IntSize DeprecatedPaintLayerScrollableArea::offsetFromResizeCorner(const IntPoin
     return localPoint - resizerPoint;
 }
 
-void DeprecatedPaintLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSize& oldOffset)
+void PaintLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSize& oldOffset)
 {
     // FIXME: This should be possible on generated content but is not right now.
     if (!inResizeMode() || !box().canResize() || !box().node())
@@ -1351,7 +1351,7 @@ void DeprecatedPaintLayerScrollableArea::resize(const PlatformEvent& evt, const 
     // FIXME (Radar 4118564): We should also autoscroll the window as necessary to keep the point under the cursor in view.
 }
 
-LayoutRect DeprecatedPaintLayerScrollableArea::scrollIntoView(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
+LayoutRect PaintLayerScrollableArea::scrollIntoView(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
 {
     LayoutRect localExposeRect(box().absoluteToLocalQuad(FloatQuad(FloatRect(rect)), UseTransforms).boundingBox());
     localExposeRect.move(-box().borderLeft(), -box().borderTop());
@@ -1369,7 +1369,7 @@ LayoutRect DeprecatedPaintLayerScrollableArea::scrollIntoView(const LayoutRect& 
     return LayoutRect(box().localToAbsoluteQuad(FloatQuad(FloatRect(localExposeRect)), UseTransforms).boundingBox());
 }
 
-void DeprecatedPaintLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
+void PaintLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
 {
     LocalFrame* frame = box().frame();
     if (!frame)
@@ -1398,13 +1398,13 @@ void DeprecatedPaintLayerScrollableArea::updateScrollableAreaSet(bool hasOverflo
     }
 }
 
-void DeprecatedPaintLayerScrollableArea::updateCompositingLayersAfterScroll()
+void PaintLayerScrollableArea::updateCompositingLayersAfterScroll()
 {
-    DeprecatedPaintLayerCompositor* compositor = box().view()->compositor();
+    PaintLayerCompositor* compositor = box().view()->compositor();
     if (compositor->inCompositingMode()) {
         if (usesCompositedScrolling()) {
-            ASSERT(layer()->hasCompositedDeprecatedPaintLayerMapping());
-            layer()->compositedDeprecatedPaintLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
+            ASSERT(layer()->hasCompositedLayerMapping());
+            layer()->compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
             compositor->setNeedsCompositingUpdate(CompositingUpdateAfterGeometryChange);
         } else {
             layer()->setNeedsCompositingInputsUpdate();
@@ -1412,7 +1412,7 @@ void DeprecatedPaintLayerScrollableArea::updateCompositingLayersAfterScroll()
     }
 }
 
-bool DeprecatedPaintLayerScrollableArea::usesCompositedScrolling() const
+bool PaintLayerScrollableArea::usesCompositedScrolling() const
 {
     // Scroll form controls on the main thread so they exhibit correct touch scroll event bubbling
     if (box().isIntrinsicallyScrollable(VerticalScrollbar) || box().isIntrinsicallyScrollable(HorizontalScrollbar))
@@ -1420,12 +1420,12 @@ bool DeprecatedPaintLayerScrollableArea::usesCompositedScrolling() const
 
     // See https://codereview.chromium.org/176633003/ for the tests that fail without this disabler.
     DisableCompositingQueryAsserts disabler;
-    return layer()->hasCompositedDeprecatedPaintLayerMapping() && layer()->compositedDeprecatedPaintLayerMapping()->scrollingLayer();
+    return layer()->hasCompositedLayerMapping() && layer()->compositedLayerMapping()->scrollingLayer();
 }
 
-static bool layerNeedsCompositedScrolling(DeprecatedPaintLayerScrollableArea::LCDTextMode mode, const DeprecatedPaintLayer* layer)
+static bool layerNeedsCompositedScrolling(PaintLayerScrollableArea::LCDTextMode mode, const PaintLayer* layer)
 {
-    if (mode == DeprecatedPaintLayerScrollableArea::ConsiderLCDText && !layer->compositor()->preferCompositingToLCDTextEnabled())
+    if (mode == PaintLayerScrollableArea::ConsiderLCDText && !layer->compositor()->preferCompositingToLCDTextEnabled())
         return false;
 
     return layer->scrollsOverflow()
@@ -1434,7 +1434,7 @@ static bool layerNeedsCompositedScrolling(DeprecatedPaintLayerScrollableArea::LC
         && !layer->layoutObject()->style()->hasBorderRadius();
 }
 
-void DeprecatedPaintLayerScrollableArea::updateNeedsCompositedScrolling(LCDTextMode mode)
+void PaintLayerScrollableArea::updateNeedsCompositedScrolling(LCDTextMode mode)
 {
     const bool needsCompositedScrolling = layerNeedsCompositedScrolling(mode, layer());
     if (static_cast<bool>(m_needsCompositedScrolling) != needsCompositedScrolling) {
@@ -1443,7 +1443,7 @@ void DeprecatedPaintLayerScrollableArea::updateNeedsCompositedScrolling(LCDTextM
     }
 }
 
-void DeprecatedPaintLayerScrollableArea::setTopmostScrollChild(DeprecatedPaintLayer* scrollChild)
+void PaintLayerScrollableArea::setTopmostScrollChild(PaintLayer* scrollChild)
 {
     // We only want to track the topmost scroll child for scrollable areas with
     // overlay scrollbars.
@@ -1452,7 +1452,7 @@ void DeprecatedPaintLayerScrollableArea::setTopmostScrollChild(DeprecatedPaintLa
     m_nextTopmostScrollChild = scrollChild;
 }
 
-bool DeprecatedPaintLayerScrollableArea::visualViewportSuppliesScrollbars() const
+bool PaintLayerScrollableArea::visualViewportSuppliesScrollbars() const
 {
     if (!layer()->isRootLayer())
         return false;
@@ -1464,7 +1464,7 @@ bool DeprecatedPaintLayerScrollableArea::visualViewportSuppliesScrollbars() cons
     return frame->settings()->viewportMetaEnabled();
 }
 
-DeprecatedPaintLayerScrollableArea::ScrollbarManager::ScrollbarManager(DeprecatedPaintLayerScrollableArea& scrollableArea)
+PaintLayerScrollableArea::ScrollbarManager::ScrollbarManager(PaintLayerScrollableArea& scrollableArea)
     : m_scrollableArea(&scrollableArea)
     , m_canDetachScrollbars(0)
     , m_hBarIsAttached(0)
@@ -1472,14 +1472,14 @@ DeprecatedPaintLayerScrollableArea::ScrollbarManager::ScrollbarManager(Deprecate
 {
 }
 
-void DeprecatedPaintLayerScrollableArea::ScrollbarManager::dispose()
+void PaintLayerScrollableArea::ScrollbarManager::dispose()
 {
     m_canDetachScrollbars = m_hBarIsAttached = m_vBarIsAttached = 0;
     destroyScrollbar(HorizontalScrollbar);
     destroyScrollbar(VerticalScrollbar);
 }
 
-void DeprecatedPaintLayerScrollableArea::ScrollbarManager::setCanDetachScrollbars(bool detach)
+void PaintLayerScrollableArea::ScrollbarManager::setCanDetachScrollbars(bool detach)
 {
     ASSERT(!m_hBarIsAttached || m_hBar);
     ASSERT(!m_vBarIsAttached || m_vBar);
@@ -1492,7 +1492,7 @@ void DeprecatedPaintLayerScrollableArea::ScrollbarManager::setCanDetachScrollbar
     }
 }
 
-void DeprecatedPaintLayerScrollableArea::ScrollbarManager::setHasHorizontalScrollbar(bool hasScrollbar)
+void PaintLayerScrollableArea::ScrollbarManager::setHasHorizontalScrollbar(bool hasScrollbar)
 {
     if (hasScrollbar) {
         // This doesn't hit in any tests, but since the equivalent code in setHasVerticalScrollbar
@@ -1508,7 +1508,7 @@ void DeprecatedPaintLayerScrollableArea::ScrollbarManager::setHasHorizontalScrol
     }
 }
 
-void DeprecatedPaintLayerScrollableArea::ScrollbarManager::setHasVerticalScrollbar(bool hasScrollbar)
+void PaintLayerScrollableArea::ScrollbarManager::setHasVerticalScrollbar(bool hasScrollbar)
 {
     if (hasScrollbar) {
         DisableCompositingQueryAsserts disabler;
@@ -1522,7 +1522,7 @@ void DeprecatedPaintLayerScrollableArea::ScrollbarManager::setHasVerticalScrollb
     }
 }
 
-PassRefPtrWillBeRawPtr<Scrollbar> DeprecatedPaintLayerScrollableArea::ScrollbarManager::createScrollbar(ScrollbarOrientation orientation)
+PassRefPtrWillBeRawPtr<Scrollbar> PaintLayerScrollableArea::ScrollbarManager::createScrollbar(ScrollbarOrientation orientation)
 {
     ASSERT(orientation == HorizontalScrollbar ? !m_hBarIsAttached : !m_vBarIsAttached);
     RefPtrWillBeRawPtr<Scrollbar> widget = nullptr;
@@ -1544,7 +1544,7 @@ PassRefPtrWillBeRawPtr<Scrollbar> DeprecatedPaintLayerScrollableArea::ScrollbarM
     return widget.release();
 }
 
-void DeprecatedPaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(ScrollbarOrientation orientation, bool invalidate)
+void PaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(ScrollbarOrientation orientation, bool invalidate)
 {
     RefPtrWillBeMember<Scrollbar>& scrollbar = orientation == HorizontalScrollbar ? m_hBar : m_vBar;
     ASSERT(orientation == HorizontalScrollbar ? !m_hBarIsAttached: !m_vBarIsAttached);
@@ -1561,7 +1561,7 @@ void DeprecatedPaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(Scro
     scrollbar = nullptr;
 }
 
-DEFINE_TRACE(DeprecatedPaintLayerScrollableArea::ScrollbarManager)
+DEFINE_TRACE(PaintLayerScrollableArea::ScrollbarManager)
 {
     visitor->trace(m_scrollableArea);
     visitor->trace(m_hBar);

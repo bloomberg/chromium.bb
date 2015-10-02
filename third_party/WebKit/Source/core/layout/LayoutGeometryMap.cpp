@@ -28,7 +28,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutView.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/geometry/TransformState.h"
 #include "wtf/TemporaryChange.h"
 
@@ -119,7 +119,7 @@ FloatPoint LayoutGeometryMap::mapToContainer(const FloatPoint& p, const LayoutBo
 #if ENABLE(ASSERT)
     if (m_mapping.size() > 0) {
         const LayoutObject* lastLayoutObject = m_mapping.last().m_layoutObject;
-        const DeprecatedPaintLayer* layer = lastLayoutObject->enclosingLayer();
+        const PaintLayer* layer = lastLayoutObject->enclosingLayer();
 
         // Bounds for invisible layers are intentionally not calculated, and are
         // therefore not necessarily expected to be correct here. This is ok,
@@ -168,7 +168,7 @@ FloatQuad LayoutGeometryMap::mapToContainer(const FloatRect& rect, const LayoutB
 #if ENABLE(ASSERT)
     if (m_mapping.size() > 0) {
         const LayoutObject* lastLayoutObject = m_mapping.last().m_layoutObject;
-        const DeprecatedPaintLayer* layer = lastLayoutObject->enclosingLayer();
+        const PaintLayer* layer = lastLayoutObject->enclosingLayer();
 
         // Bounds for invisible layers are intentionally not calculated, and are
         // therefore not necessarily expected to be correct here. This is ok,
@@ -214,7 +214,7 @@ static bool canMapBetweenLayoutObjects(const LayoutObject* layoutObject, const L
     return true;
 }
 
-void LayoutGeometryMap::pushMappingsToAncestor(const DeprecatedPaintLayer* layer, const DeprecatedPaintLayer* ancestorLayer)
+void LayoutGeometryMap::pushMappingsToAncestor(const PaintLayer* layer, const PaintLayer* ancestorLayer)
 {
     const LayoutObject* layoutObject = layer->layoutObject();
 
@@ -292,7 +292,7 @@ void LayoutGeometryMap::popMappingsToAncestor(const LayoutBoxModelObject* ancest
     }
 }
 
-void LayoutGeometryMap::popMappingsToAncestor(const DeprecatedPaintLayer* ancestorLayer)
+void LayoutGeometryMap::popMappingsToAncestor(const PaintLayer* ancestorLayer)
 {
     const LayoutBoxModelObject* ancestorLayoutObject = ancestorLayer ? ancestorLayer->layoutObject() : 0;
     popMappingsToAncestor(ancestorLayoutObject);

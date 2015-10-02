@@ -42,8 +42,8 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef DeprecatedPaintLayerClipper_h
-#define DeprecatedPaintLayerClipper_h
+#ifndef PaintLayerClipper_h
+#define PaintLayerClipper_h
 
 #include "core/layout/ClipRectsCache.h"
 #include "core/layout/LayoutBox.h"
@@ -51,7 +51,7 @@
 
 namespace blink {
 
-class DeprecatedPaintLayer;
+class PaintLayer;
 
 enum ShouldRespectOverflowClip {
     IgnoreOverflowClip,
@@ -61,7 +61,7 @@ enum ShouldRespectOverflowClip {
 class ClipRectsContext {
     STACK_ALLOCATED();
 public:
-    ClipRectsContext(const DeprecatedPaintLayer* root, ClipRectsCacheSlot slot, OverlayScrollbarSizeRelevancy relevancy = IgnoreOverlayScrollbarSize, const LayoutSize& accumulation = LayoutSize())
+    ClipRectsContext(const PaintLayer* root, ClipRectsCacheSlot slot, OverlayScrollbarSizeRelevancy relevancy = IgnoreOverlayScrollbarSize, const LayoutSize& accumulation = LayoutSize())
         : rootLayer(root)
         , scrollbarRelevancy(relevancy)
         , m_cacheSlot(slot)
@@ -95,11 +95,11 @@ public:
         return m_cacheSlot == PaintingClipRectsIgnoringOverflowClip || m_cacheSlot == PaintingClipRects;
     }
 
-    const DeprecatedPaintLayer* rootLayer;
+    const PaintLayer* rootLayer;
     const OverlayScrollbarSizeRelevancy scrollbarRelevancy;
 
 private:
-    friend class DeprecatedPaintLayerClipper;
+    friend class PaintLayerClipper;
 
     ClipRectsCacheSlot m_cacheSlot;
     LayoutSize subPixelAccumulation;
@@ -107,7 +107,7 @@ private:
     ShouldRespectOverflowClip respectOverflowClipForViewport;
 };
 
-// DeprecatedPaintLayerClipper is responsible for computing and caching clip
+// PaintLayerClipper is responsible for computing and caching clip
 // rects.
 //
 // The main reason for this cache is that we compute the clip rects during
@@ -153,13 +153,13 @@ private:
 // clip #fixed. This is the reason why we compute the painting clip rects during
 // a layout tree walk and cache them for painting.
 //
-// This class is NOT DEPRECATED, DeprecatedPaintLayer is and we match its
+// This class is NOT DEPRECATED, PaintLayer is and we match its
 // naming.
-class DeprecatedPaintLayerClipper {
+class PaintLayerClipper {
     DISALLOW_ALLOCATION();
-    WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerClipper);
+    WTF_MAKE_NONCOPYABLE(PaintLayerClipper);
 public:
-    explicit DeprecatedPaintLayerClipper(const LayoutBoxModelObject&);
+    explicit PaintLayerClipper(const LayoutBoxModelObject&);
 
     void clearClipRectsIncludingDescendants();
     void clearClipRectsIncludingDescendants(ClipRectsCacheSlot);
@@ -190,7 +190,7 @@ private:
     }
     void getOrCalculateClipRects(const ClipRectsContext&, ClipRects&) const;
 
-    DeprecatedPaintLayer* clippingRootForPainting() const;
+    PaintLayer* clippingRootForPainting() const;
 
     ClipRectsCache& cache() const
     {

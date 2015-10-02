@@ -15,7 +15,7 @@ class WebViewImpl;
 // processing steps on WebView: beginFrame, layout, paint.
 //
 // The painting capabilities are very limited in that only the main layer of
-// every CompositedDeprecatedPaintLayerMapping will be painted, squashed layers
+// every CompositedLayerMapping will be painted, squashed layers
 // are not supported and the entirety of every layer is always repainted even if
 // only part of the layer was invalid.
 //

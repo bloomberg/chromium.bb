@@ -107,12 +107,12 @@ public:
     bool scrollableAreaScrollLayerDidChange(ScrollableArea*);
     void scrollableAreaScrollbarLayerDidChange(ScrollableArea*, ScrollbarOrientation);
     void setLayerIsContainerForFixedPositionLayers(GraphicsLayer*, bool);
-    void updateLayerPositionConstraint(DeprecatedPaintLayer*);
+    void updateLayerPositionConstraint(PaintLayer*);
     void touchEventTargetRectsDidChange();
-    void willDestroyLayer(DeprecatedPaintLayer*);
+    void willDestroyLayer(PaintLayer*);
 
-    void updateScrollParentForGraphicsLayer(GraphicsLayer* child, DeprecatedPaintLayer* parent);
-    void updateClipParentForGraphicsLayer(GraphicsLayer* child, DeprecatedPaintLayer* parent);
+    void updateScrollParentForGraphicsLayer(GraphicsLayer* child, PaintLayer* parent);
+    void updateClipParentForGraphicsLayer(GraphicsLayer* child, PaintLayer* parent);
 
     static String mainThreadScrollingReasonsAsText(MainThreadScrollingReasons);
     String mainThreadScrollingReasonsAsText() const;
@@ -160,7 +160,7 @@ private:
     using ScrollbarMap = WillBeHeapHashMap<RawPtrWillBeMember<ScrollableArea>, OwnPtr<WebScrollbarLayer>>;
     ScrollbarMap m_horizontalScrollbars;
     ScrollbarMap m_verticalScrollbars;
-    HashSet<const DeprecatedPaintLayer*> m_layersWithTouchRects;
+    HashSet<const PaintLayer*> m_layersWithTouchRects;
     bool m_wasFrameScrollable;
 
     MainThreadScrollingReasons m_lastMainThreadScrollingReasons;

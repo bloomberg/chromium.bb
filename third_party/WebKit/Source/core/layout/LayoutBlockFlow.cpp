@@ -51,9 +51,9 @@
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/paint/BlockFlowPainter.h"
 #include "core/paint/ClipScope.h"
-#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/text/BidiTextRun.h"
@@ -322,7 +322,7 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
     if (m_paintInvalidationLogicalTop != m_paintInvalidationLogicalBottom) {
         bool hasVisibleContent = style()->visibility() == VISIBLE;
         if (!hasVisibleContent) {
-            DeprecatedPaintLayer* layer = enclosingLayer();
+            PaintLayer* layer = enclosingLayer();
             layer->updateDescendantDependentFlags();
             hasVisibleContent = layer->hasVisibleContent();
         }
@@ -1342,7 +1342,7 @@ void LayoutBlockFlow::adjustPositionedBlock(LayoutBox& child, const MarginInfo& 
         logicalTop += collapsedBeforePos - collapsedBeforeNeg;
     }
 
-    DeprecatedPaintLayer* childLayer = child.layer();
+    PaintLayer* childLayer = child.layer();
     if (childLayer->staticBlockPosition() != logicalTop)
         childLayer->setStaticBlockPosition(logicalTop);
 }
@@ -2631,7 +2631,7 @@ LayoutRect LayoutBlockFlow::selectionRectForPaintInvalidation(const LayoutBoxMod
     LayoutRect rect = selectionGapRectsForPaintInvalidation(paintInvalidationContainer);
     // FIXME: groupedMapping() leaks the squashing abstraction.
     if (paintInvalidationContainer->layer()->groupedMapping())
-        DeprecatedPaintLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
+        PaintLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
     return rect;
 }
 

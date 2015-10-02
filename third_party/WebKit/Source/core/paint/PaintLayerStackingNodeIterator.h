@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeprecatedPaintLayerStackingNodeIterator_h
-#define DeprecatedPaintLayerStackingNodeIterator_h
+#ifndef PaintLayerStackingNodeIterator_h
+#define PaintLayerStackingNodeIterator_h
 
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
@@ -39,7 +39,7 @@ namespace blink {
 enum ChildrenIteration {
     NegativeZOrderChildren = 1,
     // Normal flow children are not mandated by CSS 2.1 but are an artifact of
-    // our implementation: we allocate DeprecatedPaintLayers for elements that
+    // our implementation: we allocate PaintLayers for elements that
     // are not treated as stacking contexts and thus we need to walk them
     // during painting and hit-testing.
     NormalFlowChildren = 1 << 1,
@@ -47,50 +47,50 @@ enum ChildrenIteration {
     AllChildren = NegativeZOrderChildren | NormalFlowChildren | PositiveZOrderChildren
 };
 
-class DeprecatedPaintLayerStackingNode;
-class DeprecatedPaintLayer;
+class PaintLayerStackingNode;
+class PaintLayer;
 
-// This iterator walks the DeprecatedPaintLayerStackingNode lists in the following order:
+// This iterator walks the PaintLayerStackingNode lists in the following order:
 // NegativeZOrderChildren -> NormalFlowChildren -> PositiveZOrderChildren.
-class DeprecatedPaintLayerStackingNodeIterator {
+class PaintLayerStackingNodeIterator {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNodeIterator);
+    WTF_MAKE_NONCOPYABLE(PaintLayerStackingNodeIterator);
 public:
-    DeprecatedPaintLayerStackingNodeIterator(const DeprecatedPaintLayerStackingNode& root, unsigned whichChildren);
+    PaintLayerStackingNodeIterator(const PaintLayerStackingNode& root, unsigned whichChildren);
 
-    DeprecatedPaintLayerStackingNode* next();
+    PaintLayerStackingNode* next();
 
 private:
-    const DeprecatedPaintLayerStackingNode& m_root;
+    const PaintLayerStackingNode& m_root;
     unsigned m_remainingChildren;
     unsigned m_index;
-    DeprecatedPaintLayer* m_currentNormalFlowChild;
+    PaintLayer* m_currentNormalFlowChild;
 };
 
-// This iterator is similar to DeprecatedPaintLayerStackingNodeIterator but it walks the lists in reverse order
+// This iterator is similar to PaintLayerStackingNodeIterator but it walks the lists in reverse order
 // (from the last item to the first one).
-class DeprecatedPaintLayerStackingNodeReverseIterator {
+class PaintLayerStackingNodeReverseIterator {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNodeReverseIterator);
+    WTF_MAKE_NONCOPYABLE(PaintLayerStackingNodeReverseIterator);
 public:
-    DeprecatedPaintLayerStackingNodeReverseIterator(const DeprecatedPaintLayerStackingNode& root, unsigned whichChildren)
+    PaintLayerStackingNodeReverseIterator(const PaintLayerStackingNode& root, unsigned whichChildren)
         : m_root(root)
         , m_remainingChildren(whichChildren)
     {
         setIndexToLastItem();
     }
 
-    DeprecatedPaintLayerStackingNode* next();
+    PaintLayerStackingNode* next();
 
 private:
     void setIndexToLastItem();
 
-    const DeprecatedPaintLayerStackingNode& m_root;
+    const PaintLayerStackingNode& m_root;
     unsigned m_remainingChildren;
     int m_index;
-    DeprecatedPaintLayer* m_currentNormalFlowChild;
+    PaintLayer* m_currentNormalFlowChild;
 };
 
 } // namespace blink
 
-#endif // DeprecatedPaintLayerStackingNodeIterator_h
+#endif // PaintLayerStackingNodeIterator_h

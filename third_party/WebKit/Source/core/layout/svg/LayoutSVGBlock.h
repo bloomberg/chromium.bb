@@ -37,7 +37,7 @@ public:
 
     AffineTransform localTransform() const final { return m_localTransform; }
 
-    DeprecatedPaintLayerType layerTypeRequired() const final { return NoDeprecatedPaintLayer; }
+    PaintLayerType layerTypeRequired() const final { return NoPaintLayer; }
 
     void invalidateTreeIfNeeded(PaintInvalidationState&) override;
 

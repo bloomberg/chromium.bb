@@ -6,10 +6,10 @@
 #include "core/paint/ReplicaPainter.h"
 
 #include "core/layout/LayoutReplica.h"
-#include "core/paint/DeprecatedPaintLayer.h"
-#include "core/paint/DeprecatedPaintLayerPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/PaintLayer.h"
+#include "core/paint/PaintLayerPainter.h"
 
 namespace blink {
 
@@ -23,10 +23,10 @@ void ReplicaPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     if (paintInfo.phase == PaintPhaseForeground) {
         // Turn around and paint the parent layer. Use temporary clipRects, so that the layer doesn't end up caching clip rects
         // computing using the wrong rootLayer
-        DeprecatedPaintLayer* rootPaintingLayer = m_layoutReplica.layer()->transform() ? m_layoutReplica.layer()->parent() : m_layoutReplica.layer()->enclosingTransformedAncestor();
-        DeprecatedPaintLayerPaintingInfo paintingInfo(rootPaintingLayer, LayoutRect(paintInfo.rect), GlobalPaintNormalPhase, LayoutSize(), 0);
+        PaintLayer* rootPaintingLayer = m_layoutReplica.layer()->transform() ? m_layoutReplica.layer()->parent() : m_layoutReplica.layer()->enclosingTransformedAncestor();
+        PaintLayerPaintingInfo paintingInfo(rootPaintingLayer, LayoutRect(paintInfo.rect), GlobalPaintNormalPhase, LayoutSize(), 0);
         PaintLayerFlags flags = PaintLayerHaveTransparency | PaintLayerAppliedTransform | PaintLayerUncachedClipRects | PaintLayerPaintingReflection;
-        DeprecatedPaintLayerPainter(*m_layoutReplica.layer()->parent()).paintLayer(paintInfo.context, paintingInfo, flags);
+        PaintLayerPainter(*m_layoutReplica.layer()->parent()).paintLayer(paintInfo.context, paintingInfo, flags);
     } else if (paintInfo.phase == PaintPhaseMask) {
         m_layoutReplica.paintMask(paintInfo, adjustedPaintOffset);
     }

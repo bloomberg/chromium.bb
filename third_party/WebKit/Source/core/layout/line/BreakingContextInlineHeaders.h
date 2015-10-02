@@ -40,7 +40,7 @@
 #include "core/layout/line/TrailingObjects.h"
 #include "core/layout/line/WordMeasurement.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"

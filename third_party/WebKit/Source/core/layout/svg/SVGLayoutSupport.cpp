@@ -38,7 +38,7 @@
 #include "core/layout/svg/LayoutSVGViewportContainer.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/StrokeData.h"
@@ -450,7 +450,7 @@ AffineTransform SVGLayoutSupport::deprecatedCalculateTransformToLayer(const Layo
     // Continue walking up the layer tree, accumulating CSS transforms.
     // FIXME: this queries layer compositing state - which is not
     // supported during layout. Hence, the result may not include all CSS transforms.
-    DeprecatedPaintLayer* layer = layoutObject ? layoutObject->enclosingLayer() : 0;
+    PaintLayer* layer = layoutObject ? layoutObject->enclosingLayer() : 0;
     while (layer && layer->isAllowedToQueryCompositingState()) {
         // We can stop at compositing layers, to match the backing resolution.
         // FIXME: should we be computing the transform to the nearest composited layer,

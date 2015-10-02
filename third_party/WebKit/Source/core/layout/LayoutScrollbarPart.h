@@ -40,7 +40,7 @@ public:
 
     const char* name() const override { return "LayoutScrollbarPart"; }
 
-    DeprecatedPaintLayerType layerTypeRequired() const override { return NoDeprecatedPaintLayer; }
+    PaintLayerType layerTypeRequired() const override { return NoPaintLayer; }
 
     void layout() override;
 

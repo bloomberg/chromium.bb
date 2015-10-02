@@ -58,7 +58,7 @@ private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectEmbeddedObject || LayoutPart::isOfType(type); }
     LayoutBox* embeddedContentBox() const final;
 
-    DeprecatedPaintLayerType layerTypeRequired() const final;
+    PaintLayerType layerTypeRequired() const final;
 
     ScrollResultOneDimensional scroll(ScrollDirectionPhysical, ScrollGranularity, float multiplier) final;
 

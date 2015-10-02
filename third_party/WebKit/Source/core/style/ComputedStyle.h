@@ -1239,7 +1239,7 @@ public:
     // the purpose of painting and hit testing. This means that they are painted
     // atomically (like a stacking context) but they don't determine the
     // stacking of the elements underneath them (stacking contexts or elements
-    // "treated as stacking context"). See DeprecatedPaintLayerStackingNode for
+    // "treated as stacking context"). See PaintLayerStackingNode for
     // more about painting order.
     bool isTreatedAsStackingContext() const
     {

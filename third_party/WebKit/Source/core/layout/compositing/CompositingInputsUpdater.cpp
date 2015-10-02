@@ -6,14 +6,14 @@
 #include "core/layout/compositing/CompositingInputsUpdater.h"
 
 #include "core/layout/LayoutBlock.h"
-#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
-#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
 
-CompositingInputsUpdater::CompositingInputsUpdater(DeprecatedPaintLayer* rootLayer)
+CompositingInputsUpdater::CompositingInputsUpdater(PaintLayer* rootLayer)
     : m_geometryMap(UseTransforms)
     , m_rootLayer(rootLayer)
 {
@@ -29,7 +29,7 @@ void CompositingInputsUpdater::update()
     updateRecursive(m_rootLayer, DoNotForceUpdate, AncestorInfo());
 }
 
-static const DeprecatedPaintLayer* findParentLayerOnClippingContainerChain(const DeprecatedPaintLayer* layer)
+static const PaintLayer* findParentLayerOnClippingContainerChain(const PaintLayer* layer)
 {
     LayoutObject* current = layer->layoutObject();
     while (current) {
@@ -62,7 +62,7 @@ static const DeprecatedPaintLayer* findParentLayerOnClippingContainerChain(const
     return nullptr;
 }
 
-static const DeprecatedPaintLayer* findParentLayerOnContainingBlockChain(const LayoutObject* object)
+static const PaintLayer* findParentLayerOnContainingBlockChain(const LayoutObject* object)
 {
     for (const LayoutObject* current = object; current; current = current->containingBlock()) {
         if (current->hasLayer())
@@ -72,13 +72,13 @@ static const DeprecatedPaintLayer* findParentLayerOnContainingBlockChain(const L
     return nullptr;
 }
 
-static bool hasClippedStackingAncestor(const DeprecatedPaintLayer* layer, const DeprecatedPaintLayer* clippingLayer)
+static bool hasClippedStackingAncestor(const PaintLayer* layer, const PaintLayer* clippingLayer)
 {
     if (layer == clippingLayer)
         return false;
     bool foundInterveningClip = false;
     const LayoutObject* clippingLayoutObject = clippingLayer->layoutObject();
-    for (const DeprecatedPaintLayer* current = layer->compositingContainer(); current; current = current->compositingContainer()) {
+    for (const PaintLayer* current = layer->compositingContainer(); current; current = current->compositingContainer()) {
         if (current == clippingLayer)
             return foundInterveningClip;
 
@@ -93,24 +93,24 @@ static bool hasClippedStackingAncestor(const DeprecatedPaintLayer* layer, const 
     return false;
 }
 
-void CompositingInputsUpdater::updateRecursive(DeprecatedPaintLayer* layer, UpdateType updateType, AncestorInfo info)
+void CompositingInputsUpdater::updateRecursive(PaintLayer* layer, UpdateType updateType, AncestorInfo info)
 {
     if (!layer->childNeedsCompositingInputsUpdate() && updateType != ForceUpdate)
         return;
 
     m_geometryMap.pushMappingsToAncestor(layer, layer->parent());
 
-    if (layer->hasCompositedDeprecatedPaintLayerMapping())
+    if (layer->hasCompositedLayerMapping())
         info.enclosingCompositedLayer = layer;
 
     if (layer->needsCompositingInputsUpdate()) {
         if (info.enclosingCompositedLayer)
-            info.enclosingCompositedLayer->compositedDeprecatedPaintLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
+            info.enclosingCompositedLayer->compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
         updateType = ForceUpdate;
     }
 
     if (updateType == ForceUpdate) {
-        DeprecatedPaintLayer::AncestorDependentCompositingInputs properties;
+        PaintLayer::AncestorDependentCompositingInputs properties;
 
         if (!layer->isRootLayer()) {
             properties.clippedAbsoluteBoundingBox = enclosingIntRect(m_geometryMap.absoluteRect(FloatRect(layer->boundingBoxForCompositingOverlapTest())));
@@ -123,7 +123,7 @@ void CompositingInputsUpdater::updateRecursive(DeprecatedPaintLayer* layer, Upda
             IntRect clipRect = pixelSnappedIntRect(layer->clipper().backgroundClipRect(ClipRectsContext(m_rootLayer, AbsoluteClipRects)).rect());
             properties.clippedAbsoluteBoundingBox.intersect(clipRect);
 
-            const DeprecatedPaintLayer* parent = layer->parent();
+            const PaintLayer* parent = layer->parent();
             properties.opacityAncestor = parent->isTransparent() ? parent : parent->opacityAncestor();
             properties.transformAncestor = parent->hasTransformRelatedProperty() ? parent : parent->transformAncestor();
             properties.filterAncestor = parent->hasFilter() ? parent : parent->filterAncestor();
@@ -131,21 +131,21 @@ void CompositingInputsUpdater::updateRecursive(DeprecatedPaintLayer* layer, Upda
             properties.nearestFixedPositionLayer = layerIsFixedPosition ? layer : parent->nearestFixedPositionLayer();
 
             if (info.hasAncestorWithClipOrOverflowClip) {
-                const DeprecatedPaintLayer* parentLayerOnClippingContainerChain = findParentLayerOnClippingContainerChain(layer);
+                const PaintLayer* parentLayerOnClippingContainerChain = findParentLayerOnClippingContainerChain(layer);
                 const bool parentHasClipOrOverflowClip = parentLayerOnClippingContainerChain->layoutObject()->hasClipOrOverflowClip();
                 properties.clippingContainer = parentHasClipOrOverflowClip ? parentLayerOnClippingContainerChain->layoutObject() : parentLayerOnClippingContainerChain->clippingContainer();
             }
 
             if (info.lastScrollingAncestor) {
                 const LayoutObject* containingBlock = layer->layoutObject()->containingBlock();
-                const DeprecatedPaintLayer* parentLayerOnContainingBlockChain = findParentLayerOnContainingBlockChain(containingBlock);
+                const PaintLayer* parentLayerOnContainingBlockChain = findParentLayerOnContainingBlockChain(containingBlock);
 
                 properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain->ancestorScrollingLayer();
                 if (parentLayerOnContainingBlockChain->scrollsOverflow())
                     properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain;
 
                 if (layer->layoutObject()->isOutOfFlowPositioned() && !layer->subtreeIsInvisible()) {
-                    const DeprecatedPaintLayer* clippingLayer = properties.clippingContainer ? properties.clippingContainer->enclosingLayer() : layer->compositor()->rootLayer();
+                    const PaintLayer* clippingLayer = properties.clippingContainer ? properties.clippingContainer->enclosingLayer() : layer->compositor()->rootLayer();
                     if (hasClippedStackingAncestor(layer, clippingLayer))
                         properties.clipParent = clippingLayer;
                 }
@@ -173,8 +173,8 @@ void CompositingInputsUpdater::updateRecursive(DeprecatedPaintLayer* layer, Upda
     if (layer->layoutObject()->hasClipPath())
         info.hasAncestorWithClipPath = true;
 
-    DeprecatedPaintLayer::DescendantDependentCompositingInputs descendantProperties;
-    for (DeprecatedPaintLayer* child = layer->firstChild(); child; child = child->nextSibling()) {
+    PaintLayer::DescendantDependentCompositingInputs descendantProperties;
+    for (PaintLayer* child = layer->firstChild(); child; child = child->nextSibling()) {
         updateRecursive(child, updateType, info);
 
         descendantProperties.hasDescendantWithClipPath |= child->hasDescendantWithClipPath() || child->layoutObject()->hasClipPath();
@@ -189,12 +189,12 @@ void CompositingInputsUpdater::updateRecursive(DeprecatedPaintLayer* layer, Upda
 
 #if ENABLE(ASSERT)
 
-void CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(DeprecatedPaintLayer* layer)
+void CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(PaintLayer* layer)
 {
     ASSERT(!layer->childNeedsCompositingInputsUpdate());
     ASSERT(!layer->needsCompositingInputsUpdate());
 
-    for (DeprecatedPaintLayer* child = layer->firstChild(); child; child = child->nextSibling())
+    for (PaintLayer* child = layer->firstChild(); child; child = child->nextSibling())
         assertNeedsCompositingInputsUpdateBitsCleared(child);
 }
 

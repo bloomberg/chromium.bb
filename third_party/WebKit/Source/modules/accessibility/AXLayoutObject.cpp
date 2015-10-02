@@ -65,7 +65,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
@@ -1503,7 +1503,7 @@ AXObject* AXLayoutObject::accessibilityHitTest(const IntPoint& point) const
     if (!m_layoutObject || !m_layoutObject->hasLayer())
         return 0;
 
-    DeprecatedPaintLayer* layer = toLayoutBox(m_layoutObject)->layer();
+    PaintLayer* layer = toLayoutBox(m_layoutObject)->layer();
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult hitTestResult = HitTestResult(request, point);

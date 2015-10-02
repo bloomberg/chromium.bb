@@ -8,9 +8,9 @@
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/paint/ClipScope.h"
-#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/PaintLayer.h"
 
 namespace blink {
 
@@ -74,7 +74,7 @@ void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPo
         skipRecording ? nullptr : &(*clipScope));
     // TODO(wkorman): Rework below to process paint invalidation rects during layout rather than paint.
     if (!gapRectsBounds.isEmpty()) {
-        DeprecatedPaintLayer* layer = m_layoutBlockFlow.enclosingLayer();
+        PaintLayer* layer = m_layoutBlockFlow.enclosingLayer();
         gapRectsBounds.moveBy(-paintOffset);
         if (!m_layoutBlockFlow.hasLayer()) {
             LayoutRect localBounds(gapRectsBounds);

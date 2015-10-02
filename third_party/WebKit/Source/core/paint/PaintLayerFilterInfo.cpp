@@ -28,49 +28,49 @@
  */
 
 #include "config.h"
-#include "core/paint/DeprecatedPaintLayerFilterInfo.h"
+#include "core/paint/PaintLayerFilterInfo.h"
 
 #include "core/fetch/DocumentResourceReference.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
-#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/FilterEffectBuilder.h"
+#include "core/paint/PaintLayer.h"
 #include "core/svg/SVGFilterElement.h"
 
 namespace blink {
 
-DeprecatedPaintLayerFilterInfoMap* DeprecatedPaintLayerFilterInfo::s_filterMap = 0;
+PaintLayerFilterInfoMap* PaintLayerFilterInfo::s_filterMap = 0;
 
-DeprecatedPaintLayerFilterInfo* DeprecatedPaintLayerFilterInfo::filterInfoForLayer(const DeprecatedPaintLayer* layer)
+PaintLayerFilterInfo* PaintLayerFilterInfo::filterInfoForLayer(const PaintLayer* layer)
 {
     if (!s_filterMap)
         return 0;
-    DeprecatedPaintLayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
+    PaintLayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
     return (iter != s_filterMap->end()) ? iter->value : 0;
 }
 
-DeprecatedPaintLayerFilterInfo* DeprecatedPaintLayerFilterInfo::createFilterInfoForLayerIfNeeded(DeprecatedPaintLayer* layer)
+PaintLayerFilterInfo* PaintLayerFilterInfo::createFilterInfoForLayerIfNeeded(PaintLayer* layer)
 {
     if (!s_filterMap)
-        s_filterMap = new DeprecatedPaintLayerFilterInfoMap();
+        s_filterMap = new PaintLayerFilterInfoMap();
 
-    DeprecatedPaintLayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
+    PaintLayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
     if (iter != s_filterMap->end()) {
         ASSERT(layer->hasFilterInfo());
         return iter->value;
     }
 
-    DeprecatedPaintLayerFilterInfo* filter = new DeprecatedPaintLayerFilterInfo(layer);
+    PaintLayerFilterInfo* filter = new PaintLayerFilterInfo(layer);
     s_filterMap->set(layer, filter);
     layer->setHasFilterInfo(true);
     return filter;
 }
 
-void DeprecatedPaintLayerFilterInfo::removeFilterInfoForLayer(DeprecatedPaintLayer* layer)
+void PaintLayerFilterInfo::removeFilterInfoForLayer(PaintLayer* layer)
 {
     if (!s_filterMap)
         return;
-    DeprecatedPaintLayerFilterInfo* filter = s_filterMap->take(layer);
+    PaintLayerFilterInfo* filter = s_filterMap->take(layer);
     if (s_filterMap->isEmpty()) {
         delete s_filterMap;
         s_filterMap = 0;
@@ -83,27 +83,27 @@ void DeprecatedPaintLayerFilterInfo::removeFilterInfoForLayer(DeprecatedPaintLay
     delete filter;
 }
 
-DeprecatedPaintLayerFilterInfo::DeprecatedPaintLayerFilterInfo(DeprecatedPaintLayer* layer)
+PaintLayerFilterInfo::PaintLayerFilterInfo(PaintLayer* layer)
     : m_layer(layer)
 {
 }
 
-DeprecatedPaintLayerFilterInfo::~DeprecatedPaintLayerFilterInfo()
+PaintLayerFilterInfo::~PaintLayerFilterInfo()
 {
     removeReferenceFilterClients();
 }
 
-void DeprecatedPaintLayerFilterInfo::setBuilder(PassRefPtrWillBeRawPtr<FilterEffectBuilder> builder)
+void PaintLayerFilterInfo::setBuilder(PassRefPtrWillBeRawPtr<FilterEffectBuilder> builder)
 {
     m_builder = builder;
 }
 
-void DeprecatedPaintLayerFilterInfo::notifyFinished(Resource*)
+void PaintLayerFilterInfo::notifyFinished(Resource*)
 {
     m_layer->filterNeedsPaintInvalidation();
 }
 
-void DeprecatedPaintLayerFilterInfo::updateReferenceFilterClients(const FilterOperations& operations)
+void PaintLayerFilterInfo::updateReferenceFilterClients(const FilterOperations& operations)
 {
     removeReferenceFilterClients();
     for (size_t i = 0; i < operations.size(); ++i) {
@@ -133,7 +133,7 @@ void DeprecatedPaintLayerFilterInfo::updateReferenceFilterClients(const FilterOp
     }
 }
 
-void DeprecatedPaintLayerFilterInfo::removeReferenceFilterClients()
+void PaintLayerFilterInfo::removeReferenceFilterClients()
 {
     for (size_t i = 0; i < m_externalSVGReferences.size(); ++i)
         m_externalSVGReferences.at(i)->removeClient(this);

@@ -8,7 +8,7 @@
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include <gtest/gtest.h>
 

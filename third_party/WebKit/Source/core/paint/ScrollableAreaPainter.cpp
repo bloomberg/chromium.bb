@@ -7,9 +7,9 @@
 
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
-#include "core/paint/DeprecatedPaintLayer.h"
-#include "core/paint/DeprecatedPaintLayerScrollableArea.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintLayer.h"
+#include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -113,7 +113,7 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, cons
 
         LayoutView* layoutView = scrollableArea().box().view();
 
-        DeprecatedPaintLayer* paintingRoot = scrollableArea().layer()->enclosingLayerWithCompositedDeprecatedPaintLayerMapping(IncludeSelf);
+        PaintLayer* paintingRoot = scrollableArea().layer()->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
         if (!paintingRoot)
             paintingRoot = layoutView->layer();
 
@@ -193,7 +193,7 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const In
     context->fillRect(absRect, Color::white);
 }
 
-DeprecatedPaintLayerScrollableArea& ScrollableAreaPainter::scrollableArea() const
+PaintLayerScrollableArea& ScrollableAreaPainter::scrollableArea() const
 {
     return *m_scrollableArea;
 }

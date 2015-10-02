@@ -65,8 +65,8 @@
 #include "core/page/Page.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ContentData.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -893,7 +893,7 @@ void LayoutBlock::finishDelayUpdateScrollInfo()
 
         for (auto block : *infoMap) {
             if (block.key->hasOverflowClip()) {
-                DeprecatedPaintLayerScrollableArea* scrollableArea = block.key->layer()->scrollableArea();
+                PaintLayerScrollableArea* scrollableArea = block.key->layer()->scrollableArea();
                 ScrollInfo& scrollInfo = block.value;
                 scrollableArea->finalizeScrollDimensions(scrollInfo.scrollOffset, scrollInfo.autoHorizontalScrollBarChanged, scrollInfo.autoVerticalScrollBarChanged);
             }

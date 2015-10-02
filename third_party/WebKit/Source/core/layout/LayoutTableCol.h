@@ -119,7 +119,7 @@ private:
 
     bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
     bool canHaveChildren() const override;
-    DeprecatedPaintLayerType layerTypeRequired() const override { return NoDeprecatedPaintLayer; }
+    PaintLayerType layerTypeRequired() const override { return NoPaintLayer; }
 
     LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
     void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;

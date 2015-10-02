@@ -27,8 +27,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef DeprecatedPaintLayerFilterInfo_h
-#define DeprecatedPaintLayerFilterInfo_h
+#ifndef PaintLayerFilterInfo_h
+#define PaintLayerFilterInfo_h
 
 #include "core/dom/Element.h"
 #include "core/fetch/DocumentResource.h"
@@ -43,18 +43,18 @@ namespace blink {
 
 class FilterEffectBuilder;
 class FilterOperations;
-class DeprecatedPaintLayer;
-class DeprecatedPaintLayerFilterInfo;
+class PaintLayer;
+class PaintLayerFilterInfo;
 
-typedef HashMap<const DeprecatedPaintLayer*, DeprecatedPaintLayerFilterInfo*> DeprecatedPaintLayerFilterInfoMap;
+typedef HashMap<const PaintLayer*, PaintLayerFilterInfo*> PaintLayerFilterInfoMap;
 
-class DeprecatedPaintLayerFilterInfo final : public DocumentResourceClient {
-    WTF_MAKE_FAST_ALLOCATED(DeprecatedPaintLayerFilterInfo);
-    WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerFilterInfo);
+class PaintLayerFilterInfo final : public DocumentResourceClient {
+    WTF_MAKE_FAST_ALLOCATED(PaintLayerFilterInfo);
+    WTF_MAKE_NONCOPYABLE(PaintLayerFilterInfo);
 public:
-    static DeprecatedPaintLayerFilterInfo* filterInfoForLayer(const DeprecatedPaintLayer*);
-    static DeprecatedPaintLayerFilterInfo* createFilterInfoForLayerIfNeeded(DeprecatedPaintLayer*);
-    static void removeFilterInfoForLayer(DeprecatedPaintLayer*);
+    static PaintLayerFilterInfo* filterInfoForLayer(const PaintLayer*);
+    static PaintLayerFilterInfo* createFilterInfoForLayerIfNeeded(PaintLayer*);
+    static void removeFilterInfoForLayer(PaintLayer*);
 
     FilterEffectBuilder* builder() const { return m_builder.get(); }
     void setBuilder(PassRefPtrWillBeRawPtr<FilterEffectBuilder>);
@@ -64,14 +64,14 @@ public:
     void removeReferenceFilterClients();
 
 private:
-    DeprecatedPaintLayerFilterInfo(DeprecatedPaintLayer*);
-    ~DeprecatedPaintLayerFilterInfo() override;
+    PaintLayerFilterInfo(PaintLayer*);
+    ~PaintLayerFilterInfo() override;
 
-    DeprecatedPaintLayer* m_layer;
+    PaintLayer* m_layer;
 
     RefPtrWillBePersistent<FilterEffectBuilder> m_builder;
 
-    static DeprecatedPaintLayerFilterInfoMap* s_filterMap;
+    static PaintLayerFilterInfoMap* s_filterMap;
     WillBePersistentHeapVector<RefPtrWillBeMember<Element>> m_internalSVGReferences;
     Vector<ResourcePtr<DocumentResource>> m_externalSVGReferences;
 };
@@ -79,4 +79,4 @@ private:
 } // namespace blink
 
 
-#endif // DeprecatedPaintLayerFilterInfo_h
+#endif // PaintLayerFilterInfo_h

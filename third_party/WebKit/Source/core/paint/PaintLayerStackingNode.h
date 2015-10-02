@@ -42,8 +42,8 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef DeprecatedPaintLayerStackingNode_h
-#define DeprecatedPaintLayerStackingNode_h
+#ifndef PaintLayerStackingNode_h
+#define PaintLayerStackingNode_h
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBoxModelObject.h"
@@ -53,12 +53,12 @@
 
 namespace blink {
 
-class DeprecatedPaintLayer;
-class DeprecatedPaintLayerCompositor;
+class PaintLayer;
+class PaintLayerCompositor;
 class ComputedStyle;
 class LayoutBoxModelObject;
 
-// DeprecatedPaintLayerStackingNode represents anything that is a stacking
+// PaintLayerStackingNode represents anything that is a stacking
 // context or treated as a stacking context.
 //
 // Stacking contexts are the basis for the CSS painting algorithm. The paint
@@ -67,12 +67,12 @@ class LayoutBoxModelObject;
 // ‘z-index’. This walk is interleaved with content that is not a stacking.
 // context. See CSS 2.1 appendix E for the actual algorithm
 // http://www.w3.org/TR/CSS21/zindex.html
-// See also DeprecatedPaintLayerPainter (in particular paintLayerContents) for
+// See also PaintLayerPainter (in particular paintLayerContents) for
 // our implementation of the walk.
 //
 // Stacking contexts form a subtree over the layout tree. Ideally we would want
 // objects of this class to be a node in this tree but there are potential
-// issues with stale pointers so we rely on DeprecatedPaintLayer's tree
+// issues with stale pointers so we rely on PaintLayer's tree
 // structure.
 //
 // This class's purpose is to represent a node in the stacking context tree
@@ -80,17 +80,17 @@ class LayoutBoxModelObject;
 // hit-testing.
 //
 // To implement any z-order list iterations, use
-// DeprecatedPaintLayerStackingNodeIterator and
-// DeprecatedPaintLayerStackingNodeReverseIterator.
+// PaintLayerStackingNodeIterator and
+// PaintLayerStackingNodeReverseIterator.
 //
-// This class is NOT DEPRECATED, DeprecatedPaintLayer is and we match its
+// This class is NOT DEPRECATED, PaintLayer is and we match its
 // naming.
-class CORE_EXPORT DeprecatedPaintLayerStackingNode {
-    WTF_MAKE_FAST_ALLOCATED(DeprecatedPaintLayerStackingNode);
-    WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNode);
+class CORE_EXPORT PaintLayerStackingNode {
+    WTF_MAKE_FAST_ALLOCATED(PaintLayerStackingNode);
+    WTF_MAKE_NONCOPYABLE(PaintLayerStackingNode);
 public:
-    explicit DeprecatedPaintLayerStackingNode(DeprecatedPaintLayer*);
-    ~DeprecatedPaintLayerStackingNode();
+    explicit PaintLayerStackingNode(PaintLayer*);
+    ~PaintLayerStackingNode();
 
     int zIndex() const { return layoutObject()->style()->zIndex(); }
 
@@ -113,9 +113,9 @@ public:
 
     void updateStackingNodesAfterStyleChange(const ComputedStyle* oldStyle);
 
-    DeprecatedPaintLayerStackingNode* ancestorStackingContextNode() const;
+    PaintLayerStackingNode* ancestorStackingContextNode() const;
 
-    DeprecatedPaintLayer* layer() const { return m_layer; }
+    PaintLayer* layer() const { return m_layer; }
 
 #if ENABLE(ASSERT)
     bool layerListMutationAllowed() const { return m_layerListMutationAllowed; }
@@ -123,18 +123,18 @@ public:
 #endif
 
 private:
-    friend class DeprecatedPaintLayerStackingNodeIterator;
-    friend class DeprecatedPaintLayerStackingNodeReverseIterator;
+    friend class PaintLayerStackingNodeIterator;
+    friend class PaintLayerStackingNodeReverseIterator;
     friend class LayoutTreeAsText;
 
-    Vector<DeprecatedPaintLayerStackingNode*>* posZOrderList() const
+    Vector<PaintLayerStackingNode*>* posZOrderList() const
     {
         ASSERT(!m_zOrderListsDirty);
         ASSERT(isStackingContext() || !m_posZOrderList);
         return m_posZOrderList.get();
     }
 
-    Vector<DeprecatedPaintLayerStackingNode*>* negZOrderList() const
+    Vector<PaintLayerStackingNode*>* negZOrderList() const
     {
         ASSERT(!m_zOrderListsDirty);
         ASSERT(isStackingContext() || !m_negZOrderList);
@@ -142,30 +142,30 @@ private:
     }
 
     void rebuildZOrderLists();
-    void collectLayers(OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>>& posZOrderList, OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>>& negZOrderList);
+    void collectLayers(OwnPtr<Vector<PaintLayerStackingNode*>>& posZOrderList, OwnPtr<Vector<PaintLayerStackingNode*>>& negZOrderList);
 
 #if ENABLE(ASSERT)
     bool isInStackingParentZOrderLists() const;
-    void updateStackingParentForZOrderLists(DeprecatedPaintLayerStackingNode* stackingParent);
-    void setStackingParent(DeprecatedPaintLayerStackingNode* stackingParent) { m_stackingParent = stackingParent; }
+    void updateStackingParentForZOrderLists(PaintLayerStackingNode* stackingParent);
+    void setStackingParent(PaintLayerStackingNode* stackingParent) { m_stackingParent = stackingParent; }
 #endif
 
     bool shouldBeTreatedAsOrStackingContext() const { return layoutObject()->style()->isTreatedAsOrStackingContext(); }
 
     bool isDirtyStackingContext() const { return m_zOrderListsDirty && isStackingContext(); }
 
-    DeprecatedPaintLayerCompositor* compositor() const;
+    PaintLayerCompositor* compositor() const;
     // We can't return a LayoutBox as LayoutInline can be a stacking context.
     LayoutBoxModelObject* layoutObject() const;
 
-    DeprecatedPaintLayer* m_layer;
+    PaintLayer* m_layer;
 
     // m_posZOrderList holds a sorted list of all the descendant nodes within
     // that have z-indices of 0 or greater (auto will count as 0).
     // m_negZOrderList holds descendants within our stacking context with
     // negative z-indices.
-    OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>> m_posZOrderList;
-    OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>> m_negZOrderList;
+    OwnPtr<Vector<PaintLayerStackingNode*>> m_posZOrderList;
+    OwnPtr<Vector<PaintLayerStackingNode*>> m_negZOrderList;
 
     // This boolean caches whether the z-order lists above are dirty.
     // It is only ever set for stacking contexts, as no other element can
@@ -180,11 +180,11 @@ private:
 
 #if ENABLE(ASSERT)
     unsigned m_layerListMutationAllowed : 1;
-    DeprecatedPaintLayerStackingNode* m_stackingParent;
+    PaintLayerStackingNode* m_stackingParent;
 #endif
 };
 
-inline void DeprecatedPaintLayerStackingNode::clearZOrderLists()
+inline void PaintLayerStackingNode::clearZOrderLists()
 {
     ASSERT(!isStackingContext());
 
@@ -196,7 +196,7 @@ inline void DeprecatedPaintLayerStackingNode::clearZOrderLists()
     m_negZOrderList.clear();
 }
 
-inline void DeprecatedPaintLayerStackingNode::updateZOrderLists()
+inline void PaintLayerStackingNode::updateZOrderLists()
 {
     if (!m_zOrderListsDirty)
         return;
@@ -213,7 +213,7 @@ inline void DeprecatedPaintLayerStackingNode::updateZOrderLists()
 #if ENABLE(ASSERT)
 class LayerListMutationDetector {
 public:
-    explicit LayerListMutationDetector(DeprecatedPaintLayerStackingNode* stackingNode)
+    explicit LayerListMutationDetector(PaintLayerStackingNode* stackingNode)
         : m_stackingNode(stackingNode)
         , m_previousMutationAllowedState(stackingNode->layerListMutationAllowed())
     {
@@ -226,11 +226,11 @@ public:
     }
 
 private:
-    DeprecatedPaintLayerStackingNode* m_stackingNode;
+    PaintLayerStackingNode* m_stackingNode;
     bool m_previousMutationAllowedState;
 };
 #endif
 
 } // namespace blink
 
-#endif // DeprecatedPaintLayerStackingNode_h
+#endif // PaintLayerStackingNode_h

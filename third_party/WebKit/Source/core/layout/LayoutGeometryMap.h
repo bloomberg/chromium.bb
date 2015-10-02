@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class DeprecatedPaintLayer;
+class PaintLayer;
 class LayoutBoxModelObject;
 class TransformationMatrix;
 class TransformState;
@@ -65,8 +65,8 @@ public:
     FloatQuad mapToContainer(const FloatRect&, const LayoutBoxModelObject*) const;
 
     // Called by code walking the layout or layer trees.
-    void pushMappingsToAncestor(const DeprecatedPaintLayer*, const DeprecatedPaintLayer* ancestorLayer);
-    void popMappingsToAncestor(const DeprecatedPaintLayer*);
+    void pushMappingsToAncestor(const PaintLayer*, const PaintLayer* ancestorLayer);
+    void popMappingsToAncestor(const PaintLayer*);
     void pushMappingsToAncestor(const LayoutObject*, const LayoutBoxModelObject* ancestorLayoutObject);
     void popMappingsToAncestor(const LayoutBoxModelObject*);
 

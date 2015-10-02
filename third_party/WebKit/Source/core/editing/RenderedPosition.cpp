@@ -35,7 +35,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 
 namespace blink {
 
@@ -244,7 +244,7 @@ void RenderedPosition::positionInGraphicsLayerBacking(CompositedSelectionBound& 
         return;
 
     LayoutRect rect = m_layoutObject->localCaretRect(m_inlineBox, m_offset);
-    DeprecatedPaintLayer* layer = nullptr;
+    PaintLayer* layer = nullptr;
     bound.edgeTopInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.minXMinYCorner(), &layer);
     bound.edgeBottomInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.minXMaxYCorner(), nullptr);
     bound.layer = layer ? layer->graphicsLayerBacking() : nullptr;

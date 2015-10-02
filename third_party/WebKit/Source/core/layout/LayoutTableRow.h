@@ -137,15 +137,15 @@ private:
     void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
     void layout() override;
 
-    DeprecatedPaintLayerType layerTypeRequired() const override
+    PaintLayerType layerTypeRequired() const override
     {
         if (hasTransformRelatedProperty() || hasHiddenBackface() || hasClipPath() || createsGroup() || style()->shouldCompositeForCurrentAnimations() || style()->hasCompositorProxy())
-            return NormalDeprecatedPaintLayer;
+            return NormalPaintLayer;
 
         if (hasOverflowClip())
-            return OverflowClipDeprecatedPaintLayer;
+            return OverflowClipPaintLayer;
 
-        return NoDeprecatedPaintLayer;
+        return NoPaintLayer;
     }
 
     void paint(const PaintInfo&, const LayoutPoint&) const override;

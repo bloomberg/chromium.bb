@@ -51,13 +51,13 @@
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/DoubleRect.h"
@@ -98,19 +98,19 @@ LayoutBox::LayoutBox(ContainerNode* node)
     setIsBox();
 }
 
-DeprecatedPaintLayerType LayoutBox::layerTypeRequired() const
+PaintLayerType LayoutBox::layerTypeRequired() const
 {
     // hasAutoZIndex only returns true if the element is positioned or a flex-item since
     // position:static elements that are not flex-items get their z-index coerced to auto.
     if (isPositioned() || createsGroup() || hasClipPath() || hasTransformRelatedProperty()
         || style()->hasCompositorProxy() || hasHiddenBackface() || hasReflection() || style()->specifiesColumns()
         || !style()->hasAutoZIndex() || style()->shouldCompositeForCurrentAnimations())
-        return NormalDeprecatedPaintLayer;
+        return NormalPaintLayer;
 
     if (hasOverflowClip())
-        return OverflowClipDeprecatedPaintLayer;
+        return OverflowClipPaintLayer;
 
-    return NoDeprecatedPaintLayer;
+    return NoPaintLayer;
 }
 
 void LayoutBox::willBeDestroyed()
@@ -240,7 +240,7 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
         document().view()->recalculateScrollbarOverlayStyle();
         document().view()->recalculateCustomScrollbarStyle();
         if (LayoutView* layoutView = view()) {
-            if (DeprecatedPaintLayerScrollableArea* scrollableArea = layoutView->scrollableArea()) {
+            if (PaintLayerScrollableArea* scrollableArea = layoutView->scrollableArea()) {
                 if (scrollableArea->horizontalScrollbar() && scrollableArea->horizontalScrollbar()->isCustomScrollbar())
                     scrollableArea->horizontalScrollbar()->styleChanged();
                 if (scrollableArea->verticalScrollbar() && scrollableArea->verticalScrollbar()->isCustomScrollbar())
@@ -649,7 +649,7 @@ bool LayoutBox::canResize() const
     return (hasOverflowClip() || isLayoutIFrame()) && style()->resize() != RESIZE_NONE;
 }
 
-void LayoutBox::addLayerHitTestRects(LayerHitTestRects& layerRects, const DeprecatedPaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
+void LayoutBox::addLayerHitTestRects(LayerHitTestRects& layerRects, const PaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     LayoutPoint adjustedLayerOffset = layerOffset + locationOffset();
     LayoutBoxModelObject::addLayerHitTestRects(layerRects, currentLayer, adjustedLayerOffset, containerRect);
@@ -1260,7 +1260,7 @@ static bool isCandidateForOpaquenessTest(const LayoutBox& childBox)
         return false;
     if (childBox.size().isZero())
         return false;
-    if (DeprecatedPaintLayer* childLayer = childBox.layer()) {
+    if (PaintLayer* childLayer = childBox.layer()) {
         // FIXME: perhaps this could be less conservative?
         if (childLayer->compositingState() != NotComposited)
             return false;
@@ -1406,7 +1406,7 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationStat
         // Issue paint invalidations for any scrollbars if there is a scrollable area for this layoutObject.
         if (ScrollableArea* area = scrollableArea()) {
             // In slimming paint mode, we already invalidated the display item clients of the scrollbars
-            // during DeprecatedPaintLayerScrollableArea::invalidateScrollbarRect(). However, for now we still need to
+            // during PaintLayerScrollableArea::invalidateScrollbarRect(). However, for now we still need to
             // invalidate the rectangles to trigger repaints.
             if (area->hasVerticalBarDamage())
                 invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(area->verticalBarDamage()));
@@ -1772,7 +1772,7 @@ void LayoutBox::clearSpannerPlaceholder()
 LayoutRect LayoutBox::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     if (style()->visibility() != VISIBLE) {
-        DeprecatedPaintLayer* layer = enclosingLayer();
+        PaintLayer* layer = enclosingLayer();
         layer->updateDescendantDependentFlags();
         if (layer->subtreeIsInvisible())
             return LayoutRect();
@@ -2757,7 +2757,7 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(const LayoutBoxMo
     if (style()->position() == FixedPosition && containingBlock->isLayoutView()) {
         const LayoutView* view = toLayoutView(containingBlock);
         if (FrameView* frameView = view->frameView()) {
-            // Don't use visibleContentRect since the DeprecatedPaintLayer's size has not been set yet.
+            // Don't use visibleContentRect since the PaintLayer's size has not been set yet.
             IntSize viewportSize = frameView->layoutViewportScrollableArea()->excludeScrollbars(frameView->frameRect().size());
             return containingBlock->isHorizontalWritingMode() ? viewportSize.width() : viewportSize.height();
         }
@@ -2801,7 +2801,7 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(const LayoutBoxM
     if (style()->position() == FixedPosition && containingBlock->isLayoutView()) {
         const LayoutView* view = toLayoutView(containingBlock);
         if (FrameView* frameView = view->frameView()) {
-            // Don't use visibleContentRect since the DeprecatedPaintLayer's size has not been set yet.
+            // Don't use visibleContentRect since the PaintLayer's size has not been set yet.
             IntSize viewportSize = frameView->layoutViewportScrollableArea()->excludeScrollbars(frameView->frameRect().size());
             return containingBlock->isHorizontalWritingMode() ? viewportSize.height() : viewportSize.width();
         }
@@ -3921,8 +3921,8 @@ bool LayoutBox::avoidsFloats() const
 
 bool LayoutBox::hasNonCompositedScrollbars() const
 {
-    if (DeprecatedPaintLayer* layer = this->layer()) {
-        if (DeprecatedPaintLayerScrollableArea* scrollableArea = layer->scrollableArea()) {
+    if (PaintLayer* layer = this->layer()) {
+        if (PaintLayerScrollableArea* scrollableArea = layer->scrollableArea()) {
             if (scrollableArea->hasHorizontalScrollbar() && !scrollableArea->layerForHorizontalScrollbar())
                 return true;
             if (scrollableArea->hasVerticalScrollbar() && !scrollableArea->layerForVerticalScrollbar())
@@ -4345,11 +4345,11 @@ int LayoutBox::baselinePosition(FontBaseline baselineType, bool /*firstLine*/, L
 }
 
 
-DeprecatedPaintLayer* LayoutBox::enclosingFloatPaintingLayer() const
+PaintLayer* LayoutBox::enclosingFloatPaintingLayer() const
 {
     const LayoutObject* curr = this;
     while (curr) {
-        DeprecatedPaintLayer* layer = curr->hasLayer() && curr->isBox() ? toLayoutBox(curr)->layer() : 0;
+        PaintLayer* layer = curr->hasLayer() && curr->isBox() ? toLayoutBox(curr)->layer() : 0;
         if (layer && layer->isSelfPaintingLayer())
             return layer;
         curr = curr->parent();

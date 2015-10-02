@@ -34,7 +34,7 @@
 namespace blink {
 
 class Color;
-class DeprecatedPaintLayer;
+class PaintLayer;
 class Element;
 class LayoutRect;
 class LocalFrame;
@@ -69,7 +69,7 @@ class LayoutTreeAsText {
 // not being done).
 public:
 static void writeLayoutObject(TextStream&, const LayoutObject&, LayoutAsTextBehavior);
-static void writeLayers(TextStream&, const DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer*, const LayoutRect& paintDirtyRect, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
+static void writeLayers(TextStream&, const PaintLayer* rootLayer, PaintLayer*, const LayoutRect& paintDirtyRect, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 static void writeLineBoxTree(TextStream&, const LayoutBlockFlow&, int indent = 0);
 };
 

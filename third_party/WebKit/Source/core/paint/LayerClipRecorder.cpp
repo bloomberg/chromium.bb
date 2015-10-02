@@ -7,7 +7,7 @@
 
 #include "core/layout/ClipRect.h"
 #include "core/layout/LayoutView.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -17,7 +17,7 @@
 namespace blink {
 
 LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphicsContext, const LayoutBoxModelObject& layoutObject, DisplayItem::Type clipType, const ClipRect& clipRect,
-    const DeprecatedPaintLayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags, BorderRadiusClippingRule rule)
+    const PaintLayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags, BorderRadiusClippingRule rule)
     : m_graphicsContext(graphicsContext)
     , m_layoutObject(layoutObject)
     , m_clipType(clipType)
@@ -34,7 +34,7 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphicsContext, const Lay
     m_graphicsContext.displayItemList()->createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, snappedClipRect, roundedRects);
 }
 
-static bool inContainingBlockChain(DeprecatedPaintLayer* startLayer, DeprecatedPaintLayer* endLayer)
+static bool inContainingBlockChain(PaintLayer* startLayer, PaintLayer* endLayer)
 {
     if (startLayer == endLayer)
         return true;
@@ -48,13 +48,13 @@ static bool inContainingBlockChain(DeprecatedPaintLayer* startLayer, DeprecatedP
     return false;
 }
 
-void LayerClipRecorder::collectRoundedRectClips(DeprecatedPaintLayer& paintLayer, const DeprecatedPaintLayerPaintingInfo& localPaintingInfo, GraphicsContext& context, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags,
+void LayerClipRecorder::collectRoundedRectClips(PaintLayer& paintLayer, const PaintLayerPaintingInfo& localPaintingInfo, GraphicsContext& context, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags,
     BorderRadiusClippingRule rule, Vector<FloatRoundedRect>& roundedRectClips)
 {
     // If the clip rect has been tainted by a border radius, then we have to walk up our layer chain applying the clips from
     // any layers with overflow. The condition for being able to apply these clips is that the overflow object be in our
     // containing block chain so we check that also.
-    for (DeprecatedPaintLayer* layer = rule == IncludeSelfForBorderRadius ? &paintLayer : paintLayer.parent(); layer; layer = layer->parent()) {
+    for (PaintLayer* layer = rule == IncludeSelfForBorderRadius ? &paintLayer : paintLayer.parent(); layer; layer = layer->parent()) {
         // Composited scrolling layers handle border-radius clip in the compositor via a mask layer. We do not
         // want to apply a border-radius clip to the layer contents itself, because that would require re-rastering
         // every frame to update the clip. We only want to make sure that the mask layer is properly clipped so

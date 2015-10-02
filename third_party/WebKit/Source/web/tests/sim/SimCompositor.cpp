@@ -7,8 +7,8 @@
 
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/graphics/ContentLayerDelegate.h"
 #include "public/platform/WebRect.h"
 #include "web/WebLocalFrameImpl.h"
@@ -19,10 +19,10 @@
 
 namespace blink {
 
-static void paintLayers(DeprecatedPaintLayer& layer, SimDisplayItemList& displayList)
+static void paintLayers(PaintLayer& layer, SimDisplayItemList& displayList)
 {
     if (layer.compositingState() == PaintsIntoOwnBacking) {
-        CompositedDeprecatedPaintLayerMapping* mapping = layer.compositedDeprecatedPaintLayerMapping();
+        CompositedLayerMapping* mapping = layer.compositedLayerMapping();
         GraphicsLayer* graphicsLayer = mapping->mainGraphicsLayer();
         if (graphicsLayer->hasTrackedPaintInvalidations()) {
             ContentLayerDelegate* delegate = graphicsLayer->contentLayerDelegateForTesting();
@@ -30,7 +30,7 @@ static void paintLayers(DeprecatedPaintLayer& layer, SimDisplayItemList& display
             graphicsLayer->resetTrackedPaintInvalidations();
         }
     }
-    for (DeprecatedPaintLayer* child = layer.firstChild(); child; child = child->nextSibling())
+    for (PaintLayer* child = layer.firstChild(); child; child = child->nextSibling())
         paintLayers(*child, displayList);
 }
 
@@ -39,7 +39,7 @@ static void paintFrames(LocalFrame& root, SimDisplayItemList& displayList)
     for (Frame* frame = &root; frame; frame = frame->tree().traverseNext(&root)) {
         if (!frame->isLocalFrame())
             continue;
-        DeprecatedPaintLayer* layer = toLocalFrame(frame)->view()->layoutView()->layer();
+        PaintLayer* layer = toLocalFrame(frame)->view()->layoutView()->layer();
         paintLayers(*layer, displayList);
     }
 }

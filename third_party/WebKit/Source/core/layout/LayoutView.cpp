@@ -35,9 +35,9 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutQuote.h"
 #include "core/layout/LayoutScrollbarPart.h"
-#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/Page.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "core/paint/ViewPainter.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/TraceEvent.h"
@@ -83,7 +83,7 @@ LayoutView::~LayoutView()
 bool LayoutView::hitTest(HitTestResult& result)
 {
     // We have to recursively update layout/style here because otherwise, when the hit test recurses
-    // into a child document, it could trigger a layout on the parent document, which can destroy DeprecatedPaintLayer
+    // into a child document, it could trigger a layout on the parent document, which can destroy PaintLayer
     // that are higher up in the call stack, leading to crashes.
     // Note that Document::updateLayout calls its parent's updateLayout.
     frameView()->updateLifecycleToCompositingCleanPlusScrolling();
@@ -382,7 +382,7 @@ void LayoutView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidatio
     LayoutRect dirtyRect = viewRect();
     if (doingFullPaintInvalidation() && !dirtyRect.isEmpty()) {
         const LayoutBoxModelObject& paintInvalidationContainer = paintInvalidationState.paintInvalidationContainer();
-        DeprecatedPaintLayer::mapRectToPaintInvalidationBacking(this, &paintInvalidationContainer, dirtyRect, &paintInvalidationState);
+        PaintLayer::mapRectToPaintInvalidationBacking(this, &paintInvalidationContainer, dirtyRect, &paintInvalidationState);
         invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationFull);
         invalidateDisplayItemClients(paintInvalidationContainer);
     }
@@ -906,10 +906,10 @@ bool LayoutView::usesCompositing() const
     return m_compositor && m_compositor->staleInCompositingMode();
 }
 
-DeprecatedPaintLayerCompositor* LayoutView::compositor()
+PaintLayerCompositor* LayoutView::compositor()
 {
     if (!m_compositor)
-        m_compositor = adoptPtr(new DeprecatedPaintLayerCompositor(*this));
+        m_compositor = adoptPtr(new PaintLayerCompositor(*this));
 
     return m_compositor.get();
 }

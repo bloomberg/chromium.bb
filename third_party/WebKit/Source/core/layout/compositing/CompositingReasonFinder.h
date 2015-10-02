@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class DeprecatedPaintLayer;
+class PaintLayer;
 class LayoutObject;
 class ComputedStyle;
 class LayoutView;
@@ -24,7 +24,7 @@ public:
     explicit CompositingReasonFinder(LayoutView&);
 
     CompositingReasons potentialCompositingReasonsFromStyle(LayoutObject*) const;
-    CompositingReasons directReasons(const DeprecatedPaintLayer*) const;
+    CompositingReasons directReasons(const PaintLayer*) const;
 
     void updateTriggers();
 
@@ -35,10 +35,10 @@ public:
 private:
     bool isMainFrame() const;
 
-    CompositingReasons nonStyleDeterminedDirectReasons(const DeprecatedPaintLayer*) const;
+    CompositingReasons nonStyleDeterminedDirectReasons(const PaintLayer*) const;
 
     bool requiresCompositingForTransform(LayoutObject*) const;
-    bool requiresCompositingForPositionFixed(const DeprecatedPaintLayer*) const;
+    bool requiresCompositingForPositionFixed(const PaintLayer*) const;
 
     LayoutView& m_layoutView;
     CompositingTriggerFlags m_compositingTriggers;

@@ -25,7 +25,7 @@
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 
 #include "wtf/TemporaryChange.h"
 
@@ -200,14 +200,14 @@ void LayoutSVGResourceContainer::addClientLayer(Node* node)
     clearInvalidationMask();
 }
 
-void LayoutSVGResourceContainer::addClientLayer(DeprecatedPaintLayer* client)
+void LayoutSVGResourceContainer::addClientLayer(PaintLayer* client)
 {
     ASSERT(client);
     m_clientLayers.add(client);
     clearInvalidationMask();
 }
 
-void LayoutSVGResourceContainer::removeClientLayer(DeprecatedPaintLayer* client)
+void LayoutSVGResourceContainer::removeClientLayer(PaintLayer* client)
 {
     ASSERT(client);
     m_clientLayers.remove(client);

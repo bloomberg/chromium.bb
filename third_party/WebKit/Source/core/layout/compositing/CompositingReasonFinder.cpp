@@ -11,7 +11,7 @@
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 
 namespace blink {
 
@@ -45,7 +45,7 @@ bool CompositingReasonFinder::isMainFrame() const
     return !m_layoutView.document().ownerElement();
 }
 
-CompositingReasons CompositingReasonFinder::directReasons(const DeprecatedPaintLayer* layer) const
+CompositingReasons CompositingReasonFinder::directReasons(const PaintLayer* layer) const
 {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return CompositingReasonNone;
@@ -139,7 +139,7 @@ bool CompositingReasonFinder::requiresCompositingForTransform(LayoutObject* layo
     return layoutObject->hasTransformRelatedProperty() && layoutObject->style()->has3DTransform();
 }
 
-CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const DeprecatedPaintLayer* layer) const
+CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const PaintLayer* layer) const
 {
     CompositingReasons directReasons = CompositingReasonNone;
     LayoutObject* layoutObject = layer->layoutObject();
@@ -155,7 +155,7 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     // Composite |layer| if it is inside of an ancestor scrolling layer, but that
     // scrolling layer is not not on the stacking context ancestor chain of |layer|.
     // See the definition of the scrollParent property in Layer for more detail.
-    if (const DeprecatedPaintLayer* scrollingAncestor = layer->ancestorScrollingLayer()) {
+    if (const PaintLayer* scrollingAncestor = layer->ancestorScrollingLayer()) {
         if (scrollingAncestor->needsCompositedScrolling() && layer->scrollParent())
             directReasons |= CompositingReasonOverflowScrollingParent;
     }
@@ -177,7 +177,7 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(const ComputedStyl
     return style.shouldCompositeForCurrentAnimations();
 }
 
-bool CompositingReasonFinder::requiresCompositingForPositionFixed(const DeprecatedPaintLayer* layer) const
+bool CompositingReasonFinder::requiresCompositingForPositionFixed(const PaintLayer* layer) const
 {
     if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger))
         return false;

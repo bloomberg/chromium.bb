@@ -33,7 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/layout/LayoutBox.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
@@ -91,7 +91,7 @@ protected:
         LayoutBox* rb = getLayoutBox(webView, elementId);
         if (!rb)
             return nullptr;
-        DeprecatedPaintLayer* compositingLayer = rb->enclosingLayer()->enclosingLayerForPaintInvalidation();
+        PaintLayer* compositingLayer = rb->enclosingLayer()->enclosingLayerForPaintInvalidation();
         if (!compositingLayer)
             return nullptr;
         return compositingLayer->layoutObject();
@@ -102,7 +102,7 @@ protected:
         LayoutBox* rb = getFrameElement(frameId, webView, elementId);
         if (!rb)
             return nullptr;
-        DeprecatedPaintLayer* compositingLayer = rb->enclosingLayer()->enclosingLayerForPaintInvalidation();
+        PaintLayer* compositingLayer = rb->enclosingLayer()->enclosingLayerForPaintInvalidation();
         if (!compositingLayer)
             return nullptr;
         return compositingLayer->layoutObject();
@@ -146,7 +146,7 @@ TEST_F(LayoutGeometryMapTest, SimpleGeometryMapTest)
     EXPECT_EQ(FloatPoint(8.0f, 8.0f), rgm.mapToContainer(point, nullptr));
     EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, nullptr));
 
-    rgm.popMappingsToAncestor(static_cast<DeprecatedPaintLayer*>(nullptr));
+    rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
     EXPECT_EQ(FloatPoint(0.0f, 0.0f), rgm.mapToContainer(point, nullptr));
     EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, nullptr));
 
@@ -189,7 +189,7 @@ TEST_F(LayoutGeometryMapTest, TransformedGeometryTest)
     EXPECT_EQ(FloatPoint(8.0f, 8.0f), rgm.mapToContainer(point, nullptr));
     EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 15.0f, 25.0f)), rgm.mapToContainer(rect, nullptr));
 
-    rgm.popMappingsToAncestor(static_cast<DeprecatedPaintLayer*>(nullptr));
+    rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
     EXPECT_EQ(FloatPoint(0.0f, 0.0f), rgm.mapToContainer(point, nullptr));
     EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToContainer(rect, nullptr).boundingBox());
 
@@ -234,7 +234,7 @@ TEST_F(LayoutGeometryMapTest, FixedGeometryTest)
     EXPECT_EQ(FloatPoint(8.0f, 8.0f), rgm.mapToContainer(point, nullptr));
     EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 15.0f, 25.0f)), rgm.mapToContainer(rect, nullptr));
 
-    rgm.popMappingsToAncestor(static_cast<DeprecatedPaintLayer*>(nullptr));
+    rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
     EXPECT_EQ(FloatPoint(0.0f, 0.0f), rgm.mapToContainer(point, nullptr));
     EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 15.0f, 25.0f)), rgm.mapToContainer(rect, nullptr));
 
@@ -304,8 +304,8 @@ TEST_F(LayoutGeometryMapTest, IframeTest)
     EXPECT_NEAR(1.866, rectFromQuad(rgm.mapToContainer(rect, nullptr)).width(), 0.0001f);
     EXPECT_NEAR(2.232, rectFromQuad(rgm.mapToContainer(rect, nullptr)).height(), 0.0001f);
 
-    rgm.popMappingsToAncestor(static_cast<DeprecatedPaintLayer*>(nullptr));
-    rgmNoFrame.popMappingsToAncestor(static_cast<DeprecatedPaintLayer*>(nullptr));
+    rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
+    rgmNoFrame.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
     EXPECT_EQ(FloatPoint(0.0f, 0.0f), rgm.mapToContainer(point, nullptr));
     EXPECT_EQ(FloatPoint(0.0f, 0.0f), rgmNoFrame.mapToContainer(point, nullptr));
 
@@ -363,7 +363,7 @@ TEST_F(LayoutGeometryMapTest, ColumnTest)
     EXPECT_EQ(FloatPoint(8.0f, 8.0f), rgm.mapToContainer(point, nullptr));
     EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 5.0f, 3.0f)), rgm.mapToContainer(rect, nullptr));
 
-    rgm.popMappingsToAncestor(static_cast<DeprecatedPaintLayer*>(nullptr));
+    rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
     EXPECT_EQ(FloatPoint(0.0f, 0.0f), rgm.mapToContainer(point, nullptr));
     EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 5.0f, 3.0f)), rgm.mapToContainer(rect, nullptr));
 
@@ -371,7 +371,7 @@ TEST_F(LayoutGeometryMapTest, ColumnTest)
     EXPECT_EQ(FloatPoint(8.0f, 8.0f), rgm.mapToContainer(point, nullptr));
     EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 5.0f, 3.0f)), rgm.mapToContainer(rect, nullptr));
 
-    rgm.popMappingsToAncestor(static_cast<DeprecatedPaintLayer*>(nullptr));
+    rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "Col2"), nullptr);
     EXPECT_NEAR(8.0f + offset, rgm.mapToContainer(point, nullptr).x(), 0.1f);
     EXPECT_NEAR(8.0f, rgm.mapToContainer(point, nullptr).y(), 0.1f);
@@ -380,7 +380,7 @@ TEST_F(LayoutGeometryMapTest, ColumnTest)
     EXPECT_EQ(5.0f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).width());
     EXPECT_EQ(3.0f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).height());
 
-    rgm.popMappingsToAncestor(static_cast<DeprecatedPaintLayer*>(nullptr));
+    rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "Col3"), nullptr);
     EXPECT_NEAR(8.0f + offset * 2.0f, rgm.mapToContainer(point, nullptr).x(), 0.1f);
     EXPECT_NEAR(8.0f, rgm.mapToContainer(point, nullptr).y(), 0.1f);

@@ -43,9 +43,9 @@ LayoutHTMLCanvas::LayoutHTMLCanvas(HTMLCanvasElement* element)
     view()->frameView()->setIsVisuallyNonEmpty();
 }
 
-DeprecatedPaintLayerType LayoutHTMLCanvas::layerTypeRequired() const
+PaintLayerType LayoutHTMLCanvas::layerTypeRequired() const
 {
-    return NormalDeprecatedPaintLayer;
+    return NormalPaintLayer;
 }
 
 void LayoutHTMLCanvas::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const

@@ -68,7 +68,7 @@ public:
     LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const;
     LayoutRect fragmentsBoundingBox(const LayoutRect& boundingBoxInFlowThread) const;
 
-    void collectLayerFragments(DeprecatedPaintLayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) const;
+    void collectLayerFragments(PaintLayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) const;
     LayoutRect calculateOverflow() const;
 
     // The "CSS actual" value of column-count. This includes overflowing columns, if any.

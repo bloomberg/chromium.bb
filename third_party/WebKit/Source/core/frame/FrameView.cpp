@@ -64,9 +64,9 @@
 #include "core/layout/ScrollAlignment.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/TracedLayoutObject.h"
-#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/CompositedSelection.h"
-#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -76,8 +76,8 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/FramePainter.h"
+#include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
@@ -365,7 +365,7 @@ bool FrameView::didFirstLayout() const
 
 void FrameView::invalidateRect(const IntRect& rect)
 {
-    // For querying DeprecatedPaintLayer::compositingState() when invalidating scrollbars.
+    // For querying PaintLayer::compositingState() when invalidating scrollbars.
     // FIXME: do all scrollbar invalidations after layout of all frames is complete. It's currently not recursively true.
     DisableCompositingQueryAsserts disabler;
     if (!parent()) {
@@ -1288,7 +1288,7 @@ bool FrameView::invalidateViewportConstrainedObjects()
         LayoutObject* layoutObject = viewportConstrainedObject;
         ASSERT(layoutObject->style()->hasViewportConstrainedPosition());
         ASSERT(layoutObject->hasLayer());
-        DeprecatedPaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
+        PaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
 
         if (layer->isPaintInvalidationContainer())
             continue;
@@ -1338,7 +1338,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
     // FIXME: Find out what are enough to invalidate in slow path scrolling. crbug.com/451090#9.
     ASSERT(layoutView());
     if (contentsInCompositedLayer())
-        layoutView()->layer()->compositedDeprecatedPaintLayerMapping()->setContentsNeedDisplay();
+        layoutView()->layer()->compositedLayerMapping()->setContentsNeedDisplay();
     else
         layoutView()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
 
@@ -1784,8 +1784,8 @@ void FrameView::setTransparent(bool isTransparent)
 {
     m_isTransparent = isTransparent;
     DisableCompositingQueryAsserts disabler;
-    if (layoutView() && layoutView()->layer()->hasCompositedDeprecatedPaintLayerMapping())
-        layoutView()->layer()->compositedDeprecatedPaintLayerMapping()->updateContentsOpaque();
+    if (layoutView() && layoutView()->layer()->hasCompositedLayerMapping())
+        layoutView()->layer()->compositedLayerMapping()->updateContentsOpaque();
 }
 
 bool FrameView::hasOpaqueBackground() const
@@ -1802,11 +1802,11 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
 {
     m_baseBackgroundColor = backgroundColor;
 
-    if (layoutView() && layoutView()->layer()->hasCompositedDeprecatedPaintLayerMapping()) {
-        CompositedDeprecatedPaintLayerMapping* compositedDeprecatedPaintLayerMapping = layoutView()->layer()->compositedDeprecatedPaintLayerMapping();
-        compositedDeprecatedPaintLayerMapping->updateContentsOpaque();
-        if (compositedDeprecatedPaintLayerMapping->mainGraphicsLayer())
-            compositedDeprecatedPaintLayerMapping->mainGraphicsLayer()->setNeedsDisplay();
+    if (layoutView() && layoutView()->layer()->hasCompositedLayerMapping()) {
+        CompositedLayerMapping* compositedLayerMapping = layoutView()->layer()->compositedLayerMapping();
+        compositedLayerMapping->updateContentsOpaque();
+        if (compositedLayerMapping->mainGraphicsLayer())
+            compositedLayerMapping->mainGraphicsLayer()->setNeedsDisplay();
     }
     recalculateScrollbarOverlayStyle();
 }
@@ -2053,7 +2053,7 @@ IntRect FrameView::clipRectsForFrameOwner(const HTMLFrameOwnerElement* ownerElem
         return windowClipRect();
 
     // If we have no layer, just return our window clip rect.
-    const DeprecatedPaintLayer* enclosingLayer = ownerElement->layoutObject()->enclosingLayer();
+    const PaintLayer* enclosingLayer = ownerElement->layoutObject()->enclosingLayer();
     if (!enclosingLayer)
         return windowClipRect();
 
@@ -3945,7 +3945,7 @@ void FrameView::collectFrameTimingRequests(GraphicsLayerFrameTimingRequests& gra
     if (!graphicsLayer)
         return;
 
-    DeprecatedPaintLayer::mapRectToPaintInvalidationBacking(localFrame->contentLayoutObject(), paintInvalidationContainer, viewRect);
+    PaintLayer::mapRectToPaintInvalidationBacking(localFrame->contentLayoutObject(), paintInvalidationContainer, viewRect);
 
     graphicsLayerTimingRequests.add(graphicsLayer, Vector<std::pair<int64_t, WebRect>>()).storedValue->value.append(std::make_pair(m_frame->frameID(), enclosingIntRect(viewRect)));
 }

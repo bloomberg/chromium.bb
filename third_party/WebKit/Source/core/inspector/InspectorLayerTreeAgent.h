@@ -48,8 +48,8 @@ class InspectorPageAgent;
 class LayoutObject;
 class LayoutRect;
 class PictureSnapshot;
-class DeprecatedPaintLayer;
-class DeprecatedPaintLayerCompositor;
+class PaintLayer;
+class PaintLayerCompositor;
 
 typedef String ErrorString;
 
@@ -94,12 +94,12 @@ private:
 
     GraphicsLayer* rootGraphicsLayer();
 
-    DeprecatedPaintLayerCompositor* deprecatedPaintLayerCompositor();
+    PaintLayerCompositor* deprecatedPaintLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);
     const PictureSnapshot* snapshotById(ErrorString*, const String& snapshotId);
 
     typedef HashMap<int, int> LayerIdToNodeIdMap;
-    void buildLayerIdToNodeIdMap(DeprecatedPaintLayer*, LayerIdToNodeIdMap&);
+    void buildLayerIdToNodeIdMap(PaintLayer*, LayerIdToNodeIdMap&);
     void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
     int idForNode(Node*);
 

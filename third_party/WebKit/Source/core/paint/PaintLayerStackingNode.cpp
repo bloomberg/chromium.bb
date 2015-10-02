@@ -42,19 +42,19 @@
  */
 
 #include "config.h"
-#include "core/paint/DeprecatedPaintLayerStackingNode.h"
+#include "core/paint/PaintLayerStackingNode.h"
 
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/paint/PaintLayer.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
 
-// FIXME: This should not require DeprecatedPaintLayer. There is currently a cycle where
+// FIXME: This should not require PaintLayer. There is currently a cycle where
 // in order to determine if we shoulBeTreatedAsStackingContext() we have to ask the paint
 // layer about some of its state.
-DeprecatedPaintLayerStackingNode::DeprecatedPaintLayerStackingNode(DeprecatedPaintLayer* layer)
+PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer* layer)
     : m_layer(layer)
 #if ENABLE(ASSERT)
     , m_layerListMutationAllowed(true)
@@ -68,7 +68,7 @@ DeprecatedPaintLayerStackingNode::DeprecatedPaintLayerStackingNode(DeprecatedPai
     m_zOrderListsDirty = isStackingContext();
 }
 
-DeprecatedPaintLayerStackingNode::~DeprecatedPaintLayerStackingNode()
+PaintLayerStackingNode::~PaintLayerStackingNode()
 {
 #if ENABLE(ASSERT)
     if (!layoutObject()->documentBeingDestroyed()) {
@@ -80,18 +80,18 @@ DeprecatedPaintLayerStackingNode::~DeprecatedPaintLayerStackingNode()
 }
 
 // Helper for the sorting of layers by z-index.
-static inline bool compareZIndex(DeprecatedPaintLayerStackingNode* first, DeprecatedPaintLayerStackingNode* second)
+static inline bool compareZIndex(PaintLayerStackingNode* first, PaintLayerStackingNode* second)
 {
     return first->zIndex() < second->zIndex();
 }
 
-DeprecatedPaintLayerCompositor* DeprecatedPaintLayerStackingNode::compositor() const
+PaintLayerCompositor* PaintLayerStackingNode::compositor() const
 {
     ASSERT(layoutObject()->view());
     return layoutObject()->view()->compositor();
 }
 
-void DeprecatedPaintLayerStackingNode::dirtyZOrderLists()
+void PaintLayerStackingNode::dirtyZOrderLists()
 {
     ASSERT(m_layerListMutationAllowed);
     ASSERT(isStackingContext());
@@ -110,18 +110,18 @@ void DeprecatedPaintLayerStackingNode::dirtyZOrderLists()
         compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
-void DeprecatedPaintLayerStackingNode::dirtyStackingContextZOrderLists()
+void PaintLayerStackingNode::dirtyStackingContextZOrderLists()
 {
-    if (DeprecatedPaintLayerStackingNode* stackingNode = ancestorStackingContextNode())
+    if (PaintLayerStackingNode* stackingNode = ancestorStackingContextNode())
         stackingNode->dirtyZOrderLists();
 }
 
-void DeprecatedPaintLayerStackingNode::rebuildZOrderLists()
+void PaintLayerStackingNode::rebuildZOrderLists()
 {
     ASSERT(m_layerListMutationAllowed);
     ASSERT(isDirtyStackingContext());
 
-    for (DeprecatedPaintLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
+    for (PaintLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
         if (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)
             child->stackingNode()->collectLayers(m_posZOrderList, m_negZOrderList);
     }
@@ -140,10 +140,10 @@ void DeprecatedPaintLayerStackingNode::rebuildZOrderLists()
         for (LayoutObject* child = view->firstChild(); child; child = child->nextSibling()) {
             Element* childElement = (child->node() && child->node()->isElementNode()) ? toElement(child->node()) : 0;
             if (childElement && childElement->isInTopLayer()) {
-                DeprecatedPaintLayer* layer = toLayoutBoxModelObject(child)->layer();
+                PaintLayer* layer = toLayoutBoxModelObject(child)->layer();
                 // Create the buffer if it doesn't exist yet.
                 if (!m_posZOrderList)
-                    m_posZOrderList = adoptPtr(new Vector<DeprecatedPaintLayerStackingNode*>);
+                    m_posZOrderList = adoptPtr(new Vector<PaintLayerStackingNode*>);
                 m_posZOrderList->append(layer->stackingNode());
             }
         }
@@ -156,20 +156,20 @@ void DeprecatedPaintLayerStackingNode::rebuildZOrderLists()
     m_zOrderListsDirty = false;
 }
 
-void DeprecatedPaintLayerStackingNode::collectLayers(OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>>& posBuffer, OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>>& negBuffer)
+void PaintLayerStackingNode::collectLayers(OwnPtr<Vector<PaintLayerStackingNode*>>& posBuffer, OwnPtr<Vector<PaintLayerStackingNode*>>& negBuffer)
 {
     if (layer()->isInTopLayer())
         return;
 
     if (isTreatedAsOrStackingContext()) {
-        OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>>& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
+        OwnPtr<Vector<PaintLayerStackingNode*>>& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
         if (!buffer)
-            buffer = adoptPtr(new Vector<DeprecatedPaintLayerStackingNode*>);
+            buffer = adoptPtr(new Vector<PaintLayerStackingNode*>);
         buffer->append(this);
     }
 
     if (!isStackingContext()) {
-        for (DeprecatedPaintLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
+        for (PaintLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
             if (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)
                 child->stackingNode()->collectLayers(posBuffer, negBuffer);
         }
@@ -177,7 +177,7 @@ void DeprecatedPaintLayerStackingNode::collectLayers(OwnPtr<Vector<DeprecatedPai
 }
 
 #if ENABLE(ASSERT)
-bool DeprecatedPaintLayerStackingNode::isInStackingParentZOrderLists() const
+bool PaintLayerStackingNode::isInStackingParentZOrderLists() const
 {
     if (!m_stackingParent || m_stackingParent->zOrderListsDirty())
         return false;
@@ -191,7 +191,7 @@ bool DeprecatedPaintLayerStackingNode::isInStackingParentZOrderLists() const
     return false;
 }
 
-void DeprecatedPaintLayerStackingNode::updateStackingParentForZOrderLists(DeprecatedPaintLayerStackingNode* stackingParent)
+void PaintLayerStackingNode::updateStackingParentForZOrderLists(PaintLayerStackingNode* stackingParent)
 {
     if (m_posZOrderList) {
         for (size_t i = 0; i < m_posZOrderList->size(); ++i)
@@ -206,18 +206,18 @@ void DeprecatedPaintLayerStackingNode::updateStackingParentForZOrderLists(Deprec
 
 #endif
 
-void DeprecatedPaintLayerStackingNode::updateLayerListsIfNeeded()
+void PaintLayerStackingNode::updateLayerListsIfNeeded()
 {
     updateZOrderLists();
 
     if (!layer()->reflectionInfo())
         return;
 
-    DeprecatedPaintLayer* reflectionLayer = layer()->reflectionInfo()->reflectionLayer();
+    PaintLayer* reflectionLayer = layer()->reflectionInfo()->reflectionLayer();
     reflectionLayer->stackingNode()->updateZOrderLists();
 }
 
-void DeprecatedPaintLayerStackingNode::updateStackingNodesAfterStyleChange(const ComputedStyle* oldStyle)
+void PaintLayerStackingNode::updateStackingNodesAfterStyleChange(const ComputedStyle* oldStyle)
 {
     bool wasStackingContext = oldStyle ? !oldStyle->hasAutoZIndex() : false;
     int oldZIndex = oldStyle ? oldStyle->zIndex() : 0;
@@ -234,7 +234,7 @@ void DeprecatedPaintLayerStackingNode::updateStackingNodesAfterStyleChange(const
         clearZOrderLists();
 }
 
-void DeprecatedPaintLayerStackingNode::updateIsTreatedAsStackingContext()
+void PaintLayerStackingNode::updateIsTreatedAsStackingContext()
 {
     bool isTreatedAsOrStackingContext = shouldBeTreatedAsOrStackingContext();
     if (isTreatedAsOrStackingContext == this->isTreatedAsOrStackingContext())
@@ -246,17 +246,17 @@ void DeprecatedPaintLayerStackingNode::updateIsTreatedAsStackingContext()
     dirtyStackingContextZOrderLists();
 }
 
-DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNode::ancestorStackingContextNode() const
+PaintLayerStackingNode* PaintLayerStackingNode::ancestorStackingContextNode() const
 {
-    for (DeprecatedPaintLayer* ancestor = layer()->parent(); ancestor; ancestor = ancestor->parent()) {
-        DeprecatedPaintLayerStackingNode* stackingNode = ancestor->stackingNode();
+    for (PaintLayer* ancestor = layer()->parent(); ancestor; ancestor = ancestor->parent()) {
+        PaintLayerStackingNode* stackingNode = ancestor->stackingNode();
         if (stackingNode->isStackingContext())
             return stackingNode;
     }
     return 0;
 }
 
-LayoutBoxModelObject* DeprecatedPaintLayerStackingNode::layoutObject() const
+LayoutBoxModelObject* PaintLayerStackingNode::layoutObject() const
 {
     return m_layer->layoutObject();
 }

@@ -50,7 +50,7 @@ class Frame;
 class Element;
 class LocalFrame;
 class Page;
-class DeprecatedPaintLayerCompositor;
+class PaintLayerCompositor;
 class UserGestureToken;
 class WebCompositorAnimationTimeline;
 class WebLayer;
@@ -122,7 +122,7 @@ public:
 
     void scheduleAnimation();
 
-    DeprecatedPaintLayerCompositor* compositor() const;
+    PaintLayerCompositor* compositor() const;
     void setRootGraphicsLayer(GraphicsLayer*);
     void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*);
     void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*);

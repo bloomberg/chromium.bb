@@ -160,7 +160,7 @@ void LayoutTableCell::computePreferredLogicalWidths()
     }
 }
 
-void LayoutTableCell::addLayerHitTestRects(LayerHitTestRects& layerRects, const DeprecatedPaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
+void LayoutTableCell::addLayerHitTestRects(LayerHitTestRects& layerRects, const PaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     LayoutPoint adjustedLayerOffset = layerOffset;
     // LayoutTableCell's location includes the offset of it's containing LayoutTableRow, so

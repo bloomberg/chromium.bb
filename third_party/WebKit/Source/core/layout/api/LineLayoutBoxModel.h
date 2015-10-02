@@ -28,7 +28,7 @@ public:
 
     LineLayoutBoxModel() { }
 
-    DeprecatedPaintLayer* layer() const
+    PaintLayer* layer() const
     {
         return toBoxModel()->layer();
     }

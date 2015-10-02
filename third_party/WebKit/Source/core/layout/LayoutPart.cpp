@@ -34,7 +34,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "core/paint/PartPainter.h"
 #include "core/plugins/PluginView.h"
 
@@ -105,12 +105,12 @@ Widget* LayoutPart::widget() const
     return nullptr;
 }
 
-DeprecatedPaintLayerType LayoutPart::layerTypeRequired() const
+PaintLayerType LayoutPart::layerTypeRequired() const
 {
-    DeprecatedPaintLayerType type = LayoutReplaced::layerTypeRequired();
-    if (type != NoDeprecatedPaintLayer)
+    PaintLayerType type = LayoutReplaced::layerTypeRequired();
+    if (type != NoPaintLayer)
         return type;
-    return ForcedDeprecatedPaintLayer;
+    return ForcedPaintLayer;
 }
 
 bool LayoutPart::requiresAcceleratedCompositing() const

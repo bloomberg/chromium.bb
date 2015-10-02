@@ -41,7 +41,7 @@
 #include "core/frame/Settings.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -1073,7 +1073,7 @@ void WebFrameWidgetImpl::setIsAcceleratedCompositingActive(bool active)
         m_localRoot->frameView()->setClipsRepaints(!m_isAcceleratedCompositingActive);
 }
 
-DeprecatedPaintLayerCompositor* WebFrameWidgetImpl::compositor() const
+PaintLayerCompositor* WebFrameWidgetImpl::compositor() const
 {
     LocalFrame* frame = toLocalFrame(toCoreFrame(m_localRoot));
     if (!frame || !frame->document() || !frame->document()->layoutView())

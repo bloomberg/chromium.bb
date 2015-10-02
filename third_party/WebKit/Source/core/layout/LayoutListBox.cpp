@@ -54,7 +54,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/text/BidiTextRun.h"

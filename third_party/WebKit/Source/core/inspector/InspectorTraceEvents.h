@@ -28,7 +28,7 @@ class HitTestRequest;
 class HitTestResult;
 class ImageResource;
 class KURL;
-class DeprecatedPaintLayer;
+class PaintLayer;
 class LayoutRect;
 class LocalFrame;
 class Node;
@@ -228,7 +228,7 @@ extern const char RemovedFromSquashingLayer[];
 extern const char ReflectionLayerChanged[];
 extern const char NewCompositedLayer[];
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const DeprecatedPaintLayer*, const char* reason);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const PaintLayer*, const char* reason);
 }
 
 #define TRACE_LAYER_INVALIDATION(LAYER, REASON) \

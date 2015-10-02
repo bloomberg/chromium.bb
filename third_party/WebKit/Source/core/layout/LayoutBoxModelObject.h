@@ -31,16 +31,16 @@
 
 namespace blink {
 
-class DeprecatedPaintLayer;
-class DeprecatedPaintLayerScrollableArea;
+class PaintLayer;
+class PaintLayerScrollableArea;
 
-enum DeprecatedPaintLayerType {
-    NoDeprecatedPaintLayer,
-    NormalDeprecatedPaintLayer,
+enum PaintLayerType {
+    NoPaintLayer,
+    NormalPaintLayer,
     // A forced or overflow clip layer is required for bookkeeping purposes,
     // but does not force a layer to be self painting.
-    OverflowClipDeprecatedPaintLayer,
-    ForcedDeprecatedPaintLayer
+    OverflowClipPaintLayer,
+    ForcedPaintLayer
 };
 
 // Modes for some of the line-related functions.
@@ -74,17 +74,17 @@ class InlineFlowBox;
 //
 // The reason for this partial implementation is that the 2 classes inheriting
 // from it (LayoutBox and LayoutInline) have different requirements but need to
-// have a DeprecatedPaintLayer.
+// have a PaintLayer.
 // For a full implementation of the box model, see LayoutBox.
 //
-// An important member of this class is DeprecatedPaintLayer. This class is
+// An important member of this class is PaintLayer. This class is
 // central to painting and hit-testing (see its class comment).
-// DeprecatedPaintLayers are instantiated for several reasons based on the
+// PaintLayers are instantiated for several reasons based on the
 // return value of layerTypeRequired().
 // Interestingly, most SVG objects inherit from LayoutSVGModelObject and thus
-// can't have a DeprecatedPaintLayer. This is an unfortunate artifact of our
+// can't have a PaintLayer. This is an unfortunate artifact of our
 // design as it limits code sharing and prevents hardware accelerating SVG
-// (the current design require a DeprecatedPaintLayer for compositing).
+// (the current design require a PaintLayer for compositing).
 //
 // In order to fully understand LayoutBoxModelObject and the inherited classes,
 // we need to introduce the concept of coordinate systems.
@@ -152,15 +152,15 @@ public:
     virtual int pixelSnappedOffsetHeight() const;
 
     bool hasSelfPaintingLayer() const;
-    DeprecatedPaintLayer* layer() const { return m_layer.get(); }
-    DeprecatedPaintLayerScrollableArea* scrollableArea() const;
+    PaintLayer* layer() const { return m_layer.get(); }
+    PaintLayerScrollableArea* scrollableArea() const;
 
     virtual void updateFromStyle();
 
-    // The type of DeprecatedPaintLayer to instantiate.
-    // Any value returned from this function other than NoDeprecatedPaintLayer
+    // The type of PaintLayer to instantiate.
+    // Any value returned from this function other than NoPaintLayer
     // will populate |m_layer|.
-    virtual DeprecatedPaintLayerType layerTypeRequired() const = 0;
+    virtual PaintLayerType layerTypeRequired() const = 0;
 
     // This will work on inlines to return the bounding box of all of the lines' border boxes.
     virtual IntRect borderBoundingBox() const = 0;
@@ -296,7 +296,7 @@ protected:
     void addOutlineRectsForNormalChildren(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const;
     void addOutlineRectsForDescendant(const LayoutObject& descendant, Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const;
 
-    void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer*, const LayoutPoint&, const LayoutRect&) const override;
+    void addLayerHitTestRects(LayerHitTestRects&, const PaintLayer*, const LayoutPoint&, const LayoutRect&) const override;
 
     void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
@@ -330,14 +330,14 @@ public:
     IntSize calculateImageIntrinsicDimensions(StyleImage*, const IntSize& scaledPositioningAreaSize, ScaleByEffectiveZoomOrNot) const;
 
 private:
-    void createLayer(DeprecatedPaintLayerType);
+    void createLayer(PaintLayerType);
 
     LayoutUnit computedCSSPadding(const Length&) const;
     bool isBoxModelObject() const final { return true; }
 
-    // The DeprecatedPaintLayer associated with this object.
+    // The PaintLayer associated with this object.
     // |m_layer| can be nullptr depending on the return value of layerTypeRequired().
-    OwnPtr<DeprecatedPaintLayer> m_layer;
+    OwnPtr<PaintLayer> m_layer;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBoxModelObject, isBoxModelObject());

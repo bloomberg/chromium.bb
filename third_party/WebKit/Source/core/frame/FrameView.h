@@ -128,7 +128,7 @@ public:
 
     // Methods for getting/setting the size Blink should use to layout the contents.
     // NOTE: Scrollbar exclusion is based on the FrameView's scrollbars. To exclude
-    // scrollbars on the root DeprecatedPaintLayer, use LayoutView::layoutSize.
+    // scrollbars on the root PaintLayer, use LayoutView::layoutSize.
     IntSize layoutSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
     void setLayoutSize(const IntSize&);
 

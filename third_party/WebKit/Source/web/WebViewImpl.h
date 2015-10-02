@@ -76,7 +76,7 @@ class InspectorOverlay;
 class LinkHighlightImpl;
 class PageOverlay;
 class PageScaleConstraintsSet;
-class DeprecatedPaintLayerCompositor;
+class PaintLayerCompositor;
 class TopControls;
 class UserGestureToken;
 class WebActiveGestureAnimation;
@@ -435,7 +435,7 @@ public:
     GraphicsLayer* rootGraphicsLayer();
     void setRootGraphicsLayer(GraphicsLayer*);
     GraphicsLayerFactory* graphicsLayerFactory() const;
-    DeprecatedPaintLayerCompositor* compositor() const;
+    PaintLayerCompositor* compositor() const;
     void registerForAnimations(WebLayer*);
     void scheduleAnimation();
     void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*);

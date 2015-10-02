@@ -44,7 +44,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/UseCounter.h"
-#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintLayer.h"
 #include "core/svg/SVGElement.h"
 
 namespace blink {
