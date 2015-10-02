@@ -63,6 +63,12 @@ class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
                               event_factory_evdev_, params));
   }
 
+  void DispatchPinchEvent(const PinchEventParams& params) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchPinchEvent,
+                              event_factory_evdev_, params));
+  }
+
   void DispatchScrollEvent(const ScrollEventParams& params) override {
     ui_thread_runner_->PostTask(
         FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchScrollEvent,
@@ -228,6 +234,17 @@ void EventFactoryEvdev::DispatchMouseWheelEvent(
   MouseWheelEvent event(params.delta, params.location, params.location,
                         params.timestamp, modifiers_.GetModifierFlags(),
                         0 /* changed_button_flags */);
+  event.set_source_device_id(params.device_id);
+  DispatchUiEvent(&event);
+}
+
+void EventFactoryEvdev::DispatchPinchEvent(const PinchEventParams& params) {
+  TRACE_EVENT1("evdev", "EventFactoryEvdev::DispatchPinchEvent", "device",
+               params.device_id);
+  GestureEventDetails details(params.type);
+  details.set_scale(params.scale);
+  GestureEvent event(params.location.x(), params.location.y(), 0,
+                     params.timestamp, details);
   event.set_source_device_id(params.device_id);
   DispatchUiEvent(&event);
 }

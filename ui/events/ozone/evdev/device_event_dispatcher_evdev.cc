@@ -75,6 +75,22 @@ MouseWheelEventParams::MouseWheelEventParams(
 MouseWheelEventParams::~MouseWheelEventParams() {
 }
 
+PinchEventParams::PinchEventParams(int device_id,
+                                   EventType type,
+                                   const gfx::PointF location,
+                                   float scale,
+                                   const base::TimeDelta timestamp)
+    : device_id(device_id),
+      type(type),
+      location(location),
+      scale(scale),
+      timestamp(timestamp) {}
+
+PinchEventParams::PinchEventParams(const PinchEventParams& other) = default;
+
+PinchEventParams::~PinchEventParams() {
+}
+
 ScrollEventParams::ScrollEventParams(int device_id,
                                      EventType type,
                                      const gfx::PointF location,

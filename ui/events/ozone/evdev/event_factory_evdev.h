@@ -67,6 +67,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   void DispatchMouseMoveEvent(const MouseMoveEventParams& params);
   void DispatchMouseButtonEvent(const MouseButtonEventParams& params);
   void DispatchMouseWheelEvent(const MouseWheelEventParams& params);
+  void DispatchPinchEvent(const PinchEventParams& params);
   void DispatchScrollEvent(const ScrollEventParams& params);
   void DispatchTouchEvent(const TouchEventParams& params);
 

@@ -100,6 +100,7 @@ class MockDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
   void DispatchMouseButtonEvent(const MouseButtonEventParams& params) override {
   }
   void DispatchMouseWheelEvent(const MouseWheelEventParams& params) override {}
+  void DispatchPinchEvent(const PinchEventParams& params) override {}
   void DispatchScrollEvent(const ScrollEventParams& params) override {}
   void DispatchTouchEvent(const TouchEventParams& params) override {
     callback_.Run(params);

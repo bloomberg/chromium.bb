@@ -387,7 +387,9 @@ void GestureInterpreterLibevdevCros::OnGesturePinch(const Gesture* gesture,
   if (!cursor_)
     return;  // No cursor!
 
-  NOTIMPLEMENTED();
+  dispatcher_->DispatchPinchEvent(
+      PinchEventParams(id_, ET_GESTURE_PINCH_UPDATE, cursor_->GetLocation(),
+                       pinch->dz, StimeToTimedelta(gesture->end_time)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureMetrics(

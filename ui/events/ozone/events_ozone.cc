@@ -171,7 +171,7 @@ int GetModifiersFromKeyState() {
 
 void DispatchEventFromNativeUiEvent(const base::NativeEvent& native_event,
                                     base::Callback<void(ui::Event*)> callback) {
-  const ui::Event* native_ui_event = static_cast<ui::Event*>(native_event);
+  ui::Event* native_ui_event = static_cast<ui::Event*>(native_event);
   if (native_ui_event->IsKeyEvent()) {
     ui::KeyEvent key_event(native_event);
     callback.Run(&key_event);
@@ -187,6 +187,10 @@ void DispatchEventFromNativeUiEvent(const base::NativeEvent& native_event,
   } else if (native_ui_event->IsScrollEvent()) {
     ui::ScrollEvent scroll_event(native_event);
     callback.Run(&scroll_event);
+  } else if (native_ui_event->IsGestureEvent()) {
+    callback.Run(native_ui_event);
+    // TODO(mohsen): Use the same pattern for scroll/touch/wheel events.
+    // Apparently, there is no need for them to wrap the |native_event|.
   } else {
     NOTREACHED();
   }

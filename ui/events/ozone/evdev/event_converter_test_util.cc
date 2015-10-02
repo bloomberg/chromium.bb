@@ -47,6 +47,10 @@ class TestDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
     event_factory_evdev_->DispatchMouseWheelEvent(params);
   }
 
+  void DispatchPinchEvent(const PinchEventParams& params) override {
+    event_factory_evdev_->DispatchPinchEvent(params);
+  }
+
   void DispatchScrollEvent(const ScrollEventParams& params) override {
     event_factory_evdev_->DispatchScrollEvent(params);
   }

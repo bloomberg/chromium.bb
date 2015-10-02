@@ -84,6 +84,22 @@ struct EVENTS_OZONE_EVDEV_EXPORT MouseWheelEventParams {
   base::TimeDelta timestamp;
 };
 
+struct EVENTS_OZONE_EVDEV_EXPORT PinchEventParams {
+  PinchEventParams(int device_id,
+                   EventType type,
+                   const gfx::PointF location,
+                   float scale,
+                   const base::TimeDelta timestamp);
+  PinchEventParams(const PinchEventParams& other);
+  ~PinchEventParams();
+
+  int device_id;
+  EventType type;
+  const gfx::PointF location;
+  float scale;
+  const base::TimeDelta timestamp;
+};
+
 struct EVENTS_OZONE_EVDEV_EXPORT ScrollEventParams {
   ScrollEventParams(int device_id,
                     EventType type,
@@ -136,6 +152,7 @@ class EVENTS_OZONE_EVDEV_EXPORT DeviceEventDispatcherEvdev {
   virtual void DispatchMouseButtonEvent(
       const MouseButtonEventParams& params) = 0;
   virtual void DispatchMouseWheelEvent(const MouseWheelEventParams& params) = 0;
+  virtual void DispatchPinchEvent(const PinchEventParams& params) = 0;
   virtual void DispatchScrollEvent(const ScrollEventParams& params) = 0;
   virtual void DispatchTouchEvent(const TouchEventParams& params) = 0;
 
