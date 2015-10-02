@@ -391,10 +391,15 @@ void FrameLoaderClientImpl::dispatchDidFinishLoading(DocumentLoader* loader,
 
 void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad(bool documentIsEmpty)
 {
-    if (m_webFrame->client())
-        m_webFrame->client()->didFinishDocumentLoad(m_webFrame, documentIsEmpty);
     if (WebViewImpl* webview = m_webFrame->viewImpl())
         webview->didFinishDocumentLoad(m_webFrame);
+
+    // TODO(dglazkov): Sadly, workers are WebFrameClients, and they can totally
+    // destroy themselves when didFinishDocumentLoad is invoked, and in turn destroy
+    // the fake WebLocalFrame that they create, which means that you should not
+    // put any code touching `this` after the two lines below.
+    if (m_webFrame->client())
+        m_webFrame->client()->didFinishDocumentLoad(m_webFrame, documentIsEmpty);
 }
 
 void FrameLoaderClientImpl::dispatchDidLoadResourceFromMemoryCache(const ResourceRequest& request, const ResourceResponse& response)
