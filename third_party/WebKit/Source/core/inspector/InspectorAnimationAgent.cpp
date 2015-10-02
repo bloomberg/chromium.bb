@@ -192,6 +192,14 @@ void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
     }
 }
 
+void InspectorAnimationAgent::getCurrentTime(ErrorString* errorString, const String& id, double* currentTime)
+{
+    Animation* animation = assertAnimation(errorString, id);
+    if (m_idToAnimationClone.get(id))
+        animation = m_idToAnimationClone.get(id);
+    *currentTime = animation->timeline()->currentTime() - animation->startTime();
+}
+
 Animation* InspectorAnimationAgent::animationClone(Animation* animation)
 {
     const String id = String::number(animation->sequenceNumber());
