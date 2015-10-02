@@ -17,6 +17,7 @@
 #include "ipc/ipc_listener.h"
 
 namespace IPC {
+class AttachmentBrokerUnprivileged;
 class SyncChannel;
 class SyncMessageFilter;
 }
@@ -73,6 +74,8 @@ class NaClListener : public IPC::Listener {
   void OnAddPrefetchedResource(
       const nacl::NaClResourcePrefetchResult& prefetched_resource_file);
   void OnStart(const nacl::NaClStartParams& params);
+
+  scoped_ptr<IPC::AttachmentBrokerUnprivileged> attachment_broker_;
 
   // A channel back to the browser.
   scoped_ptr<IPC::SyncChannel> channel_;

@@ -24,6 +24,7 @@
 #include "components/nacl/loader/nacl_ipc_adapter.h"
 #include "components/nacl/loader/nacl_validation_db.h"
 #include "components/nacl/loader/nacl_validation_query.h"
+#include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
@@ -44,6 +45,7 @@
 #include <io.h>
 
 #include "content/public/common/sandbox_init.h"
+#include "ipc/attachment_broker_unprivileged_win.h"
 #endif
 
 namespace {
@@ -194,17 +196,21 @@ class BrowserValidationDBProxy : public NaClValidationDB {
   NaClListener* listener_;
 };
 
-
-NaClListener::NaClListener() : shutdown_event_(true, false),
-                               io_thread_("NaCl_IOThread"),
+NaClListener::NaClListener()
+    : shutdown_event_(true, false),
+      io_thread_("NaCl_IOThread"),
 #if defined(OS_LINUX)
-                               prereserved_sandbox_size_(0),
+      prereserved_sandbox_size_(0),
 #endif
 #if defined(OS_POSIX)
-                               number_of_cores_(-1),  // unknown/error
+      number_of_cores_(-1),  // unknown/error
 #endif
-                               main_loop_(NULL),
-                               is_started_(false) {
+      main_loop_(NULL),
+      is_started_(false) {
+#if defined(OS_WIN)
+  attachment_broker_.reset(new IPC::AttachmentBrokerUnprivilegedWin);
+  IPC::AttachmentBroker::SetGlobal(attachment_broker_.get());
+#endif
   io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   DCHECK(g_listener == NULL);
@@ -265,6 +271,8 @@ void NaClListener::Listen() {
   filter_ = channel_->CreateSyncMessageFilter();
   channel_->AddFilter(new FileTokenMessageFilter());
   channel_->Init(channel_name, IPC::Channel::MODE_CLIENT, true);
+  if (attachment_broker_.get())
+    attachment_broker_->DesignateBrokerCommunicationChannel(channel_.get());
   main_loop_ = base::MessageLoop::current();
   main_loop_->Run();
 }

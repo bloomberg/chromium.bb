@@ -18,9 +18,14 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
+#include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
 #include "sandbox/win/src/sandbox_policy.h"
+
+#if defined(OS_WIN)
+#include "ipc/attachment_broker_unprivileged_win.h"
+#endif
 
 namespace {
 
@@ -31,6 +36,10 @@ void SendReply(IPC::Channel* channel, int32 pid, bool result) {
 }  // namespace
 
 NaClBrokerListener::NaClBrokerListener() {
+#if defined(OS_WIN)
+  attachment_broker_.reset(new IPC::AttachmentBrokerUnprivilegedWin);
+  IPC::AttachmentBroker::SetGlobal(attachment_broker_.get());
+#endif
 }
 
 NaClBrokerListener::~NaClBrokerListener() {
@@ -41,6 +50,8 @@ void NaClBrokerListener::Listen() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
   channel_ = IPC::Channel::CreateClient(channel_name, this);
+  if (attachment_broker_.get())
+    attachment_broker_->DesignateBrokerCommunicationChannel(channel_.get());
   CHECK(channel_->Connect());
   base::MessageLoop::current()->Run();
 }
