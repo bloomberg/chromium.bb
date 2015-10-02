@@ -562,9 +562,9 @@ create_outgoing_proxy(struct wl_proxy *proxy, const struct wl_message *message,
  * \param args Extra arguments for the given request
  * \param interface The interface to use for the new proxy
  *
- * Translates the request given by opcode and the extra arguments into the
- * wire format and write it to the connection buffer.  This version takes an
- * array of the union type wl_argument.
+ * This function translates a request given an opcode, an interface and a
+ * wl_argument array to the wire format and writes it to the connection
+ * buffer.
  *
  * For new-id arguments, this function will allocate a new wl_proxy
  * and send the ID to the server.  The new wl_proxy will be returned
@@ -656,8 +656,10 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
  * \param ... Extra arguments for the given request
  * \return A new wl_proxy for the new_id argument or NULL on error
  *
- * Translates the request given by opcode and the extra arguments into the
- * wire format and write it to the connection buffer.
+ * This function translates a request given an opcode, an interface and extra
+ * arguments to the wire format and writes it to the connection buffer. The
+ * types of the extra arguments must correspond to the argument types of the
+ * method associated with the opcode in the interface.
  *
  * For new-id arguments, this function will allocate a new wl_proxy
  * and send the ID to the server.  The new wl_proxy will be returned
