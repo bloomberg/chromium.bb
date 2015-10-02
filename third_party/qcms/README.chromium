@@ -103,6 +103,8 @@ The following changes have been made since qcms was imported:
    - https://code.google.com/p/chromium/issues/detail?id=506607
  - LUT8/16 profiles with an empty CLUT are invalid
    - https://code.google.com/p/chromium/issues/detail?id=487284
+ - Caching transform prelude to save computation in V4 profiles
+   - https://code.google.com/p/chromium/issues/detail?id=506607
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src

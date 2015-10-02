@@ -268,6 +268,11 @@ void qcms_transform_data_rgba_out_lut_sse2(qcms_transform *transform,
     dest[b_out] = otdata_b[output[2]];
 }
 
+static inline __m128i __mm_swizzle_epi32(__m128i value, int bgra)
+{
+    return bgra ? _mm_shuffle_epi32(value, _MM_SHUFFLE(0, 1, 2, 3)) :
+                  _mm_shuffle_epi32(value, _MM_SHUFFLE(0, 3, 2, 1)) ;
+}
 
 void qcms_transform_data_tetra_clut_rgba_sse2(qcms_transform *transform,
                                               unsigned char *src,
@@ -275,17 +280,13 @@ void qcms_transform_data_tetra_clut_rgba_sse2(qcms_transform *transform,
                                               size_t length,
                                               qcms_format_type output_format)
 {
-    const int r_out = output_format.r;
-    const int b_out = output_format.b;
+    const int bgra = output_format.r;
 
     size_t i;
 
-    const int xy_len = 1;
-    const int x_len = transform->grid_size;
-    const int len = x_len * x_len;
-
-    const __m128 __clut_stride = _mm_set_ps((float)(3 * xy_len), (float)(3 * x_len), (float)(3 * len), 0);
-    const __m128 __grid_scaled = _mm_set1_ps((1.0f / 255.0f) * (transform->grid_size - 1));
+    const int xy_len_3 = 3 * 1;
+    const int x_len_3 = 3 * transform->grid_size;
+    const int len_3 = x_len_3 * transform->grid_size;
 
     const __m128 __255 = _mm_set1_ps(255.0f);
     const __m128 __one = _mm_set1_ps(1.0f);
@@ -302,62 +303,37 @@ void qcms_transform_data_tetra_clut_rgba_sse2(qcms_transform *transform,
     __m128 c1;
     __m128 c0;
 
-    __m128 in;
-
-    __m128 xyz_r;
-    __m128 xyz_0;
-    __m128 xyz_n;
-
-    ALIGN float xyz_r_f[4];
-    ALIGN int   xyz_0_i[4];
-    ALIGN int   xyz_n_i[4];
-
-    __m128i result;
-
-#define TETRA_SRC_RGB(r, g, b) _mm_set_ps((float)b, (float)g, (float)r, 0.f)
+    if (!(transform->transform_flags & TRANSFORM_FLAG_CLUT_CACHE))
+        qcms_transform_build_clut_cache(transform);
 
     for (i = 0; i < length; ++i) {
-        // compute input point in cube lattice (grid) co-ordinates
-        in = _mm_mul_ps(TETRA_SRC_RGB(src[0], src[1], src[2]), __grid_scaled);
+        unsigned char in_r = *src++;
+        unsigned char in_g = *src++;
+        unsigned char in_b = *src++;
 
-        // floor: convert to int (truncate), convert back to float
-        xyz_0 = _mm_cvtepi32_ps(_mm_cvttps_epi32(in));
+        // initialize the output result with the alpha channel only
 
-        // ceil: where in is greater than xyz_0 = floor(in), add 1
-        xyz_n = _mm_add_ps(xyz_0, _mm_and_ps(_mm_cmpgt_ps(in, xyz_0), __one));
+        __m128i result = _mm_setr_epi32(*src++, 0, 0, 0);
 
-        // compute the input point relative to the sub-cube origin
-        xyz_r = _mm_sub_ps(in, xyz_0);
+        // get the input point r.xyz relative to the subcube origin
 
-#define rx (xyz_r_f[1])
-#define ry (xyz_r_f[2])
-#define rz (xyz_r_f[3])
+        float rx = transform->r_cache[in_r];
+        float ry = transform->r_cache[in_g];
+        float rz = transform->r_cache[in_b];
 
-        _mm_store_ps(xyz_r_f, xyz_r);
+        // load and LUT scale the subcube maximum vertex
 
-#define x0 (xyz_0_i[1])
-#define y0 (xyz_0_i[2])
-#define z0 (xyz_0_i[3])
+        int xn = transform->ceil_cache[in_r] * len_3;
+        int yn = transform->ceil_cache[in_g] * x_len_3;
+        int zn = transform->ceil_cache[in_b] * xy_len_3;
 
-        xyz_0 = _mm_mul_ps(xyz_0, __clut_stride);
-        _mm_store_si128((__m128i*) xyz_0_i, _mm_cvtps_epi32(xyz_0));
+        // load and LUT scale the subcube origin vertex
 
-#define xn (xyz_n_i[1])
-#define yn (xyz_n_i[2])
-#define zn (xyz_n_i[3])
+        int x0 = transform->floor_cache[in_r] * len_3;
+        int y0 = transform->floor_cache[in_g] * x_len_3;
+        int z0 = transform->floor_cache[in_b] * xy_len_3;
 
-        xyz_n = _mm_mul_ps(xyz_n, __clut_stride);
-        _mm_store_si128((__m128i*) xyz_n_i, _mm_cvtps_epi32(xyz_n));
-
-        dest[3] = src[3];
-        src += 4;
-
-#define SET_I0_AND_PREFETCH_CLUT() \
-        _mm_prefetch((char*)&(r_table[i0 = x0 + y0 + z0]), _MM_HINT_T0)
-
-#if !defined(_MSC_VER)
-        SET_I0_AND_PREFETCH_CLUT();
-#endif
+        // tetrahedral interpolate the input color r.xyz
 
 #define TETRA_LOOKUP_CLUT(i3, i2, i1, i0) \
         c0 = _mm_set_ps(b_table[i0], g_table[i0], r_table[i0], 0.f), \
@@ -365,11 +341,10 @@ void qcms_transform_data_tetra_clut_rgba_sse2(qcms_transform *transform,
         c2 = _mm_set_ps(b_table[i2], g_table[i2], r_table[i2], 0.f), \
         c3 = _mm_set_ps(b_table[i3], g_table[i3], r_table[i3], 0.f)
 
+        i0 = x0 + y0 + z0;
+
         if (rx >= ry) {
 
-#if defined(_MSC_VER)
-            SET_I0_AND_PREFETCH_CLUT();
-#endif
             if (ry >= rz) {         // rx >= ry && ry >= rz
 
                 i3 = yn + (i1 = xn);
@@ -411,9 +386,6 @@ void qcms_transform_data_tetra_clut_rgba_sse2(qcms_transform *transform,
             }
         } else {
 
-#if defined(_MSC_VER)
-            SET_I0_AND_PREFETCH_CLUT();
-#endif
             if (rx >= rz) {         // ry > rx && rx >= rz
 
                 i3 = xn + (i2 = yn);
@@ -457,29 +429,29 @@ void qcms_transform_data_tetra_clut_rgba_sse2(qcms_transform *transform,
 
         // output.xyz = column_matrix(c1, c2, c3) x r.xyz + c0.xyz
 
-        in = _mm_shuffle_ps(xyz_r, xyz_r, _MM_SHUFFLE(1, 1, 1, 1));
-        c1 = _mm_mul_ps(c1, in);
-        in = _mm_shuffle_ps(xyz_r, xyz_r, _MM_SHUFFLE(2, 2, 2, 2));
-        c2 = _mm_mul_ps(c2, in);
-        in = _mm_shuffle_ps(xyz_r, xyz_r, _MM_SHUFFLE(3, 3, 3, 3));
-        c3 = _mm_mul_ps(c3, in);
+        c0 = _mm_add_ps(c0, _mm_mul_ps(c1, _mm_set1_ps(rx)));
+        c0 = _mm_add_ps(c0, _mm_mul_ps(c2, _mm_set1_ps(ry)));
+        c0 = _mm_add_ps(c0, _mm_mul_ps(c3, _mm_set1_ps(rz)));
 
-        in = _mm_add_ps(c3, c2);
-        in = _mm_add_ps(in, c1);
-        in = _mm_add_ps(in, c0);
+        // clamp to [0.0..1.0], then scale by 255
 
-        // clamp to [0.0..1.0] and scale by 255
+        c0 = _mm_max_ps(c0, __000);
+        c0 = _mm_min_ps(c0, __one);
+        c0 = _mm_mul_ps(c0, __255);
 
-        in = _mm_max_ps(in, __000);
-        in = _mm_min_ps(in, __one);
-        in = _mm_mul_ps(in, __255);
+        // int(c0) with float rounding, add alpha
 
-        result = _mm_cvtps_epi32(in); // convert to int (rounding)
+        result = _mm_add_epi32(result, _mm_cvtps_epi32(c0));
 
-        dest[r_out] = (unsigned char) _mm_extract_epi16(result, 2);
-        dest[1]     = (unsigned char) _mm_extract_epi16(result, 4);
-        dest[b_out] = (unsigned char) _mm_extract_epi16(result, 6);
+        // swizzle and repack in result low bytes
 
+        result = __mm_swizzle_epi32(result, bgra);
+        result = _mm_packus_epi16(result, result);
+        result = _mm_packus_epi16(result, result);
+
+        // store into uint32_t* pixel destination
+
+        *(uint32_t *)dest = _mm_cvtsi128_si32(result);
         dest += 4;
     }
 }

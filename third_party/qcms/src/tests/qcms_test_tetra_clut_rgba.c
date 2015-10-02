@@ -106,8 +106,14 @@ int main(int argc, const char **argv)
     srand(0);
     seconds();
 
+    memset(&transform0, 0, sizeof(transform0));
+    memset(&transform1, 0, sizeof(transform1));
+
     transform0.grid_size = samples;
     transform1.grid_size = samples;
+
+    transform0.transform_flags = 0;
+    transform1.transform_flags = 0;
 
     lutSize = 3 * samples * samples * samples;
     lut0 = create_lut(lutSize);

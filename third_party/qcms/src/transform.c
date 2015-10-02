@@ -530,22 +530,26 @@ void qcms_transform_data_tetra_clut_rgba(qcms_transform *transform, unsigned cha
 	float c0_g, c1_g, c2_g, c3_g;
 	float c0_b, c1_b, c2_b, c3_b;
 	float clut_r, clut_g, clut_b;
+
 	for (i = 0; i < length; i++) {
 		unsigned char in_r = *src++;
 		unsigned char in_g = *src++;
 		unsigned char in_b = *src++;
 		unsigned char in_a = *src++;
+
 		float linear_r = in_r/255.0f, linear_g=in_g/255.0f, linear_b = in_b/255.0f;
 
 		int x = floor(linear_r * (transform->grid_size-1));
 		int y = floor(linear_g * (transform->grid_size-1));
 		int z = floor(linear_b * (transform->grid_size-1));
+
 		int x_n = ceil(linear_r * (transform->grid_size-1));
 		int y_n = ceil(linear_g * (transform->grid_size-1));
 		int z_n = ceil(linear_b * (transform->grid_size-1));
-		float rx = linear_r * (transform->grid_size-1) - x; 
+
+		float rx = linear_r * (transform->grid_size-1) - x;
 		float ry = linear_g * (transform->grid_size-1) - y;
-		float rz = linear_b * (transform->grid_size-1) - z; 
+		float rz = linear_b * (transform->grid_size-1) - z;
 
 		c0_r = CLU(r_table, x, y, z);
 		c0_g = CLU(g_table, x, y, z);
@@ -650,21 +654,25 @@ static void qcms_transform_data_tetra_clut(qcms_transform *transform, unsigned c
 	float c0_g, c1_g, c2_g, c3_g;
 	float c0_b, c1_b, c2_b, c3_b;
 	float clut_r, clut_g, clut_b;
+
 	for (i = 0; i < length; i++) {
 		unsigned char in_r = *src++;
 		unsigned char in_g = *src++;
 		unsigned char in_b = *src++;
+
 		float linear_r = in_r/255.0f, linear_g=in_g/255.0f, linear_b = in_b/255.0f;
 
 		int x = floor(linear_r * (transform->grid_size-1));
 		int y = floor(linear_g * (transform->grid_size-1));
 		int z = floor(linear_b * (transform->grid_size-1));
+
 		int x_n = ceil(linear_r * (transform->grid_size-1));
 		int y_n = ceil(linear_g * (transform->grid_size-1));
 		int z_n = ceil(linear_b * (transform->grid_size-1));
-		float rx = linear_r * (transform->grid_size-1) - x; 
+
+		float rx = linear_r * (transform->grid_size-1) - x;
 		float ry = linear_g * (transform->grid_size-1) - y;
-		float rz = linear_b * (transform->grid_size-1) - z; 
+		float rz = linear_b * (transform->grid_size-1) - z;
 
 		c0_r = CLU(r_table, x, y, z);
 		c0_g = CLU(g_table, x, y, z);
@@ -1240,6 +1248,24 @@ qcms_bool qcms_transform_create_LUT_zyx_bgra(qcms_profile *in, qcms_profile *out
 	}
 
 	return false;
+}
+
+void qcms_transform_build_clut_cache(qcms_transform* transform) {
+	const int grid_factor = transform->grid_size - 1;
+	const float grid_scaled = (1.0f / 255.0f) * grid_factor;
+	int i;
+
+#define div_255_ceiling(value) (((value) + 254) / 255)
+
+	for (i = 0; i < 256; i++) {
+		transform->ceil_cache[i] = div_255_ceiling(i * grid_factor);
+		transform->floor_cache[i] = i * grid_factor / 255;
+		transform->r_cache[i] = (i * grid_scaled) - transform->floor_cache[i];
+	}
+
+#undef div_255_ceil
+
+	transform->transform_flags |= TRANSFORM_FLAG_CLUT_CACHE;
 }
 
 #define NO_MEM_TRANSFORM NULL
