@@ -77,7 +77,7 @@ public:
     explicit MockWebTaskRunner(std::priority_queue<DelayedTask>* timerTasks) : m_timerTasks(timerTasks) { }
     ~MockWebTaskRunner() override { }
 
-    void postTask(const WebTraceLocation&, Task* task) override
+    virtual void postTask(const WebTraceLocation&, Task* task)
     {
         m_timerTasks->push(DelayedTask(task, 0));
     }
@@ -85,12 +85,6 @@ public:
     void postDelayedTask(const WebTraceLocation&, Task* task, double delayMs) override
     {
         m_timerTasks->push(DelayedTask(task, delayMs * 0.001));
-    }
-
-    WebTaskRunner* clone() override
-    {
-        ASSERT_NOT_REACHED();
-        return nullptr;
     }
 
     std::priority_queue<DelayedTask>* m_timerTasks; // NOT OWNED

@@ -34,7 +34,6 @@
 #include "blink/public/resources/grit/blink_image_resources.h"
 #include "blink/public/resources/grit/blink_resources.h"
 #include "components/mime_util/mime_util.h"
-#include "components/scheduler/child/web_task_runner_impl.h"
 #include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
@@ -479,8 +478,7 @@ WebURLLoader* BlinkPlatformImpl::createURLLoader() {
   // data URLs to bypass the ResourceDispatcher.
   return new WebURLLoaderImpl(
       child_thread ? child_thread->resource_dispatcher() : NULL,
-      make_scoped_ptr(new scheduler::WebTaskRunnerImpl(
-            base::ThreadTaskRunnerHandle::Get())));
+      MainTaskRunnerForCurrentThread());
 }
 
 blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {
@@ -1363,6 +1361,16 @@ uint32_t BlinkPlatformImpl::getUniqueIdForProcess() {
   // TODO(rickyz): Replace this with base::GetUniqueIdForProcess when that's
   // ready.
   return base::trace_event::TraceLog::GetInstance()->process_id();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+BlinkPlatformImpl::MainTaskRunnerForCurrentThread() {
+  if (main_thread_task_runner_.get() &&
+      main_thread_task_runner_->BelongsToCurrentThread()) {
+    return main_thread_task_runner_;
+  } else {
+    return base::ThreadTaskRunnerHandle::Get();
+  }
 }
 
 bool BlinkPlatformImpl::IsMainThread() const {

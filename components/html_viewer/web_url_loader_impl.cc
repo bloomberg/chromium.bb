@@ -312,9 +312,4 @@ void WebURLLoaderImpl::OnResponseBodyStreamReady(MojoResult result) {
   ReadMore();
 }
 
-void WebURLLoaderImpl::setLoadingTaskRunner(
-    blink::WebTaskRunner* web_task_runner) {
-  // TODO(alexclarke): Consider hooking this up.
-}
-
 }  // namespace html_viewer

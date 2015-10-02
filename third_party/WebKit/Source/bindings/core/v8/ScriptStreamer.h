@@ -21,7 +21,6 @@ class ScriptResourceClient;
 class ScriptState;
 class Settings;
 class SourceStream;
-class WebTaskRunner;
 
 // ScriptStreamer streams incomplete script data to V8 so that it can be parsed
 // while it's loaded. PendingScript holds a reference to ScriptStreamer. At the
@@ -33,9 +32,9 @@ class WebTaskRunner;
 class CORE_EXPORT ScriptStreamer final : public RefCountedWillBeRefCountedGarbageCollected<ScriptStreamer> {
     WTF_MAKE_NONCOPYABLE(ScriptStreamer);
 public:
-    static PassRefPtrWillBeRawPtr<ScriptStreamer> create(ScriptResource* resource, PendingScript::Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions, WebTaskRunner* loadingTaskRunner)
+    static PassRefPtrWillBeRawPtr<ScriptStreamer> create(ScriptResource* resource, PendingScript::Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions)
     {
-        return adoptRefWillBeNoop(new ScriptStreamer(resource, scriptType, scriptState, compileOptions, loadingTaskRunner));
+        return adoptRefWillBeNoop(new ScriptStreamer(resource, scriptType, scriptState, compileOptions));
     }
 
     ~ScriptStreamer();
@@ -43,7 +42,7 @@ public:
 
     // Launches a task (on a background thread) which will stream the given
     // PendingScript into V8 as it loads.
-    static void startStreaming(PendingScript&, PendingScript::Type, Settings*, ScriptState*, WebTaskRunner*);
+    static void startStreaming(PendingScript&, PendingScript::Type, Settings*, ScriptState*);
 
     // Returns false if we cannot stream the given encoding.
     static bool convertEncoding(const char* encodingName, v8::ScriptCompiler::StreamedSource::Encoding*);
@@ -108,12 +107,12 @@ private:
     // streamed. Non-const for testing.
     static size_t kSmallScriptThreshold;
 
-    ScriptStreamer(ScriptResource*, PendingScript::Type, ScriptState*, v8::ScriptCompiler::CompileOptions, WebTaskRunner*);
+    ScriptStreamer(ScriptResource*, PendingScript::Type, ScriptState*, v8::ScriptCompiler::CompileOptions);
 
     void streamingComplete();
     void notifyFinishedToClient();
 
-    static bool startStreamingInternal(PendingScript&, PendingScript::Type, Settings*, ScriptState*, WebTaskRunner*);
+    static bool startStreamingInternal(PendingScript&, PendingScript::Type, Settings*, ScriptState*);
 
     // This pointer is weak. If PendingScript and its Resource are deleted
     // before ScriptStreamer, PendingScript will notify ScriptStreamer of its
@@ -150,8 +149,6 @@ private:
 
     // Encoding of the streamed script. Saved for sanity checking purposes.
     v8::ScriptCompiler::StreamedSource::Encoding m_encoding;
-
-    OwnPtr<WebTaskRunner> m_loadingTaskRunner;
 };
 
 } // namespace blink

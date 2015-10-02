@@ -172,14 +172,6 @@ ResourceFetcher::~ResourceFetcher()
 #endif
 }
 
-WebTaskRunner* ResourceFetcher::loadingTaskRunner()
-{
-    if (!m_context)
-        return nullptr;
-
-    return m_context->loadingTaskRunner();
-}
-
 Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
 {
     KURL url = MemoryCache::removeFragmentIdentifierIfNeeded(resourceURL);

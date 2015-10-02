@@ -39,7 +39,6 @@ namespace content {
 class RequestPeer;
 class ResourceDispatcherDelegate;
 class ResourceRequestBody;
-class ResourceSchedulingFilter;
 class ThreadedDataProvider;
 struct ResourceResponseInfo;
 struct RequestInfo;
@@ -129,9 +128,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
     main_thread_task_runner_ = main_thread_task_runner;
   }
-
-  void SetResourceSchedulingFilter(
-      scoped_refptr<ResourceSchedulingFilter> resource_scheduling_filter);
 
  private:
   friend class ResourceDispatcherTest;
@@ -253,7 +249,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   base::TimeTicks io_timestamp_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  scoped_refptr<ResourceSchedulingFilter> resource_scheduling_filter_;
 
   base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
 

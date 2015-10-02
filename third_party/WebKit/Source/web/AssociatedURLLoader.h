@@ -54,7 +54,6 @@ public:
     void loadAsynchronously(const WebURLRequest&, WebURLLoaderClient*) override;
     void cancel() override;
     void setDefersLoading(bool) override;
-    void setLoadingTaskRunner(blink::WebTaskRunner*) override;
 
 private:
 

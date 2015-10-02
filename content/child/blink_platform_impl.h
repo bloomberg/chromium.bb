@@ -195,6 +195,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
 
   bool IsMainThread() const;
 
+  scoped_refptr<base::SingleThreadTaskRunner> MainTaskRunnerForCurrentThread();
+
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   WebThemeEngineImpl native_theme_engine_;
   WebFallbackThemeEngineImpl fallback_theme_engine_;

@@ -147,8 +147,6 @@ public:
     bool clientDefersImage(const KURL&) const;
     void determineRequestContext(ResourceRequest&, Resource::Type);
 
-    WebTaskRunner* loadingTaskRunner();
-
 private:
     friend class ResourceCacheValidationSuppressor;
 

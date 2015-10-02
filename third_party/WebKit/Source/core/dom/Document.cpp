@@ -5685,13 +5685,6 @@ bool Document::isSecureContext(String& errorMessage, const SecureContextCheck pr
     return true;
 }
 
-WebTaskRunner* Document::loadingTaskRunner() const
-{
-    if (frame())
-        return frame()->frameScheduler()->loadingTaskRunner();
-    return Platform::current()->currentThread()->scheduler()->loadingTaskRunner();
-}
-
 DEFINE_TRACE(Document)
 {
 #if ENABLE(OILPAN)

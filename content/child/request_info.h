@@ -17,13 +17,8 @@
 #include "content/public/common/resource_type.h"
 #include "net/base/request_priority.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
-#include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
-
-namespace blink {
-class WebTaskRunner;
-} // namespace blink
 
 namespace content {
 
@@ -114,9 +109,6 @@ struct CONTENT_EXPORT RequestInfo {
 
   // Extra data associated with this request.  We do not own this pointer.
   blink::WebURLRequest::ExtraData* extra_data;
-
-  // Optional, the specific task queue to execute loading tasks on.
-  scoped_ptr<blink::WebTaskRunner> loading_web_task_runner;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RequestInfo);

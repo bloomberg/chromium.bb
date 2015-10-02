@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
-#include "content/child/resource_scheduling_filter.h"
 #include "content/child/shared_memory_received_data_factory.h"
 #include "content/child/site_isolation_stats_gatherer.h"
 #include "content/child/sync_load_response.h"
@@ -404,9 +403,6 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
         new ResourceHostMsg_ReleaseDownloadedFile(request_id));
   }
 
-  if (resource_scheduling_filter_.get())
-    resource_scheduling_filter_->ClearRequestIdTaskRunner(request_id);
-
   return true;
 }
 
@@ -591,13 +587,6 @@ int ResourceDispatcher::StartAsync(const RequestInfo& request_info,
                          frame_origin,
                          request->url,
                          request_info.download_to_file);
-
-  if (resource_scheduling_filter_.get() &&
-      request_info.loading_web_task_runner) {
-    resource_scheduling_filter_->SetRequestIdTaskRunner(
-        request_id,
-        make_scoped_ptr(request_info.loading_web_task_runner->clone()));
-  }
 
   message_sender_->Send(new ResourceHostMsg_RequestResource(
       request_info.routing_id, request_id, *request));
@@ -803,11 +792,6 @@ scoped_ptr<ResourceHostMsg_Request> ResourceDispatcher::CreateRequest(
   if (frame_origin)
     *frame_origin = extra_data->frame_origin();
   return request.Pass();
-}
-
-void ResourceDispatcher::SetResourceSchedulingFilter(
-    scoped_refptr<ResourceSchedulingFilter> resource_scheduling_filter) {
-  resource_scheduling_filter_ = resource_scheduling_filter;
 }
 
 }  // namespace content

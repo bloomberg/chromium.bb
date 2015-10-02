@@ -48,7 +48,6 @@ class ResourceLoader;
 class ResourceResponse;
 class ResourceRequest;
 class ResourceTimingInfo;
-class WebTaskRunner;
 
 enum FetchResourceType {
     FetchMainResource,
@@ -107,7 +106,6 @@ public:
 
     virtual bool fetchIncreasePriorities() const { return false; }
     virtual ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority priority, Resource::Type, const FetchRequest&) { return priority; }
-    virtual WebTaskRunner* loadingTaskRunner() const { return nullptr; }
 
 protected:
     FetchContext() { }

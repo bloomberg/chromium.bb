@@ -1041,10 +1041,9 @@ void RenderThreadImpl::SetResourceDispatchTaskQueue(
     const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
   // Add a filter that forces resource messages to be dispatched via a
   // particular task runner.
-  scoped_refptr<ResourceSchedulingFilter> filter(
-      new ResourceSchedulingFilter(resource_task_queue, resource_dispatcher()));
-  channel()->AddFilter(filter.get());
-  resource_dispatcher()->SetResourceSchedulingFilter(filter);
+  resource_scheduling_filter_ =
+      new ResourceSchedulingFilter(resource_task_queue, resource_dispatcher());
+  channel()->AddFilter(resource_scheduling_filter_.get());
 
   // The ChildResourceMessageFilter and the ResourceDispatcher need to use the
   // same queue to ensure tasks are executed in the expected order.

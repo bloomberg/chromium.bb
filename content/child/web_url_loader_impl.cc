@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/mime_util/mime_util.h"
-#include "components/scheduler/child/web_task_runner_impl.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/ftp_directory_listing_response_delegate.h"
 #include "content/child/multipart_response_delegate.h"
@@ -43,7 +42,6 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/url_request_data_job.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
-#include "third_party/WebKit/public/platform/WebTraceLocation.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoadTiming.h"
@@ -256,7 +254,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
  public:
   Context(WebURLLoaderImpl* loader,
           ResourceDispatcher* resource_dispatcher,
-          scoped_ptr<blink::WebTaskRunner> task_runner);
+          scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   WebURLLoaderClient* client() const { return client_; }
   void set_client(WebURLLoaderClient* client) { client_ = client; }
@@ -269,7 +267,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
       blink::WebThreadedDataReceiver* threaded_data_receiver);
   void Start(const WebURLRequest& request,
              SyncLoadResponse* sync_load_response);
-  void SetWebTaskRunner(scoped_ptr<blink::WebTaskRunner> task_runner);
 
   // RequestPeer methods:
   void OnUploadProgress(uint64 position, uint64 size) override;
@@ -298,19 +295,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   friend class base::RefCounted<Context>;
   ~Context() override;
 
-  class HandleDataURLTask : public blink::WebTaskRunner::Task {
-   public:
-    explicit HandleDataURLTask(scoped_refptr<Context> context)
-        : context_(context) {}
-
-    void run() override {
-      context_->HandleDataURL();
-    }
-
-   private:
-    scoped_refptr<Context> context_;
-  };
-
   // Called when the body data stream is detached from the reader side.
   void CancelBodyStreaming();
   // We can optimize the handling of data URLs in most cases.
@@ -321,7 +305,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   WebURLRequest request_;
   WebURLLoaderClient* client_;
   ResourceDispatcher* resource_dispatcher_;
-  scoped_ptr<blink::WebTaskRunner> web_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   WebReferrerPolicy referrer_policy_;
   scoped_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
@@ -335,11 +319,11 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
 WebURLLoaderImpl::Context::Context(
     WebURLLoaderImpl* loader,
     ResourceDispatcher* resource_dispatcher,
-    scoped_ptr<blink::WebTaskRunner> web_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : loader_(loader),
       client_(NULL),
       resource_dispatcher_(resource_dispatcher),
-      web_task_runner_(web_task_runner.Pass()),
+      task_runner_(task_runner),
       referrer_policy_(blink::WebReferrerPolicyDefault),
       defers_loading_(NOT_DEFERRING),
       request_id_(-1) {
@@ -375,11 +359,8 @@ void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
     defers_loading_ = SHOULD_DEFER;
   } else if (!value && defers_loading_ != NOT_DEFERRING) {
     if (defers_loading_ == DEFERRED_DATA) {
-      // TODO(alexclarke): Find a way to let blink and chromium FROM_HERE
-      // coexist.
-      web_task_runner_->postTask(
-          ::blink::WebTraceLocation(__FUNCTION__, __FILE__),
-          new HandleDataURLTask(this));
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&Context::HandleDataURL, this));
     }
     defers_loading_ = NOT_DEFERRING;
   }
@@ -437,11 +418,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
           GetInfoFromDataURL(sync_load_response->url, sync_load_response,
                              &sync_load_response->data);
     } else {
-      // TODO(alexclarke): Find a way to let blink and chromium FROM_HERE
-      // coexist.
-      web_task_runner_->postTask(
-          ::blink::WebTraceLocation(__FUNCTION__, __FILE__),
-          new HandleDataURLTask(this));
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&Context::HandleDataURL, this));
     }
     return;
   }
@@ -504,7 +482,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       GetRequestContextFrameTypeForWebURLRequest(request);
   request_info.extra_data = request.extraData();
   request_info.report_raw_headers = request.reportRawHeaders();
-  request_info.loading_web_task_runner.reset(web_task_runner_->clone());
 
   scoped_refptr<ResourceRequestBody> request_body =
       GetRequestBodyForWebURLRequest(request).get();
@@ -517,11 +494,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   request_id_ = resource_dispatcher_->StartAsync(
       request_info, request_body.get(), this);
-}
-
-void WebURLLoaderImpl::Context::SetWebTaskRunner(
-    scoped_ptr<blink::WebTaskRunner> web_task_runner) {
-  web_task_runner_ = web_task_runner.Pass();
 }
 
 void WebURLLoaderImpl::Context::OnUploadProgress(uint64 position, uint64 size) {
@@ -869,8 +841,8 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
 
 WebURLLoaderImpl::WebURLLoaderImpl(
     ResourceDispatcher* resource_dispatcher,
-    scoped_ptr<blink::WebTaskRunner> web_task_runner)
-    : context_(new Context(this, resource_dispatcher, web_task_runner.Pass())) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : context_(new Context(this, resource_dispatcher, task_runner)) {
 }
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {
@@ -1085,13 +1057,6 @@ void WebURLLoaderImpl::didChangePriority(WebURLRequest::Priority new_priority,
 bool WebURLLoaderImpl::attachThreadedDataReceiver(
     blink::WebThreadedDataReceiver* threaded_data_receiver) {
   return context_->AttachThreadedDataReceiver(threaded_data_receiver);
-}
-
-void WebURLLoaderImpl::setLoadingTaskRunner(
-    blink::WebTaskRunner* loading_task_runner) {
-  // There's no guarantee on the lifetime of |loading_task_runner| so we take a
-  // copy.
-  context_->SetWebTaskRunner(make_scoped_ptr(loading_task_runner->clone()));
 }
 
 }  // namespace content
