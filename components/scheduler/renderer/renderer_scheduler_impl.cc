@@ -639,8 +639,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   if (block_expensive_tasks && loading_tasks_seem_expensive)
     new_policy.loading_queue_priority = TaskQueue::DISABLED_PRIORITY;
 
-  if ((block_expensive_tasks && timer_tasks_seem_expensive) ||
-      MainThreadOnly().timer_queue_suspend_count != 0 ||
+  if (MainThreadOnly().timer_queue_suspend_count != 0 ||
       MainThreadOnly().timer_queue_suspended_when_backgrounded) {
     new_policy.timer_queue_priority = TaskQueue::DISABLED_PRIORITY;
   }

@@ -736,9 +736,10 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
   EXPECT_EQ(RendererScheduler::UseCase::COMPOSITOR_GESTURE, CurrentUseCase());
 }
 
+// TODO(skyostil): Re-enable once timer blocking is re-enabled.
 TEST_F(
     RendererSchedulerImplTest,
-    TestCompositorPolicy_ExpensiveTimersDontRunWhenMainThreadOnCriticalPath) {
+    DISABLED_TestCompositorPolicy_ExpensiveTimersDontRunWhenMainThreadOnCriticalPath) {
   std::vector<std::string> run_order;
 
   SimulateExpensiveTasks(timer_task_runner_);
