@@ -39,6 +39,8 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
     BUTTON_TERTIARY = 1 << 2,
     BUTTON_BACK = 1 << 3,
     BUTTON_FORWARD = 1 << 4,
+    BUTTON_STYLUS_PRIMARY = 1 << 5,
+    BUTTON_STYLUS_SECONDARY = 1 << 6,
   };
 
   // The implementer promises that |GetPointerId()| will never exceed

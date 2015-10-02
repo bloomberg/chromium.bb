@@ -32,6 +32,7 @@ GestureConfiguration::GestureConfiguration()
       fling_touchscreen_tap_suppression_enabled_(false),
       fling_max_cancel_to_down_time_in_ms_(400),
       fling_max_tap_gap_time_in_ms_(200),
+      stylus_scale_enabled_(false),
       gesture_begin_end_types_enabled_(false),
       long_press_time_in_ms_(1000),
       max_distance_between_taps_for_double_tap_(20),

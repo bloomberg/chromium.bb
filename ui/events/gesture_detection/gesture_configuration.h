@@ -52,6 +52,10 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   void set_fling_max_tap_gap_time_in_ms(int val) {
     fling_max_tap_gap_time_in_ms_ = val;
   }
+  bool stylus_scale_enabled() const { return stylus_scale_enabled_; }
+  void set_stylus_scale_enabled(bool enabled) {
+    stylus_scale_enabled_ = enabled;
+  }
   bool gesture_begin_end_types_enabled() const {
     return gesture_begin_end_types_enabled_;
   }
@@ -222,6 +226,8 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   // Maxium time between a mousedown/mouseup pair that is considered to be a
   // suppressable tap.
   int fling_max_tap_gap_time_in_ms_;
+
+  bool stylus_scale_enabled_;
   bool gesture_begin_end_types_enabled_;
   int long_press_time_in_ms_;
   float max_distance_between_taps_for_double_tap_;

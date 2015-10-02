@@ -200,7 +200,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   // ScaleGestureListener implementation.
   bool OnScaleBegin(const ScaleGestureDetector& detector,
                     const MotionEvent& e) override {
-    if (ignore_multitouch_zoom_events_ && !detector.InDoubleTapMode())
+    if (ignore_multitouch_zoom_events_ && !detector.InAnchoredScaleMode())
       return false;
     return true;
   }
@@ -214,7 +214,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
 
   bool OnScale(const ScaleGestureDetector& detector,
                const MotionEvent& e) override {
-    if (ignore_multitouch_zoom_events_ && !detector.InDoubleTapMode())
+    if (ignore_multitouch_zoom_events_ && !detector.InAnchoredScaleMode())
       return false;
     if (!pinch_event_sent_) {
       Send(CreateGesture(ET_GESTURE_PINCH_BEGIN,
@@ -239,7 +239,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     if (scale == 1)
       return true;
 
-    if (detector.InDoubleTapMode()) {
+    if (detector.InAnchoredScaleMode()) {
       // Relative changes in the double-tap scale factor computed by |detector|
       // diminish as the touch moves away from the original double-tap focus.
       // For historical reasons, Chrome has instead adopted a scale factor
@@ -596,7 +596,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
 
   bool IsDoubleTapInProgress() const {
     return gesture_detector_.is_double_tapping() ||
-           (IsScaleGestureDetectionInProgress() && InDoubleTapMode());
+           (IsScaleGestureDetectionInProgress() && InAnchoredScaleMode());
   }
 
   bool IsScrollInProgress() const { return scroll_event_sent_; }
@@ -622,8 +622,8 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     return scale_gesture_detector_.IsInProgress();
   }
 
-  bool InDoubleTapMode() const {
-    return scale_gesture_detector_.InDoubleTapMode();
+  bool InAnchoredScaleMode() const {
+    return scale_gesture_detector_.InAnchoredScaleMode();
   }
 
   bool IsDoubleTapEnabled() const {

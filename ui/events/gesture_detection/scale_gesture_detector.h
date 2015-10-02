@@ -37,6 +37,11 @@ class GESTURE_DETECTION_EXPORT ScaleGestureDetector {
     // Minimum pinch span change before pinch occurs (in dips). See
     // crbug.com/373318.
     float min_pinch_update_span_delta;
+
+    // Whether the associated |ScaleGestureListener| should receive |OnScale|
+    // callbacks when the user uses a stylus and presses the button.
+    // Defaults to false.
+    bool stylus_scale_enabled;
   };
 
   ScaleGestureDetector(const Config& config, ScaleGestureListener* listener);
@@ -63,7 +68,7 @@ class GESTURE_DETECTION_EXPORT ScaleGestureDetector {
   // Set whether the associated |ScaleGestureListener| should receive
   // OnScale callbacks when the user performs a doubletap followed by a swipe.
   bool IsInProgress() const;
-  bool InDoubleTapMode() const;
+  bool InAnchoredScaleMode() const;
   float GetFocusX() const;
   float GetFocusY() const;
   float GetCurrentSpan() const;
@@ -77,7 +82,11 @@ class GESTURE_DETECTION_EXPORT ScaleGestureDetector {
   base::TimeTicks GetEventTime() const;
 
  private:
-  enum DoubleTapMode { DOUBLE_TAP_MODE_NONE, DOUBLE_TAP_MODE_IN_PROGRESS };
+  enum AnchoredScaleMode {
+    ANCHORED_SCALE_MODE_NONE,
+    ANCHORED_SCALE_MODE_DOUBLE_TAP,
+    ANCHORED_SCALE_MODE_STYLUS
+  };
 
   // The TouchMajor/TouchMinor elements of a MotionEvent can flutter/jitter on
   // some hardware/driver combos. Smooth out to get kinder, gentler behavior.
@@ -87,6 +96,7 @@ class GESTURE_DETECTION_EXPORT ScaleGestureDetector {
   void ResetScaleWithSpan(float span);
 
   ScaleGestureListener* const listener_;
+  bool stylus_scale_enabled_;
 
   float focus_x_;
   float focus_y_;
@@ -111,9 +121,10 @@ class GESTURE_DETECTION_EXPORT ScaleGestureDetector {
   base::TimeTicks touch_history_last_accepted_time_;
   float touch_min_major_;
   float touch_max_major_;
-  float double_tap_focus_x_;
-  float double_tap_focus_y_;
-  DoubleTapMode double_tap_mode_;
+
+  float anchored_scale_start_x_;
+  float anchored_scale_start_y_;
+  AnchoredScaleMode anchored_scale_mode_;
 
   bool event_before_or_above_starting_gesture_event_;
 

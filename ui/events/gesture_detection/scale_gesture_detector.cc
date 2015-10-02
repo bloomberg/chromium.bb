@@ -36,14 +36,15 @@ ScaleGestureDetector::Config::Config()
     : span_slop(16),
       min_scaling_touch_major(48),
       min_scaling_span(200),
-      min_pinch_update_span_delta(0) {
-}
+      min_pinch_update_span_delta(0),
+      stylus_scale_enabled(false) {}
 
 ScaleGestureDetector::Config::~Config() {}
 
 ScaleGestureDetector::ScaleGestureDetector(const Config& config,
                                            ScaleGestureListener* listener)
     : listener_(listener),
+      stylus_scale_enabled_(config.stylus_scale_enabled),
       focus_x_(0),
       focus_y_(0),
       curr_span_(0),
@@ -62,9 +63,9 @@ ScaleGestureDetector::ScaleGestureDetector(const Config& config,
       touch_history_direction_(0),
       touch_min_major_(0),
       touch_max_major_(0),
-      double_tap_focus_x_(0),
-      double_tap_focus_y_(0),
-      double_tap_mode_(DOUBLE_TAP_MODE_NONE),
+      anchored_scale_start_x_(0),
+      anchored_scale_start_y_(0),
+      anchored_scale_mode_(ANCHORED_SCALE_MODE_NONE),
       event_before_or_above_starting_gesture_event_(false) {
   DCHECK(listener_);
   span_slop_ = config.span_slop + kSlopEpsilon;
@@ -82,10 +83,18 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
 
   const int action = event.GetAction();
 
+  const int count = static_cast<int>(event.GetPointerCount());
+  const bool is_stylus_button_down =
+      (event.GetButtonState() & MotionEvent::BUTTON_STYLUS_PRIMARY) != 0;
+
+  const bool anchored_scale_cancelled =
+      anchored_scale_mode_ == ANCHORED_SCALE_MODE_STYLUS &&
+      !is_stylus_button_down;
+
   const bool stream_complete =
       action == MotionEvent::ACTION_UP ||
-      action == MotionEvent::ACTION_CANCEL ||
-      (action == MotionEvent::ACTION_POINTER_DOWN && InDoubleTapMode());
+      action == MotionEvent::ACTION_CANCEL || anchored_scale_cancelled ||
+      (action == MotionEvent::ACTION_POINTER_DOWN && InAnchoredScaleMode());
 
   if (action == MotionEvent::ACTION_DOWN || stream_complete) {
     // Reset any scale in progress with the listener.
@@ -94,7 +103,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
     if (in_progress_) {
       listener_->OnScaleEnd(*this, event);
       ResetScaleWithSpan(0);
-    } else if (InDoubleTapMode() && stream_complete) {
+    } else if (InAnchoredScaleMode() && stream_complete) {
       ResetScaleWithSpan(0);
     }
 
@@ -104,26 +113,35 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
     }
   }
 
+  if (!in_progress_ && stylus_scale_enabled_ && !InAnchoredScaleMode() &&
+      !stream_complete && is_stylus_button_down) {
+    // Start of a stylus scale gesture.
+    anchored_scale_start_x_ = event.GetX();
+    anchored_scale_start_y_ = event.GetY();
+    anchored_scale_mode_ = ANCHORED_SCALE_MODE_STYLUS;
+    initial_span_ = 0;
+  }
+
   const bool config_changed = action == MotionEvent::ACTION_DOWN ||
                               action == MotionEvent::ACTION_POINTER_UP ||
-                              action == MotionEvent::ACTION_POINTER_DOWN;
+                              action == MotionEvent::ACTION_POINTER_DOWN ||
+                              anchored_scale_cancelled;
 
   const bool pointer_up = action == MotionEvent::ACTION_POINTER_UP;
   const int skip_index = pointer_up ? event.GetActionIndex() : -1;
 
   // Determine focal point.
   float sum_x = 0, sum_y = 0;
-  const int count = static_cast<int>(event.GetPointerCount());
   const int unreleased_point_count = pointer_up ? count - 1 : count;
   const float inverse_unreleased_point_count = 1.0f / unreleased_point_count;
 
   float focus_x;
   float focus_y;
-  if (InDoubleTapMode()) {
+  if (InAnchoredScaleMode()) {
     // In double tap mode, the focal pt is always where the double tap
     // gesture started.
-    focus_x = double_tap_focus_x_;
-    focus_y = double_tap_focus_y_;
+    focus_x = anchored_scale_start_x_;
+    focus_y = anchored_scale_start_y_;
     if (event.GetY() < focus_y) {
       event_before_or_above_starting_gesture_event_ = true;
     } else {
@@ -165,7 +183,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   const float span_x = dev_x * 2;
   const float span_y = dev_y * 2;
   float span;
-  if (InDoubleTapMode()) {
+  if (InAnchoredScaleMode()) {
     span = span_y;
   } else {
     span = std::sqrt(span_x * span_x + span_y * span_y);
@@ -177,7 +195,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   const bool was_in_progress = in_progress_;
   focus_x_ = focus_x;
   focus_y_ = focus_y;
-  if (!InDoubleTapMode() && in_progress_ &&
+  if (!InAnchoredScaleMode() && in_progress_ &&
       (span < min_span_ || config_changed)) {
     listener_->OnScaleEnd(*this, event);
     ResetScaleWithSpan(span);
@@ -188,7 +206,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
     initial_span_ = prev_span_ = curr_span_ = span;
   }
 
-  const float min_span = InDoubleTapMode() ? span_slop_ : min_span_;
+  const float min_span = InAnchoredScaleMode() ? span_slop_ : min_span_;
   if (!in_progress_ && span >= min_span &&
       (was_in_progress || std::abs(span - initial_span_) > span_slop_)) {
     prev_span_x_ = curr_span_x_ = span_x;
@@ -223,8 +241,8 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
 
 bool ScaleGestureDetector::IsInProgress() const { return in_progress_; }
 
-bool ScaleGestureDetector::InDoubleTapMode() const {
-  return double_tap_mode_ == DOUBLE_TAP_MODE_IN_PROGRESS;
+bool ScaleGestureDetector::InAnchoredScaleMode() const {
+  return anchored_scale_mode_ != ANCHORED_SCALE_MODE_NONE;
 }
 
 float ScaleGestureDetector::GetFocusX() const { return focus_x_; }
@@ -244,7 +262,7 @@ float ScaleGestureDetector::GetPreviousSpanX() const { return prev_span_x_; }
 float ScaleGestureDetector::GetPreviousSpanY() const { return prev_span_y_; }
 
 float ScaleGestureDetector::GetScaleFactor() const {
-  if (InDoubleTapMode()) {
+  if (InAnchoredScaleMode()) {
     // Drag is moving up; the further away from the gesture start, the smaller
     // the span should be, the closer, the larger the span, and therefore the
     // larger the scale.
@@ -270,9 +288,9 @@ base::TimeTicks ScaleGestureDetector::GetEventTime() const {
 
 bool ScaleGestureDetector::OnDoubleTap(const MotionEvent& ev) {
   // Double tap: start watching for a swipe.
-  double_tap_focus_x_ = ev.GetX();
-  double_tap_focus_y_ = ev.GetY();
-  double_tap_mode_ = DOUBLE_TAP_MODE_IN_PROGRESS;
+  anchored_scale_start_x_ = ev.GetX();
+  anchored_scale_start_y_ = ev.GetY();
+  anchored_scale_mode_ = ANCHORED_SCALE_MODE_DOUBLE_TAP;
   return true;
 }
 
@@ -349,7 +367,7 @@ void ScaleGestureDetector::ResetTouchHistory() {
 void ScaleGestureDetector::ResetScaleWithSpan(float span) {
   in_progress_ = false;
   initial_span_ = span;
-  double_tap_mode_ = DOUBLE_TAP_MODE_NONE;
+  anchored_scale_mode_ = ANCHORED_SCALE_MODE_NONE;
 }
 
 }  // namespace ui

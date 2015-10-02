@@ -54,6 +54,7 @@ ScaleGestureDetector::Config BuildScaleGestureDetectorConfig(
   config.min_scaling_span = gesture_config.min_scaling_span_in_pixels();
   config.min_pinch_update_span_delta =
       gesture_config.min_pinch_update_span_delta();
+  config.stylus_scale_enabled = gesture_config.stylus_scale_enabled();
   return config;
 }
 

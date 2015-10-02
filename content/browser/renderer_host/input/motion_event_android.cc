@@ -71,6 +71,10 @@ int FromAndroidButtonState(int button_state) {
     result |= MotionEventAndroid::BUTTON_SECONDARY;
   if ((button_state & BUTTON_TERTIARY) != 0)
     result |= MotionEventAndroid::BUTTON_TERTIARY;
+  if ((button_state & BUTTON_STYLUS_PRIMARY) != 0)
+    result |= MotionEventAndroid::BUTTON_STYLUS_PRIMARY;
+  if ((button_state & BUTTON_STYLUS_SECONDARY) != 0)
+    result |= MotionEventAndroid::BUTTON_STYLUS_SECONDARY;
   return result;
 }
 

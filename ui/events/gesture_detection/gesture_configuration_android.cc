@@ -4,6 +4,7 @@
 
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
+#include "base/android/build_info.h"
 #include "base/memory/singleton.h"
 #include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/screen.h"
@@ -33,6 +34,9 @@ class GestureConfigurationAndroid : public GestureConfiguration {
   GestureConfigurationAndroid() : GestureConfiguration() {
     set_double_tap_enabled(true);
     set_double_tap_timeout_in_ms(ViewConfiguration::GetDoubleTapTimeoutInMs());
+    // TODO(jdduke): Enable this on Android M after the implicit conflict with
+    // stylus selection is resolved.
+    set_stylus_scale_enabled(false);
     set_gesture_begin_end_types_enabled(false);
     set_long_press_time_in_ms(ViewConfiguration::GetLongPressTimeoutInMs());
     set_max_distance_between_taps_for_double_tap(
