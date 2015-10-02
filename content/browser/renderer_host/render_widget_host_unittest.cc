@@ -1106,7 +1106,18 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
 
   // Test immediate start and stop, ensuring that the timeout doesn't fire.
   host_->StartNewContentRenderingTimeout();
-  host_->StopNewContentRenderingTimeout();
+  host_->OnFirstPaintAfterLoad();
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMicroseconds(20));
+  base::MessageLoop::current()->Run();
+
+  EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
+
+  // Test that the timer doesn't fire if it receives a stop before
+  // a start.
+  host_->OnFirstPaintAfterLoad();
+  host_->StartNewContentRenderingTimeout();
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitClosure(),
       TimeDelta::FromMicroseconds(20));

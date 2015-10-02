@@ -263,9 +263,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // a new compositor frame is not received before it expires.
   void StartNewContentRenderingTimeout();
 
-  // Stops the rendering timeout and prevents it from clearing any displayed
-  // graphics.
-  void StopNewContentRenderingTimeout();
+  // Notification that a new compositor frame has been generated following
+  // a page load. This stops |new_content_rendering_timeout_|, or prevents
+  // the timer from running if the load commit message hasn't been received
+  // yet.
+  void OnFirstPaintAfterLoad();
 
   // Forwards the given message to the renderer. These are called by the view
   // when it has received a message.
@@ -809,6 +811,18 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   scoped_ptr<TimeoutMonitor> hang_monitor_timeout_;
 
   scoped_ptr<TimeoutMonitor> new_content_rendering_timeout_;
+
+  // This boolean is true if RenderWidgetHostImpl receives a compositor frame
+  // from a newly loaded page before StartNewContentRenderingTimeout() is
+  // called. This means that a paint for the new load has completed before
+  // the browser received a DidCommitProvisionalLoad message. In that case
+  // |new_content_rendering_timeout_| is not needed. The renderer will send
+  // both the FirstPaintAfterLoad and DidCommitProvisionalLoad messages after
+  // any new page navigation, it doesn't matter which is received first, and
+  // it should not be possible to interleave other navigations in between
+  // receipt of those messages (unless FirstPaintAfterLoad is prevented from
+  // being sent, in which case the timer should fire).
+  bool received_paint_after_load_;
 
 #if defined(OS_WIN)
   std::list<HWND> dummy_windows_for_activation_;

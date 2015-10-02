@@ -197,6 +197,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
       is_in_gesture_scroll_(false),
+      received_paint_after_load_(false),
       next_browser_snapshot_id_(1),
       owned_by_render_frame_host_(false),
       is_focused_(false),
@@ -476,6 +477,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
 #endif
     IPC_MESSAGE_HANDLER(InputHostMsg_ImeCompositionRangeChanged,
                         OnImeCompositionRangeChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstPaintAfterLoad,
+                        OnFirstPaintAfterLoad)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -918,13 +921,23 @@ void RenderWidgetHostImpl::StopHangMonitorTimeout() {
 }
 
 void RenderWidgetHostImpl::StartNewContentRenderingTimeout() {
-  if (new_content_rendering_timeout_)
-    new_content_rendering_timeout_->Start(new_content_rendering_delay_);
+  // It is possible for a compositor frame to arrive before the browser is
+  // notified about the page being committed, in which case no timer is
+  // necessary.
+  if (received_paint_after_load_) {
+    received_paint_after_load_ = false;
+    return;
+  }
+
+  new_content_rendering_timeout_->Start(new_content_rendering_delay_);
 }
 
-void RenderWidgetHostImpl::StopNewContentRenderingTimeout() {
-  if (new_content_rendering_timeout_)
+void RenderWidgetHostImpl::OnFirstPaintAfterLoad() {
+  if (new_content_rendering_timeout_->IsRunning()) {
     new_content_rendering_timeout_->Stop();
+  } else {
+    received_paint_after_load_ = true;
+  }
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
@@ -1514,8 +1527,6 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   // This trace event is used in
   // chrome/browser/extensions/api/cast_streaming/performance_test.cc
   TRACE_EVENT0("test_fps,benchmark", "OnSwapCompositorFrame");
-
-  StopNewContentRenderingTimeout();
 
   ViewHostMsg_SwapCompositorFrame::Param param;
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
