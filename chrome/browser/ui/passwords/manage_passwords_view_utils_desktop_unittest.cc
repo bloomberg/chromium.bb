@@ -111,12 +111,12 @@ TEST_F(ManagePasswordsViewUtilDesktopTest, GetPasswordManagerSettingsStringId) {
        kSmartLockBrandingGroupName,
        kEnabledPasswordManagerSettingsMigrationGroupName,
        kPasswordManagerSettingsBehaviourChangeEnabledGroupName, SMART_LOCK_USER,
-       IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_REMEMBER_ENABLE},
+       IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE},
       {"Smart Lock User no branding, behavioral change, migration active.",
        kSmartLockNoBrandingGroupName,
        kEnabledPasswordManagerSettingsMigrationGroupName,
        kPasswordManagerSettingsBehaviourChangeEnabledGroupName, SMART_LOCK_USER,
-       IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_REMEMBER_ENABLE},
+       IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE},
       {"Smart Lock User no branding, no behavioral change, migration active.",
        kSmartLockNoBrandingGroupName,
        kEnabledPasswordManagerSettingsMigrationGroupName,
@@ -146,7 +146,7 @@ TEST_F(ManagePasswordsViewUtilDesktopTest, GetPasswordManagerSettingsStringId) {
        kSmartLockNoBrandingGroupName,
        kEnabledPasswordManagerSettingsMigrationGroupName,
        kPasswordManagerSettingsBehaviourChangeEnabledGroupName,
-       NON_SMART_LOCK_USER, IDS_OPTIONS_PASSWORD_MANAGER_REMEMBER_ENABLE},
+       NON_SMART_LOCK_USER, IDS_OPTIONS_PASSWORD_MANAGER_ENABLE},
   };
 
   for (const auto& test_case : kTestData) {

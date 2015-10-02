@@ -10161,12 +10161,6 @@ I don't think this site should be blocked!
         <message name="IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME" desc="The title of the 'Passwords and forms' group">
           Passwords and forms
         </message>
-        <message name="IDS_OPTIONS_PASSWORD_MANAGER_REMEMBER_ENABLE" desc="The label of a checkbox in Chrome's settings to enable saving passwords.">
-          Remember website passwords.
-        </message>
-        <message name="IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_REMEMBER_ENABLE" desc="The label of a checkbox in Chrome's settings to enable saving passwords if Smart Lock is enabled.">
-          Use Smart Lock for Passwords to remember passwords for apps and sites.
-        </message>
         <message name="IDS_OPTIONS_PASSWORD_MANAGER_ENABLE" desc="The label of the password manager checkbox">
           Offer to save your web passwords.
         </message>

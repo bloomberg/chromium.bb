@@ -11,17 +11,9 @@
 
 int GetPasswordManagerSettingsStringId(
     const sync_driver::SyncService* sync_service) {
-  int smart_lock_users_ids;
-  int non_smart_lock_users_ids;
+  int smart_lock_users_ids = IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE;
+  int non_smart_lock_users_ids = IDS_OPTIONS_PASSWORD_MANAGER_ENABLE;
 
-  if (password_manager::IsSettingsBehaviorChangeActive()) {
-    smart_lock_users_ids =
-        IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_REMEMBER_ENABLE;
-    non_smart_lock_users_ids = IDS_OPTIONS_PASSWORD_MANAGER_REMEMBER_ENABLE;
-  } else {
-    smart_lock_users_ids = IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE;
-    non_smart_lock_users_ids = IDS_OPTIONS_PASSWORD_MANAGER_ENABLE;
-  }
   if (password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service))
     return smart_lock_users_ids;
   if (password_bubble_experiment::IsSmartLockUser(sync_service) &&
