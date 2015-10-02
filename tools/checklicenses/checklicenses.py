@@ -325,6 +325,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/icu': [  # http://crbug.com/98301
         'UNKNOWN',
     ],
+    'third_party/jmake': [  # Used only at build time.
+        'GPL (v2)',
+    ],
     'third_party/jsoncpp/source': [
         # https://github.com/open-source-parsers/jsoncpp/issues/234
         'UNKNOWN',

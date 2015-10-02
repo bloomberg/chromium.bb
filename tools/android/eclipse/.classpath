@@ -81,6 +81,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="third_party/android_swipe_refresh/java/src"/>
     <classpathentry kind="src" path="third_party/cacheinvalidation/src/java"/>
     <classpathentry kind="src" path="third_party/gif_player/src"/>
+    <classpathentry kind="src" path="third_party/jmake/src"/>
     <classpathentry kind="src" path="third_party/junit/src/src/main/java"/>
     <classpathentry kind="src" path="third_party/mockito/src/cglib-and-asm/src"/>
     <classpathentry kind="src" path="third_party/mockito/src/src"/>

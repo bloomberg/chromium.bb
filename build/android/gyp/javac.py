@@ -12,6 +12,7 @@ import sys
 import textwrap
 
 from util import build_utils
+from util import md5_check
 
 import jar
 
@@ -122,10 +123,47 @@ def _ExtractClassFiles(jar_path, dest_dir, java_files):
   def extract_predicate(path):
     if not path.endswith('.class'):
       return False
-    path_without_suffix = re.sub(r'(?:\$[^/]+)?\.class$', '', path)
-    return not any(path_without_suffix in p for p in java_files)
+    path_without_suffix = re.sub(r'(?:\$|\.)[^/]+class$', '', path)
+    partial_java_path = path_without_suffix + '.java'
+    return not any(p.endswith(partial_java_path) for p in java_files)
 
   build_utils.ExtractAll(jar_path, path=dest_dir, predicate=extract_predicate)
+  for path in build_utils.FindInDirectory(dest_dir, '*.class'):
+    shutil.copystat(jar_path, path)
+
+
+def _ConvertToJMakeArgs(javac_cmd, pdb_path):
+  new_args = ['bin/jmake', '-pdb', pdb_path]
+  if javac_cmd[0] != 'javac':
+    new_args.extend(('-jcexec', new_args[0]))
+  if md5_check.PRINT_EXPLANATIONS:
+    new_args.append('-Xtiming')
+
+  do_not_prefix = ('-classpath', '-bootclasspath')
+  skip_next = False
+  for arg in javac_cmd[1:]:
+    if not skip_next and arg not in do_not_prefix:
+      arg = '-C' + arg
+    new_args.append(arg)
+    skip_next = arg in do_not_prefix
+
+  return new_args
+
+
+def _FilterJMakeOutput(stdout):
+  if md5_check.PRINT_EXPLANATIONS:
+    return stdout
+  return re.sub(r'\b(Jmake version|Writing project database).*?\n', '', stdout)
+
+
+def _FixTempPathsInIncrementalMetadata(pdb_path, temp_dir):
+  # The .pdb records absolute paths. Fix up paths within /tmp (srcjars).
+  if os.path.exists(pdb_path):
+    # Although its a binary file, search/replace still seems to work fine.
+    with open(pdb_path) as fileobj:
+      pdb_data = fileobj.read()
+    with open(pdb_path, 'w') as fileobj:
+      fileobj.write(re.sub(r'/tmp/[^/]*', temp_dir, pdb_data))
 
 
 def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
@@ -140,35 +178,58 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
     os.makedirs(classes_dir)
 
     changed_paths = None
+    # jmake can handle deleted files, but it's a rare case and it would
+    # complicate this script's logic.
     if options.incremental and changes.AddedOrModifiedOnly():
       changed_paths = set(changes.IterChangedPaths())
       # Do a full compile if classpath has changed.
+      # jmake doesn't seem to do this on its own... Might be that ijars mess up
+      # its change-detection logic.
       if any(p in changed_paths for p in classpath_inputs):
         changed_paths = None
-      else:
-        java_files = [p for p in java_files if p in changed_paths]
-        srcjars = [p for p in srcjars if p in changed_paths]
+
+    if options.incremental:
+      # jmake is a compiler wrapper that figures out the minimal set of .java
+      # files that need to be rebuilt given a set of .java files that have
+      # changed.
+      # jmake determines what files are stale based on timestamps between .java
+      # and .class files. Since we use .jars, .srcjars, and md5 checks,
+      # timestamp info isn't accurate for this purpose. Rather than use jmake's
+      # programatic interface (like we eventually should), we ensure that all
+      # .class files are newer than their .java files, and convey to jmake which
+      # sources are stale by having their .class files be missing entirely
+      # (by not extracting them).
+      pdb_path = options.jar_path + '.pdb'
+      javac_cmd = _ConvertToJMakeArgs(javac_cmd, pdb_path)
+      if srcjars:
+        _FixTempPathsInIncrementalMetadata(pdb_path, temp_dir)
 
     if srcjars:
       java_dir = os.path.join(temp_dir, 'java')
       os.makedirs(java_dir)
       for srcjar in options.java_srcjars:
-        extract_predicate = None
         if changed_paths:
-          changed_subpaths = set(changes.IterChangedSubpaths(srcjar))
-          extract_predicate = lambda p: p in changed_subpaths
-        build_utils.ExtractAll(srcjar, path=java_dir, pattern='*.java',
-                               predicate=extract_predicate)
+          changed_paths.update(changes.IterChangedSubpaths(srcjar))
+        build_utils.ExtractAll(srcjar, path=java_dir, pattern='*.java')
       jar_srcs = build_utils.FindInDirectory(java_dir, '*.java')
-      java_files.extend(_FilterJavaFiles(jar_srcs, options.javac_includes))
+      jar_srcs = _FilterJavaFiles(jar_srcs, options.javac_includes)
+      java_files.extend(jar_srcs)
+      if changed_paths:
+        # Set the mtime of all sources to 0 since we use the absense of .class
+        # files to tell jmake which files are stale.
+        for path in jar_srcs:
+          os.utime(path, (0, 0))
 
     if java_files:
       if changed_paths:
-        # When no files have been removed and the output jar already
-        # exists, reuse .class files from the existing jar.
-        _ExtractClassFiles(options.jar_path, classes_dir, java_files)
-        _ExtractClassFiles(excluded_jar_path, classes_dir, java_files)
-        # Add the extracted files to the classpath.
+        changed_java_files = [p for p in java_files if p in changed_paths]
+        if os.path.exists(options.jar_path):
+          _ExtractClassFiles(options.jar_path, classes_dir, changed_java_files)
+        if os.path.exists(excluded_jar_path):
+          _ExtractClassFiles(excluded_jar_path, classes_dir, changed_java_files)
+        # Add the extracted files to the classpath. This is required because
+        # when compiling only a subset of files, classes that haven't changed
+        # need to be findable.
         classpath_idx = javac_cmd.index('-classpath')
         javac_cmd[classpath_idx + 1] += ':' + classes_dir
 
@@ -179,6 +240,7 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
       build_utils.CheckOutput(
           cmd,
           print_stdout=options.chromium_code,
+          stdout_filter=_FilterJMakeOutput,
           stderr_filter=ColorJavacOutput)
 
     if options.main_class or options.manifest_entry:
@@ -360,6 +422,8 @@ def main(argv):
       options.jar_path,
       options.jar_path.replace('.jar', '.excluded.jar'),
   ]
+  if options.incremental:
+    output_paths.append(options.jar_path + '.pdb')
 
   # An escape hatch to be able to check if incremental compiles are causing
   # problems.

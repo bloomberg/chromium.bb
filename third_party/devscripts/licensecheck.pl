@@ -475,7 +475,7 @@ sub parselicense($) {
 
     if ($licensetext =~ /is free software.? you (can|may) redistribute it and\/or modify it under the terms of (?:version [^ ]+ (?:\(?only\)? )?of )?the GNU General Public License/i) {
 	$license = "GPL$gplver$extrainfo $license";
-    } elsif ($licensetext =~ /is distributed under the terms of the GNU General Public License,/
+    } elsif ($licensetext =~ /is distributed under the terms of the GNU General Public License/
 	and $gplver) {
 	$license = "GPL$gplver$extrainfo $license";
     } elsif ($licensetext =~ /is distributed.*terms.*[^L]GPL/) {

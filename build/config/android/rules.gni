@@ -817,6 +817,7 @@ template("java_strings_grd_prebuilt") {
 #     android_library target, for example.
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
 #   enable_errorprone: If true, enables the errorprone compiler.
+#   enable_incremental_javac: Overrides the global enable_incremental_javac.
 #   main_class: When specified, a wrapper script is created within
 #     $target_out_dir/bin to launch the binary with the given class as the
 #     entrypoint.
@@ -905,6 +906,7 @@ template("junit_binary") {
 #
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
 #   enable_errorprone: If true, enables the errorprone compiler.
+#   enable_incremental_javac: Overrides the global enable_incremental_javac.
 #
 #   jar_excluded_patterns: List of patterns of .class files to exclude from the
 #     final jar.
@@ -996,6 +998,7 @@ template("java_prebuilt") {
 #
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
 #   enable_errorprone: If true, enables the errorprone compiler.
+#   enable_incremental_javac: Overrides the global enable_incremental_javac.
 #
 #   jar_excluded_patterns: List of patterns of .class files to exclude from the
 #     final jar.
@@ -1799,7 +1802,9 @@ template("unittest_apk") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
-    data_deps = [ "//tools/android/md5sum" ]
+    data_deps = [
+      "//tools/android/md5sum",
+    ]
     if (host_os == "linux") {
       data_deps += [ "//tools/android/forwarder2" ]
     }

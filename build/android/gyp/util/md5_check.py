@@ -12,7 +12,7 @@ import zipfile
 
 
 # When set and a difference is detected, a diff of what changed is printed.
-_PRINT_MD5_DIFFS = int(os.environ.get('PRINT_MD5_DIFFS', 0))
+PRINT_EXPLANATIONS = int(os.environ.get('PRINT_BUILD_EXPLANATIONS', 0))
 
 # An escape hatch that causes all targets to be rebuilt.
 _FORCE_REBUILD = int(os.environ.get('FORCE_REBUILD', 0))
@@ -77,7 +77,7 @@ def CallAndRecordIfStale(
   if not changes.HasChanges():
     return
 
-  if _PRINT_MD5_DIFFS:
+  if PRINT_EXPLANATIONS:
     print '=' * 80
     print 'Target is stale: %s' % record_path
     print changes.DescribeDifference()

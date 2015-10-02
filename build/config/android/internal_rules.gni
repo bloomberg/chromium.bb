@@ -199,7 +199,7 @@ template("dex") {
       rebased_output,
     ]
 
-    if (incremental_dx) {
+    if (enable_incremental_dx) {
       args += [ "--incremental" ]
     }
 
@@ -1048,6 +1048,11 @@ template("compile_java") {
     _enable_errorprone = invoker.enable_errorprone
   }
 
+  _enable_incremental_javac = enable_incremental_javac
+  if (defined(invoker.enable_incremental_javac)) {
+    _enable_incremental_javac = invoker.enable_incremental_javac
+  }
+
   _manifest_entries = []
   if (defined(invoker.manifest_entries)) {
     _manifest_entries = invoker.manifest_entries
@@ -1107,8 +1112,10 @@ template("compile_java") {
       "--java-srcjars=@FileArg($_rebased_build_config:javac:srcjars)",
       "--jar-excluded-classes=$_jar_excluded_patterns",
     ]
-    if (incremental_javac) {
+    if (_enable_incremental_javac) {
       args += [ "--incremental" ]
+      deps += [ "//third_party/jmake" ]
+      outputs += [ "${_intermediate_jar_path}.pdb" ]
     }
     if (_supports_android) {
       deps += [ "//build/android:android_ijar" ]
@@ -1276,6 +1283,7 @@ template("java_library_impl") {
                            [
                              "dist_jar_path",
                              "enable_errorprone",
+                             "enable_incremental_javac",
                              "jar_excluded_patterns",
                              "manifest_entries",
                              "proguard_config",
