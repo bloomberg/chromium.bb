@@ -242,19 +242,6 @@ ShellIntegration::DefaultWebClientState
 
 }  // namespace
 
-ShellIntegration::DefaultWebClientSetPermission
-    ShellIntegration::CanSetAsDefaultBrowser() {
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-  if (distribution->GetDefaultBrowserControlPolicy() !=
-          BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL)
-    return SET_DEFAULT_NOT_ALLOWED;
-
-  if (ShellUtil::CanMakeChromeDefaultUnattended())
-    return SET_DEFAULT_UNATTENDED;
-  else
-    return SET_DEFAULT_INTERACTIVE;
-}
-
 bool ShellIntegration::SetAsDefaultBrowser() {
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -271,6 +258,23 @@ bool ShellIntegration::SetAsDefaultBrowser() {
   }
 
   VLOG(1) << "Chrome registered as default browser.";
+  return true;
+}
+
+bool ShellIntegration::SetAsDefaultBrowserInteractive() {
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED() << "Error getting app exe path";
+    return false;
+  }
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (!ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe)) {
+    LOG(ERROR) << "Failed to launch the set-default-browser Windows UI.";
+    return false;
+  }
+
+  VLOG(1) << "Set-default-browser Windows UI completed.";
   return true;
 }
 
@@ -297,23 +301,6 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
   return true;
 }
 
-bool ShellIntegration::SetAsDefaultBrowserInteractive() {
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED() << "Error getting app exe path";
-    return false;
-  }
-
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe)) {
-    LOG(ERROR) << "Failed to launch the set-default-browser Windows UI.";
-    return false;
-  }
-
-  VLOG(1) << "Set-default-browser Windows UI completed.";
-  return true;
-}
-
 bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
     const std::string& protocol) {
   base::FilePath chrome_exe;
@@ -334,20 +321,21 @@ bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
   return true;
 }
 
+ShellIntegration::DefaultWebClientSetPermission
+    ShellIntegration::CanSetAsDefaultBrowser() {
+  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
+  if (distribution->GetDefaultBrowserControlPolicy() !=
+          BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL)
+    return SET_DEFAULT_NOT_ALLOWED;
+
+  if (ShellUtil::CanMakeChromeDefaultUnattended())
+    return SET_DEFAULT_UNATTENDED;
+  else
+    return SET_DEFAULT_INTERACTIVE;
+}
+
 bool ShellIntegration::IsElevationNeededForSettingDefaultProtocolClient() {
   return base::win::GetVersion() < base::win::VERSION_WIN8;
-}
-
-ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
-  return GetDefaultWebClientStateFromShellUtilDefaultState(
-      ShellUtil::GetChromeDefaultState());
-}
-
-ShellIntegration::DefaultWebClientState
-    ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
-  return GetDefaultWebClientStateFromShellUtilDefaultState(
-      ShellUtil::GetChromeDefaultProtocolClientState(
-          base::UTF8ToUTF16(protocol)));
 }
 
 base::string16 ShellIntegration::GetApplicationNameForProtocol(
@@ -357,6 +345,11 @@ base::string16 ShellIntegration::GetApplicationNameForProtocol(
     return GetAppForProtocolUsingAssocQuery(url);
   else
     return GetAppForProtocolUsingRegistry(url);
+}
+
+ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
+  return GetDefaultWebClientStateFromShellUtilDefaultState(
+      ShellUtil::GetChromeDefaultState());
 }
 
 // There is no reliable way to say which browser is default on a machine (each
@@ -390,6 +383,13 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
       ff_default = true;
   }
   return ff_default;
+}
+
+ShellIntegration::DefaultWebClientState
+    ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
+  return GetDefaultWebClientStateFromShellUtilDefaultState(
+      ShellUtil::GetChromeDefaultProtocolClientState(
+          base::UTF8ToUTF16(protocol)));
 }
 
 base::string16 ShellIntegration::GetAppModelIdForProfile(

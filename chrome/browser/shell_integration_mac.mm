@@ -11,14 +11,41 @@
 #include "components/version_info/version_info.h"
 #import "third_party/mozilla/NSWorkspace+Utils.h"
 
-ShellIntegration::DefaultWebClientSetPermission
-    ShellIntegration::CanSetAsDefaultBrowser() {
-  if (chrome::GetChannel() != version_info::Channel::CANARY) {
-    return SET_DEFAULT_UNATTENDED;
-  }
+namespace {
 
-  return SET_DEFAULT_NOT_ALLOWED;
+// Returns true if |identifier| is the bundle id of the default browser.
+bool IsIdentifierDefaultBrowser(NSString* identifier) {
+  NSString* default_browser =
+      [[NSWorkspace sharedWorkspace] defaultBrowserIdentifier];
+  if (!default_browser)
+    return false;
+
+  // We need to ensure we do the comparison case-insensitive as LS doesn't
+  // persist the case of our bundle id.
+  NSComparisonResult result =
+      [default_browser caseInsensitiveCompare:identifier];
+  return result == NSOrderedSame;
 }
+
+// Returns true if |identifier| is the bundle id of the default client
+// application for the given protocol.
+bool IsIdentifierDefaultProtocolClient(NSString* identifier,
+                                       NSString* protocol) {
+  CFStringRef default_client_cf =
+      LSCopyDefaultHandlerForURLScheme(base::mac::NSToCFCast(protocol));
+  NSString* default_client = static_cast<NSString*>(
+      base::mac::CFTypeRefToNSObjectAutorelease(default_client_cf));
+  if (!default_client)
+    return false;
+
+  // We need to ensure we do the comparison case-insensitive as LS doesn't
+  // persist the case of our bundle id.
+  NSComparisonResult result =
+      [default_client caseInsensitiveCompare:identifier];
+  return result == NSOrderedSame;
+}
+
+}  // namespace
 
 // Sets Chromium as default browser to be used by the operating system. This
 // applies only for the current user. Returns false if this cannot be done, or
@@ -60,41 +87,14 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
   return return_code == noErr;
 }
 
-namespace {
+ShellIntegration::DefaultWebClientSetPermission
+    ShellIntegration::CanSetAsDefaultBrowser() {
+  if (chrome::GetChannel() != version_info::Channel::CANARY) {
+    return SET_DEFAULT_UNATTENDED;
+  }
 
-// Returns true if |identifier| is the bundle id of the default browser.
-bool IsIdentifierDefaultBrowser(NSString* identifier) {
-  NSString* default_browser =
-      [[NSWorkspace sharedWorkspace] defaultBrowserIdentifier];
-  if (!default_browser)
-    return false;
-
-  // We need to ensure we do the comparison case-insensitive as LS doesn't
-  // persist the case of our bundle id.
-  NSComparisonResult result =
-      [default_browser caseInsensitiveCompare:identifier];
-  return result == NSOrderedSame;
+  return SET_DEFAULT_NOT_ALLOWED;
 }
-
-// Returns true if |identifier| is the bundle id of the default client
-// application for the given protocol.
-bool IsIdentifierDefaultProtocolClient(NSString* identifier,
-                                       NSString* protocol) {
-  CFStringRef default_client_cf =
-      LSCopyDefaultHandlerForURLScheme(base::mac::NSToCFCast(protocol));
-  NSString* default_client = static_cast<NSString*>(
-      base::mac::CFTypeRefToNSObjectAutorelease(default_client_cf));
-  if (!default_client)
-    return false;
-
-  // We need to ensure we do the comparison case-insensitive as LS doesn't
-  // persist the case of our bundle id.
-  NSComparisonResult result =
-      [default_client caseInsensitiveCompare:identifier];
-  return result == NSOrderedSame;
-}
-
-}  // namespace
 
 // static
 base::string16 ShellIntegration::GetApplicationNameForProtocol(

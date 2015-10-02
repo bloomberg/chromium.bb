@@ -241,6 +241,11 @@ class ShellIntegration {
     // the observer.
     void ExecuteCheckIsDefault();
 
+    // Communicate results to the observer. This function is posted as a task
+    // onto the UI thread by the ExecuteCheckIsDefault function running in the
+    // file thread.
+    void CompleteCheckIsDefault(DefaultWebClientState state);
+
     // Function that handles setting Chrome as the default web client on the
     // file thread. This function is posted as a task onto the file thread.
     // Once it is finished the CompleteSetAsDefault function is posted to the
@@ -250,11 +255,6 @@ class ShellIntegration {
     // in context where user interaction is required (CanSetAsDefault*
     // returns SET_DEFAULT_INTERACTIVE).
     void ExecuteSetAsDefault(bool interactive_permitted);
-
-    // Communicate results to the observer. This function is posted as a task
-    // onto the UI thread by the ExecuteCheckIsDefault function running in the
-    // file thread.
-    void CompleteCheckIsDefault(DefaultWebClientState state);
 
     // When the action to set Chrome as the default has completed this function
     // is run. It is posted as a task back onto the UI thread by the

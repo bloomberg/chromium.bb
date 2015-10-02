@@ -497,12 +497,6 @@ base::FilePath GetChromeExePath() {
 }  // namespace
 
 // static
-ShellIntegration::DefaultWebClientSetPermission
-ShellIntegration::CanSetAsDefaultBrowser() {
-  return SET_DEFAULT_UNATTENDED;
-}
-
-// static
 bool ShellIntegration::SetAsDefaultBrowser() {
   return SetDefaultWebClient(std::string());
 }
@@ -514,9 +508,9 @@ bool ShellIntegration::SetAsDefaultProtocolClient(
 }
 
 // static
-ShellIntegration::DefaultWebClientState
-ShellIntegration::GetDefaultBrowser() {
-  return GetIsDefaultWebClient(std::string());
+ShellIntegration::DefaultWebClientSetPermission
+ShellIntegration::CanSetAsDefaultBrowser() {
+  return SET_DEFAULT_UNATTENDED;
 }
 
 // static
@@ -527,8 +521,8 @@ base::string16 ShellIntegration::GetApplicationNameForProtocol(
 
 // static
 ShellIntegration::DefaultWebClientState
-ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
-  return GetIsDefaultWebClient(protocol);
+ShellIntegration::GetDefaultBrowser() {
+  return GetIsDefaultWebClient(std::string());
 }
 
 // static
@@ -542,6 +536,12 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
   // We don't care about the return value here.
   base::GetAppOutput(base::CommandLine(argv), &browser);
   return browser.find("irefox") != std::string::npos;
+}
+
+// static
+ShellIntegration::DefaultWebClientState
+ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
+  return GetIsDefaultWebClient(protocol);
 }
 
 namespace shell_integration_linux {

@@ -5,12 +5,6 @@
 #include "chrome/browser/shell_integration.h"
 
 // static
-ShellIntegration::DefaultWebClientSetPermission
-    ShellIntegration::CanSetAsDefaultBrowser() {
-  return SET_DEFAULT_NOT_ALLOWED;
-}
-
-// static
 bool ShellIntegration::SetAsDefaultBrowser() {
   return false;
 }
@@ -21,13 +15,13 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
 }
 
 // static
-ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
-  return UNKNOWN_DEFAULT;
+ShellIntegration::DefaultWebClientSetPermission
+    ShellIntegration::CanSetAsDefaultBrowser() {
+  return SET_DEFAULT_NOT_ALLOWED;
 }
 
 // static
-ShellIntegration::DefaultWebClientState
-ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
+ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
   return UNKNOWN_DEFAULT;
 }
 
@@ -36,3 +30,8 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
   return false;
 }
 
+// static
+ShellIntegration::DefaultWebClientState
+ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
+  return UNKNOWN_DEFAULT;
+}

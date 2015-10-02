@@ -29,6 +29,25 @@
 
 using content::BrowserThread;
 
+namespace {
+
+const struct ShellIntegration::AppModeInfo* gAppModeInfo = nullptr;
+
+}  // namespace
+
+#if !defined(OS_WIN)
+// static
+bool ShellIntegration::SetAsDefaultBrowserInteractive() {
+  return false;
+}
+
+// static
+bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
+    const std::string& protocol) {
+  return false;
+}
+#endif  // !defined(OS_WIN)
+
 // static
 ShellIntegration::DefaultWebClientSetPermission
     ShellIntegration::CanSetAsDefaultProtocolClient() {
@@ -37,7 +56,12 @@ ShellIntegration::DefaultWebClientSetPermission
   return CanSetAsDefaultBrowser();
 }
 
-static const struct ShellIntegration::AppModeInfo* gAppModeInfo = NULL;
+#if !defined(OS_WIN)
+// static
+bool ShellIntegration::IsElevationNeededForSettingDefaultProtocolClient() {
+  return false;
+}
+#endif  // !defined(OS_WIN)
 
 // static
 void ShellIntegration::SetAppModeInfo(const struct AppModeInfo* info) {
@@ -112,30 +136,16 @@ void ShellIntegration::AppendProfileArgs(const base::FilePath& profile_path,
 }
 
 #if !defined(OS_WIN)
-
 base::string16 ShellIntegration::GetAppShortcutsSubdirName() {
   if (chrome::GetChannel() == version_info::Channel::CANARY)
     return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY);
   return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME);
 }
-
-// static
-bool ShellIntegration::SetAsDefaultBrowserInteractive() {
-  return false;
-}
-
-// static
-bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
-    const std::string& protocol) {
-  return false;
-}
-
-// static
-bool ShellIntegration::IsElevationNeededForSettingDefaultProtocolClient() {
-  return false;
-}
-
 #endif  // !defined(OS_WIN)
+
+///////////////////////////////////////////////////////////////////////////////
+// ShellIntegration::DefaultWebClientObserver
+//
 
 bool ShellIntegration::DefaultWebClientObserver::IsOwnedByWorker() {
   return false;
