@@ -5,6 +5,7 @@
     <script src="resources/audio-testing.js"></script>
     <script src="resources/audioparam-testing.js"></script>
     <script src="../resources/js-test.js"></script>
+    <title>Test AudioParam.exponentialRampToValueAtTime</title>
   </head>
 
   <body>
@@ -25,7 +26,7 @@
       var numberOfTests = 100;
 
       // Max allowed difference between the rendered data and the expected result.
-      var maxAllowedError = 6.75e-4;
+      var maxAllowedError = 1.222e-5;
 
       // The AudioGainNode starts with this value instead of the default value.
       var initialValue = 100;

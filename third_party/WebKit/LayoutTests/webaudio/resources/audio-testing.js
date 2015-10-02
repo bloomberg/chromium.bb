@@ -527,8 +527,9 @@ var Should = (function () {
         return this._success;
     }
 
-    // Check if |target| is close to |value| using the given relative error |threshold|.
-    // |value| should not be zero, but no check is made for that.
+    // Check if |target| is close to |value| using the given relative error |threshold|.  |value|
+    // should not be zero, but no check is made for that.  The |target| value is printed to
+    // precision |precision|, with |precision| defaulting to 7.
     //
     // Example:
     // Should("One", 1.001).beCloseTo(1, .1);
@@ -536,16 +537,21 @@ var Should = (function () {
     // Result:
     // "PASS One is 1 within a relative error of 0.1."
     // "FAIL One is not 1 within a relative error of 0.1: 2"
-    ShouldModel.prototype.beCloseTo = function (value, relativeErrorThreshold) {
+    ShouldModel.prototype.beCloseTo = function (value, relativeErrorThreshold, precision) {
         var type = typeof value;
         this._assert(type === 'number', 'value should be number for');
 
         var relativeError = Math.abs(this.target - value) / Math.abs(value);
         if (relativeError <= relativeErrorThreshold) {
-            this._testPassed("is " + value + " within a relative error of " + relativeErrorThreshold);
+            this._testPassed("is " + value.toPrecision(precision) +
+                " within a relative error of " + relativeErrorThreshold);
         } else {
-            this._testFailed("is not " + value + " within a relative error of " + relativeErrorThreshold
-                             + ": " + this.target);
+            // Include actual relative error so the failed test case can be updated with the actual
+            // relative error, if appropriate.
+            this._testFailed("is not " + value.toPrecision(precision) +
+                " within a relative error of " + relativeErrorThreshold +
+                ": " + this.target + " with relative error " + relativeError
+            );
         }
         return this._success;
     }

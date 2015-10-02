@@ -1,0 +1,15 @@
+Test Sampling of SetTargetAtTime
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Initialize by setValueAtTime: Target value at frame 129 is 9139.31185271227 within a relative error of 3.6029e-8.
+PASS Initialize by setValueAtTime: Target value at frame 1 is 9139.311852712282 within a relative error of 3.6029e-8.
+PASS Initialize by setValueAtTime: Target value at frame 0 is 10000 within a relative error of 3.6029e-8.
+PASS Initialize by setter: Target value at frame 129 is 9139.31185271227 within a relative error of 3.6029e-8.
+PASS Initialize by setter: Target value at frame 1 is 9139.311852712282 within a relative error of 3.6029e-8.
+PASS Initialize by setter: Target value at frame 0 is 10000 within a relative error of 0.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

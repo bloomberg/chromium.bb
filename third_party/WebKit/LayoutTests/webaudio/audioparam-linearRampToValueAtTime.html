@@ -5,6 +5,7 @@
 <script src="resources/audio-testing.js"></script>
 <script src="resources/audioparam-testing.js"></script>
 <script src="../resources/js-test.js"></script>
+<title>Test AudioParam.linearRampToValueAtTime</title>
 </head>
 
 <body>
@@ -25,7 +26,7 @@ description("Test AudioParam linearRampToValueAtTime() functionality.");
 var numberOfTests = 100;
 
 // Max allowed difference between the rendered data and the expected result.
-var maxAllowedError = 7.51e-7;
+var maxAllowedError = 1.865e-6;
 
 // Set the gain node value to the specified value at the specified time.
 function setValue(value, time)

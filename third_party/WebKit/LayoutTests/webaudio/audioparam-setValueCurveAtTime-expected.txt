@@ -3,7 +3,7 @@ Test AudioParam setValueCurveAtTime() functionality.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 PASS All 20 tests started and ended at the correct time.
-PASS All 20 tests passed within an acceptable tolerance.
+PASS All 20 tests passed within an acceptable relative tolerance of 4.657e-10.
 PASS AudioParam setValueCurveAtTime() test passed.
 PASS successfullyParsed is true
 

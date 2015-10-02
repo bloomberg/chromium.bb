@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Osc with ExponentialRamp (crbug.com/522229)</title>
+  </head>
+
+  <body>
+    <p>
+      Test from <a href="crbug.com/522229">crbug.com/522229</a>.  This test cannot be validated
+      using an offline context because it requires user interaction.
+    </p>
+    <p>
+      Press the start button to start the test and the stop button to stop it.
+    </p>
+    <p>
+      Press any set of keys quickly and listen.  At no point should audio ever be silent.  There
+      should be no glitches either.  If either of these happens, this test has failed.
+    </p>
+    <button onclick="startTest()">Start</button>
+    <button onclick="stopTest()">Stop</button>
+
+    <script>
+      var context = new AudioContext();
+      var sawosc;
+
+      function updateOsc(event) {
+        var freq = Math.random() * 440 + 440;
+        sawosc.frequency.exponentialRampToValueAtTime(freq, context.currentTime + 0.025);
+      }
+
+      function startTest() {
+        sawosc = context.createOscillator();
+        sawosc.type = 'sawtooth';
+        sawosc.connect(context.destination);
+        window.addEventListener('keydown', updateOsc);
+        sawosc.start();
+      }
+
+      function stopTest() {
+        window.removeEventListener('keydown', updateOsc);
+        sawosc.stop();
+      }
+    </script>
+  </body>
+</html>

@@ -55,12 +55,13 @@ public:
     // otherwise defaultValue is returned.
     float valueForContextTime(AbstractAudioContext*, float defaultValue, bool& hasValue);
 
-    // Given the time range, calculates parameter values into the values buffer
-    // and returns the last parameter value calculated for "values" or the defaultValue if none were calculated.
-    // controlRate is the rate (number per second) at which parameter values will be calculated.
-    // It should equal sampleRate for sample-accurate parameter changes, and otherwise will usually match
-    // the render quantum size such that the parameter value changes once per render quantum.
-    float valuesForTimeRange(double startTime, double endTime, float defaultValue, float* values, unsigned numberOfValues, double sampleRate, double controlRate);
+    // Given the time range in frames, calculates parameter values into the values buffer and
+    // returns the last parameter value calculated for "values" or the defaultValue if none were
+    // calculated.  controlRate is the rate (number per second) at which parameter values will be
+    // calculated.  It should equal sampleRate for sample-accurate parameter changes, and otherwise
+    // will usually match the render quantum size such that the parameter value changes once per
+    // render quantum.
+    float valuesForFrameRange(size_t startFrame, size_t endFrame, float defaultValue, float* values, unsigned numberOfValues, double sampleRate, double controlRate);
 
     bool hasValues() { return m_events.size(); }
 
@@ -103,7 +104,7 @@ private:
     };
 
     void insertEvent(const ParamEvent&, ExceptionState&);
-    float valuesForTimeRangeImpl(double startTime, double endTime, float defaultValue, float* values, unsigned numberOfValues, double sampleRate, double controlRate);
+    float valuesForFrameRangeImpl(size_t startFrame, size_t endFrame, float defaultValue, float* values, unsigned numberOfValues, double sampleRate, double controlRate);
 
     // Produce a nice string describing the event in human-readable form.
     String eventToString(const ParamEvent&);

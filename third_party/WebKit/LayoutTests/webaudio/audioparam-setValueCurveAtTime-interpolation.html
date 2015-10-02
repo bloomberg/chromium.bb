@@ -5,6 +5,7 @@
     <script src="../resources/js-test.js"></script>
     <script src="resources/compatibility.js"></script>
     <script src="resources/audio-testing.js"></script>
+    <title>Test Interpolation for AudioParam.setValueCurveAtTime</title>
   </head>
 
   <body>
@@ -217,7 +218,7 @@
          var expected = new Float32Array(testDurationFrames);
 
          var curveStartFrame = config.curveStartTime * sampleRate;
-         var curveEndFrame = Math.floor((config.curveStartTime + config.curveDuration) * sampleRate);
+         var curveEndFrame = (config.curveStartTime + config.curveDuration) * sampleRate;
          var fullGainFrame = config.fullGainTime * sampleRate;
 
          var k;

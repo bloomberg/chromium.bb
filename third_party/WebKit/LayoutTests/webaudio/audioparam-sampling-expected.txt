@@ -1,0 +1,33 @@
+Test Sampling of LinearRampToValueAtTime
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS linearRamp: Sample 1 is 0.9929687 within a relative error of 1.201e-8.
+PASS linearRamp: Sample 128 is 0.0007812500 within a relative error of 0.00001526.
+PASS linearRamp passed.
+
+PASS linearRamp:short: Sample 1 is 0.8200000 within a relative error of 8.723e-9.
+PASS linearRamp:short: Sample 5 is 0.02000000 within a relative error of 9.537e-7.
+PASS linearRamp:short passed.
+
+PASS linearRamp:long: Sample 1 is 0.9955000 within a relative error of 2.827e-8.
+PASS linearRamp:long: Sample 200 is 0.0005000000 within a relative error of 0.00004674.
+PASS linearRamp:long passed.
+
+PASS exponentialRamp: Sample 1 is 0.9222396 within a relative error of 2.505e-8.
+PASS exponentialRamp: Sample 128 is 0.00001009035 within a relative error of 1.484e-7.
+PASS exponentialRamp passed.
+
+PASS exponentialRamp:short: Sample 1 is 0.1258925 within a relative error of 5.027e-8.
+PASS exponentialRamp:short: Sample 5 is 0.00001258925 within a relative error of 3.821e-7.
+PASS exponentialRamp:short passed.
+
+PASS exponentialRamp:long: Sample 1 is 0.9495110 within a relative error of 8.035e-9.
+PASS exponentialRamp:long: Sample 200 is 0.00001005773 within a relative error of 0.000001337.
+PASS exponentialRamp:long passed.
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

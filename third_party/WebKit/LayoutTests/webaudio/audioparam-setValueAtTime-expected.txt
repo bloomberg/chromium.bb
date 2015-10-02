@@ -3,7 +3,7 @@ Test AudioParam setValueAtTime() functionality.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 PASS All 100 tests started and ended at the correct time.
-PASS All 100 tests passed within an acceptable tolerance.
+PASS All 100 tests passed within an acceptable relative tolerance of 6e-8.
 PASS AudioParam setValueAtTime() test passed.
 PASS successfullyParsed is true
 

@@ -5,6 +5,7 @@
 <script src="resources/audio-testing.js"></script>
 <script src="resources/audioparam-testing.js"></script>
 <script src="../resources/js-test.js"></script>
+<title>Test AudioParam.setValueCurveAtTime</title>
 </head>
 
 <body>
@@ -42,13 +43,6 @@ function automation(value, startTime, endTime)
     gainNode.gain.setValueCurveAtTime(curve, startTime, endTime - startTime);
 }
 
-// Create a sine wave of the specified duration.
-function createReferenceSineArray(startTime, endTime, startValue, endValue, sampleRate)
-{
-    // Ignore |startValue| and |endValue| for the sine wave.
-    return createSineWaveArray(endTime - startTime, freqHz, sineAmplitude, sampleRate);
-}
-
 function runTest() 
 {
     // The curve of values to use.
@@ -63,7 +57,8 @@ function runTest()
                             "setValueCurveAtTime()",
                             maxAllowedError,
                             createReferenceSineArray,
-                            2 * Math.PI * sineAmplitude * freqHz / sampleRate);
+                            2 * Math.PI * sineAmplitude * freqHz / sampleRate,
+                            differenceErrorMetric);
 }
 
 runTest();

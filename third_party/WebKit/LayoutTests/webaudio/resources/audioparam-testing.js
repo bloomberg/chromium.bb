@@ -33,19 +33,6 @@ function renderLength(numberOfTests)
     return timeToSampleFrame((numberOfTests + 1) * timeInterval, sampleRate);
 }
 
-// Create a buffer containing the same constant value.
-function createConstantBuffer(context, constant, length) {
-    var buffer = context.createBuffer(1, length, context.sampleRate);
-    var n = buffer.length;
-    var data = buffer.getChannelData(0);
-
-    for (var k = 0; k < n; ++k) {
-        data[k] = constant;
-    }
-
-    return buffer;
-}
-
 // Create a constant reference signal with the given |value|.  Basically the same as
 // |createConstantBuffer|, but with the parameters to match the other create functions.  The
 // |endValue| is ignored.
@@ -55,9 +42,20 @@ function createConstantArray(startTime, endTime, value, endValue, sampleRate)
     var endFrame = timeToSampleFrame(endTime, sampleRate);
     var length = endFrame - startFrame;
 
-    var buffer = createConstantBuffer(context, value, length);
+    var buffer = createConstantBuffer(context, length, value);
 
     return buffer.getChannelData(0);
+}
+
+function getStartEndFrames(startTime, endTime, sampleRate)
+{
+    // Start frame is the ceiling of the start time because the ramp
+    // starts at or after the sample frame.  End frame is the ceiling
+    // because it's the exclusive ending frame of the automation.
+    var startFrame = Math.ceil(startTime * sampleRate);
+    var endFrame = Math.ceil(endTime * sampleRate);
+
+    return {startFrame: startFrame, endFrame: endFrame};
 }
 
 // Create a linear ramp starting at |startValue| and ending at |endValue|.  The ramp starts at time
@@ -65,15 +63,22 @@ function createConstantArray(startTime, endTime, value, endValue, sampleRate)
 // samples to return.)
 function createLinearRampArray(startTime, endTime, startValue, endValue, sampleRate)
 {
-    var startFrame = timeToSampleFrame(startTime, sampleRate);
-    var endFrame = timeToSampleFrame(endTime, sampleRate);
+    var frameInfo = getStartEndFrames(startTime, endTime, sampleRate);
+    var startFrame = frameInfo.startFrame;
+    var endFrame = frameInfo.endFrame;
     var length = endFrame - startFrame;
     var array = new Array(length);
 
-    var step = (endValue - startValue) / length;
+    var step = Math.fround((endValue - startValue) / (endTime - startTime) / sampleRate);
+    var start = Math.fround(startValue + (endValue - startValue) * (startFrame / sampleRate - startTime) / (endTime - startTime));
 
+    var slope = (endValue - startValue) / (endTime - startTime);
+
+    // v(t) = v0 + (v1 - v0)*(t-t0)/(t1-t0)
     for (k = 0; k < length; ++k) {
-        array[k] = startValue + k * step;
+        //array[k] = Math.fround(start + k * step);
+        var t = (startFrame + k) / sampleRate;
+        array[k] = startValue + slope * (t - startTime);
     }
 
     return array;
@@ -84,15 +89,20 @@ function createLinearRampArray(startTime, endTime, startValue, endValue, sampleR
 // many samples to return.)
 function createExponentialRampArray(startTime, endTime, startValue, endValue, sampleRate)
 {
-    var startFrame = timeToSampleFrame(startTime, sampleRate);
-    var endFrame = timeToSampleFrame(endTime, sampleRate);
+    var deltaTime = endTime - startTime;
+
+    var frameInfo = getStartEndFrames(startTime, endTime, sampleRate);
+    var startFrame = frameInfo.startFrame;
+    var endFrame = frameInfo.endFrame;
     var length = endFrame - startFrame;
     var array = new Array(length);
 
-    var multiplier = Math.pow(endValue / startValue, 1 / length);
-    
+    var ratio = endValue / startValue;
+
+    // v(t) = v0*(v1/v0)^((t-t0)/(t1-t0))
     for (var k = 0; k < length; ++k) {
-        array[k] = startValue * Math.pow(multiplier, k);
+        var t = Math.fround((startFrame + k) / sampleRate);
+        array[k] = Math.fround(startValue * Math.pow(ratio, (t - startTime) / deltaTime));
     }
 
     return array;
@@ -109,17 +119,52 @@ function discreteTimeConstantForSampleRate(timeConstant, sampleRate)
 // return.)
 function createExponentialApproachArray(startTime, endTime, startValue, targetValue, sampleRate, timeConstant)
 {
-    var startFrame = timeToSampleFrame(startTime, sampleRate);
-    var endFrame = timeToSampleFrame(endTime, sampleRate);
-    var length = endFrame - startFrame;
+    var startFrameFloat = startTime * sampleRate;
+    var frameInfo = getStartEndFrames(startTime, endTime, sampleRate);
+    var startFrame = frameInfo.startFrame;
+    var endFrame = frameInfo.endFrame;
+    var length = Math.floor(endFrame - startFrame);
     var array = new Array(length);
     var c = discreteTimeConstantForSampleRate(timeConstant, sampleRate);
 
-    var value = startValue;
-    
+    var delta = startValue - targetValue;
+
+    // v(t) = v1 + (v0 - v1) * exp(-(t-t0)/tau)
     for (var k = 0; k < length; ++k) {
+        var t = (startFrame + k) / sampleRate;
+        var value = targetValue + delta * Math.exp(-(t - startTime) / timeConstant);
         array[k] = value;
-        value += (targetValue - value) * c;
+    }
+
+    return array;
+}
+
+// Create a sine wave of the specified duration.
+function createReferenceSineArray(startTime, endTime, startValue, endValue, sampleRate)
+{
+    // Ignore |startValue| and |endValue| for the sine wave.
+    var curve = createSineWaveArray(endTime - startTime, freqHz, sineAmplitude, sampleRate);
+    // Sample the curve appropriately.
+    var frameInfo = getStartEndFrames(startTime, endTime, sampleRate);
+    var startFrame = frameInfo.startFrame;
+    var endFrame = frameInfo.endFrame;
+    var length = Math.floor(endFrame - startFrame);
+    var array = new Array(length);
+
+    // v(t) = linearly interpolate between V[k] and V[k + 1] where k = floor(N/duration*(t - t0))
+    var f = length / (endTime - startTime);
+
+    for (var k = 0; k < length; ++k) {
+        var t = (startFrame + k) / sampleRate;
+        var indexFloat = f * (t - startTime);
+        var index = Math.floor(indexFloat);
+        if (index + 1 < length) {
+            var v0 = curve[index];
+            var v1 = curve[index + 1];
+            array[k] = v0 + (v1 - v0) * (indexFloat - index);
+        } else {
+            array[k] = curve[length - 1];
+        }
     }
 
     return array;
@@ -153,6 +198,18 @@ function endValueDelta(timeIntervalIndex)
     }
 }
 
+// Relative error metric
+function relativeErrorMetric(actual, expected)
+{
+    return (actual - expected) / Math.abs(expected);
+}
+
+// Difference metric
+function differenceErrorMetric(actual, expected)
+{
+    return actual - expected;
+}
+
 // Return the difference between the starting value at |timeIntervalIndex| and the starting value at
 // the next time interval.  Since we started at a large initial value, we decrease the value at each
 // time interval.
@@ -162,7 +219,7 @@ function valueUpdate(timeIntervalIndex)
 }
 
 // Compare a section of the rendered data against our expected signal.
-function comparePartialSignals(rendered, expectedFunction, startTime, endTime, valueInfo, sampleRate)
+function comparePartialSignals(rendered, expectedFunction, startTime, endTime, valueInfo, sampleRate, errorMetric)
 {
     var startSample = timeToSampleFrame(startTime, sampleRate);
     var expected = expectedFunction(startTime, endTime, valueInfo.startValue, valueInfo.endValue, sampleRate, timeConstant);
@@ -186,14 +243,14 @@ function comparePartialSignals(rendered, expectedFunction, startTime, endTime, v
             testFailed("Nan or infinity for reference data at " + maxErrorIndex);
             break;
         }
-        var error = Math.abs(rendered[startSample + k] - expected[k]);
+        var error = Math.abs(errorMetric(rendered[startSample + k], expected[k]));
         if (error > maxError) {
             maxError = error;
             maxErrorIndex = k;
         }
     }
 
-    return {maxError : maxError, index : maxErrorIndex};
+    return {maxError : maxError, index : maxErrorIndex, expected: expected};
 }
 
 // Find the discontinuities in the data and compare the locations of the discontinuities with the
@@ -270,21 +327,28 @@ function verifyDiscontinuities(values, times, threshold)
 // values of each interval.
 //
 // breakThreshold - threshold to use for determining discontinuities.
-function compareSignals(testName, maxError, renderedData, expectedFunction, timeValueInfo, breakThreshold)
+function compareSignals(testName, maxError, renderedData, expectedFunction, timeValueInfo, breakThreshold, errorMetric)
 {
     var success = true;
     var failedTestCount = 0;
     var times = timeValueInfo.times;
     var values = timeValueInfo.values;
     var n = values.length;
+    var expectedSignal = [];
 
     success = verifyDiscontinuities(renderedData, times, breakThreshold);
 
     for (var k = 0; k < n; ++k) {
-        var result = comparePartialSignals(renderedData, expectedFunction, times[k], times[k + 1], values[k], sampleRate);
+        var result = comparePartialSignals(renderedData, expectedFunction, times[k], times[k + 1], values[k], sampleRate, errorMetric);
+
+        expectedSignal = expectedSignal.concat(Array.prototype.slice.call(result.expected));
 
         if (result.maxError > maxError) {
-            testFailed("Incorrect value for test " + k + ". Max error = " + result.maxError + " at offset " + (result.index + timeToSampleFrame(times[k], sampleRate)));
+            var offset = result.index + timeToSampleFrame(times[k], sampleRate);
+            testFailed("Incorrect value for test " + k + ". Max error = " + result.maxError
+                       + " at offset " + offset
+                       + ": actual = " + renderedData[offset]
+                       + ", expected = " + expectedSignal[offset] + ".");
             ++failedTestCount;
         }
     }
@@ -293,7 +357,7 @@ function compareSignals(testName, maxError, renderedData, expectedFunction, time
         testFailed(failedTestCount + " tests failed out of " + n);
         success = false;
     } else {
-        testPassed("All " + n + " tests passed within an acceptable tolerance.");
+        testPassed("All " + n + " tests passed within an acceptable relative tolerance of " + maxError + ".");
     }
       
     if (success) {
@@ -315,7 +379,7 @@ function compareSignals(testName, maxError, renderedData, expectedFunction, time
 // jumpThreshold - optional parameter that specifies the threshold to use for detecting
 // discontinuities.  If not specified, defaults to discontinuityThreshold.
 //
-function checkResultFunction(testName, error, referenceFunction, jumpThreshold)
+function checkResultFunction(testName, error, referenceFunction, jumpThreshold, errorMetric)
 {
     return function(event) {
         var buffer = event.renderedBuffer;
@@ -329,7 +393,7 @@ function checkResultFunction(testName, error, referenceFunction, jumpThreshold)
             threshold = jumpThreshold;
         }
         
-        compareSignals(testName, error, renderedData, referenceFunction, timeValueInfo, threshold);
+        compareSignals(testName, error, renderedData, referenceFunction, timeValueInfo, threshold, errorMetric);
 
         finishJSTest();
     }
@@ -395,7 +459,7 @@ function doAutomation(numberOfTests, initialValue, setValueFunction, automationF
 // jumpThreshold - optional parameter that specifies the threshold to use for detecting
 // discontinuities.  If not specified, defaults to discontinuityThreshold.
 //
-function createAudioGraphAndTest(numberOfTests, initialValue, setValueFunction, automationFunction, testName, maxError, referenceFunction, jumpThreshold)
+function createAudioGraphAndTest(numberOfTests, initialValue, setValueFunction, automationFunction, testName, maxError, referenceFunction, jumpThreshold, errorMetric)
 {
     if (window.testRunner) {
         testRunner.dumpAsText();
@@ -406,7 +470,7 @@ function createAudioGraphAndTest(numberOfTests, initialValue, setValueFunction, 
 
     // Create offline audio context.
     context = new OfflineAudioContext(2, renderLength(numberOfTests), sampleRate);
-    var constantBuffer = createConstantBuffer(context, 1, renderLength(numberOfTests));
+    var constantBuffer = createConstantBuffer(context, renderLength(numberOfTests), 1);
 
     // We use an AudioGainNode here simply as a convenient way to test the AudioParam
     // automation, since it's easy to pass a constant value through the node, automate the
@@ -435,6 +499,7 @@ function createAudioGraphAndTest(numberOfTests, initialValue, setValueFunction, 
     context.oncomplete = checkResultFunction(testName,
                                              maxError,
                                              referenceFunction,
-                                             jumpThreshold);
+                                             jumpThreshold,
+                                             errorMetric || relativeErrorMetric);
     context.startRendering();
 }
