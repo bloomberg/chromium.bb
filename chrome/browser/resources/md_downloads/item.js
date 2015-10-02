@@ -8,14 +8,10 @@ cr.define('downloads', function() {
 
     /**
      * @param {!downloads.ThrottledIconLoader} iconLoader
-     * @param {!downloads.ActionService} actionService
      */
-    factoryImpl: function(iconLoader, actionService) {
+    factoryImpl: function(iconLoader) {
       /** @private {!downloads.ThrottledIconLoader} */
       this.iconLoader_ = iconLoader;
-
-      /** @private {!downloads.ActionService} */
-      this.actionService_ = actionService;
     },
 
     properties: {
@@ -268,12 +264,12 @@ cr.define('downloads', function() {
 
     /** @private */
     onCancelClick_: function() {
-      this.actionService_.cancel(this.data_.id);
+      downloads.ActionService.getInstance().cancel(this.data_.id);
     },
 
     /** @private */
     onDiscardDangerous_: function() {
-      this.actionService_.discardDangerous(this.data_.id);
+      downloads.ActionService.getInstance().discardDangerous(this.data_.id);
     },
 
     /**
@@ -282,7 +278,7 @@ cr.define('downloads', function() {
      */
     onDragStart_: function(e) {
       e.preventDefault();
-      this.actionService_.drag(this.data_.id);
+      downloads.ActionService.getInstance().drag(this.data_.id);
     },
 
     /**
@@ -291,37 +287,37 @@ cr.define('downloads', function() {
      */
     onFileLinkClick_: function(e) {
       e.preventDefault();
-      this.actionService_.openFile(this.data_.id);
+      downloads.ActionService.getInstance().openFile(this.data_.id);
     },
 
     /** @private */
     onPauseClick_: function() {
-      this.actionService_.pause(this.data_.id);
+      downloads.ActionService.getInstance().pause(this.data_.id);
     },
 
     /** @private */
     onRemoveClick_: function() {
-      this.actionService_.remove(this.data_.id);
+      downloads.ActionService.getInstance().remove(this.data_.id);
     },
 
     /** @private */
     onResumeClick_: function() {
-      this.actionService_.resume(this.data_.id);
+      downloads.ActionService.getInstance().resume(this.data_.id);
     },
 
     /** @private */
     onRetryClick_: function() {
-      this.actionService_.download(this.$['file-link'].href);
+      downloads.ActionService.getInstance().download(this.data_.url);
     },
 
     /** @private */
     onSaveDangerous_: function() {
-      this.actionService_.saveDangerous(this.data_.id);
+      downloads.ActionService.getInstance().saveDangerous(this.data_.id);
     },
 
     /** @private */
     onShowClick_: function() {
-      this.actionService_.show(this.data_.id);
+      downloads.ActionService.getInstance().show(this.data_.id);
     },
   });
 

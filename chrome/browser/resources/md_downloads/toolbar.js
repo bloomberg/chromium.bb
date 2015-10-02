@@ -6,12 +6,6 @@ cr.define('downloads', function() {
   var Toolbar = Polymer({
     is: 'downloads-toolbar',
 
-    /** @param {!downloads.ActionService} actionService */
-    setActionService: function(actionService) {
-      /** @private {!downloads.ActionService} */
-      this.actionService_ = actionService;
-    },
-
     attached: function() {
       /** @private {!SearchFieldDelegate} */
       this.searchFieldDelegate_ = new ToolbarSearchFieldDelegate(this);
@@ -40,7 +34,7 @@ cr.define('downloads', function() {
     /** @private */
     onClearAllClick_: function() {
       assert(this.canClearAll());
-      this.actionService_.clearAll();
+      downloads.ActionService.getInstance().clearAll();
     },
 
     /** @private */
@@ -50,13 +44,13 @@ cr.define('downloads', function() {
 
     /** @param {string} searchTerm */
     onSearchTermSearch: function(searchTerm) {
-      this.actionService_.search(searchTerm);
+      downloads.ActionService.getInstance().search(searchTerm);
       this.updateClearAll_();
     },
 
     /** @private */
     onOpenDownloadsFolderClick_: function() {
-      this.actionService_.openDownloadsFolder();
+      downloads.ActionService.getInstance().openDownloadsFolder();
     },
 
     /** @private */

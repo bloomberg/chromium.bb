@@ -6,11 +6,6 @@ cr.define('downloads', function() {
   var Manager = Polymer({
     is: 'downloads-manager',
 
-    created: function() {
-      /** @private {!downloads.ActionService} */
-      this.actionService_ = new downloads.ActionService;
-    },
-
     properties: {
       hasDownloads_: {
         type: Boolean,
@@ -49,21 +44,19 @@ cr.define('downloads', function() {
      */
     onCommand_: function(e) {
       if (e.command.id == 'clear-all-command')
-        this.actionService_.clearAll();
+        downloads.ActionService.getInstance().clearAll();
       else if (e.command.id == 'undo-command')
-        this.actionService_.undo();
+        downloads.ActionService.getInstance().undo();
     },
 
     /** @private */
     onLoad_: function() {
-      this.$.toolbar.setActionService(this.actionService_);
-
       cr.ui.decorate('command', cr.ui.Command);
       document.addEventListener('canExecute', this.onCanExecute_.bind(this));
       document.addEventListener('command', this.onCommand_.bind(this));
 
       // Shows all downloads.
-      this.actionService_.search('');
+      downloads.ActionService.getInstance().search('');
     },
 
     /** @private */
@@ -126,8 +119,7 @@ cr.define('downloads', function() {
         var id = data.id;
 
         // Re-use old items when possible (saves work, preserves focus).
-        var item = oldIdMap[id] ||
-            new downloads.Item(this.iconLoader_, this.actionService_);
+        var item = oldIdMap[id] || new downloads.Item(this.iconLoader_);
 
         this.idMap_[id] = item;  // Associated by ID for fast lookup.
         this.items_.push(item);  // Add to sorted list for order.
@@ -167,7 +159,7 @@ cr.define('downloads', function() {
 
       var hasDownloads = this.size_() > 0;
       if (!hasDownloads) {
-        var isSearching = this.actionService_.isSearching();
+        var isSearching = downloads.ActionService.getInstance().isSearching();
         var messageToShow = isSearching ? 'noSearchResults' : 'noDownloads';
         this.$['no-downloads'].querySelector('span').textContent =
             loadTimeData.getString(messageToShow);

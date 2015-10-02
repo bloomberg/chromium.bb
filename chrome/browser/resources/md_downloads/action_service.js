@@ -93,5 +93,7 @@ cr.define('downloads', function() {
     undo: chrome.send.bind(chrome, 'undo'),
   };
 
+  cr.addSingletonGetter(ActionService);
+
   return {ActionService: ActionService};
 });
