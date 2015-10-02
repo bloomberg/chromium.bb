@@ -43,6 +43,7 @@
         'browser/geolocation/omnibox_geolocation_local_state_unittest.mm',
         'browser/install_time_util_unittest.mm',
         'browser/installation_notifier_unittest.mm',
+        'browser/metrics/ios_chrome_metrics_service_accessor_unittest.cc',
         'browser/metrics/previous_session_info_unittest.mm',
         'browser/metrics/ios_chrome_stability_metrics_provider_unittest.cc',
         'browser/metrics/ios_stability_metrics_provider_unittest.mm',
