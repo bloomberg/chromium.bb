@@ -212,3 +212,11 @@ chrome.ConsoleMessageBrowserEvent.prototype.message;
 
 /** @type {string} */
 chrome.ConsoleMessageBrowserEvent.prototype.sourceId;
+
+/**
+ * The last error of the NaCL embed element.
+ * https://developer.chrome.com/native-client/devguide/coding/progress-events
+ *
+ * @type {string}
+ */
+HTMLEmbedElement.prototype.lastError;

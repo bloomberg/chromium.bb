@@ -66,10 +66,8 @@ remoting.ClientPluginImpl = function(container, capabilities) {
    * @private {Array<remoting.ClientSession.Capability>}
    */
   this.hostCapabilities_ = null;
-  /** @private {boolean} */
-  this.helloReceived_ = false;
   /** @private {base.Deferred} */
-  this.onInitializedDeferred_ = null;
+  this.onInitializedDeferred_ = new base.Deferred();
   /** @private {function(string, string):void} */
   this.onPairingComplete_ = function(clientId, sharedSecret) {};
   /** @private {remoting.ClientSession.PerfStats} */
@@ -82,8 +80,9 @@ remoting.ClientPluginImpl = function(container, capabilities) {
     new base.DomEventHook(
       this.plugin_, 'message', this.handleMessage_.bind(this), false),
     new base.DomEventHook(
-      this.plugin_, 'crash', this.onPluginCrashed_.bind(this), false));
-
+      this.plugin_, 'crash', this.onPluginCrashed_.bind(this), false),
+    new base.DomEventHook(
+      this.plugin_, 'error', this.onPluginLoadError_.bind(this), false));
   /** @private */
   this.hostDesktop_ = new remoting.ClientPlugin.HostDesktopImpl(
       this, this.postMessage_.bind(this));
@@ -179,6 +178,13 @@ remoting.ClientPluginImpl.prototype.onPluginCrashed_ = function(event) {
   console.error('Plugin crashed.');
 };
 
+/** @private */
+remoting.ClientPluginImpl.prototype.onPluginLoadError_ = function() {
+  console.error('Failed to load plugin : ' + this.plugin_.lastError);
+  this.onInitializedDeferred_.reject(
+      new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN));
+};
+
 /**
  * @param {remoting.ClientPluginMessage}
  *    message Parsed message from the plugin.
@@ -247,12 +253,7 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
   }
 
   if (message.method == 'hello') {
-    this.helloReceived_ = true;
-    if (this.onInitializedDeferred_ != null) {
-      this.onInitializedDeferred_.resolve(true);
-      this.onInitializedDeferred_ = null;
-    }
-
+    this.onInitializedDeferred_.resolve();
   } else if (message.method == 'onDesktopSize') {
     this.hostDesktop_.onSizeUpdated(message);
   } else if (message.method == 'onDesktopShape') {
@@ -366,28 +367,15 @@ remoting.ClientPluginImpl.prototype.element = function() {
 };
 
 /**
- * @return {Promise}  A promise that resolves to true if the plugin initializes.
+ * @override {remoting.ClientPlugin}
  */
 remoting.ClientPluginImpl.prototype.initialize = function() {
-  // 99.9 percentile of plugin initialize time from our stats is 141 seconds.
-  var PLUGIN_INTIALIZE_TIMEOUT = 150 * 1000;
-
+  // If Nacl is disabled, we won't receive any error events, rejecting the
+  // promise immediately.
   if (!base.isNaclEnabled()) {
     return Promise.reject(new remoting.Error(remoting.Error.Tag.NACL_DISABLED));
   }
-
-  if (this.helloReceived_) {
-    return Promise.resolve(true);
-  }
-
-  if (!this.onInitializedDeferred_) {
-    this.onInitializedDeferred_ = new base.Deferred();
-  }
-
-  return base.Promise.rejectAfterTimeout(
-      this.onInitializedDeferred_.promise(),
-      PLUGIN_INTIALIZE_TIMEOUT,
-      new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN));
+  return this.onInitializedDeferred_.promise();
 };
 
 /**
