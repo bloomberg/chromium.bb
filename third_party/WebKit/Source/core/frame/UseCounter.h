@@ -833,11 +833,11 @@ public:
         BackspaceNavigatedBack = 957,
         BackspaceNavigatedBackAfterFormInteraction = 958,
         CSPSourceWildcardWouldMatchExactHost = 959,
-        CredentialManagerGet = 959,
-        CredentialManagerGetWithUI = 960,
-        CredentialManagerGetWithoutUI = 961,
-        CredentialManagerStore = 962,
-        CredentialManagerRequireUserMediation = 963,
+        CredentialManagerGet = 960,
+        CredentialManagerGetWithUI = 961,
+        CredentialManagerGetWithoutUI = 962,
+        CredentialManagerStore = 963,
+        CredentialManagerRequireUserMediation = 964,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
