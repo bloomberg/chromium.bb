@@ -51,6 +51,8 @@ using base::TimeDelta;
 
 using content::BrowserThread;
 
+namespace {
+
 struct TestURLInfo {
   std::string url;
   std::string title;
@@ -150,6 +152,36 @@ void WaitForURLsDeletedNotification(history::HistoryService* history_service) {
   runner.Run();
 }
 
+// Post history_backend->GetURL() to the history thread and stop the originating
+// thread's message loop when done.
+class GetURLTask : public history::HistoryDBTask {
+ public:
+  GetURLTask(const GURL& url, bool* result_storage)
+      : result_storage_(result_storage),
+        url_(url) {
+  }
+
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
+    *result_storage_ = backend->GetURL(url_, NULL);
+    return true;
+  }
+
+  void DoneRunOnMainThread() override {
+    base::MessageLoop::current()->Quit();
+  }
+
+ private:
+  ~GetURLTask() override {}
+
+  bool* result_storage_;
+  const GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetURLTask);
+};
+
+}  // namespace
+
 class HistoryQuickProviderTest : public testing::Test {
  public:
   HistoryQuickProviderTest()
@@ -208,9 +240,18 @@ class HistoryQuickProviderTest : public testing::Test {
                          base::string16 expected_fill_into_edit,
                          base::string16 autocompletion);
 
+  // TODO(shess): From history_service.h in reference to history_backend:
+  // > This class has most of the implementation and runs on the 'thread_'.
+  // > You MUST communicate with this class ONLY through the thread_'s
+  // > message_loop().
+  // Direct use of this object in tests is almost certainly not thread-safe.
   history::HistoryBackend* history_backend() {
     return history_service_->history_backend_.get();
   }
+
+  // Call history_backend()->GetURL(url, NULL) on the history thread, returning
+  // the result.
+  bool GetURLProxy(const GURL& url);
 
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -392,6 +433,18 @@ void HistoryQuickProviderTest::RunTestWithCursor(
   if (can_inline_top_result)
     EXPECT_EQ(expected_autocompletion, ac_matches_[0].inline_autocompletion);
   EXPECT_EQ(expected_fill_into_edit, ac_matches_[0].fill_into_edit);
+}
+
+bool HistoryQuickProviderTest::GetURLProxy(const GURL& url) {
+  base::CancelableTaskTracker task_tracker;
+  bool result = false;
+  history_service_->ScheduleDBTask(
+      scoped_ptr<history::HistoryDBTask>(new GetURLTask(url, &result)),
+      &task_tracker);
+  // Run the message loop until GetURLTask::DoneRunOnMainThread stops it.  If
+  // the test hangs, DoneRunOnMainThread isn't being invoked correctly.
+  base::MessageLoop::current()->Run();
+  return result;
 }
 
 TEST_F(HistoryQuickProviderTest, SimpleSingleMatch) {
@@ -616,7 +669,7 @@ TEST_F(HistoryQuickProviderTest, DeleteMatch) {
           ASCIIToUTF16("slashdot.org/favorite_page.html"),
                   ASCIIToUTF16(".org/favorite_page.html"));
   EXPECT_EQ(1U, ac_matches_.size());
-  EXPECT_TRUE(history_backend()->GetURL(test_url, NULL));
+  EXPECT_TRUE(GetURLProxy(test_url));
   provider_->DeleteMatch(ac_matches_[0]);
 
   // Check that the underlying URL is deleted from the history DB (this implies
@@ -626,7 +679,7 @@ TEST_F(HistoryQuickProviderTest, DeleteMatch) {
   // To ensure that the deletion has been propagated everywhere before we start
   // verifying post-deletion states, first wait until we see the notification.
   WaitForURLsDeletedNotification(history_service_);
-  EXPECT_FALSE(history_backend()->GetURL(test_url, NULL));
+  EXPECT_FALSE(GetURLProxy(test_url));
 
   // Just to be on the safe side, explicitly verify that we have deleted enough
   // data so that we will not be serving the same result again.
