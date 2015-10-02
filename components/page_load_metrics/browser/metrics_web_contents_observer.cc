@@ -64,9 +64,16 @@ base::Time WallTimeFromTimeTicks(base::TimeTicks time) {
                              base::TimeDelta::FromMinutes(10), 100)
 
 PageLoadTracker::PageLoadTracker(bool in_foreground)
-    : has_commit_(false), started_in_foreground_(in_foreground) {}
+    : has_commit_(false), started_in_foreground_(in_foreground) {
+  RecordEvent(PAGE_LOAD_STARTED);
+}
 
 PageLoadTracker::~PageLoadTracker() {
+  // Even a load that failed a provisional load should log
+  // that it aborted before first layout.
+  if (timing_.first_layout.is_zero())
+    RecordEvent(PAGE_LOAD_ABORTED_BEFORE_FIRST_LAYOUT);
+
   if (has_commit_)
     RecordTimingHistograms();
 }
@@ -132,11 +139,19 @@ void PageLoadTracker::RecordTimingHistograms() {
     if (timing_.first_layout < background_delta) {
       PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstLayout",
                           timing_.first_layout);
+      RecordEvent(PAGE_LOAD_SUCCESSFUL_FIRST_LAYOUT_FOREGROUND);
     } else {
       PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstLayout.BG",
                           timing_.first_layout);
+      RecordEvent(PAGE_LOAD_SUCCESSFUL_FIRST_LAYOUT_BACKGROUND);
     }
   }
+
+}
+
+void PageLoadTracker::RecordEvent(PageLoadEvent event) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "PageLoad.EventCounts", event, PAGE_LOAD_LAST_ENTRY);
 }
 
 MetricsWebContentsObserver::MetricsWebContentsObserver(
@@ -179,12 +194,14 @@ void MetricsWebContentsObserver::DidFinishNavigation(
       provisional_loads_.take_and_erase(navigation_handle));
   DCHECK(finished_nav);
 
-  // TODO(csharrison) handle the two error cases:
-  // 1. Error pages that replace the previous page.
-  // 2. Error pages that leave the user on the previous page.
-  // For now these cases will be ignored.
-  if (!navigation_handle->HasCommitted())
+  // Handle a pre-commit error here. Navigations that result in an error page
+  // will be ignored.
+  if (!navigation_handle->HasCommitted()) {
+    finished_nav->RecordEvent(PAGE_LOAD_FAILED_BEFORE_COMMIT);
+    if (navigation_handle->GetNetErrorCode() == net::ERR_ABORTED)
+      finished_nav->RecordEvent(PAGE_LOAD_ABORTED_BEFORE_COMMIT);
     return;
+  }
 
   // Don't treat a same-page nav as a new page load.
   if (navigation_handle->IsSamePage())

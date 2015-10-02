@@ -29836,6 +29836,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.EventCounts" enum="PageLoadEvent">
+  <owner>csharrison@chromium.org</owner>
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Captures counts of various page load events. These are enumerated in the
+    enum page_load_metrics::PageLoadEvent, and include events like 'page load
+    aborted before first layout'
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Timing.NavigationToDOMContentLoadedEventFired"
     units="milliseconds">
   <owner>bmcquade@chromium.org</owner>
@@ -66735,6 +66745,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Malformed"/>
   <int value="3" label="Not Found"/>
   <int value="4" label="Index"/>
+</enum>
+
+<enum name="PageLoadEvent" type="int">
+  <int value="0" label="Started main frame load"/>
+  <int value="1" label="Failed load before commit"/>
+  <int value="2" label="Aborted load before commit"/>
+  <int value="3" label="Aborted load before first layout"/>
+  <int value="4" label="Successful first layout (foreground)"/>
+  <int value="5" label="Successful first layout (backgrounded)"/>
 </enum>
 
 <enum name="PagespeedHeaderServerType" type="int">

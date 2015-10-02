@@ -35,6 +35,9 @@ const char kBGHistogramNameDomContent[] =
     "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired.BG";
 const char kBGHistogramNameLoad[] =
     "PageLoad.Timing2.NavigationToLoadEventFired.BG";
+
+const char kHistogramNameEvents[] = "PageLoad.EventCounts";
+
 }  //  namespace
 
 class MetricsWebContentsObserverTest
@@ -333,5 +336,124 @@ TEST_F(MetricsWebContentsObserverTest, DontBackgroundQuickerLoad) {
   histogram_tester_.ExpectTotalCount(kHistogramNameFirstLayout, 1);
   histogram_tester_.ExpectBucketCount(kHistogramNameFirstLayout,
                                       first_layout.InMilliseconds(), 1);
+}
+
+TEST_F(MetricsWebContentsObserverTest, FailProvisionalLoad) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl),
+                                      net::ERR_TIMED_OUT);
+  rfh_tester->SimulateNavigationStop();
+
+  histogram_tester_.ExpectTotalCount(kHistogramNameEvents, 3);
+  histogram_tester_.ExpectBucketCount(kHistogramNameEvents,
+                                      PAGE_LOAD_STARTED, 1);
+  histogram_tester_.ExpectBucketCount(kHistogramNameEvents,
+                                      PAGE_LOAD_FAILED_BEFORE_COMMIT, 1);
+  histogram_tester_.ExpectBucketCount(kHistogramNameEvents,
+                                      PAGE_LOAD_ABORTED_BEFORE_FIRST_LAYOUT, 1);
+  histogram_tester_.ExpectBucketCount(kHistogramNameEvents,
+                                      PAGE_LOAD_ABORTED_BEFORE_COMMIT, 0);
+}
+
+TEST_F(MetricsWebContentsObserverTest, AbortProvisionalLoad) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl), net::ERR_ABORTED);
+  rfh_tester->SimulateNavigationStop();
+
+  histogram_tester_.ExpectTotalCount(kHistogramNameEvents, 4);
+  histogram_tester_.ExpectBucketCount(kHistogramNameEvents,
+                                      PAGE_LOAD_STARTED, 1);
+  histogram_tester_.ExpectBucketCount(kHistogramNameEvents,
+                                      PAGE_LOAD_FAILED_BEFORE_COMMIT, 1);
+  histogram_tester_.ExpectBucketCount(kHistogramNameEvents,
+                                      PAGE_LOAD_ABORTED_BEFORE_FIRST_LAYOUT, 1);
+  histogram_tester_.ExpectBucketCount(kHistogramNameEvents,
+                                      PAGE_LOAD_ABORTED_BEFORE_COMMIT, 1);
+}
+
+TEST_F(MetricsWebContentsObserverTest, AbortCommittedLoadBeforeFirstLayout) {
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(10);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      main_rfh());
+  // Navigate again to force histogram logging.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  // 3 events: 2 starts and one abort before first layout.
+  histogram_tester_.ExpectTotalCount(kHistogramNameEvents, 3);
+  histogram_tester_.ExpectBucketCount(kHistogramNameEvents,
+                                      PAGE_LOAD_STARTED, 2);
+  histogram_tester_.ExpectBucketCount(
+      kHistogramNameEvents, PAGE_LOAD_ABORTED_BEFORE_FIRST_LAYOUT, 1);
+}
+
+TEST_F(MetricsWebContentsObserverTest,
+       SuccessfulFirstLayoutInForeGroundEvent) {
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(10);
+  timing.first_layout = base::TimeDelta::FromMilliseconds(100);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      main_rfh());
+  // Navigate again to force histogram logging.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  // 3 events: 2 starts and one successful first layout.
+  histogram_tester_.ExpectTotalCount(kHistogramNameEvents, 3);
+  histogram_tester_.ExpectBucketCount(kHistogramNameEvents,
+                                      PAGE_LOAD_STARTED, 2);
+  histogram_tester_.ExpectBucketCount(
+      kHistogramNameEvents, PAGE_LOAD_SUCCESSFUL_FIRST_LAYOUT_FOREGROUND, 1);
+}
+
+TEST_F(MetricsWebContentsObserverTest,
+       SuccessfulFirstLayoutInBackgroundEvent) {
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(
+      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSecondsF() - 1);
+
+  timing.first_layout = base::TimeDelta::FromSeconds(30);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  // Background the tab.
+  observer_->WasHidden();
+
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      main_rfh());
+
+  observer_->WasShown();
+  // Navigate again to force histogram logging.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  // 3 events: 2 starts and one successful first layout.
+  histogram_tester_.ExpectTotalCount(kHistogramNameEvents, 3);
+  histogram_tester_.ExpectBucketCount(kHistogramNameEvents,
+                                      PAGE_LOAD_STARTED, 2);
+  histogram_tester_.ExpectBucketCount(
+      kHistogramNameEvents, PAGE_LOAD_SUCCESSFUL_FIRST_LAYOUT_BACKGROUND, 1);
 }
 }  // namespace page_load_metrics

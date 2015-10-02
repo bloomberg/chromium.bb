@@ -12,6 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "net/base/net_errors.h"
 
 namespace content {
 class NavigationHandle;
@@ -24,6 +25,37 @@ class Message;
 
 namespace page_load_metrics {
 
+// If you add elements from this enum, make sure you update the enum
+// value in histograms.xml. Only add elements to the end to prevent
+// inconsistencies between versions.
+enum PageLoadEvent {
+  PAGE_LOAD_STARTED,
+
+  // A provisional load is a load before it commits, i.e. before it receives the
+  // first bytes of the response body or knows the encoding of the response
+  // body. A load failed before it was committed for any reason, e.g. from a
+  // user abort or a network timeout.
+  PAGE_LOAD_FAILED_BEFORE_COMMIT,
+
+  // A subset of PAGE_LOAD_FAILED_BEFORE_COMMIT, this counts the
+  // specific failures due to user aborts.
+  PAGE_LOAD_ABORTED_BEFORE_COMMIT,
+
+  // When a load is aborted anytime before the page's first layout, we increase
+  // these counts. This includes all failed provisional loads.
+  PAGE_LOAD_ABORTED_BEFORE_FIRST_LAYOUT,
+
+  // We increase this count if a page load successfully has a layout.
+  // Differentiate between loads that were backgrounded before first layout.
+  // Note that a load that is backgrounded, then foregrounded before first
+  // layout will still end up in the backgrounded bucket.
+  PAGE_LOAD_SUCCESSFUL_FIRST_LAYOUT_FOREGROUND,
+  PAGE_LOAD_SUCCESSFUL_FIRST_LAYOUT_BACKGROUND,
+
+  // Add values before this final count.
+  PAGE_LOAD_LAST_ENTRY
+};
+
 class PageLoadTracker {
  public:
   explicit PageLoadTracker(bool in_foreground);
@@ -33,6 +65,7 @@ class PageLoadTracker {
 
   // Returns true if the timing was successfully updated.
   bool UpdateTiming(const PageLoadTiming& timing);
+  void RecordEvent(PageLoadEvent event);
 
  private:
   void RecordTimingHistograms();
