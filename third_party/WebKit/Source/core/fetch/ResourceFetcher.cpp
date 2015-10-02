@@ -532,6 +532,10 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (!existingResource)
         return Load;
 
+    // Service Worker's CORS fallback message must not be cached.
+    if (existingResource->response().wasFallbackRequiredByServiceWorker())
+        return Reload;
+
     // We already have a preload going for this URL.
     if (fetchRequest.forPreload() && existingResource->isPreloaded())
         return Use;
