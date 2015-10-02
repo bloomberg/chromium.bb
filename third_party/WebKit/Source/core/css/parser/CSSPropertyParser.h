@@ -209,7 +209,6 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseLineHeight();
     bool parseFontSize(bool important);
-    PassRefPtrWillBeRawPtr<CSSValue> consumeFontVariant();
     bool parseFontWeight(bool important);
     PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFaceSrc();
 

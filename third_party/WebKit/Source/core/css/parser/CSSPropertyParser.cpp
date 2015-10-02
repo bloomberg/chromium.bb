@@ -428,27 +428,30 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFontVariantLigatures(CSSParserTok
     return ligatureValues.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeFontVariant()
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeFontVariant(CSSParserTokenRange& range)
 {
-    if (m_ruleType != StyleRule::FontFace) {
-        if (m_range.peek().id() != CSSValueNormal && m_range.peek().id() != CSSValueSmallCaps)
-            return nullptr;
-        return consumeIdent(m_range);
-    }
+    if (range.peek().id() == CSSValueNormal || range.peek().id() == CSSValueSmallCaps)
+        return consumeIdent(range);
+    return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFontVariantList(CSSParserTokenRange& range)
+{
     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
     do {
-        if (m_range.peek().id() == CSSValueAll) {
+        if (range.peek().id() == CSSValueAll) {
             // FIXME: CSSPropertyParser::parseFontVariant() implements
             // the old css3 draft:
             // http://www.w3.org/TR/2002/WD-css3-webfonts-20020802/#font-variant
             // 'all' is only allowed in @font-face and with no other values.
             if (values->length())
                 return nullptr;
-            return consumeIdent(m_range);
+            return consumeIdent(range);
         }
-        if (m_range.peek().id() == CSSValueNormal || m_range.peek().id() == CSSValueSmallCaps)
-            values->append(consumeIdent(m_range));
-    } while (consumeCommaIncludingWhitespace(m_range));
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> fontVariant = consumeFontVariant(range);
+        if (fontVariant)
+            values->append(fontVariant.release());
+    } while (consumeCommaIncludingWhitespace(range));
 
     if (values->length())
         return values.release();
@@ -562,7 +565,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitFontFeatureSettings:
         return consumeFontFeatureSettings(m_range);
     case CSSPropertyFontVariant:
-        return consumeFontVariant();
+        return consumeFontVariant(m_range);
     case CSSPropertyFontFamily:
         return consumeFontFamily(m_range);
     case CSSPropertyFontWeight:
@@ -683,9 +686,13 @@ bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
         break;
     }
     case CSSPropertyFontVariant:
+        parsedValue = consumeFontVariantList(m_range);
+        break;
     case CSSPropertyFontWeight:
+        parsedValue = consumeFontWeight(m_range);
+        break;
     case CSSPropertyWebkitFontFeatureSettings:
-        parsedValue = parseSingleValue(propId);
+        parsedValue = consumeFontFeatureSettings(m_range);
         break;
     default:
         break;
