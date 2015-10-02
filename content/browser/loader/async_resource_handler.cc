@@ -318,9 +318,6 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
     int size;
     if (!buffer_->ShareToProcess(filter->PeerHandle(), &handle, &size))
       return false;
-    // TODO(erikchen): Temporary debugging to help track down crash.
-    // http://crbug.com/527588.
-    CHECK_LE(size, 512 * 1024);
     filter->Send(new ResourceMsg_SetDataBuffer(
         GetRequestID(), handle, size, filter->peer_pid()));
     sent_first_data_msg_ = true;
