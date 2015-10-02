@@ -56,13 +56,13 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterStripInfo', function() {
     ['Proxy-Authenticate: Digest realm="asdfasdf", nonce=5, qop="auth"', null],
     ['Proxy-Authenticate: Basic realm=foo,foo=bar , Digest ', null],
 
+    ['cookie: [4 bytes were stripped]', null],
     ['cookie: Stuff [4 bytes were stripped]',
      'cookie: [29 bytes were stripped]'],
     ['cookie: [4 bytes were stripped] Stuff',
      'cookie: [29 bytes were stripped]'],
     ['set-cookie: [4 bytes were stripped]', null],
     ['Proxy-Authenticate: NTLM [23 bytes were stripped]', null],
-    ['cookie: [value was stripped]', null],
   ];
 
   for (var i = 0; i < expectations.length; ++i) {

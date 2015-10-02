@@ -536,9 +536,7 @@ function stripCookieOrLoginInfo(line) {
     var suffix = line.slice(prefix.length);
     // If private information has already been removed, keep the line as-is.
     // This is often the case when viewing a loaded log.
-    // TODO(mmenke):  Remove '[value was stripped]' check once M24 hits stable.
-    if (suffix.search(/^\[[0-9]+ bytes were stripped\]$/) == -1 &&
-        suffix != '[value was stripped]') {
+    if (suffix.search(/^\[[0-9]+ bytes were stripped\]$/) == -1) {
       return prefix + '[' + suffix.length + ' bytes were stripped]';
     }
   }
