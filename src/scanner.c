@@ -1531,6 +1531,7 @@ int main(int argc, char *argv[])
 		if (freopen(argv[2], "w", stdout) == NULL) {
 			fprintf(stderr, "Could not open output file: %s\n",
 				strerror(errno));
+			fclose(input);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -1550,6 +1551,7 @@ int main(int argc, char *argv[])
 	XML_SetUserData(ctx.parser, &ctx);
 	if (ctx.parser == NULL) {
 		fprintf(stderr, "failed to create parser\n");
+		fclose(input);
 		exit(EXIT_FAILURE);
 	}
 
@@ -1561,6 +1563,7 @@ int main(int argc, char *argv[])
 		len = fread(buf, 1, XML_BUFFER_SIZE, input);
 		if (len < 0) {
 			fprintf(stderr, "fread: %m\n");
+			fclose(input);
 			exit(EXIT_FAILURE);
 		}
 		if (XML_ParseBuffer(ctx.parser, len, len == 0) == 0) {
@@ -1569,6 +1572,7 @@ int main(int argc, char *argv[])
 				XML_GetCurrentLineNumber(ctx.parser),
 				XML_GetCurrentColumnNumber(ctx.parser),
 				XML_ErrorString(XML_GetErrorCode(ctx.parser)));
+			fclose(input);
 			exit(EXIT_FAILURE);
 		}
 	} while (len > 0);
@@ -1588,6 +1592,7 @@ int main(int argc, char *argv[])
 	}
 
 	free_protocol(&protocol);
+	fclose(input);
 
 	return 0;
 }
