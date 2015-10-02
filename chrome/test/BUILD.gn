@@ -1849,6 +1849,18 @@ if (!is_android) {
               ".",
               "//chrome")
     }
+    if (is_android) {
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_android_sources,
+              ".",
+              "//chrome")
+    }
+    if (!is_android && !is_ios) {
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_non_mobile_sources,
+              ".",
+              "//chrome")
+    }
     if (!is_mac && !is_ios) {
       deps += [
         "//chrome/tools/convert_dict:lib",

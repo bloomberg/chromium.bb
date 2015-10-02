@@ -6,10 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/browser/permissions/permission_request_id.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -19,6 +16,12 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/infobars/infobar_service.h"
+#else
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#endif
 
 namespace {
 
@@ -31,10 +34,6 @@ class TestPermissionContext : public MidiPermissionContext {
      tab_context_updated_(false) {}
 
   ~TestPermissionContext() override {}
-
-  PermissionQueueController* GetInfoBarController() {
-    return GetQueueController();
-  }
 
   bool permission_granted() {
     return permission_granted_;
@@ -76,8 +75,11 @@ class MidiPermissionContextTests : public ChromeRenderViewHostTestHarness {
   // ChromeRenderViewHostTestHarness:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+#if defined(OS_ANDROID)
     InfoBarService::CreateForWebContents(web_contents());
+#else
     PermissionBubbleManager::CreateForWebContents(web_contents());
+#endif
   }
 
   DISALLOW_COPY_AND_ASSIGN(MidiPermissionContextTests);

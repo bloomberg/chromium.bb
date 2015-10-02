@@ -163,7 +163,6 @@
       'browser/password_manager/simple_password_store_mac_unittest.cc',
       'browser/permissions/permission_context_base_unittest.cc',
       'browser/permissions/permission_manager_unittest.cc',
-      'browser/permissions/permission_queue_controller_unittest.cc',
       'browser/predictors/autocomplete_action_predictor_table_unittest.cc',
       'browser/predictors/autocomplete_action_predictor_unittest.cc',
       'browser/predictors/resource_prefetch_common_unittest.cc',
@@ -480,8 +479,6 @@
       'browser/ui/sync/sync_promo_ui_unittest.cc',
       'browser/ui/tests/ui_gfx_image_unittest.cc',
       'browser/ui/tests/ui_gfx_image_unittest.mm',
-      'browser/ui/website_settings/mock_permission_bubble_view.cc',
-      'browser/ui/website_settings/mock_permission_bubble_view.h',
       'browser/ui/website_settings/website_settings_unittest.cc',
       'browser/ui/webui/fileicon_source_unittest.cc',
       'browser/ui/webui/history_ui_unittest.cc',
@@ -553,6 +550,13 @@
     ],
     'chrome_unit_tests_mac_android_sources': [
       'browser/password_manager/save_password_infobar_delegate_unittest.cc',
+    ],
+    'chrome_unit_tests_android_sources': [
+      'browser/permissions/permission_queue_controller_unittest.cc',
+    ],
+    'chrome_unit_tests_non_mobile_sources': [
+      'browser/ui/website_settings/mock_permission_bubble_view.cc',
+      'browser/ui/website_settings/mock_permission_bubble_view.h',
     ],
     'chrome_unit_tests_spellchecker_sources': [
       'browser/spellchecker/feedback_sender_unittest.cc',
@@ -1894,6 +1898,12 @@
             ['include', '^test/base/testing_browser_process'],
           ],
         }],
+        ['OS=="ios" or OS=="android"', {
+          'sources!': [
+            'browser/ui/website_settings/mock_permission_bubble_request.cc',
+            'browser/ui/website_settings/mock_permission_bubble_request.h',
+          ]
+        }],
         ['OS=="android"', {
           'sources!': [
             'browser/password_manager/password_manager_test_base.cc',
@@ -2280,6 +2290,9 @@
           'includes': ['chrome_ios_bundle_resources.gypi'],
           'xcode_settings': {'OTHER_LDFLAGS': ['-ObjC']},
         }],
+        ['OS!="android" and OS!="ios"', {
+          'sources': [ '<@(chrome_unit_tests_non_mobile_sources)' ],
+        }],
         ['chromeos==1', {
           'sources!': [
             'browser/metrics/signin_status_metrics_provider_unittest.cc',
@@ -2555,6 +2568,9 @@
         }],
         ['OS=="mac" or OS=="android"', {
           'sources': [ '<@(chrome_unit_tests_mac_android_sources)' ],
+        }],
+        ['OS=="android"', {
+          'sources': [ '<@(chrome_unit_tests_android_sources)' ],
         }],
         ['OS!="mac" and OS!="ios"', {
           'dependencies': [

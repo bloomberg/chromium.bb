@@ -17,7 +17,7 @@ class InfoBarService;
 class Profile;
 
 // This class controls an infobar queue per profile, and it's used by
-// GeolocationPermissionContext, and so on.
+// GeolocationPermissionContext, and so on. It is only used on Android.
 // An alternate approach would be to have this queue per tab, and use
 // notifications to broadcast when permission is set / listen to notification to
 // cancel pending requests. This may be specially useful if there are other

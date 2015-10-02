@@ -301,9 +301,6 @@ const char kDisablePasswordManagerReauthentication[] =
 // Disable the new material UI - requires out of process PDF plugin.
 const char kDisablePdfMaterialUI[]          = "disable-pdf-material-ui";
 
-// Don't use bubbles for content permissions requests instead of infobars.
-const char kDisablePermissionsBubbles[]      = "disable-permissions-bubbles";
-
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
@@ -1268,9 +1265,6 @@ const char kMetricsClientID[]               = "metrics-client-id";
 // chrome/browser/mac/relauncher.h.
 const char kRelauncherProcess[]             = "relauncher";
 #endif  // defined(OS_MACOSX)
-
-// Use bubbles for content permissions requests instead of infobars.
-const char kEnablePermissionsBubbles[]      = "enable-permissions-bubbles";
 
 #if defined(OS_WIN)
 // Fallback to XPS. By default connector uses CDD.

@@ -348,13 +348,10 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
             notification.origin_url().spec());
 }
 
+// TODO(felt): This DCHECKs when bubbles are enabled, when the file_url is
+// persisted. crbug.com/502057
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
-                       CheckFilePermissionNotGranted) {
-  // TODO(felt): This DCHECKs when bubbles are enabled, when the file_url is
-  // persisted. crbug.com/502057
-  if (PermissionBubbleManager::Enabled())
-    return;
-
+                       DISABLED_CheckFilePermissionNotGranted) {
   // This case should succeed because a normal page URL is used.
   std::string script_result;
 

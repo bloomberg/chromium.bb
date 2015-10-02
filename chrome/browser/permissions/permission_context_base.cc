@@ -7,12 +7,9 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_bubble_request_impl.h"
 #include "chrome/browser/permissions/permission_context_uma_util.h"
-#include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
@@ -20,14 +17,23 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/permissions/permission_queue_controller.h"
+#else
+#include "chrome/browser/permissions/permission_bubble_request_impl.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#endif
+
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
     const ContentSettingsType permission_type)
     : profile_(profile),
       permission_type_(permission_type),
       weak_factory_(this) {
+#if defined(OS_ANDROID)
   permission_queue_controller_.reset(
       new PermissionQueueController(profile_, permission_type_));
+#endif
 }
 
 PermissionContextBase::~PermissionContextBase() {
@@ -79,18 +85,16 @@ void PermissionContextBase::CancelPermissionRequest(
     const PermissionRequestID& id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (PermissionBubbleManager::Enabled()) {
-    PermissionBubbleRequest* cancelling =
-        pending_bubbles_.get(id.ToString());
-    if (cancelling != NULL && web_contents != NULL &&
-        PermissionBubbleManager::FromWebContents(web_contents) != NULL) {
-      PermissionBubbleManager::FromWebContents(web_contents)->
-          CancelRequest(cancelling);
-    }
-    return;
-  }
-
+#if defined(OS_ANDROID)
   GetQueueController()->CancelInfoBarRequest(id);
+#else
+  PermissionBubbleRequest* cancelling = pending_bubbles_.get(id.ToString());
+  if (cancelling != NULL && web_contents != NULL &&
+      PermissionBubbleManager::FromWebContents(web_contents) != NULL) {
+    PermissionBubbleManager::FromWebContents(web_contents)
+        ->CancelRequest(cancelling);
+  }
+#endif
 }
 
 void PermissionContextBase::DecidePermission(
@@ -140,30 +144,26 @@ void PermissionContextBase::DecidePermission(
   PermissionContextUmaUtil::PermissionRequested(
       permission_type_, requesting_origin, embedding_origin, profile_);
 
-  if (PermissionBubbleManager::Enabled()) {
-    PermissionBubbleManager* bubble_manager =
-        PermissionBubbleManager::FromWebContents(web_contents);
-    DCHECK(bubble_manager);
-    scoped_ptr<PermissionBubbleRequest> request_ptr(
-        new PermissionBubbleRequestImpl(
-            requesting_origin, user_gesture, permission_type_,
-            profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
-            base::Bind(&PermissionContextBase::PermissionDecided,
-                       weak_factory_.GetWeakPtr(), id, requesting_origin,
-                       embedding_origin, callback),
-            base::Bind(&PermissionContextBase::CleanUpBubble,
-                       weak_factory_.GetWeakPtr(), id)));
-    PermissionBubbleRequest* request = request_ptr.get();
+#if !defined(OS_ANDROID)
+  PermissionBubbleManager* bubble_manager =
+      PermissionBubbleManager::FromWebContents(web_contents);
+  DCHECK(bubble_manager);
+  scoped_ptr<PermissionBubbleRequest> request_ptr(
+      new PermissionBubbleRequestImpl(
+          requesting_origin, user_gesture, permission_type_,
+          profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+          base::Bind(&PermissionContextBase::PermissionDecided,
+                     weak_factory_.GetWeakPtr(), id, requesting_origin,
+                     embedding_origin, callback),
+          base::Bind(&PermissionContextBase::CleanUpBubble,
+                     weak_factory_.GetWeakPtr(), id)));
+  PermissionBubbleRequest* request = request_ptr.get();
 
-    bool inserted = pending_bubbles_.add(
-        id.ToString(), request_ptr.Pass()).second;
-    DCHECK(inserted) << "Duplicate id " << id.ToString();
-    bubble_manager->AddRequest(request);
-    return;
-  }
-
-  // TODO(gbillock): Delete this and the infobar delegate when
-  // we're using only bubbles. crbug.com/337458
+  bool inserted =
+      pending_bubbles_.add(id.ToString(), request_ptr.Pass()).second;
+  DCHECK(inserted) << "Duplicate id " << id.ToString();
+  bubble_manager->AddRequest(request);
+#else
   GetQueueController()->CreateInfoBarRequest(
       id, requesting_origin, embedding_origin,
       base::Bind(&PermissionContextBase::PermissionDecided,
@@ -172,6 +172,7 @@ void PermissionContextBase::DecidePermission(
                  // the queue controller takes care of persisting the
                  // permission
                  false));
+#endif
 }
 
 void PermissionContextBase::PermissionDecided(
@@ -181,32 +182,34 @@ void PermissionContextBase::PermissionDecided(
     const BrowserPermissionCallback& callback,
     bool persist,
     ContentSetting content_setting) {
-  // Infobar persistance and its related UMA is tracked on the infobar
+#if !defined(OS_ANDROID)
+  // Infobar persistence and its related UMA is tracked on the infobar
   // controller directly.
-  if (PermissionBubbleManager::Enabled()) {
-    if (persist) {
-      DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
-             content_setting == CONTENT_SETTING_BLOCK);
-      if (content_setting == CONTENT_SETTING_ALLOW)
-        PermissionContextUmaUtil::PermissionGranted(permission_type_,
-                                                    requesting_origin);
-      else
-        PermissionContextUmaUtil::PermissionDenied(permission_type_,
-                                                   requesting_origin);
-    } else {
-      DCHECK_EQ(content_setting, CONTENT_SETTING_DEFAULT);
-      PermissionContextUmaUtil::PermissionDismissed(permission_type_,
-                                                    requesting_origin);
-    }
+  if (persist) {
+    DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
+           content_setting == CONTENT_SETTING_BLOCK);
+    if (content_setting == CONTENT_SETTING_ALLOW)
+      PermissionContextUmaUtil::PermissionGranted(permission_type_,
+                                                  requesting_origin);
+    else
+      PermissionContextUmaUtil::PermissionDenied(permission_type_,
+                                                 requesting_origin);
+  } else {
+    DCHECK_EQ(content_setting, CONTENT_SETTING_DEFAULT);
+    PermissionContextUmaUtil::PermissionDismissed(permission_type_,
+                                                  requesting_origin);
   }
+#endif
 
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                       persist, content_setting);
 }
 
+#if defined(OS_ANDROID)
 PermissionQueueController* PermissionContextBase::GetQueueController() {
   return permission_queue_controller_.get();
 }
+#endif
 
 Profile* PermissionContextBase::profile() const {
   return profile_;

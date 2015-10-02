@@ -512,9 +512,14 @@ source_set("test_support") {
     "test/test_confirm_bubble_model.h",
     "toolbar/test_toolbar_action_view_controller.cc",
     "toolbar/test_toolbar_action_view_controller.h",
-    "website_settings/mock_permission_bubble_request.cc",
-    "website_settings/mock_permission_bubble_request.h",
   ]
+
+  if (!is_ios && !is_android) {
+    sources += [
+      "website_settings/mock_permission_bubble_request.cc",
+      "website_settings/mock_permission_bubble_request.h",
+    ]
+  }
 
   if (toolkit_views) {
     sources += [ "views/find_bar_host_unittest_util_views.cc" ]

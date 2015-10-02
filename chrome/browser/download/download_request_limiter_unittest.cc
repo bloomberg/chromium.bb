@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "chrome/browser/download/download_permission_request.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -22,12 +20,16 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#else
+#include "chrome/browser/download/download_permission_request.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #endif
 
 using content::WebContents;
 
 class DownloadRequestLimiterTest;
 
+#if !defined(OS_ANDROID)
 class FakePermissionBubbleView : public PermissionBubbleView {
  public:
   class Factory : public base::RefCounted<FakePermissionBubbleView::Factory> {
@@ -73,6 +75,7 @@ class FakePermissionBubbleView : public PermissionBubbleView {
   DownloadRequestLimiterTest* test_;
   Delegate* delegate_;
 };
+#endif
 
 class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -86,15 +89,15 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     profile_.reset(new TestingProfile());
 
-    if (PermissionBubbleManager::Enabled()) {
-      PermissionBubbleManager::CreateForWebContents(web_contents());
-      scoped_refptr<FakePermissionBubbleView::Factory> factory =
-          new FakePermissionBubbleView::Factory(this);
-      PermissionBubbleManager::FromWebContents(web_contents())->view_factory_ =
-          base::Bind(&FakePermissionBubbleView::Factory::Create, factory);
-      PermissionBubbleManager::FromWebContents(web_contents())
-          ->DisplayPendingRequests();
-    }
+#if !defined(OS_ANDROID)
+    PermissionBubbleManager::CreateForWebContents(web_contents());
+    scoped_refptr<FakePermissionBubbleView::Factory> factory =
+        new FakePermissionBubbleView::Factory(this);
+    PermissionBubbleManager::FromWebContents(web_contents())->view_factory_ =
+        base::Bind(&FakePermissionBubbleView::Factory::Create, factory);
+    PermissionBubbleManager::FromWebContents(web_contents())
+        ->DisplayPendingRequests();
+#endif
 
     testing_action_ = ACCEPT;
     ask_allow_count_ = cancel_count_ = continue_count_ = 0;
@@ -236,6 +239,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<TestingProfile> profile_;
 };
 
+#if !defined(OS_ANDROID)
 void FakePermissionBubbleView::Show(
     const std::vector<PermissionBubbleRequest*>& requests,
     const std::vector<bool>& accept_state) {
@@ -251,6 +255,7 @@ void FakePermissionBubbleView::Show(
     delegate_->Closing();
   }
 }
+#endif
 
 TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_Allow) {
   BubbleManagerDocumentLoadCompleted();

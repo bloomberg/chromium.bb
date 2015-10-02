@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -26,11 +25,6 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
     MockPermissionBubbleView::SetFactory(manager, true);
     manager->DisplayPendingRequests();
     InProcessBrowserTest::SetUpOnMainThread();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnablePermissionsBubbles);
-    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   PermissionBubbleManager* GetPermissionBubbleManager() {

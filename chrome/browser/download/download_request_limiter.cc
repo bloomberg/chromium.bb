@@ -8,11 +8,9 @@
 #include "base/stl_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/download/download_permission_request.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,6 +26,9 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/download/download_request_infobar_delegate.h"
+#else
+#include "chrome/browser/download/download_permission_request.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #endif
 
 using content::BrowserThread;
@@ -98,11 +99,12 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
     return;
   }
 
-  bool promptable = (InfoBarService::FromWebContents(web_contents()) != NULL);
-  if (PermissionBubbleManager::Enabled()) {
-    promptable =
-        (PermissionBubbleManager::FromWebContents(web_contents()) != NULL);
-  }
+#if defined(OS_ANDROID)
+  bool promptable = InfoBarService::FromWebContents(web_contents()) != nullptr;
+#else
+  bool promptable =
+      PermissionBubbleManager::FromWebContents(web_contents()) != nullptr;
+#endif
 
   // See PromptUserForDownload(): if there's no InfoBarService, then
   // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.

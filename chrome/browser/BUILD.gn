@@ -602,7 +602,12 @@ source_set("browser") {
     sources += rebase_path(gypi_values.chrome_browser_notifications_sources,
                            ".",
                            "//chrome")
-    if (!is_android) {
+    if (is_android) {
+      sources +=
+          rebase_path(gypi_values.chrome_browser_notifications_android_sources,
+                      ".",
+                      "//chrome")
+    } else {
       sources += rebase_path(
               gypi_values.chrome_browser_notifications_non_android_sources,
               ".",

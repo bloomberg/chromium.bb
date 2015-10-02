@@ -7,9 +7,8 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/media/media_permission.h"
 #include "chrome/browser/media/media_stream_device_permissions.h"
-#include "chrome/browser/media/media_stream_infobar_delegate.h"
+#include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,8 +21,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
+#else
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#endif  // OS_ANDROID
 
+#if defined(OS_ANDROID)
 namespace {
 // Callback for the permission update infobar when the site and Chrome
 // permissions are mismatched on Android.
@@ -154,16 +158,14 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
     return;
   }
 
-  if (PermissionBubbleManager::Enabled()) {
-    PermissionBubbleManager* bubble_manager =
-        PermissionBubbleManager::FromWebContents(web_contents);
-    if (bubble_manager)
-      bubble_manager->AddRequest(controller.release());
-  } else {
-    // TODO(gbillock): delete this block and the MediaStreamInfoBarDelegate
-    // when we've transitioned to bubbles. (https://crbug/337458)
-    MediaStreamInfoBarDelegate::Create(web_contents, controller.Pass());
-  }
+#if defined(OS_ANDROID)
+  MediaStreamInfoBarDelegate::Create(web_contents, controller.Pass());
+#else
+  PermissionBubbleManager* bubble_manager =
+      PermissionBubbleManager::FromWebContents(web_contents);
+  if (bubble_manager)
+    bubble_manager->AddRequest(controller.release());
+#endif
 }
 
 void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(

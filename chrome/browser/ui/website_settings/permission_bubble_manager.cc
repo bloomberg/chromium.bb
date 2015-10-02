@@ -65,17 +65,6 @@ void PermissionBubbleManager::Observer::OnBubbleAdded() {
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionBubbleManager);
 
-// static
-bool PermissionBubbleManager::Enabled() {
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  return false;
-#endif
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisablePermissionsBubbles))
-    return false;
-  return true;
-}
-
 PermissionBubbleManager::PermissionBubbleManager(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

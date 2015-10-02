@@ -2808,10 +2808,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsBubble) {
     return;
 #endif
 
-  // Enable permision bubbles.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnablePermissionsBubbles);
-
   // Create a downloads observer.
   scoped_ptr<content::DownloadTestObserver> downloads_observer(
         CreateWaiter(browser(), 2));

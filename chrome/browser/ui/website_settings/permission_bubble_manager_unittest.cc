@@ -121,13 +121,6 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
   MockView* view_() { return static_cast<MockView*>(manager_->view_.get()); }
 };
 
-TEST_F(PermissionBubbleManagerTest, TestFlag) {
-  EXPECT_TRUE(PermissionBubbleManager::Enabled());
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePermissionsBubbles);
-  EXPECT_FALSE(PermissionBubbleManager::Enabled());
-}
-
 TEST_F(PermissionBubbleManagerTest, SingleRequest) {
   manager_->AddRequest(&request1_);
   manager_->DisplayPendingRequests();

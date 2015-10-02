@@ -43,7 +43,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_permission_request.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
@@ -1821,13 +1820,10 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
 
   PermissionBubbleManager* bubble_manager =
       PermissionBubbleManager::FromWebContents(web_contents);
-  if (PermissionBubbleManager::Enabled() && bubble_manager) {
+  if (bubble_manager) {
     bubble_manager->AddRequest(
         new RegisterProtocolHandlerPermissionRequest(registry, handler,
                                                      url, user_gesture));
-  } else {
-    RegisterProtocolHandlerInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(web_contents), registry, handler);
   }
 }
 

@@ -15,7 +15,9 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
 class PermissionQueueController;
+#endif
 class PermissionRequestID;
 class Profile;
 
@@ -111,8 +113,10 @@ class PermissionContextBase : public KeyedService {
                                 const GURL& requesting_origin,
                                 bool allowed) {}
 
+#if defined(OS_ANDROID)
   // Return an instance of the infobar queue controller, creating it if needed.
   PermissionQueueController* GetQueueController();
+#endif
 
   // Returns the profile associated with this permission context.
   Profile* profile() const;
@@ -133,7 +137,9 @@ class PermissionContextBase : public KeyedService {
 
   Profile* profile_;
   const ContentSettingsType permission_type_;
+#if defined(OS_ANDROID)
   scoped_ptr<PermissionQueueController> permission_queue_controller_;
+#endif
   base::ScopedPtrHashMap<std::string, scoped_ptr<PermissionBubbleRequest>>
       pending_bubbles_;
 

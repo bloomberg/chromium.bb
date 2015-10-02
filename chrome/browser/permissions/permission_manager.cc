@@ -11,12 +11,15 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#endif
 
 using content::PermissionStatus;
 using content::PermissionType;
@@ -299,11 +302,12 @@ void PermissionManager::UnsubscribePermissionStatusChange(int subscription_id) {
 
 bool PermissionManager::IsPermissionBubbleManagerMissing(
     content::WebContents* web_contents) {
+#if defined(OS_ANDROID)
   // Can't be missing if it isn't needed to begin with.
-  if (!PermissionBubbleManager::Enabled())
-    return false;
-
+  return false;
+#else
   return PermissionBubbleManager::FromWebContents(web_contents) == nullptr;
+#endif
 }
 
 void PermissionManager::OnContentSettingChanged(

@@ -45,10 +45,6 @@ class PermissionBubbleManager
     DISMISS
   };
 
-  // Return the enabled state of permissions bubbles.
-  // Controlled by a flag and FieldTrial.
-  static bool Enabled();
-
   ~PermissionBubbleManager() override;
 
   // Adds a new request to the permission bubble. Ownership of the request

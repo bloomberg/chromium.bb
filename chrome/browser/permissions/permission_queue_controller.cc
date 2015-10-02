@@ -10,6 +10,7 @@
 #include "chrome/browser/geolocation/geolocation_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/midi_permission_infobar_delegate.h"
+#include "chrome/browser/media/protected_media_identifier_infobar_delegate.h"
 #include "chrome/browser/notifications/notification_permission_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_context_uma_util.h"
 #include "chrome/browser/permissions/permission_request_id.h"
@@ -26,10 +27,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-#include "chrome/browser/media/protected_media_identifier_infobar_delegate.h"
-#endif
 
 namespace {
 
@@ -143,13 +140,11 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
           GetInfoBarService(id_), requesting_frame_,
           display_languages, type_, callback);
       break;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       infobar_ = ProtectedMediaIdentifierInfoBarDelegate::Create(
           GetInfoBarService(id_), requesting_frame_,
           display_languages, callback);
       break;
-#endif
     case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
       infobar_ = DurableStoragePermissionInfoBarDelegate::Create(
           GetInfoBarService(id_), requesting_frame_,
