@@ -109,8 +109,12 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
   void NavigateToPageWithLinks(Shell* shell) {
     EXPECT_TRUE(NavigateToURL(
         shell, embedded_test_server()->GetURL("/click-noreferrer-links.html")));
-    std::string script = "setOriginForLinks('" +
-                         embedded_test_server()->base_url().spec() + "');";
+
+    // Rewrite selected links on the page to be actual cross-site (bar.com)
+    // URLs. This does not use the /cross-site/ redirector, since that creates
+    // links that initially look same-site.
+    std::string script = "setOriginForLinks('http://bar.com:" +
+                         embedded_test_server()->base_url().port() + "/');";
     EXPECT_TRUE(ExecuteScript(shell->web_contents(), script));
   }
 
