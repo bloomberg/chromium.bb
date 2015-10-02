@@ -128,10 +128,10 @@ void ExtensionInstalledBubbleBridge::Show() {
       // Start showing window only after extension has fully loaded.
       installedBubbleBridge_.reset(new ExtensionInstalledBubbleBridge(self));
       installedBubble_.reset(new ExtensionInstalledBubble(
-          installedBubbleBridge_.get(),
           extension,
           browser,
           icon));
+      installedBubble_->SetBubbleUi(installedBubbleBridge_.get());
       installedBubble_->IgnoreBrowserClosing();
     }
   }

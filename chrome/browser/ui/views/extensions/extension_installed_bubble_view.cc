@@ -456,12 +456,16 @@ void InstalledBubbleContent::OnPaint(gfx::Canvas* canvas) {
 void ExtensionInstalledBubbleView::Show(const Extension* extension,
                                         Browser* browser,
                                         const SkBitmap& icon) {
-  new ExtensionInstalledBubbleView(extension, browser, icon);
+  // ExtensionInstalledBubbleView is deleted in WidgetDelegate::DeleteDelegate.
+  new ExtensionInstalledBubbleView(
+      make_scoped_ptr(new ExtensionInstalledBubble(extension, browser, icon)));
 }
 
 ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
-    const Extension* extension, Browser *browser, const SkBitmap& icon)
-    : bubble_(this, extension, browser, icon) {
+    scoped_ptr<ExtensionInstalledBubble> bubble)
+    : bubble_(bubble.Pass()) {
+  DCHECK(bubble_);
+  bubble_->SetBubbleUi(this);
 }
 
 ExtensionInstalledBubbleView::~ExtensionInstalledBubbleView() {}
@@ -482,17 +486,17 @@ bool ExtensionInstalledBubble::ExtensionInstalledBubbleUi::ShouldShow(
 
 void ExtensionInstalledBubbleView::Show() {
   BrowserView* browser_view =
-      BrowserView::GetBrowserViewForBrowser(bubble_.browser());
+      BrowserView::GetBrowserViewForBrowser(bubble_->browser());
 
   views::View* reference_view = NULL;
-  if (bubble_.type() == bubble_.BROWSER_ACTION ||
+  if (bubble_->type() == bubble_->BROWSER_ACTION ||
       extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
     BrowserActionsContainer* container =
         browser_view->GetToolbarView()->browser_actions();
     // Hitting this DCHECK means |ShouldShow| failed.
     DCHECK(!container->animating());
 
-    reference_view = container->GetViewForId(bubble_.extension()->id());
+    reference_view = container->GetViewForId(bubble_->extension()->id());
     // If the view is not visible then it is in the chevron, so point the
     // install bubble to the chevron instead. If this is an incognito window,
     // both could be invisible.
@@ -501,16 +505,16 @@ void ExtensionInstalledBubbleView::Show() {
       if (!reference_view || !reference_view->visible())
         reference_view = NULL;  // fall back to app menu below.
     }
-  } else if (bubble_.type() == bubble_.PAGE_ACTION) {
+  } else if (bubble_->type() == bubble_->PAGE_ACTION) {
     LocationBarView* location_bar_view = browser_view->GetLocationBarView();
     ExtensionAction* page_action =
-        extensions::ExtensionActionManager::Get(bubble_.browser()->profile())->
-            GetPageAction(*bubble_.extension());
+        extensions::ExtensionActionManager::Get(bubble_->browser()->profile())
+            ->GetPageAction(*bubble_->extension());
     location_bar_view->SetPreviewEnabledPageAction(page_action,
                                                    true);  // preview_enabled
     reference_view = location_bar_view->GetPageActionView(page_action);
     DCHECK(reference_view);
-  } else if (bubble_.type() == bubble_.OMNIBOX_KEYWORD) {
+  } else if (bubble_->type() == bubble_->OMNIBOX_KEYWORD) {
     LocationBarView* location_bar_view = browser_view->GetLocationBarView();
     reference_view = location_bar_view;
     DCHECK(reference_view);
@@ -521,26 +525,26 @@ void ExtensionInstalledBubbleView::Show() {
     reference_view = browser_view->GetToolbarView()->app_menu();
   SetAnchorView(reference_view);
 
-  set_arrow(bubble_.type() == bubble_.OMNIBOX_KEYWORD ?
-            views::BubbleBorder::TOP_LEFT :
-            views::BubbleBorder::TOP_RIGHT);
+  set_arrow(bubble_->type() == bubble_->OMNIBOX_KEYWORD
+                ? views::BubbleBorder::TOP_LEFT
+                : views::BubbleBorder::TOP_RIGHT);
   SetLayoutManager(new views::FillLayout());
-  AddChildView(new InstalledBubbleContent(bubble_, bubble_.browser()));
+  AddChildView(new InstalledBubbleContent(*bubble_, bubble_->browser()));
 
   views::BubbleDelegateView::CreateBubble(this)->Show();
 
   // The bubble widget is now the parent and owner of |this| and takes care of
   // deletion when the bubble or browser go away.
-  bubble_.IgnoreBrowserClosing();
+  bubble_->IgnoreBrowserClosing();
 }
 
 gfx::Rect ExtensionInstalledBubbleView::GetAnchorRect() const {
   // For omnibox keyword bubbles, move the arrow to point to the left edge
   // of the omnibox, just to the right of the icon.
-  if (bubble_.type() == bubble_.OMNIBOX_KEYWORD) {
+  if (bubble_->type() == bubble_->OMNIBOX_KEYWORD) {
     const LocationBarView* location_bar_view =
-        BrowserView::GetBrowserViewForBrowser(bubble_.browser())->
-        GetLocationBarView();
+        BrowserView::GetBrowserViewForBrowser(bubble_->browser())
+            ->GetLocationBarView();
     return gfx::Rect(location_bar_view->GetOmniboxViewOrigin(),
         gfx::Size(0, location_bar_view->omnibox_view()->height()));
   }
@@ -548,13 +552,13 @@ gfx::Rect ExtensionInstalledBubbleView::GetAnchorRect() const {
 }
 
 void ExtensionInstalledBubbleView::WindowClosing() {
-  if (bubble_.extension() && bubble_.type() == bubble_.PAGE_ACTION &&
+  if (bubble_->extension() && bubble_->type() == bubble_->PAGE_ACTION &&
       !extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
     BrowserView* browser_view =
-        BrowserView::GetBrowserViewForBrowser(bubble_.browser());
+        BrowserView::GetBrowserViewForBrowser(bubble_->browser());
     browser_view->GetLocationBarView()->SetPreviewEnabledPageAction(
-        extensions::ExtensionActionManager::Get(bubble_.browser()->profile())->
-        GetPageAction(*bubble_.extension()),
+        extensions::ExtensionActionManager::Get(bubble_->browser()->profile())
+            ->GetPageAction(*bubble_->extension()),
         false);  // preview_enabled
   }
 }

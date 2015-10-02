@@ -57,14 +57,12 @@ scoped_ptr<extensions::Command> GetCommand(
   return result.Pass();
 }
 
-} // namespace
+}  // namespace
 
-ExtensionInstalledBubble::ExtensionInstalledBubble(
-    ExtensionInstalledBubbleUi* bubble_ui,
-    const Extension* extension,
-    Browser* browser,
-    const SkBitmap& icon)
-    : bubble_ui_(bubble_ui),
+ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
+                                                   Browser* browser,
+                                                   const SkBitmap& icon)
+    : bubble_ui_(nullptr),
       extension_(extension),
       browser_(browser),
       icon_(icon),
@@ -130,8 +128,16 @@ base::string16 ExtensionInstalledBubble::GetHowToUseDescription() const {
       l10n_util::GetStringFUTF16(message_id, extra);
 }
 
+void ExtensionInstalledBubble::SetBubbleUi(
+    ExtensionInstalledBubbleUi* bubble_ui) {
+  DCHECK(!bubble_ui_);
+  DCHECK(bubble_ui);
+  bubble_ui_ = bubble_ui;
+}
+
 void ExtensionInstalledBubble::ShowInternal() {
   if (ExtensionInstalledBubbleUi::ShouldShow(this)) {
+    DCHECK(bubble_ui_);
     bubble_ui_->Show();
     return;
   }

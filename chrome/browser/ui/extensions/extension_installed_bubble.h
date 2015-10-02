@@ -56,8 +56,7 @@ class ExtensionInstalledBubble : public content::NotificationObserver,
     virtual void Show() = 0;
   };
 
-  ExtensionInstalledBubble(ExtensionInstalledBubbleUi* bubble_ui,
-                           const extensions::Extension* extension,
+  ExtensionInstalledBubble(const extensions::Extension* extension,
                            Browser* browser,
                            const SkBitmap& icon);
 
@@ -75,6 +74,9 @@ class ExtensionInstalledBubble : public content::NotificationObserver,
 
   // Returns the string describing how to use the new extension.
   base::string16 GetHowToUseDescription() const;
+
+  // Sets the UI that corresponds to this bubble.
+  void SetBubbleUi(ExtensionInstalledBubbleUi* bubble_ui);
 
  private:
   // Delegates showing the view to our |view_|. Called internally via PostTask.

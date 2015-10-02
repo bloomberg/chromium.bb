@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_VIEW_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
@@ -37,9 +38,8 @@ class ExtensionInstalledBubbleView
                    const SkBitmap& icon);
 
  private:
-  ExtensionInstalledBubbleView(const extensions::Extension* extension,
-                               Browser* browser,
-                               const SkBitmap& icon);
+  explicit ExtensionInstalledBubbleView(
+      scoped_ptr<ExtensionInstalledBubble> bubble);
 
   ~ExtensionInstalledBubbleView() override;
 
@@ -52,7 +52,7 @@ class ExtensionInstalledBubbleView
   // views::BubbleDelegate:
   gfx::Rect GetAnchorRect() const override;
 
-  ExtensionInstalledBubble bubble_;
+  scoped_ptr<ExtensionInstalledBubble> bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleView);
 };
