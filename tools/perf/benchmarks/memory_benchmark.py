@@ -45,7 +45,9 @@ class MemoryHealthPlan(_MemoryBenchmark):
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
-    return bool(cls._RE_BENCHMARK_VALUES.match(value.name))
+    # TODO(perezju): Do not ignore baidu failures http://crbug.com/538143
+    return (bool(cls._RE_BENCHMARK_VALUES.match(value.name)) and
+            not ('baidu' in value.page.name and value.values is None))
 
 
 # TODO(bashi): Workaround for http://crbug.com/532075
