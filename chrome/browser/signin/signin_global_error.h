@@ -62,9 +62,6 @@ class SigninGlobalError : public GlobalErrorWithStandardBubble,
   // The SigninErrorController that provides auth status.
   SigninErrorController* error_controller_;
 
-  // True if signin global error was added to the global error service.
-  bool is_added_to_global_error_service_;
-
   DISALLOW_COPY_AND_ASSIGN(SigninGlobalError);
 };
 

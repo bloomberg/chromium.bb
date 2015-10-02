@@ -121,24 +121,20 @@ bool AvatarMenuButton::GetAvatarImages(Profile* profile,
     if (index == std::string::npos)
       return false;
 
-    if (switches::IsNewAvatarMenu()) {
-      *avatar = cache.GetAvatarIconOfProfileAtIndex(index);
-      // TODO(noms): Once the code for the old avatar menu button is removed,
-      // this function will only be called for badging the taskbar icon.  The
-      // function can be renamed to something like GetAvatarImageForBadging()
-      // and only needs to return the avatar from
-      // AvatarMenu::GetImageForMenuButton().
-#if !defined(OS_CHROMEOS)
-      bool is_badge_rectangle = false;
-      AvatarMenu::GetImageForMenuButton(profile->GetPath(),
-                                        taskbar_badge_avatar,
-                                        &is_badge_rectangle);
+#if defined(OS_CHROMEOS)
+    AvatarMenu::GetImageForMenuButton(profile->GetPath(), avatar, is_rectangle);
+#else
+    *avatar = cache.GetAvatarIconOfProfileAtIndex(index);
+    // TODO(noms): Once the code for the old avatar menu button is removed,
+    // this function will only be called for badging the taskbar icon.  The
+    // function can be renamed to something like GetAvatarImageForBadging()
+    // and only needs to return the avatar from
+    // AvatarMenu::GetImageForMenuButton().
+    bool is_badge_rectangle = false;
+    AvatarMenu::GetImageForMenuButton(profile->GetPath(),
+                                      taskbar_badge_avatar,
+                                      &is_badge_rectangle);
 #endif
-    } else {
-      AvatarMenu::GetImageForMenuButton(profile->GetPath(),
-                                        avatar,
-                                        is_rectangle);
-    }
   }
   return true;
 }

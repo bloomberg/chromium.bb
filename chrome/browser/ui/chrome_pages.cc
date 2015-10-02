@@ -370,8 +370,14 @@ void ShowBrowserSignin(Browser* browser, signin_metrics::Source source) {
   // away from Chrome, and accidentally close the avatar bubble. The same will
   // happen if we had to switch browser windows to show the sign in page. In
   // this case, fallback to the full-tab signin page.
-  if (switches::IsNewAvatarMenu() &&
-      source != signin_metrics::SOURCE_APP_LAUNCHER && !switched_browser) {
+  bool show_avatar_bubble =
+      source != signin_metrics::SOURCE_APP_LAUNCHER && !switched_browser;
+#if defined(OS_CHROMEOS)
+  // ChromeOS doesn't have the avatar bubble.
+  show_avatar_bubble = false;
+#endif
+
+  if (show_avatar_bubble) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
         signin::ManageAccountsParams());

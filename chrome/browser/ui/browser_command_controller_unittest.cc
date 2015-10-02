@@ -173,14 +173,9 @@ TEST_F(BrowserCommandControllerTest, AppFullScreen) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
 }
 
-TEST_F(BrowserCommandControllerTest, OldAvatarMenuEnabledForOneOrMoreProfiles) {
+TEST_F(BrowserCommandControllerTest, AvatarAcceleratorEnabledOnDesktop) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
-
-  // The command line is reset at the end of every test by the test suite.
-  switches::DisableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
-  ASSERT_FALSE(switches::IsNewAvatarMenu());
 
   TestingProfileManager testing_profile_manager(
       TestingBrowserProcess::GetGlobal());
@@ -211,33 +206,6 @@ TEST_F(BrowserCommandControllerTest, OldAvatarMenuEnabledForOneOrMoreProfiles) {
   testing_profile_manager.DeleteTestingProfile("p2");
 }
 
-TEST_F(BrowserCommandControllerTest, NewAvatarMenuEnabledWhenOnlyOneProfile) {
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
-
-  // The command line is reset at the end of every test by the test suite.
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
-
-  TestingProfileManager testing_profile_manager(
-      TestingBrowserProcess::GetGlobal());
-  ASSERT_TRUE(testing_profile_manager.SetUp());
-  ProfileManager* profile_manager = testing_profile_manager.profile_manager();
-
-  chrome::BrowserCommandController command_controller(browser());
-  const CommandUpdater* command_updater = command_controller.command_updater();
-
-  testing_profile_manager.CreateTestingProfile("p1");
-  ASSERT_EQ(1U, profile_manager->GetNumberOfProfiles());
-#if defined(OS_CHROMEOS)
-  // Chrome OS uses system tray menu to handle multi-profiles.
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
-#else
-  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
-#endif
-  testing_profile_manager.DeleteTestingProfile("p1");
-}
-
 TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
@@ -255,15 +223,7 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
   chrome::BrowserCommandController command_controller(otr_browser.get());
   const CommandUpdater* command_updater = command_controller.command_updater();
 
-  // Both the old style and the new style avatar menu should be disabled.
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
-  if (switches::IsNewAvatarMenu()) {
-    switches::DisableNewAvatarMenuForTesting(
-        base::CommandLine::ForCurrentProcess());
-  } else {
-    switches::EnableNewAvatarMenuForTesting(
-        base::CommandLine::ForCurrentProcess());
-  }
+  // The avatar menu should be disabled.
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
   // The command line is reset at the end of every test by the test suite.
 }

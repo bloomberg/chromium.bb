@@ -114,7 +114,6 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   // The new avatar button is optionally displayed to the left of the
   // minimize button.
   if (new_avatar_button()) {
-    DCHECK(switches::IsNewAvatarMenu());
     minimize_button_offset -=
         new_avatar_button()->width() + kNewAvatarButtonOffset;
 
@@ -137,8 +136,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   if (base::i18n::IsRTL()) {
     if (!browser_view()->ShouldShowAvatar() && frame()->IsMaximized()) {
       tabstrip_x += avatar_bounds_.x();
-    } else if (browser_view()->IsRegularOrGuestSession() &&
-               switches::IsNewAvatarMenu()) {
+    } else if (browser_view()->IsRegularOrGuestSession()) {
       tabstrip_x = width() - minimize_button_offset;
     }
 
@@ -274,7 +272,7 @@ void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void GlassBrowserFrameView::Layout() {
-  if (browser_view()->IsRegularOrGuestSession() && switches::IsNewAvatarMenu())
+  if (browser_view()->IsRegularOrGuestSession())
     LayoutNewStyleAvatar();
   else
     LayoutAvatar();
@@ -487,7 +485,7 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 }
 
 void GlassBrowserFrameView::LayoutNewStyleAvatar() {
-  DCHECK(switches::IsNewAvatarMenu());
+  DCHECK(browser_view()->IsRegularOrGuestSession());
   if (!new_avatar_button())
     return;
 
@@ -514,9 +512,6 @@ void GlassBrowserFrameView::LayoutNewStyleAvatar() {
 }
 
 void GlassBrowserFrameView::LayoutAvatar() {
-  // Even though the avatar is used for both incognito and profiles we always
-  // use the incognito icon to layout the avatar button. The profile icon
-  // can be customized so we can't depend on its size to perform layout.
   gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
 
   int avatar_x = NonClientBorderThickness() + kAvatarLeftSpacing;

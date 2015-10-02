@@ -57,8 +57,6 @@
 class AvatarButtonControllerTest : public CocoaProfileTest {
  public:
   void SetUp() override {
-    switches::EnableNewAvatarMenuForTesting(
-        base::CommandLine::ForCurrentProcess());
     DCHECK(profiles::IsMultipleProfilesEnabled());
 
     CocoaProfileTest::SetUp();

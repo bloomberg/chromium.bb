@@ -184,7 +184,7 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
 
   // If needed, start downloading the high-res avatars and migrate any legacy
   // profile names.
-  if (switches::IsNewAvatarMenu() && !disable_avatar_download_for_testing_)
+  if (!disable_avatar_download_for_testing_)
     MigrateLegacyProfileNamesAndDownloadAvatars();
 }
 
@@ -225,7 +225,7 @@ void ProfileInfoCache::AddProfileToCache(
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
 
-  if (switches::IsNewAvatarMenu() && !disable_avatar_download_for_testing_)
+  if (!disable_avatar_download_for_testing_)
     DownloadHighResAvatarIfNeeded(icon_index, profile_path);
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
@@ -331,12 +331,13 @@ const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
       return *image;
   }
 
-  // Use the high resolution version of the avatar if it exists.
-  if (switches::IsNewAvatarMenu()) {
-    const gfx::Image* image = GetHighResAvatarOfProfileAtIndex(index);
-    if (image)
-      return *image;
-  }
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Use the high resolution version of the avatar if it exists. Mobile and
+  // ChromeOS don't need the high resolution version so no need to fetch it.
+  const gfx::Image* image = GetHighResAvatarOfProfileAtIndex(index);
+  if (image)
+    return *image;
+#endif
 
   int resource_id = profiles::GetDefaultAvatarIconResourceIDAtIndex(
       GetAvatarIconIndexOfProfileAtIndex(index));
@@ -585,7 +586,7 @@ void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
 
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
 
-  if (switches::IsNewAvatarMenu() && !disable_avatar_download_for_testing_)
+  if (!disable_avatar_download_for_testing_)
     DownloadHighResAvatarIfNeeded(icon_index, profile_path);
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
@@ -864,10 +865,11 @@ base::string16 ProfileInfoCache::ChooseNameForNewProfile(
     size_t icon_index) const {
   base::string16 name;
   for (int name_index = 1; ; ++name_index) {
-    if (switches::IsNewAvatarMenu()) {
-      name = l10n_util::GetStringFUTF16Int(IDS_NEW_NUMBERED_PROFILE_NAME,
-                                           name_index);
-    } else if (icon_index < profiles::GetGenericAvatarIconCount()) {
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+    name = l10n_util::GetStringFUTF16Int(IDS_NEW_NUMBERED_PROFILE_NAME,
+                                         name_index);
+#else
+   if (icon_index < profiles::GetGenericAvatarIconCount()) {
       name = l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME,
                                            name_index);
     } else {
@@ -876,6 +878,7 @@ base::string16 ProfileInfoCache::ChooseNameForNewProfile(
       if (name_index > 1)
         name.append(base::UTF8ToUTF16(base::IntToString(name_index)));
     }
+#endif
 
     // Loop through previously named profiles to ensure we're not duplicating.
     bool name_found = false;
@@ -1027,10 +1030,10 @@ bool ProfileInfoCache::ChooseAvatarIconIndexForNewProfile(
     bool allow_generic_icon,
     bool must_be_unique,
     size_t* out_icon_index) const {
-  // Always allow all icons for new profiles if using the
-  // --new-avatar-menu flag.
-  if (switches::IsNewAvatarMenu())
-    allow_generic_icon = true;
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Always allow the generic icon when displaying the new avatar menu.
+  allow_generic_icon = true;
+#endif
   size_t start = allow_generic_icon ? 0 : profiles::GetGenericAvatarIconCount();
   size_t end = profiles::GetDefaultAvatarIconCount();
   size_t count = end - start;
@@ -1200,8 +1203,6 @@ void ProfileInfoCache::OnAvatarPictureSaved(
 }
 
 void ProfileInfoCache::MigrateLegacyProfileNamesAndDownloadAvatars() {
-  DCHECK(switches::IsNewAvatarMenu());
-
   // Only do this on desktop platforms.
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
   // Migrate any legacy profile names ("First user", "Default Profile") to

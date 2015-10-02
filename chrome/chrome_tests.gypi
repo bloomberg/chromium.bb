@@ -652,7 +652,6 @@
       'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
       'browser/ui/views/media_router/media_router_ui_browsertest.cc',
       'browser/ui/views/new_task_manager_view_browsertest.cc',
-      'browser/ui/views/profiles/avatar_menu_button_browsertest.cc',
       'browser/ui/views/toolbar/browser_actions_container_browsertest.cc',
       'browser/ui/views/toolbar/toolbar_view_browsertest.cc',
       'browser/ui/views/translate/translate_bubble_view_browsertest.cc',

@@ -368,7 +368,7 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
     SigninErrorController* error_controller =
         SigninErrorControllerFactory::GetForProfile(browser->profile());
     DCHECK(error_controller->HasError());
-    if (switches::IsNewAvatarMenu() && !force_new_tab) {
+    if (!force_new_tab) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
           signin::ManageAccountsParams());
@@ -378,7 +378,7 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
     }
   } else {
     signin_metrics::LogSigninSource(signin_metrics::SOURCE_SETTINGS);
-    if (switches::IsNewAvatarMenu() && !force_new_tab) {
+    if (!force_new_tab) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
           signin::ManageAccountsParams());

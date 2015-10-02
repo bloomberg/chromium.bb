@@ -104,7 +104,6 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
  protected:
   void SetUp() override {
     ExtensionBrowserTest::SetUp();
-    DCHECK(switches::IsNewAvatarMenu());
     DCHECK(switches::IsNewProfileManagement());
   }
 

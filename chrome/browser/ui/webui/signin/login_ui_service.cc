@@ -74,24 +74,15 @@ void LoginUIService::ShowLoginPopup() {
 
 void LoginUIService::DisplayLoginResult(Browser* browser,
                                         const base::string16& message) {
-  last_login_result_ = message;
-  if (switches::IsNewAvatarMenu()) {
-    browser->window()->ShowAvatarBubbleFromAvatarButton(
-        message.empty() ? BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN :
-                          BrowserWindow::AVATAR_BUBBLE_MODE_SHOW_ERROR,
-        signin::ManageAccountsParams());
-  } else {
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-    browser->window()->ShowOneClickSigninBubble(
-        BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
-        base::string16(), /* no SAML email */
-        message,
-        // This callback is never invoked.
-        // TODO(rogerta): Separate out the bubble API so we don't have to pass
-        // ignored |email| and |callback| params.
-        BrowserWindow::StartSyncCallback());
+#if defined(OS_CHROMEOS)
+  // ChromeOS doesn't have the avatar bubble so it never calls this function.
+  NOTREACHED();
 #endif
-  }
+  last_login_result_ = message;
+  browser->window()->ShowAvatarBubbleFromAvatarButton(
+      message.empty() ? BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN :
+                        BrowserWindow::AVATAR_BUBBLE_MODE_SHOW_ERROR,
+      signin::ManageAccountsParams());
 }
 
 const base::string16& LoginUIService::GetLastLoginResult() {

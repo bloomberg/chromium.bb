@@ -16,8 +16,11 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/info_bubble_window.h"
+#import "chrome/browser/ui/cocoa/profiles/avatar_button_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_menu_bubble_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/testing_profile.h"
@@ -27,15 +30,11 @@
 
 class AvatarIconControllerTest : public CocoaProfileTest {
  public:
+  AvatarIconControllerTest() {}
+
   void SetUp() override {
-    switches::DisableNewAvatarMenuForTesting(
-        base::CommandLine::ForCurrentProcess());
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
-
-    controller_.reset(
-        [[AvatarIconController alloc] initWithBrowser:browser()]);
-    [[controller_ view] setHidden:YES];
   }
 
   void TearDown() override {
@@ -43,86 +42,30 @@ class AvatarIconControllerTest : public CocoaProfileTest {
     CocoaProfileTest::TearDown();
   }
 
-  NSButton* button() { return [controller_ buttonView]; }
-
-  NSView* view() { return [controller_ view]; }
-
-  AvatarIconController* controller() { return controller_.get(); }
-
- private:
-  base::scoped_nsobject<AvatarIconController> controller_;
+  AvatarBaseController* icon_controller() {
+    BrowserWindowCocoa* window =
+        static_cast<BrowserWindowCocoa*>(browser()->window());
+    return [window->cocoa_controller() avatarButtonController];
+  }
 };
 
-TEST_F(AvatarIconControllerTest, AddRemoveProfiles) {
-  EXPECT_TRUE([view() isHidden]);
-
-  testing_profile_manager()->CreateTestingProfile("one");
-
-  EXPECT_FALSE([view() isHidden]);
-
-  testing_profile_manager()->CreateTestingProfile("two");
-  EXPECT_FALSE([view() isHidden]);
-
-  testing_profile_manager()->DeleteTestingProfile("one");
-  EXPECT_FALSE([view() isHidden]);
-
-  testing_profile_manager()->DeleteTestingProfile("two");
-  EXPECT_TRUE([view() isHidden]);
-}
-
-TEST_F(AvatarIconControllerTest, DoubleOpen) {
-  // Create a second profile to enable the avatar menu.
-  testing_profile_manager()->CreateTestingProfile("p2");
-
-  EXPECT_FALSE([controller() menuController]);
-
-  [button() performClick:button()];
-
-  BaseBubbleController* menu = [controller() menuController];
-  EXPECT_TRUE([menu isKindOfClass:[AvatarMenuBubbleController class]]);
-
-  EXPECT_TRUE(menu);
-
-  [button() performClick:button()];
-  EXPECT_EQ(menu, [controller() menuController]);
-
-  // Do not animate out because that is hard to test around.
-  static_cast<InfoBubbleWindow*>(menu.window).allowedAnimations =
-      info_bubble::kAnimateNone;
-  [menu close];
-  EXPECT_FALSE([controller() menuController]);
-
-  testing_profile_manager()->DeleteTestingProfile("p2");
-}
-
-TEST_F(AvatarIconControllerTest, SupervisedUserLabel) {
-  DCHECK(!profile()->IsSupervised());
-  EXPECT_FALSE([controller() labelButtonView]);
-
-  // Create a second, supervised profile to enable the avatar menu.
-  std::string name = "p2";
-  TestingProfile* profile = testing_profile_manager()->CreateTestingProfile(
-      name, scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
-      base::ASCIIToUTF16(name), 0, "asdf", TestingProfile::TestingFactories());
-  EXPECT_TRUE(profile->IsSupervised());
-
-  // http://crbug.com/39725
-  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile, &TemplateURLServiceFactory::BuildInstanceFor);
-  AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile, &AutocompleteClassifierFactory::BuildInstanceFor);
-  profile->CreateBookmarkModel(true);
-  bookmarks::test::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForProfile(profile));
-
+TEST_F(AvatarIconControllerTest, ShowingAvatarIconInIncognito) {
   Browser* browser =
-      new Browser(Browser::CreateParams(profile, chrome::GetActiveDesktop()));
-  // Build a new controller to check if it is initialized correctly for a
-  // supervised user profile.
-  base::scoped_nsobject<AvatarIconController> controller(
-      [[AvatarIconController alloc] initWithBrowser:browser]);
-
-  EXPECT_TRUE([controller labelButtonView]);
+      new Browser(Browser::CreateParams(profile()->GetOffTheRecordProfile(),
+                                        chrome::GetActiveDesktop()));
+  BrowserWindowCocoa* window =
+      static_cast<BrowserWindowCocoa*>(browser->window());
+  AvatarBaseController* icon_controller =
+      [window->cocoa_controller() avatarButtonController];
+  // In incognito, we should be using the AvatarIconController to show the
+  // incognito guy.
+  EXPECT_TRUE([icon_controller isKindOfClass:[AvatarIconController class]]);
 
   browser->window()->Close();
+}
+
+TEST_F(AvatarIconControllerTest, ShowingAvatarButtonInRegularSession) {
+  // In a regular session, we should be using the AvatarButtonController to show
+  // the profile name.
+  EXPECT_TRUE([icon_controller() isKindOfClass:[AvatarButtonController class]]);
 }

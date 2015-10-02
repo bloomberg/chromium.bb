@@ -282,37 +282,6 @@ TEST_F(ProfileListDesktopTest, ShowAvatarMenuInTrial) {
 #endif
 }
 
-TEST_F(ProfileListDesktopTest, DontShowOldAvatarMenuForSingleProfile) {
-  switches::DisableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
-
-  manager()->CreateTestingProfile("Test 1");
-
-  EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
-
-  // If multiprofile mode is enabled, there are no other cases when we wouldn't
-  // show the menu.
-  if (profiles::IsMultipleProfilesEnabled())
-    return;
-
-  manager()->CreateTestingProfile("Test 2");
-
-  EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
-}
-
-TEST_F(ProfileListDesktopTest, AlwaysShowNewAvatarMenu) {
-  // If multiprofile mode is not enabled then the menu is never shown.
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
-
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
-
-  manager()->CreateTestingProfile("Test 1");
-
-  EXPECT_TRUE(AvatarMenu::ShouldShowAvatarMenu());
-}
-
 TEST_F(ProfileListDesktopTest, ShowAvatarMenu) {
   // If multiprofile mode is not enabled then the menu is never shown.
   if (!profiles::IsMultipleProfilesEnabled())

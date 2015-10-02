@@ -26,16 +26,6 @@ class UserManagerUIBrowserTest : public InProcessBrowserTest,
                                  public testing::WithParamInterface<bool> {
  public:
   UserManagerUIBrowserTest() {}
-
- protected:
-  void SetUp() override {
-    InProcessBrowserTest::SetUp();
-    DCHECK(switches::IsNewAvatarMenu());
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    switches::EnableNewAvatarMenuForTesting(command_line);
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageLoads) {

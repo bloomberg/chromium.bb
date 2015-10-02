@@ -510,10 +510,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<PopularSitesInternalsUI>;
 #endif
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
-  if (url.host() == chrome::kChromeUIUserManagerHost &&
-      switches::IsNewAvatarMenu()) {
+  if (url.host() == chrome::kChromeUIUserManagerHost)
     return &NewWebUI<UserManagerUI>;
-  }
 #endif
 
   /****************************************************************************

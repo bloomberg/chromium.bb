@@ -131,8 +131,6 @@ void ManageProfileHandler::GetLocalizedValues(
                                supervised_user_dashboard_url,
                                supervised_user_dashboard_display));
 
-  localized_strings->SetBoolean("newAvatarMenuEnabled",
-                                switches::IsNewAvatarMenu());
   localized_strings->SetBoolean("profileShortcutsEnabled",
                                 ProfileShortcutManager::IsFeatureEnabled());
 

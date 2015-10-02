@@ -35,12 +35,8 @@ SigninGlobalError::SigninGlobalError(
     SigninErrorController* error_controller,
     Profile* profile)
     : profile_(profile),
-      error_controller_(error_controller),
-      is_added_to_global_error_service_(false) {
+      error_controller_(error_controller) {
   error_controller_->AddObserver(this);
-  is_added_to_global_error_service_ = !switches::IsNewAvatarMenu();
-  if (is_added_to_global_error_service_)
-    GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(this);
 }
 
 SigninGlobalError::~SigninGlobalError() {
@@ -60,11 +56,6 @@ void SigninGlobalError::AttemptToFixError(Browser* browser) {
 }
 
 void SigninGlobalError::Shutdown() {
-  if (is_added_to_global_error_service_) {
-    GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(this);
-    is_added_to_global_error_service_ = false;
-  }
-
   error_controller_->RemoveObserver(this);
   error_controller_ = NULL;
 }
@@ -106,15 +97,9 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
   UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
                             signin_metrics::HISTOGRAM_REAUTH_SHOWN,
                             signin_metrics::HISTOGRAM_REAUTH_MAX);
-  if (switches::IsNewAvatarMenu()) {
-    browser->window()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
-        signin::ManageAccountsParams());
-  } else {
-    chrome::ShowSingletonTab(
-        browser,
-        signin::GetReauthURL(profile_, error_controller_->error_account_id()));
-  }
+  browser->window()->ShowAvatarBubbleFromAvatarButton(
+      BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
+      signin::ManageAccountsParams());
 #endif
 }
 

@@ -250,6 +250,45 @@ void DumpBrowserHistograms(const base::FilePath& output_file) {
                   static_cast<int>(output_string.size()));
 }
 
+// Shows the User Manager on startup if the last used profile must sign in or
+// if the last used profile was the guest or system profile.
+// Returns true if the User Manager was shown, false otherwise.
+bool ShowUserManagerOnStartupIfNeeded(
+    Profile* last_used_profile, const base::CommandLine& command_line) {
+#if defined(OS_CHROMEOS)
+  // ChromeOS never shows the User Manager on startup.
+  return false;
+#else
+  const ProfileInfoCache& profile_info =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t profile_index = profile_info.GetIndexOfProfileWithPath(
+      last_used_profile->GetPath());
+
+  if (profile_index == std::string::npos ||
+      !profile_info.ProfileIsSigninRequiredAtIndex(profile_index)) {
+    // Signin is not required. However, guest, system or locked profiles cannot
+    // be re-opened on startup. The only exception is if there's already a Guest
+    // window open in a separate process (for example, launching a new browser
+    // after clicking on a downloaded file in Guest mode).
+    if ((!last_used_profile->IsGuestSession() &&
+         !last_used_profile->IsSystemProfile()) ||
+        (chrome::GetTotalBrowserCountForProfile(
+           last_used_profile->GetOffTheRecordProfile()) > 0)) {
+      return false;
+    }
+  }
+
+  // Show the User Manager.
+  profiles::UserManagerProfileSelected action =
+      command_line.HasSwitch(switches::kShowAppList) ?
+          profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER :
+          profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION;
+  UserManager::Show(
+      base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL, action);
+  return true;
+#endif
+}
+
 }  // namespace
 
 StartupBrowserCreator::StartupBrowserCreator()
@@ -671,34 +710,8 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   // |last_used_profile| is the last used incognito profile. Restoring it will
   // create a browser window for the corresponding original profile.
   if (last_opened_profiles.empty()) {
-    // If the last used profile is locked or was a guest, show the user manager.
-    if (switches::IsNewAvatarMenu()) {
-      ProfileInfoCache& profile_info =
-          g_browser_process->profile_manager()->GetProfileInfoCache();
-      size_t profile_index = profile_info.GetIndexOfProfileWithPath(
-          last_used_profile->GetPath());
-      bool signin_required = profile_index != std::string::npos &&
-          profile_info.ProfileIsSigninRequiredAtIndex(profile_index);
-
-      // Guest, system or locked profiles cannot be re-opened on startup. The
-      // only exception is if there's already a Guest window open in a separate
-      // process (for example, launching a new browser after clicking on a
-      // downloaded file in Guest mode).
-      bool guest_or_system = last_used_profile->IsGuestSession() ||
-                             last_used_profile->IsSystemProfile();
-      bool has_guest_browsers = guest_or_system &&
-          chrome::GetTotalBrowserCountForProfile(
-              last_used_profile->GetOffTheRecordProfile()) > 0;
-      if (signin_required || (guest_or_system && !has_guest_browsers)) {
-        profiles::UserManagerProfileSelected action =
-            command_line.HasSwitch(switches::kShowAppList) ?
-                profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER :
-                profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION;
-        UserManager::Show(
-            base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL, action);
-        return true;
-      }
-    }
+    if (ShowUserManagerOnStartupIfNeeded(last_used_profile, command_line))
+      return true;
 
     Profile* profile_to_open = last_used_profile->IsGuestSession() ?
         last_used_profile->GetOffTheRecordProfile() : last_used_profile;
@@ -709,15 +722,17 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
       return false;
     }
   } else {
+#if !defined(OS_CHROMEOS)
     // Guest profiles should not be reopened on startup. This can happen if
     // the last used profile was a Guest, but other profiles were also open
     // when Chrome was closed. In this case, pick a different open profile
     // to be the active one, since the Guest profile is never added to the list
     // of open profiles.
-    if (switches::IsNewAvatarMenu() && last_used_profile->IsGuestSession()) {
+    if (last_used_profile->IsGuestSession()) {
       DCHECK(!last_opened_profiles[0]->IsGuestSession());
       last_used_profile = last_opened_profiles[0];
     }
+#endif
 
     // Launch the last used profile with the full command line, and the other
     // opened profiles without the URLs to launch.

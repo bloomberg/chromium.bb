@@ -78,9 +78,6 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, DisableFind) {
 // Flakes http://crbug.com/471953
 IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
                        DISABLED_NewAvatarMenuEnabledInGuestMode) {
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
-
   EXPECT_EQ(1U, BrowserList::GetInstance(chrome::GetActiveDesktop())->size());
 
   // Create a guest browser nicely. Using CreateProfile() and CreateBrowser()

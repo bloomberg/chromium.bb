@@ -29,9 +29,6 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
   }
 
   void SetUp() override {
-    switches::DisableNewAvatarMenuForTesting(
-        base::CommandLine::ForCurrentProcess());
-
     CocoaTest::SetUp();
     ASSERT_TRUE(manager_.SetUp());
 

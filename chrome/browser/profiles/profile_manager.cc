@@ -688,15 +688,15 @@ void ProfileManager::ScheduleProfileForDeletion(
 
   base::FilePath new_path;
   if (last_non_supervised_profile_path.empty()) {
-    // If we are using --new-avatar-menu, then assign the default
-    // placeholder avatar and name. Otherwise, use random ones.
-    bool is_new_avatar_menu = switches::IsNewAvatarMenu();
+    base::string16 new_avatar_url = base::string16();
+    base::string16 new_profile_name = base::string16();
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
     int avatar_index = profiles::GetPlaceholderAvatarIndex();
-    base::string16 new_avatar_url = is_new_avatar_menu ?
-        base::UTF8ToUTF16(profiles::GetDefaultAvatarIconUrl(avatar_index)) :
-        base::string16();
-    base::string16 new_profile_name = is_new_avatar_menu ?
-        cache.ChooseNameForNewProfile(avatar_index) : base::string16();
+    new_avatar_url =
+        base::UTF8ToUTF16(profiles::GetDefaultAvatarIconUrl(avatar_index));
+    new_profile_name = cache.ChooseNameForNewProfile(avatar_index);
+#endif
 
     new_path = GenerateNextProfileDirectoryPath();
     CreateProfileAsync(new_path,
@@ -823,12 +823,13 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
           cache.GetSupervisedUserIdOfProfileAtIndex(profile_cache_index);
     } else if (profile->GetPath() ==
                profiles::GetDefaultProfileDir(cache.GetUserDataDir())) {
-      // The --new-avatar-menu flag no longer uses the "First User" name.
-      bool is_new_avatar_menu = switches::IsNewAvatarMenu();
       avatar_index = profiles::GetPlaceholderAvatarIndex();
-      profile_name = is_new_avatar_menu ?
-          base::UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index)) :
-          l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME);
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+      profile_name =
+          base::UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index));
+#else
+      profile_name = l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME);
+#endif
     } else {
       avatar_index = cache.ChooseAvatarIconIndexForNewProfile();
       profile_name =

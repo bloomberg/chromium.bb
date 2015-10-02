@@ -1389,8 +1389,7 @@ using content::WebContents;
 }
 
 - (BOOL)shouldUseNewAvatarButton {
-  return switches::IsNewAvatarMenu() &&
-      profiles::IsRegularOrGuestSession(browser_.get());
+  return profiles::IsRegularOrGuestSession(browser_.get());
 }
 
 - (BOOL)isBookmarkBarVisible {

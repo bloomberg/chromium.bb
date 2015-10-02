@@ -150,8 +150,6 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
 };
 
 TEST_F(ProfileChooserControllerTest, InitialLayoutWithNewMenu) {
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
   StartProfileChooserController();
 
   NSArray* subviews = [[[controller() window] contentView] subviews];
@@ -217,8 +215,6 @@ TEST_F(ProfileChooserControllerTest, InitialLayoutWithNewMenu) {
 }
 
 TEST_F(ProfileChooserControllerTest, RightClickTutorialShownAfterWelcome) {
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
   // The welcome upgrade tutorial takes precedence so show it then dismiss it.
   // The right click tutorial should be shown right away.
   StartProfileChooserControllerWithTutorialMode(
@@ -229,8 +225,6 @@ TEST_F(ProfileChooserControllerTest, RightClickTutorialShownAfterWelcome) {
 }
 
 TEST_F(ProfileChooserControllerTest, RightClickTutorialShownAfterReopen) {
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
   // The welcome upgrade tutorial takes precedence so show it then close the
   // menu. Reopening the menu should show the tutorial.
   StartProfileChooserController();
@@ -247,8 +241,6 @@ TEST_F(ProfileChooserControllerTest, RightClickTutorialShownAfterReopen) {
 }
 
 TEST_F(ProfileChooserControllerTest, RightClickTutorialNotShownAfterDismiss) {
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
   // The welcome upgrade tutorial takes precedence so show it then close the
   // menu. Reopening the menu should show the tutorial.
   StartProfileChooserController();
@@ -280,9 +272,6 @@ TEST_F(ProfileChooserControllerTest, RightClickTutorialNotShownAfterDismiss) {
 }
 
 TEST_F(ProfileChooserControllerTest, OtherProfilesSortedAlphabetically) {
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
-
   // Add two extra profiles, to make sure sorting is alphabetical and not
   // by order of creation.
   testing_profile_manager()->CreateTestingProfile(
@@ -321,8 +310,6 @@ TEST_F(ProfileChooserControllerTest, OtherProfilesSortedAlphabetically) {
 
 TEST_F(ProfileChooserControllerTest,
     LocalProfileActiveCardLinksWithNewMenu) {
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
   StartProfileChooserController();
   NSArray* subviews = [[[controller() window] contentView] subviews];
   ASSERT_EQ(2U, [subviews count]);
@@ -369,8 +356,6 @@ TEST_F(ProfileChooserControllerTest,
 
 TEST_F(ProfileChooserControllerTest,
     SignedInProfileActiveCardLinksWithNewMenu) {
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
   // Sign in the first profile.
   ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
   cache->SetAuthInfoOfProfileAtIndex(0, kGaiaId, base::ASCIIToUTF16(kEmail));

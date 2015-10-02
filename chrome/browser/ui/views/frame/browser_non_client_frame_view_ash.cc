@@ -568,7 +568,7 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
 
 #if defined(FRAME_AVATAR_BUTTON)
 void BrowserNonClientFrameViewAsh::LayoutNewStyleAvatar() {
-  DCHECK(switches::IsNewAvatarMenu());
+  DCHECK(new_avatar_button());
 
   gfx::Size button_size = new_avatar_button()->GetPreferredSize();
   int button_x = width() -

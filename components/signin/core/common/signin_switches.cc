@@ -16,9 +16,6 @@ const char kDisableAccountConsistency[] = "disable-account-consistency";
 // Disables new profile management system, including new profile chooser UI.
 const char kDisableNewProfileManagement[] = "disable-new-profile-management";
 
-// Disables the new avatar menu, forcing the top-corner avatar button.
-const char kDisableNewAvatarMenu[] = "disable-new-avatar-menu";
-
 // Disable sending signin scoped device id to LSO with refresh token request.
 const char kDisableSigninScopedDeviceId[] = "disable-signin-scoped-device-id";
 
@@ -28,9 +25,6 @@ const char kEnableAccountConsistency[] = "enable-account-consistency";
 // Enables the old iframe-based flow for sign in.  When not enabled, uses the
 // webview-based flow.
 const char kEnableIframeBasedSignin[] = "enable-iframe-based-signin";
-
-// Enable the new avatar menu and the User Manager.
-const char kEnableNewAvatarMenu[] = "enable-new-avatar-menu";
 
 // Enables new profile management system, including lock mode.
 const char kEnableNewProfileManagement[] = "new-profile-management";

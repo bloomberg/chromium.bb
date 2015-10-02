@@ -551,9 +551,6 @@ TEST_F(ProfileInfoCacheTest, AddStubProfile) {
 // High res avatar downloading is only supported on desktop.
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
 TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
-
   // The TestingProfileManager's ProfileInfoCache doesn't download avatars.
   ProfileInfoCache profile_info_cache(g_browser_process->local_state(),
       testing_profile_manager_.profile_manager()->user_data_dir());
@@ -617,9 +614,6 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
 }
 
 TEST_F(ProfileInfoCacheTest, NothingToDownloadHighResAvatarTest) {
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
-
   // The TestingProfileManager's ProfileInfoCache doesn't download avatars.
   ProfileInfoCache profile_info_cache(
       g_browser_process->local_state(),
@@ -642,8 +636,6 @@ TEST_F(ProfileInfoCacheTest, NothingToDownloadHighResAvatarTest) {
 }
 
 TEST_F(ProfileInfoCacheTest, MigrateLegacyProfileNamesWithNewAvatarMenu) {
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
   EXPECT_EQ(0U, GetCache()->GetNumberOfProfiles());
 
   base::FilePath path_1 = GetProfilePath("path_1");
@@ -693,11 +685,9 @@ TEST_F(ProfileInfoCacheTest, MigrateLegacyProfileNamesWithNewAvatarMenu) {
 }
 #endif
 
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
 TEST_F(ProfileInfoCacheTest,
        DontMigrateLegacyProfileNamesWithoutNewAvatarMenu) {
-  switches::DisableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
-
   EXPECT_EQ(0U, GetCache()->GetNumberOfProfiles());
 
   base::string16 name_1 = ASCIIToUTF16("Default Profile");
@@ -734,3 +724,4 @@ TEST_F(ProfileInfoCacheTest,
   EXPECT_EQ(name_4, GetCache()->GetNameOfProfileAtIndex(
       GetCache()->GetIndexOfProfileWithPath(path_4)));
 }
+#endif

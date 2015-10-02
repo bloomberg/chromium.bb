@@ -73,18 +73,26 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
   if (!is_visible)
     return;
 
-  // The first time UpdateOldAvatarButton() is called the window is not visible
-  // so DrawTaskBarDecoration() has no effect. Therefore we need to call it
-  // again once the window is visible.
-  if (!browser_view_->IsRegularOrGuestSession() ||
-      !switches::IsNewAvatarMenu()) {
+#if defined(OS_CHROMEOS)
+  // On ChromeOS we always need to give the old avatar button a chance to update
+  // in case we're in a teleported window. On desktop, the old avatar button
+  // only shows up when in incognito mode.
+  UpdateOldAvatarButton();
+  OnProfileAvatarChanged(base::FilePath());
+#else
+  if (!browser_view_->IsRegularOrGuestSession()) {
+    // The first time UpdateOldAvatarButton() is called the window is not
+    // visible so DrawTaskBarDecoration() has no effect. Therefore we need to
+    // call it again once the window is visible.
     UpdateOldAvatarButton();
   }
 
-  // Make sure the task bar icon is correctly updated call
-  // |OnProfileAvatarChanged()| in this case, but only for non guest profiles.
-  if (!browser_view_->IsGuestSession() || !switches::IsNewAvatarMenu())
+  // Call OnProfileAvatarChanged() in this case to make sure the task bar icon
+  // is correctly updated. Guest profiles don't badge the icon so no need to do
+  // this in guest mode.
+  if (!browser_view_->IsGuestSession())
     OnProfileAvatarChanged(base::FilePath());
+#endif
 }
 
 void BrowserNonClientFrameView::ChildPreferredSizeChanged(View* child) {
@@ -179,9 +187,11 @@ int BrowserNonClientFrameView::GetTopAreaHeight() const {
 }
 
 void BrowserNonClientFrameView::UpdateAvatar() {
-  if (browser_view()->IsRegularOrGuestSession() && switches::IsNewAvatarMenu())
+#if !defined(OS_CHROMEOS)
+  if (browser_view()->IsRegularOrGuestSession())
     UpdateNewAvatarButtonImpl();
   else
+#endif
     UpdateOldAvatarButton();
 }
 
@@ -246,7 +256,6 @@ void BrowserNonClientFrameView::UpdateOldAvatarButton() {
 void BrowserNonClientFrameView::UpdateNewAvatarButton(
     views::ButtonListener* listener,
     const NewAvatarButton::AvatarButtonStyle style) {
-  DCHECK(switches::IsNewAvatarMenu());
   // This should never be called in incognito mode.
   DCHECK(browser_view_->IsRegularOrGuestSession());
 
@@ -282,11 +291,12 @@ void BrowserNonClientFrameView::OnProfileWasRemoved(
 void BrowserNonClientFrameView::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
   UpdateTaskbarDecoration();
-  // Profile avatars are only displayed in the old UI or incognito.
-  if ((!browser_view()->IsGuestSession() && browser_view()->IsOffTheRecord()) ||
-      !switches::IsNewAvatarMenu()) {
+  // Profile avatars are only displayed in incognito or on ChromeOS teleported
+  // windows.
+#if !defined(OS_CHROMEOS)
+  if (!browser_view()->IsGuestSession() && browser_view()->IsOffTheRecord())
+#endif
     UpdateOldAvatarButton();
-  }
 }
 
 void BrowserNonClientFrameView::UpdateTaskbarDecoration() {

@@ -39,14 +39,6 @@
 
 using content::BrowserThread;
 
-namespace {
-
-// Constants for the show profile switcher experiment
-const char kShowProfileSwitcherFieldTrialName[] = "ShowProfileSwitcher";
-const char kAlwaysShowSwitcherGroupName[] = "AlwaysShow";
-
-}  // namespace
-
 AvatarMenu::AvatarMenu(ProfileInfoInterface* profile_cache,
                        AvatarMenuObserver* observer,
                        Browser* browser)
@@ -97,27 +89,15 @@ AvatarMenu::Item::~Item() {
 
 // static
 bool AvatarMenu::ShouldShowAvatarMenu() {
-  if (base::FieldTrialList::FindFullName(kShowProfileSwitcherFieldTrialName) ==
-      kAlwaysShowSwitcherGroupName) {
-    // We should only be in this group when multi-profiles is enabled.
-    DCHECK(profiles::IsMultipleProfilesEnabled());
-    return true;
-  }
-
   // TODO: Eliminate this ifdef. Add a delegate interface for the menu which
   // would also help remove the Browser dependency in AvatarMenuActions
   // implementations.
-  if (profiles::IsMultipleProfilesEnabled()) {
 #if defined(OS_CHROMEOS)
-    // On ChromeOS the menu will not be shown.
-    return false;
-#else
-    return switches::IsNewAvatarMenu() ||
-           (g_browser_process->profile_manager() &&
-            g_browser_process->profile_manager()->GetNumberOfProfiles() > 1);
-#endif
-  }
+  // On ChromeOS the menu will not be shown.
   return false;
+#else
+  return true;
+#endif
 }
 
 bool AvatarMenu::CompareItems(const Item* item1, const Item* item2) {
@@ -132,15 +112,16 @@ void AvatarMenu::SwitchToProfile(size_t index,
          index == GetActiveProfileIndex());
   const Item& item = GetItemAt(index);
 
-  if (switches::IsNewAvatarMenu()) {
-    // Don't open a browser window for signed-out profiles.
-    if (item.signin_required) {
-      UserManager::Show(item.profile_path,
-                        profiles::USER_MANAGER_NO_TUTORIAL,
-                        profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
-      return;
-    }
+#if !defined(OS_CHROMEOS)
+  // ChromeOS doesn't have the User Manager, it can't open it.
+  // Don't open a browser window for signed-out profiles.
+  if (item.signin_required) {
+    UserManager::Show(item.profile_path,
+                      profiles::USER_MANAGER_NO_TUTORIAL,
+                      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+    return;
   }
+#endif
 
   base::FilePath path =
       profile_info_->GetPathOfProfileAtIndex(item.profile_index);

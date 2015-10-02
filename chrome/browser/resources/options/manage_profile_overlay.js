@@ -95,25 +95,11 @@ cr.define('options', function() {
 
       $('create-profile-supervised-sign-in-link').onclick =
           function(event) {
-        // Without the new avatar menu, the signin process will open an overlay
-        // to configure sync, which would replace this overlay. It's smoother to
-        // close this one now.
-        // With the new avatar menu enabled, a sign-in flow in the avatar menu
-        // is triggered instead, which does not open any overlays, so there's no
-        // need to close this one.
-        if (!loadTimeData.getBoolean('newAvatarMenuEnabled')) {
-          // TODO(pamg): Move the sync-setup overlay to a higher layer so this
-          // one can stay open under it, after making sure that doesn't break
-          // anything else.
-          PageManager.closeOverlay();
-        }
         SyncSetupOverlay.startSignIn();
       };
 
       $('create-profile-supervised-sign-in-again-link').onclick =
           function(event) {
-        if (!loadTimeData.getBoolean('newAvatarMenuEnabled'))
-          PageManager.closeOverlay();
         SyncSetupOverlay.showSetupUI();
       };
 

@@ -163,7 +163,7 @@ void GetStatusLabelsForAuthError(Profile* profile,
 }
 
 void InitializePrefsForProfile(Profile* profile) {
-  if (profile->IsNewProfile() && switches::IsNewAvatarMenu()) {
+  if (profile->IsNewProfile()) {
     // Suppresses the upgrade tutorial for a new profile.
     profile->GetPrefs()->SetInteger(
         prefs::kProfileAvatarTutorialShown, kUpgradeWelcomeTutorialShowMax + 1);

@@ -283,8 +283,7 @@ void BrowserProcessImpl::StartTearDown() {
                  "BrowserProcessImpl::StartTearDown:ProfileManager");
     // The desktop User Manager needs to be closed before the guest profile
     // can be destroyed.
-    if (switches::IsNewAvatarMenu())
-      UserManager::Hide();
+    UserManager::Hide();
     profile_manager_.reset();
   }
 

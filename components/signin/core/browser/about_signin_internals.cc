@@ -514,8 +514,6 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
   AddSectionEntry(basic_info, "Chrome Version", product_version);
   AddSectionEntry(basic_info, "Webview Based Signin?",
       switches::IsEnableWebviewBasedSignin() == true ? "On" : "Off");
-  AddSectionEntry(basic_info, "New Avatar Menu?",
-      switches::IsNewAvatarMenu() == true ? "On" : "Off");
   AddSectionEntry(basic_info, "New Profile Management?",
       switches::IsNewProfileManagement() == true ? "On" : "Off");
   AddSectionEntry(basic_info, "Account Consistency?",

@@ -666,13 +666,14 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
   RegisterTitle(values, "thirdPartyImeConfirmOverlay",
                 IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_TITLE);
+  values->SetBoolean("usingNewProfilesUI", false);
+#else
+  values->SetBoolean("usingNewProfilesUI", true);
 #endif
 
   values->SetBoolean("showSetDefault", ShouldShowSetDefaultBrowser());
 
   values->SetBoolean("allowAdvancedSettings", ShouldAllowAdvancedSettings());
-
-  values->SetBoolean("usingNewProfilesUI", switches::IsNewAvatarMenu());
 
 #if defined(OS_CHROMEOS)
   values->SetBoolean(

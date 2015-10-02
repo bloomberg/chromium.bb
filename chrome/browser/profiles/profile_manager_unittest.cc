@@ -1054,10 +1054,6 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameResetsDefaultName) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
-  // The command line is reset at the end of every test by the test suite.
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
-
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   EXPECT_EQ(0u, cache.GetNumberOfProfiles());
@@ -1092,10 +1088,6 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameResetsDefaultName) {
 TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesCustomName) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
-
-  // The command line is reset at the end of every test by the test suite.
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
@@ -1139,10 +1131,6 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesCustomName) {
 TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesSignedInName) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
-
-  // The command line is reset at the end of every test by the test suite.
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
@@ -1194,10 +1182,6 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesSignedInName) {
 TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
-
-  // The command line is reset at the end of every test by the test suite.
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();

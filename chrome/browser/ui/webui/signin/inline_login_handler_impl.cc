@@ -356,9 +356,8 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
     SigninErrorController* error_controller =
         SigninErrorControllerFactory::GetForProfile(profile_);
 
-    bool is_new_avatar_menu = switches::IsNewAvatarMenu();
-
-    OneClickSigninSyncStarter::StartSyncMode start_mode;
+    OneClickSigninSyncStarter::StartSyncMode start_mode =
+        OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST;
     if (source == signin_metrics::SOURCE_SETTINGS || choose_what_to_sync_) {
       bool show_settings_without_configure =
           error_controller->HasError() &&
@@ -367,25 +366,12 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
       start_mode = show_settings_without_configure ?
           OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST;
-    } else {
-      start_mode = is_new_avatar_menu ?
-          OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST :
-          OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
     }
 
-    OneClickSigninSyncStarter::ConfirmationRequired confirmation_required;
-    if (confirm_untrusted_signin_) {
-      confirmation_required =
-          OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN;
-    } else if (is_new_avatar_menu) {
-      confirmation_required = OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
-    } else {
-      confirmation_required =
-          source == signin_metrics::SOURCE_SETTINGS ||
-          choose_what_to_sync_ ?
-              OneClickSigninSyncStarter::NO_CONFIRMATION :
-              OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
-    }
+    OneClickSigninSyncStarter::ConfirmationRequired confirmation_required =
+        confirm_untrusted_signin_ ?
+            OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN :
+            OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
 
     bool start_signin = !HandleCrossAccountError(result.refresh_token, source,
         confirmation_required, start_mode);

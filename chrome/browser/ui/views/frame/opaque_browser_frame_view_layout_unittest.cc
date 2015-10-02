@@ -200,33 +200,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     root_view_->AddChildView(window_title_);
   }
 
-  void AddAvatarButton() {
-    // Disable the New Avatar Menu.
-    switches::DisableNewAvatarMenuForTesting(
-        base::CommandLine::ForCurrentProcess());
-
-    menu_button_ = new AvatarMenuButton(nullptr, false);
-    menu_button_->set_id(VIEW_ID_AVATAR_BUTTON);
-    delegate_->SetShouldShowAvatar(true);
-    root_view_->AddChildView(menu_button_);
-  }
-
-#if defined(ENABLE_SUPERVISED_USERS)
-  void AddSupervisedUserAvatarLabel() {
-    supervised_user_avatar_label_ = new SupervisedUserAvatarLabel(nullptr);
-    supervised_user_avatar_label_->set_id(VIEW_ID_SUPERVISED_USER_AVATAR_LABEL);
-    root_view_->AddChildView(supervised_user_avatar_label_);
-
-    // The avatar label should only be used together with the avatar button.
-    AddAvatarButton();
-  }
-#endif
-
   void AddNewAvatarButton() {
-    // Enable the New Avatar Menu.
-    switches::EnableNewAvatarMenuForTesting(
-        base::CommandLine::ForCurrentProcess());
-
     new_avatar_button_ =
         new views::MenuButton(nullptr, base::string16(), nullptr, false);
     new_avatar_button_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
@@ -414,55 +388,6 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WithWindowTitleAndIcon) {
   EXPECT_EQ("27,3 370x17", window_title_->bounds().ToString());
 }
 
-TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithAvatar) {
-  // Tests a normal tabstrip window with an avatar icon.
-  AddAvatarButton();
-  root_view_->Layout();
-
-  ExpectBasicWindowBounds();
-
-  // Check the location of the avatar
-  EXPECT_EQ("7,11 40x29", menu_button_->bounds().ToString());
-  EXPECT_EQ("45,13 352x29",
-            layout_manager_->GetBoundsForTabStrip(
-                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
-}
-
-TEST_F(OpaqueBrowserFrameViewLayoutTest,
-       WindowWithAvatarWithoutCaptionButtonsOnLeft) {
-  // Tests the layout of a chrome window with an avatar icon and no caption
-  // buttons. However, the caption buttons *would* be on the left if they
-  // weren't hidden, and therefore, the avatar icon should be on the right.
-  // The lack of caption buttons should force the tab strip to be condensed.
-  AddAvatarButton();
-  std::vector<views::FrameButton> leading_buttons;
-  std::vector<views::FrameButton> trailing_buttons;
-  leading_buttons.push_back(views::FRAME_BUTTON_CLOSE);
-  leading_buttons.push_back(views::FRAME_BUTTON_MINIMIZE);
-  leading_buttons.push_back(views::FRAME_BUTTON_MAXIMIZE);
-  layout_manager_->SetButtonOrdering(leading_buttons, trailing_buttons);
-  delegate_->SetShouldShowCaptionButtons(false);
-  root_view_->Layout();
-
-  EXPECT_EQ("0,0 0x0", maximize_button_->bounds().ToString());
-  EXPECT_EQ("0,0 0x0", minimize_button_->bounds().ToString());
-  EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
-  EXPECT_EQ("0,0 0x0", close_button_->bounds().ToString());
-
-  // Check the location of the avatar
-  EXPECT_EQ("458,0 40x24", menu_button_->bounds().ToString());
-  EXPECT_EQ("-5,-3 458x29",
-            layout_manager_->GetBoundsForTabStrip(
-                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("251x61", layout_manager_->GetMinimumSize(kWidth).ToString());
-
-  // A normal window with no window icon still produces icon bounds for
-  // Windows, which has a hidden icon that a user can double click on to close
-  // the window.
-  EXPECT_EQ("2,0 17x17", layout_manager_->IconBounds().ToString());
-}
-
 TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithNewAvatar) {
   // Tests a normal tabstrip window with the new style avatar icon.
   AddNewAvatarButton();
@@ -479,75 +404,3 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithNewAvatar) {
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
   EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
 }
-
-#if defined(ENABLE_SUPERVISED_USERS)
-TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithAvatarWithButtonsOnLeft) {
-  // Tests the layout of a chrome window with an avatar icon and caption buttons
-  // on the left. The avatar icon should therefore be on the right.
-  // AddAvatarLabel() also adds the avatar button.
-  AddSupervisedUserAvatarLabel();
-  std::vector<views::FrameButton> leading_buttons;
-  std::vector<views::FrameButton> trailing_buttons;
-  leading_buttons.push_back(views::FRAME_BUTTON_CLOSE);
-  leading_buttons.push_back(views::FRAME_BUTTON_MINIMIZE);
-  leading_buttons.push_back(views::FRAME_BUTTON_MAXIMIZE);
-  layout_manager_->SetButtonOrdering(leading_buttons, trailing_buttons);
-  root_view_->Layout();
-
-  EXPECT_EQ("73,1 25x18", maximize_button_->bounds().ToString());
-  EXPECT_EQ("47,1 26x18", minimize_button_->bounds().ToString());
-  EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
-  EXPECT_EQ("4,1 43x18", close_button_->bounds().ToString());
-
-  // Check the location of the avatar
-  EXPECT_EQ("454,11 40x29", menu_button_->bounds().ToString());
-
-  // Check the tab strip bounds.
-  gfx::Rect tab_strip_bounds = layout_manager_->GetBoundsForTabStrip(
-      delegate_->GetTabstripPreferredSize(), kWidth);
-  EXPECT_GT(tab_strip_bounds.x(), maximize_button_->bounds().x());
-  EXPECT_GT(maximize_button_->bounds().right(), tab_strip_bounds.x());
-  EXPECT_EQ(13, tab_strip_bounds.y());
-  EXPECT_EQ(29, tab_strip_bounds.height());
-  EXPECT_GT(supervised_user_avatar_label_->bounds().x(),
-            tab_strip_bounds.right());
-  EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
-
-  // Check the relative location of the avatar label to the avatar. The right
-  // end of the avatar label should be slightly to the right of the right end of
-  // the avatar icon.
-  EXPECT_GT(supervised_user_avatar_label_->bounds().right(),
-            menu_button_->bounds().right());
-  EXPECT_GT(menu_button_->bounds().x(),
-            supervised_user_avatar_label_->bounds().x());
-  EXPECT_GT(menu_button_->bounds().bottom(),
-            supervised_user_avatar_label_->bounds().bottom());
-  EXPECT_GT(supervised_user_avatar_label_->bounds().y(),
-            menu_button_->bounds().y());
-
-  // This means that the menu will pop out facing the left (if it were to face
-  // the right, it would go outside the window frame and be clipped).
-  EXPECT_TRUE(menu_button_->button_on_right());
-
-  // If the buttons are on the left, there should be no hidden icon for the user
-  // to double click.
-  EXPECT_EQ("0,0 0x0", layout_manager_->IconBounds().ToString());
-}
-
-TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithAvatarLabelAndButtonOnLeft) {
-  AddSupervisedUserAvatarLabel();
-  root_view_->Layout();
-
-  ExpectBasicWindowBounds();
-
-  // Check the location of the avatar label relative to the avatar button if
-  // both are displayed on the left side.
-  // The label height and width depends on the font size and the text displayed.
-  // This may possibly change, so we don't test it here.
-  EXPECT_EQ(menu_button_->bounds().x() - 2,
-            supervised_user_avatar_label_->bounds().x());
-  EXPECT_EQ(menu_button_->bounds().bottom() - 3 -
-            supervised_user_avatar_label_->bounds().height(),
-            supervised_user_avatar_label_->bounds().y());
-}
-#endif

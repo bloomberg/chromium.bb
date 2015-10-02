@@ -60,8 +60,7 @@ void ProfileSigninConfirmationDialogViews::ShowDialog(
   // bubble.
   // TODO(guohui): removes the workaround once the profile confirmation dialog
   // is fixed.
-  if (switches::IsNewAvatarMenu() && ProfileChooserView::IsShowing())
-    ProfileChooserView::Hide();
+  ProfileChooserView::Hide();
 
   ProfileSigninConfirmationDialogViews* dialog =
       new ProfileSigninConfirmationDialogViews(
