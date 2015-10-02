@@ -96,7 +96,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private FindToolbarManager mFindToolbarManager;
     private FindToolbarObserver mFindToolbarObserver;
     private boolean mIsSearchContentViewShowing;
-    private boolean mDidLoadResolvedSearchRequest;
+    private boolean mDidStartLoadingResolvedSearchRequest;
     private long mLoadedSearchUrlTimeMs;
     // TODO(donnd): consider changing this member's name to indicate "opened" instead of "seen".
     private boolean mWereSearchResultsSeen;
@@ -221,7 +221,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
         mIsShowingPromo = false;
         mDidLogPromoOutcome = false;
-        mDidLoadResolvedSearchRequest = false;
+        mDidStartLoadingResolvedSearchRequest = false;
         mWereSearchResultsSeen = false;
         mNetworkCommunicator = this;
         ApplicationStatus.registerStateListenerForActivity(this, mActivity);
@@ -492,7 +492,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
             boolean shouldPrefetch = mPolicy.shouldPrefetchSearchResult(isTap);
             mSearchRequest = new ContextualSearchRequest(mSelectionController.getSelectedText(),
                     null, shouldPrefetch);
-            mDidLoadResolvedSearchRequest = false;
+            mDidStartLoadingResolvedSearchRequest = false;
             mSearchPanelDelegate.displaySearchTerm(mSelectionController.getSelectedText());
             if (shouldPrefetch) loadSearchUrl();
         }
@@ -725,7 +725,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
             // appear in the user's history until the user views it).  See crbug.com/406446.
             boolean shouldPreload = !doPreventPreload && mPolicy.shouldPrefetchSearchResult(true);
             mSearchRequest = new ContextualSearchRequest(searchTerm, alternateTerm, shouldPreload);
-            mDidLoadResolvedSearchRequest = false;
+            mDidStartLoadingResolvedSearchRequest = false;
             if (mSearchPanelDelegate.isContentViewShowing()) {
                 mSearchRequest.setNormalPriority();
             }
@@ -747,7 +747,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private void loadSearchUrl() {
         mLoadedSearchUrlTimeMs = System.currentTimeMillis();
         mSearchPanelDelegate.loadUrlInPanel(mSearchRequest.getSearchUrl());
-        mDidLoadResolvedSearchRequest = true;
+        mDidStartLoadingResolvedSearchRequest = true;
 
         // TODO(pedrosimonetti): If the user taps on a word and quickly after that taps on the
         // peeking Search Bar, the Search Content View will not be displayed. It seems that
@@ -838,10 +838,10 @@ public class ContextualSearchManager extends ContextualSearchObservable
                                 mNetworkCommunicator.getBasePageUrl())) {
                     mSearchRequest = new ContextualSearchRequest(
                             mSelectionController.getSelectedText());
-                    mDidLoadResolvedSearchRequest = false;
+                    mDidStartLoadingResolvedSearchRequest = false;
                 }
-                if ((mSearchRequest != null && !mDidLoadResolvedSearchRequest)
-                        || mShouldLoadDelayedSearch) {
+                if (mSearchRequest != null && (!mDidStartLoadingResolvedSearchRequest
+                        || mShouldLoadDelayedSearch)) {
                     // mShouldLoadDelayedSearch is used in the long-press case to load content.
                     // Since content is now created and destroyed for each request, was impossible
                     // to know if content was already loaded or recently needed to be; this is for
@@ -962,7 +962,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
             if (mSearchPanelDelegate.isContentViewShowing()) {
                 loadSearchUrl();
             } else {
-                mDidLoadResolvedSearchRequest = false;
+                mDidStartLoadingResolvedSearchRequest = false;
             }
         }
     }
@@ -1102,9 +1102,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
                             mNetworkCommunicator.getBasePageUrl())) {
                 mSearchRequest = new ContextualSearchRequest(
                         mSelectionController.getSelectedText());
-                mDidLoadResolvedSearchRequest = false;
+                mDidStartLoadingResolvedSearchRequest = false;
             }
-            if ((mSearchRequest != null && !mDidLoadResolvedSearchRequest)
+            if ((mSearchRequest != null && !mDidStartLoadingResolvedSearchRequest)
                     || mShouldLoadDelayedSearch) {
                 // mShouldLoadDelayedSearch is used in the long-press case to load content. Since
                 // content is now created and destroyed for each request, was impossible to know if
