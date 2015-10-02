@@ -467,6 +467,11 @@ const char kEnableNewBookmarkApps[]         = "enable-new-bookmark-apps";
 // Enables showing popular sites on the NTP.
 const char kEnableNTPPopularSites[]         = "enable-ntp-popular-sites";
 
+// Enables using the default search engine country to show country specific
+// popular sites on the NTP.
+const char kEnableNTPSearchEngineCountryDetection[] =
+    "enable-ntp-search-engine-country-detection";
+
 // Enable auto-reload of error pages if offline.
 const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
 

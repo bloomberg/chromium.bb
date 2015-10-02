@@ -5,6 +5,7 @@
 #include "chrome/browser/android/popular_sites.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -35,75 +37,37 @@ const char kPopularSitesDefaultCountryCode[] = "DEFAULT";
 const char kPopularSitesDefaultVersion[] = "2";
 const char kPopularSitesLocalFilename[] = "suggested_sites.json";
 
-
-// Find out the country code of the user by using the Google country code if
-// Google is the default search engine set. If Google is not the default search,
-// use the country provided Fallback to a default if we can't
-// make an educated guess.
-std::string GetCountryCode(Profile* profile,
-                           const std::string& fallback_country) {
+// Extract the country from the default search engine if the default search
+// engine is Google.
+std::string GetDefaultSearchEngineCountryCode(Profile* profile) {
   DCHECK(profile);
 
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kEnableNTPSearchEngineCountryDetection))
+    return std::string();
+
   const TemplateURLService* template_url_service =
-     TemplateURLServiceFactory::GetForProfile(profile);
+      TemplateURLServiceFactory::GetForProfile(profile);
   DCHECK(template_url_service);
 
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
   // It's possible to not have a default provider in the case that the default
   // search engine is defined by policy.
-  if (!default_provider)
-      return kPopularSitesDefaultCountryCode;
+  if (default_provider) {
+    bool is_google_search_engine =
+        TemplateURLPrepopulateData::GetEngineType(
+            *default_provider, template_url_service->search_terms_data()) ==
+        SearchEngineType::SEARCH_ENGINE_GOOGLE;
 
-  bool is_google_search_engine = TemplateURLPrepopulateData::GetEngineType(
-      *default_provider, template_url_service->search_terms_data()) ==
-          SearchEngineType::SEARCH_ENGINE_GOOGLE;
-
-  if (is_google_search_engine) {
-    GURL search_url = default_provider->GenerateSearchURL(
-        template_url_service->search_terms_data());
-    return base::ToUpperASCII(google_util::GetGoogleCountryCode(search_url));
+    if (is_google_search_engine) {
+      GURL search_url = default_provider->GenerateSearchURL(
+          template_url_service->search_terms_data());
+      return google_util::GetGoogleCountryCode(search_url);
+    }
   }
 
-  if (!fallback_country.empty())
-    return base::ToUpperASCII(fallback_country);
-
-  return kPopularSitesDefaultCountryCode;
-}
-
-std::string GetPopularSitesServerFilename(Profile* profile,
-                                          const std::string& override_country,
-                                          const std::string& override_version,
-                                          const std::string& override_filename,
-                                          const std::string& fallback_country) {
-  if (!override_filename.empty())
-    return override_filename;
-
-  std::string country = !override_country.empty()
-                            ? override_country
-                            : GetCountryCode(profile, fallback_country);
-  std::string version = !override_version.empty() ? override_version
-                                                  : kPopularSitesDefaultVersion;
-  return base::StringPrintf(kPopularSitesServerFilenameFormat,
-                            country.c_str(), version.c_str());
-}
-
-GURL GetPopularSitesURL(Profile* profile,
-                        const std::string& override_country,
-                        const std::string& override_version,
-                        const std::string& override_filename,
-                        const std::string& fallback_country) {
-  return GURL(base::StringPrintf(
-      kPopularSitesURLFormat,
-      GetPopularSitesServerFilename(profile, override_country, override_version,
-                                    override_filename, fallback_country)
-          .c_str()));
-}
-
-base::FilePath GetPopularSitesPath() {
-  base::FilePath dir;
-  PathService::Get(chrome::DIR_USER_DATA, &dir);
-  return dir.AppendASCII(kPopularSitesLocalFilename);
+  return std::string();
 }
 
 // Get the country that the experiment is running under
@@ -114,6 +78,55 @@ std::string GetVariationsServiceCountry() {
   if (variations_service)
     return variations_service->GetStoredPermanentCountry();
   return std::string();
+}
+
+// Find out the country code of the user by using the Google country code if
+// Google is the default search engine set. If Google is not the default search
+// engine use the country provided by VariationsService. Fallback to a default
+// if we can't make an educated guess.
+std::string GetCountryCode(Profile* profile) {
+  std::string country_code = GetDefaultSearchEngineCountryCode(profile);
+
+  if (country_code.empty())
+    country_code = GetVariationsServiceCountry();
+
+  if (country_code.empty())
+    country_code = kPopularSitesDefaultCountryCode;
+
+  return base::ToUpperASCII(country_code);
+}
+
+std::string GetPopularSitesServerFilename(
+    Profile* profile,
+    const std::string& override_country,
+    const std::string& override_version,
+    const std::string& override_filename) {
+  if (!override_filename.empty())
+    return override_filename;
+
+  std::string country =
+      !override_country.empty() ? override_country : GetCountryCode(profile);
+  std::string version = !override_version.empty() ? override_version
+                                                  : kPopularSitesDefaultVersion;
+  return base::StringPrintf(kPopularSitesServerFilenameFormat,
+                            country.c_str(), version.c_str());
+}
+
+GURL GetPopularSitesURL(Profile* profile,
+                        const std::string& override_country,
+                        const std::string& override_version,
+                        const std::string& override_filename) {
+  return GURL(base::StringPrintf(
+      kPopularSitesURLFormat,
+      GetPopularSitesServerFilename(profile, override_country, override_version,
+                                    override_filename)
+          .c_str()));
+}
+
+base::FilePath GetPopularSitesPath() {
+  base::FilePath dir;
+  PathService::Get(chrome::DIR_USER_DATA, &dir);
+  return dir.AppendASCII(kPopularSitesLocalFilename);
 }
 
 scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
@@ -177,10 +190,9 @@ PopularSites::PopularSites(Profile* profile,
   // Re-download the file once on every Chrome startup, but use the cached
   // local file afterwards.
   static bool first_time = true;
-  FetchPopularSites(
-      GetPopularSitesURL(profile, override_country, override_version,
-                         override_filename, GetVariationsServiceCountry()),
-      profile->GetRequestContext(), first_time || force_download);
+  FetchPopularSites(GetPopularSitesURL(profile, override_country,
+                                       override_version, override_filename),
+                    profile->GetRequestContext(), first_time || force_download);
   first_time = false;
 }
 

@@ -137,6 +137,7 @@ extern const char kEnableNavigationTracing[];
 extern const char kEnableNetBenchmarking[];
 extern const char kEnableNewBookmarkApps[];
 extern const char kEnableNTPPopularSites[];
+extern const char kEnableNTPSearchEngineCountryDetection[];
 extern const char kEnableOfflineAutoReload[];
 extern const char kEnableOfflineAutoReloadVisibleOnly[];
 extern const char kEnablePanels[];
