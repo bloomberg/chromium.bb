@@ -46,7 +46,7 @@ bool SiteEngagementHelper::InputTracker::HandleKeyPressEvent(
   // (e.g. keypress is a key down then key up).
   if (event.type == blink::WebInputEvent::RawKeyDown) {
     PauseTracking(helper_->web_contents()->GetRenderViewHost());
-    helper_->RecordUserInput();
+    helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
   }
   return false;
 }
@@ -60,7 +60,7 @@ bool SiteEngagementHelper::InputTracker::HandleMouseEvent(
        event.type == blink::WebInputEvent::MouseDown) ||
       event.type == blink::WebInputEvent::MouseWheel) {
     PauseTracking(helper_->web_contents()->GetRenderViewHost());
-    helper_->RecordUserInput();
+    helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_MOUSE);
   }
   return false;
 }
@@ -116,7 +116,8 @@ SiteEngagementHelper::SiteEngagementHelper(content::WebContents* contents)
       input_tracker_(this),
       record_engagement_(false) { }
 
-void SiteEngagementHelper::RecordUserInput() {
+void SiteEngagementHelper::RecordUserInput(
+    SiteEngagementMetrics::EngagementType type) {
   TRACE_EVENT0("SiteEngagement", "RecordUserInput");
   content::WebContents* contents = web_contents();
   if (contents) {
@@ -127,7 +128,7 @@ void SiteEngagementHelper::RecordUserInput() {
 
     // Service is null in incognito.
     if (service)
-      service->HandleUserInput(contents->GetVisibleURL());
+      service->HandleUserInput(contents->GetVisibleURL(), type);
   }
 }
 

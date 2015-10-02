@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/test/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
@@ -160,9 +161,19 @@ IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest,
     SiteEngagementServiceFactory::GetForProfile(browser()->profile());
   DCHECK(service);
 
+  base::HistogramTester histograms;
+
+  // Histograms should start off empty.
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                              0);
+
   ui_test_utils::NavigateToURL(browser(), url1);
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                              1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 1);
 
   HandleKeyPress(helper.get(), ui::VKEY_UP);
   HandleKeyPress(helper.get(), ui::VKEY_RETURN);
@@ -173,6 +184,14 @@ IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest,
 
   EXPECT_DOUBLE_EQ(0.7, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                              5);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 3);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 1);
 
   HandleMouseEvent(helper.get(), blink::WebMouseEvent::ButtonRight,
                    blink::WebInputEvent::MouseDown);
@@ -183,6 +202,10 @@ IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest,
 
   EXPECT_DOUBLE_EQ(0.85, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                              8);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 4);
 
   ui_test_utils::NavigateToURL(browser(), url2);
 
@@ -197,6 +220,14 @@ IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest,
   EXPECT_DOUBLE_EQ(0.85, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.6, service->GetScore(url2));
   EXPECT_DOUBLE_EQ(1.45, service->GetTotalEngagementPoints());
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                              11);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 2);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 4);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 5);
 }
 
 IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest,

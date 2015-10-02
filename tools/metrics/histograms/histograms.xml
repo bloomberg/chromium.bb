@@ -42329,6 +42329,101 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Number of retries until the final response was recorded.</summary>
 </histogram>
 
+<histogram name="SiteEngagementService.EngagementScore">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Distribution of the engagement scores accumulated by a user, recorded at
+    startup per non-incognito profile, and then upon the first
+    engagement-increasing event every hour thereafter.
+  </summary>
+</histogram>
+
+<histogram name="SiteEngagementService.EngagementType"
+    enum="SiteEngagementServiceEngagementType">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The type of engagement (navigation, user input, etc.) which led to an
+    accumulation in site engagement.
+  </summary>
+</histogram>
+
+<histogram name="SiteEngagementService.MeanEngagement">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The mean site engagement per origin accumulated by this profile, recorded at
+    startup per non-incognito profile, and then upon the first
+    engagement-increasing event every hour thereafter.
+  </summary>
+</histogram>
+
+<histogram name="SiteEngagementService.MedianEngagement">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The median site engagement per origin accumulated by this profile, recorded
+    at startup per non-incognito profile, and then upon the first
+    engagement-increasing event every hour thereafter.
+  </summary>
+</histogram>
+
+<histogram name="SiteEngagementService.OriginsEngaged">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The total number of origins with a non-zero site engagement score for this
+    profile, recorded at startup per non-incognito profile, and then upon the
+    first engagement-increasing event every hour thereafter.
+  </summary>
+</histogram>
+
+<histogram name="SiteEngagementService.OriginsWithMaxDailyEngagement">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The number of origins which have reached the daily site engagement point
+    cap, recorded at startup per non-incognito profile, and then upon the first
+    engagement-increasing event every hour thereafter. Thus, each bin N contains
+    the number of clients where at least N origins have reached the maximum
+    daily site engagement point cap.
+  </summary>
+</histogram>
+
+<histogram name="SiteEngagementService.OriginsWithMaxEngagement">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The number of origins which have reached the absolute site engagement point
+    cap, recorded at startup per non-incognito profile, and then upon the first
+    engagement-increasing event every hour thereafter. Thus, each bin N contains
+    the number of clients where at least N origins have reached the maximum
+    absolute site engagement point cap.
+  </summary>
+</histogram>
+
+<histogram name="SiteEngagementService.PercentOriginsWithMaxEngagement">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The percentage of all origins recorded by the site engagement service which
+    have reached the absolute site engagement point cap, recorded at startup per
+    non-incognito profile, and then upon the first engagement-increasing event
+    every hour thereafter.
+  </summary>
+</histogram>
+
+<histogram name="SiteEngagementService.TotalEngagement">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The total site engagement accumulated by this profile, recorded at startup
+    per non-incognito profile, and then upon the first engagement-increasing
+    event every hour thereafter.
+  </summary>
+</histogram>
+
 <histogram name="SiteIsolation.AllResponses">
   <owner>creis@chromium.org</owner>
   <summary>
@@ -70811,6 +70906,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Stale"/>
   <int value="2" label="Fresh"/>
   <int value="3" label="Fresh index with cache updated since backend start"/>
+</enum>
+
+<enum name="SiteEngagementServiceEngagementType" type="int">
+  <int value="0" label="Navigation"/>
+  <int value="1" label="Keypress"/>
+  <int value="2" label="Mouse"/>
 </enum>
 
 <enum name="SiteIsolationMimeType" type="int">

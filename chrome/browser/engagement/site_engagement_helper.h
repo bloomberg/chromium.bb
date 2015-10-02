@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -82,7 +83,7 @@ class SiteEngagementHelper
 
   // Ask the SiteEngagementService to record engagement via user input at the
   // current contents location.
-  void RecordUserInput();
+  void RecordUserInput(SiteEngagementMetrics::EngagementType type);
 
   bool ShouldRecordEngagement();
 

@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
+#include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -320,6 +322,70 @@ class SiteEngagementServiceTest : public BrowserWithTestWindowTest {
   }
 };
 
+TEST_F(SiteEngagementServiceTest, GetMedianEngagement) {
+  SiteEngagementService* service =
+      SiteEngagementServiceFactory::GetForProfile(profile());
+  DCHECK(service);
+
+  GURL url1("http://www.google.com/");
+  GURL url2("https://www.google.com/");
+  GURL url3("https://drive.google.com/");
+  GURL url4("https://maps.google.com/");
+  GURL url5("https://youtube.com/");
+  GURL url6("https://images.google.com/");
+
+  {
+    // For zero total sites, the median is 0.
+    std::map<GURL, double> score_map = service->GetScoreMap();
+    EXPECT_TRUE(0 == score_map.size());
+    EXPECT_DOUBLE_EQ(0, service->GetMedianEngagement(score_map));
+  }
+
+  {
+    // For odd total sites, the median is the middle score.
+    service->AddPoints(url1, 1);
+    std::map<GURL, double> score_map = service->GetScoreMap();
+    EXPECT_TRUE(1 == score_map.size());
+    EXPECT_DOUBLE_EQ(1, service->GetMedianEngagement(score_map));
+  }
+
+  {
+    // For even total sites, the median is the mean of the middle two scores.
+    service->AddPoints(url2, 2);
+    std::map<GURL, double> score_map = service->GetScoreMap();
+    EXPECT_TRUE(2 == score_map.size());
+    EXPECT_DOUBLE_EQ(1.5, service->GetMedianEngagement(score_map));
+  }
+
+  {
+    service->AddPoints(url3, 1.4);
+    std::map<GURL, double> score_map = service->GetScoreMap();
+    EXPECT_TRUE(3 == score_map.size());
+    EXPECT_DOUBLE_EQ(1.4, service->GetMedianEngagement(score_map));
+  }
+
+  {
+    service->AddPoints(url4, 1.8);
+    std::map<GURL, double> score_map = service->GetScoreMap();
+    EXPECT_TRUE(4 == score_map.size());
+    EXPECT_DOUBLE_EQ(1.6, service->GetMedianEngagement(score_map));
+  }
+
+  {
+    service->AddPoints(url5, 2.5);
+    std::map<GURL, double> score_map = service->GetScoreMap();
+    EXPECT_TRUE(5 == score_map.size());
+    EXPECT_DOUBLE_EQ(1.8, service->GetMedianEngagement(score_map));
+  }
+
+  {
+    service->AddPoints(url6, 3);
+    std::map<GURL, double> score_map = service->GetScoreMap();
+    EXPECT_TRUE(6 == score_map.size());
+    EXPECT_DOUBLE_EQ(1.9, service->GetMedianEngagement(score_map));
+  }
+}
+
 // Tests that the Site Engagement service is hooked up properly to navigations
 // by performing two navigations and checking the engagement score increases
 // both times.
@@ -342,8 +408,8 @@ TEST_F(SiteEngagementServiceTest, ScoreIncrementsOnPageRequest) {
   EXPECT_LT(prev_score, service->GetScore(url));
 }
 
-// Expect that site engagement scores for several sites are correctly aggregated
-// by GetTotalEngagementPoints().
+// Expect that site engagement scores for several sites are correctly
+// aggregated during navigation events.
 TEST_F(SiteEngagementServiceTest, GetTotalNavigationPoints) {
   SiteEngagementService* service =
       SiteEngagementServiceFactory::GetForProfile(profile());
@@ -391,23 +457,189 @@ TEST_F(SiteEngagementServiceTest, GetTotalUserInputPoints) {
   EXPECT_EQ(0, service->GetScore(url2));
   EXPECT_EQ(0, service->GetScore(url3));
 
-  service->HandleUserInput(url1);
+  service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
   EXPECT_DOUBLE_EQ(0.05, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.05, service->GetTotalEngagementPoints());
 
-  service->HandleUserInput(url2);
-  service->HandleUserInput(url2);
+  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
   EXPECT_DOUBLE_EQ(0.1, service->GetScore(url2));
   EXPECT_DOUBLE_EQ(0.15, service->GetTotalEngagementPoints());
 
-  service->HandleUserInput(url3);
+  service->HandleUserInput(url3, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
   EXPECT_DOUBLE_EQ(0.05, service->GetScore(url3));
   EXPECT_DOUBLE_EQ(0.2, service->GetTotalEngagementPoints());
 
-  service->HandleUserInput(url1);
-  service->HandleUserInput(url1);
+  service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
   EXPECT_DOUBLE_EQ(0.15, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.3, service->GetTotalEngagementPoints());
+}
+
+TEST_F(SiteEngagementServiceTest, CheckHistograms) {
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  scoped_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), make_scoped_ptr(clock)));
+
+  base::Time current_day = GetReferenceTime();
+  clock->SetNow(current_day);
+
+  base::HistogramTester histograms;
+
+  // Histograms should start empty as the testing SiteEngagementService
+  // constructor does not record metrics.
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
+                              0);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalOriginsHistogram, 0);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kMeanEngagementHistogram,
+                              0);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kMedianEngagementHistogram,
+                              0);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementScoreHistogram,
+                              0);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram, 0);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kOriginsWithMaxDailyEngagementHistogram, 0);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                              0);
+
+  // The https and http versions of www.google.com should be separate.
+  GURL url1("https://www.google.com/");
+  GURL url2("http://www.google.com/");
+  GURL url3("http://drive.google.com/");
+
+  service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
+  service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
+                              1);
+  histograms.ExpectUniqueSample(SiteEngagementMetrics::kTotalOriginsHistogram,
+                                1, 1);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kMeanEngagementHistogram,
+                              1);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kMedianEngagementHistogram,
+                              1);
+  // Recorded per origin.
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementScoreHistogram,
+                              1);
+  histograms.ExpectUniqueSample(
+      SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram, 0, 1);
+  histograms.ExpectUniqueSample(
+      SiteEngagementMetrics::kOriginsWithMaxDailyEngagementHistogram, 0, 1);
+  histograms.ExpectUniqueSample(
+      SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 1);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                              3);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 1);
+
+  clock->SetNow(GetReferenceTime() + base::TimeDelta::FromMinutes(59));
+
+  service->HandleNavigation(url2, ui::PAGE_TRANSITION_GENERATED);
+  service->HandleNavigation(url2, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                              5);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 3);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 1);
+
+  clock->SetNow(GetReferenceTime() + base::TimeDelta::FromMinutes(60));
+
+  service->HandleNavigation(url3, ui::PAGE_TRANSITION_TYPED);
+  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
+                              2);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kTotalOriginsHistogram, 1,
+                               1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kTotalOriginsHistogram, 3,
+                               1);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kMeanEngagementHistogram,
+                              2);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kMedianEngagementHistogram,
+                              2);
+  // Recorded per origin.
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementScoreHistogram,
+                              4);
+  histograms.ExpectUniqueSample(
+      SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram, 0, 2);
+  histograms.ExpectUniqueSample(
+      SiteEngagementMetrics::kOriginsWithMaxDailyEngagementHistogram, 0, 2);
+  histograms.ExpectUniqueSample(
+      SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 2);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                              7);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 4);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 2);
+
+  service->HandleNavigation(url1, ui::PAGE_TRANSITION_GENERATED);
+  service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
+  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  service->HandleUserInput(url3, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                              12);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 6);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 3);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 3);
+
+  // Advance an origin to the max for a day and advance the clock an hour before
+  // the last increment before max. Expect the histogram to be updated.
+  for (int i = 0; i < 6; ++i)
+    service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
+
+  clock->SetNow(GetReferenceTime() + base::TimeDelta::FromMinutes(121));
+  service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
+
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
+                              3);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kTotalOriginsHistogram, 1,
+                               1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kTotalOriginsHistogram, 3,
+                               2);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kMeanEngagementHistogram,
+                              3);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kMedianEngagementHistogram,
+                              3);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementScoreHistogram,
+                              7);
+  histograms.ExpectUniqueSample(
+      SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram, 0, 3);
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kOriginsWithMaxDailyEngagementHistogram, 0, 2);
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kOriginsWithMaxDailyEngagementHistogram, 1, 1);
+  histograms.ExpectUniqueSample(
+      SiteEngagementMetrics::kPercentOriginsWithMaxEngagementHistogram, 0, 3);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                              19);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_NAVIGATION,
+                               13);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_KEYPRESS, 3);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
+                               SiteEngagementMetrics::ENGAGEMENT_MOUSE, 3);
 }
 
 // Expect that sites that have reached zero engagement are cleaned up.

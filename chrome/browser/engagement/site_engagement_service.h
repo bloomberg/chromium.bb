@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/page_transition_types.h"
 
@@ -57,6 +58,9 @@ class SiteEngagementScore {
 
   double Score() const;
   void AddPoints(double points);
+
+  // Returns true if the maximum number of points today has been added.
+  bool MaxPointsPerDayAdded();
 
   // Updates the content settings dictionary |score_dict| with the current score
   // fields. Returns true if |score_dict| changed, otherwise return false.
@@ -129,14 +133,19 @@ class SiteEngagementService : public KeyedService,
 
   // Update the karma score of the origin matching |url| for time-on-site, based
   // on user input.
-  void HandleUserInput(const GURL& url);
+  void HandleUserInput(const GURL& url,
+                       SiteEngagementMetrics::EngagementType type);
 
   // Overridden from SiteEngagementScoreProvider:
   double GetScore(const GURL& url) override;
   double GetTotalEngagementPoints() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CleanupEngagementScores);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetMedianEngagement);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalNavigationPoints);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalUserInputPoints);
 
   // Only used in tests.
   SiteEngagementService(Profile* profile, scoped_ptr<base::Clock> clock);
@@ -145,12 +154,31 @@ class SiteEngagementService : public KeyedService,
   // maximum limits for the day and overall.
   void AddPoints(const GURL& url, double points);
 
+  // Post startup tasks: cleaning up origins which have decayed to 0, and
+  // logging UMA statistics.
+  void AfterStartupTask();
   void CleanupEngagementScores();
+  void RecordMetrics();
+
+  // Returns the median engagement score of all recorded origins.
+  double GetMedianEngagement(std::map<GURL, double>& score_map);
+
+  // Returns the number of origins with maximum daily and total engagement
+  // respectively.
+  int OriginsWithMaxDailyEngagement();
+  int OriginsWithMaxEngagement(std::map<GURL, double>& score_map);
 
   Profile* profile_;
 
   // The clock used to vend times.
   scoped_ptr<base::Clock> clock_;
+
+  // Metrics are recorded at non-incognito browser startup, and then
+  // approximately once per hour thereafter. Store the local time at which
+  // metrics were previously uploaded: the first event which affects any
+  // origin's engagement score after an hour has elapsed triggers the next
+  // upload.
+  base::Time last_metrics_time_;
 
   base::WeakPtrFactory<SiteEngagementService> weak_factory_;
 

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/time/clock.h"
@@ -21,6 +22,9 @@
 #include "url/gurl.h"
 
 namespace {
+
+// Length of time between metrics logging.
+const base::TimeDelta metrics_interval = base::TimeDelta::FromMinutes(60);
 
 // Delta within which to consider scores equal.
 const double kScoreDelta = 0.001;
@@ -113,6 +117,15 @@ void SiteEngagementScore::AddPoints(double points) {
   last_engagement_time_ = now;
 }
 
+bool SiteEngagementScore::MaxPointsPerDayAdded() {
+  if (!last_engagement_time_.is_null() &&
+      clock_->Now().LocalMidnight() != last_engagement_time_.LocalMidnight()) {
+    return false;
+  }
+
+  return points_added_today_ == kMaxPointsPerDay;
+}
+
 bool SiteEngagementScore::UpdateScoreDict(base::DictionaryValue* score_dict) {
   double raw_score_orig = 0;
   double points_added_today_orig = 0;
@@ -177,7 +190,7 @@ SiteEngagementService::SiteEngagementService(Profile* profile)
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE, content::BrowserThread::GetMessageLoopProxyForThread(
                      content::BrowserThread::UI),
-      base::Bind(&SiteEngagementService::CleanupEngagementScores,
+      base::Bind(&SiteEngagementService::AfterStartupTask,
                  weak_factory_.GetWeakPtr()));
 }
 
@@ -186,11 +199,18 @@ SiteEngagementService::~SiteEngagementService() {
 
 void SiteEngagementService::HandleNavigation(const GURL& url,
                                              ui::PageTransition transition) {
+  SiteEngagementMetrics::RecordEngagement(
+      SiteEngagementMetrics::ENGAGEMENT_NAVIGATION);
   AddPoints(url, SiteEngagementScore::kNavigationPoints);
+  RecordMetrics();
 }
 
-void SiteEngagementService::HandleUserInput(const GURL& url) {
+void SiteEngagementService::HandleUserInput(
+    const GURL& url,
+    SiteEngagementMetrics::EngagementType type) {
+  SiteEngagementMetrics::RecordEngagement(type);
   AddPoints(url, SiteEngagementScore::kUserInputPoints);
+  RecordMetrics();
 }
 
 double SiteEngagementService::GetScore(const GURL& url) {
@@ -204,22 +224,12 @@ double SiteEngagementService::GetScore(const GURL& url) {
 }
 
 double SiteEngagementService::GetTotalEngagementPoints() {
-  HostContentSettingsMap* settings_map =
-    HostContentSettingsMapFactory::GetForProfile(profile_);
-  scoped_ptr<ContentSettingsForOneType> engagement_settings =
-      GetEngagementContentSettings(settings_map);
+  std::map<GURL, double> score_map = GetScoreMap();
 
   double total_score = 0;
-  for (const auto& site : *engagement_settings) {
-    GURL origin(site.primary_pattern.ToString());
-    if (!origin.is_valid())
-      continue;
+  for (const auto& value : score_map)
+    total_score += value.second;
 
-    scoped_ptr<base::DictionaryValue> score_dict =
-        GetScoreDictForOrigin(settings_map, origin);
-    SiteEngagementScore score(clock_.get(), *score_dict);
-    total_score += score.Score();
-  }
   return total_score;
 }
 
@@ -268,6 +278,11 @@ void SiteEngagementService::AddPoints(const GURL& url, double points) {
   }
 }
 
+void SiteEngagementService::AfterStartupTask() {
+  CleanupEngagementScores();
+  RecordMetrics();
+}
+
 void SiteEngagementService::CleanupEngagementScores() {
   HostContentSettingsMap* settings_map =
     HostContentSettingsMapFactory::GetForProfile(profile_);
@@ -290,3 +305,91 @@ void SiteEngagementService::CleanupEngagementScores() {
   }
 }
 
+void SiteEngagementService::RecordMetrics() {
+  base::Time now = clock_->Now();
+  if (last_metrics_time_.is_null() ||
+      now - last_metrics_time_ >= metrics_interval) {
+    last_metrics_time_ = now;
+    std::map<GURL, double> score_map = GetScoreMap();
+
+    int origins_with_max_engagement = OriginsWithMaxEngagement(score_map);
+    int total_origins = score_map.size();
+    int percent_origins_with_max_engagement =
+        (total_origins == 0 ? 0 : (origins_with_max_engagement * 100) /
+                                      total_origins);
+
+    double total_engagement = GetTotalEngagementPoints();
+    double mean_engagement =
+        (total_origins == 0 ? 0 : total_engagement / total_origins);
+
+    SiteEngagementMetrics::RecordTotalOriginsEngaged(total_origins);
+    SiteEngagementMetrics::RecordTotalSiteEngagement(total_engagement);
+    SiteEngagementMetrics::RecordMeanEngagement(mean_engagement);
+    SiteEngagementMetrics::RecordMedianEngagement(
+        GetMedianEngagement(score_map));
+    SiteEngagementMetrics::RecordEngagementScores(score_map);
+
+    SiteEngagementMetrics::RecordOriginsWithMaxDailyEngagement(
+        OriginsWithMaxDailyEngagement());
+    SiteEngagementMetrics::RecordOriginsWithMaxEngagement(
+        origins_with_max_engagement);
+    SiteEngagementMetrics::RecordPercentOriginsWithMaxEngagement(
+        percent_origins_with_max_engagement);
+  }
+}
+
+double SiteEngagementService::GetMedianEngagement(
+    std::map<GURL, double>& score_map) {
+  if (score_map.size() == 0)
+    return 0;
+
+  std::vector<double> scores;
+  scores.reserve(score_map.size());
+  for (const auto& value : score_map)
+    scores.push_back(value.second);
+
+  // Calculate the median as the middle value of the sorted engagement scores
+  // if there are an odd number of scores, or the average of the two middle
+  // scores otherwise.
+  std::sort(scores.begin(), scores.end());
+  size_t mid = scores.size() / 2;
+  if (scores.size() % 2 == 1)
+    return scores[mid];
+  else
+    return (scores[mid - 1] + scores[mid]) / 2;
+}
+
+int SiteEngagementService::OriginsWithMaxDailyEngagement() {
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  scoped_ptr<ContentSettingsForOneType> engagement_settings =
+      GetEngagementContentSettings(settings_map);
+
+  int total_origins = 0;
+
+  // We cannot call GetScoreMap as we need the score objects, not raw scores.
+  for (const auto& site : *engagement_settings) {
+    GURL origin(site.primary_pattern.ToString());
+    if (!origin.is_valid())
+      continue;
+
+    scoped_ptr<base::DictionaryValue> score_dict =
+        GetScoreDictForOrigin(settings_map, origin);
+    SiteEngagementScore score(clock_.get(), *score_dict);
+    if (score.MaxPointsPerDayAdded())
+      ++total_origins;
+  }
+
+  return total_origins;
+}
+
+int SiteEngagementService::OriginsWithMaxEngagement(
+    std::map<GURL, double>& score_map) {
+  int total_origins = 0;
+
+  for (const auto& value : score_map)
+    if (value.second == SiteEngagementScore::kMaxPoints)
+      ++total_origins;
+
+  return total_origins;
+}

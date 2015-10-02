@@ -1438,6 +1438,8 @@
       'browser/engagement/site_engagement_eviction_policy.h',
       'browser/engagement/site_engagement_helper.cc',
       'browser/engagement/site_engagement_helper.h',
+      'browser/engagement/site_engagement_metrics.cc',
+      'browser/engagement/site_engagement_metrics.h',
       'browser/engagement/site_engagement_service.cc',
       'browser/engagement/site_engagement_service.h',
       'browser/engagement/site_engagement_service_factory.cc',
