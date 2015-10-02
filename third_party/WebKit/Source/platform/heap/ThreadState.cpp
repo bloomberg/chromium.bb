@@ -45,6 +45,7 @@
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
+#include "wtf/DataLog.h"
 #include "wtf/Partitions.h"
 #include "wtf/ThreadingPrimitives.h"
 #if ENABLE(GC_PROFILING)
@@ -608,6 +609,9 @@ bool ThreadState::judgeGCThreshold(size_t totalMemorySizeThreshold, double heapG
         return false;
     // If the growing rate of Oilpan's heap or PartitionAlloc is high enough,
     // trigger a GC.
+#if PRINT_HEAP_STATS
+    dataLogF("heapGrowingRate=%.1lf, partitionAllocGrowingRate=%.1lf\n", heapGrowingRate(), partitionAllocGrowingRate());
+#endif
     return heapGrowingRate() >= heapGrowingRateThreshold || partitionAllocGrowingRate() >= heapGrowingRateThreshold;
 }
 
@@ -648,6 +652,10 @@ void ThreadState::scheduleV8FollowupGCIfNeeded(V8GCType gcType)
     ASSERT(checkThread());
     Heap::reportMemoryUsageForTracing();
 
+#if PRINT_HEAP_STATS
+    dataLogF("ThreadState::scheduleV8FollowupGCIfNeeded (gcType=%s)\n", gcType == V8MajorGC ? "MajorGC" : "MinorGC");
+#endif
+
     if (isGCForbidden())
         return;
 
@@ -660,14 +668,23 @@ void ThreadState::scheduleV8FollowupGCIfNeeded(V8GCType gcType)
     // TODO(haraken): Consider if we should trigger a memory pressure GC
     // for V8 minor GCs as well.
     if (gcType == V8MajorGC && shouldForceMemoryPressureGC()) {
+#if PRINT_HEAP_STATS
+        dataLogF("Scheduled MemoryPressureGC\n");
+#endif
         Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::MemoryPressureGC);
         return;
     }
     if (shouldScheduleV8FollowupGC()) {
+#if PRINT_HEAP_STATS
+        dataLogF("Scheduled PreciseGC\n");
+#endif
         schedulePreciseGC();
         return;
     }
     if (gcType == V8MajorGC) {
+#if PRINT_HEAP_STATS
+        dataLogF("Scheduled IdleGC\n");
+#endif
         scheduleIdleGC();
         return;
     }
@@ -677,6 +694,10 @@ void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
 {
     ASSERT(checkThread());
     Heap::reportMemoryUsageForTracing();
+
+#if PRINT_HEAP_STATS
+    dataLogF("ThreadState::schedulePageNavigationGCIfNeeded (estimatedRemovalRatio=%.2lf)\n", estimatedRemovalRatio);
+#endif
 
     if (isGCForbidden())
         return;
@@ -689,10 +710,16 @@ void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
     ASSERT(!sweepForbidden());
 
     if (shouldForceMemoryPressureGC()) {
+#if PRINT_HEAP_STATS
+        dataLogF("Scheduled MemoryPressureGC\n");
+#endif
         Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::MemoryPressureGC);
         return;
     }
     if (shouldSchedulePageNavigationGC(estimatedRemovalRatio)) {
+#if PRINT_HEAP_STATS
+        dataLogF("Scheduled PageNavigationGC\n");
+#endif
         schedulePageNavigationGC();
         return;
     }
@@ -710,6 +737,10 @@ void ThreadState::scheduleGCIfNeeded()
     ASSERT(checkThread());
     Heap::reportMemoryUsageForTracing();
 
+#if PRINT_HEAP_STATS
+    dataLogF("ThreadState::scheduleGCIfNeeded\n");
+#endif
+
     // Allocation is allowed during sweeping, but those allocations should not
     // trigger nested GCs.
     if (isGCForbidden())
@@ -718,6 +749,9 @@ void ThreadState::scheduleGCIfNeeded()
     if (shouldForceMemoryPressureGC()) {
         completeSweep();
         if (shouldForceMemoryPressureGC()) {
+#if PRINT_HEAP_STATS
+            dataLogF("Scheduled MemoryPressureGC\n");
+#endif
             Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::MemoryPressureGC);
             return;
         }
@@ -730,11 +764,17 @@ void ThreadState::scheduleGCIfNeeded()
     if (shouldForceConservativeGC()) {
         completeSweep();
         if (shouldForceConservativeGC()) {
+#if PRINT_HEAP_STATS
+            dataLogF("Scheduled ConservativeGC\n");
+#endif
             Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
             return;
         }
     }
     if (shouldScheduleIdleGC()) {
+#if PRINT_HEAP_STATS
+        dataLogF("Scheduled IdleGC\n");
+#endif
         scheduleIdleGC();
         return;
     }
@@ -1155,6 +1195,10 @@ void ThreadState::postSweep()
         if (Heap::objectSizeAtLastGC() > 0)
             collectionRate = 1 - 1.0 * Heap::markedObjectSize() / Heap::objectSizeAtLastGC();
         TRACE_COUNTER1("blink_gc", "ThreadState::collectionRate", static_cast<int>(100 * collectionRate));
+
+#if PRINT_HEAP_STATS
+        dataLogF("ThreadState::postSweep (collectionRate=%d%%)\n", static_cast<int>(100 * collectionRate));
+#endif
 
         // Heap::markedObjectSize() may be underestimated here if any other
         // thread has not yet finished lazy sweeping.

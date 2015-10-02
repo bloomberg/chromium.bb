@@ -44,6 +44,7 @@
 #include "public/platform/WebMemoryAllocatorDump.h"
 #include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/Assertions.h"
+#include "wtf/DataLog.h"
 #include "wtf/LeakAnnotations.h"
 #include "wtf/MainThread.h"
 #include "wtf/Partitions.h"
@@ -472,6 +473,10 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     double markingTimeInMilliseconds = WTF::currentTimeMS() - timeStamp;
     s_estimatedMarkingTimePerByte = totalObjectSize ? (markingTimeInMilliseconds / 1000 / totalObjectSize) : 0;
 
+#if PRINT_HEAP_STATS
+    dataLogF("Heap::collectGarbage (gcReason=%s, lazySweeping=%d, time=%.1lfms)\n", gcReasonString(reason), gcType == ThreadState::GCWithoutSweep, markingTimeInMilliseconds);
+#endif
+
     Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", markingTimeInMilliseconds, 0, 10 * 1000, 50);
     Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", Heap::allocatedObjectSize() / 1024, 0, 4 * 1024 * 1024, 50);
     Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", Heap::allocatedSpace() / 1024, 0, 4 * 1024 * 1024, 50);
@@ -624,6 +629,10 @@ void Heap::reportMemoryUsageHistogram()
 
 void Heap::reportMemoryUsageForTracing()
 {
+#if PRINT_HEAP_STATS
+    // dataLogF("allocatedSpace=%ldMB, allocatedObjectSize=%ldMB, markedObjectSize=%ldMB, partitionAllocSize=%ldMB, wrapperCount=%ld, collectedWrapperCount=%ld\n", Heap::allocatedSpace() / 1024 / 1024, Heap::allocatedObjectSize() / 1024 / 1024, Heap::markedObjectSize() / 1024 / 1024, WTF::Partitions::totalSizeOfCommittedPages() / 1024 / 1024, Heap::wrapperCount(), Heap::collectedWrapperCount());
+#endif
+
     bool gcTracingEnabled;
     TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink_gc", &gcTracingEnabled);
     if (!gcTracingEnabled)

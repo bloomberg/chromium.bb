@@ -50,6 +50,8 @@ class Isolate;
 
 namespace blink {
 
+#define PRINT_HEAP_STATS 0 // Enable this macro to print heap stats to stderr.
+
 class BasePage;
 class CallbackStack;
 class CrossThreadPersistentRegion;
