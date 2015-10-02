@@ -240,7 +240,9 @@ void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info)
 
     if (info.redirectChain().isEmpty()) {
         PerformanceEntry* entry = PerformanceResourceTiming::create(info, timeOrigin(), startTime, allowTimingDetails);
-        addResourceTimingBuffer(*entry);
+        notifyObserversOfEntry(*entry);
+        if (!isResourceTimingBufferFull())
+            addResourceTimingBuffer(*entry);
         return;
     }
 
