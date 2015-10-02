@@ -68,7 +68,8 @@ cr.define('hotword', function() {
           url.indexOf(base + '/?') == 0 ||
           url.indexOf(base + '/#') == 0 ||
           url.indexOf(base + '/webhp') == 0 ||
-          url.indexOf(base + '/search') == 0) {
+          url.indexOf(base + '/search') == 0 ||
+          url.indexOf(base + '/imghp') == 0) {
         return true;
       }
       return false;
@@ -447,6 +448,9 @@ cr.define('hotword', function() {
                     sendResponse));
             return true;
           }
+
+          // Do not show the opt-in promo for ineligible urls.
+          this.sendResponse_({'doNotShowOptinMessage': true}, sendResponse);
           break;
         case CommandFromPage.CLICKED_OPTIN:
           chrome.hotwordPrivate.setEnabled(true);
@@ -457,6 +461,30 @@ cr.define('hotword', function() {
           break;
       }
       return false;
+    },
+
+    /**
+     * Sends a message directly to the sending page.
+     * @param {!HotwordStatus} response The response to send to the sender.
+     * @param {!function(HotwordStatus)} sendResponse Callback to respond
+     *     to sender.
+     * @private
+     */
+    sendResponse_: function(response, sendResponse) {
+      try {
+        sendResponse(response);
+      } catch (err) {
+        // Suppress the exception thrown by sendResponse() when the page doesn't
+        // specify a response callback in the call to
+        // chrome.runtime.sendMessage().
+        // Unfortunately, there doesn't appear to be a way to detect one-way
+        // messages without explicitly saying in the message itself. This
+        // message is defined as a constant in
+        // extensions/renderer/messaging_bindings.cc
+        if (err.message == 'Attempting to use a disconnected port object')
+          return;
+        throw err;
+      }
     },
 
     /**
@@ -477,20 +505,7 @@ cr.define('hotword', function() {
         response = hotwordStatus;
       }
 
-      try {
-        sendResponse(response);
-      } catch (err) {
-        // Suppress the exception thrown by sendResponse() when the page doesn't
-        // specify a response callback in the call to
-        // chrome.runtime.sendMessage().
-        // Unfortunately, there doesn't appear to be a way to detect one-way
-        // messages without explicitly saying in the message itself. This
-        // message is defined as a constant in
-        // extensions/renderer/messaging_bindings.cc
-        if (err.message == 'Attempting to use a disconnected port object')
-          return;
-        throw err;
-      }
+      this.sendResponse_(response, sendResponse);
     },
 
     /**
