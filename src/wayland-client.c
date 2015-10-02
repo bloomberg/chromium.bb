@@ -157,7 +157,7 @@ display_fatal_error(struct wl_display *display, int error)
 /**
  * This function is called for error events
  * and indicates that in some object an error occurred.
- * Difference between this function and display_fatal_error()
+ * The difference between this function and display_fatal_error()
  * is that this one handles errors that will come by wire,
  * whereas display_fatal_error() is called for local errors.
  *
