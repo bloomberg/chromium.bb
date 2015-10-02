@@ -91,5 +91,9 @@
         <item name="android:listPopupWindowStyle">@style/ListPopupWindow.LowEnd</item>
         <item name="android:spinnerStyle">@style/Spinner.LowEnd</item>
         <item name="android:autoCompleteTextViewStyle">@style/AutoCompleteTextView.LowEnd</item>
+
+        <!-- Without HW acceleration the default text cursor looks weird (top
+             half is way brighter than the bottom), so we use our own. -->
+        <item name="android:textCursorDrawable">@drawable/text_cursor_lowend</item>
     </style>
 </resources>
