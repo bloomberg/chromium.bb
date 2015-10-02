@@ -826,9 +826,7 @@ void ThreadState::scheduleIdleLazySweep()
     if (!isMainThread())
         return;
 
-#if ENABLE(LAZY_SWEEPING)
     Platform::current()->currentThread()->scheduler()->postIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleLazySweep, this));
-#endif
 }
 
 void ThreadState::schedulePreciseGC()
@@ -1036,9 +1034,7 @@ void ThreadState::preSweep()
 
     threadLocalWeakProcessing();
 
-#if ENABLE(LAZY_SWEEPING)
     GCState previousGCState = gcState();
-#endif
     // We have to set the GCState to Sweeping before calling pre-finalizers
     // to disallow a GC during the pre-finalizers.
     setGCState(Sweeping);
@@ -1052,7 +1048,6 @@ void ThreadState::preSweep()
     poisonEagerHeap(SetPoison);
 #endif
 
-#if ENABLE(LAZY_SWEEPING)
     eagerSweep();
 #if defined(ADDRESS_SANITIZER)
     poisonAllHeaps();
@@ -1064,9 +1059,6 @@ void ThreadState::preSweep()
         // The default behavior is lazy sweeping.
         scheduleIdleLazySweep();
     }
-#else
-    completeSweep();
-#endif
 
 #if ENABLE(GC_PROFILING)
     snapshotFreeListIfNecessary();

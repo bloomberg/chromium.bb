@@ -1963,7 +1963,6 @@ TEST(HeapTest, FreelistReuse)
 }
 #endif
 
-#if ENABLE(LAZY_SWEEPING)
 TEST(HeapTest, LazySweepingPages)
 {
     clearOutOldGarbage();
@@ -2088,7 +2087,6 @@ TEST(HeapTest, EagerlySweepingPages)
     EXPECT_EQ(100, SimpleFinalizedEagerObject::s_destructorCalls);
     EXPECT_EQ(100, SimpleFinalizedObjectInstanceOfTemplate::s_destructorCalls);
 }
-#endif
 
 TEST(HeapTest, Finalization)
 {

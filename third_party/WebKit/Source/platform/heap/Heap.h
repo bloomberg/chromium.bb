@@ -118,16 +118,12 @@ public:
     static bool willObjectBeLazilySwept(const T* objectPointer)
     {
         static_assert(IsGarbageCollectedType<T>::value, "only objects deriving from GarbageCollected can be used.");
-#if ENABLE(LAZY_SWEEPING)
         BasePage* page = pageFromObject(objectPointer);
         if (page->hasBeenSwept())
             return false;
         ASSERT(page->heap()->threadState()->isSweepingInProgress());
 
         return !Heap::isHeapObjectAlive(const_cast<T*>(objectPointer));
-#else
-        return false;
-#endif
     }
 
     // Push a trace callback on the marking stack.
@@ -453,7 +449,7 @@ public:                                                \
 #define EAGERLY_FINALIZE() typedef int IsEagerlyFinalizedMarker
 #endif
 
-#if !ENABLE(OILPAN) && ENABLE(LAZY_SWEEPING)
+#if !ENABLE(OILPAN)
 #define EAGERLY_FINALIZE_WILL_BE_REMOVED() EAGERLY_FINALIZE()
 #else
 #define EAGERLY_FINALIZE_WILL_BE_REMOVED()
