@@ -44,6 +44,7 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
                                configurator,
                                event_creator),
       auto_lofi_enabled_group_(false),
+      auto_lofi_control_group_(false),
       network_quality_prohibitively_slow_(false) {
   network_interfaces_.reset(new net::NetworkInterfaceList());
 }
@@ -102,9 +103,18 @@ bool TestDataReductionProxyConfig::IsIncludedInLoFiEnabledFieldTrial() const {
   return auto_lofi_enabled_group_;
 }
 
+bool TestDataReductionProxyConfig::IsIncludedInLoFiControlFieldTrial() const {
+  return auto_lofi_control_group_;
+}
+
 void TestDataReductionProxyConfig::SetIncludedInLoFiEnabledFieldTrial(
     bool auto_lofi_enabled_group) {
   auto_lofi_enabled_group_ = auto_lofi_enabled_group;
+}
+
+void TestDataReductionProxyConfig::SetIncludedInLoFiControlFieldTrial(
+    bool auto_lofi_control_group) {
+  auto_lofi_control_group_ = auto_lofi_control_group;
 }
 
 void TestDataReductionProxyConfig::SetNetworkProhibitivelySlow(

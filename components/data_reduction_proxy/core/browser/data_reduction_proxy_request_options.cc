@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
@@ -49,6 +50,7 @@ const char kPatchNumberHeaderOption[] = "p";
 const char kClientHeaderOption[] = "c";
 const char kLoFiHeaderOption[] = "q";
 const char kExperimentsOption[] = "exp";
+const char kLoFiExperimentID[] = "lofi_active_control";
 
 // The empty version for the authentication protocol. Currently used by
 // Android webview.
@@ -180,6 +182,29 @@ void DataReductionProxyRequestOptions::MayRegenerateHeaderBasedOnLoFi(
   if (!lofi_.empty() && !lofi_now_enabled) {
     lofi_ = std::string();
     RegenerateRequestHeaderValue();
+    return;
+  }
+
+  // User was not part of Lo-Fi active control experiment, but now is.
+  if (std::find(experiments_.begin(), experiments_.end(),
+                std::string(kLoFiExperimentID)) == experiments_.end() &&
+      data_reduction_proxy_config_->IsInLoFiActiveControlExperiment()) {
+    experiments_.push_back(kLoFiExperimentID);
+    RegenerateRequestHeaderValue();
+    DCHECK(std::find(experiments_.begin(), experiments_.end(),
+                     kLoFiExperimentID) != experiments_.end());
+    return;
+  }
+
+  // User was part of Lo-Fi active control experiment, but now is not.
+  auto it = std::find(experiments_.begin(), experiments_.end(),
+                      std::string(kLoFiExperimentID));
+  if (it != experiments_.end() &&
+      !data_reduction_proxy_config_->IsInLoFiActiveControlExperiment()) {
+    experiments_.erase(it);
+    RegenerateRequestHeaderValue();
+    DCHECK(std::find(experiments_.begin(), experiments_.end(),
+                     std::string(kLoFiExperimentID)) == experiments_.end());
     return;
   }
 }

@@ -75,6 +75,11 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // Allows tests to set the session as part of Lo-Fi enabled field trial.
   void SetIncludedInLoFiEnabledFieldTrial(bool included_in_lofi_enabled);
 
+  bool IsIncludedInLoFiControlFieldTrial() const override;
+
+  // Allows tests to set the session as part of Lo-Fi control field trial.
+  void SetIncludedInLoFiControlFieldTrial(bool included_in_lofi_control);
+
   // Allows tests to mark the network as prohibitively slow.
   void SetNetworkProhibitivelySlow(bool network_quality_prohibitively_slow);
 
@@ -90,6 +95,9 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   // True if this session is part of Auto Lo-Fi enabled field trial.
   bool auto_lofi_enabled_group_;
+
+  // True if this session is part of Auto Lo-Fi control field trial.
+  bool auto_lofi_control_group_;
 
   // True if network quality is slow enough to turn Auto Lo-Fi ON.
   bool network_quality_prohibitively_slow_;

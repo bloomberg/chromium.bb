@@ -31,6 +31,7 @@ extern const char kPatchNumberHeaderOption[];
 extern const char kClientHeaderOption[];
 extern const char kLoFiHeaderOption[];
 extern const char kExperimentsOption[];
+extern const char kLoFiExperimentID[];
 
 #if defined(OS_ANDROID)
 extern const char kAndroidWebViewProtocolVersion[];

@@ -314,21 +314,18 @@ TEST_F(DataReductionProxyRequestOptionsTest, LoFiOnThroughCommandLineSwitch) {
 TEST_F(DataReductionProxyRequestOptionsTest, AutoLoFi) {
   const struct {
     bool auto_lofi_enabled_group;
+    bool auto_lofi_control_group;
     bool network_prohibitively_slow;
-
   } tests[] = {
-      {
-       false, false,
-      },
-      {
-       false, true,
-      },
-      {
-       true, false,
-      },
-      {
-       true, true,
-      },
+      {false, false, false},
+      {false, false, true},
+      {true, false, false},
+      {true, false, true},
+      {false, true, false},
+      {false, true, true},
+      // Repeat this test data to simulate user moving out of Lo-Fi control
+      // experiment.
+      {false, true, false},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
@@ -337,6 +334,8 @@ TEST_F(DataReductionProxyRequestOptionsTest, AutoLoFi) {
     // trial and network is prohibitively slow.
     bool expect_lofi_header =
         tests[i].auto_lofi_enabled_group && tests[i].network_prohibitively_slow;
+    bool expect_lofi_experiment_header =
+        tests[i].auto_lofi_control_group && tests[i].network_prohibitively_slow;
 
     std::string expected_header;
     if (!expect_lofi_header) {
@@ -350,8 +349,15 @@ TEST_F(DataReductionProxyRequestOptionsTest, AutoLoFi) {
                             std::string(), "low", std::vector<std::string>(),
                             &expected_header);
     }
+
+    if (expect_lofi_experiment_header) {
+      expected_header = expected_header.append(", exp=");
+      expected_header = expected_header.append(kLoFiExperimentID);
+    }
     test_context_->config()->SetIncludedInLoFiEnabledFieldTrial(
         tests[i].auto_lofi_enabled_group);
+    test_context_->config()->SetIncludedInLoFiControlFieldTrial(
+        tests[i].auto_lofi_control_group);
     test_context_->config()->SetNetworkProhibitivelySlow(
         tests[i].network_prohibitively_slow);
 

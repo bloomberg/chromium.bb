@@ -221,6 +221,10 @@ class DataReductionProxyConfig
   // Should be called on all URL requests (main frame and non main frame).
   bool ShouldUseLoFiHeaderForRequests() const;
 
+  // Returns true if the session is in the Lo-Fi control experiment. This
+  // happens if user is in Control group, and connection is slow.
+  bool IsInLoFiActiveControlExperiment() const;
+
   // Sets |lofi_status_| to LOFI_STATUS_OFF.
   void SetLoFiModeOff();
 

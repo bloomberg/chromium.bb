@@ -493,6 +493,24 @@ bool DataReductionProxyConfig::ShouldUseLoFiHeaderForRequests() const {
   return ShouldUseLoFiHeaderForRequests(lofi_status_);
 }
 
+bool DataReductionProxyConfig::IsInLoFiActiveControlExperiment() const {
+  switch (lofi_status_) {
+    case LOFI_STATUS_OFF:
+    case LOFI_STATUS_TEMPORARILY_OFF:
+    case LOFI_STATUS_INACTIVE_CONTROL:
+    case LOFI_STATUS_INACTIVE:
+    case LOFI_STATUS_ACTIVE_FROM_FLAGS:
+    case LOFI_STATUS_ACTIVE:
+      return false;
+    case LOFI_STATUS_ACTIVE_CONTROL:
+      DCHECK(IsIncludedInLoFiControlFieldTrial());
+      return true;
+    default:
+      NOTREACHED() << lofi_status_;
+  }
+  return false;
+}
+
 void DataReductionProxyConfig::PopulateAutoLoFiParams() {
   std::string field_trial = params::GetLoFiFieldTrialName();
 
