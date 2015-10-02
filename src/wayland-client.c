@@ -956,13 +956,12 @@ static const struct wl_callback_listener sync_listener = {
  * requests by sending a request to the display server and waiting for a
  * reply before returning.
  *
+ * This function uses wl_display_dispatch_queue() internally. It is not allowed
+ * to call this function while the thread is being prepared for reading events,
+ * and doing so will cause a dead lock.
+ *
  * \note This function may dispatch other events being received on the given
  * queue.
- *
- * \note This function uses wl_display_dispatch_queue() internally. If you
- * are using wl_display_read_events() from more threads, don't use this function
- * (or make sure that calling wl_display_roundtrip_queue() doesn't interfere
- * with calling wl_display_prepare_read() and wl_display_read_events())
  *
  * \sa wl_display_roundtrip()
  * \memberof wl_display
@@ -997,13 +996,12 @@ wl_display_roundtrip_queue(struct wl_display *display, struct wl_event_queue *qu
  * requests by sending a request to the display server and waiting for a reply
  * before returning.
  *
+ * This function uses wl_display_dispatch_queue() internally. It is not allowed
+ * to call this function while the thread is being prepared for reading events,
+ * and doing so will cause a dead lock.
+ *
  * \note This function may dispatch other events being received on the default
  * queue.
- *
- * \note This function uses wl_display_dispatch_queue() internally. If you
- * are using wl_display_read_events() from more threads, don't use this function
- * (or make sure that calling wl_display_roundtrip() doesn't interfere
- * with calling wl_display_prepare_read() and wl_display_read_events())
  *
  * \memberof wl_display
  */
@@ -1248,58 +1246,29 @@ cancel_read(struct wl_display *display)
  * \return 0 on success or -1 on error.  In case of error errno will
  * be set accordingly
  *
- * This will read events from the file descriptor for the display.
- * This function does not dispatch events, it only reads and queues
- * events into their corresponding event queues. If no data is
- * available on the file descriptor, wl_display_read_events() returns
- * immediately. To dispatch events that may have been queued, call
+ * Calling this function will result in data available on the display file
+ * descriptor being read and read events will be queued on their corresponding
+ * event queues.
+ *
+ * Before calling this function, depending on what thread it is to be called
+ * from, wl_display_prepare_read_queue() or wl_display_prepare_read() needs to
+ * be called. See wl_display_prepare_read_queue() for more details.
+ *
+ * When being called at a point where other threads have been prepared to read
+ * (using wl_display_prepare_read_queue() or wl_display_prepare_read()) this
+ * function will sleep until all other prepared threads have either been
+ * cancelled (using wl_display_cancel_read()) or them self entered this
+ * function. The last thread that calls this function will then read and queue
+ * events on their corresponding event queues, and finally wake up all other
+ * wl_display_read_events() calls causing them to return.
+ *
+ * If a thread cancels a read preparation when all other threads that have
+ * prepared to read has either called wl_display_cancel_read() or
+ * wl_display_read_events(), all reader threads will return without having read
+ * any data.
+ *
+ * To dispatch events that may have been queued, call
  * wl_display_dispatch_pending() or wl_display_dispatch_queue_pending().
- *
- * Before calling this function, wl_display_prepare_read() must be
- * called first. When running in more threads (which is the usual
- * case, since we'd use wl_display_dispatch() otherwise), every thread
- * must call wl_display_prepare_read() before calling this function.
- *
- * After calling wl_display_prepare_read() there can be some extra code
- * before calling wl_display_read_events(), for example poll() or alike.
- * Example of code in a thread:
- *
- * \code
- *
- *   while (wl_display_prepare_read(display) < 0)
- *           wl_display_dispatch_pending(display);
- *   wl_display_flush(display);
- *
- *   ... some code ...
- *
- *   fds[0].fd = wl_display_get_fd(display);
- *   fds[0].events = POLLIN;
- *   poll(fds, 1, -1);
- *
- *   if (!everything_ok()) {
- *	wl_display_cancel_read(display);
- *	handle_error();
- *   }
- *
- *   if (wl_display_read_events(display) < 0)
- *	handle_error();
- *
- *   ...
- * \endcode
- *
- * After wl_display_prepare_read() succeeds, other threads that enter
- * wl_display_read_events() will sleep until the very last thread enters
- * it too or cancels. Therefore when the display fd becomes (or already
- * is) readable, wl_display_read_events() should be called as soon as
- * possible to unblock all threads. If wl_display_read_events() will not
- * be called, then wl_display_cancel_read() must be called instead to let
- * the other threads continue.
- *
- * This function must not be called simultaneously with wl_display_dispatch().
- * It may lead to deadlock. If programmer wants, for some reason, use
- * wl_display_dispatch() in one thread and wl_display_prepare_read() with
- * wl_display_read_events() in another, extra care must be taken to serialize
- * these calls, i. e. use mutexes or similar (on whole prepare + read sequence)
  *
  * \sa wl_display_prepare_read(), wl_display_cancel_read(),
  * wl_display_dispatch_pending(), wl_display_dispatch()
@@ -1401,28 +1370,6 @@ err:
  * to wl_display_prepare_read_queue() fails, we dispatch the pending events and
  * try again until we're successful.
  *
- * When using wl_display_dispatch() we'd have something like:
- *
- * \code
- * wl_display_dispatch_pending(display);
- * wl_display_flush(display);
- * poll(fds, nfds, -1);
- * wl_display_dispatch(display);
- * \endcode
- *
- * This sequence in not thread-safe. The race is immediately after poll(),
- * where one thread could preempt and read events before the other thread calls
- * wl_display_dispatch(). This call now blocks and starves the other
- * fds in the event loop.
- *
- * Another race would be when using more event queues.
- * When one thread calls wl_display_dispatch(_queue)(), then it
- * reads all events from display's fd and queues them in appropriate
- * queues. Then it dispatches only its own queue and the other events
- * are sitting in their queues, waiting for dispatching. If that happens
- * before the other thread managed to call poll(), it will
- * block with events queued.
- *
  * The wl_display_prepare_read_queue() function doesn't acquire exclusive access
  * to the display's fd. It only registers that the thread calling this function
  * has intention to read from fd. When all registered readers call
@@ -1501,19 +1448,27 @@ wl_display_cancel_read(struct wl_display *display)
  * \param queue The event queue to dispatch
  * \return The number of dispatched events on success or -1 on failure
  *
- * Dispatch all incoming events for objects assigned to the given
- * event queue. On failure -1 is returned and errno set appropriately.
+ * Dispatch events on the given event queue.
  *
- * The behaviour of this function is exactly the same as the behaviour of
- * wl_display_dispatch(), but it dispatches events on given queue,
- * not on the default queue.
+ * If the given event queue is empty, this function blocks until there are
+ * events to be read from the display fd. Events are read and queued on
+ * the appropriate event queues. Finally, events on given event queue are
+ * dispatched. On failure -1 is returned and errno set appropriately.
  *
- * This function blocks if there are no events to dispatch (if there are,
- * it only dispatches these events and returns immediately).
- * When this function returns after blocking, it means that it read events
- * from display's fd and queued them to appropriate queues.
- * If among the incoming events were some events assigned to the given queue,
- * they are dispatched by this moment.
+ * In a multi threaded enviroment, do not manually wait using poll() (or
+ * equivalent) before calling this function, as doing so might cause a dead
+ * lock. If external reliance on poll() (or equivalent) is required, see
+ * wl_display_prepare_read_queue() of how to do so.
+ *
+ * This function is thread safe as long as it dispatches the right queue on the
+ * right thread. It is also compatible with the multi thread event reading
+ * preparation API (see wl_display_prepare_read_queue()), and uses the
+ * equivalent functionality internally. It is not allowed to call this function
+ * while the thread is being prepared for reading events, and doing so will
+ * cause a dead lock.
+ *
+ * It can be used as a helper function to ease the procedure of reading and
+ * dispatching events.
  *
  * \note Since Wayland 1.5 the display has an extra queue
  * for its own events (i. e. delete_id). This queue is dispatched always,
@@ -1521,11 +1476,8 @@ wl_display_cancel_read(struct wl_display *display)
  * That means that this function can return non-0 value even when it
  * haven't dispatched any event for the given queue.
  *
- * This function has the same constrains for using in multi-threaded apps
- * as \ref wl_display_dispatch().
- *
  * \sa wl_display_dispatch(), wl_display_dispatch_pending(),
- * wl_display_dispatch_queue_pending()
+ * wl_display_dispatch_queue_pending(), wl_display_prepare_read_queue()
  *
  * \memberof wl_display
  */
@@ -1622,17 +1574,24 @@ wl_display_dispatch_queue_pending(struct wl_display *display,
  * \param display The display context object
  * \return The number of dispatched events on success or -1 on failure
  *
- * Dispatch the display's default event queue.
+ * Dispatch events on the default event queue.
  *
  * If the default event queue is empty, this function blocks until there are
  * events to be read from the display fd. Events are read and queued on
  * the appropriate event queues. Finally, events on the default event queue
- * are dispatched.
+ * are dispatched. On failure -1 is returned and errno set appropriately.
  *
- * In multi-threaded environment, programmer may want to use
- * wl_display_read_events(). However, use of wl_display_read_events()
- * must not be mixed with wl_display_dispatch(). See wl_display_read_events()
- * and wl_display_prepare_read() for more details.
+ * In a multi threaded enviroment, do not manually wait using poll() (or
+ * equivalent) before calling this function, as doing so might cause a dead
+ * lock. If external reliance on poll() (or equivalent) is required, see
+ * wl_display_prepare_read_queue() of how to do so.
+ *
+ * This function is thread safe as long as it dispatches the right queue on the
+ * right thread. It is also compatible with the multi thread event reading
+ * preparation API (see wl_display_prepare_read_queue()), and uses the
+ * equivalent functionality internally. It is not allowed to call this function
+ * while the thread is being prepared for reading events, and doing so will
+ * cause a dead lock.
  *
  * \note It is not possible to check if there are events on the queue
  * or not. For dispatching default queue events without blocking, see \ref
