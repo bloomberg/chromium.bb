@@ -15,6 +15,10 @@ cr.define('downloads', function() {
     },
 
     properties: {
+      data: {
+        type: Object,
+      },
+
       hideDate: {
         type: Boolean,
         value: true,
@@ -31,13 +35,13 @@ cr.define('downloads', function() {
 
       completelyOnDisk_: {
         computed: 'computeCompletelyOnDisk_(' +
-            'data_.state, data_.file_externally_removed)',
+            'data.state, data.file_externally_removed)',
         type: Boolean,
         value: true,
       },
 
       controlledBy_: {
-        computed: 'computeControlledBy_(data_.by_ext_id, data_.by_ext_name)',
+        computed: 'computeControlledBy_(data.by_ext_id, data.by_ext_name)',
         type: String,
         value: '',
       },
@@ -61,49 +65,45 @@ cr.define('downloads', function() {
 
       isActive_: {
         computed: 'computeIsActive_(' +
-            'data_.state, data_.file_externally_removed)',
+            'data.state, data.file_externally_removed)',
         type: Boolean,
         value: true,
       },
 
       isDangerous_: {
-        computed: 'computeIsDangerous_(data_.state)',
+        computed: 'computeIsDangerous_(data.state)',
         type: Boolean,
         value: false,
       },
 
       isInProgress_: {
-        computed: 'computeIsInProgress_(data_.state)',
+        computed: 'computeIsInProgress_(data.state)',
         type: Boolean,
         value: false,
       },
 
       showCancel_: {
-        computed: 'computeShowCancel_(data_.state)',
+        computed: 'computeShowCancel_(data.state)',
         type: Boolean,
         value: false,
       },
 
       showProgress_: {
-        computed: 'computeShowProgress_(showCancel_, data_.percent)',
+        computed: 'computeShowProgress_(showCancel_, data.percent)',
         type: Boolean,
         value: false,
       },
 
       isMalware_: {
-        computed: 'computeIsMalware_(isDangerous_, data_.danger_type)',
+        computed: 'computeIsMalware_(isDangerous_, data.danger_type)',
         type: Boolean,
         value: false,
-      },
-
-      data_: {
-        type: Object,
       },
     },
 
     observers: [
-      // TODO(dbeam): this gets called way more when I observe data_.by_ext_id
-      // and data_.by_ext_name directly. Why?
+      // TODO(dbeam): this gets called way more when I observe data.by_ext_id
+      // and data.by_ext_name directly. Why?
       'observeControlledBy_(controlledBy_)',
     ],
 
@@ -114,7 +114,7 @@ cr.define('downloads', function() {
 
     /** @param {!downloads.Data} data */
     update: function(data) {
-      this.data_ = data;
+      this.data = data;
 
       if (!this.isDangerous_) {
         var icon = 'chrome://fileicon/' + encodeURIComponent(data.file_path);
@@ -140,17 +140,17 @@ cr.define('downloads', function() {
 
     /** @private */
     computeCompletelyOnDisk_: function() {
-      return this.data_.state == downloads.States.COMPLETE &&
-             !this.data_.file_externally_removed;
+      return this.data.state == downloads.States.COMPLETE &&
+             !this.data.file_externally_removed;
     },
 
     /** @private */
     computeControlledBy_: function() {
-      if (!this.data_.by_ext_id || !this.data_.by_ext_name)
+      if (!this.data.by_ext_id || !this.data.by_ext_name)
         return '';
 
-      var url = 'chrome://extensions#' + this.data_.by_ext_id;
-      var name = this.data_.by_ext_name;
+      var url = 'chrome://extensions#' + this.data.by_ext_id;
+      var name = this.data.by_ext_name;
       return loadTimeData.getStringF('controlledByUrl', url, name);
     },
 
@@ -158,12 +158,12 @@ cr.define('downloads', function() {
     computeDate_: function() {
       if (this.hideDate)
         return '';
-      return assert(this.data_.since_string || this.data_.date_string);
+      return assert(this.data.since_string || this.data.date_string);
     },
 
     /** @private */
     computeDescription_: function() {
-      var data = this.data_;
+      var data = this.data;
 
       switch (data.state) {
         case downloads.States.DANGEROUS:
@@ -193,28 +193,28 @@ cr.define('downloads', function() {
 
     /** @private */
     computeIsActive_: function() {
-      return this.data_.state != downloads.States.CANCELLED &&
-             this.data_.state != downloads.States.INTERRUPTED &&
-             !this.data_.file_externally_removed;
+      return this.data.state != downloads.States.CANCELLED &&
+             this.data.state != downloads.States.INTERRUPTED &&
+             !this.data.file_externally_removed;
     },
 
     /** @private */
     computeIsDangerous_: function() {
-      return this.data_.state == downloads.States.DANGEROUS;
+      return this.data.state == downloads.States.DANGEROUS;
     },
 
     /** @private */
     computeIsInProgress_: function() {
-      return this.data_.state == downloads.States.IN_PROGRESS;
+      return this.data.state == downloads.States.IN_PROGRESS;
     },
 
     /** @private */
     computeIsMalware_: function() {
       return this.isDangerous_ &&
-          (this.data_.danger_type == downloads.DangerType.DANGEROUS_CONTENT ||
-           this.data_.danger_type == downloads.DangerType.DANGEROUS_HOST ||
-           this.data_.danger_type == downloads.DangerType.DANGEROUS_URL ||
-           this.data_.danger_type == downloads.DangerType.POTENTIALLY_UNWANTED);
+          (this.data.danger_type == downloads.DangerType.DANGEROUS_CONTENT ||
+           this.data.danger_type == downloads.DangerType.DANGEROUS_HOST ||
+           this.data.danger_type == downloads.DangerType.DANGEROUS_URL ||
+           this.data.danger_type == downloads.DangerType.POTENTIALLY_UNWANTED);
     },
 
     /** @private */
@@ -226,26 +226,26 @@ cr.define('downloads', function() {
 
     /** @private */
     computeShowCancel_: function() {
-      return this.data_.state == downloads.States.IN_PROGRESS ||
-             this.data_.state == downloads.States.PAUSED;
+      return this.data.state == downloads.States.IN_PROGRESS ||
+             this.data.state == downloads.States.PAUSED;
     },
 
     /** @private */
     computeShowProgress_: function() {
-      return this.showCancel_ && this.data_.percent >= -1;
+      return this.showCancel_ && this.data.percent >= -1;
     },
 
     /** @private */
     computeTag_: function() {
-      switch (this.data_.state) {
+      switch (this.data.state) {
         case downloads.States.CANCELLED:
           return loadTimeData.getString('statusCancelled');
 
         case downloads.States.INTERRUPTED:
-          return this.data_.last_reason_text;
+          return this.data.last_reason_text;
 
         case downloads.States.COMPLETE:
-          return this.data_.file_externally_removed ?
+          return this.data.file_externally_removed ?
               loadTimeData.getString('statusRemoved') : '';
       }
 
@@ -254,7 +254,7 @@ cr.define('downloads', function() {
 
     /** @private */
     isIndeterminate_: function() {
-      return this.data_.percent == -1;
+      return this.data.percent == -1;
     },
 
     /** @private */
@@ -264,12 +264,12 @@ cr.define('downloads', function() {
 
     /** @private */
     onCancelClick_: function() {
-      downloads.ActionService.getInstance().cancel(this.data_.id);
+      downloads.ActionService.getInstance().cancel(this.data.id);
     },
 
     /** @private */
     onDiscardDangerous_: function() {
-      downloads.ActionService.getInstance().discardDangerous(this.data_.id);
+      downloads.ActionService.getInstance().discardDangerous(this.data.id);
     },
 
     /**
@@ -278,7 +278,7 @@ cr.define('downloads', function() {
      */
     onDragStart_: function(e) {
       e.preventDefault();
-      downloads.ActionService.getInstance().drag(this.data_.id);
+      downloads.ActionService.getInstance().drag(this.data.id);
     },
 
     /**
@@ -287,37 +287,37 @@ cr.define('downloads', function() {
      */
     onFileLinkClick_: function(e) {
       e.preventDefault();
-      downloads.ActionService.getInstance().openFile(this.data_.id);
+      downloads.ActionService.getInstance().openFile(this.data.id);
     },
 
     /** @private */
     onPauseClick_: function() {
-      downloads.ActionService.getInstance().pause(this.data_.id);
+      downloads.ActionService.getInstance().pause(this.data.id);
     },
 
     /** @private */
     onRemoveClick_: function() {
-      downloads.ActionService.getInstance().remove(this.data_.id);
+      downloads.ActionService.getInstance().remove(this.data.id);
     },
 
     /** @private */
     onResumeClick_: function() {
-      downloads.ActionService.getInstance().resume(this.data_.id);
+      downloads.ActionService.getInstance().resume(this.data.id);
     },
 
     /** @private */
     onRetryClick_: function() {
-      downloads.ActionService.getInstance().download(this.data_.url);
+      downloads.ActionService.getInstance().download(this.data.url);
     },
 
     /** @private */
     onSaveDangerous_: function() {
-      downloads.ActionService.getInstance().saveDangerous(this.data_.id);
+      downloads.ActionService.getInstance().saveDangerous(this.data.id);
     },
 
     /** @private */
     onShowClick_: function() {
-      downloads.ActionService.getInstance().show(this.data_.id);
+      downloads.ActionService.getInstance().show(this.data.id);
     },
   });
 
