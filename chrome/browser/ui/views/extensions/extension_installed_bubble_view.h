@@ -44,7 +44,7 @@ class ExtensionInstalledBubbleView
   ~ExtensionInstalledBubbleView() override;
 
   // ExtensionInstalledBubble::ExtensionInstalledBubbleUi:
-  bool MaybeShowNow() override;
+  void Show() override;
 
   // views::WidgetDelegate:
   void WindowClosing() override;

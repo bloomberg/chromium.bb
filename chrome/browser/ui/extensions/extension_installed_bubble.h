@@ -47,10 +47,13 @@ class ExtensionInstalledBubble : public content::NotificationObserver,
    public:
     virtual ~ExtensionInstalledBubbleUi() {}
 
-    // Attempts to show the bubble. Called from ShowInternal. Returns false
-    // if, because of animating (such as from adding a new browser action
-    // to the toolbar), the bubble could not be shown immediately.
-    virtual bool MaybeShowNow() = 0;
+    // Returns false if, because of animating (such as from adding a new browser
+    // action to the toolbar), the bubble could not be shown immediately.
+    // TODO(hcarmona): Detect animation in a platform-agnostic manner.
+    static bool ShouldShow(ExtensionInstalledBubble* bubble);
+
+    // Shows the bubble UI. Should be implemented per platform.
+    virtual void Show() = 0;
   };
 
   ExtensionInstalledBubble(ExtensionInstalledBubbleUi* bubble_ui,

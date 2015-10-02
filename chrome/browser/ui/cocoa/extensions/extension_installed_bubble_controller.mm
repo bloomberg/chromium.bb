@@ -59,7 +59,7 @@ class ExtensionInstalledBubbleBridge
 
  private:
   // ExtensionInstalledBubble::ExtensionInstalledBubbleUi:
-  bool MaybeShowNow() override;
+  void Show() override;
 
   // The (owning) installed bubble controller.
   ExtensionInstalledBubbleController* controller_;
@@ -75,9 +75,14 @@ ExtensionInstalledBubbleBridge::ExtensionInstalledBubbleBridge(
 ExtensionInstalledBubbleBridge::~ExtensionInstalledBubbleBridge() {
 }
 
-bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
-  [controller_ showWindow:controller_];
+// static
+bool ExtensionInstalledBubble::ExtensionInstalledBubbleUi::ShouldShow(
+    ExtensionInstalledBubble* bubble) {
   return true;
+}
+
+void ExtensionInstalledBubbleBridge::Show() {
+  [controller_ showWindow:controller_];
 }
 
 @implementation ExtensionInstalledBubbleController

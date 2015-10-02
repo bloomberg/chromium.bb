@@ -131,8 +131,10 @@ base::string16 ExtensionInstalledBubble::GetHowToUseDescription() const {
 }
 
 void ExtensionInstalledBubble::ShowInternal() {
-  if (bubble_ui_->MaybeShowNow())
+  if (ExtensionInstalledBubbleUi::ShouldShow(this)) {
+    bubble_ui_->Show();
     return;
+  }
   if (animation_wait_retries_++ < kAnimationWaitRetries) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&ExtensionInstalledBubble::ShowInternal,

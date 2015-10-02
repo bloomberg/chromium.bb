@@ -466,7 +466,21 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
 
 ExtensionInstalledBubbleView::~ExtensionInstalledBubbleView() {}
 
-bool ExtensionInstalledBubbleView::MaybeShowNow() {
+// static
+bool ExtensionInstalledBubble::ExtensionInstalledBubbleUi::ShouldShow(
+    ExtensionInstalledBubble* bubble) {
+  if (bubble->type() == bubble->BROWSER_ACTION ||
+      extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
+    BrowserActionsContainer* container =
+        BrowserView::GetBrowserViewForBrowser(bubble->browser())
+            ->GetToolbarView()
+            ->browser_actions();
+    return !container->animating();
+  }
+  return true;
+}
+
+void ExtensionInstalledBubbleView::Show() {
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForBrowser(bubble_.browser());
 
@@ -475,8 +489,8 @@ bool ExtensionInstalledBubbleView::MaybeShowNow() {
       extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
     BrowserActionsContainer* container =
         browser_view->GetToolbarView()->browser_actions();
-    if (container->animating())
-      return false;
+    // Hitting this DCHECK means |ShouldShow| failed.
+    DCHECK(!container->animating());
 
     reference_view = container->GetViewForId(bubble_.extension()->id());
     // If the view is not visible then it is in the chevron, so point the
@@ -518,8 +532,6 @@ bool ExtensionInstalledBubbleView::MaybeShowNow() {
   // The bubble widget is now the parent and owner of |this| and takes care of
   // deletion when the bubble or browser go away.
   bubble_.IgnoreBrowserClosing();
-
-  return true;
 }
 
 gfx::Rect ExtensionInstalledBubbleView::GetAnchorRect() const {
