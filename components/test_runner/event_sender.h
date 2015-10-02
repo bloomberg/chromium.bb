@@ -184,6 +184,8 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void ReplaySavedEvents();
   bool HandleInputEventOnViewOrPopup(const blink::WebInputEvent&);
 
+  double last_event_timestamp() { return last_event_timestamp_; }
+
   bool force_layout_on_events() const { return force_layout_on_events_; }
   void set_force_layout_on_events(bool force) {
     force_layout_on_events_ = force;
@@ -279,6 +281,8 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   uint32 time_offset_ms_;
   int click_count_;
+  // Timestamp (in seconds) of the last event that was dispatched
+  double last_event_timestamp_;
 
   base::WeakPtrFactory<EventSender> weak_factory_;
 

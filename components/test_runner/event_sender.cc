@@ -404,6 +404,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void TouchCancel();
   void TouchEnd();
   void LeapForward(int milliseconds);
+  double LastEventTimestamp();
   void BeginDragWithFiles(const std::vector<std::string>& files);
   void AddTouchPoint(double x, double y, gin::Arguments* args);
   void MouseDragBegin();
@@ -531,6 +532,7 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("touchCancel", &EventSenderBindings::TouchCancel)
       .SetMethod("touchEnd", &EventSenderBindings::TouchEnd)
       .SetMethod("leapForward", &EventSenderBindings::LeapForward)
+      .SetMethod("lastEventTimestamp", &EventSenderBindings::LastEventTimestamp)
       .SetMethod("beginDragWithFiles", &EventSenderBindings::BeginDragWithFiles)
       .SetMethod("addTouchPoint", &EventSenderBindings::AddTouchPoint)
       .SetMethod("mouseDragBegin", &EventSenderBindings::MouseDragBegin)
@@ -727,6 +729,12 @@ void EventSenderBindings::TouchEnd() {
 void EventSenderBindings::LeapForward(int milliseconds) {
   if (sender_)
     sender_->LeapForward(milliseconds);
+}
+
+double EventSenderBindings::LastEventTimestamp() {
+  if (sender_)
+    return sender_->last_event_timestamp();
+  return 0;
 }
 
 void EventSenderBindings::BeginDragWithFiles(
@@ -1888,7 +1896,7 @@ void EventSender::MouseLeave() {
                  click_count_,
                  0,
                  &event);
-   view_->handleInputEvent(event);
+   HandleInputEventOnViewOrPopup(event);
 }
 
 
@@ -1946,7 +1954,8 @@ void EventSender::ScheduleAsynchronousKeyDown(const std::string& code_str,
 }
 
 double EventSender::GetCurrentEventTimeSec() {
-  return (delegate_->GetCurrentTimeInMillisecond() + time_offset_ms_) / 1000.0;
+  return (base::TimeTicks::Now() - base::TimeTicks()).InSeconds() +
+         time_offset_ms_ / 1000.0;
 }
 
 void EventSender::DoLeapForward(int milliseconds) {
@@ -2487,6 +2496,8 @@ void EventSender::ReplaySavedEvents() {
 }
 
 bool EventSender::HandleInputEventOnViewOrPopup(const WebInputEvent& event) {
+  last_event_timestamp_ = event.timeStampSeconds;
+
   if (WebPagePopup* popup = view_->pagePopup()) {
     if (!WebInputEvent::isKeyboardEventType(event.type))
       return popup->handleInputEvent(event);

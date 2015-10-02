@@ -27,7 +27,6 @@
 #define TypeAhead_h
 
 #include "core/CoreExport.h"
-#include "core/dom/DOMTimeStamp.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -64,7 +63,8 @@ public:
 
 private:
     TypeAheadDataSource* m_dataSource;
-    DOMTimeStamp m_lastTypeTime;
+    // platform timestamp of last keyboard event in seconds
+    double m_lastTypeTime;
     UChar m_repeatingChar;
     StringBuilder m_buffer;
 };

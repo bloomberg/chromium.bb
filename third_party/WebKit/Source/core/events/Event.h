@@ -26,6 +26,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "core/dom/DOMHighResTimeStamp.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/events/EventInit.h"
 #include "core/events/EventPath.h"
@@ -122,7 +123,16 @@ public:
 
     bool bubbles() const { return m_canBubble; }
     bool cancelable() const { return m_cancelable; }
-    DOMTimeStamp timeStamp() const { return m_createTime; }
+
+    // Event creation timestamp in milliseconds. If |HiResEventTimeStamp|
+    // runtime feature is enabled it returns a DOMHighResTimeStamp using the
+    // platform timestamp (see |m_platformTimeStamp|) otherwise it returns a
+    // DOMTimeStamp that represents the current object's construction time (see
+    // |m_createTime|). For more info see http://crbug.com/160524
+    double timeStamp(ScriptState*) const;
+    double platformTimeStamp() const { return m_platformTimeStamp; }
+    void setPlatformTimeStamp(double platformTimeStamp) { m_platformTimeStamp = platformTimeStamp; }
+    DOMTimeStamp createTime() const { return m_createTime; }
 
     void stopPropagation() { m_propagationStopped = true; }
     void stopImmediatePropagation() { m_immediatePropagationStopped = true; }
@@ -183,9 +193,6 @@ public:
 
     bool isBeingDispatched() const { return eventPhase(); }
 
-    double uiCreateTime() const { return m_uiCreateTime; }
-    void setUICreateTime(double uiCreateTime) { m_uiCreateTime = uiCreateTime; }
-
     // Events that must not leak across isolated world, similar to how
     // ErrorEvent behaves, can override this method.
     virtual bool canBeDispatchedInWorld(const DOMWrapperWorld&) const { return true; }
@@ -225,7 +232,10 @@ private:
     DOMTimeStamp m_createTime;
     RefPtrWillBeMember<Event> m_underlyingEvent;
     OwnPtrWillBeMember<EventPath> m_eventPath;
-    double m_uiCreateTime; // For input events, the time the event was recorded by the UI.
+    // The monotonic platform time in seconds, for input events it is the
+    // event timestamp provided by the host OS and reported in the original
+    // WebInputEvent instance.
+    double m_platformTimeStamp;
 };
 
 #define DEFINE_EVENT_TYPE_CASTS(typeName) \

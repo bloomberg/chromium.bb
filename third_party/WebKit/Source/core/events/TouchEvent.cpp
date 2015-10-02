@@ -45,7 +45,7 @@ TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
         TouchList* changedTouches, const AtomicString& type,
         PassRefPtrWillBeRawPtr<AbstractView> view,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable, bool causesScrollingIfUncanceled,
-        double uiCreateTime)
+        double timestamp)
     // Pass a sourceCapabilities including the ability to fire touchevents when creating this touchevent, which is always created from input device capabilities from EventHandler.
     : UIEventWithKeyState(type, true, cancelable, view, 0, ctrlKey, altKey, shiftKey, metaKey, InputDeviceCapabilities::firesTouchEventsSourceCapabilities())
     , m_touches(touches)
@@ -53,7 +53,7 @@ TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
     , m_changedTouches(changedTouches)
     , m_causesScrollingIfUncanceled(causesScrollingIfUncanceled)
 {
-    setUICreateTime(uiCreateTime);
+    setPlatformTimeStamp(timestamp);
 }
 
 TouchEvent::~TouchEvent()

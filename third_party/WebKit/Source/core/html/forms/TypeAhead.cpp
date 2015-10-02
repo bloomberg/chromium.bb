@@ -42,7 +42,7 @@ TypeAhead::TypeAhead(TypeAheadDataSource* dataSource)
 {
 }
 
-static const DOMTimeStamp typeAheadTimeout = 1000;
+static const double typeAheadTimeout = 1; // in seconds
 
 static String stripLeadingWhiteSpace(const String& string)
 {
@@ -59,12 +59,12 @@ static String stripLeadingWhiteSpace(const String& string)
 
 int TypeAhead::handleEvent(KeyboardEvent* event, MatchModeFlags matchMode)
 {
-    if (event->timeStamp() < m_lastTypeTime)
+    if (event->platformTimeStamp() < m_lastTypeTime)
         return -1;
 
     int optionCount = m_dataSource->optionCount();
-    DOMTimeStamp delta = event->timeStamp() - m_lastTypeTime;
-    m_lastTypeTime = event->timeStamp();
+    double delta = event->platformTimeStamp() - m_lastTypeTime;
+    m_lastTypeTime = event->platformTimeStamp();
 
     UChar c = event->charCode();
 
@@ -122,7 +122,7 @@ int TypeAhead::handleEvent(KeyboardEvent* event, MatchModeFlags matchMode)
 
 bool TypeAhead::hasActiveSession(KeyboardEvent* event)
 {
-    DOMTimeStamp delta = event->timeStamp() - m_lastTypeTime;
+    double delta = event->platformTimeStamp() - m_lastTypeTime;
     return delta <= typeAheadTimeout;
 }
 

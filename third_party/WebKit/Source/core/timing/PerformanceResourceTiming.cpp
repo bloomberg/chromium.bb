@@ -39,6 +39,7 @@
 
 namespace blink {
 
+// TODO(majidvp): Should return DOMHighResTimeStamp type instead
 static double monotonicTimeToDOMHighResTimeStamp(double timeOrigin, double seconds)
 {
     ASSERT(seconds >= 0.0);

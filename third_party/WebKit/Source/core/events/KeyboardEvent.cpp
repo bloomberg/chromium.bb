@@ -82,7 +82,7 @@ KeyboardEvent::KeyboardEvent(const PlatformKeyboardEvent& key, AbstractView* vie
     , m_location(keyLocationCode(key))
     , m_isAutoRepeat(key.isAutoRepeat())
 {
-    setUICreateTime(key.timestamp());
+    setPlatformTimeStamp(key.timestamp());
 }
 
 KeyboardEvent::KeyboardEvent(const AtomicString& eventType, const KeyboardEventInit& initializer)

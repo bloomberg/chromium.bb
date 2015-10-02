@@ -386,6 +386,10 @@ public:
     bool setScrollbarVisibilityInScrollableArea(Node*, bool visible);
 
     void forceRestrictIFramePermissions();
+
+    // Translate given platform monotonic time in seconds to high resolution
+    // document time in seconds
+    double monotonicTimeToZeroBasedDocumentTime(double, ExceptionState&);
 private:
     explicit Internals(ScriptState*);
     Document* contextDocument() const;

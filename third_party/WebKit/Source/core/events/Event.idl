@@ -44,7 +44,17 @@
     readonly attribute boolean defaultPrevented;
 
     [RuntimeEnabled=TrustedEvents, Unforgeable] readonly attribute boolean isTrusted;
-    readonly attribute DOMTimeStamp timeStamp;
+
+    // TODO(majidvp): At the moment the actual return value type can either
+    // be: 
+    //  - DOMTimeStamp (i.e. long long): legacy type
+    //  - DOMHighResTimeStamp (i.e. double):  HighResEventTimeStamp REF is 
+    //    enabled 
+    // Below IDL definition uses DOMHighResTimeStamp because all DOMTimeStamp
+    // values can be represented in double type without any loss of precision.
+    // Once the feature is enabled by default the return value type will always
+    // match the definition here.
+    [CallWith=ScriptState] readonly attribute DOMHighResTimeStamp timeStamp;
 
     // FIXME: initEvent()'s arguments should not be optional.
     [Measure] void initEvent([Default=Undefined] optional DOMString type,

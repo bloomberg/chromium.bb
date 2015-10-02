@@ -120,7 +120,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
     short button, unsigned short buttons, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
     PlatformMouseEvent::SyntheticEventType syntheticEventType,
-    double uiCreateTime)
+    double timestamp)
     : MouseRelatedEvent(eventType, canBubble, cancelable, view, detail, IntPoint(screenX, screenY),
         IntPoint(windowX, windowY),
         IntPoint(movementX, movementY),
@@ -132,7 +132,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     , m_relatedTarget(relatedTarget)
     , m_syntheticEventType(syntheticEventType)
 {
-    setUICreateTime(uiCreateTime);
+    setPlatformTimeStamp(timestamp);
 }
 
 MouseEvent::MouseEvent(const AtomicString& eventType, const MouseEventInit& initializer)

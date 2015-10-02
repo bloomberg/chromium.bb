@@ -422,14 +422,19 @@ double PerformanceBase::clampTimeResolution(double timeSeconds)
     return floor(timeSeconds / resolutionSeconds) * resolutionSeconds;
 }
 
-double PerformanceBase::now() const
+DOMHighResTimeStamp PerformanceBase::monotonicTimeToDOMHighResTimeStamp(double monotonicTime) const
 {
     // Avoid exposing raw platform timestamps.
     if (m_timeOrigin == 0.0)
         return 0.0;
 
-    double nowSeconds = monotonicallyIncreasingTime() - m_timeOrigin;
-    return 1000.0 * clampTimeResolution(nowSeconds);
+    double timeInSeconds = monotonicTime - m_timeOrigin;
+    return convertSecondsToDOMHighResTimeStamp(clampTimeResolution(timeInSeconds));
+}
+
+DOMHighResTimeStamp PerformanceBase::now() const
+{
+    return monotonicTimeToDOMHighResTimeStamp(monotonicallyIncreasingTime());
 }
 
 DEFINE_TRACE(PerformanceBase)

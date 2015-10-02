@@ -105,6 +105,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/HistoryItem.h"
 #include "core/page/ChromeClient.h"
@@ -2527,6 +2528,17 @@ bool Internals::setScrollbarVisibilityInScrollableArea(Node* node, bool visible)
 void Internals::forceRestrictIFramePermissions()
 {
     RuntimeEnabledFeatures::setRestrictIFramePermissionsEnabled(true);
+}
+
+double Internals::monotonicTimeToZeroBasedDocumentTime(double platformTime, ExceptionState& exceptionState)
+{
+    Document* document = contextDocument();
+    if (!document) {
+        exceptionState.throwDOMException(InvalidAccessError, "No context document is available.");
+        return 0;
+    }
+
+    return document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(platformTime);
 }
 
 } // namespace blink

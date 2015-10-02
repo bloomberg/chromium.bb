@@ -33,6 +33,7 @@
 #define PerformanceBase_h
 
 #include "core/CoreExport.h"
+#include "core/dom/DOMHighResTimeStamp.h"
 #include "core/events/EventTarget.h"
 #include "core/timing/PerformanceEntry.h"
 #include "platform/Timer.h"
@@ -61,11 +62,19 @@ public:
     const AtomicString& interfaceName() const override;
 
     virtual PerformanceTiming* timing() const;
-    double now() const;
+
+    // Reduce the resolution to 5µs to prevent timing attacks. See:
+    // http://www.w3.org/TR/hr-time-2/#privacy-security
+    static double clampTimeResolution(double timeSeconds);
+
+    // Translate given platform monotonic time in seconds into a high resolution
+    // DOMHighResTimeStamp in milliseconds. The result timestamp is relative to
+    // document's time origin and has a time resolution that is safe for
+    // exposing to web.
+    DOMHighResTimeStamp monotonicTimeToDOMHighResTimeStamp(double) const;
+    DOMHighResTimeStamp now() const;
 
     double timeOrigin() const { return m_timeOrigin; }
-
-    static double clampTimeResolution(double timeSeconds);
 
     PerformanceEntryVector getEntries() const;
     PerformanceEntryVector getEntriesByType(const String& entryType);

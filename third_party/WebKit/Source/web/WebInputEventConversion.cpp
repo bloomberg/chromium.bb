@@ -50,8 +50,6 @@
 
 namespace blink {
 
-static const double millisPerSecond = 1000.0;
-
 static float scaleDeltaToWindow(const Widget* widget, float delta)
 {
     float scale = 1;
@@ -330,6 +328,7 @@ PlatformKeyboardEventBuilder::PlatformKeyboardEventBuilder(const WebKeyboardEven
     m_key = Platform::current()->domKeyStringFromEnum(e.domKey);
 
     m_modifiers = toPlatformKeyboardEventModifiers(e.modifiers);
+    m_timestamp = e.timeStampSeconds;
     m_windowsVirtualKeyCode = e.windowsKeyCode;
 }
 
@@ -469,7 +468,7 @@ static IntPoint convertAbsoluteLocationForLayoutObject(const LayoutPoint& locati
 // RemoteFrameViews.
 static void updateWebMouseEventFromCoreMouseEvent(const MouseRelatedEvent& event, const Widget* widget, const LayoutObject& layoutObject, WebMouseEvent& webEvent)
 {
-    webEvent.timeStampSeconds = event.timeStamp() / millisPerSecond;
+    webEvent.timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
     webEvent.modifiers = getWebInputModifiers(event);
 
     FrameView* view = widget ? toFrameView(widget->parent()) : 0;
@@ -559,7 +558,10 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const LayoutObj
     else
         return;
 
-    timeStampSeconds = event.timeStamp() / millisPerSecond;
+    // TODO(majidvp): Instead of using |Event::createTime| which is epoch time
+    // we should instead use |Event::platformTimeStamp| which is the actual
+    // platform monotonic time. See: crbug.com/538199
+    timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
     modifiers = getWebInputModifiers(event);
 
     // The mouse event co-ordinates should be generated from the co-ordinates of the touch point.
@@ -618,7 +620,7 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
     else if (event.location() == KeyboardEvent::DOM_KEY_LOCATION_RIGHT)
         modifiers |= WebInputEvent::IsRight;
 
-    timeStampSeconds = event.timeStamp() / millisPerSecond;
+    timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
     windowsKeyCode = event.keyCode();
 
     // The platform keyevent does not exist if the event was created using
@@ -711,7 +713,7 @@ WebTouchEventBuilder::WebTouchEventBuilder(const LayoutObject* layoutObject, con
     }
 
     modifiers = getWebInputModifiers(event);
-    timeStampSeconds = event.timeStamp() / millisPerSecond;
+    timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
     cancelable = event.cancelable();
     causesScrollingIfUncanceled = event.causesScrollingIfUncanceled();
 
@@ -754,7 +756,7 @@ WebGestureEventBuilder::WebGestureEventBuilder(const LayoutObject* layoutObject,
         data.tap.tapCount = 1;
     }
 
-    timeStampSeconds = event.timeStamp() / millisPerSecond;
+    timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
     modifiers = getWebInputModifiers(event);
 
     globalX = event.screenX();

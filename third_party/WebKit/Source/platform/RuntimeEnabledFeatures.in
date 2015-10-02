@@ -82,6 +82,7 @@ Geofencing status=experimental
 GeometryInterfaces status=test
 GetUserMedia depends_on=MediaDevices, status=experimental
 GlobalCacheStorage status=stable
+HiResEventTimeStamp status=experimental
 ImageColorProfiles
 ImageOrientation status=test
 ImageRenderingPixelated status=stable

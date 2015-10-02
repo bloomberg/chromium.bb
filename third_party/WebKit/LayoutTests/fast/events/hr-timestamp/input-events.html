@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script type="text/javascript">
+'use strict';
+
+let testCases = {
+    'mousedown': () => eventSender.mouseDown(),
+    'keydown': () => eventSender.keyDown('x'),
+    'touchstart': () => {
+        eventSender.addTouchPoint(1, 1);
+        eventSender.touchStart();
+    },
+    'click': () => eventSender.gestureTap(1, 1)
+};
+
+for (let eventName in testCases)
+    createTest(eventName, testCases[eventName]);
+
+function createTest(eventName, dispatchEventFn) {
+    async_test(function(t) {
+        document.addEventListener(eventName, t.step_func(function(e) {
+            let platformTimestamp = eventSender.lastEventTimestamp(); // in seconds
+            let expectedTimestamp = internals.monotonicTimeToZeroBasedDocumentTime(platformTimestamp) * 1000; // in milliseconds
+            assert_approx_equals(e.timeStamp, expectedTimestamp, 0.005);
+            t.done();
+        }));
+        dispatchEventFn();
+    }, "Event timestamp should be equal to the timestamp provided by the platform for " + eventName);
+}
+</script>

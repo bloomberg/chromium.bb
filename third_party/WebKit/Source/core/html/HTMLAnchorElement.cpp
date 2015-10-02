@@ -349,7 +349,7 @@ void HTMLAnchorElement::handleClick(Event* event)
     sendPings(completedURL);
 
     ResourceRequest request(completedURL);
-    request.setUIStartTime(event->uiCreateTime());
+    request.setUIStartTime(event->platformTimeStamp());
     request.setInputPerfMetricReportPolicy(InputToLoadPerfMetricReportPolicy::ReportLink);
 
     ReferrerPolicy policy;
