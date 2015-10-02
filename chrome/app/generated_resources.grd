@@ -8185,6 +8185,21 @@ I don't think this site should be blocked!
       <message name="IDS_SRT_BUBBLE_TEXT" desc="Text for the Chrome Cleanup Tool bubble view full description.">
           Is Chrome crashing, showing unusual startup pages, toolbars, or unexpected ads you can't get rid of, or otherwise changing your browsing experience? You may be able to fix the problem by running the Chrome Cleanup Tool.
       </message>
+      <message name="IDS_SRT_BUBBLE_TEXT_WITH_UWS_NAME" desc="Text for the Chrome Cleanup Tool bubble view stating that a single piece of Unwanted Software was found.">
+          Chrome found an unwanted program (<ph name="UWS_NAME">$1<ex>SoftwareName</ex></ph>) installed on your computer. You may be able to remove it by running the Chrome Cleanup Tool.
+      </message>
+      <message name="IDS_SRT_BUBBLE_TEXT_WITH_UWS_NAMES" desc="Text for the Chrome Cleanup Tool bubble view stating that two or more pieces of Unwanted Software were found.">
+          Chrome found <ph name="NUMBER_OF_UWS_GREATER_THAN_ONE">$1<ex>3</ex></ph> unwanted programs (<ph name="IDS_SRT_BUBBLE_TEXT_2_UWS_NAMES">$1<ex>Software1 and Software2</ex></ph>) installed on your computer. You may be able to remove these programs by running the Chrome Cleanup Tool.
+      </message>
+      <message name="IDS_SRT_BUBBLE_TEXT_2_UWS_NAMES" desc="Text to put within IDS_SRT_BUBBLE_TEXT_WITH_UWS_NAME when there are 2 UwS found, e.g., Software1 and Software2.">
+          <ph name="UWS_NAME">$1<ex>SoftwareName</ex></ph> and <ph name="UWS_NAME">$2<ex>Software2</ex></ph>
+      </message>
+      <message name="IDS_SRT_BUBBLE_TEXT_1_MORE_UWS_NAME" desc="Text to replace IDS_SRT_BUBBLE_TEXT_2_UWS_NAMES above when there are 3 found unwanted software, e.g., Software1, Software2, and one more.">
+          <ph name="UWS_NAME">$1<ex>Software1</ex></ph>, <ph name="UWS_NAME">$2<ex>Software2</ex></ph>, and one more
+      </message>
+      <message name="IDS_SRT_BUBBLE_TEXT_MORE_UWS_NAMES" desc="Text to replace IDS_SRT_BUBBLE_TEXT_2_UWS_NAMES above when there are more than 2 found unwanted software, e.g., Software1, Software2, and 3 others.">
+          <ph name="UWS_NAME">$1<ex>Software1</ex></ph>, <ph name="UWS_NAME">$2<ex>Software2</ex></ph>, and <ph name="NUMBER_OF_UWS_GREATER_THAN_ONE">$1<ex>3</ex></ph> others
+      </message>
       <if expr="use_titlecase">
         <message name="IDS_SRT_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option to be shown when unusual behavior was detected.">
           Unusual Behavior Detected
