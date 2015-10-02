@@ -107,7 +107,7 @@ public class IntentHandler {
     /**
      * The scheme for referrer coming from an application.
      */
-    private static final String ANDROID_APP_REFERRER_SCHEME = "android-app://";
+    public static final String ANDROID_APP_REFERRER_SCHEME = "android-app://";
 
     /**
      * A referrer id used for Chrome to Chrome referrer passing.
