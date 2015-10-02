@@ -30,7 +30,7 @@ const int kMinutesInHour = 60;
 const int kMinutesInDay = 24 * kMinutesInHour;
 
 // Time interval for each DataUsageBucket.
-const int kDataUsageBucketLengthInMinutes = 5;
+const int kDataUsageBucketLengthInMinutes = 15;
 static_assert(kDataUsageBucketLengthInMinutes > 0,
               "Length of time should be positive");
 static_assert(kMinutesInHour % kDataUsageBucketLengthInMinutes == 0,

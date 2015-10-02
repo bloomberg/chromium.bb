@@ -12,9 +12,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-// Each bucket holds data usage for a 5 minute interval. History is maintained
+// Each bucket holds data usage for a 15 minute interval. History is maintained
 // for 60 days.
-const unsigned kNumExpectedBuckets = 60 * 24 * 60 / 5;
+const unsigned kNumExpectedBuckets = 60 * 24 * 60 / 15;
 }
 
 namespace data_reduction_proxy {
@@ -97,7 +97,7 @@ TEST_F(DataUsageStoreTest, StoreSameBucket) {
   exploded.millisecond = 0;
   base::Time time1 = base::Time::FromUTCExploded(exploded);
 
-  exploded.minute = 4;
+  exploded.minute = 14;
   exploded.second = 59;
   exploded.millisecond = 999;
   base::Time time2 = base::Time::FromUTCExploded(exploded);
@@ -137,7 +137,7 @@ TEST_F(DataUsageStoreTest, StoreConsecutiveBuckets) {
   exploded.millisecond = 999;
   base::Time time1 = base::Time::FromUTCExploded(exploded);
 
-  exploded.minute = 5;
+  exploded.minute = 15;
   exploded.second = 0;
   exploded.millisecond = 0;
   base::Time time2 = base::Time::FromUTCExploded(exploded);
@@ -173,18 +173,19 @@ TEST_F(DataUsageStoreTest, StoreMultipleBuckets) {
 
   // Comments indicate time expressed as day.hour.min.sec.millis relative to
   // each other beginning at 0.0.0.0.0.
-  // The first bucket range is 0.0.0.0.0 - 0.0.4.59.999 and
-  // the second bucket range is 0.0.5.0.0 - 0.0.9.59.999, etc.
+  // The first bucket range is 0.0.0.0.0 - 0.0.14.59.999 and
+  // the second bucket range is 0.0.5.0.0 - 0.0.29.59.999, etc.
   base::Time first_bucket_time = base::Time::Now();  // 0.0.0.0.0.
   base::Time last_bucket_time = first_bucket_time    // 59.23.55.0.0
                                 + base::TimeDelta::FromDays(60) -
-                                base::TimeDelta::FromMinutes(5);
+                                base::TimeDelta::FromMinutes(15);
   base::Time before_history_time =  // 0.0.-5.0.0
-      first_bucket_time - base::TimeDelta::FromMinutes(5);
-  base::Time tenth_bucket_time =  // 0.0.45.0.0
-      first_bucket_time + base::TimeDelta::FromMinutes(45);
-  base::Time second_last_bucket_time =  // 59.23.50.0.0
-      last_bucket_time - base::TimeDelta::FromMinutes(5);
+      first_bucket_time - base::TimeDelta::FromMinutes(15);
+  base::Time tenth_bucket_time =  // 0.2.15.0.0
+      first_bucket_time + base::TimeDelta::FromHours(2) +
+      base::TimeDelta::FromMinutes(15);
+  base::Time second_last_bucket_time =  // 59.23.45.0.0
+      last_bucket_time - base::TimeDelta::FromMinutes(15);
 
   // This bucket will be discarded when the |last_bucket| is stored.
   DataUsageBucket bucket_before_history;

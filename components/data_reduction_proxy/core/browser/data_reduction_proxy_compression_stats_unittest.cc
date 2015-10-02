@@ -26,9 +26,9 @@ namespace {
 
 const int kWriteDelayMinutes = 60;
 
-// Each bucket holds data usage for a 5 minute interval. History is maintained
+// Each bucket holds data usage for a 15 minute interval. History is maintained
 // for 60 days.
-const int kNumExpectedBuckets = 60 * 24 * 60 / 5;
+const int kNumExpectedBuckets = 60 * 24 * 60 / 15;
 
 int64 GetListPrefInt64Value(
     const base::ListValue& list_update, size_t index) {
@@ -1111,11 +1111,11 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   EnableDataUsageReporting();
   base::RunLoop().RunUntilIdle();
 
-  base::Time five_mins_ago = base::Time::Now() - TimeDelta::FromMinutes(5);
+  base::Time fifteen_mins_ago = base::Time::Now() - TimeDelta::FromMinutes(15);
 
   RecordDataUsage("https://www.google.com", 1000, 1250);
-  // Fake above record to be from 5 minutes ago.
-  SetLastUpdatedTimestamp(five_mins_ago);
+  // Fake above record to be from 15 minutes ago.
+  SetLastUpdatedTimestamp(fifteen_mins_ago);
   RecordDataUsage("https://yahoo.com", 1001, 1251);
 
   auto expected_data_usage =
@@ -1150,11 +1150,11 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   EnableDataUsageReporting();
   base::RunLoop().RunUntilIdle();
 
-  base::Time five_mins_ago = base::Time::Now() - TimeDelta::FromMinutes(5);
+  base::Time fifteen_mins_ago = base::Time::Now() - TimeDelta::FromMinutes(15);
 
   RecordDataUsage("https://www.google.com", 1000, 1250);
   // Fake above record to be from 15 minutes ago.
-  SetLastUpdatedTimestamp(five_mins_ago);
+  SetLastUpdatedTimestamp(fifteen_mins_ago);
 
   auto expected_data_usage =
       make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(

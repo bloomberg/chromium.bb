@@ -147,7 +147,7 @@ chrome.test.runTests([
             if (data_usage['data_usage_buckets'].length == 0) {
               verifyDataUsage(numRetries - 1);
             } else {
-              chrome.test.assertEq(17280,
+              chrome.test.assertEq(5760,
                                    data_usage['data_usage_buckets'].length);
             }
         }));
