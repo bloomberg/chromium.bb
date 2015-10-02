@@ -34,6 +34,7 @@ bool AttachmentBrokerPrivilegedWin::SendAttachmentToProcess(
       RouteDuplicatedHandle(new_wire_format);
       return true;
     }
+    case BrokerableAttachment::MACH_PORT:
     case BrokerableAttachment::PLACEHOLDER:
       NOTREACHED();
       return false;
