@@ -63,9 +63,13 @@ public:
     void uniform2ui(const WebGLUniformLocation*, GLuint, GLuint);
     void uniform3ui(const WebGLUniformLocation*, GLuint, GLuint, GLuint);
     void uniform4ui(const WebGLUniformLocation*, GLuint, GLuint, GLuint, GLuint);
+    void uniform1uiv(const WebGLUniformLocation*, const FlexibleUint32ArrayView&);
     void uniform1uiv(const WebGLUniformLocation*, Vector<GLuint>&);
+    void uniform2uiv(const WebGLUniformLocation*, const FlexibleUint32ArrayView&);
     void uniform2uiv(const WebGLUniformLocation*, Vector<GLuint>&);
+    void uniform3uiv(const WebGLUniformLocation*, const FlexibleUint32ArrayView&);
     void uniform3uiv(const WebGLUniformLocation*, Vector<GLuint>&);
+    void uniform4uiv(const WebGLUniformLocation*, const FlexibleUint32ArrayView&);
     void uniform4uiv(const WebGLUniformLocation*, Vector<GLuint>&);
     void uniformMatrix2x3fv(const WebGLUniformLocation*, GLboolean, DOMFloat32Array*);
     void uniformMatrix2x3fv(const WebGLUniformLocation*, GLboolean, Vector<GLfloat>&);

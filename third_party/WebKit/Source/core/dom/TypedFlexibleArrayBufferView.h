@@ -29,8 +29,9 @@ public:
     }
 };
 
-using FlexibleInt32ArrayView = TypedFlexibleArrayBufferView<WTF::Int32Array>;
 using FlexibleFloat32ArrayView = TypedFlexibleArrayBufferView<WTF::Float32Array>;
+using FlexibleInt32ArrayView = TypedFlexibleArrayBufferView<WTF::Int32Array>;
+using FlexibleUint32ArrayView = TypedFlexibleArrayBufferView<WTF::Uint32Array>;
 
 } // namespace blink
 

@@ -6081,16 +6081,6 @@ bool WebGLRenderingContextBase::validateCapability(const char* functionName, GLe
     }
 }
 
-template<typename WTFTypedArray>
-bool WebGLRenderingContextBase::validateUniformParameters(const char* functionName, const WebGLUniformLocation* location, const TypedFlexibleArrayBufferView<WTFTypedArray>& v, GLsizei requiredMinSize)
-{
-    if (!v.dataMaybeOnStack()) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
-        return false;
-    }
-    return validateUniformMatrixParameters(functionName, location, false, v.dataMaybeOnStack(), v.length(), requiredMinSize);
-}
-
 bool WebGLRenderingContextBase::validateUniformParameters(const char* functionName, const WebGLUniformLocation* location, DOMFloat32Array* v, GLsizei requiredMinSize)
 {
     if (!v) {

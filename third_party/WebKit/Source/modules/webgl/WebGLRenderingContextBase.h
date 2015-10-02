@@ -594,7 +594,7 @@ protected:
     public:
         LRUImageBufferCache(int capacity);
         // The pointer returned is owned by the image buffer map.
-        ImageBuffer* imageBuffer(const IntSize& size);
+        ImageBuffer* imageBuffer(const IntSize&);
     private:
         void bubbleToFront(int idx);
         OwnPtr<OwnPtr<ImageBuffer>[]> m_buffers;
@@ -1003,7 +1003,14 @@ protected:
     bool validateUniformMatrixParameters(const char* functionName, const WebGLUniformLocation*, GLboolean transpose, void*, GLsizei, GLsizei mod);
 
     template<typename WTFTypedArray>
-    bool validateUniformParameters(const char*, const WebGLUniformLocation*,  const TypedFlexibleArrayBufferView<WTFTypedArray>&, GLsizei);
+    bool validateUniformParameters(const char* functionName, const WebGLUniformLocation* location, const TypedFlexibleArrayBufferView<WTFTypedArray>& v, GLsizei requiredMinSize)
+    {
+        if (!v.dataMaybeOnStack()) {
+            synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
+            return false;
+        }
+        return validateUniformMatrixParameters(functionName, location, false, v.dataMaybeOnStack(), v.length(), requiredMinSize);
+    }
 
     // Helper function to validate the target for bufferData and getBufferParameter.
     virtual bool validateBufferTarget(const char* functionName, GLenum target);
@@ -1043,7 +1050,7 @@ protected:
 
     // Helper functions to bufferData() and bufferSubData().
     void bufferDataImpl(GLenum target, long long size, const void* data, GLenum usage);
-    void bufferSubDataImpl(GLenum target, long long offset, GLsizeiptr size, const void* data);
+    void bufferSubDataImpl(GLenum target, long long offset, GLsizeiptr, const void* data);
 
     // Helper function for delete* (deleteBuffer, deleteProgram, etc) functions.
     // Return false if caller should return without further processing.

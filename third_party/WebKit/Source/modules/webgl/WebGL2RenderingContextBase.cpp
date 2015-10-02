@@ -923,12 +923,28 @@ void WebGL2RenderingContextBase::uniform4ui(const WebGLUniformLocation* location
     webContext()->uniform4ui(location->location(), v0, v1, v2, v3);
 }
 
+void WebGL2RenderingContextBase::uniform1uiv(const WebGLUniformLocation* location, const FlexibleUint32ArrayView& v)
+{
+    if (isContextLost() || !validateUniformParameters<WTF::Uint32Array>("uniform1uiv", location, v, 1))
+        return;
+
+    webContext()->uniform1uiv(location->location(), v.length(), v.dataMaybeOnStack());
+}
+
 void WebGL2RenderingContextBase::uniform1uiv(const WebGLUniformLocation* location, Vector<GLuint>& value)
 {
-    if (isContextLost() || validateUniformParameters("uniform1uiv", location, value.data(), value.size(), 1))
+    if (isContextLost() || !validateUniformParameters("uniform1uiv", location, value.data(), value.size(), 1))
         return;
 
     webContext()->uniform1uiv(location->location(), value.size(), value.data());
+}
+
+void WebGL2RenderingContextBase::uniform2uiv(const WebGLUniformLocation* location, const FlexibleUint32ArrayView& v)
+{
+    if (isContextLost() || !validateUniformParameters<WTF::Uint32Array>("uniform2uiv", location, v, 2))
+        return;
+
+    webContext()->uniform2uiv(location->location(), v.length() >> 1, v.dataMaybeOnStack());
 }
 
 void WebGL2RenderingContextBase::uniform2uiv(const WebGLUniformLocation* location, Vector<GLuint>& value)
@@ -939,12 +955,28 @@ void WebGL2RenderingContextBase::uniform2uiv(const WebGLUniformLocation* locatio
     webContext()->uniform2uiv(location->location(), value.size() / 2, value.data());
 }
 
+void WebGL2RenderingContextBase::uniform3uiv(const WebGLUniformLocation* location, const FlexibleUint32ArrayView& v)
+{
+    if (isContextLost() || !validateUniformParameters<WTF::Uint32Array>("uniform3uiv", location, v, 3))
+        return;
+
+    webContext()->uniform3uiv(location->location(), v.length() / 3, v.dataMaybeOnStack());
+}
+
 void WebGL2RenderingContextBase::uniform3uiv(const WebGLUniformLocation* location, Vector<GLuint>& value)
 {
     if (isContextLost() || !validateUniformParameters("uniform3uiv", location, value.data(), value.size(), 3))
         return;
 
     webContext()->uniform3uiv(location->location(), value.size() / 3, value.data());
+}
+
+void WebGL2RenderingContextBase::uniform4uiv(const WebGLUniformLocation* location, const FlexibleUint32ArrayView& v)
+{
+    if (isContextLost() || !validateUniformParameters<WTF::Uint32Array>("uniform4uiv", location, v, 4))
+        return;
+
+    webContext()->uniform4uiv(location->location(), v.length() >> 2, v.dataMaybeOnStack());
 }
 
 void WebGL2RenderingContextBase::uniform4uiv(const WebGLUniformLocation* location, Vector<GLuint>& value)
