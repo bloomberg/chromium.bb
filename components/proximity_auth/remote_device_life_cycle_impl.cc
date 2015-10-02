@@ -43,6 +43,7 @@ RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
     : remote_device_(remote_device),
       proximity_auth_client_(proximity_auth_client),
       state_(RemoteDeviceLifeCycle::State::STOPPED),
+      observers_(base::ObserverList<Observer>::NOTIFY_EXISTING_ONLY),
       bluetooth_throttler_(new BluetoothThrottlerImpl(
           make_scoped_ptr(new base::DefaultTickClock()))),
       weak_ptr_factory_(this) {}
@@ -73,9 +74,7 @@ void RemoteDeviceLifeCycleImpl::RemoveObserver(Observer* observer) {
 
 scoped_ptr<ConnectionFinder>
 RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
-  // TODO(tengs): We should not rely on the assumption that an empty Bluetooth
-  // address means that the device is BLE.
-  if (remote_device_.bluetooth_address.empty()) {
+  if (remote_device_.bluetooth_type == RemoteDevice::BLUETOOTH_LE) {
     return make_scoped_ptr(new BluetoothLowEnergyConnectionFinder(
         remote_device_, kBLESmartLockServiceUUID,
         BluetoothLowEnergyConnectionFinder::FinderStrategy::FIND_PAIRED_DEVICE,
@@ -126,6 +125,7 @@ void RemoteDeviceLifeCycleImpl::OnAuthenticationResult(
     Authenticator::Result result,
     scoped_ptr<SecureContext> secure_context) {
   DCHECK(state_ == RemoteDeviceLifeCycle::State::AUTHENTICATING);
+  authenticator_.reset();
   if (result != Authenticator::Result::SUCCESS) {
     PA_LOG(WARNING) << "Waiting " << kAuthenticationRecoveryTimeSeconds
                     << " seconds to retry after authentication failure.";
@@ -139,9 +139,8 @@ void RemoteDeviceLifeCycleImpl::OnAuthenticationResult(
   }
 
   // Create the MessengerImpl asynchronously. |messenger_| registers itself as
-  // an
-  // observer of |connection_|, so creating it synchronously would
-  // trigger |OnSendComplete()| as an observer call for |messenger_|.
+  // an observer of |connection_|, so creating it synchronously would trigger
+  // |OnSendCompleted()| as an observer call for |messenger_|.
   secure_context_ = secure_context.Pass();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&RemoteDeviceLifeCycleImpl::CreateMessenger,
@@ -160,6 +159,7 @@ void RemoteDeviceLifeCycleImpl::CreateMessenger() {
 
 void RemoteDeviceLifeCycleImpl::OnDisconnected() {
   DCHECK(state_ == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
+  messenger_.reset();
   FindConnection();
 }
 

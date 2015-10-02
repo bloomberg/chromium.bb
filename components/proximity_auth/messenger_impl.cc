@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
@@ -36,6 +38,15 @@ const char kMessageTypeUnlockResponse[] = "unlock_response";
 // The name for an unlock event originating from the local device.
 const char kUnlockEventName[] = "easy_unlock";
 
+// Messages sent and received from the iOS app when polling for it's lock screen
+// status.
+// TODO(tengs): Unify the iOS status update protocol with the existing Android
+// protocol, so we don't have this special case.
+const char kPollScreenState[] = "PollScreenState";
+const char kScreenUnlocked[] = "Screen Unlocked";
+const char kScreenLocked[] = "Screen Locked";
+const int kIOSPollingIntervalSeconds = 5;
+
 // Serializes the |value| to a JSON string and returns the result.
 std::string SerializeValueToJson(const base::Value& value) {
   std::string json;
@@ -61,6 +72,11 @@ MessengerImpl::MessengerImpl(scoped_ptr<Connection> connection,
       weak_ptr_factory_(this) {
   DCHECK(connection_->IsConnected());
   connection_->AddObserver(this);
+
+  // TODO(tengs): We need CryptAuth to report if the phone runs iOS or Android,
+  // rather than relying on this heuristic.
+  if (connection_->remote_device().bluetooth_type == RemoteDevice::BLUETOOTH_LE)
+    PollScreenStateForIOS();
 }
 
 MessengerImpl::~MessengerImpl() {
@@ -77,8 +93,11 @@ void MessengerImpl::RemoveObserver(MessengerObserver* observer) {
 }
 
 bool MessengerImpl::SupportsSignIn() const {
+  // TODO(tengs): Support sign-in for Bluetooth LE protocol.
   return (secure_context_->GetProtocolVersion() ==
-          SecureContext::PROTOCOL_VERSION_THREE_ONE);
+          SecureContext::PROTOCOL_VERSION_THREE_ONE) &&
+         connection_->remote_device().bluetooth_type !=
+             RemoteDevice::BLUETOOTH_LE;
 }
 
 void MessengerImpl::DispatchUnlockEvent() {
@@ -131,6 +150,9 @@ MessengerImpl::PendingMessage::PendingMessage(
     : json_message(SerializeValueToJson(message)),
       type(GetMessageType(message)) {}
 
+MessengerImpl::PendingMessage::PendingMessage(const std::string& message)
+    : json_message(message), type(std::string()) {}
+
 MessengerImpl::PendingMessage::~PendingMessage() {}
 
 void MessengerImpl::ProcessMessageQueue() {
@@ -151,6 +173,21 @@ void MessengerImpl::OnMessageEncoded(const std::string& encoded_message) {
 }
 
 void MessengerImpl::OnMessageDecoded(const std::string& decoded_message) {
+  // TODO(tengs): Unify the iOS status update protocol with the existing Android
+  // protocol, so we don't have this special case.
+  if (decoded_message == kScreenUnlocked || decoded_message == kScreenLocked) {
+    RemoteStatusUpdate update;
+    update.user_presence =
+        (decoded_message == kScreenUnlocked ? USER_PRESENT : USER_ABSENT);
+    update.secure_screen_lock_state = SECURE_SCREEN_LOCK_ENABLED;
+    update.trust_agent_state = TRUST_AGENT_ENABLED;
+    FOR_EACH_OBSERVER(MessengerObserver, observers_,
+                      OnRemoteStatusUpdate(update));
+    pending_message_.reset();
+    ProcessMessageQueue();
+    return;
+  }
+
   // The decoded message should be a JSON string.
   scoped_ptr<base::Value> message_value =
       base::JSONReader::Read(decoded_message);
@@ -243,6 +280,21 @@ void MessengerImpl::HandleUnlockResponseMessage(
   FOR_EACH_OBSERVER(MessengerObserver, observers_, OnUnlockResponse(true));
 }
 
+void MessengerImpl::PollScreenStateForIOS() {
+  if (!connection_->IsConnected())
+    return;
+
+  // Sends message requesting screen state.
+  queued_messages_.push_back(PendingMessage(std::string(kPollScreenState)));
+  ProcessMessageQueue();
+
+  // Schedules the next message in |kPollingIntervalSeconds|.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&MessengerImpl::PollScreenStateForIOS,
+                            weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(kIOSPollingIntervalSeconds));
+}
+
 void MessengerImpl::OnConnectionStatusChanged(Connection* connection,
                                               Connection::Status old_status,
                                               Connection::Status new_status) {
@@ -250,7 +302,6 @@ void MessengerImpl::OnConnectionStatusChanged(Connection* connection,
   if (new_status == Connection::DISCONNECTED) {
     PA_LOG(INFO) << "Secure channel disconnected...";
     connection_->RemoveObserver(this);
-    connection_.reset();
     FOR_EACH_OBSERVER(MessengerObserver, observers_, OnDisconnected());
     // TODO(isherman): Determine whether it's also necessary/appropriate to fire
     // this notification from the destructor.

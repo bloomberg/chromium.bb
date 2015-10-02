@@ -89,6 +89,8 @@ class MockProximityMonitor : public ProximityMonitor {
   MOCK_CONST_METHOD0(IsUnlockAllowed, bool());
   MOCK_CONST_METHOD0(IsInRssiRange, bool());
   MOCK_METHOD0(RecordProximityMetricsOnAuthSuccess, void());
+  MOCK_METHOD1(AddObserver, void(ProximityMonitorObserver*));
+  MOCK_METHOD1(RemoveObserver, void(ProximityMonitorObserver*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockProximityMonitor);
@@ -463,12 +465,11 @@ TEST_F(
   CreateUnlockManager(UnlockManager::ScreenlockType::SESSION_LOCK);
   SimulateUserPresentState();
 
-  NiceMock<MockRemoteDeviceLifeCycle> life_cycle;
-  ON_CALL(life_cycle, GetState())
+  ON_CALL(life_cycle_, GetState())
       .WillByDefault(Return(RemoteDeviceLifeCycle::State::FINDING_CONNECTION));
 
   EXPECT_CALL(*proximity_monitor_, Stop()).Times(AtLeast(1));
-  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle);
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
 }
 
 TEST_F(
@@ -477,25 +478,18 @@ TEST_F(
   CreateUnlockManager(UnlockManager::ScreenlockType::SESSION_LOCK);
   SimulateUserPresentState();
 
-  NiceMock<MockRemoteDeviceLifeCycle> life_cycle;
-  ON_CALL(life_cycle, GetState())
+  ON_CALL(life_cycle_, GetState())
       .WillByDefault(
           Return(RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED));
 
   EXPECT_CALL(*proximity_monitor_, Start()).Times(AtLeast(1));
-  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle);
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
 }
 
 TEST_F(ProximityAuthUnlockManagerTest,
        OnLifeCycleStateChanged_SecureChannelEstablished_RegistersAsObserver) {
   CreateUnlockManager(UnlockManager::ScreenlockType::SESSION_LOCK);
   SimulateUserPresentState();
-
-  NiceMock<MockRemoteDeviceLifeCycle> life_cycle;
-  ON_CALL(life_cycle, GetState())
-      .WillByDefault(
-          Return(RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED));
-
   EXPECT_CALL(messenger_, AddObserver(unlock_manager_.get()));
   unlock_manager_->OnLifeCycleStateChanged();
 }
@@ -504,12 +498,6 @@ TEST_F(ProximityAuthUnlockManagerTest,
        OnLifeCycleStateChanged_StartsProximityMonitor) {
   CreateUnlockManager(UnlockManager::ScreenlockType::SESSION_LOCK);
   SimulateUserPresentState();
-
-  NiceMock<MockRemoteDeviceLifeCycle> life_cycle;
-  ON_CALL(life_cycle, GetState())
-      .WillByDefault(
-          Return(RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED));
-
   EXPECT_CALL(*proximity_monitor_, Start()).Times(AtLeast(1));
   unlock_manager_->OnLifeCycleStateChanged();
 }
@@ -612,8 +600,10 @@ TEST_F(ProximityAuthUnlockManagerTest, OnDisconnected_UnregistersAsObserver) {
       .WillByDefault(
           Return(RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED));
 
-  EXPECT_CALL(messenger_, RemoveObserver(unlock_manager_.get()));
+  EXPECT_CALL(messenger_, RemoveObserver(unlock_manager_.get()))
+      .Times(testing::AtLeast(1));
   unlock_manager_.get()->OnDisconnected();
+  unlock_manager_->SetRemoteDeviceLifeCycle(nullptr);
 }
 
 TEST_F(ProximityAuthUnlockManagerTest,

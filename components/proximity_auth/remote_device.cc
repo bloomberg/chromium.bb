@@ -6,7 +6,7 @@
 
 namespace proximity_auth {
 
-RemoteDevice::RemoteDevice() {}
+RemoteDevice::RemoteDevice() : bluetooth_type(BLUETOOTH_CLASSIC) {}
 
 RemoteDevice::RemoteDevice(const std::string& user_id,
                            const std::string& name,

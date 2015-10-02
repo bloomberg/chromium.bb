@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -18,6 +19,10 @@
 #include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/tpm/tpm_token_loader.h"
+#include "components/proximity_auth/cryptauth/base64url.h"
+#include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/remote_device.h"
+#include "components/proximity_auth/switches.h"
 
 namespace {
 
@@ -258,7 +263,7 @@ void EasyUnlockServiceSignin::OnWillFinalizeUnlock(bool success) {
   NOTREACHED();
 }
 
-void EasyUnlockServiceSignin::OnSuspendDone() {
+void EasyUnlockServiceSignin::OnSuspendDoneInternal() {
   // Ignored.
 }
 
@@ -382,6 +387,33 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   // that it has to refresh it's user data.
   if (user_id == user_id_)
     NotifyUserUpdated();
+
+  if (user_id != user_id || devices.empty())
+    return;
+
+  // TODO(tengs): Currently, ProximityAuthSystem only supports one device. Once
+  // multiple devices are supported, we need to load all devices.
+  std::string decoded_public_key, decoded_psk, decoded_challenge;
+  proximity_auth::Base64UrlDecode(devices[0].public_key, &decoded_public_key);
+  proximity_auth::Base64UrlDecode(devices[0].psk, &decoded_psk);
+  proximity_auth::Base64UrlDecode(devices[0].challenge, &decoded_challenge);
+
+  // TODO(tengs): We need to store the Bluetooth type with the TPM data.
+  proximity_auth::RemoteDevice::BluetoothType bluetooth_type =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)
+          ? proximity_auth::RemoteDevice::BLUETOOTH_LE
+          : proximity_auth::RemoteDevice::BLUETOOTH_CLASSIC;
+
+  proximity_auth::RemoteDevice remote_device(
+      user_id, std::string(), decoded_public_key, bluetooth_type,
+      devices[0].bluetooth_address, decoded_psk, decoded_challenge);
+  PA_LOG(INFO) << "Loaded Remote Device:\n"
+               << "  user id: " << remote_device.user_id << "\n"
+               << "  name: " << remote_device.name << "\n"
+               << "  public key" << devices[0].public_key << "\n"
+               << "  bt_addr:" << remote_device.bluetooth_address;
+  OnRemoteDeviceChanged(&remote_device);
 }
 
 const EasyUnlockServiceSignin::UserData*

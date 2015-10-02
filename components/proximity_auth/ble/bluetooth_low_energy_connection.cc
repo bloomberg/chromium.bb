@@ -76,7 +76,6 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
 }
 
 BluetoothLowEnergyConnection::~BluetoothLowEnergyConnection() {
-  PA_LOG(INFO) << "Connection destroyed.";
   Disconnect();
   if (adapter_) {
     adapter_->RemoveObserver(this);
@@ -127,7 +126,7 @@ void BluetoothLowEnergyConnection::CreateGattConnection() {
 
 void BluetoothLowEnergyConnection::Disconnect() {
   if (sub_status() != SubStatus::DISCONNECTED) {
-    ClearWriteRequestsQueue();
+    weak_ptr_factory_.InvalidateWeakPtrs();
     StopNotifySession();
     characteristic_finder_.reset();
     if (gatt_connection_) {
@@ -318,8 +317,7 @@ BluetoothLowEnergyConnection::WriteRequest::WriteRequest(
       number_of_failed_attempts(0) {
 }
 
-BluetoothLowEnergyConnection::WriteRequest::~WriteRequest() {
-}
+BluetoothLowEnergyConnection::WriteRequest::~WriteRequest() {}
 
 void BluetoothLowEnergyConnection::CompleteConnection() {
   PA_LOG(INFO) << "Connection completed. Time elapsed: "
@@ -533,11 +531,6 @@ BluetoothLowEnergyConnection::BuildWriteRequest(
   std::vector<uint8> value(signal.begin(), signal.end());
   value.insert(value.end(), bytes.begin(), bytes.end());
   return WriteRequest(value, is_last_write_for_wire_message);
-}
-
-void BluetoothLowEnergyConnection::ClearWriteRequestsQueue() {
-  while (!write_requests_queue_.empty())
-    write_requests_queue_.pop();
 }
 
 void BluetoothLowEnergyConnection::PrintTimeElapsed() {

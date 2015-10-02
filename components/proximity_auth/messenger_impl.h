@@ -54,6 +54,7 @@ class MessengerImpl : public Messenger, public ConnectionObserver {
   struct PendingMessage {
     PendingMessage();
     PendingMessage(const base::DictionaryValue& message);
+    PendingMessage(const std::string& message);
     ~PendingMessage();
 
     // The message, serialized as JSON.
@@ -84,6 +85,10 @@ class MessengerImpl : public Messenger, public ConnectionObserver {
   // Handles an incoming "unlock_response" message, notifying observers of the
   // response.
   void HandleUnlockResponseMessage(const base::DictionaryValue& message);
+
+  // For iOS, we need to poll the phone every few seconds to keep the app alive
+  // in the background. This function starts the poll loop.
+  void PollScreenStateForIOS();
 
   // ConnectionObserver:
   void OnConnectionStatusChanged(Connection* connection,

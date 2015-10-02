@@ -10,6 +10,7 @@
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/fake_connection.h"
 #include "components/proximity_auth/messenger_observer.h"
+#include "components/proximity_auth/proximity_auth_test_util.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/secure_context.h"
@@ -92,7 +93,8 @@ class MockMessengerObserver : public MessengerObserver {
 class TestMessenger : public MessengerImpl {
  public:
   TestMessenger()
-      : MessengerImpl(make_scoped_ptr(new FakeConnection(RemoteDevice())),
+      : MessengerImpl(make_scoped_ptr(new FakeConnection(
+                          CreateClassicRemoteDeviceForTest())),
                       make_scoped_ptr(new NiceMock<MockSecureContext>())) {}
   ~TestMessenger() override {}
 

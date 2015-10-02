@@ -219,9 +219,6 @@ class BluetoothLowEnergyConnection : public Connection,
                                  const std::vector<uint8>& bytes,
                                  bool is_last_message_for_wire_message);
 
-  // Clears |write_requests_queue_|.
-  void ClearWriteRequestsQueue();
-
   // Prints the time elapsed since |Connect()| was called.
   void PrintTimeElapsed();
 

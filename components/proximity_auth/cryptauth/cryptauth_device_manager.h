@@ -44,13 +44,13 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
   class Observer {
    public:
     // Called when a sync attempt is started.
-    virtual void OnSyncStarted() = 0;
+    virtual void OnSyncStarted() {}
 
     // Called when a sync attempt finishes with the |success| of the request.
     // |devices_changed| specifies if the sync caused the stored unlock keys to
     // change.
     virtual void OnSyncFinished(SyncResult sync_result,
-                                DeviceChangeResult device_change_result) = 0;
+                                DeviceChangeResult device_change_result) {}
 
     virtual ~Observer() {}
   };

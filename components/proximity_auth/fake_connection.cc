@@ -9,7 +9,7 @@
 namespace proximity_auth {
 
 FakeConnection::FakeConnection(const RemoteDevice& remote_device)
-    : Connection(RemoteDevice()) {
+    : Connection(remote_device) {
   Connect();
 }
 
