@@ -48,6 +48,7 @@
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/input/EventHandler.h"
@@ -464,6 +465,9 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popup
 {
     LocalFrame* frame = m_element->document().frame();
     if (!frame)
+        return WebString();
+
+    if (!m_element->document().contentSecurityPolicy()->allowJavaScriptURLs(m_element->document().url(), OrdinalNumber()))
         return WebString();
 
     const KURL& kurl = url;
