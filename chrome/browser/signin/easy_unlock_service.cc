@@ -532,7 +532,6 @@ void EasyUnlockService::AttemptAuth(const std::string& user_id,
   // the proximity_auth component.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery) &&
-      auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK &&
       proximity_auth_system_) {
     proximity_auth_system_->OnAuthAttempted(user_id);
   }
