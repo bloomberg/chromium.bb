@@ -413,8 +413,9 @@ void LibjingleTransportFactory::EnsureFreshJingleInfo() {
     return;
   }
 
-  if (base::TimeTicks::Now() - last_jingle_info_update_time_ >
-      base::TimeDelta::FromSeconds(kJingleInfoUpdatePeriodSeconds)) {
+  if (last_jingle_info_update_time_.is_null() ||
+      base::TimeTicks::Now() - last_jingle_info_update_time_ >
+          base::TimeDelta::FromSeconds(kJingleInfoUpdatePeriodSeconds)) {
     jingle_info_request_.reset(new JingleInfoRequest(signal_strategy_));
     jingle_info_request_->Send(base::Bind(
         &LibjingleTransportFactory::OnJingleInfo, base::Unretained(this)));
