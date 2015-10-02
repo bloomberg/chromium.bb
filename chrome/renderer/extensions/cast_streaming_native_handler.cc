@@ -763,16 +763,6 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
     return;
   }
 
-  const std::string url = *v8::String::Utf8Value(args[7]);
-  blink::WebMediaStream stream =
-      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
-
-  if (stream.isNull()) {
-    args.GetIsolate()->ThrowException(v8::Exception::TypeError(
-        v8::String::NewFromUtf8(args.GetIsolate(), kInvalidMediaStreamURL)));
-    return;
-  }
-
   const int max_width = args[3]->ToInt32(args.GetIsolate())->Value();
   const int max_height = args[4]->ToInt32(args.GetIsolate())->Value();
   const double fps = args[5]->NumberValue();
@@ -780,6 +770,16 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
   if (fps <= 1) {
     args.GetIsolate()->ThrowException(v8::Exception::TypeError(
         v8::String::NewFromUtf8(args.GetIsolate(), kInvalidFPS)));
+    return;
+  }
+
+  const std::string url = *v8::String::Utf8Value(args[6]);
+  blink::WebMediaStream stream =
+      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
+
+  if (stream.isNull()) {
+    args.GetIsolate()->ThrowException(v8::Exception::TypeError(
+        v8::String::NewFromUtf8(args.GetIsolate(), kInvalidMediaStreamURL)));
     return;
   }
 
@@ -802,14 +802,14 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
     return;
   }
 
-  base::DictionaryValue* options = NULL;
-  if (args.Length() >= 10) {
+  scoped_ptr<base::DictionaryValue> options;
+  if (args.Length() >= 9) {
     scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    base::Value* options_value =
-        converter->FromV8Value(args[8], context()->v8_context());
+    scoped_ptr<base::Value> options_value(
+        converter->FromV8Value(args[8], context()->v8_context()));
     if (!options_value->IsType(base::Value::TYPE_NULL)) {
-      if (!options_value || !options_value->GetAsDictionary(&options)) {
-        delete options_value;
+      options = base::DictionaryValue::From(options_value.Pass());
+      if (!options) {
         args.GetIsolate()->ThrowException(v8::Exception::TypeError(
             v8::String::NewFromUtf8(args.GetIsolate(), kUnableToConvertArgs)));
         return;
@@ -818,7 +818,7 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
   }
 
   if (!options) {
-    options = new base::DictionaryValue();
+    options.reset(new base::DictionaryValue());
   }
 
   v8::CopyablePersistentTraits<v8::Function>::CopyablePersistent error_callback;
@@ -826,19 +826,12 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
                        v8::Local<v8::Function>(args[7].As<v8::Function>()));
 
   session->Start(
-      audio_config,
-      video_config,
-      local_endpoint,
-      remote_endpoint,
-      make_scoped_ptr(options),
-      capture_format,
+      audio_config, video_config, local_endpoint, remote_endpoint,
+      options.Pass(), capture_format,
       base::Bind(&CastStreamingNativeHandler::AddTracksToMediaStream,
-                 weak_factory_.GetWeakPtr(),
-                 url,
-                 params),
+                 weak_factory_.GetWeakPtr(), url, params),
       base::Bind(&CastStreamingNativeHandler::CallReceiverErrorCallback,
-                 weak_factory_.GetWeakPtr(),
-                 error_callback));
+                 weak_factory_.GetWeakPtr(), error_callback));
 }
 
 void CastStreamingNativeHandler::CallReceiverErrorCallback(
