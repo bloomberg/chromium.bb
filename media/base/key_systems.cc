@@ -446,7 +446,7 @@ void KeySystemsImpl::AddConcreteSupportedKeySystems(
              EmeFeatureSupport::ALWAYS_ENABLED);
     }
 
-    DCHECK(!IsSupportedKeySystem(info.key_system))
+    DCHECK(!IsConcreteSupportedKeySystem(info.key_system))
         << "Key system '" << info.key_system << "' already registered";
     DCHECK(!parent_key_system_map_.count(info.key_system))
         <<  "'" << info.key_system << "' is already registered as a parent";
@@ -660,7 +660,20 @@ void KeySystemsImpl::AddCodecMask(
 
 bool KeySystemsImpl::IsSupportedKeySystem(const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return concrete_key_system_map_.count(key_system) != 0;
+
+  if (!IsConcreteSupportedKeySystem(key_system))
+    return false;
+
+  // TODO(ddorwin): Move this to where we add key systems when prefixed EME is
+  // removed (crbug.com/249976).
+  if (!IsPotentiallySupportedKeySystem(key_system)) {
+    // If you encounter this path, see the comments for the above function.
+    DLOG(ERROR) << "Unrecognized key system " << key_system
+                << ". See code comments.";
+    return false;
+  }
+
+  return true;
 }
 
 EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
@@ -875,22 +888,6 @@ std::string GetPrefixedKeySystemName(const std::string& key_system) {
 bool PrefixedIsSupportedConcreteKeySystem(const std::string& key_system) {
   return KeySystemsImpl::GetInstance()->IsConcreteSupportedKeySystem(
       key_system);
-}
-
-bool IsSupportedKeySystem(const std::string& key_system) {
-  if (!KeySystemsImpl::GetInstance()->IsSupportedKeySystem(key_system))
-    return false;
-
-  // TODO(ddorwin): Move this to where we add key systems when prefixed EME is
-  // removed (crbug.com/249976).
-  if (!IsPotentiallySupportedKeySystem(key_system)) {
-    // If you encounter this path, see the comments for the above function.
-    NOTREACHED() << "Unrecognized key system " << key_system
-                 << ". See code comments.";
-    return false;
-  }
-
-  return true;
 }
 
 bool IsSupportedKeySystemWithInitDataType(const std::string& key_system,

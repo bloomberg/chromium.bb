@@ -73,6 +73,10 @@ static bool IsSupportedKeySystemWithAudioMimeType(
           EmeConfigRule::NOT_SUPPORTED);
 }
 
+static bool IsSupportedKeySystem(const std::string& key_system) {
+  return KeySystems::GetInstance()->IsSupportedKeySystem(key_system);
+}
+
 // Adds test container and codec masks.
 // This function must be called after SetMediaClient() if a MediaClient will be
 // provided.

@@ -121,10 +121,9 @@ public class KeySystemTest extends AwTestBase {
         assertEquals("\"supported\"", isKeySystemSupported("x-com.oem.test-keysystem"));
     }
 
-    // TODO(ddorwin): This should fail: http://crbug.com/531764.
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testSupportPlatformKeySystemNoPrefix() throws Throwable {
-        assertEquals("\"supported\"", isKeySystemSupported("com.oem.test-keysystem"));
+        assertEquals("\"NotSupportedError\"", isKeySystemSupported("com.oem.test-keysystem"));
     }
 }
