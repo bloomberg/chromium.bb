@@ -384,6 +384,7 @@ _x86_internal_release_boards = frozenset([
     'butterfly',
     'candy',
     'celes',
+    'chell',
     'cid',
     'clapper',
     'cranky',
@@ -405,6 +406,7 @@ _x86_internal_release_boards = frozenset([
     'lakitu',
     'lakitu_mobbuild',
     'lakitu_next',
+    'lars',
     'leon',
     'link',
     'lulu',
@@ -422,6 +424,7 @@ _x86_internal_release_boards = frozenset([
     'peppy',
     'quawks',
     'rambi',
+    'reks',
     'rikku',
     'samus',
     'slippy',
@@ -595,8 +598,11 @@ _waterfall_config_map = {
         'stumpy_moblab-paladin',
 
         # Experimental Canaries (Group)
+        'glados-release-group',
+        'kunimitsu-release-group',
         'storm-release-group',
         'strago-release-group',
+        'strago-b-release-group',
         'veyron-c-release-group',
 
         # Experimental Canaries
@@ -2603,6 +2609,12 @@ def GetConfig():
       important=False,
   )
 
+  _AddGroupConfig(
+      'strago-b', 'reks', (
+      ),
+      important=False,
+  )
+
   # oak-based boards
   _AddGroupConfig(
       'oak', 'oak', (
@@ -2612,7 +2624,9 @@ def GetConfig():
   # glados-based boards
   _AddGroupConfig(
       'glados', 'glados', (
+          'chell',
       ),
+      important=False,
   )
 
   # storm-based boards
@@ -2627,7 +2641,9 @@ def GetConfig():
   # kunimitsu-based boards
   _AddGroupConfig(
       'kunimitsu', 'kunimitsu', (
+          'lars',
       ),
+      important=False,
   )
 
   # Factory and Firmware releases much inherit from these classes.
@@ -2701,6 +2717,7 @@ def GetConfig():
       'beltino',
       'butterfly',
       'candy',
+      'chell',
       'clapper',
       'cyan',
       'daisy',
@@ -2713,6 +2730,7 @@ def GetConfig():
       'gnawty',
       'jecht',
       'kip',
+      'lars',
       'leon',
       'link',
       'lumpy',
@@ -2727,6 +2745,7 @@ def GetConfig():
       'peppy',
       'quawks',
       'rambi',
+      'reks',
       'rikku',
       'samus',
       'slippy',

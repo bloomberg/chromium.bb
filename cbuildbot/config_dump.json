@@ -4409,6 +4409,171 @@
             "-chrome_internal"
         ]
     },
+    "chell-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "chell"
+        ],
+        "important": false,
+        "manifest": "official.xml"
+    },
+    "chell-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "chell"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "chell-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "chell"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "chell-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "chell"
+        ],
+        "manifest": "official.xml",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
+    },
+    "chell-full": {
+        "_template": "full",
+        "boards": [
+            "chell"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "chell-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "chell"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "chell-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "chell"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "chell-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "chell"
+        ]
+    },
+    "chell-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "chell"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "chell-release": {
+        "_template": "release",
+        "boards": [
+            "chell"
+        ]
+    },
+    "chell-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "chell"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "chell"
+                ],
+                "grouped": true,
+                "name": "chell-release-afdo-generate"
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "chell"
+                ],
+                "grouped": true,
+                "name": "chell-release-afdo-use"
+            }
+        ]
+    },
+    "chell-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "chell"
+        ]
+    },
+    "chell-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "chell"
+        ]
+    },
+    "chell-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "chell"
+        ],
+        "manifest": "official.xml"
+    },
+    "chell-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "chell"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
     "chromiumos-sdk": {
         "active_waterfall": "chromiumos",
         "archive_build_debug": true,
@@ -7112,9 +7277,25 @@
                 "useflags": [
                     "-chrome_internal"
                 ]
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "chell"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "chell-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: glados)",
+        "description": "Full Builds; Group config (boards: glados, chell)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -7225,10 +7406,21 @@
                 ],
                 "grouped": true,
                 "name": "glados-release"
+            },
+            {
+                "_template": "release",
+                "boards": [
+                    "chell"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "chell-release",
+                "unittests": null,
+                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: glados)",
-        "important": true
+        "description": "Release Builds (canary) (internal); Group config (boards: glados, chell)"
     },
     "glados-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -9207,9 +9399,25 @@
                 "useflags": [
                     "-chrome_internal"
                 ]
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "lars"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "lars-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: kunimitsu)",
+        "description": "Full Builds; Group config (boards: kunimitsu, lars)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -9320,10 +9528,21 @@
                 ],
                 "grouped": true,
                 "name": "kunimitsu-release"
+            },
+            {
+                "_template": "release",
+                "boards": [
+                    "lars"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "lars-release",
+                "unittests": null,
+                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: kunimitsu)",
-        "important": true
+        "description": "Release Builds (canary) (internal); Group config (boards: kunimitsu, lars)"
     },
     "kunimitsu-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -9920,6 +10139,171 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "lars-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "lars"
+        ],
+        "important": false,
+        "manifest": "official.xml"
+    },
+    "lars-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "lars"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "lars-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "lars"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "lars-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "lars"
+        ],
+        "manifest": "official.xml",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
+    },
+    "lars-full": {
+        "_template": "full",
+        "boards": [
+            "lars"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "lars-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "lars"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "lars-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "lars"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "lars-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "lars"
+        ]
+    },
+    "lars-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "lars"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "lars-release": {
+        "_template": "release",
+        "boards": [
+            "lars"
+        ]
+    },
+    "lars-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "lars"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "lars"
+                ],
+                "grouped": true,
+                "name": "lars-release-afdo-generate"
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "lars"
+                ],
+                "grouped": true,
+                "name": "lars-release-afdo-use"
+            }
+        ]
+    },
+    "lars-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "lars"
+        ]
+    },
+    "lars-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "lars"
+        ]
+    },
+    "lars-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "lars"
+        ],
+        "manifest": "official.xml"
+    },
+    "lars-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "lars"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "leon-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -15828,6 +16212,171 @@
         "hw_tests_override": [],
         "vm_tests": []
     },
+    "reks-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "reks"
+        ],
+        "important": false,
+        "manifest": "official.xml"
+    },
+    "reks-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "reks"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "reks-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "reks"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "reks-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "reks"
+        ],
+        "manifest": "official.xml",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
+    },
+    "reks-full": {
+        "_template": "full",
+        "boards": [
+            "reks"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "reks-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "reks"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "reks-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "reks"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "reks-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "reks"
+        ]
+    },
+    "reks-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "reks"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "reks-release": {
+        "_template": "release",
+        "boards": [
+            "reks"
+        ]
+    },
+    "reks-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "reks"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "reks"
+                ],
+                "grouped": true,
+                "name": "reks-release-afdo-generate"
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "reks"
+                ],
+                "grouped": true,
+                "name": "reks-release-afdo-use"
+            }
+        ]
+    },
+    "reks-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "reks"
+        ]
+    },
+    "reks-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "reks"
+        ]
+    },
+    "reks-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "reks"
+        ],
+        "manifest": "official.xml"
+    },
+    "reks-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "reks"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
     "rikku-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
@@ -17883,6 +18432,49 @@
         "useflags": [
             "-chrome_internal"
         ]
+    },
+    "strago-b-full-group": {
+        "_template": "full",
+        "boards": [
+            "reks"
+        ],
+        "child_configs": [
+            {
+                "_template": "full",
+                "boards": [
+                    "reks"
+                ],
+                "grouped": true,
+                "name": "reks-full",
+                "prebuilts": "public",
+                "useflags": [
+                    "-chrome_internal"
+                ]
+            }
+        ],
+        "description": "Full Builds; Group config (boards: reks)",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "strago-b-release-group": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "reks"
+        ],
+        "child_configs": [
+            {
+                "_template": "release",
+                "boards": [
+                    "reks"
+                ],
+                "grouped": true,
+                "name": "reks-release"
+            }
+        ],
+        "description": "Release Builds (canary) (internal); Group config (boards: reks)"
     },
     "strago-chrome-pfq": {
         "_template": "chrome-pfq",
