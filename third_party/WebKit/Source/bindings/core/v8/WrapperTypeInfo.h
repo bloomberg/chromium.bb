@@ -151,6 +151,7 @@ struct WrapperTypeInfo {
     {
         if (isGarbageCollected()) {
             Heap::decreaseWrapperCount(1);
+            Heap::increaseCollectedWrapperCount(1);
         } else {
             ASSERT(derefObjectFunction);
             derefObjectFunction(scriptWrappable);
@@ -161,6 +162,7 @@ struct WrapperTypeInfo {
     {
         ASSERT(isGarbageCollected());
         Heap::decreaseWrapperCount(1);
+        Heap::increaseCollectedWrapperCount(1);
     }
 
     void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) const
