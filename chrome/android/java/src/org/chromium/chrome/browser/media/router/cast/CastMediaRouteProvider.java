@@ -5,7 +5,10 @@
 package org.chromium.chrome.browser.media.router.cast;
 
 import android.content.Context;
+import android.os.Handler;
+import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
+import android.support.v7.media.MediaRouter.RouteInfo;
 
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
 import org.chromium.chrome.browser.media.router.DiscoveryDelegate;
@@ -14,6 +17,8 @@ import org.chromium.chrome.browser.media.router.MediaRouteProvider;
 import org.chromium.chrome.browser.media.router.RouteController;
 import org.chromium.chrome.browser.media.router.RouteDelegate;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +30,7 @@ import javax.annotation.Nullable;
  */
 public class CastMediaRouteProvider
         implements MediaRouteProvider, DiscoveryDelegate, RouteDelegate {
+
     private final Context mApplicationContext;
     private final MediaRouter mAndroidMediaRouter;
     private final MediaRouteManager mManager;
@@ -35,10 +41,33 @@ public class CastMediaRouteProvider
     private final Map<String, String> mClientIdsToRouteIds = new HashMap<String, String>();
 
     private CreateRouteRequest mPendingCreateRouteRequest;
+    private Handler mHandler = new Handler();
+
+    private static class OnSinksReceivedRunnable implements Runnable {
+
+        private final WeakReference<MediaRouteManager> mRouteManager;
+        private final MediaRouteProvider mRouteProvider;
+        private final String mSourceId;
+        private final List<MediaSink> mSinks;
+
+        OnSinksReceivedRunnable(MediaRouteManager manager, MediaRouteProvider routeProvider,
+                String sourceId, List<MediaSink> sinks) {
+            mRouteManager = new WeakReference<MediaRouteManager>(manager);
+            mRouteProvider = routeProvider;
+            mSourceId = sourceId;
+            mSinks = sinks;
+        }
+
+        @Override
+        public void run() {
+            MediaRouteManager manager = mRouteManager.get();
+            if (manager != null) manager.onSinksReceived(mSourceId, mRouteProvider, mSinks);
+        }
+    };
 
     @Override
     public void onSinksReceived(String sourceId, List<MediaSink> sinks) {
-        mManager.onSinksReceived(sourceId, this, sinks);
+        mHandler.post(new OnSinksReceivedRunnable(mManager, this, sourceId, sinks));
     }
 
     @Override
@@ -108,9 +137,17 @@ public class CastMediaRouteProvider
             return;
         }
 
-        callback = new DiscoveryCallback(sourceId, this);
+        MediaRouteSelector routeSelector = source.buildRouteSelector();
+        List<MediaSink> knownSinks = new ArrayList<MediaSink>();
+        for (RouteInfo route : mAndroidMediaRouter.getRoutes()) {
+            if (route.matchesSelector(routeSelector)) {
+                knownSinks.add(MediaSink.fromRoute(route));
+            }
+        }
+
+        callback = new DiscoveryCallback(sourceId, knownSinks, this);
         mAndroidMediaRouter.addCallback(
-                source.buildRouteSelector(),
+                routeSelector,
                 callback,
                 MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY);
         mDiscoveryCallbacks.put(applicationId, callback);

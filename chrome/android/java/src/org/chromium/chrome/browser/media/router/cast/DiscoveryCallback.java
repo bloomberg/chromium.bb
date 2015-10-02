@@ -24,10 +24,14 @@ public class DiscoveryCallback extends MediaRouter.Callback {
     private Set<String> mSourceUrns = new HashSet<String>();
     private List<MediaSink> mSinks = new ArrayList<MediaSink>();
 
-    public DiscoveryCallback(String sourceUrn, DiscoveryDelegate delegate) {
+    public DiscoveryCallback(String sourceUrn, List<MediaSink> knownSinks,
+            DiscoveryDelegate delegate) {
         assert delegate != null;
         assert sourceUrn != null && !sourceUrn.isEmpty();
+
+        mSinks.addAll(knownSinks);
         mDiscoveryDelegate = delegate;
+
         addSourceUrn(sourceUrn);
     }
 
