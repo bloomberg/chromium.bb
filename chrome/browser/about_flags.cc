@@ -37,6 +37,7 @@
 #include "components/proximity_auth/switches.h"
 #include "components/search/search_switches.h"
 #include "components/sync_driver/sync_driver_switches.h"
+#include "components/tracing/tracing_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/user_metrics.h"
 #include "media/base/media_switches.h"
@@ -198,6 +199,18 @@ const Experiment::Choice kTouchTextSelectionStrategyChoices[] = {
   { IDS_TOUCH_SELECTION_STRATEGY_DIRECTION,
     switches::kTouchTextSelectionStrategy,
     "direction" }
+};
+
+const Experiment::Choice kTraceUploadURL[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, "", "" },
+  { IDS_TRACE_UPLOAD_URL_CHOICE_OTHER, switches::kTraceUploadURL,
+    "https://performance-insights.appspot.com/upload?tags=flags,Other"},
+  { IDS_TRACE_UPLOAD_URL_CHOICE_EMLOADING, switches::kTraceUploadURL,
+    "https://performance-insights.appspot.com/upload?tags=flags,emloading" },
+  { IDS_TRACE_UPLOAD_URL_CHOICE_QA, switches::kTraceUploadURL,
+    "https://performance-insights.appspot.com/upload?tags=flags,QA" },
+  { IDS_TRACE_UPLOAD_URL_CHOICE_TESTING, switches::kTraceUploadURL,
+    "https://performance-insights.appspot.com/upload?tags=flags,TestingTeam" }
 };
 
 #if !defined(DISABLE_NACL)
@@ -1148,6 +1161,16 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_TOUCH_SELECTION_STRATEGY_DESCRIPTION,
      kOsAndroid,  // TODO(mfomitchev): Add CrOS/Win/Linux support soon.
      MULTI_VALUE_TYPE(kTouchTextSelectionStrategyChoices)},
+    {"enable-navigation-tracing",
+     IDS_FLAGS_ENABLE_NAVIGATION_TRACING,
+     IDS_FLAGS_ENABLE_NAVIGATION_TRACING_DESCRIPTION,
+     kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableNavigationTracing)},
+    {"trace-upload-url",
+     IDS_FLAGS_TRACE_UPLOAD_URL,
+     IDS_FLAGS_TRACE_UPLOAD_URL_DESCRIPTION,
+     kOsAll,
+     MULTI_VALUE_TYPE(kTraceUploadURL)},
     {"enable-suggestions-service",
      IDS_FLAGS_ENABLE_SUGGESTIONS_SERVICE_NAME,
      IDS_FLAGS_ENABLE_SUGGESTIONS_SERVICE_DESCRIPTION,
