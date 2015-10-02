@@ -10,8 +10,10 @@
 #include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "content/public/browser/page_navigator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -320,6 +322,34 @@ class SiteEngagementServiceTest : public BrowserWithTestWindowTest {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableSiteEngagementService);
   }
+
+  void NavigateWithTransitionAndExpectHigherScore(
+      SiteEngagementService* service,
+      GURL& url,
+      ui::PageTransition transition) {
+    double prev_score = service->GetScore(url);
+    content::NavigationController* controller =
+        &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
+
+    browser()->OpenURL(content::OpenURLParams(url, content::Referrer(),
+                                              CURRENT_TAB, transition, false));
+    CommitPendingLoad(controller);
+    EXPECT_LT(prev_score, service->GetScore(url));
+  }
+
+  void NavigateWithTransitionAndExpectEqualScore(
+      SiteEngagementService* service,
+      GURL& url,
+      ui::PageTransition transition) {
+    double prev_score = service->GetScore(url);
+    content::NavigationController* controller =
+        &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
+
+    browser()->OpenURL(content::OpenURLParams(url, content::Referrer(),
+                                              CURRENT_TAB, transition, false));
+    CommitPendingLoad(controller);
+    EXPECT_EQ(prev_score, service->GetScore(url));
+  }
 };
 
 TEST_F(SiteEngagementServiceTest, GetMedianEngagement) {
@@ -395,17 +425,14 @@ TEST_F(SiteEngagementServiceTest, ScoreIncrementsOnPageRequest) {
   DCHECK(service);
 
   GURL url("http://www.google.com/");
-
-  AddTab(browser(), GURL("about:blank"));
   EXPECT_EQ(0, service->GetScore(url));
-  double prev_score = service->GetScore(url);
+  AddTab(browser(), GURL("about:blank"));
 
-  NavigateAndCommitActiveTab(url);
-  EXPECT_LT(prev_score, service->GetScore(url));
-  prev_score = service->GetScore(url);
+  NavigateWithTransitionAndExpectHigherScore(service, url,
+                                             ui::PAGE_TRANSITION_TYPED);
 
-  NavigateAndCommitActiveTab(url);
-  EXPECT_LT(prev_score, service->GetScore(url));
+  NavigateWithTransitionAndExpectHigherScore(service, url,
+                                             ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
 
 // Expect that site engagement scores for several sites are correctly
@@ -429,18 +456,22 @@ TEST_F(SiteEngagementServiceTest, GetTotalNavigationPoints) {
   EXPECT_EQ(0.5, service->GetTotalEngagementPoints());
 
   service->HandleNavigation(url2, ui::PAGE_TRANSITION_GENERATED);
-  service->HandleNavigation(url2, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  service->HandleNavigation(url2, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
   EXPECT_EQ(1, service->GetScore(url2));
   EXPECT_EQ(1.5, service->GetTotalEngagementPoints());
 
+  service->HandleNavigation(url2, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  EXPECT_EQ(1.5, service->GetScore(url2));
+  EXPECT_EQ(2, service->GetTotalEngagementPoints());
+
   service->HandleNavigation(url3, ui::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(0.5, service->GetScore(url3));
-  EXPECT_EQ(2, service->GetTotalEngagementPoints());
+  EXPECT_EQ(2.5, service->GetTotalEngagementPoints());
 
   service->HandleNavigation(url1, ui::PAGE_TRANSITION_GENERATED);
   service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(1.5, service->GetScore(url1));
-  EXPECT_EQ(3, service->GetTotalEngagementPoints());
+  EXPECT_EQ(3.5, service->GetTotalEngagementPoints());
 }
 
 TEST_F(SiteEngagementServiceTest, GetTotalUserInputPoints) {
@@ -544,7 +575,7 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   clock->SetNow(GetReferenceTime() + base::TimeDelta::FromMinutes(59));
 
   service->HandleNavigation(url2, ui::PAGE_TRANSITION_GENERATED);
-  service->HandleNavigation(url2, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  service->HandleNavigation(url2, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                               5);
@@ -708,4 +739,33 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
     EXPECT_EQ(0u, score_map.size());
     EXPECT_EQ(0, service->GetScore(url1));
   }
+}
+
+TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
+  AddTab(browser(), GURL("about:blank"));
+  GURL url("https://www.google.com/");
+
+  SiteEngagementService* service =
+    SiteEngagementServiceFactory::GetForProfile(browser()->profile());
+  DCHECK(service);
+
+  // Only direct navigation should trigger engagement.
+  NavigateWithTransitionAndExpectHigherScore(service, url,
+                                             ui::PAGE_TRANSITION_TYPED);
+  NavigateWithTransitionAndExpectHigherScore(service, url,
+                                             ui::PAGE_TRANSITION_GENERATED);
+  NavigateWithTransitionAndExpectHigherScore(service, url,
+                                             ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  NavigateWithTransitionAndExpectHigherScore(
+      service, url, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+
+  // Other transition types should not accumulate engagement.
+  NavigateWithTransitionAndExpectEqualScore(service, url,
+                                            ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  NavigateWithTransitionAndExpectEqualScore(service, url,
+                                            ui::PAGE_TRANSITION_LINK);
+  NavigateWithTransitionAndExpectEqualScore(service, url,
+                                            ui::PAGE_TRANSITION_RELOAD);
+  NavigateWithTransitionAndExpectEqualScore(service, url,
+                                            ui::PAGE_TRANSITION_FORM_SUBMIT);
 }
