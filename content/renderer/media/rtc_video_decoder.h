@@ -22,6 +22,7 @@
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/webrtc/modules/video_coding/codecs/interface/video_codec_interface.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace base {
 class WaitableEvent;
@@ -89,12 +90,14 @@ class CONTENT_EXPORT RTCVideoDecoder
   struct BufferData {
     BufferData(int32 bitstream_buffer_id,
                uint32_t timestamp,
-               size_t size);
+               size_t size,
+               const gfx::Rect& visible_rect);
     BufferData();
     ~BufferData();
     int32 bitstream_buffer_id;
     uint32_t timestamp;  // in 90KHz
     size_t size;  // buffer size
+    gfx::Rect visible_rect;
   };
 
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsBufferAfterReset);
@@ -133,7 +136,8 @@ class CONTENT_EXPORT RTCVideoDecoder
   scoped_refptr<media::VideoFrame> CreateVideoFrame(
       const media::Picture& picture,
       const media::PictureBuffer& pb,
-      uint32_t timestamp);
+      uint32_t timestamp,
+      const gfx::Rect& visible_rect);
 
   // Resets VDA.
   void ResetInternal();
@@ -168,7 +172,9 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Stores the buffer metadata to |input_buffer_data_|.
   void RecordBufferData(const BufferData& buffer_data);
   // Gets the buffer metadata from |input_buffer_data_|.
-  void GetBufferData(int32 bitstream_buffer_id, uint32_t* timestamp);
+  void GetBufferData(int32 bitstream_buffer_id,
+                     uint32_t* timestamp,
+                     gfx::Rect* visible_rect);
 
   // Records the result of InitDecode to UMA and returns |status|.
   int32_t RecordInitDecodeUMA(int32_t status);

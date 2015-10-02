@@ -58,10 +58,12 @@ RTCVideoDecoder::SHMBuffer::~SHMBuffer() {
 
 RTCVideoDecoder::BufferData::BufferData(int32 bitstream_buffer_id,
                                         uint32_t timestamp,
-                                        size_t size)
+                                        size_t size,
+                                        const gfx::Rect& visible_rect)
     : bitstream_buffer_id(bitstream_buffer_id),
       timestamp(timestamp),
-      size(size) {}
+      size(size),
+      visible_rect(visible_rect) {}
 
 RTCVideoDecoder::BufferData::BufferData() {}
 
@@ -221,7 +223,8 @@ int32_t RTCVideoDecoder::Decode(
   // Create buffer metadata.
   BufferData buffer_data(next_bitstream_buffer_id_,
                          inputImage._timeStamp,
-                         inputImage._length);
+                         inputImage._length,
+                         gfx::Rect(frame_size_));
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & ID_LAST;
 
@@ -363,23 +366,23 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
-  const media::PictureBuffer& pb = it->second;
 
-  // Validate picture rectangle from GPU.
-  if (picture.visible_rect().IsEmpty() ||
-      !gfx::Rect(pb.size()).Contains(picture.visible_rect())) {
-    NOTREACHED() << "Invalid picture size from VDA: "
-                 << picture.visible_rect().ToString() << " should fit in "
-                 << pb.size().ToString();
+  uint32_t timestamp = 0;
+  gfx::Rect visible_rect;
+  GetBufferData(picture.bitstream_buffer_id(), &timestamp, &visible_rect);
+  if (!picture.visible_rect().IsEmpty())
+    visible_rect = picture.visible_rect();
+
+  const media::PictureBuffer& pb = it->second;
+  if (visible_rect.IsEmpty() || !gfx::Rect(pb.size()).Contains(visible_rect)) {
+    LOG(ERROR) << "Invalid picture size: " << visible_rect.ToString()
+               << " should fit in " << pb.size().ToString();
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
 
-  // Create a media::VideoFrame.
-  uint32_t timestamp = 0;
-  GetBufferData(picture.bitstream_buffer_id(), &timestamp);
   scoped_refptr<media::VideoFrame> frame =
-      CreateVideoFrame(picture, pb, timestamp);
+      CreateVideoFrame(picture, pb, timestamp, visible_rect);
   bool inserted =
       picture_buffers_at_display_.insert(std::make_pair(
                                              picture.picture_buffer_id(),
@@ -405,8 +408,8 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
 scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
     const media::Picture& picture,
     const media::PictureBuffer& pb,
-    uint32_t timestamp) {
-  gfx::Rect visible_rect(picture.visible_rect());
+    uint32_t timestamp,
+    const gfx::Rect& visible_rect) {
   DCHECK(decoder_texture_target_);
   // Convert timestamp from 90KHz to ms.
   base::TimeDelta timestamp_ms = base::TimeDelta::FromInternalValue(
@@ -791,13 +794,15 @@ void RTCVideoDecoder::RecordBufferData(const BufferData& buffer_data) {
 }
 
 void RTCVideoDecoder::GetBufferData(int32 bitstream_buffer_id,
-                                    uint32_t* timestamp) {
+                                    uint32_t* timestamp,
+                                    gfx::Rect* visible_rect) {
   for (std::list<BufferData>::iterator it = input_buffer_data_.begin();
        it != input_buffer_data_.end();
        ++it) {
     if (it->bitstream_buffer_id != bitstream_buffer_id)
       continue;
     *timestamp = it->timestamp;
+    *visible_rect = it->visible_rect;
     return;
   }
   NOTREACHED() << "Missing bitstream buffer id: " << bitstream_buffer_id;
