@@ -2,25 +2,33 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (is_android) {
-  gcc_version = 49
-} else if (current_toolchain == "//build/toolchain/cros:target" ||
-           current_toolchain == "//build/toolchain/linux:mipsel") {
-  gcc_version = exec_script("../../compiler_version.py",
-                            [
-                              "target",
-                              "compiler",
-                            ],
-                            "value")
-} else if (current_toolchain == "//build/toolchain/linux:x64" ||
-           current_toolchain == "//build/toolchain/linux:x86") {
-  # These are both the same and just use the default gcc on the system.
-  gcc_version = exec_script("../../compiler_version.py",
-                            [
-                              "host",
-                              "compiler",
-                            ],
-                            "value")
-} else {
-  gcc_version = 0
+declare_args() {
+  # This allows the gcc_version to be overriden when using a custom toolchain.
+  # If the gcc_version is {X}.{Y}, set this value as XY.
+  gcc_version = -1
+}
+
+if (gcc_version == -1) {
+  if (is_android) {
+    gcc_version = 49
+  } else if (current_toolchain == "//build/toolchain/cros:target" ||
+             current_toolchain == "//build/toolchain/linux:mipsel") {
+    gcc_version = exec_script("../../compiler_version.py",
+                              [
+                                "target",
+                                "compiler",
+                              ],
+                              "value")
+  } else if (current_toolchain == "//build/toolchain/linux:x64" ||
+             current_toolchain == "//build/toolchain/linux:x86") {
+    # These are both the same and just use the default gcc on the system.
+    gcc_version = exec_script("../../compiler_version.py",
+                              [
+                                "host",
+                                "compiler",
+                              ],
+                              "value")
+  } else {
+    gcc_version = 0
+  }
 }
