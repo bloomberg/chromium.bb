@@ -200,6 +200,9 @@ void ActionUpdateCheck::OnUpdateCheckFailed(int error,
 
   VLOG(1) << "Update check failed." << error;
 
+  ChangeAllItemsState(CrxUpdateItem::State::kChecking,
+                      CrxUpdateItem::State::kNoUpdate);
+
   UpdateComplete(error);
 }
 
