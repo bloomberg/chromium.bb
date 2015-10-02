@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.shell;
 
-import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.R;
 import org.chromium.base.CommandLine;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -15,6 +14,10 @@ import org.chromium.ui.base.ResourceBundle;
  * The android_webview shell Application subclass.
  */
 public class AwShellApplication extends ContentApplication {
+    public AwShellApplication() {
+        super(false /* mShouldInitializeApplicationStatusTracking */);
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();

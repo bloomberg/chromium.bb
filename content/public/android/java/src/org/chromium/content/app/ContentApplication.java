@@ -20,6 +20,14 @@ public abstract class ContentApplication extends BaseChromiumApplication {
     private TracingControllerAndroid mTracingController;
     private boolean mLibraryDependenciesInitialized;
 
+    public ContentApplication() {
+        this(true /* mShouldInitializeApplicationStatusTracking */);
+    }
+
+    protected ContentApplication(boolean shouldInitializeApplicationStatusTracking) {
+        super(shouldInitializeApplicationStatusTracking);
+    }
+
     TracingControllerAndroid getTracingController() {
         if (mTracingController == null) {
             mTracingController = new TracingControllerAndroid(this);

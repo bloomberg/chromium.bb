@@ -16,6 +16,15 @@ import android.view.Window;
 public class BaseChromiumApplication extends Application {
 
     private static final String TAG = "cr.base";
+    private final boolean mShouldInitializeApplicationStatusTracking;
+
+    public BaseChromiumApplication() {
+        this(true);
+    }
+
+    protected BaseChromiumApplication(boolean shouldInitializeApplicationStatusTracking) {
+        mShouldInitializeApplicationStatusTracking = shouldInitializeApplicationStatusTracking;
+    }
 
     /**
      * Interface to be implemented by listeners for window focus events.
@@ -35,6 +44,40 @@ public class BaseChromiumApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        if (mShouldInitializeApplicationStatusTracking) startTrackingApplicationStatus();
+    }
+
+    /**
+     * Registers a listener to receive window focus updates on activities in this application.
+     * @param listener Listener to receive window focus events.
+     */
+    public void registerWindowFocusChangedListener(WindowFocusChangedListener listener) {
+        mWindowFocusListeners.addObserver(listener);
+    }
+
+    /**
+     * Unregisters a listener from receiving window focus updates on activities in this application.
+     * @param listener Listener that doesn't want to receive window focus events.
+     */
+    public void unregisterWindowFocusChangedListener(WindowFocusChangedListener listener) {
+        mWindowFocusListeners.removeObserver(listener);
+    }
+
+    /** Initializes the {@link CommandLine}. */
+    public void initCommandLine() {}
+
+    /**
+     * This must only be called for contexts whose application is a subclass of
+     * {@link BaseChromiumApplication}.
+     */
+    @VisibleForTesting
+    public static void initCommandLine(Context context) {
+        ((BaseChromiumApplication) context.getApplicationContext()).initCommandLine();
+    }
+
+    /** Register hooks and listeners to start tracking the application status. */
+    private void startTrackingApplicationStatus() {
         ApplicationStatus.initialize(this);
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
@@ -81,33 +124,5 @@ public class BaseChromiumApplication extends Application {
                 assert activity.getWindow().getCallback() instanceof WindowCallbackWrapper;
             }
         });
-    }
-
-    /**
-     * Registers a listener to receive window focus updates on activities in this application.
-     * @param listener Listener to receive window focus events.
-     */
-    public void registerWindowFocusChangedListener(WindowFocusChangedListener listener) {
-        mWindowFocusListeners.addObserver(listener);
-    }
-
-    /**
-     * Unregisters a listener from receiving window focus updates on activities in this application.
-     * @param listener Listener that doesn't want to receive window focus events.
-     */
-    public void unregisterWindowFocusChangedListener(WindowFocusChangedListener listener) {
-        mWindowFocusListeners.removeObserver(listener);
-    }
-
-    /** Initializes the {@link CommandLine}. */
-    public void initCommandLine() {}
-
-    /**
-     * This must only be called for contexts whose application is a subclass of
-     * {@link BaseChromiumApplication}.
-     */
-    @VisibleForTesting
-    public static void initCommandLine(Context context) {
-        ((BaseChromiumApplication) context.getApplicationContext()).initCommandLine();
     }
 }
