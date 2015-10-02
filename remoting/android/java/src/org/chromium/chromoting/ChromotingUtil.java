@@ -10,6 +10,8 @@ import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 import android.view.Menu;
 
+import org.chromium.base.ApiCompatibilityUtils;
+
 /** Utility methods for chromoting code. */
 public abstract class ChromotingUtil {
     /**
@@ -21,7 +23,7 @@ public abstract class ChromotingUtil {
     public static void tintMenuIcons(Context context, Menu menu) {
         TypedValue typedValue = new TypedValue();
         context.getTheme().resolveAttribute(R.attr.colorControlNormal, typedValue, true);
-        int color = context.getResources().getColor(typedValue.resourceId);
+        int color = ApiCompatibilityUtils.getColor(context.getResources(), typedValue.resourceId);
         int items = menu.size();
         for (int i = 0; i < items; i++) {
             Drawable icon = menu.getItem(i).getIcon();
