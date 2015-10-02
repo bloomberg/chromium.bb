@@ -1193,8 +1193,7 @@
   },
 
   'WATCHLISTS': {
-    'accelerator_table': ['mazda+watch@chromium.org',
-                          'derat+watch@chromium.org',
+    'accelerator_table': ['derat+watch@chromium.org',
                           'yusukes+watch@chromium.org'],
     'accessibility': ['aboxhall+watch@chromium.org',
                       'dmazzoni+watch@chromium.org',
