@@ -49169,6 +49169,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Viewport.DidScalePage" enum="BooleanDidScalePage">
+  <owner>bokan@chromium.org</owner>
+  <summary>
+    Tracks the proportion of non-mobile optimized (i.e. zoom disabled or layout
+    width matches viewport) page views that had a user-initiated page scale
+    (e.g. pinch-zoom, double-tap). Recorded on navigation to a new page - on
+    Android only.
+  </summary>
+</histogram>
+
+<histogram name="Viewport.MaxPageScale" enum="PageScaleFactorRange">
+  <owner>bokan@chromium.org</owner>
+  <summary>
+    Tracks the maximum scale factor that a user has scaled to over the lifetime
+    of the page. The scale is counted at pinch end (e.g. zooming to 300% and
+    back out to 150% in one gesture would count as 150%). Reported only on
+    non-mobile optimized pages (i.e. zoom disabled or layout width matches
+    viewport) which have had a page scale changing gesture. Recorded on
+    navigation to a new page - on Android only.
+  </summary>
+</histogram>
+
 <histogram name="Viewport.MetaTagType" enum="MetaTagTypeEnum">
   <owner>bokan@chromium.org</owner>
   <summary>
@@ -52986,6 +53008,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanDidFallBack" type="int">
   <int value="0" label="Did not fall back"/>
   <int value="1" label="Did fall back"/>
+</enum>
+
+<enum name="BooleanDidScalePage" type="int">
+  <int value="0" label="User did not change scale"/>
+  <int value="1" label="User did change scale"/>
 </enum>
 
 <enum name="BooleanDuplicate" type="int">
@@ -66792,6 +66819,30 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Aborted load before first layout"/>
   <int value="4" label="Successful first layout (foreground)"/>
   <int value="5" label="Successful first layout (backgrounded)"/>
+</enum>
+
+<enum name="PageScaleFactorRange" type="int">
+  <int value="0" label="&lt;25%"/>
+  <int value="1" label="25-49%"/>
+  <int value="2" label="50-74%"/>
+  <int value="3" label="75-99%"/>
+  <int value="4" label="100-124%"/>
+  <int value="5" label="125-149%"/>
+  <int value="6" label="150-174%"/>
+  <int value="7" label="175-199%"/>
+  <int value="8" label="200-224%"/>
+  <int value="9" label="225-249%"/>
+  <int value="10" label="250-274%"/>
+  <int value="11" label="275-299%"/>
+  <int value="12" label="300-324%"/>
+  <int value="13" label="325-349%"/>
+  <int value="14" label="350-374%"/>
+  <int value="15" label="375-399%"/>
+  <int value="16" label="400-424%"/>
+  <int value="17" label="425-449%"/>
+  <int value="18" label="450-474%"/>
+  <int value="19" label="475-499%"/>
+  <int value="20" label="&gt;=500%"/>
 </enum>
 
 <enum name="PagespeedHeaderServerType" type="int">

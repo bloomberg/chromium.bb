@@ -491,10 +491,6 @@ public:
     void requestPointerUnlock();
     bool isPointerLocked();
 
-    // Heuristic-based function for determining if we should disable workarounds
-    // for viewing websites that are not optimized for mobile devices.
-    bool shouldDisableDesktopWorkarounds();
-
     // Exposed for tests.
     unsigned numLinkHighlights() { return m_linkHighlights.size(); }
     LinkHighlightImpl* linkHighlight(int i) { return m_linkHighlights[i].get(); }

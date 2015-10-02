@@ -519,6 +519,7 @@ void Page::didCommitLoad(LocalFrame* frame)
     if (m_mainFrame == frame) {
         frame->console().clearMessages();
         useCounter().didCommitLoad();
+        frameHost().visualViewport().sendUMAMetrics();
         m_originsUsingFeatures.updateMeasurementsAndClear();
         UserGestureIndicator::clearProcessedUserGestureSinceLoad();
     }

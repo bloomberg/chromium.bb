@@ -799,16 +799,18 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         // Don't trigger a disambiguation popup when screencasting, since it's implemented outside of
         // compositor pipeline and is not being screencasted itself. This leads to bad user experience.
         WebDevToolsAgentImpl* devTools = mainFrameDevToolsAgentImpl();
+        VisualViewport& visualViewport = page()->frameHost().visualViewport();
         bool screencastEnabled = devTools && devTools->screencastEnabled();
-        if (event.data.tap.width > 0 && !shouldDisableDesktopWorkarounds() && !screencastEnabled) {
-            IntRect boundingBox(page()->frameHost().visualViewport().viewportToRootFrame(IntRect(
+        if (event.data.tap.width > 0 && !visualViewport.shouldDisableDesktopWorkarounds() && !screencastEnabled) {
+            IntRect boundingBox(visualViewport.viewportToRootFrame(IntRect(
                 event.x - event.data.tap.width / 2,
                 event.y - event.data.tap.height / 2,
                 event.data.tap.width,
                 event.data.tap.height)));
 
-            // FIXME: We shouldn't pass details of the VisualViewport offset to render_view_impl.
-            WebSize visualViewportOffset = flooredIntSize(page()->frameHost().visualViewport().location());
+            // TODO(bokan): We shouldn't pass details of the VisualViewport offset to render_view_impl.
+            //              crbug.com/459591
+            WebSize visualViewportOffset = flooredIntSize(visualViewport.location());
 
             if (m_webSettings->multiTargetTapNotificationEnabled()) {
                 Vector<IntRect> goodTargets;
@@ -2072,6 +2074,8 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         autofillClient->firstUserGestureObserved();
     }
 
+    page()->frameHost().visualViewport().startTrackingPinchStats();
+
     TRACE_EVENT1("input", "WebViewImpl::handleInputEvent", "type", inputTypeToName(inputEvent.type).ascii());
     // If we've started a drag and drop operation, ignore input events until
     // we're done.
@@ -2867,7 +2871,7 @@ bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rectInViewport)
     element->document().updateLayoutIgnorePendingStylesheets();
 
     bool zoomInToLegibleScale = m_webSettings->autoZoomFocusedNodeToLegibleScale()
-        && !shouldDisableDesktopWorkarounds();
+        && !page()->frameHost().visualViewport().shouldDisableDesktopWorkarounds();
 
     if (zoomInToLegibleScale) {
         // When deciding whether to zoom in on a focused text box, we should decide not to
@@ -4264,8 +4268,10 @@ void WebViewImpl::applyViewportDeltas(
     visualViewportOffset.move(visualViewportDelta.width, visualViewportDelta.height);
     setPageScaleFactorAndLocation(pageScaleFactor() * pageScaleDelta, visualViewportOffset);
 
-    if (pageScaleDelta != 1)
+    if (pageScaleDelta != 1) {
         m_doubleTapZoomPending = false;
+        page()->frameHost().visualViewport().userDidChangeScale();
+    }
 
     m_elasticOverscroll += elasticOverscrollDelta;
     frameView->didUpdateElasticOverscroll();
@@ -4430,25 +4436,6 @@ void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event)
         page()->pointerLockController().dispatchLockedMouseEvent(
             PlatformMouseEventBuilder(mainFrameImpl()->frameView(), mouseEvent),
             eventType);
-}
-
-bool WebViewImpl::shouldDisableDesktopWorkarounds()
-{
-    if (!settings()->viewportEnabled())
-        return false;
-
-    // A document is considered adapted to small screen UAs if one of these holds:
-    // 1. The author specified viewport has a constrained width that is equal to
-    //    the initial viewport width.
-    // 2. The author has disabled viewport zoom.
-
-    const PageScaleConstraints& constraints = pageScaleConstraintsSet().pageDefinedConstraints();
-
-    if (!mainFrameImpl() || !mainFrameImpl()->frameView())
-        return false;
-
-    return mainFrameImpl()->frameView()->layoutSize().width() == m_size.width
-        || (constraints.minimumScale == constraints.maximumScale && constraints.minimumScale != -1);
 }
 
 void WebViewImpl::forceNextWebGLContextCreationToFail()

@@ -195,6 +195,15 @@ public:
     GraphicsLayer* layerForHorizontalScrollbar() const override;
     GraphicsLayer* layerForVerticalScrollbar() const override;
 
+    // Used for gathering data on user pinch-zoom statistics.
+    void userDidChangeScale();
+    void sendUMAMetrics();
+    void startTrackingPinchStats();
+
+    // Heuristic-based function for determining if we should disable workarounds
+    // for viewing websites that are not optimized for mobile devices.
+    bool shouldDisableDesktopWorkarounds() const;
+
 private:
     explicit VisualViewport(FrameHost&);
 
@@ -231,6 +240,8 @@ private:
     float m_scale;
     IntSize m_size;
     float m_topControlsAdjustment;
+    float m_maxPageScale;
+    bool m_trackPinchZoomStatsForPage;
 };
 
 } // namespace blink

@@ -71,12 +71,15 @@ VisualViewport::VisualViewport(FrameHost& owner)
     : m_frameHost(&owner)
     , m_scale(1)
     , m_topControlsAdjustment(0)
+    , m_maxPageScale(-1)
+    , m_trackPinchZoomStatsForPage(false)
 {
     reset();
 }
 
 VisualViewport::~VisualViewport()
 {
+    sendUMAMetrics();
 }
 
 DEFINE_TRACE(VisualViewport)
@@ -652,6 +655,68 @@ IntPoint VisualViewport::rootFrameToViewport(const IntPoint& pointInRootFrame) c
 {
     // FIXME: How to snap to pixels?
     return flooredIntPoint(FloatPoint(rootFrameToViewport(FloatPoint(pointInRootFrame))));
+}
+
+void VisualViewport::startTrackingPinchStats()
+{
+    if (!mainFrame())
+        return;
+
+    Document* document = mainFrame()->document();
+    if (!document)
+        return;
+
+    if (!document->url().protocolIsInHTTPFamily())
+        return;
+
+    m_trackPinchZoomStatsForPage = !shouldDisableDesktopWorkarounds();
+}
+
+void VisualViewport::userDidChangeScale()
+{
+    if (!m_trackPinchZoomStatsForPage)
+        return;
+
+    m_maxPageScale = std::max(m_maxPageScale, m_scale);
+}
+
+void VisualViewport::sendUMAMetrics()
+{
+    if (m_trackPinchZoomStatsForPage) {
+        bool didScale = m_maxPageScale > 0;
+
+        Platform::current()->histogramEnumeration("Viewport.DidScalePage", didScale ? 1 : 0, 2);
+
+        if (didScale) {
+            int zoomPercentage = floor(m_maxPageScale * 100);
+
+            // See the PageScaleFactor enumeration in histograms.xml for the bucket ranges.
+            int bucket = floor(zoomPercentage / 25.f);
+
+            Platform::current()->histogramEnumeration("Viewport.MaxPageScale", bucket, 21);
+        }
+    }
+
+    m_maxPageScale = -1;
+    m_trackPinchZoomStatsForPage = false;
+}
+
+bool VisualViewport::shouldDisableDesktopWorkarounds() const
+{
+    if (!mainFrame() || !mainFrame()->view())
+        return false;
+
+    if (!mainFrame()->settings()->viewportEnabled())
+        return false;
+
+    // A document is considered adapted to small screen UAs if one of these holds:
+    // 1. The author specified viewport has a constrained width that is equal to
+    //    the initial viewport width.
+    // 2. The author has disabled viewport zoom.
+    const PageScaleConstraints& constraints = frameHost().pageScaleConstraintsSet().pageDefinedConstraints();
+
+    return mainFrame()->view()->layoutSize().width() == m_size.width()
+        || (constraints.minimumScale == constraints.maximumScale && constraints.minimumScale != -1);
 }
 
 String VisualViewport::debugName(const GraphicsLayer* graphicsLayer)
