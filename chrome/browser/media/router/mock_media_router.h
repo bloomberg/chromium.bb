@@ -56,7 +56,7 @@ class MockMediaRouter : public MediaRouter {
                void(const MediaRoute::Id& route_id));
   MOCK_METHOD1(RegisterIssuesObserver, void(IssuesObserver* observer));
   MOCK_METHOD1(UnregisterIssuesObserver, void(IssuesObserver* observer));
-  MOCK_METHOD1(RegisterMediaSinksObserver, void(MediaSinksObserver* observer));
+  MOCK_METHOD1(RegisterMediaSinksObserver, bool(MediaSinksObserver* observer));
   MOCK_METHOD1(UnregisterMediaSinksObserver,
                void(MediaSinksObserver* observer));
   MOCK_METHOD1(RegisterMediaRoutesObserver,

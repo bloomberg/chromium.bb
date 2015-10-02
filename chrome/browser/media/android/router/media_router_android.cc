@@ -188,7 +188,7 @@ void MediaRouterAndroid::OnPresentationSessionDetached(
   CloseRoute(route_id);
 }
 
-void MediaRouterAndroid::RegisterMediaSinksObserver(
+bool MediaRouterAndroid::RegisterMediaSinksObserver(
     MediaSinksObserver* observer) {
   const std::string& source_id = observer->source().id();
   base::ObserverList<MediaSinksObserver>* observer_list =
@@ -204,7 +204,7 @@ void MediaRouterAndroid::RegisterMediaSinksObserver(
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jsource_id =
       base::android::ConvertUTF8ToJavaString(env, source_id);
-  Java_ChromeMediaRouter_startObservingMediaSinks(
+  return Java_ChromeMediaRouter_startObservingMediaSinks(
       env, java_media_router_.obj(), jsource_id.obj());
 }
 

@@ -70,11 +70,18 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
            PresentationServiceDelegate::Observer* observer));
   MOCK_METHOD2(RemoveObserver,
       void(int render_process_id, int render_frame_id));
-  MOCK_METHOD3(AddScreenAvailabilityListener,
-      bool(
-          int render_process_id,
-          int routing_id,
-          PresentationScreenAvailabilityListener* listener));
+
+  bool AddScreenAvailabilityListener(
+      int render_process_id,
+      int routing_id,
+      PresentationScreenAvailabilityListener* listener) override {
+    if (!screen_availability_listening_supported_)
+      listener->OnScreenAvailabilityNotSupported();
+
+    return AddScreenAvailabilityListener();
+  }
+  MOCK_METHOD0(AddScreenAvailabilityListener, bool());
+
   MOCK_METHOD3(RemoveScreenAvailabilityListener,
       void(
           int render_process_id,
@@ -132,6 +139,13 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
       void(int render_process_id,
            int render_frame_id,
            const content::SessionStateChangedCallback& state_changed_cb));
+
+  void set_screen_availability_listening_supported(bool value) {
+    screen_availability_listening_supported_ = value;
+  }
+
+ private:
+  bool screen_availability_listening_supported_ = true;
 };
 
 class MockPresentationServiceClient :
@@ -147,9 +161,8 @@ class MockPresentationServiceClient :
   MOCK_METHOD2(OnSessionStateChanged,
                void(const presentation::PresentationSessionInfo& session_info,
                     presentation::PresentationSessionState new_state));
-  void OnScreenAvailabilityNotSupported(const mojo::String& url) override {
-    NOTIMPLEMENTED();
-  }
+
+  MOCK_METHOD1(OnScreenAvailabilityNotSupported, void(const mojo::String& url));
 
   void OnSessionMessagesReceived(
       presentation::PresentationSessionInfoPtr session_info,
@@ -198,7 +211,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     // using RunLoop.
     // The callback shouldn't be invoked since there is no availability
     // result yet.
-    EXPECT_CALL(mock_delegate_, AddScreenAvailabilityListener(_, _, _))
+    EXPECT_CALL(mock_delegate_, AddScreenAvailabilityListener())
         .WillOnce(DoAll(
             InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
             Return(delegate_success)));
@@ -829,6 +842,14 @@ TEST_F(PresentationServiceImplTest, ListenForSessionStateChange) {
   service_impl_->OnSessionStateChanged(
       content::PresentationSessionInfo(kPresentationUrl, kPresentationId),
       content::PRESENTATION_SESSION_STATE_CONNECTED);
+}
+
+TEST_F(PresentationServiceImplTest, ScreenAvailabilityNotSupported) {
+  mock_delegate_.set_screen_availability_listening_supported(false);
+  EXPECT_CALL(mock_client_,
+              OnScreenAvailabilityNotSupported(Eq(kPresentationUrl)));
+
+  ListenForScreenAvailabilityAndWait(kPresentationUrl, false);
 }
 
 }  // namespace content

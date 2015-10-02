@@ -35,9 +35,12 @@ class MediaSinksObserver {
 
   const MediaSource& source() const { return source_; }
 
+  bool is_active() const { return is_active_; }
+
  private:
   const MediaSource source_;
   MediaRouter* router_;
+  bool is_active_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSinksObserver);
 };

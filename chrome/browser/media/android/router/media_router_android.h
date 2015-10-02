@@ -91,7 +91,7 @@ class MediaRouterAndroid : public MediaRouter {
   explicit MediaRouterAndroid(content::BrowserContext*);
 
   // MediaRouter implementation.
-  void RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
+  bool RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
   void UnregisterMediaSinksObserver(MediaSinksObserver* observer) override;
   void RegisterMediaRoutesObserver(MediaRoutesObserver* observer) override;
   void UnregisterMediaRoutesObserver(MediaRoutesObserver* observer) override;

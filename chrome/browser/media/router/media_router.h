@@ -133,7 +133,9 @@ class MediaRouter : public KeyedService {
   // in undefined behavior.
   // If the MRPM Host is not available, the registration request will fail
   // immediately.
-  virtual void RegisterMediaSinksObserver(MediaSinksObserver* observer) = 0;
+  // The implementation can reject the request to observe in which case it will
+  // notify the caller by returning |false|.
+  virtual bool RegisterMediaSinksObserver(MediaSinksObserver* observer) = 0;
 
   // Removes a previously added MediaSinksObserver. |observer| will stop
   // receiving further updates.

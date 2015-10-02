@@ -573,6 +573,11 @@ void PresentationServiceImpl::ScreenAvailabilityListenerImpl
   service_->client_->OnScreenAvailabilityUpdated(availability_url_, available);
 }
 
+void PresentationServiceImpl::ScreenAvailabilityListenerImpl
+::OnScreenAvailabilityNotSupported() {
+  service_->client_->OnScreenAvailabilityNotSupported(availability_url_);
+}
+
 PresentationServiceImpl::NewSessionMojoCallbackWrapper
 ::NewSessionMojoCallbackWrapper(const NewSessionMojoCallback& callback)
     : callback_(callback) {

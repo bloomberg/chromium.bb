@@ -118,6 +118,7 @@ class CONTENT_EXPORT PresentationServiceImpl
     // PresentationScreenAvailabilityListener implementation.
     std::string GetAvailabilityUrl() const override;
     void OnScreenAvailabilityChanged(bool available) override;
+    void OnScreenAvailabilityNotSupported() override;
 
    private:
     const std::string availability_url_;

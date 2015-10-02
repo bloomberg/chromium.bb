@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.media.router;
 import android.content.Context;
 import android.support.v7.media.MediaRouter;
 
+import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -53,6 +54,9 @@ public class ChromeMediaRouter implements MediaRouteManager {
             // so getting the MediaRouter instance will throw an exception.
             return MediaRouter.getInstance(applicationContext);
         } catch (NoSuchMethodError e) {
+            return null;
+        } catch (NoClassDefFoundError e) {
+            // TODO(mlamouri): happens with Robolectric.
             return null;
         }
     }
@@ -129,14 +133,19 @@ public class ChromeMediaRouter implements MediaRouteManager {
 
     /**
      * Starts background monitoring for available media sinks compatible with the given
-     * |sourceUrn|
+     * |sourceUrn| if the device is in a state that allows it.
      * @param sourceId a URL to use for filtering of the available media sinks
+     * @return whether the monitoring started (ie. was allowed).
      */
     @CalledByNative
-    public void startObservingMediaSinks(String sourceId) {
+    public boolean startObservingMediaSinks(String sourceId) {
+        if (SysUtils.isLowEndDevice()) return false;
+
         for (MediaRouteProvider provider : mRouteProviders) {
             provider.startObservingMediaSinks(sourceId);
         }
+
+        return true;
     }
 
     /**

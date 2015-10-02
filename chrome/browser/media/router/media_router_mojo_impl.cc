@@ -275,7 +275,7 @@ void MediaRouterMojoImpl::OnPresentationSessionDetached(
                         base::Unretained(this), route_id));
 }
 
-void MediaRouterMojoImpl::RegisterMediaSinksObserver(
+bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
     MediaSinksObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -297,6 +297,7 @@ void MediaRouterMojoImpl::RegisterMediaSinksObserver(
   observer_list->AddObserver(observer);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaSinks,
                         base::Unretained(this), source_id));
+  return true;
 }
 
 void MediaRouterMojoImpl::UnregisterMediaSinksObserver(

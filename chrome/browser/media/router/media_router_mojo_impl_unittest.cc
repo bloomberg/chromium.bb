@@ -336,7 +336,7 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   MediaSinksObserver* captured_observer;
   EXPECT_CALL(mock_router, RegisterMediaSinksObserver(_))
       .Times(3)
-      .WillRepeatedly(SaveArg<0>(&captured_observer));
+      .WillRepeatedly(DoAll(SaveArg<0>(&captured_observer), Return(true)));
 
   MockMediaSinksObserver sinks_observer(&mock_router, media_source);
   EXPECT_EQ(&sinks_observer, captured_observer);

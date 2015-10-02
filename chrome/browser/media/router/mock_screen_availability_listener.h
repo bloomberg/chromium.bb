@@ -20,6 +20,8 @@ class MockScreenAvailabilityListener
 
   MOCK_METHOD1(OnScreenAvailabilityChanged, void(bool available));
 
+  MOCK_METHOD0(OnScreenAvailabilityNotSupported, void());
+
  private:
   std::string availability_url_;
 };

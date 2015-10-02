@@ -60,6 +60,8 @@ class PresentationServiceDelegateImplTest
 };
 
 TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {
+  ON_CALL(router_, RegisterMediaSinksObserver(_)).WillByDefault(Return(true));
+
   std::string presentation_url1("http://url1");
   std::string presentation_url2("http://url2");
   MediaSource source1 = MediaSourceForPresentationUrl(presentation_url1);
@@ -94,6 +96,8 @@ TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {
 }
 
 TEST_F(PresentationServiceDelegateImplTest, AddSameListenerTwice) {
+  ON_CALL(router_, RegisterMediaSinksObserver(_)).WillByDefault(Return(true));
+
   std::string presentation_url1("http://url1");
   MediaSource source1(MediaSourceForPresentationUrl(presentation_url1));
   MockScreenAvailabilityListener listener1(presentation_url1);
@@ -182,6 +186,8 @@ TEST_F(PresentationServiceDelegateImplTest, DefaultMediaSourceObserver) {
 }
 
 TEST_F(PresentationServiceDelegateImplTest, Reset) {
+  ON_CALL(router_, RegisterMediaSinksObserver(_)).WillByDefault(Return(true));
+
   std::string presentation_url1("http://url1");
   MediaSource source = MediaSourceForPresentationUrl(presentation_url1);
   MockScreenAvailabilityListener listener1(presentation_url1);
@@ -214,6 +220,19 @@ TEST_F(PresentationServiceDelegateImplTest, DelegateObservers) {
 
   EXPECT_CALL(delegate_observer1, OnDelegateDestroyed()).Times(1);
   manager.reset();
+}
+
+TEST_F(PresentationServiceDelegateImplTest, SinksObserverCantRegister) {
+  ON_CALL(router_, RegisterMediaSinksObserver(_)).WillByDefault(Return(false));
+
+  const std::string presentation_url("http://url1");
+  MockScreenAvailabilityListener listener(presentation_url);
+  const int render_process_id = 10;
+  const int render_frame_id = 1;
+
+  EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).Times(1);
+  EXPECT_FALSE(delegate_impl_->AddScreenAvailabilityListener(
+      render_process_id, render_frame_id, &listener));
 }
 
 }  // namespace media_router

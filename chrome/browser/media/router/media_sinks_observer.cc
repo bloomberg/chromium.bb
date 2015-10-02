@@ -13,7 +13,7 @@ MediaSinksObserver::MediaSinksObserver(MediaRouter* router,
                                        const MediaSource& source)
     : source_(source), router_(router) {
   DCHECK(router_);
-  router_->RegisterMediaSinksObserver(this);
+  is_active_ = router_->RegisterMediaSinksObserver(this);
 }
 
 MediaSinksObserver::~MediaSinksObserver() {

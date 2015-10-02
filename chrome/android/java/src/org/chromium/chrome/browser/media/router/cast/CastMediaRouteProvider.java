@@ -229,5 +229,4 @@ public class CastMediaRouteProvider
         mAndroidMediaRouter = androidMediaRouter;
         mManager = manager;
     }
-
 }

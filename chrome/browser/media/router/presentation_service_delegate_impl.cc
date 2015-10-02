@@ -178,12 +178,19 @@ const std::vector<MediaRoute::Id> PresentationFrame::GetRouteIds() const {
 
 bool PresentationFrame::SetScreenAvailabilityListener(
     content::PresentationScreenAvailabilityListener* listener) {
-  if (sinks_observer_ && sinks_observer_->listener() == listener) {
+  if (sinks_observer_ && sinks_observer_->listener() == listener)
     return false;
-  }
+
   MediaSource source(GetMediaSourceFromListener(listener));
   sinks_observer_.reset(
       new PresentationMediaSinksObserver(router_, listener, source));
+
+  if (!sinks_observer_->is_active()) {
+    sinks_observer_.reset();
+    listener->OnScreenAvailabilityNotSupported();
+    return false;
+  }
+
   return true;
 }
 

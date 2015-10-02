@@ -26,6 +26,11 @@ class CONTENT_EXPORT PresentationScreenAvailabilityListener {
   // Called when screen availability for the associated Presentation URL has
   // changed to |available|.
   virtual void OnScreenAvailabilityChanged(bool available) = 0;
+
+  // Callend when screen availability monitoring is not supported by the
+  // by the implementation because of system limitations like running low on
+  // battery or having resource constraints.
+  virtual void OnScreenAvailabilityNotSupported() = 0;
 };
 
 }  // namespace content

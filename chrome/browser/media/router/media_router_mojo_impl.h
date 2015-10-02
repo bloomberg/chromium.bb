@@ -128,7 +128,7 @@ class MediaRouterMojoImpl : public MediaRouter,
   void ExecutePendingRequests();
 
   // MediaRouter implementation.
-  void RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
+  bool RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
   void UnregisterMediaSinksObserver(MediaSinksObserver* observer) override;
   void RegisterMediaRoutesObserver(MediaRoutesObserver* observer) override;
   void UnregisterMediaRoutesObserver(MediaRoutesObserver* observer) override;
