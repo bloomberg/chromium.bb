@@ -52,6 +52,7 @@ import json
 import logging
 import os
 import pickle
+import re
 import shutil
 import sys
 import tempfile
@@ -66,6 +67,34 @@ from pylib import constants
 from pylib import forwarder
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
+
+
+# Regex for the master branch commit position.
+_GIT_CR_POS_RE = re.compile(r'^Cr-Commit-Position: refs/heads/master@{#(\d+)}$')
+
+
+def _GetChromiumRevision():
+  """Get the git hash and commit position of the chromium master branch.
+
+  See: https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/runtest.py#212
+
+  Returns:
+    A dictionary with 'revision' and 'commit_pos' keys.
+  """
+  status, output = cmd_helper.GetCmdStatusAndOutput(
+      ['git', 'log', '-n', '1', '--pretty=format:%H%n%B', 'HEAD'],
+      constants.DIR_SOURCE_ROOT)
+  revision = None
+  commit_pos = None
+  if not status:
+    lines = output.splitlines()
+    revision = lines[0]
+    for line in reversed(lines):
+      m = _GIT_CR_POS_RE.match(line.strip())
+      if m:
+        commit_pos = int(m.group(1))
+        break
+  return {'revision': revision, 'commit_pos': commit_pos}
 
 
 def GetPersistedResult(test_name):
@@ -253,6 +282,15 @@ class TestRunner(base_test_runner.BaseTestRunner):
                     ' the test.')
       return ''
 
+  def _WriteBuildBotJson(self):
+    """Write metadata about the buildbot environment to the output dir."""
+    data = {
+      'chromium': _GetChromiumRevision(),
+      'environment': dict(os.environ)}
+    logging.info('BuildBot environment: %s', data)
+    with open(os.path.join(self._output_dir, 'buildbot.json'), 'w') as f:
+      json.dump(data, f, sort_keys=True, indent=2, separators=(',', ': '))
+
   def _ArchiveOutputDir(self):
     """Archive all files in the output dir, and return as compressed bytes."""
     with io.BytesIO() as archive:
@@ -297,6 +335,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     if (self._options.collect_chartjson_data
         or test_config.get('archive_output_dir')):
       self._output_dir = tempfile.mkdtemp()
+      self._WriteBuildBotJson()
       cmd = cmd + ' --output-dir=%s' % self._output_dir
 
     logging.info(
