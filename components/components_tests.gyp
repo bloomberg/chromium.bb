@@ -593,7 +593,6 @@
     ],
     'search_engines_unittest_sources': [
       'search_engines/default_search_manager_unittest.cc',
-      'search_engines/default_search_policy_handler_unittest.cc',
       'search_engines/default_search_pref_migration_unittest.cc',
       'search_engines/keyword_table_unittest.cc',
       'search_engines/search_host_to_urls_map_unittest.cc',
@@ -984,6 +983,7 @@
         'components.gyp:update_client',
         'components.gyp:update_client_test_support',
         'components.gyp:upload_list',
+        'components.gyp:url_matcher',
         'components.gyp:user_prefs_tracked',
         'components.gyp:user_prefs_tracked_test_support',
         'components.gyp:variations',
