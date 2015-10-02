@@ -15271,10 +15271,10 @@ After you create a new supervised user, you can manage their settings at any tim
         Use Android Midi API for WebMIDI (effective only with Android M+ devices).
       </message>
       <message name="IDS_FLAGS_THEME_COLOR_IN_TABBED_MODE_NAME" desc="Name for the flag to enable theme-color in tabbed mode of Chrome.">
-        Enable theme-color in tabbed mode.
+        Enable <ph name="META_TAG_NAME">theme-color<ex>theme-color</ex></ph> in tabbed mode.
       </message>
       <message name="IDS_FLAGS_THEME_COLOR_IN_TABBED_MODE_DESCRIPTION" desc="Description for the flag to enable theme-color in tabbed mode of Chrome.">
-        Allows websites to set the color of the omnibox in tabbed mode ("Merge Apps and Tabs" off) via theme-color meta tag.
+        Allows websites to set the color of the omnibox in tabbed mode ("Merge Apps and Tabs" off) via <ph name="META_TAG_NAME">theme-color<ex>theme-color</ex></ph> meta tag.
       </message>
    </if>
 
