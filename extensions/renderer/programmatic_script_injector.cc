@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_frame_observer.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
@@ -23,33 +22,12 @@
 
 namespace extensions {
 
-// Watches for the deletion of a RenderFrame, after which is_valid will return
-// false.
-class ProgrammaticScriptInjector::FrameWatcher
-    : public content::RenderFrameObserver {
- public:
-  explicit FrameWatcher(content::RenderFrame* render_frame)
-      : content::RenderFrameObserver(render_frame), is_valid_(true) {}
-  ~FrameWatcher() override {}
-
-  bool is_frame_valid() const { return is_valid_; }
-
- private:
-  void FrameDetached() override { is_valid_ = false; }
-  void OnDestruct() override { is_valid_ = false; }
-
-  bool is_valid_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameWatcher);
-};
-
 ProgrammaticScriptInjector::ProgrammaticScriptInjector(
     const ExtensionMsg_ExecuteCode_Params& params,
     content::RenderFrame* render_frame)
     : params_(new ExtensionMsg_ExecuteCode_Params(params)),
       url_(
           ScriptContext::GetDataSourceURLForFrame(render_frame->GetWebFrame())),
-      frame_watcher_(new FrameWatcher(render_frame)),
       finished_(false) {
   effective_url_ = ScriptContext::GetEffectiveDocumentURL(
       render_frame->GetWebFrame(), url_, params.match_about_blank);
@@ -136,14 +114,17 @@ void ProgrammaticScriptInjector::GetRunInfo(
 
 void ProgrammaticScriptInjector::OnInjectionComplete(
     scoped_ptr<base::Value> execution_result,
-    UserScript::RunLocation run_location) {
+    UserScript::RunLocation run_location,
+    content::RenderFrame* render_frame) {
   DCHECK(results_.empty());
   if (execution_result)
     results_.Append(execution_result.Pass());
-  Finish(std::string());
+  Finish(std::string(), render_frame);
 }
 
-void ProgrammaticScriptInjector::OnWillNotInject(InjectFailureReason reason) {
+void ProgrammaticScriptInjector::OnWillNotInject(
+    InjectFailureReason reason,
+    content::RenderFrame* render_frame) {
   std::string error;
   switch (reason) {
     case NOT_ALLOWED:
@@ -160,24 +141,25 @@ void ProgrammaticScriptInjector::OnWillNotInject(InjectFailureReason reason) {
     case WONT_INJECT:
       break;
   }
-  Finish(error);
+  Finish(error, render_frame);
 }
 
 UserScript::RunLocation ProgrammaticScriptInjector::GetRunLocation() const {
   return static_cast<UserScript::RunLocation>(params_->run_at);
 }
 
-void ProgrammaticScriptInjector::Finish(const std::string& error) {
+void ProgrammaticScriptInjector::Finish(const std::string& error,
+                                        content::RenderFrame* render_frame) {
   DCHECK(!finished_);
   finished_ = true;
 
   // It's possible that the render frame was destroyed in the course of
   // injecting scripts. Don't respond if it was (the browser side watches for
   // frame deletions so nothing is left hanging).
-  if (frame_watcher_->is_frame_valid()) {
-    frame_watcher_->render_frame()->Send(
+  if (render_frame) {
+    render_frame->Send(
         new ExtensionHostMsg_ExecuteCodeFinished(
-            frame_watcher_->render_frame()->GetRoutingID(), params_->request_id,
+            render_frame->GetRoutingID(), params_->request_id,
             error, url_, results_));
   }
 }

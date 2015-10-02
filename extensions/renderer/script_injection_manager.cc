@@ -223,6 +223,10 @@ ScriptInjectionManager::ScriptInjectionManager(
 }
 
 ScriptInjectionManager::~ScriptInjectionManager() {
+  for (ScriptInjection* injection : pending_injections_)
+    injection->invalidate_render_frame();
+  for (ScriptInjection* injection : running_injections_)
+    injection->invalidate_render_frame();
 }
 
 void ScriptInjectionManager::OnRenderFrameCreated(
@@ -354,14 +358,15 @@ void ScriptInjectionManager::InjectScripts(
   active_injection_frames_.insert(frame);
 
   ScriptsRunInfo scripts_run_info(frame, run_location);
-  std::vector<ScriptInjection*> released_injections;
-  frame_injections.release(&released_injections);
-  for (ScriptInjection* injection : released_injections) {
+  for (ScopedVector<ScriptInjection>::iterator iter = frame_injections.begin();
+       iter != frame_injections.end();) {
     // It's possible for the frame to be invalidated in the course of injection
     // (if a script removes its own frame, for example). If this happens, abort.
     if (!active_injection_frames_.count(frame))
       break;
-    TryToInject(make_scoped_ptr(injection), run_location, &scripts_run_info);
+    scoped_ptr<ScriptInjection> injection(*iter);
+    iter = frame_injections.weak_erase(iter);
+    TryToInject(injection.Pass(), run_location, &scripts_run_info);
   }
 
   // We are done running in the frame.

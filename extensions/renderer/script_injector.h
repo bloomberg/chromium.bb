@@ -79,12 +79,18 @@ class ScriptInjector {
 
   // Notifies the script that injection has completed, with a possibly-populated
   // list of results (depending on whether or not ExpectsResults() was true).
+  // |render_frame| contains the render frame, or null if the frame was
+  // invalidated.
   virtual void OnInjectionComplete(
       scoped_ptr<base::Value> execution_result,
-      UserScript::RunLocation run_location) = 0;
+      UserScript::RunLocation run_location,
+      content::RenderFrame* render_frame) = 0;
 
   // Notifies the script that injection will never occur.
-  virtual void OnWillNotInject(InjectFailureReason reason) = 0;
+  // |render_frame| contains the render frame, or null if the frame was
+  // invalidated.
+  virtual void OnWillNotInject(InjectFailureReason reason,
+                               content::RenderFrame* render_frame) = 0;
 };
 
 }  // namespace extensions

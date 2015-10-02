@@ -78,6 +78,25 @@ int GetIsolatedWorldIdForInstance(const InjectionHost* injection_host,
 
 }  // namespace
 
+// Watches for the deletion of a RenderFrame, after which is_valid will return
+// false.
+class ScriptInjection::FrameWatcher : public content::RenderFrameObserver {
+ public:
+  FrameWatcher(content::RenderFrame* render_frame,
+               ScriptInjection* injection)
+      : content::RenderFrameObserver(render_frame),
+        injection_(injection) {}
+  ~FrameWatcher() override {}
+
+ private:
+  void FrameDetached() override { injection_->invalidate_render_frame(); }
+  void OnDestruct() override { injection_->invalidate_render_frame(); }
+
+  ScriptInjection* injection_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameWatcher);
+};
+
 // static
 std::string ScriptInjection::GetHostIdForIsolatedWorld(int isolated_world_id) {
   const IsolatedWorldMap& isolated_worlds = g_isolated_worlds.Get();
@@ -106,13 +125,14 @@ ScriptInjection::ScriptInjection(
       request_id_(kInvalidRequestId),
       complete_(false),
       did_inject_js_(false),
+      frame_watcher_(new FrameWatcher(render_frame, this)),
       weak_ptr_factory_(this) {
   CHECK(injection_host_.get());
 }
 
 ScriptInjection::~ScriptInjection() {
   if (!complete_)
-    injector_->OnWillNotInject(ScriptInjector::WONT_INJECT);
+    NotifyWillNotInject(ScriptInjector::WONT_INJECT);
 }
 
 ScriptInjection::InjectionResult ScriptInjection::TryToInject(
@@ -183,7 +203,7 @@ void ScriptInjection::RequestPermissionFromBrowser() {
 void ScriptInjection::NotifyWillNotInject(
     ScriptInjector::InjectFailureReason reason) {
   complete_ = true;
-  injector_->OnWillNotInject(reason);
+  injector_->OnWillNotInject(reason, render_frame_);
 }
 
 ScriptInjection::InjectionResult ScriptInjection::Inject(
@@ -205,10 +225,12 @@ ScriptInjection::InjectionResult ScriptInjection::Inject(
 
   injector_->GetRunInfo(scripts_run_info, run_location_);
 
-  if (complete_)
-    injector_->OnInjectionComplete(execution_result_.Pass(), run_location_);
-  else
+  if (complete_) {
+    injector_->OnInjectionComplete(execution_result_.Pass(), run_location_,
+                                   render_frame_);
+  } else {
     ++scripts_run_info->num_blocking_js;
+  }
 
   return complete_ ? INJECTION_FINISHED : INJECTION_BLOCKED;
 }
@@ -280,7 +302,8 @@ void ScriptInjection::OnJsInjectionCompleted(
   // If |async_completion_callback_| is set, it means the script finished
   // asynchronously, and we should run it.
   if (!async_completion_callback_.is_null()) {
-    injector_->OnInjectionComplete(execution_result_.Pass(), run_location_);
+    injector_->OnInjectionComplete(execution_result_.Pass(), run_location_,
+                                   render_frame_);
     // Warning: this object can be destroyed after this line!
     async_completion_callback_.Run(this);
   }

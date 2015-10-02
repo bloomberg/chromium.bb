@@ -260,10 +260,12 @@ void UserScriptInjector::GetRunInfo(
 
 void UserScriptInjector::OnInjectionComplete(
     scoped_ptr<base::Value> execution_result,
-    UserScript::RunLocation run_location) {
+    UserScript::RunLocation run_location,
+    content::RenderFrame* render_frame) {
 }
 
-void UserScriptInjector::OnWillNotInject(InjectFailureReason reason) {
+void UserScriptInjector::OnWillNotInject(InjectFailureReason reason,
+                                         content::RenderFrame* render_frame) {
 }
 
 }  // namespace extensions

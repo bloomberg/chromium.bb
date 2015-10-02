@@ -27,8 +27,6 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   ~ProgrammaticScriptInjector() override;
 
  private:
-  class FrameWatcher;
-
   // ScriptInjector implementation.
   UserScript::InjectionType script_type() const override;
   bool ShouldExecuteInMainWorld() const override;
@@ -47,15 +45,17 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   void GetRunInfo(ScriptsRunInfo* scripts_run_info,
                   UserScript::RunLocation run_location) const override;
   void OnInjectionComplete(scoped_ptr<base::Value> execution_result,
-                           UserScript::RunLocation run_location) override;
-  void OnWillNotInject(InjectFailureReason reason) override;
+                           UserScript::RunLocation run_location,
+                           content::RenderFrame* render_frame) override;
+  void OnWillNotInject(InjectFailureReason reason,
+                       content::RenderFrame* render_frame) override;
 
   // Return the run location for this injector.
   UserScript::RunLocation GetRunLocation() const;
 
   // Notify the browser that the script was injected (or never will be), and
   // send along any results or errors.
-  void Finish(const std::string& error);
+  void Finish(const std::string& error, content::RenderFrame* render_frame);
 
   // The parameters for injecting the script.
   scoped_ptr<ExtensionMsg_ExecuteCode_Params> params_;
@@ -67,9 +67,6 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   // could be different for e.g. about:blank URLs. Do not use this value to make
   // security decisions, to avoid race conditions (e.g. due to navigation).
   GURL effective_url_;
-
-  // A helper class to hold the render frame and watch for its deletion.
-  scoped_ptr<FrameWatcher> frame_watcher_;
 
   // The results of the script execution.
   base::ListValue results_;
