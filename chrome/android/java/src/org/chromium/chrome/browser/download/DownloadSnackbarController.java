@@ -4,10 +4,8 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
-import android.os.Build;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
@@ -78,7 +76,6 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         getSnackbarManager().showSnackbar(snackbar);
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public SnackbarManager getSnackbarManager() {
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (activity != null && ApplicationStatus.hasVisibleActivities()
