@@ -18,9 +18,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
@@ -33,7 +31,6 @@
 #include "components/component_updater/default_component_installer.h"
 #include "components/component_updater/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/rappor/rappor_service.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -63,19 +60,12 @@ const base::FilePath::CharType kSwReporterExeName[] =
     FILE_PATH_LITERAL("software_reporter_tool.exe");
 
 // Where to fetch the reporter's list of found uws in the registry.
-const wchar_t kSoftwareRemovalToolRegistryKey[] =
-    L"Software\\Google\\Software Removal Tool";
 const wchar_t kCleanerSuffixRegistryKey[] = L"Cleaner";
 const wchar_t kEndTimeValueName[] = L"EndTime";
 const wchar_t kExitCodeValueName[] = L"ExitCode";
-const wchar_t kFoundUwsValueName[] = L"FoundUws";
 const wchar_t kStartTimeValueName[] = L"StartTime";
 const wchar_t kUploadResultsValueName[] = L"UploadResults";
 const wchar_t kVersionValueName[] = L"Version";
-
-const char kFoundUwsMetricName[] = "SoftwareReporter.FoundUwS";
-const char kFoundUwsReadErrorMetricName[] =
-    "SoftwareReporter.FoundUwSReadError";
 
 void SRTHasCompleted(SRTCompleted value) {
   UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.HasCompleted", value,
@@ -138,40 +128,6 @@ void ReportUploadsWithUma(const base::string16& upload_results) {
   UMA_HISTOGRAM_COUNTS_100("SoftwareReporter.UploadLongestFailureRun",
                            longest_failure_run);
   UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.LastUploadResult", last_result);
-}
-
-// Reports UwS found by the software reporter tool via UMA and RAPPOR.
-void ReportFoundUwS() {
-  base::win::RegKey reporter_key(HKEY_CURRENT_USER,
-                                 kSoftwareRemovalToolRegistryKey,
-                                 KEY_QUERY_VALUE | KEY_SET_VALUE);
-  std::vector<base::string16> found_uws_strings;
-  if (reporter_key.Valid() &&
-      reporter_key.ReadValues(kFoundUwsValueName, &found_uws_strings) ==
-          ERROR_SUCCESS) {
-    rappor::RapporService* rappor_service = g_browser_process->rappor_service();
-
-    bool parse_error = false;
-    for (const base::string16& uws_string : found_uws_strings) {
-      // All UwS ids are expected to be integers.
-      uint32_t uws_id = 0;
-      if (base::StringToUint(uws_string, &uws_id)) {
-        UMA_HISTOGRAM_SPARSE_SLOWLY(kFoundUwsMetricName, uws_id);
-        if (rappor_service) {
-          rappor_service->RecordSample(kFoundUwsMetricName,
-                                       rappor::COARSE_RAPPOR_TYPE,
-                                       base::UTF16ToUTF8(uws_string));
-        }
-      } else {
-        parse_error = true;
-      }
-    }
-
-    // Clean up the old value.
-    reporter_key.DeleteValue(kFoundUwsValueName);
-
-    UMA_HISTOGRAM_BOOLEAN(kFoundUwsReadErrorMetricName, parse_error);
-  }
 }
 
 class SwReporterInstallerTraits : public ComponentInstallerTraits {
@@ -238,7 +194,8 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
     return;
 
   // Check if we have information from Cleaner and record UMA statistics.
-  base::string16 cleaner_key_name(kSoftwareRemovalToolRegistryKey);
+  base::string16 cleaner_key_name(
+      safe_browsing::kSoftwareRemovalToolRegistryKey);
   cleaner_key_name.append(1, L'\\').append(kCleanerSuffixRegistryKey);
   base::win::RegKey cleaner_key(
       HKEY_CURRENT_USER, cleaner_key_name.c_str(), KEY_ALL_ACCESS);
@@ -305,7 +262,6 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
       }
     }
   }
-  ReportFoundUwS();
 
   // Install the component.
   scoped_ptr<ComponentInstallerTraits> traits(new SwReporterInstallerTraits());

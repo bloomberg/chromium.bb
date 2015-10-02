@@ -13,9 +13,12 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/launch.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,6 +31,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "components/component_updater/pref_names.h"
+#include "components/rappor/rappor_service.h"
 #include "components/variations/net/variations_http_header_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -40,12 +44,21 @@ using content::BrowserThread;
 
 namespace safe_browsing {
 
+const wchar_t kSoftwareRemovalToolRegistryKey[] =
+    L"Software\\Google\\Software Removal Tool";
+
 namespace {
 
 // Overrides for the reporter launcher and prompt triggers free function, used
 // by tests.
 ReporterLauncher g_reporter_launcher_;
 PromptTrigger g_prompt_trigger_;
+
+const wchar_t kFoundUwsValueName[] = L"FoundUws";
+
+const char kFoundUwsMetricName[] = "SoftwareReporter.FoundUwS";
+const char kFoundUwsReadErrorMetricName[] =
+    "SoftwareReporter.FoundUwSReadError";
 
 void DisplaySRTPrompt(const base::FilePath& download_path) {
   // Find the last active browser, which may be NULL, in which case we won't
@@ -118,6 +131,40 @@ int LaunchAndWaitForExit(const base::FilePath& exe_path,
     RecordReporterStepHistogram(SW_REPORTER_FAILED_TO_START);
   }
   return exit_code;
+}
+
+// Reports UwS found by the software reporter tool via UMA and RAPPOR.
+void ReportFoundUwS() {
+  base::win::RegKey reporter_key(HKEY_CURRENT_USER,
+                                 kSoftwareRemovalToolRegistryKey,
+                                 KEY_QUERY_VALUE | KEY_SET_VALUE);
+  std::vector<base::string16> found_uws_strings;
+  if (reporter_key.Valid() &&
+      reporter_key.ReadValues(kFoundUwsValueName, &found_uws_strings) ==
+          ERROR_SUCCESS) {
+    rappor::RapporService* rappor_service = g_browser_process->rappor_service();
+
+    bool parse_error = false;
+    for (const base::string16& uws_string : found_uws_strings) {
+      // All UwS ids are expected to be integers.
+      uint32_t uws_id = 0;
+      if (base::StringToUint(uws_string, &uws_id)) {
+        UMA_HISTOGRAM_SPARSE_SLOWLY(kFoundUwsMetricName, uws_id);
+        if (rappor_service) {
+          rappor_service->RecordSample(kFoundUwsMetricName,
+                                       rappor::COARSE_RAPPOR_TYPE,
+                                       base::UTF16ToUTF8(uws_string));
+        }
+      } else {
+        parse_error = true;
+      }
+    }
+
+    // Clean up the old value.
+    reporter_key.DeleteValue(kFoundUwsValueName);
+
+    UMA_HISTOGRAM_BOOLEAN(kFoundUwsReadErrorMetricName, parse_error);
+  }
 }
 
 }  // namespace
@@ -302,6 +349,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
       return;
 
     UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.ExitCode", exit_code);
+    ReportFoundUwS();
     PrefService* local_state = g_browser_process->local_state();
     if (local_state) {
       local_state->SetInteger(prefs::kSwReporterLastExitCode, exit_code);

@@ -19,6 +19,9 @@ class Browser;
 
 namespace safe_browsing {
 
+// The registry key for the Reporter and Cleaner.
+extern const wchar_t kSoftwareRemovalToolRegistryKey[];
+
 // Reporter exit codes.
 const int kSwReporterCleanupNeeded = 0;
 const int kSwReporterNothingFound = 2;
