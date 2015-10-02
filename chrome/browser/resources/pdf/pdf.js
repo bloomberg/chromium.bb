@@ -429,7 +429,7 @@ PDFViewer.prototype = {
   handleMouseEvent_: function(e) {
     if (this.isMaterial_) {
       if (e.type == 'mousemove')
-        this.toolbarManager_.showToolbarsForMouseMove(e);
+        this.toolbarManager_.handleMouseMove(e);
       else if (e.type == 'mouseout')
         this.toolbarManager_.hideToolbarsForMouseOut();
     }

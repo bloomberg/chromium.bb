@@ -77,11 +77,13 @@ function ToolbarManager(window, toolbar, zoomToolbar) {
 
 ToolbarManager.prototype = {
 
-  showToolbarsForMouseMove: function(e) {
+  handleMouseMove: function(e) {
     this.isMouseNearTopToolbar_ = this.toolbar_ && isMouseNearTopToolbar(e);
     this.isMouseNearSideToolbar_ = isMouseNearSideToolbar(e);
 
     this.keyboardNavigationActive = false;
+    var touchInteractionActive =
+        (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents);
 
     // Allow the top toolbar to be shown if the mouse moves away from the side
     // toolbar (as long as the timeout has elapsed).
@@ -92,10 +94,16 @@ ToolbarManager.prototype = {
     if (this.isMouseNearTopToolbar_)
       this.sideToolbarAllowedOnly_ = false;
 
-    // Show the toolbars if the mouse is near the top or right of the screen or
-    // if the mouse moved fast.
+    // Tapping the screen with toolbars open tries to close them.
+    if (touchInteractionActive && this.zoomToolbar_.isVisible()) {
+      this.hideToolbarsIfAllowed();
+      return;
+    }
+
+    // Show the toolbars if the mouse is near the top or bottom-right of the
+    // screen, if the mouse moved fast, or if the touchscreen was tapped.
     if (this.isMouseNearTopToolbar_ || this.isMouseNearSideToolbar_ ||
-        isHighVelocityMouseMove(e)) {
+        isHighVelocityMouseMove(e) || touchInteractionActive) {
       if (this.sideToolbarAllowedOnly_)
         this.zoomToolbar_.show();
       else

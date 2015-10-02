@@ -22,6 +22,10 @@
       }
     },
 
+    isVisible: function() {
+      return this.visible_;
+    },
+
     setTooltips_: function() {
       this.$['fit-button'].tooltips =
           [this.strings.tooltipFitToPage, this.strings.tooltipFitToWidth];

@@ -24,6 +24,17 @@ function getMouseMoveEvents(fromX, fromY, toX, toY, steps) {
   return events;
 }
 
+function makeTapEvent(x, y) {
+  var e = new MouseEvent('mousemove', {
+    clientX: x,
+    clientY: y,
+    movementX: 0,
+    movementY: 0,
+    sourceCapabilities: new InputDeviceCapabilities({firesTouchEvents: true})
+  });
+  return e;
+}
+
 var tests = [
   /**
    * Test that ToolbarManager.forceHideTopToolbar hides (or shows) the top
@@ -38,7 +49,7 @@ var tests = [
 
     var mouseMove = function(fromX, fromY, toX, toY, steps) {
       getMouseMoveEvents(fromX, fromY, toX, toY, steps).forEach(function(e) {
-        toolbarManager.showToolbarsForMouseMove(e);
+        toolbarManager.handleMouseMove(e);
       });
     };
 
@@ -106,7 +117,7 @@ var tests = [
 
     var mouseMove = function(fromX, fromY, toX, toY, steps) {
       getMouseMoveEvents(fromX, fromY, toX, toY, steps).forEach(function(e) {
-        toolbarManager.showToolbarsForMouseMove(e);
+        toolbarManager.handleMouseMove(e);
       });
     };
 
@@ -127,6 +138,45 @@ var tests = [
     chrome.test.assertTrue(toolbar.opened);
     mockWindow.runTimeout();
     chrome.test.assertFalse(toolbar.opened);
+
+    chrome.test.succeed();
+  },
+
+  /**
+   * Test that the toolbars can be shown or hidden by tapping with a touch
+   * device.
+   */
+  function testToolbarTouchInteraction() {
+    var mockWindow = new MockWindow(1920, 1080);
+    var toolbar =
+        Polymer.Base.create('viewer-pdf-toolbar', {loadProgress: 100});
+    var zoomToolbar = Polymer.Base.create('viewer-zoom-toolbar');
+    var toolbarManager = new ToolbarManager(mockWindow, toolbar, zoomToolbar);
+
+    toolbarManager.hideToolbarsIfAllowed();
+    chrome.test.assertFalse(toolbar.opened);
+
+    // Tap anywhere on the screen -> Toolbars open.
+    toolbarManager.handleMouseMove(makeTapEvent(500, 500));
+    chrome.test.assertTrue(toolbar.opened, "toolbars open after tap");
+
+    // Tap again -> Toolbars close.
+    toolbarManager.handleMouseMove(makeTapEvent(500, 500));
+    chrome.test.assertFalse(toolbar.opened, "toolbars close after tap");
+
+    // Open toolbars, wait 2 seconds -> Toolbars close.
+    toolbarManager.handleMouseMove(makeTapEvent(500, 500));
+    mockWindow.runTimeout();
+    chrome.test.assertFalse(toolbar.opened, "toolbars close after wait");
+
+    // Open toolbars, tap near toolbars -> Toolbar doesn't close.
+    toolbarManager.handleMouseMove(makeTapEvent(500, 500));
+    toolbarManager.handleMouseMove(makeTapEvent(100, 75));
+    chrome.test.assertTrue(toolbar.opened,
+                           "toolbars stay open after tap near toolbars");
+    mockWindow.runTimeout();
+    chrome.test.assertTrue(toolbar.opened,
+                           "tap near toolbars prevents auto close");
 
     chrome.test.succeed();
   }
