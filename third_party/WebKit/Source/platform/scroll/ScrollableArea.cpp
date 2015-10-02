@@ -221,27 +221,6 @@ void ScrollableArea::userScrollHelper(const DoublePoint& position, ScrollBehavio
     scrollAnimator()->scrollToOffsetWithoutAnimation(toFloatPoint(position));
 }
 
-void ScrollableArea::scrollIntoRect(const LayoutRect& rectInContent, const FloatRect& targetRectInFrame)
-{
-    // Use |pixelSnappedIntRect| for rounding to pixel as opposed to |enclosingIntRect|. It gives a better
-    // combined (location and size) rounding error resulting in a more accurate scroll offset.
-    // FIXME: It would probably be best to do the whole calculation in LayoutUnits but contentsToRootFrame
-    // and friends don't have LayoutRect/Point versions yet.
-    IntRect boundsInContent = pixelSnappedIntRect(rectInContent);
-    IntRect boundsInFrame(boundsInContent.location() - toIntSize(scrollPosition()), boundsInContent.size());
-
-    int centeringOffsetX = (targetRectInFrame.width() - boundsInFrame.width()) / 2;
-    int centeringOffsetY = (targetRectInFrame.height() - boundsInFrame.height()) / 2;
-
-    IntSize scrollDelta(
-        boundsInFrame.x() - centeringOffsetX - targetRectInFrame.x(),
-        boundsInFrame.y() - centeringOffsetY - targetRectInFrame.y());
-
-    DoublePoint targetOffset = DoublePoint(scrollPosition() + scrollDelta);
-
-    setScrollPosition(targetOffset, ProgrammaticScroll);
-}
-
 LayoutRect ScrollableArea::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
 {
     // TODO(bokan): This should really be implemented here but ScrollAlignment is in Core which is a dependency violation.

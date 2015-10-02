@@ -126,8 +126,6 @@
     [RaisesException, TypeChecking=Interface] void setEditingValue(Element inputElement, DOMString value);
     [RaisesException, TypeChecking=Interface] void setAutofilled(Element inputElement, boolean enabled);
 
-    [RaisesException, TypeChecking=Interface] void scrollElementToRect(Element element, long x, long y, long w, long h);
-
     [TypeChecking=Interface] Range rangeFromLocationAndLength(Element scope, long rangeLocation, long rangeLength);
     [TypeChecking=Interface] unsigned long locationFromRange(Element scope, Range range);
     [TypeChecking=Interface] unsigned long lengthFromRange(Element scope, Range range);
