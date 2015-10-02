@@ -83,7 +83,7 @@ def start_xvfb(env, build_dir, xvfb_path='Xvfb', display=':9'):
   openbox_proc = None
 
   try:
-    xvfb_cmd = [xvfb_path, display, '-screen', '0', '1280x800x24', '-ac',
+    xvfb_cmd = [xvfb_path, display, '-screen', '0', '1024x768x24', '-ac',
                 '-nolisten', 'tcp', '-dpi', '96']
     xvfb_proc = subprocess.Popen(xvfb_cmd, stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT)
