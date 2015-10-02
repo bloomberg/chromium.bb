@@ -15,6 +15,8 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/memory/tab_stats.h"
+#include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
 class BrowserList;
 class GURL;
@@ -42,10 +44,11 @@ class TabManagerDelegate;
 // Note that the browser tests are only active for platforms that use
 // TabManager (CrOS only for now) and need to be adjusted accordingly if
 // support for new platforms is added.
-class TabManager {
+class TabManager : public chrome::BrowserListObserver,
+                   public TabStripModelObserver {
  public:
   TabManager();
-  ~TabManager();
+  ~TabManager() override;
 
   // Number of discard events since Chrome started.
   int discard_count() const { return discard_count_; }
@@ -123,6 +126,19 @@ class TabManager {
   // Called by the memory pressure listener when the memory pressure rises.
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
+  // chrome::BrowserListObserver overrides.
+  void OnBrowserAdded(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
+
+  // TabStripModelObserver overrides.
+  void TabChangedAt(content::WebContents* contents,
+                    int index,
+                    TabChangeType change_type) override;
+
+  // Returns true if the tab is currently playing audio or has played audio
+  // recently.
+  bool IsAudioTab(content::WebContents* contents) const;
 
   // Returns true if |first| is considered less desirable to be killed than
   // |second|.

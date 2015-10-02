@@ -34,6 +34,9 @@ enum TestIndicies {
 };
 }  // namespace
 
+// TODO(georgesak): Add tests for protection to tabs with form input and
+// playing audio;
+
 // Tests the sorting comparator so that we know it's producing the
 // desired order.
 TEST_F(TabManagerTest, Comparator) {

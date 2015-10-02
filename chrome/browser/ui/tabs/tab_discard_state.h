@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_TABS_TAB_DISCARD_STATE_H_
 
 #include "base/supports_user_data.h"
+#include "base/time/time.h"
 
 namespace content {
 class WebContents;
@@ -23,6 +24,10 @@ class TabDiscardState : public base::SupportsUserData::Data {
   // |state| is now owned by |web_contents|
   static void Set(content::WebContents* web_contents, TabDiscardState* state);
 
+  // Copies the discard state from |old_contents| to |new_contents|.
+  static void CopyState(content::WebContents* old_contents,
+                        content::WebContents* new_contents);
+
   // Returns true if |web_contents| has been discarded to save memory.
   static bool IsDiscarded(content::WebContents* web_contents);
 
@@ -35,18 +40,38 @@ class TabDiscardState : public base::SupportsUserData::Data {
   // Increments the number of times |web_contents| has been discarded.
   static void IncrementDiscardCount(content::WebContents* web_contents);
 
-  // Copies the discard state from |old_contents| to |new_contents|.
-  static void CopyState(content::WebContents* old_contents,
-                        content::WebContents* new_contents);
+  // Returns true if audio has recently been audible from the WebContents.
+  static bool IsRecentlyAudible(content::WebContents* web_contents);
 
-  TabDiscardState() : is_discarded_(false), discard_count_(0) {}
+  // Set/clears the state of whether audio has recently been audible from the
+  // WebContents.
+  static void SetRecentlyAudible(content::WebContents* web_contents,
+                                 bool state);
+
+  // Returns the timestamp of the last time |web_contents| changed its audio
+  // state.
+  static base::TimeTicks LastAudioChangeTime(
+      content::WebContents* web_contents);
+
+  // Sets the timestamp of the last time |web_contents| changed its audio state.
+  static void SetLastAudioChangeTime(content::WebContents* web_contents,
+                                     base::TimeTicks timestamp);
 
  private:
+  TabDiscardState();
+
   // Is the tab currently discarded?
   bool is_discarded_;
 
   // Number of times the tab has been discarded.
   int discard_count_;
+
+  // Is the tab playing audio?
+  bool is_recently_audible_;
+
+  // Last time the tab started or stopped playing audio (we record the
+  // transition time).
+  base::TimeTicks last_audio_change_time_;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_DISCARD_STATE_H_

@@ -8,6 +8,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
+using base::TimeTicks;
 using content::WebContents;
 
 namespace {
@@ -39,9 +40,16 @@ void TabDiscardState::Set(WebContents* web_contents, TabDiscardState* state) {
 }
 
 // static
+void TabDiscardState::CopyState(content::WebContents* old_contents,
+                                content::WebContents* new_contents) {
+  TabDiscardState* old_state = Get(old_contents);
+  TabDiscardState* new_State = Get(new_contents);
+  *new_State = *old_state;
+}
+
+// static
 bool TabDiscardState::IsDiscarded(WebContents* web_contents) {
-  TabDiscardState* discard_state = TabDiscardState::Get(web_contents);
-  return discard_state->is_discarded_;
+  return TabDiscardState::Get(web_contents)->is_discarded_;
 }
 
 // static
@@ -58,20 +66,39 @@ void TabDiscardState::SetDiscardState(WebContents* web_contents, bool state) {
 
 // static
 int TabDiscardState::DiscardCount(WebContents* web_contents) {
-  TabDiscardState* discard_state = TabDiscardState::Get(web_contents);
-  return discard_state->discard_count_;
+  return TabDiscardState::Get(web_contents)->discard_count_;
 }
 
 // static
 void TabDiscardState::IncrementDiscardCount(WebContents* web_contents) {
-  TabDiscardState* discard_state = TabDiscardState::Get(web_contents);
-  discard_state->discard_count_++;
+  TabDiscardState::Get(web_contents)->discard_count_++;
 }
 
 // static
-void TabDiscardState::CopyState(content::WebContents* old_contents,
-                                content::WebContents* new_contents) {
-  TabDiscardState* old_state = Get(old_contents);
-  TabDiscardState* new_State = Get(new_contents);
-  *new_State = *old_state;
+bool TabDiscardState::IsRecentlyAudible(content::WebContents* web_contents) {
+  return TabDiscardState::Get(web_contents)->is_recently_audible_;
 }
+
+// static
+void TabDiscardState::SetRecentlyAudible(content::WebContents* web_contents,
+                                         bool state) {
+  TabDiscardState::Get(web_contents)->is_recently_audible_ = state;
+}
+
+// static
+TimeTicks TabDiscardState::LastAudioChangeTime(
+    content::WebContents* web_contents) {
+  return TabDiscardState::Get(web_contents)->last_audio_change_time_;
+}
+
+// static
+void TabDiscardState::SetLastAudioChangeTime(content::WebContents* web_contents,
+                                             TimeTicks timestamp) {
+  TabDiscardState::Get(web_contents)->last_audio_change_time_ = timestamp;
+}
+
+TabDiscardState::TabDiscardState()
+    : is_discarded_(false),
+      discard_count_(0),
+      is_recently_audible_(false),
+      last_audio_change_time_(TimeTicks::UnixEpoch()) {}
