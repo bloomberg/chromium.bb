@@ -15,9 +15,10 @@ import android.os.Parcel;
 import android.preference.PreferenceManager;
 import android.util.Base64;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executor;
 
 /**
  * Retrieves app restrictions and provides them to the parent class as Bundles. Ensures that
@@ -37,6 +38,8 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
             refresh();
         }
     };
+
+    private Executor mExecutor = AsyncTask.THREAD_POOL_EXECUTOR;
 
     /**
      * @param context The application context.
@@ -86,8 +89,7 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
             protected Bundle doInBackground(Void... params) {
                 long startTime = System.currentTimeMillis();
                 Bundle bundle = getApplicationRestrictions(mContext.getPackageName());
-                RecordHistogram.recordTimesHistogram("Enterprise.AppRestrictionLoadTime",
-                        System.currentTimeMillis() - startTime, TimeUnit.MILLISECONDS);
+                recordStartTimeHistogram(startTime);
                 return bundle;
             }
 
@@ -96,7 +98,7 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
                 cachePolicies(result);
                 notifySettingsAvailable(result);
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }.executeOnExecutor(mExecutor);
     }
 
     @Override
@@ -137,14 +139,34 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
         // this will be corrected once the Android returns the real App Restrictions.
         p.unmarshall(bytes, 0, bytes.length);
         p.setDataPosition(0);
-        Bundle result = p.readBundle();
+        Bundle result;
         try {
             result = p.readBundle();
         } catch (IllegalStateException e) {
             result = null;
         }
-        RecordHistogram.recordBooleanHistogram(
-                "Enterprise.AppRestrictionsCacheLoad", result != null);
+        recordCacheLoadResultHistogram(result != null);
         return result;
+    }
+
+    // Extracted to allow stubbing, since it calls a static that can't easily be stubbed
+    @VisibleForTesting
+    protected void recordCacheLoadResultHistogram(final boolean success) {
+        RecordHistogram.recordBooleanHistogram(
+                "Enterprise.AppRestrictionsCacheLoad", success);
+    }
+
+    // Extracted to allow stubbing, since it calls a static that can't easily be stubbed
+    @VisibleForTesting
+    protected void recordStartTimeHistogram(long startTime) {
+        // TODO(aberent): Re-implement once we understand why the previous implementation was giving
+        // random crashes (https://crbug.com/535043)
+    }
+    /**
+     * @param testExecutor - The executor to use for this class's AsyncTasks.
+     */
+    @VisibleForTesting
+    void setTaskExecutor(Executor testExecutor) {
+        mExecutor = testExecutor;
     }
 }
