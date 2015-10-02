@@ -353,16 +353,14 @@ class TaskOutputCollector(object):
   function, in particular they call 'process_shard_result' method in parallel.
   """
 
-  def __init__(self, task_output_dir, task_name, shard_count):
+  def __init__(self, task_output_dir, shard_count):
     """Initializes TaskOutputCollector, ensures |task_output_dir| exists.
 
     Args:
       task_output_dir: (optional) local directory to put fetched files to.
-      task_name: name of the swarming task results belong to.
       shard_count: expected number of task shards.
     """
     self.task_output_dir = task_output_dir
-    self.task_name = task_name
     self.shard_count = shard_count
 
     self._lock = threading.Lock()
@@ -517,6 +515,8 @@ def retrieve_results(
     # Disable internal retries in net.url_read_json, since we are doing retries
     # ourselves.
     # TODO(maruel): We'd need to know if it's a 404 and not retry at all.
+    # TODO(maruel): Sadly, we currently have to poll here. Use hanging HTTP
+    # request on GAE v2.
     result = net.url_read_json(result_url, retry_50x=False)
     if not result:
       continue
@@ -525,8 +525,6 @@ def retrieve_results(
       # TODO(maruel): Not always fetch stdout?
       out = net.url_read_json(output_url)
       result['output'] = out.get('output') if out else out
-      if not result['output']:
-        logging.error('No output found for task %s', task_id)
       # Record the result, try to fetch attached output files (if any).
       if output_collector:
         # TODO(vadimsh): Respect |should_stop| and |deadline| when fetching.
@@ -698,7 +696,7 @@ def decorate_shard_output(swarming, shard_index, metadata):
 
 
 def collect(
-    swarming, task_name, task_ids, timeout, decorate, print_status_updates,
+    swarming, task_ids, timeout, decorate, print_status_updates,
     task_summary_json, task_output_dir):
   """Retrieves results of a Swarming task.
 
@@ -706,8 +704,7 @@ def collect(
     process exit code that should be returned to the user.
   """
   # Collect summary JSON and output files (if task_output_dir is not None).
-  output_collector = TaskOutputCollector(
-      task_output_dir, task_name, len(task_ids))
+  output_collector = TaskOutputCollector(task_output_dir, len(task_ids))
 
   seen_shards = set()
   exit_code = None
@@ -1077,7 +1074,6 @@ def CMDcollect(parser, args):
   try:
     return collect(
         options.swarming,
-        None,
         args,
         options.timeout,
         options.decorate,
@@ -1262,7 +1258,6 @@ def CMDrun(parser, args):
   try:
     return collect(
         options.swarming,
-        options.task_name,
         task_ids,
         options.timeout,
         options.decorate,
@@ -1310,6 +1305,29 @@ def CMDreproduce(parser, args):
     print >> sys.stderr, 'Failed to run: %s' % ' '.join(properties['command'])
     print >> sys.stderr, str(e)
     return 1
+
+
+@subcommand.usage('bot_id')
+def CMDterminate(parser, args):
+  """Tells a bot to gracefully shut itself down as soon as it can.
+
+  This is done by completing whatever current task there is then exiting the bot
+  process.
+  """
+  parser.add_option(
+      '--wait', action='store_true', help='Wait for the bot to terminate')
+  options, args = parser.parse_args(args)
+  if len(args) != 1:
+    parser.error('Please provide the bot id')
+  url = options.swarming + '/_ah/api/swarming/v1/bot/%s/terminate' % args[0]
+  request = net.url_read_json(url, data={})
+  if not request:
+    print >> sys.stderr, 'Failed to ask for termination'
+    return 1
+  if options.wait:
+    return collect(
+        options.swarming, [request['task_id']], 0., False, False, None, None)
+  return 0
 
 
 @subcommand.usage("(hash|isolated) [-- extra_args|raw command]")

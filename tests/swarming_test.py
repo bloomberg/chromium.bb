@@ -59,11 +59,10 @@ def get_results(keys, output_collector=None):
           'https://host:9001', keys, 10., None, True, output_collector))
 
 
-def collect(url, task_name, task_ids):
+def collect(url, task_ids):
   """Simplifies the call to swarming.collect()."""
   return swarming.collect(
     swarming=url,
-    task_name=task_name,
     task_ids=task_ids,
     timeout=10,
     decorate=True,
@@ -499,14 +498,13 @@ class TestSwarmingCollection(NetTestCase):
 
   def test_collect_nothing(self):
     self.mock(swarming, 'yield_results', lambda *_: [])
-    self.assertEqual(
-        1, collect('https://localhost:1', 'name', ['10100', '10200']))
+    self.assertEqual(1, collect('https://localhost:1', ['10100', '10200']))
     self._check_output('', 'Results from some shards are missing: 0, 1\n')
 
   def test_collect_success(self):
     data = gen_result_response(output='Foo')
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
-    self.assertEqual(0, collect('https://localhost:1', 'name', ['10100']))
+    self.assertEqual(0, collect('https://localhost:1', ['10100']))
     expected = u'\n'.join((
       '+---------------------------------------------------------------------+',
       '| Shard 0  https://localhost:1/user/task/10100                        |',
@@ -523,7 +521,7 @@ class TestSwarmingCollection(NetTestCase):
     data = gen_result_response(output='Foo', exit_code=-9)
     data['output'] = 'Foo'
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
-    self.assertEqual(-9, collect('https://localhost:1', 'name', ['10100']))
+    self.assertEqual(-9, collect('https://localhost:1', ['10100']))
     expected = u'\n'.join((
       '+----------------------------------------------------------------------'
         '+',
@@ -546,8 +544,7 @@ class TestSwarmingCollection(NetTestCase):
     data = gen_result_response(output='Foo')
     data['output'] = 'Foo'
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
-    self.assertEqual(
-        1, collect('https://localhost:1', 'name', ['10100', '10200']))
+    self.assertEqual(1, collect('https://localhost:1', ['10100', '10200']))
     expected = u'\n'.join((
       '+---------------------------------------------------------------------+',
       '| Shard 0  https://localhost:1/user/task/10100                        |',
@@ -572,7 +569,7 @@ class TestSwarmingCollection(NetTestCase):
       actual_calls.append((isolated_hash, outdir, require_command))
     self.mock(isolateserver, 'fetch_isolated', fetch_isolated)
 
-    collector = swarming.TaskOutputCollector(self.tempdir, 'name', 2)
+    collector = swarming.TaskOutputCollector(self.tempdir, 2)
     for index in xrange(2):
       collector.process_shard_result(
           index,
@@ -640,7 +637,7 @@ class TestSwarmingCollection(NetTestCase):
     ]
 
     # Feed them to collector.
-    collector = swarming.TaskOutputCollector(self.tempdir, 'task/name', 2)
+    collector = swarming.TaskOutputCollector(self.tempdir, 2)
     for index, result in enumerate(data):
       collector.process_shard_result(index, result)
     collector.finalize()
