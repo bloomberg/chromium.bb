@@ -15,10 +15,13 @@ The following hypothesis are made:
 """
 
 import copy
+import errno
 import json
 import logging
 import re
+import socket
 import ssl
+import sys
 import time
 import urllib
 import urllib2
@@ -429,7 +432,14 @@ class Rietveld(object):
           if retry >= (self._maxtries - 1):
             raise
           if (not 'Name or service not known' in e.reason and
-              not 'EOF occurred in violation of protocol' in e.reason):
+              not 'EOF occurred in violation of protocol' in e.reason and
+              # On windows we hit weird bug http://crbug.com/537417
+              # with message '[Errno 10060] A connection attempt failed...'
+              not (sys.platform.startswith('win') and
+                   isinstance(e.reason, socket.error) and
+                   e.reason.errno == errno.ETIMEDOUT
+                )
+              ):
             # Usually internal GAE flakiness.
             raise
         except ssl.SSLError, e:
