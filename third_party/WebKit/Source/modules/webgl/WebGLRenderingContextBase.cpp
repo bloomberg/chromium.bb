@@ -1245,6 +1245,9 @@ bool WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceDrawingBuffe
     canvas()->clearCopiedImage();
     m_markedCanvasDirty = false;
 
+    if (!canvas()->buffer())
+        return false;
+
     ScopedTexture2DRestorer restorer(this);
     ScopedFramebufferRestorer fboRestorer(this);
 
