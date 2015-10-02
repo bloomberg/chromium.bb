@@ -8595,6 +8595,27 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Notifications.Persistent.Clicked">
+  <owner>peter@chromium.org</owner>
+  <description>
+    Recorded when a persistent notification gets clicked on by the user.
+  </description>
+</action>
+
+<action name="Notifications.Persistent.Closed">
+  <owner>peter@chromium.org</owner>
+  <description>
+    Recorded when a persistent notification gets closed by the user. This does
+    not always mean that the user didn't click on the notification: both could
+    be counted if the website doesn't close the notification on click.
+  </description>
+</action>
+
+<action name="Notifications.Persistent.Shown">
+  <owner>peter@chromium.org</owner>
+  <description>Recorded when a persistent notification gets shown.</description>
+</action>
+
 <action name="Notifications.ShowMessageCenter">
   <owner>dewittj@chromium.org</owner>
   <description>

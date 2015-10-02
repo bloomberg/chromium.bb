@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -31,6 +32,7 @@
 #include "content/public/browser/notification_event_dispatcher.h"
 #include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/platform_notification_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -99,6 +101,9 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     const GURL& origin,
     int action_index) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::RecordAction(
+      base::UserMetricsAction("Notifications.Persistent.Clicked"));
+
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationClickEvent(
             browser_context,
@@ -113,6 +118,9 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
     int64_t persistent_notification_id,
     const GURL& origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::RecordAction(
+      base::UserMetricsAction("Notifications.Persistent.Closed"));
+
   PlatformNotificationContext* context =
       BrowserContext::GetStoragePartitionForSite(browser_context, origin)
           ->GetPlatformNotificationContext();
@@ -279,6 +287,8 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
   persistent_notifications_[persistent_notification_id] = notification.id();
 
   GetNotificationUIManager()->Add(notification, profile);
+  content::RecordAction(
+      base::UserMetricsAction("Notifications.Persistent.Shown"));
 
   HostContentSettingsMapFactory::GetForProfile(profile)->UpdateLastUsage(
       origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
