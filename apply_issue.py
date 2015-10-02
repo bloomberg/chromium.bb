@@ -203,7 +203,9 @@ def main():
     print('Downloading patch from %s' % issue_url)
     try:
       patchset = obj.get_patch(issue_to_apply, patchset_to_apply)
-    except urllib2.HTTPError as e:
+    except urllib2.URLError:
+      logging.exception('failed to fetch the patch for issue %d, patchset %d.',
+                        issue_to_apply, patchset_to_apply)
       print(
           'Failed to fetch the patch for issue %d, patchset %d.\n'
           'Try visiting %s/%d') % (
