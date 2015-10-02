@@ -708,7 +708,7 @@ void SVGUseElement::invalidateDependentShadowTrees()
 {
     // Recursively invalidate dependent <use> shadow trees
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& rawInstances = instancesForElement();
-    Vector<RefPtrWillBeRawPtr<SVGElement>> instances;
+    WillBeHeapVector<RefPtrWillBeMember<SVGElement>> instances;
     instances.appendRange(rawInstances.begin(), rawInstances.end());
     for (auto& instance : instances) {
         if (RefPtrWillBeRawPtr<SVGUseElement> element = instance->correspondingUseElement()) {
