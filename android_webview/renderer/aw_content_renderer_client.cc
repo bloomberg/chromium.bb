@@ -58,20 +58,22 @@ AwContentRendererClient::~AwContentRendererClient() {
 }
 
 void AwContentRendererClient::RenderThreadStarted() {
+  RenderThread* thread = RenderThread::Get();
+  aw_render_process_observer_.reset(new AwRenderProcessObserver);
+  thread->AddObserver(aw_render_process_observer_.get());
+
+  visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
+  thread->AddObserver(visited_link_slave_.get());
+
+  // Using WebString requires blink initialization.
+  thread->EnsureWebKitInitialized();
+
   blink::WebString content_scheme(base::ASCIIToUTF16(url::kContentScheme));
   blink::WebSecurityPolicy::registerURLSchemeAsLocal(content_scheme);
 
   blink::WebString aw_scheme(
       base::ASCIIToUTF16(android_webview::kAndroidWebViewVideoPosterScheme));
   blink::WebSecurityPolicy::registerURLSchemeAsSecure(aw_scheme);
-
-  RenderThread* thread = RenderThread::Get();
-
-  aw_render_process_observer_.reset(new AwRenderProcessObserver);
-  thread->AddObserver(aw_render_process_observer_.get());
-
-  visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
-  thread->AddObserver(visited_link_slave_.get());
 }
 
 void AwContentRendererClient::RenderFrameCreated(
