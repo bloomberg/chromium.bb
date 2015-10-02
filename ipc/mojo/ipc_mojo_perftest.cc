@@ -6,17 +6,17 @@
 #include "base/run_loop.h"
 #include "ipc/ipc_perftest_support.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
-#include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 namespace {
 
 // This is needed because we rely on //base/test:test_support_perf and
 // it provides main() which doesn't have Mojo initialization.  We need
-// some way to call InitWithSimplePlatformSupport() only once before
-// using Mojo.
+// some way to call Init() only once before using Mojo.
 struct MojoInitialier {
   MojoInitialier() {
-    mojo::embedder::test::InitWithSimplePlatformSupport();
+    mojo::embedder::Init();
   }
 };
 
@@ -63,6 +63,20 @@ TEST_F(MojoChannelPerfTest, ChannelProxyPingPong) {
 
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
+}
+
+// Test to see how many channels we can create.
+TEST_F(MojoChannelPerfTest, DISABLED_MaxChannelCount) {
+#if defined(OS_POSIX)
+  LOG(INFO) << "base::GetMaxFds " << base::GetMaxFds();
+  base::SetFdLimit(20000);
+#endif
+
+  std::vector<mojo::embedder::PlatformChannelPair*> channels;
+  for (size_t i = 0; i < 10000; ++i) {
+    LOG(INFO) << "channels size: " << channels.size();
+    channels.push_back(new mojo::embedder::PlatformChannelPair());
+  }
 }
 
 class MojoTestClient : public IPC::test::PingPongTestClient {

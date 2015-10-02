@@ -23,7 +23,8 @@ class TestingDelegate : public IPC::MojoBootstrap::Delegate {
  public:
   TestingDelegate() : passed_(false) {}
 
-  void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle) override;
+  void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle,
+                       int32 peer_pid) override;
   void OnBootstrapError() override;
 
   bool passed() const { return passed_; }
@@ -33,7 +34,8 @@ class TestingDelegate : public IPC::MojoBootstrap::Delegate {
 };
 
 void TestingDelegate::OnPipeAvailable(
-    mojo::embedder::ScopedPlatformHandle handle) {
+    mojo::embedder::ScopedPlatformHandle handle,
+    int32 peer_pid) {
   passed_ = true;
   base::MessageLoop::current()->Quit();
 }

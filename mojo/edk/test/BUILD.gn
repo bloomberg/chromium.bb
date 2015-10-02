@@ -1,0 +1,159 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("../mojo_edk.gni")
+import("../../public/mojo.gni")
+import("//testing/test.gni")
+
+mojo_edk_source_set("test_support") {
+  testonly = true
+  sources = [
+    "multiprocess_test_helper.cc",
+    "multiprocess_test_helper.h",
+    "scoped_ipc_support.cc",
+    "scoped_ipc_support.h",
+    "test_utils.h",
+    "test_utils_posix.cc",
+    "test_utils_win.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//mojo/edk/system",
+    "//testing/gtest",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+  ]
+}
+
+mojo_edk_source_set("run_all_unittests") {
+  testonly = true
+  sources = [
+    "run_all_unittests.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    ":test_support_impl",
+    "//base",
+    "//base/test:test_support",
+    "//mojo/edk/system",
+    "//testing/gtest",
+    "//third_party/mojo/src/mojo/public/c/test_support",
+  ]
+}
+
+mojo_edk_source_set("run_all_perftests") {
+  testonly = true
+  deps = [
+    ":test_support_impl",
+    "//base",
+    "//base/test:test_support",
+    "//mojo/edk/system",
+
+    # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
+    # declared in third party only for now.
+    "//third_party/mojo/src/mojo/edk/system",
+    "//third_party/mojo/src/mojo/public/c/test_support",
+  ]
+
+  sources = [
+    "run_all_perftests.cc",
+  ]
+}
+
+mojo_edk_source_set("test_support_impl") {
+  testonly = true
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//third_party/mojo/src/mojo/public/c/test_support",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+  ]
+
+  sources = [
+    "test_support_impl.cc",
+    "test_support_impl.h",
+  ]
+}
+
+# Public SDK test targets follow. These targets are not defined within the
+# public SDK itself as running the unittests requires the EDK.
+# TODO(vtl): These don't really belong here. (They should be converted to
+# apptests, but even apart from that these targets belong somewhere else.)
+
+group("public_tests") {
+  testonly = true
+  deps = [
+    # TODO(use_chrome_edk): remove "2"
+    ":mojo_public_bindings_unittests2",
+    ":mojo_public_environment_unittests2",
+    ":mojo_public_system_perftests2",
+    ":mojo_public_system_unittests2",
+    ":mojo_public_utility_unittests2",
+    ":mojo_system_impl_private_unittests2",
+  ]
+
+  if (mojo_use_application_in_sdk) {
+    deps += [ ":mojo_public_application_unittests" ]
+  }
+}
+
+if (mojo_use_application_in_sdk) {
+  # TODO(use_chrome_edk): remove "2"
+  test("mojo_public_application_unittests2") {
+    deps = [
+      ":run_all_unittests",
+      "../../../third_party/mojo/src/mojo/public/cpp/application/tests",
+    ]
+  }
+}
+
+# TODO(use_chrome_edk): remove "2"
+test("mojo_public_bindings_unittests2") {
+  deps = [
+    ":run_all_unittests",
+    "../../../third_party/mojo/src/mojo/public/cpp/bindings/tests",
+  ]
+}
+
+# TODO(use_chrome_edk): remove "2"
+test("mojo_public_environment_unittests2") {
+  deps = [
+    ":run_all_unittests",
+    "../../../third_party/mojo/src/mojo/public/cpp/environment/tests",
+  ]
+}
+
+# TODO(use_chrome_edk): remove "2"
+test("mojo_public_system_perftests2") {
+  deps = [
+    ":run_all_perftests",
+    "../../../third_party/mojo/src/mojo/public/c/system/tests:perftests",
+  ]
+}
+
+# TODO(use_chrome_edk): remove "2"
+test("mojo_public_system_unittests2") {
+  deps = [
+    ":run_all_unittests",
+    "../../../third_party/mojo/src/mojo/public/cpp/system/tests",
+  ]
+}
+
+# TODO(use_chrome_edk): remove "2"
+test("mojo_public_utility_unittests2") {
+  deps = [
+    ":run_all_unittests",
+    "../../../third_party/mojo/src/mojo/public/cpp/utility/tests",
+  ]
+}
+
+# TODO(use_chrome_edk): remove "2"
+test("mojo_system_impl_private_unittests2") {
+  deps = [
+    ":run_all_unittests",
+    "../../../third_party/mojo/src/mojo/public/platform/native:system_impl_private_tests",
+  ]
+}

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_listener.h"
@@ -15,6 +16,7 @@
 #include "ipc/mojo/client_channel.mojom.h"
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 #include "ipc/mojo/ipc_mojo_handle_attachment.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
@@ -25,6 +27,10 @@
 namespace IPC {
 
 namespace {
+
+// TODO(jam): do more tests on using channel on same thread if it supports it (
+// i.e. with use-new-edk and Windows). Also see message_pipe_dispatcher.cc
+bool g_use_channel_on_io_thread_only = true;
 
 class MojoChannelFactory : public ChannelFactory {
  public:
@@ -53,20 +59,47 @@ class ClientChannelMojo : public ChannelMojo, public ClientChannel {
  public:
   ClientChannelMojo(scoped_refptr<base::TaskRunner> io_runner,
                     const ChannelHandle& handle,
-                    Listener* listener);
-  ~ClientChannelMojo() override;
+                    Listener* listener)
+      : ChannelMojo(io_runner, handle, Channel::MODE_CLIENT, listener),
+        binding_(this),
+        weak_factory_(this) {
+  }
+  ~ClientChannelMojo() override {}
+
   // MojoBootstrap::Delegate implementation
-  void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle) override;
+  void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle,
+                       int32 peer_pid) override {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
+      mojo::edk::ScopedPlatformHandle edk_handle(mojo::edk::PlatformHandle(
+#if defined(OS_WIN)
+          handle.release().handle));
+#else
+          handle.release().fd));
+#endif
+      InitMessageReader(
+          mojo::edk::CreateMessagePipe(edk_handle.Pass()), peer_pid);
+      return;
+    }
+    CreateMessagingPipe(handle.Pass(), base::Bind(&ClientChannelMojo::BindPipe,
+                                                  weak_factory_.GetWeakPtr()));
+  }
 
   // ClientChannel implementation
   void Init(
       mojo::ScopedMessagePipeHandle pipe,
       int32_t peer_pid,
-      const mojo::Callback<void(int32_t)>& callback) override;
+      const mojo::Callback<void(int32_t)>& callback) override {
+   InitMessageReader(pipe.Pass(), static_cast<base::ProcessId>(peer_pid));
+   callback.Run(GetSelfPID());
+  }
 
  private:
-  void BindPipe(mojo::ScopedMessagePipeHandle handle);
-  void OnConnectionError();
+  void BindPipe(mojo::ScopedMessagePipeHandle handle) {
+    binding_.Bind(handle.Pass());
+  }
+  void OnConnectionError() {
+    listener()->OnChannelError();
+  }
 
   mojo::Binding<ClientChannel> binding_;
   base::WeakPtrFactory<ClientChannelMojo> weak_factory_;
@@ -74,59 +107,81 @@ class ClientChannelMojo : public ChannelMojo, public ClientChannel {
   DISALLOW_COPY_AND_ASSIGN(ClientChannelMojo);
 };
 
-ClientChannelMojo::ClientChannelMojo(scoped_refptr<base::TaskRunner> io_runner,
-                                     const ChannelHandle& handle,
-                                     Listener* listener)
-    : ChannelMojo(io_runner, handle, Channel::MODE_CLIENT, listener),
-      binding_(this),
-      weak_factory_(this) {}
-
-ClientChannelMojo::~ClientChannelMojo() {
-}
-
-void ClientChannelMojo::OnPipeAvailable(
-    mojo::embedder::ScopedPlatformHandle handle) {
-  CreateMessagingPipe(handle.Pass(), base::Bind(&ClientChannelMojo::BindPipe,
-                                                weak_factory_.GetWeakPtr()));
-}
-
-void ClientChannelMojo::Init(
-    mojo::ScopedMessagePipeHandle pipe,
-    int32_t peer_pid,
-    const mojo::Callback<void(int32_t)>& callback) {
-  InitMessageReader(pipe.Pass(), static_cast<base::ProcessId>(peer_pid));
-  callback.Run(GetSelfPID());
-}
-
-void ClientChannelMojo::BindPipe(mojo::ScopedMessagePipeHandle handle) {
-  binding_.Bind(handle.Pass());
-}
-
-void ClientChannelMojo::OnConnectionError() {
-  listener()->OnChannelError();
-}
-
 //------------------------------------------------------------------------------
 
 class ServerChannelMojo : public ChannelMojo {
  public:
   ServerChannelMojo(scoped_refptr<base::TaskRunner> io_runner,
                     const ChannelHandle& handle,
-                    Listener* listener);
-  ~ServerChannelMojo() override;
+                    Listener* listener)
+      : ChannelMojo(io_runner, handle, Channel::MODE_SERVER, listener),
+        weak_factory_(this) {
+  }
+  ~ServerChannelMojo() override {
+    Close();
+  }
 
   // MojoBootstrap::Delegate implementation
-  void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle) override;
+  void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle,
+                       int32 peer_pid) override {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
+      mojo::edk::ScopedPlatformHandle edk_handle(mojo::edk::PlatformHandle(
+#if defined(OS_WIN)
+          handle.release().handle));
+#else
+          handle.release().fd));
+#endif
+      message_pipe_ = mojo::edk::CreateMessagePipe(edk_handle.Pass());
+      if (!message_pipe_.is_valid()) {
+        LOG(WARNING) << "mojo::CreateMessagePipe failed: ";
+        listener()->OnChannelError();
+        return;
+      }
+      InitMessageReader(message_pipe_.Pass(), peer_pid);
+      return;
+    }
+
+    mojo::ScopedMessagePipeHandle peer;
+    MojoResult create_result =
+        mojo::CreateMessagePipe(nullptr, &message_pipe_, &peer);
+    if (create_result != MOJO_RESULT_OK) {
+      LOG(WARNING) << "mojo::CreateMessagePipe failed: " << create_result;
+      listener()->OnChannelError();
+      return;
+    }
+    CreateMessagingPipe(
+        handle.Pass(),
+        base::Bind(&ServerChannelMojo::InitClientChannel,
+                   weak_factory_.GetWeakPtr(), base::Passed(&peer)));
+  }
   // Channel override
-  void Close() override;
+  void Close() override {
+    client_channel_.reset();
+    message_pipe_.reset();
+    ChannelMojo::Close();
+  }
 
  private:
   void InitClientChannel(mojo::ScopedMessagePipeHandle peer_handle,
-                         mojo::ScopedMessagePipeHandle handle);
-  void OnConnectionError();
+                         mojo::ScopedMessagePipeHandle handle) {
+    client_channel_.Bind(
+        mojo::InterfacePtrInfo<ClientChannel>(handle.Pass(), 0u));
+    client_channel_.set_connection_error_handler(base::Bind(
+        &ServerChannelMojo::OnConnectionError, base::Unretained(this)));
+    client_channel_->Init(
+        peer_handle.Pass(), static_cast<int32_t>(GetSelfPID()),
+        base::Bind(&ServerChannelMojo::ClientChannelWasInitialized,
+                   base::Unretained(this)));
+  }
+
+  void OnConnectionError() {
+    listener()->OnChannelError();
+  }
 
   // ClientChannelClient implementation
-  void ClientChannelWasInitialized(int32_t peer_pid);
+  void ClientChannelWasInitialized(int32_t peer_pid) {
+    InitMessageReader(message_pipe_.Pass(), peer_pid);
+  }
 
   mojo::InterfacePtr<ClientChannel> client_channel_;
   mojo::ScopedMessagePipeHandle message_pipe_;
@@ -134,59 +189,6 @@ class ServerChannelMojo : public ChannelMojo {
 
   DISALLOW_COPY_AND_ASSIGN(ServerChannelMojo);
 };
-
-ServerChannelMojo::ServerChannelMojo(scoped_refptr<base::TaskRunner> io_runner,
-                                     const ChannelHandle& handle,
-                                     Listener* listener)
-    : ChannelMojo(io_runner, handle, Channel::MODE_SERVER, listener),
-      weak_factory_(this) {}
-
-ServerChannelMojo::~ServerChannelMojo() {
-  Close();
-}
-
-void ServerChannelMojo::OnPipeAvailable(
-    mojo::embedder::ScopedPlatformHandle handle) {
-  mojo::ScopedMessagePipeHandle peer;
-  MojoResult create_result =
-      mojo::CreateMessagePipe(nullptr, &message_pipe_, &peer);
-  if (create_result != MOJO_RESULT_OK) {
-    LOG(WARNING) << "mojo::CreateMessagePipe failed: " << create_result;
-    listener()->OnChannelError();
-    return;
-  }
-  CreateMessagingPipe(
-      handle.Pass(),
-      base::Bind(&ServerChannelMojo::InitClientChannel,
-                 weak_factory_.GetWeakPtr(), base::Passed(&peer)));
-}
-
-void ServerChannelMojo::Close() {
-  client_channel_.reset();
-  message_pipe_.reset();
-  ChannelMojo::Close();
-}
-
-void ServerChannelMojo::InitClientChannel(
-    mojo::ScopedMessagePipeHandle peer_handle,
-    mojo::ScopedMessagePipeHandle handle) {
-  client_channel_.Bind(
-      mojo::InterfacePtrInfo<ClientChannel>(handle.Pass(), 0u));
-  client_channel_.set_connection_error_handler(base::Bind(
-      &ServerChannelMojo::OnConnectionError, base::Unretained(this)));
-  client_channel_->Init(
-      peer_handle.Pass(), static_cast<int32_t>(GetSelfPID()),
-      base::Bind(&ServerChannelMojo::ClientChannelWasInitialized,
-                 base::Unretained(this)));
-}
-
-void ServerChannelMojo::OnConnectionError() {
-  listener()->OnChannelError();
-}
-
-void ServerChannelMojo::ClientChannelWasInitialized(int32_t peer_pid) {
-  InitMessageReader(message_pipe_.Pass(), peer_pid);
-}
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
 
@@ -276,7 +278,8 @@ ChannelMojo::ChannelMojo(scoped_refptr<base::TaskRunner> io_runner,
   // Create MojoBootstrap after all members are set as it touches
   // ChannelMojo from a different thread.
   bootstrap_ = MojoBootstrap::Create(handle, mode, this);
-  if (io_runner == base::MessageLoop::current()->task_runner()) {
+  if (!g_use_channel_on_io_thread_only ||
+      io_runner == base::MessageLoop::current()->task_runner()) {
     InitOnIOThread();
   } else {
     io_runner->PostTask(FROM_HERE, base::Bind(&ChannelMojo::InitOnIOThread,
@@ -298,7 +301,8 @@ void ChannelMojo::CreateMessagingPipe(
     const CreateMessagingPipeCallback& callback) {
   auto return_callback = base::Bind(&ChannelMojo::OnMessagingPipeCreated,
                                     weak_factory_.GetWeakPtr(), callback);
-  if (base::ThreadTaskRunnerHandle::Get() == io_runner_) {
+  if (!g_use_channel_on_io_thread_only ||
+      base::ThreadTaskRunnerHandle::Get() == io_runner_) {
     CreateMessagingPipeOnIOThread(
         handle.Pass(), base::ThreadTaskRunnerHandle::Get(), return_callback);
   } else {
@@ -487,7 +491,7 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
           }
 
           MojoHandle wrapped_handle;
-          MojoResult wrap_result = CreatePlatformHandleWrapper(
+          MojoResult wrap_result = mojo::embedder::CreatePlatformHandleWrapper(
               mojo::embedder::ScopedPlatformHandle(
                   mojo::embedder::PlatformHandle(file.release())),
               &wrapped_handle);

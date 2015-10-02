@@ -27,8 +27,6 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/common/trace_controller_impl.h"
 #include "mojo/common/tracing_impl.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/runner/in_process_native_runner.h"
 #include "mojo/runner/out_of_process_native_runner.h"
@@ -40,6 +38,7 @@
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -50,7 +49,7 @@ namespace {
 class Setup {
  public:
   Setup() {
-    embedder::Init(make_scoped_ptr(new embedder::SimplePlatformSupport()));
+    embedder::Init();
   }
 
   ~Setup() {}

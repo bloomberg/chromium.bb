@@ -9,4 +9,9 @@ include_rules = [
 
   # internal includes.
   "+mojo",
+
+  # TODO(use_chrome_edk): temporary
+  "+../../../../../../mojo/edk/system/core.h",
+  "+../../../../../../mojo/edk/embedder/embedder_internal.h",
+  "+../../../../../../mojo/edk/embedder/simple_platform_support.h",
 ]

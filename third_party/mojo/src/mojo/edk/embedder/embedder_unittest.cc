@@ -136,7 +136,7 @@ class EmbedderTest : public testing::Test {
   }
 
  private:
-  void SetUp() override { test::InitWithSimplePlatformSupport(); }
+  void SetUp() override { Init(); }
 
   void TearDown() override { EXPECT_TRUE(test::Shutdown()); }
 
@@ -499,7 +499,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessMasterSlave) {
   EXPECT_TRUE(client_platform_handle.is_valid());
 
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  test::InitWithSimplePlatformSupport();
+  Init();
 
   {
     mojo::test::ScopedSlaveIPCSupport ipc_support(
@@ -694,7 +694,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
   EXPECT_TRUE(client_platform_handle.is_valid());
 
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  test::InitWithSimplePlatformSupport();
+  Init();
 
   {
     // TODO(vtl): This should eventually initialize a slave process instead,

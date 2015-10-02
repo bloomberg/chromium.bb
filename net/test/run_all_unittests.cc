@@ -25,7 +25,7 @@
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-#include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #endif
 
 using net::internal::ClientSocketPoolBaseHelper;
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
   net::EnableSSLServerSockets();
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  mojo::embedder::test::InitWithSimplePlatformSupport();
+  mojo::embedder::Init();
 #endif
 
   return base::LaunchUnitTests(

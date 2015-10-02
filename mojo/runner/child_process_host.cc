@@ -15,12 +15,12 @@
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/runner/context.h"
 #include "mojo/runner/switches.h"
 #include "mojo/runner/task_runners.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "sandbox/linux/services/namespace_sandbox.h"
@@ -156,7 +156,8 @@ void ChildProcessHost::AppCompleted(int32_t result) {
 void ChildProcessHost::DidCreateChannel(embedder::ChannelInfo* channel_info) {
   DVLOG(2) << "AppChildProcessHost::DidCreateChannel()";
 
-  CHECK(channel_info);
+  DCHECK(channel_info ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk"));
   channel_info_ = channel_info;
 }
 

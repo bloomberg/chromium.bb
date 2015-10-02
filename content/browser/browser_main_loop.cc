@@ -69,6 +69,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
+#include "ipc/mojo/scoped_ipc_support.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -931,6 +932,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
 
+  mojo_ipc_support_.reset();
   mojo_shell_context_.reset();
 
 #if !defined(OS_IOS)
@@ -1270,6 +1272,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif  // !defined(OS_IOS)
 
   mojo_shell_context_.reset(new MojoShellContext);
+  mojo_ipc_support_.reset(new IPC::ScopedIPCSupport(
+      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
+          ->task_runner()));
 
   return result_code_;
 }

@@ -7,9 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_channel.h"
-#include "third_party/mojo/src/mojo/edk/embedder/configuration.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
-#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
 
 namespace content {
 
@@ -18,10 +16,8 @@ namespace {
 class MojoInitializer {
  public:
   MojoInitializer() {
-    mojo::embedder::GetConfiguration()->max_message_num_bytes =
-        IPC::Channel::kMaximumMessageSize;
-    mojo::embedder::Init(scoped_ptr<mojo::embedder::PlatformSupport>(
-        new mojo::embedder::SimplePlatformSupport()));
+    mojo::embedder::SetMaxMessageSize(IPC::Channel::kMaximumMessageSize);
+    mojo::embedder::Init();
   }
 };
 

@@ -11,10 +11,6 @@ namespace mojo {
 namespace embedder {
 namespace test {
 
-// Calls |Init()| with a |SimplePlatformSupport| (use this in tests if, e.g.,
-// you don't care about sandboxing, etc.).
-MOJO_SYSTEM_IMPL_EXPORT void InitWithSimplePlatformSupport();
-
 // This shuts down the global, singleton instance. (Note: "Real" embedders are
 // not expected to ever shut down this instance. This |Shutdown()| function will
 // do more work to ensure that tests don't leak, etc.) Returns true if there

@@ -7,7 +7,7 @@
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/mojo/init/ui_init.h"
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 #else
   base::AtExitManager at_exit;
 #endif
-  mojo::embedder::test::InitWithSimplePlatformSupport();
+  mojo::embedder::Init();
 
   return base::LaunchUnitTests(argc,
                                argv,

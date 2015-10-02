@@ -34,6 +34,7 @@ group("mojo") {
 group("mojo_public_bindings_unittests_run") {
   testonly = true
   deps = [
+    # TODO(use_chrome_edk): "//mojo/edk/test:mojo_public_bindings_unittests"
     "//third_party/mojo/src/mojo/edk/test:mojo_public_bindings_unittests",
   ]
 }
@@ -43,6 +44,7 @@ group("mojo_public_bindings_unittests_run") {
 group("mojo_public_environment_unittests_run") {
   testonly = true
   deps = [
+    # TODO(use_chrome_edk): "//mojo/edk/test:mojo_public_environment_unittests"
     "//third_party/mojo/src/mojo/edk/test:mojo_public_environment_unittests",
   ]
 }
@@ -52,6 +54,7 @@ group("mojo_public_environment_unittests_run") {
 group("mojo_public_system_unittests_run") {
   testonly = true
   deps = [
+    # TODO(use_chrome_edk): "//mojo/edk/test:mojo_public_system_unittests"
     "//third_party/mojo/src/mojo/edk/test:mojo_public_system_unittests",
   ]
 }
@@ -61,6 +64,7 @@ group("mojo_public_system_unittests_run") {
 group("mojo_public_utility_unittests_run") {
   testonly = true
   deps = [
+    # TODO(use_chrome_edk): "//mojo/edk/test:mojo_public_utility_unittests"
     "//third_party/mojo/src/mojo/edk/test:mojo_public_utility_unittests",
   ]
 }
@@ -72,6 +76,16 @@ group("tests") {
     "//mojo/application/public/cpp/tests:mojo_public_application_unittests",
     "//mojo/common:mojo_common_unittests",
     "//mojo/converters/surfaces/tests:mojo_surfaces_lib_unittests",
+
+    # TODO(use_chrome_edk):
+    #"//mojo/edk/js/test:js_unittests",
+    #"//mojo/edk/system:mojo_message_pipe_perftests",
+    #"//mojo/edk/system:mojo_system_unittests",
+    #"//mojo/edk/test:mojo_public_bindings_unittests",
+    #"//mojo/edk/test:mojo_public_environment_unittests",
+    #"//mojo/edk/test:mojo_public_system_perftests",
+    #"//mojo/edk/test:mojo_public_system_unittests",
+    #"//mojo/edk/test:mojo_public_utility_unittests",
     "//third_party/mojo/src/mojo/edk/js/test:js_unittests",
     "//third_party/mojo/src/mojo/edk/system:mojo_message_pipe_perftests",
     "//third_party/mojo/src/mojo/edk/system:mojo_system_unittests",

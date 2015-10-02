@@ -55,7 +55,7 @@ include_rules = [
 
 specific_include_rules = {
   "run_all_unittests\.cc": [
-    "+third_party/mojo/src/mojo/edk/embedder/test_embedder.h",
+    "+third_party/mojo/src/mojo/edk/embedder/embedder.h",
   ],
   "html_frame_apptest\.cc": [
     "+components/web_view",

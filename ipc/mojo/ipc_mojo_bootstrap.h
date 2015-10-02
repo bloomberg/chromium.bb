@@ -28,7 +28,8 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
   class Delegate {
    public:
     virtual void OnPipeAvailable(
-        mojo::embedder::ScopedPlatformHandle handle) = 0;
+        mojo::embedder::ScopedPlatformHandle handle,
+        int32 peer_pid) = 0;
     virtual void OnBootstrapError() = 0;
   };
 

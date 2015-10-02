@@ -38,6 +38,7 @@ component("mojo") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//ipc",
+    "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/edk/system",
     "//third_party/mojo/src/mojo/public/c/environment:environment",

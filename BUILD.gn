@@ -149,6 +149,13 @@ group("both_gn_and_gyp") {
       "//third_party/WebKit/Source/wtf:wtf_unittests",
       "//third_party/cacheinvalidation:cacheinvalidation_unittests",
       "//third_party/codesighs",
+
+      # TODO(use-new-edk):
+      #"//mojo/edk/system:mojo_system_unittests",
+      #"//mojo/edk/test:mojo_public_bindings_unittests",
+      #"//mojo/edk/test:mojo_public_environment_unittests",
+      #"//mojo/edk/test:mojo_public_system_unittests",
+      #"//mojo/edk/test:mojo_public_utility_unittests",
       "//third_party/mojo/src/mojo/edk/system:mojo_system_unittests",
       "//third_party/mojo/src/mojo/edk/test:mojo_public_bindings_unittests",
       "//third_party/mojo/src/mojo/edk/test:mojo_public_environment_unittests",
@@ -473,6 +480,9 @@ group("both_gn_and_gyp") {
       "//sync/tools:sync_client",
       "//sync/tools:sync_listen_notifications",
       "//testing/gmock:gmock_main",
+
+      # TODO(use-new-edk):
+      #"//mojo/edk/test:mojo_public_system_perftests",
       "//third_party/mojo/src/mojo/edk/test:mojo_public_system_perftests",
       "//ui/keyboard:keyboard_unittests",
       "//ui/message_center:message_center_unittests",
@@ -724,6 +734,9 @@ group("gn_mojo_targets") {
       "//media/mojo/services:cdm_service",
       "//media/mojo:tests",
       "//mojo:tests",
+      # TODO(use-new-edk):
+      #"//mojo/edk/js/test:js_integration_tests",
+      #"//mojo/edk/js/tests:js_to_cpp_bindings_python",
       "//third_party/mojo/src/mojo/edk/js/test:js_integration_tests",
     ]
   }
@@ -845,6 +858,13 @@ if (is_linux) {
       "//sql:sql_unittests",  # PASSES 2/25/2015
       "//sync:sync_unit_tests",  # PASSES 2/25/2015
       "//third_party/cacheinvalidation:cacheinvalidation_unittests",  # PASSES 2/25/2015
+
+      # TODO(use-new-edk):
+      #"//mojo/edk/system:mojo_system_unittests",  # PASSES 2/25/2015
+      #"//mojo/edk/test:mojo_public_bindings_unittests",  # PASSES 2/25/2015
+      #"//mojo/edk/test:mojo_public_environment_unittests",  # PASSES 2/25/2015
+      #"//mojo/edk/test:mojo_public_system_unittests",  # PASSES 2/25/2015
+      #"//mojo/edk/test:mojo_public_utility_unittests",
       "//third_party/mojo/src/mojo/edk/system:mojo_system_unittests",  # PASSES 2/25/2015
       "//third_party/mojo/src/mojo/edk/test:mojo_public_bindings_unittests",  # PASSES 2/25/2015
       "//third_party/mojo/src/mojo/edk/test:mojo_public_environment_unittests",  # PASSES 2/25/2015
@@ -917,6 +937,13 @@ if (is_linux) {
       "//sql:sql_unittests",  # PASSES 4/17/2015
       "//sync:sync_unit_tests",  # PASSES 4/20/2015
       "//third_party/cacheinvalidation:cacheinvalidation_unittests",  # PASSES 4/20/2015
+
+      # TODO(use-new-edk):
+      #"//mojo/edk/system:mojo_system_unittests",  # Seems to hang?
+      #"//mojo/edk/test:mojo_public_bindings_unittests",  # FAILS
+      #"//mojo/edk/test:mojo_public_environment_unittests",  # PASSES 4/20/2015
+      #"//mojo/edk/test:mojo_public_system_unittests",  # PASSES 4/20/2015
+      #"//mojo/edk/test:mojo_public_utility_unittests",  # PASSES 4/20/2015
       "//third_party/mojo/src/mojo/edk/system:mojo_system_unittests",  # Seems to hang?
       "//third_party/mojo/src/mojo/edk/test:mojo_public_bindings_unittests",  # FAILS
       "//third_party/mojo/src/mojo/edk/test:mojo_public_environment_unittests",  # PASSES 4/20/2015

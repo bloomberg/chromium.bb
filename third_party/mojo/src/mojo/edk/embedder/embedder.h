@@ -21,8 +21,6 @@
 namespace mojo {
 namespace embedder {
 
-struct Configuration;
-class PlatformSupport;
 class ProcessDelegate;
 
 // Basic configuration/initialization ------------------------------------------
@@ -31,13 +29,12 @@ class ProcessDelegate;
 // functions available and functional. This is never shut down (except in tests
 // -- see test_embedder.h).
 
-// Returns the global configuration. In general, you should not need to change
-// the configuration, but if you do you must do it before calling |Init()|.
-MOJO_SYSTEM_IMPL_EXPORT Configuration* GetConfiguration();
+// Allows changing the default max message size. Must be called before Init.
+MOJO_SYSTEM_IMPL_EXPORT void SetMaxMessageSize(size_t bytes);
 
 // Must be called first, or just after setting configuration parameters, to
 // initialize the (global, singleton) system.
-MOJO_SYSTEM_IMPL_EXPORT void Init(scoped_ptr<PlatformSupport> platform_support);
+MOJO_SYSTEM_IMPL_EXPORT void Init();
 
 // Basic functions -------------------------------------------------------------
 

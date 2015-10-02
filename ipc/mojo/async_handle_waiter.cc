@@ -86,6 +86,11 @@ class AsyncHandleWaiter::Context
   }
 
   void DidProcessIOEvent() override {
+    // This object could have been constructed in another's class's
+    // DidProcessIOEvent.
+    if (io_loop_level_== 0)
+      return;
+
     DCHECK_GE(io_loop_level_, 1);
 
     // Leaving a nested loop.

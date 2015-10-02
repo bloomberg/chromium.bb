@@ -27,6 +27,10 @@ class TraceEventSystemStatsMonitor;
 }  // namespace trace_event
 }  // namespace base
 
+namespace IPC {
+class ScopedIPCSupport;
+}
+
 namespace media {
 class AudioManager;
 class UserInputMonitor;
@@ -241,6 +245,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   scoped_ptr<base::Thread> indexed_db_thread_;
   scoped_ptr<MojoShellContext> mojo_shell_context_;
+  scoped_ptr<IPC::ScopedIPCSupport> mojo_ipc_support_;
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
   scoped_ptr<media::UserInputMonitor> user_input_monitor_;

@@ -133,6 +133,11 @@ component("system") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+
+    # TODO(use_chrome_edk): so that EDK in third_party can choose the EDK in
+    # src/mojo if the command line flag is specified. It has to since we can
+    # only have one definition of the Mojo primitives.
+    "//mojo/edk/system",
   ]
 
   allow_circular_includes_from = [ "../embedder" ]
@@ -215,6 +220,7 @@ test("mojo_system_unittests") {
     ":system",
     ":test_utils",
     "../embedder:embedder_unittests",
+    "../../public/cpp/environment:standalone",
     "../test:test_support",
     "//base",
     "//base/test:test_support",
@@ -234,6 +240,7 @@ test("mojo_message_pipe_perftests") {
   deps = [
     ":system",
     ":test_utils",
+    "../../public/cpp/environment:standalone",
     "../test:test_support",
     "//base",
     "//base/test:test_support",

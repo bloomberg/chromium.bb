@@ -18,6 +18,7 @@ mojo_sdk_source_set("tests") {
 
   mojo_sdk_deps = [
     "mojo/public/c/system/tests",
+    "mojo/public/cpp/environment:standalone",
     "mojo/public/cpp/system",
     "mojo/public/cpp/test_support:test_utils",
   ]

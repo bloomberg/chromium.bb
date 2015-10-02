@@ -18,7 +18,8 @@
 namespace IPC {
 
 namespace {
-
+// TODO(use_chrome_edk)
+//class IPCSupportInitializer : public mojo::edk::ProcessDelegate {
 class IPCSupportInitializer : public mojo::embedder::ProcessDelegate {
  public:
   IPCSupportInitializer()

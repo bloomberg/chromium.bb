@@ -31,11 +31,12 @@ class MojoServerBootstrap : public MojoBootstrap {
 
   mojo::embedder::ScopedPlatformHandle server_pipe_;
   bool connected_;
+  int32_t peer_pid_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoServerBootstrap);
 };
 
-MojoServerBootstrap::MojoServerBootstrap() : connected_(false) {
+MojoServerBootstrap::MojoServerBootstrap() : connected_(false), peer_pid_(0) {
 }
 
 void MojoServerBootstrap::SendClientPipe(int32_t peer_pid) {
@@ -78,6 +79,7 @@ void MojoServerBootstrap::SendClientPipe(int32_t peer_pid) {
 void MojoServerBootstrap::OnChannelConnected(int32_t peer_pid) {
   DCHECK_EQ(state(), STATE_INITIALIZED);
   connected_ = true;
+  peer_pid_ = peer_pid;
   SendClientPipe(peer_pid);
 }
 
@@ -91,7 +93,7 @@ bool MojoServerBootstrap::OnMessageReceived(const Message&) {
   set_state(STATE_READY);
   CHECK(server_pipe_.is_valid());
   delegate()->OnPipeAvailable(
-      mojo::embedder::ScopedPlatformHandle(server_pipe_.release()));
+      mojo::embedder::ScopedPlatformHandle(server_pipe_.release()), peer_pid_);
 
   return true;
 }
@@ -107,10 +109,12 @@ class MojoClientBootstrap : public MojoBootstrap {
   bool OnMessageReceived(const Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
 
+  int32 peer_pid_;
+
   DISALLOW_COPY_AND_ASSIGN(MojoClientBootstrap);
 };
 
-MojoClientBootstrap::MojoClientBootstrap() {
+MojoClientBootstrap::MojoClientBootstrap() : peer_pid_(0) {
 }
 
 bool MojoClientBootstrap::OnMessageReceived(const Message& message) {
@@ -133,12 +137,13 @@ bool MojoClientBootstrap::OnMessageReceived(const Message& message) {
   set_state(STATE_READY);
   delegate()->OnPipeAvailable(
       mojo::embedder::ScopedPlatformHandle(mojo::embedder::PlatformHandle(
-          PlatformFileForTransitToPlatformFile(pipe))));
+          PlatformFileForTransitToPlatformFile(pipe))), peer_pid_);
 
   return true;
 }
 
 void MojoClientBootstrap::OnChannelConnected(int32_t peer_pid) {
+  peer_pid_ = peer_pid;
 }
 
 }  // namespace

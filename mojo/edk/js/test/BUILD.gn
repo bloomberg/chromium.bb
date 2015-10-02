@@ -1,0 +1,46 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+# TODO(use_chrome_edk): remove "2"
+test("js_unittests2") {
+  deps = [
+    "../../js",
+    "../../js:js_unittests",
+    "../../test:run_all_unittests",
+    "../../test:test_support",
+    "//base",
+    "//gin:gin_test",
+    "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/public/cpp/environment",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//third_party/mojo/src/mojo/public/cpp/utility",
+    "//third_party/mojo/src/mojo/public/interfaces/bindings/tests:test_interfaces",
+    "//third_party/mojo/src/mojo/public/interfaces/bindings/tests:test_interfaces_experimental",
+  ]
+
+  sources = [
+    "run_js_tests.cc",
+  ]
+}
+
+# TODO(use_chrome_edk): remove "2"
+test("js_integration_tests2") {
+  deps = [
+    "../../js",
+    "../../js/tests:js_to_cpp_tests",
+    "../../test:run_all_unittests",
+    "../../test:test_support",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/interfaces/bindings/tests:test_interfaces",
+    "//base",
+    "//gin:gin_test",
+    "//mojo/environment:chromium",
+  ]
+
+  sources = [
+    "run_js_integration_tests.cc",
+  ]
+}

@@ -57,7 +57,10 @@ mojo_sdk_source_set("system_impl_private_tests") {
     "//testing/gtest",
   ]
 
-  mojo_sdk_deps = [ "mojo/public/c/system" ]
+  mojo_sdk_deps = [
+    "mojo/public/c/system",
+    "mojo/public/cpp/environment:standalone",
+  ]
 }
 
 mojo_sdk_source_set("gles2") {

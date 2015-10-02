@@ -6,7 +6,7 @@
 #include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -29,7 +29,7 @@ int RunTestSuite(int argc, char** argv) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  mojo::embedder::test::InitWithSimplePlatformSupport();
+  mojo::embedder::Init();
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   base::RegisterContentUriTestUtils(env);
