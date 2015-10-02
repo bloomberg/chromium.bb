@@ -11,6 +11,8 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 
 using media::AudioBus;
+using media::AudioInputBuffer;
+using media::AudioInputBufferParameters;
 
 namespace content {
 
@@ -39,8 +41,10 @@ AudioInputSyncWriter::AudioInputSyncWriter(void* shared_memory,
       next_read_buffer_index_(0),
       number_of_filled_segments_(0),
       write_count_(0),
+      write_to_fifo_count_(0),
       write_error_count_(0),
-      trailing_error_count_(0) {
+      trailing_write_to_fifo_count_(0),
+      trailing_write_error_count_(0) {
   DCHECK_GT(shared_memory_segment_count, 0);
   DCHECK_EQ(shared_memory_size % shared_memory_segment_count, 0u);
   shared_memory_segment_size_ =
@@ -53,31 +57,46 @@ AudioInputSyncWriter::AudioInputSyncWriter(void* shared_memory,
   uint8* ptr = shared_memory_;
   for (int i = 0; i < shared_memory_segment_count; ++i) {
     CHECK_EQ(0U, reinterpret_cast<uintptr_t>(ptr) &
-        (media::AudioBus::kChannelAlignment - 1));
-    media::AudioInputBuffer* buffer =
-        reinterpret_cast<media::AudioInputBuffer*>(ptr);
-    scoped_ptr<media::AudioBus> audio_bus =
-        media::AudioBus::WrapMemory(params, buffer->audio);
+        (AudioBus::kChannelAlignment - 1));
+    AudioInputBuffer* buffer = reinterpret_cast<AudioInputBuffer*>(ptr);
+    scoped_ptr<AudioBus> audio_bus =
+        AudioBus::WrapMemory(params, buffer->audio);
     audio_buses_.push_back(audio_bus.release());
     ptr += shared_memory_segment_size_;
   }
 }
 
 AudioInputSyncWriter::~AudioInputSyncWriter() {
-  // Subtract 'trailing' errors that will happen if the renderer process was
+  // We log the following:
+  // - Percentage of data written to fifo (and not to shared memory).
+  // - Percentage of data dropped (fifo reached max size or socket buffer full).
+  // - Glitch yes/no (at least 1 drop).
+  //
+  // Subtract 'trailing' counts that will happen if the renderer process was
   // killed or e.g. the page refreshed while the input device was open etc.
   // This trims off the end of both the error and write counts so that we
-  // preserve the proportion of errors before the teardown period.
-  DCHECK_LE(trailing_error_count_, write_error_count_);
-  DCHECK_LE(trailing_error_count_, write_count_);
-  write_error_count_ -= trailing_error_count_;
-  write_count_ -= trailing_error_count_;
+  // preserve the proportion of counts before the teardown period. We pick
+  // the largest trailing count as the time we consider that the trailing errors
+  // begun, and subract that from the total write count.
+  DCHECK_LE(trailing_write_to_fifo_count_, write_to_fifo_count_);
+  DCHECK_LE(trailing_write_to_fifo_count_, write_count_);
+  DCHECK_LE(trailing_write_error_count_, write_error_count_);
+  DCHECK_LE(trailing_write_error_count_, write_count_);
+
+  write_to_fifo_count_ -= trailing_write_to_fifo_count_;
+  write_error_count_ -= trailing_write_error_count_;
+  write_count_ -= std::max(trailing_write_to_fifo_count_,
+                           trailing_write_error_count_);
 
   if (write_count_ == 0)
     return;
 
   UMA_HISTOGRAM_PERCENTAGE(
       "Media.AudioCapturerMissedReadDeadline",
+      100.0 * write_to_fifo_count_ / write_count_);
+
+  UMA_HISTOGRAM_PERCENTAGE(
+      "Media.AudioCapturerDroppedData",
       100.0 * write_error_count_ / write_count_);
 
   UMA_HISTOGRAM_ENUMERATION("Media.AudioCapturerAudioGlitches",
@@ -98,37 +117,12 @@ AudioInputSyncWriter::~AudioInputSyncWriter() {
   DVLOG(1) << log_string;
 }
 
-void AudioInputSyncWriter::Write(const media::AudioBus* data,
+void AudioInputSyncWriter::Write(const AudioBus* data,
                                  double volume,
                                  bool key_pressed,
                                  uint32 hardware_delay_bytes) {
   ++write_count_;
-
-#if !defined(OS_ANDROID)
-  static const base::TimeDelta kLogDelayThreadhold =
-      base::TimeDelta::FromMilliseconds(500);
-
-  std::ostringstream oss;
-  if (last_write_time_.is_null()) {
-    // This is the first time Write is called.
-    base::TimeDelta interval = base::Time::Now() - creation_time_;
-    oss << "AISW::Write: audio input data received for the first time: delay "
-           "= " << interval.InMilliseconds() << "ms";
-
-  } else {
-    base::TimeDelta interval = base::Time::Now() - last_write_time_;
-    if (interval > kLogDelayThreadhold) {
-      oss << "AISW::Write: audio input data delay unexpectedly long: delay = "
-          << interval.InMilliseconds() << "ms";
-    }
-  }
-  if (!oss.str().empty()) {
-    AddToNativeLog(oss.str());
-    DVLOG(1) << oss.str();
-  }
-
-  last_write_time_ = base::Time::Now();
-#endif
+  CheckTimeSinceLastWrite();
 
   // Check that the renderer side has read data so that we don't overwrite data
   // that hasn't been read yet. The renderer side sends a signal over the socket
@@ -149,54 +143,38 @@ void AudioInputSyncWriter::Write(const media::AudioBus* data,
     }
   }
 
-  // Check that the ring buffer isn't full, and if it is log error and drop the
-  // buffer.
-  if (number_of_filled_segments_ ==
+  bool write_error = !WriteDataFromFifoToSharedMemory();
+
+  // Write the current data to the shared memory if there is room, otherwise
+  // put it in the fifo.
+  if (number_of_filled_segments_ <
       static_cast<int>(shared_memory_segment_count_)) {
-    const std::string error_message =
-        "No room in ring buffer to write data to. Dropping the data.";
-    LOG(ERROR) << error_message;
-    AddToNativeLog(error_message);
-    ++write_error_count_;
-    ++trailing_error_count_;
-    return;
+    WriteParametersToCurrentSegment(volume, key_pressed, hardware_delay_bytes);
+
+    // Copy data into shared memory using pre-allocated audio buses.
+    AudioBus* audio_bus = audio_buses_[current_segment_id_];
+    data->CopyTo(audio_bus);
+
+    if (!SignalDataWrittenAndUpdateCounters())
+      write_error = true;
+
+    trailing_write_to_fifo_count_ = 0;
+  } else {
+    if (!PushDataToFifo(data, volume, key_pressed, hardware_delay_bytes))
+      write_error = true;
+
+    ++write_to_fifo_count_;
+    ++trailing_write_to_fifo_count_;
   }
 
-  // Write audio parameters to shared memory.
-  uint8* ptr = shared_memory_;
-  ptr += current_segment_id_ * shared_memory_segment_size_;
-  media::AudioInputBuffer* buffer =
-      reinterpret_cast<media::AudioInputBuffer*>(ptr);
-  buffer->params.volume = volume;
-  buffer->params.size = audio_bus_memory_size_;
-  buffer->params.key_pressed = key_pressed;
-  buffer->params.hardware_delay_bytes = hardware_delay_bytes;
-  buffer->params.id = next_buffer_id_++;
-
-  // Copy data from the native audio layer into shared memory using pre-
-  // allocated audio buses.
-  media::AudioBus* audio_bus = audio_buses_[current_segment_id_];
-  data->CopyTo(audio_bus);
-
-  if (socket_->Send(&current_segment_id_, sizeof(current_segment_id_)) !=
-      sizeof(current_segment_id_)) {
-    const std::string error_message = "No room in socket buffer.";
-    LOG(ERROR) << error_message;
-    AddToNativeLog(error_message);
+  // Increase write error counts if error, or reset the trailing error counter
+  // if all write operations went well (no data dropped).
+  if (write_error) {
     ++write_error_count_;
-    ++trailing_error_count_;
-    return;
+    ++trailing_write_error_count_;
+  } else {
+    trailing_write_error_count_ = 0;
   }
-
-  // Successfully delivered the buffer. Clear the trailing failure count.
-  trailing_error_count_ = 0;
-
-  if (++current_segment_id_ >= shared_memory_segment_count_)
-    current_segment_id_ = 0;
-
-  ++number_of_filled_segments_;
-  CHECK_LE(number_of_filled_segments_,
-           static_cast<int>(shared_memory_segment_count_));
 }
 
 void AudioInputSyncWriter::Close() {
@@ -216,8 +194,145 @@ bool AudioInputSyncWriter::PrepareForeignSocket(
   return foreign_socket_->PrepareTransitDescriptor(process_handle, descriptor);
 }
 
+void AudioInputSyncWriter::CheckTimeSinceLastWrite() {
+#if !defined(OS_ANDROID)
+  static const base::TimeDelta kLogDelayThreadhold =
+      base::TimeDelta::FromMilliseconds(500);
+
+  std::ostringstream oss;
+  if (last_write_time_.is_null()) {
+    // This is the first time Write is called.
+    base::TimeDelta interval = base::Time::Now() - creation_time_;
+    oss << "AISW::Write: audio input data received for the first time: delay "
+           "= " << interval.InMilliseconds() << "ms";
+  } else {
+    base::TimeDelta interval = base::Time::Now() - last_write_time_;
+    if (interval > kLogDelayThreadhold) {
+      oss << "AISW::Write: audio input data delay unexpectedly long: delay = "
+          << interval.InMilliseconds() << "ms";
+    }
+  }
+  if (!oss.str().empty()) {
+    AddToNativeLog(oss.str());
+    DVLOG(1) << oss.str();
+  }
+
+  last_write_time_ = base::Time::Now();
+#endif
+}
+
 void AudioInputSyncWriter::AddToNativeLog(const std::string& message) {
   MediaStreamManager::SendMessageToNativeLog(message);
+}
+
+bool AudioInputSyncWriter::PushDataToFifo(
+    const AudioBus* data,
+    double volume,
+    bool key_pressed,
+    uint32 hardware_delay_bytes) {
+  if (overflow_buses_.size() == kMaxOverflowBusesSize) {
+    const std::string error_message = "AISW: No room in fifo.";
+    LOG(ERROR) << error_message;
+    AddToNativeLog(error_message);
+    return false;
+  }
+
+  if (overflow_buses_.empty()) {
+    const std::string message = "AISW: Starting to use fifo.";
+    DVLOG(1) << message;
+    AddToNativeLog(message);
+  }
+
+  // Push parameters to fifo.
+  AudioInputBufferParameters params =
+      { volume, 0, hardware_delay_bytes, 0, key_pressed };
+  overflow_params_.push_back(params);
+
+  // Push audio data to fifo.
+  scoped_ptr<AudioBus> audio_bus =
+      AudioBus::Create(data->channels(), data->frames());
+  data->CopyTo(audio_bus.get());
+  overflow_buses_.push_back(audio_bus.release());
+
+  DCHECK_LE(overflow_buses_.size(), static_cast<size_t>(kMaxOverflowBusesSize));
+  DCHECK_EQ(overflow_params_.size(), overflow_buses_.size());
+
+  return true;
+}
+
+bool AudioInputSyncWriter::WriteDataFromFifoToSharedMemory() {
+  if (overflow_buses_.empty())
+    return true;
+
+  const int segment_count = static_cast<int>(shared_memory_segment_count_);
+  bool write_error = false;
+  auto params_it = overflow_params_.begin();
+  auto audio_bus_it = overflow_buses_.begin();
+  DCHECK_EQ(overflow_params_.size(), overflow_buses_.size());
+
+  while (audio_bus_it != overflow_buses_.end() &&
+         number_of_filled_segments_ < segment_count) {
+    // Write parameters to shared memory.
+    WriteParametersToCurrentSegment((*params_it).volume,
+                                    (*params_it).key_pressed,
+                                    (*params_it).hardware_delay_bytes);
+
+    // Copy data from the fifo into shared memory using pre-allocated audio
+    // buses.
+    (*audio_bus_it)->CopyTo(audio_buses_[current_segment_id_]);
+
+    if (!SignalDataWrittenAndUpdateCounters())
+      write_error = true;
+
+    ++params_it;
+    ++audio_bus_it;
+  }
+
+  // Erase all copied data from fifo.
+  overflow_params_.erase(overflow_params_.begin(), params_it);
+  overflow_buses_.erase(overflow_buses_.begin(), audio_bus_it);
+
+  if (overflow_buses_.empty()) {
+    const std::string message = "AISW: Fifo emptied.";
+    DVLOG(1) << message;
+    AddToNativeLog(message);
+  }
+
+  DCHECK_EQ(overflow_params_.size(), overflow_buses_.size());
+  return !write_error;
+}
+
+void AudioInputSyncWriter::WriteParametersToCurrentSegment(
+    double volume,
+    bool key_pressed,
+    uint32 hardware_delay_bytes) {
+  uint8* ptr = shared_memory_;
+  ptr += current_segment_id_ * shared_memory_segment_size_;
+  AudioInputBuffer* buffer = reinterpret_cast<AudioInputBuffer*>(ptr);
+  buffer->params.volume = volume;
+  buffer->params.size = audio_bus_memory_size_;
+  buffer->params.key_pressed = key_pressed;
+  buffer->params.hardware_delay_bytes = hardware_delay_bytes;
+  buffer->params.id = next_buffer_id_;
+}
+
+bool AudioInputSyncWriter::SignalDataWrittenAndUpdateCounters() {
+  if (socket_->Send(&current_segment_id_, sizeof(current_segment_id_)) !=
+      sizeof(current_segment_id_)) {
+    const std::string error_message = "AISW: No room in socket buffer.";
+    LOG(ERROR) << error_message;
+    AddToNativeLog(error_message);
+    return false;
+  }
+
+  if (++current_segment_id_ >= shared_memory_segment_count_)
+    current_segment_id_ = 0;
+  ++number_of_filled_segments_;
+  CHECK_LE(number_of_filled_segments_,
+           static_cast<int>(shared_memory_segment_count_));
+  ++next_buffer_id_;
+
+  return true;
 }
 
 }  // namespace content

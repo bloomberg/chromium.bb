@@ -153,13 +153,27 @@ class AudioInputSyncWriterTest : public testing::Test {
   }
 
   // Get total number of expected log calls. On non-Android we expect one log
-  // call at first Write() call, zero on Android. Besides that only for errors.
+  // call at first Write() call, zero on Android. Besides that only for errors
+  // and fifo info.
   int GetTotalNumberOfExpectedLogCalls(int expected_calls_due_to_error) {
 #if defined(OS_ANDROID)
     return expected_calls_due_to_error;
 #else
     return expected_calls_due_to_error + 1;
 #endif
+  }
+
+  // Tests expected numbers which are given as arguments.
+  bool TestSocketAndFifoExpectations(int number_of_buffers_in_socket,
+                                     size_t number_of_verifications_in_socket,
+                                     size_t number_of_buffers_in_fifo) {
+    EXPECT_EQ(number_of_buffers_in_socket, socket_->NumberOfBuffersFilled());
+    EXPECT_EQ(number_of_verifications_in_socket, socket_->Peek());
+    EXPECT_EQ(number_of_buffers_in_fifo, writer_->overflow_buses_.size());
+
+    return number_of_buffers_in_socket == socket_->NumberOfBuffersFilled() &&
+           number_of_verifications_in_socket == socket_->Peek() &&
+           number_of_buffers_in_fifo == writer_->overflow_buses_.size();
   }
 
  protected:
@@ -174,17 +188,14 @@ class AudioInputSyncWriterTest : public testing::Test {
 };
 
 TEST_F(AudioInputSyncWriterTest, SingleWriteAndRead) {
-  // We always expect one log call at first write.
   EXPECT_CALL(*writer_.get(), AddToNativeLog(_))
       .Times(GetTotalNumberOfExpectedLogCalls(0));
 
   writer_->Write(audio_bus_.get(), 0, false, 0);
-  EXPECT_EQ(1, socket_->NumberOfBuffersFilled());
-  EXPECT_EQ(0u, socket_->Peek());
+  EXPECT_TRUE(TestSocketAndFifoExpectations(1, 0, 0));
 
   socket_->Read(1);
-  EXPECT_EQ(0, socket_->NumberOfBuffersFilled());
-  EXPECT_EQ(sizeof(uint32_t), socket_->Peek());
+  EXPECT_TRUE(TestSocketAndFifoExpectations(0, 1 * sizeof(uint32_t), 0));
 }
 
 TEST_F(AudioInputSyncWriterTest, MultipleWritesAndReads) {
@@ -193,73 +204,159 @@ TEST_F(AudioInputSyncWriterTest, MultipleWritesAndReads) {
 
   for (int i = 1; i <= 2 * kSegments; ++i) {
     writer_->Write(audio_bus_.get(), 0, false, 0);
-    EXPECT_EQ(1, socket_->NumberOfBuffersFilled());
-    EXPECT_EQ(0u, socket_->Peek());
-
+    EXPECT_TRUE(TestSocketAndFifoExpectations(1, 0, 0));
     socket_->Read(1);
-    EXPECT_EQ(0, socket_->NumberOfBuffersFilled());
-    EXPECT_EQ(sizeof(uint32_t), socket_->Peek());
+    EXPECT_TRUE(TestSocketAndFifoExpectations(0, 1 * sizeof(uint32_t), 0));
   }
 }
 
 TEST_F(AudioInputSyncWriterTest, MultipleWritesNoReads) {
   EXPECT_CALL(*writer_.get(), AddToNativeLog(_))
-      .Times(GetTotalNumberOfExpectedLogCalls(kSegments));
+      .Times(GetTotalNumberOfExpectedLogCalls(1));
 
+  // Fill the ring buffer.
   for (int i = 1; i <= kSegments; ++i) {
     writer_->Write(audio_bus_.get(), 0, false, 0);
-    EXPECT_EQ(i, socket_->NumberOfBuffersFilled());
-    EXPECT_EQ(0u, socket_->Peek());
+    EXPECT_TRUE(TestSocketAndFifoExpectations(i, 0, 0));
   }
 
-  // Now the ring buffer is full, do more writes. We should get an extra error
-  // log call for each write. See top EXPECT_CALL.
-  for (int i = 1; i <= kSegments; ++i) {
+  // Now the ring buffer is full, do more writes. We should start filling the
+  // fifo and should get one extra log call for that.
+  for (size_t i = 1; i <= kSegments; ++i) {
     writer_->Write(audio_bus_.get(), 0, false, 0);
-    EXPECT_EQ(kSegments, socket_->NumberOfBuffersFilled());
-    EXPECT_EQ(0u, socket_->Peek());
+    EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments, 0, i));
   }
 }
 
 TEST_F(AudioInputSyncWriterTest, FillAndEmptyRingBuffer) {
   EXPECT_CALL(*writer_.get(), AddToNativeLog(_))
-      .Times(GetTotalNumberOfExpectedLogCalls(1));
+      .Times(GetTotalNumberOfExpectedLogCalls(2));
 
-  // Fill ring buffer.
+  // Fill the ring buffer.
   for (int i = 1; i <= kSegments; ++i) {
     writer_->Write(audio_bus_.get(), 0, false, 0);
   }
-  EXPECT_EQ(kSegments, socket_->NumberOfBuffersFilled());
-  EXPECT_EQ(0u, socket_->Peek());
+  EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments, 0, 0));
 
   // Empty half of the ring buffer.
-  int buffers_to_read = kSegments / 2;
+  const int buffers_to_read = kSegments / 2;
   socket_->Read(buffers_to_read);
-  EXPECT_EQ(kSegments - buffers_to_read, socket_->NumberOfBuffersFilled());
-  EXPECT_EQ(buffers_to_read * sizeof(uint32_t), socket_->Peek());
+  EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments - buffers_to_read,
+                                            buffers_to_read * sizeof(uint32_t),
+                                            0));
 
   // Fill up again. The first write should do receive until that queue is
   // empty.
   for (int i = kSegments - buffers_to_read + 1; i <= kSegments; ++i) {
     writer_->Write(audio_bus_.get(), 0, false, 0);
-    EXPECT_EQ(i, socket_->NumberOfBuffersFilled());
-    EXPECT_EQ(0u, socket_->Peek());
+    EXPECT_TRUE(TestSocketAndFifoExpectations(i, 0, 0));
   }
 
-  // Another write, should render and extra error log call.
+  // Another write, should put the data in the fifo, and render an extra log
+  // call.
   writer_->Write(audio_bus_.get(), 0, false, 0);
-  EXPECT_EQ(kSegments, socket_->NumberOfBuffersFilled());
-  EXPECT_EQ(0u, socket_->Peek());
+  EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments, 0, 1));
 
   // Empty the ring buffer.
   socket_->Read(kSegments);
-  EXPECT_EQ(0, socket_->NumberOfBuffersFilled());
-  EXPECT_EQ(kSegments * sizeof(uint32_t), socket_->Peek());
+  EXPECT_TRUE(
+      TestSocketAndFifoExpectations(0, kSegments * sizeof(uint32_t), 1));
 
-  // Another write, should do receive until that queue is empty.
+  // Another write, should do receive until that queue is empty and write both
+  // the data in the fifo and the new data, and render a log call.
   writer_->Write(audio_bus_.get(), 0, false, 0);
-  EXPECT_EQ(1, socket_->NumberOfBuffersFilled());
-  EXPECT_EQ(0u, socket_->Peek());
+  EXPECT_TRUE(TestSocketAndFifoExpectations(2, 0, 0));
+
+  // Read the two data blocks.
+  socket_->Read(2);
+  EXPECT_TRUE(TestSocketAndFifoExpectations(0, 2 * sizeof(uint32_t), 0));
+}
+
+TEST_F(AudioInputSyncWriterTest, FillRingBufferAndFifo) {
+  EXPECT_CALL(*writer_.get(), AddToNativeLog(_))
+      .Times(GetTotalNumberOfExpectedLogCalls(2));
+
+  // Fill the ring buffer.
+  for (int i = 1; i <= kSegments; ++i) {
+    writer_->Write(audio_bus_.get(), 0, false, 0);
+  }
+  EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments, 0, 0));
+
+  // Fill the fifo. Should render one log call for starting filling it.
+  const size_t max_fifo_size = AudioInputSyncWriter::kMaxOverflowBusesSize;
+  for (size_t i = 1; i <= max_fifo_size; ++i) {
+    writer_->Write(audio_bus_.get(), 0, false, 0);
+  }
+  EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments, 0, max_fifo_size));
+
+  // Another write, data should be dropped and render one log call.
+  writer_->Write(audio_bus_.get(), 0, false, 0);
+  EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments, 0, max_fifo_size));
+}
+
+TEST_F(AudioInputSyncWriterTest, MultipleFillAndEmptyRingBufferAndPartOfFifo) {
+  EXPECT_CALL(*writer_.get(), AddToNativeLog(_))
+      .Times(GetTotalNumberOfExpectedLogCalls(4));
+
+  // Fill the ring buffer.
+  for (int i = 1; i <= kSegments; ++i) {
+    writer_->Write(audio_bus_.get(), 0, false, 0);
+  }
+  EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments, 0, 0));
+
+  // Write more data, should be put in the fifo and render one log call for
+  // starting filling it.
+  for (size_t i = 1; i <= 2 * kSegments; ++i) {
+    writer_->Write(audio_bus_.get(), 0, false, 0);
+  }
+  EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments, 0, 2 * kSegments));
+
+  // Empty the ring buffer.
+  socket_->Read(kSegments);
+  EXPECT_TRUE(TestSocketAndFifoExpectations(0, kSegments * sizeof(uint32_t),
+                                            2 * kSegments));
+
+  // Another write should fill up the ring buffer with data from the fifo and
+  // put this data into the fifo.
+  writer_->Write(audio_bus_.get(), 0, false, 0);
+  EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments, 0, kSegments + 1));
+
+  // Empty the ring buffer again.
+  socket_->Read(kSegments);
+  EXPECT_TRUE(TestSocketAndFifoExpectations(0, kSegments * sizeof(uint32_t),
+                                            kSegments + 1));
+
+  // Another write should fill up the ring buffer with data from the fifo and
+  // put this data into the fifo.
+  writer_->Write(audio_bus_.get(), 0, false, 0);
+  EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments, 0, 2));
+
+  // Empty the ring buffer again.
+  socket_->Read(kSegments);
+  EXPECT_TRUE(
+      TestSocketAndFifoExpectations(0, kSegments * sizeof(uint32_t), 2));
+
+  // Another write should put the remaining data in the fifo in the ring buffer
+  // together with this data. Should render a log call for emptying the fifo.
+  writer_->Write(audio_bus_.get(), 0, false, 0);
+  EXPECT_TRUE(TestSocketAndFifoExpectations(3, 0, 0));
+
+  // Read the remaining data.
+  socket_->Read(3);
+  EXPECT_TRUE(TestSocketAndFifoExpectations(0, 3 * sizeof(uint32_t), 0));
+
+  // Fill the ring buffer and part of the fifo. Should render one log call for
+  // starting filling it.
+  for (int i = 1; i <= kSegments + 2; ++i) {
+    writer_->Write(audio_bus_.get(), 0, false, 0);
+  }
+  EXPECT_TRUE(TestSocketAndFifoExpectations(kSegments, 0, 2));
+
+  // Empty both. Should render a log call for emptying the fifo.
+  socket_->Read(kSegments);
+  writer_->Write(audio_bus_.get(), 0, false, 0);
+  socket_->Read(3);
+  EXPECT_TRUE(TestSocketAndFifoExpectations(0, 3 * sizeof(uint32_t), 0));
 }
 
 }  // namespace content
