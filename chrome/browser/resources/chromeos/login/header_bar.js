@@ -332,15 +332,15 @@ cr.define('login', function() {
           (this.signinUIState_ == SIGNIN_UI_STATE.ERROR);
 
       $('add-user-button').hidden =
-          gaiaIsActive ||
-          enrollmentIsActive ||
+          !accountPickerIsActive ||
           isMultiProfilesUI ||
           isLockScreen ||
-          supervisedUserCreationDialogIsActive ||
           errorScreenIsActive;
       $('more-settings-header-bar-item').hidden =
           !this.showCreateSupervised_ ||
           gaiaIsActive ||
+          isLockScreen ||
+          errorScreenIsActive ||
           supervisedUserCreationDialogIsActive;
       $('cancel-add-user-button').hidden =
           !this.allowCancel_ ||
@@ -354,6 +354,7 @@ cr.define('login', function() {
           supervisedUserCreationDialogIsActive;
       $('guest-user-header-bar-item').hidden =
           !this.showGuest_ ||
+          isLockScreen ||
           supervisedUserCreationDialogIsActive ||
           wrongHWIDWarningIsActive ||
           isSamlPasswordConfirm ||
