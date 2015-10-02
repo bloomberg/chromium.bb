@@ -54,8 +54,8 @@ PASS oldChildWindow.navigator.language is newChildWindow.navigator.language
 PASS oldChildWindow.navigator.maxTouchPoints is newChildWindow.navigator.maxTouchPoints
 PASS oldChildWindow.navigator.onLine is newChildWindow.navigator.onLine
 PASS oldChildWindow.navigator.platform is newChildWindow.navigator.platform
+PASS oldChildWindow.navigator.presentation.connection is newChildWindow.navigator.presentation.connection
 PASS oldChildWindow.navigator.presentation.defaultRequest is newChildWindow.navigator.presentation.defaultRequest
-PASS oldChildWindow.navigator.presentation.session is newChildWindow.navigator.presentation.session
 PASS oldChildWindow.navigator.product is newChildWindow.navigator.product
 PASS oldChildWindow.navigator.productSub is newChildWindow.navigator.productSub
 PASS oldChildWindow.navigator.serviceWorker.controller is newChildWindow.navigator.serviceWorker.controller

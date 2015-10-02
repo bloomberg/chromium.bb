@@ -59803,11 +59803,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="929" label="PresentationRequestStart"/>
   <int value="930" label="PresentationRequestReconnect"/>
   <int value="931" label="PresentationRequestGetAvailability"/>
-  <int value="932" label="PresentationRequestSessionConnectEventListener"/>
-  <int value="933" label="PresentationSessionClose"/>
-  <int value="934" label="PresentationSessionSend"/>
-  <int value="935" label="PresentationSessionStateChangeEventListener"/>
-  <int value="936" label="PresentationSessionMessageEventListener"/>
+  <int value="932" label="PresentationRequestConnectionAvailableEventListener"/>
+  <int value="933" label="PresentationConnectionClose"/>
+  <int value="934" label="PresentationConnectionSend"/>
+  <int value="935" label="PresentationConnectionStateChangeEventListener"/>
+  <int value="936" label="PresentationConnectionMessageEventListener"/>
   <int value="937" label="CSSAnimationsStackedNeutralKeyframe"/>
   <int value="938" label="ReadingCheckedInClickHandler"/>
   <int value="939" label="FlexboxIntrinsicSizeAlgorithmIsDifferent"/>

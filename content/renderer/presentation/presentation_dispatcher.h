@@ -60,11 +60,11 @@ class CONTENT_EXPORT PresentationDispatcher
   void setController(blink::WebPresentationController* controller) override;
   void startSession(
       const blink::WebString& presentationUrl,
-      blink::WebPresentationSessionClientCallbacks* callback) override;
+      blink::WebPresentationConnectionClientCallbacks* callback) override;
   void joinSession(
       const blink::WebString& presentationUrl,
       const blink::WebString& presentationId,
-      blink::WebPresentationSessionClientCallbacks* callback) override;
+      blink::WebPresentationConnectionClientCallbacks* callback) override;
   void sendString(const blink::WebString& presentationUrl,
                   const blink::WebString& presentationId,
                   const blink::WebString& message) override;
@@ -102,7 +102,7 @@ class CONTENT_EXPORT PresentationDispatcher
       mojo::Array<presentation::SessionMessagePtr> messages) override;
 
   void OnSessionCreated(
-      blink::WebPresentationSessionClientCallbacks* callback,
+      blink::WebPresentationConnectionClientCallbacks* callback,
       presentation::PresentationSessionInfoPtr session_info,
       presentation::PresentationErrorPtr error);
   void OnDefaultSessionStarted(

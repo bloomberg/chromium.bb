@@ -8,22 +8,22 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "content/common/presentation/presentation_service.mojom.h"
-#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationSessionClient.h"
+#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnectionClient.h"
 
 namespace content {
 
-// PresentationSessionClient is passed to the Blink layer if presentation
+// PresentationConnectionClient is passed to the Blink layer if presentation
 // session has been created successfully. Owned by the callback.
-class CONTENT_EXPORT PresentationSessionClient
-    : public NON_EXPORTED_BASE(blink::WebPresentationSessionClient) {
+class CONTENT_EXPORT PresentationConnectionClient
+    : public NON_EXPORTED_BASE(blink::WebPresentationConnectionClient) {
  public:
-  explicit PresentationSessionClient(
+  explicit PresentationConnectionClient(
         presentation::PresentationSessionInfoPtr session_info);
-  explicit PresentationSessionClient(const mojo::String& url,
+  explicit PresentationConnectionClient(const mojo::String& url,
                                      const mojo::String& id);
-  ~PresentationSessionClient() override;
+  ~PresentationConnectionClient() override;
 
-  // WebPresentationSessionClient implementation.
+  // WebPresentationConnectionClient implementation.
   blink::WebString getUrl() override;
   blink::WebString getId() override;
 

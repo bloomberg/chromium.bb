@@ -12,7 +12,7 @@
 #include "content/public/common/presentation_constants.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/presentation/presentation_session_client.h"
+#include "content/renderer/presentation/presentation_connection_client.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
@@ -38,17 +38,17 @@ blink::WebPresentationError::ErrorType GetWebPresentationErrorTypeFromMojo(
   }
 }
 
-blink::WebPresentationSessionState GetWebPresentationSessionStateFromMojo(
+blink::WebPresentationConnectionState GetWebPresentationConnectionStateFromMojo(
         presentation::PresentationSessionState mojoSessionState) {
   switch (mojoSessionState) {
     case presentation::PRESENTATION_SESSION_STATE_CONNECTED:
-      return blink::WebPresentationSessionState::Connected;
+      return blink::WebPresentationConnectionState::Connected;
     case presentation::PRESENTATION_SESSION_STATE_DISCONNECTED:
-      return blink::WebPresentationSessionState::Disconnected;
+      return blink::WebPresentationConnectionState::Disconnected;
   }
 
   NOTREACHED();
-  return blink::WebPresentationSessionState::Disconnected;
+  return blink::WebPresentationConnectionState::Disconnected;
 }
 
 }  // namespace
@@ -79,7 +79,7 @@ void PresentationDispatcher::setController(
 
 void PresentationDispatcher::startSession(
     const blink::WebString& presentationUrl,
-    blink::WebPresentationSessionClientCallbacks* callback) {
+    blink::WebPresentationConnectionClientCallbacks* callback) {
   DCHECK(callback);
   ConnectToPresentationServiceIfNeeded();
 
@@ -96,7 +96,7 @@ void PresentationDispatcher::startSession(
 void PresentationDispatcher::joinSession(
     const blink::WebString& presentationUrl,
     const blink::WebString& presentationId,
-    blink::WebPresentationSessionClientCallbacks* callback) {
+    blink::WebPresentationConnectionClientCallbacks* callback) {
   DCHECK(callback);
   ConnectToPresentationServiceIfNeeded();
 
@@ -342,13 +342,13 @@ void PresentationDispatcher::OnDefaultSessionStarted(
 
   if (!session_info.is_null()) {
     controller_->didStartDefaultSession(
-        new PresentationSessionClient(session_info.Clone()));
+        new PresentationConnectionClient(session_info.Clone()));
     presentation_service_->ListenForSessionMessages(session_info.Pass());
   }
 }
 
 void PresentationDispatcher::OnSessionCreated(
-    blink::WebPresentationSessionClientCallbacks* callback,
+    blink::WebPresentationConnectionClientCallbacks* callback,
     presentation::PresentationSessionInfoPtr session_info,
     presentation::PresentationErrorPtr error) {
   DCHECK(callback);
@@ -361,8 +361,8 @@ void PresentationDispatcher::OnSessionCreated(
   }
 
   DCHECK(!session_info.is_null());
-  callback->onSuccess(
-      blink::adoptWebPtr(new PresentationSessionClient(session_info.Clone())));
+  callback->onSuccess(blink::adoptWebPtr(
+      new PresentationConnectionClient(session_info.Clone())));
   presentation_service_->ListenForSessionMessages(session_info.Pass());
 }
 
@@ -374,8 +374,8 @@ void PresentationDispatcher::OnSessionStateChanged(
 
   DCHECK(!session_info.is_null());
   controller_->didChangeSessionState(
-      new PresentationSessionClient(session_info.Pass()),
-      GetWebPresentationSessionStateFromMojo(session_state));
+      new PresentationConnectionClient(session_info.Pass()),
+      GetWebPresentationConnectionStateFromMojo(session_state));
 }
 
 void PresentationDispatcher::OnSessionMessagesReceived(
@@ -387,8 +387,8 @@ void PresentationDispatcher::OnSessionMessagesReceived(
   for (size_t i = 0; i < messages.size(); ++i) {
     // Note: Passing batches of messages to the Blink layer would be more
     // efficient.
-    scoped_ptr<PresentationSessionClient> session_client(
-        new PresentationSessionClient(session_info->url, session_info->id));
+    scoped_ptr<PresentationConnectionClient> session_client(
+        new PresentationConnectionClient(session_info->url, session_info->id));
     switch (messages[i]->type) {
       case presentation::PresentationMessageType::
           PRESENTATION_MESSAGE_TYPE_TEXT: {

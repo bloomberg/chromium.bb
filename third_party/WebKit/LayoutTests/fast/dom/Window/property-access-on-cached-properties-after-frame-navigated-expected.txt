@@ -47,8 +47,8 @@ PASS window.cached_navigator.vendor is window.navigator.vendor
 PASS window.cached_navigator.vendorSub is ''
 PASS window.cached_navigator_connection.onchange is null
 PASS window.cached_navigator_connection.ontypechange is null
+PASS window.cached_navigator_presentation.connection is null
 PASS window.cached_navigator_presentation.defaultRequest is null
-PASS window.cached_navigator_presentation.session is null
 PASS window.cached_navigator_serviceWorker.controller is null
 PASS window.cached_navigator_serviceWorker.oncontrollerchange is null
 PASS window.cached_navigator_serviceWorker.onmessage is null

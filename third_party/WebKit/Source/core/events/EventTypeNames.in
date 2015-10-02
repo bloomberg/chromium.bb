@@ -52,6 +52,7 @@ compositionstart
 compositionupdate
 connect
 connecting
+connectionavailable
 contextlost
 contextmenu
 contextrestored
@@ -195,7 +196,6 @@ selectionchange
 selectstart
 show
 signalingstatechange
-sessionconnect
 soundend
 soundstart
 sourceclose

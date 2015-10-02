@@ -18,8 +18,8 @@ namespace blink {
 
 class LocalFrame;
 class WebPresentationAvailabilityCallback;
-class WebPresentationSessionClient;
-enum class WebPresentationSessionState;
+class WebPresentationConnectionClient;
+enum class WebPresentationConnectionState;
 
 // The coordinator between the various page exposed properties and the content
 // layer represented via |WebPresentationClient|.
@@ -47,10 +47,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // Implementation of WebPresentationController.
-    void didStartDefaultSession(WebPresentationSessionClient*) override;
-    void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState) override;
-    void didReceiveSessionTextMessage(WebPresentationSessionClient*, const WebString&) override;
-    void didReceiveSessionBinaryMessage(WebPresentationSessionClient*, const uint8_t* data, size_t length) override;
+    void didStartDefaultSession(WebPresentationConnectionClient*) override;
+    void didChangeSessionState(WebPresentationConnectionClient*, WebPresentationConnectionState) override;
+    void didReceiveSessionTextMessage(WebPresentationConnectionClient*, const WebString&) override;
+    void didReceiveSessionBinaryMessage(WebPresentationConnectionClient*, const uint8_t* data, size_t length) override;
 
     // Called by the Presentation object to advertize itself to the controller.
     // The Presentation object is kept as a WeakMember in order to avoid keeping
@@ -62,8 +62,8 @@ public:
     // url.
     void setDefaultRequestUrl(const KURL&);
 
-    // Handling of running sessions.
-    void registerSession(PresentationSession*);
+    // Handling of running connections.
+    void registerConnection(PresentationConnection*);
 
 private:
     PresentationController(LocalFrame&, WebPresentationClient*);
@@ -71,9 +71,9 @@ private:
     // Implementation of LocalFrameLifecycleObserver.
     void willDetachFrameHost() override;
 
-    // Return the session associated with the given |sessionClient| or null if
-    // it doesn't exist.
-    PresentationSession* findSession(WebPresentationSessionClient*);
+    // Return the connection associated with the given |connectionClient| or
+    // null if it doesn't exist.
+    PresentationConnection* findConnection(WebPresentationConnectionClient*);
 
     // The WebPresentationClient which allows communicating with the embedder.
     // It is not owned by the PresentationController but the controller will
@@ -85,11 +85,11 @@ private:
     // PersistentWillBeMember<PresentationRequest> m_defaultRequest;
     WeakMember<Presentation> m_presentation;
 
-    // The presentation sessions associated with that frame.
-    // TODO(mlamouri): the PresentationController will keep any created session
-    // alive until the frame is detached. These should be weak ptr so that the
-    // session can be GC'd.
-    PersistentHeapHashSetWillBeHeapHashSet<Member<PresentationSession>> m_sessions;
+    // The presentation connections associated with that frame.
+    // TODO(mlamouri): the PresentationController will keep any created
+    // connections alive until the frame is detached. These should be weak ptr
+    // so that the connection can be GC'd.
+    PersistentHeapHashSetWillBeHeapHashSet<Member<PresentationConnection>> m_connections;
 };
 
 } // namespace blink

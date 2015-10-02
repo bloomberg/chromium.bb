@@ -3240,8 +3240,8 @@ interface PopStateEvent
     getter state
     method constructor
 interface Presentation
+    getter connection
     getter defaultRequest
-    getter session
     method constructor
     setter defaultRequest
 interface PresentationAvailability
@@ -3249,14 +3249,7 @@ interface PresentationAvailability
     getter value
     method constructor
     setter onchange
-interface PresentationRequest
-    getter onsessionconnect
-    method constructor
-    method getAvailability
-    method reconnect
-    method start
-    setter onsessionconnect
-interface PresentationSession
+interface PresentationConnection
     getter binaryType
     getter id
     getter onmessage
@@ -3268,9 +3261,16 @@ interface PresentationSession
     setter binaryType
     setter onmessage
     setter onstatechange
-interface PresentationSessionConnectEvent
-    getter session
+interface PresentationConnectionAvailableEvent
+    getter connection
     method constructor
+interface PresentationRequest
+    getter onconnectionavailable
+    method constructor
+    method getAvailability
+    method reconnect
+    method start
+    setter onconnectionavailable
 interface ProcessingInstruction
     getter sheet
     getter target

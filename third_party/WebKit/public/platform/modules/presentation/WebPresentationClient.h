@@ -13,14 +13,14 @@ namespace blink {
 
 class WebPresentationAvailabilityObserver;
 class WebPresentationController;
-class WebPresentationSessionClient;
+class WebPresentationConnectionClient;
 class WebString;
 struct WebPresentationError;
 
 // If session was created, callback's onSuccess() is invoked with the information about the
 // presentation session created by the embedder. Otherwise, onError() is invoked with the error code
 // and message.
-using WebPresentationSessionClientCallbacks = WebCallbacks<WebPassOwnPtr<WebPresentationSessionClient>, const WebPresentationError&>;
+using WebPresentationConnectionClientCallbacks = WebCallbacks<WebPassOwnPtr<WebPresentationConnectionClient>, const WebPresentationError&>;
 
 // Callback for .getAvailability().
 using WebPresentationAvailabilityCallbacks = WebCallbacks<bool, const WebPresentationError&>;
@@ -35,11 +35,11 @@ public:
 
     // Called when the frame requests to start a new session.
     // The ownership of the |callbacks| argument is transferred to the embedder.
-    virtual void startSession(const WebString& presentationUrl, WebPresentationSessionClientCallbacks*) = 0;
+    virtual void startSession(const WebString& presentationUrl, WebPresentationConnectionClientCallbacks*) = 0;
 
     // Called when the frame requests to join an existing session.
     // The ownership of the |callbacks| argument is transferred to the embedder.
-    virtual void joinSession(const WebString& presentationUrl, const WebString& presentationId, WebPresentationSessionClientCallbacks*) = 0;
+    virtual void joinSession(const WebString& presentationUrl, const WebString& presentationId, WebPresentationConnectionClientCallbacks*) = 0;
 
     // Called when the frame requests to send String message to an existing session.
     virtual void sendString(const WebString& presentationUrl, const WebString& presentationId, const WebString& message) = 0;

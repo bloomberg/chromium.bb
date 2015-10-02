@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPresentationSessionClient_h
-#define WebPresentationSessionClient_h
+#ifndef WebPresentationConnectionClient_h
+#define WebPresentationConnectionClient_h
 
 #include "public/platform/WebString.h"
 
 namespace blink {
 
-enum class WebPresentationSessionState {
+enum class WebPresentationConnectionState {
     Connected = 0,
     Disconnected,
 };
 
 // The implementation the embedder has to provide for the Presentation API to work.
-class WebPresentationSessionClient {
+class WebPresentationConnectionClient {
 public:
-    virtual ~WebPresentationSessionClient() { }
+    virtual ~WebPresentationConnectionClient() { }
 
     virtual WebString getId() = 0;
     virtual WebString getUrl() = 0;
@@ -25,4 +25,4 @@ public:
 
 } // namespace blink
 
-#endif // WebPresentationSessionClient_h
+#endif // WebPresentationConnectionClient_h

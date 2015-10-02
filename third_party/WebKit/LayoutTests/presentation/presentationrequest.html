@@ -18,10 +18,10 @@ async_test(function(t) {
 
 test(function() {
   navigator.presentation.defaultRequest = new PresentationRequest("http://example.com");
-  navigator.presentation.defaultRequest.onsessionconnect = function() {  };
+  navigator.presentation.defaultRequest.onconnectionavailable = function() {  };
   gc();
-  assert_not_equals(navigator.presentation.defaultRequest.onsessionconnect, undefined);
-}, "Test that navigator.presentation.defaultRequest.onsessionconnect isn't reset after gc()");
+  assert_not_equals(navigator.presentation.defaultRequest.onconnectionavailable, undefined);
+}, "Test that navigator.presentation.defaultRequest.onconnectionavailable isn't reset after gc()");
 
 </script>
 </body>

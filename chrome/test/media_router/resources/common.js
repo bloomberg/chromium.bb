@@ -15,8 +15,9 @@ var startSessionRequest = new PresentationRequest(presentationUrl);
 var defaultRequestSessionId = null;
 
 window.navigator.presentation.defaultRequest = startSessionRequest;
-window.navigator.presentation.defaultRequest.onsessionconnect = function(e) {
-  defaultRequestSessionId = e.session.id;
+window.navigator.presentation.defaultRequest.onconnectionavailable = function(e)
+{
+  defaultRequestSessionId = e.connection.id;
 };
 
 /**

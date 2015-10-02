@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PresentationSession_h
-#define PresentationSession_h
+#ifndef PresentationConnection_h
+#define PresentationConnection_h
 
 #include "core/events/EventTarget.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/presentation/WebPresentationSessionClient.h"
+#include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -25,19 +25,19 @@ class DOMArrayBufferView;
 class PresentationController;
 class PresentationRequest;
 
-class PresentationSession final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationSession>
+class PresentationConnection final
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationConnection>
     , public DOMWindowProperty {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationSession);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationSession);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationConnection);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationConnection);
     DEFINE_WRAPPERTYPEINFO();
 public:
     // For CallbackPromiseAdapter.
-    using WebType = OwnPtr<WebPresentationSessionClient>;
+    using WebType = OwnPtr<WebPresentationConnectionClient>;
 
-    static PresentationSession* take(ScriptPromiseResolver*, PassOwnPtr<WebPresentationSessionClient>, PresentationRequest*);
-    static PresentationSession* take(PresentationController*, PassOwnPtr<WebPresentationSessionClient>, PresentationRequest*);
-    ~PresentationSession() override;
+    static PresentationConnection* take(ScriptPromiseResolver*, PassOwnPtr<WebPresentationConnectionClient>, PresentationRequest*);
+    static PresentationConnection* take(PresentationController*, PassOwnPtr<WebPresentationConnectionClient>, PresentationRequest*);
+    ~PresentationConnection() override;
 
     // EventTarget implementation.
     const AtomicString& interfaceName() const override;
@@ -61,13 +61,13 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
-    // Returns true if and only if the WebPresentationSessionClient represents this session.
-    bool matches(WebPresentationSessionClient*) const;
+    // Returns true if and only if the WebPresentationConnectionClient represents this connection.
+    bool matches(WebPresentationConnectionClient*) const;
 
-    // Notifies the session about its state change.
-    void didChangeState(WebPresentationSessionState);
+    // Notifies the connection about its state change.
+    void didChangeState(WebPresentationConnectionState);
 
-    // Notifies the session about new message.
+    // Notifies the presentation about new message.
     void didReceiveTextMessage(const String& message);
     void didReceiveBinaryMessage(const uint8_t* data, size_t length);
 
@@ -104,7 +104,7 @@ private:
         RefPtr<BlobDataHandle> blobDataHandle;
     };
 
-    PresentationSession(LocalFrame*, const String& id, const String& url);
+    PresentationConnection(LocalFrame*, const String& id, const String& url);
 
     bool canSendMessage(ExceptionState&);
     void handleMessageQueue();
@@ -115,7 +115,7 @@ private:
 
     String m_id;
     String m_url;
-    WebPresentationSessionState m_state;
+    WebPresentationConnectionState m_state;
 
     // For Blob data handling.
     Member<BlobLoader> m_blobLoader;
@@ -126,4 +126,4 @@ private:
 
 } // namespace blink
 
-#endif // PresentationSession_h
+#endif // PresentationConnection_h

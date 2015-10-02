@@ -25,8 +25,8 @@ modules/notifications/Notification
 modules/permissions/PermissionStatus
 modules/presentation/Presentation
 modules/presentation/PresentationAvailability
+modules/presentation/PresentationConnection
 modules/presentation/PresentationRequest
-modules/presentation/PresentationSession
 modules/screen_orientation/ScreenOrientation
 modules/serviceworkers/ServiceWorker
 modules/serviceworkers/ServiceWorkerContainer

@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowProperty.h"
-#include "modules/presentation/PresentationSession.h"
+#include "modules/presentation/PresentationConnection.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 
@@ -22,8 +22,8 @@ class LocalFrame;
 class PresentationController;
 class PresentationRequest;
 class ScriptState;
-class WebPresentationSessionClient;
-enum class WebPresentationSessionState;
+class WebPresentationConnectionClient;
+enum class WebPresentationConnectionState;
 
 // Implements the main entry point of the Presentation API corresponding to the Presentation.idl
 // See https://w3c.github.io/presentation-api/#navigatorpresentation for details.
@@ -46,13 +46,13 @@ public:
     PresentationRequest* defaultRequest() const;
     void setDefaultRequest(PresentationRequest*);
 
-    PresentationSession* session() const;
+    PresentationConnection* connection() const;
 
 private:
     explicit Presentation(LocalFrame*);
 
-    // The session object provided to the presentation page. Not supported.
-    Member<PresentationSession> m_session;
+    // The connection object provided to the presentation page. Not supported.
+    Member<PresentationConnection> m_connection;
 
     // Default PresentationRequest used by the embedder.
     Member<PresentationRequest> m_defaultRequest;

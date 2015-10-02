@@ -3,18 +3,18 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/presentation/PresentationSessionCallbacks.h"
+#include "modules/presentation/PresentationConnectionCallbacks.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "modules/presentation/PresentationConnection.h"
 #include "modules/presentation/PresentationError.h"
 #include "modules/presentation/PresentationRequest.h"
-#include "modules/presentation/PresentationSession.h"
+#include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "public/platform/modules/presentation/WebPresentationError.h"
-#include "public/platform/modules/presentation/WebPresentationSessionClient.h"
 
 namespace blink {
 
-PresentationSessionCallbacks::PresentationSessionCallbacks(ScriptPromiseResolver* resolver, PresentationRequest* request)
+PresentationConnectionCallbacks::PresentationConnectionCallbacks(ScriptPromiseResolver* resolver, PresentationRequest* request)
     : m_resolver(resolver)
     , m_request(request)
 {
@@ -22,16 +22,16 @@ PresentationSessionCallbacks::PresentationSessionCallbacks(ScriptPromiseResolver
     ASSERT(m_request);
 }
 
-void PresentationSessionCallbacks::onSuccess(WebPassOwnPtr<WebPresentationSessionClient> presentationSessionClient)
+void PresentationConnectionCallbacks::onSuccess(WebPassOwnPtr<WebPresentationConnectionClient> PresentationConnectionClient)
 {
-    OwnPtr<WebPresentationSessionClient> result(presentationSessionClient.release());
+    OwnPtr<WebPresentationConnectionClient> result(PresentationConnectionClient.release());
 
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;
-    m_resolver->resolve(PresentationSession::take(m_resolver.get(), result.release(), m_request));
+    m_resolver->resolve(PresentationConnection::take(m_resolver.get(), result.release(), m_request));
 }
 
-void PresentationSessionCallbacks::onError(const WebPresentationError& error)
+void PresentationConnectionCallbacks::onError(const WebPresentationError& error)
 {
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;

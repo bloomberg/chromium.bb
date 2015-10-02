@@ -8,7 +8,7 @@
 test(function() {
     assert_true('presentation' in navigator);
     assert_true('defaultRequest' in navigator.presentation);
-    assert_true('session' in navigator.presentation);
+    assert_true('connection' in navigator.presentation);
 
     assert_true('PresentationRequest' in window);
 }, "Test that the Presentation API is present.")
@@ -16,7 +16,7 @@ test(function() {
 test(function() {
   assert_equals(typeof(navigator.presentation), "object");
   assert_equals(typeof(navigator.presentation.defaultRequest), "object");
-  assert_equals(typeof(navigator.presentation.session), "object");
+  assert_equals(typeof(navigator.presentation.connection), "object");
 }, "Test the Presentation API property types.");
 
 test(function() {
@@ -28,7 +28,7 @@ test(function() {
   assert_equals(typeof(request.start), "function");
   assert_equals(typeof(request.reconnect), "function");
   assert_equals(typeof(request.getAvailability), "function");
-  assert_equals(typeof(request.onsessionconnect), "object");
+  assert_equals(typeof(request.onconnectionavailable), "object");
 
   assert_true(request instanceof EventTarget);
 }, "Test PresentationRequest API types.");

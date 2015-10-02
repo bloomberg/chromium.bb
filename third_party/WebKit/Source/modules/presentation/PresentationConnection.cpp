@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/presentation/PresentationSession.h"
+#include "modules/presentation/PresentationConnection.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMArrayBuffer.h"
@@ -18,10 +18,10 @@
 #include "core/frame/UseCounter.h"
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/Presentation.h"
+#include "modules/presentation/PresentationConnectionAvailableEvent.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationRequest.h"
-#include "modules/presentation/PresentationSessionConnectEvent.h"
-#include "public/platform/modules/presentation/WebPresentationSessionClient.h"
+#include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/AtomicString.h"
@@ -42,15 +42,15 @@ WebPresentationClient* presentationClient(ExecutionContext* executionContext)
     return controller ? controller->client() : nullptr;
 }
 
-const AtomicString& SessionStateToString(WebPresentationSessionState state)
+const AtomicString& connectionStateToString(WebPresentationConnectionState state)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, connectedValue, ("connected", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, disconnectedValue, ("disconnected", AtomicString::ConstructFromLiteral));
 
     switch (state) {
-    case WebPresentationSessionState::Connected:
+    case WebPresentationConnectionState::Connected:
         return connectedValue;
-    case WebPresentationSessionState::Disconnected:
+    case WebPresentationConnectionState::Disconnected:
         return disconnectedValue;
     }
 
@@ -60,18 +60,18 @@ const AtomicString& SessionStateToString(WebPresentationSessionState state)
 
 void throwPresentationDisconnectedError(ExceptionState& exceptionState)
 {
-    exceptionState.throwDOMException(InvalidStateError, "Presentation session is disconnected.");
+    exceptionState.throwDOMException(InvalidStateError, "Presentation connection is disconnected.");
 }
 
 } // namespace
 
-class PresentationSession::BlobLoader final : public GarbageCollectedFinalized<PresentationSession::BlobLoader>, public FileReaderLoaderClient {
+class PresentationConnection::BlobLoader final : public GarbageCollectedFinalized<PresentationConnection::BlobLoader>, public FileReaderLoaderClient {
 public:
-    BlobLoader(PassRefPtr<BlobDataHandle> blobDataHandle, PresentationSession* presentationSession)
-        : m_presentationSession(presentationSession)
+    BlobLoader(PassRefPtr<BlobDataHandle> blobDataHandle, PresentationConnection* PresentationConnection)
+        : m_PresentationConnection(PresentationConnection)
         , m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
     {
-        m_loader.start(m_presentationSession->executionContext(), blobDataHandle);
+        m_loader.start(m_PresentationConnection->executionContext(), blobDataHandle);
     }
     ~BlobLoader() override { }
 
@@ -80,11 +80,11 @@ public:
     void didReceiveData() override { }
     void didFinishLoading() override
     {
-        m_presentationSession->didFinishLoadingBlob(m_loader.arrayBufferResult());
+        m_PresentationConnection->didFinishLoadingBlob(m_loader.arrayBufferResult());
     }
     void didFail(FileError::ErrorCode errorCode) override
     {
-        m_presentationSession->didFailLoadingBlob(errorCode);
+        m_PresentationConnection->didFailLoadingBlob(errorCode);
     }
 
     void cancel()
@@ -94,30 +94,30 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-        visitor->trace(m_presentationSession);
+        visitor->trace(m_PresentationConnection);
     }
 
 private:
-    Member<PresentationSession> m_presentationSession;
+    Member<PresentationConnection> m_PresentationConnection;
     FileReaderLoader m_loader;
 };
 
-PresentationSession::PresentationSession(LocalFrame* frame, const String& id, const String& url)
+PresentationConnection::PresentationConnection(LocalFrame* frame, const String& id, const String& url)
     : DOMWindowProperty(frame)
     , m_id(id)
     , m_url(url)
-    , m_state(WebPresentationSessionState::Connected)
+    , m_state(WebPresentationConnectionState::Connected)
     , m_binaryType(BinaryTypeBlob)
 {
 }
 
-PresentationSession::~PresentationSession()
+PresentationConnection::~PresentationConnection()
 {
     ASSERT(!m_blobLoader);
 }
 
 // static
-PresentationSession* PresentationSession::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebPresentationSessionClient> client, PresentationRequest* request)
+PresentationConnection* PresentationConnection::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebPresentationConnectionClient> client, PresentationRequest* request)
 {
     ASSERT(resolver);
     ASSERT(client);
@@ -136,53 +136,53 @@ PresentationSession* PresentationSession::take(ScriptPromiseResolver* resolver, 
 }
 
 // static
-PresentationSession* PresentationSession::take(PresentationController* controller, PassOwnPtr<WebPresentationSessionClient> client, PresentationRequest* request)
+PresentationConnection* PresentationConnection::take(PresentationController* controller, PassOwnPtr<WebPresentationConnectionClient> client, PresentationRequest* request)
 {
     ASSERT(controller);
     ASSERT(request);
 
-    PresentationSession* session = new PresentationSession(controller->frame(), client->getId(), client->getUrl());
-    controller->registerSession(session);
-    request->dispatchEvent(PresentationSessionConnectEvent::create(EventTypeNames::sessionconnect, session));
+    PresentationConnection* connection = new PresentationConnection(controller->frame(), client->getId(), client->getUrl());
+    controller->registerConnection(connection);
+    request->dispatchEvent(PresentationConnectionAvailableEvent::create(EventTypeNames::connectionavailable, connection));
 
-    return session;
+    return connection;
 }
 
-const AtomicString& PresentationSession::interfaceName() const
+const AtomicString& PresentationConnection::interfaceName() const
 {
-    return EventTargetNames::PresentationSession;
+    return EventTargetNames::PresentationConnection;
 }
 
-ExecutionContext* PresentationSession::executionContext() const
+ExecutionContext* PresentationConnection::executionContext() const
 {
     if (!frame())
         return nullptr;
     return frame()->document();
 }
 
-bool PresentationSession::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool capture)
+bool PresentationConnection::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool capture)
 {
     if (eventType == EventTypeNames::statechange)
-        UseCounter::count(executionContext(), UseCounter::PresentationSessionStateChangeEventListener);
+        UseCounter::count(executionContext(), UseCounter::PresentationConnectionStateChangeEventListener);
     else if (eventType == EventTypeNames::message)
-        UseCounter::count(executionContext(), UseCounter::PresentationSessionMessageEventListener);
+        UseCounter::count(executionContext(), UseCounter::PresentationConnectionMessageEventListener);
 
     return EventTarget::addEventListener(eventType, listener, capture);
 }
 
-DEFINE_TRACE(PresentationSession)
+DEFINE_TRACE(PresentationConnection)
 {
     visitor->trace(m_blobLoader);
-    RefCountedGarbageCollectedEventTargetWithInlineData<PresentationSession>::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<PresentationConnection>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 
-const AtomicString& PresentationSession::state() const
+const AtomicString& PresentationConnection::state() const
 {
-    return SessionStateToString(m_state);
+    return connectionStateToString(m_state);
 }
 
-void PresentationSession::send(const String& message, ExceptionState& exceptionState)
+void PresentationConnection::send(const String& message, ExceptionState& exceptionState)
 {
     if (!canSendMessage(exceptionState))
         return;
@@ -191,7 +191,7 @@ void PresentationSession::send(const String& message, ExceptionState& exceptionS
     handleMessageQueue();
 }
 
-void PresentationSession::send(PassRefPtr<DOMArrayBuffer> arrayBuffer, ExceptionState& exceptionState)
+void PresentationConnection::send(PassRefPtr<DOMArrayBuffer> arrayBuffer, ExceptionState& exceptionState)
 {
     ASSERT(arrayBuffer && arrayBuffer->buffer());
     if (!canSendMessage(exceptionState))
@@ -201,7 +201,7 @@ void PresentationSession::send(PassRefPtr<DOMArrayBuffer> arrayBuffer, Exception
     handleMessageQueue();
 }
 
-void PresentationSession::send(PassRefPtr<DOMArrayBufferView> arrayBufferView, ExceptionState& exceptionState)
+void PresentationConnection::send(PassRefPtr<DOMArrayBufferView> arrayBufferView, ExceptionState& exceptionState)
 {
     ASSERT(arrayBufferView);
     if (!canSendMessage(exceptionState))
@@ -211,7 +211,7 @@ void PresentationSession::send(PassRefPtr<DOMArrayBufferView> arrayBufferView, E
     handleMessageQueue();
 }
 
-void PresentationSession::send(Blob* data, ExceptionState& exceptionState)
+void PresentationConnection::send(Blob* data, ExceptionState& exceptionState)
 {
     ASSERT(data);
     if (!canSendMessage(exceptionState))
@@ -221,18 +221,18 @@ void PresentationSession::send(Blob* data, ExceptionState& exceptionState)
     handleMessageQueue();
 }
 
-bool PresentationSession::canSendMessage(ExceptionState& exceptionState)
+bool PresentationConnection::canSendMessage(ExceptionState& exceptionState)
 {
-    if (m_state == WebPresentationSessionState::Disconnected) {
+    if (m_state == WebPresentationConnectionState::Disconnected) {
         throwPresentationDisconnectedError(exceptionState);
         return false;
     }
 
-    // The session can send a message if there is a client available.
+    // The connection can send a message if there is a client available.
     return !!presentationClient(executionContext());
 }
 
-void PresentationSession::handleMessageQueue()
+void PresentationConnection::handleMessageQueue()
 {
     WebPresentationClient* client = presentationClient(executionContext());
     if (!client)
@@ -257,7 +257,7 @@ void PresentationSession::handleMessageQueue()
     }
 }
 
-String PresentationSession::binaryType() const
+String PresentationConnection::binaryType() const
 {
     switch (m_binaryType) {
     case BinaryTypeBlob:
@@ -269,7 +269,7 @@ String PresentationSession::binaryType() const
     return String();
 }
 
-void PresentationSession::setBinaryType(const String& binaryType)
+void PresentationConnection::setBinaryType(const String& binaryType)
 {
     if (binaryType == "blob") {
         m_binaryType = BinaryTypeBlob;
@@ -282,17 +282,17 @@ void PresentationSession::setBinaryType(const String& binaryType)
     ASSERT_NOT_REACHED();
 }
 
-void PresentationSession::didReceiveTextMessage(const String& message)
+void PresentationConnection::didReceiveTextMessage(const String& message)
 {
-    if (m_state == WebPresentationSessionState::Disconnected)
+    if (m_state == WebPresentationConnectionState::Disconnected)
         return;
 
     dispatchEvent(MessageEvent::create(message));
 }
 
-void PresentationSession::didReceiveBinaryMessage(const uint8_t* data, size_t length)
+void PresentationConnection::didReceiveBinaryMessage(const uint8_t* data, size_t length)
 {
-    if (m_state == WebPresentationSessionState::Disconnected)
+    if (m_state == WebPresentationConnectionState::Disconnected)
         return;
 
     switch (m_binaryType) {
@@ -311,9 +311,9 @@ void PresentationSession::didReceiveBinaryMessage(const uint8_t* data, size_t le
     ASSERT_NOT_REACHED();
 }
 
-void PresentationSession::close()
+void PresentationConnection::close()
 {
-    if (m_state != WebPresentationSessionState::Connected)
+    if (m_state != WebPresentationConnectionState::Connected)
         return;
     WebPresentationClient* client = presentationClient(executionContext());
     if (client)
@@ -330,12 +330,12 @@ void PresentationSession::close()
     m_messages.swap(empty);
 }
 
-bool PresentationSession::matches(WebPresentationSessionClient* client) const
+bool PresentationConnection::matches(WebPresentationConnectionClient* client) const
 {
     return client && m_url == static_cast<String>(client->getUrl()) && m_id == static_cast<String>(client->getId());
 }
 
-void PresentationSession::didChangeState(WebPresentationSessionState state)
+void PresentationConnection::didChangeState(WebPresentationConnectionState state)
 {
     if (m_state == state)
         return;
@@ -344,7 +344,7 @@ void PresentationSession::didChangeState(WebPresentationSessionState state)
     dispatchEvent(Event::create(EventTypeNames::statechange));
 }
 
-void PresentationSession::didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer> buffer)
+void PresentationConnection::didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer> buffer)
 {
     ASSERT(!m_messages.isEmpty() && m_messages.first()->type == MessageTypeBlob);
     ASSERT(buffer && buffer->buffer());
@@ -358,7 +358,7 @@ void PresentationSession::didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer> buffer
     handleMessageQueue();
 }
 
-void PresentationSession::didFailLoadingBlob(FileError::ErrorCode errorCode)
+void PresentationConnection::didFailLoadingBlob(FileError::ErrorCode errorCode)
 {
     ASSERT(!m_messages.isEmpty() && m_messages.first()->type == MessageTypeBlob);
     // FIXME: generate error message?
