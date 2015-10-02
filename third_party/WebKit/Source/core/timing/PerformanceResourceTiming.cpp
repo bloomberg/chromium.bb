@@ -42,7 +42,7 @@ namespace blink {
 static double monotonicTimeToDOMHighResTimeStamp(double timeOrigin, double seconds)
 {
     ASSERT(seconds >= 0.0);
-    if (!seconds)
+    if (!seconds || !timeOrigin)
         return 0.0;
     return PerformanceBase::clampTimeResolution(seconds - timeOrigin) * 1000.0;
 }

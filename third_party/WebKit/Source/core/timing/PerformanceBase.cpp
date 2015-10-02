@@ -424,6 +424,10 @@ double PerformanceBase::clampTimeResolution(double timeSeconds)
 
 double PerformanceBase::now() const
 {
+    // Avoid exposing raw platform timestamps.
+    if (m_timeOrigin == 0.0)
+        return 0.0;
+
     double nowSeconds = monotonicallyIncreasingTime() - m_timeOrigin;
     return 1000.0 * clampTimeResolution(nowSeconds);
 }

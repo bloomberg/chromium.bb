@@ -66,14 +66,14 @@ void DocumentLoadTiming::notifyDocumentTimingChanged()
 
 double DocumentLoadTiming::monotonicTimeToZeroBasedDocumentTime(double monotonicTime) const
 {
-    if (!monotonicTime)
+    if (!monotonicTime || !m_referenceMonotonicTime)
         return 0.0;
     return monotonicTime - m_referenceMonotonicTime;
 }
 
 double DocumentLoadTiming::monotonicTimeToPseudoWallTime(double monotonicTime) const
 {
-    if (!monotonicTime)
+    if (!monotonicTime || !m_referenceMonotonicTime)
         return 0.0;
     return m_referenceWallTime + monotonicTime - m_referenceMonotonicTime;
 }
