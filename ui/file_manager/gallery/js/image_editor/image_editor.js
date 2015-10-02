@@ -928,7 +928,6 @@ ImageEditor.MouseControl.prototype.onTouchStart = function(e) {
     this.dragHandler_ = this.buffer_.getDragHandler(position.x, position.y,
                                                     true /* touch */);
     this.dragHappened_ = false;
-    e.preventDefault();
   }
 };
 

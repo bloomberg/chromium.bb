@@ -46,27 +46,20 @@ function DimmableUIController(container) {
   this.disabled_ = false;
 
   /**
-   * @private {boolean}
-   */
-  this.maybeTap_ = false;
-
-  /**
    * @private {number}
    */
-  this.touchStartedAt_ = 0;
-
-  /**
-   * @private {HTMLElement}
-   */
-  this.touchTarget_ = null;
+  this.madeVisibleAt_ = 0;
 
   this.container_.addEventListener('click', this.onClick_.bind(this));
   this.container_.addEventListener('mousemove', this.onMousemove_.bind(this));
-  this.container_.addEventListener('touchstart', this.onTouchstart_.bind(this));
-  this.container_.addEventListener('touchmove', this.onTouchmove_.bind(this));
-  this.container_.addEventListener('touchend', this.onTouchend_.bind(this));
-  this.container_.addEventListener('touchcancel',
-      this.onTouchcancel_.bind(this));
+  this.container_.addEventListener(
+      'touchstart', this.onTouchOperation_.bind(this));
+  this.container_.addEventListener(
+      'touchmove', this.onTouchOperation_.bind(this));
+  this.container_.addEventListener(
+      'touchend', this.onTouchOperation_.bind(this));
+  this.container_.addEventListener(
+      'touchcancel', this.onTouchOperation_.bind(this));
 
   chrome.accessibilityFeatures.spokenFeedback.onChange.addListener(
       this.onGetOrChangedSpokenFeedbackConfiguration_.bind(this));
@@ -81,10 +74,12 @@ function DimmableUIController(container) {
 DimmableUIController.DEFAULT_TIMEOUT = 3000; // ms
 
 /**
- * Duration to consider a touch operation as a tap.
+ * We don't allow user to change visibility of tools shorter than this interval.
+ * This is necessary not to hide tools immediately after they become visible by
+ * touchstart event when user taps UI to make them visible.
  * @const {number}
  */
-DimmableUIController.TAP_DURATION = 300; // ms
+DimmableUIController.MIN_OPERATION_INTERVAL = 500; // ms
 
 /**
  * Sets current mode of Gallery.
@@ -126,59 +121,13 @@ DimmableUIController.prototype.onMousemove_ = function() {
 };
 
 /**
- * Handles touchstart event.
- * @param {!Event} event An event.
+ * Handles touch event.
  * @private
  */
-DimmableUIController.prototype.onTouchstart_ = function(event) {
+DimmableUIController.prototype.onTouchOperation_ = function() {
   if (this.disabled_)
     return;
 
-  this.maybeTap_ = true;
-  this.touchStartedAt_ = Date.now();
-  this.touchTarget_ = /** @type {HTMLElement} */ (event.target);
-};
-
-/**
- * Handles touchmove event.
- * @private
- */
-DimmableUIController.prototype.onTouchmove_ = function() {
-  if (this.disabled_ || !this.maybeTap_ ||
-      Date.now() - this.touchStartedAt_ < DimmableUIController.TAP_DURATION) {
-    return;
-  }
-
-  this.maybeTap_ = false;
-  this.show_(true);
-  this.clearTimeout_();
-};
-
-/**
- * Handles touchend event.
- * @private
- */
-DimmableUIController.prototype.onTouchend_ = function() {
-  if (this.disabled_)
-    return;
-
-  if (this.maybeTap_ && this.touchTarget_ &&
-      !this.isPartOfTools_(this.touchTarget_))
-    this.toggle_();
-  else
-    this.kick();
-};
-
-/**
- * Handles touchcancel event.
- * @private
- */
-DimmableUIController.prototype.onTouchcancel_ = function() {
-  if (this.disabled_)
-    return;
-
-  // If touch operation has been canceled, we handle it mostly same with
-  // touchend except that we never handle it as a tap.
   this.kick();
 };
 
@@ -223,12 +172,10 @@ DimmableUIController.prototype.isPartOfTools_ = function(element) {
  * @private
  */
 DimmableUIController.prototype.toggle_ = function() {
-  if (this.isToolsVisible_()) {
-    this.clearTimeout_();
+  if (this.isToolsVisible_())
     this.show_(false);
-  } else {
+  else
     this.kick();
-  }
 };
 
 /**
@@ -246,10 +193,21 @@ DimmableUIController.prototype.isToolsVisible_ = function() {
  * @private
  */
 DimmableUIController.prototype.show_ = function(show) {
-  if (show)
+  if (this.isToolsVisible_() === show)
+    return;
+
+  if (show) {
+    this.madeVisibleAt_ = Date.now();
     this.container_.setAttribute('tools', true);
-  else
+  } else {
+    if (Date.now() - this.madeVisibleAt_ <
+        DimmableUIController.MIN_OPERATION_INTERVAL) {
+      return;
+    }
+
     this.container_.removeAttribute('tools');
+    this.clearTimeout_();
+  }
 };
 
 /**
