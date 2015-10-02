@@ -382,7 +382,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
      * for the current tab changing.
      */
     @Override
-    protected void onPrimaryColorChanged() {
+    protected void onPrimaryColorChanged(boolean shouldAnimate) {
         if (mBackgroundColorSet) return;
         mBackgroundColorSet = true;
         int primaryColor = getToolbarDataProvider().getPrimaryColor();

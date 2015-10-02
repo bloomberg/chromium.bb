@@ -267,7 +267,7 @@ public class LayoutManagerDocument extends LayoutManager
         boolean canUseLiveTexture =
                 tab.getContentViewCore() != null && !tab.isShowingSadTab() && !isNativePage;
         layoutTab.initFromHost(tab.getBackgroundColor(), tab.getFallbackTextureId(),
-                tab.shouldStall(), canUseLiveTexture,
+                tab.shouldStall(), canUseLiveTexture, tab.getThemeColor(),
                 ColorUtils.getTextBoxColorForToolbarBackground(tab.getThemeColor()));
 
         mHost.requestRender();

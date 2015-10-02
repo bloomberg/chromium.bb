@@ -884,17 +884,6 @@ public class ToolbarPhone extends ToolbarLayout
         canvas.translate(0, -animationProgress * mBackgroundOverlayBounds.height());
         canvas.clipRect(mBackgroundOverlayBounds);
 
-        // Draw the background of the view we are leaving.
-        mTabSwitcherAnimationBgOverlay.setBounds(
-                0, 0, getMeasuredWidth(), getMeasuredHeight());
-        if (isLocationBarShownInNTP()) {
-            float ntpTransitionPercentage = mUrlExpansionPercent;
-            boolean shouldDrawWhite = ntpTransitionPercentage != 1.0f;
-            mTabSwitcherAnimationBgOverlay.setColor(shouldDrawWhite
-                    ? Color.WHITE : getToolbarColorForVisualState(VisualState.NORMAL));
-        }
-        mTabSwitcherAnimationBgOverlay.draw(canvas);
-
         float previousAlpha = 0.f;
         if (mHomeButton.getVisibility() != View.GONE) {
             // Draw the New Tab button used in the URL view.
@@ -1102,9 +1091,6 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         mBackgroundOverlayBounds.set(0, 0, w, mToolbarHeightWithoutShadow);
-        if (mTabSwitcherAnimationBgOverlay != null) {
-            mTabSwitcherAnimationBgOverlay.setBounds(0, 0, w, h);
-        }
         super.onSizeChanged(w, h, oldw, oldh);
     }
 
@@ -1675,10 +1661,10 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     @Override
-    protected void onPrimaryColorChanged() {
-        super.onPrimaryColorChanged();
+    protected void onPrimaryColorChanged(boolean shouldAnimate) {
+        super.onPrimaryColorChanged(shouldAnimate);
         if (mBrandColorTransitionActive) mBrandColorTransitionAnimation.cancel();
-        if (!isVisualStateValidForBrandColorTransition(mVisualState)) {
+        if (!shouldAnimate || !isVisualStateValidForBrandColorTransition(mVisualState)) {
             return;
         }
         final int initialColor = mToolbarBackground.getColor();

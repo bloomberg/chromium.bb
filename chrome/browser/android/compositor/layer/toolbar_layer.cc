@@ -25,6 +25,7 @@ scoped_refptr<cc::Layer> ToolbarLayer::layer() {
 
 void ToolbarLayer::PushResource(
     ui::ResourceManager::Resource* resource,
+    int toolbar_background_color,
     bool anonymize,
     int toolbar_textbox_background_color,
     bool show_debug,
@@ -34,6 +35,9 @@ void ToolbarLayer::PushResource(
   // This layer effectively draws over the space it takes for shadows.  Set the
   // bounds to the non-shadow size so that other things can properly line up.
   layer_->SetBounds(resource->padding.size());
+
+  toolbar_background_layer_->SetBounds(resource->padding.size());
+  toolbar_background_layer_->SetBackgroundColor(toolbar_background_color);
 
   bitmap_layer_->SetUIResourceId(resource->ui_resource->id());
   bitmap_layer_->SetBounds(resource->size);
@@ -97,6 +101,8 @@ void ToolbarLayer::UpdateProgressBar(int progress_bar_x,
 
 ToolbarLayer::ToolbarLayer()
     : layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
+      toolbar_background_layer_(
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
       bitmap_layer_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       progress_bar_layer_(
@@ -108,6 +114,9 @@ ToolbarLayer::ToolbarLayer()
       debug_layer_(
           cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
       brightness_(1.f) {
+  toolbar_background_layer_->SetIsDrawable(true);
+  layer_->AddChild(toolbar_background_layer_);
+
   bitmap_layer_->SetIsDrawable(true);
   layer_->AddChild(bitmap_layer_);
 

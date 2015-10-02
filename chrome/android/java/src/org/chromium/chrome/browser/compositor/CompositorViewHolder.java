@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -678,6 +679,11 @@ public class CompositorViewHolder extends FrameLayout
         if (rect == null) rect = new Rect();
         rect.set(0, (int) mLastVisibleContentOffset, getWidth(), getHeight());
         return rect;
+    }
+
+    @Override
+    public int getTopControlsBackgroundColor() {
+        return mTabVisible == null ? Color.WHITE : mTabVisible.getThemeColor();
     }
 
     @Override

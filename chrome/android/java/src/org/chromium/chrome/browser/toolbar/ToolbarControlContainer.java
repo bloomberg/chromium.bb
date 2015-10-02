@@ -61,6 +61,11 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
     }
 
     @Override
+    public int getToolbarBackgroundColor() {
+        return ((ToolbarLayout) mToolbar).getToolbarDataProvider().getPrimaryColor();
+    }
+
+    @Override
     public void setSwipeHandler(EdgeSwipeHandler handler) {
         mSwipeHandler = handler;
         mSwipeRecognizer.setSwipeHandler(handler);
@@ -155,18 +160,15 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
 
         @Override
         protected void onCaptureStart(Canvas canvas, Rect dirtyRect) {
-            // Erase the shadow component of the bitmap if the clip rect included shadow.  Because
-            // this region is not opaque painting twice would be bad.
-            if (dirtyRect.intersects(
-                    0, mToolbarActualHeightPx,
-                    mToolbarContainer.getWidth(), mToolbarContainer.getHeight())) {
-                canvas.save();
-                canvas.clipRect(
-                        0, mToolbarActualHeightPx,
-                        mToolbarContainer.getWidth(), mToolbarContainer.getHeight());
-                canvas.drawColor(0, PorterDuff.Mode.CLEAR);
-                canvas.restore();
-            }
+            // Erase the canvas because assets drawn are not fully opaque and therefore painting
+            // twice would be bad.
+            canvas.save();
+            canvas.clipRect(
+                    0, 0,
+                    mToolbarContainer.getWidth(), mToolbarContainer.getHeight());
+            canvas.drawColor(0, PorterDuff.Mode.CLEAR);
+            canvas.restore();
+            dirtyRect.set(0, 0, mToolbarContainer.getWidth(), mToolbarContainer.getHeight());
 
             mToolbar.setTextureCaptureMode(true);
 

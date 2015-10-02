@@ -26,6 +26,8 @@ public interface ControlContainer {
      */
     void getProgressBarDrawingInfo(ClipDrawableProgressBar.DrawingInfo drawingInfoOut);
 
+    int getToolbarBackgroundColor();
+
     /**
      * @param handler The swipe handler to be notified of swipe events on this container.
      */

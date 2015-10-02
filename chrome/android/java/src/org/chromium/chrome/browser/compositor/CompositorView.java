@@ -380,9 +380,10 @@ public class CompositorView
             useTexture = false;
         }
 
-        nativeUpdateToolbarLayer(mNativeCompositorView, R.id.control_container, offset,
-                provider.getActiveLayout().getToolbarBrightness(), useTexture,
-                forceHideTopControlsAndroidView);
+        nativeUpdateToolbarLayer(mNativeCompositorView, R.id.control_container,
+                mRenderHost.getTopControlsBackgroundColor(), offset,
+                provider.getActiveLayout().getToolbarBrightness(),
+                useTexture, forceHideTopControlsAndroidView);
 
         if (progressBarDrawingInfo == null) return;
         nativeUpdateProgressBar(mNativeCompositorView,
@@ -484,7 +485,8 @@ public class CompositorView
             float width, float height, float visibleXOffset, float visibleYOffset,
             float overdrawBottomHeight, float dpToPixel);
     private native void nativeUpdateToolbarLayer(long nativeCompositorView, int resourceId,
-            float topOffset, float brightness, boolean visible, boolean showShadow);
+            int toolbarBackgroundColor, float topOffset, float brightness, boolean visible,
+            boolean showShadow);
     private native void nativeUpdateProgressBar(
             long nativeCompositorView,
             int progressBarX,

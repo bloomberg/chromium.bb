@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
 
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
@@ -35,5 +36,10 @@ public class WebappControlContainer extends ViewResourceFrameLayout
 
     @Override
     public void setSwipeHandler(EdgeSwipeHandler handler) {
+    }
+
+    @Override
+    public int getToolbarBackgroundColor() {
+        return Color.WHITE;
     }
 }

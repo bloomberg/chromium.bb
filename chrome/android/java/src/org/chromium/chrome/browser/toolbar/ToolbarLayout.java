@@ -384,7 +384,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * For extending classes to override and carry out the changes related with the primary color
      * for the current tab changing.
      */
-    protected void onPrimaryColorChanged() { }
+    protected void onPrimaryColorChanged(boolean shouldAnimate) { }
 
     /**
      * Sets the icon drawable that the close button in the toolbar (if any) should show.

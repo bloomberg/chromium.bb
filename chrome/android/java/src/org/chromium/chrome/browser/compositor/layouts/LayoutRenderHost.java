@@ -80,6 +80,11 @@ public interface LayoutRenderHost {
     Rect getVisibleViewport(Rect rect);
 
     /**
+     * @return The background color of the toolbar.
+     */
+    int getTopControlsBackgroundColor();
+
+    /**
      * @return Whether or not the toolbar is currently being faked.
      */
     boolean areTopControlsPermanentlyHidden();
