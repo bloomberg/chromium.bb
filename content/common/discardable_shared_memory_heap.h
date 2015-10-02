@@ -30,6 +30,7 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
     base::DiscardableSharedMemory* shared_memory() { return shared_memory_; }
     size_t start() const { return start_; }
     size_t length() const { return length_; }
+    void set_is_locked(bool is_locked) { is_locked_ = is_locked; }
 
    private:
     friend class DiscardableSharedMemoryHeap;
@@ -41,6 +42,7 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
     base::DiscardableSharedMemory* shared_memory_;
     size_t start_;
     size_t length_;
+    bool is_locked_;
 
     DISALLOW_COPY_AND_ASSIGN(Span);
   };
