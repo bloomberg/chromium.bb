@@ -26,7 +26,9 @@ const int kMaximumReportedProfileCount = 5;
 
 const int kMaximumDaysOfDisuse = 4 * 7;  // Should be integral number of weeks.
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 size_t number_of_profile_switches_ = 0;
+#endif
 
 // Enum for tracking the state of profiles being switched to.
 enum ProfileOpenState {
@@ -38,21 +40,20 @@ enum ProfileOpenState {
   PROFILE_UNOPENED
 };
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 ProfileOpenState GetProfileOpenState(
     ProfileManager* manager,
     const base::FilePath& path) {
   Profile* profile_switched_to = manager->GetProfileByPath(path);
-
-  if (!profile_switched_to) {
+  if (!profile_switched_to)
     return PROFILE_UNOPENED;
-  }
 
-  if (chrome::GetTotalBrowserCountForProfile(profile_switched_to) > 0) {
+  if (chrome::GetTotalBrowserCountForProfile(profile_switched_to) > 0)
     return PROFILE_OPENED;
-  }
 
   return PROFILE_OPENED_NO_BROWSER;
 }
+#endif
 
 ProfileMetrics::ProfileType GetProfileType(
     const base::FilePath& profile_path) {
@@ -190,10 +191,12 @@ void ProfileMetrics::UpdateReportedProfilesStatistics(ProfileManager* manager) {
 #endif
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 void ProfileMetrics::LogNumberOfProfileSwitches() {
   UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSwitches",
                            number_of_profile_switches_);
 }
+#endif
 
 // The OS_MACOSX implementation of this function is in profile_metrics_mac.mm.
 #if defined(OS_WIN)
@@ -353,6 +356,7 @@ void ProfileMetrics::LogProfileOpenMethod(ProfileOpen metric) {
                             NUM_PROFILE_OPEN_METRICS);
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 void ProfileMetrics::LogProfileSwitch(
     ProfileOpen metric,
     ProfileManager* manager,
@@ -389,6 +393,7 @@ void ProfileMetrics::LogProfileSwitch(
   // as opening of profile related UI elements.
   LogProfileOpenMethod(metric);
 }
+#endif
 
 void ProfileMetrics::LogProfileSwitchGaia(ProfileGaia metric) {
   if (metric == GAIA_OPT_IN)

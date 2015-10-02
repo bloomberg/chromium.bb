@@ -184,9 +184,11 @@ void ProfileSizeTask(const base::FilePath& path, int enabled_app_count) {
     UMA_HISTOGRAM_COUNTS_10000("Profile.AppCount", enabled_app_count);
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 void QueueProfileDirectoryForDeletion(const base::FilePath& path) {
   ProfilesToDelete().push_back(path);
 }
+#endif
 
 bool IsProfileMarkedForDeletion(const base::FilePath& profile_path) {
   return std::find(ProfilesToDelete().begin(), ProfilesToDelete().end(),
@@ -654,6 +656,7 @@ ProfileShortcutManager* ProfileManager::profile_shortcut_manager() {
   return profile_shortcut_manager_.get();
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 void ProfileManager::ScheduleProfileForDeletion(
     const base::FilePath& profile_dir,
     const CreateCallback& callback) {
@@ -737,6 +740,7 @@ void ProfileManager::ScheduleProfileForDeletion(
 
   FinishDeletingProfile(profile_dir, last_non_supervised_profile_path);
 }
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 void ProfileManager::AutoloadProfiles() {
   // If running in the background is disabled for the browser, do not autoload
@@ -1223,6 +1227,7 @@ Profile* ProfileManager::CreateAndInitializeProfile(
   return profile;
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 void ProfileManager::FinishDeletingProfile(
     const base::FilePath& profile_dir,
     const base::FilePath& new_active_profile_dir) {
@@ -1284,6 +1289,7 @@ void ProfileManager::FinishDeletingProfile(
   cache.DeleteProfileFromCache(profile_dir);
   ProfileMetrics::UpdateReportedProfilesStatistics(this);
 }
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(
     Profile* profile,
@@ -1464,7 +1470,6 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
 
   profile_manager_->UpdateLastUser(last_active);
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 void ProfileManager::OnNewActiveProfileLoaded(
     const base::FilePath& profile_to_delete_path,
@@ -1491,6 +1496,7 @@ void ProfileManager::OnNewActiveProfileLoaded(
   if (!original_callback.is_null())
     original_callback.Run(loaded_profile, status);
 }
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 ProfileManagerWithoutInit::ProfileManagerWithoutInit(
     const base::FilePath& user_data_dir) : ProfileManager(user_data_dir) {

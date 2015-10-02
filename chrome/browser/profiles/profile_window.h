@@ -65,6 +65,7 @@ void FindOrCreateNewWindowForProfile(
 // even if a window for that profile already exists. When the browser is
 // opened, |callback| will be run if it isn't null.
 
+#if !defined(OS_ANDROID)
 void SwitchToProfile(const base::FilePath& path,
                      chrome::HostDesktopType desktop_type,
                      bool always_create,
@@ -74,6 +75,7 @@ void SwitchToProfile(const base::FilePath& path,
 // Opens a Browser for the guest profile and runs |callback| if it isn't null.
 void SwitchToGuestProfile(chrome::HostDesktopType desktop_type,
                           ProfileManager::CreateCallback callback);
+#endif
 
 // Returns true if |profile| has potential profile switch targets, ie there's at
 // least one other profile available to switch to, not counting guest. This is

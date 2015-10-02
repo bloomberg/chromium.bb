@@ -142,6 +142,7 @@ base::FilePath GetShutdownMsPath() {
   return shutdown_ms_file.AppendASCII(kShutdownMsFile);
 }
 
+#if !defined(OS_ANDROID)
 bool ShutdownPreThreadsStop() {
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker(
@@ -249,7 +250,7 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
 
 #if defined(OS_WIN)
     upgrade_util::RelaunchChromeWithMode(*new_cl.get(), g_relaunch_mode);
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif defined(OS_POSIX)
     upgrade_util::RelaunchChromeBrowser(*new_cl.get());
 #endif  // defined(OS_WIN)
 
@@ -274,6 +275,7 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
   chrome::NotifyAndTerminate(false);
 #endif
 }
+#endif  // !defined(OS_ANDROID)
 
 void ReadLastShutdownFile(ShutdownType type,
                           int num_procs,

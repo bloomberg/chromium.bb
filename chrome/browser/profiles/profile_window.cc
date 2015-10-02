@@ -44,13 +44,13 @@
 #include "extensions/browser/extension_system.h"
 #endif  // defined(ENABLE_EXTENSIONS)
 
-#if !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#endif  // !defined (OS_IOS)
+#endif  // !defined (OS_ANDROID)
 
 using base::UserMetricsAction;
 using content::BrowserThread;
@@ -262,9 +262,6 @@ void FindOrCreateNewWindowForProfile(
     chrome::startup::IsFirstRun is_first_run,
     chrome::HostDesktopType desktop_type,
     bool always_create) {
-#if defined(OS_IOS)
-  NOTREACHED();
-#else
   DCHECK(profile);
 
   if (!always_create) {
@@ -280,9 +277,9 @@ void FindOrCreateNewWindowForProfile(
   StartupBrowserCreator browser_creator;
   browser_creator.LaunchBrowser(
       command_line, profile, base::FilePath(), process_startup, is_first_run);
-#endif  // defined(OS_IOS)
 }
 
+#if !defined(OS_ANDROID)
 void SwitchToProfile(const base::FilePath& path,
                      chrome::HostDesktopType desktop_type,
                      bool always_create,
@@ -320,6 +317,7 @@ void SwitchToGuestProfile(chrome::HostDesktopType desktop_type,
       base::string16(),
       std::string());
 }
+#endif
 
 bool HasProfileSwitchTargets(Profile* profile) {
   size_t min_profiles = profile->IsGuestSession() ? 1 : 2;

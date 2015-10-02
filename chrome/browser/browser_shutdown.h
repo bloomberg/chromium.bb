@@ -29,6 +29,7 @@ void OnShutdownStarting(ShutdownType type);
 // Get the current shutdown type.
 ShutdownType GetShutdownType();
 
+#if !defined(OS_ANDROID)
 // Performs the shutdown tasks that need to be done before
 // BrowserProcess and the various threads go away.
 //
@@ -41,6 +42,7 @@ bool ShutdownPreThreadsStop();
 // The provided parameter indicates whether a preference to restart
 // the session was present.
 void ShutdownPostThreadsStop(bool restart_last_session);
+#endif
 
 // Called at startup to create a histogram from our previous shutdown time.
 void ReadLastShutdownInfo();

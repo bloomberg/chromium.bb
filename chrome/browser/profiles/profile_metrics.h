@@ -214,7 +214,10 @@ class ProfileMetrics {
   static bool CountProfileInformation(ProfileManager* manager,
                                       ProfileCounts* counts);
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   static void LogNumberOfProfileSwitches();
+#endif
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // Update OS level tracking of profile counts.
   static void UpdateReportedOSProfileStatistics(size_t active, size_t signedin);
@@ -225,9 +228,11 @@ class ProfileMetrics {
   static void LogProfileAvatarSelection(size_t icon_index);
   static void LogProfileDeleteUser(ProfileDelete metric);
   static void LogProfileOpenMethod(ProfileOpen metric);
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   static void LogProfileSwitch(ProfileOpen metric,
                                ProfileManager* manager,
                                const base::FilePath& profile_path);
+#endif
   static void LogProfileSwitchGaia(ProfileGaia metric);
   static void LogProfileSyncInfo(ProfileSync metric);
   static void LogProfileAuthResult(ProfileAuth metric);
