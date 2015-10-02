@@ -186,7 +186,7 @@ void LocalNtpSource::StartDataRequest(
     return;
   }
 
-#if !defined(OFFICIAL_BUILD)
+#if !defined(GOOGLE_CHROME_BUILD)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kLocalNtpReload)) {
     if (stripped_path == "local-ntp.html" || stripped_path == "local-ntp.js" ||
