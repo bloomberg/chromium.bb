@@ -1099,7 +1099,7 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
                 ],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
-                ['git', 'cl', 'dcommit', '-f'],
+                ['git', 'cl', 'land', '-f', '-v'],
                 ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
             ])
 
@@ -1226,7 +1226,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
-                ['git', 'cl', 'dcommit', '-f'],
+                ['git', 'cl', 'land', '-f', '-v'],
                 ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
             ])
 
@@ -1287,7 +1287,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
-                ['git', 'cl', 'dcommit', '-f'],
+                ['git', 'cl', 'land', '-f', '-v'],
                 ['git', 'config', 'branch.auto-rebaseline-alt-temporary-branch.rietveldissue'],
             ])
 
@@ -1347,7 +1347,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
-                ['git', 'cl', 'dcommit', '-f'],
+                ['git', 'cl', 'land', '-f', '-v'],
                 ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
             ])
 

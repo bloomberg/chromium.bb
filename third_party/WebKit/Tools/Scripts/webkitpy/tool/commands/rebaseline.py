@@ -874,7 +874,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 # FIXME: Log the pull and dcommit stdout/stderr to the log-server.
                 tool.executive.run_command(['git', 'pull'])
 
-                self._run_git_cl_command(options, ['dcommit', '-f'])
+                self._run_git_cl_command(options, ['land', '-f', '-v'])
         except:
             traceback.print_exc(file=sys.stderr)
         finally:
