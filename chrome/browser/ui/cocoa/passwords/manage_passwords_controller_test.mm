@@ -29,7 +29,8 @@ void ManagePasswordsControllerTest::SetUp() {
 ManagePasswordsBubbleModel*
 ManagePasswordsControllerTest::model() {
   if (!model_) {
-    model_.reset(new ManagePasswordsBubbleModel(test_web_contents_.get()));
+    model_.reset(new ManagePasswordsBubbleModel(
+        test_web_contents_.get(), ManagePasswordsBubbleModel::AUTOMATIC));
   }
   return model_.get();
 }

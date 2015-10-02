@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tab_dialogs_views.h"
 
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/hung_renderer_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
@@ -59,8 +60,8 @@ void TabDialogsViews::ShowManagePasswordsBubble(bool user_action) {
     ManagePasswordsBubbleView::CloseBubble();
   }
   ManagePasswordsBubbleView::ShowBubble(
-      web_contents_, user_action ? ManagePasswordsBubble::USER_ACTION
-                                 : ManagePasswordsBubble::AUTOMATIC);
+      web_contents_, user_action ? ManagePasswordsBubbleModel::USER_ACTION
+                                 : ManagePasswordsBubbleModel::AUTOMATIC);
 }
 
 void TabDialogsViews::HideManagePasswordsBubble() {

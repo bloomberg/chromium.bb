@@ -39,9 +39,9 @@ ManagePasswordsBubbleCocoa* ManagePasswordsBubbleCocoa::bubble_ = NULL;
 
 ManagePasswordsBubbleCocoa::ManagePasswordsBubbleCocoa(
     content::WebContents* webContents,
-    DisplayReason displayReason,
+    ManagePasswordsBubbleModel::DisplayReason displayReason,
     ManagePasswordsIcon* icon)
-    : ManagePasswordsBubble(webContents, displayReason),
+    : model_(webContents, displayReason),
       icon_(icon),
       closing_(false),
       controller_(nil),
@@ -67,7 +67,7 @@ void ManagePasswordsBubbleCocoa::Show(bool user_action) {
   DCHECK(browserWindow);
   controller_ = [[ManagePasswordsBubbleController alloc]
       initWithParentWindow:browserWindow
-                     model:model()];
+                     model:&model_];
   [controller_ setShouldOpenAsKeyWindow:(user_action ? YES : NO)];
   [controller_ showWindow:nil];
 
@@ -116,9 +116,8 @@ void ManagePasswordsBubbleCocoa::Show(content::WebContents* webContents,
   BrowserWindowController* bwc =
       [BrowserWindowController browserWindowControllerForWindow:window];
   bubble_ = new ManagePasswordsBubbleCocoa(
-      webContents,
-      user_action ? ManagePasswordsBubble::USER_ACTION
-                  : ManagePasswordsBubble::AUTOMATIC,
+      webContents, user_action ? ManagePasswordsBubbleModel::USER_ACTION
+                               : ManagePasswordsBubbleModel::AUTOMATIC,
       [bwc locationBarBridge]->manage_passwords_decoration()->icon());
 
   bubble_->Show(user_action);

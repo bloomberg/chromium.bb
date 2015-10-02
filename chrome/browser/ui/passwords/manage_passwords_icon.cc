@@ -43,12 +43,9 @@ void ManagePasswordsIcon::UpdateIDs() {
   }
 
   // Otherwise, start with the correct values for MANAGE_STATE, and adjust
-// things accordingly if we're in PENDING_STATE.
-// TODO(dconnelly): Figure out how to share the resources with Android.
-#if !defined(OS_ANDROID)
+  // things accordingly if we're in PENDING_STATE.
   icon_id_ = active() ? IDR_SAVE_PASSWORD_ACTIVE : IDR_SAVE_PASSWORD_INACTIVE;
   tooltip_text_id_ = IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE;
   if (state() == password_manager::ui::PENDING_PASSWORD_STATE)
     tooltip_text_id_ = IDS_PASSWORD_MANAGER_TOOLTIP_SAVE;
-#endif
 }

@@ -85,10 +85,11 @@ bool IsSmartLockBrandingEnabled(Profile* profile) {
 }  // namespace
 
 ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
-    content::WebContents* web_contents)
+    content::WebContents* web_contents,
+    DisplayReason display_reason)
     : content::WebContentsObserver(web_contents),
       display_disposition_(metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING),
-      dismissal_reason_(metrics_util::NOT_DISPLAYED),
+      dismissal_reason_(metrics_util::NO_DIRECT_INTERACTION),
       update_password_submission_event_(metrics_util::NO_UPDATE_SUBMISSION) {
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(web_contents);
@@ -106,7 +107,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     local_credentials_ = DeepCopyForms(controller->GetCurrentForms());
     federated_credentials_ = DeepCopyForms(controller->GetFederatedForms());
   } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
-    pending_password_ = *controller->GetCurrentForms()[0];
+    pending_password_ = controller->PendingPassword();
   } else {
     local_credentials_ = DeepCopyForms(controller->GetCurrentForms());
   }
@@ -147,13 +148,8 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
 
   manage_link_ =
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK);
-}
 
-ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {}
-
-void ManagePasswordsBubbleModel::OnBubbleShown(
-    ManagePasswordsBubble::DisplayReason reason) {
-  if (reason == ManagePasswordsBubble::USER_ACTION) {
+  if (display_reason == USER_ACTION) {
     switch (state_) {
       case password_manager::ui::PENDING_PASSWORD_STATE:
         display_disposition_ = metrics_util::MANUAL_WITH_PASSWORD_PENDING;
@@ -193,17 +189,10 @@ void ManagePasswordsBubbleModel::OnBubbleShown(
   }
   metrics_util::LogUIDisplayDisposition(display_disposition_);
 
-  // Default to a dismissal reason of "no interaction". If the user interacts
-  // with the button in such a way that it closes, we'll reset this value
-  // accordingly.
-  dismissal_reason_ = metrics_util::NO_DIRECT_INTERACTION;
-
-  ManagePasswordsUIController* controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
   controller->OnBubbleShown();
 }
 
-void ManagePasswordsBubbleModel::OnBubbleHidden() {
+ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
     Profile* profile = GetProfile();
     if (profile && IsSmartLockBrandingEnabled(profile)) {
@@ -239,7 +228,6 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
   if (update_password_submission_event_ != metrics_util::NO_UPDATE_SUBMISSION)
     LogUpdatePasswordSubmissionEvent(update_password_submission_event_);
 }
-
 void ManagePasswordsBubbleModel::OnCancelClicked() {
   DCHECK_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE, state_);
   dismissal_reason_ = metrics_util::CLICKED_CANCEL;

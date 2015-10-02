@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_MODEL_H_
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
@@ -30,20 +29,15 @@ enum class CredentialType;
 class ManagePasswordsBubbleModel : public content::WebContentsObserver {
  public:
   enum PasswordAction { REMOVE_PASSWORD, ADD_PASSWORD };
+  enum DisplayReason { AUTOMATIC, USER_ACTION };
 
   // Creates a ManagePasswordsBubbleModel, which holds a raw pointer to the
-  // WebContents in which it lives. Defaults to a display disposition of
-  // AUTOMATIC_WITH_PASSWORD_PENDING, and a dismissal reason of NOT_DISPLAYED.
-  // The bubble's state is updated from the ManagePasswordsUIController
-  // associated with |web_contents| upon creation.
-  explicit ManagePasswordsBubbleModel(content::WebContents* web_contents);
+  // WebContents in which it lives. Construction implies that the bubble
+  // is shown. The bubble's state is updated from the
+  // ManagePasswordsUIController associated with |web_contents|.
+  ManagePasswordsBubbleModel(content::WebContents* web_contents,
+                             DisplayReason reason);
   ~ManagePasswordsBubbleModel() override;
-
-  // Called by the view code when the bubble is shown.
-  void OnBubbleShown(ManagePasswordsBubble::DisplayReason reason);
-
-  // Called by the view code when the bubble is hidden.
-  void OnBubbleHidden();
 
   // Called by the view code when the "Cancel" button in clicked by the user.
   void OnCancelClicked();

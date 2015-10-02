@@ -116,9 +116,11 @@ class ManagePasswordsUIController
 
   virtual const autofill::PasswordForm& PendingPassword() const;
 
+#if !defined(OS_ANDROID)
   // Set the state of the Omnibox icon, and possibly show the associated bubble
   // without user interaction.
   virtual void UpdateIconAndBubbleState(ManagePasswordsIcon* icon);
+#endif
 
   // Called from the model when the bubble is displayed.
   void OnBubbleShown();
@@ -126,7 +128,7 @@ class ManagePasswordsUIController
   // Called from the model when the bubble is hidden.
   void OnBubbleHidden();
 
-  password_manager::ui::State state() const { return passwords_data_.state(); }
+  virtual password_manager::ui::State state() const;
 
   // True if a password is sitting around, waiting for a user to decide whether
   // or not to save it.

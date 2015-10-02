@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -30,6 +29,8 @@
 #include "chrome/browser/android/chrome_application.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
+#else
+#include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 #endif
 
 using autofill::PasswordFormMap;
@@ -343,13 +344,15 @@ void ManagePasswordsUIController::WasHidden() {
 
 const autofill::PasswordForm& ManagePasswordsUIController::
     PendingPassword() const {
+  if (state() == password_manager::ui::AUTO_SIGNIN_STATE)
+    return *GetCurrentForms()[0];
+
   DCHECK(state() == password_manager::ui::PENDING_PASSWORD_STATE ||
          state() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
          state() == password_manager::ui::CONFIRMATION_STATE)
       << state();
   password_manager::PasswordFormManager* form_manager =
       passwords_data_.form_manager();
-  DCHECK(form_manager);
   return form_manager->pending_credentials();
 }
 
@@ -359,6 +362,7 @@ bool ManagePasswordsUIController::PasswordOverridden() const {
   return form_manager ? form_manager->password_overridden() : false;
 }
 
+#if !defined(OS_ANDROID)
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
     ManagePasswordsIcon* icon) {
   if (should_pop_up_bubble_) {
@@ -370,18 +374,24 @@ void ManagePasswordsUIController::UpdateIconAndBubbleState(
     icon->SetState(state());
   }
 }
+#endif
 
 void ManagePasswordsUIController::OnBubbleShown() {
   should_pop_up_bubble_ = false;
 }
 
 void ManagePasswordsUIController::OnBubbleHidden() {
+  // Avoid using |state()| which is overridden for some unit tests.
   if (state() == password_manager::ui::CREDENTIAL_REQUEST_STATE ||
       state() == password_manager::ui::CONFIRMATION_STATE ||
       state() == password_manager::ui::AUTO_SIGNIN_STATE) {
     passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
     UpdateBubbleAndIconVisibility();
   }
+}
+
+password_manager::ui::State ManagePasswordsUIController::state() const {
+  return passwords_data_.state();
 }
 
 void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {

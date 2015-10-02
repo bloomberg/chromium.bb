@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/passwords/manage_passwords_bubble.h"
+#import "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 
 namespace content {
 class WebContents;
@@ -19,7 +19,7 @@ class WebContents;
 class ManagePasswordsIcon;
 
 // Cocoa implementation of the platform-independent password bubble interface.
-class ManagePasswordsBubbleCocoa : public ManagePasswordsBubble {
+class ManagePasswordsBubbleCocoa {
  public:
   // Creates and shows the bubble, which owns itself. Does nothing if the bubble
   // is already shown.
@@ -39,14 +39,17 @@ class ManagePasswordsBubbleCocoa : public ManagePasswordsBubble {
   friend class ManagePasswordsBubbleTest;
 
   // Instance-specific logic. Clients should use the static interface.
-  ManagePasswordsBubbleCocoa(content::WebContents* webContents,
-                             DisplayReason displayReason,
-                             ManagePasswordsIcon* icon);
-  ~ManagePasswordsBubbleCocoa() override;
+  ManagePasswordsBubbleCocoa(
+      content::WebContents* webContents,
+      ManagePasswordsBubbleModel::DisplayReason displayReason,
+      ManagePasswordsIcon* icon);
+  ~ManagePasswordsBubbleCocoa();
   void Show(bool user_action);
 
   // Cleans up state and deletes itself. Called when the bubble is closed.
   void OnClose();
+
+  ManagePasswordsBubbleModel model_;
 
   // The location bar icon corresponding to the bubble.
   ManagePasswordsIcon* icon_;

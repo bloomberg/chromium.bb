@@ -56,6 +56,10 @@ class ManagePasswordsUIControllerMock
   const autofill::PasswordForm& PendingPassword() const override;
   void SetPendingPassword(autofill::PasswordForm pending_password);
 
+  password_manager::ui::State state() const override;
+  void SetState(password_manager::ui::State state);
+  void UnsetState();
+
   void ManageAccounts() override;
   bool manage_accounts() const { return manage_accounts_; }
 
@@ -79,6 +83,8 @@ class ManagePasswordsUIControllerMock
   bool never_saved_password_;
   bool choose_credential_;
   bool manage_accounts_;
+  bool state_overridden_;
+  password_manager::ui::State state_;
   base::TimeDelta elapsed_;
 
   autofill::PasswordForm chosen_credential_;

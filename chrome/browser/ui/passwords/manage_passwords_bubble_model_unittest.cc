@@ -8,7 +8,6 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/test/base/testing_profile.h"
@@ -68,43 +67,48 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
             content::WebContentsTester::CreateTestWebContents(&profile_,
                                                               nullptr)) {}
 
-  void SetUp() override {
-    // Create the test UIController here so that it's bound to
-    // |test_web_contents_| and therefore accessible to the model.
-    new ManagePasswordsUIControllerMock(test_web_contents_.get());
-
-    model_.reset(new ManagePasswordsBubbleModel(test_web_contents_.get()));
-  }
-
   void TearDown() override { model_.reset(); }
 
   PrefService* prefs() { return profile_.GetPrefs(); }
 
   TestingProfile* profile() { return &profile_; }
 
+ protected:
+  void SetUpWithState(password_manager::ui::State state,
+                      ManagePasswordsBubbleModel::DisplayReason reason) {
+    // Create the test UIController here so that it's bound to
+    // |test_web_contents_| and therefore accessible to the model.
+    ManagePasswordsUIControllerMock* mock =
+        new ManagePasswordsUIControllerMock(test_web_contents_.get());
+    mock->SetState(state);
+    model_.reset(
+        new ManagePasswordsBubbleModel(test_web_contents_.get(), reason));
+    mock->UnsetState();
+  }
+
   void PretendPasswordWaiting() {
-    model_->set_state(password_manager::ui::PENDING_PASSWORD_STATE);
-    model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
+    SetUpWithState(password_manager::ui::PENDING_PASSWORD_STATE,
+                   ManagePasswordsBubbleModel::AUTOMATIC);
   }
 
   void PretendUpdatePasswordWaiting() {
-    model_->set_state(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
-    model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
+    SetUpWithState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
+                   ManagePasswordsBubbleModel::AUTOMATIC);
   }
 
   void PretendCredentialsWaiting() {
-    model_->set_state(password_manager::ui::CREDENTIAL_REQUEST_STATE);
-    model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
+    SetUpWithState(password_manager::ui::CREDENTIAL_REQUEST_STATE,
+                   ManagePasswordsBubbleModel::AUTOMATIC);
   }
 
   void PretendAutoSigningIn() {
-    model_->set_state(password_manager::ui::AUTO_SIGNIN_STATE);
-    model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
+    SetUpWithState(password_manager::ui::AUTO_SIGNIN_STATE,
+                   ManagePasswordsBubbleModel::AUTOMATIC);
   }
 
   void PretendManagingPasswords() {
-    model_->set_state(password_manager::ui::MANAGE_STATE);
-    model_->OnBubbleShown(ManagePasswordsBubble::USER_ACTION);
+    SetUpWithState(password_manager::ui::MANAGE_STATE,
+                   ManagePasswordsBubbleModel::USER_ACTION);
   }
 
   ManagePasswordsUIControllerMock* controller() {
@@ -113,7 +117,8 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
             test_web_contents_.get()));
   }
 
- protected:
+  content::WebContents* test_web_contents() { return test_web_contents_.get(); }
+
   scoped_ptr<ManagePasswordsBubbleModel> model_;
   autofill::PasswordForm test_form_;
 
@@ -123,34 +128,14 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
   scoped_ptr<content::WebContents> test_web_contents_;
 };
 
-TEST_F(ManagePasswordsBubbleModelTest, DefaultValues) {
-  EXPECT_EQ(model_->display_disposition(),
-            password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
-  EXPECT_EQ(model_->dismissal_reason(),
-            password_manager::metrics_util::NOT_DISPLAYED);
-  EXPECT_FALSE(controller()->saved_password());
-  EXPECT_FALSE(controller()->never_saved_password());
-}
-
-TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutLogging) {
-  base::HistogramTester histogram_tester;
-  model_->OnBubbleHidden();
-  EXPECT_EQ(model_->dismissal_reason(),
-            password_manager::metrics_util::NOT_DISPLAYED);
-  EXPECT_FALSE(controller()->saved_password());
-  EXPECT_FALSE(controller()->never_saved_password());
-
-  histogram_tester.ExpectTotalCount(kUIDismissalReasonMetric, 0);
-}
-
 TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
   base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
-  model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::NO_DIRECT_INTERACTION);
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
             model_->state());
+  model_.reset();
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
@@ -164,12 +149,12 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickSave) {
   base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
   model_->OnSaveClicked();
-  model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_SAVE);
+  model_.reset();
+
   EXPECT_TRUE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
-
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonMetric,
       password_manager::metrics_util::CLICKED_SAVE,
@@ -180,13 +165,13 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickNever) {
   base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
   model_->OnNeverForThisSiteClicked();
-  model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_NEVER);
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, model_->state());
+  model_.reset();
+
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_TRUE(controller()->never_saved_password());
-
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonMetric,
       password_manager::metrics_util::CLICKED_NEVER,
@@ -197,10 +182,11 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickManage) {
   base::HistogramTester histogram_tester;
   PretendManagingPasswords();
   model_->OnManageLinkClicked();
-  model_->OnBubbleHidden();
+
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_MANAGE);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, model_->state());
+  model_.reset();
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
@@ -214,10 +200,10 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickDone) {
   base::HistogramTester histogram_tester;
   PretendManagingPasswords();
   model_->OnDoneClicked();
-  model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_DONE);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, model_->state());
+  model_.reset();
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
@@ -234,9 +220,9 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickCredential) {
   autofill::PasswordForm form;
   model_->OnChooseCredentials(
       form, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
-  model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_CREDENTIAL);
+  model_.reset();
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
   EXPECT_TRUE(controller()->choose_credential());
@@ -252,9 +238,9 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickCancelCredential) {
   PretendCredentialsWaiting();
   EXPECT_FALSE(controller()->choose_credential());
   model_->OnCancelClicked();
-  model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_CANCEL);
+  model_.reset();
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
   EXPECT_FALSE(controller()->choose_credential());
@@ -268,9 +254,9 @@ TEST_F(ManagePasswordsBubbleModelTest, DismissCredential) {
   base::HistogramTester histogram_tester;
   PretendCredentialsWaiting();
   EXPECT_FALSE(controller()->choose_credential());
-  model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::NO_DIRECT_INTERACTION);
+  model_.reset();
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
   EXPECT_FALSE(controller()->choose_credential());
@@ -285,9 +271,9 @@ TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninToast) {
   base::HistogramTester histogram_tester;
   PretendAutoSigningIn();
   model_->OnAutoSignInToastTimeout();
-  model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT);
+  model_.reset();
 
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonMetric,
@@ -302,7 +288,7 @@ TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninAndManagedBubble) {
   model_->OnAutoSignInClicked();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::AUTO_SIGNIN_TOAST_CLICKED);
-  model_->OnBubbleHidden();
+  model_.reset();
 
   EXPECT_TRUE(controller()->manage_accounts());
 
@@ -315,7 +301,7 @@ TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninAndManagedBubble) {
 TEST_F(ManagePasswordsBubbleModelTest, ClickUpdate) {
   PretendUpdatePasswordWaiting();
   model_->OnUpdateClicked(autofill::PasswordForm());
-  model_->OnBubbleHidden();
+  model_.reset();
   EXPECT_TRUE(controller()->updated_password());
   EXPECT_FALSE(controller()->never_saved_password());
 }
@@ -332,7 +318,9 @@ TEST_F(ManagePasswordsBubbleModelTest, ShowSmartLockWarmWelcome) {
 
   PretendPasswordWaiting();
   EXPECT_TRUE(model_->ShouldShowGoogleSmartLockWelcome());
-  model_->OnBubbleHidden();
+  model_.reset();
+  model_.reset(new ManagePasswordsBubbleModel(
+      test_web_contents(), ManagePasswordsBubbleModel::AUTOMATIC));
   EXPECT_FALSE(model_->ShouldShowGoogleSmartLockWelcome());
   EXPECT_TRUE(prefs()->GetBoolean(
       password_manager::prefs::kWasSavePrompFirstRunExperienceShown));
@@ -350,7 +338,9 @@ TEST_F(ManagePasswordsBubbleModelTest, OmitSmartLockWarmWelcome) {
 
   PretendPasswordWaiting();
   EXPECT_FALSE(model_->ShouldShowGoogleSmartLockWelcome());
-  model_->OnBubbleHidden();
+  model_.reset();
+  model_.reset(new ManagePasswordsBubbleModel(
+      test_web_contents(), ManagePasswordsBubbleModel::AUTOMATIC));
   EXPECT_FALSE(model_->ShouldShowGoogleSmartLockWelcome());
   EXPECT_FALSE(prefs()->GetBoolean(
       password_manager::prefs::kWasSavePrompFirstRunExperienceShown));

@@ -850,8 +850,9 @@ ManagePasswordsBubbleView* ManagePasswordsBubbleView::manage_passwords_bubble_ =
     NULL;
 
 // static
-void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
-                                           DisplayReason reason) {
+void ManagePasswordsBubbleView::ShowBubble(
+    content::WebContents* web_contents,
+    ManagePasswordsBubbleModel::DisplayReason reason) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser);
   DCHECK(browser->window());
@@ -877,7 +878,7 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
     manage_passwords_bubble_->AdjustForFullscreen(
         browser_view->GetBoundsInScreen());
   }
-  if (reason == AUTOMATIC)
+  if (reason == ManagePasswordsBubbleModel::AUTOMATIC)
     manage_passwords_bubble_->GetWidget()->ShowInactive();
   else
     manage_passwords_bubble_->GetWidget()->Show();
@@ -897,15 +898,15 @@ void ManagePasswordsBubbleView::ActivateBubble() {
 }
 
 content::WebContents* ManagePasswordsBubbleView::web_contents() const {
-  return model()->web_contents();
+  return model_.web_contents();
 }
 
 ManagePasswordsBubbleView::ManagePasswordsBubbleView(
     content::WebContents* web_contents,
     ManagePasswordsIconView* anchor_view,
-    DisplayReason reason)
-    : ManagePasswordsBubble(web_contents, reason),
-      ManagedFullScreenBubbleDelegateView(anchor_view, web_contents),
+    ManagePasswordsBubbleModel::DisplayReason reason)
+    : ManagedFullScreenBubbleDelegateView(anchor_view, web_contents),
+      model_(web_contents, reason),
       anchor_view_(anchor_view),
       initially_focused_view_(NULL) {
   // Compensate for built-in vertical padding in the anchor view's image.
@@ -942,23 +943,22 @@ void ManagePasswordsBubbleView::OnWidgetClosing(views::Widget* /*widget*/) {
 }
 
 bool ManagePasswordsBubbleView::ShouldShowCloseButton() const {
-  return model()->state() == password_manager::ui::PENDING_PASSWORD_STATE;
+  return model_.state() == password_manager::ui::PENDING_PASSWORD_STATE;
 }
 
 void ManagePasswordsBubbleView::Refresh() {
   RemoveAllChildViews(true);
   initially_focused_view_ = NULL;
-  if (model()->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
+  if (model_.state() == password_manager::ui::PENDING_PASSWORD_STATE) {
     AddChildView(new PendingView(this));
-  } else if (model()->state() ==
+  } else if (model_.state() ==
              password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     AddChildView(new UpdatePendingView(this));
-  } else if (model()->state() == password_manager::ui::CONFIRMATION_STATE) {
+  } else if (model_.state() == password_manager::ui::CONFIRMATION_STATE) {
     AddChildView(new SaveConfirmationView(this));
-  } else if (model()->state() ==
-                 password_manager::ui::CREDENTIAL_REQUEST_STATE) {
+  } else if (model_.state() == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
     AddChildView(new AccountChooserView(this));
-  } else if (model()->state() == password_manager::ui::AUTO_SIGNIN_STATE) {
+  } else if (model_.state() == password_manager::ui::AUTO_SIGNIN_STATE) {
     AddChildView(new AutoSigninView(this));
   } else {
     AddChildView(new ManageView(this));

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_VIEW_H_
 
-#include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/managed_full_screen_bubble_delegate_view.h"
 
 class ManagePasswordsIconView;
@@ -22,12 +22,11 @@ class WebContents;
 // 2. ManageView: Displays the current page's saved credentials.
 // 3. BlacklistedView: Informs the user that the current page is blacklisted.
 //
-class ManagePasswordsBubbleView : public ManagePasswordsBubble,
-                                  public ManagedFullScreenBubbleDelegateView {
+class ManagePasswordsBubbleView : public ManagedFullScreenBubbleDelegateView {
  public:
   // Shows the bubble.
   static void ShowBubble(content::WebContents* web_contents,
-                         DisplayReason reason);
+                         ManagePasswordsBubbleModel::DisplayReason reason);
 
   // Closes the existing bubble.
   static void CloseBubble();
@@ -52,6 +51,8 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   }
 #endif
 
+  ManagePasswordsBubbleModel* model() { return &model_; }
+
  private:
   class AccountChooserView;
   class AutoSigninView;
@@ -64,7 +65,7 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
 
   ManagePasswordsBubbleView(content::WebContents* web_contents,
                             ManagePasswordsIconView* anchor_view,
-                            DisplayReason reason);
+                            ManagePasswordsBubbleModel::DisplayReason reason);
   ~ManagePasswordsBubbleView() override;
 
   // ManagedFullScreenBubbleDelegateView:
@@ -95,6 +96,8 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
 
   // The timeout in seconds for the auto sign-in toast.
   static int auto_signin_toast_timeout_;
+
+  ManagePasswordsBubbleModel model_;
 
   ManagePasswordsIconView* anchor_view_;
 
