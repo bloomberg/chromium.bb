@@ -322,7 +322,7 @@
     'chromium.chrome': {
       'Google Chrome Win': 'gyp_official_goma_minimal_symbols_x86',
       'Google Chrome Linux': 'gyp_official_goma_x86',
-      'Google Chrome Linux x64': 'gyp_official_goma',
+      'Google Chrome Linux x64': 'gn_official_goma',
       'Google Chrome Mac': 'gyp_official_goma',
       'Google Chrome ChromeOS': 'gyp_official_goma_chromeos',
     },
