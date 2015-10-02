@@ -33,10 +33,6 @@ vars = {
   'googlecode_url': 'http://%s.googlecode.com/svn',
   'chromium_git': 'https://chromium.googlesource.com',
   # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling libvpx
-  # and whatever else without interference from each other.
-  'libvpx_revision': 'b33794b9132c8c1722206d6676c37177ccbaef2e',
-  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling sfntly
   # and whatever else without interference from each other.
   'sfntly_revision': '130f832eddf98467e6578b548cb74ce17d04a26d',
@@ -189,9 +185,6 @@ deps = {
 
   'src/third_party/webdriver/pylib':
     Var('chromium_git') + '/external/selenium/py.git' + '@' + '5fd78261a75fe08d27ca4835fb6c5ce4b42275bd',
-
-  'src/third_party/libvpx':
-   Var('chromium_git') + '/chromium/deps/libvpx.git' + '@' +  Var('libvpx_revision'),
 
   'src/third_party/libvpx_new/source/libvpx':
    Var('chromium_git') + '/webm/libvpx.git' + '@' +  '7d28d12ef34f6cbb6b1e18f3b23b71392fd3ddf5',
