@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/extensions/api/tab_capture/tab_capture_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -89,10 +90,87 @@ class TabCaptureApiPixelTest : public TabCaptureApiTest {
   }
 };
 
+// Tests the logic that examines the constraints to determine the starting
+// off-screen tab size.
+TEST(TabCaptureCaptureOffscreenTabTest, DetermineInitialSize) {
+  using extensions::api::tab_capture::CaptureOptions;
+  using extensions::api::tab_capture::MediaStreamConstraint;
+
+  // Empty options --> 1280x720
+  CaptureOptions options;
+  EXPECT_EQ(gfx::Size(1280, 720),
+            TabCaptureCaptureOffscreenTabFunction::DetermineInitialSize(
+                options));
+
+  // Use specified mandatory maximum size.
+  options.video_constraints.reset(new MediaStreamConstraint());
+  base::DictionaryValue* properties =
+      &options.video_constraints->mandatory.additional_properties;
+  properties->SetInteger("maxWidth", 123);
+  properties->SetInteger("maxHeight", 456);
+  EXPECT_EQ(gfx::Size(123, 456),
+            TabCaptureCaptureOffscreenTabFunction::DetermineInitialSize(
+                options));
+
+  // Use default size if larger than mandatory minimum size.  Else, use
+  // mandatory minimum size.
+  options.video_constraints.reset(new MediaStreamConstraint());
+  properties = &options.video_constraints->mandatory.additional_properties;
+  properties->SetInteger("minWidth", 123);
+  properties->SetInteger("minHeight", 456);
+  EXPECT_EQ(gfx::Size(1280, 720),
+            TabCaptureCaptureOffscreenTabFunction::DetermineInitialSize(
+                options));
+  properties->SetInteger("minWidth", 2560);
+  properties->SetInteger("minHeight", 1440);
+  EXPECT_EQ(gfx::Size(2560, 1440),
+            TabCaptureCaptureOffscreenTabFunction::DetermineInitialSize(
+                options));
+
+  // Use specified optional maximum size, if no mandatory size was specified.
+  options.video_constraints.reset(new MediaStreamConstraint());
+  options.video_constraints->optional.reset(
+      new MediaStreamConstraint::Optional());
+  properties = &options.video_constraints->optional->additional_properties;
+  properties->SetInteger("maxWidth", 456);
+  properties->SetInteger("maxHeight", 123);
+  EXPECT_EQ(gfx::Size(456, 123),
+            TabCaptureCaptureOffscreenTabFunction::DetermineInitialSize(
+                options));
+  // ...unless a mandatory minimum size was specified:
+  options.video_constraints->mandatory.additional_properties.SetInteger(
+      "minWidth", 500);
+  options.video_constraints->mandatory.additional_properties.SetInteger(
+      "minHeight", 600);
+  EXPECT_EQ(gfx::Size(500, 600),
+            TabCaptureCaptureOffscreenTabFunction::DetermineInitialSize(
+                options));
+
+  // Use default size if larger than optional minimum size.  Else, use optional
+  // minimum size.
+  options.video_constraints.reset(new MediaStreamConstraint());
+  options.video_constraints->optional.reset(
+      new MediaStreamConstraint::Optional());
+  properties = &options.video_constraints->optional->additional_properties;
+  properties->SetInteger("minWidth", 9999);
+  properties->SetInteger("minHeight", 8888);
+  EXPECT_EQ(gfx::Size(9999, 8888),
+            TabCaptureCaptureOffscreenTabFunction::DetermineInitialSize(
+                options));
+}
+
 // Tests API behaviors, including info queries, and constraints violations.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests.html")) << message_;
+}
+
+// Tests that there is a maximum limitation to the number of simultaneous
+// off-screen tabs.
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MaxOffscreenTabs) {
+  AddExtensionToCommandLineWhitelist();
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "max_offscreen_tabs.html"))
+      << message_;
 }
 
 // Tests that tab capture video frames can be received in a VIDEO element.
@@ -119,6 +197,29 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, EndToEndThroughWebRTC) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest(
       "tab_capture", "end_to_end.html?method=webrtc&colorDeviation=50"))
+      << message_;
+}
+
+// Tests that tab capture video frames can be received in a VIDEO element from
+// an off-screen tab.
+IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, OffscreenTabEndToEnd) {
+  if (IsTooIntensiveForThisPlatform()) {
+    LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
+    return;
+  }
+  AddExtensionToCommandLineWhitelist();
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "offscreen_end_to_end.html"))
+      << message_;
+}
+
+// Tests that off-screen tabs can't do evil things (e.g., access local files).
+IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, OffscreenTabEvilTests) {
+  if (IsTooIntensiveForThisPlatform()) {
+    LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
+    return;
+  }
+  AddExtensionToCommandLineWhitelist();
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "offscreen_evil_tests.html"))
       << message_;
 }
 

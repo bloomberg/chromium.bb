@@ -1151,6 +1151,7 @@ enum HistogramValue {
   EASYUNLOCKPRIVATE_SETUPCONNECTIONSEND,
   DATAREDUCTIONPROXY_GETDATAUSAGE,
   EASYUNLOCKPRIVATE_SETUPCONNECTIONGETDEVICEADDRESS,
+  TABCAPTURE_CAPTUREOFFSCREENTAB,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

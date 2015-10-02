@@ -9,11 +9,12 @@ var binding = require('binding').Binding.create('tabCapture');
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  apiFunctions.setCustomCallback('capture',
-      function(name, request, callback, response) {
+  function proxyToGetUserMedia(name, request, callback, response) {
     if (!callback)
       return;
 
+    // TODO(miu): Propagate exceptions and always provide a useful error when
+    // callback() is invoked with a null argument.  http://crbug.com/463679
     if (response) {
       var options = {};
       if (response.audioConstraints)
@@ -24,14 +25,17 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
       try {
         navigator.webkitGetUserMedia(options,
                                      function(stream) { callback(stream); },
-                                     function() { callback(null); });
+                                     function(exception) { callback(null); });
       } catch (e) {
         callback(null);
       }
     } else {
       callback(null);
     }
-  });
+  }
+
+  apiFunctions.setCustomCallback('capture', proxyToGetUserMedia);
+  apiFunctions.setCustomCallback('captureOffscreenTab', proxyToGetUserMedia);
 });
 
 exports.binding = binding.generate();

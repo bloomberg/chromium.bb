@@ -20,6 +20,9 @@ class Profile;
 
 namespace extensions {
 
+// TODO(miu): This file and classes should be renamed, as this implementation
+// has expanded in scope to be used for all off-screen tabs.
+
 class OffscreenPresentation;  // Forward declaration.  See below.
 
 // Creates, owns, and manages all OffscreenPresentation instances created by the
@@ -31,7 +34,7 @@ class OffscreenPresentation;  // Forward declaration.  See below.
 // Usage:
 //
 //   OffscreenPresentationsOwner::Get(extension_contents)
-//       ->FindOrStartPresentation(start_url, presentation_id, size);
+//       ->StartPresentation(start_url, presentation_id, size);
 //
 // This class operates exclusively on the UI thread and so is not thread-safe.
 class OffscreenPresentationsOwner
@@ -44,12 +47,14 @@ class OffscreenPresentationsOwner
   static OffscreenPresentationsOwner* Get(
       content::WebContents* extension_web_contents);
 
-  // Find a presentation, keyed by |start_url| and |presentation_id|.  If found,
-  // return it.  Otherwise, instantiate a new one and return that.  If too many
-  // presentations have already been started, this method returns nullptr.
-  OffscreenPresentation* FindOrStartPresentation(
+  // Instantiate a new off-screen tab, navigate it to |start_url|, and register
+  // it with the presentation router using |presentation_id| (if a non-empty
+  // string).  The new tab's main frame will start out with the given
+  // |initial_size| in DIP coordinates.  If too many off-screen tabs have
+  // already been started, this method returns nullptr.
+  OffscreenPresentation* StartPresentation(
       const GURL& start_url,
-      const std::string& presentation_id,
+      const std::string& optional_presentation_id,
       const gfx::Size& initial_size);
 
  protected:
@@ -67,11 +72,6 @@ class OffscreenPresentationsOwner
   friend class content::WebContentsUserData<OffscreenPresentationsOwner>;
 
   explicit OffscreenPresentationsOwner(content::WebContents* contents);
-
-  // Returns the OffscreenPresentation that matches the given |start_url| and
-  // |presentation_id|, or nullptr if not found.
-  OffscreenPresentation* FindPresentation(
-      const GURL& start_url, const std::string& presentation_id) const;
 
   content::WebContents* const extension_web_contents_;
   ScopedVector<OffscreenPresentation> presentations_;

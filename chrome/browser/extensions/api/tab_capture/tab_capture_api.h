@@ -21,11 +21,11 @@ class TabCaptureCaptureFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("tabCapture.capture", TABCAPTURE_CAPTURE)
 
- protected:
-  ~TabCaptureCaptureFunction() override {}
+ private:
+  ~TabCaptureCaptureFunction() final {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  bool RunSync() final;
 };
 
 class TabCaptureGetCapturedTabsFunction : public ChromeSyncExtensionFunction {
@@ -33,11 +33,28 @@ class TabCaptureGetCapturedTabsFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("tabCapture.getCapturedTabs",
                              TABCAPTURE_GETCAPTUREDTABS)
 
- protected:
-  ~TabCaptureGetCapturedTabsFunction() override {}
+ private:
+  ~TabCaptureGetCapturedTabsFunction() final {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  bool RunSync() final;
+};
+
+class TabCaptureCaptureOffscreenTabFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("tabCapture.captureOffscreenTab",
+                             TABCAPTURE_CAPTUREOFFSCREENTAB)
+
+  // Examines the min/max width/height constraints in the |options| to determine
+  // a suitable initial off-screen tab size.
+  static gfx::Size DetermineInitialSize(
+      const extensions::api::tab_capture::CaptureOptions& options);
+
+ private:
+  ~TabCaptureCaptureOffscreenTabFunction() final {}
+
+  // ExtensionFunction:
+  bool RunSync() final;
 };
 
 }  // namespace extensions

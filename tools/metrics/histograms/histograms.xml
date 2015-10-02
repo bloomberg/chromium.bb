@@ -58265,6 +58265,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1088" label="EASYUNLOCKPRIVATE_SETUPCONNECTIONSEND"/>
   <int value="1089" label="DATAREDUCTIONPROXY_GETDATAUSAGE"/>
   <int value="1090" label="EASYUNLOCKPRIVATE_SETUPCONNECTIONGETDEVICEADDRESS"/>
+  <int value="1091" label="TABCAPTURE_CAPTUREOFFSCREENTAB"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

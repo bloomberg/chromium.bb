@@ -49,9 +49,16 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
   // Add a tab capture request to the registry when a stream is requested
   // through the API.  |target_contents| refers to the WebContents associated
   // with the tab to be captured.  |extension_id| refers to the Extension
-  // initiating the request.
+  // initiating the request.  |is_anonymous| is true if GetCapturedTabs() should
+  // not list the captured tab, and no status change events should be dispatched
+  // for it.
+  //
+  // TODO(miu): This is broken in that it's possible for a later WebContents
+  // instance to have the same pointer value as a previously-destroyed one.  To
+  // be fixed while working on http://crbug.com/163100.
   bool AddRequest(content::WebContents* target_contents,
-                  const std::string& extension_id);
+                  const std::string& extension_id,
+                  bool is_anonymous);
 
   // Called by MediaStreamDevicesController to verify the request before
   // creating the stream.  |render_process_id| and |render_frame_id| are used to

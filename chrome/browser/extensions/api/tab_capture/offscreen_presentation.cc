@@ -138,25 +138,17 @@ OffscreenPresentationsOwner* OffscreenPresentationsOwner::Get(
   return FromWebContents(extension_web_contents);
 }
 
-OffscreenPresentation* OffscreenPresentationsOwner::FindOrStartPresentation(
+OffscreenPresentation* OffscreenPresentationsOwner::StartPresentation(
     const GURL& start_url,
     const std::string& presentation_id,
     const gfx::Size& initial_size) {
-  OffscreenPresentation* presentation =
-      FindPresentation(start_url, presentation_id);
-  if (presentation) {
-    DVLOG(1) << "Returning already-running OffscreenPresentation for start_url="
-             << presentation->start_url();
-    return presentation;
-  }
-
   if (presentations_.size() >= kMaxPresentationsPerExtension)
     return nullptr;  // Maximum number of presentations reached.
 
-  presentation = new OffscreenPresentation(this, start_url, presentation_id);
-  presentations_.push_back(presentation);
-  presentation->Start(initial_size);
-  return presentation;
+  presentations_.push_back(
+      new OffscreenPresentation(this, start_url, presentation_id));
+  presentations_.back()->Start(initial_size);
+  return presentations_.back();
 }
 
 void OffscreenPresentationsOwner::ClosePresentation(
@@ -165,16 +157,6 @@ void OffscreenPresentationsOwner::ClosePresentation(
       std::find(presentations_.begin(), presentations_.end(), presentation);
   if (it != presentations_.end())
     presentations_.erase(it);
-}
-
-OffscreenPresentation* OffscreenPresentationsOwner::FindPresentation(
-    const GURL& start_url, const std::string& presentation_id) const {
-  for (OffscreenPresentation* presentation : presentations_) {
-    if (presentation->start_url() == start_url &&
-        presentation->presentation_id() == presentation_id)
-      return presentation;
-  }
-  return nullptr;
 }
 
 OffscreenPresentation::OffscreenPresentation(OffscreenPresentationsOwner* owner,
@@ -218,6 +200,13 @@ void OffscreenPresentation::Start(const gfx::Size& initial_size) {
   // Mute audio output.  When tab capture starts, the audio will be
   // automatically unmuted, but will be captured into the MediaStream.
   presentation_web_contents_->SetAudioMuted(true);
+
+  // TODO(imcheng): If |presentation_id_| is not empty, register it with the
+  // PresentationRouter.  http://crbug.com/513859
+  if (!presentation_id_.empty()) {
+    NOTIMPLEMENTED()
+        << "Register with PresentationRouter, id=" << presentation_id_;
+  }
 
   // Navigate to the initial URL of the presentation.
   content::NavigationController::LoadURLParams load_params(start_url_);
@@ -381,14 +370,12 @@ void OffscreenPresentation::RequestMediaAccessPermission(
   // WebContents.
   content::BrowserContext* const extension_browser_context =
       owner_->extension_web_contents()->GetBrowserContext();
-  std::string extension_id;
-  for (const ExtensionHost* host :
-           ProcessManager::Get(extension_browser_context)->background_hosts()) {
-    if (host->host_contents() == owner_->extension_web_contents()) {
-      extension_id = host->extension_id();
-      break;
-    }
-  }
+  const extensions::Extension* const extension =
+      ProcessManager::Get(extension_browser_context)->
+          GetExtensionForWebContents(owner_->extension_web_contents());
+  const std::string extension_id = extension ? extension->id() : "";
+  LOG_IF(DFATAL, extension_id.empty())
+      << "Extension that started this OffscreenPresentation was not found.";
 
   // If verified, allow any tab capture audio/video devices that were requested.
   extensions::TabCaptureRegistry* const tab_capture_registry =

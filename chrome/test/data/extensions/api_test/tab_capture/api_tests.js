@@ -4,6 +4,21 @@
 
 var tabCapture = chrome.tabCapture;
 
+var helloWorldPageUri = 'data:text/html;charset=UTF-8,' +
+    encodeURIComponent('<html><body>Hello world!</body></html>');
+
+function assertIsSameSetOfTabs(list_a, list_b, id_field_name) {
+  chrome.test.assertEq(list_a.length, list_b.length);
+  function tabIdSortFunction(a, b) {
+    return (a[id_field_name] || 0) - (b[id_field_name] || 0);
+  }
+  list_a.sort(tabIdSortFunction);
+  list_b.sort(tabIdSortFunction);
+  for (var i = 0, end = list_a.length; i < end; ++i) {
+    chrome.test.assertEq(list_a[i][id_field_name], list_b[i][id_field_name]);
+  }
+}
+
 chrome.test.runTests([
   function captureTabAndVerifyStateTransitions() {
     // Tab capture events in the order they happen.
@@ -143,6 +158,38 @@ chrome.test.runTests([
     tabCapture.capture({audio: false}, function(stream) {
       chrome.test.assertTrue(!stream);
       chrome.test.succeed();
+    });
+  },
+
+  function offscreenTabsDoNotShowUpAsCapturedTabs() {
+    tabCapture.getCapturedTabs(function(tab_list_before) {
+      tabCapture.captureOffscreenTab(
+          helloWorldPageUri,
+          {video: true},
+          function(stream) {
+            chrome.test.assertTrue(!!stream);
+            tabCapture.getCapturedTabs(function(tab_list_after) {
+              assertIsSameSetOfTabs(tab_list_before, tab_list_after, 'tabId');
+              stream.getVideoTracks()[0].stop();
+              chrome.test.succeed();
+            });
+          });
+    });
+  },
+
+  function offscreenTabsDoNotShowUpInTabsQuery() {
+    chrome.tabs.query({/* all tabs */}, function(tab_list_before) {
+      tabCapture.captureOffscreenTab(
+          helloWorldPageUri,
+          {video: true},
+          function(stream) {
+            chrome.test.assertTrue(!!stream);
+            chrome.tabs.query({/* all tabs */}, function(tab_list_after) {
+              assertIsSameSetOfTabs(tab_list_before, tab_list_after, 'id');
+              stream.getVideoTracks()[0].stop();
+              chrome.test.succeed();
+            });
+          });
     });
   }
 ]);
