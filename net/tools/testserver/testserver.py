@@ -154,7 +154,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
 
   def __init__(self, server_address, request_hander_class, pem_cert_and_key,
                ssl_client_auth, ssl_client_cas, ssl_client_cert_types,
-               ssl_bulk_ciphers, ssl_key_exchanges, enable_npn,
+               ssl_bulk_ciphers, ssl_key_exchanges, npn_protocols,
                record_resume_info, tls_intolerant,
                tls_intolerance_type, signed_cert_timestamps,
                fallback_scsv_enabled, ocsp_response,
@@ -172,10 +172,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
     self.ssl_client_auth = ssl_client_auth
     self.ssl_client_cas = []
     self.ssl_client_cert_types = []
-    if enable_npn:
-      self.next_protos = ['http/1.1']
-    else:
-      self.next_protos = None
+    self.npn_protocols = npn_protocols
     self.signed_cert_timestamps = signed_cert_timestamps
     self.fallback_scsv_enabled = fallback_scsv_enabled
     self.ocsp_response = ocsp_response
@@ -234,7 +231,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
                                     settings=self.ssl_handshake_settings,
                                     reqCAs=self.ssl_client_cas,
                                     reqCertTypes=self.ssl_client_cert_types,
-                                    nextProtos=self.next_protos,
+                                    nextProtos=self.npn_protocols,
                                     signedCertTimestamps=
                                     self.signed_cert_timestamps,
                                     fallbackSCSV=self.fallback_scsv_enabled,
@@ -2056,7 +2053,7 @@ class ServerRunner(testserver_base.TestServerRunner):
                              self.options.ssl_client_cert_type,
                              self.options.ssl_bulk_cipher,
                              self.options.ssl_key_exchange,
-                             self.options.enable_npn,
+                             self.options.npn_protocols,
                              self.options.record_resume,
                              self.options.tls_intolerant,
                              self.options.tls_intolerance_type,
@@ -2285,12 +2282,10 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   'multiple times, indicating multiple '
                                   'algorithms should be enabled.');
     # TODO(davidben): Add ALPN support to tlslite.
-    self.option_parser.add_option('--enable-npn', dest='enable_npn',
-                                  default=False, const=True,
-                                  action='store_const',
-                                  help='Enable server support for the NPN '
-                                  'extension. The server will advertise '
-                                  'support for exactly one protocol, http/1.1')
+    self.option_parser.add_option('--npn-protocols', action='append',
+                                  help='Specify the list of protocols sent in'
+                                  'an NPN response.  The server will not'
+                                  'support NPN if the list is empty.')
     self.option_parser.add_option('--file-root-url', default='/files/',
                                   help='Specify a root URL for files served.')
     # TODO(ricea): Generalize this to support basic auth for HTTP too.

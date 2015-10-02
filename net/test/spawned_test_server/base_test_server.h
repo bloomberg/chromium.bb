@@ -218,8 +218,10 @@ class BaseTestServer {
     // stapled OCSP response.
     bool ocsp_server_unavailable;
 
-    // Whether to enable NPN support.
-    bool enable_npn;
+    // List of protocols to advertise in NPN extension.  NPN is not supported if
+    // list is empty.  Note that regardless of what protocol is negotiated, the
+    // test server will continue to speak HTTP/1.1.
+    std::vector<std::string> npn_protocols;
 
     // Whether to send a fatal alert immediately after completing the handshake.
     bool alert_after_handshake;

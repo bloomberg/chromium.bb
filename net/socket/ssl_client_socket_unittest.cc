@@ -3138,7 +3138,7 @@ TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.enable_npn = true;
+  server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(
@@ -3165,7 +3165,7 @@ TEST_F(SSLClientSocketFalseStartTest, RSA) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.enable_npn = true;
+  server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(
@@ -3179,7 +3179,7 @@ TEST_F(SSLClientSocketFalseStartTest, DHE_RSA) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.enable_npn = true;
+  server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, false));
@@ -3192,7 +3192,7 @@ TEST_F(SSLClientSocketFalseStartTest, NoAEAD) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128;
-  server_options.enable_npn = true;
+  server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, false));
@@ -3206,7 +3206,7 @@ TEST_F(SSLClientSocketFalseStartTest, SessionResumption) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.enable_npn = true;
+  server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP11);
 
@@ -3239,7 +3239,7 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBeforeFinished) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.enable_npn = true;
+  server_options.npn_protocols.push_back(std::string("http/1.1"));
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
@@ -3297,7 +3297,7 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBadFinished) {
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.enable_npn = true;
+  server_options.npn_protocols.push_back(std::string("http/1.1"));
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
@@ -3416,6 +3416,98 @@ TEST_F(SSLClientSocketChannelIDTest, FailingChannelIDAsync) {
 
   EXPECT_EQ(ERR_UNEXPECTED, rv);
   EXPECT_FALSE(sock_->IsConnected());
+}
+
+TEST_F(SSLClientSocketTest, NPN) {
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.npn_protocols.push_back(std::string("spdy/3.1"));
+  server_options.npn_protocols.push_back(std::string("h2"));
+  ASSERT_TRUE(ConnectToTestServer(server_options));
+
+  SSLConfig client_config;
+  client_config.next_protos.push_back(kProtoHTTP2);
+  client_config.next_protos.push_back(kProtoHTTP11);
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_EQ(OK, rv);
+
+  std::string proto;
+  EXPECT_EQ(SSLClientSocket::kNextProtoNegotiated, sock_->GetNextProto(&proto));
+  EXPECT_EQ("h2", proto);
+}
+
+// In case of no overlap between client and server list, SSLClientSocket should
+// fall back to first one on the client list.
+TEST_F(SSLClientSocketTest, NPNNoOverlap) {
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.npn_protocols.push_back(std::string("http/1.1"));
+  ASSERT_TRUE(ConnectToTestServer(server_options));
+
+  SSLConfig client_config;
+  client_config.next_protos.push_back(kProtoHTTP2);
+  client_config.next_protos.push_back(kProtoSPDY31);
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_EQ(OK, rv);
+
+  std::string proto;
+  EXPECT_EQ(SSLClientSocket::kNextProtoNoOverlap, sock_->GetNextProto(&proto));
+  EXPECT_EQ("h2", proto);
+}
+
+// Server preference should be respected.  The list is in decreasing order of
+// preference.
+TEST_F(SSLClientSocketTest, NPNServerPreference) {
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.npn_protocols.push_back(std::string("spdy/3.1"));
+  server_options.npn_protocols.push_back(std::string("h2"));
+  ASSERT_TRUE(ConnectToTestServer(server_options));
+
+  SSLConfig client_config;
+  client_config.next_protos.push_back(kProtoHTTP2);
+  client_config.next_protos.push_back(kProtoSPDY31);
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_EQ(OK, rv);
+
+  std::string proto;
+  EXPECT_EQ(SSLClientSocket::kNextProtoNegotiated, sock_->GetNextProto(&proto));
+  EXPECT_EQ("spdy/3.1", proto);
+}
+
+TEST_F(SSLClientSocketTest, NPNClientDisabled) {
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.npn_protocols.push_back(std::string("http/1.1"));
+  ASSERT_TRUE(ConnectToTestServer(server_options));
+
+  SSLConfig client_config;
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_EQ(OK, rv);
+
+  std::string proto;
+  EXPECT_EQ(SSLClientSocket::kNextProtoUnsupported,
+            sock_->GetNextProto(&proto));
+}
+
+TEST_F(SSLClientSocketTest, NPNServerDisabled) {
+  SpawnedTestServer::SSLOptions server_options;
+  ASSERT_TRUE(ConnectToTestServer(server_options));
+
+  SSLConfig client_config;
+  client_config.next_protos.push_back(kProtoHTTP11);
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_EQ(OK, rv);
+
+  std::string proto;
+  EXPECT_EQ(SSLClientSocket::kNextProtoUnsupported,
+            sock_->GetNextProto(&proto));
 }
 
 }  // namespace net
