@@ -2438,7 +2438,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, cons
             updateCompositedSelectionIfNeeded();
 
             if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-                calculatePaintProperties();
+                updatePaintProperties();
 
             if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
                 synchronizedPaint(interestRect);
@@ -2457,13 +2457,13 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, cons
     }
 }
 
-void FrameView::calculatePaintProperties()
+void FrameView::updatePaintProperties()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-    lifecycle().advanceTo(DocumentLifecycle::InCalcPaintProps);
+    lifecycle().advanceTo(DocumentLifecycle::InUpdatePaintProperties);
     // TODO(pdr): Calculate the paint properties by walking the layout tree.
-    lifecycle().advanceTo(DocumentLifecycle::CalcPaintPropsClean);
+    lifecycle().advanceTo(DocumentLifecycle::UpdatePaintPropertiesClean);
 }
 
 void FrameView::synchronizedPaint(const LayoutRect& interestRect)

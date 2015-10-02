@@ -68,8 +68,8 @@ public:
         PaintInvalidationClean,
 
         // When RuntimeEnabledFeatures::slimmingPaintV2Enabled.
-        InCalcPaintProps,
-        CalcPaintPropsClean,
+        InUpdatePaintProperties,
+        UpdatePaintPropertiesClean,
 
         // When RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled
         // (implied by slimmingPaintV2Enabled).
@@ -174,7 +174,7 @@ inline bool DocumentLifecycle::stateAllowsTreeMutations() const
     return m_state != InStyleRecalc
         && m_state != InPerformLayout
         && m_state != InCompositingUpdate
-        && m_state != InCalcPaintProps
+        && m_state != InUpdatePaintProperties
         && m_state != InPaint
         && m_state != InCompositingForSlimmingPaintV2;
 }
@@ -199,7 +199,7 @@ inline bool DocumentLifecycle::stateAllowsDetach() const
         || m_state == LayoutClean
         || m_state == CompositingClean
         || m_state == PaintInvalidationClean
-        || m_state == CalcPaintPropsClean
+        || m_state == UpdatePaintPropertiesClean
         || m_state == PaintClean
         || m_state == CompositingForSlimmingPaintV2Clean
         || m_state == Stopping;
@@ -210,7 +210,7 @@ inline bool DocumentLifecycle::stateAllowsLayoutInvalidation() const
     return m_state != InPerformLayout
         && m_state != InCompositingUpdate
         && m_state != InPaintInvalidation
-        && m_state != InCalcPaintProps
+        && m_state != InUpdatePaintProperties
         && m_state != InPaint
         && m_state != InCompositingForSlimmingPaintV2;
 }
