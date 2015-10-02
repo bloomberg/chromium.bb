@@ -206,6 +206,9 @@ class VIEWS_EXPORT BridgedNativeWidget
   // frame is ready, or a timeout occurs.
   void MaybeWaitForFrame(const gfx::Size& size_in_dip);
 
+  // Show the window using -[NSApp beginSheet:..], modal for the parent window.
+  void ShowAsModalSheet();
+
   // Sets mouseDownCanMoveWindow on |bridged_view_| and triggers the NSWindow to
   // update its draggable region.
   void SetDraggable(bool draggable);

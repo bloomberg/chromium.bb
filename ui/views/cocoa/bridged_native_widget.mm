@@ -457,14 +457,7 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
     return;
 
   if (native_widget_mac_->IsWindowModalSheet()) {
-    NSWindow* parent_window = parent_->GetNSWindow();
-    DCHECK(parent_window);
-
-    [NSApp beginSheet:window_
-        modalForWindow:parent_window
-         modalDelegate:[window_ delegate]
-        didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-           contextInfo:nullptr];
+    ShowAsModalSheet();
     return;
   }
 
@@ -809,7 +802,13 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
   layer()->GetCompositor()->SetHostHasTransparentBackground(translucent);
   layer()->SetFillsBoundsOpaquely(!translucent);
 
-  if (translucent) {
+  // Use the regular window background for window modal sheets. The layer() will
+  // still paint over most of it, but the native -[NSApp beginSheet:] animation
+  // blocks the UI thread, so there's no way to invalidate the shadow to match
+  // the composited layer. This assumes the native window shape is a good match
+  // for the composited NonClientFrameView, which should be the case since the
+  // native shape is what's most appropriate for displaying sheets on Mac.
+  if (translucent && !native_widget_mac_->IsWindowModalSheet()) {
     [window_ setOpaque:NO];
     [window_ setBackgroundColor:[NSColor clearColor]];
   }
@@ -1145,6 +1144,25 @@ void BridgedNativeWidget::MaybeWaitForFrame(const gfx::Size& size_in_dip) {
     if (compositor_widget_->HasFrameOfSize(size_in_dip))
       return;  // Frame arrived.
   }
+}
+
+void BridgedNativeWidget::ShowAsModalSheet() {
+  // -[NSApp beginSheet:] will block the UI thread while the animation runs.
+  // So that it doesn't animate a fully transparent window, first wait for a
+  // frame. The first step is to pretend that the window is already visible.
+  window_visible_ = true;
+  layer()->SetVisible(true);
+  native_widget_mac_->GetWidget()->OnNativeWidgetVisibilityChanged(true);
+  MaybeWaitForFrame(GetClientAreaSize());
+
+  NSWindow* parent_window = parent_->GetNSWindow();
+  DCHECK(parent_window);
+
+  [NSApp beginSheet:window_
+      modalForWindow:parent_window
+       modalDelegate:[window_ delegate]
+      didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+         contextInfo:nullptr];
 }
 
 NSMutableDictionary* BridgedNativeWidget::GetWindowProperties() const {

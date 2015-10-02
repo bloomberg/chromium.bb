@@ -115,16 +115,21 @@ class NativeWidgetMacTest : public WidgetTest {
   // The content size of NSWindows made by MakeNativeParent().
   NSRect ParentRect() const { return NSMakeRect(100, 100, 300, 200); }
 
-  // Make a native NSWindow to use as a parent.
-  NSWindow* MakeNativeParent() {
-    native_parent_.reset(
-        [[NSWindow alloc] initWithContentRect:ParentRect()
-                                    styleMask:NSBorderlessWindowMask
-                                      backing:NSBackingStoreBuffered
-                                        defer:NO]);
+  // Make a native NSWindow with the given |style_mask| to use as a parent.
+  NSWindow* MakeNativeParentWithStyle(int style_mask) {
+    native_parent_.reset([[NSWindow alloc]
+        initWithContentRect:ParentRect()
+                  styleMask:style_mask
+                    backing:NSBackingStoreBuffered
+                      defer:NO]);
     [native_parent_ setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
     [native_parent_ makeKeyAndOrderFront:nil];
     return native_parent_;
+  }
+
+  // Make a borderless, native NSWindow to use as a parent.
+  NSWindow* MakeNativeParent() {
+    return MakeNativeParentWithStyle(NSBorderlessWindowMask);
   }
 
   // Create a Widget backed by the NativeWidgetMacTestWindow NSWindow subclass.
@@ -658,16 +663,19 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
 
 namespace {
 
-// Delegate to make Widgets of MODAL_TYPE_CHILD.
-class ChildModalDialogDelegate : public DialogDelegateView {
+// Delegate to make Widgets of a provided ui::ModalType.
+class ModalDialogDelegate : public DialogDelegateView {
  public:
-  ChildModalDialogDelegate() {}
+  explicit ModalDialogDelegate(ui::ModalType modal_type)
+      : modal_type_(modal_type) {}
 
   // WidgetDelegate:
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_CHILD; }
+  ui::ModalType GetModalType() const override { return modal_type_; }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ChildModalDialogDelegate);
+  const ui::ModalType modal_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
 };
 
 // While in scope, waits for a call to a swizzled objective C method, then quits
@@ -727,7 +735,8 @@ ScopedSwizzleWaiter* ScopedSwizzleWaiter::instance_ = nullptr;
 // animation). However, testing with overlapping swizzlers is tricky.
 Widget* ShowChildModalWidgetAndWait(NSWindow* native_parent) {
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      new ChildModalDialogDelegate, nullptr, [native_parent contentView]);
+      new ModalDialogDelegate(ui::MODAL_TYPE_CHILD), nullptr,
+      [native_parent contentView]);
 
   modal_dialog_widget->SetBounds(gfx::Rect(50, 50, 200, 150));
   EXPECT_FALSE(modal_dialog_widget->IsVisible());
@@ -799,6 +808,90 @@ TEST_F(NativeWidgetMacTest, NativeWindowChildModalShowHide) {
   }
 }
 
+// Tests behavior of window-modal dialogs, displayed as sheets.
+TEST_F(NativeWidgetMacTest, WindowModalSheet) {
+  NSWindow* native_parent =
+      MakeNativeParentWithStyle(NSClosableWindowMask | NSTitledWindowMask);
+
+  Widget* sheet_widget = views::DialogDelegate::CreateDialogWidget(
+      new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW), nullptr,
+      [native_parent contentView]);
+
+  // Retain, to run checks after the Widget is torn down.
+  base::scoped_nsobject<NSWindow> sheet_window(
+      [sheet_widget->GetNativeWindow() retain]);
+
+  // Although there is no titlebar displayed, sheets need NSTitledWindowMask in
+  // order to properly engage window-modal behavior in AppKit.
+  EXPECT_EQ(NSTitledWindowMask, [sheet_window styleMask]);
+
+  sheet_widget->SetBounds(gfx::Rect(50, 50, 200, 150));
+  EXPECT_FALSE(sheet_widget->IsVisible());
+  EXPECT_FALSE(sheet_widget->GetLayer()->IsDrawn());
+
+  NSButton* parent_close_button =
+      [native_parent standardWindowButton:NSWindowCloseButton];
+  EXPECT_TRUE(parent_close_button);
+  EXPECT_TRUE([parent_close_button isEnabled]);
+
+  bool did_observe = false;
+  bool* did_observe_ptr = &did_observe;
+  id observer = [[NSNotificationCenter defaultCenter]
+      addObserverForName:NSWindowWillBeginSheetNotification
+                  object:native_parent
+                   queue:nil
+              usingBlock:^(NSNotification* note) {
+                // Ensure that before the sheet runs, the window contents would
+                // be drawn.
+                EXPECT_TRUE(sheet_widget->IsVisible());
+                EXPECT_TRUE(sheet_widget->GetLayer()->IsDrawn());
+                *did_observe_ptr = true;
+              }];
+
+  sheet_widget->Show();  // Should run the above block, then animate the sheet.
+  EXPECT_TRUE(did_observe);
+  [[NSNotificationCenter defaultCenter] removeObserver:observer];
+
+  // Modal, so the close button in the parent window should get disabled.
+  EXPECT_FALSE([parent_close_button isEnabled]);
+
+  // Trigger the close. Don't use CloseNow, since that tears down the UI before
+  // the close sheet animation gets a chance to run (so it's banned).
+  sheet_widget->Close();
+  EXPECT_TRUE(sheet_widget->IsVisible());
+
+  did_observe = false;
+
+  // Experimentally (on 10.10), this notification is posted from within the
+  // -[NSWindow orderOut:] call that is triggered from -[ViewsNSWindowDelegate
+  // sheetDidEnd:]. |sheet_widget| will be destroyed next, so it's still safe to
+  // use in the block. However, since the orderOut just happened, it's not very
+  // interesting.
+  observer = [[NSNotificationCenter defaultCenter]
+      addObserverForName:NSWindowDidEndSheetNotification
+                  object:native_parent
+                   queue:nil
+              usingBlock:^(NSNotification* note) {
+                EXPECT_TRUE([sheet_window delegate]);
+                EXPECT_FALSE(sheet_widget->IsVisible());
+                EXPECT_FALSE(sheet_widget->GetLayer()->IsDrawn());
+                *did_observe_ptr = true;
+              }];
+
+  // Pump in order to trigger -[NSWindow endSheet:..], which will block while
+  // the animation runs, then delete |sheet_widget|.
+  TestWidgetObserver widget_observer(sheet_widget);
+  EXPECT_TRUE([sheet_window delegate]);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE([sheet_window delegate]);
+
+  EXPECT_TRUE(did_observe);  // Also ensures the Close() actually uses sheets.
+  [[NSNotificationCenter defaultCenter] removeObserver:observer];
+
+  EXPECT_TRUE(widget_observer.widget_closed());
+  EXPECT_TRUE([parent_close_button isEnabled]);
+}
+
 // Test calls to Widget::ReparentNativeView() that result in a no-op on Mac.
 // Tests with both native and non-native parents.
 TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
@@ -841,7 +934,8 @@ TEST_F(NativeWidgetMacTest, NativeProperties) {
 
   // Create a dialog widget (also TYPE_WINDOW), but with a DialogDelegate.
   Widget* dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      new ChildModalDialogDelegate, nullptr, regular_widget->GetNativeView());
+      new ModalDialogDelegate(ui::MODAL_TYPE_CHILD), nullptr,
+      regular_widget->GetNativeView());
   EXPECT_TRUE([dialog_widget->GetNativeWindow() canBecomeKeyWindow]);
   // Dialogs shouldn't take main status away from their parent.
   EXPECT_FALSE([dialog_widget->GetNativeWindow() canBecomeMainWindow]);
