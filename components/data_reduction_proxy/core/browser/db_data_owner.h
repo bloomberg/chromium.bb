@@ -50,9 +50,6 @@ class DBDataOwner {
   // Deletes all historical data usage from storage.
   void DeleteHistoricalDataUsage();
 
-  // Deletes browsing history for the given data range from storage.
-  void DeleteBrowsingHistory(const base::Time& start, const base::Time& end);
-
   // Returns a weak pointer to self for use on UI thread.
   base::WeakPtr<DBDataOwner> GetWeakPtr();
 

@@ -1,12 +1,9 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include <map>
-#include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
@@ -18,21 +15,6 @@ namespace {
 // Each bucket holds data usage for a 15 minute interval. History is maintained
 // for 60 days.
 const unsigned kNumExpectedBuckets = 60 * 24 * 60 / 15;
-const int kBucketsInHour = 60 / 15;
-const int kTestCurrentBucketIndex = 2880;
-
-base::Time::Exploded TestExplodedTime() {
-  base::Time::Exploded exploded;
-  exploded.year = 2001;
-  exploded.month = 12;
-  exploded.day_of_month = 31;
-  exploded.hour = 12;
-  exploded.minute = 1;
-  exploded.second = 0;
-  exploded.millisecond = 0;
-
-  return exploded;
-}
 }
 
 namespace data_reduction_proxy {
@@ -52,41 +34,9 @@ class DataUsageStoreTest : public testing::Test {
     return data_usage_store_->current_bucket_last_updated_.ToInternalValue();
   }
 
-  int ComputeBucketIndex(const base::Time& time) const {
-    return data_usage_store_->ComputeBucketIndex(time);
-  }
-
   TestDataStore* store() const { return store_.get(); }
 
   DataUsageStore* data_usage_store() const { return data_usage_store_.get(); }
-
-  void PopulateStore() {
-    base::Time::Exploded exploded = TestExplodedTime();
-    base::Time current_time = base::Time::FromUTCExploded(exploded);
-
-    DataUsageBucket current_bucket;
-    current_bucket.set_last_updated_timestamp(current_time.ToInternalValue());
-    std::string bucket_value;
-    ASSERT_TRUE(current_bucket.SerializeToString(&bucket_value));
-
-    std::map<std::string, std::string> map;
-    map.insert(
-        std::pair<std::string, std::string>("current_bucket_index", "2880"));
-    for (int i = 0; i < static_cast<int>(kNumExpectedBuckets); ++i) {
-      base::Time time = current_time - base::TimeDelta::FromMinutes(i * 5);
-      DataUsageBucket bucket;
-      bucket.set_last_updated_timestamp(time.ToInternalValue());
-      int index = kTestCurrentBucketIndex - i;
-      if (index < 0)
-        index += kNumExpectedBuckets;
-
-      std::string bucket_value;
-      DCHECK(bucket.SerializeToString(&bucket_value));
-      map.insert(std::pair<std::string, std::string>(
-          base::StringPrintf("data_usage_bucket:%d", index), bucket_value));
-    }
-    store()->Put(map);
-  }
 
  private:
   scoped_ptr<TestDataStore> store_;
@@ -136,7 +86,11 @@ TEST_F(DataUsageStoreTest, LoadAndStoreToSameBucket) {
 }
 
 TEST_F(DataUsageStoreTest, StoreSameBucket) {
-  base::Time::Exploded exploded = TestExplodedTime();
+  base::Time::Exploded exploded;
+  exploded.year = 2001;
+  exploded.month = 1;
+  exploded.day_of_month = 1;
+  exploded.hour = 0;
 
   exploded.minute = 0;
   exploded.second = 0;
@@ -172,7 +126,11 @@ TEST_F(DataUsageStoreTest, StoreSameBucket) {
 }
 
 TEST_F(DataUsageStoreTest, StoreConsecutiveBuckets) {
-  base::Time::Exploded exploded = TestExplodedTime();
+  base::Time::Exploded exploded;
+  exploded.year = 2001;
+  exploded.month = 1;
+  exploded.day_of_month = 1;
+  exploded.hour = 0;
 
   exploded.minute = 0;
   exploded.second = 59;
@@ -301,146 +259,6 @@ TEST_F(DataUsageStoreTest, DeleteHistoricalDataUsage) {
 
   data_usage_store()->DeleteHistoricalDataUsage();
   ASSERT_EQ(0u, store()->map()->size());
-}
-
-TEST_F(DataUsageStoreTest, BucketOverlapsInterval) {
-  base::Time::Exploded exploded = TestExplodedTime();
-  base::Time time1 = base::Time::FromUTCExploded(exploded);
-
-  exploded.minute = 16;
-  base::Time time16 = base::Time::FromUTCExploded(exploded);
-
-  exploded.minute = 17;
-  base::Time time17 = base::Time::FromUTCExploded(exploded);
-
-  exploded.minute = 18;
-  base::Time time18 = base::Time::FromUTCExploded(exploded);
-
-  exploded.minute = 33;
-  base::Time time33 = base::Time::FromUTCExploded(exploded);
-
-  exploded.minute = 34;
-  base::Time time34 = base::Time::FromUTCExploded(exploded);
-
-  exploded.minute = 46;
-  base::Time time46 = base::Time::FromUTCExploded(exploded);
-
-  ASSERT_FALSE(DataUsageStore::BucketOverlapsInterval(time1, time17, time33));
-  ASSERT_TRUE(DataUsageStore::BucketOverlapsInterval(time16, time17, time33));
-  ASSERT_TRUE(DataUsageStore::BucketOverlapsInterval(time18, time17, time33));
-  ASSERT_TRUE(DataUsageStore::BucketOverlapsInterval(time34, time17, time33));
-  ASSERT_FALSE(DataUsageStore::BucketOverlapsInterval(time46, time17, time33));
-}
-
-TEST_F(DataUsageStoreTest, ComputeBucketIndex) {
-  PopulateStore();
-
-  base::Time::Exploded exploded = TestExplodedTime();
-
-  DataUsageBucket current_bucket;
-  data_usage_store()->LoadCurrentDataUsageBucket(&current_bucket);
-
-  exploded.minute = 0;
-  ASSERT_EQ(kTestCurrentBucketIndex,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
-  exploded.minute = 14;
-  ASSERT_EQ(kTestCurrentBucketIndex,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
-
-  exploded.minute = 15;
-  ASSERT_EQ(kTestCurrentBucketIndex + 1,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
-
-  exploded.hour = 11;
-  exploded.minute = 59;
-  ASSERT_EQ(kTestCurrentBucketIndex - 1,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
-
-  exploded.minute = 0;
-  ASSERT_EQ(kTestCurrentBucketIndex - kBucketsInHour,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
-
-  exploded.hour = 1;
-  ASSERT_EQ(kTestCurrentBucketIndex - kBucketsInHour * 11,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
-
-  exploded.day_of_month = 1;
-  exploded.hour = 12;
-  ASSERT_EQ(kTestCurrentBucketIndex - kBucketsInHour * 30 * 24,
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
-
-  exploded.hour = 11;
-  exploded.minute = 45;
-  ASSERT_EQ(kTestCurrentBucketIndex - kBucketsInHour * 30 * 24 - 1 +
-                static_cast<int>(kNumExpectedBuckets),
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
-
-  exploded.minute = 30;
-  ASSERT_EQ(kTestCurrentBucketIndex - kBucketsInHour * 30 * 24 - 2 +
-                static_cast<int>(kNumExpectedBuckets),
-            ComputeBucketIndex(base::Time::FromUTCExploded(exploded)));
-}
-
-TEST_F(DataUsageStoreTest, DeleteBrowsingHistory) {
-  PopulateStore();
-  DataUsageBucket current_bucket;
-  data_usage_store()->LoadCurrentDataUsageBucket(&current_bucket);
-
-  ASSERT_EQ(kNumExpectedBuckets + 1, store()->map()->size());
-
-  base::Time::Exploded exploded = TestExplodedTime();
-  exploded.minute = 0;
-  base::Time now = base::Time::FromUTCExploded(exploded);
-  base::Time fifteen_mins_from_now = now + base::TimeDelta::FromMinutes(15);
-  // Deleting browsing from the future should be a no-op.
-  data_usage_store()->DeleteBrowsingHistory(fifteen_mins_from_now,
-                                            fifteen_mins_from_now);
-  ASSERT_EQ(kNumExpectedBuckets + 1, store()->map()->size());
-
-  ASSERT_TRUE(store()->map()->find(base::StringPrintf(
-                  "data_usage_bucket:%d", kTestCurrentBucketIndex)) !=
-              store()->map()->end());
-  // Delete the current bucket.
-  data_usage_store()->DeleteBrowsingHistory(now, now);
-  ASSERT_EQ(kNumExpectedBuckets, store()->map()->size());
-  ASSERT_TRUE(store()->map()->find(base::StringPrintf(
-                  "data_usage_bucket:%d", kTestCurrentBucketIndex)) ==
-              store()->map()->end());
-
-  data_usage_store()->DeleteBrowsingHistory(
-      now - base::TimeDelta::FromMinutes(5), now);
-  ASSERT_EQ(kNumExpectedBuckets - 1, store()->map()->size());
-  ASSERT_TRUE(store()->map()->find(base::StringPrintf(
-                  "data_usage_bucket:%d", kTestCurrentBucketIndex - 1)) ==
-              store()->map()->end());
-
-  data_usage_store()->DeleteBrowsingHistory(now - base::TimeDelta::FromDays(30),
-                                            now);
-  ASSERT_EQ(kNumExpectedBuckets - kBucketsInHour * 30 * 24,
-            store()->map()->size());
-  ASSERT_TRUE(store()->map()->find("data_usage_bucket:0") ==
-              store()->map()->end());
-  ASSERT_TRUE(store()->map()->find(base::StringPrintf(
-                  "data_usage_bucket:%d", kNumExpectedBuckets - 1)) !=
-              store()->map()->end());
-
-  // Delete wraps around and removes the last element which is at position
-  // (|kNumExpectedBuckets| - 1).
-  data_usage_store()->DeleteBrowsingHistory(
-      now - base::TimeDelta::FromDays(30) - base::TimeDelta::FromMinutes(5),
-      now);
-  ASSERT_EQ(kNumExpectedBuckets - kBucketsInHour * 30 * 24 - 1,
-            store()->map()->size());
-  ASSERT_TRUE(store()->map()->find(base::StringPrintf(
-                  "data_usage_bucket:%d", kNumExpectedBuckets - 1)) ==
-              store()->map()->end());
-  ASSERT_TRUE(store()->map()->find(base::StringPrintf(
-                  "data_usage_bucket:%d", kNumExpectedBuckets - 2)) !=
-              store()->map()->end());
-
-  data_usage_store()->DeleteBrowsingHistory(now - base::TimeDelta::FromDays(60),
-                                            now);
-  ASSERT_EQ(1u, store()->map()->size());
 }
 
 }  // namespace data_reduction_proxy

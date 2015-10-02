@@ -293,14 +293,6 @@ void DataReductionProxyService::DeleteHistoricalDataUsage() {
                                        db_data_owner_->GetWeakPtr()));
 }
 
-void DataReductionProxyService::DeleteBrowsingHistory(const base::Time& start,
-                                                      const base::Time& end) {
-  DCHECK_LE(start, end);
-  db_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DBDataOwner::DeleteBrowsingHistory,
-                            db_data_owner_->GetWeakPtr(), start, end));
-}
-
 void DataReductionProxyService::AddObserver(
     DataReductionProxyServiceObserver* observer) {
   DCHECK(CalledOnValidThread());

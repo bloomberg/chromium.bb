@@ -136,10 +136,6 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     compression_stats_->data_usage_map_last_updated_ = time;
   }
 
-  DataReductionProxyCompressionStats::SiteUsageMap* DataUsageMap() {
-    return &compression_stats_->data_usage_map_;
-  }
-
   void SetUpPrefs() {
     CreatePrefList(prefs::kDailyHttpOriginalContentLength);
     CreatePrefList(prefs::kDailyHttpReceivedContentLength);
@@ -413,17 +409,8 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     compression_stats_->GetHistoricalDataUsage(onLoadDataUsage);
   }
 
-  void LoadHistoricalDataUsage(
-      const HistoricalDataUsageCallback& onLoadDataUsage) {
-    compression_stats_->service_->LoadHistoricalDataUsage(onLoadDataUsage);
-  }
-
   void DeleteHistoricalDataUsage() {
     compression_stats_->DeleteHistoricalDataUsage();
-  }
-
-  void DeleteBrowsingHistory(const base::Time& start, const base::Time& end) {
-    compression_stats_->DeleteBrowsingHistory(start, end);
   }
 
   void EnableDataUsageReporting() {
@@ -1210,56 +1197,6 @@ TEST_F(DataReductionProxyCompressionStatsTest, DeleteHistoricalDataUsage) {
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
                                     base::Unretained(&verifier)));
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(DataReductionProxyCompressionStatsTest, DeleteBrowsingHistory) {
-  EnableDataUsageReporting();
-  base::RunLoop().RunUntilIdle();
-
-  base::Time now = base::Time::Now();
-  RecordDataUsage("https://www.yahoo.com", 900, 1100);
-  // Fake above record to be from 15 minutes ago so that it is flushed to
-  // storage.
-  base::Time fifteen_mins_ago = now - TimeDelta::FromMinutes(15);
-  SetLastUpdatedTimestamp(fifteen_mins_ago);
-
-  // This data usage will be in memory.
-  RecordDataUsage("https://www.google.com", 1000, 1250);
-  SetLastUpdatedTimestamp(now);
-
-  // This should only delete in-memory usage.
-  DeleteBrowsingHistory(now, now);
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_TRUE(DataUsageMap()->empty());
-
-  auto expected_data_usage =
-      make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
-          kNumExpectedBuckets));
-  data_reduction_proxy::PerConnectionDataUsage* connection_usage =
-      expected_data_usage->at(kNumExpectedBuckets - 1).add_connection_usage();
-  data_reduction_proxy::PerSiteDataUsage* site_usage =
-      connection_usage->add_site_usage();
-  site_usage->set_hostname("www.yahoo.com");
-  site_usage->set_data_used(900);
-  site_usage->set_original_size(1100);
-  DataUsageLoadVerifier verifier1(expected_data_usage.Pass());
-
-  LoadHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
-                                     base::Unretained(&verifier1)));
-  base::RunLoop().RunUntilIdle();
-
-  // This should delete in-storage usage as well.
-  DeleteBrowsingHistory(fifteen_mins_ago, now);
-  base::RunLoop().RunUntilIdle();
-
-  expected_data_usage =
-      make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
-          kNumExpectedBuckets));
-  DataUsageLoadVerifier verifier2(expected_data_usage.Pass());
-  LoadHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
-                                     base::Unretained(&verifier2)));
   base::RunLoop().RunUntilIdle();
 }
 

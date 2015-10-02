@@ -658,22 +658,6 @@ void DataReductionProxyCompressionStats::GetHistoricalDataUsage(
   service_->LoadHistoricalDataUsage(get_data_usage_callback);
 }
 
-void DataReductionProxyCompressionStats::DeleteBrowsingHistory(
-    const base::Time& start,
-    const base::Time& end) {
-  DCHECK_NE(LOADING, current_data_usage_load_status_);
-
-  if (!data_usage_map_last_updated_.is_null() &&
-      DataUsageStore::BucketOverlapsInterval(data_usage_map_last_updated_,
-                                             start, end)) {
-    data_usage_map_.clear();
-    data_usage_map_last_updated_ = base::Time();
-    data_usage_map_is_dirty_ = false;
-  }
-
-  service_->DeleteBrowsingHistory(start, end);
-}
-
 void DataReductionProxyCompressionStats::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   connection_type_ = StoredConnectionType(type);
