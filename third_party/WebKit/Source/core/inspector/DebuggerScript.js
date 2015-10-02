@@ -68,7 +68,8 @@ DebuggerScript.getFunctionScopes = function(fun)
             continue;
         result.push({
             type: scopeDetails.type(),
-            object: scopeObject
+            object: scopeObject,
+            name: scopeDetails.name()
         });
     }
     return result;
@@ -389,10 +390,12 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
     var scopeMirrors = (scopeDetailsLevel === DebuggerScript.ScopeInfoDetails.NoScopes ? [] : frameMirror.allScopes(scopeDetailsLevel === DebuggerScript.ScopeInfoDetails.FastAsyncScopes));
     var scopeTypes = new Array(scopeMirrors.length);
     var scopeObjects = new Array(scopeMirrors.length);
+    var scopeNames = new Array(scopeMirrors.length);
     for (var i = 0; i < scopeMirrors.length; ++i) {
         var scopeDetails = scopeMirrors[i].details();
         scopeTypes[i] = scopeDetails.type();
         scopeObjects[i] = scopeDetails.object();
+        scopeNames[i] = scopeDetails.name();
     }
 
     // Calculated lazily.
@@ -405,14 +408,16 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
         if (!scopeChain) {
             scopeChain = [];
             for (var i = 0, j = 0; i < scopeObjects.length; ++i) {
-                var scopeObject = DebuggerScript._buildScopeObject(scopeTypes[i], scopeObjects[i]);
+                var scopeObject = DebuggerScript._buildScopeObject(scopeTypes[i], scopeObjects[i], scopeNames[i]);
                 if (scopeObject) {
                     scopeTypes[j] = scopeTypes[i];
+                    scopeNames[j] = scopeNames[i];
                     scopeChain[j] = scopeObject;
                     ++j;
                 }
             }
             scopeTypes.length = scopeChain.length;
+            scopeNames.length = scopeChain.length;
             scopeObjects = null; // Free for GC.
         }
         return scopeChain;
@@ -423,6 +428,13 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
         if (!scopeChain)
             lazyScopeChain();
         return scopeTypes;
+    }
+
+    function lazyScopeNames()
+    {
+        if (!scopeChain)
+            lazyScopeChain();
+        return scopeNames;
     }
 
     function ensureFuncMirror()
@@ -534,6 +546,7 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
         "thisObject": thisObject,
         "scopeChain": lazyScopeChain,
         "scopeType": lazyScopeTypes,
+        "scopeName": lazyScopeNames,
         "evaluate": evaluate,
         "caller": callerFrame,
         "restart": restart,

@@ -24,7 +24,7 @@ Local
     x: 2014
 Block
     makeClosureDeeperBlockVar: "block.deep.TextParam"
-Closure
+Closure (makeClosure)
     makeClosureBlockVar: "block.TextParam"
     makeClosureDeeperLocalVar: "local.deep.TextParam"
     makeClosureLocalVar: "local.TextParam"

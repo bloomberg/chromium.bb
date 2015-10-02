@@ -224,6 +224,11 @@ JavaScriptCallFrame.prototype.setVariableValue = function(scopeIndex, variableNa
  */
 JavaScriptCallFrame.prototype.scopeType = function(scopeIndex) {}
 
+/**
+ * @param {number} scopeIndex
+ * @return {string}
+ */
+JavaScriptCallFrame.prototype.scopeName = function(scopeIndex) {}
 
 /** @type {!Window} */
 var inspectedGlobalObject;

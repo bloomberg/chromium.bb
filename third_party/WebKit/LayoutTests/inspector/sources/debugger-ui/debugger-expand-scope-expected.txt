@@ -15,7 +15,7 @@ Local
     negZero: -0
     this: Window
     x: 2010
-Closure
+Closure (makeClosure)
     makeClosureLocalVar: "local.TextParam"
     n: "TextParam"
 WindowGlobal

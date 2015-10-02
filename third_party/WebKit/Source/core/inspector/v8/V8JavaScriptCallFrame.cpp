@@ -137,6 +137,16 @@ void scopeTypeMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     info.GetReturnValue().Set(impl->scopeType(scopeIndex));
 }
 
+void scopeNameMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::unwrap(info.Holder());
+    v8::Maybe<int32_t> maybeScopeIndex = info[0]->Int32Value(info.GetIsolate()->GetCurrentContext());
+    if (maybeScopeIndex.IsNothing())
+        return;
+    int scopeIndex = maybeScopeIndex.FromJust();
+    info.GetReturnValue().Set(impl->scopeName(scopeIndex));
+}
+
 char hiddenPropertyName[] = "v8inspector::JavaScriptCallFrame";
 char className[] = "V8JavaScriptCallFrame";
 using JavaScriptCallFrameWrapper = InspectorWrapper<JavaScriptCallFrame, hiddenPropertyName, className>;
@@ -162,6 +172,7 @@ const JavaScriptCallFrameWrapper::V8MethodConfiguration V8JavaScriptCallFrameMet
     {"restart", restartMethodCallback},
     {"setVariableValue", setVariableValueMethodCallback},
     {"scopeType", scopeTypeMethodCallback},
+    {"scopeName", scopeNameMethodCallback}
 };
 
 } // namespace

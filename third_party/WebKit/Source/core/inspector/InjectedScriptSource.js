@@ -482,7 +482,7 @@ InjectedScript.prototype = {
             delete details["rawScopes"];
             var scopes = [];
             for (var i = 0; i < rawScopes.length; ++i)
-                scopes[i] = InjectedScript.CallFrameProxy._createScopeJson(rawScopes[i].type, rawScopes[i].object, objectGroupName);
+                scopes[i] = InjectedScript.CallFrameProxy._createScopeJson(rawScopes[i].type, rawScopes[i].name, rawScopes[i].object, objectGroupName);
             details.scopeChain = scopes;
         }
         return details;
@@ -1543,7 +1543,7 @@ InjectedScript.CallFrameProxy.prototype = {
         var scopeChain = callFrame.scopeChain;
         var scopeChainProxy = [];
         for (var i = 0; i < scopeChain.length; ++i)
-            scopeChainProxy[i] = InjectedScript.CallFrameProxy._createScopeJson(callFrame.scopeType(i), scopeChain[i], "backtrace");
+            scopeChainProxy[i] = InjectedScript.CallFrameProxy._createScopeJson(callFrame.scopeType(i), callFrame.scopeName(i), scopeChain[i], "backtrace");
         return scopeChainProxy;
     },
 
@@ -1567,17 +1567,21 @@ InjectedScript.CallFrameProxy._scopeTypeNames = {
 
 /**
  * @param {number} scopeTypeCode
+ * @param {string} scopeName
  * @param {*} scopeObject
  * @param {string} groupId
  * @return {!DebuggerAgent.Scope}
  */
-InjectedScript.CallFrameProxy._createScopeJson = function(scopeTypeCode, scopeObject, groupId)
+InjectedScript.CallFrameProxy._createScopeJson = function(scopeTypeCode, scopeName, scopeObject, groupId)
 {
-    return {
+    var scope = {
         object: injectedScript._wrapObject(scopeObject, groupId),
         type: InjectedScript.CallFrameProxy._scopeTypeNames[scopeTypeCode],
         __proto__: null
     };
+    if (scopeName)
+        scope.name = scopeName;
+    return scope;
 }
 
 /**
