@@ -12,6 +12,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
 #include "modules/encryptedmedia/MediaKeySystemAccess.h"
@@ -19,6 +20,7 @@
 #include "platform/EncryptedMediaRequest.h"
 #include "platform/Logging.h"
 #include "platform/network/ParsedContentType.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebEncryptedMediaClient.h"
 #include "public/platform/WebEncryptedMediaRequest.h"
 #include "public/platform/WebMediaKeySystemConfiguration.h"
@@ -103,6 +105,13 @@ public:
     }
 
 private:
+    // For widevine key system, generate warning and report to UMA if
+    // |m_supportedConfigurations| contains any video capability with empty
+    // robustness string.
+    // TODO(xhwang): Remove after we handle empty robustness correctly.
+    // See http://crbug.com/482277
+    void checkVideoCapabilityRobustness() const;
+
     Member<ScriptPromiseResolver> m_resolver;
     const String m_keySystem;
     WebVector<WebMediaKeySystemConfiguration> m_supportedConfigurations;
@@ -140,6 +149,8 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(ScriptState* sc
         webConfig.label = config.label();
         m_supportedConfigurations[i] = webConfig;
     }
+
+    checkVideoCapabilityRobustness();
 }
 
 void MediaKeySystemAccessInitializer::requestSucceeded(WebContentDecryptionModuleAccess* access)
@@ -152,6 +163,42 @@ void MediaKeySystemAccessInitializer::requestNotSupported(const WebString& error
 {
     m_resolver->reject(DOMException::create(NotSupportedError, errorMessage));
     m_resolver.clear();
+}
+
+void MediaKeySystemAccessInitializer::checkVideoCapabilityRobustness() const
+{
+    // Only check for widevine key system.
+    if (keySystem() != "com.widevine.alpha")
+        return;
+
+    bool hasVideoCapabilities = false;
+    bool hasEmptyRobustness = false;
+
+    for (const auto& config : m_supportedConfigurations) {
+        if (!config.hasVideoCapabilities)
+            continue;
+
+        hasVideoCapabilities = true;
+
+        for (const auto& capability : config.videoCapabilities) {
+            if (capability.robustness.isEmpty()) {
+                hasEmptyRobustness = true;
+                break;
+            }
+        }
+
+        if (hasEmptyRobustness)
+            break;
+    }
+
+    if (hasVideoCapabilities)
+        Platform::current()->histogramEnumeration("Media.EME.Widevine.VideoCapability.HasEmptyRobustness", hasEmptyRobustness, 2);
+
+    if (hasEmptyRobustness) {
+        m_resolver->executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel,
+            "It is recommended that a robustness level be specified. Not specifying the robustness level could "
+            "result in unexpected behavior in the future, potentially including failure to play."));
+    }
 }
 
 } // namespace
@@ -191,7 +238,6 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
         // TODO(ddorwin): Implement the following:
         // Reject promise with a new DOMException whose name is NotSupportedError.
     }
-
 
     // 5. Let origin be the origin of document.
     //    (Passed with the execution context in step 7.)

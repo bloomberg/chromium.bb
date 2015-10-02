@@ -17549,6 +17549,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>System code count using the Widevine key system.</summary>
 </histogram>
 
+<histogram name="Media.EME.Widevine.VideoCapability.HasEmptyRobustness"
+    enum="BooleanEmpty">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    Whether the robustness level of any video capability in the supported
+    configuration passed into requestMediaKeySystemAccess() is empty. This is
+    specific to the Widevine key system.
+  </summary>
+</histogram>
+
 <histogram name="Media.FallbackHardwareAudioBitsPerChannel">
   <owner>dalecurtis@chromium.org</owner>
   <summary>
@@ -52981,6 +52991,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanDuplicate" type="int">
   <int value="0" label="Not Duplicate"/>
   <int value="1" label="Duplicate"/>
+</enum>
+
+<enum name="BooleanEmpty" type="int">
+  <int value="0" label="Not Empty"/>
+  <int value="1" label="Empty"/>
 </enum>
 
 <enum name="BooleanEnabled" type="int">
