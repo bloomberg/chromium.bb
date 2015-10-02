@@ -999,15 +999,15 @@ CommandHandler.COMMANDS_['drive-go-to-drive'] = /** @type {Command} */ ({
 });
 
 /**
- * Opens a file with default action.
+ * Opens a file with default task.
  * @type {Command}
  */
-CommandHandler.COMMANDS_['default-action'] = /** @type {Command} */ ({
+CommandHandler.COMMANDS_['default-task'] = /** @type {Command} */ ({
   execute: function(event, fileManager) {
-    fileManager.taskController.executeDefaultAction();
+    fileManager.taskController.executeDefaultTask();
   },
   canExecute: function(event, fileManager) {
-    var canExecute = fileManager.taskController.canExecuteDefaultAction();
+    var canExecute = fileManager.taskController.canExecuteDefaultTask();
     event.canExecute = canExecute;
     event.command.setHidden(!canExecute);
   }

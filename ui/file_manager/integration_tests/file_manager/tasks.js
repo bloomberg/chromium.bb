@@ -31,8 +31,8 @@ function FakeTask(isDefault, taskId, title, opt_isGenericFileHandler) {
  * @const
  */
 var DOWNLOADS_FAKE_TASKS = [
-  new FakeTask(true, 'dummytaskid|open-with', 'DummyAction1'),
-  new FakeTask(false, 'dummytaskid-2|open-with', 'DummyAction2')
+  new FakeTask(true, 'dummytaskid|open-with', 'DummyTask1'),
+  new FakeTask(false, 'dummytaskid-2|open-with', 'DummyTask2')
 ];
 
 /**
@@ -42,8 +42,8 @@ var DOWNLOADS_FAKE_TASKS = [
  * @const
  */
 var DRIVE_FAKE_TASKS = [
-  new FakeTask(true, 'dummytaskid|drive|open-with', 'DummyAction1'),
-  new FakeTask(false, 'dummytaskid-2|drive|open-with', 'DummyAction2')
+  new FakeTask(true, 'dummytaskid|drive|open-with', 'DummyTask1'),
+  new FakeTask(false, 'dummytaskid-2|drive|open-with', 'DummyTask2')
 ];
 
 /**
@@ -91,7 +91,7 @@ function executeDefaultTask(expectedTaskId, windowId) {
 }
 
 /**
- * Tests to specify default action via the default action dialog.
+ * Tests to specify default task via the default task dialog.
  *
  * @param {string} expectedTaskId Task ID to be expected to newly specify as
  *     default.
@@ -99,11 +99,11 @@ function executeDefaultTask(expectedTaskId, windowId) {
  * @return {Promise} Promise to be fulfilled/rejected depends on the test
  *     result.
  */
-function defaultActionDialog(expectedTaskId, windowId) {
+function defaultTaskDialog(expectedTaskId, windowId) {
   // Prepare expected labels.
   var expectedLabels = [
-    'DummyAction1 (default)',
-    'DummyAction2'
+    'DummyTask1 (default)',
+    'DummyTask2'
   ];
 
   // Select file.
@@ -122,7 +122,7 @@ function defaultActionDialog(expectedTaskId, windowId) {
       then(function() {
         return remoteCall.callRemoteTestUtil(
             'fakeEvent', windowId, ['#tasks', 'select', {
-              item: { action: 'ChangeDefaultAction' }
+              item: {type: 'ChangeDefaultTask'}
             }]);
       }).
       then(function(result) {
@@ -136,7 +136,7 @@ function defaultActionDialog(expectedTaskId, windowId) {
       var menuItemsPromise = remoteCall.callRemoteTestUtil(
           'queryAllElements',
           windowId,
-          ['#default-action-dialog #default-actions-list li']);
+          ['#default-task-dialog #default-tasks-list li']);
 
       // Compare the contents of items.
       return menuItemsPromise.then(function(items) {
@@ -159,7 +159,7 @@ function defaultActionDialog(expectedTaskId, windowId) {
             'fakeEvent',
             windowId,
             [
-              '#default-action-dialog #default-actions-list li:nth-of-type(2)',
+              '#default-task-dialog #default-tasks-list li:nth-of-type(2)',
               'mousedown',
               {bubbles: true, button: 0}
             ]);
@@ -169,7 +169,7 @@ function defaultActionDialog(expectedTaskId, windowId) {
             'fakeEvent',
             windowId,
             [
-              '#default-action-dialog #default-actions-list li:nth-of-type(2)',
+              '#default-task-dialog #default-tasks-list li:nth-of-type(2)',
               'click',
               {bubbles: true}
             ]);
@@ -181,7 +181,7 @@ function defaultActionDialog(expectedTaskId, windowId) {
   // Wait for the dialog hidden, and the task is executed.
   var dialogHiddenPromise = itemClickedPromise.then(function() {
     return remoteCall.waitForElementLost(
-        windowId, '#default-action-dialog', null);
+        windowId, '#default-task-dialog', null);
   });
 
   // Execute the new default task.
@@ -210,21 +210,21 @@ testcase.executeDefaultTaskOnDownloads = function() {
       executeDefaultTask.bind(null, 'dummytaskid|open-with')));
 };
 
-testcase.defaultActionDialogOnDrive = function() {
+testcase.defaultTaskDialogOnDrive = function() {
   testPromise(setupTaskTest(RootPath.DRIVE, DRIVE_FAKE_TASKS).then(
-      defaultActionDialog.bind(null, 'dummytaskid-2|drive|open-with')));
+      defaultTaskDialog.bind(null, 'dummytaskid-2|drive|open-with')));
 };
 
-testcase.defaultActionDialogOnDownloads = function() {
+testcase.defaultTaskDialogOnDownloads = function() {
   testPromise(setupTaskTest(RootPath.DOWNLOADS, DOWNLOADS_FAKE_TASKS).then(
-      defaultActionDialog.bind(null, 'dummytaskid-2|open-with')));
+      defaultTaskDialog.bind(null, 'dummytaskid-2|open-with')));
 };
 
 testcase.genericTaskIsNotExecuted = function() {
   var tasks = [
-    new FakeTask(false, 'dummytaskid|open-with', 'DummyAction1',
+    new FakeTask(false, 'dummytaskid|open-with', 'DummyTask1',
         true /* isGenericFileHandler */),
-    new FakeTask(false, 'dummytaskid-2|open-with', 'DummyAction2',
+    new FakeTask(false, 'dummytaskid-2|open-with', 'DummyTask2',
         true /* isGenericFileHandler */)
   ];
 
@@ -243,11 +243,11 @@ testcase.genericTaskIsNotExecuted = function() {
 
 testcase.genericAndNonGenericTasksAreMixed = function() {
   var tasks = [
-    new FakeTask(false, 'dummytaskid|open-with', 'DummyAction1',
+    new FakeTask(false, 'dummytaskid|open-with', 'DummyTask1',
         true /* isGenericFileHandler */),
-    new FakeTask(false, 'dummytaskid-2|open-with', 'DummyAction2',
+    new FakeTask(false, 'dummytaskid-2|open-with', 'DummyTask2',
         false /* isGenericFileHandler */),
-    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyAction3',
+    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyTask3',
         true /* isGenericFileHandler */)
   ];
 

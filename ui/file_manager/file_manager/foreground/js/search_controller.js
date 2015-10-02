@@ -208,7 +208,7 @@ SearchController.prototype.onItemSelect_ = function() {
     if (!locationInfo ||
         (locationInfo.isRootEntry &&
          locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE_OTHER)) {
-      this.taskController_.doEntryAction(entry);
+      this.taskController_.executeEntryTask(entry);
       return;
     }
     // If the parent entry can be /drive/other.
@@ -216,7 +216,7 @@ SearchController.prototype.onItemSelect_ = function() {
         parentEntry,
         function() {
           this.directoryModel_.selectEntry(entry);
-          this.taskController_.doEntryAction(entry);
+          this.taskController_.executeEntryTask(entry);
         }.bind(this));
   }.bind(this));
 };

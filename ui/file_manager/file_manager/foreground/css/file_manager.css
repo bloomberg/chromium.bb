@@ -1406,23 +1406,23 @@ html[dir='rtl'] .badge {
 /* Padding counterweights negative margins of items, thus eliminating scroll
    bar when it's not needed. Max height is set to fit 8 items before showing
    scroll bar. */
-#default-actions-list {
+#default-tasks-list {
   max-height: 328px;
   padding: 1px 0;
 }
 
-#default-actions-list > li > * {
+#default-tasks-list > li > * {
   background-position: 5px center;
   background-repeat: no-repeat;
   background-size: 16px 16px;
   padding-left: 26px;
 }
 
-#default-actions-list > li[selected] {
+#default-tasks-list > li[selected] {
   background-color: rgb(225, 225, 225);
 }
 
-#default-actions-list:focus > li[selected] {
+#default-tasks-list:focus > li[selected] {
   background-color: rgb(66, 129, 244);
   color: white;
 }
@@ -1617,7 +1617,7 @@ li[renaming=''] .badge {
   align-items: center;
 }
 
-#default-actions-list li {
+#default-tasks-list li {
   height: 32px;
   line-height: 32px;
 }
@@ -1942,7 +1942,7 @@ body[drive='error'] #unmounted-panel > .error,
   flex: none;
 }
 
-#default-action-dialog {
+#default-task-dialog {
   min-width: 300px;
   width: auto;
 }

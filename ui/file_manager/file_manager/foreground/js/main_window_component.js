@@ -188,7 +188,7 @@ MainWindowComponent.prototype.onDetailClick_ = function(event) {
     this.directoryModel_.changeDirectoryEntry(
         /** @type {!DirectoryEntry} */ (entry));
   } else {
-    this.taskController_.dispatchSelectionAction();
+    this.taskController_.executeSelectionTask();
   }
 };
 
@@ -269,7 +269,6 @@ MainWindowComponent.prototype.onListKeyDown_ = function(event) {
       break;
 
     case 'Enter':  // Enter => Change directory or perform default action.
-      // TODO(dgozman): move directory action to dispatchSelectionAction.
       var selection = this.selectionHandler_.selection;
       if (selection.totalCount === 1 &&
           selection.entries[0].isDirectory &&
@@ -283,7 +282,7 @@ MainWindowComponent.prototype.onListKeyDown_ = function(event) {
           this.directoryModel_.changeDirectoryEntry(
               /** @type {!DirectoryEntry} */ (selection.entries[0]));
         }
-      } else if (this.taskController_.dispatchSelectionAction()) {
+      } else if (this.taskController_.executeSelectionTask()) {
         event.preventDefault();
       }
       break;

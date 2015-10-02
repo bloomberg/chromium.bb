@@ -58,7 +58,7 @@ function testDoEntryAction(callback) {
       new cr.EventTarget(),
       null);
 
-  controller.doEntryAction(fileSystem.entries['/test.png']);
+  controller.executeEntryTask(fileSystem.entries['/test.png']);
   reportPromise(new Promise(function(fulfill) {
     chrome.fileManagerPrivate.executeTask = fulfill;
   }).then(function(info) {

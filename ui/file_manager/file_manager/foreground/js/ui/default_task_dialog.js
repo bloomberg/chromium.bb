@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 /**
- * DefaultActionDialog contains a message, a list box, an ok button, and a
+ * DefaultTaskDialog contains a message, a list box, an ok button, and a
  * cancel button.
- * This dialog should be used as action picker for file operations.
+ * This dialog should be used as task picker for file operations.
  */
 cr.define('cr.filebrowser', function() {
 
@@ -16,13 +16,13 @@ cr.define('cr.filebrowser', function() {
    * @constructor
    * @extends {FileManagerDialogBase}
    */
-  function DefaultActionDialog(parentNode) {
+  function DefaultTaskDialog(parentNode) {
     FileManagerDialogBase.call(this, parentNode);
 
-    this.frame_.id = 'default-action-dialog';
+    this.frame_.id = 'default-task-dialog';
 
     this.list_ = new cr.ui.List();
-    this.list_.id = 'default-actions-list';
+    this.list_.id = 'default-tasks-list';
     this.frame_.insertBefore(this.list_, this.text_.nextSibling);
 
     this.selectionModel_ = this.list_.selectionModel =
@@ -47,7 +47,7 @@ cr.define('cr.filebrowser', function() {
     };
   }
 
-  DefaultActionDialog.prototype = {
+  DefaultTaskDialog.prototype = {
     __proto__: FileManagerDialogBase.prototype
   };
 
@@ -55,7 +55,7 @@ cr.define('cr.filebrowser', function() {
    * Renders item for list.
    * @param {Object} item Item to render.
    */
-  DefaultActionDialog.prototype.renderItem = function(item) {
+  DefaultTaskDialog.prototype.renderItem = function(item) {
     var result = this.document_.createElement('li');
 
     var div = this.document_.createElement('div');
@@ -88,7 +88,7 @@ cr.define('cr.filebrowser', function() {
    * @param {function(Object)} onSelectedItem Callback which is called when an
    *     item is selected.
    */
-  DefaultActionDialog.prototype.showDefaultActionDialog =
+  DefaultTaskDialog.prototype.showDefaultTaskDialog =
       function(title, message, items, defaultIndex, onSelectedItem) {
 
     this.onSelectedItemCallback_ = onSelectedItem;
@@ -97,7 +97,7 @@ cr.define('cr.filebrowser', function() {
         this, title, message);
 
     if (!show) {
-      console.error('DefaultActionDialog can\'t be shown.');
+      console.error('DefaultTaskDialog can\'t be shown.');
       return;
     }
 
@@ -120,7 +120,7 @@ cr.define('cr.filebrowser', function() {
    * List activation handler. Closes dialog and calls 'ok' callback.
    * @param {number} index Activated index.
    */
-  DefaultActionDialog.prototype.activateItemAtIndex_ = function(index) {
+  DefaultTaskDialog.prototype.activateItemAtIndex_ = function(index) {
     this.hide();
     this.onSelectedItemCallback_(this.dataModel_.item(index));
   };
@@ -128,7 +128,7 @@ cr.define('cr.filebrowser', function() {
   /**
    * Closes dialog and invokes callback with currently-selected item.
    */
-  DefaultActionDialog.prototype.onSelected_ = function() {
+  DefaultTaskDialog.prototype.onSelected_ = function() {
     if (this.selectionModel_.selectedIndex !== -1)
       this.activateItemAtIndex_(this.selectionModel_.selectedIndex);
   };
@@ -136,7 +136,7 @@ cr.define('cr.filebrowser', function() {
   /**
    * @override
    */
-  DefaultActionDialog.prototype.onContainerKeyDown_ = function(event) {
+  DefaultTaskDialog.prototype.onContainerKeyDown_ = function(event) {
     // Handle Escape.
     if (event.keyCode == 27) {
       this.hide();
@@ -147,5 +147,5 @@ cr.define('cr.filebrowser', function() {
     }
   };
 
-  return {DefaultActionDialog: DefaultActionDialog};
+  return {DefaultTaskDialog: DefaultTaskDialog};
 });

@@ -62,7 +62,7 @@ function TaskController(
   /**
    * @private {boolean}
    */
-  this.canExecuteDefaultAction_ = false;
+  this.canExecuteDefaultTask_ = false;
 
   /**
    * @private {boolean}
@@ -73,8 +73,8 @@ function TaskController(
    * @private {!cr.ui.Command}
    * @const
    */
-  this.defaultActionCommand_ = assertInstanceof(
-      document.querySelector('#default-action'), cr.ui.Command);
+  this.defaultTaskCommand_ = assertInstanceof(
+      document.querySelector('#default-task'), cr.ui.Command);
 
   /**
    * @private {!cr.ui.Command}
@@ -100,34 +100,34 @@ function TaskController(
 }
 
 /**
- * Cached the temporary disabled action item. Used inside
- * FileSelectionHandler.createTemporaryDisabledActionItem_().
+ * Cached the temporary disabled task item. Used inside
+ * FileSelectionHandler.createTemporaryDisabledTaskItem_().
  * @type {Object}
  * @private
  */
-TaskController.cachedDisabledActionItem_ = null;
+TaskController.cachedDisabledTaskItem_ = null;
 
 /**
- * Create the temporary disabled action item.
+ * Create the temporary disabled task item.
  * @return {Object} Created disabled item.
  * @private
  */
-TaskController.createTemporaryDisabledActionItem_ = function() {
-  if (!TaskController.cachedDisabledActionItem_) {
-    TaskController.cachedDisabledActionItem_ = {
-      title: str('ACTION_OPEN'),
+TaskController.createTemporaryDisabledTaskItem_ = function() {
+  if (!TaskController.cachedDisabledTaskItem_) {
+    TaskController.cachedDisabledTaskItem_ = {
+      title: str('TASK_OPEN'),
       disabled: true,
       taskId: null
     };
   }
 
-  return TaskController.cachedDisabledActionItem_;
+  return TaskController.cachedDisabledTaskItem_;
 };
 
 /**
- * Do action depending on the selection and the dialog type.
+ * Execute task depending on the selection and the dialog type.
  */
-TaskController.prototype.dispatchSelectionAction = function() {
+TaskController.prototype.executeSelectionTask = function() {
   if (this.dialogType_ == DialogType.FULL_PAGE) {
     if (this.tasks)
       this.tasks.executeDefault();
@@ -150,14 +150,14 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
   if (!this.tasks)
     return;
 
-  switch (event.item.action) {
-    case FileTasks.TaskMenuButtonActions.ShowMenu:
+  switch (event.item.type) {
+    case FileTasks.TaskMenuButtonItemType.ShowMenu:
       this.ui_.taskMenuButton.showMenu(false);
       break;
-    case FileTasks.TaskMenuButtonActions.RunTask:
+    case FileTasks.TaskMenuButtonItemType.RunTask:
       this.tasks.execute(event.item.task.taskId);
       break;
-    case FileTasks.TaskMenuButtonActions.ChangeDefaultAction:
+    case FileTasks.TaskMenuButtonItemType.ChangeDefaultTask:
       var selection = this.selectionHandler_.selection;
       var extensions = [];
 
@@ -186,7 +186,7 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
           true);
       break;
     default:
-      assertNotReached('Unknown action.');
+      assertNotReached('Unknown task.');
   }
 };
 
@@ -217,11 +217,11 @@ TaskController.prototype.changeDefaultTask_ = function(selection, task) {
 };
 
 /**
- * Executes default action.
+ * Executes default task.
  */
-TaskController.prototype.executeDefaultAction = function() {
+TaskController.prototype.executeDefaultTask = function() {
   if (this.tasks)
-    this.tasks.execute(this.ui_.fileContextMenu.defaultActionMenuItem.taskId);
+    this.tasks.execute(this.ui_.fileContextMenu.defaultTaskMenuItem.taskId);
 };
 
 /**
@@ -259,17 +259,17 @@ TaskController.prototype.onSelectionChanged_ = function() {
   this.tasks = new FileTasks(
       this.volumeManager_, this.metadataModel_, this.directoryModel_,
       this.ui_);
-  // Caller of update context menu action items.
+  // Caller of update context menu task items.
   // FileSelectionHandler.EventType.CHANGE
   if (this.dialogType_ === DialogType.FULL_PAGE &&
       selection.directoryCount === 0 && selection.fileCount > 0) {
     // Show disabled items for position calculation of the menu. They will be
     // overridden in this.updateFileSelectionAsync().
-    this.updateContextMenuActionItems_(
-        [TaskController.createTemporaryDisabledActionItem_()]);
+    this.updateContextMenuTaskItems_(
+        [TaskController.createTemporaryDisabledTaskItem_()]);
   } else {
     // Update context menu.
-    this.updateContextMenuActionItems_([]);
+    this.updateContextMenuTaskItems_([]);
   }
 };
 
@@ -291,7 +291,7 @@ TaskController.prototype.onSelectionChangeThrottled_ = function() {
             if (this.selectionHandler_.selection !== selection)
               return;
             this.tasks.display(this.ui_.taskMenuButton);
-            this.updateContextMenuActionItems_(
+            this.updateContextMenuTaskItems_(
                 assert(this.tasks.getTaskItems()));
           }.bind(this));
     }.bind(this));
@@ -301,11 +301,11 @@ TaskController.prototype.onSelectionChangeThrottled_ = function() {
 };
 
 /**
- * Returns whether default action command can be executed or not.
- * @return {boolean} True if default action command is executable.
+ * Returns whether default task command can be executed or not.
+ * @return {boolean} True if default task command is executable.
  */
-TaskController.prototype.canExecuteDefaultAction = function() {
-  return this.canExecuteDefaultAction_;
+TaskController.prototype.canExecuteDefaultTask = function() {
+  return this.canExecuteDefaultTask_;
 };
 
 /**
@@ -317,48 +317,48 @@ TaskController.prototype.canExecuteOpenWith = function() {
 };
 
 /**
- * Updates action menu item to match passed task items.
+ * Updates tasks menu item to match passed task items.
  *
  * @param {!Array<!Object>} items List of items.
  * @private
  */
-TaskController.prototype.updateContextMenuActionItems_ = function(items) {
+TaskController.prototype.updateContextMenuTaskItems_ = function(items) {
   // When only one task is available, show it as default item.
   if (items.length === 1) {
-    var actionItem = items[0];
+    var taskItem = items[0];
 
-    if (actionItem.iconType) {
-      this.ui_.fileContextMenu.defaultActionMenuItem.style.backgroundImage = '';
-      this.ui_.fileContextMenu.defaultActionMenuItem.setAttribute(
-          'file-type-icon', actionItem.iconType);
-    } else if (actionItem.iconUrl) {
-      this.ui_.fileContextMenu.defaultActionMenuItem.style.backgroundImage =
-          'url(' + actionItem.iconUrl + ')';
+    if (taskItem.iconType) {
+      this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage = '';
+      this.ui_.fileContextMenu.defaultTaskMenuItem.setAttribute(
+          'file-type-icon', taskItem.iconType);
+    } else if (taskItem.iconUrl) {
+      this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage =
+          'url(' + taskItem.iconUrl + ')';
     } else {
-      this.ui_.fileContextMenu.defaultActionMenuItem.style.backgroundImage = '';
+      this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage = '';
     }
 
-    this.ui_.fileContextMenu.defaultActionMenuItem.label =
-        actionItem.taskId === FileTasks.ZIP_UNPACKER_TASK_ID ?
-        str('ACTION_OPEN') : actionItem.title;
-    this.ui_.fileContextMenu.defaultActionMenuItem.disabled =
-        !!actionItem.disabled;
-    this.ui_.fileContextMenu.defaultActionMenuItem.taskId = actionItem.taskId;
+    this.ui_.fileContextMenu.defaultTaskMenuItem.label =
+        taskItem.taskId === FileTasks.ZIP_UNPACKER_TASK_ID ?
+        str('TASK_OPEN') : taskItem.title;
+    this.ui_.fileContextMenu.defaultTaskMenuItem.disabled =
+        !!taskItem.disabled;
+    this.ui_.fileContextMenu.defaultTaskMenuItem.taskId = taskItem.taskId;
   }
 
-  this.canExecuteDefaultAction_ = items.length === 1;
-  this.defaultActionCommand_.canExecuteChange(this.ui_.listContainer.element);
+  this.canExecuteDefaultTask_ = items.length === 1;
+  this.defaultTaskCommand_.canExecuteChange(this.ui_.listContainer.element);
 
   this.canExecuteOpenWith_ = items.length > 1;
   this.openWithCommand_.canExecuteChange(this.ui_.listContainer.element);
 
-  this.ui_.fileContextMenu.actionItemsSeparator.hidden = items.length === 0;
+  this.ui_.fileContextMenu.tasksSeparator.hidden = items.length === 0;
 };
 
 /**
  * @param {FileEntry} entry
  */
-TaskController.prototype.doEntryAction = function(entry) {
+TaskController.prototype.executeEntryTask = function(entry) {
   if (this.dialogType_ == DialogType.FULL_PAGE) {
     this.metadataModel_.get([entry], ['contentMimeType']).then(
         function(props) {

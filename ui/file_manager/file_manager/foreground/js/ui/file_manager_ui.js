@@ -85,11 +85,11 @@ function FileManagerUI(providersModel, element, launchParam) {
 
   /**
    * Default task picker.
-   * @type {!cr.filebrowser.DefaultActionDialog}
+   * @type {!cr.filebrowser.DefaultTaskDialog}
    * @const
    */
   this.defaultTaskPicker =
-      new cr.filebrowser.DefaultActionDialog(this.element);
+      new cr.filebrowser.DefaultTaskDialog(this.element);
 
   /**
    * Suggest apps dialog.
@@ -245,15 +245,15 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @type {!HTMLMenuItemElement}
    * @const
    */
-  this.fileContextMenu.defaultActionMenuItem =
+  this.fileContextMenu.defaultTaskMenuItem =
       /** @type {!HTMLMenuItemElement} */
-      (queryRequiredElement('#default-action-menu-item', this.fileContextMenu));
+      (queryRequiredElement('#default-task-menu-item', this.fileContextMenu));
 
   /**
    * @const {!cr.ui.MenuItem}
    */
-  this.fileContextMenu.actionItemsSeparator = /** @type {!cr.ui.MenuItem} */
-      (queryRequiredElement('#action-items-separator', this.fileContextMenu));
+  this.fileContextMenu.tasksSeparator = /** @type {!cr.ui.MenuItem} */
+      (queryRequiredElement('#tasks-separator', this.fileContextMenu));
 
   /**
    * The combo button to specify the task.

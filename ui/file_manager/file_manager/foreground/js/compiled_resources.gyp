@@ -117,7 +117,7 @@
           './providers_model.js',
           './ui/banners.js',
           './ui/conflict_dialog.js',
-          './ui/default_action_dialog.js',
+          './ui/default_task_dialog.js',
           './ui/dialog_footer.js',
           './ui/directory_tree.js',
           './ui/drag_selector.js',

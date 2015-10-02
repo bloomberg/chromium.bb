@@ -93,13 +93,13 @@ FileTasks.VIDEO_PLAYER_ID = 'jcgeabjmjgoblfofpppfkcoakmfobdko';
 FileTasks.ZIP_UNPACKER_TASK_ID = 'oedeeodfidgoollimchfdnbmhcpnklnd|app|zip';
 
 /**
- * Available actions in task menu button.
+ * Available tasks in task menu button.
  * @enum {string}
  */
-FileTasks.TaskMenuButtonActions = {
+FileTasks.TaskMenuButtonItemType = {
   ShowMenu: 'ShowMenu',
   RunTask: 'RunTask',
-  ChangeDefaultAction: 'ChangeDefaultAction'
+  ChangeDefaultTask: 'ChangeDefaultTask'
 };
 
 /**
@@ -296,11 +296,9 @@ FileTasks.isInternalTask_ = function(taskId) {
   var appId = taskParts[0];
   var taskType = taskParts[1];
   var actionId = taskParts[2];
-  // The action IDs here should match ones used in executeInternalTask_().
   return (appId === chrome.runtime.id &&
           taskType === 'file' &&
-          (actionId === 'play' ||
-           actionId === 'mount-archive'));
+          actionId === 'mount-archive');
 };
 
 /**
@@ -328,7 +326,7 @@ FileTasks.prototype.processTasks_ = function(tasks) {
         // TODO(serya): This hack needed until task.iconUrl is working
         //             (see GetFileTasksFileBrowserFunction::RunImpl).
         task.iconType = 'audio';
-        task.title = loadTimeData.getString('ACTION_LISTEN');
+        task.title = loadTimeData.getString('TASK_LISTEN');
       } else if (taskParts[2] === 'mount-archive') {
         task.iconType = 'archive';
         task.title = loadTimeData.getString('MOUNT_ARCHIVE');
@@ -337,31 +335,31 @@ FileTasks.prototype.processTasks_ = function(tasks) {
           task.iconType = 'generic';
         else // Use specific icon.
           task.iconType = FileType.getIcon(this.entries_[0]);
-        task.title = loadTimeData.getString('ACTION_OPEN');
+        task.title = loadTimeData.getString('TASK_OPEN');
       } else if (taskParts[2] === 'open-hosted-gdoc') {
         task.iconType = 'gdoc';
-        task.title = loadTimeData.getString('ACTION_OPEN_GDOC');
+        task.title = loadTimeData.getString('TASK_OPEN_GDOC');
       } else if (taskParts[2] === 'open-hosted-gsheet') {
         task.iconType = 'gsheet';
-        task.title = loadTimeData.getString('ACTION_OPEN_GSHEET');
+        task.title = loadTimeData.getString('TASK_OPEN_GSHEET');
       } else if (taskParts[2] === 'open-hosted-gslides') {
         task.iconType = 'gslides';
-        task.title = loadTimeData.getString('ACTION_OPEN_GSLIDES');
+        task.title = loadTimeData.getString('TASK_OPEN_GSLIDES');
       } else if (taskParts[2] === 'view-swf') {
         // Do not render this task if disabled.
         if (!loadTimeData.getBoolean('SWF_VIEW_ENABLED'))
           continue;
         task.iconType = 'generic';
-        task.title = loadTimeData.getString('ACTION_VIEW');
+        task.title = loadTimeData.getString('TASK_VIEW');
       } else if (taskParts[2] === 'view-pdf') {
         // Do not render this task if disabled.
         if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED'))
           continue;
         task.iconType = 'pdf';
-        task.title = loadTimeData.getString('ACTION_VIEW');
+        task.title = loadTimeData.getString('TASK_VIEW');
       } else if (taskParts[2] === 'view-in-browser') {
         task.iconType = 'generic';
-        task.title = loadTimeData.getString('ACTION_VIEW');
+        task.title = loadTimeData.getString('TASK_VIEW');
       }
     }
 
@@ -432,21 +430,21 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
     switch (extension) {
       case '.exe':
       case '.msi':
-        textMessageId = 'NO_ACTION_FOR_EXECUTABLE';
+        textMessageId = 'NO_TASK_FOR_EXECUTABLE';
         break;
       case '.dmg':
-        textMessageId = 'NO_ACTION_FOR_DMG';
+        textMessageId = 'NO_TASK_FOR_DMG';
         break;
       case '.crx':
-        textMessageId = 'NO_ACTION_FOR_CRX';
-        titleMessageId = 'NO_ACTION_FOR_CRX_TITLE';
+        textMessageId = 'NO_TASK_FOR_CRX';
+        titleMessageId = 'NO_TASK_FOR_CRX_TITLE';
         break;
       default:
-        textMessageId = 'NO_ACTION_FOR_FILE';
+        textMessageId = 'NO_TASK_FOR_FILE';
     }
 
     var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
-    var text = strf(textMessageId, webStoreUrl, str('NO_ACTION_FOR_FILE_URL'));
+    var text = strf(textMessageId, webStoreUrl, str('NO_TASK_FOR_FILE_URL'));
     var title = titleMessageId ? str(titleMessageId) : filename;
     this.ui_.alertDialog.showHtml(title, text, null, null, null);
     callback(false, entries);
@@ -527,8 +525,7 @@ FileTasks.prototype.executeInternal_ = function(taskId) {
   var entries = assert(this.entries_);
   this.checkAvailability_(function() {
     if (FileTasks.isInternalTask_(taskId)) {
-      var taskParts = taskId.split('|');
-      this.executeInternalTask_(taskParts[2]);
+      this.executeInternalTask_(taskId);
     } else {
       chrome.fileManagerPrivate.executeTask(taskId,
           assert(entries),
@@ -625,16 +622,17 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
 /**
  * Executes an internal task.
  *
- * @param {string} id The short task id.
+ * @param {string} taskId The task id.
  * @private
  */
-FileTasks.prototype.executeInternalTask_ = function(id) {
-  if (id === 'mount-archive') {
+FileTasks.prototype.executeInternalTask_ = function(taskId) {
+  var taskParts = taskId.split('|');
+  if (taskParts[2] === 'mount-archive') {
     this.mountArchivesInternal_();
     return;
   }
 
-  console.error('Unexpected action ID: ' + id);
+  console.error('The specified task is not a valid internal task: ' + taskId);
 };
 
 /**
@@ -698,10 +696,10 @@ FileTasks.prototype.display_ = function(combobutton) {
   // If there exist defaultTask show it on the combobutton.
   if (this.defaultTask_) {
     combobutton.defaultItem = this.createCombobuttonItem_(this.defaultTask_,
-        str('ACTION_OPEN'));
+        str('TASK_OPEN'));
   } else {
     combobutton.defaultItem = {
-      action: FileTasks.TaskMenuButtonActions.ShowMenu,
+      type: FileTasks.TaskMenuButtonItemType.ShowMenu,
       label: str('OPEN_WITH_BUTTON_LABEL')
     };
   }
@@ -717,11 +715,11 @@ FileTasks.prototype.display_ = function(combobutton) {
     }
 
     // If there exist non generic task (i.e. defaultTask is set), we show an
-    // item to change default action.
+    // item to change default task.
     if (this.defaultTask_) {
       combobutton.addSeparator();
       var changeDefaultMenuItem = combobutton.addDropDownItem({
-        action: FileTasks.TaskMenuButtonActions.ChangeDefaultAction,
+        type: FileTasks.TaskMenuButtonItemType.ChangeDefaultTask,
         label: loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM')
       });
       changeDefaultMenuItem.classList.add('change-default');
@@ -743,7 +741,7 @@ FileTasks.prototype.createItems_ = function() {
     var task = this.tasks_[index];
     if (task === this.defaultTask_) {
       var title = task.title + ' ' +
-                  loadTimeData.getString('DEFAULT_ACTION_LABEL');
+                  loadTimeData.getString('DEFAULT_TASK_LABEL');
       items.push(this.createCombobuttonItem_(task, title, true, true));
     } else {
       items.push(this.createCombobuttonItem_(task));
@@ -784,7 +782,7 @@ FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
                                                       opt_bold,
                                                       opt_isDefault) {
   return {
-    action: FileTasks.TaskMenuButtonActions.RunTask,
+    type: FileTasks.TaskMenuButtonItemType.RunTask,
     label: opt_title || task.title,
     iconUrl: task.iconUrl,
     iconType: task.iconType,
@@ -796,17 +794,17 @@ FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
 };
 
 /**
- * Shows modal action picker dialog with currently available list of tasks.
+ * Shows modal task picker dialog with currently available list of tasks.
  *
- * @param {cr.filebrowser.DefaultActionDialog} actionDialog Action dialog to
- *     show and update.
+ * @param {cr.filebrowser.DefaultTaskDialog} taskDialog Task dialog to show and
+ *     update.
  * @param {string} title Title to use.
  * @param {string} message Message to use.
  * @param {function(Object)} onSuccess Callback to pass selected task.
  * @param {boolean=} opt_hideGenericFileHandler Whether to hide generic file
  *     handler or not.
  */
-FileTasks.prototype.showTaskPicker = function(actionDialog, title, message,
+FileTasks.prototype.showTaskPicker = function(taskDialog, title, message,
                                               onSuccess,
                                               opt_hideGenericFileHandler) {
   var hideGenericFileHandler = opt_hideGenericFileHandler || false;
@@ -821,7 +819,7 @@ FileTasks.prototype.showTaskPicker = function(actionDialog, title, message,
       defaultIdx = j;
   }
 
-  actionDialog.showDefaultActionDialog(
+  taskDialog.showDefaultTaskDialog(
       title,
       message,
       items, defaultIdx,

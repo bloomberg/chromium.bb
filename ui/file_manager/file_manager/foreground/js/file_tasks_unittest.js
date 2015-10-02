@@ -25,12 +25,12 @@ window.metrics = {
 };
 
 loadTimeData.data = {
-  NO_ACTION_FOR_EXECUTABLE: 'NO_ACTION_FOR_EXECUTABLE',
-  NO_ACTION_FOR_FILE_URL: 'NO_ACTION_FOR_FILE_URL',
-  NO_ACTION_FOR_FILE: 'NO_ACTION_FOR_FILE',
-  NO_ACTION_FOR_DMG: 'NO_ACTION_FOR_DMG',
-  NO_ACTION_FOR_CRX: 'NO_ACTION_FOR_CRX',
-  NO_ACTION_FOR_CRX_TITLE: 'NO_ACTION_FOR_CRX_TITLE'
+  NO_TASK_FOR_EXECUTABLE: 'NO_TASK_FOR_EXECUTABLE',
+  NO_TASK_FOR_FILE_URL: 'NO_TASK_FOR_FILE_URL',
+  NO_TASK_FOR_FILE: 'NO_TASK_FOR_FILE',
+  NO_TASK_FOR_DMG: 'NO_TASK_FOR_DMG',
+  NO_TASK_FOR_CRX: 'NO_TASK_FOR_CRX',
+  NO_TASK_FOR_CRX_TITLE: 'NO_TASK_FOR_CRX_TITLE'
 };
 
 /**
@@ -113,7 +113,7 @@ function testToOpenExeFile(callback) {
   var mockEntry = new MockFileEntry(mockFileSystem, '/test.exe');
 
   reportPromise(showHtmlOfAlertDialogIsCalled(
-      [mockEntry], 'test.exe', 'NO_ACTION_FOR_EXECUTABLE'), callback);
+      [mockEntry], 'test.exe', 'NO_TASK_FOR_EXECUTABLE'), callback);
 }
 
 function testToOpenDmgFile(callback) {
@@ -121,7 +121,7 @@ function testToOpenDmgFile(callback) {
   var mockEntry = new MockFileEntry(mockFileSystem, '/test.dmg');
 
   reportPromise(showHtmlOfAlertDialogIsCalled(
-      [mockEntry], 'test.dmg', 'NO_ACTION_FOR_DMG'), callback);
+      [mockEntry], 'test.dmg', 'NO_TASK_FOR_DMG'), callback);
 }
 
 function testToOpenCrxFile(callback) {
@@ -129,7 +129,7 @@ function testToOpenCrxFile(callback) {
   var mockEntry = new MockFileEntry(mockFileSystem, '/test.crx');
 
   reportPromise(showHtmlOfAlertDialogIsCalled(
-      [mockEntry], 'NO_ACTION_FOR_CRX_TITLE', 'NO_ACTION_FOR_CRX'), callback);
+      [mockEntry], 'NO_TASK_FOR_CRX_TITLE', 'NO_TASK_FOR_CRX'), callback);
 }
 
 function testToOpenRtfFile(callback) {

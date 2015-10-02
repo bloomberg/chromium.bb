@@ -98,7 +98,7 @@
                i18n-values="label:TOGGLE_HIDDEN_FILES_COMMAND_LABEL"
                shortcut="U+00BE-Ctrl" hide-shortcut-text>
 
-      <command id="default-action">
+      <command id="default-task">
       <command id="open-with" i18n-values="label:OPEN_WITH_BUTTON_LABEL">
       <command id="zip-selection"
                i18n-values="label:ZIP_SELECTION_BUTTON_LABEL">
@@ -127,11 +127,11 @@
 
     <cr-menu id="file-context-menu" class="chrome-menu files-menu"
              menu-item-selector="cr-menu-item,hr" showShortcuts>
-      <cr-menu-item id="default-action-menu-item" command="#default-action"
+      <cr-menu-item id="default-task-menu-item" command="#default-task"
                 visibleif="full-page" hidden></cr-menu-item>
       <cr-menu-item command="#open-with"
                 visibleif="full-page" hidden></cr-menu-item>
-      <hr id="action-items-separator" visibleif="full-page" hidden>
+      <hr id="tasks-separator" visibleif="full-page" hidden>
       <cr-menu-item command="#toggle-pinned" checkable></cr-menu-item>
       <cr-menu-item command="#share"></cr-menu-item>
       <cr-menu-item command="#create-folder-shortcut"></cr-menu-item>
