@@ -179,6 +179,10 @@ class GNRoller(object):
       fp.write(new_deps)
 
   def WaitForBuildToFinish(self):
+    ret = self.CheckoutBuildBranch()
+    if ret:
+      return ret
+
     print('Checking build')
     results = self.CheckBuild()
     while (len(results) < 3 or
@@ -201,6 +205,16 @@ class GNRoller(object):
     self.Call('git-cl set-close')
     self.MoveToLastHead()
 
+    return ret
+
+  def CheckoutBuildBranch(self):
+    ret, out, err = self.Call('git checkout build_gn_%s' % self.new_gn_version)
+    if ret:
+      print('Failed to check out build_gn_%s' % self.new_gn_version)
+      if out:
+        print(out)
+      if err:
+        print(err, file=sys.stderr)
     return ret
 
   def CheckBuild(self):
@@ -276,6 +290,10 @@ class GNRoller(object):
     return results
 
   def RollBuildtools(self):
+    ret = self.CheckoutBuildBranch()
+    if ret:
+      return ret
+
     results = self.CheckBuild()
     if (len(results) < 3 or
         not all(r['state'] == 'success' for r in results.values())):
