@@ -199,7 +199,11 @@ public class WebContentsTest extends ContentShellTestBase {
      * @throws InterruptedException
      * @throws ExecutionException
      */
+    /*
     @SmallTest
+    https://crbug.com/538625
+    */
+    @DisabledTest
     public void testSerializingADestroyedWebContentsDoesNotDeserialize()
             throws InterruptedException, ExecutionException {
         ContentShellActivity activity = launchContentShellWithUrl(TEST_URL_1);
@@ -234,7 +238,11 @@ public class WebContentsTest extends ContentShellTestBase {
      * @throws InterruptedException
      * @throws ExecutionException
      */
+    /*
     @SmallTest
+    https://crbug.com/538625
+    */
+    @DisabledTest
     public void testDestroyingAWebContentsAfterSerializingDoesNotDeserialize()
             throws InterruptedException, ExecutionException {
         ContentShellActivity activity = launchContentShellWithUrl(TEST_URL_1);
