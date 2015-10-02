@@ -250,7 +250,6 @@ SigninScreenHandler::SigninScreenHandler(
   DCHECK(network_state_informer_.get());
   DCHECK(network_error_model_);
   DCHECK(core_oobe_actor_);
-  DCHECK(gaia_screen_handler_);
   gaia_screen_handler_->set_signin_screen_handler(this);
   network_state_informer_->AddObserver(this);
 
@@ -570,7 +569,6 @@ void SigninScreenHandler::SetNativeWindowDelegate(
 
 void SigninScreenHandler::OnNetworkReady() {
   VLOG(1) << "OnNetworkReady() call.";
-  DCHECK(gaia_screen_handler_);
   gaia_screen_handler_->MaybePreloadAuthExtension();
 }
 
@@ -634,7 +632,6 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state,
       break;
     case UI_STATE_ACCOUNT_PICKER:
       ui_state_ = UI_STATE_ACCOUNT_PICKER;
-      DCHECK(gaia_screen_handler_);
       gaia_screen_handler_->CancelShowGaiaAsync();
       ShowScreen(OobeUI::kScreenAccountPicker, params);
       break;
@@ -956,12 +953,10 @@ void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error,
 void SigninScreenHandler::ShowSigninScreenForCreds(
     const std::string& username,
     const std::string& password) {
-  DCHECK(gaia_screen_handler_);
   gaia_screen_handler_->ShowSigninScreenForTest(username, password);
 }
 
 void SigninScreenHandler::ShowWhitelistCheckFailedError() {
-  DCHECK(gaia_screen_handler_);
   gaia_screen_handler_->ShowWhitelistCheckFailedError();
 }
 
@@ -1005,15 +1000,6 @@ bool SigninScreenHandler::ShouldLoadGaia() const {
   // Do not load the extension for the screen locker, see crosbug.com/25018.
   return !ScreenLocker::default_screen_locker() &&
          is_account_picker_showing_first_time_;
-}
-
-void SigninScreenHandler::UserSettingsChanged() {
-  DCHECK(gaia_screen_handler_);
-  GaiaContext context;
-  if (delegate_)
-    context.has_users = !delegate_->GetUsers().empty();
-  gaia_screen_handler_->UpdateGaia(context);
-  UpdateAddButtonStatus();
 }
 
 void SigninScreenHandler::UpdateAddButtonStatus() {
@@ -1443,12 +1429,10 @@ bool SigninScreenHandler::IsOfflineLoginAllowed() const {
 
 void SigninScreenHandler::OnShowAddUser() {
   is_account_picker_showing_first_time_ = false;
-  DCHECK(gaia_screen_handler_);
   gaia_screen_handler_->ShowGaiaAsync(is_enrolling_consumer_management_);
 }
 
 net::Error SigninScreenHandler::FrameError() const {
-  DCHECK(gaia_screen_handler_);
   return gaia_screen_handler_->frame_error();
 }
 

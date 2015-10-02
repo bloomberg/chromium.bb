@@ -36,7 +36,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
   return {
     EXTERNAL_API: [
       'loadAuthExtension',
-      'updateAuthExtension',
       'doReload',
       'monitorOfflineIdle',
       'onWebviewError',
@@ -490,7 +489,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.classList.toggle('full-width', false);
       this.samlPasswordConfirmAttempt_ = 0;
 
-      this.updateAuthExtension(data);
+      this.updateAuthExtension_(data);
 
       var params = {};
       for (var i in cr.login.GaiaAuthHost.SUPPORTED_PARAMS) {
@@ -549,7 +548,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @param {Object} data New extension parameters bag.
      * @private
      */
-    updateAuthExtension: function(data) {
+    updateAuthExtension_: function(data) {
       if (this.isNewGaiaFlow) {
         $('login-header-bar').showCreateSupervisedButton =
             data.supervisedUsersEnabled && data.supervisedUsersCanCreate;

@@ -302,14 +302,6 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
   CallJS("loadAuthExtension", params);
 }
 
-void GaiaScreenHandler::UpdateGaia(const GaiaContext& context) {
-  base::DictionaryValue params;
-  UpdateAuthParams(&params, context.has_users,
-                   context.is_enrolling_consumer_management,
-                   IsRestrictiveProxy());
-  CallJS("updateAuthExtension", params);
-}
-
 void GaiaScreenHandler::ReloadGaia(bool force_reload) {
   if (frame_state_ == FRAME_STATE_LOADING && !force_reload) {
     VLOG(1) << "Skipping reloading of Gaia since gaia is loading.";

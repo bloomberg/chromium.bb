@@ -316,9 +316,6 @@ class SigninScreenHandler
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
 
-  // Updates authentication extension. Called when device settings that affect
-  // sign-in (allow BWSI and allow whitelist) are changed.
-  void UserSettingsChanged();
   void UpdateAddButtonStatus();
 
   // Restore input focus to current user pod.

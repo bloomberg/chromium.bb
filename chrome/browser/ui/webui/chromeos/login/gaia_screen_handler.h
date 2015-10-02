@@ -75,12 +75,19 @@ class GaiaScreenHandler : public BaseScreenHandler,
       policy::ConsumerManagementService* consumer_management);
   ~GaiaScreenHandler() override;
 
+  // Decides whether an auth extension should be pre-loaded. If it should,
+  // pre-loads it.
+  void MaybePreloadAuthExtension();
+
+ private:
+  // TODO (antrim@): remove this dependency.
+  friend class SigninScreenHandler;
+
   void LoadGaia(const GaiaContext& context);
 
   // Callback that loads GAIA after version information has been retrieved.
   void LoadGaiaWithVersion(const GaiaContext& context,
                            const std::string& platform_version);
-  void UpdateGaia(const GaiaContext& context);
 
   // Sends request to reload Gaia. If |force_reload| is true, request
   // will be sent in any case, otherwise it will be sent only when Gaia is
@@ -91,19 +98,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // we're using the offline login page but the device is online.
   void MonitorOfflineIdle(bool is_online);
 
-  // Decides whether an auth extension should be pre-loaded. If it should,
-  // pre-loads it.
-  void MaybePreloadAuthExtension();
-
   // Show error UI at the end of GAIA flow when user is not whitelisted.
   void ShowWhitelistCheckFailedError();
-
-  FrameState frame_state() const { return frame_state_; }
-  net::Error frame_error() const { return frame_error_; }
-
- private:
-  // TODO (antrim@): remove this dependency.
-  friend class SigninScreenHandler;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
@@ -217,6 +213,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // Returns temporary unused device Id.
   std::string GetTemporaryDeviceId();
+
+  FrameState frame_state() const { return frame_state_; }
+  net::Error frame_error() const { return frame_error_; }
 
   // Current state of Gaia frame.
   FrameState frame_state_ = FRAME_STATE_UNKNOWN;
