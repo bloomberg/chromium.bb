@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell_apk.ContentShellActivity;
@@ -33,7 +34,11 @@ public class WebContentsTest extends ContentShellTestBase {
      * @throws InterruptedException
      * @throws ExecutionException
      */
+    /*
     @SmallTest
+    https://crbug.com/538625
+    */
+    @DisabledTest
     public void testWebContentsIsDestroyedMethod() throws InterruptedException, ExecutionException {
         final ContentShellActivity activity = launchContentShellWithUrl(TEST_URL_1);
         waitForActiveShellToBeDoneLoading();
