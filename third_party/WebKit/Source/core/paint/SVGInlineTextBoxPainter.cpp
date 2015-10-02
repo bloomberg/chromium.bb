@@ -18,6 +18,7 @@
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/paint/InlineTextBoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/LineLayoutPaintShim.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/style/ShadowList.h"
@@ -39,7 +40,7 @@ bool SVGInlineTextBoxPainter::shouldPaintSelection(const PaintInfo& paintInfo) c
 
 void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ASSERT(paintInfo.shouldPaintWithinRoot(&m_svgInlineTextBox.layoutObject()));
+    ASSERT(paintInfo.shouldPaintWithinRoot(LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.lineLayoutItem())));
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
     ASSERT(m_svgInlineTextBox.truncation() == cNoTruncation);
 
@@ -52,13 +53,13 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     if (paintInfo.phase == PaintPhaseSelection && !shouldPaintSelection(paintInfo))
         return;
 
-    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(m_svgInlineTextBox.layoutObject());
+    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(*LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.lineLayoutItem()));
     if (!textShouldBePainted(textLayoutObject))
         return;
 
     DisplayItem::Type displayItemType = DisplayItem::paintPhaseToDrawingType(paintInfo.phase);
     if (!DrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_svgInlineTextBox, displayItemType)) {
-        LayoutObject& parentLayoutObject = m_svgInlineTextBox.parent()->layoutObject();
+        LayoutObject& parentLayoutObject = *LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.parent()->lineLayoutItem());
         const ComputedStyle& style = parentLayoutObject.styleRef();
 
         DrawingRecorder recorder(*paintInfo.context, m_svgInlineTextBox, displayItemType, paintInfo.rect);
@@ -158,7 +159,7 @@ void SVGInlineTextBoxPainter::paintSelectionBackground(const PaintInfo& paintInf
     if (!backgroundColor.alpha())
         return;
 
-    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(m_svgInlineTextBox.layoutObject());
+    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(*LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.lineLayoutItem()));
     if (!textShouldBePainted(textLayoutObject))
         return;
 
@@ -194,7 +195,7 @@ static inline LayoutObject* findLayoutObjectDefininingTextDecoration(InlineFlowB
     // Lookup first layout object in parent hierarchy which has text-decoration set.
     LayoutObject* layoutObject = 0;
     while (parentBox) {
-        layoutObject = &parentBox->layoutObject();
+        layoutObject = LineLayoutPaintShim::layoutObjectFrom(parentBox->lineLayoutItem());
 
         if (layoutObject->style() && layoutObject->style()->textDecoration() != TextDecorationNone)
             break;
@@ -298,7 +299,7 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
     TextRun& textRun, const SVGTextFragment& fragment, int startPosition, int endPosition,
     LayoutSVGResourceMode resourceMode)
 {
-    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(m_svgInlineTextBox.layoutObject());
+    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(*LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.lineLayoutItem()));
 
     float scalingFactor = textLayoutObject.scalingFactor();
     ASSERT(scalingFactor);
@@ -327,7 +328,7 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
     }
 
     SkPaint paint;
-    if (!SVGPaintContext::paintForLayoutObject(paintInfo, style, m_svgInlineTextBox.parent()->layoutObject(), resourceMode, paint, additionalPaintServerTransform))
+    if (!SVGPaintContext::paintForLayoutObject(paintInfo, style, *LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.parent()->lineLayoutItem()), resourceMode, paint, additionalPaintServerTransform))
         return;
     paint.setAntiAlias(true);
 
@@ -339,7 +340,7 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
 
     if (resourceMode == ApplyToStrokeMode) {
         StrokeData strokeData;
-        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, style, m_svgInlineTextBox.parent()->layoutObject());
+        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, style, *LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.parent()->lineLayoutItem()));
         if (style.svgStyle().vectorEffect() != VE_NON_SCALING_STROKE)
             strokeData.setThickness(strokeData.thickness() * scalingFactor);
         strokeData.setupPaint(&paint);
@@ -383,7 +384,7 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo, const Comput
     if (style != selectionStyle) {
         StyleDifference diff;
         diff.setNeedsPaintInvalidationObject();
-        SVGResourcesCache::clientStyleChanged(&m_svgInlineTextBox.parent()->layoutObject(), diff, selectionStyle);
+        SVGResourcesCache::clientStyleChanged(LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.parent()->lineLayoutItem()), diff, selectionStyle);
     }
 
     paintTextWithShadows(paintInfo, selectionStyle, textRun, fragment, startPosition, endPosition, resourceMode);
@@ -391,7 +392,7 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo, const Comput
     if (style != selectionStyle) {
         StyleDifference diff;
         diff.setNeedsPaintInvalidationObject();
-        SVGResourcesCache::clientStyleChanged(&m_svgInlineTextBox.parent()->layoutObject(), diff, style);
+        SVGResourcesCache::clientStyleChanged(LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.parent()->lineLayoutItem()), diff, style);
     }
 
     // Eventually draw text using regular style from the end position of the selection to the end of the current chunk part
@@ -405,7 +406,7 @@ void SVGInlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* context, con
     if (marker->type() != DocumentMarker::TextMatch)
         return;
 
-    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(m_svgInlineTextBox.layoutObject());
+    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(*LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.lineLayoutItem()));
 
     AffineTransform fragmentTransform;
     for (InlineTextBox* box = textLayoutObject.firstTextBox(); box; box = box->nextTextBox()) {
@@ -434,7 +435,7 @@ void SVGInlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* context, con
             fragment.buildFragmentTransform(fragmentTransform);
 
             // Draw the marker highlight.
-            if (m_svgInlineTextBox.layoutObject().frame()->editor().markedTextMatchesAreHighlighted()) {
+            if (LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.lineLayoutItem())->frame()->editor().markedTextMatchesAreHighlighted()) {
                 Color color = marker->activeMatch() ?
                     LayoutTheme::theme().platformActiveTextSearchHighlightColor() :
                     LayoutTheme::theme().platformInactiveTextSearchHighlightColor();

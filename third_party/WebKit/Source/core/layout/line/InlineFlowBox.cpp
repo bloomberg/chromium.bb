@@ -804,7 +804,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
     if (textBox->knownToHaveNoOverflow())
         return;
 
-    const ComputedStyle& style = textBox->layoutObject().styleRef(isFirstLineStyle());
+    const ComputedStyle& style = textBox->lineLayoutItem().styleRef(isFirstLineStyle());
 
     GlyphOverflowAndFallbackFontsMap::iterator it = textBoxDataMap.find(textBox);
     GlyphOverflow* glyphOverflow = it == textBoxDataMap.end() ? nullptr : &it->value.second;
