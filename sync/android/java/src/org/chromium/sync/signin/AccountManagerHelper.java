@@ -8,7 +8,6 @@ package org.chromium.sync.signin;
 import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
@@ -166,16 +165,8 @@ public class AccountManagerHelper {
         return mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
     }
 
-    /**
-     * Convenience method to get the single Google account on the device. Should only be
-     * called if it has been determined that there is exactly one account.
-     *
-     * @return The single account to sign into.
-     */
-    public Account getSingleGoogleAccount() {
-        Account[] googleAccounts = getGoogleAccounts();
-        assert googleAccounts.length == 1;
-        return googleAccounts[0];
+    public void getGoogleAccounts(AccountManagerDelegate.Callback<Account[]> callback) {
+        mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE, callback);
     }
 
     public boolean hasGoogleAccounts() {
@@ -382,9 +373,9 @@ public class AccountManagerHelper {
         }
     }
 
-    public AccountManagerFuture<Boolean> checkChildAccount(
-            Account account, AccountManagerCallback<Boolean> callback) {
+    public void checkChildAccount(
+            Account account, AccountManagerDelegate.Callback<Boolean> callback) {
         String[] features = {FEATURE_IS_CHILD_ACCOUNT_KEY};
-        return mAccountManager.hasFeatures(account, features, callback, null /* handler */);
+        mAccountManager.hasFeatures(account, features, callback);
     }
 }

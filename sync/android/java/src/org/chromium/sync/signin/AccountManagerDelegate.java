@@ -15,7 +15,20 @@ import android.os.Handler;
  * Wrapper around the Android account manager, to facilitate dependency injection during testing.
  */
 public interface AccountManagerDelegate {
+    /**
+     * A callback class that can be used to allow asynchronous methods.
+     */
+    interface Callback<T> {
+        void gotResult(T value);
+    }
+
+    /**
+     * Use the asynchronous getAccountsByType(String, Callback<Account[]>) instead.
+     */
+    @Deprecated
     Account[] getAccountsByType(String type);
+
+    void getAccountsByType(String type, Callback<Account[]> callback);
 
     AccountManagerFuture<Bundle> getAuthToken(Account account, String authTokenType,
             boolean notifyAuthFailure, AccountManagerCallback<Bundle> callback, Handler handler);
@@ -24,6 +37,5 @@ public interface AccountManagerDelegate {
 
     AuthenticatorDescription[] getAuthenticatorTypes();
 
-    AccountManagerFuture<Boolean> hasFeatures(Account account, String[] features,
-            AccountManagerCallback<Boolean> callback, Handler handler);
+    void hasFeatures(Account account, String[] features, Callback<Boolean> callback);
 }

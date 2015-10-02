@@ -5,17 +5,11 @@
 package org.chromium.chrome.browser.childaccounts;
 
 import android.accounts.Account;
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
-import android.accounts.AuthenticatorException;
-import android.accounts.OperationCanceledException;
 import android.content.Context;
 
-import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.sync.signin.AccountManagerDelegate.Callback;
 import org.chromium.sync.signin.AccountManagerHelper;
-
-import java.io.IOException;
 
 /**
  * This class serves as a simple interface for querying the child account information.
@@ -29,22 +23,8 @@ import java.io.IOException;
  * side and also takes responsibility for monitoring changes and taking a suitable action.
  */
 public class ChildAccountService {
-    private static final String TAG = "ChildAccountService";
-
     private ChildAccountService() {
         // Only for static usage.
-    }
-
-    /**
-     * A callback to return the result of {@link #checkHasChildAccount}.
-     */
-    public static interface HasChildAccountCallback {
-
-        /**
-         * @param hasChildAccount Whether there is exactly one child account on the device.
-         */
-        public void onChildAccountChecked(boolean hasChildAccount);
-
     }
 
     /**
@@ -52,32 +32,21 @@ public class ChildAccountService {
      *
      * @param callback A callback which will be called with the result.
      */
-    public static void checkHasChildAccount(
-            Context context, final HasChildAccountCallback callback) {
+    public static void checkHasChildAccount(Context context, final Callback<Boolean> callback) {
         ThreadUtils.assertOnUiThread();
         if (!nativeIsChildAccountDetectionEnabled()) {
-            callback.onChildAccountChecked(false);
+            callback.gotResult(false);
             return;
         }
-        AccountManagerHelper helper = AccountManagerHelper.get(context);
-        Account[] accounts = helper.getGoogleAccounts();
-        if (accounts.length != 1) {
-            callback.onChildAccountChecked(false);
-            return;
-        }
-        helper.checkChildAccount(accounts[0], new AccountManagerCallback<Boolean>() {
+        final AccountManagerHelper helper = AccountManagerHelper.get(context);
+        helper.getGoogleAccounts(new Callback<Account[]>() {
             @Override
-            public void run(AccountManagerFuture<Boolean> future) {
-                assert future.isDone();
-                boolean hasFeatures = false;
-                try {
-                    hasFeatures = future.getResult();
-                } catch (AuthenticatorException | IOException e) {
-                    Log.e(TAG, "Error while checking features: ", e);
-                } catch (OperationCanceledException e) {
-                    Log.e(TAG, "Checking features was cancelled. This should not happen.");
+            public void gotResult(Account[] accounts) {
+                if (accounts.length != 1) {
+                    callback.gotResult(false);
+                } else {
+                    helper.checkChildAccount(accounts[0], callback);
                 }
-                callback.onChildAccountChecked(hasFeatures);
             }
         });
     }

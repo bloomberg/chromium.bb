@@ -70,7 +70,7 @@ import javax.annotation.Nullable;
  */
 public class MockAccountManager implements AccountManagerDelegate {
 
-    private static final String TAG = "cr.MockAccountManager";
+    private static final String TAG = "MockAccountManager";
 
     private static final long WAIT_TIME_FOR_GRANT_BROADCAST_MS = scaleTimeout(20000);
 
@@ -134,6 +134,22 @@ public class MockAccountManager implements AccountManagerDelegate {
             }
             return accounts;
         }
+    }
+
+    @Override
+    public void getAccountsByType(
+            final String type, final AccountManagerDelegate.Callback<Account[]> callback) {
+        new AsyncTask<Void, Void, Account[]>() {
+            @Override
+            protected Account[] doInBackground(Void... params) {
+                return getAccountsByType(type);
+            }
+
+            @Override
+            protected void onPostExecute(Account[] accounts) {
+                callback.gotResult(accounts);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @VisibleForTesting
@@ -265,25 +281,23 @@ public class MockAccountManager implements AccountManagerDelegate {
     }
 
     @Override
-    public AccountManagerFuture<Boolean> hasFeatures(Account account, final String[] features,
-            AccountManagerCallback<Boolean> callback, Handler handler) {
+    public void hasFeatures(Account account, final String[] features,
+            final AccountManagerDelegate.Callback<Boolean> callback) {
         final AccountHolder accountHolder = getAccountHolder(account);
-        AccountManagerTask<Boolean> accountManagerTask =
-                new AccountManagerTask<Boolean>(handler, callback, new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        Set<String> accountFeatures = accountHolder.getFeatures();
-                        for (String feature : features) {
-                            if (!accountFeatures.contains(feature)) {
-                                Log.d(TAG, accountFeatures + " does not contain " + feature);
-                                return false;
-                            }
-                        }
-                        return true;
+        accountHolder.addFeaturesCallback(new Runnable() {
+            @Override
+            public void run() {
+                Set<String> accountFeatures = accountHolder.getFeatures();
+                boolean hasAllFeatures = true;
+                for (String feature : features) {
+                    if (!accountFeatures.contains(feature)) {
+                        Log.d(TAG, accountFeatures + " does not contain " + feature);
+                        hasAllFeatures = false;
                     }
-                });
-        accountHolder.addFeaturesCallback(accountManagerTask);
-        return accountManagerTask;
+                }
+                callback.gotResult(hasAllFeatures);
+            }
+        });
     }
 
     public void notifyFeaturesFetched(Account account, Set<String> features) {

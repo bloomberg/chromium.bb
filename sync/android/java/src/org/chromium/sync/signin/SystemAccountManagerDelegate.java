@@ -12,11 +12,13 @@ import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
@@ -32,6 +34,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
 
     private final AccountManager mAccountManager;
     private final Context mApplicationContext;
+    private static final String TAG = "Auth";
 
     public SystemAccountManagerDelegate(Context context) {
         mApplicationContext = context.getApplicationContext();
@@ -48,6 +51,21 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         long elapsed = SystemClock.elapsedRealtime() - now;
         recordElapsedTimeHistogram("Signin.AndroidGetAccountsTime_AccountManager", elapsed);
         return accounts;
+    }
+
+    @Override
+    public void getAccountsByType(final String type, final Callback<Account[]> callback) {
+        new AsyncTask<Void, Void, Account[]>() {
+            @Override
+            protected Account[] doInBackground(Void... params) {
+                return getAccountsByType(type);
+            }
+
+            @Override
+            protected void onPostExecute(Account[] accounts) {
+                callback.gotResult(accounts);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override
@@ -75,19 +93,32 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public AccountManagerFuture<Boolean> hasFeatures(Account account, String[] features,
-            final AccountManagerCallback<Boolean> callback, Handler handler) {
+    public void hasFeatures(Account account, String[] features,
+            final AccountManagerDelegate.Callback<Boolean> callback) {
         if (!AccountManagerHelper.get(mApplicationContext).hasGetAccountsPermission()) {
-            final FakeFalseAccountManagerFuture future = new FakeFalseAccountManagerFuture();
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    callback.run(future);
+                    callback.gotResult(false);
                 }
             });
-            return future;
+            return;
         }
-        return mAccountManager.hasFeatures(account, features, callback, handler);
+        mAccountManager.hasFeatures(account, features, new AccountManagerCallback<Boolean>() {
+            @Override
+            public void run(AccountManagerFuture<Boolean> future) {
+                assert future.isDone();
+                boolean hasFeatures = false;
+                try {
+                    hasFeatures = future.getResult();
+                } catch (AuthenticatorException | IOException e) {
+                    Log.e(TAG, "Error while checking features: ", e);
+                } catch (OperationCanceledException e) {
+                    Log.e(TAG, "Checking features was cancelled. This should not happen.");
+                }
+                callback.gotResult(hasFeatures);
+            }
+        }, null /* handler */);
     }
 
     /**
@@ -101,35 +132,5 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     protected static void recordElapsedTimeHistogram(String histogramName, long elapsedMs) {
         if (!LibraryLoader.isInitialized()) return;
         RecordHistogram.recordTimesHistogram(histogramName, elapsedMs, TimeUnit.MILLISECONDS);
-    }
-
-    private static final class FakeFalseAccountManagerFuture
-            implements AccountManagerFuture<Boolean> {
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            return false;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return false;
-        }
-
-        @Override
-        public boolean isDone() {
-            return true;
-        }
-
-        @Override
-        public Boolean getResult()
-                throws OperationCanceledException, IOException, AuthenticatorException {
-            return false;
-        }
-
-        @Override
-        public Boolean getResult(long timeout, TimeUnit unit)
-                throws OperationCanceledException, IOException, AuthenticatorException {
-            return getResult();
-        }
     }
 }

@@ -17,6 +17,9 @@ void ChildAccountInfoFetcherAndroid::StartFetchingChildAccountInfo(
   JNIEnv* env = base::android::AttachCurrentThread();
   std::string account_name =
       service->account_tracker_service()->GetAccountInfo(account_id).email;
+  // The AccountTrackerService may not be populated correctly in tests.
+  if (account_name.empty())
+    return;
   Java_ChildAccountInfoFetcher_fetch(
       env, reinterpret_cast<jlong>(service),
       base::android::ConvertUTF8ToJavaString(env, account_id).obj(),
