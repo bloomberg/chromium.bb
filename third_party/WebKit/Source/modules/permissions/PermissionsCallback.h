@@ -26,7 +26,7 @@ class ScriptPromiseResolver;
 class PermissionsCallback final
     : public WebCallbacks<WebPassOwnPtr<WebVector<WebPermissionStatus>>, void> {
 public:
-    PermissionsCallback(ScriptPromiseResolver*, PassOwnPtr<Vector<WebPermissionType>>, PassOwnPtr<Vector<int>>);
+    PermissionsCallback(ScriptPromiseResolver*, PassOwnPtr<WebVector<WebPermissionType>>);
     ~PermissionsCallback() = default;
 
     void onSuccess(WebPassOwnPtr<WebVector<WebPermissionStatus>>) override;
@@ -34,14 +34,7 @@ public:
 
 private:
     Persistent<ScriptPromiseResolver> m_resolver;
-
-    // The permission types which were passed to the client to be requested.
-    OwnPtr<Vector<WebPermissionType>> m_internalPermissions;
-
-    // Maps each index in the caller vector to the corresponding index in the
-    // internal vector (i.e. the vector passsed to the client) such that both
-    // indices have the same WebPermissionType.
-    OwnPtr<Vector<int>> m_callerIndexToInternalIndex;
+    OwnPtr<WebVector<WebPermissionType>> m_permissionTypes;
 
     WTF_MAKE_NONCOPYABLE(PermissionsCallback);
 };

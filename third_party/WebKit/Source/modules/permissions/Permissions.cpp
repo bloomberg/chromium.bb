@@ -23,8 +23,6 @@
 #include "platform/Logging.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/permissions/WebPermissionClient.h"
-#include "wtf/NotFound.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -148,8 +146,7 @@ ScriptPromise Permissions::request(ScriptState* scriptState, const Vector<Dictio
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
 
     ExceptionState exceptionState(ExceptionState::GetterContext,  "request", "Permissions", scriptState->context()->Global(), scriptState->isolate());
-    OwnPtr<Vector<WebPermissionType>> internalPermissions = adoptPtr(new Vector<WebPermissionType>());
-    OwnPtr<Vector<int>> callerIndexToInternalIndex = adoptPtr(new Vector<int>(rawPermissions.size()));
+    OwnPtr<WebVector<WebPermissionType>> permissions = adoptPtr(new WebVector<WebPermissionType>(rawPermissions.size()));
     for (size_t i = 0; i < rawPermissions.size(); ++i) {
         const Dictionary& rawPermission = rawPermissions[i];
 
@@ -157,25 +154,14 @@ ScriptPromise Permissions::request(ScriptState* scriptState, const Vector<Dictio
         if (exceptionState.hadException())
             return exceptionState.reject(scriptState);
 
-        // Only append permissions to the vector that is passed to the client if it is not already
-        // in the vector (i.e. do not duplicate permisison types).
-        int internalIndex;
-        auto it = internalPermissions->find(type.get());
-        if (it == kNotFound) {
-            internalIndex = internalPermissions->size();
-            internalPermissions->append(type.get());
-        } else {
-            internalIndex = it;
-        }
-        callerIndexToInternalIndex->operator[](i) = internalIndex;
+        permissions->operator[](i) = type.get();
     }
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    WebVector<WebPermissionType> internalWebPermissions = *internalPermissions;
-    client->requestPermissions(internalWebPermissions, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()),
-        new PermissionsCallback(resolver, internalPermissions.release(), callerIndexToInternalIndex.release()));
+    WebVector<WebPermissionType> permissionsCopy = *permissions;
+    client->requestPermissions(permissionsCopy, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionsCallback(resolver, permissions.release()));
     return promise;
 }
 
