@@ -852,9 +852,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="The name of the Go to 'url' command in the content area context menu">
             &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
           </message>
-          <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="The name of the Add as Search Engine command in the content area context menu">
-            Add as search en&amp;gine...
-          </message>
           <message name="IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD" desc="The name of the Save Password command in the content area context menu">
             Save password
           </message>
@@ -1071,9 +1068,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="In Title Case: The name of the Go to url for 'string' command in the content area context menu">
             &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="In Title Case: The name of the Add as Search Engine command in the content area context menu">
-            Add As Search En&amp;gine...
           </message>
           <message name="IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD" desc="In Title Case: The name of the Save Password command in the content area context menu">
             Save Password

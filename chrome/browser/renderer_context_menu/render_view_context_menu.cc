@@ -52,7 +52,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
@@ -225,7 +224,6 @@ const struct UmaEnumCommandIdPair {
     {45, -1, IDC_CONTENT_CONTEXT_GOTOURL},
     {46, -1, IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS},
     {47, -1, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS},
-    {48, -1, IDC_CONTENT_CONTEXT_ADDSEARCHENGINE},
     {52, -1, IDC_CONTENT_CONTEXT_OPENLINKWITH},
     {53, -1, IDC_CHECK_SPELLING_WHILE_TYPING},
     {54, -1, IDC_SPELLCHECK_MENU},
@@ -1385,9 +1383,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return true;
 #endif
 
-    case IDC_CONTENT_CONTEXT_ADDSEARCHENGINE:
-      return !params_.keyword_url.is_empty();
-
     case IDC_SPELLCHECK_MENU:
       return true;
 
@@ -1859,34 +1854,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           ForceNewTabDispositionFromEventFlags(event_flags);
       GURL url = chrome::GetSettingsUrl(chrome::kHandlerSettingsSubPage);
       OpenURL(url, GURL(), disposition, ui::PAGE_TRANSITION_LINK);
-      break;
-    }
-
-    case IDC_CONTENT_CONTEXT_ADDSEARCHENGINE: {
-      // Make sure the model is loaded.
-      TemplateURLService* model =
-          TemplateURLServiceFactory::GetForProfile(GetProfile());
-      if (!model)
-        return;
-      model->Load();
-
-      SearchEngineTabHelper* search_engine_tab_helper =
-          SearchEngineTabHelper::FromWebContents(source_web_contents_);
-      if (search_engine_tab_helper &&
-          search_engine_tab_helper->delegate()) {
-        base::string16 keyword(TemplateURL::GenerateKeyword(
-            params_.page_url,
-            GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages)));
-        TemplateURLData data;
-        data.SetShortName(keyword);
-        data.SetKeyword(keyword);
-        data.SetURL(params_.keyword_url.spec());
-        data.favicon_url =
-            TemplateURL::GenerateFaviconURL(params_.page_url.GetOrigin());
-        // Takes ownership of the TemplateURL.
-        search_engine_tab_helper->delegate()->ConfirmAddSearchProvider(
-            new TemplateURL(data), GetProfile());
-      }
       break;
     }
 
