@@ -17,7 +17,6 @@ namespace content {
 
 NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     BrowserContext* browser_context,
-    int frame_tree_node_id,
     scoped_ptr<NavigationRequestInfo> request_info,
     NavigationURLLoaderDelegate* delegate)
     : delegate_(delegate),
@@ -28,7 +27,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NavigationURLLoaderImplCore::Start, base::Unretained(core_),
-                 browser_context->GetResourceContext(), frame_tree_node_id,
+                 browser_context->GetResourceContext(),
                  base::Passed(&request_info)));
 }
 

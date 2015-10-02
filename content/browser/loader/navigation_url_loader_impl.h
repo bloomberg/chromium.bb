@@ -26,7 +26,6 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
  public:
   // The caller is responsible for ensuring that |delegate| outlives the loader.
   NavigationURLLoaderImpl(BrowserContext* browser_context,
-                          int frame_tree_node_id,
                           scoped_ptr<NavigationRequestInfo> request_info,
                           NavigationURLLoaderDelegate* delegate);
   ~NavigationURLLoaderImpl() override;

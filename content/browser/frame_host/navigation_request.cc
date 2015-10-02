@@ -196,7 +196,7 @@ bool NavigationRequest::BeginNavigation() {
 
     loader_ = NavigationURLLoader::Create(
         frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
-        frame_tree_node_->frame_tree_node_id(), info_.Pass(), this);
+        info_.Pass(), this);
     return true;
   }
 
