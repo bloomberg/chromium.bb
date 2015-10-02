@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/credential_manager_pending_require_user_mediation_task.h"
 
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "url/gurl.h"
 
@@ -13,8 +14,10 @@ namespace password_manager {
 CredentialManagerPendingRequireUserMediationTask::
     CredentialManagerPendingRequireUserMediationTask(
         CredentialManagerPendingRequireUserMediationTaskDelegate* delegate,
-        const GURL& origin)
-    : delegate_(delegate) {
+        const GURL& origin,
+        const std::vector<std::string>& affiliated_realms)
+    : delegate_(delegate),
+      affiliated_realms_(affiliated_realms.begin(), affiliated_realms.end()) {
   origins_.insert(origin.spec());
 }
 
@@ -30,7 +33,9 @@ void CredentialManagerPendingRequireUserMediationTask::
     OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm> results) {
   PasswordStore* store = delegate_->GetPasswordStore();
   for (autofill::PasswordForm* form : results) {
-    if (origins_.count(form->origin.spec())) {
+    if (origins_.count(form->origin.spec()) ||
+        (affiliated_realms_.count(form->signon_realm) &&
+         AffiliatedMatchHelper::IsValidAndroidCredential(*form))) {
       form->skip_zero_click = true;
       // Note that UpdateLogin ends up copying the form while posting a task to
       // update the PasswordStore, so it's fine to let |results| delete the

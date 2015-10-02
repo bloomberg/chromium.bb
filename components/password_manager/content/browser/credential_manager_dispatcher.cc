@@ -86,19 +86,41 @@ void CredentialManagerDispatcher::OnRequireUserMediation(int request_id) {
   DCHECK(request_id);
 
   PasswordStore* store = GetPasswordStore();
-  if (store) {
-    if (!pending_require_user_mediation_) {
-      pending_require_user_mediation_.reset(
-          new CredentialManagerPendingRequireUserMediationTask(
-              this, web_contents()->GetLastCommittedURL().GetOrigin()));
+  if (!store) {
+    web_contents()->GetRenderViewHost()->Send(
+        new CredentialManagerMsg_AcknowledgeRequireUserMediation(
+            web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
+    return;
+  }
 
-      // This will result in a callback to
-      // CredentialManagerPendingRequireUserMediationTask::OnGetPasswordStoreResults().
-      store->GetAutofillableLogins(pending_require_user_mediation_.get());
-    } else {
-      pending_require_user_mediation_->AddOrigin(
-          web_contents()->GetLastCommittedURL().GetOrigin());
-    }
+  if (store->affiliated_match_helper()) {
+    store->affiliated_match_helper()->GetAffiliatedAndroidRealms(
+        GetSynthesizedFormForOrigin(),
+        base::Bind(&CredentialManagerDispatcher::ScheduleRequireMediationTask,
+                   weak_factory_.GetWeakPtr(), request_id));
+  } else {
+    std::vector<std::string> no_affiliated_realms;
+    ScheduleRequireMediationTask(request_id, no_affiliated_realms);
+  }
+}
+
+void CredentialManagerDispatcher::ScheduleRequireMediationTask(
+    int request_id,
+    const std::vector<std::string>& android_realms) {
+  DCHECK(GetPasswordStore());
+  if (!pending_require_user_mediation_) {
+    pending_require_user_mediation_.reset(
+        new CredentialManagerPendingRequireUserMediationTask(
+            this, web_contents()->GetLastCommittedURL().GetOrigin(),
+            android_realms));
+
+    // This will result in a callback to
+    // CredentialManagerPendingRequireUserMediationTask::OnGetPasswordStoreResults().
+    GetPasswordStore()->GetAutofillableLogins(
+        pending_require_user_mediation_.get());
+  } else {
+    pending_require_user_mediation_->AddOrigin(
+        web_contents()->GetLastCommittedURL().GetOrigin());
   }
 
   web_contents()->GetRenderViewHost()->Send(

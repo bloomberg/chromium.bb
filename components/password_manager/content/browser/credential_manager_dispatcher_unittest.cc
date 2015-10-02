@@ -371,6 +371,42 @@ TEST_F(CredentialManagerDispatcherTest,
 }
 
 TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerOnRequireUserMediationWithAffiliation) {
+  store_->AddLogin(form_);
+  store_->AddLogin(cross_origin_form_);
+  store_->AddLogin(affiliated_form1_);
+  store_->AddLogin(affiliated_form2_);
+
+  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
+  store_->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+
+  std::vector<GURL> federations;
+  std::vector<std::string> affiliated_realms;
+  affiliated_realms.push_back(kTestAndroidRealm1);
+  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
+      dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+  RunAllPendingTasks();
+
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  EXPECT_EQ(4U, passwords.size());
+  EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
+  EXPECT_FALSE(passwords[cross_origin_form_.signon_realm][0].skip_zero_click);
+  EXPECT_FALSE(passwords[affiliated_form1_.signon_realm][0].skip_zero_click);
+  EXPECT_FALSE(passwords[affiliated_form2_.signon_realm][0].skip_zero_click);
+
+  dispatcher()->OnRequireUserMediation(kRequestId);
+  RunAllPendingTasks();
+  process()->sink().ClearMessages();
+
+  passwords = store_->stored_passwords();
+  EXPECT_EQ(4U, passwords.size());
+  EXPECT_TRUE(passwords[form_.signon_realm][0].skip_zero_click);
+  EXPECT_FALSE(passwords[cross_origin_form_.signon_realm][0].skip_zero_click);
+  EXPECT_TRUE(passwords[affiliated_form1_.signon_realm][0].skip_zero_click);
+  EXPECT_FALSE(passwords[affiliated_form2_.signon_realm][0].skip_zero_click);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialWithEmptyPasswordStore) {
   std::vector<GURL> federations;
   EXPECT_CALL(
