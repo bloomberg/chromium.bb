@@ -1329,7 +1329,7 @@
     </request>
    </interface>
 
-  <interface name="wl_seat" version="4">
+  <interface name="wl_seat" version="5">
     <description summary="group of input devices">
       A seat is a group of keyboards, pointer and touch devices. This
       object is published as a global during start up, or when such a
@@ -1399,6 +1399,15 @@
       </description>
       <arg name="name" type="string"/>
     </event>
+
+    <!-- Version 5 additions -->
+
+    <request name="release" type="destructor" since="5">
+      <description summary="release the seat object">
+      Using this request client can tell the server that it is not going to
+	use the seat object anymore.
+      </description>
+    </request>
 
   </interface>
 
