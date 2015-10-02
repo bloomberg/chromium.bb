@@ -267,8 +267,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   BluetoothDispatcherHost* GetBluetoothDispatcherHost();
 
  protected:
-  // A proxy for our IPC::Channel that lives on the IO thread (see
-  // browser_process.h)
+  // A proxy for our IPC::Channel that lives on the IO thread.
   scoped_ptr<IPC::ChannelProxy> channel_;
 
   // True if fast shutdown has been performed on this RPH.
