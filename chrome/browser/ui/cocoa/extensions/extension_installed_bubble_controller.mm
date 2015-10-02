@@ -92,24 +92,18 @@ void ExtensionInstalledBubbleBridge::Show() {
 @synthesize pageActionPreviewShowing = pageActionPreviewShowing_;
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                 extension:(const Extension*)extension
-                    bundle:(const BundleInstaller*)bundle
-                   browser:(Browser*)browser
-                      icon:(SkBitmap)icon {
-  NSString* nibName = bundle ? @"ExtensionInstalledBubbleBundle" :
-                               @"ExtensionInstalledBubble";
-  if ((self = [super initWithWindowNibPath:nibName
+           extensionBubble:(ExtensionInstalledBubble*)extensionBubble {
+  if ((self = [super initWithWindowNibPath:@"ExtensionInstalledBubble"
                               parentWindow:parentWindow
                                 anchoredAt:NSZeroPoint])) {
-    bundle_ = bundle;
-    DCHECK(browser);
-    browser_ = browser;
-    icon_.reset([gfx::SkBitmapToNSImage(icon) retain]);
+    DCHECK(extensionBubble);
+    const extensions::Extension* extension = extensionBubble->extension();
+    browser_ = extensionBubble->browser();
+    DCHECK(browser_);
+    icon_.reset([gfx::SkBitmapToNSImage(extensionBubble->icon()) retain]);
     pageActionPreviewShowing_ = NO;
 
-    if (bundle_) {
-      type_ = extension_installed_bubble::kBundle;
-    } else if (extension->is_app()) {
+    if (extension->is_app()) {
       type_ = extension_installed_bubble::kApp;
     } else if (!extensions::OmniboxInfo::GetKeyword(extension).empty()) {
       type_ = extension_installed_bubble::kOmniboxKeyword;
@@ -122,18 +116,28 @@ void ExtensionInstalledBubbleBridge::Show() {
       type_ = extension_installed_bubble::kGeneric;
     }
 
-    if (type_ == extension_installed_bubble::kBundle) {
-      [self showWindow:self];
-    } else {
-      // Start showing window only after extension has fully loaded.
-      installedBubbleBridge_.reset(new ExtensionInstalledBubbleBridge(self));
-      installedBubble_.reset(new ExtensionInstalledBubble(
-          extension,
-          browser,
-          icon));
-      installedBubble_->SetBubbleUi(installedBubbleBridge_.get());
-      installedBubble_->IgnoreBrowserClosing();
-    }
+    // Start showing window only after extension has fully loaded.
+    installedBubbleBridge_.reset(new ExtensionInstalledBubbleBridge(self));
+    installedBubble_.reset(extensionBubble);
+    installedBubble_->SetBubbleUi(installedBubbleBridge_.get());
+    installedBubble_->IgnoreBrowserClosing();
+  }
+  return self;
+}
+
+- (id)initWithParentWindow:(NSWindow*)parentWindow
+                    bundle:(const BundleInstaller*)bundle
+                   browser:(Browser*)browser {
+  if ((self = [super initWithWindowNibPath:@"ExtensionInstalledBubbleBundle"
+                              parentWindow:parentWindow
+                                anchoredAt:NSZeroPoint])) {
+    bundle_ = bundle;
+    DCHECK(browser);
+    browser_ = browser;
+    icon_.reset([gfx::SkBitmapToNSImage(SkBitmap()) retain]);
+    pageActionPreviewShowing_ = NO;
+    type_ = extension_installed_bubble::kBundle;
+    [self showWindow:self];
   }
   return self;
 }

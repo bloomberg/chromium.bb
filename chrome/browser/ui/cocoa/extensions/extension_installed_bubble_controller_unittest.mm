@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/common/extension.h"
@@ -114,6 +115,13 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
     return extension;
   }
 
+  ExtensionInstalledBubbleControllerForTest* CreateController() {
+    return [[ExtensionInstalledBubbleControllerForTest alloc]
+        initWithParentWindow:window_
+             extensionBubble:new ExtensionInstalledBubble(extension_.get(),
+                                                          browser(), icon_)];
+  }
+
   // Required to initialize the extension installed bubble.
   NSWindow* window_;  // weak, owned by CocoaProfileTest.
 
@@ -129,13 +137,7 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
 // Confirm that window sizes are set correctly for a page action extension.
 TEST_F(ExtensionInstalledBubbleControllerTest, PageActionTest) {
   extension_ = CreateExtension(extension_installed_bubble::kPageAction);
-  ExtensionInstalledBubbleControllerForTest* controller =
-      [[ExtensionInstalledBubbleControllerForTest alloc]
-          initWithParentWindow:window_
-                     extension:extension_.get()
-                        bundle:NULL
-                       browser:browser()
-                          icon:icon_];
+  ExtensionInstalledBubbleControllerForTest* controller = CreateController();
   EXPECT_TRUE(controller);
 
   // Initialize window without having to calculate tabstrip locations.
@@ -189,13 +191,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest, PageActionTest) {
 
 TEST_F(ExtensionInstalledBubbleControllerTest, BrowserActionTest) {
   extension_ = CreateExtension(extension_installed_bubble::kBrowserAction);
-  ExtensionInstalledBubbleControllerForTest* controller =
-      [[ExtensionInstalledBubbleControllerForTest alloc]
-          initWithParentWindow:window_
-                     extension:extension_.get()
-                        bundle:NULL
-                       browser:browser()
-                          icon:icon_];
+  ExtensionInstalledBubbleControllerForTest* controller = CreateController();
   EXPECT_TRUE(controller);
 
   // Initialize window without having to calculate tabstrip locations.
@@ -249,13 +245,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest, BrowserActionTest) {
 
 TEST_F(ExtensionInstalledBubbleControllerTest, ParentClose) {
   extension_ = CreateExtension(extension_installed_bubble::kBrowserAction);
-  ExtensionInstalledBubbleControllerForTest* controller =
-      [[ExtensionInstalledBubbleControllerForTest alloc]
-          initWithParentWindow:window_
-                     extension:extension_.get()
-                        bundle:NULL
-                       browser:browser()
-                          icon:icon_];
+  ExtensionInstalledBubbleControllerForTest* controller = CreateController();
   EXPECT_TRUE(controller);
 
   // Bring up the window and disable close animation.
@@ -285,13 +275,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest, ParentClose) {
 
 TEST_F(ExtensionInstalledBubbleControllerTest, AppTest) {
   extension_ = CreateExtension(extension_installed_bubble::kApp);
-  ExtensionInstalledBubbleControllerForTest* controller =
-      [[ExtensionInstalledBubbleControllerForTest alloc]
-          initWithParentWindow:window_
-                     extension:extension_.get()
-                        bundle:NULL
-                       browser:browser()
-                          icon:icon_];
+  ExtensionInstalledBubbleControllerForTest* controller = CreateController();
   EXPECT_TRUE(controller);
   [controller initializeWindow];
   EXPECT_TRUE([controller window]);

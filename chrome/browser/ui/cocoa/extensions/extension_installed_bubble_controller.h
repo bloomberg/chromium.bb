@@ -105,11 +105,15 @@ typedef enum {
 
 // Initialize the window, and then create observers to wait for the extension
 // to complete loading, or the browser window to close.
+// Takes ownership of |extensionBubble|.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                 extension:(const extensions::Extension*)extension
+           extensionBubble:(ExtensionInstalledBubble*)extensionBubble;
+
+// Initialize the window, and then create observers to wait for the extension
+// to complete loading, or the browser window to close.
+- (id)initWithParentWindow:(NSWindow*)parentWindow
                     bundle:(const extensions::BundleInstaller*)bundle
-                   browser:(Browser*)browser
-                      icon:(SkBitmap)icon;
+                   browser:(Browser*)browser;
 
 // Action for close button.
 - (IBAction)closeWindow:(id)sender;

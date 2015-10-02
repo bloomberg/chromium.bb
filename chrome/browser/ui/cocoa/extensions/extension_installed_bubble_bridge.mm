@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
+#include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "extensions/common/extension.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -22,10 +23,8 @@ void ShowExtensionInstalledBubble(const extensions::Extension* extension,
   // worry about it here.
   [[ExtensionInstalledBubbleController alloc]
       initWithParentWindow:browser->window()->GetNativeWindow()
-                 extension:extension
-                    bundle:NULL
-                   browser:browser
-                      icon:icon];
+           extensionBubble:new ExtensionInstalledBubble(extension, browser,
+                                                        icon)];
 }
 
 }  // namespace chrome
@@ -36,8 +35,6 @@ void extensions::BundleInstaller::ShowInstalledBubble(
   // worry about it here.
   [[ExtensionInstalledBubbleController alloc]
       initWithParentWindow:browser->window()->GetNativeWindow()
-                 extension:NULL
                     bundle:bundle
-                   browser:browser
-                      icon:SkBitmap()];
+                   browser:browser];
 }
