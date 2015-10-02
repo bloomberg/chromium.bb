@@ -1314,6 +1314,7 @@ DEFINE_TRACE(FrameSelection)
     visitor->trace(m_pendingSelection);
     visitor->trace(m_selectionEditor);
     visitor->trace(m_originalBase);
+    visitor->trace(m_originalBaseInComposedTree);
     visitor->trace(m_previousCaretNode);
     visitor->trace(m_typingStyle);
 }
