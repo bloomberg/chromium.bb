@@ -40,16 +40,17 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT MediaStreamDescriptorClient {
+class PLATFORM_EXPORT MediaStreamDescriptorClient : public GarbageCollectedMixin {
 public:
     virtual ~MediaStreamDescriptorClient() { }
 
     virtual void streamEnded() = 0;
     virtual void addRemoteTrack(MediaStreamComponent*) = 0;
     virtual void removeRemoteTrack(MediaStreamComponent*) = 0;
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
-class PLATFORM_EXPORT MediaStreamDescriptor final : public RefCounted<MediaStreamDescriptor> {
+class PLATFORM_EXPORT MediaStreamDescriptor final : public GarbageCollectedFinalized<MediaStreamDescriptor> {
 public:
     class ExtraData {
     public:
@@ -57,11 +58,11 @@ public:
     };
 
     // Only used for AudioDestinationNode.
-    static PassRefPtr<MediaStreamDescriptor> create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources);
+    static MediaStreamDescriptor* create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources);
 
-    static PassRefPtr<MediaStreamDescriptor> create(const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
+    static MediaStreamDescriptor* create(const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
 
-    static PassRefPtr<MediaStreamDescriptor> create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
+    static MediaStreamDescriptor* create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
 
     MediaStreamDescriptorClient* client() const { return m_client; }
     void setClient(MediaStreamDescriptorClient* client) { m_client = client; }
@@ -74,8 +75,8 @@ public:
     unsigned numberOfVideoComponents() const { return m_videoComponents.size(); }
     MediaStreamComponent* videoComponent(unsigned index) const { return m_videoComponents[index].get(); }
 
-    void addComponent(PassRefPtr<MediaStreamComponent>);
-    void removeComponent(PassRefPtr<MediaStreamComponent>);
+    void addComponent(MediaStreamComponent*);
+    void removeComponent(MediaStreamComponent*);
 
     void addRemoteTrack(MediaStreamComponent*);
     void removeRemoteTrack(MediaStreamComponent*);
@@ -89,21 +90,26 @@ public:
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
+    // |m_extraData| may hold pointers to GC objects, and it may touch them in destruction.
+    // So this class is eagerly finalized to finalize |m_extraData| promptly.
+    EAGERLY_FINALIZE();
+    DECLARE_TRACE();
+
 private:
     MediaStreamDescriptor(const String& id, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources);
     MediaStreamDescriptor(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
 
-    MediaStreamDescriptorClient* m_client;
+    Member<MediaStreamDescriptorClient> m_client;
     String m_id;
-    Vector<RefPtr<MediaStreamComponent>> m_audioComponents;
-    Vector<RefPtr<MediaStreamComponent>> m_videoComponents;
+    HeapVector<Member<MediaStreamComponent>> m_audioComponents;
+    HeapVector<Member<MediaStreamComponent>> m_videoComponents;
     bool m_active;
     bool m_ended;
 
     OwnPtr<ExtraData> m_extraData;
 };
 
-typedef Vector<RefPtr<MediaStreamDescriptor>> MediaStreamDescriptorVector;
+typedef HeapVector<Member<MediaStreamDescriptor>> MediaStreamDescriptorVector;
 
 } // namespace blink
 

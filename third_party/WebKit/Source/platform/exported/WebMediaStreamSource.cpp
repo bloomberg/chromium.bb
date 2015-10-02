@@ -69,7 +69,7 @@ void WebMediaStreamSource::ExtraData::setOwner(MediaStreamSource* owner)
     m_owner = owner;
 }
 
-WebMediaStreamSource::WebMediaStreamSource(const PassRefPtr<MediaStreamSource>& mediaStreamSource)
+WebMediaStreamSource::WebMediaStreamSource(MediaStreamSource* mediaStreamSource)
     : m_private(mediaStreamSource)
 {
 }
@@ -88,11 +88,6 @@ void WebMediaStreamSource::assign(const WebMediaStreamSource& other)
 void WebMediaStreamSource::reset()
 {
     m_private.reset();
-}
-
-WebMediaStreamSource::operator PassRefPtr<MediaStreamSource>() const
-{
-    return m_private.get();
 }
 
 WebMediaStreamSource::operator MediaStreamSource*() const

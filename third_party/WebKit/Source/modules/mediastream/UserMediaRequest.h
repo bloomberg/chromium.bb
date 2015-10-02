@@ -39,7 +39,6 @@
 #include "platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -62,7 +61,7 @@ public:
 
     void start();
 
-    void succeed(PassRefPtr<MediaStreamDescriptor>);
+    void succeed(MediaStreamDescriptor*);
     void failPermissionDenied(const String& message);
     void failConstraint(const String& constraintName, const String& message);
     void failUASpecific(const String& name, const String& message, const String& constraintName);
