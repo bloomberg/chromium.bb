@@ -97,6 +97,9 @@ class IncidentReportingService : public content::NotificationObserver {
   // storage.
   void AddDownloadManager(content::DownloadManager* download_manager);
 
+  // Returns true if incident reporting is enabled via a field trial.
+  static bool IsEnabled();
+
  protected:
   // A pointer to a function that populates a protobuf with environment data.
   typedef void (*CollectEnvironmentDataFn)(

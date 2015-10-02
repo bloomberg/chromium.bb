@@ -9,11 +9,13 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/process_info.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -364,6 +366,13 @@ void IncidentReportingService::RegisterDelayedAnalysisCallback(
 void IncidentReportingService::AddDownloadManager(
     content::DownloadManager* download_manager) {
   download_metadata_manager_.AddDownloadManager(download_manager);
+}
+
+// static
+bool IncidentReportingService::IsEnabled() {
+  std::string group_name = base::FieldTrialList::FindFullName(
+      "SafeBrowsingIncidentReportingService");
+  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
 IncidentReportingService::IncidentReportingService(
@@ -803,6 +812,8 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
       eligible_profile ? eligible_profile->GetPrefs()->GetBoolean(
                              prefs::kSafeBrowsingExtendedReportingEnabled) :
                        false);
+
+  process->set_field_trial_participant(IsEnabled());
 
   // Associate process-wide incidents with the profile that benefits from the
   // strongest safe browsing protections.

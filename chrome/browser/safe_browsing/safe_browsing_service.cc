@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -94,15 +93,6 @@ base::FilePath CookieFilePath() {
   return base::FilePath(
       SafeBrowsingService::GetBaseFilename().value() + kCookiesFile);
 }
-
-#if defined(FULL_SAFE_BROWSING)
-// Returns true if the incident reporting service is enabled via a field trial.
-bool IsIncidentReportingServiceEnabled() {
-  const std::string group_name = base::FieldTrialList::FindFullName(
-      "SafeBrowsingIncidentReportingService");
-  return group_name == "Enabled";
-}
-#endif  // defined(FULL_SAFE_BROWSING)
 
 #if defined(SAFE_BROWSING_DB_REMOTE)
 // Android field trial
@@ -268,7 +258,7 @@ void SafeBrowsingService::Initialize() {
       this, url_request_context_getter_.get()));
 #endif
 
-  if (IsIncidentReportingServiceEnabled()) {
+  if (safe_browsing::IncidentReportingService::IsEnabled()) {
     incident_service_.reset(new safe_browsing::IncidentReportingService(
         this, url_request_context_getter_));
     resource_request_detector_.reset(new safe_browsing::ResourceRequestDetector(
