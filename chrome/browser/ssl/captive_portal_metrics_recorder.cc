@@ -8,15 +8,12 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/captive_portal/captive_portal_service.h"
+#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-#include "chrome/browser/captive_portal/captive_portal_service.h"
-#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
-#endif
 
 namespace {
 
@@ -34,37 +31,32 @@ enum SSLInterstitialCauseCaptivePortal {
   UNUSED_CAPTIVE_PORTAL_EVENT,
 };
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
 void RecordCaptivePortalEventStats(SSLInterstitialCauseCaptivePortal event) {
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.captive_portal", event,
                             UNUSED_CAPTIVE_PORTAL_EVENT);
 }
-#endif
 
 }  // namespace
 
 CaptivePortalMetricsRecorder::CaptivePortalMetricsRecorder(
     content::WebContents* web_contents,
     bool overridable)
-    : captive_portal_detection_enabled_(false),
+    : overridable_(overridable),
+      captive_portal_detection_enabled_(false),
       captive_portal_probe_completed_(false),
       captive_portal_no_response_(false),
       captive_portal_detected_(false) {
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  overridable_ = overridable;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   captive_portal_detection_enabled_ =
       CaptivePortalServiceFactory::GetForProfile(profile)->enabled();
   registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
                  content::Source<Profile>(profile));
-#endif
 }
 
 CaptivePortalMetricsRecorder::~CaptivePortalMetricsRecorder() {}
 
 void CaptivePortalMetricsRecorder::RecordCaptivePortalUMAStatistics() const {
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   RecordCaptivePortalEventStats(CAPTIVE_PORTAL_ALL);
   if (captive_portal_detection_enabled_)
     RecordCaptivePortalEventStats(
@@ -83,14 +75,12 @@ void CaptivePortalMetricsRecorder::RecordCaptivePortalUMAStatistics() const {
     RecordCaptivePortalEventStats(overridable_
                                       ? CAPTIVE_PORTAL_NO_RESPONSE_OVERRIDABLE
                                       : CAPTIVE_PORTAL_NO_RESPONSE);
-#endif
 }
 
 void CaptivePortalMetricsRecorder::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   // When detection is disabled, captive portal service always sends
   // RESULT_INTERNET_CONNECTED. Ignore any probe results in that case.
   if (!captive_portal_detection_enabled_)
@@ -116,5 +106,4 @@ void CaptivePortalMetricsRecorder::Observe(
         captive_portal_no_response_ ||
         (results->result == captive_portal::RESULT_NO_RESPONSE);
   }
-#endif
 }

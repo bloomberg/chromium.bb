@@ -39,9 +39,7 @@ class CaptivePortalMetricsRecorder : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   bool overridable_;
-#endif
   bool captive_portal_detection_enabled_;
   // Did the probe complete before the interstitial was closed?
   bool captive_portal_probe_completed_;
