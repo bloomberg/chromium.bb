@@ -30444,6 +30444,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.SettingsReconciliation.InitialAndFinalValues"
+    enum="PasswordManagerPreferencesInitialAndFinalValues">
+  <owner>engedy@chromium.org</owner>
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Tracks the pair of initial values and pair of final values for the legacy
+    preference for controlling the Chrome Password Manager and the new
+    preference for controlling Smart Lock on Android. A single sample is
+    recorded after sync has merged last snaphot and finished initialization for
+    sync users, and on profile initialization for non-sync users.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.SettingsReconciliation.InitialValues"
     enum="PasswordManagerPreferencesInitialValues">
   <owner>engedy@chromium.org</owner>
@@ -67352,6 +67365,47 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Password is non blank"/>
   <int value="4"
       label="Password status not checked as user is on a Windows Domain"/>
+</enum>
+
+<enum name="PasswordManagerPreferencesInitialAndFinalValues" type="int">
+  <summary>
+    The pair of initial values and the pair of final values for the legacy
+    preference for controlling the Chrome Password Manager and new preference
+    for controlling Smart Lock on Android. In the values label N means new pref
+    value, L meand legacy pref value.
+  </summary>
+  <int value="0"
+      label="Initial state: N='off', L='off' Final state: N='off', L='off'"/>
+  <int value="1"
+      label="Initial state: N='off', L='off' Final state: N='off', L='on'"/>
+  <int value="2"
+      label="Initial state: N='off', L='off' Final state: N='on', L='off'"/>
+  <int value="3"
+      label="Initial state: N='off', L='off' Final state: N='on', L='on'"/>
+  <int value="4"
+      label="Initial state: N='off', L='on' Final state: N='off', L='off'"/>
+  <int value="5"
+      label="Initial state: N='off', L='on' Final state: N='off', L='on'"/>
+  <int value="6"
+      label="Initial state: N='off', L='on' Final state: N='on', L='off'"/>
+  <int value="7"
+      label="Initial state: N='off', L='on' Final state: N='on', L='on'"/>
+  <int value="8"
+      label="Initial state: N='on', L='off' Final state: N='off', L='off'"/>
+  <int value="9"
+      label="Initial state: N='on', L='off' Final state: N='off', L='on'"/>
+  <int value="10"
+      label="Initial state: N='on', L='off' Final state: N='on', L='off'"/>
+  <int value="11"
+      label="Initial state: N='on', L='off' Final state: N='on', L='on'"/>
+  <int value="12"
+      label="Initial state: N='on', L='on' Final state: N='off', L='off'"/>
+  <int value="13"
+      label="Initial state: N='on', L='on' Final state: N='off', L='on'"/>
+  <int value="14"
+      label="Initial state: N='on', L='on' Final state: N='on', L='off'"/>
+  <int value="15"
+      label="Initial state: N='on', L='on' Final state: N='on', L='on'"/>
 </enum>
 
 <enum name="PasswordManagerPreferencesInitialValues" type="int">

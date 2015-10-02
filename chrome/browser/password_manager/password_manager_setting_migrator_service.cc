@@ -61,6 +61,32 @@ void SaveCurrentPrefState(PrefService* prefs,
       prefs, password_manager::prefs::kPasswordManagerSavingEnabled);
 }
 
+void TrackInitialAndFinalValues(PrefService* prefs,
+                                bool initial_new_pref_value,
+                                bool initial_legacy_pref_value) {
+  bool final_new_pref_value =
+      prefs->GetBoolean(password_manager::prefs::kCredentialsEnableService);
+  bool final_legacy_pref_value =
+      prefs->GetBoolean(password_manager::prefs::kPasswordManagerSavingEnabled);
+  const int kMaxInitValue = 0x10;
+  int value_to_log = 0;
+  const int kInitialNewValueMask = 0x8;
+  const int kInitialLegacyValueMask = 0x4;
+  const int kFinalNewValueMask = 0x2;
+  const int kFinalLegacyValueMask = 0x1;
+  if (initial_new_pref_value)
+    value_to_log |= kInitialNewValueMask;
+  if (initial_legacy_pref_value)
+    value_to_log |= kInitialLegacyValueMask;
+  if (final_new_pref_value)
+    value_to_log |= kFinalNewValueMask;
+  if (final_legacy_pref_value)
+    value_to_log |= kFinalLegacyValueMask;
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.SettingsReconciliation.InitialAndFinalValues",
+      value_to_log, kMaxInitValue);
+}
+
 }  // namespace
 
 // static
@@ -132,8 +158,11 @@ void PasswordManagerSettingMigratorService::Observe(
   }
   if (ProfileSyncServiceFactory::HasProfileSyncService(profile_))
     sync_service_ = ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (!CanSyncStart())
+  if (!CanSyncStart()) {
     MigrateOffState(profile_->GetPrefs());
+    TrackInitialAndFinalValues(profile_->GetPrefs(), initial_new_pref_value_,
+                               initial_legacy_pref_value_);
+  }
   InitObservers();
 }
 
@@ -235,6 +264,6 @@ void PasswordManagerSettingMigratorService::MigrateAfterModelAssociation(
       UpdatePreferencesValues(prefs, false);
     }
   }
-  // TODO(melandory) Add histogram which will log combination of initial and
-  // final values for the both preferences.
+  TrackInitialAndFinalValues(prefs, initial_new_pref_value_,
+                             initial_legacy_pref_value_);
 }

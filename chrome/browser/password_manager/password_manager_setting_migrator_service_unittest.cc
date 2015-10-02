@@ -36,6 +36,9 @@ const char kDisabledGroupName[] = "Disable";
 const char kInitialValuesHistogramName[] =
     "PasswordManager.SettingsReconciliation.InitialValues";
 
+const char kInitialAndFinalValuesHistogramName[] =
+    "PasswordManager.SettingsReconciliation.InitialAndFinalValues";
+
 enum BooleanPrefState {
   OFF,
   ON,
@@ -50,6 +53,28 @@ enum PasswordManagerPreferencesInitialValues {
   N1L0,
   N1L1,
   NUM_INITIAL_VALUES,
+};
+
+// Enum used for histogram tracking of the combined initial values and final
+// values for the legacy and new preferences.
+enum PasswordManagerPreferencesInitialAndFinalValues {
+  I00F00,
+  I00F01,
+  I00F10,
+  I00F11,
+  I01F00,
+  I01F01,
+  I01F10,
+  I01F11,
+  I10F00,
+  I10F01,
+  I10F10,
+  I10F11,
+  I11F00,
+  I11F01,
+  I11F10,
+  I11F11,
+  NUM_INITIAL_AND_FINAL_VALUES,
 };
 
 syncer::SyncData CreatePrefSyncData(const std::string& name, bool value) {
@@ -214,31 +239,32 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
     BooleanPrefState old_pref_sync_value;
     bool result_value;
     PasswordManagerPreferencesInitialValues histogram_initial_value;
+    PasswordManagerPreferencesInitialAndFinalValues histogram_initial_and_final;
   } kTestingTable[] = {
-      {EMPTY, EMPTY, EMPTY, EMPTY, true, N1L1},
-      {EMPTY, EMPTY, EMPTY, OFF, false, N1L1},
-      {EMPTY, EMPTY, EMPTY, ON, true, N1L1},
-      {EMPTY, EMPTY, OFF, EMPTY, false, N1L1},
-      {EMPTY, EMPTY, ON, EMPTY, true, N1L1},
-      {OFF, OFF, EMPTY, EMPTY, false, N0L0},
-      {OFF, OFF, OFF, OFF, false, N0L0},
-      {OFF, OFF, OFF, ON, true, N0L0},
-      {OFF, OFF, ON, OFF, true, N0L0},
-      {OFF, ON, OFF, ON, false, N0L1},
-      {OFF, ON, ON, OFF, false, N0L1},
-      {OFF, ON, ON, ON, true, N0L1},
-      {ON, OFF, EMPTY, EMPTY, false, N1L0},
-      {ON, OFF, OFF, ON, false, N1L0},
-      {ON, OFF, ON, OFF, false, N1L0},
-      {ON, OFF, ON, ON, true, N1L0},
-      {ON, ON, EMPTY, OFF, false, N1L1},
-      {ON, ON, EMPTY, ON, true, N1L1},
-      {ON, ON, OFF, EMPTY, false, N1L1},
-      {ON, ON, OFF, OFF, false, N1L1},
-      {ON, ON, OFF, ON, false, N1L1},
-      {ON, ON, ON, EMPTY, true, N1L1},
-      {ON, ON, ON, OFF, false, N1L1},
-      {ON, ON, ON, ON, true, N1L1},
+      {EMPTY, EMPTY, EMPTY, EMPTY, true, N1L1, I11F11},
+      {EMPTY, EMPTY, EMPTY, OFF, false, N1L1, I11F00},
+      {EMPTY, EMPTY, EMPTY, ON, true, N1L1, I11F11},
+      {EMPTY, EMPTY, OFF, EMPTY, false, N1L1, I11F00},
+      {EMPTY, EMPTY, ON, EMPTY, true, N1L1, I11F11},
+      {OFF, OFF, EMPTY, EMPTY, false, N0L0, I00F00},
+      {OFF, OFF, OFF, OFF, false, N0L0, I00F00},
+      {OFF, OFF, OFF, ON, true, N0L0, I00F11},
+      {OFF, OFF, ON, OFF, true, N0L0, I00F11},
+      {OFF, ON, OFF, ON, false, N0L1, I01F00},
+      {OFF, ON, ON, OFF, false, N0L1, I01F00},
+      {OFF, ON, ON, ON, true, N0L1, I01F11},
+      {ON, OFF, EMPTY, EMPTY, false, N1L0, I10F00},
+      {ON, OFF, OFF, ON, false, N1L0, I10F00},
+      {ON, OFF, ON, OFF, false, N1L0, I10F00},
+      {ON, OFF, ON, ON, true, N1L0, I10F11},
+      {ON, ON, EMPTY, OFF, false, N1L1, I11F00},
+      {ON, ON, EMPTY, ON, true, N1L1, I11F11},
+      {ON, ON, OFF, EMPTY, false, N1L1, I11F00},
+      {ON, ON, OFF, OFF, false, N1L1, I11F00},
+      {ON, ON, OFF, ON, false, N1L1, I11F00},
+      {ON, ON, ON, EMPTY, true, N1L1, I11F11},
+      {ON, ON, ON, OFF, false, N1L1, I11F00},
+      {ON, ON, ON, ON, true, N1L1, I11F11},
   };
 
   for (const auto& test_case : kTestingTable) {
@@ -267,6 +293,9 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
     EXPECT_THAT(tester.GetAllSamples(kInitialValuesHistogramName),
                 testing::ElementsAre(
                     base::Bucket(test_case.histogram_initial_value, 1)));
+    EXPECT_THAT(tester.GetAllSamples(kInitialAndFinalValuesHistogramName),
+                testing::ElementsAre(
+                    base::Bucket(test_case.histogram_initial_and_final, 1)));
   }
 }
 
@@ -331,6 +360,8 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
     EXPECT_THAT(tester.GetAllSamples(kInitialValuesHistogramName),
                 testing::ElementsAre(
                     base::Bucket(test_case.histogram_initial_value, 1)));
+    EXPECT_THAT(tester.GetAllSamples(kInitialAndFinalValuesHistogramName),
+                testing::IsEmpty());
   }
 }
 
@@ -341,8 +372,11 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
   prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, false);
   ON_CALL(*profile_sync_service(), CanSyncStart())
       .WillByDefault(testing::Return(false));
+  base::HistogramTester tester;
   NotifyProfileAdded();
   ExpectValuesForBothPrefValues(false, false);
+  EXPECT_THAT(tester.GetAllSamples(kInitialAndFinalValuesHistogramName),
+              testing::ElementsAre(base::Bucket(I10F00, 1)));
 }
 
 TEST_F(PasswordManagerSettingMigratorServiceTest,
@@ -353,8 +387,11 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
   ASSERT_EQ(prefs->GetBoolean(prefs::kCredentialsEnableService), true);
   ON_CALL(*profile_sync_service(), CanSyncStart())
       .WillByDefault(testing::Return(false));
+  base::HistogramTester tester;
   NotifyProfileAdded();
   ExpectValuesForBothPrefValues(true, true);
+  EXPECT_THAT(tester.GetAllSamples(kInitialAndFinalValuesHistogramName),
+              testing::ElementsAre(base::Bucket(I11F11, 1)));
 }
 
 TEST_F(PasswordManagerSettingMigratorServiceTest,
@@ -364,8 +401,11 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
   ASSERT_EQ(prefs->GetBoolean(prefs::kCredentialsEnableService), true);
   ON_CALL(*profile_sync_service(), CanSyncStart())
       .WillByDefault(testing::Return(false));
+  base::HistogramTester tester;
   NotifyProfileAdded();
   ExpectValuesForBothPrefValues(true, true);
+  EXPECT_THAT(tester.GetAllSamples(kInitialAndFinalValuesHistogramName),
+              testing::ElementsAre(base::Bucket(I11F11, 1)));
 }
 
 }  // namespace password_manager
