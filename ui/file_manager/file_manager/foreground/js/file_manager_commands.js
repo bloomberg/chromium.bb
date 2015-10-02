@@ -1023,8 +1023,7 @@ CommandHandler.COMMANDS_['open-with'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   execute: function(event, fileManager) {
-    var tasks = fileManager.taskController.tasks;
-    if (tasks) {
+    fileManager.taskController.getFileTasks().then(function(tasks) {
       tasks.showTaskPicker(fileManager.ui.defaultTaskPicker,
           str('OPEN_WITH_BUTTON_LABEL'),
           '',
@@ -1032,7 +1031,11 @@ CommandHandler.COMMANDS_['open-with'] = /** @type {Command} */ ({
             tasks.execute(task.taskId);
           },
           false);
-    }
+    })
+    .catch(function(error) {
+      if (error)
+        console.error(error.stack || error);
+    });
   },
   /**
    * @param {!Event} event Command event.

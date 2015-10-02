@@ -188,9 +188,33 @@ MainWindowComponent.prototype.onDetailClick_ = function(event) {
     this.directoryModel_.changeDirectoryEntry(
         /** @type {!DirectoryEntry} */ (entry));
   } else {
-    this.taskController_.executeSelectionTask();
+    this.acceptSelection_();
   }
 };
+
+/**
+ * Accepts the current selection depending on the mode.
+ * @private
+ */
+MainWindowComponent.prototype.acceptSelection_ = function() {
+  var selection = this.selectionHandler_.selection;
+  if (this.dialogType_ == DialogType.FULL_PAGE) {
+    this.taskController_.getFileTasks()
+        .then(function(tasks) {
+          tasks.executeDefault();
+        })
+        .catch(function(error) {
+          if (error)
+            console.error(error.stack || error);
+        });
+    return true;
+  }
+  if (!this.ui_.dialogFooter.okButton.disabled) {
+    this.ui_.dialogFooter.okButton.click();
+    return true;
+  }
+  return false;
+}
 
 /**
  * Handles click event on the toggle-view button.
@@ -282,7 +306,7 @@ MainWindowComponent.prototype.onListKeyDown_ = function(event) {
           this.directoryModel_.changeDirectoryEntry(
               /** @type {!DirectoryEntry} */ (selection.entries[0]));
         }
-      } else if (this.taskController_.executeSelectionTask()) {
+      } else if (this.acceptSelection_()) {
         event.preventDefault();
       }
       break;

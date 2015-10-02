@@ -63,8 +63,7 @@ function getMockFileManager() {
  * @param {string} expectedText An expected text.
  * @return {!Promise}
  */
-function showHtmlOfAlertDialogIsCalled(
-    entries, expectedTitle, expectedText) {
+function showHtmlOfAlertDialogIsCalled(entries, expectedTitle, expectedText) {
   return new Promise(function(resolve, reject) {
     var fileManager = getMockFileManager();
     fileManager.ui.alertDialog.showHtml =
@@ -74,12 +73,12 @@ function showHtmlOfAlertDialogIsCalled(
           resolve();
         };
 
-    var fileTasks = new FileTasks(
+    FileTasks.create(
         fileManager.volumeManager, fileManager.metadataModel,
-        fileManager.directoryModel, fileManager.ui);
-    fileTasks.init(entries, []).then(function() {
-      fileTasks.executeDefault();
-    });
+        fileManager.directoryModel, fileManager.ui, entries, [null]).
+      then(function(tasks) {
+        tasks.executeDefault();
+      });
   });
 }
 
@@ -99,12 +98,12 @@ function openSuggestAppsDialogIsCalled(entries, mimeTypes) {
       }
     };
 
-    var fileTasks = new FileTasks(
+    FileTasks.create(
         fileManager.volumeManager, fileManager.metadataModel,
-        fileManager.directoryModel, fileManager.ui);
-    fileTasks.init(entries, mimeTypes).then(function() {
-      fileTasks.executeDefault();
-    });
+        fileManager.directoryModel, fileManager.ui, entries, mimeTypes)
+        .then(function(tasks) {
+          tasks.executeDefault();
+        });
   });
 }
 
@@ -149,7 +148,7 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
     var fileSystem = new MockFileSystem('volumeId');
     var entry = new MockFileEntry(fileSystem, '/test.rtf');
 
-    var tasks = new FileTasks(
+    FileTasks.create(
         {
           getDriveConnectionState: function() {
             return VolumeManagerCommon.DriveConnectionType.ONLINE;
@@ -170,10 +169,12 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
               resolve();
             }
           }
+        },
+        [entry],
+        ['application/rtf']).then(function(tasks) {
+          tasks.openSuggestAppsDialog(
+              function() {}, function() {}, function() {});
         });
-
-    tasks.openSuggestAppsDialog(
-        entry, 'application/rtf', function() {}, function() {}, function() {});
   });
 
   reportPromise(showByExtensionAndMimeIsCalled, callback);
@@ -189,7 +190,7 @@ function testOpenSuggestAppsDialogFailure(callback) {
     var fileSystem = new MockFileSystem('volumeId');
     var entry = new MockFileEntry(fileSystem, '/test');
 
-    var tasks = new FileTasks(
+    FileTasks.create(
         {
           getDriveConnectionState: function() {
             return VolumeManagerCommon.DriveConnectionType.ONLINE;
@@ -202,10 +203,11 @@ function testOpenSuggestAppsDialogFailure(callback) {
           fileContextMenu: {
             defaultActionMenuItem: document.createElement('div')
           }
+        },
+        [entry],
+        [null]).then(function(tasks) {
+          tasks.openSuggestAppsDialog(function() {}, function() {}, resolve);
         });
-
-    tasks.openSuggestAppsDialog(
-        entry, null, function() {}, function() {}, resolve);
   });
 
   reportPromise(onFailureIsCalled, callback);

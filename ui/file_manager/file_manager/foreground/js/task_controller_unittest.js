@@ -27,7 +27,7 @@ function setUp() {
   cr.ui.decorate('command', cr.ui.Command);
 }
 
-function testDoEntryAction(callback) {
+function testExecuteEntryTask(callback) {
   window.chrome.fileManagerPrivate = {
     getFileTasks: function(entries, callback) {
       setTimeout(callback.bind(null, [

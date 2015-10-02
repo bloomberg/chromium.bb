@@ -84,10 +84,9 @@ function TaskController(
       assertInstanceof(document.querySelector('#open-with'), cr.ui.Command);
 
   /**
-   * @public {!FileTasks}
+   * @private {Promise<!FileTasks>}
    */
-  this.tasks = new FileTasks(
-      this.volumeManager_, this.metadataModel_, this.directoryModel_, this.ui_);
+  this.tasks_ = null;
 
   ui.taskMenuButton.addEventListener(
       'select', this.onTaskItemClicked_.bind(this));
@@ -125,69 +124,57 @@ TaskController.createTemporaryDisabledTaskItem_ = function() {
 };
 
 /**
- * Execute task depending on the selection and the dialog type.
- */
-TaskController.prototype.executeSelectionTask = function() {
-  if (this.dialogType_ == DialogType.FULL_PAGE) {
-    if (this.tasks)
-      this.tasks.executeDefault();
-    return true;
-  }
-  if (!this.ui_.dialogFooter.okButton.disabled) {
-    this.ui_.dialogFooter.okButton.click();
-    return true;
-  }
-  return false;
-};
-
-/**
  * Task combobox handler.
  *
  * @param {Object} event Event containing task which was clicked.
  * @private
  */
 TaskController.prototype.onTaskItemClicked_ = function(event) {
-  if (!this.tasks)
-    return;
+  this.getFileTasks()
+    .then(function(tasks) {
+      switch (event.item.type) {
+        case FileTasks.TaskMenuButtonItemType.ShowMenu:
+          this.ui_.taskMenuButton.showMenu(false);
+          break;
+        case FileTasks.TaskMenuButtonItemType.RunTask:
+          tasks.execute(event.item.task.taskId);
+          break;
+        case FileTasks.TaskMenuButtonItemType.ChangeDefaultTask:
+          var selection = this.selectionHandler_.selection;
+          var extensions = [];
 
-  switch (event.item.type) {
-    case FileTasks.TaskMenuButtonItemType.ShowMenu:
-      this.ui_.taskMenuButton.showMenu(false);
-      break;
-    case FileTasks.TaskMenuButtonItemType.RunTask:
-      this.tasks.execute(event.item.task.taskId);
-      break;
-    case FileTasks.TaskMenuButtonItemType.ChangeDefaultTask:
-      var selection = this.selectionHandler_.selection;
-      var extensions = [];
-
-      for (var i = 0; i < selection.entries.length; i++) {
-        var match = /\.(\w+)$/g.exec(selection.entries[i].toURL());
-        if (match) {
-          var ext = match[1].toUpperCase();
-          if (extensions.indexOf(ext) == -1) {
-            extensions.push(ext);
+          for (var i = 0; i < selection.entries.length; i++) {
+            var match = /\.(\w+)$/g.exec(selection.entries[i].toURL());
+            if (match) {
+              var ext = match[1].toUpperCase();
+              if (extensions.indexOf(ext) == -1) {
+                extensions.push(ext);
+              }
+            }
           }
-        }
+
+          var format = '';
+
+          if (extensions.length == 1) {
+            format = extensions[0];
+          }
+
+          // Change default was clicked. We should open "change default" dialog.
+          tasks.showTaskPicker(
+              this.ui_.defaultTaskPicker,
+              loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
+              strf('CHANGE_DEFAULT_CAPTION', format),
+              this.changeDefaultTask_.bind(this, selection),
+              true);
+          break;
+        default:
+          assertNotReached('Unknown task.');
       }
-
-      var format = '';
-
-      if (extensions.length == 1) {
-        format = extensions[0];
-      }
-
-      // Change default was clicked. We should open "change default" dialog.
-      this.tasks.showTaskPicker(
-          this.ui_.defaultTaskPicker,
-          loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
-          strf('CHANGE_DEFAULT_CAPTION', format),
-          this.changeDefaultTask_.bind(this, selection),
-          true);
-      break;
-    default:
-      assertNotReached('Unknown task.');
-  }
+    }.bind(this))
+    .catch(function(error) {
+      if (error)
+        console.error(error.stack || error);
+    });
 };
 
 /**
@@ -207,11 +194,15 @@ TaskController.prototype.changeDefaultTask_ = function(selection, task) {
 
   // Update task menu button unless the task button was updated other selection.
   if (this.selectionHandler_.selection === selection) {
-    this.tasks = new FileTasks(
-        this.volumeManager_, this.metadataModel_, this.directoryModel_,
-        this.ui_);
-    this.tasks.init(selection.entries, selection.mimeTypes);
-    this.tasks.display(this.ui_.taskMenuButton);
+    this.tasks_ = null;
+    this.getFileTasks()
+        .then(function(tasks) {
+          tasks.display(this.ui_.taskMenuButton);
+        }.bind(this))
+        .catch(function(error) {
+          if (error)
+            console.error(error.stack || error);
+        });
   }
   this.selectionHandler_.onFileSelectionChanged();
 };
@@ -220,8 +211,14 @@ TaskController.prototype.changeDefaultTask_ = function(selection, task) {
  * Executes default task.
  */
 TaskController.prototype.executeDefaultTask = function() {
-  if (this.tasks)
-    this.tasks.execute(this.ui_.fileContextMenu.defaultTaskMenuItem.taskId);
+  this.getFileTasks()
+      .then(function(tasks) {
+        tasks.execute(this.ui_.fileContextMenu.defaultTaskMenuItem.taskId);
+      }.bind(this))
+      .catch(function(error) {
+        if (error)
+          console.error(error.stack || error);
+      });
 };
 
 /**
@@ -255,10 +252,8 @@ TaskController.prototype.getMimeType_ = function(entry) {
  * @private
  */
 TaskController.prototype.onSelectionChanged_ = function() {
+  this.tasks_ = null;
   var selection = this.selectionHandler_.selection;
-  this.tasks = new FileTasks(
-      this.volumeManager_, this.metadataModel_, this.directoryModel_,
-      this.ui_);
   // Caller of update context menu task items.
   // FileSelectionHandler.EventType.CHANGE
   if (this.dialogType_ === DialogType.FULL_PAGE &&
@@ -278,26 +273,45 @@ TaskController.prototype.onSelectionChanged_ = function() {
  * @private
  */
 TaskController.prototype.onSelectionChangeThrottled_ = function() {
-  // FileSelectionHandler.EventType.CHANGE_THROTTLED
-  // Update the file tasks.
   var selection = this.selectionHandler_.selection;
   if (this.dialogType_ === DialogType.FULL_PAGE &&
       selection.directoryCount === 0 && selection.fileCount > 0) {
-    selection.computeAdditional(this.metadataModel_).then(function() {
-      if (this.selectionHandler_.selection !== selection)
-        return;
-      this.tasks.init(selection.entries, assert(selection.mimeTypes)).then(
-          function() {
-            if (this.selectionHandler_.selection !== selection)
-              return;
-            this.tasks.display(this.ui_.taskMenuButton);
-            this.updateContextMenuTaskItems_(
-                assert(this.tasks.getTaskItems()));
-          }.bind(this));
-    }.bind(this));
+    this.getFileTasks()
+        .then(function(tasks) {
+          tasks.display(this.ui_.taskMenuButton);
+          this.updateContextMenuTaskItems_(tasks.getTaskItems());
+        }.bind(this))
+        .catch(function(error) {
+          if (error)
+            console.error(error.stack || error);
+        });
   } else {
     this.ui_.taskMenuButton.hidden = true;
   }
+}
+
+/**
+ * @return {!Promise<!FileTasks>}
+ * @public
+ */
+TaskController.prototype.getFileTasks = function() {
+  if (this.tasks_)
+    return this.tasks_;
+
+  var selection = this.selectionHandler_.selection;
+  return selection.computeAdditional(this.metadataModel_).then(
+      function() {
+        if (this.selectionHandler_.selection !== selection)
+          return Promise.reject();
+        return FileTasks.create(
+            this.volumeManager_, this.metadataModel_, this.directoryModel_,
+            this.ui_, selection.entries, assert(selection.mimeTypes)).
+            then(function(tasks) {
+              if (this.selectionHandler_.selection !== selection)
+                return Promise.reject();
+              return tasks;
+            }.bind(this));
+      }.bind(this));
 };
 
 /**
@@ -359,20 +373,13 @@ TaskController.prototype.updateContextMenuTaskItems_ = function(items) {
  * @param {FileEntry} entry
  */
 TaskController.prototype.executeEntryTask = function(entry) {
-  if (this.dialogType_ == DialogType.FULL_PAGE) {
-    this.metadataModel_.get([entry], ['contentMimeType']).then(
-        function(props) {
-          var tasks = new FileTasks(
-              this.volumeManager_, this.metadataModel_, this.directoryModel_,
-              this.ui_);
-          tasks.init([entry], [props[0].contentMimeType || '']);
-          tasks.executeDefault();
-        }.bind(this));
-  } else {
-    var selection = this.selectionHandler_.selection;
-    if (selection.entries.length === 1 &&
-        util.isSameEntry(selection.entries[0], entry)) {
-      this.ui_.dialogFooter.okButton.click();
-    }
-  }
+  this.metadataModel_.get([entry], ['contentMimeType']).then(
+      function(props) {
+        FileTasks.create(
+            this.volumeManager_, this.metadataModel_, this.directoryModel_,
+            this.ui_, [entry], [props[0].contentMimeType || null])
+            .then(function(tasks) {
+              tasks.executeDefault();
+            });
+      }.bind(this));
 };
