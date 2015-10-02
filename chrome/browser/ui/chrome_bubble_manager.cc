@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/chrome_bubble_manager.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/bubble/bubble_delegate.h"
@@ -15,11 +16,18 @@ namespace {
 
 // Add any new enum before BUBBLE_TYPE_MAX and update BubbleType in
 // tools/metrics/histograms/histograms.xml.
-// Do not re-order these because they are used for collecting metrics.
+// Do not re-number these because they are used for collecting metrics.
+// Related bubbles can be grouped together every 10 values.
 enum BubbleType {
-  BUBBLE_TYPE_UNKNOWN,  // Used for unrecognized bubble names.
-  BUBBLE_TYPE_MOCK,     // Used for testing.
-  BUBBLE_TYPE_MAX,      // Number of bubble types; used for metrics.
+  // Special bubble values:
+  BUBBLE_TYPE_UNKNOWN = 0,  // Used for unrecognized bubble names.
+  BUBBLE_TYPE_MOCK = 1,     // Used for testing.
+
+  // Extension-related bubbles:
+  BUBBLE_TYPE_EXTENSION_INSTALLED = 10,  // Displayed after installing.
+
+  // Upper boundary for metrics.
+  BUBBLE_TYPE_MAX,
 };
 
 // Convert from bubble name to ID. The bubble ID will allow collecting the
@@ -30,6 +38,8 @@ static int GetBubbleId(BubbleReference bubble) {
   // Translate from bubble name to enum.
   if (bubble->GetName().compare("MockBubble") == 0)
     bubble_type = BUBBLE_TYPE_MOCK;
+  else if (bubble->GetName().compare("ExtensionInstalled") == 0)
+    bubble_type = BUBBLE_TYPE_EXTENSION_INSTALLED;
 
   DCHECK_NE(bubble_type, BUBBLE_TYPE_UNKNOWN);
   DCHECK_NE(bubble_type, BUBBLE_TYPE_MAX);
@@ -45,49 +55,31 @@ static void LogBubbleCloseReason(BubbleReference bubble,
   int bubble_id = GetBubbleId(bubble);
   switch (reason) {
     case BUBBLE_CLOSE_FORCED:
-      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.Forced",
-                                bubble_id,
-                                BUBBLE_TYPE_MAX);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.Forced", bubble_id);
       return;
     case BUBBLE_CLOSE_FOCUS_LOST:
-      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.FocusLost",
-                                bubble_id,
-                                BUBBLE_TYPE_MAX);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.FocusLost", bubble_id);
       return;
     case BUBBLE_CLOSE_TABSWITCHED:
-      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.TabSwitched",
-                                bubble_id,
-                                BUBBLE_TYPE_MAX);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.TabSwitched", bubble_id);
       return;
     case BUBBLE_CLOSE_TABDETACHED:
-      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.TabDetached",
-                                bubble_id,
-                                BUBBLE_TYPE_MAX);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.TabDetached", bubble_id);
       return;
     case BUBBLE_CLOSE_USER_DISMISSED:
-      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.UserDismissed",
-                                bubble_id,
-                                BUBBLE_TYPE_MAX);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.UserDismissed", bubble_id);
       return;
     case BUBBLE_CLOSE_NAVIGATED:
-      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.Navigated",
-                                bubble_id,
-                                BUBBLE_TYPE_MAX);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.Navigated", bubble_id);
       return;
     case BUBBLE_CLOSE_FULLSCREEN_TOGGLED:
-      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.FullscreenToggled",
-                                bubble_id,
-                                BUBBLE_TYPE_MAX);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.FullscreenToggled", bubble_id);
       return;
     case BUBBLE_CLOSE_ACCEPTED:
-      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.Accepted",
-                                bubble_id,
-                                BUBBLE_TYPE_MAX);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.Accepted", bubble_id);
       return;
     case BUBBLE_CLOSE_CANCELED:
-      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.Canceled",
-                                bubble_id,
-                                BUBBLE_TYPE_MAX);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.Close.Canceled", bubble_id);
       return;
   }
 
@@ -145,8 +137,7 @@ void ChromeBubbleManager::NavigationEntryCommitted(
 
 void ChromeBubbleManager::ChromeBubbleMetrics::OnBubbleNeverShown(
     BubbleReference bubble) {
-  UMA_HISTOGRAM_ENUMERATION("Bubbles.NeverShown", GetBubbleId(bubble),
-                            BUBBLE_TYPE_MAX);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Bubbles.NeverShown", GetBubbleId(bubble));
 }
 
 void ChromeBubbleManager::ChromeBubbleMetrics::OnBubbleClosed(

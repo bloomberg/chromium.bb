@@ -53354,6 +53354,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BubbleType" type="int">
   <int value="0" label="Unknown Bubble"/>
   <int value="1" label="Mock Bubble"/>
+  <int value="10" label="Extension Installed Bubble"/>
 </enum>
 
 <enum name="CacheResult" type="int">
