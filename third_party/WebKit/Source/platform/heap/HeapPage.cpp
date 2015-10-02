@@ -1038,6 +1038,17 @@ void FreeList::addToFreeList(Address address, size_t size)
         } else if (address[i] == reuseForbiddenZapValue) {
             forbiddenCount++;
         } else {
+            // TODO(haraken): Remove these assertions once bug 537922 is fixed.
+            HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(&address[i]);
+            ASSERT(header->checkHeader());
+            if (header->isPromptlyFreed())
+                ASSERT_NOT_REACHED();
+            else if (header->isFree())
+                ASSERT_NOT_REACHED();
+            else if (header->isDead())
+                ASSERT_NOT_REACHED();
+            else if (header->isMarked())
+                ASSERT_NOT_REACHED();
             ASSERT_NOT_REACHED();
         }
     }
