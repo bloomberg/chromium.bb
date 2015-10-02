@@ -58,9 +58,13 @@ GoogleUpdate3ClassFactory* g_google_update_factory = nullptr;
 // value was chosen unscientificaly during an informal discussion.
 const int64_t kGoogleUpdatePollIntervalMs = 250;
 
+const int kGoogleAllowedRetries = 1;
+const int kGoogleRetryIntervalSeconds = 5;
+
 // Constants from Google Update.
 const HRESULT GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY = 0x80040813;
 const HRESULT GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL = 0x8004081f;
+const HRESULT GOOPDATE_E_APP_USING_EXTERNAL_UPDATER = 0xA043081D;
 const HRESULT GOOPDATEINSTALL_E_INSTALLER_FAILED = 0x80040902;
 
 // Check if the currently running instance can be updated by Google Update.
@@ -282,6 +286,9 @@ class UpdateCheckDriver {
   // The task runner on which the update checks runs.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
+  // Number of remaining retries allowed when errors occur.
+  int allowed_retries_;
+
   // The caller's task runner, on which methods of |delegate_| will be invoked.
   scoped_refptr<base::SingleThreadTaskRunner> result_runner_;
 
@@ -350,6 +357,7 @@ UpdateCheckDriver::UpdateCheckDriver(
     const base::WeakPtr<UpdateCheckDelegate>& delegate)
     : task_runner_(task_runner),
       result_runner_(base::ThreadTaskRunnerHandle::Get()),
+      allowed_retries_(kGoogleAllowedRetries),
       locale_(locale),
       install_update_if_possible_(install_update_if_possible),
       elevation_window_(elevation_window),
@@ -670,6 +678,19 @@ void UpdateCheckDriver::PollGoogleUpdate() {
                    base::string16());
   } else if (IsErrorState(state, state_value, &error_code, &hresult,
                           &installer_exit_code, &error_string)) {
+    // Some errors can be transient.  Retry them after a short delay.
+    if (hresult == GOOPDATE_E_APP_USING_EXTERNAL_UPDATER) {
+      if (allowed_retries_ > 0) {
+        --allowed_retries_;
+        app_bundle_.Release();
+        google_update_.Release();
+        task_runner_->PostDelayedTask(
+            FROM_HERE, base::Bind(&UpdateCheckDriver::BeginUpdateCheck,
+                                  base::Unretained(this)),
+            base::TimeDelta::FromSeconds(kGoogleRetryIntervalSeconds));
+        return;
+      }
+    }
     OnUpgradeError(error_code, hresult, installer_exit_code, error_string);
   } else if (IsFinalState(state, state_value, &upgrade_status, &new_version)) {
     status_ = upgrade_status;
@@ -722,6 +743,14 @@ void UpdateCheckDriver::OnUpgradeError(GoogleUpdateErrorCode error_code,
   error_code_ = error_code;
   hresult_ = hresult;
   installer_exit_code_ = installer_exit_code;
+
+  // Some specific result codes have dedicated messages.
+  if (hresult == GOOPDATE_E_APP_USING_EXTERNAL_UPDATER) {
+    html_error_message_ = l10n_util::GetStringUTF16(
+        IDS_ABOUT_BOX_EXTERNAL_UPDATE_IS_RUNNING);
+    return;
+  }
+
   base::string16 html_error_msg =
       base::StringPrintf(L"%d: <a href='%ls0x%X' target=_blank>0x%X</a>",
                          error_code_, base::UTF8ToUTF16(
