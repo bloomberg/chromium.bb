@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import collections
 import re
 import subprocess
@@ -16,27 +17,30 @@ BUNDLE_SIZE = 32
 Error = collections.namedtuple('Error', 'offset message')
 
 
-def GetLocation(binary, offset):
+def GetLocation(addr2line, binary, offset):
   proc = subprocess.Popen(
-      ['x86_64-nacl-addr2line', '--functions', '--basenames',
+      [addr2line, '--functions', '--basenames',
        '-e', binary, hex(offset)],
       stdout=subprocess.PIPE)
   function, file_loc = list(proc.stdout)
   function = function.rstrip()
-
-  m = re.match(r'(.*):(\d+)$', file_loc)
-  file_name = m.group(1)
-  line_number = int(m.group(2))
-
   proc.wait()
   assert proc.returncode == 0, 'addr2line failed'
+
+  m = re.match(r'(.*):(\d+)$', file_loc)
+  if not m:
+    # addr2line seems to give '??:?' when not enough debug info.
+    return '?:?, function %s' % function
+  file_name = m.group(1)
+  line_number = int(m.group(2))
 
   return '%s:%s, function %s' % (file_name, line_number, function)
 
 
-def PrintDisassembly(binary, start_address, stop_address, erroneous_offsets):
+def PrintDisassembly(objdump, binary, start_address, stop_address,
+                     erroneous_offsets):
   proc = subprocess.Popen(
-      ['x86_64-nacl-objdump', '-D', binary,
+      [objdump, '-D', binary,
        '--start-address', hex(start_address),
        '--stop-address', hex(stop_address)],
       stdout=subprocess.PIPE)
@@ -68,7 +72,7 @@ def PrintDisassembly(binary, start_address, stop_address, erroneous_offsets):
     print line
 
 
-def PrintErrors(binary, errors):
+def PrintErrors(args, binary, errors):
   errors = sorted(errors, key=lambda e: e.offset)
   errors_by_bundle = collections.defaultdict(list)
   for e in errors:
@@ -76,23 +80,34 @@ def PrintErrors(binary, errors):
 
   for bundle, bundle_errors in sorted(errors_by_bundle.items()):
     for offset, message in bundle_errors:
-      print '%x (%s): %s' % (offset, GetLocation(binary, offset), message)
-
-    PrintDisassembly(binary,
+      print '%x (%s): %s' % (offset,
+                             GetLocation(args.addr2line, binary, offset),
+                             message)
+    PrintDisassembly(args.objdump, binary,
                      start_address=bundle * BUNDLE_SIZE,
                      stop_address=(bundle + 1) * BUNDLE_SIZE,
                      erroneous_offsets=[offset for offset, _ in bundle_errors])
     print
 
 
-def main():
-  # TODO(shcherbina): add option to pass path to the toolchain.
-  if len(sys.argv) != 2:
-    print 'Usage:'
-    print '    ncval_annotate.py <nexe>'
-    sys.exit(1)
+def ParseArgs():
+  description = 'Runs ncval, and annotate results with disassembly.'
+  parser = argparse.ArgumentParser(description=description)
+  parser.add_argument('nexe',
+                      help='nexe or .so file to validate.')
+  parser.add_argument('--ncval', default='ncval_new', type=str,
+                      help='Command to invoke as ncval.')
+  parser.add_argument('--objdump', default='x86_64-nacl-objdump', type=str,
+                      help='Command to invoke as objdump.')
+  parser.add_argument('--addr2line', default='x86_64-nacl-addr2line', type=str,
+                      help='Command to invoke as addr2line.')
+  return parser.parse_args()
 
-  binary = sys.argv[1]
+
+def main():
+  args = ParseArgs()
+
+  binary = args.nexe
   retcode = 0
 
   # Ncval output has the following structure:
@@ -108,7 +123,7 @@ def main():
   # by bundles).
 
   errors = []
-  proc = subprocess.Popen(["ncval_new", binary], stderr=subprocess.PIPE)
+  proc = subprocess.Popen([args.ncval, binary], stderr=subprocess.PIPE)
   for line in proc.stderr:
     # Collect error messages of the form
     #    201ef: unrecognized instruction
@@ -117,13 +132,13 @@ def main():
       errors.append(Error(offset=int(m.group(1), 16), message=m.group(2)))
     else:
       if errors:
-        PrintErrors(binary, errors)
+        PrintErrors(args, binary, errors)
         errors = []
         retcode = 1
       print line.rstrip()
 
   if errors:
-    PrintErrors(binary, errors)
+    PrintErrors(args, binary, errors)
     retcode = 1
   sys.exit(retcode)
 
