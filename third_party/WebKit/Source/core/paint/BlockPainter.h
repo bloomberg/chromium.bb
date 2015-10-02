@@ -40,7 +40,6 @@ public:
     bool intersectsPaintRect(const PaintInfo&, const LayoutPoint& paintOffset) const;
 
 private:
-    bool hasCaret() const;
     void paintCarets(const PaintInfo&, const LayoutPoint&);
     void paintContents(const PaintInfo&, const LayoutPoint&);
 

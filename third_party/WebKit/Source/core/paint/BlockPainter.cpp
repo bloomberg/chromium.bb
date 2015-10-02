@@ -40,7 +40,7 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
     // There are some cases where not all clipped visual overflow is accounted for.
     // FIXME: reduce the number of such cases.
     ContentsClipBehavior contentsClipBehavior = ForceContentsClip;
-    if (m_layoutBlock.hasOverflowClip() && !m_layoutBlock.hasControlClip() && !(m_layoutBlock.shouldPaintSelectionGaps() && originalPhase == PaintPhaseForeground) && !hasCaret())
+    if (m_layoutBlock.hasOverflowClip() && !m_layoutBlock.hasControlClip() && !(m_layoutBlock.shouldPaintSelectionGaps() && originalPhase == PaintPhaseForeground) && !m_layoutBlock.hasCaret())
         contentsClipBehavior = SkipContentsClipIfPossible;
 
     if (localPaintInfo.phase == PaintPhaseOutline) {
@@ -209,7 +209,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
     // If the caret's node's layout object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
-    if (paintPhase == PaintPhaseForeground && hasCaret() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, paintOffset)) {
+    if (paintPhase == PaintPhaseForeground && m_layoutBlock.hasCaret() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, paintOffset)) {
         LayoutRect bounds = m_layoutBlock.visualOverflowRect();
         bounds.moveBy(paintOffset);
         LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds, paintOffset);
@@ -217,33 +217,15 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     }
 }
 
-static inline bool caretBrowsingEnabled(const LocalFrame* frame)
-{
-    Settings* settings = frame->settings();
-    return settings && settings->caretBrowsingEnabled();
-}
-
-static inline bool hasCursorCaret(const FrameSelection& selection, const LayoutBlock* block, const LocalFrame* frame)
-{
-    return selection.caretLayoutObject() == block && (selection.hasEditableStyle() || caretBrowsingEnabled(frame));
-}
-
-static inline bool hasDragCaret(const DragCaretController& dragCaretController, const LayoutBlock* block, const LocalFrame* frame)
-{
-    return dragCaretController.caretLayoutObject() == block && (dragCaretController.isContentEditable() || caretBrowsingEnabled(frame));
-}
-
 void BlockPainter::paintCarets(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LocalFrame* frame = m_layoutBlock.frame();
 
-    FrameSelection& selection = frame->selection();
-    if (hasCursorCaret(selection, &m_layoutBlock, frame))
-        selection.paintCaret(paintInfo.context, paintOffset, LayoutRect(paintInfo.rect));
+    if (m_layoutBlock.hasCursorCaret())
+        frame->selection().paintCaret(paintInfo.context, paintOffset, LayoutRect(paintInfo.rect));
 
-    DragCaretController& dragCaretController = frame->page()->dragCaretController();
-    if (hasDragCaret(dragCaretController, &m_layoutBlock, frame))
-        dragCaretController.paintDragCaret(frame, paintInfo.context, paintOffset, LayoutRect(paintInfo.rect));
+    if (m_layoutBlock.hasDragCaret())
+        frame->page()->dragCaretController().paintDragCaret(frame, paintInfo.context, paintOffset, LayoutRect(paintInfo.rect));
 }
 
 bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
@@ -256,13 +238,6 @@ bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutP
     m_layoutBlock.flipForWritingMode(overflowRect);
     overflowRect.moveBy(paintOffset + m_layoutBlock.location());
     return (overflowRect.intersects(LayoutRect(paintInfo.rect)));
-}
-
-bool BlockPainter::hasCaret() const
-{
-    LocalFrame* frame = m_layoutBlock.frame();
-    return hasCursorCaret(frame->selection(), &m_layoutBlock, frame)
-        || hasDragCaret(frame->page()->dragCaretController(), &m_layoutBlock, frame);
 }
 
 void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

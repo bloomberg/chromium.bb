@@ -30,6 +30,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/editing/DragCaretController.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -2559,6 +2560,25 @@ void LayoutBlock::updateHitTestResult(HitTestResult& result, const LayoutPoint& 
 inline bool LayoutBlock::isInlineBoxWrapperActuallyChild() const
 {
     return isInlineBlockOrInlineTable() && !size().isEmpty() && node() && editingIgnoresContent(node());
+}
+
+static inline bool caretBrowsingEnabled(const LocalFrame* frame)
+{
+    Settings* settings = frame->settings();
+    return settings && settings->caretBrowsingEnabled();
+}
+
+bool LayoutBlock::hasCursorCaret() const
+{
+    LocalFrame* frame = this->frame();
+    return frame->selection().caretLayoutObject() == this && (frame->selection().hasEditableStyle() || caretBrowsingEnabled(frame));
+}
+
+bool LayoutBlock::hasDragCaret() const
+{
+    LocalFrame* frame = this->frame();
+    DragCaretController& dragCaretController = frame->page()->dragCaretController();
+    return dragCaretController.caretLayoutObject() == this && (dragCaretController.isContentEditable() || caretBrowsingEnabled(frame));
 }
 
 LayoutRect LayoutBlock::localCaretRect(InlineBox* inlineBox, int caretOffset, LayoutUnit* extraWidthToEndOfLine)

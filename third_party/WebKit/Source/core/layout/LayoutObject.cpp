@@ -1737,7 +1737,9 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
             || style()->isBackgroundColorCurrentColor()
             // Skip any text nodes that do not contain text boxes. Whitespace cannot be
             // skipped or we will miss invalidating decorations (e.g., underlines).
-            || (isText() && !isBR() && toLayoutText(this)->hasTextBoxes()))
+            || (isText() && !isBR() && toLayoutText(this)->hasTextBoxes())
+            // Caret is painted in text color.
+            || (isLayoutBlock() && toLayoutBlock(this)->hasCaret()))
             diff.setNeedsPaintInvalidationObject();
     }
 

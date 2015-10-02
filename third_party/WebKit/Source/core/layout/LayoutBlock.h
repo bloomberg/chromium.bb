@@ -403,6 +403,11 @@ private:
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
     void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
+public:
+    bool hasCursorCaret() const;
+    bool hasDragCaret() const;
+    bool hasCaret() const { return hasCursorCaret() || hasDragCaret(); }
+
 private:
     LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = nullptr) final;
     bool isInlineBoxWrapperActuallyChild() const;
