@@ -583,11 +583,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SetHistoryOffsetAndLength,
 IPC_MESSAGE_CONTROL1(ViewMsg_New,
                      ViewMsg_New_Params)
 
-// Reply in response to ViewHostMsg_ShowView or ViewHostMsg_ShowWidget.
-// similar to the new command, but used when the renderer created a view
-// first, and we need to update it.
-IPC_MESSAGE_ROUTED0(ViewMsg_CreatingNew_ACK)
-
 // Sends updated preferences to the renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetRendererPrefs,
                     content::RendererPreferences)
@@ -971,9 +966,8 @@ IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrames,
                     bool /* enabled */)
 
-// Sent by the renderer when it is creating a new window.  The browser creates
-// a tab for it and responds with a ViewMsg_CreatingNew_ACK.  If route_id is
-// MSG_ROUTING_NONE, the view couldn't be created.
+// Sent by the renderer when it is creating a new window.  The browser creates a
+// tab for it.  If route_id is MSG_ROUTING_NONE, the view couldn't be created.
 IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_CreateWindow,
                             ViewHostMsg_CreateWindow_Params,
                             int /* route_id */,
@@ -1024,10 +1018,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowWidget,
 // Message to show a full screen widget.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowFullscreenWidget,
                     int /* route_id */)
-
-// Indicates the renderer is ready in response to a ViewMsg_New or
-// a ViewMsg_CreatingNew_ACK.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_RenderViewReady)
 
 // Sent by the renderer process to request that the browser close the view.
 // This corresponds to the window.close() API, and the browser may ignore

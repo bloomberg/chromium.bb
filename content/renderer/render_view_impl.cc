@@ -740,10 +740,8 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 
   // If this is a popup, we must wait for the CreatingNew_ACK message before
   // completing initialization.  Otherwise, we can finish it now.
-  if (opener_id_ == MSG_ROUTING_NONE) {
+  if (opener_id_ == MSG_ROUTING_NONE)
     did_show_ = true;
-    CompleteInit();
-  }
 
   webview()->setDeviceScaleFactor(device_scale_factor_);
   webview()->setDisplayMode(display_mode_);

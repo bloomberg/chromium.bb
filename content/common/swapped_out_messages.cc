@@ -80,8 +80,6 @@ bool SwappedOutMessages::CanHandleWhileSwappedOut(
     case ViewHostMsg_ShowWidget::ID:
     // Sends an ACK.
     case ViewHostMsg_ShowFullscreenWidget::ID:
-    // Updates browser state.
-    case ViewHostMsg_RenderViewReady::ID:
     // Updates the previous navigation entry.
     case ViewHostMsg_UpdateState::ID:
     // Sends an ACK.

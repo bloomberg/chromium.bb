@@ -172,6 +172,10 @@ base::ProcessHandle MockRenderProcessHost::GetHandle() const {
   return base::GetCurrentProcessHandle();
 }
 
+bool MockRenderProcessHost::IsReady() const {
+  return false;
+}
+
 bool MockRenderProcessHost::Send(IPC::Message* msg) {
   // Save the message in the sink.
   sink_.OnMessageReceived(*msg);

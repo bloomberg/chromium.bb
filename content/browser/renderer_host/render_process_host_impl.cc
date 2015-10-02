@@ -525,6 +525,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       permission_service_context_(new PermissionServiceContext(this)),
       pending_valuebuffer_state_(new gpu::ValueStateMap()),
       subscribe_uniform_enabled_(false),
+      channel_connected_(false),
+      sent_render_process_ready_(false),
       weak_factory_(this) {
   widget_helper_ = new RenderWidgetHelper();
 
@@ -651,6 +653,9 @@ bool RenderProcessHostImpl::Init() {
   base::FilePath renderer_path = ChildProcessHost::GetChildPath(flags);
   if (renderer_path.empty())
     return false;
+
+  channel_connected_ = false;
+  sent_render_process_ready_ = false;
 
   // Setup the IPC channel.
   const std::string channel_id =
@@ -1481,6 +1486,12 @@ base::ProcessHandle RenderProcessHostImpl::GetHandle() const {
   return child_process_launcher_->GetProcess().Handle();
 }
 
+bool RenderProcessHostImpl::IsReady() const {
+  // The process launch result (that sets GetHandle()) and the channel
+  // connection (that sets channel_connected_) can happen in either order.
+  return GetHandle() && channel_connected_;
+}
+
 bool RenderProcessHostImpl::Shutdown(int exit_code, bool wait) {
   if (run_renderer_in_process())
     return false;  // Single process mode never shuts down the renderer.
@@ -1600,6 +1611,16 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
+  channel_connected_ = true;
+  if (IsReady()) {
+    DCHECK(!sent_render_process_ready_);
+    sent_render_process_ready_ = true;
+    // Send RenderProcessReady only if we already received the process handle.
+    FOR_EACH_OBSERVER(RenderProcessHostObserver,
+                      observers_,
+                      RenderProcessReady(this));
+  }
+
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   Send(new ChildProcessMsg_SetIPCLoggingEnabled(
       IPC::Logging::GetInstance()->Enabled()));
@@ -2388,6 +2409,15 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());
     queued_messages_.pop();
+  }
+
+  if (IsReady()) {
+    DCHECK(!sent_render_process_ready_);
+    sent_render_process_ready_ = true;
+    // Send RenderProcessReady only if the channel is already connected.
+    FOR_EACH_OBSERVER(RenderProcessHostObserver,
+                      observers_,
+                      RenderProcessReady(this));
   }
 
 #if defined(ENABLE_WEBRTC)

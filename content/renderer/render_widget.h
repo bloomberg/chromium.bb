@@ -364,17 +364,13 @@ class CONTENT_EXPORT RenderWidget
   // Creates a WebWidget based on the popup type.
   static blink::WebWidget* CreateWebWidget(RenderWidget* render_widget);
 
-  // Initializes this view with the given opener.  CompleteInit must be called
-  // later.
+  // Initializes this view with the given opener.
   bool Init(int32 opener_id);
 
   // Called by Init and subclasses to perform initialization.
   bool DoInit(int32 opener_id,
               blink::WebWidget* web_widget,
               IPC::SyncMessage* create_widget_message);
-
-  // Finishes creation of a pending view started with Init.
-  void CompleteInit();
 
   // Sets whether this RenderWidget has been swapped out to be displayed by
   // a RenderWidget in a different process.  If so, no new IPC messages will be
@@ -605,8 +601,6 @@ class CONTENT_EXPORT RenderWidget
 
   // The rect where this view should be initially shown.
   gfx::Rect initial_rect_;
-
-  bool init_complete_;
 
   // We store the current cursor object so we can avoid spamming SetCursor
   // messages.

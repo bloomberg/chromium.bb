@@ -114,8 +114,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Try to shut down the associated renderer process without running unload
   // handlers, etc, giving it the specified exit code. If |wait| is true, wait
-  // for the process to be actually terminated before returning.
-  // Returns true if it was able to shut down.
+  // for the process to be actually terminated before returning.  Returns true
+  // if it was able to shut down.  On Windows, this must not be called before
+  // RenderProcessReady was called on a RenderProcessHostObserver, otherwise
+  // RenderProcessExited may never be called.
   virtual bool Shutdown(int exit_code, bool wait) = 0;
 
   // Try to shut down the associated renderer process as fast as possible.
@@ -133,8 +135,18 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //
   // NOTE: this is not necessarily valid immediately after calling Init, as
   // Init starts the process asynchronously.  It's guaranteed to be valid after
-  // the first IPC arrives.
+  // the first IPC arrives or RenderProcessReady was called on a
+  // RenderProcessHostObserver for this. At that point, IsReady() returns true.
   virtual base::ProcessHandle GetHandle() const = 0;
+
+  // Returns whether the process is ready. The process is ready once both
+  // conditions (which can happen in arbitrary order) are true:
+  // 1- the launcher reported a succesful launch
+  // 2- the channel is connected.
+  //
+  // After that point, GetHandle() is valid, and deferred messages have been
+  // sent.
+  virtual bool IsReady() const = 0;
 
   // Returns the user browser context associated with this renderer process.
   virtual content::BrowserContext* GetBrowserContext() const = 0;

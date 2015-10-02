@@ -54,6 +54,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool FastShutdownIfPossible() override;
   bool FastShutdownStarted() const override;
   base::ProcessHandle GetHandle() const override;
+  bool IsReady() const override;
   int GetID() const override;
   bool HasConnection() const override;
   void SetIgnoreInputEvents(bool ignore_input_events) override;

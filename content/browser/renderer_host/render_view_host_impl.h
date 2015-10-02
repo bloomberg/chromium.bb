@@ -185,6 +185,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 #endif
 
   // RenderProcessHostObserver implementation
+  void RenderProcessReady(RenderProcessHost* host) override;
   void RenderProcessExited(RenderProcessHost* host,
                            base::TerminationStatus status,
                            int exit_code) override;
@@ -349,7 +350,6 @@ class CONTENT_EXPORT RenderViewHostImpl
                   bool user_gesture);
   void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
   void OnShowFullscreenWidget(int route_id);
-  void OnRenderViewReady();
   void OnRenderProcessGone(int status, int error_code);
   void OnUpdateState(int32 page_id, const PageState& state);
   void OnUpdateTargetURL(const GURL& url);
@@ -384,6 +384,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, RoutingIdSane);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            CleanUpSwappedOutRVHOnProcessCrash);
+  // Send RenderViewReady to observers once the process is launched, but not
+  // re-entrantly.
+  void PostRenderViewReady();
+  void RenderViewReady();
 
   // TODO(creis): Move to a private namespace on RenderFrameHostImpl.
   // Delay to wait on closing the WebContents for a beforeunload/unload handler
@@ -475,6 +479,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   scoped_ptr<WebPreferences> web_preferences_;
 
   bool updating_web_preferences_;
+
+  bool render_view_ready_on_process_launch_;
 
   base::WeakPtrFactory<RenderViewHostImpl> weak_factory_;
 

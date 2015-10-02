@@ -17,6 +17,11 @@ class RenderProcessHost;
 // in RenderProcessHost lifecycle events.
 class CONTENT_EXPORT RenderProcessHostObserver {
  public:
+  // This method is invoked when the process was launched and the channel was
+  // connected. This is the earliest time it is safe to call Shutdown on the
+  // RenderProcessHost and get RenderProcessExited notifications.
+  virtual void RenderProcessReady(RenderProcessHost* host) {}
+
   // This method is invoked when the process is going to exit and should not be
   // used for further navigations. Note that this is a COURTESY callback, not
   // guaranteed to be called for any particular process. Because this is the

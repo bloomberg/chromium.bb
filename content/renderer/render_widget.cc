@@ -485,7 +485,6 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       compositor_deps_(compositor_deps),
       webwidget_(nullptr),
       opener_id_(MSG_ROUTING_NONE),
-      init_complete_(false),
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0.f),
       next_paint_flags_(0),
@@ -573,7 +572,6 @@ RenderWidget* RenderWidget::CreateForFrame(
   if (widget->DoInit(MSG_ROUTING_NONE,
                      RenderWidget::CreateWebFrameWidget(widget.get(), frame),
                      nullptr)) {
-    widget->CompleteInit();
     return widget.get();
   }
   return nullptr;
@@ -638,19 +636,6 @@ bool RenderWidget::DoInit(int32 opener_id,
     // The above Send can fail when the tab is closing.
     return false;
   }
-}
-
-// This is used to complete pending inits and non-pending inits.
-void RenderWidget::CompleteInit() {
-  DCHECK(routing_id_ != MSG_ROUTING_NONE);
-
-  init_complete_ = true;
-
-  // TODO(piman): do we still need the 2-stage initialization? crbug.com/535339
-  if (compositor_)
-    StartCompositor();
-
-  Send(new ViewHostMsg_RenderViewReady(routing_id_));
 }
 
 void RenderWidget::SetSwappedOut(bool is_swapped_out) {
@@ -724,7 +709,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(InputMsg_SyntheticGestureCompleted,
                         OnSyntheticGestureCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(ViewMsg_CreatingNew_ACK, OnCreatingNewAck)
     IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableDeviceEmulation,
                         OnEnableDeviceEmulation)
@@ -884,14 +868,6 @@ void RenderWidget::OnClose() {
 
   // Balances the AddRef taken when we called AddRoute.
   Release();
-}
-
-// Got a response from the browser after the renderer decided to create a new
-// view.
-void RenderWidget::OnCreatingNewAck() {
-  DCHECK(routing_id_ != MSG_ROUTING_NONE);
-
-  CompleteInit();
 }
 
 void RenderWidget::OnResize(const ViewMsg_Resize_Params& params) {
@@ -1363,8 +1339,7 @@ void RenderWidget::initializeLayerTreeView() {
 
   compositor_ = RenderWidgetCompositor::Create(this, compositor_deps_);
   compositor_->setViewportSize(size_, physical_backing_size_);
-  if (init_complete_)
-    StartCompositor();
+  StartCompositor();
 }
 
 void RenderWidget::WillCloseLayerTreeView() {

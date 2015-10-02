@@ -118,6 +118,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool Shutdown(int exit_code, bool wait) override;
   bool FastShutdownIfPossible() override;
   base::ProcessHandle GetHandle() const override;
+  bool IsReady() const override;
   BrowserContext* GetBrowserContext() const override;
   bool InSameStoragePartition(StoragePartition* partition) const override;
   int GetID() const override;
@@ -493,6 +494,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // IOSurface references.
   IOSurfaceManagerToken io_surface_manager_token_;
 #endif
+
+  bool channel_connected_;
+  bool sent_render_process_ready_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 

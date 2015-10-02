@@ -224,6 +224,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       virtual_keyboard_requested_(false),
       is_focused_element_editable_(false),
       updating_web_preferences_(false),
+      render_view_ready_on_process_launch_(false),
       weak_factory_(this) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
@@ -351,6 +352,8 @@ bool RenderViewHostImpl::CreateRenderView(
     RenderFrameHostImpl::FromID(GetProcess()->GetID(), main_frame_routing_id_)
         ->SetRenderFrameCreated(true);
   }
+  SendScreenRects();
+  PostRenderViewReady();
 
   return true;
 }
@@ -581,6 +584,13 @@ void RenderViewHostImpl::RequestFindMatchRects(int current_version) {
   Send(new ViewMsg_FindMatchRects(GetRoutingID(), current_version));
 }
 #endif
+
+void RenderViewHostImpl::RenderProcessReady(RenderProcessHost* host) {
+  if (render_view_ready_on_process_launch_) {
+    render_view_ready_on_process_launch_ = false;
+    RenderViewReady();
+  }
+}
 
 void RenderViewHostImpl::RenderProcessExited(RenderProcessHost* host,
                                              base::TerminationStatus status,
@@ -903,7 +913,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
                         OnShowFullscreenWidget)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
@@ -934,6 +943,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
 void RenderViewHostImpl::Init() {
   RenderWidgetHostImpl::Init();
+  PostRenderViewReady();
 }
 
 void RenderViewHostImpl::Shutdown() {
@@ -1020,13 +1030,6 @@ void RenderViewHostImpl::OnShowFullscreenWidget(int route_id) {
   if (is_active_)
     delegate_->ShowCreatedFullscreenWidget(route_id);
   Send(new ViewMsg_Move_ACK(route_id));
-}
-
-void RenderViewHostImpl::OnRenderViewReady() {
-  render_view_termination_status_ = base::TERMINATION_STATUS_STILL_RUNNING;
-  SendScreenRects();
-  WasResized();
-  delegate_->RenderViewReady(this);
 }
 
 void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
@@ -1424,6 +1427,22 @@ void RenderViewHostImpl::GrantFileAccessFromPageState(const PageState& state) {
 
 void RenderViewHostImpl::SelectWordAroundCaret() {
   Send(new ViewMsg_SelectWordAroundCaret(GetRoutingID()));
+}
+
+void RenderViewHostImpl::PostRenderViewReady() {
+  if (GetProcess()->IsReady()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&RenderViewHostImpl::RenderViewReady,
+                   weak_factory_.GetWeakPtr()));
+  } else {
+    render_view_ready_on_process_launch_ = true;
+  }
+}
+
+void RenderViewHostImpl::RenderViewReady() {
+  delegate_->RenderViewReady(this);
 }
 
 }  // namespace content

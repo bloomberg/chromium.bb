@@ -2904,6 +2904,23 @@ const std::vector<task_management::WebContentsTag*>& GetTrackedTags() {
       tracked_tags();
 }
 
+bool HasExpectedGuestTask(
+    const task_management::MockWebContentsTaskManager& task_manager,
+    content::WebContents* guest_contents) {
+  bool found = false;
+  for (auto* task: task_manager.tasks()) {
+    if (task->GetType() != task_management::Task::GUEST)
+      continue;
+    EXPECT_FALSE(found);
+    found = true;
+    const base::string16 title = task->title();
+    const base::string16 expected_prefix = GetExpectedPrefix(guest_contents);
+    EXPECT_TRUE(base::StartsWith(title, expected_prefix,
+                                 base::CompareCase::INSENSITIVE_ASCII));
+  }
+  return found;
+}
+
 }  // namespace
 
 // Tests that the pre-existing WebViews are provided to the task manager.
@@ -2921,20 +2938,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagementPreExistingWebViews) {
   task_manager.StartObserving();
 
   // The pre-existing tab and guest tasks are provided.
-  // 4 tasks expected in the following order:
+  // 4 tasks expected. The order is arbitrary.
   // Tab: about:blank,
   // Background Page: <webview> task manager test,
   // App: <webview> task manager test,
   // Webview: WebViewed test content.
   EXPECT_EQ(4U, task_manager.tasks().size());
-
-  const task_management::Task* task = task_manager.tasks().back();
-  EXPECT_EQ(task_management::Task::GUEST, task->GetType());
-  const base::string16 title = task->title();
-  const base::string16 expected_prefix = GetExpectedPrefix(guest_contents);
-  EXPECT_TRUE(base::StartsWith(title,
-                               expected_prefix,
-                               base::CompareCase::INSENSITIVE_ASCII));
+  EXPECT_TRUE(HasExpectedGuestTask(task_manager, guest_contents));
 }
 
 // Tests that the post-existing WebViews are provided to the task manager.
@@ -2957,20 +2967,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagementPostExistingWebViews) {
   content::WebContents* guest_contents =
       LoadGuest("/extensions/platform_apps/web_view/task_manager/guest.html",
                 "web_view/task_manager");
-  // 4 tasks expected in the following order:
+  // 4 tasks expected. The order is arbitrary.
   // Tab: about:blank,
   // Background Page: <webview> task manager test,
   // App: <webview> task manager test,
   // Webview: WebViewed test content.
   EXPECT_EQ(4U, task_manager.tasks().size());
-
-  const task_management::Task* task = task_manager.tasks().back();
-  EXPECT_EQ(task_management::Task::GUEST, task->GetType());
-  const base::string16 title = task->title();
-  const base::string16 expected_prefix = GetExpectedPrefix(guest_contents);
-  EXPECT_TRUE(base::StartsWith(title,
-                               expected_prefix,
-                               base::CompareCase::INSENSITIVE_ASCII));
+  EXPECT_TRUE(HasExpectedGuestTask(task_manager, guest_contents));
 }
 
 #endif  // defined(ENABLE_TASK_MANAGER)

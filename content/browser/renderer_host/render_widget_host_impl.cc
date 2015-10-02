@@ -402,8 +402,6 @@ void RenderWidgetHostImpl::Init() {
 
   renderer_initialized_ = true;
 
-  // Send the ack along with the information on placement.
-  Send(new ViewMsg_CreatingNew_ACK(routing_id_));
   GetProcess()->ResumeRequestsForView(routing_id_);
 
   // If the RWHV has not yet been set, the surface ID namespace will get
@@ -413,6 +411,7 @@ void RenderWidgetHostImpl::Init() {
                                            view_->GetSurfaceIdNamespace()));
   }
 
+  SendScreenRects();
   WasResized();
 }
 
@@ -449,7 +448,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnQueueSyntheticGesture)
     IPC_MESSAGE_HANDLER(InputHostMsg_ImeCancelComposition,
                         OnImeCancelComposition)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateScreenRects_ACK,
                         OnUpdateScreenRectsAck)
@@ -1440,11 +1438,6 @@ void RenderWidgetHostImpl::ClearDisplayedGraphics() {
   NotifyNewContentRenderingTimeoutForTesting();
   if (view_)
     view_->ClearCompositorFrame();
-}
-
-void RenderWidgetHostImpl::OnRenderViewReady() {
-  SendScreenRects();
-  WasResized();
 }
 
 void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {

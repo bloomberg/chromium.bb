@@ -588,7 +588,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SendColorProfile();
 
   // IPC message handlers
-  void OnRenderViewReady();
   void OnRenderProcessGone(int status, int error_code);
   void OnClose();
   void OnUpdateScreenRectsAck();
