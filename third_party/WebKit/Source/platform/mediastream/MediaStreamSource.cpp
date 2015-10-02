@@ -34,9 +34,9 @@
 
 namespace blink {
 
-MediaStreamSource* MediaStreamSource::create(const String& id, Type type, const String& name, bool remote, bool readonly, ReadyState readyState, bool requiresConsumer)
+PassRefPtr<MediaStreamSource> MediaStreamSource::create(const String& id, Type type, const String& name, bool remote, bool readonly, ReadyState readyState, bool requiresConsumer)
 {
-    return new MediaStreamSource(id, type, name, remote, readonly, readyState, requiresConsumer);
+    return adoptRef(new MediaStreamSource(id, type, name, remote, readonly, readyState, requiresConsumer));
 }
 
 MediaStreamSource::MediaStreamSource(const String& id, Type type, const String& name, bool remote, bool readonly, ReadyState readyState, bool requiresConsumer)
@@ -54,14 +54,21 @@ void MediaStreamSource::setReadyState(ReadyState readyState)
 {
     if (m_readyState != ReadyStateEnded && m_readyState != readyState) {
         m_readyState = readyState;
-        for (auto i = m_observers.begin(); i != m_observers.end(); ++i)
+        for (Vector<Observer*>::iterator i = m_observers.begin(); i != m_observers.end(); ++i)
             (*i)->sourceChangedState();
     }
 }
 
 void MediaStreamSource::addObserver(MediaStreamSource::Observer* observer)
 {
-    m_observers.add(observer);
+    m_observers.append(observer);
+}
+
+void MediaStreamSource::removeObserver(MediaStreamSource::Observer* observer)
+{
+    size_t pos = m_observers.find(observer);
+    if (pos != kNotFound)
+        m_observers.remove(pos);
 }
 
 void MediaStreamSource::addAudioConsumer(AudioDestinationConsumer* consumer)
@@ -96,12 +103,6 @@ void MediaStreamSource::consumeAudio(AudioBus* bus, size_t numberOfFrames)
     MutexLocker locker(m_audioConsumersLock);
     for (HeapHashSet<Member<AudioDestinationConsumer>>::iterator it = m_audioConsumers.begin(); it != m_audioConsumers.end(); ++it)
         (*it)->consumeAudio(bus, numberOfFrames);
-}
-
-DEFINE_TRACE(MediaStreamSource)
-{
-    visitor->trace(m_observers);
-    visitor->trace(m_audioConsumers);
 }
 
 } // namespace blink

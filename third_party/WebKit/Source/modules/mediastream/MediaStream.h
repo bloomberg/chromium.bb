@@ -44,13 +44,13 @@ class MODULES_EXPORT MediaStream final
     , public MediaStreamDescriptorClient
     , public ContextLifecycleObserver {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaStream);
-    USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static MediaStream* create(ExecutionContext*);
     static MediaStream* create(ExecutionContext*, MediaStream*);
     static MediaStream* create(ExecutionContext*, const MediaStreamTrackVector&);
-    static MediaStream* create(ExecutionContext*, MediaStreamDescriptor*);
+    static MediaStream* create(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
     ~MediaStream() override;
 
     String id() const { return m_descriptor->id(); }
@@ -77,7 +77,7 @@ public:
     // MediaStreamDescriptorClient
     void streamEnded() override;
 
-    MediaStreamDescriptor* descriptor() const { return m_descriptor; }
+    MediaStreamDescriptor* descriptor() const { return m_descriptor.get(); }
 
     // EventTarget
     const AtomicString& interfaceName() const override;
@@ -91,7 +91,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MediaStream(ExecutionContext*, MediaStreamDescriptor*);
+    MediaStream(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
     MediaStream(ExecutionContext*, const MediaStreamTrackVector& audioTracks, const MediaStreamTrackVector& videoTracks);
 
     // ContextLifecycleObserver
@@ -110,7 +110,7 @@ private:
 
     MediaStreamTrackVector m_audioTracks;
     MediaStreamTrackVector m_videoTracks;
-    Member<MediaStreamDescriptor> m_descriptor;
+    RefPtr<MediaStreamDescriptor> m_descriptor;
 
     Timer<MediaStream> m_scheduledEventTimer;
     WillBeHeapVector<RefPtrWillBeMember<Event>> m_scheduledEvents;

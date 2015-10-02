@@ -33,7 +33,6 @@
 #define MediaStreamComponent_h
 
 #include "platform/audio/AudioSourceProvider.h"
-#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -45,15 +44,15 @@ namespace blink {
 class MediaStreamSource;
 class WebAudioSourceProvider;
 
-class PLATFORM_EXPORT MediaStreamComponent final : public GarbageCollectedFinalized<MediaStreamComponent> {
+class PLATFORM_EXPORT MediaStreamComponent final : public RefCounted<MediaStreamComponent> {
 public:
     class ExtraData {
     public:
         virtual ~ExtraData() { }
     };
 
-    static MediaStreamComponent* create(MediaStreamSource*);
-    static MediaStreamComponent* create(const String& id, MediaStreamSource*);
+    static PassRefPtr<MediaStreamComponent> create(PassRefPtr<MediaStreamSource>);
+    static PassRefPtr<MediaStreamComponent> create(const String& id, PassRefPtr<MediaStreamSource>);
 
     MediaStreamSource* source() const { return m_source.get(); }
 
@@ -71,13 +70,8 @@ public:
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
-    // |m_extraData| may hold pointers GC objects, and it may touch them in destruction.
-    // So this class is eagerly finalized to finalize |m_extraData| promptly.
-    EAGERLY_FINALIZE();
-    DECLARE_TRACE();
-
 private:
-    MediaStreamComponent(const String& id, MediaStreamSource*);
+    MediaStreamComponent(const String& id, PassRefPtr<MediaStreamSource>);
 
 #if ENABLE(WEB_AUDIO)
     // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
@@ -106,14 +100,14 @@ private:
     AudioSourceProviderImpl m_sourceProvider;
 #endif // ENABLE(WEB_AUDIO)
 
-    Member<MediaStreamSource> m_source;
+    RefPtr<MediaStreamSource> m_source;
     String m_id;
     bool m_enabled;
     bool m_muted;
     OwnPtr<ExtraData> m_extraData;
 };
 
-typedef HeapVector<Member<MediaStreamComponent>> MediaStreamComponentVector;
+typedef Vector<RefPtr<MediaStreamComponent>> MediaStreamComponentVector;
 
 } // namespace blink
 

@@ -41,7 +41,7 @@ MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(AudioNode
 {
     m_source = MediaStreamSource::create("WebAudio-" + createCanonicalUUIDString(), MediaStreamSource::TypeAudio, "MediaStreamAudioDestinationNode", false, true, MediaStreamSource::ReadyStateLive, true);
     MediaStreamSourceVector audioSources;
-    audioSources.append(m_source.get());
+    audioSources.append(m_source);
     MediaStreamSourceVector videoSources;
     m_stream = MediaStream::create(node.context()->executionContext(), MediaStreamDescriptor::create(audioSources, videoSources));
     MediaStreamCenter::instance().didCreateMediaStreamAndTracks(m_stream->descriptor());

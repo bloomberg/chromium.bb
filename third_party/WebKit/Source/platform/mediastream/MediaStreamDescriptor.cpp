@@ -37,22 +37,22 @@
 
 namespace blink {
 
-MediaStreamDescriptor* MediaStreamDescriptor::create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
+PassRefPtr<MediaStreamDescriptor> MediaStreamDescriptor::create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
 {
-    return new MediaStreamDescriptor(createCanonicalUUIDString(), audioSources, videoSources);
+    return adoptRef(new MediaStreamDescriptor(createCanonicalUUIDString(), audioSources, videoSources));
 }
 
-MediaStreamDescriptor* MediaStreamDescriptor::create(const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
+PassRefPtr<MediaStreamDescriptor> MediaStreamDescriptor::create(const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
 {
-    return new MediaStreamDescriptor(createCanonicalUUIDString(), audioComponents, videoComponents);
+    return adoptRef(new MediaStreamDescriptor(createCanonicalUUIDString(), audioComponents, videoComponents));
 }
 
-MediaStreamDescriptor* MediaStreamDescriptor::create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
+PassRefPtr<MediaStreamDescriptor> MediaStreamDescriptor::create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
 {
-    return new MediaStreamDescriptor(id, audioComponents, videoComponents);
+    return adoptRef(new MediaStreamDescriptor(id, audioComponents, videoComponents));
 }
 
-void MediaStreamDescriptor::addComponent(MediaStreamComponent* component)
+void MediaStreamDescriptor::addComponent(PassRefPtr<MediaStreamComponent> component)
 {
     switch (component->source()->type()) {
     case MediaStreamSource::TypeAudio:
@@ -66,7 +66,7 @@ void MediaStreamDescriptor::addComponent(MediaStreamComponent* component)
     }
 }
 
-void MediaStreamDescriptor::removeComponent(MediaStreamComponent* component)
+void MediaStreamDescriptor::removeComponent(PassRefPtr<MediaStreamComponent> component)
 {
     size_t pos = kNotFound;
     switch (component->source()->type()) {
@@ -100,7 +100,7 @@ void MediaStreamDescriptor::removeRemoteTrack(MediaStreamComponent* component)
 }
 
 MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
-    : m_client(nullptr)
+    : m_client(0)
     , m_id(id)
     , m_active(true)
     , m_ended(false)
@@ -114,7 +114,7 @@ MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStream
 }
 
 MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
-    : m_client(nullptr)
+    : m_client(0)
     , m_id(id)
     , m_active(true)
     , m_ended(false)
@@ -126,11 +126,5 @@ MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStream
         m_videoComponents.append((*iter));
 }
 
-DEFINE_TRACE(MediaStreamDescriptor)
-{
-    visitor->trace(m_audioComponents);
-    visitor->trace(m_videoComponents);
-    visitor->trace(m_client);
-}
-
 } // namespace blink
+
