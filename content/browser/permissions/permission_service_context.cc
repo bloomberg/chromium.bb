@@ -41,15 +41,15 @@ void PermissionServiceContext::ServiceHadConnectionError(
   services_.erase(it);
 }
 
-void PermissionServiceContext::RenderFrameDeleted(
-    RenderFrameHost* render_frame_host) {
-  CancelPendingOperations(render_frame_host);
-}
-
 void PermissionServiceContext::RenderFrameHostChanged(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {
   CancelPendingOperations(old_host);
+}
+
+void PermissionServiceContext::FrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  CancelPendingOperations(render_frame_host);
 }
 
 void PermissionServiceContext::DidNavigateAnyFrame(

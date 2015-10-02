@@ -27,11 +27,7 @@ int ShellPermissionManager::RequestPermission(
   return kNoPendingOperation;
 }
 
-void ShellPermissionManager::CancelPermissionRequest(
-    PermissionType permission,
-    RenderFrameHost* render_frame_host,
-    int request_id,
-    const GURL& requesting_origin) {
+void ShellPermissionManager::CancelPermissionRequest(int request_id) {
 }
 
 void ShellPermissionManager::ResetPermission(

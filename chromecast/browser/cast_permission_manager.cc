@@ -29,11 +29,7 @@ int CastPermissionManager::RequestPermission(
   return kNoPendingOperation;
 }
 
-void CastPermissionManager::CancelPermissionRequest(
-    content::PermissionType permission,
-    content::RenderFrameHost* render_frame_host,
-    int request_id,
-    const GURL& origin) {
+void CastPermissionManager::CancelPermissionRequest(int request_id) {
 }
 
 void CastPermissionManager::ResetPermission(

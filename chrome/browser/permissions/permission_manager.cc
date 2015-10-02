@@ -197,30 +197,27 @@ void PermissionManager::OnPermissionRequestResponse(
   callback.Run(ContentSettingToPermissionStatus(content_setting));
 }
 
-void PermissionManager::CancelPermissionRequest(
-    PermissionType permission,
-    content::RenderFrameHost* render_frame_host,
-    int request_id,
-    const GURL& requesting_origin) {
+void PermissionManager::CancelPermissionRequest(int request_id) {
   PendingRequest* pending_request = pending_requests_.Lookup(request_id);
   if (!pending_request)
     return;
 
-  PermissionContextBase* context = PermissionContext::Get(profile_, permission);
+  PermissionContextBase* context = PermissionContext::Get(
+      profile_, pending_request->permission);
   if (!context)
     return;
 
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-  if (IsPermissionBubbleManagerMissing(web_contents))
+  content::WebContents* web_contents = tab_util::GetWebContentsByFrameID(
+      pending_request->render_process_id, pending_request->render_frame_id);
+  DCHECK(web_contents);
+  if (IsPermissionBubbleManagerMissing(web_contents)) {
+    pending_requests_.Remove(request_id);
     return;
+  }
 
-  int render_process_id = render_frame_host->GetProcess()->GetID();
-  int render_frame_id = render_frame_host->GetRoutingID();
-  const PermissionRequestID request(render_process_id,
-                                    render_frame_id,
+  const PermissionRequestID request(pending_request->render_process_id,
+                                    pending_request->render_frame_id,
                                     request_id);
-
   context->CancelPermissionRequest(web_contents, request);
   pending_requests_.Remove(request_id);
 }

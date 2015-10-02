@@ -290,42 +290,49 @@ void AwPermissionManager::OnRequestResponse(
   callback.Run(status);
 }
 
-void AwPermissionManager::CancelPermissionRequest(
-    PermissionType permission,
-    content::RenderFrameHost* render_frame_host,
-    int request_id,
-    const GURL& origin) {
+void AwPermissionManager::CancelPermissionRequest(int request_id) {
   PendingRequest* pending_request = pending_requests_.Lookup(request_id);
   if (!pending_request)
     return;
 
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(pending_request->render_process_id,
+          pending_request->render_frame_id);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  DCHECK(web_contents);
+
   // The caller is canceling (presumably) the most recent request. Assuming the
   // request did not complete, the user did not respond to the requset.
   // Thus, assume we do not know the result.
-  const GURL& embedding_origin =
-      content::WebContents::FromRenderFrameHost(render_frame_host)
+  const GURL& embedding_origin = web_contents
           ->GetLastCommittedURL().GetOrigin();
-  result_cache_->ClearResult(permission, origin, embedding_origin);
+  result_cache_->ClearResult(
+      pending_request->permission,
+      pending_request->requesting_origin,
+      embedding_origin);
 
-  int render_process_id = render_frame_host->GetProcess()->GetID();
-  int render_frame_id = render_frame_host->GetRoutingID();
   AwBrowserPermissionRequestDelegate* delegate =
-      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
-                                                 render_frame_id);
+      AwBrowserPermissionRequestDelegate::FromID(
+          pending_request->render_process_id,
+          pending_request->render_frame_id);
   if (!delegate) {
     pending_requests_.Remove(request_id);
     return;
   }
 
-  switch (permission) {
+  switch (pending_request->permission) {
     case PermissionType::GEOLOCATION:
-      delegate->CancelGeolocationPermissionRequests(origin);
+      delegate->CancelGeolocationPermissionRequests(
+          pending_request->requesting_origin);
       break;
     case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      delegate->CancelProtectedMediaIdentifierPermissionRequests(origin);
+      delegate->CancelProtectedMediaIdentifierPermissionRequests(
+          pending_request->requesting_origin);
       break;
     case PermissionType::MIDI_SYSEX:
-      delegate->CancelMIDISysexPermissionRequests(origin);
+      delegate->CancelMIDISysexPermissionRequests(
+          pending_request->requesting_origin);
       break;
     case PermissionType::NOTIFICATIONS:
     case PermissionType::PUSH_MESSAGING:
@@ -333,7 +340,7 @@ void AwPermissionManager::CancelPermissionRequest(
     case PermissionType::AUDIO_CAPTURE:
     case PermissionType::VIDEO_CAPTURE:
       NOTIMPLEMENTED() << "CancelPermission not implemented for "
-                       << static_cast<int>(permission);
+                       << static_cast<int>(pending_request->permission);
       break;
     case PermissionType::MIDI:
       // There is nothing to cancel so this is simply ignored.

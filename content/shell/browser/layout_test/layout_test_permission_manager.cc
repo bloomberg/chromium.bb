@@ -76,11 +76,7 @@ int LayoutTestPermissionManager::RequestPermission(
   return kNoPendingOperation;
 }
 
-void LayoutTestPermissionManager::CancelPermissionRequest(
-    PermissionType permission,
-    RenderFrameHost* render_frame_host,
-    int request_id,
-    const GURL& requesting_origin) {
+void LayoutTestPermissionManager::CancelPermissionRequest(int request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

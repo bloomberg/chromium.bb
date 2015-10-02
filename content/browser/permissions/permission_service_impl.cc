@@ -164,7 +164,6 @@ void PermissionServiceImpl::OnRequestPermissionResponse(
 }
 
 void PermissionServiceImpl::CancelPendingOperations() {
-  DCHECK(context_->render_frame_host());
   DCHECK(context_->GetBrowserContext());
 
   PermissionManager* permission_manager =
@@ -176,10 +175,7 @@ void PermissionServiceImpl::CancelPendingOperations() {
   for (RequestsMap::Iterator<PendingRequest> it(&pending_requests_);
        !it.IsAtEnd(); it.Advance()) {
     permission_manager->CancelPermissionRequest(
-        it.GetCurrentValue()->permission,
-        context_->render_frame_host(),
-        it.GetCurrentKey(),
-        it.GetCurrentValue()->origin);
+        it.GetCurrentValue()->id);
   }
   pending_requests_.Clear();
 
