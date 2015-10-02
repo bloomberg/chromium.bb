@@ -93,11 +93,14 @@ void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(registration_);
 
-  // This context is is the primary owner of this handle, keeps the
-  // initial reference until it goes away.
-  controller_ =
-      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
-
+  if (info.version_id == kInvalidServiceWorkerVersionId) {
+    controller_.reset();
+  } else {
+    // This context is is the primary owner of this handle, keeps the
+    // initial reference until it goes away.
+    controller_ =
+        ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
+  }
   // TODO(kinuko): We can forward the message to other threads here
   // when we support navigator.serviceWorker in dedicated workers.
 }
