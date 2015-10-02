@@ -7,8 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/resources/ui_resource_client.h"
-#include "ui/android/resources/ui_resource_android.h"
+#include "cc/resources/scoped_ui_resource.h"
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/rect.h"
@@ -16,7 +15,6 @@
 
 namespace ui {
 
-class UIResourceAndroid;
 class UIResourceProvider;
 
 // A Java counterpart will be generated for this enum.
@@ -43,7 +41,7 @@ class UI_ANDROID_EXPORT ResourceManager {
     gfx::Rect Border(const gfx::Size& bounds) const;
     gfx::Rect Border(const gfx::Size& bounds, const gfx::InsetsF& scale) const;
 
-    scoped_ptr<UIResourceAndroid> ui_resource;
+    scoped_ptr<cc::ScopedUIResource> ui_resource;
     gfx::Size size;
     gfx::Rect padding;
     gfx::Rect aperture;

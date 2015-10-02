@@ -6,8 +6,8 @@
 
 #include "base/android/jni_string.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/resources/scoped_ui_resource.h"
 #include "jni/ResourceManager_jni.h"
-#include "ui/android/resources/ui_resource_android.h"
 #include "ui/android/resources/ui_resource_provider.h"
 #include "ui/gfx/android/java_bitmap.h"
 
@@ -20,9 +20,7 @@ ResourceManagerImpl* ResourceManagerImpl::FromJavaObject(jobject jobj) {
                                         jobj));
 }
 
-ResourceManagerImpl::ResourceManagerImpl(
-    ui::UIResourceProvider* ui_resource_provider)
-    : ui_resource_provider_(ui_resource_provider) {
+ResourceManagerImpl::ResourceManagerImpl() : host_(nullptr) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(env, Java_ResourceManager_create(
                            env, base::android::GetApplicationContext(),
@@ -33,6 +31,12 @@ ResourceManagerImpl::ResourceManagerImpl(
 ResourceManagerImpl::~ResourceManagerImpl() {
   Java_ResourceManager_destroy(base::android::AttachCurrentThread(),
                                java_obj_.obj());
+}
+
+void ResourceManagerImpl::Init(cc::LayerTreeHost* host) {
+  DCHECK(!host_);
+  DCHECK(host);
+  host_ = host;
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -102,8 +106,11 @@ void ResourceManagerImpl::OnResourceReady(JNIEnv* env,
   resource->aperture.SetRect(aperture_left, aperture_top,
                              aperture_right - aperture_left,
                              aperture_bottom - aperture_top);
+
+  SkBitmap skbitmap = gfx::CreateSkBitmapFromJavaBitmap(jbitmap);
+  skbitmap.setImmutable();
   resource->ui_resource =
-      UIResourceAndroid::CreateFromJavaBitmap(ui_resource_provider_, jbitmap);
+      cc::ScopedUIResource::Create(host_, cc::UIResourceBitmap(skbitmap));
 }
 
 // static

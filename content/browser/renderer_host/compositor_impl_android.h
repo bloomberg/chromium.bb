@@ -43,6 +43,7 @@ class CONTENT_EXPORT CompositorImpl
     : public Compositor,
       public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient,
+      public ui::UIResourceProvider,
       public ui::WindowAndroidCompositor {
  public:
   class VSyncObserver {
@@ -63,6 +64,11 @@ class CONTENT_EXPORT CompositorImpl
 
   void AddObserver(VSyncObserver* observer);
   void RemoveObserver(VSyncObserver* observer);
+
+  // ui::ResourceProvider implementation.
+  cc::UIResourceId CreateUIResource(cc::UIResourceClient* client) override;
+  void DeleteUIResource(cc::UIResourceId resource_id) override;
+  bool SupportsETC1NonPowerOfTwo() const override;
 
  private:
   // Compositor implementation.
@@ -156,7 +162,6 @@ class CONTENT_EXPORT CompositorImpl
   scoped_refptr<cc::Layer> subroot_layer_;
 
   scoped_ptr<cc::LayerTreeHost> host_;
-  ui::UIResourceProvider ui_resource_provider_;
   ui::ResourceManagerImpl resource_manager_;
 
   scoped_ptr<cc::OnscreenDisplayClient> display_client_;
@@ -212,6 +217,8 @@ class CONTENT_EXPORT CompositorImpl
   // if |host_| is deleted or we succeed in creating *and* initializing an
   // OutputSurface (which is essentially the contract with cc).
   bool output_surface_request_pending_;
+
+  gpu::Capabilities gpu_capabilities_;
 
   base::ObserverList<VSyncObserver, true> observer_list_;
 

@@ -3,22 +3,38 @@
 // found in the LICENSE file.
 
 #include "cc/resources/ui_resource_bitmap.h"
+#include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/layer_tree_host.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/resources/system_ui_resource_type.h"
-#include "ui/android/resources/ui_resource_client_android.h"
-#include "ui/android/resources/ui_resource_provider.h"
 #include "ui/gfx/android/java_bitmap.h"
+
+
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::DoAll;
+using ::testing::InSequence;
+using ::testing::Invoke;
+using ::testing::MatcherCast;
+using ::testing::Mock;
+using ::testing::Pointee;
+using ::testing::Return;
+using ::testing::SaveArg;
+using ::testing::SetArrayArgument;
+using ::testing::SetArgPointee;
+using ::testing::StrEq;
+using ::testing::StrictMock;
 
 namespace ui {
 
 class TestResourceManagerImpl : public ResourceManagerImpl {
  public:
-  explicit TestResourceManagerImpl(UIResourceProvider* provider)
-      : ResourceManagerImpl(provider) {}
-
+  TestResourceManagerImpl() {}
   ~TestResourceManagerImpl() override {}
 
   void SetResourceAsLoaded(AndroidResourceType res_type, int res_id) {
@@ -48,114 +64,69 @@ namespace {
 
 const ui::SystemUIResourceType kTestResourceType = ui::OVERSCROLL_GLOW;
 
-class MockUIResourceProvider : public ui::UIResourceProvider {
+class MockLayerTreeHost : public cc::LayerTreeHost {
  public:
-  MockUIResourceProvider()
-      : next_ui_resource_id_(1),
-        has_layer_tree_host_(true),
-        resource_manager_(this) {}
+  MockLayerTreeHost(cc::LayerTreeHost::InitParams* params)
+      : cc::LayerTreeHost(params) {}
 
-  virtual ~MockUIResourceProvider() {}
-
-  cc::UIResourceId CreateUIResource(
-      ui::UIResourceClientAndroid* client) override {
-    if (!has_layer_tree_host_)
-      return 0;
-    cc::UIResourceId id = next_ui_resource_id_++;
-    client->GetBitmap(id, false);
-    ui_resource_client_map_[id] = client;
-    return id;
-  }
-
-  void DeleteUIResource(cc::UIResourceId id) override {
-    CHECK(has_layer_tree_host_);
-    ui_resource_client_map_.erase(id);
-  }
-
-  bool SupportsETC1NonPowerOfTwo() const override { return true; }
-
-  void LayerTreeHostCleared() {
-    has_layer_tree_host_ = false;
-    UIResourceClientMap client_map = ui_resource_client_map_;
-    ui_resource_client_map_.clear();
-    for (UIResourceClientMap::iterator iter = client_map.begin();
-         iter != client_map.end(); iter++) {
-      iter->second->UIResourceIsInvalid();
-    }
-  }
-
-  void LayerTreeHostReturned() { has_layer_tree_host_ = true; }
-
-  TestResourceManagerImpl& GetResourceManager() { return resource_manager_; }
-
-  cc::UIResourceId next_ui_resource_id() const { return next_ui_resource_id_; }
+  MOCK_METHOD1(CreateUIResource, cc::UIResourceId(cc::UIResourceClient*));
+  MOCK_METHOD1(DeleteUIResource, void(cc::UIResourceId));
 
  private:
-  typedef base::hash_map<cc::UIResourceId, ui::UIResourceClientAndroid*>
-      UIResourceClientMap;
-
-  cc::UIResourceId next_ui_resource_id_;
-  UIResourceClientMap ui_resource_client_map_;
-  bool has_layer_tree_host_;
-
-  // The UIResourceProvider owns the ResourceManager.
-  TestResourceManagerImpl resource_manager_;
+  DISALLOW_COPY_AND_ASSIGN(MockLayerTreeHost);
 };
 
 }  // namespace
 
 class ResourceManagerTest : public testing::Test {
  public:
+  ResourceManagerTest() : fake_client_(cc::FakeLayerTreeHostClient::DIRECT_3D) {
+    cc::LayerTreeHost::InitParams params;
+    cc::LayerTreeSettings settings;
+    params.client = &fake_client_;
+    params.settings = &settings;
+    params.task_graph_runner = &task_graph_runner_;
+    host_.reset(new MockLayerTreeHost(&params));
+    resource_manager_.Init(host_.get());
+  }
+
   void PreloadResource(ui::SystemUIResourceType type) {
-    ui_resource_provider_.GetResourceManager().PreloadResource(
-        ui::ANDROID_RESOURCE_TYPE_SYSTEM, type);
+    resource_manager_.PreloadResource(ui::ANDROID_RESOURCE_TYPE_SYSTEM, type);
   }
 
   cc::UIResourceId GetUIResourceId(ui::SystemUIResourceType type) {
-    return ui_resource_provider_.GetResourceManager().GetUIResourceId(
-        ui::ANDROID_RESOURCE_TYPE_SYSTEM, type);
-  }
-
-  void LayerTreeHostCleared() { ui_resource_provider_.LayerTreeHostCleared(); }
-
-  void LayerTreeHostReturned() {
-    ui_resource_provider_.LayerTreeHostReturned();
+    return resource_manager_.GetUIResourceId(ui::ANDROID_RESOURCE_TYPE_SYSTEM,
+                                             type);
   }
 
   void SetResourceAsLoaded(ui::SystemUIResourceType type) {
-    ui_resource_provider_.GetResourceManager().SetResourceAsLoaded(
-        ui::ANDROID_RESOURCE_TYPE_SYSTEM, type);
+    resource_manager_.SetResourceAsLoaded(ui::ANDROID_RESOURCE_TYPE_SYSTEM,
+                                          type);
   }
 
-  cc::UIResourceId GetNextUIResourceId() const {
-    return ui_resource_provider_.next_ui_resource_id();
-  }
-
- private:
-  MockUIResourceProvider ui_resource_provider_;
+ protected:
+  scoped_ptr<MockLayerTreeHost> host_;
+  TestResourceManagerImpl resource_manager_;
+  cc::TestTaskGraphRunner task_graph_runner_;
+  cc::FakeLayerTreeHostClient fake_client_;
 };
 
 TEST_F(ResourceManagerTest, GetResource) {
-  EXPECT_NE(0, GetUIResourceId(kTestResourceType));
+  const cc::UIResourceId kResourceId = 99;
+  EXPECT_CALL(*host_.get(), CreateUIResource(_))
+      .WillOnce(Return(kResourceId))
+      .RetiresOnSaturation();
+  EXPECT_EQ(kResourceId, GetUIResourceId(kTestResourceType));
 }
 
 TEST_F(ResourceManagerTest, PreloadEnsureResource) {
-  // Preloading the resource should trigger bitmap loading, but the actual
-  // resource id will not be generated until it is explicitly requested.
-  cc::UIResourceId first_resource_id = GetNextUIResourceId();
+  const cc::UIResourceId kResourceId = 99;
   PreloadResource(kTestResourceType);
+  EXPECT_CALL(*host_.get(), CreateUIResource(_))
+      .WillOnce(Return(kResourceId))
+      .RetiresOnSaturation();
   SetResourceAsLoaded(kTestResourceType);
-  EXPECT_EQ(first_resource_id, GetNextUIResourceId());
-  EXPECT_NE(0, GetUIResourceId(kTestResourceType));
-  EXPECT_NE(first_resource_id, GetNextUIResourceId());
-}
-
-TEST_F(ResourceManagerTest, ResetLayerTreeHost) {
-  EXPECT_NE(0, GetUIResourceId(kTestResourceType));
-  LayerTreeHostCleared();
-  EXPECT_EQ(0, GetUIResourceId(kTestResourceType));
-  LayerTreeHostReturned();
-  EXPECT_NE(0, GetUIResourceId(kTestResourceType));
+  EXPECT_EQ(kResourceId, GetUIResourceId(kTestResourceType));
 }
 
 }  // namespace ui

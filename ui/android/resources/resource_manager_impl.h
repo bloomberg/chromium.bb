@@ -16,8 +16,10 @@ class UI_ANDROID_EXPORT ResourceManagerImpl : public ResourceManager {
  public:
   static ResourceManagerImpl* FromJavaObject(jobject jobj);
 
-  explicit ResourceManagerImpl(ui::UIResourceProvider* ui_resource_provider);
+  ResourceManagerImpl();
   ~ResourceManagerImpl() override;
+
+  void Init(cc::LayerTreeHost* host);
 
   // ResourceManager implementation.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
@@ -53,7 +55,7 @@ class UI_ANDROID_EXPORT ResourceManagerImpl : public ResourceManager {
 
   typedef IDMap<Resource, IDMapOwnPointer> ResourceMap;
 
-  ui::UIResourceProvider* const ui_resource_provider_;
+  cc::LayerTreeHost* host_;
   ResourceMap resources_[ANDROID_RESOURCE_TYPE_COUNT];
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

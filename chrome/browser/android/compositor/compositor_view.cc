@@ -106,6 +106,7 @@ CompositorView::CompositorView(JNIEnv* env,
 
 CompositorView::~CompositorView() {
   content::BrowserChildProcessObserver::Remove(this);
+  tab_content_manager_->OnUIResourcesWereEvicted();
 
   // Explicitly reset these scoped_ptrs here because otherwise we callbacks will
   // try to access member variables during destruction.
@@ -153,6 +154,7 @@ void CompositorView::SurfaceCreated(JNIEnv* env, jobject object) {
 void CompositorView::SurfaceDestroyed(JNIEnv* env, jobject object) {
   compositor_->SetSurface(NULL);
   current_surface_format_ = 0;
+  tab_content_manager_->OnUIResourcesWereEvicted();
 }
 
 void CompositorView::SurfaceChanged(JNIEnv* env,

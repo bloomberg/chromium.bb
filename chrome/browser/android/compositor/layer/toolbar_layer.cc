@@ -6,10 +6,10 @@
 
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
+#include "cc/resources/scoped_ui_resource.h"
 #include "content/public/browser/android/compositor.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/resource_manager.h"
-#include "ui/android/resources/ui_resource_android.h"
 
 namespace chrome {
 namespace android {

@@ -5,11 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_THUMBNAIL_THUMBNAIL_H_
 #define CHROME_BROWSER_ANDROID_THUMBNAIL_THUMBNAIL_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
-#include "ui/android/resources/ui_resource_client_android.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace base {
@@ -34,7 +33,7 @@ class ThumbnailDelegate {
   virtual ~ThumbnailDelegate() {}
 };
 
-class Thumbnail : public ui::UIResourceClientAndroid {
+class Thumbnail : public cc::UIResourceClient {
  public:
   static scoped_ptr<Thumbnail> Create(
       TabId tab_id,
@@ -56,14 +55,11 @@ class Thumbnail : public ui::UIResourceClientAndroid {
                            const gfx::Size& content_size);
   void CreateUIResource();
 
-  // content::UIResourceClient implementation.
+  // cc::UIResourceClient implementation.
   cc::UIResourceBitmap GetBitmap(cc::UIResourceId uid,
                                  bool resource_lost) override;
 
-  // ui::UIResourceClientAndroid implementation.
-  void UIResourceIsInvalid() override;
-
- protected:
+ private:
   Thumbnail(TabId tab_id,
             const base::Time& time_stamp,
             float scale,
@@ -71,6 +67,7 @@ class Thumbnail : public ui::UIResourceClientAndroid {
             ThumbnailDelegate* thumbnail_delegate);
 
   void ClearUIResourceId();
+  void DoInvalidate();
 
   TabId tab_id_;
   base::Time time_stamp_;
@@ -87,6 +84,7 @@ class Thumbnail : public ui::UIResourceClientAndroid {
   ui::UIResourceProvider* ui_resource_provider_;
   ThumbnailDelegate* thumbnail_delegate_;
 
+  base::WeakPtrFactory<Thumbnail> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(Thumbnail);
 };
 

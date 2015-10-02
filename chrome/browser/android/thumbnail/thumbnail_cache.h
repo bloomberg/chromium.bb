@@ -18,7 +18,6 @@
 #include "chrome/browser/android/thumbnail/scoped_ptr_expiring_cache.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/android/resources/ui_resource_client_android.h"
 #include "ui/android/resources/ui_resource_provider.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -69,6 +68,10 @@ class ThumbnailCache : ThumbnailDelegate {
       TabId tab_id,
       const base::Callback<void(bool, SkBitmap)>&
           post_decompress_callback);
+
+  // Called when resident textures were evicted, which requires paging
+  // in bitmaps.
+  void OnUIResourcesWereEvicted();
 
   // ThumbnailDelegate implementation
   void InvalidateCachedThumbnail(Thumbnail* thumbnail) override;

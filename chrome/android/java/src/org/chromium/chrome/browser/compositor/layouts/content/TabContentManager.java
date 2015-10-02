@@ -344,16 +344,6 @@ public class TabContentManager {
         }
     }
 
-    /**
-     * Set the UI resource provider to be used by this {@link TabContentManager} on the native side.
-     * @param resourceProviderNativePtr The pointer to the UI resource provider to be used.
-     */
-    public void setUIResourceProvider(long resourceProviderNativePtr) {
-        if (mNativeTabContentManager == 0 || resourceProviderNativePtr == 0) return;
-
-        nativeSetUIResourceProvider(mNativeTabContentManager, resourceProviderNativePtr);
-    }
-
     @CalledByNative
     protected void notifyListenersOfThumbnailChange(int tabId) {
         for (ThumbnailChangeListener listener : mListeners) {
@@ -375,8 +365,6 @@ public class TabContentManager {
     private native void nativeRemoveTabThumbnail(long nativeTabContentManager, int tabId);
     private native void nativeRemoveTabThumbnailFromDiskAtAndAboveId(long nativeTabContentManager,
             int minForbiddenId);
-    private native void nativeSetUIResourceProvider(long nativeTabContentManager,
-            long resourceProviderNativePtr);
     private native void nativeGetDecompressedThumbnail(long nativeTabContentManager, int tabId);
     private static native void nativeDestroy(long nativeTabContentManager);
 }

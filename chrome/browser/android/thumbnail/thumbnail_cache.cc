@@ -473,6 +473,11 @@ void ThumbnailCache::RemoveFromReadQueue(TabId tab_id) {
     read_queue_.erase(read_iter);
 }
 
+void ThumbnailCache::OnUIResourcesWereEvicted() {
+  cache_.Clear();
+  approximation_cache_.Clear();
+}
+
 void ThumbnailCache::InvalidateCachedThumbnail(Thumbnail* thumbnail) {
   DCHECK(thumbnail);
   TabId tab_id = thumbnail->tab_id();

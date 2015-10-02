@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -45,7 +48,8 @@ Thumbnail::Thumbnail(TabId tab_id,
       ui_resource_id_(0),
       retrieved_(false),
       ui_resource_provider_(ui_resource_provider),
-      thumbnail_delegate_(thumbnail_delegate) {
+      thumbnail_delegate_(thumbnail_delegate),
+      weak_factory_(this) {
 }
 
 Thumbnail::~Thumbnail() {
@@ -83,8 +87,15 @@ void Thumbnail::CreateUIResource() {
 
 cc::UIResourceBitmap Thumbnail::GetBitmap(cc::UIResourceId uid,
                                           bool resource_lost) {
-  if (retrieved_)
+  if (retrieved_) {
+    // InvalidateCachedThumbnail() causes |this| to be deleted, so
+    // don't delete the resource while LayerTeeHost calls into |this|
+    // to avoid reentry there.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&Thumbnail::DoInvalidate, weak_factory_.GetWeakPtr()));
     return bitmap_;
+  }
 
   retrieved_ = true;
 
@@ -94,8 +105,7 @@ cc::UIResourceBitmap Thumbnail::GetBitmap(cc::UIResourceId uid,
   return old_bitmap;
 }
 
-void Thumbnail::UIResourceIsInvalid() {
-  ui_resource_id_ = 0;
+void Thumbnail::DoInvalidate() {
   if (thumbnail_delegate_)
     thumbnail_delegate_->InvalidateCachedThumbnail(this);
 }

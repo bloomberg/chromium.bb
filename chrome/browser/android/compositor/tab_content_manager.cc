@@ -150,14 +150,6 @@ void TabContentManager::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-void TabContentManager::SetUIResourceProvider(JNIEnv* env,
-                                              jobject obj,
-                                              jlong ui_resource_provider_ptr) {
-  ui::UIResourceProvider* ui_resource_provider =
-      reinterpret_cast<ui::UIResourceProvider*>(ui_resource_provider_ptr);
-  SetUIResourceProvider(ui_resource_provider);
-}
-
 void TabContentManager::SetUIResourceProvider(
     ui::UIResourceProvider* ui_resource_provider) {
   thumbnail_cache_->SetUIResourceProvider(ui_resource_provider);
@@ -340,6 +332,10 @@ void TabContentManager::GetDecompressedThumbnail(JNIEnv* env,
                  weak_factory_.GetWeakPtr(), reinterpret_cast<int>(tab_id));
   thumbnail_cache_->DecompressThumbnailFromFile(reinterpret_cast<int>(tab_id),
                                                 decompress_done_callback);
+}
+
+void TabContentManager::OnUIResourcesWereEvicted() {
+  thumbnail_cache_->OnUIResourcesWereEvicted();
 }
 
 void TabContentManager::OnFinishedThumbnailRead(int tab_id) {

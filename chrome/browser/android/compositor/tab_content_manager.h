@@ -48,9 +48,6 @@ class TabContentManager : public ThumbnailCacheObserver {
 
   void Destroy(JNIEnv* env, jobject obj);
 
-  void SetUIResourceProvider(JNIEnv* env,
-                             jobject obj,
-                             jlong ui_resource_provider_ptr);
   void SetUIResourceProvider(ui::UIResourceProvider* ui_resource_provider);
 
   // Get the live layer from the cache.
@@ -90,6 +87,7 @@ class TabContentManager : public ThumbnailCacheObserver {
                                               jobject obj,
                                               jint min_forbidden_id);
   void GetDecompressedThumbnail(JNIEnv* env, jobject obj, jint tab_id);
+  void OnUIResourcesWereEvicted();
 
   // ThumbnailCacheObserver implementation;
   void OnFinishedThumbnailRead(TabId tab_id) override;

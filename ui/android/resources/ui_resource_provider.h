@@ -5,46 +5,19 @@
 #ifndef UI_ANDROID_RESOURCES_UI_RESOURCE_PROVIDER_H_
 #define UI_ANDROID_RESOURCES_UI_RESOURCE_PROVIDER_H_
 
-#include "base/containers/hash_tables.h"
 #include "cc/resources/ui_resource_client.h"
 #include "ui/android/ui_android_export.h"
 
-namespace cc {
-class LayerTreeHost;
-}
-
 namespace ui {
-
-class UIResourceClientAndroid;
 
 class UI_ANDROID_EXPORT UIResourceProvider {
  public:
-  UIResourceProvider();
-  ~UIResourceProvider();
+  virtual cc::UIResourceId CreateUIResource(cc::UIResourceClient* client) = 0;
+  virtual void DeleteUIResource(cc::UIResourceId resource_id) = 0;
+  virtual bool SupportsETC1NonPowerOfTwo() const = 0;
 
-  void SetLayerTreeHost(cc::LayerTreeHost* host);
-
-  void UIResourcesAreInvalid();
-
-  virtual cc::UIResourceId CreateUIResource(
-      ui::UIResourceClientAndroid* client);
-
-  virtual void DeleteUIResource(cc::UIResourceId resource_id);
-
-  void SetSupportsETC1NonPowerOfTwo(bool supports_etc1_npot) {
-    supports_etc1_npot_ = supports_etc1_npot;
-  }
-
-  virtual bool SupportsETC1NonPowerOfTwo() const;
-
- private:
-  typedef base::hash_map<cc::UIResourceId, ui::UIResourceClientAndroid*>
-      UIResourceClientMap;
-  UIResourceClientMap ui_resource_client_map_;
-  cc::LayerTreeHost* host_;
-  bool supports_etc1_npot_;
-
-  DISALLOW_COPY_AND_ASSIGN(UIResourceProvider);
+ protected:
+  virtual ~UIResourceProvider() {}
 };
 
 }  // namespace ui

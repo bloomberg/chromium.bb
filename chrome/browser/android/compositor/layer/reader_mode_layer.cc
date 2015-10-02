@@ -10,12 +10,12 @@
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
+#include "cc/resources/scoped_ui_resource.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/resource_manager.h"
-#include "ui/android/resources/ui_resource_android.h"
 
 namespace chrome {
 namespace android {
