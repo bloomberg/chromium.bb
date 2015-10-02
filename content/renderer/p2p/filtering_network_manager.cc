@@ -27,6 +27,7 @@ FilteringNetworkManager::FilteringNetworkManager(
   if (!media_permission_) {
     initialized_ = true;
     set_enumeration_permission(ENUMERATION_ALLOWED);
+    VLOG(3) << "media_permission is not passed, granting permission";
     return;
   }
 }
@@ -88,11 +89,14 @@ void FilteringNetworkManager::GetNetworks(NetworkList* networks) const {
 
   if (enumeration_permission() == ENUMERATION_ALLOWED)
     network_manager_->GetNetworks(networks);
+
+  VLOG(3) << "GetNetworks() returns " << networks->size() << " networks.";
 }
 
 void FilteringNetworkManager::OnPermissionStatus(bool granted) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GT(pending_permission_checks_, 0);
+  VLOG(3) << "OnPermissionStatus: " << granted;
 
   --pending_permission_checks_;
 

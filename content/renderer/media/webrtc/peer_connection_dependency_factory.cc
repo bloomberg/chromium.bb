@@ -472,8 +472,13 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   }
 
   if (!enforce_preferences) {
+    VLOG(3) << "WebRTC routing preferences will not be enforced";
     port_config.enable_multiple_routes = true;
     port_config.enable_nonproxied_udp = true;
+  } else {
+    VLOG(3) << "WebRTC routing preferences: multiple_routes: "
+            << port_config.enable_multiple_routes
+            << ", nonproxied_udp: " << port_config.enable_nonproxied_udp;
   }
 
   const GURL& requesting_origin =
