@@ -55,12 +55,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
-
-#if defined(USE_OPENSSL)
 #include "third_party/webrtc/base/ssladapter.h"
-#else
-#include "net/socket/nss_ssl_util.h"
-#endif
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_codec_bridge.h"
@@ -342,16 +337,11 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
   CHECK(worker_thread_);
 
   // Init SSL, which will be needed by PeerConnection.
-#if defined(USE_OPENSSL)
   if (!rtc::InitializeSSL()) {
     LOG(ERROR) << "Failed on InitializeSSL.";
     NOTREACHED();
     return;
   }
-#else
-  // TODO(ronghuawu): Replace this call with InitializeSSL.
-  net::EnsureNSSSSLInit();
-#endif
 
   base::WaitableEvent start_signaling_event(true, false);
   chrome_signaling_thread_.task_runner()->PostTask(

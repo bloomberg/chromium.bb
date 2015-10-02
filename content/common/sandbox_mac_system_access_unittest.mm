@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+#include <openssl/rand.h>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -10,14 +11,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "content/common/sandbox_mac.h"
 #include "content/common/sandbox_mac_unittest_helper.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(USE_OPENSSL)
-#include <openssl/rand.h>
 #include "crypto/openssl_util.h"
-#else
-#include "crypto/nss_util.h"
-#endif
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
@@ -127,8 +122,6 @@ TEST_F(MacSandboxTest, UrandomAccess) {
   EXPECT_TRUE(RunTestInAllSandboxTypes("MacSandboxedUrandomTestCase", NULL));
 }
 
-#if defined(USE_OPENSSL)
-
 //--------------------- OpenSSL Sandboxing ----------------------
 // Test case for checking sandboxing of OpenSSL initialization.
 class MacSandboxedOpenSSLTestCase : public MacSandboxTestCase {
@@ -149,30 +142,5 @@ bool MacSandboxedOpenSSLTestCase::SandboxedTest() {
 TEST_F(MacSandboxTest, OpenSSLAccess) {
   EXPECT_TRUE(RunTestInAllSandboxTypes("MacSandboxedOpenSSLTestCase", NULL));
 }
-
-#else  // !defined(USE_OPENSSL)
-
-//--------------------- NSS Sandboxing ----------------------
-// Test case for checking sandboxing of NSS initialization.
-class MacSandboxedNSSTestCase : public MacSandboxTestCase {
- public:
-  bool SandboxedTest() override;
-};
-
-REGISTER_SANDBOX_TEST_CASE(MacSandboxedNSSTestCase);
-
-bool MacSandboxedNSSTestCase::SandboxedTest() {
-  // If NSS cannot read from /dev/urandom, NSS initialization will call abort(),
-  // which will cause this test case to fail.
-  crypto::ForceNSSNoDBInit();
-  crypto::EnsureNSSInit();
-  return true;
-}
-
-TEST_F(MacSandboxTest, NSSAccess) {
-  EXPECT_TRUE(RunTestInAllSandboxTypes("MacSandboxedNSSTestCase", NULL));
-}
-
-#endif  // defined(USE_OPENSSL)
 
 }  // namespace content

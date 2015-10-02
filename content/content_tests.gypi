@@ -1220,7 +1220,7 @@
             '../ui/ozone/ozone.gyp:ozone_base',
           ],
         }],
-        ['OS == "mac" and use_openssl==1', {
+        ['OS == "mac"', {
           'dependencies': [
             '../third_party/boringssl/boringssl.gyp:boringssl',
           ],

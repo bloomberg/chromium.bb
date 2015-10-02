@@ -46,7 +46,6 @@
 #include "content/public/common/sandbox_init.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
-#include "crypto/nss_util.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media.h"
@@ -107,6 +106,10 @@
 #endif
 
 #endif  // OS_POSIX
+
+#if defined(USE_NSS_CERTS)
+#include "crypto/nss_util.h"
+#endif
 
 #if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
 extern "C" {

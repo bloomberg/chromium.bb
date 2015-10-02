@@ -245,10 +245,6 @@ source_set("browser") {
     #           ],
   }
 
-  if (is_linux && !use_openssl) {
-    deps += [ "//sandbox/linux:libc_urandom_override" ]
-  }
-
   if (use_udev) {
     deps += [ "//device/udev_linux" ]
   } else {
@@ -492,7 +488,7 @@ source_set("browser") {
     ]
   }
 
-  if (is_linux && use_openssl) {
+  if (is_linux) {
     deps += [ "//third_party/boringssl" ]
   }
 

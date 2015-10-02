@@ -315,23 +315,6 @@
       ],
     },
     {
-      # We make this its own target so that it does not interfere
-      # with our tests, and so that it may be selectively included
-      # in ports which need it.
-      'target_name': 'libc_urandom_override',
-      'type': 'static_library',
-      'sources': [
-        'services/libc_urandom_override.cc',
-        'services/libc_urandom_override.h',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-    },
-    {
       'target_name': 'suid_sandbox_client',
       'type': '<(component)',
       'sources': [

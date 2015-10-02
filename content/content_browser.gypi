@@ -1993,11 +1993,6 @@
         '<@(auralinux_browser_sources)',
       ],
     }],
-    ['OS=="linux" and use_openssl==0', {
-      'dependencies': [
-        '../sandbox/sandbox.gyp:libc_urandom_override',
-      ],
-    }],
     ['use_udev == 1', {
       'dependencies': [
         '../device/udev_linux/udev.gyp:udev_linux',
@@ -2173,7 +2168,7 @@
         'browser/media/media_web_contents_observer.h',
       ],
     }],
-    ['OS == "linux" and use_openssl==1', {
+    ['OS == "linux"', {
       'dependencies': [
         '../third_party/boringssl/boringssl.gyp:boringssl',
       ],

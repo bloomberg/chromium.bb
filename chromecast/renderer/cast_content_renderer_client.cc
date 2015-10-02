@@ -23,7 +23,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "crypto/nss_util.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -111,15 +110,6 @@ void CastContentRendererClient::AddRendererNativeBindings(
 
 void CastContentRendererClient::RenderThreadStarted() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-#if !defined(USE_OPENSSL)
-  // Note: Copied from chrome_render_process_observer.cc to fix b/8676652.
-  //
-  // On platforms where the system NSS shared libraries are used,
-  // initialize NSS now because it won't be able to load the .so's
-  // after entering the sandbox.
-  if (!command_line->HasSwitch(switches::kSingleProcess))
-    crypto::InitNSSSafely();
-#endif
 
 #if defined(ARCH_CPU_ARM_FAMILY) && !defined(OS_ANDROID)
   PlatformPollFreemem();

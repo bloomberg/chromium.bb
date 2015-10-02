@@ -6,6 +6,7 @@
 
 #include <dlfcn.h>
 #include <fcntl.h>
+#include <openssl/rand.h>
 #include <pthread.h>
 #include <signal.h>
 #include <string.h>
@@ -39,7 +40,6 @@
 #include "content/public/common/sandbox_linux.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "content/zygote/zygote_linux.h"
-#include "crypto/nss_util.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/init_process_reaper.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
@@ -50,12 +50,6 @@
 
 #if defined(OS_LINUX)
 #include <sys/prctl.h>
-#endif
-
-#if defined(USE_OPENSSL)
-#include <openssl/rand.h>
-#else
-#include "sandbox/linux/services/libc_urandom_override.h"
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -338,15 +332,10 @@ static void ZygotePreSandboxInit() {
   // cached and there's no more need to access the file system.
   scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
 
-#if defined(USE_OPENSSL)
   // Pass BoringSSL a copy of the /dev/urandom file descriptor so RAND_bytes
   // will work inside the sandbox.
   RAND_set_urandom_fd(base::GetUrandomFD());
-#else
-  // NSS libraries are loaded before sandbox is activated. This is to allow
-  // successful initialization of NSS which tries to load extra library files.
-  crypto::LoadNSSLibraries();
-#endif
+
 #if defined(ENABLE_PLUGINS)
   // Ensure access to the Pepper plugins before the sandbox is turned on.
   PreloadPepperPlugins();
@@ -523,9 +512,6 @@ static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox,
 bool ZygoteMain(const MainFunctionParams& params,
                 ScopedVector<ZygoteForkDelegate> fork_delegates) {
   g_am_zygote_or_renderer = true;
-#if !defined(USE_OPENSSL)
-  sandbox::InitLibcUrandomOverrides();
-#endif
 
   std::vector<int> fds_to_close_post_fork;
 

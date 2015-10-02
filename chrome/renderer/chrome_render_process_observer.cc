@@ -37,7 +37,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "crypto/nss_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
 #include "third_party/WebKit/public/web/WebCache.h"
@@ -261,13 +260,6 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
       chrome_common_media::LocalizedStringProvider);
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(USE_OPENSSL)
-  // On platforms where we use system NSS shared libraries,
-  // initialize NSS now because it won't be able to load the .so's
-  // after we engage the sandbox.
-  if (!command_line.HasSwitch(switches::kSingleProcess))
-    crypto::InitNSSSafely();
-#endif
   // Setup initial set of crash dump data for Field Trials in this renderer.
   variations::SetVariationListCrashKeys();
   // Listen for field trial activations to report them to the browser.

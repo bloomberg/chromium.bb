@@ -318,11 +318,6 @@
                 }, {
                   'defines': ['USE_SECCOMP_BPF'],
                 }],
-                ['use_openssl == 0', {
-                  'dependencies': [
-                    '../sandbox/sandbox.gyp:libc_urandom_override',
-                  ],
-                }],
               ],
               'cflags': ['-fPIE'],
             },

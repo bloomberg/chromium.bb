@@ -360,17 +360,6 @@ source_set("sandbox_services_headers") {
   ]
 }
 
-# We make this its own target so that it does not interfere with our tests.
-source_set("libc_urandom_override") {
-  sources = [
-    "services/libc_urandom_override.cc",
-    "services/libc_urandom_override.h",
-  ]
-  deps = [
-    "//base",
-  ]
-}
-
 if (compile_suid_client) {
   component("suid_sandbox_client") {
     sources = [

@@ -670,14 +670,6 @@ class NSSInitSingleton {
   }
 #endif  // defined(USE_NSS_CERTS)
 
-#if !defined(USE_OPENSSL)
-  // This method is used to force NSS to be initialized without a DB.
-  // Call this method before NSSInitSingleton() is constructed.
-  static void ForceNoDBInit() {
-    force_nodb_init_ = true;
-  }
-#endif
-
  private:
   friend struct base::DefaultLazyInstanceTraits<NSSInitSingleton>;
 
@@ -711,12 +703,6 @@ class NSSInitSingleton {
 
     SECStatus status = SECFailure;
     bool nodb_init = false;
-
-#if !defined(USE_OPENSSL)
-    // ForceNoDBInit was called.
-    if (force_nodb_init_)
-      nodb_init = true;
-#endif
 
 #if !defined(USE_NSS_CERTS)
     // Use the system certificate store, so initialize NSS without database.
@@ -875,11 +861,6 @@ class NSSInitSingleton {
     }
   }
 
-#if !defined(USE_OPENSSL)
-  // If this is set to true NSS is forced to be initialized without a DB.
-  static bool force_nodb_init_;
-#endif
-
   bool tpm_token_enabled_for_nss_;
   bool initializing_tpm_token_;
   typedef std::vector<base::Closure> TPMReadyCallbackList;
@@ -900,11 +881,6 @@ class NSSInitSingleton {
 
   base::ThreadChecker thread_checker_;
 };
-
-#if !defined(USE_OPENSSL)
-// static
-bool NSSInitSingleton::force_nodb_init_ = false;
-#endif
 
 base::LazyInstance<NSSInitSingleton>::Leaky
     g_nss_singleton = LAZY_INSTANCE_INITIALIZER;
@@ -939,19 +915,6 @@ void EnsureNSPRInit() {
   g_nspr_singleton.Get();
 }
 
-#if !defined(USE_OPENSSL)
-void InitNSSSafely() {
-  // We might fork, but we haven't loaded any security modules.
-  DisableNSSForkCheck();
-  // If we're sandboxed, we shouldn't be able to open user security modules,
-  // but it's more correct to tell NSS to not even try.
-  // Loading user security modules would have security implications.
-  ForceNSSNoDBInit();
-  // Initialize NSS.
-  EnsureNSSInit();
-}
-#endif  // !defined(USE_OPENSSL)
-
 void EnsureNSSInit() {
   // Initializing SSL causes us to do blocking IO.
   // Temporarily allow it until we fix
@@ -959,73 +922,6 @@ void EnsureNSSInit() {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   g_nss_singleton.Get();
 }
-
-#if !defined(USE_OPENSSL)
-
-void ForceNSSNoDBInit() {
-  NSSInitSingleton::ForceNoDBInit();
-}
-
-void DisableNSSForkCheck() {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  env->SetVar("NSS_STRICT_NOFORK", "DISABLED");
-}
-
-void LoadNSSLibraries() {
-  // Some NSS libraries are linked dynamically so load them here.
-#if defined(USE_NSS_CERTS)
-  // Try to search for multiple directories to load the libraries.
-  std::vector<base::FilePath> paths;
-
-  // Use relative path to Search PATH for the library files.
-  paths.push_back(base::FilePath());
-
-  // For Debian derivatives NSS libraries are located here.
-  paths.push_back(base::FilePath("/usr/lib/nss"));
-
-  // Ubuntu 11.10 (Oneiric) and Debian Wheezy place the libraries here.
-#if defined(ARCH_CPU_X86_64)
-  paths.push_back(base::FilePath("/usr/lib/x86_64-linux-gnu/nss"));
-#elif defined(ARCH_CPU_X86)
-  paths.push_back(base::FilePath("/usr/lib/i386-linux-gnu/nss"));
-#elif defined(ARCH_CPU_ARMEL)
-#if defined(__ARM_PCS_VFP)
-  paths.push_back(base::FilePath("/usr/lib/arm-linux-gnueabihf/nss"));
-#else
-  paths.push_back(base::FilePath("/usr/lib/arm-linux-gnueabi/nss"));
-#endif  // defined(__ARM_PCS_VFP)
-#elif defined(ARCH_CPU_MIPSEL)
-  paths.push_back(base::FilePath("/usr/lib/mipsel-linux-gnu/nss"));
-#endif  // defined(ARCH_CPU_X86_64)
-
-  // A list of library files to load.
-  std::vector<std::string> libs;
-  libs.push_back("libsoftokn3.so");
-  libs.push_back("libfreebl3.so");
-
-  // For each combination of library file and path, check for existence and
-  // then load.
-  size_t loaded = 0;
-  for (size_t i = 0; i < libs.size(); ++i) {
-    for (size_t j = 0; j < paths.size(); ++j) {
-      base::FilePath path = paths[j].Append(libs[i]);
-      base::NativeLibrary lib = base::LoadNativeLibrary(path, NULL);
-      if (lib) {
-        ++loaded;
-        break;
-      }
-    }
-  }
-
-  if (loaded == libs.size()) {
-    VLOG(3) << "NSS libraries loaded.";
-  } else {
-    LOG(ERROR) << "Failed to load NSS libraries.";
-  }
-#endif  // defined(USE_NSS_CERTS)
-}
-
-#endif  // !defined(USE_OPENSSL)
 
 bool CheckNSSVersion(const char* version) {
   return !!NSS_VersionCheck(version);

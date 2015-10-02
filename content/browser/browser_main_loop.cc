@@ -162,6 +162,10 @@
 #include "ui/gfx/x/x11_types.h"
 #endif
 
+#if defined(USE_NSS_CERTS) || !defined(USE_OPENSSL)
+#include "crypto/nss_util.h"
+#endif
+
 // One of the linux specific headers defines this as a macro.
 #ifdef DestroyAll
 #undef DestroyAll

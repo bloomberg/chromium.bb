@@ -192,10 +192,6 @@ if (enable_nacl) {
       cflags = [ "-fPIE" ]
 
       ldflags = [ "-pie" ]
-
-      if (!use_openssl) {
-        deps += [ "//sandbox/linux:libc_urandom_override" ]
-      }
     }
 
     source_set("nacl_linux") {

@@ -2166,7 +2166,7 @@
         },
       },
       'conditions': [
-        ['chromeos==1 and use_openssl==1', {
+        ['chromeos==1', {
           'dependencies': [
             '../third_party/boringssl/boringssl.gyp:boringssl',
           ]
