@@ -615,20 +615,7 @@ bool ThreadState::shouldScheduleIdleGC()
 {
     if (gcState() != NoGCScheduled)
         return false;
-#if ENABLE(IDLE_GC)
     return judgeGCThreshold(1024 * 1024, 1.5);
-#else
-    return false;
-#endif
-}
-
-bool ThreadState::shouldSchedulePreciseGC()
-{
-#if ENABLE(IDLE_GC)
-    return false;
-#else
-    return judgeGCThreshold(1024 * 1024, 1.5);
-#endif
 }
 
 bool ThreadState::shouldScheduleV8FollowupGC()
@@ -746,10 +733,6 @@ void ThreadState::scheduleGCIfNeeded()
             Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
             return;
         }
-    }
-    if (shouldSchedulePreciseGC()) {
-        schedulePreciseGC();
-        return;
     }
     if (shouldScheduleIdleGC()) {
         scheduleIdleGC();
