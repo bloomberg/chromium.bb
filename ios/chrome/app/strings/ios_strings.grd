@@ -163,6 +163,15 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_LOCATION_USAGE_CANCEL" desc="Title for the alert button to cancel sending location for Omnibox queries [Length: 20em] [iOS only]">
         Not Now
       </message>
+
+      <!-- iOS Net-Export strings -->
+      <message name="IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_MESSAGE" desc="The message of the alert informing a user with no email accounts that he or she needs to configure an email account to send net-export data. [Length: 70em]">
+        To send net-export data, please configure your email account in the Settings app.
+      </message>
+      <message name="IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_TITLE" desc="The title of the alert informing a user with no email accounts that he or she needs to configure an email account to send net-export data. [Length: 20em]">
+        No Email Accounts
+      </message>
+
       <message name="IDS_IOS_VERSION_COPIED" desc="The message displayed when the version label is tapped (in About settings) [Length: 10em] [iOS only]">
         Copied
       </message>

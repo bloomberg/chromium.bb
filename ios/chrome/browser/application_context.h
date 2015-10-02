@@ -21,6 +21,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace net_log {
+class ChromeNetLog;
+}
+
 namespace policy {
 class BrowserPolicyConnector;
 }
@@ -58,8 +62,11 @@ class ApplicationContext {
   // Gets the policy connector, creating and starting it if necessary.
   virtual policy::BrowserPolicyConnector* GetBrowserPolicyConnector() = 0;
 
-  // Gets the RapporService. May returns null.
+  // Gets the RapporService. May return null.
   virtual rappor::RapporService* GetRapporService() = 0;
+
+  // Gets the ChromeNetLog.
+  virtual net_log::ChromeNetLog* GetNetLog() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.

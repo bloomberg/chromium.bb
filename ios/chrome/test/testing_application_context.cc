@@ -69,3 +69,7 @@ TestingApplicationContext::GetBrowserPolicyConnector() {
 rappor::RapporService* TestingApplicationContext::GetRapporService() {
   return nullptr;
 }
+
+net_log::ChromeNetLog* TestingApplicationContext::GetNetLog() {
+  return nullptr;
+}

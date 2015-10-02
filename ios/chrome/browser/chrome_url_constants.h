@@ -17,6 +17,7 @@ extern const char kChromeUINewTabURL[];
 
 // URL components for Chrome on iOS.
 extern const char kChromeUIExternalFileHost[];
+extern const char kChromeUINetExportHost[];
 extern const char kChromeUIOmahaHost[];
 extern const char kChromeUISyncInternalsHost[];
 

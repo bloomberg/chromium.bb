@@ -26,6 +26,7 @@ include_rules = [
   "+components/keyed_service/ios",
   "+components/leveldb_proto",
   "+components/metrics",
+  "+components/net_log",
   "+components/network_time",
   "+components/omnibox/browser",
   "+components/open_from_clipboard",

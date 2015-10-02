@@ -7,5 +7,6 @@
 const char kChromeUINewTabURL[] = "chrome://newtab/";
 
 const char kChromeUIExternalFileHost[] = "external-file";
+const char kChromeUINetExportHost[] = "net-export";
 const char kChromeUIOmahaHost[] = "omaha";
 const char kChromeUISyncInternalsHost[] = "sync-internals";

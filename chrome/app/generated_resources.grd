@@ -14215,16 +14215,6 @@ After you create a new supervised user, you can manage their settings at any tim
         </message>
       </if>
 
-      <!-- iOS Net-Export strings -->
-      <if expr="is_ios">
-        <message name="IDS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_MESSAGE" desc="The message of the alert informing a user with no email accounts that he or she needs to configure an email account to send net-export data. [Length: 70em]">
-          To send net-export data, please configure your email account in the Settings app.
-        </message>
-        <message name="IDS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_TITLE" desc="The title of the alert informing a user with no email accounts that he or she needs to configure an email account to send net-export data. [Length: 20em]">
-          No Email Accounts
-        </message>
-      </if>
-
       <!-- Pepper 3D and WebGL (client 3D APIs) infobar strings -->
       <message name="IDS_3D_APIS_BLOCKED_TEXT" desc="Infobar message when 3D graphics APIs are blocked because the graphics processor was reset recently. NOTE that 'rats' here is being used like 'darn'.">
         Rats! <ph name="API_NAME">$1<ex>WebGL</ex></ph> hit a snag.

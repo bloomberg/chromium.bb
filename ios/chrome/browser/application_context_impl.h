@@ -8,12 +8,17 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ios/chrome/browser/application_context.h"
 
+namespace base {
+class CommandLine;
+}
+
 class ApplicationContextImpl : public ApplicationContext {
  public:
-  ApplicationContextImpl();
+  ApplicationContextImpl(const base::CommandLine& command_line);
   ~ApplicationContextImpl() override;
 
   // Sets the locale used by the application.
@@ -28,8 +33,10 @@ class ApplicationContextImpl : public ApplicationContext {
   metrics::MetricsService* GetMetricsService() override;
   policy::BrowserPolicyConnector* GetBrowserPolicyConnector() override;
   rappor::RapporService* GetRapporService() override;
+  net_log::ChromeNetLog* GetNetLog() override;
 
   base::ThreadChecker thread_checker_;
+  scoped_ptr<net_log::ChromeNetLog> net_log_;
   std::string application_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationContextImpl);

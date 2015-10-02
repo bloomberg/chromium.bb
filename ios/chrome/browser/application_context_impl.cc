@@ -4,13 +4,23 @@
 
 #include "ios/chrome/browser/application_context_impl.h"
 
+#include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
+#include "components/net_log/chrome_net_log.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "net/log/net_log_capture_mode.h"
 
-ApplicationContextImpl::ApplicationContextImpl() {
+ApplicationContextImpl::ApplicationContextImpl(
+    const base::CommandLine& command_line) {
   DCHECK(!GetApplicationContext());
   SetApplicationContext(this);
+
+  net_log_.reset(new net_log::ChromeNetLog(
+      base::FilePath(), net::NetLogCaptureMode::Default(),
+      command_line.GetCommandLineString(), GetChannelString()));
 }
 
 ApplicationContextImpl::~ApplicationContextImpl() {
@@ -58,4 +68,8 @@ ApplicationContextImpl::GetBrowserPolicyConnector() {
 
 rappor::RapporService* ApplicationContextImpl::GetRapporService() {
   return ios::GetChromeBrowserProvider()->GetRapporService();
+}
+
+net_log::ChromeNetLog* ApplicationContextImpl::GetNetLog() {
+  return net_log_.get();
 }

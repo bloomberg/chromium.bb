@@ -32,6 +32,7 @@ class TestingApplicationContext : public ApplicationContext {
   metrics::MetricsService* GetMetricsService() override;
   policy::BrowserPolicyConnector* GetBrowserPolicyConnector() override;
   rappor::RapporService* GetRapporService() override;
+  net_log::ChromeNetLog* GetNetLog() override;
 
  private:
   base::ThreadChecker thread_checker_;
