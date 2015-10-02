@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -544,6 +545,41 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
       case webrtc::kEnumCounterIceCandidatePairTypeTcp:
         UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.CandidatePairType_TCP",
                                   counter, counter_max);
+        break;
+      default:
+        // The default clause is expected to reach when new enum types are
+        // added.
+        break;
+    }
+  }
+
+  void IncrementSparseEnumCounter(
+      webrtc::PeerConnectionEnumCounterType counter_type,
+      int counter) override {
+    switch (counter_type) {
+      case webrtc::kEnumCounterAudioSrtpCipher:
+        UMA_HISTOGRAM_SPARSE_SLOWLY(
+            "WebRTC.PeerConnection.SrtpCryptoSuite.Audio", counter);
+        break;
+      case webrtc::kEnumCounterAudioSslCipher:
+        UMA_HISTOGRAM_SPARSE_SLOWLY(
+            "WebRTC.PeerConnection.SslCipherSuite.Audio", counter);
+        break;
+      case webrtc::kEnumCounterVideoSrtpCipher:
+        UMA_HISTOGRAM_SPARSE_SLOWLY(
+            "WebRTC.PeerConnection.SrtpCryptoSuite.Video", counter);
+        break;
+      case webrtc::kEnumCounterVideoSslCipher:
+        UMA_HISTOGRAM_SPARSE_SLOWLY(
+            "WebRTC.PeerConnection.SslCipherSuite.Video", counter);
+        break;
+      case webrtc::kEnumCounterDataSrtpCipher:
+        UMA_HISTOGRAM_SPARSE_SLOWLY(
+            "WebRTC.PeerConnection.SrtpCryptoSuite.Data", counter);
+        break;
+      case webrtc::kEnumCounterDataSslCipher:
+        UMA_HISTOGRAM_SPARSE_SLOWLY("WebRTC.PeerConnection.SslCipherSuite.Data",
+                                    counter);
         break;
       default:
         // The default clause is expected to reach when new enum types are

@@ -407,8 +407,13 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   factory_options.disable_sctp_data_channels = false;
   factory_options.disable_encryption =
       cmd_line->HasSwitch(switches::kDisableWebRtcEncryption);
-  if (cmd_line->HasSwitch(switches::kEnableWebRtcDtls12))
+
+  std::string group_name =
+      base::FieldTrialList::FindFullName("WebRTC-PeerConnectionDTLS1.2");
+  if (StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE) ||
+      cmd_line->HasSwitch(switches::kEnableWebRtcDtls12)) {
     factory_options.ssl_max_version = rtc::SSL_PROTOCOL_DTLS_12;
+  }
   pc_factory_->SetOptions(factory_options);
 
   event->Signal();
