@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.provider.Browser;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
@@ -185,11 +186,14 @@ public class EnhancedBookmarkUtils {
             @Override
             public void onDismissNoAction(Object actionData) {
                 // This method will be called only if the snackbar is dismissed by timeout.
+                RecordUserAction.record(
+                        "OfflinePages.SaveStatusSnackbar.FreeUpSpaceButtonNotClicked");
                 bookmarkModel.destroy();
             }
 
             @Override
             public void onAction(Object actionData) {
+                RecordUserAction.record("OfflinePages.SaveStatusSnackbar.FreeUpSpaceButtonClicked");
                 OfflinePageStorageSpacePolicy policy =
                         new OfflinePageStorageSpacePolicy(bookmarkModel.getOfflinePageBridge());
                 if (policy.hasPagesToCleanUp()) {

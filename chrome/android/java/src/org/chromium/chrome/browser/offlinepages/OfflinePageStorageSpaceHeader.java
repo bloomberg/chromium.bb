@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 
 /**
@@ -24,6 +25,7 @@ public class OfflinePageStorageSpaceHeader {
     OfflinePageStorageSpacePolicy mOfflinePageStorageSpacePolicy;
     Context mContext;
     OfflinePageFreeUpSpaceCallback mCallback;
+    boolean mClicked = false;
 
     /**
      * @param offlinePageBridge An object to access offline page functionality.
@@ -35,6 +37,10 @@ public class OfflinePageStorageSpaceHeader {
         mOfflinePageStorageSpacePolicy = new OfflinePageStorageSpacePolicy(mOfflinePageBridge);
         mContext = context;
         mCallback = callback;
+    }
+
+    public void destroy() {
+        if (!mClicked) RecordUserAction.record("OfflinePages.FreeUpSpaceHeaderNotClicked");
     }
 
     /** @return Whether the header should be shown. */
@@ -57,6 +63,8 @@ public class OfflinePageStorageSpaceHeader {
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        mClicked = true;
+                        RecordUserAction.record("OfflinePages.FreeUpSpaceHeaderClicked");
                         OfflinePageFreeUpSpaceDialog dialog =
                                 OfflinePageFreeUpSpaceDialog.newInstance(
                                         mOfflinePageBridge, mCallback);

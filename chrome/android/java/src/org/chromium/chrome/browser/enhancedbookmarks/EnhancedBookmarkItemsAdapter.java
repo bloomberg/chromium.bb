@@ -295,6 +295,9 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         mDelegate.removeUIObserver(this);
         mDelegate.getModel().removeObserver(mBookmarkModelObserver);
         mPromoHeaderManager.destroy();
+        if (mOfflineStorageHeader != null) {
+            mOfflineStorageHeader.destroy();
+        }
     }
 
     @Override

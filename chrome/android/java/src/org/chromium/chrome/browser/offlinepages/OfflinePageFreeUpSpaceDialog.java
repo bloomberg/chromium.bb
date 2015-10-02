@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.format.Formatter;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.DeletePageCallback;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -81,6 +82,7 @@ public class OfflinePageFreeUpSpaceDialog
     @Override
     public void onClick(DialogInterface dialog, int id) {
         if (id == AlertDialog.BUTTON_NEGATIVE) {
+            RecordUserAction.record("OfflinePages.FreeUpSpaceDialogButtonNotClicked");
             dialog.cancel();
             if (mCallback != null) mCallback.onFreeUpSpaceCancelled();
             return;
@@ -89,6 +91,7 @@ public class OfflinePageFreeUpSpaceDialog
         mOfflinePageBridge.deletePages(getBookmarkIdsToDelete(), new DeletePageCallback() {
             @Override
             public void onDeletePageDone(int deletePageResult) {
+                RecordUserAction.record("OfflinePages.FreeUpSpaceDialogButtonClicked");
                 if (mCallback != null) mCallback.onFreeUpSpaceDone();
             }
         });

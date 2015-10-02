@@ -8674,6 +8674,39 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="OfflinePages.FreeUpSpaceDialogButtonClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when &quot;Delete&quot; button is clicked in the Free Up Space
+    dialog.
+  </description>
+</action>
+
+<action name="OfflinePages.FreeUpSpaceDialogButtonNotClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when the user leaves the Free Up Space dialog without clicking
+    &quot;Delete&quot; button.
+  </description>
+</action>
+
+<action name="OfflinePages.FreeUpSpaceHeaderClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when &quot;Free Up Space&quot; button is clicked in the storage
+    space promotion section of &quot;Saved Offline&quot; page.
+  </description>
+</action>
+
+<action name="OfflinePages.FreeUpSpaceHeaderNotClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when the user navigates away without clicking &quot;Free Up
+    Space&quot; button is clicked in the storage space promotion section of
+    &quot;Saved Offline&quot; page.
+  </description>
+</action>
+
 <action name="OfflinePages.ReloadButtonClicked">
   <owner>jianli@chromium.org</owner>
   <description>
@@ -8703,6 +8736,24 @@ should be able to be added at any place in this file.
   <description>
     Recorded when &quot;Save&quot; button is not clicked in the snackbar that is
     shown when bookmarked page without saved copy is opened.
+  </description>
+</action>
+
+<action name="OfflinePages.SaveStatusSnackbar.FreeUpSpaceButtonClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when &quot;Free Up Space&quot; button is clicked in the in the
+    snackbar that is shown when the page is/is not saved and storage is almost
+    full.
+  </description>
+</action>
+
+<action name="OfflinePages.SaveStatusSnackbar.FreeUpSpaceButtonNotClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when the user navigates away without clicking &quot;Free Up
+    Space&quot; button is clicked in the storage space promotion section of
+    &quot;Saved Offline&quot; page.
   </description>
 </action>
 
