@@ -195,7 +195,9 @@ public:
         PreciseGC,
         ConservativeGC,
         ForcedGC,
-        NumberOfGCReason
+        MemoryPressureGC,
+        PageNavigationGC,
+        NumberOfGCReason,
     };
     static const char* gcReasonString(GCReason);
     static void collectGarbage(ThreadState::StackState, ThreadState::GCType, GCReason);

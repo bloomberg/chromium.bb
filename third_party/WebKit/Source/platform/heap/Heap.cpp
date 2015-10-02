@@ -406,6 +406,8 @@ const char* Heap::gcReasonString(GCReason reason)
         STRINGIFY_REASON(PreciseGC);
         STRINGIFY_REASON(ConservativeGC);
         STRINGIFY_REASON(ForcedGC);
+        STRINGIFY_REASON(MemoryPressureGC);
+        STRINGIFY_REASON(PageNavigationGC);
 #undef STRINGIFY_REASON
     case NumberOfGCReason: ASSERT_NOT_REACHED();
     }

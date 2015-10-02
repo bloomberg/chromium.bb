@@ -660,7 +660,7 @@ void ThreadState::scheduleV8FollowupGCIfNeeded(V8GCType gcType)
     // TODO(haraken): Consider if we should trigger a memory pressure GC
     // for V8 minor GCs as well.
     if (gcType == V8MajorGC && shouldForceMemoryPressureGC()) {
-        Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
+        Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::MemoryPressureGC);
         return;
     }
     if (shouldScheduleV8FollowupGC()) {
@@ -689,7 +689,7 @@ void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
     ASSERT(!sweepForbidden());
 
     if (shouldForceMemoryPressureGC()) {
-        Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
+        Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::MemoryPressureGC);
         return;
     }
     if (shouldSchedulePageNavigationGC(estimatedRemovalRatio)) {
@@ -718,7 +718,7 @@ void ThreadState::scheduleGCIfNeeded()
     if (shouldForceMemoryPressureGC()) {
         completeSweep();
         if (shouldForceMemoryPressureGC()) {
-            Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
+            Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::MemoryPressureGC);
             return;
         }
     }
@@ -943,7 +943,7 @@ void ThreadState::runScheduledGC(StackState stackState)
         Heap::collectGarbage(NoHeapPointersOnStack, GCWithoutSweep, Heap::PreciseGC);
         break;
     case PageNavigationGCScheduled:
-        Heap::collectGarbage(NoHeapPointersOnStack, GCWithSweep, Heap::PreciseGC);
+        Heap::collectGarbage(NoHeapPointersOnStack, GCWithSweep, Heap::PageNavigationGC);
         break;
     case IdleGCScheduled:
         // Idle time GC will be scheduled by Blink Scheduler.
