@@ -264,7 +264,7 @@ class PerfTestsRunner(object):
         revisions = {}
         path = self._port.repository_path()
         scm = SCMDetector(self._host.filesystem, self._host.executive).detect_scm_system(path) or self._host.scm()
-        revision = scm.commit_position(path)
+        revision = str(scm.commit_position(path))
         revisions['chromium'] = {'revision': revision, 'timestamp': scm.timestamp_of_revision(path, revision)}
 
         meta_info = {

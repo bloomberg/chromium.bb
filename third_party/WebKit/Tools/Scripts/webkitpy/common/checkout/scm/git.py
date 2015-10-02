@@ -190,7 +190,7 @@ class Git(SCM):
         match = re.search("^\s*Cr-Commit-Position:.*@\{#(?P<commit_position>\d+)\}", git_log, re.MULTILINE)
         if not match:
             return ""
-        return str(match.group('commit_position'))
+        return int(match.group('commit_position'))
 
     def commit_position(self, path):
         git_log = self.most_recent_log_matching('Cr-Commit-Position:', path)

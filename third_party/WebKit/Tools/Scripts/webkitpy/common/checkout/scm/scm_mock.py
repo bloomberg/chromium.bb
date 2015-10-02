@@ -77,7 +77,7 @@ class MockSCM(object):
         return self._filesystem.join(self.checkout_root, *comps)
 
     def commit_position(self, path):
-        return '5678'
+        return 5678
 
     def commit_position_from_git_commit(self, git_commit):
         if git_commit == '6469e754a1':

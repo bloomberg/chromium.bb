@@ -337,7 +337,7 @@ def summarize_results(port_obj, expectations, initial_results,
         path = port_obj.repository_path()
         scm = port_obj.host.scm_for_path(path)
         if scm:
-            results['chromium_revision'] = scm.commit_position(path)
+            results['chromium_revision'] = str(scm.commit_position(path))
         else:
             _log.warn('Failed to determine chromium commit position for %s, '
                       'leaving "chromium_revision" key blank in full_results.json.'
