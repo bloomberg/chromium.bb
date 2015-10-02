@@ -1488,29 +1488,16 @@ wl_display_dispatch_queue(struct wl_display *display,
 	struct pollfd pfd[2];
 	int ret;
 
-	pthread_mutex_lock(&display->mutex);
+	if (wl_display_prepare_read_queue(display, queue) == -1)
+		return wl_display_dispatch_queue_pending(display, queue);
 
-	ret = dispatch_queue(display, queue);
-	if (ret == -1)
-		goto err_unlock;
-	if (ret > 0) {
-		pthread_mutex_unlock(&display->mutex);
-		return ret;
-	}
-
-       /* We ignore EPIPE here, so that we try to read events before
-        * returning an error.  When the compositor sends an error it
-        * will close the socket, and if we bail out here we don't get
-        * a chance to process the error. */
-	ret = wl_connection_flush(display->connection);
+	/* Don't stop if flushing hits an EPIPE; continue so we can read any
+	 * protocol error that may have triggered it. */
+	ret = wl_display_flush(display);
 	if (ret < 0 && errno != EAGAIN && errno != EPIPE) {
-		display_fatal_error(display, errno);
-		goto err_unlock;
+		wl_display_cancel_read(display);
+		return -1;
 	}
-
-	display->reader_count++;
-
-	pthread_mutex_unlock(&display->mutex);
 
 	pfd[0].fd = display->fd;
 	pfd[0].events = POLLIN;
@@ -1523,22 +1510,10 @@ wl_display_dispatch_queue(struct wl_display *display,
 		return -1;
 	}
 
-	pthread_mutex_lock(&display->mutex);
+	if (wl_display_read_events(display) == -1)
+		return -1;
 
-	if (read_events(display) == -1)
-		goto err_unlock;
-
-	ret = dispatch_queue(display, queue);
-	if (ret == -1)
-		goto err_unlock;
-
-	pthread_mutex_unlock(&display->mutex);
-
-	return ret;
-
- err_unlock:
-	pthread_mutex_unlock(&display->mutex);
-	return -1;
+	return wl_display_dispatch_queue_pending(display, queue);
 }
 
 /** Dispatch pending events in an event queue
