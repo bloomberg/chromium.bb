@@ -352,6 +352,8 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
       return ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED;
     case blink::WebAXEventAutocorrectionOccured:
       return ui::AX_EVENT_AUTOCORRECTION_OCCURED;
+    case blink::WebAXEventBlur:
+      return ui::AX_EVENT_BLUR;
     case blink::WebAXEventCheckedStateChanged:
       return ui::AX_EVENT_CHECKED_STATE_CHANGED;
     case blink::WebAXEventChildrenChanged:

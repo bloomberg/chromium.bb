@@ -483,19 +483,24 @@ Background.prototype = {
 
     var node = evt.target;
 
+
+    // Discard focus events on embeddedObject nodes.
+    if (node.role == RoleType.embeddedObject)
+      return;
+
     // It almost never makes sense to place focus directly on a rootWebArea.
     if (node.role == RoleType.rootWebArea) {
-      // Try to find a focusable descendant.
-      node = AutomationUtil.findNodePost(node,
-                                         Dir.FORWARD,
-                                         AutomationPredicate.focused) || node;
+      // Discard focus events for root web areas when focus was previously
+      // placed on a descendant.
+      if (this.currentRange_.start.node.root == node)
+        return;
 
-      // Fall back to the first leaf node in the document.
-      if (node.role == RoleType.rootWebArea) {
-        node = AutomationUtil.findNodePost(node,
-                                           Dir.FORWARD,
-                                           AutomationPredicate.leaf);
-      }
+      // Discard focused root nodes without focused state set.
+      if (!node.state.focused)
+        return;
+
+      // Try to find a focusable descendant.
+      node = node.find({state: {focused: true}}) || node;
     }
 
     if (evt.target.role == RoleType.textField)
@@ -556,6 +561,9 @@ Background.prototype = {
       return;
 
     if (!evt.target.state.focused)
+      return;
+
+    if (evt.target.role != RoleType.textField)
       return;
 
     if (!this.currentRange_) {
