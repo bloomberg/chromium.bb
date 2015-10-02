@@ -21,6 +21,7 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/label_button.h"
@@ -138,9 +139,10 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   // See http://crbug.com/462983.
   shadow_type = views::BubbleBorder::SMALL_SHADOW;
 #endif
-  scoped_ptr<views::BubbleBorder> bubble_border(
-      new views::BubbleBorder(views::BubbleBorder::NONE,
-                              shadow_type, SK_ColorWHITE));
+  ui::NativeTheme* theme = ui::NativeTheme::instance();
+  scoped_ptr<views::BubbleBorder> bubble_border(new views::BubbleBorder(
+      views::BubbleBorder::NONE, shadow_type,
+      theme->GetSystemColor(ui::NativeTheme::kColorId_BubbleBackground)));
   set_background(new views::BubbleBackground(bubble_border.get()));
   SetBorder(bubble_border.Pass());
   SetFocusable(false);
