@@ -27,6 +27,10 @@ group("tests") {
     "//mojo:tests",
   ]
 
+  data_deps = [
+    "//tools/perf/clear_system_cache",  # For startup.cold.* telemetry testing.
+  ]
+
   if (use_x11) {
     deps += [ "//tools/xdisplaycheck" ]
   }
