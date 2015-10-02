@@ -15,6 +15,7 @@
 #include <string.h>
 #include <sys/mount.h>
 #include <sys/param.h>
+#include <unistd.h>
 
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
@@ -38,6 +39,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -648,9 +650,25 @@ void EjectAndTrashDiskImage(const std::string& dmg_bsd_device_name) {
                                                       CFRunLoopGetCurrent(),
                                                       kCFRunLoopCommonModes);
 
-  if (!SynchronousDADiskUnmount(disk, kDADiskUnmountOptionWhole)) {
-    LOG(ERROR) << "SynchronousDADiskUnmount";
-    return;
+  // Stop talking to Crashpad. This relauncher process inherited the
+  // crashpad_handler of its parent, which resides on the disk image. As long as
+  // it's running, the filesystem that contains it can't be unmounted. Since the
+  // relauncher is expected to be the only thing that's talking to that Crashpad
+  // instance, severing ties here should cause it to exit, provided it's not
+  // busy doing anything else (like uploading a crash report).
+  //
+  // This means that crash coverage is lost from this point on, which is sad.
+  crashpad::CrashpadClient::UseSystemDefaultHandler();
+
+  // Retry the unmount in a loop to give crashpad_handler a chance to exit.
+  int tries = 15;
+  while (!SynchronousDADiskUnmount(disk, kDADiskUnmountOptionWhole)) {
+    if (--tries > 0) {
+      sleep(1);
+    } else {
+      LOG(ERROR) << "SynchronousDADiskUnmount";
+      return;
+    }
   }
 
   if (!SynchronousDADiskEject(disk, kDADiskEjectOptionDefault)) {
