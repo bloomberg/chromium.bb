@@ -793,10 +793,17 @@ void HTMLTreeBuilder::processStartTagForInBody(AtomicHTMLToken* token)
         return;
     }
     if (token->name() == inputTag) {
+        // Per spec https://html.spec.whatwg.org/#parsing-main-inbody,
+        // section "A start tag whose tag name is "input""
+
         Attribute* typeAttribute = token->getAttributeItem(typeAttr);
+        bool disableFrameset = !typeAttribute || !equalIgnoringCase(typeAttribute->value(), "hidden");
+
         m_tree.reconstructTheActiveFormattingElements();
+        // TODO(kouhei): Make it obvious that insertSelfClosingHTMLElement may mutate the token.
         m_tree.insertSelfClosingHTMLElement(token);
-        if (!typeAttribute || !equalIgnoringCase(typeAttribute->value(), "hidden"))
+
+        if (disableFrameset)
             m_framesetOk = false;
         return;
     }

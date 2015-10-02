@@ -207,6 +207,7 @@ private:
         RefPtrWillBeMember<HTMLStackItem> m_contextElementStackItem;
     };
 
+    // https://html.spec.whatwg.org/#frameset-ok-flag
     bool m_framesetOk;
 #if ENABLE(ASSERT)
     bool m_isAttached;
