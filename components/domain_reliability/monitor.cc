@@ -9,7 +9,6 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
-#include "base/time/time.h"
 #include "components/domain_reliability/baked_in_configs.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -149,18 +148,12 @@ void DomainReliabilityMonitor::AddBakedInConfigs() {
   DCHECK(OnNetworkThread());
   DCHECK(moved_to_network_thread_);
 
-  base::Time now = base::Time::Now();
   for (size_t i = 0; kBakedInJsonConfigs[i]; ++i) {
     base::StringPiece json(kBakedInJsonConfigs[i]);
     scoped_ptr<const DomainReliabilityConfig> config =
         DomainReliabilityConfig::FromJSON(json);
-    if (!config) {
+    if (!config)
       continue;
-    } else if (config->IsExpired(now)) {
-      LOG(WARNING) << "Baked-in Domain Reliability config for "
-                   << config->domain << " is expired.";
-      continue;
-    }
     context_manager_.AddContextForConfig(config.Pass());
   }
 }
