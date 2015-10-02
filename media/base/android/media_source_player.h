@@ -23,6 +23,7 @@
 #include "media/base/android/media_decoder_job.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_android.h"
+#include "media/base/android/media_statistics.h"
 #include "media/base/media_export.h"
 #include "media/base/time_delta_interpolator.h"
 
@@ -267,6 +268,10 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
 
   // Whether audio or video decoder is in the process of prerolling.
   bool prerolling_;
+
+  // Gathers and reports playback quality statistics to UMA.
+  // Use pointer to enable replacement of this object for tests.
+  scoped_ptr<MediaStatistics> media_stat_;
 
   // Weak pointer passed to media decoder jobs for callbacks.
   base::WeakPtr<MediaSourcePlayer> weak_this_;

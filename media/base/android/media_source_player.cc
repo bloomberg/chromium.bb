@@ -47,19 +47,24 @@ MediaSourcePlayer::MediaSourcePlayer(
       is_waiting_for_video_decoder_(false),
       prerolling_(true),
       weak_factory_(this) {
+  media_stat_.reset(new MediaStatistics());
+
   audio_decoder_job_.reset(new AudioDecoderJob(
       base::Bind(&DemuxerAndroid::RequestDemuxerData,
                  base::Unretained(demuxer_.get()),
                  DemuxerStream::AUDIO),
       base::Bind(&MediaSourcePlayer::OnDemuxerConfigsChanged,
-                 weak_factory_.GetWeakPtr())));
+                 weak_factory_.GetWeakPtr()),
+      &media_stat_->audio_frame_stats()));
   video_decoder_job_.reset(new VideoDecoderJob(
       base::Bind(&DemuxerAndroid::RequestDemuxerData,
                  base::Unretained(demuxer_.get()),
                  DemuxerStream::VIDEO),
       base::Bind(request_media_resources_cb_, player_id),
       base::Bind(&MediaSourcePlayer::OnDemuxerConfigsChanged,
-                 weak_factory_.GetWeakPtr())));
+                 weak_factory_.GetWeakPtr()),
+      &media_stat_->video_frame_stats()));
+
   demuxer_->Initialize(this);
   interpolator_.SetUpperBound(base::TimeDelta());
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -467,6 +472,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
     DVLOG(1) << __FUNCTION__ << " : decode error";
     Release();
     manager()->OnError(player_id(), MEDIA_ERROR_DECODE);
+    media_stat_->StopAndReport(GetCurrentTime());
     return;
   }
 
@@ -477,6 +483,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
   // any other pending events only after handling EOS detection.
   if (IsEventPending(SEEK_EVENT_PENDING)) {
     ProcessPendingEvents();
+    media_stat_->StopAndReport(GetCurrentTime());
     return;
   }
 
@@ -497,13 +504,16 @@ void MediaSourcePlayer::MediaDecoderCallback(
     return;
   }
 
-  if (status == MEDIA_CODEC_OUTPUT_END_OF_STREAM)
+  if (status == MEDIA_CODEC_OUTPUT_END_OF_STREAM) {
+    media_stat_->StopAndReport(GetCurrentTime());
     return;
+  }
 
   if (!playing_) {
     if (is_clock_manager)
       interpolator_.StopInterpolating();
 
+    media_stat_->StopAndReport(GetCurrentTime());
     return;
   }
 
@@ -514,6 +524,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
     } else {
       is_waiting_for_key_ = true;
       manager()->OnWaitingForDecryptionKey(player_id());
+      media_stat_->StopAndReport(GetCurrentTime());
     }
     return;
   }
@@ -531,8 +542,10 @@ void MediaSourcePlayer::MediaDecoderCallback(
   // If the status is MEDIA_CODEC_ABORT, stop decoding new data. The player is
   // in the middle of a seek or stop event and needs to wait for the IPCs to
   // come.
-  if (status == MEDIA_CODEC_ABORT)
+  if (status == MEDIA_CODEC_ABORT) {
+    media_stat_->StopAndReport(GetCurrentTime());
     return;
+  }
 
   if (prerolling_ && IsPrerollFinished(is_audio)) {
     if (IsPrerollFinished(!is_audio)) {
@@ -654,6 +667,8 @@ bool MediaSourcePlayer::VideoFinished() {
 void MediaSourcePlayer::OnDecoderStarved() {
   DVLOG(1) << __FUNCTION__;
 
+  media_stat_->AddStarvation();
+
   SetPendingEvent(PREFETCH_REQUEST_EVENT_PENDING);
   ProcessPendingEvents();
 }
@@ -719,6 +734,8 @@ void MediaSourcePlayer::OnPrefetchDone() {
   start_presentation_timestamp_ = GetCurrentTime();
   if (!interpolator_.interpolating())
     interpolator_.StartInterpolating();
+
+  media_stat_->Start(start_presentation_timestamp_);
 
   if (!AudioFinished())
     DecodeMoreAudio();

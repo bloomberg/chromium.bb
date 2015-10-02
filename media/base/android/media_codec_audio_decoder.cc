@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/base/android/media_statistics.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/demuxer_stream.h"
 
@@ -21,6 +22,7 @@ namespace media {
 
 MediaCodecAudioDecoder::MediaCodecAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    FrameStatistics* frame_statistics,
     const base::Closure& request_data_cb,
     const base::Closure& starvation_cb,
     const base::Closure& decoder_drained_cb,
@@ -28,14 +30,15 @@ MediaCodecAudioDecoder::MediaCodecAudioDecoder(
     const base::Closure& waiting_for_decryption_key_cb,
     const base::Closure& error_cb,
     const SetTimeCallback& update_current_time_cb)
-    : MediaCodecDecoder(media_task_runner,
+    : MediaCodecDecoder("AudioDecoder",
+                        media_task_runner,
+                        frame_statistics,
                         request_data_cb,
                         starvation_cb,
                         decoder_drained_cb,
                         stop_done_cb,
                         waiting_for_decryption_key_cb,
-                        error_cb,
-                        "AudioDecoder"),
+                        error_cb),
       volume_(-1.0),
       bytes_per_frame_(0),
       output_sampling_rate_(0),
@@ -207,6 +210,10 @@ void MediaCodecAudioDecoder::Render(int buffer_index,
     int64 head_position =
         audio_codec->PlayOutputBuffer(buffer_index, size, offset, postpone);
 
+    base::TimeTicks current_time = base::TimeTicks::Now();
+
+    frame_statistics_->IncrementFrameCount();
+
     // Reset the base timestamp if we have not started playing.
     // SetBaseTimestamp() must be called before AddFrames() since it resets the
     // internal frame count.
@@ -239,6 +246,16 @@ void MediaCodecAudioDecoder::Render(int buffer_index,
 
       DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
                << " will play: [" << now_playing << "," << last_buffered << "]";
+
+      // Statistics
+      if (!next_frame_time_limit_.is_null() &&
+          next_frame_time_limit_ < current_time) {
+        DVLOG(2) << class_name() << "::" << __FUNCTION__ << " LATE FRAME delay:"
+                 << current_time - next_frame_time_limit_;
+        frame_statistics_->IncrementLateFrameCount();
+      }
+
+      next_frame_time_limit_ = current_time + (last_buffered - now_playing);
 
       media_task_runner_->PostTask(
           FROM_HERE, base::Bind(update_current_time_cb_, now_playing,

@@ -1865,6 +1865,8 @@
             'base/android/media_resource_getter.h',
             'base/android/media_source_player.cc',
             'base/android/media_source_player.h',
+            'base/android/media_statistics.cc',
+            'base/android/media_statistics.h',
             'base/android/media_task_runner.cc',
             'base/android/media_task_runner.h',
             'base/android/media_url_interceptor.h',

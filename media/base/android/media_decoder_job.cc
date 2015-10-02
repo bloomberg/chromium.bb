@@ -10,6 +10,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "media/base/android/media_statistics.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/timestamp_constants.h"
 
@@ -23,8 +24,10 @@ static const int kMediaCodecTimeoutInMilliseconds = 250;
 MediaDecoderJob::MediaDecoderJob(
     const scoped_refptr<base::SingleThreadTaskRunner>& decoder_task_runner,
     const base::Closure& request_data_cb,
-    const base::Closure& config_changed_cb)
+    const base::Closure& config_changed_cb,
+    FrameStatistics* frame_statistics)
     : need_to_reconfig_decoder_job_(false),
+      frame_statistics_(frame_statistics),
       ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_task_runner_(decoder_task_runner),
       needs_flush_(false),
@@ -485,9 +488,19 @@ void MediaDecoderJob::DecodeInternal(
       (status != MEDIA_CODEC_OUTPUT_END_OF_STREAM || size != 0u);
   base::TimeDelta time_to_render;
   DCHECK(!start_time_ticks.is_null());
-  if (render_output && ComputeTimeToRender()) {
-    time_to_render = presentation_timestamp - (base::TimeTicks::Now() -
-        start_time_ticks + start_presentation_timestamp);
+  if (render_output) {
+    frame_statistics_->IncrementFrameCount();
+
+    if (ComputeTimeToRender()) {
+      time_to_render =
+          presentation_timestamp - (base::TimeTicks::Now() - start_time_ticks +
+                                    start_presentation_timestamp);
+
+      // ComputeTimeToRender() returns true for video streams only, this is a
+      // video stream.
+      if (time_to_render < base::TimeDelta())
+        frame_statistics_->IncrementLateFrameCount();
+    }
   }
 
   if (time_to_render > base::TimeDelta()) {

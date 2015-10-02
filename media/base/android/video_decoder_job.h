@@ -21,10 +21,10 @@ class VideoDecoderJob : public MediaDecoderJob {
   // |request_resources_cb| - Callback used to request resources.
   // |on_demuxer_config_changed_cb| - Callback used to inform the caller that
   // demuxer config has changed.
-  VideoDecoderJob(
-      const base::Closure& request_data_cb,
-      const base::Closure& request_resources_cb,
-      const base::Closure& on_demuxer_config_changed_cb);
+  VideoDecoderJob(const base::Closure& request_data_cb,
+                  const base::Closure& request_resources_cb,
+                  const base::Closure& on_demuxer_config_changed_cb,
+                  FrameStatistics* frame_statistics);
   ~VideoDecoderJob() override;
 
   // Passes a java surface object to the codec. Returns true if the surface

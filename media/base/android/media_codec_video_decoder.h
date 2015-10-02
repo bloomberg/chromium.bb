@@ -28,6 +28,7 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
   //                   decoder can use them.
   MediaCodecVideoDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_runner,
+      FrameStatistics* frame_statistics,
       const base::Closure& request_data_cb,
       const base::Closure& starvation_cb,
       const base::Closure& drained_requested_cb,

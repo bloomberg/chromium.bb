@@ -99,6 +99,8 @@ MediaCodecPlayer::~MediaCodecPlayer()
   if (audio_decoder_)
     audio_decoder_->ReleaseDecoderResources();
 
+  media_stat_->StopAndReport(GetInterpolatedTime());
+
   if (drm_bridge_) {
     DCHECK(cdm_registration_id_);
     drm_bridge_->UnregisterPlayer(cdm_registration_id_);
@@ -807,6 +809,8 @@ void MediaCodecPlayer::OnStopDone(DemuxerStream::Type type) {
       return;
   }
 
+  media_stat_->StopAndReport(GetInterpolatedTime());
+
   // DetachListener to UI thread
   ui_task_runner_->PostTask(FROM_HERE, detach_listener_cb_);
 
@@ -851,6 +855,8 @@ void MediaCodecPlayer::OnStarvation(DemuxerStream::Type type) {
   SetState(kStateStopping);
   RequestToStopDecoders();
   SetPendingStart(true);
+
+  media_stat_->AddStarvation();
 }
 
 void MediaCodecPlayer::OnTimeIntervalUpdate(DemuxerStream::Type type,
@@ -1246,6 +1252,10 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::StartDecoders() {
 
   DVLOG(1) << __FUNCTION__ << " current_time:" << current_time;
 
+  // At this point decoder threads are either not running at all or their
+  // message pumps are in the idle state after the preroll is done.
+  media_stat_->Start(current_time);
+
   if (!AudioFinished()) {
     if (!audio_decoder_->Start(current_time))
       return kStartFailed;
@@ -1268,6 +1278,8 @@ void MediaCodecPlayer::StopDecoders() {
 
   video_decoder_->SyncStop();
   audio_decoder_->SyncStop();
+
+  media_stat_->StopAndReport(GetInterpolatedTime());
 }
 
 void MediaCodecPlayer::RequestToStopDecoders() {
@@ -1325,6 +1337,8 @@ void MediaCodecPlayer::ReleaseDecoderResources() {
   // At this point decoder threads should not be running
   if (interpolator_.interpolating())
     interpolator_.StopInterpolating();
+
+  media_stat_->StopAndReport(GetInterpolatedTime());
 }
 
 void MediaCodecPlayer::CreateDecoders() {
@@ -1333,9 +1347,12 @@ void MediaCodecPlayer::CreateDecoders() {
 
   internal_error_cb_ = base::Bind(&MediaCodecPlayer::OnError, media_weak_this_);
 
+  media_stat_.reset(new MediaStatistics());
+
   audio_decoder_.reset(new MediaCodecAudioDecoder(
-      GetMediaTaskRunner(), base::Bind(&MediaCodecPlayer::RequestDemuxerData,
-                                       media_weak_this_, DemuxerStream::AUDIO),
+      GetMediaTaskRunner(), &media_stat_->audio_frame_stats(),
+      base::Bind(&MediaCodecPlayer::RequestDemuxerData, media_weak_this_,
+                 DemuxerStream::AUDIO),
       base::Bind(&MediaCodecPlayer::OnStarvation, media_weak_this_,
                  DemuxerStream::AUDIO),
       base::Bind(&MediaCodecPlayer::OnDecoderDrained, media_weak_this_,
@@ -1349,8 +1366,9 @@ void MediaCodecPlayer::CreateDecoders() {
                  DemuxerStream::AUDIO)));
 
   video_decoder_.reset(new MediaCodecVideoDecoder(
-      GetMediaTaskRunner(), base::Bind(&MediaCodecPlayer::RequestDemuxerData,
-                                       media_weak_this_, DemuxerStream::VIDEO),
+      GetMediaTaskRunner(), &media_stat_->video_frame_stats(),
+      base::Bind(&MediaCodecPlayer::RequestDemuxerData, media_weak_this_,
+                 DemuxerStream::VIDEO),
       base::Bind(&MediaCodecPlayer::OnStarvation, media_weak_this_,
                  DemuxerStream::VIDEO),
       base::Bind(&MediaCodecPlayer::OnDecoderDrained, media_weak_this_,

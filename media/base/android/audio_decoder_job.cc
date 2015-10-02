@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/base/android/media_statistics.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/timestamp_constants.h"
 
@@ -35,10 +36,12 @@ base::LazyInstance<AudioDecoderThread>::Leaky
 
 AudioDecoderJob::AudioDecoderJob(
     const base::Closure& request_data_cb,
-    const base::Closure& on_demuxer_config_changed_cb)
+    const base::Closure& on_demuxer_config_changed_cb,
+    FrameStatistics* frame_statistics)
     : MediaDecoderJob(g_audio_decoder_thread.Pointer()->task_runner(),
                       request_data_cb,
-                      on_demuxer_config_changed_cb),
+                      on_demuxer_config_changed_cb,
+                      frame_statistics),
       audio_codec_(kUnknownAudioCodec),
       num_channels_(0),
       config_sampling_rate_(0),
@@ -106,14 +109,29 @@ void AudioDecoderJob::ReleaseOutputBuffer(
     int64 head_position = (static_cast<AudioCodecBridge*>(
         media_codec_bridge_.get()))->PlayOutputBuffer(
             output_buffer_index, size, offset);
+
+    base::TimeTicks current_time = base::TimeTicks::Now();
+
     size_t new_frames_count = size / bytes_per_frame_;
     frame_count_ += new_frames_count;
     audio_timestamp_helper_->AddFrames(new_frames_count);
     int64 frames_to_play = frame_count_ - head_position;
     DCHECK_GE(frames_to_play, 0);
+
+    const base::TimeDelta last_buffered =
+        audio_timestamp_helper_->GetTimestamp();
+
     current_presentation_timestamp =
-        audio_timestamp_helper_->GetTimestamp() -
+        last_buffered -
         audio_timestamp_helper_->GetFrameDuration(frames_to_play);
+
+    if (!next_frame_time_limit_.is_null() &&
+        next_frame_time_limit_ < current_time) {
+      frame_statistics_->IncrementLateFrameCount();
+    }
+
+    next_frame_time_limit_ =
+        current_time + (last_buffered - current_presentation_timestamp);
   } else {
     current_presentation_timestamp = kNoTimestamp();
   }

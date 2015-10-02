@@ -52,6 +52,8 @@ source_set("android") {
     "media_resource_getter.h",
     "media_source_player.cc",
     "media_source_player.h",
+    "media_statistics.cc",
+    "media_statistics.h",
     "media_task_runner.cc",
     "media_task_runner.h",
     "media_url_interceptor.h",

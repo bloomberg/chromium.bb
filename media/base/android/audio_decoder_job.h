@@ -24,7 +24,8 @@ class AudioDecoderJob : public MediaDecoderJob {
   // |on_demuxer_config_changed_cb| - Callback used to inform the caller that
   // demuxer config has changed.
   AudioDecoderJob(const base::Closure& request_data_cb,
-                  const base::Closure& on_demuxer_config_changed_cb);
+                  const base::Closure& on_demuxer_config_changed_cb,
+                  FrameStatistics* frame_statistics);
   ~AudioDecoderJob() override;
 
   // MediaDecoderJob implementation.
@@ -78,6 +79,9 @@ class AudioDecoderJob : public MediaDecoderJob {
 
   // Object to calculate the current audio timestamp for A/V sync.
   scoped_ptr<AudioTimestampHelper> audio_timestamp_helper_;
+
+  // The time limit for the next frame to avoid underrun.
+  base::TimeTicks next_frame_time_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDecoderJob);
 };

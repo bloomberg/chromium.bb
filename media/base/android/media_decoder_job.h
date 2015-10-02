@@ -18,6 +18,7 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
+struct FrameStatistics;
 class MediaDrmBridge;
 
 // Class for managing all the decoding tasks. Each decoding task will be posted
@@ -117,7 +118,8 @@ class MediaDecoderJob {
   MediaDecoderJob(
       const scoped_refptr<base::SingleThreadTaskRunner>& decoder_task_runner,
       const base::Closure& request_data_cb,
-      const base::Closure& config_changed_cb);
+      const base::Closure& config_changed_cb,
+      FrameStatistics* frame_statistics);
 
   // Release the output buffer at index |output_buffer_index| and render it if
   // |render_output| is true. Upon completion, |callback| will be called.
@@ -153,6 +155,8 @@ class MediaDecoderJob {
   bool need_to_reconfig_decoder_job_;
 
   scoped_ptr<MediaCodecBridge> media_codec_bridge_;
+
+  FrameStatistics* frame_statistics_;
 
  private:
   friend class MediaSourcePlayerTest;

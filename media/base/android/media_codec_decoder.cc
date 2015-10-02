@@ -32,16 +32,18 @@ const int kOutputBufferTimeout = 20;
 }
 
 MediaCodecDecoder::MediaCodecDecoder(
+    const char* decoder_thread_name,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    FrameStatistics* frame_statistics,
     const base::Closure& external_request_data_cb,
     const base::Closure& starvation_cb,
     const base::Closure& decoder_drained_cb,
     const base::Closure& stop_done_cb,
     const base::Closure& waiting_for_decryption_key_cb,
-    const base::Closure& error_cb,
-    const char* decoder_thread_name)
-    : media_task_runner_(media_task_runner),
-      decoder_thread_(decoder_thread_name),
+    const base::Closure& error_cb)
+    : decoder_thread_(decoder_thread_name),
+      media_task_runner_(media_task_runner),
+      frame_statistics_(frame_statistics),
       needs_reconfigure_(false),
       drain_decoder_(false),
       always_reconfigure_for_tests_(false),

@@ -13,6 +13,7 @@
 #include "media/base/android/demuxer_android.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_android.h"
+#include "media/base/android/media_statistics.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/time_delta_interpolator.h"
@@ -408,6 +409,10 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   // The flag is set after the new encryption key is added to MediaDrm. Cleared
   // on starting the playback.
   bool key_is_added_;
+
+  // Gathers and reports playback quality statistics to UMA.
+  // Use pointer to enable replacement of this object for tests.
+  scoped_ptr<MediaStatistics> media_stat_;
 
   base::WeakPtr<MediaCodecPlayer> media_weak_this_;
   // NOTE: Weak pointers must be invalidated before all other member variables.

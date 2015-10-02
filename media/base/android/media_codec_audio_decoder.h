@@ -19,6 +19,7 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
   //                         Called for each rendered frame.
   MediaCodecAudioDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_runner,
+      FrameStatistics* frame_statistics,
       const base::Closure& request_data_cb,
       const base::Closure& starvation_cb,
       const base::Closure& decoder_drained_cb,
@@ -86,6 +87,9 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
 
   // Reports current playback time to the callee.
   SetTimeCallback update_current_time_cb_;
+
+  // The time limit for the next frame to avoid underrun.
+  base::TimeTicks next_frame_time_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecAudioDecoder);
 };

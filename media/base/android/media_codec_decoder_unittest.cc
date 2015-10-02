@@ -9,6 +9,7 @@
 #include "media/base/android/media_codec_audio_decoder.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_codec_video_decoder.h"
+#include "media/base/android/media_statistics.h"
 #include "media/base/android/test_data_factory.h"
 #include "media/base/android/test_statistics.h"
 #include "media/base/timestamp_constants.h"
@@ -227,6 +228,7 @@ class MediaCodecDecoderTest : public testing::Test {
   base::TimeDelta stop_request_time_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  FrameStatistics frame_statistics_;
   DataAvailableCallback data_available_cb_;
   scoped_refptr<gfx::SurfaceTexture> surface_texture_;
 
@@ -270,8 +272,9 @@ bool MediaCodecDecoderTest::WaitForCondition(const Predicate& condition,
 
 void MediaCodecDecoderTest::CreateAudioDecoder() {
   decoder_ = scoped_ptr<MediaCodecDecoder>(new MediaCodecAudioDecoder(
-      task_runner_, base::Bind(&MediaCodecDecoderTest::OnDataRequested,
-                               base::Unretained(this)),
+      task_runner_, &frame_statistics_,
+      base::Bind(&MediaCodecDecoderTest::OnDataRequested,
+                 base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnStarvation, base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnDecoderDrained,
                  base::Unretained(this)),
@@ -287,8 +290,9 @@ void MediaCodecDecoderTest::CreateAudioDecoder() {
 
 void MediaCodecDecoderTest::CreateVideoDecoder() {
   decoder_ = scoped_ptr<MediaCodecDecoder>(new MediaCodecVideoDecoder(
-      task_runner_, base::Bind(&MediaCodecDecoderTest::OnDataRequested,
-                               base::Unretained(this)),
+      task_runner_, &frame_statistics_,
+      base::Bind(&MediaCodecDecoderTest::OnDataRequested,
+                 base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnStarvation, base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnDecoderDrained,
                  base::Unretained(this)),

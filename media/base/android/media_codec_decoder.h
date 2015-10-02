@@ -19,6 +19,7 @@
 
 namespace media {
 
+struct FrameStatistics;
 class MediaCodecBridge;
 
 // The decoder for MediaCodecPlayer.
@@ -137,10 +138,15 @@ class MediaCodecDecoder {
 
   // MediaCodecDecoder constructor.
   // Parameters:
+  //   decoder_thread_name:
+  //     The thread name to be passed to decoder thread constructor.
   //   media_task_runner:
   //     A task runner for the controlling thread. All public methods should be
   //     called on this thread, and callbacks are delivered on this thread.
   //     The MediaCodecPlayer uses a dedicated (Media) thread for this.
+  //   frame_statistics:
+  //     A pointer to FrameStatistics object which gathers playback quality
+  //     related data.
   //   external_request_data_cb:
   //     Called periodically as the amount of internally stored data decreases.
   //     The receiver should call OnDemuxerDataAvailable() with more data.
@@ -157,17 +163,17 @@ class MediaCodecDecoder {
   //   error_cb:
   //     Called when a MediaCodec error occurred. If this happens, a player has
   //     to either call ReleaseDecoderResources() or destroy the decoder object.
-  //   decoder_thread_name:
-  //     The thread name to be passed to decoder thread constructor.
   MediaCodecDecoder(
+      const char* decoder_thread_name,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      FrameStatistics* frame_statistics,
       const base::Closure& external_request_data_cb,
       const base::Closure& starvation_cb,
       const base::Closure& decoder_drained_cb,
       const base::Closure& stop_done_cb,
       const base::Closure& waiting_for_decryption_key_cb,
-      const base::Closure& error_cb,
-      const char* decoder_thread_name);
+      const base::Closure& error_cb);
+
   virtual ~MediaCodecDecoder();
 
   virtual const char* class_name() const;
@@ -310,15 +316,17 @@ class MediaCodecDecoder {
 
   // Protected data.
 
+  // We call MediaCodecBridge on this thread for both input and output buffers.
+  base::Thread decoder_thread_;
+
   // Object for posting tasks on Media thread.
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
+  // Statistics for UMA.
+  FrameStatistics* frame_statistics_;
+
   // Controls Android MediaCodec
   scoped_ptr<MediaCodecBridge> media_codec_bridge_;
-
-  // We call MediaCodecBridge on this thread for both
-  // input and output buffers.
-  base::Thread decoder_thread_;
 
   // The queue of access units.
   AccessUnitQueue au_queue_;

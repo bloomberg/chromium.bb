@@ -17748,6 +17748,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.MSE.LateAudioFrames"
+    units="late frames per million frames">
+  <owner>qinmin@chromium.org</owner>
+  <owner>timav@chromium.org</owner>
+  <summary>
+    Relative number of late audio frames wrt total number of audio frames in MSE
+    playback, multiplied by one million. The audio frame is considered late if
+    it might cause an underrun, i.e. comes from decoder when audio buffer is
+    already depleted.
+  </summary>
+</histogram>
+
+<histogram name="Media.MSE.LateVideoFrames"
+    units="late frames per million frames">
+  <owner>qinmin@chromium.org</owner>
+  <owner>timav@chromium.org</owner>
+  <summary>
+    Relative number of late video frames wrt total number of video frames in MSE
+    playback, multiplied by one million. The video frame is late if it missed
+    its presentation time as determined by PTS when it comes from decoder. The
+    rendering policy (i.e. render or skip) does not affect it.
+  </summary>
+</histogram>
+
 <histogram name="Media.MSE.NumberOfTracks">
   <owner>acolwell@chromium.org</owner>
   <summary>
@@ -17764,6 +17788,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Whether Media Source Extensions is specified for playback of Media elements.
     Sampled when media pipeline starts.
+  </summary>
+</histogram>
+
+<histogram name="Media.MSE.PlaybackDuration" units="seconds">
+  <owner>qinmin@chromium.org</owner>
+  <owner>timav@chromium.org</owner>
+  <summary>
+    Duration of an uninterrupted MSE playback. This is the time interval between
+    the playback starts or resumes and the moment when user stops the playback
+    by pressing pause, initiating a seek etc. Measured in media time in seconds.
+  </summary>
+</histogram>
+
+<histogram name="Media.MSE.Starvations" units="starvations per million frames">
+  <owner>qinmin@chromium.org</owner>
+  <owner>timav@chromium.org</owner>
+  <summary>
+    Relative number of starvations wrt total number of frames in MSE playback,
+    multiplied by one million. Starvation happens when the player interrupts the
+    regular playback and asks for more data, conditions are player-specific.
   </summary>
 </histogram>
 

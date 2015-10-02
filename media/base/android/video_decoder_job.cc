@@ -28,10 +28,12 @@ base::LazyInstance<VideoDecoderThread>::Leaky
 VideoDecoderJob::VideoDecoderJob(
     const base::Closure& request_data_cb,
     const base::Closure& request_resources_cb,
-    const base::Closure& on_demuxer_config_changed_cb)
+    const base::Closure& on_demuxer_config_changed_cb,
+    FrameStatistics* frame_statistics)
     : MediaDecoderJob(g_video_decoder_thread.Pointer()->task_runner(),
                       request_data_cb,
-                      on_demuxer_config_changed_cb),
+                      on_demuxer_config_changed_cb,
+                      frame_statistics),
       video_codec_(kUnknownVideoCodec),
       config_width_(0),
       config_height_(0),

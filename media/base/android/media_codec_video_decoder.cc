@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/base/android/media_statistics.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/timestamp_constants.h"
 
@@ -18,6 +19,7 @@ const int kDelayForStandAloneEOS = 2;  // milliseconds
 
 MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    FrameStatistics* frame_statistics,
     const base::Closure& request_data_cb,
     const base::Closure& starvation_cb,
     const base::Closure& decoder_drained_cb,
@@ -27,14 +29,15 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     const SetTimeCallback& update_current_time_cb,
     const VideoSizeChangedCallback& video_size_changed_cb,
     const base::Closure& codec_created_cb)
-    : MediaCodecDecoder(media_task_runner,
+    : MediaCodecDecoder("VideoDecoder",
+                        media_task_runner,
+                        frame_statistics,
                         request_data_cb,
                         starvation_cb,
                         decoder_drained_cb,
                         stop_done_cb,
                         waiting_for_decryption_key_cb,
-                        error_cb,
-                        "VideoDecoder"),
+                        error_cb),
       is_protected_surface_required_(false),
       update_current_time_cb_(update_current_time_cb),
       video_size_changed_cb_(video_size_changed_cb),
@@ -276,7 +279,19 @@ void MediaCodecVideoDecoder::Render(int buffer_index,
            << " ticks delta:" << (base::TimeTicks::Now() - start_time_ticks_)
            << " time_to_render:" << time_to_render;
 
+  const bool render = (size > 0);
+
+  if (render)
+    frame_statistics_->IncrementFrameCount();
+
   if (time_to_render < base::TimeDelta()) {
+    if (render) {
+      DVLOG(2) << class_name() << "::" << __FUNCTION__
+               << " LATE FRAME delay:" << (-1) * time_to_render;
+
+      frame_statistics_->IncrementLateFrameCount();
+    }
+
     // Skip late frames
     ReleaseOutputBuffer(buffer_index, pts, false, update_time, eos_encountered);
     return;
@@ -284,7 +299,6 @@ void MediaCodecVideoDecoder::Render(int buffer_index,
 
   delayed_buffers_.insert(buffer_index);
 
-  const bool render = (size > 0);
   decoder_thread_.task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&MediaCodecVideoDecoder::ReleaseOutputBuffer,
                             base::Unretained(this), buffer_index, pts, render,
