@@ -72,7 +72,8 @@ Polymer({
 
   /** @private */
   doneClearing_: function() {
-    this.$.clearDataButton.disabled = false;
+    if (this.$)
+      this.$.clearDataButton.disabled = false;
   },
 
   /**
