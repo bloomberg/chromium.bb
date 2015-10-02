@@ -34,8 +34,9 @@ namespace blink {
 typedef EventSender<SVGUseElement> SVGUseEventSender;
 
 class SVGUseElement final : public SVGGraphicsElement,
-                            public SVGURIReference,
-                            public DocumentResourceClient {
+    public SVGURIReference,
+    public DocumentResourceClient {
+
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGUseElement);
 public:
@@ -97,9 +98,9 @@ private:
 
     void invalidateDependentShadowTrees();
 
-    bool resourceIsStillLoading();
+    bool resourceIsStillLoading() const;
     Document* externalDocument() const;
-    bool instanceTreeIsLoading(SVGElement*);
+    bool instanceTreeIsLoading(const SVGElement*);
     void notifyFinished(Resource*) override;
     TreeScope* referencedScope() const;
     void setDocumentResource(ResourcePtr<DocumentResource>);
