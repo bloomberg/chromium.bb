@@ -1777,10 +1777,10 @@ wl_display_get_protocol_error(struct wl_display *display,
  * \param display The display context object
  * \return The number of bytes sent on success or -1 on failure
  *
- * Send all buffered data on the client side to the server. Clients
- * should call this function before blocking. On success, the number
- * of bytes sent to the server is returned. On failure, this
- * function returns -1 and errno is set appropriately.
+ * Send all buffered data on the client side to the server. Clients should
+ * always call this function before blocking on input from the display fd.
+ * On success, the number of bytes sent to the server is returned. On
+ * failure, this function returns -1 and errno is set appropriately.
  *
  * wl_display_flush() never blocks.  It will write as much data as
  * possible, but if all data could not be written, errno will be set
