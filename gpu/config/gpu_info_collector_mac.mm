@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_ioobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -75,8 +76,9 @@ CollectInfoResult CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
   if (IOServiceGetMatchingServices(kIOMasterPortDefault,
                                    match_dictionary,
                                    &entry_iterator) == kIOReturnSuccess) {
-    io_registry_entry_t entry;
-    while ((entry = IOIteratorNext(entry_iterator))) {
+
+    base::mac::ScopedIOObject<io_registry_entry_t> entry;
+    while (entry.reset(IOIteratorNext(entry_iterator)), entry) {
       GPUInfo::GPUDevice gpu;
       if (GetEntryProperty(entry, CFSTR("class-code")) != 0x30000) {
         // 0x30000 : DISPLAY_VGA
