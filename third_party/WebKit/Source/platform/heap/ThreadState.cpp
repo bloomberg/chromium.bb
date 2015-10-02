@@ -601,10 +601,10 @@ double ThreadState::partitionAllocGrowingRate()
 
 // TODO(haraken): We should improve the GC heuristics. The heuristics affect
 // performance significantly.
-bool ThreadState::judgeGCThreshold(size_t allocatedObjectSizeThreshold, double heapGrowingRateThreshold)
+bool ThreadState::judgeGCThreshold(size_t totalMemorySizeThreshold, double heapGrowingRateThreshold)
 {
-    // If the allocated object size is small enough, don't trigger a GC.
-    if (Heap::allocatedObjectSize() < allocatedObjectSizeThreshold)
+    // If the allocated object size or the total memory size is small, don't trigger a GC.
+    if (Heap::allocatedObjectSize() < 100 * 1024 || totalMemorySize() < totalMemorySizeThreshold)
         return false;
     // If the growing rate of Oilpan's heap or PartitionAlloc is high enough,
     // trigger a GC.
@@ -638,7 +638,7 @@ bool ThreadState::shouldScheduleV8FollowupGC()
 
 bool ThreadState::shouldSchedulePageNavigationGC(float estimatedRemovalRatio)
 {
-    return judgeGCThreshold(512 * 1024, 1.5 * (1 - estimatedRemovalRatio));
+    return judgeGCThreshold(1024 * 1024, 1.5 * (1 - estimatedRemovalRatio));
 }
 
 bool ThreadState::shouldForceConservativeGC()
