@@ -1695,6 +1695,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   CGFloat xOffset = kHorizontalSpacing;
   CGFloat yOffset = 0;
   CGFloat availableTextWidth = kFixedMenuWidth - 2 * kHorizontalSpacing;
+  CGFloat maxAvailableTextWidth = kFixedMenuWidth - kHorizontalSpacing;
 
   // Profile options. This can be a link to the accounts view, the profile's
   // username for signed in users, or a "Sign in" button for local profiles.
@@ -1702,11 +1703,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       SigninManagerFactory::GetForProfile(
           browser_->profile()->GetOriginalProfile());
   if (!isGuestSession_ && signinManager->IsSigninAllowed()) {
-    NSView* linksContainer =
-        [self createCurrentProfileLinksForItem:item
-                                          rect:NSMakeRect(xOffset, yOffset,
-                                                          availableTextWidth,
-                                                          0)];
+    NSView* linksContainer = [self
+        createCurrentProfileLinksForItem:item
+                                    rect:NSMakeRect(xOffset, yOffset,
+                                                    maxAvailableTextWidth, 0)];
     [container addSubview:linksContainer];
     yOffset = NSMaxY([linksContainer frame]);
   }
@@ -1770,6 +1770,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // Don't double-apply the left margin to the sub-views.
   rect.origin.x = 0;
+
+  // Adds right padding.
+  const CGFloat kRightPadding = kHorizontalSpacing;
+  rect.size.width -= kRightPadding;
 
   // The available links depend on the type of profile that is active.
   if (item.signed_in) {
@@ -1839,6 +1843,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         l10n_util::GetNSString(IDS_PROFILES_SIGNIN_PROMO),
         NSMakePoint(0, NSMaxY([signinButton frame]) + kVerticalSpacing),
         nil);
+    if (kRightPadding >= 8)
+      rect.size.width += 8;  // Re-stretch a little bit to fit promo text.
+    DCHECK(kRightPadding >= 8);
     [promo setFrameSize:NSMakeSize(rect.size.width, 0)];
     [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:promo];
     [container addSubview:promo];
