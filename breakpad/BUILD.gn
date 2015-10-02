@@ -44,9 +44,9 @@ config("sender_config") {
   include_dirs = [ "src" ]
 }
 
-# {micro,mini}dump_stackwalk and minidump_dump are tool-type executables that do
-# not build on iOS.
-if (current_toolchain == host_toolchain && !is_win) {
+# {micro,mini}dump_stackwalk and minidump_dump are tool-type executables
+# that do not build on Windows.
+if (!is_win && current_toolchain == host_toolchain) {
   # Contains the code shared by both {micro,mini}dump_stackwalk.
   static_library("stackwalk_common") {
     sources = [
