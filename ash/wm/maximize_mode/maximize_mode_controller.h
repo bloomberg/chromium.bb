@@ -6,6 +6,7 @@
 #define ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -50,7 +51,8 @@ class ASH_EXPORT MaximizeModeController :
     public chromeos::AccelerometerReader::Observer,
     public chromeos::PowerManagerClient::Observer,
 #endif  // OS_CHROMEOS
-    public ShellObserver {
+    public ShellObserver,
+    public WindowTreeHostManager::Observer {
  public:
   MaximizeModeController();
   ~MaximizeModeController() override;
@@ -80,6 +82,9 @@ class ASH_EXPORT MaximizeModeController :
   void OnAppTerminating() override;
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
+
+  // WindowTreeHostManager::Observer:
+  void OnDisplayConfigurationChanged() override;
 
 #if defined(OS_CHROMEOS)
   // chromeos::AccelerometerReader::Observer:

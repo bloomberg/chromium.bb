@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <math.h>
+#include <vector>
 
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
@@ -69,6 +70,8 @@ class MaximizeModeControllerTest : public test::AshTestBase {
   ~MaximizeModeControllerTest() override {}
 
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAshEnableTouchView);
     test::AshTestBase::SetUp();
     chromeos::AccelerometerReader::GetInstance()->RemoveObserver(
         maximize_mode_controller());
@@ -437,6 +440,30 @@ TEST_F(MaximizeModeControllerTest, DisplayDisconnectionDuringOverview) {
   EXPECT_FALSE(
       Shell::GetInstance()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(w1->GetRootWindow(), w2->GetRootWindow());
+}
+
+// Test that the disabling of the internal display exits maximize mode, and that
+// while disabled we do not re-enter maximize mode.
+TEST_F(MaximizeModeControllerTest, NoMaximizeModeWithDisabledInternalDisplay) {
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  UpdateDisplay("200x200, 200x200");
+  const int64 internal_display_id =
+      test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
+  ASSERT_FALSE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(270.0f);
+  EXPECT_TRUE(IsMaximizeModeStarted());
+
+  // Deactivate internal display to simulate Docked Mode.
+  std::vector<DisplayInfo> secondary_only;
+  secondary_only.push_back(
+      display_manager->GetDisplayInfo(display_manager->GetDisplayAt(1).id()));
+  display_manager->OnNativeDisplaysChanged(secondary_only);
+  ASSERT_FALSE(display_manager->IsActiveDisplayId(internal_display_id));
+  EXPECT_FALSE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(270.0f);
+  EXPECT_FALSE(IsMaximizeModeStarted());
 }
 
 class MaximizeModeControllerSwitchesTest : public MaximizeModeControllerTest {

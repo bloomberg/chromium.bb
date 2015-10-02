@@ -18,6 +18,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 #if defined(USE_X11)
@@ -114,6 +115,7 @@ MaximizeModeController::MaximizeModeController()
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableTouchView)) {
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
+    shell->window_tree_host_manager()->AddObserver(this);
   }
   chromeos::DBusThreadManager::Get()->
       GetPowerManagerClient()->AddObserver(this);
@@ -126,6 +128,7 @@ MaximizeModeController::~MaximizeModeController() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableTouchView)) {
     chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
+    Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
   }
   chromeos::DBusThreadManager::Get()->
       GetPowerManagerClient()->RemoveObserver(this);
@@ -184,6 +187,14 @@ void MaximizeModeController::OnAccelerometerUpdated(
 
   if (!update->has(chromeos::ACCELEROMETER_SOURCE_SCREEN))
     return;
+
+  if (!gfx::Display::HasInternalDisplay())
+    return;
+
+  if (!Shell::GetInstance()->display_manager()->IsActiveDisplayId(
+          gfx::Display::InternalDisplayId())) {
+    return;
+  }
 
   // Whether or not we enter maximize mode affects whether we handle screen
   // rotation, so determine whether to enter maximize mode first.
@@ -320,6 +331,14 @@ void MaximizeModeController::OnMaximizeModeStarted() {
 // their original position.
 void MaximizeModeController::OnMaximizeModeEnded() {
   RecordTouchViewUsageInterval(TOUCH_VIEW_INTERVAL_ACTIVE);
+}
+
+void MaximizeModeController::OnDisplayConfigurationChanged() {
+  if (!gfx::Display::HasInternalDisplay() ||
+      !Shell::GetInstance()->display_manager()->IsActiveDisplayId(
+          gfx::Display::InternalDisplayId())) {
+    LeaveMaximizeMode();
+  }
 }
 
 void MaximizeModeController::RecordTouchViewUsageInterval(
