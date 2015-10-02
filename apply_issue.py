@@ -209,7 +209,9 @@ def main():
           'Try visiting %s/%d') % (
               issue_to_apply, patchset_to_apply,
               options.server, issue_to_apply)
-      return 1
+      # Special code for bot_update to indicate that cause is network or
+      # Rietveld. Not 2, because 2 is returned on arg parsing failure.
+      return 3
     if options.whitelist:
       patchset.patches = [patch for patch in patchset.patches
                           if patch.filename in options.whitelist]
