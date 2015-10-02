@@ -195,23 +195,6 @@ config("runtime_library") {
   }
 }
 
-config("sdk") {
-  if (sysroot != "") {
-    cflags = [ "--sysroot=" + sysroot ]
-    asmflags = [ "--sysroot=" + sysroot ]
-    ldflags = [ "--sysroot=" + sysroot ]
-
-    # Need to get some linker flags out of the sysroot.
-    sysroot_ld_path = rebase_path("//build/config/linux/sysroot_ld_path.py")
-    ldflags += [ exec_script(sysroot_ld_path,
-                             [
-                               rebase_path("//build/linux/sysroot_ld_path.sh"),
-                               sysroot,
-                             ],
-                             "value") ]
-  }
-}
-
 config("executable_config") {
   cflags = [ "-fPIE" ]
   asmflags = [ "-fPIE" ]

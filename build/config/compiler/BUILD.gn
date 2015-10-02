@@ -493,8 +493,18 @@ config("runtime_library") {
   # smaller.
   if (is_win) {
     configs += [ "//build/config/win:runtime_library" ]
+  } else if (is_linux) {
+    configs += [ "//build/config/linux:runtime_library" ]
+  } else if (is_ios) {
+    configs += [ "//build/config/ios:runtime_library" ]
+  } else if (is_mac) {
+    configs += [ "//build/config/mac:runtime_library" ]
   } else if (is_android) {
     configs += [ "//build/config/android:runtime_library" ]
+  }
+
+  if (is_posix) {
+    configs += [ "//build/config/posix:runtime_library" ]
   }
 
   if (is_component_build) {

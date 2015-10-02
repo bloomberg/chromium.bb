@@ -84,12 +84,27 @@ config("compiler") {
 config("runtime_library") {
   cflags = []
 
+  # Defines that set up the CRT.
   defines = [
     "__STD_C",
     "_CRT_RAND_S",
     "_CRT_SECURE_NO_DEPRECATE",
     "_HAS_EXCEPTIONS=0",
     "_SCL_SECURE_NO_DEPRECATE",
+  ]
+
+  # Defines that set up the Windows SDK.
+  defines += [
+    "_ATL_NO_OPENGL",
+    "_WINDOWS",
+    "CERT_CHAIN_PARA_HAS_EXTRA_FIELDS",
+    "NTDDI_VERSION=0x06030000",
+    "PSAPI_VERSION=1",
+    "WIN32",
+    "_SECURE_ATL",
+
+    # This is required for ATL to use XP-safe versions of its functions.
+    "_USING_V110_SDK71_",
   ]
 
   if (is_component_build) {
@@ -118,25 +133,6 @@ config("runtime_library") {
       }
     }
   }
-}
-
-# Compiler setup for the Windows SDK. Applied to all targets.
-config("sdk") {
-  # The include path is the stuff returned by the script.
-  #include_dirs = msvc_config[0]  TODO(brettw) make this work.
-
-  defines = [
-    "_ATL_NO_OPENGL",
-    "_WINDOWS",
-    "CERT_CHAIN_PARA_HAS_EXTRA_FIELDS",
-    "NTDDI_VERSION=0x06030000",
-    "PSAPI_VERSION=1",
-    "WIN32",
-    "_SECURE_ATL",
-
-    # This is required for ATL to use XP-safe versions of its functions.
-    "_USING_V110_SDK71_",
-  ]
 }
 
 # Sets the default Windows build version. This is separated because some

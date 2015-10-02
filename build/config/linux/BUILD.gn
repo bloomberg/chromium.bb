@@ -7,21 +7,11 @@ import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 
-config("sdk") {
-  if (sysroot != "") {
-    cflags = [ "--sysroot=" + sysroot ]
-    ldflags = [ "--sysroot=" + sysroot ]
-
-    # Need to get some linker flags out of the sysroot.
-    ldflags += [ exec_script("sysroot_ld_path.py",
-                             [
-                               rebase_path("//build/linux/sysroot_ld_path.sh",
-                                           root_build_dir),
-                               sysroot,
-                             ],
-                             "value") ]
-  }
-
+# This is included by reference in the //build/config/compiler:runtime_library
+# config that is applied to all targets. It is here to separate out the logic
+# that is Linux-only. Please see that target for advice on what should go in
+# :runtime_library vs. :compiler.
+config("runtime_library") {
   # Set here because OS_CHROMEOS cannot be autodetected in build_config.h like
   # OS_LINUX and the like.
   if (is_chromeos) {

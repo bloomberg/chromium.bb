@@ -116,7 +116,6 @@ check_targets = [
 # discouraged except for gypi_to_gn calls.
 exec_script_whitelist = [
   "//ash/BUILD.gn",
-  "//build/config/android/BUILD.gn",
   "//build/config/android/config.gni",
   "//build/config/android/internal_rules.gni",
   "//build/config/android/rules.gni",
@@ -126,6 +125,7 @@ exec_script_whitelist = [
   "//build/config/linux/BUILD.gn",
   "//build/config/linux/pkg_config.gni",
   "//build/config/mac/mac_sdk.gni",
+  "//build/config/posix/BUILD.gn",
   "//build/config/win/BUILD.gn",
   "//build/config/win/visual_studio_version.gni",
   "//build/gn_helpers.py",

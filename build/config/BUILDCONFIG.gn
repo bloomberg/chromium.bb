@@ -359,7 +359,6 @@ if (is_win) {
   _native_compiler_configs += [
     "//build/config/win:lean_and_mean",
     "//build/config/win:nominmax",
-    "//build/config/win:sdk",
     "//build/config/win:unicode",
     "//build/config/win:winver",
   ]
@@ -373,16 +372,6 @@ if (is_posix) {
     "//build/config/gcc:no_exceptions",
     "//build/config/gcc:symbol_visibility_hidden",
   ]
-}
-
-if (is_linux) {
-  _native_compiler_configs += [ "//build/config/linux:sdk" ]
-} else if (is_mac) {
-  _native_compiler_configs += [ "//build/config/mac:sdk" ]
-} else if (is_ios) {
-  _native_compiler_configs += [ "//build/config/ios:sdk" ]
-} else if (is_android) {
-  _native_compiler_configs += [ "//build/config/android:sdk" ]
 }
 
 if (is_android) {
