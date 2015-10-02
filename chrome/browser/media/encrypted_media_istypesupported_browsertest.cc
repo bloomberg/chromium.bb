@@ -124,11 +124,6 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
     invalid_codecs_.push_back("foo");
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // TODO(jrummell): Switch tests to unprefixed EME: http://crbug.com/367158.
-    command_line->AppendSwitch(switches::kEnablePrefixedEncryptedMedia);
-  }
-
   typedef std::vector<std::string> CodecVector;
 
   const CodecVector& no_codecs() const { return no_codecs_; }
