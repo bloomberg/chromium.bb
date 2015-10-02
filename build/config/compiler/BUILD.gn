@@ -512,228 +512,232 @@ config("runtime_library") {
   }
 }
 
-# default_warning_flags collects all warning flags that are used by default.
-# This is in a variable instead of a config so that it can be used in
-# both chromium_code and no_chromium_code.  This way these flags are guaranteed
-# to appear on the compile command line after -Wall.
+# default_warnings ------------------------------------------------------------
+#
+# Collects all warning flags that are used by default.  This is used as a
+# subconfig of both chromium_code and no_chromium_code.  This way these
+# flags are guaranteed to appear on the compile command line after -Wall.
+config("default_warnings") {
+  cflags = []
+  cflags_cc = []
 
-default_warning_flags = []
-default_warning_flags_cc = []
-if (is_win) {
-  default_warning_flags += [
-    # Treat warnings as errors.
-    "/WX",
+  if (is_win) {
+    cflags += [
+      # Treat warnings as errors.
+      "/WX",
 
-    # Warnings permanently disabled:
+      # Warnings permanently disabled:
 
-    # C4127: conditional expression is constant
-    # This warning can in theory catch dead code and other problems, but
-    # triggers in far too many desirable cases where the conditional
-    # expression is either set by macros or corresponds some legitimate
-    # compile-time constant expression (due to constant template args,
-    # conditionals comparing the sizes of different types, etc.).  Some of
-    # these can be worked around, but it's not worth it.
-    "/wd4127",
+      # C4127: conditional expression is constant
+      # This warning can in theory catch dead code and other problems, but
+      # triggers in far too many desirable cases where the conditional
+      # expression is either set by macros or corresponds some legitimate
+      # compile-time constant expression (due to constant template args,
+      # conditionals comparing the sizes of different types, etc.).  Some of
+      # these can be worked around, but it's not worth it.
+      "/wd4127",
 
-    # C4251: 'identifier' : class 'type' needs to have dll-interface to be
-    #        used by clients of class 'type2'
-    # This is necessary for the shared library build.
-    "/wd4251",
+      # C4251: 'identifier' : class 'type' needs to have dll-interface to be
+      #        used by clients of class 'type2'
+      # This is necessary for the shared library build.
+      "/wd4251",
 
-    # C4351: new behavior: elements of array 'array' will be default
-    #        initialized
-    # This is a silly "warning" that basically just alerts you that the
-    # compiler is going to actually follow the language spec like it's
-    # supposed to, instead of not following it like old buggy versions did.
-    # There's absolutely no reason to turn this on.
-    "/wd4351",
+      # C4351: new behavior: elements of array 'array' will be default
+      #        initialized
+      # This is a silly "warning" that basically just alerts you that the
+      # compiler is going to actually follow the language spec like it's
+      # supposed to, instead of not following it like old buggy versions did.
+      # There's absolutely no reason to turn this on.
+      "/wd4351",
 
-    # C4355: 'this': used in base member initializer list
-    # It's commonly useful to pass |this| to objects in a class' initializer
-    # list.  While this warning can catch real bugs, most of the time the
-    # constructors in question don't attempt to call methods on the passed-in
-    # pointer (until later), and annotating every legit usage of this is
-    # simply more hassle than the warning is worth.
-    "/wd4355",
+      # C4355: 'this': used in base member initializer list
+      # It's commonly useful to pass |this| to objects in a class' initializer
+      # list.  While this warning can catch real bugs, most of the time the
+      # constructors in question don't attempt to call methods on the passed-in
+      # pointer (until later), and annotating every legit usage of this is
+      # simply more hassle than the warning is worth.
+      "/wd4355",
 
-    # C4503: 'identifier': decorated name length exceeded, name was
-    #        truncated
-    # This only means that some long error messages might have truncated
-    # identifiers in the presence of lots of templates.  It has no effect on
-    # program correctness and there's no real reason to waste time trying to
-    # prevent it.
-    "/wd4503",
+      # C4503: 'identifier': decorated name length exceeded, name was
+      #        truncated
+      # This only means that some long error messages might have truncated
+      # identifiers in the presence of lots of templates.  It has no effect on
+      # program correctness and there's no real reason to waste time trying to
+      # prevent it.
+      "/wd4503",
 
-    # Warning C4589 says: "Constructor of abstract class ignores
-    # initializer for virtual base class." Disable this warning because it
-    # is flaky in VS 2015 RTM. It triggers on compiler generated
-    # copy-constructors in some cases.
-    "/wd4589",
+      # Warning C4589 says: "Constructor of abstract class ignores
+      # initializer for virtual base class." Disable this warning because it
+      # is flaky in VS 2015 RTM. It triggers on compiler generated
+      # copy-constructors in some cases.
+      "/wd4589",
 
-    # C4611: interaction between 'function' and C++ object destruction is
-    #        non-portable
-    # This warning is unavoidable when using e.g. setjmp/longjmp.  MSDN
-    # suggests using exceptions instead of setjmp/longjmp for C++, but
-    # Chromium code compiles without exception support.  We therefore have to
-    # use setjmp/longjmp for e.g. JPEG decode error handling, which means we
-    # have to turn off this warning (and be careful about how object
-    # destruction happens in such cases).
-    "/wd4611",
+      # C4611: interaction between 'function' and C++ object destruction is
+      #        non-portable
+      # This warning is unavoidable when using e.g. setjmp/longjmp.  MSDN
+      # suggests using exceptions instead of setjmp/longjmp for C++, but
+      # Chromium code compiles without exception support.  We therefore have to
+      # use setjmp/longjmp for e.g. JPEG decode error handling, which means we
+      # have to turn off this warning (and be careful about how object
+      # destruction happens in such cases).
+      "/wd4611",
 
-    # Warnings to evaluate and possibly fix/reenable later:
+      # Warnings to evaluate and possibly fix/reenable later:
 
-    "/wd4100",  # Unreferenced formal function parameter.
-    "/wd4121",  # Alignment of a member was sensitive to packing.
-    "/wd4244",  # Conversion: possible loss of data.
-    "/wd4481",  # Nonstandard extension: override specifier.
-    "/wd4505",  # Unreferenced local function has been removed.
-    "/wd4510",  # Default constructor could not be generated.
-    "/wd4512",  # Assignment operator could not be generated.
-    "/wd4610",  # Class can never be instantiated, constructor required.
-    "/wd4995",  # 'X': name was marked as #pragma deprecated
-    "/wd4996",  # Deprecated function warning.
-  ]
-
-  # VS xtree header file needs to be patched or 4702 (unreachable code
-  # warning) is reported if _HAS_EXCEPTIONS=0. Disable the warning if xtree is
-  # not patched.
-  if (!msvs_xtree_patched &&
-      exec_script("../../win_is_xtree_patched.py", [], "value") == 0) {
-    default_warning_flags += [ "/wd4702" ]  # Unreachable code.
-  }
-
-  # Building with Clang on Windows is a work in progress and very
-  # experimental. See crbug.com/82385.
-  # Keep this in sync with the similar block in build/common.gypi
-  if (is_clang) {
-    default_warning_flags += [
-      # TODO(hans): Make this list shorter eventually, http://crbug.com/504657
-      "-Qunused-arguments",  # http://crbug.com/504658
-      "-Wno-microsoft-enum-value",  # http://crbug.com/505296
-      "-Wno-unknown-pragmas",  # http://crbug.com/505314
-      "-Wno-unused-value",  # http://crbug.com/505318
+      "/wd4100",  # Unreferenced formal function parameter.
+      "/wd4121",  # Alignment of a member was sensitive to packing.
+      "/wd4244",  # Conversion: possible loss of data.
+      "/wd4481",  # Nonstandard extension: override specifier.
+      "/wd4505",  # Unreferenced local function has been removed.
+      "/wd4510",  # Default constructor could not be generated.
+      "/wd4512",  # Assignment operator could not be generated.
+      "/wd4610",  # Class can never be instantiated, constructor required.
+      "/wd4995",  # 'X': name was marked as #pragma deprecated
+      "/wd4996",  # Deprecated function warning.
     ]
-  }
-} else {
-  # Common GCC warning setup.
-  default_warning_flags += [
-    # Enables.
-    "-Wendif-labels",  # Weird old-style text after an #endif.
-    "-Werror",  # Warnings as errors.
 
-    # Disables.
-    "-Wno-missing-field-initializers",  # "struct foo f = {0};"
-    "-Wno-unused-parameter",  # Unused function parameters.
-  ]
-
-  if (is_mac) {
-    default_warning_flags += [ "-Wnewline-eof" ]
-    if (!is_nacl) {
-      # When compiling Objective-C, warns if a method is used whose
-      # availability is newer than the deployment target. This is not
-      # required when compiling Chrome for iOS.
-      default_warning_flags += [ "-Wpartial-availability" ]
+    # VS xtree header file needs to be patched or 4702 (unreachable code
+    # warning) is reported if _HAS_EXCEPTIONS=0. Disable the warning if xtree is
+    # not patched.
+    if (!msvs_xtree_patched &&
+        exec_script("../../win_is_xtree_patched.py", [], "value") == 0) {
+      cflags += [ "/wd4702" ]  # Unreachable code.
     }
-  }
 
-  if (gcc_version >= 48) {
-    default_warning_flags_cc += [
-      # See comment for -Wno-c++11-narrowing.
-      "-Wno-narrowing",
-    ]
-    if (!is_clang) {
-      default_warning_flags_cc += [
-        # TODO(thakis): Remove, http://crbug.com/263960
-        "-Wno-literal-suffix",
+    # Building with Clang on Windows is a work in progress and very
+    # experimental. See crbug.com/82385.
+    # Keep this in sync with the similar block in build/common.gypi
+    if (is_clang) {
+      cflags += [
+        # TODO(hans): Make this list shorter eventually, http://crbug.com/504657
+        "-Qunused-arguments",  # http://crbug.com/504658
+        "-Wno-microsoft-enum-value",  # http://crbug.com/505296
+        "-Wno-unknown-pragmas",  # http://crbug.com/505314
+        "-Wno-unused-value",  # http://crbug.com/505318
       ]
     }
-  }
+  } else {
+    # Common GCC warning setup.
+    cflags += [
+      # Enables.
+      "-Wendif-labels",  # Weird old-style text after an #endif.
+      "-Werror",  # Warnings as errors.
 
-  # Suppress warnings about ABI changes on ARM (Clang doesn't give this
-  # warning).
-  if (current_cpu == "arm" && !is_clang) {
-    default_warning_flags += [ "-Wno-psabi" ]
-  }
-
-  if (is_android) {
-    # Disable any additional warnings enabled by the Android build system but
-    # which chromium does not build cleanly with (when treating warning as
-    # errors).
-    default_warning_flags += [
-      "-Wno-extra",
-      "-Wno-ignored-qualifiers",
-      "-Wno-type-limits",
+      # Disables.
+      "-Wno-missing-field-initializers",  # "struct foo f = {0};"
+      "-Wno-unused-parameter",  # Unused function parameters.
     ]
-    default_warning_flags_cc += [
-      # Disabling c++0x-compat should be handled in WebKit, but
-      # this currently doesn't work because gcc_version is not set
-      # correctly when building with the Android build system.
-      # TODO(torne): Fix this in WebKit.
-      "-Wno-error=c++0x-compat",
 
-      # Other things unrelated to -Wextra:
-      "-Wno-non-virtual-dtor",
-      "-Wno-sign-promo",
-    ]
+    if (is_mac) {
+      cflags += [ "-Wnewline-eof" ]
+      if (!is_nacl) {
+        # When compiling Objective-C, warns if a method is used whose
+        # availability is newer than the deployment target. This is not
+        # required when compiling Chrome for iOS.
+        cflags += [ "-Wpartial-availability" ]
+      }
+    }
+
+    if (gcc_version >= 48) {
+      cflags_cc += [
+        # See comment for -Wno-c++11-narrowing.
+        "-Wno-narrowing",
+      ]
+      if (!is_clang) {
+        cflags_cc += [
+          # TODO(thakis): Remove, http://crbug.com/263960
+          "-Wno-literal-suffix",
+        ]
+      }
+    }
+
+    # Suppress warnings about ABI changes on ARM (Clang doesn't give this
+    # warning).
+    if (current_cpu == "arm" && !is_clang) {
+      cflags += [ "-Wno-psabi" ]
+    }
+
+    if (is_android) {
+      # Disable any additional warnings enabled by the Android build system but
+      # which chromium does not build cleanly with (when treating warning as
+      # errors).
+      cflags += [
+        "-Wno-extra",
+        "-Wno-ignored-qualifiers",
+        "-Wno-type-limits",
+      ]
+      cflags_cc += [
+        # Disabling c++0x-compat should be handled in WebKit, but
+        # this currently doesn't work because gcc_version is not set
+        # correctly when building with the Android build system.
+        # TODO(torne): Fix this in WebKit.
+        "-Wno-error=c++0x-compat",
+
+        # Other things unrelated to -Wextra:
+        "-Wno-non-virtual-dtor",
+        "-Wno-sign-promo",
+      ]
+    }
+
+    if (gcc_version >= 48) {
+      # Don't warn about the "typedef 'foo' locally defined but not used"
+      # for gcc 4.8.
+      # TODO: remove this flag once all builds work. See crbug.com/227506
+      cflags += [ "-Wno-unused-local-typedefs" ]
+    }
   }
 
-  if (gcc_version >= 48) {
-    # Don't warn about the "typedef 'foo' locally defined but not used"
-    # for gcc 4.8.
-    # TODO: remove this flag once all builds work. See crbug.com/227506
-    default_warning_flags += [ "-Wno-unused-local-typedefs" ]
-  }
-}
-if (is_clang) {
-  default_warning_flags += [
-    # This warns on using ints as initializers for floats in
-    # initializer lists (e.g. |int a = f(); CGSize s = { a, a };|),
-    # which happens in several places in chrome code. Not sure if
-    # this is worth fixing.
-    "-Wno-c++11-narrowing",
+  if (is_clang) {
+    cflags += [
+      # This warns on using ints as initializers for floats in
+      # initializer lists (e.g. |int a = f(); CGSize s = { a, a };|),
+      # which happens in several places in chrome code. Not sure if
+      # this is worth fixing.
+      "-Wno-c++11-narrowing",
 
-    # Don't die on dtoa code that uses a char as an array index.
-    # This is required solely for base/third_party/dmg_fp/dtoa.cc.
-    # TODO(brettw) move this to that project then!
-    "-Wno-char-subscripts",
+      # Don't die on dtoa code that uses a char as an array index.
+      # This is required solely for base/third_party/dmg_fp/dtoa.cc.
+      # TODO(brettw) move this to that project then!
+      "-Wno-char-subscripts",
 
-    # Warns on switches on enums that cover all enum values but
-    # also contain a default: branch. Chrome is full of that.
-    "-Wno-covered-switch-default",
+      # Warns on switches on enums that cover all enum values but
+      # also contain a default: branch. Chrome is full of that.
+      "-Wno-covered-switch-default",
 
-    # Clang considers the `register` keyword as deprecated, but e.g.
-    # code generated by flex (used in angle) contains that keyword.
-    # http://crbug.com/255186
-    "-Wno-deprecated-register",
+      # Clang considers the `register` keyword as deprecated, but e.g.
+      # code generated by flex (used in angle) contains that keyword.
+      # http://crbug.com/255186
+      "-Wno-deprecated-register",
 
-    # TODO(thakis): This used to be implied by -Wno-unused-function,
-    # which we no longer use. Check if it makes sense to remove
-    # this as well. http://crbug.com/316352
-    "-Wno-unneeded-internal-declaration",
+      # TODO(thakis): This used to be implied by -Wno-unused-function,
+      # which we no longer use. Check if it makes sense to remove
+      # this as well. http://crbug.com/316352
+      "-Wno-unneeded-internal-declaration",
 
-    # TODO(hans): Get this cleaned up, http://crbug.com/428099
-    "-Wno-inconsistent-missing-override",
-  ]
-
-  if (is_posix && !is_mac && !is_ios) {
-    default_warning_flags += [
-      # TODO(thakis): Remove, http://crbug.com/263960
-      "-Wno-reserved-user-defined-literal",
+      # TODO(hans): Get this cleaned up, http://crbug.com/428099
+      "-Wno-inconsistent-missing-override",
     ]
-  }
 
-  # NaCl's Clang compiler and Chrome's hermetic Clang compiler will almost
-  # always have different versions. Certain flags may not be recognized by
-  # one version or the other.
-  if (!is_nacl) {
-    # Flags NaCl does not recognize.
-    default_warning_flags += [
-      # TODO(thakis): Enable this, crbug.com/507717
-      "-Wno-shift-negative-value",
+    if (is_posix && !is_mac && !is_ios) {
+      cflags += [
+        # TODO(thakis): Remove, http://crbug.com/263960
+        "-Wno-reserved-user-defined-literal",
+      ]
+    }
 
-      # TODO(thakis): Consider enabling this?
-      "-Wno-bitfield-width",
-    ]
+    # NaCl's Clang compiler and Chrome's hermetic Clang compiler will almost
+    # always have different versions. Certain flags may not be recognized by
+    # one version or the other.
+    if (!is_nacl) {
+      # Flags NaCl (Clang 3.7) does not recognize.
+      cflags += [
+        # TODO(thakis): Enable this, crbug.com/507717
+        "-Wno-shift-negative-value",
+
+        # TODO(thakis): Consider enabling this?
+        "-Wno-bitfield-width",
+      ]
+    }
   }
 }
 
@@ -776,8 +780,8 @@ config("chromium_code") {
       defines += [ "_FORTIFY_SOURCE=2" ]
     }
   }
-  cflags += default_warning_flags
-  cflags_cc = default_warning_flags_cc
+
+  configs = [ ":default_warnings" ]
 }
 
 config("no_chromium_code") {
@@ -830,8 +834,7 @@ config("no_chromium_code") {
     ]
   }
 
-  cflags += default_warning_flags
-  cflags_cc += default_warning_flags_cc
+  configs = [ ":default_warnings" ]
 }
 
 # rtti ------------------------------------------------------------------------
