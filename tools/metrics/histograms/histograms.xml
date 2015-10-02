@@ -17301,6 +17301,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.CrosBeamformingDeviceState"
+    enum="CrosBeamformingDeviceState">
+  <owner>ajm@chromium.org</owner>
+  <summary>
+    The state of the user selected virtual beamforming audio device on CrOS.
+    It's logged whenever the format of the audio input stream is queried, which
+    at least happens on stream startup, but could happen at other times as well.
+  </summary>
+</histogram>
+
 <histogram name="Media.DetectedAudioCodec" enum="FFmpegCodecs">
   <obsolete>
     Deprecated Sep 15 2015 in favor of Media.DetectedAudioCodecHash
@@ -54295,6 +54305,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2147483644" label="STATUS_SINGLE_STEP"/>
   <int value="2147483645" label="STATUS_BREAKPOINT"/>
   <int value="2147483646" label="STATUS_DATATYPE_MISALIGNMENT"/>
+</enum>
+
+<enum name="CrosBeamformingDeviceState" type="int">
+  <int value="0" label="Default enabled"/>
+  <int value="1" label="User enabled"/>
+  <int value="2" label="Default disabled"/>
+  <int value="3" label="User disabled"/>
 </enum>
 
 <enum name="CrosDisksArchiveType" type="int">

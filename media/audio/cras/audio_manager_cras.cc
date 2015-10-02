@@ -10,6 +10,7 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
 #include "chromeos/audio/audio_device.h"
@@ -43,7 +44,20 @@ const int kDefaultInputBufferSize = 1024;
 const char kBeamformingOnUniqueId[] = "beamforming-on";
 const char kBeamformingOffUniqueId[] = "beamforming-off";
 
-bool IsBeamformingDefaultedOn() {
+enum CrosBeamformingDeviceState {
+  BEAMFORMING_DEFAULT_ENABLED = 0,
+  BEAMFORMING_USER_ENABLED,
+  BEAMFORMING_DEFAULT_DISABLED,
+  BEAMFORMING_USER_DISABLED,
+  BEAMFORMING_STATE_MAX = BEAMFORMING_USER_DISABLED
+};
+
+void RecordBeamformingDeviceState(CrosBeamformingDeviceState state) {
+  UMA_HISTOGRAM_ENUMERATION("Media.CrosBeamformingDeviceState", state,
+                            BEAMFORMING_STATE_MAX + 1);
+}
+
+bool IsBeamformingDefaultEnabled() {
   return base::FieldTrialList::FindFullName("ChromebookBeamforming") ==
          "Enabled";
 }
@@ -66,7 +80,7 @@ void AddBeamformingDevices(AudioDeviceNames* device_names) {
       GetLocalizedStringUTF8(BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME),
       kBeamformingOffUniqueId);
 
-  if (IsBeamformingDefaultedOn()) {
+  if (IsBeamformingDefaultEnabled()) {
     // Users in the experiment will have the "beamforming on" device appear
     // first in the list. This causes it to be selected by default.
     device_names->push_back(beamforming_on_device);
@@ -156,8 +170,24 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
                          buffer_size);
   if (has_keyboard_mic_)
     params.set_effects(AudioParameters::KEYBOARD_MIC);
-  if (device_id == kBeamformingOnUniqueId)
+
+  if (device_id == kBeamformingOnUniqueId) {
     params.set_mic_positions(mic_positions_);
+
+    // Record a UMA metric based on the state of the experiment and the selected
+    // device. This will tell us i) how common it is for users to manually
+    // adjust the beamforming device and ii) how contaminated our metric
+    // experiment buckets are.
+    if (IsBeamformingDefaultEnabled())
+      RecordBeamformingDeviceState(BEAMFORMING_DEFAULT_ENABLED);
+    else
+      RecordBeamformingDeviceState(BEAMFORMING_USER_ENABLED);
+  } else if (device_id == kBeamformingOffUniqueId) {
+    if (!IsBeamformingDefaultEnabled())
+      RecordBeamformingDeviceState(BEAMFORMING_DEFAULT_DISABLED);
+    else
+      RecordBeamformingDeviceState(BEAMFORMING_USER_DISABLED);
+  }
   return params;
 }
 
