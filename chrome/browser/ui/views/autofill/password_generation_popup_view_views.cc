@@ -7,10 +7,12 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
-#include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -88,17 +90,15 @@ class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
             const gfx::FontList& font_list) {
     views::BoxLayout* box_layout = new views::BoxLayout(
         views::BoxLayout::kHorizontal,
-        PasswordGenerationPopupController::kHorizontalPadding,
-        0,
-        15);
+        PasswordGenerationPopupController::kHorizontalPadding, 0,
+        PasswordGenerationPopupController::kHorizontalPadding);
     box_layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
     SetLayoutManager(box_layout);
 
     views::ImageView* key_image = new views::ImageView();
-    key_image->SetImage(
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_GENERATE_PASSWORD_KEY).ToImageSkia());
+    key_image->SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::AUTOLOGIN, 32,
+                                              gfx::kChromeIconGrey));
     AddChildView(key_image);
 
     PasswordTextBox* password_text_box = new PasswordTextBox();
