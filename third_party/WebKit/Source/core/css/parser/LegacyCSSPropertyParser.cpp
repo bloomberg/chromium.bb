@@ -776,9 +776,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         }
         break;
 
-    case CSSPropertyLineHeight:
-        parsedValue = parseLineHeight();
-        break;
     case CSSPropertyCounterIncrement:
         if (id == CSSValueNone)
             validPrimitive = true;
@@ -1412,6 +1409,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWordSpacing:
     case CSSPropertyTabSize:
     case CSSPropertyFontSize:
+    case CSSPropertyLineHeight:
         validPrimitive = false;
         break;
 

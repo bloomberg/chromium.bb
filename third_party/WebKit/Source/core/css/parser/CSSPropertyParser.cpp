@@ -183,6 +183,25 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRa
     return nullptr;
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeNumber(CSSParserTokenRange& range, ValueRange valueRange)
+{
+    const CSSParserToken& token = range.peek();
+    if (token.type() == NumberToken) {
+        if (valueRange == ValueRangeNonNegative && token.numericValue() < 0)
+            return nullptr;
+        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), token.unitType());
+    }
+    CalcParser calcParser(range, ValueRangeAll);
+    if (const CSSCalcValue* calculation = calcParser.value()) {
+        // TODO(rwlbuis) Calcs should not be subject to parse time range checks.
+        // spec: https://drafts.csswg.org/css-values-3/#calc-range
+        if (calculation->category() != CalcNumber || (valueRange == ValueRangeNonNegative && calculation->isNegative()))
+            return nullptr;
+        return calcParser.consumeNumber();
+    }
+    return nullptr;
+}
+
 inline bool shouldAcceptUnitlessValues(double fValue, CSSParserMode cssParserMode, UnitlessQuirk unitless)
 {
     // Quirks mode for certain properties and presentation attributes accept unit-less values for certain units.
@@ -548,6 +567,17 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFontSize(CSSParserTokenRange& ran
     return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative, UnitlessQuirk::Allow);
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineHeight(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().id() == CSSValueNormal)
+        return consumeIdent(range);
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> lineHeight = consumeNumber(range, ValueRangeNonNegative);
+    if (lineHeight)
+        return lineHeight;
+    return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -577,6 +607,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeTabSize(m_range, m_context.mode());
     case CSSPropertyFontSize:
         return consumeFontSize(m_range, m_context.mode());
+    case CSSPropertyLineHeight:
+        return consumeLineHeight(m_range, m_context.mode());
     default:
         return nullptr;
     }
