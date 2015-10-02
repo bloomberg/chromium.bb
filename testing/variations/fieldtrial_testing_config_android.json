@@ -122,11 +122,6 @@
             "group_name": "Enabled"
         }
     ],
-    "MobileModerateBinding": [
-        {
-            "group_name": "Ratio_25_50"
-        }
-    ],
     "NetworkQualityEstimator": [
         {
             "group_name": "Enabled",
