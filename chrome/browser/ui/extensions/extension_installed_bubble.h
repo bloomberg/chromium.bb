@@ -43,9 +43,9 @@ class ExtensionInstalledBubble : public content::NotificationObserver,
   };
 
   // Implements the UI for showing the bubble. Owns us.
-  class Delegate {
+  class ExtensionInstalledBubbleUi {
    public:
-    virtual ~Delegate() {}
+    virtual ~ExtensionInstalledBubbleUi() {}
 
     // Attempts to show the bubble. Called from ShowInternal. Returns false
     // if, because of animating (such as from adding a new browser action
@@ -53,9 +53,9 @@ class ExtensionInstalledBubble : public content::NotificationObserver,
     virtual bool MaybeShowNow() = 0;
   };
 
-  ExtensionInstalledBubble(Delegate* delegate,
+  ExtensionInstalledBubble(ExtensionInstalledBubbleUi* bubble_ui,
                            const extensions::Extension* extension,
-                           Browser *browser,
+                           Browser* browser,
                            const SkBitmap& icon);
 
   ~ExtensionInstalledBubble() override;
@@ -90,8 +90,8 @@ class ExtensionInstalledBubble : public content::NotificationObserver,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;
 
-  // The view delegate that shows the bubble. Owns us.
-  Delegate* delegate_;
+  // The view that shows the bubble. Owns us.
+  ExtensionInstalledBubbleUi* bubble_ui_;
 
   // |extension_| is NULL when we are deleted.
   const extensions::Extension* extension_;

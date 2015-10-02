@@ -51,14 +51,14 @@ using extensions::BundleInstaller;
 using extensions::Extension;
 
 class ExtensionInstalledBubbleBridge
-    : public ExtensionInstalledBubble::Delegate {
+    : public ExtensionInstalledBubble::ExtensionInstalledBubbleUi {
  public:
   explicit ExtensionInstalledBubbleBridge(
       ExtensionInstalledBubbleController* controller);
   ~ExtensionInstalledBubbleBridge() override;
 
  private:
-  // ExtensionInstalledBubble::Delegate:
+  // ExtensionInstalledBubble::ExtensionInstalledBubbleUi:
   bool MaybeShowNow() override;
 
   // The (owning) installed bubble controller.

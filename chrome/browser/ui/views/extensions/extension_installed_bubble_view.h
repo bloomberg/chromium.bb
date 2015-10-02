@@ -25,7 +25,7 @@ class Extension;
 //    GENERIC        -> The wrench menu. This case includes pageActions that
 //                      don't specify a default icon.
 class ExtensionInstalledBubbleView
-    : public ExtensionInstalledBubble::Delegate,
+    : public ExtensionInstalledBubble::ExtensionInstalledBubbleUi,
       public views::BubbleDelegateView {
  public:
   // Creates the ExtensionInstalledBubbleView and schedules it to be shown once
@@ -43,7 +43,7 @@ class ExtensionInstalledBubbleView
 
   ~ExtensionInstalledBubbleView() override;
 
-  // ExtensionInstalledBubble::Delegate:
+  // ExtensionInstalledBubble::ExtensionInstalledBubbleUi:
   bool MaybeShowNow() override;
 
   // views::WidgetDelegate:

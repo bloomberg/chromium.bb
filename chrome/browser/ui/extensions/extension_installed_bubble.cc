@@ -59,11 +59,12 @@ scoped_ptr<extensions::Command> GetCommand(
 
 } // namespace
 
-ExtensionInstalledBubble::ExtensionInstalledBubble(Delegate* delegate,
-                                                   const Extension* extension,
-                                                   Browser* browser,
-                                                   const SkBitmap& icon)
-    : delegate_(delegate),
+ExtensionInstalledBubble::ExtensionInstalledBubble(
+    ExtensionInstalledBubbleUi* bubble_ui,
+    const Extension* extension,
+    Browser* browser,
+    const SkBitmap& icon)
+    : bubble_ui_(bubble_ui),
       extension_(extension),
       browser_(browser),
       icon_(icon),
@@ -130,7 +131,7 @@ base::string16 ExtensionInstalledBubble::GetHowToUseDescription() const {
 }
 
 void ExtensionInstalledBubble::ShowInternal() {
-  if (delegate_->MaybeShowNow())
+  if (bubble_ui_->MaybeShowNow())
     return;
   if (animation_wait_retries_++ < kAnimationWaitRetries) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -172,5 +173,5 @@ void ExtensionInstalledBubble::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_CLOSING)
       << "Received unexpected notification";
-  delete delegate_;
+  delete bubble_ui_;
 }
