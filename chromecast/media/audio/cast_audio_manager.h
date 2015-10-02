@@ -30,8 +30,8 @@ class CastAudioManager : public ::media::AudioManagerBase {
   ::media::AudioParameters GetInputStreamParameters(
       const std::string& device_id) override;
 
-  // This must be called on audio thread.
-  // See AudioManager::GetTaskRunner.
+  // This must be called on cast media thread.
+  // See chromecast::media::MediaMessageLoop.
   virtual scoped_ptr<MediaPipelineBackend> CreateMediaPipelineBackend();
 
  private:
@@ -51,7 +51,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
       const std::string& output_device_id,
       const ::media::AudioParameters& input_params) override;
 
-  scoped_ptr<TaskRunnerImpl> audio_task_runner_;
+  scoped_ptr<TaskRunnerImpl> backend_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CastAudioManager);
 };

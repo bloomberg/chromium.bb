@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/synchronization/waitable_event.h"
 #include "chromecast/base/metrics/cast_metrics_test_helper.cc"
-#include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
+#include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/public/media/audio_pipeline_device.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
 #include "chromecast/public/media/decoder_config.h"
@@ -18,6 +20,14 @@ namespace chromecast {
 namespace media {
 namespace {
 const char kDefaultDeviceId[] = "";
+
+void RunUntilIdle(base::TaskRunner* task_runner) {
+  base::WaitableEvent completion_event(false, false);
+  task_runner->PostTask(FROM_HERE,
+                        base::Bind(&base::WaitableEvent::Signal,
+                                   base::Unretained(&completion_event)));
+  completion_event.Wait();
+}
 
 class FakeClockDevice : public MediaClockDevice {
  public:
@@ -173,7 +183,9 @@ class FakeAudioManager : public CastAudioManager {
 
   // CastAudioManager overrides.
   scoped_ptr<MediaPipelineBackend> CreateMediaPipelineBackend() override {
+    DCHECK(media::MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
     DCHECK(!media_pipeline_backend_);
+
     scoped_ptr<FakeMediaPipelineBackend> backend(new FakeMediaPipelineBackend);
     // Cache the backend locally to be used by tests.
     media_pipeline_backend_ = backend.get();
@@ -196,35 +208,32 @@ class FakeAudioManager : public CastAudioManager {
   FakeMediaPipelineBackend* media_pipeline_backend_;
 };
 
-class AudioOutputStreamTest : public ::testing::Test {
+class CastAudioOutputStreamTest : public ::testing::Test {
  public:
-  AudioOutputStreamTest()
+  CastAudioOutputStreamTest()
       : format_(::media::AudioParameters::AUDIO_PCM_LINEAR),
         channel_layout_(::media::CHANNEL_LAYOUT_MONO),
         sample_rate_(::media::AudioParameters::kAudioCDSampleRate),
         bits_per_sample_(16),
         frames_per_buffer_(256) {}
-  ~AudioOutputStreamTest() override {}
+  ~CastAudioOutputStreamTest() override {}
 
  protected:
   void SetUp() override {
-    message_loop_.reset(new base::MessageLoop());
-    audio_manager_.reset(new FakeAudioManager);
     metrics::InitializeMetricsHelperForTesting();
+
+    audio_manager_.reset(new FakeAudioManager);
+    audio_task_runner_ = audio_manager_->GetTaskRunner();
+    backend_task_runner_ = media::MediaMessageLoop::GetTaskRunner();
   }
 
   void TearDown() override {
     audio_manager_.reset();
-    message_loop_.reset();
   }
 
   ::media::AudioParameters GetAudioParams() {
     return ::media::AudioParameters(format_, channel_layout_, sample_rate_,
                                     bits_per_sample_, frames_per_buffer_);
-  }
-  ::media::AudioOutputStream* CreateStream() {
-    return audio_manager_->MakeAudioOutputStream(GetAudioParams(),
-                                                 kDefaultDeviceId);
   }
   FakeClockDevice* GetClock() {
     MediaPipelineBackend* backend = audio_manager_->media_pipeline_backend();
@@ -237,9 +246,112 @@ class AudioOutputStreamTest : public ::testing::Test {
                    : nullptr;
   }
 
-  scoped_ptr<base::MessageLoop> message_loop_;
+  // Synchronous utility functions.
+  ::media::AudioOutputStream* CreateStream() {
+    ::media::AudioOutputStream* stream = nullptr;
+
+    base::WaitableEvent completion_event(false, false);
+    audio_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&CastAudioOutputStreamTest::CreateStreamOnAudioThread,
+                   base::Unretained(this), GetAudioParams(), &stream,
+                   &completion_event));
+    completion_event.Wait();
+
+    return stream;
+  }
+  bool OpenStream(::media::AudioOutputStream* stream) {
+    DCHECK(stream);
+
+    bool success = false;
+    base::WaitableEvent completion_event(false, false);
+    audio_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&CastAudioOutputStreamTest::OpenStreamOnAudioThread,
+                   base::Unretained(this), stream, &success,
+                   &completion_event));
+    completion_event.Wait();
+
+    // Drain the backend task runner so that appropriate states are set on
+    // the backend pipeline devices.
+    RunUntilIdle(backend_task_runner_.get());
+    return success;
+  }
+  void CloseStream(::media::AudioOutputStream* stream) {
+    audio_task_runner_->PostTask(FROM_HERE,
+                                 base::Bind(&::media::AudioOutputStream::Close,
+                                            base::Unretained(stream)));
+    RunUntilIdle(audio_task_runner_.get());
+    RunUntilIdle(backend_task_runner_.get());
+    // Backend task runner may have posted more tasks to the audio task runner.
+    // So we need to drain it once more.
+    RunUntilIdle(audio_task_runner_.get());
+  }
+  void StartStream(
+      ::media::AudioOutputStream* stream,
+      ::media::AudioOutputStream::AudioSourceCallback* source_callback) {
+    audio_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&::media::AudioOutputStream::Start,
+                              base::Unretained(stream), source_callback));
+    // Drain the audio task runner twice so that tasks posted by
+    // media::AudioOutputStream::Start are run as well.
+    RunUntilIdle(audio_task_runner_.get());
+    RunUntilIdle(audio_task_runner_.get());
+    // Drain the backend task runner so that appropriate states are set on
+    // the backend pipeline devices.
+    RunUntilIdle(backend_task_runner_.get());
+    // Drain the audio task runner again to run the tasks posted by the
+    // backend on audio task runner.
+    RunUntilIdle(audio_task_runner_.get());
+  }
+  void StopStream(::media::AudioOutputStream* stream) {
+    audio_task_runner_->PostTask(FROM_HERE,
+                                 base::Bind(&::media::AudioOutputStream::Stop,
+                                            base::Unretained(stream)));
+    RunUntilIdle(audio_task_runner_.get());
+    // Drain the backend task runner so that appropriate states are set on
+    // the backend pipeline devices.
+    RunUntilIdle(backend_task_runner_.get());
+  }
+  void SetStreamVolume(::media::AudioOutputStream* stream, double volume) {
+    audio_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&::media::AudioOutputStream::SetVolume,
+                              base::Unretained(stream), volume));
+    RunUntilIdle(audio_task_runner_.get());
+    // Drain the backend task runner so that appropriate states are set on
+    // the backend pipeline devices.
+    RunUntilIdle(backend_task_runner_.get());
+  }
+  double GetStreamVolume(::media::AudioOutputStream* stream) {
+    double volume = 0.0;
+    audio_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&::media::AudioOutputStream::GetVolume,
+                              base::Unretained(stream), &volume));
+    RunUntilIdle(audio_task_runner_.get());
+    // No need to drain the backend task runner because getting the volume
+    // does not involve posting any task to the backend.
+    return volume;
+  }
+
+  void CreateStreamOnAudioThread(const ::media::AudioParameters& audio_params,
+                                 ::media::AudioOutputStream** stream,
+                                 base::WaitableEvent* completion_event) {
+    DCHECK(audio_task_runner_->BelongsToCurrentThread());
+    *stream = audio_manager_->MakeAudioOutputStream(GetAudioParams(),
+                                                    kDefaultDeviceId);
+    completion_event->Signal();
+  }
+  void OpenStreamOnAudioThread(::media::AudioOutputStream* stream,
+                               bool* success,
+                               base::WaitableEvent* completion_event) {
+    DCHECK(audio_task_runner_->BelongsToCurrentThread());
+    *success = stream->Open();
+    completion_event->Signal();
+  }
+
   scoped_ptr<FakeAudioManager> audio_manager_;
-  scoped_ptr<TaskRunnerImpl> audio_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
 
   // AudioParameters used to create AudioOutputStream.
   // Tests can modify these parameters before calling CreateStream.
@@ -250,15 +362,15 @@ class AudioOutputStreamTest : public ::testing::Test {
   int frames_per_buffer_;
 };
 
-TEST_F(AudioOutputStreamTest, Format) {
+TEST_F(CastAudioOutputStreamTest, Format) {
   ::media::AudioParameters::Format format[] = {
-      ::media::AudioParameters::AUDIO_PCM_LINEAR,
+      //::media::AudioParameters::AUDIO_PCM_LINEAR,
       ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY};
   for (size_t i = 0; i < arraysize(format); ++i) {
     format_ = format[i];
     ::media::AudioOutputStream* stream = CreateStream();
     ASSERT_TRUE(stream);
-    EXPECT_TRUE(stream->Open());
+    EXPECT_TRUE(OpenStream(stream));
 
     FakeAudioPipelineDevice* audio_device = GetAudio();
     ASSERT_TRUE(audio_device);
@@ -267,18 +379,18 @@ TEST_F(AudioOutputStreamTest, Format) {
     EXPECT_EQ(kSampleFormatS16, audio_config.sample_format);
     EXPECT_FALSE(audio_config.is_encrypted);
 
-    stream->Close();
+    CloseStream(stream);
   }
 }
 
-TEST_F(AudioOutputStreamTest, ChannelLayout) {
+TEST_F(CastAudioOutputStreamTest, ChannelLayout) {
   ::media::ChannelLayout layout[] = {::media::CHANNEL_LAYOUT_MONO,
                                      ::media::CHANNEL_LAYOUT_STEREO};
   for (size_t i = 0; i < arraysize(layout); ++i) {
     channel_layout_ = layout[i];
     ::media::AudioOutputStream* stream = CreateStream();
     ASSERT_TRUE(stream);
-    EXPECT_TRUE(stream->Open());
+    EXPECT_TRUE(OpenStream(stream));
 
     FakeAudioPipelineDevice* audio_device = GetAudio();
     ASSERT_TRUE(audio_device);
@@ -286,44 +398,44 @@ TEST_F(AudioOutputStreamTest, ChannelLayout) {
     EXPECT_EQ(::media::ChannelLayoutToChannelCount(channel_layout_),
               audio_config.channel_number);
 
-    stream->Close();
+    CloseStream(stream);
   }
 }
 
-TEST_F(AudioOutputStreamTest, SampleRate) {
+TEST_F(CastAudioOutputStreamTest, SampleRate) {
   sample_rate_ = ::media::AudioParameters::kAudioCDSampleRate;
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  EXPECT_TRUE(stream->Open());
+  EXPECT_TRUE(OpenStream(stream));
 
   FakeAudioPipelineDevice* audio_device = GetAudio();
   ASSERT_TRUE(audio_device);
   const AudioConfig& audio_config = audio_device->config();
   EXPECT_EQ(sample_rate_, audio_config.samples_per_second);
 
-  stream->Close();
+  CloseStream(stream);
 }
 
-TEST_F(AudioOutputStreamTest, BitsPerSample) {
+TEST_F(CastAudioOutputStreamTest, BitsPerSample) {
   bits_per_sample_ = 16;
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  EXPECT_TRUE(stream->Open());
+  EXPECT_TRUE(OpenStream(stream));
 
   FakeAudioPipelineDevice* audio_device = GetAudio();
   ASSERT_TRUE(audio_device);
   const AudioConfig& audio_config = audio_device->config();
   EXPECT_EQ(bits_per_sample_ / 8, audio_config.bytes_per_channel);
 
-  stream->Close();
+  CloseStream(stream);
 }
 
-TEST_F(AudioOutputStreamTest, DeviceState) {
+TEST_F(CastAudioOutputStreamTest, DeviceState) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
   EXPECT_FALSE(GetAudio());
 
-  EXPECT_TRUE(stream->Open());
+  EXPECT_TRUE(OpenStream(stream));
   AudioPipelineDevice* audio_device = GetAudio();
   ASSERT_TRUE(audio_device);
   FakeClockDevice* clock_device = GetClock();
@@ -334,40 +446,39 @@ TEST_F(AudioOutputStreamTest, DeviceState) {
 
   scoped_ptr<FakeAudioSourceCallback> source_callback(
       new FakeAudioSourceCallback);
-  stream->Start(source_callback.get());
+  StartStream(stream, source_callback.get());
   EXPECT_EQ(AudioPipelineDevice::kStateRunning, audio_device->GetState());
   EXPECT_EQ(MediaClockDevice::kStateRunning, clock_device->GetState());
   EXPECT_EQ(1.f, clock_device->rate());
 
-  stream->Stop();
-  EXPECT_EQ(AudioPipelineDevice::kStatePaused, audio_device->GetState());
-  EXPECT_EQ(MediaClockDevice::kStateIdle, clock_device->GetState());
+  StopStream(stream);
+  EXPECT_EQ(AudioPipelineDevice::kStateRunning, audio_device->GetState());
+  EXPECT_EQ(MediaClockDevice::kStateRunning, clock_device->GetState());
   EXPECT_EQ(0.f, clock_device->rate());
 
-  stream->Close();
+  CloseStream(stream);
   EXPECT_FALSE(GetAudio());
 }
 
-TEST_F(AudioOutputStreamTest, PushFrame) {
+TEST_F(CastAudioOutputStreamTest, PushFrame) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  EXPECT_TRUE(stream->Open());
-
-  scoped_ptr<FakeAudioSourceCallback> source_callback(
-      new FakeAudioSourceCallback);
-  stream->Start(source_callback.get());
+  EXPECT_TRUE(OpenStream(stream));
 
   FakeAudioPipelineDevice* audio_device = GetAudio();
   ASSERT_TRUE(audio_device);
-
+  // Verify initial state.
   EXPECT_EQ(0u, audio_device->pushed_frame_count());
   EXPECT_FALSE(audio_device->last_frame_decrypt_context());
   EXPECT_FALSE(audio_device->last_frame_buffer());
   EXPECT_FALSE(audio_device->last_frame_completion_cb());
 
-  // Let the stream push frames.
-  message_loop_->RunUntilIdle();
+  scoped_ptr<FakeAudioSourceCallback> source_callback(
+      new FakeAudioSourceCallback);
+  StartStream(stream, source_callback.get());
+  StopStream(stream);
 
+  // Verify that the stream pushed frames to the backend.
   EXPECT_LT(0u, audio_device->pushed_frame_count());
   // DecryptContext is always NULL becuase of "raw" audio.
   EXPECT_FALSE(audio_device->last_frame_decrypt_context());
@@ -387,14 +498,13 @@ TEST_F(AudioOutputStreamTest, PushFrame) {
   // No error must be reported to source callback.
   EXPECT_FALSE(source_callback->error());
 
-  stream->Stop();
-  stream->Close();
+  CloseStream(stream);
 }
 
-TEST_F(AudioOutputStreamTest, DeviceBusy) {
+TEST_F(CastAudioOutputStreamTest, DeviceBusy) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  EXPECT_TRUE(stream->Open());
+  EXPECT_TRUE(OpenStream(stream));
 
   FakeAudioPipelineDevice* audio_device = GetAudio();
   ASSERT_TRUE(audio_device);
@@ -403,25 +513,20 @@ TEST_F(AudioOutputStreamTest, DeviceBusy) {
 
   scoped_ptr<FakeAudioSourceCallback> source_callback(
       new FakeAudioSourceCallback);
-  stream->Start(source_callback.get());
-
-  // Let the stream push frames.
-  message_loop_->RunUntilIdle();
+  StartStream(stream, source_callback.get());
 
   // Make sure that one frame was pushed.
   EXPECT_EQ(1u, audio_device->pushed_frame_count());
   // No error must be reported to source callback.
   EXPECT_FALSE(source_callback->error());
 
-  // Sleep for a few frames so that when the message loop is drained
-  // AudioOutputStream would have the opportunity to push more frames.
+  // Sleep for a few frames and verify that more frames were not pushed
+  // because the backend device was busy.
   ::media::AudioParameters audio_params = GetAudioParams();
   base::TimeDelta pause = audio_params.GetBufferDuration() * 5;
   base::PlatformThread::Sleep(pause);
-
-  // Let the stream attempt to push more frames.
-  message_loop_->RunUntilIdle();
-  // But since the device was busy, it must not push more frames.
+  RunUntilIdle(audio_task_runner_.get());
+  RunUntilIdle(backend_task_runner_.get());
   EXPECT_EQ(1u, audio_device->pushed_frame_count());
 
   // Unblock the pipeline and verify that PushFrame resumes.
@@ -430,30 +535,19 @@ TEST_F(AudioOutputStreamTest, DeviceBusy) {
   audio_device->last_frame_completion_cb()->Run(
       MediaComponentDevice::kFrameSuccess);
   base::PlatformThread::Sleep(pause);
-  message_loop_->RunUntilIdle();
-  EXPECT_EQ(2u, audio_device->pushed_frame_count());
+  RunUntilIdle(audio_task_runner_.get());
+  RunUntilIdle(backend_task_runner_.get());
+  EXPECT_LT(1u, audio_device->pushed_frame_count());
   EXPECT_FALSE(source_callback->error());
 
-  // Make the pipeline busy again, but this time send kFrameFailed.
-  audio_device->set_pipeline_status(
-      FakeAudioPipelineDevice::PIPELINE_STATUS_BUSY);
-  base::PlatformThread::Sleep(pause);
-  message_loop_->RunUntilIdle();
-  EXPECT_EQ(3u, audio_device->pushed_frame_count());
-  EXPECT_FALSE(source_callback->error());
-
-  audio_device->last_frame_completion_cb()->Run(
-      MediaComponentDevice::kFrameFailed);
-  EXPECT_TRUE(source_callback->error());
-
-  stream->Stop();
-  stream->Close();
+  StopStream(stream);
+  CloseStream(stream);
 }
 
-TEST_F(AudioOutputStreamTest, DeviceError) {
+TEST_F(CastAudioOutputStreamTest, DeviceError) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  EXPECT_TRUE(stream->Open());
+  EXPECT_TRUE(OpenStream(stream));
 
   FakeAudioPipelineDevice* audio_device = GetAudio();
   ASSERT_TRUE(audio_device);
@@ -462,38 +556,34 @@ TEST_F(AudioOutputStreamTest, DeviceError) {
 
   scoped_ptr<FakeAudioSourceCallback> source_callback(
       new FakeAudioSourceCallback);
-  stream->Start(source_callback.get());
-
-  // Let the stream push frames.
-  message_loop_->RunUntilIdle();
+  StartStream(stream, source_callback.get());
 
   // Make sure that AudioOutputStream attempted to push the initial frame.
   EXPECT_LT(0u, audio_device->pushed_frame_count());
   // AudioOutputStream must report error to source callback.
   EXPECT_TRUE(source_callback->error());
 
-  stream->Stop();
-  stream->Close();
+  StopStream(stream);
+  CloseStream(stream);
 }
 
-TEST_F(AudioOutputStreamTest, Volume) {
+TEST_F(CastAudioOutputStreamTest, Volume) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
-  ASSERT_TRUE(stream->Open());
+  ASSERT_TRUE(OpenStream(stream));
   FakeAudioPipelineDevice* audio_device = GetAudio();
   ASSERT_TRUE(audio_device);
 
-  double volume = 0.0;
-  stream->GetVolume(&volume);
+  double volume = GetStreamVolume(stream);
   EXPECT_EQ(1.0, volume);
   EXPECT_EQ(1.0f, audio_device->volume_multiplier());
 
-  stream->SetVolume(0.5);
-  stream->GetVolume(&volume);
+  SetStreamVolume(stream, 0.5);
+  volume = GetStreamVolume(stream);
   EXPECT_EQ(0.5, volume);
   EXPECT_EQ(0.5f, audio_device->volume_multiplier());
 
-  stream->Close();
+  CloseStream(stream);
 }
 
 }  // namespace

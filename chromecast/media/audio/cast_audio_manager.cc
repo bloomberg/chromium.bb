@@ -6,6 +6,7 @@
 
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
+#include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
@@ -61,13 +62,13 @@ void CastAudioManager::GetAudioInputDeviceNames(
 
 scoped_ptr<MediaPipelineBackend>
 CastAudioManager::CreateMediaPipelineBackend() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(media::MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
 
-  if (!audio_task_runner_)
-    audio_task_runner_.reset(new TaskRunnerImpl());
+  if (!backend_task_runner_)
+    backend_task_runner_.reset(new TaskRunnerImpl());
 
   MediaPipelineDeviceParams device_params(
-      MediaPipelineDeviceParams::kModeIgnorePts, audio_task_runner_.get());
+      MediaPipelineDeviceParams::kModeIgnorePts, backend_task_runner_.get());
   return scoped_ptr<MediaPipelineBackend>(
       CastMediaShlib::CreateMediaPipelineBackend(device_params));
 }

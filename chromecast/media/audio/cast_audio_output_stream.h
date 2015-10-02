@@ -7,19 +7,19 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chromecast/public/media/media_component_device.h"
+#include "base/time/time.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 
-namespace media {
-class FakeAudioWorker;
-}  // namespace media
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace chromecast {
 namespace media {
 
 class CastAudioManager;
-class MediaPipelineBackend;
+class DecoderBufferBase;
 
 class CastAudioOutputStream : public ::media::AudioOutputStream {
  public:
@@ -36,20 +36,26 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   void GetVolume(double* volume) override;
 
  private:
-  // Task to push frame into audio pipeline device.
-  void PushFrame(AudioSourceCallback* source_callback);
-  void OnPushFrameStatus(AudioSourceCallback* source_callback,
-                         MediaComponentDevice::FrameStatus status);
-  void OnPushFrameError(AudioSourceCallback* source_callback);
+  class Backend;
 
-  ::media::AudioParameters audio_params_;
-  CastAudioManager* audio_manager_;
+  void OnClosed();
+  void PushFrame();
+  void OnPushFrameComplete(bool success);
+
+  const ::media::AudioParameters audio_params_;
+  CastAudioManager* const audio_manager_;
 
   double volume_;
-  bool audio_device_busy_;
-  scoped_ptr<::media::FakeAudioWorker> audio_worker_;
+  AudioSourceCallback* source_callback_;
   scoped_ptr<::media::AudioBus> audio_bus_;
-  scoped_ptr<MediaPipelineBackend> media_pipeline_backend_;
+  scoped_refptr<media::DecoderBufferBase> decoder_buffer_;
+  scoped_ptr<Backend> backend_;
+  bool backend_busy_;
+  const base::TimeDelta buffer_duration_;
+  base::TimeTicks next_push_time_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
 
   base::WeakPtrFactory<CastAudioOutputStream> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(CastAudioOutputStream);
