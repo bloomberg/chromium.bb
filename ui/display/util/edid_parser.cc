@@ -97,11 +97,10 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
       return false;
     }
 
+    // ICC filename is generated based on these ids. We always read this as big
+    // endian so that the file name matches bytes 8-11 as they appear in EDID.
     *manufacturer_id =
-        *reinterpret_cast<const uint16_t*>(&edid[kManufacturerOffset]);
-#if defined(ARCH_CPU_LITTLE_ENDIAN)
-    *manufacturer_id = base::ByteSwap(*manufacturer_id);
-#endif
+        (edid[kManufacturerOffset] << 8) + edid[kManufacturerOffset + 1];
   }
 
   if (product_code) {
@@ -111,7 +110,7 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
     }
 
     *product_code =
-        *reinterpret_cast<const uint16_t*>(&edid[kProductCodeOffset]);
+        (edid[kProductCodeOffset] << 8) + edid[kProductCodeOffset + 1];
   }
 
   if (human_readable_name)

@@ -161,7 +161,7 @@ TEST(EDIDParserTest, ParseEDID) {
   EXPECT_TRUE(ParseOutputDeviceData(edid, &manufacturer_id, &product_code,
                                     &human_readable_name, &pixel, &size));
   EXPECT_EQ(0x22f0u, manufacturer_id);
-  EXPECT_EQ(0x286cu, product_code);
+  EXPECT_EQ(0x6c28u, product_code);
   EXPECT_EQ("HP ZR30w", human_readable_name);
   EXPECT_EQ("2560x1600", pixel.ToString());
   EXPECT_EQ("641x400", size.ToString());
@@ -175,7 +175,7 @@ TEST(EDIDParserTest, ParseEDID) {
   EXPECT_TRUE(ParseOutputDeviceData(edid, &manufacturer_id, &product_code,
                                     nullptr, &pixel, &size));
   EXPECT_EQ(0x4ca3u, manufacturer_id);
-  EXPECT_EQ(0x3142u, product_code);
+  EXPECT_EQ(0x4231u, product_code);
   EXPECT_EQ("", human_readable_name);
   EXPECT_EQ("1280x800", pixel.ToString());
   EXPECT_EQ("261x163", size.ToString());
@@ -193,7 +193,7 @@ TEST(EDIDParserTest, ParseEDID) {
   EXPECT_TRUE(ParseOutputDeviceData(edid, &manufacturer_id, &product_code,
                                     &human_readable_name, &pixel, &size));
   EXPECT_EQ(0x4c2du, manufacturer_id);
-  EXPECT_EQ(0x08feu, product_code);
+  EXPECT_EQ(0xfe08u, product_code);
   EXPECT_EQ("SAMSUNG", human_readable_name);
   EXPECT_EQ("1920x1080", pixel.ToString());
   EXPECT_EQ("160x90", size.ToString());
@@ -227,7 +227,7 @@ TEST(EDIDParserTest, ParseBrokenEDID) {
   EXPECT_TRUE(ParseOutputDeviceData(edid, &manufacturer_id, &product_code,
                                     nullptr, &dummy, &dummy));
   EXPECT_EQ(0x22f0u, manufacturer_id);
-  EXPECT_EQ(0x286cu, product_code);
+  EXPECT_EQ(0x6c28u, product_code);
 }
 
 TEST(EDIDParserTest, GetDisplayId) {
@@ -243,8 +243,8 @@ TEST(EDIDParserTest, GetDisplayId) {
   EXPECT_EQ(id1, id2);
   // The product code in the two EDIDs varies.
   EXPECT_NE(product_id1, product_id2);
-  EXPECT_EQ(0x22f02676, product_id1);
-  EXPECT_EQ(0x22f02675, product_id2);
+  EXPECT_EQ(0x22f07626, product_id1);
+  EXPECT_EQ(0x22f07526, product_id2);
   EXPECT_NE(-1, id1);
   EXPECT_NE(-1, product_id1);
 }
