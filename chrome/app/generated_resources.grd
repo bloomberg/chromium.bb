@@ -5595,7 +5595,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Alternative services.
       </message>
       <message name="IDS_FLAGS_ENABLE_ALTSVC_DESCRIPTION" desc="Description for the flag to enable alternative services.">
-        Enable experimental HTTP alternative services support.
+        Enable support for Alternative Services, an experimental HTTP feature.
       </message>
       <message name="IDS_FLAGS_DISABLE_MEDIA_SOURCE_NAME" desc="Title for the flag to disable the Media Source API.">
         Disable Media Source API.
