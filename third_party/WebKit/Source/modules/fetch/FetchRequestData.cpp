@@ -13,8 +13,8 @@
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/network/ResourceRequest.h"
-#include "public/platform/WebServiceWorkerRequest.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #ifndef WebServiceWorkerClientQueryOptions_h
 #define WebServiceWorkerClientQueryOptions_h
 
-#include "public/platform/WebServiceWorkerClientType.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerClientType.h"
 
 namespace blink {
 

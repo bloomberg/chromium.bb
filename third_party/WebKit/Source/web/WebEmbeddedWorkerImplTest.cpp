@@ -11,8 +11,8 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebEmbeddedWorkerStartData.h"
-#include "public/web/WebServiceWorkerContextClient.h"
 #include "public/web/WebSettings.h"
+#include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 

@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebString.h"
-#include "public/web/WebServiceWorkerContextProxy.h"
+#include "public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 

@@ -8,10 +8,10 @@
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebPassOwnPtr.h"
-#include "public/platform/WebServiceWorkerClientType.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerClientType.h"
 
 namespace blink {
 

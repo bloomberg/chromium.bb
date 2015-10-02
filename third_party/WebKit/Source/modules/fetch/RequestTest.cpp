@@ -10,8 +10,8 @@
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 #include "core/testing/DummyPageHolder.h"
-#include "public/platform/WebServiceWorkerRequest.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>

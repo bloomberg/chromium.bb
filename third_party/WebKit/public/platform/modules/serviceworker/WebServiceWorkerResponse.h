@@ -7,11 +7,11 @@
 
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
-#include "public/platform/WebServiceWorkerResponseError.h"
-#include "public/platform/WebServiceWorkerResponseType.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 
 #if INSIDE_BLINK
 #include "wtf/Forward.h"

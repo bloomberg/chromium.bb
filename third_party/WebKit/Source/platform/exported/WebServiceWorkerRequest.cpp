@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "public/platform/WebServiceWorkerRequest.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 
 #include "platform/blob/BlobData.h"
 #include "platform/weborigin/KURL.h"

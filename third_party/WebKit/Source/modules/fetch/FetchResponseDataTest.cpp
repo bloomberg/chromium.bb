@@ -8,7 +8,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/blob/BlobData.h"
-#include "public/platform/WebServiceWorkerResponse.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 
 #include <gtest/gtest.h>
 

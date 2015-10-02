@@ -7,11 +7,11 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebServiceWorkerCacheError.h"
-#include "public/platform/WebServiceWorkerRequest.h"
-#include "public/platform/WebServiceWorkerResponse.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 
 namespace blink {
 

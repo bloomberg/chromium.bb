@@ -6,8 +6,8 @@
 #define WebServiceWorkerRegistration_h
 
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/WebServiceWorkerError.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerError.h"
 
 namespace blink {
 

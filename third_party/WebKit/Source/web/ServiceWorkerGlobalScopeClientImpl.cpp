@@ -32,9 +32,9 @@
 #include "web/ServiceWorkerGlobalScopeClientImpl.h"
 
 #include "modules/fetch/Response.h"
-#include "public/platform/WebServiceWorkerResponse.h"
 #include "public/platform/WebURL.h"
-#include "public/web/WebServiceWorkerContextClient.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
+#include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {

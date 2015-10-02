@@ -33,8 +33,8 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebPassOwnPtr.h"
-#include "public/platform/WebServiceWorkerRegistration.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 
 namespace blink {
 

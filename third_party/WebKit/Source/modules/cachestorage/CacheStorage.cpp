@@ -13,8 +13,8 @@
 #include "modules/cachestorage/CacheStorageError.h"
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
-#include "public/platform/WebServiceWorkerCacheError.h"
-#include "public/platform/WebServiceWorkerCacheStorage.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
 
 namespace blink {
 

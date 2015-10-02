@@ -34,7 +34,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebServiceWorkerRegistration.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

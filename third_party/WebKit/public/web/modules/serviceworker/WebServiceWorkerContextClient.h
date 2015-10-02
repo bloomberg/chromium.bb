@@ -32,11 +32,11 @@
 #define WebServiceWorkerContextClient_h
 
 #include "public/platform/WebMessagePortChannel.h"
-#include "public/platform/WebServiceWorkerClientsClaimCallbacks.h"
-#include "public/platform/WebServiceWorkerClientsInfo.h"
-#include "public/platform/WebServiceWorkerEventResult.h"
-#include "public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerClientsClaimCallbacks.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
 #include <v8.h>
 
 namespace blink {

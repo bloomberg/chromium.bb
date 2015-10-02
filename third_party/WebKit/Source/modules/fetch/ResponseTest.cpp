@@ -17,7 +17,7 @@
 #include "modules/fetch/FetchResponseData.h"
 #include "platform/blob/BlobData.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/WebServiceWorkerResponse.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include <gtest/gtest.h>
 
 namespace blink {

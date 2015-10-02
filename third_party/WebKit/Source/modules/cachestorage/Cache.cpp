@@ -22,7 +22,7 @@
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
 #include "public/platform/WebPassOwnPtr.h"
-#include "public/platform/WebServiceWorkerCache.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 
 namespace blink {
 

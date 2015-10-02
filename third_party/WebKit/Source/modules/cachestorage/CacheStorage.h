@@ -11,7 +11,7 @@
 #include "modules/cachestorage/Cache.h"
 #include "modules/cachestorage/CacheQueryOptions.h"
 #include "modules/fetch/GlobalFetch.h"
-#include "public/platform/WebServiceWorkerCacheStorage.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"

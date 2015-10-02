@@ -11,7 +11,7 @@
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/DataConsumerTee.h"
 #include "modules/fetch/FetchHeaderList.h"
-#include "public/platform/WebServiceWorkerResponse.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 
 namespace blink {
 

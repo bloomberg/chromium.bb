@@ -32,8 +32,8 @@
 #define ServiceWorkerGlobalScopeClientImpl_h
 
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
-#include "public/platform/WebServiceWorkerClientsInfo.h"
-#include "public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {

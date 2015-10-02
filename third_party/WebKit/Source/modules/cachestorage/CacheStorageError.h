@@ -5,7 +5,7 @@
 #ifndef CacheStorageError_h
 #define CacheStorageError_h
 
-#include "public/platform/WebServiceWorkerCacheError.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 

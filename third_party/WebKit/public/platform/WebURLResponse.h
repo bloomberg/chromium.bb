@@ -33,7 +33,7 @@
 
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivateOwnPtr.h"
-#include "public/platform/WebServiceWorkerResponseType.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 
 namespace blink {
 

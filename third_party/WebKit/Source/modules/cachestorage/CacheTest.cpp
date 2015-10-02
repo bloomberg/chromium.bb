@@ -19,8 +19,8 @@
 #include "modules/fetch/GlobalFetch.h"
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
-#include "public/platform/WebServiceWorkerCache.h"
 #include "public/platform/WebURLResponse.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "wtf/OwnPtr.h"
 
 #include <algorithm>

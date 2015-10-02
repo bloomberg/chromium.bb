@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "public/platform/WebServiceWorkerProviderClient.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 
 // This WebServiceWorkerProviderClient.cpp, which includes only config.h and
 // WebServiceWorkerProviderClient.h, should be in Source/platform/exported,
