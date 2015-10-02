@@ -407,6 +407,7 @@
     },
 
     'client.v8.fyi': {
+      'Linux Debug Builder': 'gn_debug_bot',
       'V8 Linux GN': 'gn_release_bot',
       'V8 Android GN (dbg)': 'android_gn_debug_bot',
     },
