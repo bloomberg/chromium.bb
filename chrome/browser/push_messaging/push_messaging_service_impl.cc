@@ -453,16 +453,16 @@ bool PushMessagingServiceImpl::SupportNonVisibleMessages() {
 void PushMessagingServiceImpl::SubscribeEnd(
     const content::PushMessagingService::RegisterCallback& callback,
     const std::string& subscription_id,
-    const std::vector<uint8_t>& p256dh,
+    const std::vector<uint8_t>& curve25519dh,
     content::PushRegistrationStatus status) {
-  callback.Run(subscription_id, p256dh, status);
+  callback.Run(subscription_id, curve25519dh, status);
 }
 
 void PushMessagingServiceImpl::SubscribeEndWithError(
     const content::PushMessagingService::RegisterCallback& callback,
     content::PushRegistrationStatus status) {
   SubscribeEnd(callback, std::string() /* subscription_id */,
-               std::vector<uint8_t>() /* p256dh */, status);
+               std::vector<uint8_t>() /* curve25519dh */, status);
 }
 
 void PushMessagingServiceImpl::DidSubscribe(

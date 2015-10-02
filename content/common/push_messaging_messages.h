@@ -34,12 +34,12 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 IPC_MESSAGE_ROUTED3(PushMessagingMsg_SubscribeFromDocumentSuccess,
                     int32_t /* request_id */,
                     GURL /* push_endpoint */,
-                    std::vector<uint8_t> /* p256dh */)
+                    std::vector<uint8_t> /* curve25519dh */)
 
 IPC_MESSAGE_CONTROL3(PushMessagingMsg_SubscribeFromWorkerSuccess,
                      int32_t /* request_id */,
                      GURL /* push_endpoint */,
-                     std::vector<uint8_t> /* p256dh */)
+                     std::vector<uint8_t> /* curve25519dh */)
 
 IPC_MESSAGE_ROUTED2(PushMessagingMsg_SubscribeFromDocumentError,
                     int32_t /* request_id */,
@@ -61,7 +61,7 @@ IPC_MESSAGE_CONTROL3(PushMessagingMsg_UnsubscribeError,
 IPC_MESSAGE_CONTROL3(PushMessagingMsg_GetRegistrationSuccess,
                      int32_t /* request_id */,
                      GURL /* push_endpoint */,
-                     std::vector<uint8_t> /* p256dh */)
+                     std::vector<uint8_t> /* curve25519dh */)
 
 IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetRegistrationError,
                      int32_t /* request_id */,

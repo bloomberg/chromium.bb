@@ -67,7 +67,7 @@ class PushProvider : public blink::WebPushProvider,
   // IPC message handlers.
   void OnSubscribeFromWorkerSuccess(int request_id,
                                     const GURL& endpoint,
-                                    const std::vector<uint8_t>& p256dh);
+                                    const std::vector<uint8_t>& curve25519dh);
   void OnSubscribeFromWorkerError(int request_id,
                                   PushRegistrationStatus status);
   void OnUnsubscribeSuccess(int request_id, bool did_unsubscribe);
@@ -76,7 +76,7 @@ class PushProvider : public blink::WebPushProvider,
                           const std::string& error_message);
   void OnGetRegistrationSuccess(int request_id,
                                 const GURL& endpoint,
-                                const std::vector<uint8_t>& p256dh);
+                                const std::vector<uint8_t>& curve25519dh);
   void OnGetRegistrationError(int request_id, PushGetRegistrationStatus status);
   void OnGetPermissionStatusSuccess(int request_id,
                                     blink::WebPushPermissionStatus status);

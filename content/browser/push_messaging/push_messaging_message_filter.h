@@ -76,7 +76,7 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void DidGetEncryptionKeys(const RegisterData& data,
                             const std::string& push_registration_id,
                             bool success,
-                            const std::vector<uint8_t>& p256dh);
+                            const std::vector<uint8_t>& curve25519dh);
 
   void DidGetSenderIdFromStorage(const RegisterData& data,
                                  const std::string& sender_id,
@@ -85,12 +85,12 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   // Called via PostTask from UI thread.
   void PersistRegistrationOnIO(const RegisterData& data,
                                const std::string& push_registration_id,
-                               const std::vector<uint8_t>& p256dh);
+                               const std::vector<uint8_t>& curve25519dh);
 
   void DidPersistRegistrationOnIO(
       const RegisterData& data,
       const std::string& push_registration_id,
-      const std::vector<uint8_t>& p256dh,
+      const std::vector<uint8_t>& curve25519dh,
       ServiceWorkerStatusCode service_worker_status);
 
   // Called both from IO thread, and via PostTask from UI thread.
@@ -100,7 +100,7 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void SendRegisterSuccess(const RegisterData& data,
                            PushRegistrationStatus status,
                            const std::string& push_registration_id,
-                           const std::vector<uint8_t>& p256dh);
+                           const std::vector<uint8_t>& curve25519dh);
 
   // Unsubscribe methods on IO thread ------------------------------------------
 
@@ -152,7 +152,7 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void DidGetRegistrationKeys(int request_id,
                               const GURL& endpoint,
                               bool success,
-                              const std::vector<uint8_t>& p256dh);
+                              const std::vector<uint8_t>& curve25519dh);
 
   // Helper methods on IO thread -----------------------------------------------
 
