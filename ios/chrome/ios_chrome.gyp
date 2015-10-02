@@ -480,6 +480,8 @@
         'browser/updatable_config/updatable_config_base.mm',
         'browser/updatable_config/updatable_dictionary.h',
         'browser/updatable_config/updatable_dictionary.mm',
+        'browser/update_client/ios_chrome_update_query_params_delegate.cc',
+        'browser/update_client/ios_chrome_update_query_params_delegate.h',
         'browser/web/dom_altering_lock.h',
         'browser/web/dom_altering_lock.mm',
         'browser/web/web_view_type_util.h',
