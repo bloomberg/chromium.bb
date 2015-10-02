@@ -962,8 +962,12 @@ static const struct wl_callback_listener sync_listener = {
  * \param queue The queue on which to run the roundtrip
  * \return The number of dispatched events on success or -1 on failure
  *
- * Blocks until the server processes all currently issued requests and
- * sends out pending events on the event queue.
+ * This function blocks until the server has processed all currently issued
+ * requests by sending a request to the display server and waiting for a
+ * reply before returning.
+ *
+ * \note This function may dispatch other events being received on the given
+ * queue.
  *
  * \note This function uses wl_display_dispatch_queue() internally. If you
  * are using wl_display_read_events() from more threads, don't use this function
@@ -999,8 +1003,12 @@ wl_display_roundtrip_queue(struct wl_display *display, struct wl_event_queue *qu
  * \param display The display context object
  * \return The number of dispatched events on success or -1 on failure
  *
- * Blocks until the server process all currently issued requests and
- * sends out pending events on the default event queue.
+ * This function blocks until the server has processed all currently issued
+ * requests by sending a request to the display server and waiting for a reply
+ * before returning.
+ *
+ * \note This function may dispatch other events being received on the default
+ * queue.
  *
  * \note This function uses wl_display_dispatch_queue() internally. If you
  * are using wl_display_read_events() from more threads, don't use this function
