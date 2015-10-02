@@ -621,6 +621,7 @@ bool NormalPageHeap::coalesce()
                 // The rest of the memory is already on the free list and is
                 // therefore already zero filled.
                 SET_MEMORY_INACCESSIBLE(headerAddress, sizeof(HeapObjectHeader));
+                CHECK_MEMORY_INACCESSIBLE(headerAddress, size);
                 freedSize += size;
                 headerAddress += size;
                 continue;
@@ -631,6 +632,7 @@ bool NormalPageHeap::coalesce()
                 // The rest of the memory is already on the free list and is
                 // therefore already zero filled.
                 SET_MEMORY_INACCESSIBLE(headerAddress, size < sizeof(FreeListEntry) ? size : sizeof(FreeListEntry));
+                CHECK_MEMORY_INACCESSIBLE(headerAddress, size);
                 headerAddress += size;
                 continue;
             }
@@ -1099,6 +1101,13 @@ void NEVER_INLINE FreeList::zapFreedMemory(Address address, size_t size)
             address[i] = reuseForbiddenZapValue;
     }
 }
+
+void NEVER_INLINE FreeList::checkFreedMemoryIsZapped(Address address, size_t size)
+{
+    for (size_t i = 0; i < size; i++) {
+        ASSERT(address[i] == reuseAllowedZapValue || address[i] == reuseForbiddenZapValue);
+    }
+}
 #endif
 
 void FreeList::clear()
@@ -1231,6 +1240,7 @@ void NormalPage::sweep()
             // The rest of the memory is already on the free list and is
             // therefore already zero filled.
             SET_MEMORY_INACCESSIBLE(headerAddress, size < sizeof(FreeListEntry) ? size : sizeof(FreeListEntry));
+            CHECK_MEMORY_INACCESSIBLE(headerAddress, size);
             headerAddress += size;
             continue;
         }
@@ -1308,6 +1318,7 @@ void NormalPage::makeConsistentForMutator()
             // The rest of the memory is already on the free list and is
             // therefore already zero filled.
             SET_MEMORY_INACCESSIBLE(headerAddress, size < sizeof(FreeListEntry) ? size : sizeof(FreeListEntry));
+            CHECK_MEMORY_INACCESSIBLE(headerAddress, size);
             headerAddress += size;
             continue;
         }

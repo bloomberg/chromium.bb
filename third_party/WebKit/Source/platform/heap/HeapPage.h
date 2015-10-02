@@ -94,16 +94,25 @@ const uint8_t reuseForbiddenZapValue = 0x2c;
     FreeList::zapFreedMemory(address, size);
 #define SET_MEMORY_ACCESSIBLE(address, size) \
     memset((address), 0, (size))
+#define CHECK_MEMORY_INACCESSIBLE(address, size) \
+    ASAN_UNPOISON_MEMORY_REGION(address, size); \
+    FreeList::checkFreedMemoryIsZapped(address, size); \
+    ASAN_POISON_MEMORY_REGION(address, size)
 #elif ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define SET_MEMORY_INACCESSIBLE(address, size) \
     FreeList::zapFreedMemory(address, size);   \
     ASAN_POISON_MEMORY_REGION(address, size)
 #define SET_MEMORY_ACCESSIBLE(address, size) \
-    ASAN_UNPOISON_MEMORY_REGION(address, size);    \
+    ASAN_UNPOISON_MEMORY_REGION(address, size); \
     memset((address), 0, (size))
+#define CHECK_MEMORY_INACCESSIBLE(address, size) \
+    ASAN_UNPOISON_MEMORY_REGION(address, size); \
+    FreeList::checkFreedMemoryIsZapped(address, size); \
+    ASAN_POISON_MEMORY_REGION(address, size)
 #else
 #define SET_MEMORY_INACCESSIBLE(address, size) memset((address), 0, (size))
 #define SET_MEMORY_ACCESSIBLE(address, size) do { } while (false)
+#define CHECK_MEMORY_INACCESSIBLE(address, size) do { } while (false)
 #endif
 
 #if !ENABLE(ASSERT) && !ENABLE(GC_PROFILING) && CPU(64BIT)
@@ -668,6 +677,7 @@ public:
 
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
     static void zapFreedMemory(Address, size_t);
+    static void checkFreedMemoryIsZapped(Address, size_t);
 #endif
 
 private:
