@@ -23,9 +23,7 @@ class Rect;
 //
 // Notification display design note: if the #simplified-fullscreen-ui flag is
 // enabled, the bubble has the following behaviour:
-// - Upon taking exclusive access, wait kDebounceNotificationsTimeMs, then for
-//   user input, before displaying the bubble.
-// - The bubble is shown for kIdleTimeMs, then hides.
+// - The bubble is shown for kInitialDelayMs, then hides.
 // - After a bubble has been shown, notifications are suppressed for
 //   kSnoozeNotificationsTimeMs, to avoid bothering the user. After this time
 //   has elapsed, the next user input re-displays the bubble.
@@ -40,8 +38,6 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   static const int kPaddingPx;        // Amount of padding around the link
   static const int kInitialDelayMs;   // Initial time bubble remains onscreen
   static const int kIdleTimeMs;       // Time before mouse idle triggers hide
-  // See notification display design note above.
-  static const int kDebounceNotificationsTimeMs;
   static const int kSnoozeNotificationsTimeMs;
   static const int kPositionCheckHz;  // How fast to check the mouse position
   static const int kSlideInRegionHeightPx;
@@ -107,6 +103,10 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   ExclusiveAccessBubbleType bubble_type_;
 
  private:
+  // Shows the bubble and sets up timers to auto-hide and prevent re-showing for
+  // a certain snooze time.
+  void ShowAndStartTimers();
+
   // When this timer is active, prevent the bubble from hiding. This ensures it
   // will be displayed for a minimum amount of time (which can be extended by
   // the user moving the mouse to the top of the screen and holding it there).

@@ -25,8 +25,7 @@ const int ExclusiveAccessBubble::kPaddingPx = 15;
 #endif
 const int ExclusiveAccessBubble::kInitialDelayMs = 3800;
 const int ExclusiveAccessBubble::kIdleTimeMs = 2300;
-const int ExclusiveAccessBubble::kDebounceNotificationsTimeMs = 500;
-const int ExclusiveAccessBubble::kSnoozeNotificationsTimeMs = 3600000;  // 1hr.
+const int ExclusiveAccessBubble::kSnoozeNotificationsTimeMs = 900000;  // 15m.
 const int ExclusiveAccessBubble::kPositionCheckHz = 10;
 const int ExclusiveAccessBubble::kSlideInRegionHeightPx = 4;
 const int ExclusiveAccessBubble::kSlideInDurationMs = 350;
@@ -39,15 +38,6 @@ ExclusiveAccessBubble::ExclusiveAccessBubble(
     ExclusiveAccessBubbleType bubble_type)
     : manager_(manager), url_(url), bubble_type_(bubble_type) {
   DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type_);
-
-  // Wait for a short time to let the user stop moving the mouse. After this
-  // time elapses, we will notify the user upon the next mouse input.
-  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
-    suppress_notify_timeout_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kDebounceNotificationsTimeMs), this,
-        &ExclusiveAccessBubble::CheckMousePosition);
-  }
 }
 
 ExclusiveAccessBubble::~ExclusiveAccessBubble() {
@@ -55,7 +45,9 @@ ExclusiveAccessBubble::~ExclusiveAccessBubble() {
 
 void ExclusiveAccessBubble::StartWatchingMouse() {
   // Start the initial delay timer and begin watching the mouse.
-  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    ShowAndStartTimers();
+  } else {
     hide_timeout_.Start(FROM_HERE,
                         base::TimeDelta::FromMilliseconds(kInitialDelayMs),
                         this, &ExclusiveAccessBubble::CheckMousePosition);
@@ -78,7 +70,7 @@ bool ExclusiveAccessBubble::IsWatchingMouse() const {
 }
 
 void ExclusiveAccessBubble::CheckMousePosition() {
-  // Desired behavior:
+  // Desired behavior (without the "simplified" flag):
   //
   // +------------+-----------------------------+------------+
   // | _  _  _  _ | Exit full screen mode (F11) | _  _  _  _ |  Slide-in region
@@ -97,6 +89,9 @@ void ExclusiveAccessBubble::CheckMousePosition() {
   // * Otherwise, we do nothing, because the mouse is in the neutral region and
   //   either the popup is hidden or the mouse is not idle, so we don't want to
   //   change anything's state.
+  //
+  // With the "simplified" flag, we ignore all this and just show and hide based
+  // on timers (not mouse position).
 
   gfx::Point cursor_pos = GetCursorScreenPoint();
 
@@ -112,16 +107,7 @@ void ExclusiveAccessBubble::CheckMousePosition() {
       // If the notification suppression timer has elapsed, show the
       // notification regardless of where the mouse is on the screen.
       if (!suppress_notify_timeout_.IsRunning()) {
-        Show();
-        // Do not allow the notification to hide for a few seconds.
-        hide_timeout_.Start(FROM_HERE,
-                            base::TimeDelta::FromMilliseconds(kIdleTimeMs),
-                            this, &ExclusiveAccessBubble::CheckMousePosition);
-        // Do not show the notification again until a long time has elapsed.
-        suppress_notify_timeout_.Start(
-            FROM_HERE,
-            base::TimeDelta::FromMilliseconds(kSnoozeNotificationsTimeMs), this,
-            &ExclusiveAccessBubble::CheckMousePosition);
+        ShowAndStartTimers();
         return;
       } else {
         // The timer has not elapsed, but the user moved the mouse. Reset the
@@ -133,13 +119,15 @@ void ExclusiveAccessBubble::CheckMousePosition() {
   }
   last_mouse_pos_ = cursor_pos;
 
-  if (!IsWindowActive() || !WindowContainsPoint(cursor_pos) ||
-      (cursor_pos.y() >= GetPopupRect(true).bottom()) ||
+  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ||
+      !IsWindowActive() || !WindowContainsPoint(cursor_pos) ||
+      cursor_pos.y() >= GetPopupRect(true).bottom() ||
       !idle_timeout_.IsRunning()) {
-    // The cursor is offscreen, in the slide-out region, or idle.
-    if (!hide_timeout_.IsRunning()) {
+    // Classic mode: The cursor is offscreen, in the slide-out region, or idle.
+    // Simplified mode: Always come here (never check for mouse entering the top
+    // of screen).
+    if (!hide_timeout_.IsRunning())
       Hide();
-    }
   } else if (cursor_pos.y() < kSlideInRegionHeightPx &&
              CanMouseTriggerSlideIn()) {
     Show();
@@ -179,4 +167,18 @@ base::string16 ExclusiveAccessBubble::GetCurrentAllowButtonText() const {
 base::string16 ExclusiveAccessBubble::GetInstructionText() const {
   return l10n_util::GetStringFUTF16(IDS_FULLSCREEN_PRESS_ESC_TO_EXIT,
                                     l10n_util::GetStringUTF16(IDS_APP_ESC_KEY));
+}
+
+void ExclusiveAccessBubble::ShowAndStartTimers() {
+  Show();
+
+  // Do not allow the notification to hide for a few seconds.
+  hide_timeout_.Start(FROM_HERE,
+                      base::TimeDelta::FromMilliseconds(kInitialDelayMs), this,
+                      &ExclusiveAccessBubble::CheckMousePosition);
+
+  // Do not show the notification again until a long time has elapsed.
+  suppress_notify_timeout_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kSnoozeNotificationsTimeMs),
+      this, &ExclusiveAccessBubble::CheckMousePosition);
 }
