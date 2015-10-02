@@ -137,7 +137,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   }
 
   if (cl->HasSwitch(switches::kWebViewSandboxedRenderer)) {
-    cl->AppendSwitch(switches::kUseIpcCommandBuffer);
     cl->AppendSwitch(switches::kInProcessGPU);
     cl->AppendSwitchASCII(switches::kRendererProcessLimit, "1");
   }
