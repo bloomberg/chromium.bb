@@ -73,8 +73,14 @@ class PerformanceTracker {
 
  private:
   struct FrameTimestamps {
+    FrameTimestamps();
+    ~FrameTimestamps();
+
     // Set to null for frames that were not sent after a fresh input event.
     base::TimeTicks latest_event_timestamp;
+
+    // Set to TimeDelta::Max() when unknown.
+    base::TimeDelta total_host_latency;
 
     base::TimeTicks time_received;
     base::TimeTicks time_decoded;

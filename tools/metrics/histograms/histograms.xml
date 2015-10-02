@@ -4151,6 +4151,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Chromoting.Video.NetworkLatency" units="ms">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    Estimated network roundtrip latency calculated by subtracting total
+    processing time on host and client from the total roundtrip time.
+  </summary>
+</histogram>
+
 <histogram name="Chromoting.Video.PacketRate" units="packets/second">
   <owner>anandc@chromium.org</owner>
   <owner>sergeyu@chromium.org</owner>

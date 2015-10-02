@@ -27,6 +27,7 @@ const char kEncodePendingLatencyHistogram[] =
     "Chromoting.Video.EncodePendingLatency";
 const char kSendPendingLatencyHistogram[] =
     "Chromoting.Video.SendPendingLatency";
+const char kNetworkLatencyHistogram[] = "Chromoting.Video.NetworkLatency";
 
 // Custom count and custom time histograms are log-scaled by default. This
 // results in fine-grained buckets at lower values and wider-ranged buckets
@@ -75,6 +76,9 @@ void UpdateUmaCustomHistogramStub(const std::string& histogram_name,
 
 namespace remoting {
 namespace protocol {
+
+PerformanceTracker::FrameTimestamps::FrameTimestamps() {}
+PerformanceTracker::FrameTimestamps::~FrameTimestamps() {}
 
 PerformanceTracker::PerformanceTracker()
     : video_bandwidth_(base::TimeDelta::FromSeconds(kStatsUpdatePeriodSeconds)),
@@ -129,6 +133,20 @@ void PerformanceTracker::RecordVideoPacketStats(const VideoPacket& packet) {
       timestamps.latest_event_timestamp = timestamp;
       latest_event_timestamp_ = timestamp;
     }
+  }
+
+  // If the host didn't specify any of the latency fields then set
+  // |total_host_latency| to Max, to indicate that the latency is unknown.
+  timestamps.total_host_latency = base::TimeDelta::Max();
+  if (packet.has_capture_time_ms() && packet.has_encode_time_ms() &&
+      packet.has_capture_pending_time_ms() &&
+      packet.has_capture_overhead_time_ms() &&
+      packet.has_encode_pending_time_ms() &&
+      packet.has_send_pending_time_ms()) {
+    timestamps.total_host_latency = base::TimeDelta::FromMilliseconds(
+        packet.capture_time_ms() + packet.encode_time_ms() +
+        packet.capture_pending_time_ms() + packet.capture_overhead_time_ms() +
+        packet.encode_pending_time_ms() + packet.send_pending_time_ms());
   }
 
   // If the packet is empty, there are no other stats to update.
@@ -239,6 +257,18 @@ void PerformanceTracker::RecordRoundTripLatency(
   uma_custom_times_updater_.Run(
       kRoundTripLatencyHistogram, round_trip_latency.InMilliseconds(),
       kLatencyHistogramMinMs, kLatencyHistogramMaxMs, kLatencyHistogramBuckets);
+
+  if (!timestamps.total_host_latency.is_max()) {
+    // Calculate total processing time on host and client.
+    base::TimeDelta total_processing_latency =
+        timestamps.total_host_latency + (now - timestamps.time_received);
+    base::TimeDelta network_latency =
+        round_trip_latency - total_processing_latency;
+    uma_custom_times_updater_.Run(
+        kNetworkLatencyHistogram, network_latency.InMilliseconds(),
+        kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
+        kVideoActionsHistogramsBuckets);
+  }
 }
 
 void PerformanceTracker::UploadRateStatsToUma() {
