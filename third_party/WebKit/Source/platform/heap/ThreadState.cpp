@@ -653,10 +653,6 @@ bool ThreadState::shouldForceMemoryPressureGC()
 {
     if (totalMemorySize() < 300 * 1024 * 1024)
         return false;
-
-    if (!judgeGCThreshold(0, 1.5))
-        return false;
-    completeSweep();
     return judgeGCThreshold(0, 1.5);
 }
 
@@ -668,17 +664,18 @@ void ThreadState::scheduleV8FollowupGCIfNeeded(V8GCType gcType)
     if (isGCForbidden())
         return;
 
-    // If V8 has acted on a memory pressure signal and performed a major GC,
-    // follow up, if needed.
+    // This completeSweep() will do nothing in common cases since we've
+    // called completeSweep() before V8 starts minor/major GCs.
+    completeSweep();
+    ASSERT(!isSweepingInProgress());
+    ASSERT(!sweepForbidden());
+
+    // TODO(haraken): Consider if we should trigger a memory pressure GC
+    // for V8 minor GCs as well.
     if (gcType == V8MajorGC && shouldForceMemoryPressureGC()) {
         Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
         return;
     }
-
-    if (isSweepingInProgress())
-        return;
-    ASSERT(!sweepForbidden());
-
     if (shouldScheduleV8FollowupGC()) {
         schedulePreciseGC();
         return;
@@ -704,8 +701,14 @@ void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
     ASSERT(!isSweepingInProgress());
     ASSERT(!sweepForbidden());
 
-    if (shouldSchedulePageNavigationGC(estimatedRemovalRatio))
+    if (shouldForceMemoryPressureGC()) {
+        Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
+        return;
+    }
+    if (shouldSchedulePageNavigationGC(estimatedRemovalRatio)) {
         schedulePageNavigationGC();
+        return;
+    }
 }
 
 void ThreadState::schedulePageNavigationGC()
@@ -720,22 +723,29 @@ void ThreadState::scheduleGCIfNeeded()
     ASSERT(checkThread());
     Heap::reportMemoryUsageForTracing();
 
+    // Allocation is allowed during sweeping, but those allocations should not
+    // trigger nested GCs.
     if (isGCForbidden())
         return;
 
-    // Allocation is allowed during sweeping, but those allocations should not
-    // trigger nested GCs.
+    if (shouldForceMemoryPressureGC()) {
+        completeSweep();
+        if (shouldForceMemoryPressureGC()) {
+            Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
+            return;
+        }
+    }
+
     if (isSweepingInProgress())
         return;
     ASSERT(!sweepForbidden());
 
-    if (shouldForceMemoryPressureGC()) {
-        Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
-        return;
-    }
     if (shouldForceConservativeGC()) {
-        Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
-        return;
+        completeSweep();
+        if (shouldForceConservativeGC()) {
+            Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
+            return;
+        }
     }
     if (shouldSchedulePreciseGC()) {
         schedulePreciseGC();
