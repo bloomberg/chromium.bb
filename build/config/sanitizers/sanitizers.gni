@@ -19,11 +19,6 @@ declare_args() {
   # undefined behaviour.
   is_ubsan = false
 
-  # Use libc++ (buildtools/third_party/libc++ and
-  # buildtools/third_party/libc++abi) instead of stdlibc++ as standard library.
-  # This is intended to be used for instrumented builds.
-  use_custom_libcxx = (is_asan && is_linux) || is_tsan || is_msan || is_ubsan
-
   # Track where uninitialized memory originates from. From fastest to slowest:
   # 0 - no tracking, 1 - track only the initial allocation site, 2 - track the
   # chain of stores leading from allocation site to use site.
@@ -46,6 +41,16 @@ declare_args() {
   # By default, Control Flow Integrity will crash the program if it detects a
   # violation. Set this to true to print detailed diagnostics instead.
   use_cfi_diag = false
+}
+
+# Args that are in turn dependent on other args must be in a separate
+# declare_args block. User overrides are only applied at the end of a
+# declare_args block.
+declare_args() {
+  # Use libc++ (buildtools/third_party/libc++ and
+  # buildtools/third_party/libc++abi) instead of stdlibc++ as standard library.
+  # This is intended to be used for instrumented builds.
+  use_custom_libcxx = (is_asan && is_linux) || is_tsan || is_msan || is_ubsan
 }
 
 # TODO(GYP) bug 527515: is_ubsan, is_ubsan_vptr
