@@ -29,20 +29,16 @@
   width: 15px;
 }
 
+#container-header {
+  background-color: rgb(33, 150, 243);
+}
+
 #container-header.cast-mode-list {
   background-color: rgb(0, 150, 136);
 }
 
 #container-header.filter {
   background-color: rgb(103, 58, 183);
-}
-
-#container-header.route-details {
-  display: none;
-}
-
-#container-header.sink-list {
-  background-color: rgb(33, 150, 243);
 }
 
 #device-missing {
