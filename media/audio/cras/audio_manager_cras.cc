@@ -41,8 +41,8 @@ const int kMaximumOutputBufferSize = 8192;
 // Default input buffer size.
 const int kDefaultInputBufferSize = 1024;
 
-const char kBeamformingOnUniqueId[] = "beamforming-on";
-const char kBeamformingOffUniqueId[] = "beamforming-off";
+const char kBeamformingOnDeviceId[] = "default-beamforming-on";
+const char kBeamformingOffDeviceId[] = "default-beamforming-off";
 
 enum CrosBeamformingDeviceState {
   BEAMFORMING_DEFAULT_ENABLED = 0,
@@ -70,27 +70,6 @@ void AddDefaultDevice(AudioDeviceNames* device_names) {
                                           AudioManagerBase::kDefaultDeviceId));
 }
 
-// Adds the beamforming on and off devices to |device_names|.
-void AddBeamformingDevices(AudioDeviceNames* device_names) {
-  DCHECK(device_names->empty());
-  const AudioDeviceName beamforming_on_device(
-      GetLocalizedStringUTF8(BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME),
-      kBeamformingOnUniqueId);
-  const AudioDeviceName beamforming_off_device(
-      GetLocalizedStringUTF8(BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME),
-      kBeamformingOffUniqueId);
-
-  if (IsBeamformingDefaultEnabled()) {
-    // Users in the experiment will have the "beamforming on" device appear
-    // first in the list. This causes it to be selected by default.
-    device_names->push_back(beamforming_on_device);
-    device_names->push_back(beamforming_off_device);
-  } else {
-    device_names->push_back(beamforming_off_device);
-    device_names->push_back(beamforming_on_device);
-  }
-}
-
 // Returns a mic positions string if the machine has a beamforming capable
 // internal mic and otherwise an empty string.
 std::string MicPositions() {
@@ -109,6 +88,37 @@ std::string MicPositions() {
 
 }  // namespace
 
+// Adds the beamforming on and off devices to |device_names|.
+void AudioManagerCras::AddBeamformingDevices(AudioDeviceNames* device_names) {
+  DCHECK(device_names->empty());
+  const std::string beamforming_on_name =
+      GetLocalizedStringUTF8(BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME);
+  const std::string beamforming_off_name =
+      GetLocalizedStringUTF8(BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME);
+
+  if (IsBeamformingDefaultEnabled()) {
+    // The first device in the list is expected to have a "default" device ID.
+    // Web apps may depend on this behavior.
+    beamforming_on_device_id_ = AudioManagerBase::kDefaultDeviceId;
+    beamforming_off_device_id_ = kBeamformingOffDeviceId;
+
+    // Users in the experiment will have the "beamforming on" device appear
+    // first in the list. This causes it to be selected by default.
+    device_names->push_back(
+        AudioDeviceName(beamforming_on_name, beamforming_on_device_id_));
+    device_names->push_back(
+        AudioDeviceName(beamforming_off_name, beamforming_off_device_id_));
+  } else {
+    beamforming_off_device_id_ = AudioManagerBase::kDefaultDeviceId;
+    beamforming_on_device_id_ = kBeamformingOnDeviceId;
+
+    device_names->push_back(
+        AudioDeviceName(beamforming_off_name, beamforming_off_device_id_));
+    device_names->push_back(
+        AudioDeviceName(beamforming_on_name, beamforming_on_device_id_));
+  }
+}
+
 bool AudioManagerCras::HasAudioOutputDevices() {
   return true;
 }
@@ -124,7 +134,10 @@ bool AudioManagerCras::HasAudioInputDevices() {
 }
 
 AudioManagerCras::AudioManagerCras(AudioLogFactory* audio_log_factory)
-    : AudioManagerBase(audio_log_factory), has_keyboard_mic_(false) {
+    : AudioManagerBase(audio_log_factory),
+      has_keyboard_mic_(false),
+      beamforming_on_device_id_(nullptr),
+      beamforming_off_device_id_(nullptr) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 }
 
@@ -171,22 +184,30 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
   if (has_keyboard_mic_)
     params.set_effects(AudioParameters::KEYBOARD_MIC);
 
-  if (device_id == kBeamformingOnUniqueId) {
-    params.set_mic_positions(mic_positions_);
+  if (mic_positions_.size() > 1) {
+    // We have the mic_positions_ check here because one of the beamforming
+    // devices will have been assigned the "default" ID, which could otherwise
+    // be confused with the ID in the non-beamforming-capable-device case.
+    DCHECK(beamforming_on_device_id_);
+    DCHECK(beamforming_off_device_id_);
 
-    // Record a UMA metric based on the state of the experiment and the selected
-    // device. This will tell us i) how common it is for users to manually
-    // adjust the beamforming device and ii) how contaminated our metric
-    // experiment buckets are.
-    if (IsBeamformingDefaultEnabled())
-      RecordBeamformingDeviceState(BEAMFORMING_DEFAULT_ENABLED);
-    else
-      RecordBeamformingDeviceState(BEAMFORMING_USER_ENABLED);
-  } else if (device_id == kBeamformingOffUniqueId) {
-    if (!IsBeamformingDefaultEnabled())
-      RecordBeamformingDeviceState(BEAMFORMING_DEFAULT_DISABLED);
-    else
-      RecordBeamformingDeviceState(BEAMFORMING_USER_DISABLED);
+    if (device_id == beamforming_on_device_id_) {
+      params.set_mic_positions(mic_positions_);
+
+      // Record a UMA metric based on the state of the experiment and the
+      // selected device. This will tell us i) how common it is for users to
+      // manually adjust the beamforming device and ii) how contaminated our
+      // metric experiment buckets are.
+      if (IsBeamformingDefaultEnabled())
+        RecordBeamformingDeviceState(BEAMFORMING_DEFAULT_ENABLED);
+      else
+        RecordBeamformingDeviceState(BEAMFORMING_USER_ENABLED);
+    } else if (device_id == beamforming_off_device_id_) {
+      if (!IsBeamformingDefaultEnabled())
+        RecordBeamformingDeviceState(BEAMFORMING_DEFAULT_DISABLED);
+      else
+        RecordBeamformingDeviceState(BEAMFORMING_USER_DISABLED);
+    }
   }
   return params;
 }
