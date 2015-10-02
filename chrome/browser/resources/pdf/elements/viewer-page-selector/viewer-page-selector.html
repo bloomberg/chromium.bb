@@ -6,7 +6,7 @@
   <link rel="import" type="css" href="viewer-page-selector.css">
   <template>
     <paper-input-container id="pageselector" no-label-float>
-      <input id="input" is="iron-input" bind-value="{{pageNo}}"
+      <input id="input" is="iron-input" value="{{pageNo}}"
           prevent-invalid-input allowed-pattern="\d" on-mouseup="select"
           on-change="pageNoCommitted" aria-label$="{{strings.labelPageNumber}}">
     </paper-input-container>

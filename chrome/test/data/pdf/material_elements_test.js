@@ -8,8 +8,8 @@
 var tests = [
   /**
    * Test that viewer-page-selector reacts correctly to text entry. The page
-   * selector validates that input is an integer, but does not check for
-   * document bounds.
+   * selector validates that input is an integer, and does not allow navigation
+   * past document bounds.
    */
   function testPageSelectorChange() {
     var selector =
@@ -18,13 +18,15 @@ var tests = [
     var input = selector.$.input;
     // Simulate entering text into `input` and pressing enter.
     function changeInput(newValue) {
-      input.bindValue = newValue;
+      input.value = newValue;
       input.dispatchEvent(new CustomEvent('change'));
     }
 
     var navigatedPages = [];
     selector.addEventListener('change-page', function(e) {
       navigatedPages.push(e.detail.page);
+      // A change-page handler is expected to set the pageNo to the new value.
+      selector.pageNo = e.detail.page + 1;
     });
 
     changeInput("1000");
@@ -32,6 +34,7 @@ var tests = [
     changeInput("abcd");
     changeInput("12pp");
     changeInput("3.14");
+    changeInput("3000");
 
     chrome.test.assertEq(4, navigatedPages.length);
     // The event page number is 0-based.

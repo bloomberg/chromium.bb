@@ -16,22 +16,26 @@ Polymer({
     },
 
     /**
-     * The current page being viewed (1-based).
+     * The current page being viewed (1-based). A change to pageNo is mirrored
+     * immediately to the input field. A change to the input field is not
+     * mirrored back until pageNoCommitted() is called and change-page is fired.
      */
     pageNo: {
-      type: String,
-      value: '1'
+      type: Number,
+      value: 1
     },
 
     strings: Object
   },
 
   pageNoCommitted: function() {
-    var page = parseInt(this.pageNo);
-    if (!isNaN(page)) {
+    var page = parseInt(this.$.input.value);
+
+    if (!isNaN(page) && page <= this.docLength && page > 0)
       this.fire('change-page', {page: page - 1});
-      this.$.input.blur();
-    }
+    else
+      this.$.input.value = this.pageNo;
+    this.$.input.blur();
   },
 
   docLengthChanged: function() {
