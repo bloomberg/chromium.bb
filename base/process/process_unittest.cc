@@ -176,8 +176,10 @@ TEST_F(ProcessTest, SetProcessBackgrounded) {
   EXPECT_TRUE(process.SetProcessBackgrounded(false));
   EXPECT_FALSE(process.IsProcessBackgrounded());
 #else
-  process.SetProcessBackgrounded(true);
-  process.SetProcessBackgrounded(false);
+  if (process.CanBackgroundProcesses()) {
+    process.SetProcessBackgrounded(true);
+    process.SetProcessBackgrounded(false);
+  }
 #endif
   int new_priority = process.GetPriority();
   EXPECT_EQ(old_priority, new_priority);

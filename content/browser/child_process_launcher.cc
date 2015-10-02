@@ -313,7 +313,9 @@ void TerminateOnLauncherThread(bool zygote, base::Process process) {
 void SetProcessBackgroundedOnLauncherThread(base::Process process,
                                             bool background) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
-  process.SetProcessBackgrounded(background);
+  if (process.CanBackgroundProcesses()) {
+    process.SetProcessBackgrounded(background);
+  }
 #if defined(OS_ANDROID)
   SetChildProcessInForeground(process.Handle(), !background);
 #endif
