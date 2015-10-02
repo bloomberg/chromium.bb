@@ -476,13 +476,15 @@ gfx::Rect ExclusiveAccessBubbleViews::GetPopupRect(
     top_container_bottom =
         bubble_view_context_->GetTopContainerBoundsInScreen().bottom();
   }
-  int y = top_container_bottom + kPopupTopPx;
+  // |desired_top| is the top of the bubble area including the shadow.
+  int desired_top = kPopupTopPx - view_->border()->GetInsets().top();
+  int y = top_container_bottom + desired_top;
 
   if (!ignore_animation_state &&
       animated_attribute_ == ANIMATED_ATTRIBUTE_BOUNDS) {
-    int total_height = size.height() + kPopupTopPx;
+    int total_height = size.height() + desired_top;
     int popup_bottom = animation_->CurrentValueBetween(total_height, 0);
-    int y_offset = std::min(popup_bottom, kPopupTopPx);
+    int y_offset = std::min(popup_bottom, desired_top);
     size.set_height(size.height() - popup_bottom + y_offset);
     y -= y_offset;
   }

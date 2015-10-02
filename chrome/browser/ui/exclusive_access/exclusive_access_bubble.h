@@ -40,13 +40,12 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   static const int kIdleTimeMs;       // Time before mouse idle triggers hide
   static const int kSnoozeNotificationsTimeMs;
   static const int kPositionCheckHz;  // How fast to check the mouse position
+  // Height of region triggering slide-in.
   static const int kSlideInRegionHeightPx;
-  // Height of region triggering
-  // slide-in
-  static const int kPopupTopPx;          // Space between the popup and the top
-                                         // of the screen.
   static const int kSlideInDurationMs;   // Duration of slide-in animation
   static const int kSlideOutDurationMs;  // Duration of slide-out animation
+  // Space between the popup and the top of the screen (excluding shadow).
+  static const int kPopupTopPx;
 
   // Returns the current desirable rect for the popup window.  If
   // |ignore_animation_state| is true this returns the rect assuming the popup

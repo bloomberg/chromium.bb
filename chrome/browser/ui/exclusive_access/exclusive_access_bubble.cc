@@ -30,7 +30,7 @@ const int ExclusiveAccessBubble::kPositionCheckHz = 10;
 const int ExclusiveAccessBubble::kSlideInRegionHeightPx = 4;
 const int ExclusiveAccessBubble::kSlideInDurationMs = 350;
 const int ExclusiveAccessBubble::kSlideOutDurationMs = 700;
-const int ExclusiveAccessBubble::kPopupTopPx = 15;
+const int ExclusiveAccessBubble::kPopupTopPx = 45;
 
 ExclusiveAccessBubble::ExclusiveAccessBubble(
     ExclusiveAccessManager* manager,
