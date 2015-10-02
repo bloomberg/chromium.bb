@@ -212,12 +212,15 @@
         '../base/base.gyp:base',
         '../components/components.gyp:leveldb_proto',
         '../crypto/crypto.gyp:crypto',
+        '../net/net.gyp:net',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
         # Note: file list duplicated in GN build.
+        'gcm_driver/crypto/encryption_header_parsers.cc',
+        'gcm_driver/crypto/encryption_header_parsers.h',
         'gcm_driver/crypto/gcm_encryption_provider.cc',
         'gcm_driver/crypto/gcm_encryption_provider.h',
         'gcm_driver/crypto/gcm_key_store.cc',
