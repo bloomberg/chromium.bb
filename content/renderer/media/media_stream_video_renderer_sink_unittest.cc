@@ -12,6 +12,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -47,6 +48,12 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
                    base::Unretained(this)));
 
     EXPECT_TRUE(IsInStoppedState());
+  }
+
+  ~MediaStreamVideoRendererSinkTest() {
+    media_stream_video_renderer_sink_ = nullptr;
+    registry_.reset();
+    blink::WebHeap::collectAllGarbageForTesting();
   }
 
   MOCK_METHOD1(RepaintCallback, void(const scoped_refptr<media::VideoFrame>&));

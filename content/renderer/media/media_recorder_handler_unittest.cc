@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -40,6 +41,11 @@ class MediaRecorderHandlerTest
 
     registry_.Init(kTestStreamUrl);
     registry_.AddVideoTrack(kTestVideoTrackId);
+  }
+
+  ~MediaRecorderHandlerTest() {
+    registry_.reset();
+    blink::WebHeap::collectAllGarbageForTesting();
   }
 
   MOCK_METHOD3(writeData, void(const char*, size_t, bool));

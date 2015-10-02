@@ -15,6 +15,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 
 namespace {
 
@@ -202,7 +203,10 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
  public:
   SpeechRecognitionAudioSinkTest() {}
 
-  ~SpeechRecognitionAudioSinkTest() {}
+  ~SpeechRecognitionAudioSinkTest() {
+    speech_audio_sink_.reset();
+    blink::WebHeap::collectAllGarbageForTesting();
+  }
 
   // Initializes the producer and consumer with specified audio parameters.
   // Returns the minimal number of input audio buffers which need to be captured

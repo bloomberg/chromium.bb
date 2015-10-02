@@ -72,6 +72,13 @@ class VideoTrackRecorderTest : public testing::Test,
     EXPECT_TRUE(message_loop_.IsCurrent());
   }
 
+  ~VideoTrackRecorderTest() {
+    blink_track_.reset();
+    blink_source_.reset();
+    video_track_recorder_.reset();
+    blink::WebHeap::collectAllGarbageForTesting();
+  }
+
   MOCK_METHOD4(DoOnEncodedVideo,
                void(const scoped_refptr<media::VideoFrame>& frame,
                     std::string encoded_data,
