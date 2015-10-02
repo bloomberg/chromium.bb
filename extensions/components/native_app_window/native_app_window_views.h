@@ -115,6 +115,7 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
       const gfx::Point& location) override;
 
   // WidgetObserver implementation.
+  void OnWidgetDestroying(views::Widget* widget) override;
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 

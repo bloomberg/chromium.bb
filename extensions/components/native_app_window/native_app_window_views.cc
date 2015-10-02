@@ -274,6 +274,12 @@ bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
 
 // WidgetObserver implementation.
 
+void NativeAppWindowViews::OnWidgetDestroying(views::Widget* widget) {
+  FOR_EACH_OBSERVER(web_modal::ModalDialogHostObserver,
+                    observer_list_,
+                    OnHostDestroying());
+}
+
 void NativeAppWindowViews::OnWidgetVisibilityChanged(views::Widget* widget,
                                                      bool visible) {
   app_window_->OnNativeWindowChanged();

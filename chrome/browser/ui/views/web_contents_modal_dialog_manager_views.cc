@@ -44,7 +44,8 @@ class NativeWebContentsModalDialogManagerViews
       SingleWebContentsDialogManagerDelegate* native_delegate)
       : native_delegate_(native_delegate),
         dialog_(dialog),
-        host_(NULL) {
+        host_(NULL),
+        host_destroying_(false) {
     ManageDialog();
   }
 
@@ -92,6 +93,12 @@ class NativeWebContentsModalDialogManagerViews
 
   // SingleWebContentsDialogManager overrides
   void Show() override {
+    // The host destroying means the dialogs will be destroyed in short order.
+    // Avoid showing dialogs at this point as the necessary native window
+    // services may not be present.
+    if (host_destroying_)
+      return;
+
     views::Widget* widget = GetWidget(dialog());
 #if defined(USE_AURA)
     scoped_ptr<wm::SuspendChildWindowVisibilityAnimations> suspend;
@@ -154,6 +161,7 @@ class NativeWebContentsModalDialogManagerViews
   void OnHostDestroying() override {
     host_->RemoveObserver(this);
     host_ = NULL;
+    host_destroying_ = true;
   }
 
   // views::WidgetObserver overrides
@@ -225,6 +233,7 @@ class NativeWebContentsModalDialogManagerViews
   SingleWebContentsDialogManagerDelegate* native_delegate_;
   gfx::NativeWindow dialog_;
   WebContentsModalDialogHost* host_;
+  bool host_destroying_;
   std::set<views::Widget*> observed_widgets_;
   std::set<views::Widget*> shown_widgets_;
 
