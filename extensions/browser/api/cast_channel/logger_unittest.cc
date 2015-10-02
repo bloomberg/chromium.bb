@@ -16,8 +16,6 @@ namespace extensions {
 namespace api {
 namespace cast_channel {
 
-const int kTestNssErrorCode = -8164;
-
 using proto::AggregatedSocketEvent;
 using proto::EventType;
 using proto::Log;
@@ -107,9 +105,7 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
   clock_->Advance(base::TimeDelta::FromMicroseconds(1));
 
   auth_result =
-      AuthResult::CreateWithNSSError("Parsing failed",
-                                     AuthResult::ERROR_CERT_PARSING_FAILED,
-                                     kTestNssErrorCode);
+      AuthResult("Parsing failed", AuthResult::ERROR_CERT_PARSING_FAILED);
   logger_->LogSocketChallengeReplyEvent(2, auth_result);
 
   LastErrors last_errors = logger_->GetLastErrors(2);
@@ -117,7 +113,6 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
   EXPECT_EQ(last_errors.net_return_value, net::OK);
   EXPECT_EQ(last_errors.challenge_reply_error_type,
             proto::CHALLENGE_REPLY_ERROR_CERT_PARSING_FAILED);
-  EXPECT_EQ(last_errors.nss_error_code, kTestNssErrorCode);
 
   scoped_ptr<Log> log = GetLog();
   ASSERT_TRUE(log);
@@ -179,7 +174,7 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
       EXPECT_EQ(proto::CHALLENGE_REPLY_ERROR_CERT_PARSING_FAILED,
                 event.challenge_reply_error_type());
       EXPECT_FALSE(event.has_net_return_value());
-      EXPECT_EQ(kTestNssErrorCode, event.nss_error_code());
+      EXPECT_FALSE(event.has_nss_error_code());
     }
   }
 }
@@ -212,21 +207,16 @@ TEST_F(CastChannelLoggerTest, LogLastErrorEvents) {
   EXPECT_EQ(last_errors.net_return_value, net::OK);
   EXPECT_EQ(last_errors.challenge_reply_error_type,
             proto::CHALLENGE_REPLY_ERROR_NONE);
-  EXPECT_EQ(last_errors.nss_error_code, 0);
 
-  // Now log a challenge reply error with NSS error code.  LastErrors will be
-  // set.
+  // Now log a challenge reply error.  LastErrors will be set.
   clock_->Advance(base::TimeDelta::FromMicroseconds(1));
-  auth_result = AuthResult::CreateWithNSSError(
-      "Some error",
-      AuthResult::ErrorType::ERROR_WRONG_PAYLOAD_TYPE,
-      kTestNssErrorCode);
+  auth_result =
+      AuthResult("Some error failed", AuthResult::ERROR_WRONG_PAYLOAD_TYPE);
   logger_->LogSocketChallengeReplyEvent(3, auth_result);
   last_errors = logger_->GetLastErrors(3);
   EXPECT_EQ(last_errors.event_type, proto::AUTH_CHALLENGE_REPLY);
   EXPECT_EQ(last_errors.challenge_reply_error_type,
             proto::CHALLENGE_REPLY_ERROR_WRONG_PAYLOAD_TYPE);
-  EXPECT_EQ(last_errors.nss_error_code, kTestNssErrorCode);
 
   // Logging a non-error event does not change the LastErrors for the channel.
   clock_->Advance(base::TimeDelta::FromMicroseconds(1));
@@ -235,7 +225,6 @@ TEST_F(CastChannelLoggerTest, LogLastErrorEvents) {
   EXPECT_EQ(last_errors.event_type, proto::AUTH_CHALLENGE_REPLY);
   EXPECT_EQ(last_errors.challenge_reply_error_type,
             proto::CHALLENGE_REPLY_ERROR_WRONG_PAYLOAD_TYPE);
-  EXPECT_EQ(last_errors.nss_error_code, kTestNssErrorCode);
 }
 
 TEST_F(CastChannelLoggerTest, LogSocketReadWrite) {

@@ -59,6 +59,7 @@
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
         '../url/url.gyp:url_lib',
+        '../third_party/boringssl/boringssl.gyp:boringssl',
         '../third_party/libxml/libxml.gyp:libxml',
         'common/api/api.gyp:extensions_api',
         'extensions_resources.gyp:extensions_resources',
@@ -88,31 +89,6 @@
           # on nacl_common.
           'sources': [
             '<@(extensions_common_sources_nacl)',
-          ],
-        }],
-        ['use_openssl==1', {
-          'sources': [
-            '<@(extensions_common_sources_openssl)',
-          ],
-          'dependencies': [
-            '../third_party/boringssl/boringssl.gyp:boringssl',
-          ],
-        }, {
-          'sources': [
-            '<@(extensions_common_sources_nonopenssl)'
-          ],
-          'conditions': [
-            ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
-              'dependencies': [
-                '../build/linux/system.gyp:ssl',
-              ],
-            }],
-            ['OS == "mac" or OS == "ios" or OS == "win"', {
-              'dependencies': [
-                '../third_party/nss/nss.gyp:nspr',
-                '../third_party/nss/nss.gyp:nss',
-              ],
-            }],
           ],
         }],
       ],

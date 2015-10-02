@@ -37,25 +37,19 @@ struct AuthResult {
 
   // Constructs a AuthResult that corresponds to success.
   AuthResult();
+
+  AuthResult(const std::string& error_message, ErrorType error_type);
+
   ~AuthResult();
 
   static AuthResult CreateWithParseError(const std::string& error_message,
                                          ErrorType error_type);
-  static AuthResult CreateWithNSSError(const std::string& error_message,
-                                       ErrorType error_type,
-                                       int nss_error_code);
 
   bool success() const { return error_type == ERROR_NONE; }
 
   std::string error_message;
   ErrorType error_type;
-  int nss_error_code;
   unsigned int channel_policies;
-
- private:
-  AuthResult(const std::string& error_message,
-             ErrorType error_type,
-             int nss_error_code);
 };
 
 // Authenticates the given |challenge_reply|:

@@ -31,9 +31,6 @@ struct LastErrors {
 
   // The most recent net_return_value logged for the socket.
   int net_return_value;
-
-  // The most recent NSS error logged for the socket.
-  int nss_error_code;
 };
 
 }  // namespace cast_channel

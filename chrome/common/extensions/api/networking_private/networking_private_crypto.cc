@@ -83,7 +83,7 @@ bool VerifyCredentials(
                                     &verification_context);
 
   if (verification_result.Failure()) {
-    LOG(ERROR) << kErrorPrefix << verification_result.GetLogString();
+    LOG(ERROR) << kErrorPrefix << verification_result.error_message;
     return false;
   }
 
@@ -104,7 +104,7 @@ bool VerifyCredentials(
       verification_context->VerifySignatureOverData(signature, data);
 
   if (verification_result.Failure()) {
-    LOG(ERROR) << kErrorPrefix << verification_result.GetLogString();
+    LOG(ERROR) << kErrorPrefix << verification_result.error_message;
     return false;
   }
   return true;

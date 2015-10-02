@@ -12,9 +12,7 @@ namespace cast_channel {
 LastErrors::LastErrors()
     : event_type(proto::EVENT_TYPE_UNKNOWN),
       challenge_reply_error_type(proto::CHALLENGE_REPLY_ERROR_NONE),
-      net_return_value(net::OK),
-      nss_error_code(0) {
-}
+      net_return_value(net::OK) {}
 
 LastErrors::~LastErrors() {
 }

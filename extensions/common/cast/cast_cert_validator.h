@@ -39,25 +39,17 @@ struct VerificationResult {
 
   // Construct error-related objects
   VerificationResult(const std::string& error_message, ErrorType error_type);
-  VerificationResult(const std::string& error_message,
-                     ErrorType error_type,
-                     int error_code);
 
   bool Success() const { return error_type == ERROR_NONE; }
   bool Failure() const { return error_type != ERROR_NONE; }
 
-  // Generates a string representation of this object for logging.
-  std::string GetLogString() const;
-
   ErrorType error_type;
   // Human-readable description of the problem if error_type != ERROR_NONE
   std::string error_message;
-  // May contain the underlying crypto library error code.
-  int library_error_code;
 };
 
-// An object of this type is returned by the VerifyCert function, and can be
-// used for additional certificate-related operations, using the verified
+// An object of this type is returned by the VerifyDeviceCert function, and can
+// be used for additional certificate-related operations, using the verified
 // certificate.
 class CertVerificationContext {
  public:

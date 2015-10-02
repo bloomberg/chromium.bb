@@ -228,12 +228,6 @@
       'common/manifest_handlers/nacl_modules_handler.cc',
       'common/manifest_handlers/nacl_modules_handler.h',
     ],
-    'extensions_common_sources_openssl': [
-      'common/cast/cast_cert_validator_openssl.cc',
-    ],
-    'extensions_common_sources_nonopenssl': [
-      'common/cast/cast_cert_validator_nss.cc',
-    ],
     'extensions_browser_sources': [
       # NOTE: When moving an API out of Chrome be sure to verify that the
       # Android build still compiles. See conditions below.

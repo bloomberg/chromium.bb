@@ -60,6 +60,7 @@ if (enable_extensions) {
       "//extensions:extensions_resources",
       "//ipc",
       "//net",
+      "//third_party/boringssl",
       "//third_party/icu",
       "//third_party/libxml",
       "//third_party/re2",
@@ -68,19 +69,6 @@ if (enable_extensions) {
       "//ui/gfx/ipc",
       "//url",
     ]
-
-    if (use_openssl) {
-      sources +=
-          rebase_path(extensions_gypi_values.extensions_common_sources_openssl,
-                      ".",
-                      "//extensions")
-      deps += [ "//third_party/boringssl" ]
-    } else {
-      sources += rebase_path(
-              extensions_gypi_values.extensions_common_sources_nonopenssl,
-              ".",
-              "//extensions")
-    }
 
     if (enable_nacl) {
       nacl_sources =

@@ -115,10 +115,6 @@ void MaybeSetLastErrors(const SocketEvent& event, LastErrors* last_errors) {
         event.challenge_reply_error_type();
     last_errors->event_type = event.type();
   }
-  if (event.has_nss_error_code()) {
-    last_errors->nss_error_code = event.nss_error_code();
-    last_errors->event_type = event.type();
-  }
 }
 
 }  // namespace
@@ -265,8 +261,6 @@ void Logger::LogSocketChallengeReplyEvent(int channel_id,
   SocketEvent event = CreateEvent(proto::AUTH_CHALLENGE_REPLY);
   event.set_challenge_reply_error_type(
       ChallegeReplyErrorToProto(auth_result.error_type));
-  if (auth_result.nss_error_code != 0)
-    event.set_nss_error_code(auth_result.nss_error_code);
 
   LogSocketEvent(channel_id, event);
 }

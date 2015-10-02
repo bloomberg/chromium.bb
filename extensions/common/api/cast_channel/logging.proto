@@ -142,6 +142,7 @@ message SocketEvent {
   optional ErrorState error_state = 10;
 
   optional ChallengeReplyErrorType challenge_reply_error_type = 11;
+  // No longer used.
   optional int32 nss_error_code = 12;
 }
 
