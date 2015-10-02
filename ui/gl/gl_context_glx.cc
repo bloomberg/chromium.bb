@@ -10,6 +10,7 @@ extern "C" {
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/GL/glextchromium.h"
 #include "ui/gl/gl_bindings.h"
@@ -198,7 +199,8 @@ bool GLContextGLX::GetTotalGpuMemory(size_t* bytes) {
   if (HasExtension("GL_NVX_gpu_memory_info")) {
     GLint kbytes = 0;
     glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &kbytes);
-    *bytes = 1024*kbytes;
+    *bytes =
+        base::saturated_cast<size_t>(1024u * static_cast<uint64_t>(kbytes));
     return true;
   }
   return false;
