@@ -115,7 +115,7 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
         setPrecachingEnabled(false);
         mPrecacheLauncher.setFailureReasons(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE));
         mLauncher.setDeviceState(new MockDeviceState(0 /* stickyBatteryStatus */,
-                true /* powerIsConnected */, false /* interactive */, true /* wifiIsAvailable */));
+                true /* powerIsConnected */, true /* wifiIsAvailable */));
         mLauncher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
 
         mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
@@ -130,7 +130,7 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Precache"})
     public void testGoodConditions() {
-        mLauncher.setDeviceState(new MockDeviceState(0, true, false, true));
+        mLauncher.setDeviceState(new MockDeviceState(0, true, true));
 
         mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
 
@@ -143,7 +143,7 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Precache"})
     public void testNotEnoughTimeButGoodConditionsOtherwise() {
-        mLauncher.setDeviceState(new MockDeviceState(0, true, false, true));
+        mLauncher.setDeviceState(new MockDeviceState(0, true, true));
         setLastPrecacheMs(0L);
 
         mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
@@ -158,7 +158,7 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Precache"})
     public void testEnoughTimeButNoPower() {
-        mLauncher.setDeviceState(new MockDeviceState(0, false, false, true));
+        mLauncher.setDeviceState(new MockDeviceState(0, false, true));
         mLauncher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
 
         mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
@@ -177,7 +177,7 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
                         FailureReason.SYNC_NOT_INITIALIZED,
                         FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED,
                         FailureReason.NATIVE_SHOULD_RUN_IS_FALSE));
-        mLauncher.setDeviceState(new MockDeviceState(0, false, true, false));
+        mLauncher.setDeviceState(new MockDeviceState(0, false, false));
         setLastPrecacheMs(0L);
         PrecacheService.setIsPrecaching(true);
 
@@ -193,7 +193,7 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
     @Feature({"Precache"})
     public void testStateIsResetAfterReboot() {
         // 1. Precache is successfully run at time X.
-        mLauncher.setDeviceState(new MockDeviceState(0, true, false, true));
+        mLauncher.setDeviceState(new MockDeviceState(0, true, true));
         mLauncher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
         mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
 
@@ -204,7 +204,7 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
         mLauncher.mStartPrecacheCalled = false;
 
         // 2. The device loses power and reboots.
-        mLauncher.setDeviceState(new MockDeviceState(0, false /* power */, false, true));
+        mLauncher.setDeviceState(new MockDeviceState(0, false /* power */, true));
         mLauncher.setElapsedRealtime(0);
 
         // 3. Some intent is triggered, which allows the reciever to notice the reboot and reset
@@ -216,7 +216,7 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
         mLauncher.mCancelAlarmCalled = false;
 
         // 4. Precache is successfully run at time X+1.
-        mLauncher.setDeviceState(new MockDeviceState(0, true, false, true));
+        mLauncher.setDeviceState(new MockDeviceState(0, true, true));
         mLauncher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS + 1);
 
         mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));

@@ -146,7 +146,6 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
         reasons.addAll(mPrecacheLauncher.failureReasons());
         if (!mDeviceState.isPowerConnected(context)) reasons.add(FailureReason.NO_POWER);
         if (!mDeviceState.isWifiAvailable(context)) reasons.add(FailureReason.NO_WIFI);
-        if (mDeviceState.isInteractive(context)) reasons.add(FailureReason.SCREEN_ON);
         if (timeSinceLastPrecacheMs(context) < WAIT_UNTIL_NEXT_PRECACHE_MS) {
             reasons.add(FailureReason.NOT_ENOUGH_TIME_SINCE_LAST_PRECACHE);
         }
@@ -183,14 +182,13 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         resetLastPrecacheMsIfDeviceRebooted(context);
 
+        // TODO(twifkak): Make these triggering conditions (power, screen, wifi, time) controllable
+        // via variation parameters. Also change the cancel conditions in PrecacheService.
         boolean isPowerConnected = mDeviceState.isPowerConnected(context);
         boolean isWifiAvailable = mDeviceState.isWifiAvailable(context);
-        boolean isInteractive = mDeviceState.isInteractive(context);
-        boolean areConditionsGoodForPrecaching =
-                isPowerConnected && isWifiAvailable && !isInteractive;
+        boolean areConditionsGoodForPrecaching = isPowerConnected && isWifiAvailable;
         boolean hasEnoughTimePassedSinceLastPrecache =
                 timeSinceLastPrecacheMs(context) >= WAIT_UNTIL_NEXT_PRECACHE_MS;
-
 
         // Do nothing if precaching is disabled.
         if (!isPrecachingEnabled(context.getApplicationContext())) {
@@ -198,35 +196,24 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
             return;
         }
 
-        // Only start precaching when an alarm action is received. This is to prevent situations
-        // such as power being connected, precaching starting, then precaching being immediately
-        // canceled because the screen turns on in response to power being connected.
-        if (ACTION_ALARM.equals(intent.getAction())
-                && areConditionsGoodForPrecaching
-                && hasEnoughTimePassedSinceLastPrecache) {
-            recordFailureReasons(context); // Record success.
-            acquireWakeLockAndStartService(context);
-        } else {
-            if (isPowerConnected && isWifiAvailable) {
+        if (areConditionsGoodForPrecaching) {
+            if (hasEnoughTimePassedSinceLastPrecache) {
+                recordFailureReasons(context); // Record success.
+                acquireWakeLockAndStartService(context);
+            } else {
+                // If we're just waiting for for enough time to pass after Wi-Fi or power has been
+                // connected, then set an alarm for the next time to check the device state.
                 // Don't call record failure reasons when setting an alarm to retry. These cases are
                 // uninteresting.
-
-                // If we're just waiting for non-interactivity (e.g., the screen to be off), or for
-                // enough time to pass after Wi-Fi or power has been connected, then set an alarm
-                // for the next time to check the device state. We can't receive SCREEN_ON/OFF
-                // intents as is done for detecting changes in power and connectivity, because
-                // SCREEN_ON/OFF intents are only delivered to BroadcastReceivers that are
-                // registered dynamically in code, but the PrecacheServiceLauncher is registered in
-                // the Android manifest.
                 setAlarm(context,
                         Math.max(INTERACTIVE_STATE_POLLING_PERIOD_MS,
                                 WAIT_UNTIL_NEXT_PRECACHE_MS - timeSinceLastPrecacheMs(context)));
-            } else {
-                recordFailureReasons(context);
-                // If the device doesn't have connected power or doesn't have Wi-Fi, then there's no
-                // point in setting an alarm.
-                cancelAlarm(context);
             }
+        } else {
+            recordFailureReasons(context);
+            // If the device doesn't have connected power or doesn't have Wi-Fi, then there's no
+            // point in setting an alarm.
+            cancelAlarm(context);
         }
     }
 

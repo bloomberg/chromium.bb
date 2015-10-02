@@ -12,14 +12,12 @@ import android.content.Context;
 public class MockDeviceState extends DeviceState {
     private final int mStickyBatteryStatus;
     private final boolean mPowerIsConnected;
-    private final boolean mInteractive;
     private final boolean mWifiIsAvailable;
 
-    public MockDeviceState(int stickyBatteryStatus, boolean powerIsConnected,
-            boolean interactive, boolean wifiIsAvailable) {
+    public MockDeviceState(
+            int stickyBatteryStatus, boolean powerIsConnected, boolean wifiIsAvailable) {
         mStickyBatteryStatus = stickyBatteryStatus;
         mPowerIsConnected = powerIsConnected;
-        mInteractive = interactive;
         mWifiIsAvailable = wifiIsAvailable;
     }
 
@@ -31,11 +29,6 @@ public class MockDeviceState extends DeviceState {
     @Override
     public boolean isPowerConnected(Context context) {
         return mPowerIsConnected;
-    }
-
-    @Override
-    public boolean isInteractive(Context context) {
-        return mInteractive;
     }
 
     @Override

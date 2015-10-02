@@ -10,7 +10,6 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.BatteryManager;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 
 /**
@@ -58,10 +57,6 @@ public class DeviceState {
         int status = getStickyBatteryStatus(context);
         return status == BatteryManager.BATTERY_STATUS_CHARGING
                 || status == BatteryManager.BATTERY_STATUS_FULL;
-    }
-
-    public boolean isInteractive(Context context) {
-        return ApiCompatibilityUtils.isInteractive(context);
     }
 
     /** @return whether the currently active network is Wi-Fi, not roaming, and not metered. */

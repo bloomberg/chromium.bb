@@ -63,9 +63,8 @@ public class PrecacheService extends Service {
     private final BroadcastReceiver mDeviceStateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (sIsPrecaching && (mDeviceState.isInteractive(context)
-                    || !mDeviceState.isPowerConnected(context)
-                    || !mDeviceState.isWifiAvailable(context))) {
+            if (sIsPrecaching && (!mDeviceState.isPowerConnected(context)
+                                         || !mDeviceState.isWifiAvailable(context))) {
                 cancelPrecaching();
             }
         }
@@ -195,7 +194,6 @@ public class PrecacheService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        filter.addAction(Intent.ACTION_SCREEN_ON);
         registerReceiver(mDeviceStateReceiver, filter);
     }
 

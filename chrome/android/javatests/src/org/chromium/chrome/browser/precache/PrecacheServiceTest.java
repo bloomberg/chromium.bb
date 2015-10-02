@@ -56,10 +56,10 @@ public class PrecacheServiceTest extends ServiceTestCase<MockPrecacheService> {
         getService().setPrecacheLauncher(mPrecacheLauncher);
     }
 
-    private void startAndChangeDeviceState(MockPrecacheService service, boolean powerIsConnected,
-            boolean isInteractive, boolean wifiIsAvailable) {
+    private void startAndChangeDeviceState(
+            MockPrecacheService service, boolean powerIsConnected, boolean wifiIsAvailable) {
         AdvancedMockContext context = new AdvancedMockContext();
-        getService().setDeviceState(new MockDeviceState(0, true, false, true));
+        getService().setDeviceState(new MockDeviceState(0, true, true));
         assertFalse("Precaching should not be in progress initially", service.isPrecaching());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -70,8 +70,7 @@ public class PrecacheServiceTest extends ServiceTestCase<MockPrecacheService> {
             }
         });
         assertTrue("Precaching should be in progress after start", service.isPrecaching());
-        getService().setDeviceState(
-                new MockDeviceState(0, powerIsConnected, isInteractive, wifiIsAvailable));
+        getService().setDeviceState(new MockDeviceState(0, powerIsConnected, wifiIsAvailable));
         service.getDeviceStateReceiver().onReceive(context, new Intent());
     }
 
@@ -80,20 +79,10 @@ public class PrecacheServiceTest extends ServiceTestCase<MockPrecacheService> {
     @Feature({"Precache"})
     public void testPrecacheWhenPowerDisconnects() {
         setupService();
-        startAndChangeDeviceState(getService(), false, false, true);
+        startAndChangeDeviceState(getService(), false, true);
         assertFalse("Precaching should not be in progress when power is disconnected",
                 getService().isPrecaching());
 
-    }
-
-    /** Tests that the device becoming interactive stops a precache. */
-    @SmallTest
-    @Feature({"Precache"})
-    public void testPrecacheWhenDeviceBecomesInteractive() {
-        setupService();
-        startAndChangeDeviceState(getService(), true, true, true);
-        assertFalse("Precaching should not be in progress when the device is interactive",
-                getService().isPrecaching());
     }
 
     /** Tests that going off of Wi-Fi stops a precache. */
@@ -101,7 +90,7 @@ public class PrecacheServiceTest extends ServiceTestCase<MockPrecacheService> {
     @Feature({"Precache"})
     public void testPrecacheWhenNoLongerWifi() {
         setupService();
-        startAndChangeDeviceState(getService(), true, true, true);
+        startAndChangeDeviceState(getService(), true, false);
         assertFalse("Precaching should not be in progress when the network is not Wi-Fi",
                 getService().isPrecaching());
     }
@@ -111,7 +100,7 @@ public class PrecacheServiceTest extends ServiceTestCase<MockPrecacheService> {
     @Feature({"Precache"})
     public void testPrecacheWhenPrerequisitesStillMet() {
         setupService();
-        startAndChangeDeviceState(getService(), true, false, true);
+        startAndChangeDeviceState(getService(), true, true);
         assertTrue("Precaching should be in progress", getService().isPrecaching());
     }
 
@@ -123,7 +112,7 @@ public class PrecacheServiceTest extends ServiceTestCase<MockPrecacheService> {
     @Feature({"Precache"})
     public void testPrecacheCompleted() {
         setupService();
-        startAndChangeDeviceState(getService(), true, false, true);
+        startAndChangeDeviceState(getService(), true, true);
         assertTrue("Precaching should be in progress", getService().isPrecaching());
         mPrecacheLauncher.onPrecacheCompleted(true);
         assertFalse("Precaching should not be in progress after completion",

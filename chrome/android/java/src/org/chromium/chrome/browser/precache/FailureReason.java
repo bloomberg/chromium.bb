@@ -26,8 +26,7 @@ enum FailureReason {
     /** DeviceState#isWifiAvailable() returns false. */
     NO_WIFI(5),
 
-    /** DeviceState#isInteractive() returns true. */
-    SCREEN_ON(6),
+    // Deprecated: SCREEN_ON(6).
 
     /** PrecacheServiceLauncher#timeSinceLastPrecacheMs() is too recent. */
     NOT_ENOUGH_TIME_SINCE_LAST_PRECACHE(7),
