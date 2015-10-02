@@ -156,12 +156,79 @@ void DataUsageStore::DeleteHistoricalDataUsage() {
   db_->Delete(kCurrentBucketIndexKey);
 }
 
+void DataUsageStore::DeleteBrowsingHistory(const base::Time& start,
+                                           const base::Time& end) {
+  DCHECK_LE(start, end);
+  if (current_bucket_last_updated_.is_null())
+    return;
+
+  base::Time begin_current_interval =
+      BucketLowerBoundary(current_bucket_last_updated_);
+  // Data usage is stored for the past |kDataUsageHistoryNumDays| days. Compute
+  // the begin time for data usage.
+  base::Time begin_history =
+      begin_current_interval -
+      base::TimeDelta::FromDays(kDataUsageHistoryNumDays) +
+      base::TimeDelta::FromMinutes(kDataUsageBucketLengthInMinutes);
+
+  // Nothing to do if there is no overlap between given interval and the
+  // interval for which data usage history is maintained.
+  if (begin_history > end || start > current_bucket_last_updated_)
+    return;
+
+  base::Time start_delete = start > begin_history ? start : begin_history;
+  base::Time end_delete =
+      end < current_bucket_last_updated_ ? end : current_bucket_last_updated_;
+
+  int first_index_to_delete = ComputeBucketIndex(start_delete);
+  int num_buckets_to_delete =
+      1 +
+      (BucketLowerBoundary(end_delete) - BucketLowerBoundary(start_delete))
+              .InMinutes() /
+          kDataUsageBucketLengthInMinutes;
+  for (int i = 0; i < num_buckets_to_delete; ++i) {
+    int index_to_delete = (first_index_to_delete + i) % kNumDataUsageBuckets;
+    db_->Delete(DbKeyForBucketIndex(index_to_delete));
+  }
+}
+
+int DataUsageStore::ComputeBucketIndex(const base::Time& time) const {
+  int offset = BucketOffsetFromLastSaved(time);
+
+  int index = current_bucket_index_ + offset;
+  if (index < 0) {
+    index += kNumDataUsageBuckets;
+  } else if (index >= kNumDataUsageBuckets) {
+    index -= kNumDataUsageBuckets;
+  }
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, kNumDataUsageBuckets);
+  return index;
+}
+
 // static
 bool DataUsageStore::IsInCurrentInterval(const base::Time& time) {
   if (time.is_null())
     return true;
 
   return BucketLowerBoundary(base::Time::Now()) == BucketLowerBoundary(time);
+}
+
+// static
+bool DataUsageStore::BucketOverlapsInterval(
+    const base::Time& bucket_last_updated,
+    const base::Time& start_interval,
+    const base::Time& end_interval) {
+  DCHECK(!bucket_last_updated.is_null());
+  DCHECK(!start_interval.is_null());
+  DCHECK(!end_interval.is_null());
+  DCHECK_LE(start_interval, end_interval);
+
+  base::Time bucket_start = BucketLowerBoundary(bucket_last_updated);
+  base::Time bucket_end = bucket_start + base::TimeDelta::FromMinutes(
+                                             kDataUsageBucketLengthInMinutes);
+  DCHECK_LE(bucket_start, bucket_end);
+  return bucket_end >= start_interval && end_interval >= bucket_start;
 }
 
 void DataUsageStore::GenerateKeyAndAddToMap(
@@ -194,7 +261,9 @@ int DataUsageStore::BucketOffsetFromLastSaved(
       BucketLowerBoundary(current_bucket_last_updated_);
   int offset_from_last_saved =
       (time_delta.InMinutes() / kDataUsageBucketLengthInMinutes);
-  return std::min(offset_from_last_saved, kNumDataUsageBuckets);
+  return offset_from_last_saved > 0
+             ? std::min(offset_from_last_saved, kNumDataUsageBuckets)
+             : std::max(offset_from_last_saved, -kNumDataUsageBuckets);
 }
 
 DataStore::Status DataUsageStore::LoadBucketAtIndex(int index,

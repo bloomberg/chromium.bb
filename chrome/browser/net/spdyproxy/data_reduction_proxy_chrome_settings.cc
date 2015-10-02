@@ -172,7 +172,10 @@ DataReductionProxyChromeSettings::~DataReductionProxyChromeSettings() {
 }
 
 void DataReductionProxyChromeSettings::Shutdown() {
-  data_reduction_proxy_service()->Shutdown();
+  data_reduction_proxy::DataReductionProxyService* service =
+      data_reduction_proxy_service();
+  if (service)
+    service->Shutdown();
 }
 
 void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
