@@ -357,6 +357,7 @@ _arm_internal_release_boards = frozenset([
     'veyron_mickey',
     'veyron_mighty',
     'veyron_minnie',
+    'veyron_minnie-cheets',
     'veyron_pinky',
     'veyron_rialto',
     'veyron_romy',
@@ -604,7 +605,7 @@ _waterfall_config_map = {
         'storm-release-group',
         'strago-release-group',
         'strago-b-release-group',
-        'veyron-c-release-group',
+        'veyron-d-release-group',
 
         # Experimental Canaries
         'bobcat-release',
@@ -2580,15 +2581,16 @@ def GetConfig():
       'veyron-c', 'veyron_brain', (
           'veyron_danger',
           'veyron_thea',
-          'veyron_shark',
+          'veyron_mickey',
       ),
-      important=False,
   )
 
   _AddGroupConfig(
-      'veyron-d', 'veyron_mickey', (
+      'veyron-d', 'veyron_shark', (
           'veyron_romy',
+          'veyron_minnie-cheets',
       ),
+      important=False,
   )
 
   # jecht-based boards
