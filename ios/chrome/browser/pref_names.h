@@ -32,7 +32,12 @@ extern const char kOTRStashStatePathSystemBackupExcluded[];
 extern const char kIosHandoffToOtherDevices[];
 extern const char kLastSessionExitedCleanly[];
 extern const char kMetricsReportingWifiOnly[];
+
+// TODO(stkhapugin): Consider migrating from these two bools to an integer.
+// http://crbug.com/538573
+extern const char kNetworkPredictionEnabled[];
 extern const char kNetworkPredictionWifiOnly[];
+
 extern const char kNtpShownBookmarksFolder[];
 extern const char kShowMemoryDebuggingTools[];
 
