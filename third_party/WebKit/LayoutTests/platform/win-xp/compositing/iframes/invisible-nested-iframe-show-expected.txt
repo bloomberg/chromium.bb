@@ -79,8 +79,7 @@
                 },
                 {
                   "position": [285, 0],
-                  "bounds": [15, 150],
-                  "drawsContent": true
+                  "bounds": [15, 150]
                 }
               ]
             }
