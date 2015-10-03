@@ -656,7 +656,8 @@
   },
   "Linux Tests": {
     "additional_compile_targets": [
-      "blimp_tests"
+      "blimp_tests",
+      "mandoline:all"
     ],
     "gtest_tests": [
       {
@@ -1048,7 +1049,8 @@
   },
   "Linux Tests (dbg)(1)": {
     "additional_compile_targets": [
-      "blimp_tests"
+      "blimp_tests",
+      "mandoline:all"
     ],
     "gtest_tests": [
       {
