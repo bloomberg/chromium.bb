@@ -159,11 +159,6 @@ crbug.com/518998 media/video-poster-after-loadedmetadata.html [ ImageOnlyFailure
 crbug.com/526594 [ Win10 ] plugins/webview-plugin-lifecycle.html [ ImageOnlyFailure ]
 crbug.com/518999 [ Win7 Debug ] plugins/webview-plugin-lifecycle.html [ ImageOnlyFailure Pass ]
 
-crbug.com/530331 fast/text/selection-painting-hidpi.html [ NeedsRebaseline ]
-crbug.com/530331 virtual/spv2/paint/selection/text-selection-newline-br.html [ NeedsRebaseline ]
-crbug.com/530331 paint/selection/text-selection-newline-br.html [ NeedsRebaseline ]
-crbug.com/530331 editing/selection/transformed-selection-rects.html [ NeedsRebaseline ]
-
 crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 crbug.com/519003 [ Mac ] svg/batik/text/xmlSpace.svg [ Failure Pass ]
