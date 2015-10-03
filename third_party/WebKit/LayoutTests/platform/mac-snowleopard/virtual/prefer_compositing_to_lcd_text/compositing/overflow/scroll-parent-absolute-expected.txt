@@ -22,12 +22,7 @@
                     {
                       "bounds": [485, 5000],
                       "shouldFlattenTransform": false,
-                      "drawsContent": true,
-                      "children": [
-                        {
-                          "shouldFlattenTransform": false
-                        }
-                      ]
+                      "drawsContent": true
                     }
                   ]
                 },

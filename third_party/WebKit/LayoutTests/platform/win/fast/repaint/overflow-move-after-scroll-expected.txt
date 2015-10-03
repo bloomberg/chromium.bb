@@ -31,11 +31,6 @@
                   ],
                   "paintInvalidationClients": [
                     "LayoutBlockFlow (positioned) DIV id='block'"
-                  ],
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
                   ]
                 }
               ]
@@ -44,18 +39,13 @@
               "children": [
                 {
                   "position": [0, 385],
-                  "bounds": [685, 15],
-                  "drawsContent": true
+                  "bounds": [685, 15]
                 },
                 {
                   "position": [685, 0],
                   "bounds": [15, 385],
-                  "drawsContent": true,
                   "repaintRects": [
                     [0, 0, 15, 385]
-                  ],
-                  "paintInvalidationClients": [
-                    "##ALL##"
                   ]
                 },
                 {

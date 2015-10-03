@@ -41,11 +41,6 @@
                     "LayoutBlockFlow DIV id='target'",
                     "LayoutText #text",
                     "InlineTextBox 'test'"
-                  ],
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
                   ]
                 }
               ]

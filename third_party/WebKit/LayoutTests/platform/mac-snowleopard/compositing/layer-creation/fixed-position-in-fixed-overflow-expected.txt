@@ -20,16 +20,11 @@
                   "drawsContent": true,
                   "children": [
                     {
-                      "shouldFlattenTransform": false,
-                      "children": [
-                        {
-                          "position": [192, 0],
-                          "bounds": [100, 100],
-                          "contentsOpaque": true,
-                          "drawsContent": true,
-                          "backgroundColor": "#FFFF00"
-                        }
-                      ]
+                      "position": [192, 0],
+                      "bounds": [100, 100],
+                      "contentsOpaque": true,
+                      "drawsContent": true,
+                      "backgroundColor": "#FFFF00"
                     }
                   ]
                 }

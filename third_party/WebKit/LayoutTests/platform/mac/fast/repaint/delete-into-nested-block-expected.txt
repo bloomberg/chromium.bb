@@ -6,7 +6,6 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [31, 119, 761, 37],
         [8, 155, 784, 19],
         [8, 155, 32, 19],
         [8, 137, 784, 37],
@@ -19,7 +18,6 @@
         [3, 114, 794, 111]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
         "InlineTextBox 'one'",
         "LayoutText #text",
         "RootInlineBox",

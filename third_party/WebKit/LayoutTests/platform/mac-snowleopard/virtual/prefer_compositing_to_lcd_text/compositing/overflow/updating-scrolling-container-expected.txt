@@ -30,11 +30,6 @@
                   ],
                   "paintInvalidationClients": [
                     "LayoutBlockFlow DIV id='container'"
-                  ],
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
                   ]
                 }
               ]

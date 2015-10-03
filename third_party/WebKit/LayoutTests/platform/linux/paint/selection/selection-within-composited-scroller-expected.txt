@@ -41,11 +41,6 @@
                     "LayoutBlockFlow DIV id='target'",
                     "LayoutText #text",
                     "InlineTextBox 'test'"
-                  ],
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
                   ]
                 }
               ]
@@ -54,13 +49,11 @@
               "children": [
                 {
                   "position": [0, 185],
-                  "bounds": [185, 15],
-                  "drawsContent": true
+                  "bounds": [185, 15]
                 },
                 {
                   "position": [185, 0],
-                  "bounds": [15, 185],
-                  "drawsContent": true
+                  "bounds": [15, 185]
                 },
                 {
                   "position": [185, 185],

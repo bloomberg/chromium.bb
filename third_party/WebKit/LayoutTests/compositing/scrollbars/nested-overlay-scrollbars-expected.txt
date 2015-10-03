@@ -1,0 +1,94 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [404, 404],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [400, 400],
+              "children": [
+                {
+                  "bounds": [400, 704],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "children": [
+                    {
+                      "position": [0, 500],
+                      "bounds": [204, 204],
+                      "drawsContent": true,
+                      "children": [
+                        {
+                          "position": [2, 2],
+                          "bounds": [200, 200],
+                          "children": [
+                            {
+                              "bounds": [5000, 9000],
+                              "shouldFlattenTransform": false,
+                              "drawsContent": true
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "shouldFlattenTransform": false,
+                      "children": [
+                        {
+                          "position": [2, 502],
+                          "bounds": [100, 800],
+                          "contentsOpaque": true,
+                          "drawsContent": true,
+                          "backgroundColor": "#808080"
+                        },
+                        {
+                          "position": [2, 2502],
+                          "bounds": [5000, 1000],
+                          "drawsContent": true
+                        }
+                      ]
+                    },
+                    {
+                      "position": [2, 502],
+                      "children": [
+                        {
+                          "position": [2, 195],
+                          "bounds": [193, 7]
+                        },
+                        {
+                          "position": [195, 2],
+                          "bounds": [7, 193]
+                        },
+                        {
+                          "position": [195, 195],
+                          "bounds": [7, 7],
+                          "drawsContent": true
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "children": [
+                {
+                  "position": [395, 2],
+                  "bounds": [7, 400]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

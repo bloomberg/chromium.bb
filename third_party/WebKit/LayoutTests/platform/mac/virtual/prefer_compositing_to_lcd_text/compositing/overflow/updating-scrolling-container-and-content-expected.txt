@@ -103,11 +103,6 @@
                     "InlineTextBox 'CONTENT'",
                     "LayoutText #text",
                     "InlineTextBox 'CONTENT'"
-                  ],
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
                   ]
                 }
               ]

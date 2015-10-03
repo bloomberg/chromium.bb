@@ -74,11 +74,6 @@
                     "InlineTextBox 'Findme in a typewriter!'",
                     "LayoutSVGInlineText #text",
                     "InlineTextBox 'Findme on a path! Did you findme?'"
-                  ],
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
                   ]
                 }
               ]
@@ -87,13 +82,11 @@
               "children": [
                 {
                   "position": [0, 485],
-                  "bounds": [785, 15],
-                  "drawsContent": true
+                  "bounds": [785, 15]
                 },
                 {
                   "position": [785, 0],
-                  "bounds": [15, 485],
-                  "drawsContent": true
+                  "bounds": [15, 485]
                 },
                 {
                   "position": [785, 485],

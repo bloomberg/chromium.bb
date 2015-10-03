@@ -29,11 +29,6 @@
                   ],
                   "paintInvalidationClients": [
                     "LayoutBlockFlow DIV id='indicator'"
-                  ],
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
                   ]
                 }
               ]
@@ -42,18 +37,13 @@
               "children": [
                 {
                   "position": [0, 185],
-                  "bounds": [185, 15],
-                  "drawsContent": true
+                  "bounds": [185, 15]
                 },
                 {
                   "position": [185, 0],
                   "bounds": [15, 185],
-                  "drawsContent": true,
                   "repaintRects": [
                     [0, 0, 15, 185]
-                  ],
-                  "paintInvalidationClients": [
-                    "##ALL##"
                   ]
                 },
                 {

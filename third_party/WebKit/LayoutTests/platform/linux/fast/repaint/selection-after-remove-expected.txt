@@ -12,12 +12,9 @@
         [39, 79, 32, 19],
         [38, 100, 152, 80],
         [38, 99, 152, 81],
-        [38, 79, 152, 99],
-        [8, 79, 784, 99],
-        [8, 79, 784, 99]
+        [38, 79, 152, 99]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
         "InlineTextBox 'world hello world'",
         "InlineTextBox ' '",
         "InlineTextBox 'hello world hello world'",

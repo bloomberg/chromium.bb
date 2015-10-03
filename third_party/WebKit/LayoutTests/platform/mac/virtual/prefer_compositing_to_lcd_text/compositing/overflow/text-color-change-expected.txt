@@ -193,11 +193,6 @@
                     "InlineTextBox '\n'",
                     "InlineTextBox '  Text'",
                     "InlineTextBox '\n'"
-                  ],
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
                   ]
                 }
               ]

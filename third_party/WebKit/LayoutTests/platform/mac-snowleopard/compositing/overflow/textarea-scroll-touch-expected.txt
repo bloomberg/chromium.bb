@@ -21,12 +21,7 @@
                 {
                   "bounds": [189, 308],
                   "shouldFlattenTransform": false,
-                  "drawsContent": true,
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
-                  ]
+                  "drawsContent": true
                 }
               ]
             },
@@ -60,12 +55,7 @@
                 {
                   "bounds": [189, 308],
                   "shouldFlattenTransform": false,
-                  "drawsContent": true,
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
-                  ]
+                  "drawsContent": true
                 }
               ]
             },

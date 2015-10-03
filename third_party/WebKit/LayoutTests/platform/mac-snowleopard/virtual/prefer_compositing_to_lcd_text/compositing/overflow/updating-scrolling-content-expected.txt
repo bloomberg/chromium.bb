@@ -29,11 +29,6 @@
                   ],
                   "paintInvalidationClients": [
                     "LayoutBlockFlow DIV id='indicator'"
-                  ],
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
                   ]
                 }
               ]

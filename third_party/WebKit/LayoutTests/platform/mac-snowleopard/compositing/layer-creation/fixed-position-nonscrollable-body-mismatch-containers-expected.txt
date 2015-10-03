@@ -20,12 +20,7 @@ Even though the fixed-position element's container is nonscrollable, it should s
                 {
                   "bounds": [285, 800],
                   "shouldFlattenTransform": false,
-                  "drawsContent": true,
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
-                  ]
+                  "drawsContent": true
                 }
               ]
             },

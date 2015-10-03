@@ -18,12 +18,7 @@
                 {
                   "bounds": [185, 1025],
                   "shouldFlattenTransform": false,
-                  "drawsContent": true,
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
-                  ]
+                  "drawsContent": true
                 }
               ]
             },
@@ -31,18 +26,13 @@
               "children": [
                 {
                   "position": [1, 186],
-                  "bounds": [185, 15],
-                  "drawsContent": true
+                  "bounds": [185, 15]
                 },
                 {
                   "position": [186, 1],
                   "bounds": [15, 185],
-                  "drawsContent": true,
                   "repaintRects": [
                     [0, 0, 15, 185]
-                  ],
-                  "paintInvalidationClients": [
-                    "##ALL##"
                   ]
                 },
                 {

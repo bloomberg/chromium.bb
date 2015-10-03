@@ -43,16 +43,6 @@
                     "GraphicsLayerPaintForeground",
                     "GraphicsLayerPaintOverflowContents",
                     "GraphicsLayerPaintCompositedScroll"
-                  ],
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false,
-                      "paintingPhases": [
-                        "GraphicsLayerPaintForeground",
-                        "GraphicsLayerPaintOverflowContents",
-                        "GraphicsLayerPaintCompositedScroll"
-                      ]
-                    }
                   ]
                 }
               ]

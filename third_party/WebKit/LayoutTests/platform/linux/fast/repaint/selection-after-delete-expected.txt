@@ -10,8 +10,7 @@
         [38, 100, 152, 80],
         [38, 99, 152, 81],
         [38, 79, 152, 99],
-        [38, 78, 3, 21],
-        [8, 79, 784, 99]
+        [38, 78, 3, 21]
       ],
       "paintInvalidationClients": [
         "InlineTextBox 'hello world hello world'",
@@ -24,7 +23,6 @@
         "InlineTextBox ' '",
         "InlineTextBox 'hello'",
         "LayoutText #text",
-        "LayoutBlockFlow HTML",
         "RootInlineBox",
         "RootInlineBox",
         "RootInlineBox",

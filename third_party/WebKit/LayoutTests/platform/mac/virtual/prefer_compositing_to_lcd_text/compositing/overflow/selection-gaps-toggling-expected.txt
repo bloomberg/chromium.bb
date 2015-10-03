@@ -31,12 +31,7 @@ Lorem Ipsum
               "children": [
                 {
                   "bounds": [285, 665],
-                  "shouldFlattenTransform": false,
-                  "children": [
-                    {
-                      "shouldFlattenTransform": false
-                    }
-                  ]
+                  "shouldFlattenTransform": false
                 }
               ]
             },
@@ -138,10 +133,10 @@ Lorem Ipsum
 *** iteration 2: ***
 
 {
-  "bounds": [785, 2448],
+  "bounds": [785, 2373],
   "children": [
     {
-      "bounds": [785, 2448],
+      "bounds": [785, 2373],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -155,15 +150,7 @@ Lorem Ipsum
               "children": [
                 {
                   "bounds": [285, 665],
-                  "shouldFlattenTransform": false,
-                  "children": [
-                    {
-                      "position": [0, 195],
-                      "bounds": [285, 15],
-                      "shouldFlattenTransform": false,
-                      "drawsContent": true
-                    }
-                  ]
+                  "shouldFlattenTransform": false
                 }
               ]
             },
@@ -265,10 +252,10 @@ Lorem Ipsum
 *** iteration 3: ***
 
 {
-  "bounds": [785, 4353],
+  "bounds": [785, 4158],
   "children": [
     {
-      "bounds": [785, 4353],
+      "bounds": [785, 4158],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -282,14 +269,7 @@ Lorem Ipsum
               "children": [
                 {
                   "bounds": [285, 665],
-                  "shouldFlattenTransform": false,
-                  "children": [
-                    {
-                      "position": [0, 195],
-                      "bounds": [285, 15],
-                      "shouldFlattenTransform": false
-                    }
-                  ]
+                  "shouldFlattenTransform": false
                 }
               ]
             },
