@@ -199,6 +199,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=536887)
     self.Fail('deqp/functional/gles3/fbostencilbuffer.html', ['mac', 'intel'],
         bug=536887)
+    self.Fail('deqp/functional/gles3/rbostatequery.html', ['mac', 'intel'],
+        bug=536887)
+    self.Fail('deqp/functional/gles3/readpixel.html', ['mac', 'intel'],
+        bug=536887)
+    self.Fail('deqp/functional/gles3/shaderapi.html', ['mac', 'intel'],
+        bug=536887)
+    self.Fail('deqp/functional/gles3/stringquery.html', ['mac', 'intel'],
+        bug=536887)
 
     # Linux only.
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
