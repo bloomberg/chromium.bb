@@ -1578,3 +1578,6 @@ crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [
 crbug.com/538522 css3/filters/effect-reference-colorspace-hw.html [ ImageOnlyFailure ]
 
 crbug.com/524646 [ Yosemite ] fast/dom/shadow/shadowdom-for-button.html [ ImageOnlyFailure ]
+
+crbug.com/538717 [ Win ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass ]
+crbug.com/538717 [ Win ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass ]
