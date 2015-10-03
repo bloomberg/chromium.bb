@@ -7,19 +7,19 @@ layer at (0,0) size 800x600
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceFilter {filter} [id="non-integer-tile"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTile]
-              [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00"]
+              [feColorMatrix type="MATRIX"]
                 [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="shrink-tile"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTile]
-              [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00"]
+              [feColorMatrix type="MATRIX"]
                 [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="zero-src-tile"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTile]
-              [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00"]
+              [feColorMatrix type="MATRIX"]
                 [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="zero-dst-tile"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTile]
-              [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00"]
+              [feColorMatrix type="MATRIX"]
                 [SourceGraphic]
       LayoutText {#text} at (0,96) size 4x18
         text run at (0,96) width 4: " "
