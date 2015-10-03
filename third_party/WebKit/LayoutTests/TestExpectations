@@ -1542,8 +1542,6 @@ crbug.com/524826 [ Win10 ] compositing/squashing/squashing-reflection-disallowed
 
 crbug.com/526752 [ Win10 ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
-crbug.com/534429 paint/selection/text-selection-drag.html [ NeedsRebaseline ]
-
 # This test has different results in Debug and Release.
 crbug.com/529038 [ Debug ] virtual/gpu/fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ Failure ]
 
