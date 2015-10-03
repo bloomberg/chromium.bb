@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shell/keyboard_controller_proxy_stub.h"
+#include "ash/test/content/keyboard_controller_proxy_stub.h"
 
+#include "ash/content/shell_content_state.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_util.h"
@@ -11,18 +12,13 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/mock_input_method.h"
 
-using namespace content;
-
 namespace ash {
 
 KeyboardControllerProxyStub::KeyboardControllerProxyStub()
-    : keyboard::KeyboardControllerProxy(Shell::GetInstance()
-                                            ->delegate()
-                                            ->GetActiveBrowserContext()) {
-}
+    : keyboard::KeyboardControllerProxy(ShellContentState::GetInstance()
+                                            ->GetActiveBrowserContext()) {}
 
-KeyboardControllerProxyStub::~KeyboardControllerProxyStub() {
-}
+KeyboardControllerProxyStub::~KeyboardControllerProxyStub() {}
 
 bool KeyboardControllerProxyStub::HasKeyboardWindow() const {
   return keyboard_;
@@ -44,15 +40,12 @@ ui::InputMethod* KeyboardControllerProxyStub::GetInputMethod() {
 }
 
 void KeyboardControllerProxyStub::RequestAudioInput(
-    WebContents* web_contents,
-    const MediaStreamRequest& request,
-    const MediaResponseCallback& callback) {
-}
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {}
 
-void KeyboardControllerProxyStub::LoadSystemKeyboard() {
-}
+void KeyboardControllerProxyStub::LoadSystemKeyboard() {}
 
-void KeyboardControllerProxyStub::ReloadKeyboardIfNeeded() {
-}
+void KeyboardControllerProxyStub::ReloadKeyboardIfNeeded() {}
 
 }  // namespace ash

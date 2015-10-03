@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/content/display/screen_orientation_controller_chromeos.h"
+#include "ash/content/shell_content_state.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -139,8 +140,7 @@ ScreenOrientationControllerTest::~ScreenOrientationControllerTest() {
 
 content::WebContents* ScreenOrientationControllerTest::CreateWebContents() {
   return views::ViewsDelegate::GetInstance()->CreateWebContents(
-      ash_test_helper()->test_shell_delegate()->GetActiveBrowserContext(),
-      nullptr);
+      ShellContentState::GetInstance()->GetActiveBrowserContext(), nullptr);
 }
 
 content::WebContents*

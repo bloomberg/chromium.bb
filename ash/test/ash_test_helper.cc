@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/test/ash_test_views_delegate.h"
+#include "ash/test/content/test_shell_content_state.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
@@ -98,6 +99,8 @@ void AshTestHelper::SetUp(bool start_session) {
   // created in AshTestBase tests.
   chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
+  ShellContentState::SetInstance(new TestShellContentState);
+
   ShellInitParams init_params;
   init_params.delegate = test_shell_delegate_;
   init_params.context_factory = context_factory;
@@ -123,6 +126,8 @@ void AshTestHelper::SetUp(bool start_session) {
 void AshTestHelper::TearDown() {
   // Tear down the shell.
   Shell::DeleteInstance();
+  ShellContentState::DestroyInstance();
+
   test_screenshot_delegate_ = NULL;
 
   // Remove global message center state.

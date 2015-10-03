@@ -678,6 +678,8 @@
       'content/ash_with_content_export.h',
       'content/gpu_support_impl.cc',
       'content/gpu_support_impl.h',
+      'content/shell_content_state.cc',
+      'content/shell_content_state.h',
       'keyboard_overlay/keyboard_overlay_delegate.cc',
       'keyboard_overlay/keyboard_overlay_delegate.h',
       'keyboard_overlay/keyboard_overlay_view.cc',
@@ -686,8 +688,6 @@
     'ash_test_support_sources': [
       'desktop_background/desktop_background_controller_test_api.cc',
       'desktop_background/desktop_background_controller_test_api.h',
-      'shell/keyboard_controller_proxy_stub.cc',
-      'shell/keyboard_controller_proxy_stub.h',
       'shell/toplevel_window.cc',
       'shell/toplevel_window.h',
       'test/app_list_controller_test_api.cc',
@@ -759,6 +759,12 @@
       'test/virtual_keyboard_test_helper.cc',
       'test/virtual_keyboard_test_helper.h',
     ],
+    'ash_test_support_with_content_sources': [
+      'test/content/keyboard_controller_proxy_stub.cc',
+      'test/content/keyboard_controller_proxy_stub.h',
+      'test/content/test_shell_content_state.cc',
+      'test/content/test_shell_content_state.h',
+    ],
     'ash_shell_lib_sources': [
       '../ui/views/test/test_views_delegate_aura.cc',
       'shell/app_list.cc',
@@ -766,8 +772,6 @@
       'shell/context_menu.cc',
       'shell/context_menu.h',
       'shell/example_factory.h',
-      'shell/keyboard_controller_proxy_stub.cc',
-      'shell/keyboard_controller_proxy_stub.h',
       'shell/lock_view.cc',
       'shell/panel_window.cc',
       'shell/panel_window.h',
@@ -792,6 +796,8 @@
       'shell/content/client/shell_content_browser_client.h',
       'shell/content/client/shell_main_delegate.cc',
       'shell/content/client/shell_main_delegate.h',
+      'shell/content/shell_content_state_impl.cc',
+      'shell/content/shell_content_state_impl.h',
       'shell/content/shell_main_parts.cc',
       'shell/content/shell_main_parts.h',
     ],
@@ -1087,6 +1093,7 @@
         '../ui/views/views.gyp:views_test_support',
         'ash',
         'ash_resources.gyp:ash_resources',
+        'ash_test_support_with_content',
       ],
       'sources': [
         '<@(ash_test_support_sources)',
@@ -1106,6 +1113,18 @@
             'test/test_metro_viewer_process_host.h',
           ],
         }],
+      ],
+    },
+    {
+      # GN version: //ash:test_support_with_content
+      'target_name': 'ash_test_support_with_content',
+      'type': 'static_library',
+      'dependencies': [
+        '../skia/skia.gyp:skia',
+        'ash_with_content',
+      ],
+      'sources': [
+        '<@(ash_test_support_with_content_sources)',
       ],
     },
     {

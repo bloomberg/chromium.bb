@@ -4,6 +4,7 @@
 
 #include "ash/shell/window_type_launcher.h"
 
+#include "ash/content/shell_content_state.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_widget.h"
@@ -325,8 +326,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   } else if (sender == examples_button_) {
     views::examples::ShowExamplesWindowWithContent(
         views::examples::DO_NOTHING_ON_CLOSE,
-        Shell::GetInstance()->delegate()->GetActiveBrowserContext(),
-        NULL);
+        ShellContentState::GetInstance()->GetActiveBrowserContext(), NULL);
   }
 }
 

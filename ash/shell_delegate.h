@@ -120,10 +120,6 @@ class ASH_EXPORT ShellDelegate {
   virtual void RemoveVirtualKeyboardStateObserver(
       VirtualKeyboardStateObserver* observer) = 0;
 
-  // Get the active browser context. This will get us the active profile
-  // in chrome.
-  virtual content::BrowserContext* GetActiveBrowserContext() = 0;
-
   // Get the AppListViewDelegate, creating one if it does not yet exist.
   // Ownership stays with Chrome's AppListService, or the ShellDelegate.
   virtual app_list::AppListViewDelegate* GetAppListViewDelegate() = 0;

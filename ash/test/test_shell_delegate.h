@@ -47,7 +47,6 @@ class TestShellDelegate : public ShellDelegate {
       VirtualKeyboardStateObserver* observer) override;
   void RemoveVirtualKeyboardStateObserver(
       VirtualKeyboardStateObserver* observer) override;
-  content::BrowserContext* GetActiveBrowserContext() override;
   app_list::AppListViewDelegate* GetAppListViewDelegate() override;
   ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
   SystemTrayDelegate* CreateSystemTrayDelegate() override;
@@ -75,7 +74,6 @@ class TestShellDelegate : public ShellDelegate {
   bool multi_profiles_enabled_;
   bool force_maximize_on_first_run_;
 
-  scoped_ptr<content::BrowserContext> active_browser_context_;
   scoped_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
 
   base::ObserverList<ash::VirtualKeyboardStateObserver>

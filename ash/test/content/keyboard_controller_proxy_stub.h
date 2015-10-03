@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELL_KEYBOARD_CONTROLLER_PROXY_STUB_H_
-#define ASH_SHELL_KEYBOARD_CONTROLLER_PROXY_STUB_H_
+#ifndef ASH_TEST_CONTENT_KEYBOARD_CONTROLLER_PROXY_STUB_H_
+#define ASH_TEST_CONTENT_KEYBOARD_CONTROLLER_PROXY_STUB_H_
 
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
@@ -40,4 +40,4 @@ class KeyboardControllerProxyStub : public keyboard::KeyboardControllerProxy {
 
 }  // namespace ash
 
-#endif  // ASH_SHELL_KEYBOARD_CONTROLLER_PROXY_STUB_H_
+#endif  // ASH_TEST_CONTENT_KEYBOARD_CONTROLLER_PROXY_STUB_H_

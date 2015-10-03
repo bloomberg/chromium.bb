@@ -12,8 +12,8 @@
 #include "ash/new_window_delegate.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell/keyboard_controller_proxy_stub.h"
 #include "ash/shell_window_ids.h"
+#include "ash/test/content/keyboard_controller_proxy_stub.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
@@ -21,7 +21,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
-#include "content/public/test/test_browser_context.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
@@ -31,6 +30,10 @@
 #if defined(OS_CHROMEOS)
 #include "ash/system/tray/system_tray_notifier.h"
 #endif
+
+namespace content {
+class BrowserContext;
+}
 
 namespace ash {
 namespace test {
@@ -147,11 +150,6 @@ void TestShellDelegate::AddVirtualKeyboardStateObserver(
 void TestShellDelegate::RemoveVirtualKeyboardStateObserver(
     VirtualKeyboardStateObserver* observer) {
   keyboard_state_observer_list_.RemoveObserver(observer);
-}
-
-content::BrowserContext* TestShellDelegate::GetActiveBrowserContext() {
-  active_browser_context_.reset(new content::TestBrowserContext());
-  return active_browser_context_.get();
 }
 
 app_list::AppListViewDelegate* TestShellDelegate::GetAppListViewDelegate() {

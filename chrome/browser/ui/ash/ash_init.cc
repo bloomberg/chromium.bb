@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
+#include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -51,6 +52,9 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
   if (!chromeos::LoginState::Get()->IsUserLoggedIn())
     ash::Shell::set_initially_hide_cursor(true);
 #endif
+
+  // Balanced by a call to DestroyInstance() in CloseAsh() below.
+  ash::ShellContentState::SetInstance(new ChromeShellContentState);
 
   ash::ShellInitParams shell_init_params;
   // Shell takes ownership of ChromeShellDelegate.
@@ -95,8 +99,10 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
 }
 
 void CloseAsh() {
-  if (ash::Shell::HasInstance())
+  if (ash::Shell::HasInstance()) {
     ash::Shell::DeleteInstance();
+    ash::ShellContentState::DestroyInstance();
+  }
 }
 
 }  // namespace chrome

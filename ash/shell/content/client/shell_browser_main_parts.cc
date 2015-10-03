@@ -5,8 +5,10 @@
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 
 #include "ash/ash_switches.h"
+#include "ash/content/shell_content_state.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
+#include "ash/shell/content/shell_content_state_impl.h"
 #include "ash/shell/shell_delegate_impl.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/shell_init_params.h"
@@ -120,12 +122,14 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
 
+  ShellContentState::SetInstance(
+      new ShellContentStateImpl(browser_context_.get()));
+
   ash::ShellInitParams init_params;
   init_params.delegate = delegate_;
   init_params.context_factory = content::GetContextFactory();
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   ash::Shell::CreateInstance(init_params);
-  delegate_->set_browser_context(browser_context_.get());
   ash::Shell::GetInstance()->CreateShelf();
   ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_USER);
 
@@ -147,6 +151,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   delegate_->SetWatcher(NULL);
   delegate_ = NULL;
   ash::Shell::DeleteInstance();
+  ShellContentState::DestroyInstance();
   // The global message center state must be shutdown absent
   // g_browser_process.
   message_center::MessageCenter::Shutdown();

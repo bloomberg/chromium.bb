@@ -109,7 +109,7 @@ bool ChromeShellDelegate::IsMultiAccountEnabled() const {
 }
 
 bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
-  return ::CanShowWindowForUser(window, base::Bind(&::GetActiveBrowserContext));
+  return ::CanShowWindowForUser(window, base::Bind(&GetActiveBrowserContext));
 }
 
 bool ChromeShellDelegate::IsForceMaximizeOnFirstRun() const {
@@ -128,10 +128,6 @@ bool ChromeShellDelegate::IsForceMaximizeOnFirstRun() const {
 
 void ChromeShellDelegate::Exit() {
   chrome::AttemptUserExit();
-}
-
-content::BrowserContext* ChromeShellDelegate::GetActiveBrowserContext() {
-  return ::GetActiveBrowserContext();
 }
 
 app_list::AppListViewDelegate* ChromeShellDelegate::GetAppListViewDelegate() {

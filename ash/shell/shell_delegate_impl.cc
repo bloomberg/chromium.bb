@@ -11,13 +11,14 @@
 #include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"
 #include "ash/session/session_state_delegate.h"
+#include "ash/shell/content/shell_content_state_impl.h"
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
-#include "ash/shell/keyboard_controller_proxy_stub.h"
 #include "ash/shell/shelf_delegate_impl.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/default_system_tray_delegate.h"
+#include "ash/test/content/keyboard_controller_proxy_stub.h"
 #include "ash/wm/window_state.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -83,11 +84,11 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
   // SessionStateDelegate:
   content::BrowserContext* GetBrowserContextByIndex(
       MultiProfileIndex index) override {
-    return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
+    return ShellContentState::GetInstance()->GetActiveBrowserContext();
   }
   content::BrowserContext* GetBrowserContextForWindow(
       aura::Window* window) override {
-    return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
+    return ShellContentState::GetInstance()->GetActiveBrowserContext();
   }
   content::BrowserContext* GetUserPresentingBrowserContextForWindow(
       aura::Window* window) override {
@@ -151,10 +152,7 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
 }  // namespace
 
 ShellDelegateImpl::ShellDelegateImpl()
-    : watcher_(NULL),
-      shelf_delegate_(NULL),
-      browser_context_(NULL) {
-}
+    : watcher_(NULL), shelf_delegate_(NULL) {}
 
 ShellDelegateImpl::~ShellDelegateImpl() {
 }
@@ -217,10 +215,6 @@ void ShellDelegateImpl::AddVirtualKeyboardStateObserver(
 
 void ShellDelegateImpl::RemoveVirtualKeyboardStateObserver(
     VirtualKeyboardStateObserver* observer) {
-}
-
-content::BrowserContext* ShellDelegateImpl::GetActiveBrowserContext() {
-  return browser_context_;
 }
 
 app_list::AppListViewDelegate* ShellDelegateImpl::GetAppListViewDelegate() {

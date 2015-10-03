@@ -64,7 +64,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
       ash::VirtualKeyboardStateObserver* observer) override;
   void RemoveVirtualKeyboardStateObserver(
       ash::VirtualKeyboardStateObserver* observer) override;
-  content::BrowserContext* GetActiveBrowserContext() override;
   app_list::AppListViewDelegate* GetAppListViewDelegate() override;
   ash::ShelfDelegate* CreateShelfDelegate(ash::ShelfModel* model) override;
   ash::SystemTrayDelegate* CreateSystemTrayDelegate() override;

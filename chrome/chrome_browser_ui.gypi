@@ -526,6 +526,8 @@
       'browser/ui/ash/chrome_new_window_delegate_chromeos.h',
       'browser/ui/ash/chrome_screenshot_grabber.cc',
       'browser/ui/ash/chrome_screenshot_grabber.h',
+      'browser/ui/ash/chrome_shell_content_state.cc',
+      'browser/ui/ash/chrome_shell_content_state.h',
       'browser/ui/ash/chrome_shell_delegate.cc',
       'browser/ui/ash/chrome_shell_delegate.h',
       'browser/ui/ash/chrome_shell_delegate_chromeos.cc',

@@ -77,15 +77,6 @@ class TestShellDelegateChromeOS : public test::TestShellDelegate {
     return new TestSessionStateDelegateChromeOS();
   }
 
-  content::BrowserContext* GetActiveBrowserContext() override {
-    const user_manager::UserManager* user_manager =
-        user_manager::UserManager::Get();
-    const user_manager::User* active_user = user_manager->GetActiveUser();
-    return active_user
-               ? multi_user_util::GetProfileFromUserID(active_user->GetUserID())
-               : NULL;
-  }
-
   bool CanShowWindowForUser(aura::Window* window) const override {
     // Note that the implementation of GetActiveBrowserContext() here differs
     // from the implementation in ChromeShellDelegate/session_util.cc.
@@ -96,6 +87,15 @@ class TestShellDelegateChromeOS : public test::TestShellDelegate {
   }
 
  private:
+  content::BrowserContext* GetActiveBrowserContext() {
+    const user_manager::UserManager* user_manager =
+        user_manager::UserManager::Get();
+    const user_manager::User* active_user = user_manager->GetActiveUser();
+    return active_user
+               ? multi_user_util::GetProfileFromUserID(active_user->GetUserID())
+               : NULL;
+  }
+
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegateChromeOS);
 };
 
