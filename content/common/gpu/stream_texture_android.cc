@@ -105,7 +105,8 @@ void StreamTexture::WillUseTexImage() {
     DCHECK(!needs_make_current || !owner_stub_->decoder()
                                        ->GetContextGroup()
                                        ->feature_info()
-                                       ->UseVirtualizedGLContexts());
+                                       ->workarounds()
+                                       .use_virtualized_gl_contexts);
     if (needs_make_current) {
       scoped_make_current.reset(new ui::ScopedMakeCurrent(
           owner_stub_->decoder()->GetGLContext(), owner_stub_->surface()));
