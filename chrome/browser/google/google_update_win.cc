@@ -286,9 +286,6 @@ class UpdateCheckDriver {
   // The task runner on which the update checks runs.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // Number of remaining retries allowed when errors occur.
-  int allowed_retries_;
-
   // The caller's task runner, on which methods of |delegate_| will be invoked.
   scoped_refptr<base::SingleThreadTaskRunner> result_runner_;
 
@@ -303,6 +300,9 @@ class UpdateCheckDriver {
 
   // The caller's delegate by which feedback is conveyed.
   base::WeakPtr<UpdateCheckDelegate> delegate_;
+
+  // Number of remaining retries allowed when errors occur.
+  int allowed_retries_;
 
   // True if operating on a per-machine installation rather than a per-user one.
   bool system_level_install_;
@@ -357,11 +357,11 @@ UpdateCheckDriver::UpdateCheckDriver(
     const base::WeakPtr<UpdateCheckDelegate>& delegate)
     : task_runner_(task_runner),
       result_runner_(base::ThreadTaskRunnerHandle::Get()),
-      allowed_retries_(kGoogleAllowedRetries),
       locale_(locale),
       install_update_if_possible_(install_update_if_possible),
       elevation_window_(elevation_window),
       delegate_(delegate),
+      allowed_retries_(kGoogleAllowedRetries),
       system_level_install_(false),
       last_reported_progress_(0),
       status_(UPGRADE_ERROR),
