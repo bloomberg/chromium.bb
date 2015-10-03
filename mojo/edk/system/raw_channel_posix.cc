@@ -505,6 +505,7 @@ size_t RawChannel::GetSerializedPlatformHandleSize() {
 }
 
 bool RawChannel::IsOtherEndOf(RawChannel* other) {
+  DCHECK_NE(other, this);
   PlatformHandle this_handle = HandleForDebuggingNoLock();
   PlatformHandle other_handle = other->HandleForDebuggingNoLock();
 
