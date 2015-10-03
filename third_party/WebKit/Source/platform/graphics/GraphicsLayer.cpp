@@ -999,11 +999,11 @@ bool GraphicsLayer::needsDisplay() const
     return m_needsDisplay;
 }
 
-bool GraphicsLayer::commitIfNeeded(DisplayListDiff& displayListDiff)
+bool GraphicsLayer::commitIfNeeded()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
     if (m_needsDisplay) {
-        displayItemList()->commitNewDisplayItems(&displayListDiff);
+        displayItemList()->commitNewDisplayItems(this);
         m_needsDisplay = false;
         return true;
     }
@@ -1027,9 +1027,10 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
         m_linkHighlights[i]->invalidate();
 }
 
-void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient)
+void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const IntRect& previousPaintInvalidationRect, const IntRect& newPaintInvalidationRect)
 {
-    displayItemList()->invalidate(displayItemClient);
+    m_needsDisplay = true;
+    displayItemList()->invalidate(displayItemClient, paintInvalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
     if (isTrackingPaintInvalidations())
         trackPaintInvalidationObject(displayItemClient.debugName());
 }

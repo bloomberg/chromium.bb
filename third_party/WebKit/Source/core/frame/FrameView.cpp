@@ -2491,10 +2491,8 @@ void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer, const
         GraphicsContext context(graphicsLayer->displayItemList());
         graphicsLayer->paint(context, roundedIntRect(interestRect));
 
-        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-            DisplayListDiff diff;
-            graphicsLayer->commitIfNeeded(diff);
-        }
+        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            graphicsLayer->commitIfNeeded();
     }
 
     for (auto& child : graphicsLayer->children()) {
@@ -2516,10 +2514,9 @@ void FrameView::compositeForSlimmingPaintV2()
 
     lifecycle().advanceTo(DocumentLifecycle::InCompositingForSlimmingPaintV2);
 
-    DisplayListDiff displayListDiff;
-    rootGraphicsLayer->commitIfNeeded(displayListDiff);
+    rootGraphicsLayer->commitIfNeeded();
 
-    DisplayListCompositingBuilder compositingBuilder(*rootGraphicsLayer->displayItemList(), displayListDiff);
+    DisplayListCompositingBuilder compositingBuilder(*rootGraphicsLayer->displayItemList());
     OwnPtr<CompositedDisplayList> compositedDisplayList = adoptPtr(new CompositedDisplayList());
     compositingBuilder.build(*compositedDisplayList);
     page()->setCompositedDisplayList(compositedDisplayList.release());

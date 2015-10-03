@@ -1165,6 +1165,9 @@ LayoutRect LayoutObject::computePaintInvalidationRect(const LayoutBoxModelObject
 
 void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+        return;
+
     ASSERT(gDisablePaintInvalidationStateAsserts || document().lifecycle().state() == DocumentLifecycle::InPaintInvalidation);
 
     if (r.isEmpty())
@@ -1198,16 +1201,18 @@ void LayoutObject::invalidateDisplayItemClient(const DisplayItemClientWrapper& d
     if (PaintLayer* enclosingLayer = this->enclosingLayer()) {
         // This is valid because we want to invalidate the client in the display item list of the current backing.
         DisableCompositingQueryAsserts disabler;
+        // Only the object needs to be invalidated, so use an empty invalidation rect.
+        LayoutRect invalidationRect;
         if (const PaintLayer* paintInvalidationLayer = enclosingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            paintInvalidationLayer->layoutObject()->invalidateDisplayItemClientOnBacking(displayItemClient);
+            paintInvalidationLayer->layoutObject()->invalidateDisplayItemClientOnBacking(displayItemClient, PaintInvalidationFull, invalidationRect, invalidationRect);
 
         enclosingLayer->setNeedsRepaint();
     }
 }
 
-void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const
-{
-    paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this);
+void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const
+{ 
+    paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
 
     if (PaintLayer* enclosingLayer = this->enclosingLayer())
         enclosingLayer->setNeedsRepaint();
@@ -1220,17 +1225,15 @@ LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObje
     return PaintLayer::computePaintInvalidationRect(this, paintInvalidationContainer->layer(), paintInvalidationState);
 }
 
-const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(const LayoutRect& r) const
+const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(LayoutRect& dirtyRect) const
 {
     RELEASE_ASSERT(isRooted());
 
-    if (r.isEmpty())
+    if (dirtyRect.isEmpty())
         return nullptr;
 
     if (view()->document().printing())
         return nullptr; // Don't invalidate paints if we're printing.
-
-    LayoutRect dirtyRect(r);
 
     const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidationOnRootedTree();
     PaintLayer::mapRectToPaintInvalidationBacking(this, &paintInvalidationContainer, dirtyRect);
@@ -1238,10 +1241,19 @@ const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(const
     return &paintInvalidationContainer;
 }
 
-void LayoutObject::invalidatePaintRectangle(const LayoutRect& r) const
+void LayoutObject::invalidatePaintRectangle(const LayoutRect& rect) const
 {
-    if (const LayoutBoxModelObject* paintInvalidationContainer = invalidatePaintRectangleInternal(r))
-        invalidateDisplayItemClients(*paintInvalidationContainer);
+    LayoutRect dirtyRect(rect);
+    const LayoutBoxModelObject* paintInvalidationContainer = invalidatePaintRectangleInternal(dirtyRect);
+    if (paintInvalidationContainer) {
+        invalidateDisplayItemClients(*paintInvalidationContainer, PaintInvalidationRectangle, dirtyRect, dirtyRect);
+    }
+}
+
+void LayoutObject::invalidatePaintRectangleNotInvalidatingDisplayItemClients(const LayoutRect& r) const
+{
+    LayoutRect dirtyRect(r);
+    invalidatePaintRectangleInternal(dirtyRect);
 }
 
 void LayoutObject::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
@@ -1329,7 +1341,7 @@ inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject
     setPreviousSelectionRectForPaintInvalidation(newSelectionRect);
 
     if (shouldInvalidateSelection())
-        invalidateDisplayItemClients(paintInvalidationContainer);
+        invalidateDisplayItemClients(paintInvalidationContainer, PaintInvalidationSelection, oldSelectionRect, newSelectionRect);
 
     if (fullInvalidation)
         return;
@@ -1387,12 +1399,12 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
         // invalidation is issued. See crbug.com/508383 and crbug.com/515977.
         // This is a workaround to force display items to update paint offset.
         if (!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && paintInvalidationState.forcedSubtreeInvalidationWithinContainer())
-            invalidateDisplayItemClients(paintInvalidationContainer);
+            invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, oldBounds, newBounds);
 
         return invalidationReason;
     }
 
-    invalidateDisplayItemClients(paintInvalidationContainer);
+    invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, oldBounds, newBounds);
 
     if (invalidationReason == PaintInvalidationIncremental) {
         incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds, newLocation);
@@ -3331,7 +3343,9 @@ void LayoutObject::invalidateDisplayItemClientForNonCompositingDescendantsOf(con
         explicit Functor(const LayoutBoxModelObject& paintInvalidationContainer) : m_paintInvalidationContainer(paintInvalidationContainer) { }
         void operator()(LayoutObject& object) const override
         {
-            object.invalidateDisplayItemClients(m_paintInvalidationContainer);
+            // Only the objects need to be invalidated, not any paint rectangles.
+            LayoutRect invalidationRect;
+            object.invalidateDisplayItemClients(m_paintInvalidationContainer, PaintInvalidationFull, invalidationRect, invalidationRect);
         }
     private:
         const LayoutBoxModelObject& m_paintInvalidationContainer;
@@ -3351,7 +3365,7 @@ void LayoutObject::invalidatePaintIncludingNonCompositingDescendants()
             LayoutRect invalidationRect = object.previousPaintInvalidationRect();
             object.adjustInvalidationRectForCompositedScrolling(invalidationRect, m_paintInvalidationContainer);
             object.invalidatePaintUsingContainer(m_paintInvalidationContainer, invalidationRect, PaintInvalidationLayer);
-            object.invalidateDisplayItemClients(m_paintInvalidationContainer);
+            object.invalidateDisplayItemClients(m_paintInvalidationContainer, PaintInvalidationLayer, invalidationRect, invalidationRect);
         }
     private:
         const LayoutBoxModelObject& m_paintInvalidationContainer;

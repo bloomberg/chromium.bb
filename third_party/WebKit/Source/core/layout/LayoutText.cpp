@@ -1874,14 +1874,16 @@ PassRefPtr<AbstractInlineTextBox> LayoutText::firstAbstractInlineTextBox()
     return AbstractInlineTextBox::getOrCreate(this, m_firstTextBox);
 }
 
-void LayoutText::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const
+void LayoutText::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const
 {
-    LayoutObject::invalidateDisplayItemClients(paintInvalidationContainer);
+    LayoutObject::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
+
+    LayoutRect emptyInvalidationRect;
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box);
+        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box, invalidationReason, emptyInvalidationRect, emptyInvalidationRect);
         if (box->truncation() != cNoTruncation) {
             if (EllipsisBox* ellipsisBox = box->root().ellipsisBox())
-                paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*ellipsisBox);
+                paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*ellipsisBox, invalidationReason, emptyInvalidationRect, emptyInvalidationRect);
         }
     }
 }

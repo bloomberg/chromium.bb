@@ -2053,12 +2053,12 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, P
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
-void CompositedLayerMapping::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient)
+void CompositedLayerMapping::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect)
 {
     // FIXME: need to split out paint invalidations for the background.
     // FIXME: need to distinguish invalidations for different layers (e.g. the main layer and scrolling layer). crbug.com/416535.
-    ApplyToGraphicsLayers(this, [&displayItemClient](GraphicsLayer* layer) {
-        layer->invalidateDisplayItemClient(displayItemClient);
+    ApplyToGraphicsLayers(this, [&displayItemClient, paintInvalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect](GraphicsLayer* layer) {
+        layer->invalidateDisplayItemClient(displayItemClient, paintInvalidationReason, enclosingIntRect(previousPaintInvalidationRect), enclosingIntRect(newPaintInvalidationRect));
     }, ApplyToContentLayers);
 }
 

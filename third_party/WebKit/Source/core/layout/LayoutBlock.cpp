@@ -405,9 +405,9 @@ inline static void invalidateDisplayItemClientForStartOfContinuationsIfNeeded(co
         startOfContinuations->invalidateDisplayItemClient(*startOfContinuations);
 }
 
-void LayoutBlock::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const
+void LayoutBlock::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const
 {
-    LayoutBox::invalidateDisplayItemClients(paintInvalidationContainer);
+    LayoutBox::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
     invalidateDisplayItemClientForStartOfContinuationsIfNeeded(*this);
 }
 
@@ -2387,26 +2387,26 @@ static bool shouldCheckLines(LayoutObject* obj)
         && (!obj->isDeprecatedFlexibleBox() || obj->style()->boxOrient() == VERTICAL);
 }
 
-static int getHeightForLineCount(LayoutBlock* block, int l, bool includeBottom, int& count)
+static int getHeightForLineCount(LayoutBlock* block, int lineCount, bool includeBottom, int& count)
 {
     if (block->style()->visibility() == VISIBLE) {
         if (block->isLayoutBlockFlow() && block->childrenInline()) {
             for (RootInlineBox* box = toLayoutBlockFlow(block)->firstRootBox(); box; box = box->nextRootBox()) {
-                if (++count == l)
+                if (++count == lineCount)
                     return box->lineBottom() + (includeBottom ? (block->borderBottom() + block->paddingBottom()) : LayoutUnit());
             }
         } else {
             LayoutBox* normalFlowChildWithoutLines = nullptr;
             for (LayoutBox* obj = block->firstChildBox(); obj; obj = obj->nextSiblingBox()) {
                 if (shouldCheckLines(obj)) {
-                    int result = getHeightForLineCount(toLayoutBlock(obj), l, false, count);
+                    int result = getHeightForLineCount(toLayoutBlock(obj), lineCount, false, count);
                     if (result != -1)
                         return result + obj->location().y() + (includeBottom ? (block->borderBottom() + block->paddingBottom()) : LayoutUnit());
                 } else if (!obj->isFloatingOrOutOfFlowPositioned()) {
                     normalFlowChildWithoutLines = obj;
                 }
             }
-            if (normalFlowChildWithoutLines && l == 0)
+            if (normalFlowChildWithoutLines && lineCount == 0)
                 return normalFlowChildWithoutLines->location().y() + normalFlowChildWithoutLines->size().height();
         }
     }
@@ -2469,10 +2469,10 @@ int LayoutBlock::lineCount(const RootInlineBox* stopRootInlineBox, bool* found) 
     return count;
 }
 
-int LayoutBlock::heightForLineCount(int l)
+int LayoutBlock::heightForLineCount(int lineCount)
 {
     int count = 0;
-    return getHeightForLineCount(this, l, true, count);
+    return getHeightForLineCount(this, lineCount, true, count);
 }
 
 void LayoutBlock::clearTruncation()

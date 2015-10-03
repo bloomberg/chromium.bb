@@ -7,6 +7,7 @@
 
 #include "platform/NotImplemented.h"
 #include "platform/TraceEvent.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 
 #ifndef NDEBUG
@@ -99,9 +100,18 @@ void DisplayItemList::endScope()
     endSkippingCache();
 }
 
-void DisplayItemList::invalidate(const DisplayItemClientWrapper& client)
+void DisplayItemList::invalidate(const DisplayItemClientWrapper& client, PaintInvalidationReason paintInvalidationReason, const IntRect& previousPaintInvalidationRect, const IntRect& newPaintInvalidationRect)
 {
     invalidateUntracked(client.displayItemClient());
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+        Invalidation invalidation = { previousPaintInvalidationRect, paintInvalidationReason };
+        if (!previousPaintInvalidationRect.isEmpty())
+            m_invalidations.append(invalidation);
+        if (newPaintInvalidationRect != previousPaintInvalidationRect && !newPaintInvalidationRect.isEmpty()) {
+            invalidation.rect = newPaintInvalidationRect;
+            m_invalidations.append(invalidation);
+        }
+    }
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_trackedPaintInvalidationObjects)
         m_trackedPaintInvalidationObjects->append(client.debugName());
@@ -251,11 +261,16 @@ void DisplayItemList::copyCachedSubsequence(DisplayItems::iterator& currentIt, D
 // Coefficients are related to the ratio of out-of-order CachedDisplayItems
 // and the average number of (Drawing|Subsequence)DisplayItems per client.
 //
-// TODO(pdr): Implement the DisplayListDiff algorithm for SlimmingPaintV2.
-void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
+void DisplayItemList::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
 {
     TRACE_EVENT2("blink,benchmark", "DisplayItemList::commitNewDisplayItems", "current_display_list_size", (int)m_currentDisplayItems.size(),
         "num_non_cached_new_items", (int)m_newDisplayItems.size() - m_numCachedItems);
+
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+        for (const auto& invalidation : m_invalidations)
+            graphicsLayer->setNeedsDisplayInRect(invalidation.rect, invalidation.invalidationReason);
+        m_invalidations.clear();
+    }
 
     // These data structures are used during painting only.
     ASSERT(m_scopeStack.isEmpty());

@@ -384,7 +384,7 @@ void LayoutView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidatio
         const LayoutBoxModelObject& paintInvalidationContainer = paintInvalidationState.paintInvalidationContainer();
         PaintLayer::mapRectToPaintInvalidationBacking(this, &paintInvalidationContainer, dirtyRect, &paintInvalidationState);
         invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationFull);
-        invalidateDisplayItemClients(paintInvalidationContainer);
+        invalidateDisplayItemClients(paintInvalidationContainer, PaintInvalidationFull, dirtyRect, dirtyRect);
     }
     LayoutBlock::invalidateTreeIfNeeded(paintInvalidationState);
 }

@@ -192,9 +192,9 @@ public:
 
     bool needsDisplay() const;
     // Commites new display items only if m_needsDisplay is true.
-    bool commitIfNeeded(DisplayListDiff&);
+    bool commitIfNeeded();
 
-    void invalidateDisplayItemClient(const DisplayItemClientWrapper&);
+    void invalidateDisplayItemClient(const DisplayItemClientWrapper&, PaintInvalidationReason, const IntRect& previousPaintInvalidationRect, const IntRect& newPaintInvalidationRect);
 
     // Set that the position/size of the contents (image or video).
     void setContentsRect(const IntRect&);

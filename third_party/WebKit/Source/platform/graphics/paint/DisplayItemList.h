@@ -7,8 +7,10 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/ContiguousContainer.h"
+#include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
 #include "wtf/Alignment.h"
@@ -19,6 +21,7 @@
 
 namespace blink {
 
+class GraphicsLayer;
 class GraphicsContext;
 
 // kDisplayItemAlignment must be a multiple of alignof(derived display item) for
@@ -28,10 +31,6 @@ class GraphicsContext;
 static const size_t kDisplayItemAlignment = WTF_ALIGN_OF(BeginTransform3DDisplayItem);
 static const size_t kInitialDisplayItemsCapacity = 64;
 static const size_t kMaximumDisplayItemSize = sizeof(BeginTransform3DDisplayItem);
-
-// Map from SimpleLayer.startPoint to the DrawingDisplayItems within its range
-// which were invalidated on this frame and do not change SimpleLayers.
-using DisplayListDiff = HashMap<DisplayItemClient, DisplayItem*>;
 
 class DisplayItems : public ContiguousContainer<DisplayItem, kDisplayItemAlignment> {
 public:
@@ -64,8 +63,8 @@ public:
         return adoptPtr(new DisplayItemList());
     }
 
-    // These methods are called during paint invalidation.
-    void invalidate(const DisplayItemClientWrapper&);
+    // These methods are called during paint invalidation (or paint if SlimmingPaintSynchronizedPainting is on).
+    void invalidate(const DisplayItemClientWrapper&, PaintInvalidationReason, const IntRect& previousPaintInvalidationRect, const IntRect& newPaintInvalidationRect);
     void invalidateUntracked(DisplayItemClient);
     void invalidateAll();
 
@@ -103,9 +102,9 @@ public:
     void endSkippingCache() { ASSERT(m_skippingCacheCount > 0); --m_skippingCacheCount; }
     bool skippingCache() const { return m_skippingCacheCount; }
 
-    // Must be called when a painting is finished. If passed, a DisplayListDiff
-    // is initialized and created.
-    void commitNewDisplayItems(DisplayListDiff* = 0);
+    // Must be called when a painting is finished. If passed, invalidations are recorded on the given
+    // GraphicsLayer.
+    void commitNewDisplayItems(GraphicsLayer* = 0);
 
     // Returns the approximate memory usage, excluding memory likely to be
     // shared with the embedder after copying to WebDisplayItemList.
@@ -222,6 +221,13 @@ private:
 
     unsigned m_nextScope;
     Vector<unsigned> m_scopeStack;
+
+    struct Invalidation {
+        IntRect rect;
+        PaintInvalidationReason invalidationReason;
+    };
+
+    Vector<Invalidation> m_invalidations;
 
 #if ENABLE(ASSERT)
     // This is used to check duplicated ids during add(). We could also check during

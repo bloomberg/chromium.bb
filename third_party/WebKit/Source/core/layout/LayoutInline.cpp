@@ -1404,11 +1404,11 @@ void LayoutInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     regions.append(region);
 }
 
-void LayoutInline::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const
+void LayoutInline::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const
 {
-    LayoutBoxModelObject::invalidateDisplayItemClients(paintInvalidationContainer);
+    LayoutBoxModelObject::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
     for (InlineFlowBox* box = firstLineBox(); box; box = box->nextLineBox())
-        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box);
+        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
 }
 
 } // namespace blink

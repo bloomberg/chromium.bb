@@ -408,13 +408,13 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
     }
 }
 
-void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayItemClientWrapper& displayItemClient) const
+void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason invalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const
 {
     if (layer()->groupedMapping()) {
         if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
-            squashingLayer->invalidateDisplayItemClient(displayItemClient);
+            squashingLayer->invalidateDisplayItemClient(displayItemClient, invalidationReason, enclosingIntRect(previousPaintInvalidationRect), enclosingIntRect(newPaintInvalidationRect));
     } else if (CompositedLayerMapping* compositedLayerMapping = layer()->compositedLayerMapping()) {
-        compositedLayerMapping->invalidateDisplayItemClient(displayItemClient);
+        compositedLayerMapping->invalidateDisplayItemClient(displayItemClient, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
     }
 }
 

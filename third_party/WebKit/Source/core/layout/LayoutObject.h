@@ -980,7 +980,7 @@ public:
 
     // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
-    void invalidatePaintRectangleNotInvalidatingDisplayItemClients(const LayoutRect& r) const { invalidatePaintRectangleInternal(r); }
+    void invalidatePaintRectangleNotInvalidatingDisplayItemClients(const LayoutRect&) const;
 
     // Walk the tree after layout issuing paint invalidations for layoutObjects that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
     virtual void invalidateTreeIfNeeded(PaintInvalidationState&);
@@ -1363,7 +1363,7 @@ protected:
     // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, etc.,
     // not including children which will be invalidated normally during invalidateTreeIfNeeded() and
     // parts which are invalidated separately (e.g. scrollbars).
-    virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
+    virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const;
 
     void setIsSlowRepaintObject(bool);
 
@@ -1436,7 +1436,8 @@ private:
 
     static bool isAllowedToModifyLayoutTreeStructure(Document&);
 
-    const LayoutBoxModelObject* invalidatePaintRectangleInternal(const LayoutRect&) const;
+    // The passed rect is mutated into the coordinate space of the paint invalidation container.
+    const LayoutBoxModelObject* invalidatePaintRectangleInternal(LayoutRect&) const;
 
     static LayoutPoint uninitializedPaintOffset() { return LayoutPoint(LayoutUnit::max(), LayoutUnit::max()); }
 

@@ -13,7 +13,7 @@ namespace blink {
 
 class CORE_EXPORT DisplayListCompositingBuilder {
 public:
-    DisplayListCompositingBuilder(const DisplayItemList& displayItemList, const DisplayListDiff&)
+    DisplayListCompositingBuilder(const DisplayItemList& displayItemList)
         : m_displayItemList(displayItemList) { }
 
     void build(CompositedDisplayList&);

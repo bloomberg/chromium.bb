@@ -213,7 +213,7 @@ public:
     // Helper methods for computing line counts and heights for line counts.
     RootInlineBox* lineAtIndex(int) const;
     int lineCount(const RootInlineBox* = nullptr, bool* = nullptr) const;
-    int heightForLineCount(int);
+    int heightForLineCount(int lineCount);
     void clearTruncation();
 
     LayoutBoxModelObject* virtualContinuation() const final { return continuation(); }
@@ -351,7 +351,7 @@ protected:
     bool isInlineBlockOrInlineTable() const final { return isInline() && isReplaced(); }
 
     void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState) override;
-    void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const override;
+    void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const override;
 
 private:
     LayoutObjectChildList* virtualChildren() final { return children(); }

@@ -13,7 +13,6 @@ void DisplayListCompositingBuilder::build(CompositedDisplayList& compositedDispl
 {
     // TODO(pdr): Properly implement simple layer compositing here.
     // See: https://docs.google.com/document/d/1qF7wpO_lhuxUO6YXKZ3CJuXi0grcb5gKZJBBgnoTd0k/view
-
     DisplayItemPropertyTreeBuilder treeBuilder;
     for (const auto& displayItem : m_displayItemList.displayItems())
         treeBuilder.processDisplayItem(displayItem);
