@@ -1173,8 +1173,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
       ChromeTranslateClient* chrome_translate_client =
           ChromeTranslateClient::FromWebContents(embedder_web_contents_);
-      if (!chrome_translate_client)
+      // If no |chrome_translate_client| attached with this WebContents or we're
+      // viewing in a MimeHandlerViewGuest translate will be disabled.
+      if (!chrome_translate_client ||
+          !!extensions::MimeHandlerViewGuest::FromWebContents(
+              source_web_contents_)) {
         return false;
+      }
       std::string original_lang =
           chrome_translate_client->GetLanguageState().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
