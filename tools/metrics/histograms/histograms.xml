@@ -30844,7 +30844,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Platform.DiskUsage.NumUserHomeDirectories"
     units="home directories">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>achuith@chromium.org</owner>
+  <owner>tls@chromium.org</owner>
   <summary>
     Number of users home directories on the device. Logged once a day.
   </summary>
