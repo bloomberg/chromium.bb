@@ -730,16 +730,16 @@ int main(int argc, char *argv[])
 	ec = weston_compositor_create(display, NULL);
 	if (ec == NULL) {
 		weston_log("fatal: failed to create compositor\n");
-		goto out_signals;
+		goto out;
 	}
 
 	ec->config = config;
 	if (weston_compositor_init_config(ec, config) < 0)
-		goto out_signals;
+		goto out;
 
 	if (backend_init(ec, &argc, argv, config) < 0) {
 		weston_log("fatal: failed to create compositor backend\n");
-		goto out_signals;
+		goto out;
 	}
 
 	catch_signals();
