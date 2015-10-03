@@ -4767,7 +4767,8 @@ weston_compositor_destroy(struct weston_compositor *compositor)
 
 	weston_compositor_xkb_destroy(compositor);
 
-	compositor->backend->destroy(compositor);
+	if (compositor->backend)
+		compositor->backend->destroy(compositor);
 	free(compositor);
 }
 
