@@ -1848,8 +1848,22 @@ WebGLActiveInfo* WebGL2RenderingContextBase::getTransformFeedbackVarying(WebGLPr
     if (isContextLost() || !validateWebGLObject("getTransformFeedbackVarying", program))
         return nullptr;
 
-    notImplemented();
-    return nullptr;
+    GLint maxNameLength = -1;
+    webContext()->getProgramiv(objectOrZero(program), GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH, &maxNameLength);
+    if (maxNameLength <= 0) {
+        return nullptr;
+    }
+    OwnPtr<GLchar[]> name = adoptArrayPtr(new GLchar[maxNameLength]);
+    GLsizei length = 0;
+    GLsizei size = 0;
+    GLenum type = 0;
+    webContext()->getTransformFeedbackVarying(objectOrZero(program), index, maxNameLength, &length, &size, &type, name.get());
+
+    if (length == 0 || size == 0 || type == 0) {
+        return nullptr;
+    }
+
+    return WebGLActiveInfo::create(String(name.get(), length), type, size);
 }
 
 void WebGL2RenderingContextBase::pauseTransformFeedback()
