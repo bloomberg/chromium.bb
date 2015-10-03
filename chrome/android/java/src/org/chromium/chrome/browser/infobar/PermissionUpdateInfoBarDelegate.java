@@ -13,13 +13,9 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Handles requesting the android runtime permissions for the permission update infobar.
@@ -33,21 +29,14 @@ class PermissionUpdateInfoBarDelegate implements WindowAndroid.PermissionCallbac
 
     @CalledByNative
     private static PermissionUpdateInfoBarDelegate create(
-            long nativePtr, WebContents webContents, int[] contentSettings) {
-        return new PermissionUpdateInfoBarDelegate(nativePtr, webContents, contentSettings);
+            long nativePtr, WebContents webContents, String[] permissions) {
+        return new PermissionUpdateInfoBarDelegate(nativePtr, webContents, permissions);
     }
 
     private PermissionUpdateInfoBarDelegate(
-            long nativePtr, WebContents webContents, int[] contentSettings) {
+            long nativePtr, WebContents webContents, String[] permissions) {
         mNativePtr = nativePtr;
-
-        List<String> permissions = new ArrayList<String>();
-        for (int i = 0; i < contentSettings.length; i++) {
-            String androidPermission =
-                    PrefServiceBridge.getAndroidPermissionForContentSetting(contentSettings[i]);
-            if (androidPermission != null) permissions.add(androidPermission);
-        }
-        mAndroidPermisisons = permissions.toArray(new String[permissions.size()]);
+        mAndroidPermisisons = permissions;
         mWindowAndroid = ContentViewCore.fromWebContents(webContents).getWindowAndroid();
     }
 

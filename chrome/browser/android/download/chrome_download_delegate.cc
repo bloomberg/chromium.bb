@@ -5,6 +5,7 @@
 #include "chrome/browser/android/download/chrome_download_delegate.h"
 
 #include <jni.h>
+#include <string>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -17,10 +18,14 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/android/download_controller_android.h"
 #include "jni/ChromeDownloadDelegate_jni.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::DownloadControllerAndroid;
 
 // Gets the download warning text for the given file name.
 static ScopedJavaLocalRef<jstring> GetDownloadWarningText(
@@ -49,7 +54,7 @@ static void DangerousDownloadValidated(JNIEnv* env,
                                        jint download_id,
                                        jboolean accept) {
   TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
-  content::DownloadControllerAndroid::Get()->DangerousDownloadValidated(
+  DownloadControllerAndroid::Get()->DangerousDownloadValidated(
       tab_android->web_contents(), download_id, accept);
 }
 
@@ -86,6 +91,33 @@ static void LaunchDownloadOverwriteInfoBar(
   chrome::android::AndroidDownloadManagerOverwriteInfoBarDelegate::Create(
       InfoBarService::FromWebContents(tab_android->web_contents()), file_name,
       dir_name, dir_full_path, delegate, download_info);
+}
+
+static void LaunchPermissionUpdateInfoBar(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& tab,
+    const JavaParamRef<jstring>& jpermission,
+    jlong callback_id) {
+  TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
+
+  std::string permission =
+      base::android::ConvertJavaStringToUTF8(env, jpermission);
+
+  // Convert java long long int to c++ pointer, take ownership.
+  scoped_ptr<DownloadControllerAndroid::AcquireFileAccessPermissionCallback> cb(
+      reinterpret_cast<
+          DownloadControllerAndroid::AcquireFileAccessPermissionCallback*>(
+              callback_id));
+
+  std::vector<std::string> permissions;
+  permissions.push_back(permission);
+
+  PermissionUpdateInfoBarDelegate::Create(
+      tab_android->web_contents(),
+      permissions,
+      IDS_MISSING_STORAGE_PERMISSION_DOWNLOAD_EDUCATION_TEXT,
+      *cb);
 }
 
 bool RegisterChromeDownloadDelegate(JNIEnv* env) {

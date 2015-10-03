@@ -29,4 +29,12 @@ public interface ContentViewDownloadDelegate {
      * @param downloadId The download id.
      */
     void onDangerousDownload(String filename, int downloadId);
+
+    /**
+     * Called when file access has been requested to complete a download.
+     * @param callbackId The callback ID used to trigger success or failure of the download.
+     *
+     * @see DownloadController#onRequestFileAccessResult(long, boolean)
+     */
+    void requestFileAccess(long callbackId);
 }

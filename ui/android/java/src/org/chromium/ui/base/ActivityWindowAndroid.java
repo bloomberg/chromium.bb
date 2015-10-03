@@ -185,8 +185,7 @@ public class ActivityWindowAndroid
         Activity activity = mActivityRef.get();
         if (activity == null) return false;
 
-        if (activity.getPackageManager().isPermissionRevokedByPolicy(
-                permission, activity.getPackageName())) {
+        if (isPermissionRevokedByPolicy(permission)) {
             return false;
         }
 
@@ -201,6 +200,17 @@ public class ActivityWindowAndroid
         if (!prefs.getBoolean(permissionQueriedKey, false)) return true;
 
         return false;
+    }
+
+    @Override
+    public boolean isPermissionRevokedByPolicy(String permission) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
+
+        Activity activity = mActivityRef.get();
+        if (activity == null) return false;
+
+        return activity.getPackageManager().isPermissionRevokedByPolicy(
+                permission, activity.getPackageName());
     }
 
     @Override

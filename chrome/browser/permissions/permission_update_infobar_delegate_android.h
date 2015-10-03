@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_UPDATE_INFOBAR_DELEGATE_ANDROID_H_
 
 #include <jni.h>
+#include <string>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
@@ -18,22 +19,27 @@ namespace content {
 class WebContents;
 }
 
-namespace ui {
-class WindowAndroid;
-}
-
 // An infobar delegate to be used for requesting missing Android runtime
 // permissions for previously allowed ContentSettingsTypes.
 class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   using PermissionUpdatedCallback = base::Callback<void(bool)>;
 
-  // Creates an infobar to resolve conflicts in Android runtime permissions
-  // and adds the infobar to |infobar_service|.  Returns the infobar if it was
-  // successfully added.
+  // Creates an infobar to resolve conflicts in Android runtime permissions.
+  // The necessary runtime permissions are generated based on the list of
+  // ContentSettingsTypes passed in. Returns the infobar if it was successfully
+  // added.
   static infobars::InfoBar* Create(
       content::WebContents* web_contents,
       const std::vector<ContentSettingsType>& content_settings_types,
+      const PermissionUpdatedCallback& callback);
+
+  // Creates an infobar to resolve conflicts in Android runtime permissions.
+  // Returns the infobar if it was successfully added.
+  static infobars::InfoBar* Create(
+      content::WebContents* web_contents,
+      const std::vector<std::string>& android_permissions,
+      int permission_msg_id,
       const PermissionUpdatedCallback& callback);
 
   // Return whether the runtime permissions currently granted to Chrome by
@@ -51,7 +57,8 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   PermissionUpdateInfoBarDelegate(
       content::WebContents* web_contents,
-      const std::vector<ContentSettingsType>& content_settings_types,
+      const std::vector<std::string>& android_permissions,
+      int permission_msg_id,
       const PermissionUpdatedCallback& callback);
   ~PermissionUpdateInfoBarDelegate() override;
 
@@ -69,9 +76,9 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
   void InfoBarDismissed() override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
-  std::vector<ContentSettingsType> content_settings_types_;
+  std::vector<std::string> android_permissions_;
+  int permission_msg_id_;
   PermissionUpdatedCallback callback_;
-  ui::WindowAndroid* window_android_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionUpdateInfoBarDelegate);
 };

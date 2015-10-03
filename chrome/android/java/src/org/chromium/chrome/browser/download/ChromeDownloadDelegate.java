@@ -5,16 +5,21 @@
 package org.chromium.chrome.browser.download;
 
 import android.Manifest.permission;
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Pair;
+import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
+import android.widget.TextView;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -27,6 +32,7 @@ import org.chromium.chrome.browser.infobar.InfoBarListeners;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content.browser.ContentViewDownloadDelegate;
+import org.chromium.content.browser.DownloadController;
 import org.chromium.content.browser.DownloadInfo;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -312,6 +318,54 @@ public class ChromeDownloadDelegate
         confirmDangerousDownload(downloadInfo);
     }
 
+    @Override
+    public void requestFileAccess(final long callbackId) {
+        final String storagePermission = android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+        final Activity activity = mTab.getWindowAndroid().getActivity().get();
+
+        if (activity == null) {
+            DownloadController.getInstance().onRequestFileAccessResult(callbackId, false);
+        } else if (mTab.getWindowAndroid().canRequestPermission(storagePermission)) {
+            View view = activity.getLayoutInflater().inflate(
+                    R.layout.update_permissions_dialog, null);
+            TextView dialogText = (TextView) view.findViewById(R.id.text);
+            dialogText.setText(R.string.missing_storage_permission_download_education_text);
+
+            final PermissionCallback permissionCallback = new PermissionCallback() {
+                @Override
+                public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
+                    DownloadController.getInstance().onRequestFileAccessResult(
+                            callbackId, grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                }
+            };
+
+            AlertDialog.Builder builder =
+                    new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
+                    .setView(view)
+                    .setPositiveButton(R.string.infobar_update_permissions_button_text,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id) {
+                                    mTab.getWindowAndroid().requestPermissions(
+                                            new String[] {storagePermission}, permissionCallback);
+                                }
+                            })
+                     .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                             @Override
+                             public void onCancel(DialogInterface dialog) {
+                                 DownloadController.getInstance().onRequestFileAccessResult(
+                                         callbackId, false);
+                             }
+                     });
+            builder.create().show();
+        } else if (!mTab.getWindowAndroid().isPermissionRevokedByPolicy(storagePermission)) {
+            nativeLaunchPermissionUpdateInfoBar(mTab, storagePermission, callbackId);
+        } else {
+            // TODO(tedchoc): Show toast.
+            DownloadController.getInstance().onRequestFileAccessResult(callbackId, false);
+        }
+    }
+
     /**
      * Return a pair of directory name and its full path. Note that we create the directory if
      * it does not already exist.
@@ -592,4 +646,6 @@ public class ChromeDownloadDelegate
     private static native void nativeLaunchDownloadOverwriteInfoBar(ChromeDownloadDelegate delegate,
             Tab tab, DownloadInfo downloadInfo, String fileName, String dirName,
             String dirFullPath);
+    private static native void nativeLaunchPermissionUpdateInfoBar(
+            Tab tab, String permission, long callbackId);
 }

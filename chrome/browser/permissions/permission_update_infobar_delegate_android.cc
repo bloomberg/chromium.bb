@@ -4,8 +4,6 @@
 
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 
-#include <string>
-
 #include "base/android/jni_array.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_ptr.h"
@@ -30,6 +28,51 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
       << "Caller should check ShouldShowPermissionInfobar before creating the "
       << "infobar.";
 
+  content::ContentViewCore* cvc =
+      content::ContentViewCore::FromWebContents(web_contents);
+  ui::WindowAndroid* window_android = cvc->GetWindowAndroid();
+
+  std::vector<std::string> permissions;
+  int message_id = IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT;
+
+  for (ContentSettingsType content_settings_type : content_settings_types) {
+    std::string android_permission =
+        PrefServiceBridge::GetAndroidPermissionForContentSetting(
+            content_settings_type);
+
+    if (!android_permission.empty() &&
+        !window_android->HasPermission(android_permission)) {
+      permissions.push_back(android_permission);
+
+      switch (content_settings_type) {
+        case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+          message_id = IDS_INFOBAR_MISSING_LOCATION_PERMISSION_TEXT;
+          break;
+        case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+          message_id = IDS_INFOBAR_MISSING_MICROPHONE_PERMISSION_TEXT;
+          break;
+        case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+          message_id = IDS_INFOBAR_MISSING_CAMERA_PERMISSION_TEXT;
+          break;
+        default:
+          NOTREACHED();
+          message_id = IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT;
+      }
+    }
+  }
+  if (permissions.size() > 1)
+    message_id = IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT;
+
+  return PermissionUpdateInfoBarDelegate::Create(
+      web_contents, permissions, message_id, callback);
+}
+
+// static
+infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
+    content::WebContents* web_contents,
+    const std::vector<std::string>& android_permissions,
+    int permission_msg_id,
+    const PermissionUpdatedCallback& callback) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   if (!infobar_service) {
@@ -39,7 +82,7 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
 
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new PermissionUpdateInfoBarDelegate(
-          web_contents, content_settings_types, callback))));
+          web_contents, android_permissions, permission_msg_id, callback))));
 }
 
 // static
@@ -83,25 +126,19 @@ void PermissionUpdateInfoBarDelegate::OnPermissionResult(
 
 PermissionUpdateInfoBarDelegate::PermissionUpdateInfoBarDelegate(
     content::WebContents* web_contents,
-    const std::vector<ContentSettingsType>& content_settings_types,
+    const std::vector<std::string>& android_permissions,
+    int permission_msg_id,
     const PermissionUpdatedCallback& callback)
     : ConfirmInfoBarDelegate(),
-      content_settings_types_(content_settings_types),
+      android_permissions_(android_permissions),
+      permission_msg_id_(permission_msg_id),
       callback_(callback) {
-  std::vector<int> content_settings_type_values;
-  for (ContentSettingsType type : content_settings_types)
-    content_settings_type_values.push_back(type);
-
   JNIEnv* env = base::android::AttachCurrentThread();
   java_delegate_.Reset(Java_PermissionUpdateInfoBarDelegate_create(
       env,
       reinterpret_cast<intptr_t>(this),
       web_contents->GetJavaWebContents().obj(),
-      base::android::ToJavaIntArray(env, content_settings_type_values).obj()));
-
-  content::ContentViewCore* cvc =
-        content::ContentViewCore::FromWebContents(web_contents);
-  window_android_ = cvc->GetWindowAndroid();
+      base::android::ToJavaArrayOfStrings(env, android_permissions_).obj()));
 }
 
 PermissionUpdateInfoBarDelegate::~PermissionUpdateInfoBarDelegate() {
@@ -117,41 +154,7 @@ int PermissionUpdateInfoBarDelegate::GetIconId() const {
 }
 
 base::string16 PermissionUpdateInfoBarDelegate::GetMessageText() const {
-  int missing_permission_count = 0;
-  int message_id = IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT;
-
-  for (ContentSettingsType content_settings_type : content_settings_types_) {
-    std::string android_permission =
-        PrefServiceBridge::GetAndroidPermissionForContentSetting(
-            content_settings_type);
-
-    if (!android_permission.empty() &&
-        !window_android_->HasPermission(android_permission)) {
-      missing_permission_count++;
-
-      switch (content_settings_type) {
-        case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-          message_id = IDS_INFOBAR_MISSING_LOCATION_PERMISSION_TEXT;
-          break;
-        case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-          message_id = IDS_INFOBAR_MISSING_MICROPHONE_PERMISSION_TEXT;
-          break;
-        case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-          message_id = IDS_INFOBAR_MISSING_CAMERA_PERMISSION_TEXT;
-          break;
-        default:
-          NOTREACHED();
-          message_id = IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT;
-      }
-    }
-
-    if (missing_permission_count > 1) {
-      return l10n_util::GetStringUTF16(
-          IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT);
-    }
-  }
-
-  return l10n_util::GetStringUTF16(message_id);
+  return l10n_util::GetStringUTF16(permission_msg_id_);
 }
 
 int PermissionUpdateInfoBarDelegate::GetButtons() const {

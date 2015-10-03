@@ -250,6 +250,20 @@ public class WindowAndroid {
     }
 
     /**
+     * Determine whether the specified permission is revoked by policy.
+     *
+     * @param permission The permission name.
+     * @return Whether the permission is revoked by policy and the user has no ability to change it.
+     */
+    public boolean isPermissionRevokedByPolicy(String permission) {
+        Log.w(TAG, "Cannot determine the policy permission state as the context "
+                + "is not an Activity");
+        assert false : "Failed to determine the policy permission state using a WindowAndroid "
+                + "without an Activity";
+        return false;
+    }
+
+    /**
      * Requests the specified permissions are granted for further use.
      * @param permissions The list of permissions to request access to.
      * @param callback The callback to be notified whether the permissions were granted.
