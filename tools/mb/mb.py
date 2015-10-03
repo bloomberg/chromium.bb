@@ -75,9 +75,6 @@ class MetaBuildWrapper(object):
                             help='analyze whether changes to a set of files '
                                  'will cause a set of binaries to be rebuilt.')
     AddCommonOptions(subp)
-    subp.add_argument('--swarming-targets-file',
-                      help='save runtime dependencies for targets listed '
-                           'in file.')
     subp.add_argument('path', nargs=1,
                       help='path build was generated into.')
     subp.add_argument('input_path', nargs=1,
@@ -98,11 +95,36 @@ class MetaBuildWrapper(object):
                       help='path to generate build into')
     subp.set_defaults(func=self.CmdGen)
 
+    subp = subps.add_parser('isolate',
+                            help='generate the .isolate files for a given'
+                                 'binary')
+    AddCommonOptions(subp)
+    subp.add_argument('path', nargs=1,
+                      help='path build was generated into')
+    subp.add_argument('target', nargs=1,
+                      help='ninja target to generate the isolate for')
+    subp.set_defaults(func=self.CmdIsolate)
+
     subp = subps.add_parser('lookup',
                             help='look up the command for a given config or '
                                  'builder')
     AddCommonOptions(subp)
     subp.set_defaults(func=self.CmdLookup)
+
+    subp = subps.add_parser('run',
+                            help='build and run the isolated version of a '
+                                 'binary')
+    AddCommonOptions(subp)
+    subp.add_argument('-j', '--jobs', dest='jobs', type=int,
+                      help='Number of jobs to pass to ninja')
+    subp.add_argument('--no-build', dest='build', default=True,
+                      action='store_false',
+                      help='Do not build, just isolate and run')
+    subp.add_argument('path', nargs=1,
+                      help='path to generate build into')
+    subp.add_argument('target', nargs=1,
+                      help='ninja target to build and run')
+    subp.set_defaults(func=self.CmdRun)
 
     subp = subps.add_parser('validate',
                             help='validate the config file')
@@ -121,44 +143,78 @@ class MetaBuildWrapper(object):
     self.args = parser.parse_args(argv)
 
   def CmdAnalyze(self):
-    vals = self.GetConfig()
+    vals = self.Lookup()
     if vals['type'] == 'gn':
       return self.RunGNAnalyze(vals)
-    elif vals['type'] == 'gyp':
-      return self.RunGYPAnalyze(vals)
     else:
-      raise MBErr('Unknown meta-build type "%s"' % vals['type'])
+      return self.RunGYPAnalyze(vals)
 
   def CmdGen(self):
-    vals = self.GetConfig()
-
+    vals = self.Lookup()
     self.ClobberIfNeeded(vals)
 
     if vals['type'] == 'gn':
       return self.RunGNGen(vals)
-    if vals['type'] == 'gyp':
-      return self.RunGYPGen(vals)
-
-    raise MBErr('Unknown meta-build type "%s"' % vals['type'])
-
-  def CmdLookup(self):
-    vals = self.GetConfig()
-    if vals['type'] == 'gn':
-      cmd = self.GNCmd('gen', '_path_', vals['gn_args'])
-      env = None
-    elif vals['type'] == 'gyp':
-      cmd, env = self.GYPCmd('_path_', vals)
     else:
-      raise MBErr('Unknown meta-build type "%s"' % vals['type'])
-
-    self.PrintCmd(cmd, env)
-    return 0
+      return self.RunGYPGen(vals)
 
   def CmdHelp(self):
     if self.args.subcommand:
       self.ParseArgs([self.args.subcommand, '--help'])
     else:
       self.ParseArgs(['--help'])
+
+  def CmdIsolate(self):
+    vals = self.GetConfig()
+    if not vals:
+      return 1
+
+    if vals['type'] == 'gn':
+      return self.RunGNIsolate(vals)
+    else:
+      return self.Build('%s_run' % self.args.target[0])
+
+  def CmdLookup(self):
+    vals = self.Lookup()
+    if vals['type'] == 'gn':
+      cmd = self.GNCmd('gen', '_path_', vals['gn_args'])
+      env = None
+    else:
+      cmd, env = self.GYPCmd('_path_', vals)
+
+    self.PrintCmd(cmd, env)
+    return 0
+
+  def CmdRun(self):
+    vals = self.GetConfig()
+    if not vals:
+      return 1
+
+    build_dir = self.args.path[0]
+    target = self.args.target[0]
+
+    if vals['type'] == 'gn':
+      if self.args.build:
+        ret = self.Build(target)
+        if ret:
+          return ret
+      ret = self.RunGNIsolate(vals)
+      if ret:
+        return ret
+    else:
+      ret = self.Build('%s_run' % target)
+      if ret:
+        return ret
+
+    ret, _, _ = self.Run([
+        self.executable,
+        self.PathJoin('tools', 'swarming_client', 'isolate.py'),
+        'run',
+        '-s',
+        self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target))],
+        force_verbose=False, buffer_output=False)
+
+    return ret
 
   def CmdValidate(self):
     errs = []
@@ -234,13 +290,75 @@ class MetaBuildWrapper(object):
     return 0
 
   def GetConfig(self):
+    build_dir = self.args.path[0]
+
+    vals = {}
+    if self.args.builder or self.args.master or self.args.config:
+      vals = self.Lookup()
+      if vals['type'] == 'gn':
+        # Re-run gn gen in order to ensure the config is consistent with the
+        # build dir.
+        self.RunGNGen(vals)
+      return vals
+
+    # TODO: We can only get the config for GN build dirs, not GYP build dirs.
+    # GN stores the args that were used in args.gn in the build dir,
+    # but GYP doesn't store them anywhere. We should consider modifying
+    # gyp_chromium to record the arguments it runs with in a similar
+    # manner.
+
+    mb_type_path = self.PathJoin(self.ToAbsPath(build_dir), 'mb_type')
+    if not self.Exists(mb_type_path):
+      gn_args_path = self.PathJoin(self.ToAbsPath(build_dir), 'args.gn')
+      if not self.Exists(gn_args_path):
+        self.Print('Must either specify a path to an existing GN build dir '
+                   'or pass in a -m/-b pair or a -c flag to specify the '
+                   'configuration')
+        return {}
+      else:
+        mb_type = 'gn'
+    else:
+      mb_type = self.ReadFile(mb_type_path).strip()
+
+    if mb_type == 'gn':
+      vals = self.GNValsFromDir(build_dir)
+    else:
+      vals = {}
+    vals['type'] = mb_type
+
+    return vals
+
+  def GNValsFromDir(self, build_dir):
+    args_contents = self.ReadFile(
+        self.PathJoin(self.ToAbsPath(build_dir), 'args.gn'))
+    gn_args = []
+    for l in args_contents.splitlines():
+      fields = l.split(' ')
+      name = fields[0]
+      val = ' '.join(fields[2:])
+      gn_args.append('%s=%s' % (name, val))
+
+    return {
+      'gn_args': ' '.join(gn_args),
+      'type': 'gn',
+    }
+
+  def Lookup(self):
     self.ReadConfigFile()
     config = self.ConfigFromArgs()
     if not config in self.configs:
       raise MBErr('Config "%s" not found in %s' %
                   (config, self.args.config_file))
 
-    return self.FlattenConfig(config)
+    vals = self.FlattenConfig(config)
+
+    # Do some basic sanity checking on the config so that we
+    # don't have to do this in every caller.
+    assert 'type' in vals, 'No meta-build type specified in the config'
+    assert vals['type'] in ('gn', 'gyp'), (
+        'Unknown meta-build type "%s"' % vals['gn_args'])
+
+    return vals
 
   def ReadConfigFile(self):
     if not self.Exists(self.args.config_file):
@@ -353,12 +471,12 @@ class MetaBuildWrapper(object):
     self.WriteFile(mb_type_path, new_mb_type)
 
   def RunGNGen(self, vals):
-    path = self.args.path[0]
+    build_dir = self.args.path[0]
 
-    cmd = self.GNCmd('gen', path, vals['gn_args'], extra_args=['--check'])
+    cmd = self.GNCmd('gen', build_dir, vals['gn_args'], extra_args=['--check'])
 
     swarming_targets = []
-    if self.args.swarming_targets_file:
+    if getattr(self.args, 'swarming_targets_file', None):
       # We need GN to generate the list of runtime dependencies for
       # the compile targets listed (one per line) in the file so
       # we can run them via swarming. We use ninja_to_gn.pyl to convert
@@ -374,10 +492,10 @@ class MetaBuildWrapper(object):
                       (target, '//testing/buildbot/gn_isolate_map.pyl'))
         gn_labels.append(gn_isolate_map[target]['label'])
 
-      gn_runtime_deps_path = self.ToAbsPath(path, 'runtime_deps')
+      gn_runtime_deps_path = self.ToAbsPath(build_dir, 'runtime_deps')
 
       # Since GN hasn't run yet, the build directory may not even exist.
-      self.MaybeMakeDirectory(self.ToAbsPath(path))
+      self.MaybeMakeDirectory(self.ToAbsPath(build_dir))
 
       self.WriteFile(gn_runtime_deps_path, '\n'.join(gn_labels) + '\n')
       cmd.append('--runtime-deps-list-file=%s' % gn_runtime_deps_path)
@@ -401,10 +519,10 @@ class MetaBuildWrapper(object):
       else:
         runtime_deps_target = target
       if self.platform == 'win32':
-        deps_path = self.ToAbsPath(path,
+        deps_path = self.ToAbsPath(build_dir,
                                    runtime_deps_target + '.exe.runtime_deps')
       else:
-        deps_path = self.ToAbsPath(path,
+        deps_path = self.ToAbsPath(build_dir,
                                    runtime_deps_target + '.runtime_deps')
       if not self.Exists(deps_path):
           raise MBErr('did not generate %s' % deps_path)
@@ -414,30 +532,65 @@ class MetaBuildWrapper(object):
 
       runtime_deps = self.ReadFile(deps_path).splitlines()
 
-      isolate_path = self.ToAbsPath(path, target + '.isolate')
-      self.WriteFile(isolate_path,
-        pprint.pformat({
-          'variables': {
-            'command': command,
-            'files': sorted(runtime_deps + extra_files),
-          }
-        }) + '\n')
+      self.WriteIsolateFiles(build_dir, command, target, runtime_deps,
+                             extra_files)
 
-      self.WriteJSON(
-        {
-          'args': [
-            '--isolated',
-            self.ToSrcRelPath('%s%s%s.isolated' % (path, self.sep, target)),
-            '--isolate',
-            self.ToSrcRelPath('%s%s%s.isolate' % (path, self.sep, target)),
-          ],
-          'dir': self.chromium_src_dir,
-          'version': 1,
-        },
-        isolate_path + 'd.gen.json',
-      )
+    return 0
+
+  def RunGNIsolate(self, vals):
+    gn_isolate_map = ast.literal_eval(self.ReadFile(self.PathJoin(
+        self.chromium_src_dir, 'testing', 'buildbot', 'gn_isolate_map.pyl')))
+
+    build_dir = self.args.path[0]
+    target = self.args.target[0]
+    command, extra_files = self.GetIsolateCommand(target, vals, gn_isolate_map)
+
+    label = gn_isolate_map[target]['label']
+    ret, out, _ = self.Call(['gn', 'desc', build_dir, label, 'runtime_deps'])
+    if ret:
+      return ret
+
+    runtime_deps = out.splitlines()
+
+    self.WriteIsolateFiles(build_dir, command, target, runtime_deps,
+                           extra_files)
+
+    ret, _, _ = self.Run([
+        self.executable,
+        self.PathJoin('tools', 'swarming_client', 'isolate.py'),
+        'check',
+        '-i',
+        self.ToSrcRelPath('%s/%s.isolate' % (build_dir, target)),
+        '-s',
+        self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target))],
+        buffer_output=False)
 
     return ret
+
+  def WriteIsolateFiles(self, build_dir, command, target, runtime_deps,
+                        extra_files):
+    isolate_path = self.ToAbsPath(build_dir, target + '.isolate')
+    self.WriteFile(isolate_path,
+      pprint.pformat({
+        'variables': {
+          'command': command,
+          'files': sorted(runtime_deps + extra_files),
+        }
+      }) + '\n')
+
+    self.WriteJSON(
+      {
+        'args': [
+          '--isolated',
+          self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target)),
+          '--isolate',
+          self.ToSrcRelPath('%s/%s.isolate' % (build_dir, target)),
+        ],
+        'dir': self.chromium_src_dir,
+        'version': 1,
+      },
+      isolate_path + 'd.gen.json',
+    )
 
   def GNCmd(self, subcommand, path, gn_args='', extra_args=None):
     if self.platform == 'linux2':
@@ -769,26 +922,43 @@ class MetaBuildWrapper(object):
     # This function largely exists so it can be overridden for testing.
     print(*args, **kwargs)
 
-  def Run(self, cmd, env=None, force_verbose=True):
+  def Build(self, target):
+    build_dir = self.ToSrcRelPath(self.args.path[0])
+    ninja_cmd = ['ninja', '-C', build_dir]
+    if self.args.jobs:
+      ninja_cmd.extend(['-j', '%d' % self.args.jobs])
+    ninja_cmd.append(target)
+    ret, _, _ = self.Run(ninja_cmd, force_verbose=False, buffer_output=False)
+    return ret
+
+  def Run(self, cmd, env=None, force_verbose=True, buffer_output=True):
     # This function largely exists so it can be overridden for testing.
     if self.args.dryrun or self.args.verbose or force_verbose:
       self.PrintCmd(cmd, env)
     if self.args.dryrun:
       return 0, '', ''
 
-    ret, out, err = self.Call(cmd, env=env)
+    ret, out, err = self.Call(cmd, env=env, buffer_output=buffer_output)
     if self.args.verbose or force_verbose:
+      if ret:
+        self.Print('  -> returned %d' % ret)
       if out:
         self.Print(out, end='')
       if err:
         self.Print(err, end='', file=sys.stderr)
     return ret, out, err
 
-  def Call(self, cmd, env=None):
-    p = subprocess.Popen(cmd, shell=False, cwd=self.chromium_src_dir,
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                         env=env)
-    out, err = p.communicate()
+  def Call(self, cmd, env=None, buffer_output=True):
+    if buffer_output:
+      p = subprocess.Popen(cmd, shell=False, cwd=self.chromium_src_dir,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                           env=env)
+      out, err = p.communicate()
+    else:
+      p = subprocess.Popen(cmd, shell=False, cwd=self.chromium_src_dir,
+                           env=env)
+      p.wait()
+      out = err = ''
     return p.returncode, out, err
 
   def ExpandUser(self, path):

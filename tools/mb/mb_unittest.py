@@ -58,7 +58,7 @@ class FakeMBW(mb.MetaBuildWrapper):
   def WriteFile(self, path, contents, force_verbose=False):
     self.files[path] = contents
 
-  def Call(self, cmd, env=None):
+  def Call(self, cmd, env=None, buffer_output=True):
     if env:
       self.cross_compile = env.get('GYP_CROSSCOMPILE')
     self.calls.append(cmd)
@@ -208,7 +208,8 @@ class UnitTest(unittest.TestCase):
              }"""}
 
     mbw = self.fake_mbw(files)
-    mbw.Call = lambda cmd, env=None: (0, 'out/Default/foo_unittests\n', '')
+    mbw.Call = lambda cmd, env=None, buffer_output=True: (
+        0, 'out/Default/foo_unittests\n', '')
 
     self.check(['analyze', '-c', 'gn_debug', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
@@ -225,7 +226,8 @@ class UnitTest(unittest.TestCase):
                "targets": ["all", "bar_unittests"]
              }"""}
     mbw = self.fake_mbw(files)
-    mbw.Call = lambda cmd, env=None: (0, 'out/Default/foo_unittests\n', '')
+    mbw.Call = lambda cmd, env=None, buffer_output=True: (
+        0, 'out/Default/foo_unittests\n', '')
     self.check(['analyze', '-c', 'gn_debug', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
     out = json.loads(mbw.files['/tmp/out.json'])
@@ -271,7 +273,7 @@ class UnitTest(unittest.TestCase):
 
   def test_gn_gen_fails(self):
     mbw = self.fake_mbw()
-    mbw.Call = lambda cmd, env=None: (1, '', '')
+    mbw.Call = lambda cmd, env=None, buffer_output=True: (1, '', '')
     self.check(['gen', '-c', 'gn_debug', '//out/Default'], mbw=mbw, ret=1)
 
   def test_gn_gen_swarming(self):
@@ -297,6 +299,47 @@ class UnitTest(unittest.TestCase):
                   mbw.files)
     self.assertIn('/fake_src/out/Default/base_unittests.isolated.gen.json',
                   mbw.files)
+
+  def test_gn_isolate(self):
+    files = {
+      '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
+          "{'base_unittests': {"
+          "  'label': '//base:base_unittests',"
+          "  'type': 'raw',"
+          "  'args': [],"
+          "}}\n"
+      ),
+      '/fake_src/out/Default/base_unittests.runtime_deps': (
+          "base_unittests\n"
+      ),
+    }
+    self.check(['isolate', '-c', 'gn_debug', '//out/Default', 'base_unittests'],
+               files=files, ret=0)
+
+    # test running isolate on an existing build_dir
+    files['/fake_src/out/Default/args.gn'] = 'is_debug = True\n'
+    self.check(['isolate', '//out/Default', 'base_unittests'],
+               files=files, ret=0)
+
+    files['/fake_src/out/Default/mb_type'] = 'gn\n'
+    self.check(['isolate', '//out/Default', 'base_unittests'],
+               files=files, ret=0)
+
+  def test_gn_run(self):
+    files = {
+      '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
+          "{'base_unittests': {"
+          "  'label': '//base:base_unittests',"
+          "  'type': 'raw',"
+          "  'args': [],"
+          "}}\n"
+      ),
+      '/fake_src/out/Default/base_unittests.runtime_deps': (
+          "base_unittests\n"
+      ),
+    }
+    self.check(['run', '-c', 'gn_debug', '//out/Default', 'base_unittests'],
+               files=files, ret=0)
 
   def test_gn_lookup(self):
     self.check(['lookup', '-c', 'gn_debug'], ret=0)
@@ -332,7 +375,7 @@ class UnitTest(unittest.TestCase):
 
   def test_gyp_gen_fails(self):
     mbw = self.fake_mbw()
-    mbw.Call = lambda cmd, env=None: (1, '', '')
+    mbw.Call = lambda cmd, env=None, buffer_output=True: (1, '', '')
     self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], mbw=mbw, ret=1)
 
   def test_gyp_lookup_goma_dir_expansion(self):
