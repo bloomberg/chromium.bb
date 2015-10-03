@@ -10,6 +10,6 @@
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   mojo::ApplicationRunner runner(
-      device::DevicesAppFactory::CreateApp(nullptr).release());
+      device::DevicesAppFactory::CreateApp().release());
   return runner.Run(shell_handle);
 }
