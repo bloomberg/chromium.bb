@@ -1637,8 +1637,10 @@ void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, D
 {
     if (isContextLost())
         return;
-    if (!data)
+    if (!data) {
+        synthesizeGLError(GL_INVALID_VALUE, "bufferSubData", "no data");
         return;
+    }
     bufferSubDataImpl(target, offset, data->byteLength(), data->data());
 }
 
@@ -1646,8 +1648,10 @@ void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, c
 {
     if (isContextLost())
         return;
-    if (!data)
+    if (!data) {
+        synthesizeGLError(GL_INVALID_VALUE, "bufferSubData", "no data");
         return;
+    }
     bufferSubDataImpl(target, offset, data.byteLength(), data.baseAddressMaybeOnStack());
 }
 

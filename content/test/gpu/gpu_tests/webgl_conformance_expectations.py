@@ -38,6 +38,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=478572)
     self.Fail('conformance/misc/expando-loss.html',
         bug=485634)
+    self.Fail('conformance/buffers/buffer-data-array-buffer.html',
+        bug=535077)
 
     # Win failures
     self.Fail('conformance/glsl/bugs/' +

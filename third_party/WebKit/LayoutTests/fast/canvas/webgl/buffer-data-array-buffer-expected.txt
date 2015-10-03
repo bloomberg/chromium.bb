@@ -9,11 +9,12 @@ PASS [object WebGLBuffer] is non-null.
 PASS getError was expected value: INVALID_OPERATION : 
 PASS getError was expected value: NO_ERROR : 
 PASS getError was expected value: INVALID_VALUE : 
+PASS getError was expected value: INVALID_VALUE : 
 PASS getError was expected value: NO_ERROR : 
 PASS getError was expected value: INVALID_VALUE : 
 PASS getError was expected value: INVALID_VALUE : 
 PASS getError was expected value: NO_ERROR : 
-PASS getError was expected value: NO_ERROR : 
+PASS getError was expected value: INVALID_VALUE : 
 PASS successfullyParsed is true
 
 TEST COMPLETE
