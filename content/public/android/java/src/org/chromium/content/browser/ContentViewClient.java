@@ -57,13 +57,6 @@ public class ContentViewClient {
 
         if (!shouldPropagateKey(keyCode)) return true;
 
-        // We also have to intercept some shortcuts before we send them to the ContentView.
-        if (event.isCtrlPressed() && (keyCode == KeyEvent.KEYCODE_TAB
-                || keyCode == KeyEvent.KEYCODE_W
-                || keyCode == KeyEvent.KEYCODE_F4)) {
-            return true;
-        }
-
         return false;
     }
 
