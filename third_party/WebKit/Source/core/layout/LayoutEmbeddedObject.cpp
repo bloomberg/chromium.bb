@@ -84,6 +84,10 @@ void LayoutEmbeddedObject::setPluginUnavailabilityReason(PluginUnavailabilityRea
     m_pluginUnavailabilityReason = pluginUnavailabilityReason;
 
     m_unavailablePluginReplacementText = localizedUnavailablePluginReplacementText(node(), pluginUnavailabilityReason);
+
+    // node() is nullptr when LayoutPart is being destroyed.
+    if (node())
+        setShouldDoFullPaintInvalidation();
 }
 
 bool LayoutEmbeddedObject::showsUnavailablePluginIndicator() const
