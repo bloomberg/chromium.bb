@@ -75,10 +75,10 @@ layer at (8,126) size 300x100 clip at (8,126) size 300x85 scrollWidth 1208
 layer at (8,241) size 141x32 clip at (9,242) size 124x30
   LayoutTextControl {TEXTAREA} at (0,15) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 120x13
-      LayoutText {#text} at (0,0) size 89x13
-        text run at (0,0) width 89: "Textarea y-scroll"
+      LayoutText {#text} at (0,0) size 84x13
+        text run at (0,0) width 84: "Textarea y-scroll"
 layer at (153,226) size 141x47 clip at (154,227) size 139x30
   LayoutTextControl {TEXTAREA} at (145,0) size 141x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 135x13
-      LayoutText {#text} at (0,0) size 89x13
-        text run at (0,0) width 89: "Textarea x-scroll"
+      LayoutText {#text} at (0,0) size 84x13
+        text run at (0,0) width 84: "Textarea x-scroll"

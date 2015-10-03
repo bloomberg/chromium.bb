@@ -27,36 +27,36 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (28,8) size 755x20 [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 4x18
                 text run at (1,1) width 4: " "
-layer at (10,28) size 6x32 clip at (0,0) size 0x0 scrollWidth 9 scrollHeight 43
+layer at (10,28) size 6x32 clip at (0,0) size 0x0 scrollWidth 8 scrollHeight 43
   LayoutTextControl {TEXTAREA} at (1,1) size 6x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 0x39
       LayoutText {#text} at (0,0) size 7x39
         text run at (0,0) width 7: "o"
         text run at (0,13) width 7: "n"
-        text run at (0,26) width 7: "e"
-layer at (19,28) size 6x32 clip at (0,0) size 0x0 scrollWidth 11 scrollHeight 43
+        text run at (0,26) width 6: "e"
+layer at (19,28) size 6x32 clip at (0,0) size 0x0 scrollWidth 10 scrollHeight 43
   LayoutTextControl {TEXTAREA} at (1,1) size 6x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 0x39
       LayoutText {#text} at (0,0) size 9x39
         text run at (0,0) width 4: "t"
         text run at (0,13) width 9: "w"
         text run at (0,26) width 7: "o"
-layer at (28,28) size 6x32 clip at (0,0) size 0x0 scrollWidth 9 scrollHeight 69
+layer at (28,28) size 6x32 clip at (0,0) size 0x0 scrollWidth 8 scrollHeight 69
   LayoutTextControl {TEXTAREA} at (1,1) size 6x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 0x65
       LayoutText {#text} at (0,0) size 7x65
         text run at (0,0) width 4: "t"
         text run at (0,13) width 7: "h"
-        text run at (0,26) width 5: "r"
-        text run at (0,39) width 7: "e"
-        text run at (0,52) width 7: "e"
-layer at (10,100) size 6x32 clip at (0,0) size 0x0 scrollWidth 11 scrollHeight 173
+        text run at (0,26) width 4: "r"
+        text run at (0,39) width 6: "e"
+        text run at (0,52) width 6: "e"
+layer at (10,100) size 6x32 clip at (0,0) size 0x0 scrollWidth 10 scrollHeight 173
   LayoutTextControl {TEXTAREA} at (1,1) size 6x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 0x169
       LayoutText {#text} at (0,0) size 9x169
         text run at (0,0) width 7: "o"
         text run at (0,13) width 7: "n"
-        text run at (0,26) width 7: "e"
+        text run at (0,26) width 6: "e"
         text run at (0,39) width 0: " "
         text run at (0,52) width 4: "t"
         text run at (0,65) width 9: "w"
@@ -64,22 +64,22 @@ layer at (10,100) size 6x32 clip at (0,0) size 0x0 scrollWidth 11 scrollHeight 1
         text run at (0,91) width 0: " "
         text run at (0,104) width 4: "t"
         text run at (0,117) width 7: "h"
-        text run at (0,130) width 5: "r"
-        text run at (0,143) width 7: "e"
-        text run at (0,156) width 7: "e"
-layer at (19,100) size 6x32 clip at (0,0) size 0x0 scrollWidth 11 scrollHeight 43
+        text run at (0,130) width 4: "r"
+        text run at (0,143) width 6: "e"
+        text run at (0,156) width 6: "e"
+layer at (19,100) size 6x32 clip at (0,0) size 0x0 scrollWidth 10 scrollHeight 43
   LayoutTextControl {TEXTAREA} at (1,1) size 6x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 0x39
       LayoutText {#text} at (0,0) size 9x39
         text run at (0,0) width 4: "t"
         text run at (0,13) width 9: "w"
         text run at (0,26) width 7: "o"
-layer at (28,100) size 6x32 clip at (0,0) size 0x0 scrollWidth 9 scrollHeight 69
+layer at (28,100) size 6x32 clip at (0,0) size 0x0 scrollWidth 8 scrollHeight 69
   LayoutTextControl {TEXTAREA} at (1,1) size 6x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 0x65
       LayoutText {#text} at (0,0) size 7x65
         text run at (0,0) width 4: "t"
         text run at (0,13) width 7: "h"
-        text run at (0,26) width 5: "r"
-        text run at (0,39) width 7: "e"
-        text run at (0,52) width 7: "e"
+        text run at (0,26) width 4: "r"
+        text run at (0,39) width 6: "e"
+        text run at (0,52) width 6: "e"

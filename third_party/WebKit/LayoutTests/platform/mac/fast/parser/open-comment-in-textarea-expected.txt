@@ -8,12 +8,12 @@ layer at (0,0) size 800x600
 layer at (8,8) size 141x32 clip at (9,9) size 124x30 scrollHeight 56
   LayoutTextControl {TEXTAREA} at (0,0) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 120x52
-      LayoutText {#text} at (0,0) size 20x13
-        text run at (0,0) width 20: "<!--"
-      LayoutBR {BR} at (19,11) size 1x0
-      LayoutText {#text} at (0,13) size 119x26
-        text run at (0,13) width 116: "This should be part of"
-        text run at (115,13) width 4: " "
-        text run at (0,26) width 67: "the textarea."
-      LayoutBR {BR} at (66,37) size 1x0
+      LayoutText {#text} at (0,0) size 19x13
+        text run at (0,0) width 19: "<!--"
+      LayoutBR {BR} at (18,11) size 1x0
+      LayoutText {#text} at (0,13) size 112x26
+        text run at (0,13) width 109: "This should be part of"
+        text run at (108,13) width 4: " "
+        text run at (0,26) width 63: "the textarea."
+      LayoutBR {BR} at (62,37) size 1x0
       LayoutBR {BR} at (0,39) size 0x13
