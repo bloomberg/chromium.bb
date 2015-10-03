@@ -271,6 +271,28 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLengthOrPercent(CSSParse
     return nullptr;
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeAngle(CSSParserTokenRange& range)
+{
+    const CSSParserToken& token = range.peek();
+    if (token.type() == DimensionToken) {
+        switch (token.unitType()) {
+        case CSSPrimitiveValue::UnitType::Degrees:
+        case CSSPrimitiveValue::UnitType::Radians:
+        case CSSPrimitiveValue::UnitType::Gradians:
+        case CSSPrimitiveValue::UnitType::Turns:
+            return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), token.unitType());
+        default:
+            return nullptr;
+        }
+    }
+    CalcParser calcParser(range, ValueRangeAll);
+    if (const CSSCalcValue* calculation = calcParser.value()) {
+        if (calculation->category() == CalcAngle)
+            return calcParser.consumeValue();
+    }
+    return nullptr;
+}
+
 static inline bool isCSSWideKeyword(const CSSValueID& id)
 {
     return id == CSSValueInitial || id == CSSValueInherit || id == CSSValueUnset || id == CSSValueDefault;
@@ -578,6 +600,29 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineHeight(CSSParserToke
     return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
 }
 
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeRotation(CSSParserTokenRange& range)
+{
+    ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+
+    RefPtrWillBeRawPtr<CSSValue> rotation = consumeAngle(range);
+    if (!rotation)
+        return nullptr;
+    list->append(rotation.release());
+
+    if (range.atEnd())
+        return list.release();
+
+    for (unsigned i = 0; i < 3; i++) { // 3 dimensions of rotation
+        RefPtrWillBeRawPtr<CSSValue> dimension = consumeNumber(range, ValueRangeAll);
+        if (!dimension)
+            return nullptr;
+        list->append(dimension.release());
+    }
+
+    return list.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -609,6 +654,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeFontSize(m_range, m_context.mode());
     case CSSPropertyLineHeight:
         return consumeLineHeight(m_range, m_context.mode());
+    case CSSPropertyRotate:
+        return consumeRotation(m_range);
     default:
         return nullptr;
     }

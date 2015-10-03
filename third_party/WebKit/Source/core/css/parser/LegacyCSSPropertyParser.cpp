@@ -1017,31 +1017,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
     }
 
-    case CSSPropertyRotate: { // rotate : <angle> <number>{3}? defaults to a 0 0 1
-        ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
-        RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-
-        if (!validUnit(value, FAngle))
-            return false;
-        list->append(createPrimitiveNumericValue(value));
-        value = m_valueList->next();
-
-        if (!value) {
-            parsedValue = list.release();
-            break;
-        }
-
-        for (unsigned i = 0; i < 3; i++) { // 3 dimensions of rotation
-            if (!value || !validUnit(value, FNumber))
-                return false;
-            list->append(createPrimitiveNumericValue(value));
-            value = m_valueList->next();
-        }
-
-        parsedValue = list.release();
-        break;
-    }
-
     case CSSPropertyScale: { // scale: <number>{1,3}, default scale for all axis is 1
         ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
         RefPtrWillBeRawPtr<CSSValueList> scaleList = CSSValueList::createSpaceSeparated();
@@ -1410,6 +1385,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyTabSize:
     case CSSPropertyFontSize:
     case CSSPropertyLineHeight:
+    case CSSPropertyRotate:
         validPrimitive = false;
         break;
 
