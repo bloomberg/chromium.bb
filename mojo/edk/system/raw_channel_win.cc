@@ -51,7 +51,8 @@ class VistaOrHigherFunctions {
       : is_vista_or_higher_(
           base::win::GetVersion() >= base::win::VERSION_VISTA),
         set_file_completion_notification_modes_(nullptr),
-        cancel_io_ex_(nullptr) {
+        cancel_io_ex_(nullptr),
+        get_file_information_by_handle_ex_(nullptr) {
     if (!is_vista_or_higher_)
       return;
 
@@ -64,6 +65,11 @@ class VistaOrHigherFunctions {
     cancel_io_ex_ =
         reinterpret_cast<CancelIoExFunc>(GetProcAddress(module, "CancelIoEx"));
     DCHECK(cancel_io_ex_);
+
+    get_file_information_by_handle_ex_ =
+        reinterpret_cast<GetFileInformationByHandleExFunc>(
+            GetProcAddress(module, "GetFileInformationByHandleEx"));
+    DCHECK(get_file_information_by_handle_ex_);
   }
 
   bool is_vista_or_higher() const { return is_vista_or_higher_; }
@@ -76,14 +82,25 @@ class VistaOrHigherFunctions {
     return cancel_io_ex_(handle, overlapped);
   }
 
+  BOOL GetFileInformationByHandleEx(HANDLE handle,
+                                    FILE_INFO_BY_HANDLE_CLASS file_info_class,
+                                    LPVOID file_info,
+                                    DWORD buffer_size) {
+    return get_file_information_by_handle_ex_(
+        handle, file_info_class, file_info, buffer_size);
+  }
+
  private:
   using SetFileCompletionNotificationModesFunc = BOOL(WINAPI*)(HANDLE, UCHAR);
   using CancelIoExFunc = BOOL(WINAPI*)(HANDLE, LPOVERLAPPED);
+  using GetFileInformationByHandleExFunc = BOOL(WINAPI*)(
+      HANDLE, FILE_INFO_BY_HANDLE_CLASS, LPVOID, DWORD);
 
   bool is_vista_or_higher_;
   SetFileCompletionNotificationModesFunc
       set_file_completion_notification_modes_;
   CancelIoExFunc cancel_io_ex_;
+  GetFileInformationByHandleExFunc get_file_information_by_handle_ex_;
 };
 
 base::LazyInstance<VistaOrHigherFunctions> g_vista_or_higher_functions =
@@ -245,8 +262,12 @@ class RawChannelWin final : public RawChannel {
     }
 
     ScopedPlatformHandle ReleaseHandle(std::vector<char>* read_buffer) {
-      // TODO(jam): handle XP
-      CancelIoEx(handle(), NULL);
+      if (g_vista_or_higher_functions.Get().is_vista_or_higher()) {
+        g_vista_or_higher_functions.Get().CancelIoEx(handle(), nullptr);
+      } else {
+        CHECK(false) << "TODO(jam): handle XP";
+      }
+
       // NOTE: The above call will cancel pending IO calls.
       size_t read_buffer_byte_size = owner_->read_buffer()->num_valid_bytes();
 
@@ -848,18 +869,23 @@ bool RawChannel::IsOtherEndOf(RawChannel* other) {
   PlatformHandle this_handle = HandleForDebuggingNoLock();
   PlatformHandle other_handle = other->HandleForDebuggingNoLock();
 
-  // TODO: XP: see http://stackoverflow.com/questions/65170/how-to-get-name-associated-with-open-handle/5286888#5286888
-  WCHAR data1[_MAX_PATH + sizeof(FILE_NAME_INFO)];
-  WCHAR data2[_MAX_PATH + sizeof(FILE_NAME_INFO)];
-  FILE_NAME_INFO* fileinfo1 = reinterpret_cast<FILE_NAME_INFO *>(data1);
-  FILE_NAME_INFO* fileinfo2 = reinterpret_cast<FILE_NAME_INFO *>(data2);
-  CHECK(GetFileInformationByHandleEx(
-      this_handle.handle, FileNameInfo, fileinfo1, arraysize(data1)));
-  CHECK(GetFileInformationByHandleEx(
-      other_handle.handle, FileNameInfo, fileinfo2, arraysize(data2)));
-  std::wstring filepath1(fileinfo1->FileName, fileinfo1->FileNameLength / 2);
-  std::wstring filepath2(fileinfo2->FileName, fileinfo2->FileNameLength / 2);
-  return filepath1 == filepath2;
+  if (g_vista_or_higher_functions.Get().is_vista_or_higher()) {
+    WCHAR data1[_MAX_PATH + sizeof(FILE_NAME_INFO)];
+    WCHAR data2[_MAX_PATH + sizeof(FILE_NAME_INFO)];
+    FILE_NAME_INFO* fileinfo1 = reinterpret_cast<FILE_NAME_INFO *>(data1);
+    FILE_NAME_INFO* fileinfo2 = reinterpret_cast<FILE_NAME_INFO *>(data2);
+    CHECK(g_vista_or_higher_functions.Get().GetFileInformationByHandleEx(
+        this_handle.handle, FileNameInfo, fileinfo1, arraysize(data1)));
+    CHECK(g_vista_or_higher_functions.Get().GetFileInformationByHandleEx(
+        other_handle.handle, FileNameInfo, fileinfo2, arraysize(data2)));
+    std::wstring filepath1(fileinfo1->FileName, fileinfo1->FileNameLength / 2);
+    std::wstring filepath2(fileinfo2->FileName, fileinfo2->FileNameLength / 2);
+    return filepath1 == filepath2;
+  } else {
+    // TODO: XP: see http://stackoverflow.com/questions/65170/how-to-get-name-associated-with-open-handle/5286888#5286888
+    CHECK(false) << "TODO(jam): handle XP";
+    return false;
+  }
 }
 
 }  // namespace edk
