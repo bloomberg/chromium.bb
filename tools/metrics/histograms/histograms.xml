@@ -2783,6 +2783,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.XHR.setRequestHeader.HeaderValueCategoryInRFC7230"
+    enum="XMLHttpRequestHeaderValueCategoryInRFC7230">
+  <owner>hiroshige@chromium.org</owner>
+  <summary>
+    The count of XMLHttpRequest.setRequestHeader() calls where header values are
+    invalid/valid but affected by normalization/valid in RFC 7230.
+    https://crbug.com/455099.
+  </summary>
+</histogram>
+
 <histogram name="BlinkGC.CollectGarbage" units="milliseconds">
   <owner>haraken@chromium.org</owner>
   <summary>Duration of time taken to run Heap::collectGarbage().</summary>
@@ -74387,6 +74397,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="41" label="Recent tab"/>
   <int value="42" label="Open a bookmark"/>
   <int value="43" label="Exit"/>
+</enum>
+
+<enum name="XMLHttpRequestHeaderValueCategoryInRFC7230" type="int">
+  <int value="0" label="Header Value Invalid"/>
+  <int value="1" label="Header Value Affected By Normalization"/>
+  <int value="2" label="Header Value Valid"/>
 </enum>
 
 <enum name="XMLHttpRequestSendArrayBufferOrView" type="int">
