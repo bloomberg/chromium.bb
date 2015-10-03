@@ -135,7 +135,7 @@ public:
 
     void runUntilIdle()
     {
-        while (!m_timerTasks.empty()) {
+        while (m_timerTasks.size()) {
             gCurrentTimeSecs = m_timerTasks.top().runTimeSeconds();
             m_timerTasks.top().run();
             m_timerTasks.pop();
@@ -144,7 +144,7 @@ public:
 
     void runUntilIdleOrDeadlinePassed(double deadline)
     {
-        while (!m_timerTasks.empty()) {
+        while (m_timerTasks.size()) {
             if (m_timerTasks.top().runTimeSeconds() > deadline) {
                 gCurrentTimeSecs = deadline;
                 break;
@@ -157,7 +157,7 @@ public:
 
     void runPendingTasks()
     {
-        while (!m_timerTasks.empty() && m_timerTasks.top().runTimeSeconds() <= gCurrentTimeSecs) {
+        while (m_timerTasks.size() && m_timerTasks.top().runTimeSeconds() <= gCurrentTimeSecs) {
             m_timerTasks.top().run();
             m_timerTasks.pop();
         }
@@ -298,12 +298,12 @@ public:
 
     void countingTask(Timer<TimerTest>*)
     {
-        m_runTimes.push_back(monotonicallyIncreasingTime());
+        m_runTimes.append(monotonicallyIncreasingTime());
     }
 
     void recordNextFireTimeTask(Timer<TimerTest>* timer)
     {
-        m_nextFireTimes.push_back(monotonicallyIncreasingTime() + timer->nextFireInterval());
+        m_nextFireTimes.append(monotonicallyIncreasingTime() + timer->nextFireInterval());
     }
 
     void advanceTimeBy(double timeSecs)
@@ -338,9 +338,8 @@ public:
 
 protected:
     double m_startTime;
-    // TODO(alexclarke): Migrate to WTF::Vector and add gmock matcher support.
-    std::vector<double> m_runTimes;
-    std::vector<double> m_nextFireTimes;
+    WTF::Vector<double> m_runTimes;
+    WTF::Vector<double> m_nextFireTimes;
 
 private:
     OwnPtr<TimerTestPlatform> m_platform;
@@ -370,7 +369,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancel)
     timer.stop();
 
     runUntilIdle();
-    EXPECT_TRUE(m_runTimes.empty());
+    EXPECT_FALSE(m_runTimes.size());
 }
 
 TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost)
@@ -384,7 +383,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost)
     timer.stop();
 
     runUntilIdle();
-    EXPECT_TRUE(m_runTimes.empty());
+    EXPECT_FALSE(m_runTimes.size());
 
     timer.startOneShot(0, FROM_HERE);
 
@@ -438,7 +437,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancel)
     timer.stop();
 
     runUntilIdle();
-    EXPECT_TRUE(m_runTimes.empty());
+    EXPECT_FALSE(m_runTimes.size());
 }
 
 TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost)
@@ -452,7 +451,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost)
     timer.stop();
 
     runUntilIdle();
-    EXPECT_TRUE(m_runTimes.empty());
+    EXPECT_FALSE(m_runTimes.size());
 
     double secondPostTime = monotonicallyIncreasingTime();
     timer.startOneShot(10, FROM_HERE);

@@ -623,6 +623,7 @@ class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator>, public Condi
 
 public:
     typedef T ValueType;
+    typedef T value_type;
 
     typedef T* iterator;
     typedef const T* const_iterator;
