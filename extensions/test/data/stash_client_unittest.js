@@ -54,6 +54,7 @@ unittestBindings.exportTests([
         stashedObject.stashed_handles = [dataPipe.consumerHandle];
         return [{serialization: stashedObject, monitorHandles: true}];
       });
+      stashClient.saveStashForTesting();
     }).then(test.succeed, test.fail);
   },
 

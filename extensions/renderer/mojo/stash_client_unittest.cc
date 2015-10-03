@@ -39,7 +39,6 @@ class StashClientTest : public ApiTestBase {
 // Test that stashing and restoring work correctly.
 TEST_F(StashClientTest, StashAndRestore) {
   ASSERT_NO_FATAL_FAILURE(RunTest("stash_client_unittest.js", "testStash"));
-  env()->context()->DispatchOnUnloadEvent();
   scoped_ptr<ModuleSystemTestEnvironment> restore_test_env(CreateEnvironment());
   ApiTestEnvironment restore_environment(restore_test_env.get());
   PrepareEnvironment(&restore_environment);

@@ -427,7 +427,6 @@ void Dispatcher::WillReleaseScriptContext(
   if (!context)
     return;
 
-  context->DispatchOnUnloadEvent();
   // TODO(kalman): Make |request_sender| use |context->AddInvalidationObserver|.
   // In fact |request_sender_| should really be owned by ScriptContext.
   request_sender_->InvalidateSource(context);
@@ -619,7 +618,6 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
                      IDR_BROWSER_TEST_ENVIRONMENT_SPECIFIC_BINDINGS_JS));
   resources.push_back(std::make_pair("uncaught_exception_handler",
                                      IDR_UNCAUGHT_EXCEPTION_HANDLER_JS));
-  resources.push_back(std::make_pair("unload_event", IDR_UNLOAD_EVENT_JS));
   resources.push_back(std::make_pair("utils", IDR_UTILS_JS));
   resources.push_back(std::make_pair("webRequest",
                                      IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS));

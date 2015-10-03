@@ -125,9 +125,8 @@ void ScriptContextSet::ForEach(
 std::set<ScriptContext*> ScriptContextSet::OnExtensionUnloaded(
     const std::string& extension_id) {
   std::set<ScriptContext*> removed;
-  ForEach(extension_id,
-          base::Bind(&ScriptContextSet::DispatchOnUnloadEventAndRemove,
-                     base::Unretained(this), &removed));
+  ForEach(extension_id, base::Bind(&ScriptContextSet::RecordAndRemove,
+                                   base::Unretained(this), &removed));
   return removed;
 }
 
@@ -217,12 +216,10 @@ Feature::Context ScriptContextSet::ClassifyJavaScriptContext(
   return Feature::WEB_PAGE_CONTEXT;
 }
 
-void ScriptContextSet::DispatchOnUnloadEventAndRemove(
-    std::set<ScriptContext*>* out,
-    ScriptContext* context) {
-  context->DispatchOnUnloadEvent();
-  Remove(context);  // deleted asynchronously
-  out->insert(context);
+void ScriptContextSet::RecordAndRemove(std::set<ScriptContext*>* removed,
+                                       ScriptContext* context) {
+  removed->insert(context);
+  Remove(context);  // Note: context deletion is deferred to the message loop.
 }
 
 }  // namespace extensions

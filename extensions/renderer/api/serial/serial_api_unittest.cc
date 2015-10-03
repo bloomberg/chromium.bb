@@ -682,21 +682,22 @@ TEST_F(SerialApiTest, SendUnknownConnectionId) {
   RunTest("serial_unittest.js", "testSendUnknownConnectionId");
 }
 
-TEST_F(SerialApiTest, StashAndRestoreDuringEcho) {
+// Note: these tests are disabled, since there is no good story for persisting
+// the stashed handles when an extension process is shut down. See
+// https://crbug.com/538774
+TEST_F(SerialApiTest, DISABLED_StashAndRestoreDuringEcho) {
   ASSERT_NO_FATAL_FAILURE(RunTest("serial_unittest.js", "testSendAndStash"));
-  env()->context()->DispatchOnUnloadEvent();
   scoped_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());
   ApiTestEnvironment new_api_test_env(new_env.get());
   PrepareEnvironment(&new_api_test_env, stash_backend_.get());
   new_api_test_env.RunTest("serial_unittest.js", "testRestoreAndReceive");
 }
 
-TEST_F(SerialApiTest, StashAndRestoreDuringEchoError) {
+TEST_F(SerialApiTest, DISABLED_StashAndRestoreDuringEchoError) {
   io_handler_ =
       new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_DEVICE_LOST);
   ASSERT_NO_FATAL_FAILURE(
       RunTest("serial_unittest.js", "testRestoreAndReceiveErrorSetUp"));
-  env()->context()->DispatchOnUnloadEvent();
   scoped_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());
   ApiTestEnvironment new_api_test_env(new_env.get());
   PrepareEnvironment(&new_api_test_env, stash_backend_.get());
@@ -706,7 +707,6 @@ TEST_F(SerialApiTest, StashAndRestoreDuringEchoError) {
 TEST_F(SerialApiTest, StashAndRestoreNoConnections) {
   ASSERT_NO_FATAL_FAILURE(
       RunTest("serial_unittest.js", "testStashNoConnections"));
-  env()->context()->DispatchOnUnloadEvent();
   io_handler_ = nullptr;
   scoped_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());
   ApiTestEnvironment new_api_test_env(new_env.get());

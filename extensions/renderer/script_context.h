@@ -118,9 +118,6 @@ class ScriptContext : public RequestSender::Source {
 
   void DispatchEvent(const char* event_name, v8::Local<v8::Array> args) const;
 
-  // Fires the onunload event on the unload_event module.
-  void DispatchOnUnloadEvent();
-
   // Returns the availability of the API |api_name|.
   Feature::Availability GetAvailability(const std::string& api_name);
 

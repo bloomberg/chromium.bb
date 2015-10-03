@@ -124,10 +124,9 @@ class ScriptContextSet {
       const GURL& url,
       const blink::WebSecurityOrigin& origin);
 
-  // Calls Remove on |context| then appends |context| to |out|.
-  // This is a helper designed to be used by OnExtensionUnloaded with ForEach.
-  void DispatchOnUnloadEventAndRemove(std::set<ScriptContext*>* out,
-                                      ScriptContext* context);
+  // Helper for OnExtensionUnloaded().
+  void RecordAndRemove(std::set<ScriptContext*>* removed,
+                       ScriptContext* context);
 
   // Weak reference to all installed Extensions that are also active in this
   // process.

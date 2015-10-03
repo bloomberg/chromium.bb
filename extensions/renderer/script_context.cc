@@ -232,13 +232,6 @@ void ScriptContext::DispatchEvent(const char* event_name,
       kEventBindings, "dispatchEvent", arraysize(argv), argv);
 }
 
-void ScriptContext::DispatchOnUnloadEvent() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  v8::HandleScope handle_scope(isolate());
-  v8::Context::Scope context_scope(v8_context());
-  module_system_->CallModuleMethod("unload_event", "dispatch");
-}
-
 std::string ScriptContext::GetContextTypeDescription() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return GetContextTypeDescriptionString(context_type_);

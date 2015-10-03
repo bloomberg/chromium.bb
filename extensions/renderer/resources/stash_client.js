@@ -19,8 +19,6 @@ define('stash_client', [
   var service = new stashMojom.StashService.proxyClass(new routerModule.Router(
       serviceProvider.connectToService(stashMojom.StashService.name)));
 
-  var unloadEvent = require('unload_event');
-
   /**
    * A callback invoked to obtain objects to stash from a particular client.
    * @callback module:stash_client.StashCallback
@@ -149,7 +147,7 @@ define('stash_client', [
     });
   }
 
-  unloadEvent.addListener(function() {
+  function saveStashForTesting() {
     Promise.all($Array.map(clients, function(client) {
       return client.serialize();
     })).then(function(stashedObjects) {
@@ -160,10 +158,11 @@ define('stash_client', [
       });
       service.addToStash(flattenedObjectsToStash);
     });
-  });
+  }
 
   return {
     registerClient: registerClient,
     retrieve: retrieve,
+    saveStashForTesting, saveStashForTesting,
   };
 });

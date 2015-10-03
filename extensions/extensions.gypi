@@ -941,7 +941,6 @@
       'renderer/resources/storage_area.js',
       'renderer/resources/test_custom_bindings.js',
       'renderer/resources/uncaught_exception_handler.js',
-      'renderer/resources/unload_event.js',
       'renderer/resources/utils.js',
       'renderer/resources/guest_view/app_view/app_view.js',
       'renderer/resources/guest_view/extension_options/extension_options.js',
