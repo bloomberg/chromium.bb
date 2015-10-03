@@ -45,9 +45,9 @@
 }
 
 #no-downloads .illustration {
-  background: -webkit-image-set(url(1x/no_downloads.png) 1x,
-                                url(2x/no_downloads.png) 2x)
-      no-repeat center center;
+  background: -webkit-image-set(
+      url(chrome://downloads/1x/no_downloads.png) 1x,
+      url(chrome://downloads/2x/no_downloads.png) 2x) no-repeat center center;
   height: 144px;  /* Matches natural image height. */
   margin-bottom: 32px;
 }

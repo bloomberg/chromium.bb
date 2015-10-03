@@ -23,6 +23,7 @@
   flex: none;
   margin: 0 auto;
   min-height: 103px;
+  position: relative;
   width: var(--downloads-item-width);
 }
 
@@ -78,7 +79,7 @@
 }
 
 #warning {
-  -webkit-mask-image: url(../../../../ui/webui/resources/images/warning.svg);
+  -webkit-mask-image: url(chrome://resources/images/warning.svg);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
   background: rgb(255, 193, 7);
@@ -193,8 +194,9 @@
 
 #incognito {
   bottom: 20px;
-  content: -webkit-image-set(url(1x/incognito_marker.png) 1x,
-                             url(2x/incognito_marker.png) 2x);
+  content: -webkit-image-set(
+      url(chrome://downloads/1x/incognito_marker.png) 1x,
+      url(chrome://downloads/2x/incognito_marker.png) 2x);
   position: absolute;
   right: 10px;
 }

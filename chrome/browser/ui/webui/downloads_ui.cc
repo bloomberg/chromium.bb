@@ -102,10 +102,20 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
     source->AddLocalizedString("noDownloads", IDS_MD_DOWNLOAD_NO_DOWNLOADS);
     source->AddLocalizedString("search", IDS_MD_DOWNLOAD_SEARCH);
 
+    source->AddResourcePath("1x/incognito_marker.png",
+                            IDR_MD_DOWNLOADS_1X_INCOGNITO_MARKER_PNG);
+    source->AddResourcePath("2x/incognito_marker.png",
+                            IDR_MD_DOWNLOADS_2X_INCOGNITO_MARKER_PNG);
+    source->AddResourcePath("1x/no_downloads.png",
+                            IDR_MD_DOWNLOADS_1X_NO_DOWNLOADS_PNG);
+    source->AddResourcePath("2x/no_downloads.png",
+                            IDR_MD_DOWNLOADS_2X_NO_DOWNLOADS_PNG);
     source->AddResourcePath("action_service.html",
                             IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML);
     source->AddResourcePath("action_service.js",
                             IDR_MD_DOWNLOADS_ACTION_SERVICE_JS);
+    source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);
+    source->AddResourcePath("dev.html", IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
     source->AddResourcePath("focus_row.html", IDR_MD_DOWNLOADS_FOCUS_ROW_HTML);
     source->AddResourcePath("focus_row.js", IDR_MD_DOWNLOADS_FOCUS_ROW_JS);
     source->AddResourcePath("item.css", IDR_MD_DOWNLOADS_ITEM_CSS);
@@ -120,7 +130,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
     source->AddResourcePath("toolbar.css", IDR_MD_DOWNLOADS_TOOLBAR_CSS);
     source->AddResourcePath("toolbar.html", IDR_MD_DOWNLOADS_TOOLBAR_HTML);
     source->AddResourcePath("toolbar.js", IDR_MD_DOWNLOADS_TOOLBAR_JS);
-    source->SetDefaultResource(IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
+    source->SetDefaultResource(IDR_MD_DOWNLOADS_VULCANIZED_HTML);
   } else {
     source->AddLocalizedString("controlRetry", IDS_DOWNLOAD_LINK_RETRY);
     source->AddLocalizedString("controlByExtension",
