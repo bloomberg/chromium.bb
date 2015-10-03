@@ -32,7 +32,7 @@ Gtk2KeyBindingsHandler::Gtk2KeyBindingsHandler()
     : fake_window_(gtk_offscreen_window_new()),
       handler_(CreateNewHandler()),
       has_xkb_(false) {
-  gtk_container_add(GTK_CONTAINER(fake_window_), handler_.get());
+  gtk_container_add(GTK_CONTAINER(fake_window_), handler_);
 
   int opcode, event, error;
   int major = XkbMajorVersion;
@@ -42,7 +42,7 @@ Gtk2KeyBindingsHandler::Gtk2KeyBindingsHandler()
 }
 
 Gtk2KeyBindingsHandler::~Gtk2KeyBindingsHandler() {
-  handler_.Destroy();
+  gtk_widget_destroy(handler_);
   gtk_widget_destroy(fake_window_);
 }
 
@@ -64,9 +64,9 @@ bool Gtk2KeyBindingsHandler::MatchEvent(
 
   gtk_bindings_activate_event(
 #if GDK_MAJOR_VERSION >= 3
-      G_OBJECT(handler_.get()),
+      G_OBJECT(handler_),
 #else
-      GTK_OBJECT(handler_.get()),
+      GTK_OBJECT(handler_),
 #endif
       &gdk_event);
 

@@ -52,8 +52,6 @@ component("libgtk2ui") {
     "menu_util.h",
     "native_theme_gtk2.cc",
     "native_theme_gtk2.h",
-    "owned_widget_gtk2.cc",
-    "owned_widget_gtk2.h",
     "print_dialog_gtk2.cc",
     "print_dialog_gtk2.h",
     "printing_gtk2_util.cc",

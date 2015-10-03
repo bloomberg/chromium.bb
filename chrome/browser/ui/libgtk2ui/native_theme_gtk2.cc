@@ -440,81 +440,99 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
 }
 
 GtkWidget* NativeThemeGtk2::GetWindow() const {
-  if (!fake_window_.get()) {
-    fake_window_.Own(chrome_gtk_frame_new());
-    gtk_widget_realize(fake_window_.get());
+  static GtkWidget* fake_window = NULL;
+
+  if (!fake_window) {
+    fake_window = chrome_gtk_frame_new();
+    gtk_widget_realize(fake_window);
   }
 
-  return fake_window_.get();
+  return fake_window;
 }
 
 GtkWidget* NativeThemeGtk2::GetEntry() const {
-  if (!fake_entry_.get()) {
-    fake_entry_.Own(gtk_entry_new());
+  static GtkWidget* fake_entry = NULL;
+
+  if (!fake_entry) {
+    fake_entry = gtk_entry_new();
 
     // The fake entry needs to be in the window so it can be realized so we can
     // use the computed parts of the style.
-    gtk_container_add(GTK_CONTAINER(GetWindow()), fake_entry_.get());
-    gtk_widget_realize(fake_entry_.get());
+    gtk_container_add(GTK_CONTAINER(GetWindow()), fake_entry);
+    gtk_widget_realize(fake_entry);
   }
 
-  return fake_entry_.get();
+  return fake_entry;
 }
 
 GtkWidget* NativeThemeGtk2::GetLabel() const {
-  if (!fake_label_.get())
-    fake_label_.Own(gtk_label_new(""));
+  static GtkWidget* fake_label = NULL;
 
-  return fake_label_.get();
+  if (!fake_label)
+    fake_label = gtk_label_new("");
+
+  return fake_label;
 }
 
 GtkWidget* NativeThemeGtk2::GetButton() const {
-  if (!fake_button_.get())
-    fake_button_.Own(gtk_button_new());
+  static GtkWidget* fake_button = NULL;
 
-  return fake_button_.get();
+  if (!fake_button)
+    fake_button = gtk_button_new();
+
+  return fake_button;
 }
 
 GtkWidget* NativeThemeGtk2::GetBlueButton() const {
-  if (!fake_bluebutton_.get()) {
-    fake_bluebutton_.Own(gtk_button_new());
-    TurnButtonBlue(fake_bluebutton_.get());
+  static GtkWidget* fake_bluebutton = NULL;
+
+  if (!fake_bluebutton) {
+    fake_bluebutton = gtk_button_new();
+    TurnButtonBlue(fake_bluebutton);
   }
 
-  return fake_bluebutton_.get();
+  return fake_bluebutton;
 }
 
 GtkWidget* NativeThemeGtk2::GetTree() const {
-  if (!fake_tree_.get())
-    fake_tree_.Own(gtk_tree_view_new());
+  static GtkWidget* fake_tree = NULL;
 
-  return fake_tree_.get();
+  if (!fake_tree)
+    fake_tree = gtk_tree_view_new();
+
+  return fake_tree;
 }
 
 GtkWidget* NativeThemeGtk2::GetTooltip() const {
-  if (!fake_tooltip_.get()) {
-    fake_tooltip_.Own(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-    gtk_widget_set_name(fake_tooltip_.get(), "gtk-tooltip");
-    gtk_widget_realize(fake_tooltip_.get());
+  static GtkWidget* fake_tooltip = NULL;
+
+  if (!fake_tooltip) {
+    fake_tooltip = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_set_name(fake_tooltip, "gtk-tooltip");
+    gtk_widget_realize(fake_tooltip);
   }
 
-  return fake_tooltip_.get();
+  return fake_tooltip;
 }
 
 GtkWidget* NativeThemeGtk2::GetMenu() const {
-  if (!fake_menu_.get())
-    fake_menu_.Own(gtk_custom_menu_new());
+  static GtkWidget* fake_menu = NULL;
 
-  return fake_menu_.get();
+  if (!fake_menu)
+    fake_menu = gtk_custom_menu_new();
+
+  return fake_menu;
 }
 
 GtkWidget* NativeThemeGtk2::GetMenuItem() const {
-  if (!fake_menu_item_.get()) {
-    fake_menu_item_.Own(gtk_custom_menu_item_new());
-    gtk_menu_shell_append(GTK_MENU_SHELL(GetMenu()), fake_menu_item_.get());
+  static GtkWidget* fake_menu_item = NULL;
+
+  if (!fake_menu_item) {
+    fake_menu_item = gtk_custom_menu_item_new();
+    gtk_menu_shell_append(GTK_MENU_SHELL(GetMenu()), fake_menu_item);
   }
 
-  return fake_menu_item_.get();
+  return fake_menu_item;
 }
 
 }  // namespace libgtk2ui

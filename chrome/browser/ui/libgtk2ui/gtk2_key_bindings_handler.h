@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/event_types.h"
-#include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
 #include "ui/events/linux/text_edit_command_auralinux.h"
 
 namespace content {
@@ -137,8 +136,7 @@ class Gtk2KeyBindingsHandler {
   static void MoveFocus(GtkWidget* widget, GtkDirectionType arg1);
 
   GtkWidget* fake_window_;
-
-  libgtk2ui::OwnedWidgetGtk handler_;
+  GtkWidget* handler_;
 
   // Buffer to store the match results.
   std::vector<ui::TextEditCommandAuraLinux> edit_commands_;

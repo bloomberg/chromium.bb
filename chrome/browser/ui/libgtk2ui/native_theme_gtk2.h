@@ -7,7 +7,6 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
 #include "ui/native_theme/native_theme_base.h"
 
 
@@ -46,16 +45,6 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
  private:
   NativeThemeGtk2();
   ~NativeThemeGtk2() override;
-
-  mutable OwnedWidgetGtk fake_window_;
-  mutable OwnedWidgetGtk fake_entry_;
-  mutable OwnedWidgetGtk fake_label_;
-  mutable OwnedWidgetGtk fake_button_;
-  mutable OwnedWidgetGtk fake_bluebutton_;
-  mutable OwnedWidgetGtk fake_tree_;
-  mutable OwnedWidgetGtk fake_tooltip_;
-  mutable OwnedWidgetGtk fake_menu_;
-  mutable OwnedWidgetGtk fake_menu_item_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeGtk2);
 };

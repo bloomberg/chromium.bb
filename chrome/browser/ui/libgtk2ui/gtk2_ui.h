@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal_registrar.h"
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
-#include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
 #include "ui/events/linux/text_edit_key_bindings_delegate_auralinux.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/linux_ui/linux_ui.h"
