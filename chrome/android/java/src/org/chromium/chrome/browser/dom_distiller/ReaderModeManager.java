@@ -261,6 +261,14 @@ public class ReaderModeManager extends EmptyTabObserver
             }
 
             @Override
+            public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
+                        String description, String failingUrl, boolean wasIgnoredByHandler) {
+                if (!isMainFrame) return;
+                if (DomDistillerUrlUtils.isDistilledPage(mTab.getUrl())) return;
+                updateStatusBasedOnReaderModeCriteria(true);
+            }
+
+            @Override
             public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
                     boolean isMainFrame, String validatedUrl, boolean isErrorPage,
                     boolean isIframeSrcdoc) {
@@ -270,13 +278,6 @@ public class ReaderModeManager extends EmptyTabObserver
                     sendReaderModeStatusChangedNotification();
                     mReaderModePageUrl = validatedUrl;
                 }
-            }
-
-            @Override
-            public void documentLoadedInFrame(long frameId, boolean isMainFrame) {
-                if (!isMainFrame) return;
-                if (DomDistillerUrlUtils.isDistilledPage(mTab.getUrl())) return;
-                updateStatusBasedOnReaderModeCriteria(false);
             }
 
             @Override
