@@ -1966,6 +1966,16 @@ function load() {
     window.addEventListener(
         'resize', historyView.updateClearBrowsingDataButton_);
 
+<if expr="is_ios">
+    // Trigger window resize event when search field is focused to force update
+    // of the clear browsing button, which should disappear when search field
+    // is active. The window is not resized when the virtual keyboard is shown
+    // on iOS.
+    searchField.addEventListener('focus', function() {
+      cr.dispatchSimpleEvent(window, 'resize');
+    });
+</if>  /* is_ios */
+
     // When the search field loses focus, add a delay before updating the
     // visibility, otherwise the button will flash on the screen before the
     // keyboard animates away.
