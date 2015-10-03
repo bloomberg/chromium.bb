@@ -98,7 +98,10 @@ class LayoutTestFinder(object):
                               key=lambda t: (times[t], t))
         clamped_percentile = max(0, min(100, fastest_percentile))
         number_of_tests_to_return = int(len(sorted_times) * clamped_percentile / 100)
-        fastest_tests = sorted_times[:number_of_tests_to_return]
+        fastest_tests = set(sorted_times[:number_of_tests_to_return])
+
+        # Don't try to run tests in the times_trie that no longer exist,
+        fastest_tests = fastest_tests.intersection(all_tests)
 
         # For fastest tests, include any tests not in the times_ms.json so that
         # new tests get run in the fast set.
@@ -106,7 +109,7 @@ class LayoutTestFinder(object):
 
         # Using a set to dedupe here means that --order=None won't work, but that's
         # ok because --fastest already runs in an arbitrary order.
-        return list(set(fastest_tests).union(unaccounted_tests))
+        return list(fastest_tests.union(unaccounted_tests))
 
     def _strip_test_dir_prefixes(self, paths):
         return [self._strip_test_dir_prefix(path) for path in paths if path]

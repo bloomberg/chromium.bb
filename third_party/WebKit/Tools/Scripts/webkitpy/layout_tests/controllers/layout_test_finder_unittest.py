@@ -58,3 +58,29 @@ class LayoutTestFinderTests(unittest.TestCase):
 
         tests = finder.find_tests(args=['path/test.html'])
         self.assertEqual(tests[1], ['path/test.html'])
+
+    def test_find_fastest_tests_excludes_deleted_tests(self):
+        host = MockHost()
+        port = host.port_factory.get('test-win-xp', None)
+
+        all_tests = [
+            'fast/css/1.html',
+            'fast/css/2.html',
+        ]
+
+        port.tests = lambda paths: paths or all_tests
+
+        finder = layout_test_finder.LayoutTestFinder(port, {})
+
+        finder._times_trie = lambda: {
+            'fast': {
+                'css': {
+                    '1.html': 1,
+                    '2.html': 2,
+                    'non-existant.html': 1,
+                }
+            },
+        }
+
+        tests = finder.find_tests(fastest_percentile=90, args=[])
+        self.assertEqual(set(tests[1]), set(['fast/css/1.html']))
