@@ -10,8 +10,8 @@ layer at (0,0) size 800x53
         LayoutTextControl {INPUT} at (0,0) size 71x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-layer at (11,29) size 65x13 scrollX 33.00 scrollWidth 274
+layer at (11,29) size 65x13 scrollX 36.00 scrollWidth 261
   LayoutBlockFlow {DIV} at (3,3) size 65x13
-    LayoutText {#text} at (0,0) size 274x13
-      text run at (0,0) width 274: "012345678901012345678901234567890123456789"
+    LayoutText {#text} at (0,0) size 262x13
+      text run at (0,0) width 262: "012345678901012345678901234567890123456789"
 caret: position 12 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {INPUT} of body

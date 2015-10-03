@@ -71,107 +71,107 @@ layer at (0,0) size 800x600
         text run at (131,246) width 4: " "
       LayoutTextControl {INPUT} at (135,246) size 131x19 [color=#FF0000] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (266,260) size 0x0
-layer at (11,29) size 125x13 scrollWidth 347
+layer at (11,29) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,29) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,29) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
-layer at (11,48) size 125x13 scrollWidth 347
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"
+layer at (11,48) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,48) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,48) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
-layer at (11,67) size 125x13 scrollWidth 347
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"
+layer at (11,67) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,67) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,67) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
-layer at (11,86) size 125x13 scrollWidth 347
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"
+layer at (11,86) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,86) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,86) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
-layer at (11,105) size 125x13 scrollWidth 347
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"
+layer at (11,105) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,105) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,105) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
-layer at (11,124) size 125x13 scrollWidth 347
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"
+layer at (11,124) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,124) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,124) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
-layer at (11,143) size 125x13 scrollWidth 347
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"
+layer at (11,143) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,143) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,143) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
-layer at (11,162) size 125x13 scrollWidth 347
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"
+layer at (11,162) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,162) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,162) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
-layer at (11,181) size 125x13 scrollWidth 347
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"
+layer at (11,181) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,181) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,181) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
-layer at (11,200) size 125x13 scrollWidth 347
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"
+layer at (11,200) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,200) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,200) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
-layer at (11,219) size 125x13 scrollWidth 347
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"
+layer at (11,219) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,219) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,219) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
-layer at (11,238) size 125x13 scrollWidth 347
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"
+layer at (11,238) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,238) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,238) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
-layer at (11,257) size 125x13 scrollWidth 347
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"
+layer at (11,257) size 125x13 scrollWidth 327
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 348x13
-      text run at (0,0) width 348: "The text in this disabled field should displayed as dimmed or grey"
-layer at (146,257) size 125x13 scrollWidth 152
+    LayoutText {#text} at (0,0) size 328x13
+      text run at (0,0) width 328: "The text in this disabled field should displayed as dimmed or grey"
+layer at (146,257) size 125x13 scrollWidth 143
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 152x13
-      text run at (0,0) width 152: "This text field is not disabled"
+    LayoutText {#text} at (0,0) size 143x13
+      text run at (0,0) width 143: "This text field is not disabled"

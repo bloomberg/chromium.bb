@@ -26,9 +26,9 @@ layer at (11,115) size 53x18
   LayoutBlockFlow {DIV} at (3,3) size 52.84x18
     LayoutText {#text} at (0,0) size 35x18
       text run at (0,0) width 35: "hello"
-layer at (115,115) size 53x18 scrollWidth 54
+layer at (115,115) size 53x18
   LayoutBlockFlow {DIV} at (3,3) size 52.84x18
-    LayoutText {#text} at (0,0) size 54x18
-      text run at (0,0) width 54: "WebKit"
+    LayoutText {#text} at (0,0) size 53x18
+      text run at (0,0) width 53: "WebKit"
 selection start: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 5 {INPUT} of child 5 {DIV} of body
 selection end:   position 2 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 5 {INPUT} of child 5 {DIV} of body

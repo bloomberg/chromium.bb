@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 0x0
 layer at (11,11) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 94x13
-      text run at (0,0) width 94: "some sample text"
+    LayoutText {#text} at (0,0) size 89x13
+      text run at (0,0) width 89: "some sample text"
 selection start: position 5 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of body
 selection end:   position 15 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of body

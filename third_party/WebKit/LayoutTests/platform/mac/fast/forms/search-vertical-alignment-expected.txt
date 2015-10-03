@@ -39,28 +39,28 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
 layer at (27,76) size 97x13
   LayoutBlockFlow {DIV} at (0,0) size 97x13
-    LayoutText {#text} at (0,0) size 23x13
-      text run at (0,0) width 23: "Text"
+    LayoutText {#text} at (0,0) size 22x13
+      text run at (0,0) width 22: "Text"
 layer at (146,76) size 125x13
   LayoutBlockFlow {DIV} at (3,16) size 125x13
-    LayoutText {#text} at (0,0) size 23x13
-      text run at (0,0) width 23: "Text"
+    LayoutText {#text} at (0,0) size 22x13
+      text run at (0,0) width 22: "Text"
 layer at (27,125) size 97x13
   LayoutBlockFlow {DIV} at (0,0) size 97x13
-    LayoutText {#text} at (0,0) size 23x13
-      text run at (0,0) width 23: "Text"
+    LayoutText {#text} at (0,0) size 22x13
+      text run at (0,0) width 22: "Text"
 layer at (146,125) size 125x13
   LayoutBlockFlow {DIV} at (3,1.50) size 125x13
-    LayoutText {#text} at (0,0) size 23x13
-      text run at (0,0) width 23: "Text"
+    LayoutText {#text} at (0,0) size 22x13
+      text run at (0,0) width 22: "Text"
 layer at (27,158) size 97x6 scrollHeight 13
   LayoutBlockFlow {DIV} at (0,0) size 97x6
-    LayoutText {#text} at (0,0) size 23x13
-      text run at (0,0) width 23: "Text"
+    LayoutText {#text} at (0,0) size 22x13
+      text run at (0,0) width 22: "Text"
 layer at (146,158) size 125x6 scrollHeight 13
   LayoutBlockFlow {DIV} at (3,3) size 125x6
-    LayoutText {#text} at (0,0) size 23x13
-      text run at (0,0) width 23: "Text"
+    LayoutText {#text} at (0,0) size 22x13
+      text run at (0,0) width 22: "Text"
 layer at (125,77) size 11x11 transparent
   LayoutBlockFlow {DIV} at (114,14) size 11x11
 layer at (125,126) size 11x11 transparent

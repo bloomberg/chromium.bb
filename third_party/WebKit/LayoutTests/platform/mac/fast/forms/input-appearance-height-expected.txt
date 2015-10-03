@@ -27,14 +27,14 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (87,52) size 1x0
         LayoutText {#text} at (0,57) size 26x18
           text run at (0,57) width 26: "file "
-        LayoutFileUploadControl {INPUT} at (25.31,58) size 222x18 "No file chosen"
-          LayoutButton {INPUT} at (0,0) size 78.53x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 62.53x13
-              LayoutText {#text} at (0,0) size 63x13
-                text run at (0,0) width 63: "Choose File"
-        LayoutText {#text} at (247,57) size 5x18
-          text run at (247,57) width 5: " "
-        LayoutBR {BR} at (251,71) size 1x0
+        LayoutFileUploadControl {INPUT} at (25.31,58) size 212x18 "No file chosen"
+          LayoutButton {INPUT} at (0,0) size 75.22x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 59.22x13
+              LayoutText {#text} at (0,0) size 60x13
+                text run at (0,0) width 60: "Choose File"
+        LayoutText {#text} at (237,57) size 5x18
+          text run at (237,57) width 5: " "
+        LayoutBR {BR} at (241,71) size 1x0
         LayoutText {#text} at (0,76) size 44x18
           text run at (0,76) width 44: "image "
         LayoutImage {INPUT} at (43.09,89) size 10x1
@@ -58,22 +58,22 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (176,130) size 1x0
         LayoutText {#text} at (0,134) size 35x18
           text run at (0,134) width 35: "reset "
-        LayoutButton {INPUT} at (34.20,135) size 46.30x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 30.30x13
-            LayoutText {#text} at (0,0) size 31x13
-              text run at (0,0) width 31: "Reset"
-        LayoutText {#text} at (80,134) size 5x18
-          text run at (80,134) width 5: " "
-        LayoutBR {BR} at (84,148) size 1x0
+        LayoutButton {INPUT} at (34.20,135) size 44.78x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 28.78x13
+            LayoutText {#text} at (0,0) size 29x13
+              text run at (0,0) width 29: "Reset"
+        LayoutText {#text} at (78,134) size 5x18
+          text run at (78,134) width 5: " "
+        LayoutBR {BR} at (82,148) size 1x0
         LayoutText {#text} at (0,153) size 48x18
           text run at (0,153) width 48: "submit "
-        LayoutButton {INPUT} at (47.56,154) size 53.45x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 37.45x13
-            LayoutText {#text} at (0,0) size 38x13
-              text run at (0,0) width 38: "Submit"
-        LayoutText {#text} at (101,153) size 5x18
-          text run at (101,153) width 5: " "
-        LayoutBR {BR} at (105,167) size 1x0
+        LayoutButton {INPUT} at (47.56,154) size 51.64x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 35.64x13
+            LayoutText {#text} at (0,0) size 36x13
+              text run at (0,0) width 36: "Submit"
+        LayoutText {#text} at (99,153) size 5x18
+          text run at (99,153) width 5: " "
+        LayoutBR {BR} at (103,167) size 1x0
         LayoutText {#text} at (0,172) size 51x18
           text run at (0,172) width 51: "isindex "
         LayoutTextControl {INPUT} at (50.22,172) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]

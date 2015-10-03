@@ -27,21 +27,21 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (0,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
 layer at (11,45) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 99x13
-      text run at (0,0) width 99: "The quick brown..."
+    LayoutText {#text} at (0,0) size 93x13
+      text run at (0,0) width 93: "The quick brown..."
 layer at (11,64) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 99x13
-      text run at (0,0) width 99: "The quick brown..."
+    LayoutText {#text} at (0,0) size 93x13
+      text run at (0,0) width 93: "The quick brown..."
 layer at (11,83) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 99x13
-      text run at (0,0) width 99: "The quick brown..."
+    LayoutText {#text} at (0,0) size 93x13
+      text run at (0,0) width 93: "The quick brown..."
 layer at (11,102) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 99x13
-      text run at (0,0) width 99: "The quick brown..."
+    LayoutText {#text} at (0,0) size 93x13
+      text run at (0,0) width 93: "The quick brown..."
 layer at (11,121) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 99x13
-      text run at (0,0) width 99: "The quick brown..."
+    LayoutText {#text} at (0,0) size 93x13
+      text run at (0,0) width 93: "The quick brown..."

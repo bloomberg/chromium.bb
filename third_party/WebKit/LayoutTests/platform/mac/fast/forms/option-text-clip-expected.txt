@@ -8,6 +8,6 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (717,14) size 1x0
       LayoutMenuList {SELECT} at (0,18) size 150x18 [bgcolor=#F8F8F8]
         LayoutBlockFlow (anonymous) at (0,0) size 150x18
-          LayoutText (anonymous) at (8,2) size 132x13
-            text run at (8,2) width 132: "12345 6789 ABCD EFGH"
+          LayoutText (anonymous) at (8,2) size 126x13
+            text run at (8,2) width 126: "12345 6789 ABCD EFGH"
       LayoutText {#text} at (0,0) size 0x0

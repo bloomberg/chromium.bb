@@ -3,26 +3,26 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutMenuList {SELECT} at (0,1) size 69x18 [bgcolor=#F8F8F8]
-        LayoutBlockFlow (anonymous) at (0,0) size 69x18
-          LayoutText (anonymous) at (8,2) size 38x13
-            text run at (8,2) width 38: "Default"
-      LayoutText {#text} at (69,0) size 4x18
-        text run at (69,0) width 4: " "
-      LayoutMenuList {SELECT} at (73,1) size 53x18 [bgcolor=#F8F8F8]
-        LayoutBlockFlow (anonymous) at (0,0) size 53x18
-          LayoutText (anonymous) at (8,2) size 22x13
-            text run at (8,2) width 22: "Red"
-      LayoutText {#text} at (126,0) size 4x18
-        text run at (126,0) width 4: " "
-      LayoutMenuList {SELECT} at (130,1) size 119x18 [bgcolor=#008000] [border: (1px solid #A6A6A6)]
-        LayoutBlockFlow (anonymous) at (1,1) size 117x16
-          LayoutText (anonymous) at (8,1) size 88x13
-            text run at (8,1) width 88: "Default on green"
-      LayoutText {#text} at (249,0) size 4x18
-        text run at (249,0) width 4: " "
-      LayoutMenuList {SELECT} at (253,1) size 103x18 [color=#FF0000] [bgcolor=#008000] [border: (1px solid #A6A6A6)]
-        LayoutBlockFlow (anonymous) at (1,1) size 101x16
-          LayoutText (anonymous) at (8,1) size 72x13
-            text run at (8,1) width 72: "Red on green"
+      LayoutMenuList {SELECT} at (0,1) size 67x18 [bgcolor=#F8F8F8]
+        LayoutBlockFlow (anonymous) at (0,0) size 67x18
+          LayoutText (anonymous) at (8,2) size 36x13
+            text run at (8,2) width 36: "Default"
+      LayoutText {#text} at (67,0) size 4x18
+        text run at (67,0) width 4: " "
+      LayoutMenuList {SELECT} at (71,1) size 52x18 [bgcolor=#F8F8F8]
+        LayoutBlockFlow (anonymous) at (0,0) size 52x18
+          LayoutText (anonymous) at (8,2) size 21x13
+            text run at (8,2) width 21: "Red"
+      LayoutText {#text} at (123,0) size 4x18
+        text run at (123,0) width 4: " "
+      LayoutMenuList {SELECT} at (127,1) size 114x18 [bgcolor=#008000] [border: (1px solid #A6A6A6)]
+        LayoutBlockFlow (anonymous) at (1,1) size 112x16
+          LayoutText (anonymous) at (8,1) size 83x13
+            text run at (8,1) width 83: "Default on green"
+      LayoutText {#text} at (241,0) size 4x18
+        text run at (241,0) width 4: " "
+      LayoutMenuList {SELECT} at (245,1) size 99x18 [color=#FF0000] [bgcolor=#008000] [border: (1px solid #A6A6A6)]
+        LayoutBlockFlow (anonymous) at (1,1) size 97x16
+          LayoutText (anonymous) at (8,1) size 68x13
+            text run at (8,1) width 68: "Red on green"
       LayoutText {#text} at (0,0) size 0x0

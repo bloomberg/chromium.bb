@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 308x18
         text run at (0,0) width 308: "With the label empty, the enclosing text is used."
       LayoutBR {BR} at (307,14) size 1x0
-      LayoutMenuList {SELECT} at (0,18) size 306x18 [bgcolor=#F8F8F8]
-        LayoutBlockFlow (anonymous) at (0,0) size 306x18
-          LayoutText (anonymous) at (8,2) size 275x13
-            text run at (8,2) width 275: "empty label should display empty string to match IE"
+      LayoutMenuList {SELECT} at (0,18) size 290x18 [bgcolor=#F8F8F8]
+        LayoutBlockFlow (anonymous) at (0,0) size 290x18
+          LayoutText (anonymous) at (8,2) size 259x13
+            text run at (8,2) width 259: "empty label should display empty string to match IE"
       LayoutText {#text} at (0,0) size 0x0

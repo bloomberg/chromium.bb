@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 0x0
 layer at (11,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 107x13
-      text run at (0,0) width 107: "This should be pink."
+    LayoutText {#text} at (0,0) size 101x13
+      text run at (0,0) width 101: "This should be pink."
 layer at (11,48) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13

@@ -1,0 +1,13 @@
+Spell check selects the misspelled word on context click in an input field. To test manually, type 'wellcome home.' and context-click on 'wellcome'. The test succeeds when 'wellcome' is selected after the context click.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS window.getSelection().toString() is "wellcome"
+PASS window.getSelection().toString() is ""
+PASS window.getSelection().toString() is "wellcome"
+FAIL window.getSelection().toString() should be home. Was ..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

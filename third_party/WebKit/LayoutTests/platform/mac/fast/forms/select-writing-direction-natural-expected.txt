@@ -40,9 +40,9 @@ layer at (0,0) size 800x600
           LayoutMenuList {SELECT} at (148,1) size 70x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 70x18
               LayoutText (anonymous) at (8,2) size 18x13
-                text run at (8,2) width 4: "("
-                text run at (11,2) width 8 RTL: "\x{5D0}"
-                text run at (18,2) width 8: "A"
+                text run at (8,2) width 3: "("
+                text run at (10,2) width 8 RTL: "\x{5D0}"
+                text run at (17,2) width 9: "A"
           LayoutText {#text} at (218,0) size 4x18
             text run at (218,0) width 4: " "
           LayoutMenuList {SELECT} at (222,1) size 70x18 [bgcolor=#F8F8F8]
@@ -69,9 +69,9 @@ layer at (0,0) size 800x600
           LayoutMenuList {SELECT} at (640,1) size 70x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 70x18
               LayoutText (anonymous) at (8,2) size 18x13
-                text run at (8,2) width 4: "("
-                text run at (11,2) width 8 RTL: "\x{5D0}"
-                text run at (18,2) width 8: "A"
+                text run at (8,2) width 3: "("
+                text run at (10,2) width 8 RTL: "\x{5D0}"
+                text run at (17,2) width 9: "A"
           LayoutText {#text} at (710,0) size 4x18
             text run at (710,0) width 4: " "
           LayoutMenuList {SELECT} at (714,1) size 70x18 [bgcolor=#F8F8F8]
@@ -99,16 +99,16 @@ layer at (0,0) size 800x600
           LayoutMenuList {SELECT} at (74,1) size 70x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 70x18
               LayoutText (anonymous) at (29,2) size 18x13
-                text run at (29,2) width 8: "A"
-                text run at (36,2) width 11 RTL: "(\x{5D0}"
+                text run at (29,2) width 9: "A"
+                text run at (37,2) width 10 RTL: "(\x{5D0}"
           LayoutText {#text} at (70,0) size 4x18
             text run at (70,0) width 4 RTL: " "
           LayoutMenuList {SELECT} at (0,1) size 70x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 70x18
               LayoutText (anonymous) at (29,2) size 18x13
                 text run at (29,2) width 8 RTL: "\x{5D0}"
-                text run at (36,2) width 8: "A"
-                text run at (43,2) width 4 RTL: "("
+                text run at (36,2) width 9: "A"
+                text run at (44,2) width 3 RTL: "("
           LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow {DIV} at (0,19) size 784x19
           LayoutMenuList {SELECT} at (714,1) size 70x18 [bgcolor=#F8F8F8]
@@ -128,14 +128,14 @@ layer at (0,0) size 800x600
           LayoutMenuList {SELECT} at (566,1) size 70x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 70x18
               LayoutText (anonymous) at (29,2) size 18x13
-                text run at (29,2) width 8: "A"
-                text run at (36,2) width 11 RTL: "(\x{5D0}"
+                text run at (29,2) width 9: "A"
+                text run at (37,2) width 10 RTL: "(\x{5D0}"
           LayoutText {#text} at (562,0) size 4x18
             text run at (562,0) width 4 RTL: " "
           LayoutMenuList {SELECT} at (492,1) size 70x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 70x18
               LayoutText (anonymous) at (29,2) size 18x13
                 text run at (29,2) width 8 RTL: "\x{5D0}"
-                text run at (36,2) width 8: "A"
-                text run at (43,2) width 4 RTL: "("
+                text run at (36,2) width 9: "A"
+                text run at (44,2) width 3 RTL: "("
           LayoutText {#text} at (0,0) size 0x0

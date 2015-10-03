@@ -9,42 +9,42 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,34) size 784x247
         LayoutText {#text} at (0,41) size 72x18
           text run at (0,41) width 72: "Five Tabs: "
-        LayoutBR {BR} at (139,55) size 1x0
+        LayoutBR {BR} at (137,55) size 1x0
         LayoutBR {BR} at (0,59) size 0x18
         LayoutText {#text} at (0,118) size 86x18
           text run at (0,118) width 86: "Five Spaces: "
-        LayoutBR {BR} at (153,132) size 1x0
+        LayoutBR {BR} at (150,132) size 1x0
         LayoutBR {BR} at (0,136) size 0x18
         LayoutText {#text} at (0,154) size 306x18
           text run at (0,154) width 306: "Five Spaces (with leading/trailing whitespace): "
-        LayoutMenuList {SELECT} at (305.25,155) size 96x18 [bgcolor=#F8F8F8]
-          LayoutBlockFlow (anonymous) at (0,0) size 96x18
-            LayoutText (anonymous) at (8,2) size 65x13
-              text run at (8,2) width 65: "Five Spaces"
-        LayoutBR {BR} at (401,168) size 1x0
+        LayoutMenuList {SELECT} at (305.25,155) size 93x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 93x18
+            LayoutText (anonymous) at (8,2) size 62x13
+              text run at (8,2) width 62: "Five Spaces"
+        LayoutBR {BR} at (398,168) size 1x0
         LayoutBR {BR} at (0,173) size 0x18
         LayoutText {#text} at (0,191) size 292x18
           text run at (0,191) width 292: "Five Tabs (with leading/trailing whitespace): "
-        LayoutMenuList {SELECT} at (291.92,192) size 82x18 [bgcolor=#F8F8F8]
-          LayoutBlockFlow (anonymous) at (0,0) size 82x18
-            LayoutText (anonymous) at (8,2) size 51x13
-              text run at (8,2) width 51: "Five Tabs"
-        LayoutBR {BR} at (373,205) size 1x0
+        LayoutMenuList {SELECT} at (291.92,192) size 80x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 80x18
+            LayoutText (anonymous) at (8,2) size 49x13
+              text run at (8,2) width 49: "Five Tabs"
+        LayoutBR {BR} at (371,205) size 1x0
         LayoutBR {BR} at (0,210) size 0x18
         LayoutText {#text} at (0,228) size 129x18
           text run at (0,228) width 129: "Mixed Whitespace: "
-        LayoutMenuList {SELECT} at (128.84,229) size 82x18 [bgcolor=#F8F8F8]
-          LayoutBlockFlow (anonymous) at (0,0) size 82x18
-            LayoutText (anonymous) at (8,2) size 51x13
-              text run at (8,2) width 51: "Five Tabs"
+        LayoutMenuList {SELECT} at (128.84,229) size 80x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 80x18
+            LayoutText (anonymous) at (8,2) size 49x13
+              text run at (8,2) width 49: "Five Tabs"
         LayoutText {#text} at (0,0) size 0x0
-layer at (80,42) size 68x59 clip at (81,43) size 55x57 scrollHeight 56
-  LayoutListBox {SELECT} at (71.98,0.25) size 67.97x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 54.97x14.19
-      LayoutText {#text} at (2,0) size 51x13
-        text run at (2,0) width 51: "Five Tabs"
-layer at (93,119) size 68x59 clip at (94,120) size 55x57 scrollHeight 56
-  LayoutListBox {SELECT} at (85.31,77.25) size 67.97x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 54.97x14.19
-      LayoutText {#text} at (2,0) size 51x13
-        text run at (2,0) width 51: "Five Tabs"
+layer at (80,42) size 65x59 clip at (81,43) size 52x57 scrollHeight 56
+  LayoutListBox {SELECT} at (71.98,0.25) size 65.25x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 52.25x14.19
+      LayoutText {#text} at (2,0) size 49x13
+        text run at (2,0) width 49: "Five Tabs"
+layer at (93,119) size 66x59 clip at (94,120) size 53x57 scrollHeight 56
+  LayoutListBox {SELECT} at (85.31,77.25) size 65.25x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 52.25x14.19
+      LayoutText {#text} at (2,0) size 49x13
+        text run at (2,0) width 49: "Five Tabs"

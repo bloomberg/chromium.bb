@@ -28,38 +28,38 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 0x0
 layer at (11,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#640000]
-    LayoutText {#text} at (0,0) size 21x13
-      text run at (0,0) width 21: "text"
+    LayoutText {#text} at (0,0) size 19x13
+      text run at (0,0) width 19: "text"
 layer at (11,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (152,29) size 108x13
   LayoutBlockFlow {DIV} at (9,3) size 108x13 [color=#640000]
-    LayoutText {#text} at (0,0) size 36x13
-      text run at (0,0) width 36: "search"
+    LayoutText {#text} at (0,0) size 34x13
+      text run at (0,0) width 34: "search"
 layer at (152,29) size 108x13
   LayoutBlockFlow {DIV} at (0,0) size 108x13
 layer at (283,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#640000]
-    LayoutText {#text} at (0,0) size 52x13
-      text run at (0,0) width 52: "password"
+    LayoutText {#text} at (0,0) size 50x13
+      text run at (0,0) width 50: "password"
 layer at (283,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (418,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#640000]
-    LayoutText {#text} at (0,0) size 69x13
-      text run at (0,0) width 69: "disabled text"
+    LayoutText {#text} at (0,0) size 65x13
+      text run at (0,0) width 65: "disabled text"
 layer at (418,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (553,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#A9A9A9]
-    LayoutText {#text} at (0,0) size 37x13
-      text run at (0,0) width 37: "default"
+    LayoutText {#text} at (0,0) size 35x13
+      text run at (0,0) width 35: "default"
 layer at (553,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (11,48) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#A9A9A9]
-    LayoutText {#text} at (0,0) size 85x13
-      text run at (0,0) width 85: "default disabled"
+    LayoutText {#text} at (0,0) size 80x13
+      text run at (0,0) width 80: "default disabled"
 layer at (11,48) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (261,30) size 11x11 transparent

@@ -38,21 +38,21 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,107) size 784x18
         LayoutText {#text} at (0,0) size 39x18
           text run at (0,0) width 39: "PASS"
-layer at (28,45) size 97x13 scrollX 36.00 scrollWidth 134
+layer at (28,45) size 97x13 scrollX 33.00 scrollWidth 130
   LayoutBlockFlow {DIV} at (0,0) size 97x13
-    LayoutText {#text} at (-36,0) size 134x13
-      text run at (-36,0) width 22 RTL: " \x{5D5}\x{5D6}\x{5D4}\x{5D5}"
-      text run at (-14,0) width 19: "she"
-      text run at (4,0) width 44 RTL: " \x{5D5}\x{5D4}\x{5D9}\x{5D0} \x{5D6}\x{5D4} "
-      text run at (47,0) width 14: "he"
+    LayoutText {#text} at (-33,0) size 131x13
+      text run at (-33,0) width 22 RTL: " \x{5D5}\x{5D6}\x{5D4}\x{5D5}"
+      text run at (-11,0) width 18: "she"
+      text run at (6,0) width 43 RTL: " \x{5D5}\x{5D4}\x{5D9}\x{5D0} \x{5D6}\x{5D4} "
+      text run at (48,0) width 13: "he"
       text run at (60,0) width 37 RTL: "\x{5D4}\x{5D5}\x{5D0} \x{5D6}\x{5D4} "
 layer at (28,64) size 157x13
   LayoutBlockFlow {DIV} at (0,0) size 157x13
-    LayoutText {#text} at (23,0) size 134x13
-      text run at (23,0) width 23 RTL: " \x{5D5}\x{5D6}\x{5D4}\x{5D5}"
-      text run at (45,0) width 20: "she"
-      text run at (64,0) width 44 RTL: " \x{5D5}\x{5D4}\x{5D9}\x{5D0} \x{5D6}\x{5D4} "
-      text run at (107,0) width 14: "he"
+    LayoutText {#text} at (26,0) size 131x13
+      text run at (26,0) width 23 RTL: " \x{5D5}\x{5D6}\x{5D4}\x{5D5}"
+      text run at (48,0) width 19: "she"
+      text run at (66,0) width 43 RTL: " \x{5D5}\x{5D4}\x{5D9}\x{5D0} \x{5D6}\x{5D4} "
+      text run at (108,0) width 13: "he"
       text run at (120,0) width 37 RTL: "\x{5D4}\x{5D5}\x{5D0} \x{5D6}\x{5D4} "
 layer at (28,83) size 97x13
   LayoutBlockFlow {DIV} at (0,0) size 97x13

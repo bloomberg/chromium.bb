@@ -24,13 +24,13 @@ layer at (8,94) size 100x50
   LayoutBlockFlow {DIV} at (0,86) size 100x50
     LayoutMenuList {SELECT} at (0,0) size 80x18 [bgcolor=#F8F8F8]
       LayoutBlockFlow (anonymous) at (0,0) size 80x18
-        LayoutText (anonymous) at (8,2) size 145x13
-          text run at (8,2) width 145: "Lorem ipsum dolor sit amet"
+        LayoutText (anonymous) at (8,2) size 138x13
+          text run at (8,2) width 138: "Lorem ipsum dolor sit amet"
     LayoutText {#text} at (0,0) size 0x0
-layer at (8,164) size 100x50 clip at (8,164) size 100x35 scrollWidth 153
+layer at (8,164) size 100x50 clip at (8,164) size 100x35 scrollWidth 145
   LayoutBlockFlow {DIV} at (0,156) size 100x50
     LayoutButton {BUTTON} at (0,0) size 80x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
       LayoutBlockFlow (anonymous) at (8,2) size 64x13
-        LayoutText {#text} at (0,0) size 145x13
-          text run at (0,0) width 145: "Lorem ipsum dolor sit amet"
+        LayoutText {#text} at (0,0) size 138x13
+          text run at (0,0) width 138: "Lorem ipsum dolor sit amet"
     LayoutText {#text} at (0,0) size 0x0

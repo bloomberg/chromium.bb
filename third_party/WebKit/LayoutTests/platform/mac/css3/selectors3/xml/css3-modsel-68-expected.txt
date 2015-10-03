@@ -3,16 +3,16 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x73
   LayoutBlockFlow {test} at (0,0) size 800x73
     LayoutBlockFlow {p} at (0,16) size 800x41
-      LayoutButton {button} at (0,0) size 241.03x22 [color=#7F7F7F] [bgcolor=#00FF00] [border: (2px outset #C0C0C0)]
-        LayoutBlockFlow (anonymous) at (8,4) size 225.03x13
-          LayoutText {#text} at (0,0) size 226x13
-            text run at (0,0) width 226: "A button (disabled) with green background"
-      LayoutText {#text} at (241,1) size 5x18
-        text run at (241,1) width 5: " "
+      LayoutButton {button} at (0,0) size 228.66x22 [color=#7F7F7F] [bgcolor=#00FF00] [border: (2px outset #C0C0C0)]
+        LayoutBlockFlow (anonymous) at (8,4) size 212.66x13
+          LayoutText {#text} at (0,0) size 213x13
+            text run at (0,0) width 213: "A button (disabled) with green background"
+      LayoutText {#text} at (228,1) size 5x18
+        text run at (228,1) width 5: " "
       LayoutBR {br} at (0,0) size 0x0
       LayoutTextControl {input} at (0,22) size 227x19 [color=#545454] [bgcolor=#00FF00] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (0,0) size 0x0
-layer at (3,41) size 221x13 scrollWidth 236
+layer at (3,41) size 221x13 scrollWidth 223
   LayoutBlockFlow {div} at (3,3) size 221x13
-    LayoutText {#text} at (0,0) size 236x13
-      text run at (0,0) width 236: "a text area (disabled) with green background"
+    LayoutText {#text} at (0,0) size 223x13
+      text run at (0,0) width 223: "a text area (disabled) with green background"

@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 687x18
         text run at (0,0) width 687: "In the selection list below, the text 'The label for this element is \"1\"' should appear, and not the character '1'"
       LayoutBR {BR} at (686,14) size 1x0
-      LayoutMenuList {SELECT} at (0,18) size 194x18 [bgcolor=#F8F8F8]
-        LayoutBlockFlow (anonymous) at (0,0) size 194x18
-          LayoutText (anonymous) at (8,2) size 163x13
-            text run at (8,2) width 163: "the label for this element is \"1\""
+      LayoutMenuList {SELECT} at (0,18) size 184x18 [bgcolor=#F8F8F8]
+        LayoutBlockFlow (anonymous) at (0,0) size 184x18
+          LayoutText (anonymous) at (8,2) size 153x13
+            text run at (8,2) width 153: "the label for this element is \"1\""
       LayoutText {#text} at (0,0) size 0x0

@@ -3,13 +3,13 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutButton {INPUT} at (0,0) size 53.45x18 [bgcolor=#C0C0C0]
-        LayoutBlockFlow (anonymous) at (8,2) size 37.45x13
-          LayoutText {#text} at (0,0) size 38x13
-            text run at (0,0) width 38: "Submit"
-      LayoutBR {BR} at (53,13) size 1x0
-      LayoutButton {INPUT} at (0,18) size 46.30x18 [bgcolor=#C0C0C0]
-        LayoutBlockFlow (anonymous) at (8,2) size 30.30x13
-          LayoutText {#text} at (0,0) size 31x13
-            text run at (0,0) width 31: "Reset"
-      LayoutBR {BR} at (46,31) size 1x0
+      LayoutButton {INPUT} at (0,0) size 51.64x18 [bgcolor=#C0C0C0]
+        LayoutBlockFlow (anonymous) at (8,2) size 35.64x13
+          LayoutText {#text} at (0,0) size 36x13
+            text run at (0,0) width 36: "Submit"
+      LayoutBR {BR} at (51,13) size 1x0
+      LayoutButton {INPUT} at (0,18) size 44.78x18 [bgcolor=#C0C0C0]
+        LayoutBlockFlow (anonymous) at (8,2) size 28.78x13
+          LayoutText {#text} at (0,0) size 29x13
+            text run at (0,0) width 29: "Reset"
+      LayoutBR {BR} at (44,31) size 1x0

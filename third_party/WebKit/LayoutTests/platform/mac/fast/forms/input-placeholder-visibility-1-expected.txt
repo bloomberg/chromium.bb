@@ -12,8 +12,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
 layer at (11,45) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#A9A9A9]
-    LayoutText {#text} at (0,0) size 63x13
-      text run at (0,0) width 63: "Placeholder"
+    LayoutText {#text} at (0,0) size 60x13
+      text run at (0,0) width 60: "Placeholder"
 layer at (11,45) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 caret: position 0 of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of child 3 {DIV} of body

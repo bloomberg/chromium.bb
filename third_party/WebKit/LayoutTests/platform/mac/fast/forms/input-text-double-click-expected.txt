@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 576: "Tests double-clicking on a word. If the test succeeds, the word \"word\" should be selected."
 layer at (11,11) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 71x13
-      text run at (0,0) width 71: "word another"
+    LayoutText {#text} at (0,0) size 67x13
+      text run at (0,0) width 67: "word another"
 selection start: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of body
 selection end:   position 4 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of body

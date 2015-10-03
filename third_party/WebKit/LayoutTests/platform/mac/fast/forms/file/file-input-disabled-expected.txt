@@ -13,10 +13,10 @@ layer at (0,0) size 800x600
           LayoutBR {BR} at (0,19) size 0x18
           LayoutText {#text} at (0,37) size 89x18
             text run at (0,37) width 89: "  Select File:  "
-          LayoutFileUploadControl {INPUT} at (88.42,38) size 222x18 "No file chosen" [color=#545454]
-            LayoutButton {INPUT} at (0,0) size 78.53x18 [color=#7F7F7F] [bgcolor=#C0C0C0]
-              LayoutBlockFlow (anonymous) at (8,2) size 62.53x13
-                LayoutText {#text} at (0,0) size 63x13
-                  text run at (0,0) width 63: "Choose File"
-          LayoutBR {BR} at (310,51) size 1x0
+          LayoutFileUploadControl {INPUT} at (88.42,38) size 212x18 "No file chosen" [color=#545454]
+            LayoutButton {INPUT} at (0,0) size 75.22x18 [color=#7F7F7F] [bgcolor=#C0C0C0]
+              LayoutBlockFlow (anonymous) at (8,2) size 59.22x13
+                LayoutText {#text} at (0,0) size 60x13
+                  text run at (0,0) width 60: "Choose File"
+          LayoutBR {BR} at (300,51) size 1x0
         LayoutTable {TABLE} at (0,56) size 0x0

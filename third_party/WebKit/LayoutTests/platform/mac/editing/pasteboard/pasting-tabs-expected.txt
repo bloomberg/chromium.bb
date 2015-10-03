@@ -26,6 +26,6 @@ layer at (0,0) size 800x600
 layer at (8,60) size 141x32 clip at (9,61) size 139x30
   LayoutTextControl {TEXTAREA} at (0,0) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 135x13
-      LayoutText {#text} at (0,0) size 87x13
-        text run at (0,0) width 87: "Tab->\x{9}<-Tab"
+      LayoutText {#text} at (0,0) size 80x13
+        text run at (0,0) width 80: "Tab->\x{9}<-Tab"
 caret: position 5 of child 2 {#text} of child 4 {DIV} of body

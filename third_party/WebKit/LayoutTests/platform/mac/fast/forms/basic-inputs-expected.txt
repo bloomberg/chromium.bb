@@ -66,19 +66,19 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {INPUT} at (65.59,4) size 12x13 [color=#545454]
         LayoutText {#text} at (80,1) size 9x18
           text run at (80,1) width 9: "b"
-layer at (29,328) size 125x13 scrollWidth 160
+layer at (29,328) size 125x13 scrollWidth 151
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 160x13
-      text run at (0,0) width 160: "foobarbazfoobarbazfoobarbaz"
+    LayoutText {#text} at (0,0) size 152x13
+      text run at (0,0) width 152: "foobarbazfoobarbazfoobarbaz"
 layer at (188,328) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 18x13
-      text run at (0,0) width 18: "foo"
+    LayoutText {#text} at (0,0) size 17x13
+      text run at (0,0) width 17: "foo"
 layer at (338,328) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 20x13
-      text run at (0,0) width 20: "\x{2022}\x{2022}\x{2022}"
+    LayoutText {#text} at (0,0) size 19x13
+      text run at (0,0) width 19: "\x{2022}\x{2022}\x{2022}"
 layer at (86,347) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 20x13
-      text run at (0,0) width 20: "\x{2022}\x{2022}\x{2022}"
+    LayoutText {#text} at (0,0) size 19x13
+      text run at (0,0) width 19: "\x{2022}\x{2022}\x{2022}"

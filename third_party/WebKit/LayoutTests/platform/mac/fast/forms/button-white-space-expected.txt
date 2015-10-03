@@ -13,51 +13,51 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 365x18
           text run at (0,0) width 365: "Buttons should appear next to each other in a single row:"
-      LayoutTable {TABLE} at (0,70) size 189x25
-        LayoutTableSection {TBODY} at (0,0) size 189x25
-          LayoutTableRow {TR} at (0,2) size 189x21
-            LayoutTableCell {TD} at (2,2) size 185x21 [r=0 c=0 rs=1 cs=1]
-              LayoutButton {BUTTON} at (1,2) size 78.33x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-                LayoutBlockFlow (anonymous) at (8,2) size 62.33x13
-                  LayoutText {#text} at (0,0) size 63x13
-                    text run at (0,0) width 63: "Search Mail"
-              LayoutText {#text} at (79,1) size 5x18
-                text run at (79,1) width 5: " "
-              LayoutButton {BUTTON} at (83.33,2) size 100.36x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-                LayoutBlockFlow (anonymous) at (8,2) size 84.36x13
-                  LayoutText {#text} at (0,0) size 85x13
-                    text run at (0,0) width 85: "Search the Web"
+      LayoutTable {TABLE} at (0,70) size 182x25
+        LayoutTableSection {TBODY} at (0,0) size 182x25
+          LayoutTableRow {TR} at (0,2) size 182x21
+            LayoutTableCell {TD} at (2,2) size 178x21 [r=0 c=0 rs=1 cs=1]
+              LayoutButton {BUTTON} at (1,2) size 75.02x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+                LayoutBlockFlow (anonymous) at (8,2) size 59.02x13
+                  LayoutText {#text} at (0,0) size 59x13
+                    text run at (0,0) width 59: "Search Mail"
+              LayoutText {#text} at (76,1) size 5x18
+                text run at (76,1) width 5: " "
+              LayoutButton {BUTTON} at (80.02,2) size 96.14x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+                LayoutBlockFlow (anonymous) at (8,2) size 80.14x13
+                  LayoutText {#text} at (0,0) size 81x13
+                    text run at (0,0) width 81: "Search the Web"
               LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,95) size 784x18
         LayoutText {#text} at (0,0) size 193x18
           text run at (0,0) width 193: "Buttons should look identical:"
       LayoutBlockFlow {DIV} at (0,113) size 784x18
-        LayoutButton {BUTTON} at (0,0) size 73.59x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          LayoutBlockFlow (anonymous) at (8,2) size 57.59x13
-            LayoutText {#text} at (0,0) size 58x13
-              text run at (0,0) width 58: "test button"
+        LayoutButton {BUTTON} at (0,0) size 70.27x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          LayoutBlockFlow (anonymous) at (8,2) size 54.27x13
+            LayoutText {#text} at (0,0) size 55x13
+              text run at (0,0) width 55: "test button"
       LayoutBlockFlow {DIV} at (0,131) size 784x18
-        LayoutButton {BUTTON} at (0,0) size 73.58x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          LayoutBlockFlow (anonymous) at (8,2) size 57.58x13
-            LayoutText {#text} at (0,0) size 58x13
-              text run at (0,0) width 24: "test "
-              text run at (23,0) width 35: "button"
+        LayoutButton {BUTTON} at (0,0) size 70.27x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          LayoutBlockFlow (anonymous) at (8,2) size 54.27x13
+            LayoutText {#text} at (0,0) size 55x13
+              text run at (0,0) width 22: "test "
+              text run at (21,0) width 34: "button"
       LayoutBlockFlow {DIV} at (0,149) size 784x18
         LayoutText {#text} at (0,0) size 353x18
           text run at (0,0) width 353: "Buttons should look identical (ignore vertical spacing):"
       LayoutBlockFlow {DIV} at (0,167) size 784x18
-        LayoutButton {BUTTON} at (0,0) size 90.64x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          LayoutBlockFlow (anonymous) at (8,2) size 74.64x13
-            LayoutText {#text} at (0,0) size 75x13
-              text run at (0,0) width 75: "  test  button  "
+        LayoutButton {BUTTON} at (0,0) size 85.81x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          LayoutBlockFlow (anonymous) at (8,2) size 69.81x13
+            LayoutText {#text} at (0,0) size 70x13
+              text run at (0,0) width 70: "  test  button  "
       LayoutBlockFlow {DIV} at (0,185) size 784x18
-        LayoutButton {BUTTON} at (0,0) size 90.64x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          LayoutBlockFlow (anonymous) at (8,2) size 74.64x13
-            LayoutText {#text} at (0,0) size 75x13
-              text run at (0,0) width 75: "  test  button  "
+        LayoutButton {BUTTON} at (0,0) size 85.81x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          LayoutBlockFlow (anonymous) at (8,2) size 69.81x13
+            LayoutText {#text} at (0,0) size 70x13
+              text run at (0,0) width 70: "  test  button  "
       LayoutBlockFlow {DIV} at (0,216) size 784x18
         LayoutBlockFlow {PRE} at (0,0) size 784x18
-          LayoutButton {BUTTON} at (0,0) size 90.64x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-            LayoutBlockFlow (anonymous) at (8,2) size 74.64x13
-              LayoutText {#text} at (0,0) size 75x13
-                text run at (0,0) width 75: "  test  button  "
+          LayoutButton {BUTTON} at (0,0) size 85.81x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+            LayoutBlockFlow (anonymous) at (8,2) size 69.81x13
+              LayoutText {#text} at (0,0) size 70x13
+                text run at (0,0) width 70: "  test  button  "

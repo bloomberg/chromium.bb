@@ -11,8 +11,8 @@ layer at (0,0) size 800x600
         text run at (0,18) width 108: "TEST FAILED: "
         text run at (107,18) width 321: "If the popup menu says \"document.write('Text')\". "
       LayoutBR {BR} at (427,32) size 1x0
-      LayoutMenuList {SELECT} at (0,36) size 54x18 [bgcolor=#F8F8F8]
-        LayoutBlockFlow (anonymous) at (0,0) size 54x18
-          LayoutText (anonymous) at (8,2) size 23x13
-            text run at (8,2) width 23: "Text"
+      LayoutMenuList {SELECT} at (0,36) size 53x18 [bgcolor=#F8F8F8]
+        LayoutBlockFlow (anonymous) at (0,0) size 53x18
+          LayoutText (anonymous) at (8,2) size 22x13
+            text run at (8,2) width 22: "Text"
       LayoutText {#text} at (0,0) size 0x0

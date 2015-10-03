@@ -8,10 +8,10 @@ layer at (0,0) size 800x600
           text run at (141,18) width 4: " "
         LayoutText {#text} at (286,18) size 4x18
           text run at (286,18) width 4: " "
-        LayoutButton {INPUT} at (290,19) size 46.30x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 30.30x13
-            LayoutText {#text} at (0,0) size 31x13
-              text run at (0,0) width 31: "Reset"
+        LayoutButton {INPUT} at (290,19) size 44.78x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 28.78x13
+            LayoutText {#text} at (0,0) size 29x13
+              text run at (0,0) width 29: "Reset"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,53) size 784x72
         LayoutText {#text} at (0,0) size 369x18
@@ -31,5 +31,5 @@ layer at (8,8) size 141x32 clip at (9,9) size 139x30
 layer at (153,8) size 141x32 clip at (154,9) size 139x30
   LayoutTextControl {TEXTAREA} at (145,0) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 135x13
-      LayoutText {#text} at (0,0) size 64x13
-        text run at (0,0) width 64: "Default Text"
+      LayoutText {#text} at (0,0) size 61x13
+        text run at (0,0) width 61: "Default Text"

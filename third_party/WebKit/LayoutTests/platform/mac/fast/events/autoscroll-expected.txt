@@ -24,8 +24,8 @@ layer at (0,0) size 785x3163 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 412: "If the bug does not occur, you'll be left down here at the bottom."
 layer at (11,3097) size 125x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 124x13
-      text run at (0,0) width 124: "select some of this text"
-selection start: position 1 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
-selection end:   position 17 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
+    LayoutText {#text} at (0,0) size 116x13
+      text run at (0,0) width 116: "select some of this text"
+selection start: position 2 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
+selection end:   position 18 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
 scrolled to 0,2563

@@ -1,0 +1,13 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x93 [border: (5px solid #FF0000)]
+        LayoutMenuList {SELECT} at (37,38) size 53x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 53x18
+            LayoutText (anonymous) at (8,2) size 22x13
+              text run at (8,2) width 22: "One"
+        LayoutText {#text} at (90,37) size 27x18
+          text run at (90,37) width 27: "blaa"
+caret: position 0 of child 0 {SELECT} of child 0 {DIV} of body

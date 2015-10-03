@@ -10,23 +10,23 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (444,42) size 0x0
       LayoutTextControl {INPUT} at (0,82) size 444x82 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (444,124) size 0x0
-      LayoutTextControl {INPUT} at (0,164) size 221x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        LayoutFlexibleBox {DIV} at (6,1) size 209x23
+      LayoutTextControl {INPUT} at (0,164) size 240x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutFlexibleBox {DIV} at (6,1) size 228x23
           LayoutBlockFlow {DIV} at (0,11.50) size 6x0
-          LayoutBlockFlow {DIV} at (6,0) size 188x23
+          LayoutBlockFlow {DIV} at (6,0) size 207x23
 layer at (17,11) size 417x47
   LayoutBlockFlow {DIV} at (0,0) size 417x47
-    LayoutText {#text} at (0,0) size 369x47
-      text run at (0,0) width 369: "value jgq not clipped"
+    LayoutText {#text} at (0,0) size 379x47
+      text run at (0,0) width 379: "value jgq not clipped"
 layer at (11,93) size 438x47
   LayoutBlockFlow {DIV} at (3,3) size 438x47
-    LayoutText {#text} at (0,0) size 369x47
-      text run at (0,0) width 369: "value jgq not clipped"
-layer at (20,173) size 188x23
-  LayoutBlockFlow {DIV} at (0,0) size 188x23
-    LayoutText {#text} at (0,0) size 119x23
-      text run at (0,0) width 119: "Sample Input"
+    LayoutText {#text} at (0,0) size 379x47
+      text run at (0,0) width 379: "value jgq not clipped"
+layer at (20,173) size 207x23
+  LayoutBlockFlow {DIV} at (0,0) size 207x23
+    LayoutText {#text} at (0,0) size 121x23
+      text run at (0,0) width 121: "Sample Input"
 layer at (435,28) size 14x14 transparent
   LayoutBlockFlow {DIV} at (424,16.50) size 14x14
-layer at (209,178) size 14x14 transparent
-  LayoutBlockFlow {DIV} at (195,4.50) size 14x14
+layer at (228,178) size 14x14 transparent
+  LayoutBlockFlow {DIV} at (214,4.50) size 14x14

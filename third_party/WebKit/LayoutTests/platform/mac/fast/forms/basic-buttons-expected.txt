@@ -44,13 +44,13 @@ layer at (0,0) size 800x294
               LayoutText {#text} at (1,1) size 106x18
                 text run at (1,1) width 106: "(18, 26) (18, 22)"
             LayoutTableCell {TD} at (392,20) size 135x21 [r=1 c=3 rs=1 cs=1]
-              LayoutButton {INPUT} at (1,2) size 33.06x18 [bgcolor=#C0C0C0]
-                LayoutBlockFlow (anonymous) at (8,2) size 17.06x13
-                  LayoutText {#text} at (0,0) size 18x13
-                    text run at (0,0) width 18: "foo"
+              LayoutButton {INPUT} at (1,2) size 32.16x18 [bgcolor=#C0C0C0]
+                LayoutBlockFlow (anonymous) at (8,2) size 16.16x13
+                  LayoutText {#text} at (0,0) size 17x13
+                    text run at (0,0) width 17: "foo"
             LayoutTableCell {TD} at (527,20) size 170x20 [r=1 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x18
-                text run at (1,1) width 106: "(18, 33) (18, 33)"
+                text run at (1,1) width 106: "(18, 32) (18, 32)"
           LayoutTableRow {TR} at (0,41) size 697x21
             LayoutTableCell {TD} at (0,41) size 170x20 [r=2 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 68x18
@@ -63,13 +63,13 @@ layer at (0,0) size 800x294
               LayoutText {#text} at (1,1) size 106x18
                 text run at (1,1) width 106: "(15, 14) (15, 10)"
             LayoutTableCell {TD} at (392,41) size 135x21 [r=2 c=3 rs=1 cs=1]
-              LayoutButton {INPUT} at (1,2) size 33.06x18 [bgcolor=#C0C0C0]
-                LayoutBlockFlow (anonymous) at (8,2) size 17.06x13
-                  LayoutText {#text} at (0,0) size 18x13
-                    text run at (0,0) width 18: "foo"
+              LayoutButton {INPUT} at (1,2) size 32.16x18 [bgcolor=#C0C0C0]
+                LayoutBlockFlow (anonymous) at (8,2) size 16.16x13
+                  LayoutText {#text} at (0,0) size 17x13
+                    text run at (0,0) width 17: "foo"
             LayoutTableCell {TD} at (527,41) size 170x20 [r=2 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x18
-                text run at (1,1) width 106: "(18, 33) (18, 33)"
+                text run at (1,1) width 106: "(18, 32) (18, 32)"
           LayoutTableRow {TR} at (0,62) size 697x26
             LayoutTableCell {TD} at (0,65) size 170x20 [r=3 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 90x18
@@ -82,13 +82,13 @@ layer at (0,0) size 800x294
               LayoutText {#text} at (1,1) size 106x18
                 text run at (1,1) width 106: "(25, 26) (25, 22)"
             LayoutTableCell {TD} at (392,64) size 135x21 [r=3 c=3 rs=1 cs=1]
-              LayoutButton {INPUT} at (1,2) size 33.06x18 [bgcolor=#C0C0C0]
-                LayoutBlockFlow (anonymous) at (8,2) size 17.06x13
-                  LayoutText {#text} at (0,0) size 18x13
-                    text run at (0,0) width 18: "foo"
+              LayoutButton {INPUT} at (1,2) size 32.16x18 [bgcolor=#C0C0C0]
+                LayoutBlockFlow (anonymous) at (8,2) size 16.16x13
+                  LayoutText {#text} at (0,0) size 17x13
+                    text run at (0,0) width 17: "foo"
             LayoutTableCell {TD} at (527,65) size 170x20 [r=3 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x18
-                text run at (1,1) width 106: "(18, 33) (18, 33)"
+                text run at (1,1) width 106: "(18, 32) (18, 32)"
           LayoutTableRow {TR} at (0,88) size 697x21
             LayoutTableCell {TD} at (0,88) size 170x20 [r=4 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 84x18
@@ -101,13 +101,13 @@ layer at (0,0) size 800x294
               LayoutText {#text} at (1,1) size 106x18
                 text run at (1,1) width 106: "(17, 18) (17, 14)"
             LayoutTableCell {TD} at (392,88) size 135x21 [r=4 c=3 rs=1 cs=1]
-              LayoutButton {INPUT} at (1,2) size 33.06x18 [bgcolor=#C0C0C0]
-                LayoutBlockFlow (anonymous) at (8,2) size 17.06x13
-                  LayoutText {#text} at (0,0) size 18x13
-                    text run at (0,0) width 18: "foo"
+              LayoutButton {INPUT} at (1,2) size 32.16x18 [bgcolor=#C0C0C0]
+                LayoutBlockFlow (anonymous) at (8,2) size 16.16x13
+                  LayoutText {#text} at (0,0) size 17x13
+                    text run at (0,0) width 17: "foo"
             LayoutTableCell {TD} at (527,88) size 170x20 [r=4 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x18
-                text run at (1,1) width 106: "(18, 33) (18, 33)"
+                text run at (1,1) width 106: "(18, 32) (18, 32)"
           LayoutTableRow {TR} at (0,109) size 697x21
             LayoutTableCell {TD} at (0,109) size 170x20 [r=5 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 168x18
@@ -120,13 +120,13 @@ layer at (0,0) size 800x294
               LayoutText {#text} at (1,1) size 106x18
                 text run at (1,1) width 106: "(18, 26) (18, 22)"
             LayoutTableCell {TD} at (392,109) size 135x21 [r=5 c=3 rs=1 cs=1]
-              LayoutButton {INPUT} at (1,2) size 33.06x18 [bgcolor=#C0C0C0]
-                LayoutBlockFlow (anonymous) at (8,2) size 17.06x13
-                  LayoutText {#text} at (0,0) size 18x13
-                    text run at (0,0) width 18: "foo"
+              LayoutButton {INPUT} at (1,2) size 32.16x18 [bgcolor=#C0C0C0]
+                LayoutBlockFlow (anonymous) at (8,2) size 16.16x13
+                  LayoutText {#text} at (0,0) size 17x13
+                    text run at (0,0) width 17: "foo"
             LayoutTableCell {TD} at (527,109) size 170x20 [r=5 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x18
-                text run at (1,1) width 106: "(18, 33) (18, 33)"
+                text run at (1,1) width 106: "(18, 32) (18, 32)"
           LayoutTableRow {TR} at (0,130) size 697x21
             LayoutTableCell {TD} at (0,130) size 170x20 [r=6 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 112x18
@@ -139,13 +139,13 @@ layer at (0,0) size 800x294
               LayoutText {#text} at (1,1) size 106x18
                 text run at (1,1) width 106: "(19, 28) (19, 24)"
             LayoutTableCell {TD} at (392,130) size 135x21 [r=6 c=3 rs=1 cs=1]
-              LayoutButton {INPUT} at (1,2) size 33.06x18 [bgcolor=#C0C0C0]
-                LayoutBlockFlow (anonymous) at (8,2) size 17.06x13
-                  LayoutText {#text} at (0,0) size 18x13
-                    text run at (0,0) width 18: "foo"
+              LayoutButton {INPUT} at (1,2) size 32.16x18 [bgcolor=#C0C0C0]
+                LayoutBlockFlow (anonymous) at (8,2) size 16.16x13
+                  LayoutText {#text} at (0,0) size 17x13
+                    text run at (0,0) width 17: "foo"
             LayoutTableCell {TD} at (527,130) size 170x20 [r=6 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x18
-                text run at (1,1) width 106: "(18, 33) (18, 33)"
+                text run at (1,1) width 106: "(18, 32) (18, 32)"
           LayoutTableRow {TR} at (0,151) size 697x55
             LayoutTableCell {TD} at (0,168) size 170x20 [r=7 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 92x18
@@ -158,10 +158,10 @@ layer at (0,0) size 800x294
               LayoutText {#text} at (1,1) size 106x18
                 text run at (1,1) width 106: "(53, 54) (53, 50)"
             LayoutTableCell {TD} at (392,168) size 135x21 [r=7 c=3 rs=1 cs=1]
-              LayoutButton {INPUT} at (1,2) size 33.06x18 [bgcolor=#C0C0C0]
-                LayoutBlockFlow (anonymous) at (8,2) size 17.06x13
-                  LayoutText {#text} at (0,0) size 18x13
-                    text run at (0,0) width 18: "foo"
+              LayoutButton {INPUT} at (1,2) size 32.16x18 [bgcolor=#C0C0C0]
+                LayoutBlockFlow (anonymous) at (8,2) size 16.16x13
+                  LayoutText {#text} at (0,0) size 17x13
+                    text run at (0,0) width 17: "foo"
             LayoutTableCell {TD} at (527,168) size 170x20 [r=7 c=4 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 106x18
-                text run at (1,1) width 106: "(18, 33) (18, 33)"
+                text run at (1,1) width 106: "(18, 32) (18, 32)"

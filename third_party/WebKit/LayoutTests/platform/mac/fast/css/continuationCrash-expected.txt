@@ -47,20 +47,20 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 206x18
             text run at (0,0) width 206: "2. 3. will not crash Safari either."
         LayoutBlockFlow (anonymous) at (40,144) size 744x19
-          LayoutButton {INPUT} at (0,1) size 133.94x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 117.94x13
-              LayoutText {#text} at (0,0) size 118x13
-                text run at (0,0) width 118: "1. Set outline property"
-          LayoutText {#text} at (133,0) size 5x18
-            text run at (133,0) width 5: " "
-          LayoutButton {INPUT} at (137.94,1) size 136x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 120x13
-              LayoutText {#text} at (0,0) size 120x13
-                text run at (0,0) width 120: "2. Set display property"
-          LayoutText {#text} at (273,0) size 5x18
-            text run at (273,0) width 5: " "
-          LayoutButton {INPUT} at (277.94,1) size 147.81x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 131.81x13
-              LayoutText {#text} at (0,0) size 132x13
-                text run at (0,0) width 132: "3. Replace span-element"
+          LayoutButton {INPUT} at (0,1) size 126.98x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 110.98x13
+              LayoutText {#text} at (0,0) size 111x13
+                text run at (0,0) width 111: "1. Set outline property"
+          LayoutText {#text} at (126,0) size 5x18
+            text run at (126,0) width 5: " "
+          LayoutButton {INPUT} at (130.98,1) size 129.06x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 113.06x13
+              LayoutText {#text} at (0,0) size 114x13
+                text run at (0,0) width 114: "2. Set display property"
+          LayoutText {#text} at (260,0) size 5x18
+            text run at (260,0) width 5: " "
+          LayoutButton {INPUT} at (264.05,1) size 140.88x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 124.88x13
+              LayoutText {#text} at (0,0) size 125x13
+                text run at (0,0) width 125: "3. Replace span-element"
           LayoutText {#text} at (0,0) size 0x0

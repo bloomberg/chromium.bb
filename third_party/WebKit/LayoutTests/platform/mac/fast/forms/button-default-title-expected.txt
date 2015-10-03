@@ -12,8 +12,8 @@ layer at (0,0) size 785x652 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow (anonymous) at (0,74.72) size 769x21
         LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,4) size 64x13
-            LayoutText {#text} at (13,0) size 38x13
-              text run at (13,0) width 38: "Submit"
+            LayoutText {#text} at (14,0) size 36x13
+              text run at (14,0) width 36: "Submit"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,111.72) size 769x18
         LayoutText {#text} at (0,0) size 300x18
@@ -21,8 +21,8 @@ layer at (0,0) size 785x652 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow (anonymous) at (0,145.72) size 769x21
         LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,4) size 64x13
-            LayoutText {#text} at (21,0) size 22x13
-              text run at (21,0) width 22: "Foo"
+            LayoutText {#text} at (22,0) size 20x13
+              text run at (22,0) width 20: "Foo"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,182.72) size 769x18
         LayoutText {#text} at (0,0) size 316x18
@@ -48,8 +48,8 @@ layer at (0,0) size 785x652 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow (anonymous) at (0,402.16) size 769x21
         LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,4) size 64x13
-            LayoutText {#text} at (16,0) size 32x13
-              text run at (16,0) width 32: "Reset"
+            LayoutText {#text} at (17,0) size 30x13
+              text run at (17,0) width 30: "Reset"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,439.16) size 769x18
         LayoutText {#text} at (0,0) size 300x18
@@ -57,8 +57,8 @@ layer at (0,0) size 785x652 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow (anonymous) at (0,473.16) size 769x21
         LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,4) size 64x13
-            LayoutText {#text} at (21,0) size 22x13
-              text run at (21,0) width 22: "Foo"
+            LayoutText {#text} at (22,0) size 20x13
+              text run at (22,0) width 20: "Foo"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,510.16) size 769x18
         LayoutText {#text} at (0,0) size 316x18

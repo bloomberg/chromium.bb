@@ -17,38 +17,38 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (106,18) size 5x18
           text run at (106,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x19
-        LayoutButton {BUTTON} at (0,1) size 85.16x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          LayoutBlockFlow (anonymous) at (8,2) size 69.16x13
-            LayoutText {#text} at (0,0) size 70x13
-              text run at (0,0) width 70: "UPPERCASE"
-        LayoutText {#text} at (85,0) size 5x18
-          text run at (85,0) width 5: " "
-        LayoutButton {BUTTON} at (89.16,1) size 69.42x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          LayoutBlockFlow (anonymous) at (8,2) size 53.42x13
-            LayoutText {#text} at (0,0) size 54x13
-              text run at (0,0) width 54: "lowercase"
-        LayoutText {#text} at (158,0) size 5x18
-          text run at (158,0) width 5: " "
-        LayoutButton {BUTTON} at (162.58,1) size 68.06x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          LayoutBlockFlow (anonymous) at (8,2) size 52.06x13
-            LayoutText {#text} at (0,0) size 53x13
-              text run at (0,0) width 53: "Capitalize"
+        LayoutButton {BUTTON} at (0,1) size 82.44x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          LayoutBlockFlow (anonymous) at (8,2) size 66.44x13
+            LayoutText {#text} at (0,0) size 67x13
+              text run at (0,0) width 67: "UPPERCASE"
+        LayoutText {#text} at (82,0) size 5x18
+          text run at (82,0) width 5: " "
+        LayoutButton {BUTTON} at (86.44,1) size 66.70x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          LayoutBlockFlow (anonymous) at (8,2) size 50.70x13
+            LayoutText {#text} at (0,0) size 51x13
+              text run at (0,0) width 51: "lowercase"
+        LayoutText {#text} at (153,0) size 5x18
+          text run at (153,0) width 5: " "
+        LayoutButton {BUTTON} at (157.14,1) size 65.05x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          LayoutBlockFlow (anonymous) at (8,2) size 49.05x13
+            LayoutText {#text} at (0,0) size 50x13
+              text run at (0,0) width 50: "Capitalize"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,87) size 784x19
-        LayoutButton {INPUT} at (0,1) size 85.16x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 69.16x13
-            LayoutText {#text} at (0,0) size 70x13
-              text run at (0,0) width 70: "UPPERCASE"
-        LayoutText {#text} at (85,0) size 5x18
-          text run at (85,0) width 5: " "
-        LayoutButton {INPUT} at (89.16,1) size 69.42x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 53.42x13
-            LayoutText {#text} at (0,0) size 54x13
-              text run at (0,0) width 54: "lowercase"
-        LayoutText {#text} at (158,0) size 5x18
-          text run at (158,0) width 5: " "
-        LayoutButton {INPUT} at (162.58,1) size 68.06x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 52.06x13
-            LayoutText {#text} at (0,0) size 53x13
-              text run at (0,0) width 53: "Capitalize"
+        LayoutButton {INPUT} at (0,1) size 82.44x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 66.44x13
+            LayoutText {#text} at (0,0) size 67x13
+              text run at (0,0) width 67: "UPPERCASE"
+        LayoutText {#text} at (82,0) size 5x18
+          text run at (82,0) width 5: " "
+        LayoutButton {INPUT} at (86.44,1) size 66.70x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 50.70x13
+            LayoutText {#text} at (0,0) size 51x13
+              text run at (0,0) width 51: "lowercase"
+        LayoutText {#text} at (153,0) size 5x18
+          text run at (153,0) width 5: " "
+        LayoutButton {INPUT} at (157.14,1) size 65.05x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 49.05x13
+            LayoutText {#text} at (0,0) size 50x13
+              text run at (0,0) width 50: "Capitalize"
         LayoutText {#text} at (0,0) size 0x0

@@ -10,10 +10,10 @@ layer at (0,0) size 800x600
           text run at (478,18) width 297: "The editable region should not be focused, but"
           text run at (0,36) width 246: "the text inside of it should be selected."
       LayoutBlockFlow (anonymous) at (0,70) size 784x18
-        LayoutButton {INPUT} at (0,0) size 78.55x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 62.55x13
-            LayoutText {#text} at (0,0) size 63x13
-              text run at (0,0) width 63: "Click on me"
+        LayoutButton {INPUT} at (0,0) size 75.23x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 59.23x13
+            LayoutText {#text} at (0,0) size 60x13
+              text run at (0,0) width 60: "Click on me"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,88) size 784x18
         LayoutText {#text} at (0,0) size 182x18

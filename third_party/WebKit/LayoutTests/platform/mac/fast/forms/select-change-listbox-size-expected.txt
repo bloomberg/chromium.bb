@@ -22,23 +22,23 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,86) size 784x87
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-layer at (8,94) size 47x87 clip at (9,95) size 34x85
-  LayoutListBox {SELECT} at (0,-0.13) size 46.88x87.13 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 33.88x14.19
+layer at (8,94) size 45x87 clip at (9,95) size 32x85
+  LayoutListBox {SELECT} at (0,-0.13) size 45.38x87.13 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 32.38x14.19
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "One"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 32.38x14.19
       LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "One"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 33.88x14.19
+        text run at (2,0) width 22: "Two"
+    LayoutBlockFlow {OPTION} at (1,29.38) size 32.38x14.19
+      LayoutText {#text} at (2,0) size 29x13
+        text run at (2,0) width 29: "Three"
+    LayoutBlockFlow {OPTION} at (1,43.56) size 32.38x14.19
       LayoutText {#text} at (2,0) size 23x13
-        text run at (2,0) width 23: "Two"
-    LayoutBlockFlow {OPTION} at (1,29.38) size 33.88x14.19
-      LayoutText {#text} at (2,0) size 30x13
-        text run at (2,0) width 30: "Three"
-    LayoutBlockFlow {OPTION} at (1,43.56) size 33.88x14.19
-      LayoutText {#text} at (2,0) size 24x13
-        text run at (2,0) width 24: "Four"
-    LayoutBlockFlow {OPTION} at (1,57.75) size 33.88x14.19
-      LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "Five"
-    LayoutBlockFlow {OPTION} at (1,71.94) size 33.88x14.19
-      LayoutText {#text} at (2,0) size 17x13
-        text run at (2,0) width 17: "Six"
+        text run at (2,0) width 23: "Four"
+    LayoutBlockFlow {OPTION} at (1,57.75) size 32.38x14.19
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "Five"
+    LayoutBlockFlow {OPTION} at (1,71.94) size 32.38x14.19
+      LayoutText {#text} at (2,0) size 16x13
+        text run at (2,0) width 16: "Six"

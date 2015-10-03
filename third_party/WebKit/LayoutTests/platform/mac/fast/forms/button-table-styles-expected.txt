@@ -7,137 +7,137 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 351x18
           text run at (0,0) width 351: "This tests that buttons don't honor table display styles. "
         LayoutBR {BR} at (350,14) size 1x0
-      LayoutButton {INPUT} at (0,18) size 86.48x18 [bgcolor=#C0C0C0]
-        LayoutBlockFlow (anonymous) at (8,2) size 70.48x13
-          LayoutText {#text} at (0,0) size 71x13
-            text run at (0,0) width 71: "display: table"
-      LayoutButton {INPUT} at (0,36) size 86.48x18 [bgcolor=#C0C0C0]
-        LayoutBlockFlow (anonymous) at (8,2) size 70.48x13
-          LayoutText {#text} at (0,0) size 71x13
-            text run at (0,0) width 71: "display: table"
+      LayoutButton {INPUT} at (0,18) size 82.27x18 [bgcolor=#C0C0C0]
+        LayoutBlockFlow (anonymous) at (8,2) size 66.27x13
+          LayoutText {#text} at (0,0) size 67x13
+            text run at (0,0) width 67: "display: table"
+      LayoutButton {INPUT} at (0,36) size 82.27x18 [bgcolor=#C0C0C0]
+        LayoutBlockFlow (anonymous) at (8,2) size 66.27x13
+          LayoutText {#text} at (0,0) size 67x13
+            text run at (0,0) width 67: "display: table"
       LayoutBlockFlow (anonymous) at (0,54) size 784x351
         LayoutBR {BR} at (0,0) size 0x18
         LayoutBR {BR} at (0,18) size 0x18
-        LayoutButton {INPUT} at (0,37) size 118.83x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 102.83x13
-            LayoutText {#text} at (0,0) size 103x13
-              text run at (0,0) width 103: "display: inline-table"
-        LayoutText {#text} at (118,36) size 5x18
-          text run at (118,36) width 5: " "
-        LayoutButton {INPUT} at (122.83,37) size 118.83x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 102.83x13
-            LayoutText {#text} at (0,0) size 103x13
-              text run at (0,0) width 103: "display: inline-table"
-        LayoutText {#text} at (241,36) size 5x18
-          text run at (241,36) width 5: " "
-        LayoutBR {BR} at (245,50) size 1x0
+        LayoutButton {INPUT} at (0,37) size 112.50x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 96.50x13
+            LayoutText {#text} at (0,0) size 97x13
+              text run at (0,0) width 97: "display: inline-table"
+        LayoutText {#text} at (112,36) size 5x18
+          text run at (112,36) width 5: " "
+        LayoutButton {INPUT} at (116.50,37) size 112.50x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 96.50x13
+            LayoutText {#text} at (0,0) size 97x13
+              text run at (0,0) width 97: "display: inline-table"
+        LayoutText {#text} at (229,36) size 4x18
+          text run at (229,36) width 4: " "
+        LayoutBR {BR} at (233,50) size 0x0
         LayoutBR {BR} at (0,55) size 0x18
-        LayoutButton {INPUT} at (0,74) size 146.22x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 130.22x13
-            LayoutText {#text} at (0,0) size 131x13
-              text run at (0,0) width 131: "display: table-row-group"
-        LayoutText {#text} at (146,73) size 5x18
-          text run at (146,73) width 5: " "
-        LayoutButton {INPUT} at (150.22,74) size 146.22x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 130.22x13
-            LayoutText {#text} at (0,0) size 131x13
-              text run at (0,0) width 131: "display: table-row-group"
-        LayoutText {#text} at (296,73) size 5x18
-          text run at (296,73) width 5: " "
-        LayoutBR {BR} at (300,87) size 1x0
+        LayoutButton {INPUT} at (0,74) size 138.97x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 122.97x13
+            LayoutText {#text} at (0,0) size 123x13
+              text run at (0,0) width 123: "display: table-row-group"
+        LayoutText {#text} at (138,73) size 5x18
+          text run at (138,73) width 5: " "
+        LayoutButton {INPUT} at (142.97,74) size 138.97x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 122.97x13
+            LayoutText {#text} at (0,0) size 123x13
+              text run at (0,0) width 123: "display: table-row-group"
+        LayoutText {#text} at (281,73) size 5x18
+          text run at (281,73) width 5: " "
+        LayoutBR {BR} at (285,87) size 1x0
         LayoutBR {BR} at (0,92) size 0x18
-        LayoutButton {INPUT} at (0,111) size 163.09x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 147.09x13
-            LayoutText {#text} at (0,0) size 148x13
-              text run at (0,0) width 148: "display: table-header-group"
-        LayoutText {#text} at (163,110) size 5x18
-          text run at (163,110) width 5: " "
-        LayoutButton {INPUT} at (167.09,111) size 163.09x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 147.09x13
-            LayoutText {#text} at (0,0) size 148x13
-              text run at (0,0) width 148: "display: table-header-group"
-        LayoutText {#text} at (330,110) size 5x18
-          text run at (330,110) width 5: " "
-        LayoutBR {BR} at (334,124) size 1x0
+        LayoutButton {INPUT} at (0,111) size 154.94x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 138.94x13
+            LayoutText {#text} at (0,0) size 139x13
+              text run at (0,0) width 139: "display: table-header-group"
+        LayoutText {#text} at (154,110) size 5x18
+          text run at (154,110) width 5: " "
+        LayoutButton {INPUT} at (158.94,111) size 154.94x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 138.94x13
+            LayoutText {#text} at (0,0) size 139x13
+              text run at (0,0) width 139: "display: table-header-group"
+        LayoutText {#text} at (313,110) size 5x18
+          text run at (313,110) width 5: " "
+        LayoutBR {BR} at (317,124) size 1x0
         LayoutBR {BR} at (0,129) size 0x18
-        LayoutButton {INPUT} at (0,148) size 157.91x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 141.91x13
-            LayoutText {#text} at (0,0) size 142x13
-              text run at (0,0) width 142: "display: table-footer-group"
-        LayoutText {#text} at (157,147) size 5x18
-          text run at (157,147) width 5: " "
-        LayoutButton {INPUT} at (161.91,148) size 157.91x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 141.91x13
-            LayoutText {#text} at (0,0) size 142x13
-              text run at (0,0) width 142: "display: table-footer-group"
-        LayoutText {#text} at (319,147) size 5x18
-          text run at (319,147) width 5: " "
-        LayoutBR {BR} at (323,161) size 1x0
+        LayoutButton {INPUT} at (0,148) size 149.75x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 133.75x13
+            LayoutText {#text} at (0,0) size 134x13
+              text run at (0,0) width 134: "display: table-footer-group"
+        LayoutText {#text} at (149,147) size 5x18
+          text run at (149,147) width 5: " "
+        LayoutButton {INPUT} at (153.75,148) size 149.75x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 133.75x13
+            LayoutText {#text} at (0,0) size 134x13
+              text run at (0,0) width 134: "display: table-footer-group"
+        LayoutText {#text} at (303,147) size 5x18
+          text run at (303,147) width 5: " "
+        LayoutBR {BR} at (307,161) size 1x0
         LayoutBR {BR} at (0,166) size 0x18
-        LayoutButton {INPUT} at (0,185) size 110.66x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 94.66x13
-            LayoutText {#text} at (0,0) size 95x13
-              text run at (0,0) width 95: "display: table-row"
-        LayoutText {#text} at (110,184) size 5x18
-          text run at (110,184) width 5: " "
-        LayoutButton {INPUT} at (114.66,185) size 110.66x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 94.66x13
-            LayoutText {#text} at (0,0) size 95x13
-              text run at (0,0) width 95: "display: table-row"
-        LayoutText {#text} at (225,184) size 5x18
-          text run at (225,184) width 5: " "
-        LayoutBR {BR} at (229,198) size 1x0
+        LayoutButton {INPUT} at (0,185) size 105.22x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 89.22x13
+            LayoutText {#text} at (0,0) size 90x13
+              text run at (0,0) width 90: "display: table-row"
+        LayoutText {#text} at (105,184) size 5x18
+          text run at (105,184) width 5: " "
+        LayoutButton {INPUT} at (109.22,185) size 105.22x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 89.22x13
+            LayoutText {#text} at (0,0) size 90x13
+              text run at (0,0) width 90: "display: table-row"
+        LayoutText {#text} at (214,184) size 5x18
+          text run at (214,184) width 5: " "
+        LayoutBR {BR} at (218,198) size 1x0
         LayoutBR {BR} at (0,203) size 0x18
-        LayoutButton {INPUT} at (0,222) size 165.38x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 149.38x13
-            LayoutText {#text} at (0,0) size 150x13
-              text run at (0,0) width 150: "display: table-column-group"
-        LayoutText {#text} at (165,221) size 5x18
-          text run at (165,221) width 5: " "
-        LayoutButton {INPUT} at (169.38,222) size 165.38x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 149.38x13
-            LayoutText {#text} at (0,0) size 150x13
-              text run at (0,0) width 150: "display: table-column-group"
-        LayoutText {#text} at (334,221) size 5x18
-          text run at (334,221) width 5: " "
-        LayoutBR {BR} at (338,235) size 1x0
+        LayoutButton {INPUT} at (0,222) size 157.23x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 141.23x13
+            LayoutText {#text} at (0,0) size 142x13
+              text run at (0,0) width 142: "display: table-column-group"
+        LayoutText {#text} at (157,221) size 5x18
+          text run at (157,221) width 5: " "
+        LayoutButton {INPUT} at (161.23,222) size 157.23x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 141.23x13
+            LayoutText {#text} at (0,0) size 142x13
+              text run at (0,0) width 142: "display: table-column-group"
+        LayoutText {#text} at (318,221) size 5x18
+          text run at (318,221) width 5: " "
+        LayoutBR {BR} at (322,235) size 1x0
         LayoutBR {BR} at (0,240) size 0x18
-        LayoutButton {INPUT} at (0,259) size 129.81x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 113.81x13
-            LayoutText {#text} at (0,0) size 114x13
-              text run at (0,0) width 114: "display: table-column"
-        LayoutText {#text} at (129,258) size 5x18
-          text run at (129,258) width 5: " "
-        LayoutButton {INPUT} at (133.81,259) size 129.81x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 113.81x13
-            LayoutText {#text} at (0,0) size 114x13
-              text run at (0,0) width 114: "display: table-column"
-        LayoutText {#text} at (263,258) size 5x18
-          text run at (263,258) width 5: " "
-        LayoutBR {BR} at (267,272) size 1x0
+        LayoutButton {INPUT} at (0,259) size 123.48x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 107.48x13
+            LayoutText {#text} at (0,0) size 108x13
+              text run at (0,0) width 108: "display: table-column"
+        LayoutText {#text} at (123,258) size 5x18
+          text run at (123,258) width 5: " "
+        LayoutButton {INPUT} at (127.48,259) size 123.48x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 107.48x13
+            LayoutText {#text} at (0,0) size 108x13
+              text run at (0,0) width 108: "display: table-column"
+        LayoutText {#text} at (250,258) size 5x18
+          text run at (250,258) width 5: " "
+        LayoutBR {BR} at (254,272) size 1x0
         LayoutBR {BR} at (0,277) size 0x18
-        LayoutButton {INPUT} at (0,296) size 109.31x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 93.31x13
-            LayoutText {#text} at (0,0) size 94x13
-              text run at (0,0) width 94: "display: table-cell"
-        LayoutText {#text} at (109,295) size 5x18
-          text run at (109,295) width 5: " "
-        LayoutButton {INPUT} at (113.31,296) size 109.31x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 93.31x13
-            LayoutText {#text} at (0,0) size 94x13
-              text run at (0,0) width 94: "display: table-cell"
-        LayoutText {#text} at (222,295) size 5x18
-          text run at (222,295) width 5: " "
-        LayoutBR {BR} at (226,309) size 1x0
+        LayoutButton {INPUT} at (0,296) size 103.58x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 87.58x13
+            LayoutText {#text} at (0,0) size 88x13
+              text run at (0,0) width 88: "display: table-cell"
+        LayoutText {#text} at (103,295) size 5x18
+          text run at (103,295) width 5: " "
+        LayoutButton {INPUT} at (107.58,296) size 103.58x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 87.58x13
+            LayoutText {#text} at (0,0) size 88x13
+              text run at (0,0) width 88: "display: table-cell"
+        LayoutText {#text} at (211,295) size 5x18
+          text run at (211,295) width 5: " "
+        LayoutBR {BR} at (215,309) size 1x0
         LayoutBR {BR} at (0,314) size 0x18
-        LayoutButton {INPUT} at (0,333) size 130.53x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 114.53x13
-            LayoutText {#text} at (0,0) size 115x13
-              text run at (0,0) width 115: "display: table-caption"
-        LayoutText {#text} at (130,332) size 5x18
-          text run at (130,332) width 5: " "
-        LayoutButton {INPUT} at (134.53,333) size 130.53x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 114.53x13
-            LayoutText {#text} at (0,0) size 115x13
-              text run at (0,0) width 115: "display: table-caption"
+        LayoutButton {INPUT} at (0,333) size 123.89x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 107.89x13
+            LayoutText {#text} at (0,0) size 108x13
+              text run at (0,0) width 108: "display: table-caption"
+        LayoutText {#text} at (123,332) size 5x18
+          text run at (123,332) width 5: " "
+        LayoutButton {INPUT} at (127.89,333) size 123.89x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 107.89x13
+            LayoutText {#text} at (0,0) size 108x13
+              text run at (0,0) width 108: "display: table-caption"
         LayoutText {#text} at (0,0) size 0x0

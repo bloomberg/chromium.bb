@@ -7,147 +7,147 @@ layer at (0,0) size 800x173
         LayoutText {#text} at (0,0) size 608x18
           text run at (0,0) width 608: "The select list box should not display items (options and optgroups) with style \"display: none\"."
       LayoutBlockFlow (anonymous) at (0,34) size 784x115
-        LayoutText {#text} at (49,97) size 5x18
-          text run at (49,97) width 5: " "
-        LayoutText {#text} at (112,97) size 5x18
-          text run at (112,97) width 5: " "
-        LayoutText {#text} at (175,97) size 5x18
-          text run at (175,97) width 5: " "
-        LayoutText {#text} at (229,97) size 5x18
-          text run at (229,97) width 5: " "
-        LayoutText {#text} at (283,97) size 5x18
-          text run at (283,97) width 5: " "
+        LayoutText {#text} at (48,97) size 5x18
+          text run at (48,97) width 5: " "
+        LayoutText {#text} at (108,97) size 5x18
+          text run at (108,97) width 5: " "
+        LayoutText {#text} at (169,97) size 5x18
+          text run at (169,97) width 5: " "
+        LayoutText {#text} at (221,97) size 5x18
+          text run at (221,97) width 5: " "
+        LayoutText {#text} at (273,97) size 5x18
+          text run at (273,97) width 5: " "
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-layer at (8,64) size 50x101 clip at (9,65) size 37x99
-  LayoutListBox {SELECT} at (0,13.69) size 49.58x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 36.58x14.19
+layer at (8,64) size 48x101 clip at (9,65) size 35x99
+  LayoutListBox {SELECT} at (0,13.69) size 48.06x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 35.06x14.19
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "One"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 35.06x14.19
       LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "One"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 36.58x14.19
-      LayoutText {#text} at (2,0) size 23x13
-        text run at (2,0) width 23: "Two"
-    LayoutBlockFlow {OPTION} at (1,29.38) size 36.58x14.19
-      LayoutText {#text} at (2,0) size 30x13
-        text run at (2,0) width 30: "Three"
-    LayoutBlockFlow {OPTION} at (1,43.56) size 36.58x14.19
+        text run at (2,0) width 22: "Two"
+    LayoutBlockFlow {OPTION} at (1,29.38) size 35.06x14.19
+      LayoutText {#text} at (2,0) size 29x13
+        text run at (2,0) width 29: "Three"
+    LayoutBlockFlow {OPTION} at (1,43.56) size 35.06x14.19
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "Five"
+    LayoutBlockFlow {OPTION} at (1,57.75) size 35.06x14.19
+      LayoutText {#text} at (2,0) size 16x13
+        text run at (2,0) width 16: "Six"
+    LayoutBlockFlow {OPTION} at (1,71.94) size 35.06x14.19
+      LayoutText {#text} at (2,0) size 32x13
+        text run at (2,0) width 32: "Seven"
+layer at (60,64) size 57x101 clip at (61,65) size 44x99
+  LayoutListBox {SELECT} at (52.06,13.69) size 56.73x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 43.73x14.19
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "One"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 43.73x14.19
       LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "Five"
-    LayoutBlockFlow {OPTION} at (1,57.75) size 36.58x14.19
-      LayoutText {#text} at (2,0) size 17x13
-        text run at (2,0) width 17: "Six"
-    LayoutBlockFlow {OPTION} at (1,71.94) size 36.58x14.19
-      LayoutText {#text} at (2,0) size 33x13
-        text run at (2,0) width 33: "Seven"
-layer at (62,64) size 59x101 clip at (63,65) size 46x99
-  LayoutListBox {SELECT} at (53.58,13.69) size 59.16x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 46.16x14.19
+        text run at (2,0) width 22: "Two"
+    LayoutBlockFlow {OPTION} at (1,29.38) size 43.73x14.19
+      LayoutText {#text} at (2,0) size 29x13
+        text run at (2,0) width 29: "Three"
+    LayoutBlockFlow {OPTGROUP} at (1,43.56) size 43.73x28.38
+      LayoutBlockFlow {DIV} at (0,0) size 43.73x14.19
+        LayoutText {#text} at (2,0) size 40x13
+          text run at (2,0) width 40: "***45***"
+      LayoutBlockFlow {OPTION} at (0,14.19) size 43.73x14.19
+        LayoutInline {<pseudo:before>} at (0,0) size 13x13
+          LayoutTextFragment (anonymous) at (2,0) size 13x13
+            text run at (2,0) width 13: "    "
+        LayoutText {#text} at (14,0) size 21x13
+          text run at (14,0) width 21: "Five"
+    LayoutBlockFlow {OPTION} at (1,71.94) size 43.73x14.19
+      LayoutText {#text} at (2,0) size 32x13
+        text run at (2,0) width 32: "Seven"
+layer at (121,64) size 57x101 clip at (122,65) size 44x99
+  LayoutListBox {SELECT} at (112.80,13.69) size 56.73x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 43.73x14.19
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "One"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 43.73x14.19
       LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "One"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 46.16x14.19
-      LayoutText {#text} at (2,0) size 23x13
-        text run at (2,0) width 23: "Two"
-    LayoutBlockFlow {OPTION} at (1,29.38) size 46.16x14.19
-      LayoutText {#text} at (2,0) size 30x13
-        text run at (2,0) width 30: "Three"
-    LayoutBlockFlow {OPTGROUP} at (1,43.56) size 46.16x28.38
-      LayoutBlockFlow {DIV} at (0,0) size 46.16x14.19
-        LayoutText {#text} at (2,0) size 43x13
-          text run at (2,0) width 43: "***45***"
-      LayoutBlockFlow {OPTION} at (0,14.19) size 46.16x14.19
-        LayoutInline {<pseudo:before>} at (0,0) size 14x13
-          LayoutTextFragment (anonymous) at (2,0) size 14x13
-            text run at (2,0) width 14: "    "
-        LayoutText {#text} at (15,0) size 23x13
-          text run at (15,0) width 23: "Five"
-    LayoutBlockFlow {OPTION} at (1,71.94) size 46.16x14.19
-      LayoutText {#text} at (2,0) size 33x13
-        text run at (2,0) width 33: "Seven"
-layer at (125,64) size 59x101 clip at (126,65) size 46x99
-  LayoutListBox {SELECT} at (116.73,13.69) size 59.16x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 46.16x14.19
+        text run at (2,0) width 22: "Two"
+    LayoutBlockFlow {OPTGROUP} at (1,29.38) size 43.73x28.38
+      LayoutBlockFlow {DIV} at (0,0) size 43.73x14.19
+        LayoutText {#text} at (2,0) size 40x13
+          text run at (2,0) width 40: "***45***"
+      LayoutBlockFlow {OPTION} at (0,14.19) size 43.73x14.19
+        LayoutInline {<pseudo:before>} at (0,0) size 13x13
+          LayoutTextFragment (anonymous) at (2,0) size 13x13
+            text run at (2,0) width 13: "    "
+        LayoutText {#text} at (14,0) size 24x13
+          text run at (14,0) width 24: "Four"
+    LayoutBlockFlow {OPTION} at (1,57.75) size 43.73x14.19
+      LayoutText {#text} at (2,0) size 16x13
+        text run at (2,0) width 16: "Six"
+    LayoutBlockFlow {OPTION} at (1,71.94) size 43.73x14.19
+      LayoutText {#text} at (2,0) size 32x13
+        text run at (2,0) width 32: "Seven"
+layer at (182,50) size 48x115 clip at (183,51) size 35x113
+  LayoutListBox {SELECT} at (173.53,-0.50) size 48.06x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 35.06x14.19
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "One"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 35.06x14.19
       LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "One"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 46.16x14.19
-      LayoutText {#text} at (2,0) size 23x13
-        text run at (2,0) width 23: "Two"
-    LayoutBlockFlow {OPTGROUP} at (1,29.38) size 46.16x28.38
-      LayoutBlockFlow {DIV} at (0,0) size 46.16x14.19
-        LayoutText {#text} at (2,0) size 43x13
-          text run at (2,0) width 43: "***45***"
-      LayoutBlockFlow {OPTION} at (0,14.19) size 46.16x14.19
-        LayoutInline {<pseudo:before>} at (0,0) size 14x13
-          LayoutTextFragment (anonymous) at (2,0) size 14x13
-            text run at (2,0) width 14: "    "
-        LayoutText {#text} at (15,0) size 25x13
-          text run at (15,0) width 25: "Four"
-    LayoutBlockFlow {OPTION} at (1,57.75) size 46.16x14.19
-      LayoutText {#text} at (2,0) size 17x13
-        text run at (2,0) width 17: "Six"
-    LayoutBlockFlow {OPTION} at (1,71.94) size 46.16x14.19
-      LayoutText {#text} at (2,0) size 33x13
-        text run at (2,0) width 33: "Seven"
-layer at (188,50) size 49x115 clip at (189,51) size 36x113
-  LayoutListBox {SELECT} at (179.89,-0.50) size 49.58x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 36.58x14.19
+        text run at (2,0) width 22: "Two"
+    LayoutBlockFlow {OPTION} at (1,29.38) size 35.06x14.19
+      LayoutText {#text} at (2,0) size 29x13
+        text run at (2,0) width 29: "Three"
+    LayoutBlockFlow {OPTION} at (1,43.56) size 35.06x14.19
+      LayoutText {#text} at (2,0) size 32x13
+        text run at (2,0) width 32: "Seven"
+layer at (234,50) size 48x115 clip at (235,51) size 35x113
+  LayoutListBox {SELECT} at (225.59,-0.50) size 48.06x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 35.06x14.19
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "One"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 35.06x14.19
       LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "One"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 36.58x14.19
-      LayoutText {#text} at (2,0) size 23x13
-        text run at (2,0) width 23: "Two"
-    LayoutBlockFlow {OPTION} at (1,29.38) size 36.58x14.19
-      LayoutText {#text} at (2,0) size 30x13
-        text run at (2,0) width 30: "Three"
-    LayoutBlockFlow {OPTION} at (1,43.56) size 36.58x14.19
-      LayoutText {#text} at (2,0) size 33x13
-        text run at (2,0) width 33: "Seven"
-layer at (241,50) size 50x115 clip at (242,51) size 37x113
-  LayoutListBox {SELECT} at (233.47,-0.50) size 49.58x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 36.58x14.19
+        text run at (2,0) width 22: "Two"
+    LayoutBlockFlow {OPTION} at (1,29.38) size 35.06x14.19
+      LayoutText {#text} at (2,0) size 29x13
+        text run at (2,0) width 29: "Three"
+    LayoutBlockFlow {OPTION} at (1,43.56) size 35.06x14.19
+      LayoutText {#text} at (2,0) size 32x13
+        text run at (2,0) width 32: "Seven"
+layer at (286,50) size 54x115 clip at (287,51) size 41x113
+  LayoutListBox {SELECT} at (277.66,-0.50) size 53.86x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 40.86x14.19
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "One"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 40.86x14.19
       LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "One"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 36.58x14.19
-      LayoutText {#text} at (2,0) size 23x13
-        text run at (2,0) width 23: "Two"
-    LayoutBlockFlow {OPTION} at (1,29.38) size 36.58x14.19
-      LayoutText {#text} at (2,0) size 30x13
-        text run at (2,0) width 30: "Three"
-    LayoutBlockFlow {OPTION} at (1,43.56) size 36.58x14.19
-      LayoutText {#text} at (2,0) size 33x13
-        text run at (2,0) width 33: "Seven"
-layer at (295,50) size 56x115 clip at (296,51) size 43x113
-  LayoutListBox {SELECT} at (287.05,-0.50) size 55.97x115.50 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 42.97x14.19
-      LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "One"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 42.97x14.19
-      LayoutText {#text} at (2,0) size 23x13
-        text run at (2,0) width 23: "Two"
-    LayoutBlockFlow {OPTION} at (1,29.38) size 42.97x14.19
-      LayoutText {#text} at (2,0) size 30x13
-        text run at (2,0) width 30: "Three"
-    LayoutBlockFlow {OPTGROUP} at (1,43.56) size 42.97x56.75
-      LayoutBlockFlow {DIV} at (0,0) size 42.97x14.19
-        LayoutText {#text} at (2,0) size 39x13
-          text run at (2,0) width 39: "**456**"
-      LayoutBlockFlow {OPTION} at (0,14.19) size 42.97x14.19
-        LayoutInline {<pseudo:before>} at (0,0) size 14x13
-          LayoutTextFragment (anonymous) at (2,0) size 14x13
-            text run at (2,0) width 14: "    "
-        LayoutText {#text} at (15,0) size 25x13
-          text run at (15,0) width 25: "Four"
-      LayoutBlockFlow {OPTION} at (0,28.38) size 42.97x14.19
-        LayoutInline {<pseudo:before>} at (0,0) size 14x13
-          LayoutTextFragment (anonymous) at (2,0) size 14x13
-            text run at (2,0) width 14: "    "
-        LayoutText {#text} at (15,0) size 23x13
-          text run at (15,0) width 23: "Five"
-      LayoutBlockFlow {OPTION} at (0,42.56) size 42.97x14.19
-        LayoutInline {<pseudo:before>} at (0,0) size 14x13
-          LayoutTextFragment (anonymous) at (2,0) size 14x13
-            text run at (2,0) width 14: "    "
-        LayoutText {#text} at (15,0) size 18x13
-          text run at (15,0) width 18: "Six"
-    LayoutBlockFlow {OPTION} at (1,100.31) size 42.97x14.19
-      LayoutText {#text} at (2,0) size 33x13
-        text run at (2,0) width 33: "Seven"
+        text run at (2,0) width 22: "Two"
+    LayoutBlockFlow {OPTION} at (1,29.38) size 40.86x14.19
+      LayoutText {#text} at (2,0) size 29x13
+        text run at (2,0) width 29: "Three"
+    LayoutBlockFlow {OPTGROUP} at (1,43.56) size 40.86x56.75
+      LayoutBlockFlow {DIV} at (0,0) size 40.86x14.19
+        LayoutText {#text} at (2,0) size 37x13
+          text run at (2,0) width 37: "**456**"
+      LayoutBlockFlow {OPTION} at (0,14.19) size 40.86x14.19
+        LayoutInline {<pseudo:before>} at (0,0) size 13x13
+          LayoutTextFragment (anonymous) at (2,0) size 13x13
+            text run at (2,0) width 13: "    "
+        LayoutText {#text} at (14,0) size 24x13
+          text run at (14,0) width 24: "Four"
+      LayoutBlockFlow {OPTION} at (0,28.38) size 40.86x14.19
+        LayoutInline {<pseudo:before>} at (0,0) size 13x13
+          LayoutTextFragment (anonymous) at (2,0) size 13x13
+            text run at (2,0) width 13: "    "
+        LayoutText {#text} at (14,0) size 21x13
+          text run at (14,0) width 21: "Five"
+      LayoutBlockFlow {OPTION} at (0,42.56) size 40.86x14.19
+        LayoutInline {<pseudo:before>} at (0,0) size 13x13
+          LayoutTextFragment (anonymous) at (2,0) size 13x13
+            text run at (2,0) width 13: "    "
+        LayoutText {#text} at (14,0) size 16x13
+          text run at (14,0) width 16: "Six"
+    LayoutBlockFlow {OPTION} at (1,100.31) size 40.86x14.19
+      LayoutText {#text} at (2,0) size 32x13
+        text run at (2,0) width 32: "Seven"

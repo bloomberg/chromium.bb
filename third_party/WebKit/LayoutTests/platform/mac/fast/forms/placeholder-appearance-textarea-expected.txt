@@ -9,10 +9,10 @@ layer at (0,0) size 800x600
 layer at (8,8) size 141x32 clip at (9,9) size 139x30
   LayoutTextControl {TEXTAREA} at (0,0) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 135x26 [color=#A9A9A9]
-      LayoutText {#text} at (0,0) size 39x26
-        text run at (0,0) width 24: "first \x{D}"
-        text run at (23,0) width 1: " "
-        text run at (0,13) width 39: "second"
+      LayoutText {#text} at (0,0) size 37x26
+        text run at (0,0) width 22: "first \x{D}"
+        text run at (21,0) width 1: " "
+        text run at (0,13) width 37: "second"
     LayoutBlockFlow {DIV} at (3,3) size 135x13
 layer at (8,40) size 141x32 clip at (9,41) size 139x30
   LayoutTextControl {TEXTAREA} at (0,32) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
