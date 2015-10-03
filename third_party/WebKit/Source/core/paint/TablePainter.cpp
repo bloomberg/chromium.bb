@@ -14,6 +14,7 @@
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/ScopeRecorder.h"
+#include "core/paint/TableSectionPainter.h"
 
 namespace blink {
 
@@ -50,18 +51,14 @@ void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     if (m_layoutTable.collapseBorders() && paintPhase == PaintPhaseChildBlockBackground && m_layoutTable.style()->visibility() == VISIBLE) {
         // Using our cached sorted styles, we then do individual passes,
         // painting each style of border from lowest precedence to highest precedence.
-        info.phase = PaintPhaseCollapsedTableBorders;
         LayoutTable::CollapsedBorderValues collapsedBorders = m_layoutTable.collapsedBorders();
         size_t count = collapsedBorders.size();
         for (size_t i = 0; i < count; ++i) {
-            // FIXME: pass this value into children rather than storing temporarily on the LayoutTable object.
-            m_layoutTable.setCurrentBorderValue(&collapsedBorders[i]);
             for (LayoutTableSection* section = m_layoutTable.bottomSection(); section; section = m_layoutTable.sectionAbove(section)) {
                 LayoutPoint childPoint = m_layoutTable.flipForWritingModeForChild(section, paintOffset);
-                section->paint(info, childPoint);
+                TableSectionPainter(*section).paintCollapsedBorders(info, childPoint, collapsedBorders[i]);
             }
         }
-        m_layoutTable.setCurrentBorderValue(0);
     }
 
     // Paint outline.

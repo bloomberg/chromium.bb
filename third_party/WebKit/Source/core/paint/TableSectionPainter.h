@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class CollapsedBorderValue;
 class LayoutPoint;
 class LayoutTableCell;
 class LayoutTableSection;
@@ -20,6 +21,7 @@ public:
     TableSectionPainter(const LayoutTableSection& layoutTableSection) : m_layoutTableSection(layoutTableSection) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
+    void paintCollapsedBorders(const PaintInfo&, const LayoutPoint&, const CollapsedBorderValue&);
 
 private:
     void paintObject(const PaintInfo&, const LayoutPoint&);

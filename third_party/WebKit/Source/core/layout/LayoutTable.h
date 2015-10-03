@@ -304,10 +304,6 @@ public:
     typedef Vector<CollapsedBorderValue> CollapsedBorderValues;
     void invalidateCollapsedBorders();
 
-    // TODO(wangxianzhu): This method should be moved into TablePainter.
-    const CollapsedBorderValue* currentBorderValue() const { return m_currentBorder; }
-    void setCurrentBorderValue(const CollapsedBorderValue* val) const { m_currentBorder = val; }
-
     bool hasSections() const { return m_head || m_foot || m_firstBody; }
 
     void recalcSectionsIfNeeded() const
@@ -384,9 +380,9 @@ private:
 
     void recalcCollapsedBordersIfNeeded();
 
-    // TODO(layout-dev): All mutables in this class (except for m_currentBorder) are lazily updated by recalcSections()
-    // which is called by various getter methods (e.g. borderBefore(), borderAfter()). They allow dirty layout even after
-    // DocumentLifecycle::LayoutClean which seems not proper. crbug.com/538236.
+    // TODO(layout-dev): All mutables in this class are lazily updated by recalcSections()
+    // which is called by various getter methods (e.g. borderBefore(), borderAfter()).
+    // They allow dirty layout even after DocumentLifecycle::LayoutClean which seems not proper. crbug.com/538236.
 
     mutable Vector<int> m_columnPos;
 
@@ -439,9 +435,6 @@ private:
 
     // A sorted list of all unique border values that we want to paint.
     CollapsedBorderValues m_collapsedBorders;
-    // Used by TablePainter during painting.
-    // TODO(wangxianzhu): Move it into painter.
-    mutable const CollapsedBorderValue* m_currentBorder;
     bool m_collapsedBordersValid : 1;
 
     mutable bool m_hasColElements : 1;

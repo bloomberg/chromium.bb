@@ -32,9 +32,8 @@ static WTF::String paintPhaseAsDebugString(int paintPhase)
     case 6: return "PaintPhaseChildOutlines";
     case 7: return "PaintPhaseSelfOutline";
     case 8: return "PaintPhaseSelection";
-    case 9: return "PaintPhaseCollapsedTableBorders";
-    case 10: return "PaintPhaseTextClip";
-    case 11: return "PaintPhaseMask";
+    case 9: return "PaintPhaseTextClip";
+    case 10: return "PaintPhaseMask";
     case DisplayItem::PaintPhaseMax: return "PaintPhaseClippingMask";
     default:
         ASSERT_NOT_REACHED();

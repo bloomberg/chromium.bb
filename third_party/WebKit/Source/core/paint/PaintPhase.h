@@ -47,10 +47,9 @@ enum PaintPhase {
     PaintPhaseChildOutlines = 6,
     PaintPhaseSelfOutline = 7,
     PaintPhaseSelection = 8,
-    PaintPhaseCollapsedTableBorders = 9,
-    PaintPhaseTextClip = 10,
-    PaintPhaseMask = 11,
-    PaintPhaseClippingMask = 12,
+    PaintPhaseTextClip = 9,
+    PaintPhaseMask = 10,
+    PaintPhaseClippingMask = 11,
     PaintPhaseMax = PaintPhaseClippingMask,
     // These values must be kept in sync with DisplayItem::Type and DisplayItem::typeAsDebugString().
 };

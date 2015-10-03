@@ -53,7 +53,6 @@ inline const CollapsedBorderValue& TableCellPainter::cachedCollapsedBottomBorder
 
 void TableCellPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ASSERT(paintInfo.phase != PaintPhaseCollapsedTableBorders);
     BlockPainter(m_layoutTableCell).paint(paintInfo, paintOffset);
 }
 
@@ -66,15 +65,9 @@ static EBorderStyle collapsedBorderStyle(EBorderStyle style)
     return style;
 }
 
-void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const CollapsedBorderValue& currentBorderValue)
 {
-    ASSERT(paintInfo.phase == PaintPhaseCollapsedTableBorders);
-
     if (!paintInfo.shouldPaintWithinRoot(&m_layoutTableCell) || m_layoutTableCell.style()->visibility() != VISIBLE)
-        return;
-
-    const CollapsedBorderValue* tableCurrentBorderValue = m_layoutTableCell.table()->currentBorderValue();
-    if (!tableCurrentBorderValue)
         return;
 
     const ComputedStyle& styleForCellFlow = m_layoutTableCell.styleForCellFlow();
@@ -84,13 +77,13 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     const CollapsedBorderValue& bottomBorderValue = cachedCollapsedBottomBorder(styleForCellFlow);
 
     int displayItemType = DisplayItem::TableCollapsedBorderBase;
-    if (topBorderValue.shouldPaint(*tableCurrentBorderValue))
+    if (topBorderValue.shouldPaint(currentBorderValue))
         displayItemType |= DisplayItem::TableCollapsedBorderTop;
-    if (bottomBorderValue.shouldPaint(*tableCurrentBorderValue))
+    if (bottomBorderValue.shouldPaint(currentBorderValue))
         displayItemType |= DisplayItem::TableCollapsedBorderBottom;
-    if (leftBorderValue.shouldPaint(*tableCurrentBorderValue))
+    if (leftBorderValue.shouldPaint(currentBorderValue))
         displayItemType |= DisplayItem::TableCollapsedBorderLeft;
-    if (rightBorderValue.shouldPaint(*tableCurrentBorderValue))
+    if (rightBorderValue.shouldPaint(currentBorderValue))
         displayItemType |= DisplayItem::TableCollapsedBorderRight;
 
     if (displayItemType == DisplayItem::TableCollapsedBorderBase)
