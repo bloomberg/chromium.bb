@@ -504,6 +504,25 @@
           'includes': [ '../build/apk_test.gypi' ],
         },
       ],
+      'conditions': [
+        ['test_isolation_mode != "noop"', {
+          'targets': [
+            {
+              'target_name': 'sync_unit_tests_apk_run',
+              'type': 'none',
+              'dependencies': [
+                'sync_unit_tests_apk',
+              ],
+              'includes': [
+                '../build/isolate.gypi',
+              ],
+              'sources': [
+                'sync_unit_tests_apk.isolate',
+              ],
+            },
+          ],
+        }],
+      ],
     }],
     ['test_isolation_mode != "noop"', {
       'targets': [
