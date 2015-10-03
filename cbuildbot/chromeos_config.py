@@ -389,6 +389,7 @@ _x86_internal_release_boards = frozenset([
     'clapper',
     'cranky',
     'cyan',
+    'cyan-cheets',
     'enguarde',
     'expresso',
     'falco',
@@ -2611,6 +2612,7 @@ def GetConfig():
 
   _AddGroupConfig(
       'strago-b', 'reks', (
+          'cyan-cheets',
       ),
       important=False,
   )
