@@ -349,4 +349,36 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       SlideshowTraversalOnDownloads) {
+  set_test_case_name("slideshowTraversalOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, SlideshowTraversalOnDownloads) {
+  set_test_case_name("slideshowTraversalOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, SlideshowTraversalOnDrive) {
+  set_test_case_name("slideshowTraversalOnDrive");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       StopStartSlideshowOnDownloads) {
+  set_test_case_name("stopStartSlideshowOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, StopStartSlideshowOnDownloads) {
+  set_test_case_name("stopStartSlideshowOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, StopStartSlideshowOnDrive) {
+  set_test_case_name("stopStartSlideshowOnDrive");
+  StartTest();
+}
+
 }  // namespace file_manager

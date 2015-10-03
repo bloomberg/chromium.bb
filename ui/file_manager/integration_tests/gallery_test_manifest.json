@@ -12,6 +12,7 @@
       "gallery/background.js",
       "gallery/open_image_files.js",
       "gallery/slide_mode.js",
+      "gallery/slideshow.js",
       "gallery/thumbnail_mode.js",
       "gallery/photo_editor.js"
     ]},
