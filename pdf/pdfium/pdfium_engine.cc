@@ -591,7 +591,12 @@ std::string GetDocumentMetadata(FPDF_DOCUMENT doc, const std::string& key) {
 }  // namespace
 
 bool InitializeSDK() {
-  FPDF_InitLibrary();
+  FPDF_LIBRARY_CONFIG config;
+  config.version = 2;
+  config.m_pUserFontPaths = nullptr;
+  config.m_pIsolate = v8::Isolate::GetCurrent();
+  config.m_v8EmbedderSlot = gin::kEmbedderPDFium;
+  FPDF_InitLibraryWithConfig(&config);
 
 #if defined(OS_LINUX)
   // Font loading doesn't work in the renderer sandbox in Linux.
@@ -690,7 +695,7 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
   FPDF_FORMFILLINFO::FFI_GotoURL = Form_GotoURL;
   FPDF_FORMFILLINFO::FFI_GetLanguage = Form_GetLanguage;
 #endif  // PDF_USE_XFA
-  IPDF_JSPLATFORM::version = 2;
+  IPDF_JSPLATFORM::version = 3;
   IPDF_JSPLATFORM::app_alert = Form_Alert;
   IPDF_JSPLATFORM::app_beep = Form_Beep;
   IPDF_JSPLATFORM::app_response = Form_Response;
@@ -700,8 +705,6 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
   IPDF_JSPLATFORM::Doc_submitForm = Form_SubmitForm;
   IPDF_JSPLATFORM::Doc_gotoPage = Form_GotoPage;
   IPDF_JSPLATFORM::Field_browse = Form_Browse;
-  IPDF_JSPLATFORM::m_isolate = v8::Isolate::GetCurrent();
-  IPDF_JSPLATFORM::m_v8EmbedderSlot = gin::kEmbedderPDFium;
 
   IFSDK_PAUSE::version = 1;
   IFSDK_PAUSE::user = NULL;
