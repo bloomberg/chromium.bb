@@ -42,8 +42,6 @@ using PresentationSessionErrorCallback =
 using PresentationSessionSuccessCallback =
     content::PresentationServiceDelegate::PresentationSessionSuccessCallback;
 
-using RenderFrameHostId = std::pair<int, int>;
-
 // Returns the unique identifier for the supplied RenderFrameHost.
 RenderFrameHostId GetRenderFrameHostId(RenderFrameHost* render_frame_host) {
   int render_process_id = render_frame_host->GetProcess()->GetID();
@@ -102,17 +100,12 @@ class PresentationFrame {
     delegate_observer_ = observer;
   }
 
-  void set_default_presentation_url(const std::string& url) {
-    default_presentation_url_ = url;
-  }
-
  private:
   MediaSource GetMediaSourceFromListener(
       content::PresentationScreenAvailabilityListener* listener) const;
   MediaRouteIdToPresentationSessionMapping route_id_to_presentation_;
   base::SmallMap<std::map<std::string, MediaRoute::Id>>
       presentation_id_to_route_id_;
-  std::string default_presentation_url_;
   scoped_ptr<PresentationMediaSinksObserver> sinks_observer_;
   scoped_ptr<PresentationSessionStateObserver> session_state_observer_;
   ScopedVector<PresentationSessionMessagesObserver> session_messages_observers_;
@@ -216,7 +209,6 @@ void PresentationFrame::Reset() {
 
   presentation_id_to_route_id_.clear();
   sinks_observer_.reset();
-  default_presentation_url_.clear();
   if (session_state_observer_)
     session_state_observer_->Reset();
   session_messages_observers_.clear();
@@ -266,8 +258,6 @@ class PresentationFrameManager {
   bool RemoveScreenAvailabilityListener(
       const RenderFrameHostId& render_frame_host_id,
       content::PresentationScreenAvailabilityListener* listener);
-  void SetDefaultPresentationUrl(const RenderFrameHostId& render_frame_host_id,
-                                  const std::string& default_presentation_url);
   void ListenForSessionStateChange(
       const RenderFrameHostId& render_frame_host_id,
       const content::SessionStateChangedCallback& state_changed_cb);
@@ -382,13 +372,6 @@ bool PresentationFrameManager::HasScreenAvailabilityListenerForTest(
   auto presentation_frame = presentation_frames_.get(render_frame_host_id);
   return presentation_frame &&
          presentation_frame->HasScreenAvailabilityListenerForTest(source_id);
-}
-
-void PresentationFrameManager::SetDefaultPresentationUrl(
-    const RenderFrameHostId& render_frame_host_id,
-    const std::string& default_presentation_url) {
-  auto presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
-  presentation_frame->set_default_presentation_url(default_presentation_url);
 }
 
 void PresentationFrameManager::ListenForSessionStateChange(
@@ -511,8 +494,10 @@ void PresentationServiceDelegateImpl::Reset(int render_process_id,
                                             int render_frame_id) {
   RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
   frame_manager_->Reset(render_frame_host_id);
-  if (IsMainFrame(render_process_id, render_frame_id))
-    UpdateDefaultMediaSourceAndNotifyObservers(MediaSource(), GURL());
+  if (render_frame_host_id == default_presentation_render_frame_host_id_) {
+    UpdateDefaultMediaSourceAndNotifyObservers(RenderFrameHostId(),
+                                               MediaSource(), GURL());
+  }
 }
 
 void PresentationServiceDelegateImpl::SetDefaultPresentationUrl(
@@ -520,8 +505,6 @@ void PresentationServiceDelegateImpl::SetDefaultPresentationUrl(
     int render_frame_id,
     const std::string& default_presentation_url) {
   RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
-  frame_manager_->SetDefaultPresentationUrl(render_frame_host_id,
-                                            default_presentation_url);
   if (IsMainFrame(render_process_id, render_frame_id)) {
     // This is the main frame, which means tab-level default presentation
     // might have been updated.
@@ -530,8 +513,8 @@ void PresentationServiceDelegateImpl::SetDefaultPresentationUrl(
       default_source = MediaSourceForPresentationUrl(default_presentation_url);
 
     GURL default_frame_url = GetLastCommittedURLForFrame(render_frame_host_id);
-    UpdateDefaultMediaSourceAndNotifyObservers(default_source,
-                                               default_frame_url);
+    UpdateDefaultMediaSourceAndNotifyObservers(
+        render_frame_host_id, default_source, default_frame_url);
   }
 }
 
@@ -545,8 +528,10 @@ bool PresentationServiceDelegateImpl::IsMainFrame(int render_process_id,
 
 void PresentationServiceDelegateImpl::
     UpdateDefaultMediaSourceAndNotifyObservers(
+        const RenderFrameHostId& render_frame_host_id,
         const MediaSource& new_default_source,
         const GURL& new_default_frame_url) {
+  default_presentation_render_frame_host_id_ = render_frame_host_id;
   if (!new_default_source.Equals(default_source_) ||
       new_default_frame_url != default_frame_url_) {
     default_source_ = new_default_source;

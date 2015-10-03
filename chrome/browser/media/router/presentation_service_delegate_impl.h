@@ -35,6 +35,8 @@ class MediaSinksObserver;
 class PresentationFrameManager;
 class PresentationSessionStateObserver;
 
+using RenderFrameHostId = std::pair<int, int>;
+
 // Implementation of PresentationServiceDelegate that interfaces an
 // instance of WebContents with the Chrome Media Router. It uses the Media
 // Router to handle presentation API calls forwarded from
@@ -146,11 +148,11 @@ class PresentationServiceDelegateImpl
   base::WeakPtr<PresentationServiceDelegateImpl> GetWeakPtr();
 
  private:
-  explicit PresentationServiceDelegateImpl(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PresentationServiceDelegateImpl>;
-
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
                            DelegateObservers);
+
+  explicit PresentationServiceDelegateImpl(content::WebContents* web_contents);
 
   // Returns |listener|'s presentation URL as a MediaSource. If |listener| does
   // not have a persentation URL, returns the tab mirroring MediaSource.
@@ -176,12 +178,16 @@ class PresentationServiceDelegateImpl
   // Returns |true| if the frame is the main frame of |web_contents_|.
   bool IsMainFrame(int render_process_id, int render_frame_id) const;
 
-  // Updates tab-level default MediaSource and/or default frame URL. If either
-  // changed, notify the observers.
+  // Updates tab-level default MediaSource, default frame URL, and the
+  // originating frame. If the source or frame URL changed, notify the
+  // observers.
   void UpdateDefaultMediaSourceAndNotifyObservers(
+      const RenderFrameHostId& render_frame_host_id,
       const MediaSource& new_default_source,
       const GURL& new_default_frame_url);
 
+  // ID of RenderFrameHost that contains the default presentation.
+  RenderFrameHostId default_presentation_render_frame_host_id_;
   // Default MediaSource for the tab associated with this instance.
   MediaSource default_source_;
   // URL of the frame that contains the default MediaSource.
