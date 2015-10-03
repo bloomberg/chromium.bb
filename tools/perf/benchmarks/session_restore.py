@@ -61,7 +61,8 @@ class _SessionRestoreTypical25(perf_benchmark.PerfBenchmark):
     is_cold = (self.tag == 'cold')
     return session_restore.SessionRestore(cold=is_cold)
 
-@benchmark.Disabled('android')
+@benchmark.Disabled('android',
+                    'reference')  # crbug.com/539011
 class SessionRestoreColdTypical25(_SessionRestoreTypical25):
   """Test by clearing system cache and profile before repeats."""
   tag = 'cold'
