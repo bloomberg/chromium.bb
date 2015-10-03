@@ -32,7 +32,7 @@ class BlinkAXTreeSource
   // accessibility focus will force loading inline text box children,
   // which aren't always loaded by default on all platforms.
   int accessibility_focus_id() { return accessibility_focus_id_; }
-  void set_accessiblity_focus_id(int id) { accessibility_focus_id_ = id; }
+  void set_accessibility_focus_id(int id) { accessibility_focus_id_ = id; }
 
   // AXTreeSource implementation.
   blink::WebAXObject GetRoot() const override;

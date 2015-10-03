@@ -724,6 +724,11 @@ BrowserAccessibility* BrowserAccessibility::Create() {
   return new BrowserAccessibilityAuraLinux();
 }
 
+const BrowserAccessibilityAuraLinux*
+BrowserAccessibility::ToBrowserAccessibilityAuraLinux() const {
+  return static_cast<const BrowserAccessibilityAuraLinux*>(this);
+}
+
 BrowserAccessibilityAuraLinux*
 BrowserAccessibility::ToBrowserAccessibilityAuraLinux() {
   return static_cast<BrowserAccessibilityAuraLinux*>(this);

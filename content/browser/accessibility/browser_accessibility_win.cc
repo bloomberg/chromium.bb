@@ -207,6 +207,11 @@ BrowserAccessibility* BrowserAccessibility::Create() {
   return instance->NewReference();
 }
 
+const BrowserAccessibilityWin* BrowserAccessibility::ToBrowserAccessibilityWin()
+    const {
+  return static_cast<const BrowserAccessibilityWin*>(this);
+}
+
 BrowserAccessibilityWin* BrowserAccessibility::ToBrowserAccessibilityWin() {
   return static_cast<BrowserAccessibilityWin*>(this);
 }
@@ -2010,8 +2015,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
 
   int selection_start, selection_end;
   GetSelectionOffsets(&selection_start, &selection_end);
-  *offset = selection_start;
-  if (selection_start < 0)
+  // The caret is always at the end of the selection, if a selection exists.
+  *offset = selection_end;
+  if (*offset < 0)
     return S_FALSE;
 
   return S_OK;
@@ -2065,8 +2071,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_nSelections(LONG* n_selections) {
   int selection_start, selection_end;
   GetSelectionOffsets(&selection_start, &selection_end);
   if (selection_start >= 0 && selection_end >= 0 &&
-      selection_start != selection_end)
+      selection_start != selection_end) {
     *n_selections = 1;
+  }
 
   return S_OK;
 }
@@ -2089,6 +2096,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_selection(LONG selection_index,
   int selection_start, selection_end;
   GetSelectionOffsets(&selection_start, &selection_end);
   if (selection_start >= 0 && selection_end >= 0) {
+    // We should ignore the direction of the selection when exposing start and
+    // end offsets. According to the IA2 Spec the end offset is always increased
+    // by one past the end of the selection. This wouldn't make sense if
+    // end < start.
+    if (selection_end < selection_start)
+      std::swap(selection_start, selection_end);
+
     *start_offset = selection_start;
     *end_offset = selection_end;
   }
@@ -3648,6 +3662,9 @@ void BrowserAccessibilityWin::IntAttributeToIA2(
 
 int32 BrowserAccessibilityWin::GetHyperlinkIndexFromChild(
     const BrowserAccessibilityWin& child) const {
+  if (hyperlinks().empty())
+    return -1;
+
   auto iterator = std::find(
       hyperlinks().begin(), hyperlinks().end(), child.GetId());
   if (iterator == hyperlinks().end())
@@ -3658,8 +3675,7 @@ int32 BrowserAccessibilityWin::GetHyperlinkIndexFromChild(
 
 int32 BrowserAccessibilityWin::GetHypertextOffsetFromHyperlinkIndex(
     int32 hyperlink_index) const {
-  auto& offsets_map = hyperlink_offset_to_index();
-  for (auto& offset_index : offsets_map) {
+  for (auto& offset_index : hyperlink_offset_to_index()) {
     if (offset_index.second == hyperlink_index)
       return offset_index.first;
   }
@@ -3690,6 +3706,84 @@ int32 BrowserAccessibilityWin::GetHypertextOffsetFromDescendant(
   return parent_object->GetHypertextOffsetFromChild(*current_object);
 }
 
+int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
+    const BrowserAccessibilityWin& endpoint_object,
+    int endpoint_offset) const {
+  // There are three cases:
+  // 1. Either the selection endpoint is inside this object or is an ancestor of
+  // of this object. endpoint_offset should be returned.
+  // 2. The selection endpoint is a pure descendant of this object. The offset
+  // of the embedded object character corresponding to the subtree in which
+  // the endpoint is located should be returned.
+  // 3. The selection endpoint is in a completely different part of the tree.
+  // Either 0 or text_length should be returned depending on the direction that
+  // one needs to travel to find the endpoint.
+
+  // Case 1.
+  //
+  // IsDescendantOf includes the case when endpoint_object == this.
+  if (IsDescendantOf(&endpoint_object) ||
+      // Handle the case when the endpoint is a direct text-only child.
+      // The selection offset should still be valid on the parent.
+      (endpoint_object.IsTextOnlyObject() &&
+       endpoint_object.GetParent() == this)) {
+    return endpoint_offset;
+  }
+
+  const BrowserAccessibility* common_parent = this;
+  while (common_parent && !endpoint_object.IsDescendantOf(common_parent)) {
+    common_parent = common_parent->GetParent();
+  }
+  if (!common_parent)
+    return -1;
+
+  auto common_parent_win = common_parent->ToBrowserAccessibilityWin();
+  // Text only objects must have a parent.
+  DCHECK(!IsTextOnlyObject() || GetParent());
+  DCHECK(!endpoint_object.IsTextOnlyObject() || endpoint_object.GetParent());
+  // Text only objects that are direct descendants should behave as if they
+  // are part of their parent when computing hyperlink offsets.
+  const BrowserAccessibilityWin* nearest_non_text_ancestor =
+      IsTextOnlyObject() ? GetParent()->ToBrowserAccessibilityWin() : this;
+  const BrowserAccessibilityWin& nearest_non_text_endpoint =
+      endpoint_object.IsTextOnlyObject()
+          ? *(endpoint_object.GetParent()->ToBrowserAccessibilityWin())
+          : endpoint_object;
+
+  // Case 2.
+  //
+  // We already checked in case 1 if our endpoint is inside this object.
+  // We can safely assume that it is a descendant or in a completely different
+  // part of the tree.
+  if (common_parent_win == nearest_non_text_ancestor) {
+    return nearest_non_text_ancestor->GetHypertextOffsetFromDescendant(
+        nearest_non_text_endpoint);
+  }
+
+  // Case 3.
+  //
+  // We can safely assume that the endpoint is in another part of the tree or
+  // at common parent, and that this object is a descendant of common parent.
+  int current_offset =
+      static_cast<int>(common_parent_win->GetHypertextOffsetFromDescendant(
+          *nearest_non_text_ancestor));
+  DCHECK_GE(current_offset, 0);
+  if (common_parent_win != &nearest_non_text_endpoint) {
+    endpoint_offset =
+        static_cast<int>(common_parent_win->GetHypertextOffsetFromDescendant(
+            nearest_non_text_endpoint));
+    DCHECK_GE(endpoint_offset, 0);
+  }
+
+  if (endpoint_offset < current_offset)
+    return 0;
+  if (endpoint_offset > current_offset)
+    return TextForIAccessibleText().length();
+
+  NOTREACHED();
+  return -1;
+}
+
 int BrowserAccessibilityWin::GetSelectionAnchor() const {
   BrowserAccessibility* root = manager()->GetRoot();
   int32 anchor_id;
@@ -3701,23 +3795,11 @@ int BrowserAccessibilityWin::GetSelectionAnchor() const {
   if (!anchor_object)
     return -1;
 
-  // Includes the case when anchor_object == this.
-  if (IsDescendantOf(anchor_object) ||
-      // Text only objects that are direct descendants should behave as if they
-      // are part of this object when computing hypertext.
-      (anchor_object->GetParent() == this &&
-      anchor_object->IsTextOnlyObject())) {
-    int anchor_offset;
-    if (!root->GetIntAttribute(ui::AX_ATTR_ANCHOR_OFFSET, &anchor_offset))
-      return -1;
+  int anchor_offset;
+  if (!root->GetIntAttribute(ui::AX_ATTR_ANCHOR_OFFSET, &anchor_offset))
+    return -1;
 
-    return anchor_offset;
-  }
-
-  if (anchor_object->IsDescendantOf(this))
-    return GetHypertextOffsetFromDescendant(*anchor_object);
-
-  return -1;
+  return GetHypertextOffsetFromEndpoint(*anchor_object, anchor_offset);
 }
 
 int BrowserAccessibilityWin::GetSelectionFocus() const {
@@ -3731,22 +3813,11 @@ int BrowserAccessibilityWin::GetSelectionFocus() const {
   if (!focus_object)
     return -1;
 
-  // Includes the case when focus_object == this.
-  if (IsDescendantOf(focus_object) ||
-      // Text only objects that are direct descendants should behave as if they
-      // are part of this object when computing hypertext.
-      (focus_object->GetParent() == this && focus_object->IsTextOnlyObject())) {
-    int focus_offset;
-    if (!root->GetIntAttribute(ui::AX_ATTR_FOCUS_OFFSET, &focus_offset))
-      return -1;
+  int focus_offset;
+  if (!root->GetIntAttribute(ui::AX_ATTR_FOCUS_OFFSET, &focus_offset))
+    return -1;
 
-    return focus_offset;
-  }
-
-  if (focus_object->IsDescendantOf(this))
-    return GetHypertextOffsetFromDescendant(*focus_object);
-
-  return -1;
+  return GetHypertextOffsetFromEndpoint(*focus_object, focus_offset);
 }
 
 void BrowserAccessibilityWin::GetSelectionOffsets(
@@ -3764,15 +3835,56 @@ void BrowserAccessibilityWin::GetSelectionOffsets(
   if (*selection_start < 0 || *selection_end < 0)
     return;
 
-  if (*selection_end < *selection_start)
-    std::swap(*selection_start, *selection_end);
+  // If the selection is collapsed or if it only spans one character, return the
+  // selection offsets only if the caret is active on this object or any of its
+  // children.
+  // The focus object indicates the caret position.
+  if (*selection_start == *selection_end) {
+    BrowserAccessibility* root = manager()->GetRoot();
+    int32 focus_id;
+    if (!root || !root->GetIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, &focus_id))
+      return;
 
-  // IA2 Spec says that the end of the selection should be after the last
-  // embedded object character that is part of the selection, if there is one.
-  if (hyperlink_offset_to_index().find(*selection_end) !=
-      hyperlink_offset_to_index().end()) {
-    ++(*selection_end);
+    BrowserAccessibilityWin* focus_object =
+        manager()->GetFromID(focus_id)->ToBrowserAccessibilityWin();
+    if (!focus_object)
+      return;
+
+    if (!focus_object->IsDescendantOf(this) &&
+        !(IsTextOnlyObject() && GetParent() == focus_object)) {
+      *selection_start = -1;
+      *selection_end = -1;
+      return;
+    }
   }
+
+  // The IA2 Spec says that if the largest of the two offsets falls on an
+  // embedded object character and if there is a selection in that embedded
+  // object, it should be incremented by one so that it points after the
+  // embedded object character.
+  // This is a signal to AT software that the embedded object is also part of
+  // the selection.
+  int* largest_offset =
+      (*selection_start <= *selection_end) ? selection_end : selection_start;
+  auto current_object = const_cast<BrowserAccessibilityWin*>(this);
+  LONG hyperlink_index;
+  HRESULT hr =
+      current_object->get_hyperlinkIndex(*largest_offset, &hyperlink_index);
+  if (hr != S_OK)
+    return;
+
+  DCHECK_GE(hyperlink_index, 0);
+  base::win::ScopedComPtr<IAccessibleHyperlink> hyperlink;
+  hr = current_object->get_hyperlink(hyperlink_index, hyperlink.Receive());
+  DCHECK(SUCCEEDED(hr));
+  base::win::ScopedComPtr<IAccessibleText> hyperlink_text;
+  hr = hyperlink.QueryInterface(hyperlink_text.Receive());
+  DCHECK(SUCCEEDED(hr));
+  LONG n_selections = 0;
+  hr = hyperlink_text->get_nSelections(&n_selections);
+  DCHECK(SUCCEEDED(hr));
+  if (n_selections > 0)
+    ++(*largest_offset);
 }
 
 base::string16 BrowserAccessibilityWin::GetNameRecursive() const {
@@ -3799,7 +3911,7 @@ base::string16 BrowserAccessibilityWin::GetValueText() {
   return value;
 }
 
-base::string16 BrowserAccessibilityWin::TextForIAccessibleText() {
+base::string16 BrowserAccessibilityWin::TextForIAccessibleText() const {
   switch (GetRole()) {
     case ui::AX_ROLE_TEXT_FIELD:
     case ui::AX_ROLE_MENU_LIST_OPTION:

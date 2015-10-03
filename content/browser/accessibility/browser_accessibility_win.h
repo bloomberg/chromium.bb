@@ -766,7 +766,8 @@ BrowserAccessibilityWin
   void IntAttributeToIA2(ui::AXIntAttribute attribute,
                          const char* ia2_attr);
 
-  // Functions that help in retrieving hyperlinks. Return -1 in case of failure.
+  // Functions that help when retrieving hyperlinks. Return -1 in case of
+  // failure.
   // (Hyperlink is an IA2 misnomer. It refers to objects embedded within other
   // objects, such as a numbered list within a contenteditable div.)
   int32 GetHyperlinkIndexFromChild(const BrowserAccessibilityWin& child) const;
@@ -775,15 +776,28 @@ BrowserAccessibilityWin
   int32 GetHypertextOffsetFromDescendant(
       const BrowserAccessibilityWin& descendant) const;
 
+  // If the selection endpoint is either equal to or an ancestor of this object,
+  // returns endpoint_offset.
+  // If the selection endpoint is a descendant of this object, returns its
+  // embedded character offset. Otherwise, returns either 0 or the length of the
+  // hypertext, depending on the direction of the selection.
+  // Returns -1 in case of unexpected failure, e.g. the selection endpoint
+  // cannot be located in the accessibility tree.
+  int GetHypertextOffsetFromEndpoint(
+      const BrowserAccessibilityWin& endpoint_object,
+      int endpoint_offset) const;
+
   // The following functions retrieve the endpoints of the current selection.
-  // First they checks for a local selection found on the current control, e.g.
+  // First they check for a local selection found on the current control, e.g.
   // when querying the selection on a textarea.
   // If not found they retrieve the global selection found on the current frame.
   int GetSelectionAnchor() const;
   int GetSelectionFocus() const;
   // Retrieves the selection offsets in the way required by the IA2 APIs.
-  // (Selection_start is always <= selection_end and
-  // selection_end is one past the last character of the selection.)
+  // selection_start and selection_end are -1 when there is no selection active
+  // inside this object.
+  // The greatest of the two offsets is one past the last character of the
+  // selection.)
   void GetSelectionOffsets(int* selection_start, int* selection_end) const;
 
   // Append the accessible name from this node and its children.
@@ -795,7 +809,7 @@ BrowserAccessibilityWin
 
   // Get the text of this node for the purposes of IAccessibleText - it may
   // be the name, it may be the value, etc. depending on the role.
-  base::string16 TextForIAccessibleText();
+  base::string16 TextForIAccessibleText() const;
 
   bool IsSameHypertextCharacter(size_t old_char_index, size_t new_char_index);
   void ComputeHypertextRemovedAndInserted(
@@ -856,7 +870,6 @@ BrowserAccessibilityWin
 
     // Maps the |hypertext_| embedded character offset to an index in
     // |hyperlinks_|.
-    // TODO(nektar): Replace map with vector of offsets.
     std::map<int32, int32> hyperlink_offset_to_index;
 
     // The id of a BrowserAccessibilityWin for each hyperlink.

@@ -63,6 +63,11 @@ void BrowserAccessibilityMac::RecreateNativeObject() {
   [browser_accessibility_cocoa_ swapChildren:&children];
 }
 
+const BrowserAccessibilityCocoa*
+BrowserAccessibility::ToBrowserAccessibilityCocoa() const {
+  return static_cast<const BrowserAccessibilityMac*>(this)->native_view();
+}
+
 BrowserAccessibilityCocoa* BrowserAccessibility::ToBrowserAccessibilityCocoa() {
   return static_cast<BrowserAccessibilityMac*>(this)->
       native_view();

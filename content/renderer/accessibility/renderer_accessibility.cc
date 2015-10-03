@@ -382,7 +382,7 @@ void RendererAccessibility::OnSetAccessibilityFocus(int acc_obj_id) {
   if (tree_source_.accessibility_focus_id() == acc_obj_id)
     return;
 
-  tree_source_.set_accessiblity_focus_id(acc_obj_id);
+  tree_source_.set_accessibility_focus_id(acc_obj_id);
 
   const WebDocument& document = GetMainDocument();
   if (document.isNull())

@@ -184,10 +184,13 @@ class CONTENT_EXPORT BrowserAccessibility {
   virtual bool IsNative() const;
 
 #if defined(OS_MACOSX) && __OBJC__
+  const BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa() const;
   BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa();
 #elif defined(OS_WIN)
+  const BrowserAccessibilityWin* ToBrowserAccessibilityWin() const;
   BrowserAccessibilityWin* ToBrowserAccessibilityWin();
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
+  const BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux() const;
   BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux();
 #endif
 
