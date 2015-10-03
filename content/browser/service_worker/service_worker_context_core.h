@@ -178,11 +178,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                              const RegistrationCallback& callback);
   void UnregisterServiceWorker(const GURL& pattern,
                                const UnregistrationCallback& callback);
+
   // Callback is called issued after all unregistrations occur.  The Status
   // is populated as SERVICE_WORKER_OK if all succeed, or SERVICE_WORKER_FAILED
   // if any did not succeed.
   void UnregisterServiceWorkers(const GURL& origin,
                                 const UnregistrationCallback& callback);
+
+  // Updates the service worker. If |force_bypass_cache| is true or 24 hours
+  // have passed since the last update, bypasses the browser cache.
   void UpdateServiceWorker(ServiceWorkerRegistration* registration,
                            bool force_bypass_cache);
   void UpdateServiceWorker(ServiceWorkerRegistration* registration,

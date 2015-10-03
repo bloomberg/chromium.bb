@@ -1,7 +1,7 @@
 <?php
-// Force the browser to cache this script. update() should always bypass this
-// cache and fetch a new version.
-header('Cache-Control: max-age=86400');
+// update() does not bypass cache so set the max-age to 0 such that update()
+// can find a new version in the network.
+header('Cache-Control: max-age=0');
 
 // Return a different script for each access.
 header('Content-Type:application/javascript');

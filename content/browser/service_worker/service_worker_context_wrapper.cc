@@ -416,6 +416,11 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForUpdate(
   if (!context_core_)
     return;
   DCHECK(registration);
+  // TODO(jungkees): |force_bypass_cache| is set to true because the call stack
+  // is initiated by an update button on DevTools that expects the cache is
+  // bypassed. However, in order to provide options for callers to choose the
+  // cache bypass mode, plumb |force_bypass_cache| through to
+  // UpdateRegistration().
   context_core_->UpdateServiceWorker(registration.get(),
                                      true /* force_bypass_cache */);
 }
