@@ -222,6 +222,20 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
   BeginDrawingFrame(&frame);
 
+  if (output_surface_->IsDisplayedAsOverlayPlane()) {
+    // Create the overlay candidate for the output surface, and mark it as
+    // always
+    // handled.
+    OverlayCandidate output_surface_plane;
+    output_surface_plane.display_rect =
+        gfx::RectF(root_render_pass->output_rect);
+    output_surface_plane.quad_rect_in_target_space =
+        root_render_pass->output_rect;
+    output_surface_plane.use_output_surface_for_resource = true;
+    output_surface_plane.overlay_handled = true;
+    frame.overlay_list.push_back(output_surface_plane);
+  }
+
   // If we have any copy requests, we can't remove any quads for overlays,
   // otherwise the framebuffer will be missing the overlay contents.
   if (root_render_pass->copy_requests.empty()) {

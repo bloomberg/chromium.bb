@@ -151,6 +151,9 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   // Get the class capable of informing cc of hardware overlay capability.
   virtual OverlayCandidateValidator* GetOverlayCandidateValidator() const;
 
+  // Returns true if a main image overlay plane should be scheduled.
+  virtual bool IsDisplayedAsOverlayPlane() const;
+
   // Get the texture for the main image's overlay.
   virtual unsigned GetOverlayTextureId() const;
 

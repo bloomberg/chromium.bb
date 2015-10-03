@@ -3515,10 +3515,6 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
   ResourceProvider::ResourceIdArray resources;
   OverlayCandidateList& overlays = frame->overlay_list;
   for (const OverlayCandidate& overlay : overlays) {
-    // Skip primary plane.
-    if (overlay.plane_z_order == 0)
-      continue;
-
     unsigned texture_id = 0;
     if (overlay.use_output_surface_for_resource) {
       texture_id = output_surface_->GetOverlayTextureId();

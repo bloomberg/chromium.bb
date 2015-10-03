@@ -24,12 +24,6 @@ bool OverlayStrategyCommon::Attempt(RenderPassList* render_passes_in_draw_order,
   RenderPass* root_render_pass = render_passes_in_draw_order->back();
   DCHECK(root_render_pass);
 
-  // Add our primary surface.
-  OverlayCandidate main_image;
-  main_image.display_rect = gfx::RectF(root_render_pass->output_rect);
-  DCHECK(candidate_list->empty());
-  candidate_list->push_back(main_image);
-
   bool created_overlay = false;
   QuadList& quad_list = root_render_pass->quad_list;
   for (auto it = quad_list.begin(); it != quad_list.end();) {
@@ -52,11 +46,6 @@ bool OverlayStrategyCommon::Attempt(RenderPassList* render_passes_in_draw_order,
         created_overlay = true;
         break;
     }
-  }
-
-  if (!created_overlay) {
-    DCHECK_EQ(1u, candidate_list->size());
-    candidate_list->clear();
   }
 
   return created_overlay;

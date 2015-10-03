@@ -299,6 +299,10 @@ OverlayCandidateValidator* OutputSurface::GetOverlayCandidateValidator() const {
   return nullptr;
 }
 
+bool OutputSurface::IsDisplayedAsOverlayPlane() const {
+  return false;
+}
+
 unsigned OutputSurface::GetOverlayTextureId() const {
   return 0;
 }

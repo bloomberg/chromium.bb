@@ -2124,7 +2124,7 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
     }
 
     void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
-      ASSERT_EQ(2U, surfaces->size());
+      ASSERT_EQ(1U, surfaces->size());
       OverlayCandidate& candidate = surfaces->back();
       candidate.overlay_handled = true;
     }

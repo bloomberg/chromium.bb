@@ -57,6 +57,11 @@ GpuSurfacelessBrowserCompositorOutputSurface::
     ~GpuSurfacelessBrowserCompositorOutputSurface() {
 }
 
+bool GpuSurfacelessBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane()
+    const {
+  return true;
+}
+
 unsigned GpuSurfacelessBrowserCompositorOutputSurface::GetOverlayTextureId()
     const {
   return output_surface_->current_texture_id();
@@ -65,22 +70,7 @@ unsigned GpuSurfacelessBrowserCompositorOutputSurface::GetOverlayTextureId()
 void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   DCHECK(output_surface_);
-
-  GLuint texture = output_surface_->current_texture_id();
   output_surface_->SwapBuffers(frame->gl_frame_data->sub_buffer_rect);
-  const gfx::Size& size = frame->gl_frame_data->size;
-  context_provider_->ContextGL()->ScheduleOverlayPlaneCHROMIUM(
-      0,
-      GL_OVERLAY_TRANSFORM_NONE_CHROMIUM,
-      texture,
-      0,
-      0,
-      size.width(),
-      size.height(),
-      0,
-      0,
-      1.0f,
-      1.0f);
   GpuBrowserCompositorOutputSurface::SwapBuffers(frame);
 }
 
