@@ -18,7 +18,7 @@ namespace mojo {
 namespace edk {
 
 // An instance of this class exists in the maste process for each slave process.
-class MOJO_SYSTEM_IMPL_EXPORT MasterImpl : public Master {
+class MasterImpl : public Master {
  public:
   explicit MasterImpl(base::ProcessId slave_pid);
   ~MasterImpl() override;

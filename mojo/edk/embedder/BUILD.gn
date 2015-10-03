@@ -7,7 +7,10 @@ import("../mojo_edk.gni")
 mojo_edk_source_set("embedder") {
   # This isn't really a standalone target; it must be linked into the
   # mojo_system_impl component.
-  visibility = [ "//mojo/edk/system" ]
+  visibility = [
+    "//mojo/edk/system",
+    "//components/nacl:nacl",
+  ]
 
   sources = [
     "configuration.h",
