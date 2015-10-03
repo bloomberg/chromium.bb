@@ -65,8 +65,6 @@ crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ Image
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
-crbug.com/535141 fast/text/international/combining-marks-position.html [ NeedsRebaseline ]
-
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure ]
 
 crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
