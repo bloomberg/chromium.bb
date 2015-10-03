@@ -545,8 +545,9 @@ void TableLayoutAlgorithmAuto::layout()
             } else {
                 numAuto++;
                 totalAuto += m_layoutStruct[i].clampedEffectiveMaxLogicalWidth();
-                allocAuto += cellLogicalWidth;
             }
+            if (!m_layoutStruct[i].columnHasNoCells)
+                allocAuto += cellLogicalWidth;
             break;
         default:
             break;
@@ -593,13 +594,12 @@ void TableLayoutAlgorithmAuto::layout()
     }
 
     // Give each auto width column its share of the available width, non-empty columns then empty columns.
-    if (available > 0 && numAuto) {
+    if (available > 0 && (numAuto || numAutoEmptyCellsOnly)) {
         available += allocAuto;
-        distributeWidthToColumns<float, Auto, NonEmptyCells, InitialWidth, StartToEnd>(available, totalAuto);
-    }
-    if (available > 0 && numAutoEmptyCellsOnly) {
-        unsigned total = numAutoEmptyCellsOnly;
-        distributeWidthToColumns<unsigned, Auto, EmptyCells, InitialWidth, StartToEnd>(available, total);
+        if (numAuto)
+            distributeWidthToColumns<float, Auto, NonEmptyCells, InitialWidth, StartToEnd>(available, totalAuto);
+        if (numAutoEmptyCellsOnly)
+            distributeWidthToColumns<unsigned, Auto, EmptyCells, InitialWidth, StartToEnd>(available, numAutoEmptyCellsOnly);
     }
 
     // Any remaining available width expands fixed width, percent width, and non-empty auto width columns, in that order.
