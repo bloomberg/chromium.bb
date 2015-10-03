@@ -468,12 +468,16 @@
           'dependencies': [
             '../base/base.gyp:pe_image_test',
             '../chrome/chrome.gyp:crash_service',
+            '../chrome/chrome.gyp:installer_util_unittests',
+            '../chrome/chrome.gyp:setup',
             '../chrome/chrome.gyp:setup_unittests',
+            '../chrome/installer/mini_installer.gyp:mini_installer',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_unittests',
             '../chrome_elf/chrome_elf.gyp:dll_hash_main',
             '../components/components.gyp:wifi_test',
             '../net/net.gyp:quic_client',
             '../net/net.gyp:quic_server',
+            '../rlz/rlz.gyp:rlz',
             '../sandbox/sandbox.gyp:pocdll',
             '../sandbox/sandbox.gyp:sandbox_poc',
             '../sandbox/sandbox.gyp:sbox_integration_tests',
@@ -654,12 +658,17 @@
             '../chrome/chrome.gyp:app_shim',
             '../chrome/chrome.gyp:gcapi_dll',
             '../chrome/chrome.gyp:gcapi_test',
-            '../chrome/chrome.gyp:installer_util_unittests',
             '../chrome/chrome.gyp:pack_policy_templates',
+
+            # This is a safe browsing utility only necessary for developers.
+            # For now, we can skip this and anybody that needs this can add it
+            # to the GN build.
             '../chrome/chrome.gyp:sb_sigutil',
-            '../chrome/chrome.gyp:setup',
-            '../chrome/installer/mini_installer.gyp:mini_installer',
+
+            # This project is up in the air. Don't need to convert it unless
+            # we decide we need for something. Owner: scottmg.
             '../chrome/tools/crash_service/caps/caps.gyp:caps',
+
             '../cloud_print/gcp20/prototype/gcp20_device.gyp:gcp20_device',
             '../cloud_print/gcp20/prototype/gcp20_device.gyp:gcp20_device_unittests',
             '../cloud_print/service/win/service.gyp:cloud_print_service',
@@ -677,7 +686,6 @@
             '../remoting/remoting.gyp:remoting_breakpad_tester',
             '../remoting/remoting.gyp:remoting_console',
             '../remoting/remoting.gyp:remoting_desktop',
-            '../rlz/rlz.gyp:rlz',
             '../tools/win/static_initializers/static_initializers.gyp:static_initializers',
           ],
         }],
