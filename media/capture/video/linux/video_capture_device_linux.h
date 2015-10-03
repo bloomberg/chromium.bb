@@ -41,7 +41,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   void SetRotation(int rotation);
 
  private:
-  static int TranslatePowerLineFrequencyToV4L2(int frequency);
+  static int TranslatePowerLineFrequencyToV4L2(PowerLineFrequency frequency);
 
   // Internal delegate doing the actual capture setting, buffer allocation and
   // circulation with the V4L2 API. Created and deleted in the thread where

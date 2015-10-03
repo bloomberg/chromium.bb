@@ -283,12 +283,13 @@ class MEDIA_EXPORT VideoCaptureDevice {
 
   // Gets the power line frequency, either from the params if specified by the
   // user or from the current system time zone.
-  int GetPowerLineFrequency(const VideoCaptureParams& params) const;
+  PowerLineFrequency GetPowerLineFrequency(
+      const VideoCaptureParams& params) const;
 
  private:
   // Gets the power line frequency from the current system time zone if this is
   // defined, otherwise returns 0.
-  int GetPowerLineFrequencyForLocation() const;
+  PowerLineFrequency GetPowerLineFrequencyForLocation() const;
 };
 
 }  // namespace media

@@ -189,7 +189,7 @@ static bool FindVideoControlInterfaceInDeviceInterface(
 // set the appropriate Power Line frequency for flicker removal.
 static void SetAntiFlickerInVideoControlInterface(
     IOCFPlugInInterface** plugin_interface,
-    const int frequency) {
+    const PowerLineFrequency frequency) {
   // Create, the control interface for the found plugin, and release
   // the intermediate plugin.
   IOUSBInterfaceInterface** control_interface = NULL;
@@ -249,7 +249,8 @@ static void SetAntiFlickerInVideoControlInterface(
   command.wValue = (selector << 8);
   command.wLength = kPuPowerLineFrequencyControlCommandSize;
   command.wLenDone = 0;
-  int power_line_flag_value = (frequency == 50) ? k50Hz : k60Hz;
+  int power_line_flag_value =
+      (frequency == PowerLineFrequency::FREQUENCY_50HZ) ? k50Hz : k60Hz;
   command.pData = &power_line_flag_value;
 
   IOReturn ret =
@@ -257,8 +258,8 @@ static void SetAntiFlickerInVideoControlInterface(
   DLOG_IF(ERROR, ret != kIOReturnSuccess) << "Anti-flicker control request"
                                           << " failed (0x" << std::hex << ret
                                           << "), unit id: " << real_unit_id;
-  DVLOG_IF(1, ret == kIOReturnSuccess) << "Anti-flicker set to " << frequency
-                                       << "Hz";
+  DVLOG_IF(1, ret == kIOReturnSuccess) << "Anti-flicker set to "
+                                       << static_cast<int>(frequency) << "Hz";
 
   (*control_interface)->USBInterfaceClose(control_interface);
 }
@@ -270,11 +271,11 @@ static void SetAntiFlickerInVideoControlInterface(
 // are created. The latter is used to a send a power frequency setting command.
 static void SetAntiFlickerInUsbDevice(const int vendor_id,
                                       const int product_id,
-                                      const int frequency) {
-  if (frequency == 0)
+                                      const PowerLineFrequency frequency) {
+  if (frequency == PowerLineFrequency::FREQUENCY_DEFAULT)
     return;
-  DVLOG(1) << "Setting Power Line Frequency to " << frequency << " Hz, device "
-           << std::hex << vendor_id << "-" << product_id;
+  DVLOG(1) << "Setting Power Line Frequency to " << static_cast<int>(frequency)
+           << " Hz, device " << std::hex << vendor_id << "-" << product_id;
 
   // Compose a search dictionary with vendor and product ID.
   CFMutableDictionaryRef query_dictionary =

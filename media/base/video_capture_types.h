@@ -62,6 +62,7 @@ enum class PowerLineFrequency {
   FREQUENCY_60HZ = 60,
   FREQUENCY_MAX = FREQUENCY_60HZ
 };
+
 // Assert that the int:frequency mapping is correct.
 static_assert(static_cast<int>(PowerLineFrequency::FREQUENCY_DEFAULT) == 0,
               "static_cast<int>(FREQUENCY_DEFAULT) must equal 0.");
