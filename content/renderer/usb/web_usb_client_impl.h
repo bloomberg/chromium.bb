@@ -5,17 +5,17 @@
 #ifndef CONTENT_RENDERER_USB_WEB_USB_CLIENT_IMPL_H_
 #define CONTENT_RENDERER_USB_WEB_USB_CLIENT_IMPL_H_
 
-#include "base/id_map.h"
 #include "base/macros.h"
 #include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
-#include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBClient.h"
 
 namespace content {
 
+class ServiceRegistry;
+
 class WebUSBClientImpl : public blink::WebUSBClient {
  public:
-  explicit WebUSBClientImpl(mojo::ServiceProviderPtr device_services);
+  explicit WebUSBClientImpl(content::ServiceRegistry* service_registry);
   ~WebUSBClientImpl() override;
 
  private:
@@ -29,7 +29,6 @@ class WebUSBClientImpl : public blink::WebUSBClient {
   void OnDeviceChangeNotification(
       device::usb::DeviceChangeNotificationPtr notification);
 
-  mojo::ServiceProviderPtr device_services_;
   device::usb::DeviceManagerPtr device_manager_;
   Observer* observer_ = nullptr;
 

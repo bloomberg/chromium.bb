@@ -9,10 +9,8 @@
 namespace device {
 
 // static
-scoped_ptr<mojo::ApplicationDelegate> DevicesAppFactory::CreateApp(
-    scoped_refptr<base::SequencedTaskRunner> service_task_runner) {
-  return scoped_ptr<mojo::ApplicationDelegate>(
-      new DevicesApp(service_task_runner));
+scoped_ptr<mojo::ApplicationDelegate> DevicesAppFactory::CreateApp() {
+  return scoped_ptr<mojo::ApplicationDelegate>(new DevicesApp());
 }
 
 }  // namespace device

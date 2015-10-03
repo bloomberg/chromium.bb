@@ -10,11 +10,9 @@
 #include "base/move.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/scoped_web_callbacks.h"
+#include "content/public/common/service_registry.h"
 #include "content/renderer/usb/type_converters.h"
 #include "content/renderer/usb/web_usb_device_impl.h"
-#include "device/devices_app/public/cpp/constants.h"
-#include "mojo/application/public/cpp/connect.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "third_party/WebKit/public/platform/WebCallbacks.h"
 #include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceFilter.h"
@@ -53,10 +51,8 @@ ScopedWebCallbacks<CallbacksType> MakeScopedUSBCallbacks(
 
 void OnGetDevicesComplete(
     ScopedWebCallbacks<blink::WebUSBClientGetDevicesCallbacks> scoped_callbacks,
-    mojo::ServiceProvider* device_services,
+    device::usb::DeviceManager* device_manager,
     mojo::Array<device::usb::DeviceInfoPtr> results) {
-  device::usb::DeviceManagerPtr device_manager;
-  mojo::ConnectToService(device_services, &device_manager);
   blink::WebVector<blink::WebUSBDevice*>* devices =
       new blink::WebVector<blink::WebUSBDevice*>(results.size());
   for (size_t i = 0; i < results.size(); ++i) {
@@ -70,9 +66,10 @@ void OnGetDevicesComplete(
 
 }  // namespace
 
-WebUSBClientImpl::WebUSBClientImpl(mojo::ServiceProviderPtr device_services)
-    : device_services_(device_services.Pass()) {
-  mojo::ConnectToService(device_services_.get(), &device_manager_);
+WebUSBClientImpl::WebUSBClientImpl(content::ServiceRegistry* service_registry) {
+  service_registry->ConnectToRemoteService(mojo::GetProxy(&device_manager_));
+  device_manager_.set_connection_error_handler(
+      [this]() { LOG(ERROR) << "Device manager connection failed."; });
 }
 
 WebUSBClientImpl::~WebUSBClientImpl() {}
@@ -83,7 +80,7 @@ void WebUSBClientImpl::getDevices(
   device_manager_->GetDevices(
       nullptr,
       base::Bind(&OnGetDevicesComplete, base::Passed(&scoped_callbacks),
-                 base::Unretained(device_services_.get())));
+                 base::Unretained(device_manager_.get())));
 }
 
 void WebUSBClientImpl::requestDevice(
