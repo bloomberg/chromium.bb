@@ -98,15 +98,6 @@ scoped_refptr<Dispatcher> Core::GetDispatcher(MojoHandle handle) {
   return handle_table_.GetDispatcher(handle);
 }
 
-MojoResult Core::GetAndRemoveDispatcher(MojoHandle handle,
-                                        scoped_refptr<Dispatcher>* dispatcher) {
-  if (handle == MOJO_HANDLE_INVALID)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  MutexLocker locker(&handle_table_mutex_);
-  return handle_table_.GetAndRemoveDispatcher(handle, dispatcher);
-}
-
 MojoResult Core::AsyncWait(MojoHandle handle,
                            MojoHandleSignals signals,
                            const base::Callback<void(MojoResult)>& callback) {

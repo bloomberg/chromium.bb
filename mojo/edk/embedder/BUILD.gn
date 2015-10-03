@@ -18,7 +18,6 @@ mojo_edk_source_set("embedder") {
     "embedder.h",
     "embedder_internal.h",
     "entrypoints.cc",
-    "system_impl_private_entrypoints.cc",
 
     # Test-only code:
     # TODO(vtl): It's a little unfortunate that these end up in the same
@@ -39,7 +38,6 @@ mojo_edk_source_set("embedder") {
     ":delegates",
     ":platform",
     "//third_party/mojo/src/mojo/public/cpp/system",
-    "//third_party/mojo/src/mojo/public/platform/native:system_impl_private_api",
   ]
 
   deps = [

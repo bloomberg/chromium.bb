@@ -48,15 +48,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // invalid.
   scoped_refptr<Dispatcher> GetDispatcher(MojoHandle handle);
 
-  // Like |GetDispatcher()|, but also removes the handle from the handle table.
-  // On success, gets the dispatcher for a given handle (which should not be
-  // |MOJO_HANDLE_INVALID|) and removes it. (On failure, returns an appropriate
-  // result (and leaves |dispatcher| alone), namely
-  // |MOJO_RESULT_INVALID_ARGUMENT| if there's no dispatcher for the given
-  // handle or |MOJO_RESULT_BUSY| if the handle is marked as busy.)
-  MojoResult GetAndRemoveDispatcher(MojoHandle handle,
-                                    scoped_refptr<Dispatcher>* dispatcher);
-
   // Watches on the given handle for the given signals, calling |callback| when
   // a signal is satisfied or when all signals become unsatisfiable. |callback|
   // must satisfy stringent requirements -- see |Awakable::Awake()| in

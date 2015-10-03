@@ -96,7 +96,6 @@ group("public_tests") {
     ":mojo_public_system_perftests2",
     ":mojo_public_system_unittests2",
     ":mojo_public_utility_unittests2",
-    ":mojo_system_impl_private_unittests2",
   ]
 
   if (mojo_use_application_in_sdk) {
@@ -151,13 +150,5 @@ test("mojo_public_utility_unittests2") {
   deps = [
     ":run_all_unittests",
     "../../../third_party/mojo/src/mojo/public/cpp/utility/tests",
-  ]
-}
-
-# TODO(use_chrome_edk): remove "2"
-test("mojo_system_impl_private_unittests2") {
-  deps = [
-    ":run_all_unittests",
-    "../../../third_party/mojo/src/mojo/public/platform/native:system_impl_private_tests",
   ]
 }
