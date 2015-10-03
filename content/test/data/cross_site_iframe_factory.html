@@ -4,8 +4,8 @@ sites you want. This is useful for testing site isolation.
 
 Example usage in a browsertest, explained:
 
-  GURL url =
-    test_server()->GetURL("a.com", "/cross_site_iframe_factory.html?a(b(c,d))");
+  GURL url = embedded_test_server()->
+      GetURL("a.com", "/cross_site_iframe_factory.html?a(b(c,d))");
 
 When you navigate to the above URL, the outer document (on a.com) will create a
 single iframe:
