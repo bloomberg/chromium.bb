@@ -1642,18 +1642,6 @@
     ['OS == "win"', {
       'targets': [
         {
-          'target_name': 'debug_message',
-          'type': 'executable',
-          'sources': [
-            'debug_message.cc',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
-            },
-          },
-        },
-        {
           # Target to manually rebuild pe_image_test.dll which is checked into
           # base/test/data/pe_image.
           'target_name': 'pe_image_test',

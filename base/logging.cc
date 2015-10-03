@@ -449,38 +449,8 @@ void DisplayDebugMessageInDialog(const std::string& str) {
     return;
 
 #if defined(OS_WIN)
-  // For Windows programs, it's possible that the message loop is
-  // messed up on a fatal error, and creating a MessageBox will cause
-  // that message loop to be run. Instead, we try to spawn another
-  // process that displays its command line. We look for "Debug
-  // Message.exe" in the same directory as the application. If it
-  // exists, we use it, otherwise, we use a regular message box.
-  wchar_t prog_name[MAX_PATH];
-  GetModuleFileNameW(nullptr, prog_name, MAX_PATH);
-  wchar_t* backslash = wcsrchr(prog_name, '\\');
-  if (backslash)
-    backslash[1] = 0;
-  wcscat_s(prog_name, MAX_PATH, L"debug_message.exe");
-
-  std::wstring cmdline = base::UTF8ToWide(str);
-  if (cmdline.empty())
-    return;
-
-  STARTUPINFO startup_info;
-  memset(&startup_info, 0, sizeof(startup_info));
-  startup_info.cb = sizeof(startup_info);
-
-  PROCESS_INFORMATION process_info;
-  if (CreateProcessW(prog_name, &cmdline[0], nullptr, nullptr, false, 0,
-                     nullptr, nullptr, &startup_info, &process_info)) {
-    WaitForSingleObject(process_info.hProcess, INFINITE);
-    CloseHandle(process_info.hThread);
-    CloseHandle(process_info.hProcess);
-  } else {
-    // debug process broken, let's just do a message box
-    MessageBoxW(nullptr, &cmdline[0], L"Fatal error",
-                MB_OK | MB_ICONHAND | MB_TOPMOST);
-  }
+  MessageBoxW(nullptr, base::UTF8ToUTF16(str).c_str(), L"Fatal error",
+              MB_OK | MB_ICONHAND | MB_TOPMOST);
 #else
   // We intentionally don't implement a dialog on other platforms.
   // You can just look at stderr.
