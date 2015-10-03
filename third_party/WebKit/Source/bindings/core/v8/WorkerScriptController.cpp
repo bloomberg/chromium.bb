@@ -127,7 +127,7 @@ WorkerScriptController::~WorkerScriptController()
 void WorkerScriptController::dispose()
 {
     m_rejectedPromises->dispose();
-    m_rejectedPromises.clear();
+    m_rejectedPromises.release();
 
     m_world->dispose();
 

@@ -16,13 +16,13 @@ namespace blink {
 class ScriptCallStack;
 class ScriptState;
 
-class RejectedPromises final : public NoBaseWillBeGarbageCollected<RejectedPromises> {
+class RejectedPromises final : public RefCountedWillBeGarbageCollected<RejectedPromises> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(RejectedPromises);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(RejectedPromises);
 public:
-    static PassOwnPtrWillBeRawPtr<RejectedPromises> create()
+    static PassRefPtrWillBeRawPtr<RejectedPromises> create()
     {
-        return adoptPtrWillBeNoop(new RejectedPromises);
+        return adoptRefWillBeNoop(new RejectedPromises);
     }
 
     RejectedPromises();
@@ -36,6 +36,9 @@ public:
 
 private:
     class Message;
+
+    void processQueueNow(PassOwnPtrWillBeRawPtr<WillBeHeapDeque<OwnPtrWillBeMember<Message>>>);
+    void revokeNow(PassOwnPtrWillBeRawPtr<Message>);
 
     WillBeHeapDeque<OwnPtrWillBeMember<Message>> m_queue;
     WillBeHeapVector<OwnPtrWillBeMember<Message>> m_reportedAsErrors;
