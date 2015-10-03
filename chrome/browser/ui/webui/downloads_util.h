@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_DOWNLOADS_UTIL_H_
 #define CHROME_BROWSER_UI_WEBUI_DOWNLOADS_UTIL_H_
 
+extern const char kMaterialDesignDownloadsFinchTrialName[];
+
 // Whether the Material Design version of chrome://downloads should be enabled.
 bool MdDownloadsEnabled();
 

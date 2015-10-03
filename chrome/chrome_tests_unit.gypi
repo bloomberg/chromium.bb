@@ -1578,6 +1578,7 @@
       'browser/ui/toolbar/wrench_menu_model_unittest.cc',
       'browser/ui/website_settings/permission_bubble_manager_unittest.cc',
       'browser/ui/website_settings/permission_menu_model_unittest.cc',
+      'browser/ui/webui/downloads_util_unittest.cc',
       'browser/ui/webui/help/version_updater_chromeos_unittest.cc',
       'browser/ui/webui/ntp/ntp_user_data_logger_unittest.cc',
       'browser/ui/webui/options/autofill_options_handler_unittest.cc',
