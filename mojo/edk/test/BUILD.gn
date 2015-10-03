@@ -41,6 +41,10 @@ mojo_edk_source_set("run_all_unittests") {
     "//mojo/edk/system",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/public/c/test_support",
+
+    # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
+    # declared in third party only for now.
+    "//third_party/mojo/src/mojo/edk/system",
   ]
 }
 

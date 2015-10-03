@@ -22,9 +22,6 @@ namespace mojo {
 namespace edk {
 namespace {
 
-const MojoHandleSignals kSignalAll = MOJO_HANDLE_SIGNAL_READABLE |
-                                     MOJO_HANDLE_SIGNAL_WRITABLE |
-                                     MOJO_HANDLE_SIGNAL_PEER_CLOSED;
 const uint32_t kSizeOfOptions =
     static_cast<uint32_t>(sizeof(MojoCreateDataPipeOptions));
 

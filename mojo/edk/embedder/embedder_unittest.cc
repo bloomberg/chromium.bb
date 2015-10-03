@@ -132,7 +132,7 @@ TEST_F(EmbedderTest, SendReadableMessagePipe) {
                             &num_ports, MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(write_size, num_bytes);
   EXPECT_STREQ(kHello, read_buffer);
-  EXPECT_EQ(1, num_ports);
+  EXPECT_EQ(1u, num_ports);
 
 
   client_mp2 = ports[0];
@@ -147,7 +147,7 @@ TEST_F(EmbedderTest, SendReadableMessagePipe) {
                             &num_ports, MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(write_size, num_bytes);
   EXPECT_STREQ(kHello, read_buffer);
-  EXPECT_EQ(1, num_ports);
+  EXPECT_EQ(1u, num_ports);
 
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(server_mp3));
