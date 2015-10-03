@@ -15,8 +15,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (1,1) size 59x18
                 text run at (1,1) width 59: "First row"
       LayoutBlockFlow {FORM} at (0,46) size 784x18
-        LayoutButton {INPUT} at (0,0) size 45.36x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 29.36x13
-            LayoutText {#text} at (0,0) size 30x13
-              text run at (0,0) width 30: "insert"
+        LayoutButton {INPUT} at (0,0) size 43.55x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 27.55x13
+            LayoutText {#text} at (0,0) size 28x13
+              text run at (0,0) width 28: "insert"
         LayoutText {#text} at (0,0) size 0x0

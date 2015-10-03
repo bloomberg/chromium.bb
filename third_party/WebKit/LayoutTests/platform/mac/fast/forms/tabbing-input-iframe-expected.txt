@@ -24,7 +24,7 @@ layer at (143,26) size 302x152
         LayoutBlockFlow {BODY} at (8,8) size 284x134
 layer at (452,167) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 122x13
-      text run at (0,0) width 122: "This should have focus"
+    LayoutText {#text} at (0,0) size 115x13
+      text run at (0,0) width 115: "This should have focus"
 selection start: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
 selection end:   position 22 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body

@@ -33,27 +33,27 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (28,1) size 755x20 [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 4x18
                 text run at (1,1) width 4: " "
-layer at (13,31) size 0x13 scrollWidth 49
-  LayoutBlockFlow {DIV} at (3,3) size 0x13
-    LayoutText {#text} at (0,0) size 49x13
-      text run at (0,0) width 49: "New Mail"
-layer at (22,31) size 0x13 scrollWidth 30
-  LayoutBlockFlow {DIV} at (3,3) size 0x13
-    LayoutText {#text} at (0,0) size 30x13
-      text run at (0,0) width 30: "Reply"
-layer at (31,31) size 0x13 scrollWidth 46
+layer at (13,31) size 0x13 scrollWidth 46
   LayoutBlockFlow {DIV} at (3,3) size 0x13
     LayoutText {#text} at (0,0) size 47x13
-      text run at (0,0) width 47: "Reply All"
-layer at (13,90) size 0x13 scrollWidth 49
+      text run at (0,0) width 47: "New Mail"
+layer at (22,31) size 0x13 scrollWidth 28
   LayoutBlockFlow {DIV} at (3,3) size 0x13
-    LayoutText {#text} at (0,0) size 49x13
-      text run at (0,0) width 49: "New Mail"
-layer at (22,90) size 0x13 scrollWidth 30
+    LayoutText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "Reply"
+layer at (31,31) size 0x13 scrollWidth 44
   LayoutBlockFlow {DIV} at (3,3) size 0x13
-    LayoutText {#text} at (0,0) size 30x13
-      text run at (0,0) width 30: "Reply"
-layer at (31,90) size 0x13 scrollWidth 46
+    LayoutText {#text} at (0,0) size 44x13
+      text run at (0,0) width 44: "Reply All"
+layer at (13,90) size 0x13 scrollWidth 46
   LayoutBlockFlow {DIV} at (3,3) size 0x13
     LayoutText {#text} at (0,0) size 47x13
-      text run at (0,0) width 47: "Reply All"
+      text run at (0,0) width 47: "New Mail"
+layer at (22,90) size 0x13 scrollWidth 28
+  LayoutBlockFlow {DIV} at (3,3) size 0x13
+    LayoutText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "Reply"
+layer at (31,90) size 0x13 scrollWidth 44
+  LayoutBlockFlow {DIV} at (3,3) size 0x13
+    LayoutText {#text} at (0,0) size 44x13
+      text run at (0,0) width 44: "Reply All"

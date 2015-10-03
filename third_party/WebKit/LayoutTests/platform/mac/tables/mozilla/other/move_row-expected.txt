@@ -36,10 +36,10 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (21,0) size 17x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (38,0) size 4x18
           text run at (38,0) width 4: " "
-        LayoutButton {INPUT} at (42,1) size 29.44x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 13.44x13
-            LayoutText {#text} at (0,0) size 14x13
-              text run at (0,0) width 14: "go"
+        LayoutButton {INPUT} at (42,1) size 28.84x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 12.84x13
+            LayoutText {#text} at (0,0) size 13x13
+              text run at (0,0) width 13: "go"
         LayoutText {#text} at (0,0) size 0x0
 layer at (11,145) size 11x13
   LayoutBlockFlow {DIV} at (3,3) size 11x13

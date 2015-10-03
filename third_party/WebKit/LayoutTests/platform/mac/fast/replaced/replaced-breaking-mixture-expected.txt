@@ -10,10 +10,10 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,43) size 10x36
         LayoutText {#text} at (0,0) size 25x18
           text run at (0,0) width 25: "Foo"
-        LayoutMenuList {SELECT} at (0,18) size 53x18 [bgcolor=#F8F8F8]
-          LayoutBlockFlow (anonymous) at (0,0) size 53x18
-            LayoutText (anonymous) at (8,2) size 22x13
-              text run at (8,2) width 22: "One"
+        LayoutMenuList {SELECT} at (0,18) size 52x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 52x18
+            LayoutText (anonymous) at (8,2) size 21x13
+              text run at (8,2) width 21: "One"
       LayoutBlockFlow {DIV} at (0,79) size 10x37
         LayoutText {#text} at (0,0) size 25x18
           text run at (0,0) width 25: "Foo"
@@ -23,10 +23,10 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,25) size 25x18
           text run at (0,25) width 25: "Foo"
       LayoutBlockFlow {DIV} at (0,159) size 10x36
-        LayoutMenuList {SELECT} at (0,0) size 53x18 [bgcolor=#F8F8F8]
-          LayoutBlockFlow (anonymous) at (0,0) size 53x18
-            LayoutText (anonymous) at (8,2) size 22x13
-              text run at (8,2) width 22: "One"
+        LayoutMenuList {SELECT} at (0,0) size 52x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 52x18
+            LayoutText (anonymous) at (8,2) size 21x13
+              text run at (8,2) width 21: "One"
         LayoutText {#text} at (0,18) size 25x18
           text run at (0,18) width 25: "Foo"
       LayoutBlockFlow {DIV} at (0,195) size 10x37

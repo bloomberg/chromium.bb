@@ -11,8 +11,8 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (2,2) size 22x18
                   text run at (2,2) width 22: "foo"
         LayoutBlockFlow (anonymous) at (0,28) size 784x18
-          LayoutButton {INPUT} at (0,0) size 53.45x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 37.45x13
-              LayoutText {#text} at (0,0) size 38x13
-                text run at (0,0) width 38: "Submit"
+          LayoutButton {INPUT} at (0,0) size 51.64x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 35.64x13
+              LayoutText {#text} at (0,0) size 36x13
+                text run at (0,0) width 36: "Submit"
           LayoutText {#text} at (0,0) size 0x0

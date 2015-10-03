@@ -59,18 +59,17 @@ layer at (8,60) size 406x206 clip at (9,61) size 404x204
         text run at (0,18) width 384: "Demo text here that wraps a bit and should demonstrate"
         text run at (383,18) width 5: " "
         text run at (0,71) width 184: "the goodness of line-height"
-layer at (8,829) size 141x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 69
+layer at (8,829) size 141x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 56
   LayoutTextControl {TEXTAREA} at (0,54) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-    LayoutBlockFlow {DIV} at (3,3) size 120x65
-      LayoutText {#text} at (0,0) size 112x65
-        text run at (0,0) width 105: "Demo text here that"
-        text run at (104,0) width 5: " "
-        text run at (0,13) width 82: "wraps a bit and"
-        text run at (81,13) width 5: " "
-        text run at (0,26) width 106: "should demonstrate"
-        text run at (105,26) width 4: " "
-        text run at (0,39) width 112: "the goodness of line-"
-        text run at (0,52) width 33: "height"
+    LayoutBlockFlow {DIV} at (3,3) size 120x52
+      LayoutText {#text} at (0,0) size 118x52
+        text run at (0,0) width 100: "Demo text here that"
+        text run at (99,0) width 4: " "
+        text run at (0,13) width 114: "wraps a bit and should"
+        text run at (113,13) width 4: " "
+        text run at (0,26) width 82: "demonstrate the"
+        text run at (82,26) width 4: " "
+        text run at (0,39) width 118: "goodness of line-height"
 layer at (8,901) size 141x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTextControl {TEXTAREA} at (0,126) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 135x13

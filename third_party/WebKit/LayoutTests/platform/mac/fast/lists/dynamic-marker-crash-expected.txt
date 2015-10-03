@@ -15,5 +15,5 @@ layer at (0,0) size 800x85
               text run at (0,0) width 340: "There should be an input field above this line of text."
 layer at (51,19) size 245x13
   LayoutBlockFlow {DIV} at (3,3) size 245x13
-    LayoutText {#text} at (0,0) size 57x13
-      text run at (0,0) width 57: "blah blubb"
+    LayoutText {#text} at (0,0) size 54x13
+      text run at (0,0) width 54: "blah blubb"

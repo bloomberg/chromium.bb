@@ -89,12 +89,12 @@ layer at (36,247) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (36,266) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 19x13
-      text run at (0,0) width 19: "Bar"
+    LayoutText {#text} at (0,0) size 18x13
+      text run at (0,0) width 18: "Bar"
 layer at (36,285) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 19x13
-      text run at (0,0) width 19: "Bar"
+    LayoutText {#text} at (0,0) size 18x13
+      text run at (0,0) width 18: "Bar"
 layer at (36,304) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (36,323) size 125x13

@@ -16,9 +16,9 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (285,14) size 1x0
         LayoutMenuList {SELECT} at (0,18) size 100x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 100x18
-            LayoutText (anonymous) at (16,2) size 61x13
-              text run at (16,2) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
-              text run at (57,2) width 20: "abc"
+            LayoutText (anonymous) at (17,2) size 60x13
+              text run at (17,2) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+              text run at (58,2) width 19: "abc"
         LayoutBR {BR} at (100,31) size 0x0
       LayoutBlockFlow {DIV} at (0,106) size 100x19
         LayoutText {#text} at (0,1) size 82x18
@@ -31,9 +31,9 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (117,32) size 1x0
         LayoutMenuList {SELECT} at (0,36) size 200x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 200x18
-            LayoutText (anonymous) at (8,2) size 61x13
-              text run at (8,2) width 20: "abc"
-              text run at (27,2) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+            LayoutText (anonymous) at (8,2) size 60x13
+              text run at (8,2) width 19: "abc"
+              text run at (26,2) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
         LayoutBR {BR} at (200,49) size 0x0
       LayoutBlockFlow {DIV} at (0,179) size 200x19
         LayoutText {#text} at (0,1) size 82x18
@@ -46,9 +46,9 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (71,32) size 1x0
         LayoutMenuList {SELECT} at (0,36) size 100x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 100x18
-            LayoutText (anonymous) at (8,2) size 61x13
-              text run at (8,2) width 20: "abc"
-              text run at (27,2) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+            LayoutText (anonymous) at (8,2) size 60x13
+              text run at (8,2) width 19: "abc"
+              text run at (26,2) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
         LayoutBR {BR} at (100,49) size 0x0
       LayoutBlockFlow {DIV} at (0,252) size 100x19
         LayoutText {#text} at (0,1) size 82x18

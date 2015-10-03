@@ -7,7 +7,7 @@
       "drawsContent": true,
       "repaintRects": [
         [17, 45, 108, 13],
-        [17, 45, 53, 13]
+        [17, 45, 50, 13]
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow DIV id='inner-editor'",

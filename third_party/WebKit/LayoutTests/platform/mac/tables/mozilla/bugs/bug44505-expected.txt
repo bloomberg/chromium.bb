@@ -110,8 +110,8 @@ layer at (11,219) size 154x23 clip at (12,220) size 152x21 scrollWidth 201
     LayoutBlockFlow {FORM} at (2,2) size 150x19
       LayoutButton {BUTTON} at (0,1) size 200x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
         LayoutBlockFlow (anonymous) at (8,2) size 184x13
-          LayoutText {#text} at (74,0) size 36x13
-            text run at (74,0) width 36: "button"
+          LayoutText {#text} at (75,0) size 34x13
+            text run at (75,0) width 34: "button"
 layer at (167,219) size 138x23 clip at (168,220) size 136x21
   LayoutTableCell {TD} at (158,2) size 138x22 [bgcolor=#0000FF] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
     LayoutText {#text} at (2,2) size 4x18
@@ -129,8 +129,8 @@ layer at (11,272) size 280x23 clip at (12,273) size 278x21
     LayoutBlockFlow {FORM} at (2,2) size 276x19
       LayoutButton {BUTTON} at (0,1) size 200x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
         LayoutBlockFlow (anonymous) at (8,2) size 184x13
-          LayoutText {#text} at (74,0) size 36x13
-            text run at (74,0) width 36: "button"
+          LayoutText {#text} at (75,0) size 34x13
+            text run at (75,0) width 34: "button"
 layer at (293,272) size 12x23 clip at (294,273) size 10x21
   LayoutTableCell {TD} at (284,2) size 12x22 [bgcolor=#0000FF] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
     LayoutText {#text} at (2,2) size 4x18

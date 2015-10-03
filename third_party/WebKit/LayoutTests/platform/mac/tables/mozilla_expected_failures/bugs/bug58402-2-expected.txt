@@ -33,14 +33,14 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 37x18
                 text run at (2,2) width 37: "row 3"
       LayoutBlockFlow (anonymous) at (0,240) size 784x19
-        LayoutButton {INPUT} at (0,1) size 55.09x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 39.09x13
-            LayoutText {#text} at (0,0) size 40x13
-              text run at (0,0) width 40: "expand"
-        LayoutText {#text} at (55,0) size 5x18
-          text run at (55,0) width 5: " "
-        LayoutButton {INPUT} at (59.09,1) size 42.55x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 26.55x13
-            LayoutText {#text} at (0,0) size 27x13
-              text run at (0,0) width 27: "sizes"
+        LayoutButton {INPUT} at (0,1) size 53.28x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 37.28x13
+            LayoutText {#text} at (0,0) size 38x13
+              text run at (0,0) width 38: "expand"
+        LayoutText {#text} at (53,0) size 5x18
+          text run at (53,0) width 5: " "
+        LayoutButton {INPUT} at (57.28,1) size 41.03x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 25.03x13
+            LayoutText {#text} at (0,0) size 26x13
+              text run at (0,0) width 26: "sizes"
         LayoutText {#text} at (0,0) size 0x0

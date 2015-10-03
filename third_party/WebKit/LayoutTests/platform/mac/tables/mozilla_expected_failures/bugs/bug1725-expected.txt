@@ -23,10 +23,10 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 440x24
                   LayoutTableRow {TR} at (0,2) size 440x20
                     LayoutTableCell {TD} at (2,2) size 217x20 [r=0 c=0 rs=1 cs=1]
-                      LayoutButton {INPUT} at (1,1) size 95.28x18 [bgcolor=#C0C0C0]
-                        LayoutBlockFlow (anonymous) at (8,2) size 79.28x13
-                          LayoutText {#text} at (0,0) size 80x13
-                            text run at (0,0) width 80: "Submit Criteria"
+                      LayoutButton {INPUT} at (1,1) size 90.75x18 [bgcolor=#C0C0C0]
+                        LayoutBlockFlow (anonymous) at (8,2) size 74.75x13
+                          LayoutText {#text} at (0,0) size 75x13
+                            text run at (0,0) width 75: "Submit Criteria"
                     LayoutTableCell {TD} at (221,2) size 217x20 [r=0 c=1 rs=1 cs=1]
                       LayoutText {#text} at (1,1) size 8x18
                         text run at (1,1) width 8: "4"

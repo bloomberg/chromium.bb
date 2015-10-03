@@ -16,10 +16,10 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (51.09,0) size 119x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (170,0) size 5x18
           text run at (170,0) width 5: " "
-        LayoutMenuList {SELECT} at (174.09,1) size 76x18 [bgcolor=#F8F8F8]
-          LayoutBlockFlow (anonymous) at (0,0) size 76x18
-            LayoutText (anonymous) at (8,2) size 33x13
-              text run at (8,2) width 33: "Excite"
+        LayoutMenuList {SELECT} at (174.09,1) size 74x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 74x18
+            LayoutText (anonymous) at (8,2) size 31x13
+              text run at (8,2) width 31: "Excite"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,53) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
@@ -27,9 +27,9 @@ layer at (0,0) size 800x600
           text run at (0,18) width 270: "The select should not contain blank items "
         LayoutBR {BR} at (269,32) size 1x0
       LayoutBlockFlow {FORM} at (0,89) size 784x18
-        LayoutMenuList {SELECT} at (0,0) size 226x18 [bgcolor=#F8F8F8]
-          LayoutBlockFlow (anonymous) at (0,0) size 226x18
-            LayoutText (anonymous) at (8,2) size 56x13
-              text run at (8,2) width 56: "Quick Link"
+        LayoutMenuList {SELECT} at (0,0) size 209x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 209x18
+            LayoutText (anonymous) at (8,2) size 53x13
+              text run at (8,2) width 53: "Quick Link"
 layer at (62,29) size 113x13
   LayoutBlockFlow {DIV} at (3,3) size 113x13

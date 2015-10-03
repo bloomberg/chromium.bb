@@ -184,10 +184,10 @@ layer at (0,0) size 785x2582 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {P} at (0,0) size 769x38
           LayoutText {#text} at (0,0) size 267x18
             text run at (0,0) width 267: "How does your browser fare on this test? "
-          LayoutMenuList {SELECT} at (266.59,1) size 469x18 [bgcolor=#F8F8F8]
-            LayoutBlockFlow (anonymous) at (0,0) size 469x18
-              LayoutText (anonymous) at (8,2) size 438x13
-                text run at (8,2) width 438: "The tests all render identically, and this browser may or may not grok CSS2 tables."
+          LayoutMenuList {SELECT} at (266.59,1) size 444x18 [bgcolor=#F8F8F8]
+            LayoutBlockFlow (anonymous) at (0,0) size 444x18
+              LayoutText (anonymous) at (8,2) size 413x13
+                text run at (8,2) width 413: "The tests all render identically, and this browser may or may not grok CSS2 tables."
           LayoutText {#text} at (0,0) size 0x0
           LayoutInline {LABEL} at (0,0) size 203x18
             LayoutText {#text} at (0,19) size 72x18
@@ -195,10 +195,10 @@ layer at (0,0) size 785x2582 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTextControl {INPUT} at (71.55,19) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (202,19) size 5x18
             text run at (202,19) width 5: " "
-          LayoutButton {INPUT} at (206.55,20) size 53.45x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 37.45x13
-              LayoutText {#text} at (0,0) size 38x13
-                text run at (0,0) width 38: "Submit"
+          LayoutButton {INPUT} at (206.55,20) size 51.64x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 35.64x13
+              LayoutText {#text} at (0,0) size 36x13
+                text run at (0,0) width 36: "Submit"
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {HR} at (0,2372.78) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,2390.78) size 769x18

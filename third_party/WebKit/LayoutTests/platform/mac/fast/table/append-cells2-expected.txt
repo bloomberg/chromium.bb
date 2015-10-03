@@ -76,14 +76,14 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 4x18
                 text run at (0,0) width 4: " "
       LayoutBlockFlow (anonymous) at (0,124) size 784x19
-        LayoutButton {BUTTON} at (0,1) size 43.91x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          LayoutBlockFlow (anonymous) at (8,2) size 27.91x13
-            LayoutText {#text} at (0,0) size 28x13
-              text run at (0,0) width 28: "show"
-        LayoutText {#text} at (43,0) size 5x18
-          text run at (43,0) width 5: " "
-        LayoutButton {BUTTON} at (47.91,1) size 38.55x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-          LayoutBlockFlow (anonymous) at (8,2) size 22.55x13
-            LayoutText {#text} at (0,0) size 23x13
-              text run at (0,0) width 23: "hide"
+        LayoutButton {BUTTON} at (0,1) size 42.70x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          LayoutBlockFlow (anonymous) at (8,2) size 26.70x13
+            LayoutText {#text} at (0,0) size 27x13
+              text run at (0,0) width 27: "show"
+        LayoutText {#text} at (42,0) size 5x18
+          text run at (42,0) width 5: " "
+        LayoutButton {BUTTON} at (46.70,1) size 37.34x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+          LayoutBlockFlow (anonymous) at (8,2) size 21.34x13
+            LayoutText {#text} at (0,0) size 22x13
+              text run at (0,0) width 22: "hide"
         LayoutText {#text} at (0,0) size 0x0

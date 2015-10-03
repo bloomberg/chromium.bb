@@ -16,24 +16,24 @@ layer at (0,0) size 800x600
 layer at (8,26) size 141x32 clip at (9,27) size 139x30
   LayoutTextControl {TEXTAREA} at (0,18) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 135x13 [color=#640000]
-      LayoutText {#text} at (0,0) size 21x13
-        text run at (0,0) width 21: "text"
+      LayoutText {#text} at (0,0) size 19x13
+        text run at (0,0) width 19: "text"
     LayoutBlockFlow {DIV} at (3,3) size 135x13
 layer at (153,26) size 141x32 clip at (154,27) size 139x30
   LayoutTextControl {TEXTAREA} at (145,18) size 141x32 [color=#545454] [bgcolor=#FFFFFF] [border: (1px solid #545454)]
     LayoutBlockFlow {DIV} at (3,3) size 135x13 [color=#640000]
-      LayoutText {#text} at (0,0) size 69x13
-        text run at (0,0) width 69: "disabled text"
+      LayoutText {#text} at (0,0) size 65x13
+        text run at (0,0) width 65: "disabled text"
     LayoutBlockFlow {DIV} at (3,3) size 135x13
 layer at (298,26) size 141x32 clip at (299,27) size 139x30
   LayoutTextControl {TEXTAREA} at (290,18) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 135x13 [color=#A9A9A9]
-      LayoutText {#text} at (0,0) size 37x13
-        text run at (0,0) width 37: "default"
+      LayoutText {#text} at (0,0) size 35x13
+        text run at (0,0) width 35: "default"
     LayoutBlockFlow {DIV} at (3,3) size 135x13
 layer at (443,26) size 141x32 clip at (444,27) size 139x30
   LayoutTextControl {TEXTAREA} at (435,18) size 141x32 [color=#545454] [bgcolor=#FFFFFF] [border: (1px solid #545454)]
     LayoutBlockFlow {DIV} at (3,3) size 135x13 [color=#A9A9A9]
-      LayoutText {#text} at (0,0) size 85x13
-        text run at (0,0) width 85: "default disabled"
+      LayoutText {#text} at (0,0) size 80x13
+        text run at (0,0) width 80: "default disabled"
     LayoutBlockFlow {DIV} at (3,3) size 135x13

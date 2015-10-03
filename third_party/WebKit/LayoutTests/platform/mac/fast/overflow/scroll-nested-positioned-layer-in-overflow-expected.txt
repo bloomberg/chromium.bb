@@ -12,8 +12,8 @@ layer at (0,-236) size 572x836 backgroundClip at (0,42) size 785x558 clip at (0,
         text run at (0,0) width 573: "This tests that we can scroll to reveal something in a nested positioned block in overflow."
     LayoutBlockFlow {DIV} at (0,18) size 572.31x800
     LayoutBlockFlow (anonymous) at (0,818) size 572.31x18
-      LayoutButton {INPUT} at (0,0) size 202.67x18 [bgcolor=#C0C0C0]
-        LayoutBlockFlow (anonymous) at (8,2) size 186.67x13
-          LayoutText {#text} at (0,0) size 187x13
-            text run at (0,0) width 187: "If you can see this, test has passed"
+      LayoutButton {INPUT} at (0,0) size 191.81x18 [bgcolor=#C0C0C0]
+        LayoutBlockFlow (anonymous) at (8,2) size 175.81x13
+          LayoutText {#text} at (0,0) size 176x13
+            text run at (0,0) width 176: "If you can see this, test has passed"
       LayoutText {#text} at (0,0) size 0x0

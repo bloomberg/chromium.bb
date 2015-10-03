@@ -1,8 +1,8 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 678
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 659
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x678 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x677.50
-    LayoutBlockFlow {BODY} at (8,21.44) size 769x640.06
+layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x658.50
+    LayoutBlockFlow {BODY} at (8,21.44) size 769x621.06
       LayoutBlockFlow {H1} at (0,0) size 769x37
         LayoutText {#text} at (0,0) size 317x37
           text run at (0,0) width 317: "Generic Table Tests - 1"
@@ -62,28 +62,29 @@ layer at (0,0) size 785x678 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {H2} at (0,400.16) size 769x28
         LayoutText {#text} at (0,0) size 156x28
           text run at (0,0) width 156: "Submit Results"
-      LayoutBlockFlow {FORM} at (0,448.06) size 769x38
-        LayoutBlockFlow {P} at (0,0) size 769x38
+      LayoutBlockFlow {FORM} at (0,448.06) size 769x19
+        LayoutBlockFlow {P} at (0,0) size 769x19
           LayoutText {#text} at (0,0) size 267x18
             text run at (0,0) width 267: "How does your browser fare on this test? "
-          LayoutMenuList {SELECT} at (266.59,1) size 245x18 [bgcolor=#F8F8F8]
-            LayoutBlockFlow (anonymous) at (0,0) size 245x18
-              LayoutText (anonymous) at (8,2) size 140x13
-                text run at (8,2) width 140: "The test renders correctly."
-          LayoutText {#text} at (511,0) size 5x18
-            text run at (511,0) width 5: " "
+          LayoutMenuList {SELECT} at (266.59,1) size 232x18 [bgcolor=#F8F8F8]
+            LayoutBlockFlow (anonymous) at (0,0) size 232x18
+              LayoutText (anonymous) at (8,2) size 132x13
+                text run at (8,2) width 132: "The test renders correctly."
+          LayoutText {#text} at (498,0) size 5x18
+            text run at (498,0) width 5: " "
           LayoutInline {LABEL} at (0,0) size 204x18
-            LayoutText {#text} at (515,0) size 73x18
-              text run at (515,0) width 73: "Comment: "
-            LayoutTextControl {INPUT} at (587.14,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+            LayoutText {#text} at (502,0) size 73x18
+              text run at (502,0) width 73: "Comment: "
+            LayoutTextControl {INPUT} at (574.14,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutText {#text} at (705,0) size 5x18
+            text run at (705,0) width 5: " "
+          LayoutButton {INPUT} at (709.14,1) size 51.64x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 35.64x13
+              LayoutText {#text} at (0,0) size 36x13
+                text run at (0,0) width 36: "Submit"
           LayoutText {#text} at (0,0) size 0x0
-          LayoutButton {INPUT} at (0,20) size 53.45x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 37.45x13
-              LayoutText {#text} at (0,0) size 38x13
-                text run at (0,0) width 38: "Submit"
-          LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {HR} at (0,502.06) size 769x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow {P} at (0,520.06) size 769x18
+      LayoutBlockFlow {HR} at (0,483.06) size 769x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,501.06) size 769x18
         LayoutText {#text} at (0,0) size 64x18
           text run at (0,0) width 64: "Up to the "
         LayoutInline {A} at (0,0) size 75x18 [color=#0000EE]
@@ -91,7 +92,7 @@ layer at (0,0) size 785x678 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (63,0) width 75: "Table Tests"
         LayoutText {#text} at (137,0) size 5x18
           text run at (137,0) width 5: "."
-      LayoutBlockFlow {P} at (0,554.06) size 769x18
+      LayoutBlockFlow {P} at (0,535.06) size 769x18
         LayoutText {#text} at (0,0) size 64x18
           text run at (0,0) width 64: "Up to the "
         LayoutInline {A} at (0,0) size 101x18 [color=#0000EE]
@@ -99,7 +100,7 @@ layer at (0,0) size 785x678 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (63,0) width 101: "Evil Tests Page"
         LayoutText {#text} at (163,0) size 5x18
           text run at (163,0) width 5: "."
-      LayoutBlockFlow {P} at (0,588.06) size 769x18
+      LayoutBlockFlow {P} at (0,569.06) size 769x18
         LayoutText {#text} at (0,0) size 177x18
           text run at (0,0) width 177: "This page is maintained by "
         LayoutInline {A} at (0,0) size 79x18 [color=#0000EE]
@@ -112,8 +113,8 @@ layer at (0,0) size 785x678 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (263,0) width 125: "py8ieh@bath.ac.uk"
         LayoutText {#text} at (387,0) size 10x18
           text run at (387,0) width 10: ")."
-      LayoutBlockFlow {P} at (0,622.06) size 769x18
+      LayoutBlockFlow {P} at (0,603.06) size 769x18
         LayoutText {#text} at (0,0) size 185x18
           text run at (0,0) width 185: "Last updated in March 1999."
-layer at (598,473) size 125x13
+layer at (585,473) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13

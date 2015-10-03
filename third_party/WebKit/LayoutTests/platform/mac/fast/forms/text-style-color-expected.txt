@@ -16,17 +16,17 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 0x0
 layer at (11,11) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 37x13
-      text run at (0,0) width 37: "default"
+    LayoutText {#text} at (0,0) size 35x13
+      text run at (0,0) width 35: "default"
 layer at (146,11) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 18x13
-      text run at (0,0) width 18: "red"
+    LayoutText {#text} at (0,0) size 17x13
+      text run at (0,0) width 17: "red"
 layer at (281,11) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 87x13
-      text run at (0,0) width 87: "default on green"
+    LayoutText {#text} at (0,0) size 82x13
+      text run at (0,0) width 82: "default on green"
 layer at (416,11) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 68x13
-      text run at (0,0) width 68: "red on green"
+    LayoutText {#text} at (0,0) size 64x13
+      text run at (0,0) width 64: "red on green"
