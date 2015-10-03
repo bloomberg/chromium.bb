@@ -790,7 +790,6 @@ class MediaCodecBridge {
         }
     }
 
-    // TODO(xhwang): fix deprecation warnings crbug.com/527916
     @SuppressWarnings("deprecation")
     private int getAudioFormat(int channelCount) {
         switch (channelCount) {
@@ -803,7 +802,11 @@ class MediaCodecBridge {
             case 6:
                 return AudioFormat.CHANNEL_OUT_5POINT1;
             case 8:
-                return AudioFormat.CHANNEL_OUT_7POINT1;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    return AudioFormat.CHANNEL_OUT_7POINT1_SURROUND;
+                } else {
+                    return AudioFormat.CHANNEL_OUT_7POINT1;
+                }
             default:
                 return AudioFormat.CHANNEL_OUT_DEFAULT;
         }

@@ -946,8 +946,6 @@ public class MediaDrmBridge {
         });
     }
 
-    // TODO(xhwang): fix deprecation warnings crbug.com/527916
-    @SuppressWarnings("deprecation")
     private class EventListener implements MediaDrm.OnEventListener {
         @Override
         public void onEvent(
@@ -961,9 +959,6 @@ public class MediaDrmBridge {
                 return;
             }
             switch(event) {
-                case MediaDrm.EVENT_PROVISION_REQUIRED:
-                    Log.d(TAG, "MediaDrm.EVENT_PROVISION_REQUIRED");
-                    break;
                 case MediaDrm.EVENT_KEY_REQUIRED:
                     Log.d(TAG, "MediaDrm.EVENT_KEY_REQUIRED");
                     if (mProvisioningPending) {
