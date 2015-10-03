@@ -92,7 +92,6 @@
                   'chrome/browser/ui/android/autofill/|'\
                   'chrome/browser/ui/autofill/|'\
                   'chrome/browser/ui/cocoa/autofill/|'\
-                  'chrome/browser/ui/gtk/autofill/|'\
                   'chrome/browser/ui/views/autofill/|'\
                   'chrome/browser/ui/webui/options/autofill_|'\
                   'chrome/renderer/autofill/|'\
@@ -325,7 +324,6 @@
                   'chrome/browser/ui/webui/.*downloads|' \
                   'chrome/browser/ui/views/download/|' \
                   'chrome/browser/ui/cocoa/download/|' \
-                  'chrome/browser/ui/gtk/download/'
     },
     'drive': {
       'filepath': 'chrome/browser/chromeos/drive/|' \
@@ -598,7 +596,6 @@
     'panels': {
       'filepath': 'chrome/browser/ui/panels'\
                   '|chrome/browser/ui/cocoa/panels'\
-                  '|chrome/browser/ui/gtk/panels'\
                   '|chrome/browser/ui/views/panels'
     },
     'password_manager': {
