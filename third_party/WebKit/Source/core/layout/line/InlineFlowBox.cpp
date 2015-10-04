@@ -971,7 +971,7 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
     if (!locationInContainer.intersects(overflowRect))
         return false;
 
-    // We need to hit test both our inline children (InlineBoxes) and culled inlines
+    // We need to hit test both our inline children (Inline Boxes) and culled inlines
     // (LayoutObjects). We check our inlines in the same order as line layout but
     // for each inline we additionally need to hit test its culled inline parents.
     // While hit testing culled inline parents, we can stop once we reach
@@ -989,22 +989,30 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
             return true;
         }
 
-        // If the current inlinebox's layout object and the previous inlinebox's layout object are same,
-        // we should yield the hit-test to the previous inlinebox.
+        // If the current inline box's layout object and the previous inline box's layout object are same,
+        // we should yield the hit-test to the previous inline box.
         if (prev && curr->layoutObject() == prev->layoutObject())
             continue;
 
-        LayoutObject* culledParent = &curr->layoutObject();
+        // If a parent of the current inline box is a culled inline,
+        // we hit test it before we move the previous inline box.
+        LayoutObject* currLayoutObject = &curr->layoutObject();
         while (true) {
-            LayoutObject* sibling = culledParent->style()->isLeftToRightDirection() ? culledParent->previousSibling() : culledParent->nextSibling();
-            culledParent = culledParent->parent();
+            // If the previous inline box is not a descendant of a current inline's parent,
+            // the parent is a culled inline and we hit test it.
+            // Otherwise, move to the previous inline box because we hit test first all
+            // candidate inline boxes under the parent to take a pre-order tree traversal in reverse.
+            bool hasSibling = currLayoutObject->previousSibling() || currLayoutObject->nextSibling();
+            LayoutObject* culledParent = currLayoutObject->parent();
             ASSERT(culledParent);
 
-            if (culledParent == layoutObject() || (sibling && prev && prev->layoutObject().isDescendantOf(culledParent)))
+            if (culledParent == layoutObject() || (hasSibling && prev && prev->layoutObject().isDescendantOf(culledParent)))
                 break;
 
             if (culledParent->isLayoutInline() && toLayoutInline(culledParent)->hitTestCulledInline(result, locationInContainer, accumulatedOffset))
                 return true;
+
+            currLayoutObject = culledParent;
         }
     }
 
