@@ -547,6 +547,7 @@ void RuleFeatureSet::clear()
     m_classInvalidationSets.clear();
     m_attributeInvalidationSets.clear();
     m_idInvalidationSets.clear();
+    m_pseudoInvalidationSets.clear();
 }
 
 void RuleFeatureSet::collectInvalidationSetsForClass(InvalidationSetVector& invalidationSets, Element& element, const AtomicString& className) const
