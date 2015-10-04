@@ -160,8 +160,6 @@
         '<(webrtc_base)/ratelimiter.h',
         '<(webrtc_base)/ratetracker.cc',
         '<(webrtc_base)/ratetracker.h',
-        '<(webrtc_base)/schanneladapter.cc',
-        '<(webrtc_base)/schanneladapter.h',
         '<(webrtc_base)/scoped_autorelease_pool.h',
         '<(webrtc_base)/scoped_autorelease_pool.mm',
         '<(webrtc_base)/scoped_ptr.h',
@@ -263,7 +261,6 @@
         ['OS!="win"', {
           'sources/': [
             ['exclude', '/win[a-z0-9]+\\.(h|cc)$'],
-            ['exclude', '/schanneladapter\\.(h|cc)$'],
           ],
         }],
       ],

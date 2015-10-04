@@ -101,7 +101,6 @@
     }, {
       'sources/': [
         ['exclude', '/win[a-z0-9]+\\.(h|cc)$'],
-        ['exclude', '/schanneladapter\\.(h|cc)$'],
       ],
     }],
     ['os_posix!=1 and nacl_untrusted_build==0', {
