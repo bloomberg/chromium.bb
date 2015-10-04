@@ -93,7 +93,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   virtual blink::WebFloatPoint adjustEventPointForPinchZoom(
       const blink::WebFloatPoint& point) const;
   void setDeviceScaleFactor(float device_scale) override;
-  float deviceScaleFactor() const override;
   void setBackgroundColor(blink::WebColor color) override;
   void setHasTransparentBackground(bool transparent) override;
   void setVisible(bool visible) override;

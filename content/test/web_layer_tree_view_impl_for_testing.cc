@@ -78,10 +78,6 @@ void WebLayerTreeViewImplForTesting::setDeviceScaleFactor(
   layer_tree_host_->SetDeviceScaleFactor(device_scale_factor);
 }
 
-float WebLayerTreeViewImplForTesting::deviceScaleFactor() const {
-  return layer_tree_host_->device_scale_factor();
-}
-
 void WebLayerTreeViewImplForTesting::setBackgroundColor(WebColor color) {
   layer_tree_host_->set_background_color(color);
 }

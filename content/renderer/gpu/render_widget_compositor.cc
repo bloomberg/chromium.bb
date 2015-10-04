@@ -620,10 +620,6 @@ void RenderWidgetCompositor::setDeviceScaleFactor(float device_scale) {
   layer_tree_host_->SetDeviceScaleFactor(device_scale);
 }
 
-float RenderWidgetCompositor::deviceScaleFactor() const {
-  return layer_tree_host_->device_scale_factor();
-}
-
 void RenderWidgetCompositor::setBackgroundColor(blink::WebColor color) {
   layer_tree_host_->set_background_color(color);
 }

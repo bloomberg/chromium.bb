@@ -65,7 +65,6 @@ public:
     virtual void setViewportSize(const WebSize& deviceViewportSize) { }
 
     virtual void setDeviceScaleFactor(float) { }
-    virtual float deviceScaleFactor() const { return 0; }
 
     // Sets the background color for the viewport.
     virtual void setBackgroundColor(WebColor) { }

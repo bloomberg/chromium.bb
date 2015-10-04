@@ -36,7 +36,6 @@ class WebLayerTreeViewImplForTesting
                                const blink::WebSize& device_viewport_size);
   void setViewportSize(const blink::WebSize& device_viewport_size) override;
   void setDeviceScaleFactor(float scale_factor) override;
-  float deviceScaleFactor() const override;
   void setBackgroundColor(blink::WebColor) override;
   void setHasTransparentBackground(bool transparent) override;
   void setVisible(bool visible) override;
