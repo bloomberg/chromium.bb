@@ -51,3 +51,6 @@ Bindings/named-property-enumerator.html
 
 # Times out on Android. crbug.com/384857
 Animation/overlay-background-color-transitions.html
+
+# Assumes window.eventSender is always supported; it only is for "content-shell" performance runs.
+DOM/click_webkit_user_select_none.html
