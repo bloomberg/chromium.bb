@@ -227,25 +227,32 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
     }
 }
 
+PassOwnPtrWillBeRawPtr<RejectedPromises::MessageQueue> RejectedPromises::createMessageQueue()
+{
+    return adoptPtrWillBeNoop(new MessageQueue());
+}
+
 void RejectedPromises::dispose()
 {
-    if (!m_queue.isEmpty()) {
-        OwnPtrWillBeRawPtr<WillBeHeapDeque<OwnPtrWillBeMember<Message>>> queue = adoptPtr(new WillBeHeapDeque<OwnPtrWillBeMember<Message>>());
-        queue->swap(m_queue);
-        processQueueNow(queue.release());
-    }
+    if (m_queue.isEmpty())
+        return;
+
+    OwnPtrWillBeRawPtr<MessageQueue> queue = createMessageQueue();
+    queue->swap(m_queue);
+    processQueueNow(queue.release());
 }
 
 void RejectedPromises::processQueue()
 {
     if (m_queue.isEmpty())
         return;
-    OwnPtrWillBeRawPtr<WillBeHeapDeque<OwnPtrWillBeMember<Message>>> queue = adoptPtr(new WillBeHeapDeque<OwnPtrWillBeMember<Message>>());
+
+    OwnPtrWillBeRawPtr<MessageQueue> queue = createMessageQueue();
     queue->swap(m_queue);
     Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(FROM_HERE, new Task(bind(&RejectedPromises::processQueueNow, this, queue.release())));
 }
 
-void RejectedPromises::processQueueNow(PassOwnPtrWillBeRawPtr<WillBeHeapDeque<OwnPtrWillBeMember<Message>>> queue)
+void RejectedPromises::processQueueNow(PassOwnPtrWillBeRawPtr<MessageQueue> queue)
 {
     // Remove collected handlers.
     for (size_t i = 0; i < m_reportedAsErrors.size();) {

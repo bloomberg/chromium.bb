@@ -37,10 +37,14 @@ public:
 private:
     class Message;
 
-    void processQueueNow(PassOwnPtrWillBeRawPtr<WillBeHeapDeque<OwnPtrWillBeMember<Message>>>);
+    using MessageQueue = WillBeHeapDeque<OwnPtrWillBeMember<Message>>;
+
+    PassOwnPtrWillBeRawPtr<MessageQueue> createMessageQueue();
+
+    void processQueueNow(PassOwnPtrWillBeRawPtr<MessageQueue>);
     void revokeNow(PassOwnPtrWillBeRawPtr<Message>);
 
-    WillBeHeapDeque<OwnPtrWillBeMember<Message>> m_queue;
+    MessageQueue m_queue;
     WillBeHeapVector<OwnPtrWillBeMember<Message>> m_reportedAsErrors;
 };
 
