@@ -1927,6 +1927,27 @@
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
       ],
+      'conditions': [
+        ['test_isolation_mode != "noop"',
+          {
+            'targets': [
+              {
+                'target_name': 'media_unittests_apk_run',
+                'type': 'none',
+                'dependencies': [
+                  'media_unittests_apk',
+                ],
+                'includes': [
+                  '../build/isolate.gypi',
+                ],
+                'sources': [
+                  'media_unittests_apk.isolate',
+                ],
+              },
+            ],
+          },
+        ],
+      ],
     }],
     ['media_use_ffmpeg==1', {
       'targets': [
