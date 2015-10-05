@@ -25,7 +25,7 @@ class ScopedFileOpener::Runner
         open_callback_(callback),
         aborting_requested_(false),
         open_completed_(false),
-        file_handle_(-1) {
+        file_handle_(0) {
     abort_callback_ = file_system_->OpenFile(
         file_path, mode,
         base::Bind(&ScopedFileOpener::Runner::OnOpenFileCompleted, this));
@@ -40,7 +40,7 @@ class ScopedFileOpener::Runner
       return;
     }
 
-    if (open_completed_ && file_handle_ != -1) {
+    if (open_completed_ && file_handle_ != 0) {
       if (file_system_.get()) {
         file_system_->CloseFile(
             file_handle_,
@@ -53,7 +53,7 @@ class ScopedFileOpener::Runner
 
     // Otherwise nothing to abort nor to close - the opening process has
     // completed, but the file failed to open, so there is no need to close it.
-    DCHECK(open_completed_ && file_handle_ == -1);
+    DCHECK(open_completed_ && file_handle_ == 0);
   }
 
  private:
@@ -64,13 +64,13 @@ class ScopedFileOpener::Runner
   // Called when opening is completed with either a success or an error.
   void OnOpenFileCompleted(int file_handle, base::File::Error result) {
     open_completed_ = true;
-    file_handle_ = file_handle;
 
     if (result != base::File::FILE_OK) {
       CallOpenCallbackOnce(file_handle, result);
       return;
     }
 
+    file_handle_ = file_handle;
     if (aborting_requested_ && file_system_.get()) {
       // The opening request has been aborted earlier, but the abort request
       // either hasn't arrived yet the extension, or it abort request events are

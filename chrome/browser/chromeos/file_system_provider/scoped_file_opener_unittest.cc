@@ -51,7 +51,7 @@ class TestingProvidedFileSystem : public FakeProvidedFileSystem {
   std::vector<int> close_requests_;
 
   void AbortOpen() {
-    open_callback_.Run(-1, base::File::FILE_ERROR_ABORT);
+    open_callback_.Run(0, base::File::FILE_ERROR_ABORT);
     open_callback_ = OpenFileCallback();
   }
 };
@@ -76,7 +76,7 @@ TEST(ScopedFileOpenerTest, AbortWhileOpening) {
     EXPECT_FALSE(file_system.open_callback().is_null());
   }
   ASSERT_EQ(1u, log.size());
-  EXPECT_EQ(-1, log[0].first);
+  EXPECT_EQ(0, log[0].first);
   EXPECT_EQ(base::File::FILE_ERROR_ABORT, log[0].second);
 
   base::RunLoop().RunUntilIdle();
@@ -104,7 +104,7 @@ TEST(ScopedFileOpenerTest, CloseWhileOpening) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1u, log.size());
-  EXPECT_EQ(-1, log[0].first);
+  EXPECT_EQ(0, log[0].first);
   EXPECT_EQ(base::File::FILE_ERROR_ABORT, log[0].second);
 
   ASSERT_EQ(1u, file_system.close_requests().size());
@@ -130,6 +130,25 @@ TEST(ScopedFileOpenerTest, CloseAfterOpening) {
 
   ASSERT_EQ(1u, file_system.close_requests().size());
   EXPECT_EQ(123, file_system.close_requests()[0]);
+}
+
+TEST(ScopedFileOpenerTest, CloseAfterAborting) {
+  TestingProvidedFileSystem file_system;
+  content::TestBrowserThreadBundle thread_bundle;
+  OpenLog log;
+  {
+    ScopedFileOpener file_opener(&file_system, base::FilePath(),
+                                 OPEN_FILE_MODE_READ,
+                                 base::Bind(&LogOpen, &log));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_FALSE(file_system.open_callback().is_null());
+    file_system.open_callback().Run(0, base::File::FILE_ERROR_ABORT);
+  }
+
+  ASSERT_EQ(1u, log.size());
+  EXPECT_EQ(0, log[0].first);
+  EXPECT_EQ(base::File::FILE_ERROR_ABORT, log[0].second);
+  EXPECT_EQ(0u, file_system.close_requests().size());
 }
 
 }  // namespace file_system_provider

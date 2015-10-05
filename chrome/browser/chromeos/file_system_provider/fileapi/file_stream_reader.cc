@@ -32,7 +32,7 @@ class FileStreamReader::OperationRunner
           FileStreamReader::OperationRunner,
           content::BrowserThread::DeleteOnUIThread> {
  public:
-  OperationRunner() : file_handle_(-1) {}
+  OperationRunner() : file_handle_(0) {}
 
   // Opens a file for reading and calls the completion callback. Must be called
   // on UI thread.

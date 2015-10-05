@@ -89,6 +89,8 @@ class ProvidedFileSystemInterface {
     METADATA_FIELD_THUMBNAIL = 1 << 0
   };
 
+  // Callback for OpenFile(). In case of an error, file_handle is equal to 0
+  // and result is set to an error code.
   typedef base::Callback<void(int file_handle, base::File::Error result)>
       OpenFileCallback;
 
@@ -138,7 +140,7 @@ class ProvidedFileSystemInterface {
       const storage::AsyncFileUtil::ReadDirectoryCallback& callback) = 0;
 
   // Requests opening a file at |file_path|. If the file doesn't exist, then the
-  // operation will fail.
+  // operation will fail. In case of any error, the returned file handle is 0.
   virtual AbortCallback OpenFile(const base::FilePath& file_path,
                                  OpenFileMode mode,
                                  const OpenFileCallback& callback) = 0;

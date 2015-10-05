@@ -26,7 +26,7 @@ class FileStreamWriter::OperationRunner
           FileStreamWriter::OperationRunner,
           content::BrowserThread::DeleteOnUIThread> {
  public:
-  OperationRunner() : file_handle_(-1) {}
+  OperationRunner() : file_handle_(0) {}
 
   // Opens a file for writing and calls the completion callback. Must be called
   // on UI thread.
