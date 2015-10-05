@@ -584,12 +584,12 @@ mkdir -p "${COMPILER_RT_BUILD_DIR}"
 pushd "${COMPILER_RT_BUILD_DIR}"
 
 rm -fv CMakeCache.txt
-MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
+MACOSX_DEPLOYMENT_TARGET=${deployment_target} CC="" CXX="" cmake -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DLLVM_ENABLE_THREADS=OFF \
-    -DCMAKE_C_COMPILER="${CC}" \
-    -DCMAKE_CXX_COMPILER="${CXX}" \
+    -DCMAKE_C_COMPILER="${ABS_LLVM_BUILD_DIR}/bin/clang" \
+    -DCMAKE_CXX_COMPILER="${ABS_LLVM_BUILD_DIR}/bin/clang++" \
     -DSANITIZER_MIN_OSX_VERSION="10.7" \
     -DLLVM_CONFIG_PATH="${ABS_LLVM_BUILD_DIR}/bin/llvm-config" \
     "${ABS_COMPILER_RT_DIR}"
