@@ -121,9 +121,19 @@ public:
         // Practically speaking, as far as I crawled real web applications,
         // the number of wrappers handled by each minor GC cycle is at most 3000.
         // So this limit is mainly for pathological micro benchmarks.
+        //
+        // In Oilpan, we don't limit the number of wrappers to collect as many
+        // wrappers in minor GC cycles as possible. This may increase the pause
+        // time of a minor GC, but if we give up collecting wrappers in a minor
+        // GC, it will instead end up with increasing the cost of subsequent
+        // Oilpan's GCs. Thus it will be better to collect as many wrappers as
+        // possible for minimizing the value of max(a pause time of a minor GC,
+        // a pause time of Oilpan's GC).
+#if !ENABLE(OILPAN)
         const unsigned wrappersHandledByEachMinorGC = 10000;
         if (m_nodesInNewSpace.size() >= wrappersHandledByEachMinorGC)
             return;
+#endif
 
         v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
