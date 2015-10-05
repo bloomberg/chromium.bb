@@ -35,6 +35,7 @@
       'target_name': 'cast_public_api',
       'type': '<(component)',
       'sources': [
+        'public/avsettings.h',
         'public/cast_egl_platform.h',
         'public/cast_egl_platform_shlib.h',
         'public/cast_media_shlib.h',

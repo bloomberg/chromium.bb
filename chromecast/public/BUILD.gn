@@ -8,6 +8,7 @@ config("public_config") {
 
 source_set("public") {
   sources = [
+    "avsettings.h",
     "cast_egl_platform.h",
     "cast_egl_platform_shlib.h",
     "cast_media_shlib.h",
