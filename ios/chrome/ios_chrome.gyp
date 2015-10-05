@@ -468,6 +468,8 @@
         'browser/ui/uikit_ui_util.h',
         'browser/ui/uikit_ui_util.mm',
         'browser/ui/url_loader.h',
+        'browser/ui/webui/about_ui.cc',
+        'browser/ui/webui/about_ui.h',
         'browser/ui/webui/net_export/net_export_ui.cc',
         'browser/ui/webui/net_export/net_export_ui.h',
         'browser/ui/webui/sync_internals/sync_internals_message_handler.cc',
