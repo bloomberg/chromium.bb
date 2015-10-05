@@ -74,6 +74,9 @@ class V8GCTimes(page_test.PageTest):
         continue
 
       event_stat.thread_duration += event.thread_duration
+      event_stat.max_thread_duration = max(event_stat.max_thread_duration,
+                                           event.thread_duration)
+      event_stat.count += 1
 
       parent_idle_task = _ParentIdleTask(event)
       if parent_idle_task:
@@ -96,6 +99,23 @@ class V8GCTimes(page_test.PageTest):
           results.current_page, v8_event_stat.result_name, 'ms',
           v8_event_stat.thread_duration,
           description=('Total thread duration spent in %s' %
+                       v8_event_stat.result_description)))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, '%s_max' % v8_event_stat.result_name, 'ms',
+          v8_event_stat.max_thread_duration,
+          description=('Max thread duration spent in %s' %
+                       v8_event_stat.result_description)))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, '%s_count' % v8_event_stat.result_name, 'count',
+          v8_event_stat.count,
+          description=('Number of %s' %
+                       v8_event_stat.result_description)))
+      average_thread_duration = statistics.DivideIfPossibleOrZero(
+          v8_event_stat.thread_duration, v8_event_stat.count)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, '%s_average' % v8_event_stat.result_name, 'ms',
+          average_thread_duration,
+          description=('Average thread duration spent in %s' %
                        v8_event_stat.result_description)))
       results.AddValue(scalar.ScalarValue(results.current_page,
           '%s_outside_idle' % v8_event_stat.result_name, 'ms',
@@ -184,6 +204,8 @@ class V8EventStat(object):
     self.thread_duration = 0.0
     self.thread_duration_inside_idle = 0.0
     self.idle_task_overrun_duration = 0.0
+    self.max_thread_duration = 0.0
+    self.count = 0
 
   @property
   def thread_duration_outside_idle(self):
