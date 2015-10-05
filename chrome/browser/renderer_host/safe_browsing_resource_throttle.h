@@ -16,6 +16,7 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_type.h"
+#include "net/log/net_log.h"
 
 class ResourceDispatcherHost;
 
@@ -146,6 +147,15 @@ class SafeBrowsingResourceThrottle
   // request, or following a redirect).
   void ResumeRequest();
 
+  // For marking network events.  |name| and |value| can be null.
+  void BeginNetLogEvent(net::NetLog::EventType type,
+                        const GURL& url,
+                        const char* name,
+                        const char* value);
+  void EndNetLogEvent(net::NetLog::EventType type,
+                      const char* name,
+                      const char* value);
+
   // True if we want to block the starting of requests until they're
   // deemed safe.  Otherwise we let the resource partially load.
   const bool defer_at_start_;
@@ -178,6 +188,7 @@ class SafeBrowsingResourceThrottle
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   const net::URLRequest* request_;
   const content::ResourceType resource_type_;
+  net::BoundNetLog bound_net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingResourceThrottle);
 };
