@@ -5,7 +5,6 @@
 
 """Applies an issue from Rietveld.
 """
-
 import getpass
 import json
 import logging
@@ -28,6 +27,11 @@ import scm
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
+RETURN_CODE_ARG_PARSER = 2     # default in python.
+RETURN_CODE_INFRA_FAILURE = 3  # considered as infra failure.
+RETURN_CODE_OTHERWISE = 1      # any other failure, likely patch apply one.
+
+
 class Unbuffered(object):
   """Disable buffering on a file object."""
   def __init__(self, stream):
@@ -41,9 +45,7 @@ class Unbuffered(object):
     return getattr(self.stream, attr)
 
 
-def main():
-  # TODO(pgervais): This function is way too long. Split.
-  sys.stdout = Unbuffered(sys.stdout)
+def _get_arg_parser():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
       '-v', '--verbose', action='count', default=0,
@@ -92,6 +94,13 @@ def main():
                     help='Don\'t run gclient sync on DEPS changes.')
 
   auth.add_auth_options(parser)
+  return parser
+
+
+def main():
+  # TODO(pgervais,tandrii): split this func, it's still too long.
+  sys.stdout = Unbuffered(sys.stdout)
+  parser = _get_arg_parser()
   options, args = parser.parse_args()
   auth_config = auth.extract_auth_config_from_options(options)
 
@@ -106,6 +115,7 @@ def main():
     print 'update.flag file found: bot_update has run and checkout is already '
     print 'in a consistent state. No actions will be performed in this step.'
     return 0
+
   logging.basicConfig(
       format='%(levelname)5s %(module)11s(%(lineno)4d): %(message)s',
       level=[logging.WARNING, logging.INFO, logging.DEBUG][
@@ -131,19 +141,23 @@ def main():
   # Always try un-authenticated first, except for OAuth2
   if options.private_key_file:
     # OAuth2 authentication
-    obj = rietveld.JwtOAuth2Rietveld(options.server,
+    rietveld_obj = rietveld.JwtOAuth2Rietveld(options.server,
                                      options.email,
                                      options.private_key_file)
-    properties = obj.get_issue_properties(options.issue, False)
+    try:
+      properties = rietveld_obj.get_issue_properties(options.issue, False)
+    except urllib2.URLError:
+      logging.exception('failed to fetch issue properties')
+      sys.exit(RETURN_CODE_INFRA_FAILURE)
   else:
     # Passing None as auth_config disables authentication.
-    obj = rietveld.Rietveld(options.server, None)
+    rietveld_obj = rietveld.Rietveld(options.server, None)
     properties = None
     # Bad except clauses order (HTTPError is an ancestor class of
     # ClientLoginError)
     # pylint: disable=E0701
     try:
-      properties = obj.get_issue_properties(options.issue, False)
+      properties = rietveld_obj.get_issue_properties(options.issue, False)
     except urllib2.HTTPError as e:
       if e.getcode() != 302:
         raise
@@ -151,28 +165,41 @@ def main():
         exit('FAIL: Login detected -- is issue private?')
       # TODO(maruel): A few 'Invalid username or password.' are printed first,
       # we should get rid of those.
+    except urllib2.URLError:
+      logging.exception('failed to fetch issue properties')
+      return RETURN_CODE_INFRA_FAILURE
     except rietveld.upload.ClientLoginError as e:
       # Fine, we'll do proper authentication.
       pass
     if properties is None:
-      obj = rietveld.Rietveld(options.server, auth_config, options.email)
+      rietveld_obj = rietveld.Rietveld(options.server, auth_config,
+                                       options.email)
       try:
-        properties = obj.get_issue_properties(options.issue, False)
+        properties = rietveld_obj.get_issue_properties(options.issue, False)
       except rietveld.upload.ClientLoginError as e:
         print('Accessing the issue requires proper credentials.')
-        return 1
+        return RETURN_CODE_OTHERWISE
+      except urllib2.URLError:
+        logging.exception('failed to fetch issue properties')
+        return RETURN_CODE_INFRA_FAILURE
 
   if not options.patchset:
     options.patchset = properties['patchsets'][-1]
     print('No patchset specified. Using patchset %d' % options.patchset)
 
   issues_patchsets_to_apply = [(options.issue, options.patchset)]
-  depends_on_info = obj.get_depends_on_patchset(options.issue, options.patchset)
+  try:
+    depends_on_info = rietveld_obj.get_depends_on_patchset(
+        options.issue, options.patchset)
+  except urllib2.URLError:
+    logging.exception('failed to fetch depends_on_patchset')
+    return RETURN_CODE_INFRA_FAILURE
+
   while depends_on_info:
     depends_on_issue = int(depends_on_info['issue'])
     depends_on_patchset = int(depends_on_info['patchset'])
     try:
-      depends_on_info = obj.get_depends_on_patchset(depends_on_issue,
+      depends_on_info = rietveld_obj.get_depends_on_patchset(depends_on_issue,
                                                     depends_on_patchset)
       issues_patchsets_to_apply.insert(0, (depends_on_issue,
                                            depends_on_patchset))
@@ -183,6 +210,9 @@ def main():
       print 'Therefore it is likely that this patch will not apply cleanly.'
       print
       depends_on_info = None
+    except urllib2.URLError:
+      logging.exception('failed to fetch dependency issue')
+      return RETURN_CODE_INFRA_FAILURE
 
   num_issues_patchsets_to_apply = len(issues_patchsets_to_apply)
   if num_issues_patchsets_to_apply > 1:
@@ -202,16 +232,21 @@ def main():
                                  patchset_to_apply)
     print('Downloading patch from %s' % issue_url)
     try:
-      patchset = obj.get_patch(issue_to_apply, patchset_to_apply)
+      patchset = rietveld_obj.get_patch(issue_to_apply, patchset_to_apply)
     except urllib2.HTTPError:
       print(
           'Failed to fetch the patch for issue %d, patchset %d.\n'
           'Try visiting %s/%d') % (
               issue_to_apply, patchset_to_apply,
               options.server, issue_to_apply)
-      # Special code for bot_update to indicate that cause is network or
-      # Rietveld. Not 2, because 2 is returned on arg parsing failure.
-      return 3
+      # If we got this far, then this is likely missing patchset.
+      # Thus, it's not infra failure.
+      return RETURN_CODE_OTHERWISE
+    except urllib2.URLError:
+      logging.exception(
+          'Failed to fetch the patch for issue %d, patchset %d',
+          issue_to_apply, patchset_to_apply)
+      return RETURN_CODE_INFRA_FAILURE
     if options.whitelist:
       patchset.patches = [patch for patch in patchset.patches
                           if patch.filename in options.whitelist]
@@ -247,7 +282,7 @@ def main():
       print(str(e))
       print('CWD=%s' % os.getcwd())
       print('Checkout path=%s' % scm_obj.project_path)
-      return 1
+      return RETURN_CODE_OTHERWISE
 
   if ('DEPS' in map(os.path.basename, patchset.filenames)
       and not options.ignore_deps):
@@ -285,10 +320,6 @@ if __name__ == "__main__":
   fix_encoding.fix_encoding()
   try:
     sys.exit(main())
-  except urllib2.URLError:
-    # Weird flakiness of GAE, see http://crbug.com/537417
-    logging.exception('failed to fetch something from Rietveld')
-    sys.exit(3)
   except KeyboardInterrupt:
     sys.stderr.write('interrupted\n')
-    sys.exit(1)
+    sys.exit(RETURN_CODE_OTHERWISE)
