@@ -69,6 +69,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 #include "platform/fonts/Font.h"
+#include "platform/fonts/FontCache.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
 #include "platform/text/TextRun.h"
@@ -817,14 +818,16 @@ void InspectorCSSAgent::collectPlatformFontsForLayoutObject(LayoutObject* layout
 {
     if (!layoutObject->isText())
         return;
+
+    FontCachePurgePreventer preventer;
     LayoutText* layoutText = toLayoutText(layoutObject);
     for (InlineTextBox* box = layoutText->firstTextBox(); box; box = box->nextTextBox()) {
         const ComputedStyle& style = layoutText->styleRef(box->isFirstLineStyle());
         const Font& font = style.font();
         TextRun run = box->constructTextRunForInspector(style, font);
-        SimpleShaper shaper(&font, run);
+        TextRunPaintInfo paintInfo(run);
         GlyphBuffer glyphBuffer;
-        shaper.advance(run.length(), &glyphBuffer);
+        font.buildGlyphBuffer(paintInfo, glyphBuffer);
         for (unsigned i = 0; i < glyphBuffer.size(); ++i) {
             String familyName = glyphBuffer.fontDataAt(i)->platformData().fontFamilyName();
             if (familyName.isNull())
