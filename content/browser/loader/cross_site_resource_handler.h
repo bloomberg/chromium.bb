@@ -26,6 +26,12 @@ struct TransitionLayerData;
 // and not a download.
 class CrossSiteResourceHandler : public LayeredResourceHandler {
  public:
+  enum class NavigationDecision {
+    TRANSFER_REQUIRED,
+    USE_EXISTING_RENDERER,
+    CANCEL_REQUEST
+  };
+
   CrossSiteResourceHandler(scoped_ptr<ResourceHandler> next_handler,
                            net::URLRequest* request);
   ~CrossSiteResourceHandler() override;
@@ -63,7 +69,7 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   bool OnNormalResponseStarted(ResourceResponse* response,
                                bool* defer);
 
-  void ResumeOrTransfer(bool is_transfer);
+  void ResumeOrTransfer(NavigationDecision decision);
   void ResumeIfDeferred();
 
   // Called when about to defer a request.  Sets |did_defer_| and logs the

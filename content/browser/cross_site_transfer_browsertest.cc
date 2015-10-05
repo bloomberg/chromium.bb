@@ -64,11 +64,10 @@ class TrackingResourceDispatcherHostDelegate
         BrowserThread::IO, FROM_HERE,
         base::Bind(
             &TrackingResourceDispatcherHostDelegate::SetTrackedURLOnIOThread,
-            base::Unretained(this),
-            tracked_url));
+            base::Unretained(this), tracked_url, run_loop_->QuitClosure()));
   }
 
-  // Waits until the tracked URL has been requests, and the request for it has
+  // Waits until the tracked URL has been requested, and the request for it has
   // been destroyed.
   bool WaitForTrackedURLAndGetCompleted() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -107,10 +106,12 @@ class TrackingResourceDispatcherHostDelegate
     DISALLOW_COPY_AND_ASSIGN(TrackingThrottle);
   };
 
-  void SetTrackedURLOnIOThread(const GURL& tracked_url) {
+  void SetTrackedURLOnIOThread(const GURL& tracked_url,
+                               const base::Closure& run_loop_quit_closure) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     throttle_created_ = false;
     tracked_url_ = tracked_url;
+    run_loop_quit_closure_ = run_loop_quit_closure;
   }
 
   void OnTrackedRequestDestroyed(bool completed) {
@@ -118,20 +119,20 @@ class TrackingResourceDispatcherHostDelegate
     tracked_request_completed_ = completed;
     tracked_url_ = GURL();
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, run_loop_->QuitClosure());
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            run_loop_quit_closure_);
   }
 
   // These live on the IO thread.
   GURL tracked_url_;
   bool throttle_created_;
+  base::Closure run_loop_quit_closure_;
 
-  // This is created and destroyed on the UI thread, but stopped on the IO
-  // thread.
+  // This lives on the UI thread.
   scoped_ptr<base::RunLoop> run_loop_;
 
-  // Set on the IO thread while |run_loop_| is non-NULL, read on the UI thread
-  // after deleting run_loop_.
+  // Set on the IO thread while |run_loop_| is non-nullptr, read on the UI
+  // thread after deleting run_loop_.
   bool tracked_request_completed_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackingResourceDispatcherHostDelegate);
@@ -148,7 +149,7 @@ class NoTransferRequestDelegate : public WebContentsDelegate {
     bool is_transfer =
         (params.transferred_global_request_id != GlobalRequestID());
     if (is_transfer)
-      return NULL;
+      return nullptr;
     NavigationController::LoadURLParams load_url_params(params.url);
     load_url_params.referrer = params.referrer;
     load_url_params.frame_tree_node_id = params.frame_tree_node_id;
@@ -167,16 +168,14 @@ class NoTransferRequestDelegate : public WebContentsDelegate {
 
 class CrossSiteTransferTest : public ContentBrowserTest {
  public:
-  CrossSiteTransferTest() : old_delegate_(NULL) {
-  }
+  CrossSiteTransferTest() : old_delegate_(nullptr) {}
 
   // ContentBrowserTest implementation:
   void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &CrossSiteTransferTest::InjectResourceDisptcherHostDelegate,
-            base::Unretained(this)));
+        base::Bind(&CrossSiteTransferTest::InjectResourceDispatcherHostDelegate,
+                   base::Unretained(this)));
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
     content::SetupCrossSiteRedirector(embedded_test_server());
@@ -211,7 +210,7 @@ class CrossSiteTransferTest : public ContentBrowserTest {
     IsolateAllSitesForTesting(command_line);
   }
 
-  void InjectResourceDisptcherHostDelegate() {
+  void InjectResourceDispatcherHostDelegate() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     old_delegate_ = ResourceDispatcherHostImpl::Get()->delegate();
     ResourceDispatcherHostImpl::Get()->SetDelegate(&tracking_delegate_);
@@ -220,7 +219,7 @@ class CrossSiteTransferTest : public ContentBrowserTest {
   void RestoreResourceDisptcherHostDelegate() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     ResourceDispatcherHostImpl::Get()->SetDelegate(old_delegate_);
-    old_delegate_ = NULL;
+    old_delegate_ = nullptr;
   }
 
   TrackingResourceDispatcherHostDelegate& tracking_delegate() {
@@ -253,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
 
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url1 = embedded_test_server()->GetURL("/site_isolation/blank.html?1");
-  NavigateToURL(shell(), url1);
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
 
   // Force all future navigations to transfer. Note that this includes same-site
   // navigiations which may cause double process swaps (via OpenURL and then via
@@ -272,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
   NavigateToURLContentInitiated(shell(), url2, true, true);
 
   // There should be one history entry. url2 should have replaced url1.
-  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_TRUE(controller.GetPendingEntry() == nullptr);
   EXPECT_EQ(1, controller.GetEntryCount());
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
   EXPECT_EQ(url2, controller.GetEntryAtIndex(0)->GetURL());
@@ -291,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
 
   // There should be two history entries. url2 should have replaced url1. url2
   // should not have replaced url3.
-  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_TRUE(controller.GetPendingEntry() == nullptr);
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
   EXPECT_EQ(url2, controller.GetEntryAtIndex(0)->GetURL());
@@ -312,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
 
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url = embedded_test_server()->GetURL("/site_isolation/blank.html?1");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   // Force all future navigations to transfer. Note that this includes same-site
   // navigiations which may cause double process swaps (via OpenURL and then via
@@ -326,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
   NavigateToURLContentInitiated(shell(), url2, true, true);
 
   // There should be one history entry. url2 should have replaced url1.
-  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_TRUE(controller.GetPendingEntry() == nullptr);
   EXPECT_EQ(1, controller.GetEntryCount());
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
   EXPECT_EQ(url2, controller.GetEntryAtIndex(0)->GetURL());
@@ -337,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
 
   // There should be two history entries. url2 should have replaced url1. url2
   // should not have replaced url3.
-  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_TRUE(controller.GetPendingEntry() == nullptr);
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
   EXPECT_EQ(url2, controller.GetEntryAtIndex(0)->GetURL());
@@ -353,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
 
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url1 = embedded_test_server()->GetURL("/site_isolation/blank.html?1");
-  NavigateToURL(shell(), url1);
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
 
   // Navigate to a page on A.com which redirects to B.com with entry
   // replacement. This will switch processes via OpenURL twice. First to A.com,
@@ -368,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
   NavigateToURLContentInitiated(shell(), url2a, true, true);
 
   // There should be one history entry. url2b should have replaced url1.
-  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_TRUE(controller.GetPendingEntry() == nullptr);
   EXPECT_EQ(1, controller.GetEntryCount());
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
   EXPECT_EQ(url2b, controller.GetEntryAtIndex(0)->GetURL());
@@ -382,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
 
   // There should be two history entries. url2b should have replaced url1. url2b
   // should not have replaced url3b.
-  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_TRUE(controller.GetPendingEntry() == nullptr);
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
   EXPECT_EQ(url2b, controller.GetEntryAtIndex(0)->GetURL());
@@ -397,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, NoLeakOnCrossSiteCancel) {
 
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url1 = embedded_test_server()->GetURL("/site_isolation/blank.html?1");
-  NavigateToURL(shell(), url1);
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
 
   // Force all future navigations to transfer.
   ShellContentBrowserClient::SetSwapProcessesForRedirect(true);
