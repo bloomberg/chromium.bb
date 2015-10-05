@@ -22677,6 +22677,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.Http2SSLCipherSuite" enum="SSLCipherSuite">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    The SSL/TLS cipher suite that was negotiated, recorded for each successful
+    HTTP/2 connection.
+  </summary>
+</histogram>
+
 <histogram name="Net.HttpAuthCacheAddEvicted" enum="BooleanDidEvict">
   <owner>ttuttle@chromium.org</owner>
   <summary>

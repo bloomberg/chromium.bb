@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -42,9 +43,11 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/spdy/spdy_http_stream.h"
+#include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_failure_state.h"
 
 namespace net {
@@ -1228,6 +1231,17 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     spdy_session->CloseSessionOnError(
         ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY, "");
     return ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY;
+  }
+
+  SSLInfo ssl_info;
+  bool was_npn_negotiated;
+  NextProto protocol_negotiated;
+  if (spdy_session->GetProtocolVersion() >= HTTP2 &&
+      spdy_session->GetSSLInfo(&ssl_info, &was_npn_negotiated,
+                               &protocol_negotiated)) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "Net.Http2SSLCipherSuite",
+        SSLConnectionStatusToCipherSuite(ssl_info.connection_status));
   }
 
   new_spdy_session_ = spdy_session;
