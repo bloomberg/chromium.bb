@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var html = '<button>alpha</button><input type="text">hello</input>';
+
 function getAllWebViews() {
   function findAllWebViews(node, nodes) {
     if (node.role == chrome.automation.RoleType.webView)
@@ -16,38 +18,39 @@ function getAllWebViews() {
   var webViews = [];
   findAllWebViews(rootNode, webViews);
   return webViews;
-};
+}
 
 var allTests = [
   function testLoadTabs() {
-    var webViews = getAllWebViews();
-    assertEq(2, webViews.length);
-    var subroot = webViews[1].firstChild;
-    assertEq(webViews[1], subroot.parent);
-    assertEq(subroot, subroot.parent.children[0]);
-    var button = subroot.firstChild.firstChild;
-    assertEq(chrome.automation.RoleType.button, button.role);
-    var input = subroot.firstChild.lastChild.previousSibling;
-    assertEq(chrome.automation.RoleType.textField, input.role);
-    chrome.test.succeed();
+    runWithDocument(html, function() {
+      var webViews = getAllWebViews();
+      assertEq(2, webViews.length);
+      var subroot = webViews[1].firstChild;
+      assertEq(webViews[1], subroot.parent);
+      assertEq(subroot, subroot.parent.children[0]);
+      var button = subroot.firstChild.firstChild;
+      assertEq(chrome.automation.RoleType.button, button.role);
+      var input = subroot.firstChild.lastChild.previousSibling;
+      assertEq(chrome.automation.RoleType.textField, input.role);
+      chrome.test.succeed();
+    });
   },
 
   function testSubevents() {
-    var button = null;
-    var webViews = getAllWebViews();
-    var subroot = webViews[1].firstChild;
+    runWithDocument(html, function(subroot) {
+      var button = null;
 
-    rootNode.addEventListener(chrome.automation.EventType.focus,
-        function(evt) {
-          assertEq(button, evt.target);
-          chrome.test.succeed();
-        },
-        false);
+      rootNode.addEventListener(chrome.automation.EventType.focus,
+          function(evt) {
+            assertEq(button, evt.target);
+            chrome.test.succeed();
+          },
+          false);
 
-    button = subroot.firstChild.firstChild;
-    button.focus();
+      button = subroot.firstChild.firstChild;
+      button.focus();
+    });
   }
 ];
 
-setupAndRunTests(allTests,
-                 '<button>alpha</button><input type="text">hello</input>');
+setUpAndRunTests(allTests);

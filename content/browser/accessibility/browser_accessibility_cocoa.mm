@@ -1939,9 +1939,9 @@ bool InitializeAccessibilityTreeSearch(
   }
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
     NSRange range = [(NSValue*)value rangeValue];
-    [self delegate]->AccessibilitySetTextSelection(
-        browserAccessibility_->GetId(),
-        range.location, range.location + range.length);
+    [self delegate]->AccessibilitySetSelection(
+        browserAccessibility_->GetId(), range.location,
+        browserAccessibility_->GetId(), range.location + range.length);
   }
 }
 

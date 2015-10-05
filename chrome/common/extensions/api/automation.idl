@@ -276,6 +276,18 @@
     object? attributes;
   };
 
+  // Arguments for the setDocumentSelection() function.
+  [nocompile, noinline_doc] dictionary SetDocumentSelectionParams {
+    // The node where the selection begins.
+    [instanceOf=AutomationNode] object anchorObject;
+    // The offset in the anchor node where the selection begins.
+    long anchorOffset;
+    // The node where the selection ends.
+    [instanceOf=AutomationNode] object focusObject;
+    // The offset within the focus node where the selection ends.
+    long focusOffset;
+  };
+
   // Called when the result for a <code>query</code> is available.
   callback QueryCallback = void(AutomationNode node);
 
@@ -312,7 +324,7 @@
     // The root node of the tree containing this AutomationNode.
     AutomationNode root;
 
-    // Whether this AutomationNode is root node.
+    // Whether this AutomationNode is a root node.
     boolean isRootNode;
 
     // The role of this node.
@@ -420,6 +432,19 @@
 
     // The input type, like email or number.
     DOMString textInputType;
+
+    //
+    // Tree selection attributes (available on root nodes only)
+    //
+
+    // The anchor node of the tree selection, if any.
+    AutomationNode? anchorObject;
+    // The anchor offset of the tree selection, if any.
+    long? anchorOffset;
+    // The focus node of the tree selection, if any.
+    AutomationNode? focusObject;
+    // The focus offset of the tree selection, if any.
+    long? focusOffset;
 
     //
     // Range attributes.
@@ -553,5 +578,16 @@
     // Remove a tree change observer.
     [nocompile] static void removeTreeChangeObserver(
         TreeChangeObserver observer);
+
+    // Sets the selection in a tree. This creates a selection in a single
+    // tree (anchorObject and focusObject must have the same root).
+    // Everything in the tree between the two node/offset pairs gets included
+    // in the selection. The anchor is where the user started the selection,
+    // while the focus is the point at which the selection gets extended
+    // e.g. when dragging with a mouse or using the keyboard. For nodes with
+    // the role staticText, the offset gives the character offset within
+    // the value where the selection starts or ends, respectively.
+    [nocompile] static void setDocumentSelection(
+        SetDocumentSelectionParams params);
   };
 };

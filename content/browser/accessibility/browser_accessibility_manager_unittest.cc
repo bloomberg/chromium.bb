@@ -72,9 +72,10 @@ class TestBrowserAccessibilityDelegate
                                   const gfx::Point& point) override {}
   void AccessibilitySetScrollOffset(int acc_obj_id,
                                     const gfx::Point& offset) override {}
-  void AccessibilitySetTextSelection(int acc_obj_id,
-                                     int start_offset,
-                                     int end_offset) override {}
+  void AccessibilitySetSelection(int acc_anchor_obj_id,
+                                 int start_offset,
+                                 int acc_focus_obj_id,
+                                 int end_offset) override {}
   void AccessibilitySetValue(int acc_obj_id, const base::string16& value)
       override {}
   bool AccessibilityViewHasFocus() const override { return false; }

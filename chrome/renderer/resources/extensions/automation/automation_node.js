@@ -244,9 +244,12 @@ AutomationNodeImpl.prototype = {
   },
 
   setSelection: function(startIndex, endIndex) {
-    this.performAction_('setSelection',
-                        { startIndex: startIndex,
-                          endIndex: endIndex });
+    if (this.role == 'textField' || this.role == 'textBox') {
+      this.performAction_('setSelection',
+                          { focusNodeID: this.id,
+                            anchorOffset: startIndex,
+                            focusOffset: endIndex });
+    }
   },
 
   showContextMenu: function() {

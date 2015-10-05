@@ -34,37 +34,23 @@ function runWithDocument(docString, callback) {
   chrome.tabs.create(createParams, function(tab) {
     chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
       if (tabId == tab.id && changeInfo.status == 'complete') {
-        if (callback)
-          callback();
+        chrome.automation.getTree(tab.id, callback);
       }
     });
   });
 }
 
-function setupAndRunTests(allTests, opt_docString) {
-  function runTestInternal() {
-    chrome.test.runTests(allTests);
-  }
+function listenOnce(node, eventType, callback, capture) {
+  var innerCallback = function(evt) {
+    node.removeEventListener(eventType, innerCallback, capture);
+    callback(evt);
+  };
+  node.addEventListener(eventType, innerCallback, capture);
+}
 
+function setUpAndRunTests(allTests) {
   chrome.automation.getDesktop(function(rootNodeArg) {
     rootNode = rootNodeArg;
-
-    // Only run the test when the window containing the new tab loads.
-    rootNodeArg.addEventListener(
-        chrome.automation.EventType.childrenChanged,
-        function(evt) {
-          var subroot = evt.target.firstChild;
-          if (!opt_docString || !subroot)
-            return;
-
-          if (subroot.role == 'rootWebArea' &&
-              subroot.docUrl.indexOf(opt_docString) != -1)
-            runTestInternal();
-        },
-        true);
-    if (opt_docString)
-      runWithDocument(opt_docString, null);
-    else
-      runTestInternal();
+    chrome.test.runTests(allTests);
   });
 }

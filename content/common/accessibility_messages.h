@@ -125,11 +125,12 @@ IPC_MESSAGE_ROUTED2(AccessibilityMsg_SetScrollOffset,
                     gfx::Point /* new offset */)
 
 // Relay a request from assistive technology to set the cursor or
-// selection within an editable text element.
-IPC_MESSAGE_ROUTED3(AccessibilityMsg_SetTextSelection,
-                    int /* object id */,
-                    int /* New start offset */,
-                    int /* New end offset */)
+// selection within a document.
+IPC_MESSAGE_ROUTED4(AccessibilityMsg_SetSelection,
+                    int /* New anchor object id */,
+                    int /* New anchor offset */,
+                    int /* New focus object id */,
+                    int /* New focus offset */)
 
 // Relay a request from assistive technology to set the value of an
 // editable text element.

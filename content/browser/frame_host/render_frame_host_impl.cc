@@ -526,10 +526,15 @@ void RenderFrameHostImpl::AccessibilitySetScrollOffset(
       routing_id_, acc_obj_id, offset));
 }
 
-void RenderFrameHostImpl::AccessibilitySetTextSelection(
-    int object_id, int start_offset, int end_offset) {
-  Send(new AccessibilityMsg_SetTextSelection(
-      routing_id_, object_id, start_offset, end_offset));
+void RenderFrameHostImpl::AccessibilitySetSelection(int anchor_object_id,
+                                                    int anchor_offset,
+                                                    int focus_object_id,
+                                                    int focus_offset) {
+  Send(new AccessibilityMsg_SetSelection(routing_id_,
+                                         focus_object_id,
+                                         anchor_offset,
+                                         focus_object_id,
+                                         focus_offset));
 }
 
 void RenderFrameHostImpl::AccessibilitySetValue(

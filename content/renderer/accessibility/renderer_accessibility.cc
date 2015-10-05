@@ -102,7 +102,7 @@ bool RendererAccessibility::OnMessageReceived(const IPC::Message& message) {
                         OnScrollToMakeVisible)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_ScrollToPoint, OnScrollToPoint)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetScrollOffset, OnSetScrollOffset)
-    IPC_MESSAGE_HANDLER(AccessibilityMsg_SetTextSelection, OnSetTextSelection)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_SetSelection, OnSetSelection)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetValue, OnSetValue)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_HitTest, OnHitTest)
@@ -502,21 +502,34 @@ void RendererAccessibility::OnSetFocus(int acc_obj_id) {
     obj.setFocused(true);
 }
 
-void RendererAccessibility::OnSetTextSelection(
-    int acc_obj_id, int start_offset, int end_offset) {
+void RendererAccessibility::OnSetSelection(int anchor_acc_obj_id,
+                                           int anchor_offset,
+                                           int focus_acc_obj_id,
+                                           int focus_offset) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
 
-  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
-  if (obj.isDetached()) {
+  WebAXObject anchor_obj =
+      document.accessibilityObjectFromID(anchor_acc_obj_id);
+  if (anchor_obj.isDetached()) {
 #ifndef NDEBUG
-    LOG(WARNING) << "SetTextSelection on invalid object id " << acc_obj_id;
+    LOG(WARNING) << "SetTextSelection on invalid object id "
+                 << anchor_acc_obj_id;
 #endif
     return;
   }
 
-  obj.setSelectedTextRange(start_offset, end_offset);
+  WebAXObject focus_obj = document.accessibilityObjectFromID(focus_acc_obj_id);
+  if (focus_obj.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "SetTextSelection on invalid object id "
+                 << focus_acc_obj_id;
+#endif
+    return;
+  }
+
+  anchor_obj.setSelection(anchor_obj, anchor_offset, focus_obj, focus_offset);
   WebAXObject root = document.accessibilityObject();
   if (root.isDetached()) {
 #ifndef NDEBUG

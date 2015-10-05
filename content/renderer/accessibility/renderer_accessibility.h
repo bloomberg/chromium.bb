@@ -110,7 +110,10 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
   void OnScrollToPoint(int acc_obj_id, gfx::Point point);
   void OnSetScrollOffset(int acc_obj_id, gfx::Point offset);
   void OnSetFocus(int acc_obj_id);
-  void OnSetTextSelection(int acc_obj_id, int start_offset, int end_offset);
+  void OnSetSelection(int anchor_acc_obj_id,
+                      int anchor_offset,
+                      int focus_acc_obj_id,
+                      int focus_offset);
   void OnSetValue(int acc_obj_id, base::string16 value);
   void OnShowContextMenu(int acc_obj_id);
 

@@ -457,8 +457,8 @@ void BrowserAccessibilityManager::SetTextSelection(
     int start_offset,
     int end_offset) {
   if (delegate_) {
-    delegate_->AccessibilitySetTextSelection(
-        node.GetId(), start_offset, end_offset);
+    delegate_->AccessibilitySetSelection(node.GetId(), start_offset,
+                                         node.GetId(), end_offset);
   }
 }
 

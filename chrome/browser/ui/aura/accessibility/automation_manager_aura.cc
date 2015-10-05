@@ -101,9 +101,16 @@ void AutomationManagerAura::MakeVisible(int32 id) {
   current_tree_->MakeVisible(id);
 }
 
-void AutomationManagerAura::SetSelection(int32 id, int32 start, int32 end) {
+void AutomationManagerAura::SetSelection(int32 anchor_id,
+                                         int32 anchor_offset,
+                                         int32 focus_id,
+                                         int32 focus_offset) {
   CHECK(enabled_);
-  current_tree_->SetSelection(id, start, end);
+  if (anchor_id != focus_id) {
+    NOTREACHED();
+    return;
+  }
+  current_tree_->SetSelection(anchor_id, anchor_offset, focus_offset);
 }
 
 void AutomationManagerAura::ShowContextMenu(int32 id) {

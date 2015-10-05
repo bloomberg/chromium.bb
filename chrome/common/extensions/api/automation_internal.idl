@@ -36,10 +36,13 @@ namespace automationInternal {
     ActionType actionType;
   };
 
-  // Arguments for the set_selection action supplied to performAction.
+  // Arguments for the setSelection action supplied to performAction.
   dictionary SetSelectionParams {
-    long startIndex;
-    long endIndex;
+    // Reuses ActionRequiredParams automationNodeID to mean anchor node id,
+    // and treeID to apply to both anchor and focus node ids.
+    long focusNodeID;
+    long anchorOffset;
+    long focusOffset;
   };
 
   // Arguments for the querySelector function.

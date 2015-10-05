@@ -212,4 +212,11 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TreeChange) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DocumentSelection) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(
+      RunExtensionSubtest("automation/tests/tabs", "document_selection.html"))
+      << message_;
+}
+
 }  // namespace extensions

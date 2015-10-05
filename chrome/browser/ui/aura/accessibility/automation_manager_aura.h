@@ -51,7 +51,10 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter {
   void DoDefault(int32 id) override;
   void Focus(int32 id) override;
   void MakeVisible(int32 id) override;
-  void SetSelection(int32 id, int32 start, int32 end) override;
+  void SetSelection(int32 anchor_id,
+                    int32 anchor_offset,
+                    int32 focus_id,
+                    int32 focus_offset) override;
   void ShowContextMenu(int32 id) override;
 
  private:

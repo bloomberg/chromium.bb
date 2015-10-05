@@ -2,14 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function listenOnce(node, eventType, callback, capture) {
-  var innerCallback = function() {
-    node.removeEventListener(eventType, innerCallback, capture);
-    callback();
-  };
-  node.addEventListener(eventType, innerCallback, capture);
-};
-
 var allTests = [
   function testDoDefault() {
     var firstTextField = findAutomationNode(rootNode,
@@ -54,4 +46,4 @@ var allTests = [
   }
 ];
 
-setupAndRunTests(allTests);
+setUpAndRunTests(allTests);

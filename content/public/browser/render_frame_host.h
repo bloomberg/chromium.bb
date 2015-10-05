@@ -113,8 +113,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void AccessibilityScrollToMakeVisible(
       int acc_obj_id, const gfx::Rect& subfocus) = 0;
   virtual void AccessibilityShowContextMenu(int acc_obj_id) = 0;
-  virtual void AccessibilitySetTextSelection(
-      int acc_obj_id, int start_offset, int end_offset) = 0;
+  virtual void AccessibilitySetSelection(int anchor_object_id,
+                                         int anchor_offset,
+                                         int focus_object_id,
+                                         int focus_offset) = 0;
 
   // This is called when the user has committed to the given find in page
   // request (e.g. by pressing enter or by clicking on the next / previous

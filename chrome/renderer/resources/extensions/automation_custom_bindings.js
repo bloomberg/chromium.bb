@@ -127,6 +127,23 @@ automation.registerCustomHook(function(bindingsAPI) {
     addTreeChangeObserver(observer);
   });
 
+  apiFunctions.setHandleRequest('setDocumentSelection', function(params) {
+    var anchorNodeImpl = privates(params.anchorObject).impl;
+    var focusNodeImpl = privates(params.focusObject).impl;
+    if (anchorNodeImpl.treeID !== focusNodeImpl.treeID)
+      throw new Error('Selection anchor and focus must be in the same tree.');
+    if (anchorNodeImpl.treeID === DESKTOP_TREE_ID) {
+      throw new Error('Use AutomationNode.setSelection to set the selection ' +
+          'in the desktop tree.');
+    }
+    automationInternal.performAction({ treeID: anchorNodeImpl.treeID,
+                                       automationNodeID: anchorNodeImpl.id,
+                                       actionType: 'setSelection'},
+                                     { focusNodeID: focusNodeImpl.id,
+                                       anchorOffset: params.anchorOffset,
+                                       focusOffset: params.focusOffset });
+  });
+
 });
 
 automationInternal.onTreeChange.addListener(function(treeID,

@@ -22,9 +22,12 @@ class AutomationActionAdapter {
   // shown.
   virtual void MakeVisible(int32 id) = 0;
 
-  // Sets selection for a start and end index (usually only relevant on text
-  // fields).
-  virtual void SetSelection(int32 id, int32 start, int32 end) = 0;
+  // Sets selection for anchor and focus node/offset pairs.  Also used to set
+  // selection in text fields.
+  virtual void SetSelection(int32 anchor_id,
+                            int32 anchor_offset,
+                            int32 focus_id,
+                            int32 focus_offset) = 0;
 
   // Shows the context menu resulting from a right click.
   virtual void ShowContextMenu(int32 id) = 0;

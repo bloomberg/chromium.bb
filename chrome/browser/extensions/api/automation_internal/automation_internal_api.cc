@@ -169,8 +169,12 @@ class RenderFrameHostActionAdapter : public AutomationActionAdapter {
     rfh_->AccessibilityScrollToMakeVisible(id, gfx::Rect());
   }
 
-  void SetSelection(int32 id, int32 start, int32 end) override {
-    rfh_->AccessibilitySetTextSelection(id, start, end);
+  void SetSelection(int32 anchor_id,
+                    int32 anchor_offset,
+                    int32 focus_id,
+                    int32 focus_offset) override {
+    rfh_->AccessibilitySetSelection(anchor_id, anchor_offset, focus_id,
+                                    focus_offset);
   }
 
   void ShowContextMenu(int32 id) override {
@@ -360,9 +364,9 @@ AutomationInternalPerformActionFunction::RouteActionToAdapter(
       EXTENSION_FUNCTION_VALIDATE(
           api::automation_internal::SetSelectionParams::Populate(
               params->opt_args.additional_properties, &selection_params));
-      adapter->SetSelection(automation_id,
-                           selection_params.start_index,
-                           selection_params.end_index);
+      adapter->SetSelection(automation_id, selection_params.anchor_offset,
+                            selection_params.focus_node_id,
+                            selection_params.focus_offset);
       break;
     }
     case api::automation_internal::ACTION_TYPE_SHOWCONTEXTMENU: {

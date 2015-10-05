@@ -19,6 +19,14 @@ function createTab(url, callback) {
   });
 }
 
+function listenOnce(node, eventType, callback, capture) {
+  var innerCallback = function(evt) {
+    node.removeEventListener(eventType, innerCallback, capture);
+    callback(evt);
+  };
+  node.addEventListener(eventType, innerCallback, capture);
+}
+
 function setUpAndRunTests(allTests, opt_path) {
   var path = opt_path || 'index.html';
   getUrlFromConfig(path, function(url) {

@@ -65,8 +65,10 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
       int acc_obj_id, const gfx::Point& point) = 0;
   virtual void AccessibilitySetScrollOffset(
       int acc_obj_id, const gfx::Point& offset) = 0;
-  virtual void AccessibilitySetTextSelection(
-      int acc_obj_id, int start_offset, int end_offset) = 0;
+  virtual void AccessibilitySetSelection(int anchor_obj_id,
+                                         int anchor_offset,
+                                         int focus_obj_id,
+                                         int focus_offset) = 0;
   virtual void AccessibilitySetValue(
       int acc_obj_id, const base::string16& value) = 0;
   virtual bool AccessibilityViewHasFocus() const = 0;
