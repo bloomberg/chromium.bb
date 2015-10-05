@@ -343,7 +343,15 @@ TEST_F(BackgroundSyncServiceImplTest, GetRegistration) {
   EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NOT_FOUND, error);
 }
 
-TEST_F(BackgroundSyncServiceImplTest, GetRegistrationWithRegisteredSync) {
+// Fails on Android: https://crbug.com/539313
+#if defined(OS_ANDROID)
+#define MAYBE_GetRegistrationWithRegisteredSync \
+  DISABLED_GetRegistrationWithRegisteredSync
+#else
+#define MAYBE_GetRegistrationWithRegisteredSync \
+  GetRegistrationWithRegisteredSync
+#endif
+TEST_F(BackgroundSyncServiceImplTest, MAYBE_GetRegistrationWithRegisteredSync) {
   bool register_called = false;
   bool getregistration_called = false;
   BackgroundSyncError register_error;
@@ -375,7 +383,16 @@ TEST_F(BackgroundSyncServiceImplTest, GetRegistrations) {
   EXPECT_EQ(0UL, array_size);
 }
 
-TEST_F(BackgroundSyncServiceImplTest, GetRegistrationsWithRegisteredSync) {
+// Fails on Android: https://crbug.com/539313
+#if defined(OS_ANDROID)
+#define MAYBE_GetRegistrationsWithRegisteredSync \
+  DISABLED_GetRegistrationsWithRegisteredSync
+#else
+#define MAYBE_GetRegistrationsWithRegisteredSync \
+  GetRegistrationsWithRegisteredSync
+#endif
+TEST_F(BackgroundSyncServiceImplTest,
+       MAYBE_GetRegistrationsWithRegisteredSync) {
   bool register_called = false;
   bool getregistrations_called = false;
   BackgroundSyncError register_error;
@@ -396,7 +413,13 @@ TEST_F(BackgroundSyncServiceImplTest, GetRegistrationsWithRegisteredSync) {
   EXPECT_EQ(1UL, array_size);
 }
 
-TEST_F(BackgroundSyncServiceImplTest, NotifyWhenDone) {
+// Fails on Android: https://crbug.com/539313
+#if defined(OS_ANDROID)
+#define MAYBE_NotifyWhenDone DISABLED_NotifyWhenDone
+#else
+#define MAYBE_NotifyWhenDone NotifyWhenDone
+#endif
+TEST_F(BackgroundSyncServiceImplTest, MAYBE_NotifyWhenDone) {
   // Register a sync event.
   bool register_called = false;
   BackgroundSyncError register_error;
