@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
-<link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
-<link rel="import" href="chrome://md-settings/input/input.html">
-<link rel="import" href="chrome://md-settings/radio_group/radio_group.html">
+<link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
+<link rel="import" href="chrome://md-settings/controls/settings_input.html">
+<link rel="import" href="chrome://md-settings/controls/settings_radio_group.html">
 
 <dom-module id="cr-settings-appearance-page">
   <link rel="import" type="css"
@@ -23,25 +23,25 @@
       </paper-button>
     </div>
     <hr>
-    <cr-settings-checkbox pref="{{prefs.browser.show_home_button}}"
+    <settings-checkbox pref="{{prefs.browser.show_home_button}}"
         i18n-values="label:showHomeButton">
-    </cr-settings-checkbox>
+    </settings-checkbox>
     <template is="dom-if" if="{{prefs.browser.show_home_button.value}}">
-      <cr-settings-radio-group pref="{{prefs.homepage_is_newtabpage}}">
+      <settings-radio-group pref="{{prefs.homepage_is_newtabpage}}">
         <paper-radio-button name="true"
             >[[i18n_.homePageNtp]]</paper-radio-button>
         <paper-radio-button name="false"
             >[[i18n_.openThisPage]]</paper-radio-button>
-      </cr-settings-radio-group>
+      </settings-radio-group>
       <div class="radio-extended">
-        <cr-settings-input no-label-float pref="{{prefs.homepage}}"
+        <settings-input no-label-float pref="{{prefs.homepage}}"
             label="[[i18n_.onStartupEnterUrl]]">
-        </cr-settings-input>
+        </settings-input>
       </div>
     </template>
-    <cr-settings-checkbox pref="{{prefs.bookmark_bar.show_on_all_tabs}}"
+    <settings-checkbox pref="{{prefs.bookmark_bar.show_on_all_tabs}}"
         i18n-values="label:showBookmarksBar">
-    </cr-settings-checkbox>
+    </settings-checkbox>
   </template>
   <script src="appearance_page.js"></script>
 </dom-module>

@@ -4,13 +4,13 @@
 
 /**
  * @fileoverview
- * `cr-settings-input` is a single-line text field for user input associated
+ * `settings-input` is a single-line text field for user input associated
  * with a pref value.
  *
- * @element cr-settings-input
+ * @element settings-input
  */
 Polymer({
-  is: 'cr-settings-input',
+  is: 'settings-input',
 
   behaviors: [PolicyControllable],
 
@@ -74,7 +74,7 @@ Polymer({
    * Focuses the 'input' element.
    */
   focus: function() {
-    this.$.input.inputElement.focus();
+    this.$.input.focus();
   },
 
   /**

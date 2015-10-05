@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
+<link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
 
 <dom-module id="cr-settings-a11y-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
@@ -10,31 +10,31 @@
     <a i18n-values="href:a11yLearnMoreUrl" i18n-content="learnMore"
         target="_blank"></a>
 
-    <cr-settings-checkbox i18n-values="label:optionsInMenuLabel"
+    <settings-checkbox i18n-values="label:optionsInMenuLabel"
         pref="{{prefs.settings.a11y.enable_menu}}">
-    </cr-settings-checkbox>
-    <cr-settings-checkbox i18n-values="label:largeMouseCursorLabel"
+    </settings-checkbox>
+    <settings-checkbox i18n-values="label:largeMouseCursorLabel"
         pref="{{prefs.settings.a11y.large_cursor_enabled}}">
-    </cr-settings-checkbox>
-    <cr-settings-checkbox i18n-values="label:highContrastLabel"
+    </settings-checkbox>
+    <settings-checkbox i18n-values="label:highContrastLabel"
         pref="{{prefs.settings.a11y.high_contrast_enabled}}">
-    </cr-settings-checkbox>
-    <cr-settings-checkbox
+    </settings-checkbox>
+    <settings-checkbox
         pref="{{prefs.settings.a11y.sticky_keys_enabled}}"
         i18n-values="label:stickyKeysLabel; subLabel:stickyKeysSublabel">
-    </cr-settings-checkbox>
-    <cr-settings-checkbox pref="{{prefs.settings.accessibility}}"
+    </settings-checkbox>
+    <settings-checkbox pref="{{prefs.settings.accessibility}}"
         i18n-values="label:chromeVoxLabel; subLabel:chromeVoxSublabel">
-    </cr-settings-checkbox>
-    <cr-settings-checkbox i18n-values="label:screenMagnifierLabel"
+    </settings-checkbox>
+    <settings-checkbox i18n-values="label:screenMagnifierLabel"
         pref="{{prefs.settings.a11y.screen_magnifier}}">
-    </cr-settings-checkbox>
-    <cr-settings-checkbox i18n-values="label:tapDraggingLabel"
+    </settings-checkbox>
+    <settings-checkbox i18n-values="label:tapDraggingLabel"
         pref="{{prefs.settings.touchpad.enable_tap_dragging}}">
-    </cr-settings-checkbox>
-    <cr-settings-checkbox i18n-values="label:clickOnStopLabel"
+    </settings-checkbox>
+    <settings-checkbox i18n-values="label:clickOnStopLabel"
         pref="{{prefs.settings.a11y.autoclick}}">
-    </cr-settings-checkbox>
+    </settings-checkbox>
 
     <div class="autoclick-delay-label"
         hidden$="[[!prefs.settings.a11y.autoclick]]">
@@ -54,9 +54,9 @@
       </select>
     </div>
 
-    <cr-settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"
+    <settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"
         i18n-values="label:onScreenKeyboardLabel">
-    </cr-settings-checkbox>
+    </settings-checkbox>
 
     <div class="button-strip">
       <paper-button i18n-content="moreFeaturesLink"

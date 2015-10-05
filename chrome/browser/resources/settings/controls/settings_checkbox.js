@@ -4,17 +4,17 @@
 
 /**
  * @fileoverview
- * `cr-settings-checkbox` is a checkbox that controls a supplied preference.
+ * `settings-checkbox` is a checkbox that controls a supplied preference.
  *
  * Example:
- *      <cr-settings-checkbox pref="{{prefs.settings.enableFoo}}"
+ *      <settings-checkbox pref="{{prefs.settings.enableFoo}}"
  *          label="Enable foo setting." subLabel="(bar also)">
- *      </cr-settings-checkbox>
+ *      </settings-checkbox>
  *
- * @element cr-settings-checkbox
+ * @element settings-checkbox
  */
 Polymer({
-  is: 'cr-settings-checkbox',
+  is: 'settings-checkbox',
 
   behaviors: [PolicyControllable],
 

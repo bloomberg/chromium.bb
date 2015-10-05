@@ -37,7 +37,7 @@ CrSettingsBrowserTest.prototype = {
 // Runs all tests.
 TEST_F('CrSettingsBrowserTest', 'DISABLED_CrSettingsTest', function() {
   // Register mocha tests for each element.
-  cr_settings_checkbox.registerTests();
+  settings_checkbox.registerTests();
   cr_settings_prefs.registerTests();
 
   // Run all registered tests.

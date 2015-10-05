@@ -3,7 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
+<link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
 <link rel="import" href="user_list.html">
 
@@ -20,27 +20,27 @@
           hidden$="{{computeHideManagedLabel_(isOwner, isWhitelistManaged)}}">
       </div>
       <div>
-        <cr-settings-checkbox
+        <settings-checkbox
             pref="{{prefs.cros.accounts.allowBWSI}}"
             i18n-values="label:guestBrowsingLabel"
             disabled="{{editingDisabled}}">
-        </cr-settings-checkbox>
-        <cr-settings-checkbox
+        </settings-checkbox>
+        <settings-checkbox
             pref="{{prefs.cros.accounts.supervisedUsersEnabled}}"
             i18n-values="label:supervisedUsersLabel"
             disabled="{{editingDisabled}}">
-        </cr-settings-checkbox>
-        <cr-settings-checkbox
+        </settings-checkbox>
+        <settings-checkbox
             pref="{{prefs.cros.accounts.showUserNamesOnSignIn}}"
             i18n-values="label:showOnSigninLabel"
             disabled="{{editingDisabled}}">
-        </cr-settings-checkbox>
-        <cr-settings-checkbox
+        </settings-checkbox>
+        <settings-checkbox
             pref="{{prefs.cros.accounts.allowGuest}}"
             id="restrictSignIn"
             i18n-values="label:restrictSigninLabel"
             disabled="{{editingDisabled}}" inverted>
-        </cr-settings-checkbox>
+        </settings-checkbox>
       </div>
       <div class="users">
         <div>

@@ -14,8 +14,8 @@
  * Example:
  *
  *    <cr-settings-prefs prefs="{{prefs}}"></cr-settings-prefs>
- *    <cr-settings-checkbox pref="{{prefs.homepage_is_newtabpage}}">
- *    </cr-settings-checkbox>
+ *    <settings-checkbox pref="{{prefs.homepage_is_newtabpage}}">
+ *    </settings-checkbox>
  *
  * @group Chrome Settings Elements
  * @element cr-settings-prefs

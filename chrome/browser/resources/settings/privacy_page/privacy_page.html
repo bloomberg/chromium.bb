@@ -5,7 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_manager_page.html">
 <link rel="import" href="chrome://md-settings/clear_browsing_data_page/clear_browsing_data_page.html">
-<link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
+<link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 <link rel="import" href="chrome://md-settings/site_settings_page/site_settings_page.html">
@@ -21,50 +21,50 @@
         <p class="privacy-explanation"
             i18n-values=".innerHTML:improveBrowsingExperience">
         </p>
-        <cr-settings-checkbox
+        <settings-checkbox
             pref="{{prefs.alternate_error_pages.enabled}}"
             i18n-values="label:linkDoctorPref">
-        </cr-settings-checkbox>
-        <cr-settings-checkbox
+        </settings-checkbox>
+        <settings-checkbox
             pref="{{prefs.search.suggest_enabled}}"
             i18n-values="label:searchSuggestPref">
-        </cr-settings-checkbox>
-        <cr-settings-checkbox
+        </settings-checkbox>
+        <settings-checkbox
             pref="{{prefs.net.network_prediction_options}}"
             i18n-values="label:networkPredictionEnabled">
-        </cr-settings-checkbox>
-        <cr-settings-checkbox
+        </settings-checkbox>
+        <settings-checkbox
             pref="{{prefs.safebrowsing.extended_reporting_enabled}}"
             i18n-values="label:safeBrowsingEnableExtendedReporting">
-        </cr-settings-checkbox>
-        <cr-settings-checkbox pref="{{prefs.safebrowsing.enabled}}"
+        </settings-checkbox>
+        <settings-checkbox pref="{{prefs.safebrowsing.enabled}}"
             i18n-values="label:safeBrowsingEnableProtection">
-        </cr-settings-checkbox>
+        </settings-checkbox>
 <if expr="_google_chrome">
-        <cr-settings-checkbox
+        <settings-checkbox
             pref="{{prefs.spellcheck.use_spelling_service}}"
             i18n-values="label:spellingPref">
-        </cr-settings-checkbox>
+        </settings-checkbox>
 <if expr="chromeos">
-        <cr-settings-checkbox
+        <settings-checkbox
             pref="{{prefs.cros.metrics.reportingEnabled}}"
             i18n-values="label:enableLogging">
-        </cr-settings-checkbox>
+        </settings-checkbox>
 </if>
         <!-- TODO(jlklein): Add non-chromeos metrics box. -->
 </if>
-        <cr-settings-checkbox pref="{{prefs.enable_do_not_track}}"
+        <settings-checkbox pref="{{prefs.enable_do_not_track}}"
             i18n-values="label:doNotTrack">
-        </cr-settings-checkbox>
+        </settings-checkbox>
 <if expr="chromeos">
-        <cr-settings-checkbox
+        <settings-checkbox
             pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"
             i18n-values="label:enableContentProtectionAttestation">
-        </cr-settings-checkbox>
-        <cr-settings-checkbox
+        </settings-checkbox>
+        <settings-checkbox
             pref="{{prefs.settings.internet.wake_on_wifi_ssid}}"
             i18n-values="label:wakeOnWifi">
-        </cr-settings-checkbox>
+        </settings-checkbox>
 </if>
         <div class="privacy-buttons layout horizontal end-justified">
           <paper-button

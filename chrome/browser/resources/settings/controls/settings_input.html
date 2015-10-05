@@ -4,8 +4,8 @@
 <link rel="import" href="chrome://md-settings/policy_controllable/policy_controllable.html">
 <link rel="import" href="chrome://md-settings/pref_tracker/pref_tracker.html">
 
-<dom-module id="cr-settings-input">
-  <link rel="import" type="css" href="input.css">
+<dom-module id="settings-input">
+  <link rel="import" type="css" href="settings_input.css">
   <template>
     <cr-events id="events"></cr-events>
     <cr-settings-pref-tracker pref="[[pref]]"></cr-settings-pref-tracker>
@@ -20,5 +20,5 @@
       <cr-policy-indicator pref="[[pref]]"></cr-policy-indicator>
     </div>
   </template>
-  <script src="input.js"></script>
+  <script src="settings_input.js"></script>
 </dom-module>

@@ -8,14 +8,14 @@
  *  a supplied preference.
  *
  * Example:
- *      <cr-settings-radio-group pref="{{prefs.settings.foo}}"
+ *      <settings-radio-group pref="{{prefs.settings.foo}}"
  *          label="Foo Options." buttons="{{fooOptionsList}}">
- *      </cr-settings-radio-group>
+ *      </settings-radio-group>
  *
- * @element cr-settings-radio-group
+ * @element settings-radio-group
  */
 Polymer({
-  is: 'cr-settings-radio-group',
+  is: 'settings-radio-group',
 
   properties: {
     /**

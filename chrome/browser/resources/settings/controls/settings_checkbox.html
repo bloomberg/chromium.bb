@@ -5,8 +5,8 @@
 <link rel="import" href="chrome://md-settings/policy_controllable/policy_controllable.html">
 <link rel="import" href="chrome://md-settings/pref_tracker/pref_tracker.html">
 
-<dom-module id="cr-settings-checkbox">
-  <link rel="import" type="css" href="checkbox.css">
+<dom-module id="settings-checkbox">
+  <link rel="import" type="css" href="settings_checkbox.css">
   <template>
     <cr-events id="events"></cr-events>
     <cr-settings-pref-tracker pref="[[pref]]"></cr-settings-pref-tracker>
@@ -20,5 +20,5 @@
       <cr-policy-indicator pref="[[pref]]"></cr-policy-indicator>
     </div>
   </template>
-  <script src="checkbox.js"></script>
+  <script src="settings_checkbox.js"></script>
 </dom-module>

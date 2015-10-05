@@ -2,8 +2,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="chrome://md-settings/controls/settings_radio_group.html">
 <link rel="import" href="chrome://md-settings/on_startup_page/startup_urls_page.html">
-<link rel="import" href="chrome://md-settings/radio_group/radio_group.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 
@@ -17,7 +17,7 @@
       <neon-animatable id="">
         <div id="locationLabel" i18n-content="onStartup"></div>
         <div>
-          <cr-settings-radio-group pref="{{prefs.session.restore_on_startup}}">
+          <settings-radio-group pref="{{prefs.session.restore_on_startup}}">
             <paper-radio-button name="[[prefValues_.OPEN_NEW_TAB]]"
                 i18n-content="onStartupOpenNewTab">
             </paper-radio-button>
@@ -27,7 +27,7 @@
             <paper-radio-button name="[[prefValues_.OPEN_SPECIFIC]]">
               <span i18n-content="onStartupOpenSpecific"></span>
             </paper-radio-button>
-          </cr-settings-radio-group>
+          </settings-radio-group>
           <paper-button
               on-tap="onSetPagesTap_" raised i18n-content="onStartupSetPages">
           </paper-button>

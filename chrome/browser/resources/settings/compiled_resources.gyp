@@ -7,12 +7,11 @@
       'target_name': 'settings_resources',
       'type': 'none',
       'dependencies': [
-        'checkbox/compiled_resources.gyp:*',
         'internet_page/compiled_resources.gyp:*',
         'languages_page/compiled_resources.gyp:*',
         'on_startup_page/compiled_resources.gyp:*',
         'prefs/compiled_resources.gyp:*',
-        'radio_group/compiled_resources.gyp:*',
+        'controls/compiled_resources.gyp:*',
       ],
     },
   ]
