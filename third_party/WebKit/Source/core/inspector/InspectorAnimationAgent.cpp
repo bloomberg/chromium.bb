@@ -204,8 +204,9 @@ Animation* InspectorAnimationAgent::animationClone(Animation* animation)
 {
     const String id = String::number(animation->sequenceNumber());
     if (!m_idToAnimationClone.get(id)) {
-        // TODO(samli): Clone the AnimationEffect as well.
-        Animation* clone = Animation::create(animation->effect(), animation->timeline());
+        KeyframeEffect* oldEffect = toKeyframeEffect(animation->effect());
+        KeyframeEffect* newEffect = KeyframeEffect::create(oldEffect->target(), oldEffect->model(), oldEffect->specifiedTiming());
+        Animation* clone = Animation::create(newEffect, animation->timeline());
         m_idToAnimationClone.set(id, clone);
         m_idToAnimation.set(String::number(clone->sequenceNumber()), clone);
     }
