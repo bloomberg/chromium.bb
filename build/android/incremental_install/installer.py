@@ -162,13 +162,18 @@ def main():
                                 delete_device_stale=True)
       push_dex_timer.Stop(log=False)
 
-  def check_sdk_version():
-    if device.build_version_sdk >= version_codes.MARSHMALLOW:
-      if apk_help.HasIsolatedProcesses():
-        raise Exception('Cannot use perform incremental installs on Android M+ '
-                        'without first disabling isolated processes.\n'
-                        'To do so, use GN arg:\n'
-                        '    disable_incremental_isolated_processes=true')
+  def check_selinux():
+    # Samsung started using SELinux before Marshmallow. There may be even more
+    # cases where this is required...
+    has_selinux = (device.build_version_sdk >= version_codes.MARSHMALLOW or
+                   device.GetProp('selinux.policy_version'))
+    if has_selinux and apk_help.HasIsolatedProcesses():
+      raise Exception('Cannot use incremental installs on versions of Android '
+                      'where isoloated processes cannot access the filesystem '
+                      '(this includes Android M+, and Samsung L+) without '
+                      'first disabling isoloated processes.\n'
+                      'To do so, use GN arg:\n'
+                      '    disable_incremental_isolated_processes=true')
 
   cache_path = '%s/files-cache.json' % device_incremental_dir
   def restore_cache():
@@ -205,7 +210,7 @@ def main():
   # been designed for multi-threading. Enabling only because this is a
   # developer-only tool.
   setup_timer = _Execute(
-      args.threading, create_lock_files, restore_cache, check_sdk_version)
+      args.threading, create_lock_files, restore_cache, check_selinux)
 
   _Execute(args.threading, do_install, do_push_files)
 
