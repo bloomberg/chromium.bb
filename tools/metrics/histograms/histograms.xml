@@ -19366,6 +19366,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MobileStartup.MainIntentAction" enum="MobileStartingAction">
+  <owner>mariakhomenko@chromium.org</owner>
+  <summary>
+    Android: Records the first action the user does within 10s of starting
+    Chrome. Recorded in DocumentActivity and ChromeTabbedActivity only when the
+    starting intent is of type MAIN.
+  </summary>
+</histogram>
+
 <histogram name="MobileStartup.MobileMultiWindowInstances">
   <owner>dtrainor@chromium.org</owner>
   <summary>
@@ -19389,6 +19398,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     A multiwindow session is any period of time that Chrome was not used in full
     screen mode but together with some other application that is visible at the
     same time. This is only supported in a few Android models.
+  </summary>
+</histogram>
+
+<histogram name="MobileStartup.NonMainIntentAction" enum="MobileStartingAction">
+  <owner>mariakhomenko@chromium.org</owner>
+  <summary>
+    Android: Records the first action the user does within 10s of starting
+    Chrome. Recorded in DocumentActivity and ChromeTabbedActivity only when the
+    starting intent is not of type MAIN, e.g. VIEW, etc.
   </summary>
 </histogram>
 
@@ -65310,6 +65328,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Shutdown in foreground; no log; with memory warning"/>
   <int value="4" label="Shutdown in foreground; with log; with memory warning"/>
   <int value="5" label="First launch after upgrade"/>
+</enum>
+
+<enum name="MobileStartingAction" type="int">
+  <int value="0" label="No activity"/>
+  <int value="1" label="Open new tab"/>
+  <int value="2" label="Focus omnibox"/>
+  <int value="3" label="Open bookmarks"/>
+  <int value="4" label="Open recents"/>
+  <int value="5" label="Open history"/>
+  <int value="6" label="Open tab switcher"/>
 </enum>
 
 <enum name="ModuleIndex" type="int">
