@@ -646,6 +646,7 @@ private:
         if (tokens.peek().type() == LeftParenthesisToken) {
             CSSParserTokenRange innerRange = tokens.consumeBlock();
             tokens.consumeWhitespace();
+            innerRange.consumeWhitespace();
             return parseValueExpression(innerRange, depth, result);
         }
 

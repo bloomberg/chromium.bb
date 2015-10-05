@@ -42,5 +42,6 @@ control => PASS
 -50px + 150px => PASS
 -50px - -150px => PASS
 (((((((100px))))))) => PASS
+50px + 50px => PASS
 100px => PASS
 100% * 2 => PASS
