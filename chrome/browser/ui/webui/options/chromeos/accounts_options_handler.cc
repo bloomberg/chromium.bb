@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/user_names.h"
@@ -121,6 +121,8 @@ void AccountsOptionsHandler::HandleUnwhitelistUser(
   if (!args->GetString(0, &email)) {
     return;
   }
+
+  ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::DELETE_PROFILE_SETTINGS);
 
   base::StringValue canonical_email(gaia::CanonicalizeEmail(email));
   if (OwnerSettingsServiceChromeOS* service =

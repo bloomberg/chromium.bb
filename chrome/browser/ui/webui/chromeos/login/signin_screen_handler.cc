@@ -1075,6 +1075,9 @@ void SigninScreenHandler::HandleRebootSystem() {
 }
 
 void SigninScreenHandler::HandleRemoveUser(const std::string& email) {
+  ProfileMetrics::LogProfileDeleteUser(
+      ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
+
   if (!delegate_)
     return;
   delegate_->RemoveUser(email);
