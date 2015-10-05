@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "base/process/process.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/search/search.h"
@@ -23,6 +25,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/filename_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::RenderViewHost;
 using content::RenderWidgetHost;
@@ -67,7 +71,7 @@ base::Process ProcessFromHandle(base::ProcessHandle handle) {
 
   base::ProcessHandle out_handle;
   if (!::DuplicateHandle(GetCurrentProcess(), handle, GetCurrentProcess(),
-                          &out_handle, 0, FALSE, DUPLICATE_SAME_ACCESS)) {
+                         &out_handle, 0, FALSE, DUPLICATE_SAME_ACCESS)) {
     return base::Process();
   }
   handle = out_handle;
@@ -97,12 +101,13 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
   // Loads the given url in a new background tab and returns the handle of its
   // renderer.
   base::Process OpenBackgroundTab(const GURL& page) {
-    ui_test_utils::NavigateToURLWithDisposition(browser(), page,
-        NEW_BACKGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), page, NEW_BACKGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
     TabStripModel* tab_strip = browser()->tab_strip_model();
-    WebContents* wc = tab_strip->GetWebContentsAt(
-        tab_strip->active_index() + 1);
+    WebContents* wc =
+        tab_strip->GetWebContentsAt(tab_strip->active_index() + 1);
     CHECK(wc->GetVisibleURL() == page);
 
     WaitForLauncherThread();
@@ -214,7 +219,6 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
     EXPECT_NE(rph2, rph3);
   }
 };
-
 
 class ChromeRenderProcessHostTestWithCommandLine
     : public ChromeRenderProcessHostTest {
@@ -478,9 +482,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
 class WindowDestroyer : public content::WebContentsObserver {
  public:
   WindowDestroyer(content::WebContents* web_contents, TabStripModel* model)
-      : content::WebContentsObserver(web_contents),
-        tab_strip_model_(model) {
-  }
+      : content::WebContentsObserver(web_contents), tab_strip_model_(model) {}
 
   void RenderProcessGone(base::TerminationStatus status) override {
     // Wait for the window to be destroyed, which will ensure all other
@@ -530,4 +532,153 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   wc1->GetRenderProcessHost()->Shutdown(-1, true);
 
   observer.Wait();
+}
+
+// Sets up the browser in order to start the tests with two tabs open: one
+// called "no audio" in foreground and another called "audio" in background with
+// audio in playing state. Also sets up the variables containing the process
+// associated with each tab, the urls of the two pages and the WebContents of
+// the "audio" page.
+class ChromeRenderProcessHostBackgroundingTest
+    : public ChromeRenderProcessHostTest {
+ public:
+  ChromeRenderProcessHostBackgroundingTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kProcessPerTab);
+  }
+
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+    // Set up the server and get the test pages.
+    base::FilePath test_data_dir;
+    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+    embedded_test_server()->ServeFilesFromDirectory(
+        test_data_dir.AppendASCII("chrome/test/data/"));
+    audio_url_ = embedded_test_server()->GetURL("/extensions/loop_audio.html");
+    no_audio_url_ = embedded_test_server()->GetURL("/title1.html");
+
+    // Open a browser, navigate to the audio page and get its WebContents.
+    ui_test_utils::NavigateToURL(browser(), audio_url_);
+    audio_tab_web_contents_ =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    // Create a new tab for the no audio page and confirm that the process of
+    // each tab is different and that both are valid.
+    audio_process_ = ProcessFromHandle(
+        audio_tab_web_contents_->GetRenderProcessHost()->GetHandle());
+    no_audio_process_ = ShowSingletonTab(no_audio_url_);
+    ASSERT_NE(audio_process_.Pid(), no_audio_process_.Pid());
+    ASSERT_TRUE(no_audio_process_.IsValid());
+    ASSERT_TRUE(audio_process_.IsValid());
+  }
+
+ protected:
+  GURL audio_url_;
+  GURL no_audio_url_;
+
+  base::Process audio_process_;
+  base::Process no_audio_process_;
+
+  content::WebContents* audio_tab_web_contents_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessHostBackgroundingTest);
+};
+
+// Test to make sure that a process is backgrounded when the audio stops playing
+// from the active tab and there is an immediate tab switch.
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
+                       ProcessPriorityAfterStoppedAudio) {
+  // This test is invalid on platforms that can't background.
+  if (!base::Process::CanBackgroundProcesses())
+    return;
+
+  ShowSingletonTab(audio_url_);
+
+  // Wait until the no audio page is backgrounded and the audio page is not
+  // backgrounded.
+  while (!no_audio_process_.IsProcessBackgrounded() ||
+         audio_process_.IsProcessBackgrounded()) {
+    base::RunLoop().RunUntilIdle();
+    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  }
+
+  // Pause the audio and immediately switch to the no audio tab.
+  ASSERT_TRUE(content::ExecuteScript(
+      audio_tab_web_contents_,
+      "document.getElementById('audioPlayer').pause();"));
+  ShowSingletonTab(no_audio_url_);
+
+  // Wait until the no audio page is not backgrounded and the audio page is
+  // backgrounded.
+  while (no_audio_process_.IsProcessBackgrounded() ||
+         !audio_process_.IsProcessBackgrounded()) {
+    base::RunLoop().RunUntilIdle();
+    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  }
+}
+
+// Test to make sure that a process is backgrounded automatically when audio
+// stops playing from a hidden tab.
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
+                       ProcessPriorityAfterAudioStopsOnNotVisibleTab) {
+  // This test is invalid on platforms that can't background.
+  if (!base::Process::CanBackgroundProcesses())
+    return;
+
+  // Wait until the two pages are not backgrounded.
+  while (no_audio_process_.IsProcessBackgrounded() ||
+         audio_process_.IsProcessBackgrounded()) {
+    base::RunLoop().RunUntilIdle();
+    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  }
+
+  // Stop the audio.
+  ASSERT_TRUE(content::ExecuteScript(
+      audio_tab_web_contents_,
+      "document.getElementById('audioPlayer').pause();"));
+
+  // Wait until the no audio page is not backgrounded and the audio page is
+  // backgrounded.
+  while (no_audio_process_.IsProcessBackgrounded() ||
+         !audio_process_.IsProcessBackgrounded()) {
+    base::RunLoop().RunUntilIdle();
+    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  }
+}
+
+// Test to make sure that a process is un-backgrounded automatically when audio
+// starts playing from a backgrounded tab.
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
+                       ProcessPriorityAfterAudioStartsFromBackgroundTab) {
+  // This test is invalid on platforms that can't background.
+  if (!base::Process::CanBackgroundProcesses())
+    return;
+
+  // Stop the audio.
+  ASSERT_TRUE(content::ExecuteScript(
+      audio_tab_web_contents_,
+      "document.getElementById('audioPlayer').pause();"));
+
+  // Wait until the no audio page is not backgrounded and the audio page is
+  // backgrounded.
+  while (no_audio_process_.IsProcessBackgrounded() ||
+         !audio_process_.IsProcessBackgrounded()) {
+    base::RunLoop().RunUntilIdle();
+    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  }
+
+  // Start the audio from the backgrounded tab.
+  ASSERT_TRUE(
+      content::ExecuteScript(audio_tab_web_contents_,
+                             "document.getElementById('audioPlayer').play();"));
+
+  // Wait until the two pages are not backgrounded.
+  while (no_audio_process_.IsProcessBackgrounded() ||
+         audio_process_.IsProcessBackgrounded()) {
+    base::RunLoop().RunUntilIdle();
+    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  }
 }

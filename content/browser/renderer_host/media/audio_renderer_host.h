@@ -295,7 +295,8 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;
 
-  // The number of streams in the playing state.
+  // The number of streams in the playing state. Atomic read safe from any
+  // thread, but should only be updated from the IO thread.
   base::AtomicRefCount num_playing_streams_;
 
   // Salt required to translate renderer device IDs to raw device unique IDs
