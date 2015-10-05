@@ -42,10 +42,18 @@ class ContextualSearchLayer : public Layer {
                      int progress_bar_background_resource_id,
                      int progress_bar_resource_id,
                      int search_promo_resource_id,
+                     int peek_promo_ripple_resource_id,
+                     int peek_promo_text_resource_id,
                      content::ContentViewCore* content_view_core,
                      bool search_promo_visible,
                      float search_promo_height,
                      float search_promo_opacity,
+                     bool search_peek_promo_visible,
+                     float search_peek_promo_height,
+                     float search_peek_promo_padding,
+                     float search_peek_promo_ripple_width,
+                     float search_peek_promo_ripple_opacity,
+                     float search_peek_promo_text_opacity,
                      float search_panel_x,
                      float search_panel_y,
                      float search_panel_width,
@@ -55,7 +63,6 @@ class ContextualSearchLayer : public Layer {
                      float search_context_opacity,
                      float search_term_opacity,
                      bool search_bar_border_visible,
-                     float search_bar_border_y,
                      float search_bar_border_height,
                      bool search_bar_shadow_visible,
                      float search_bar_shadow_opacity,
@@ -63,7 +70,6 @@ class ContextualSearchLayer : public Layer {
                      float arrow_icon_rotation,
                      float close_icon_opacity,
                      bool progress_bar_visible,
-                     float progress_bar_y,
                      float progress_bar_height,
                      float progress_bar_opacity,
                      int progress_bar_completion);
@@ -92,6 +98,10 @@ class ContextualSearchLayer : public Layer {
   scoped_refptr<cc::NinePatchLayer> progress_bar_background_;
   scoped_refptr<cc::UIResourceLayer> search_promo_;
   scoped_refptr<cc::SolidColorLayer> search_promo_container_;
+
+  scoped_refptr<cc::SolidColorLayer> peek_promo_container_;
+  scoped_refptr<cc::NinePatchLayer> peek_promo_ripple_;
+  scoped_refptr<cc::UIResourceLayer> peek_promo_text_;
 };
 
 }  //  namespace android

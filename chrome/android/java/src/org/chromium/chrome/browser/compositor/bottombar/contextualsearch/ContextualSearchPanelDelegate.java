@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
+import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.content.browser.ContentViewCore;
 
 /**
@@ -93,10 +94,20 @@ public interface ContextualSearchPanelDelegate {
     void setDidSearchInvolvePromo();
 
     /**
-     * Sets whether the promo is active.
-     * @param shown Whether the promo is active.
+     * @param isActive Whether the promo is active.
      */
-    void setIsPromoActive(boolean shown);
+    void setIsPromoActive(boolean isActive);
+
+    /**
+     * Shows the peek promo.
+     */
+    void showPeekPromo();
+
+    /**
+     * @return Whether the Peek Promo is visible.
+     */
+    @VisibleForTesting
+    boolean isPeekPromoVisible();
 
     /**
      * Gets whether a touch on the search content view has been done yet or not.
@@ -186,6 +197,12 @@ public interface ContextualSearchPanelDelegate {
      */
     void setSearchContentViewVisibility(boolean isVisible);
 
+    /**
+     * Creates an {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable}
+     * and adds it to the animation, setting the start value at the beginning of the animation.
+     */
+    <T extends Enum<?>> void addToAnimation(ChromeAnimation.Animatable<T> object, T prop,
+            float start, float end, long duration, long startTime);
     /**
      * @param panelContent The OverlayPanelContent that this panel should use.
      */

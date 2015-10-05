@@ -36,7 +36,7 @@ class ContextualSearchPolicy {
     private boolean mDecidedStateForTesting;
     private boolean mDidResetCounters;
 
-    static ContextualSearchPolicy getInstance(Context context) {
+    public static ContextualSearchPolicy getInstance(Context context) {
         if (sInstance == null) {
             sInstance = new ContextualSearchPolicy(context);
         }
@@ -147,6 +147,44 @@ class ContextualSearchPolicy {
      */
     boolean isPromoAvailable() {
         return isUserUndecided();
+    }
+
+    /**
+     * @return Whether the Peek promo is available to be shown above the Search Bar.
+     */
+    public boolean isPeekPromoAvailable(ContextualSearchSelectionController controller) {
+        // Allow Promo to be forcefully enabled for testing.
+        if (ContextualSearchFieldTrial.isPeekPromoForced()) return true;
+
+        // Check for several conditions to determine whether the Peek Promo is available.
+
+        // 1) Enabled by Finch.
+        if (!ContextualSearchFieldTrial.isPeekPromoEnabled()) return false;
+
+        // 2) If the Panel was never opened.
+        if (getPromoOpenCount() > 0) return false;
+
+        // 3) User has not opted in.
+        if (!isUserUndecided()) return false;
+
+        // 4) Selection was caused by a long press.
+        if (controller.getSelectionType() != SelectionType.LONG_PRESS) return false;
+
+        // 5) Promo was not shown more than the maximum number of times defined by Finch.
+        final int maxShowCount = ContextualSearchFieldTrial.getPeekPromoMaxShowCount();
+        final int peekPromoShowCount = mPreferenceManager.getContextualSearchPeekPromoShowCount();
+        if (peekPromoShowCount >= maxShowCount) return false;
+
+        // 6) Only then, show the promo.
+        return true;
+    }
+
+    /**
+     * Register that the Peek Promo was seen.
+     */
+    public void registerPeekPromoSeen() {
+        final int peekPromoShowCount = mPreferenceManager.getContextualSearchPeekPromoShowCount();
+        mPreferenceManager.setContextualSearchPeekPromoShowCount(peekPromoShowCount + 1);
     }
 
     /**

@@ -380,6 +380,12 @@ To adjust your search term, long press to select. To refine your search, slide t
       <message name="IDS_CONTEXTUAL_SEARCH_NO_THANKS_BUTTON" desc="A button to confirm and dismiss opt out promo">
         No thanks
       </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_PEEK_PROMO_TEXT" desc="A promotional message introducing the Touch to Search feature">
+        Now you can search with one touch
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_PEEK_PROMO_NEW" desc="A word that gets placed next to the promotional message to highlight the new Touch To Search feature">
+        New
+      </message>
       <message name="IDS_CRASH_DUMP_UPLOAD_TITLE" desc="Title for crash upload upload preference">
         Usage and crash reports
       </message>

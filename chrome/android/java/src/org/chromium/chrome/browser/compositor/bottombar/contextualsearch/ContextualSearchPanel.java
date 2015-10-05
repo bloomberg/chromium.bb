@@ -12,6 +12,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
+import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.content.browser.ContentViewClient;
@@ -228,7 +229,23 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         // onPanelStateChanged is not called here.
         PanelState fromState = getPanelState();
         super.setPanelState(toState, reason);
+
         mPanelMetrics.onPanelStateChanged(fromState, toState, reason);
+
+        if (toState == PanelState.PEEKED
+                && (fromState == PanelState.CLOSED || fromState == PanelState.UNDEFINED)) {
+            // If the Peek Promo is visible, it should animate when the SearchBar peeks.
+            if (getPeekPromoControl().isVisible()) {
+                getPeekPromoControl().animateAppearance();
+            }
+        }
+
+        if (fromState == PanelState.PEEKED
+                && (toState == PanelState.EXPANDED || toState == PanelState.MAXIMIZED)) {
+            // After opening the Panel to either expanded or maximized state,
+            // the promo should disappear.
+            getPeekPromoControl().hide();
+        }
     }
 
     // ============================================================================================
@@ -279,6 +296,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     @Override
     protected void onClose(StateChangeReason reason) {
         destroySearchBarControl();
+        destroyPeekPromoControl();
         if (mOverlayPanelContent != null) {
             mOverlayPanelContent.destroyContentView();
         }
@@ -405,7 +423,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     public boolean isCoordinateInsideSearchBar(float x, float y) {
         return isCoordinateInsideSearchPanel(x, y)
-                && y >= getOffsetY() && y <= (getOffsetY() + getSearchBarHeight());
+                && y >= getOffsetY() && y <= (getOffsetY() + getSearchBarContainerHeight());
     }
 
     /**
@@ -429,7 +447,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      * @return The vertical offset of the Search Content View in dp.
      */
     public float getSearchContentViewOffsetY() {
-        return getOffsetY() + getSearchBarHeight() + getPromoHeight();
+        return getOffsetY() + getSearchBarContainerHeight() + getPromoHeight();
     }
 
     /**
@@ -532,26 +550,26 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     // Panel Delegate
     // ============================================================================================
 
-    /**
-     * Sets that the Search Content View was seen.
-     */
     @Override
     public void setWasSearchContentViewSeen() {
         mPanelMetrics.setWasSearchContentViewSeen();
     }
 
-    /**
-     * Sets whether the promo is active.
-     */
     @Override
-    public void setIsPromoActive(boolean shown) {
-        mPanelMetrics.setIsPromoActive(shown);
+    public void setIsPromoActive(boolean isActive) {
+        mPanelMetrics.setIsPromoActive(isActive);
     }
 
-    /**
-     * Records timing information when the search results have fully loaded.
-     * @param wasPrefetch Whether the request was prefetch-enabled.
-     */
+    @Override
+    public void showPeekPromo() {
+        getPeekPromoControl().show();
+    }
+
+    @Override
+    public boolean isPeekPromoVisible() {
+        return getPeekPromoControl().isVisible();
+    }
+
     @Override
     public void onSearchResultsLoaded(boolean wasPrefetch) {
         mPanelMetrics.onSearchResultsLoaded(wasPrefetch);
@@ -622,15 +640,16 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
     @Override
     public void closePanel(StateChangeReason reason, boolean animate) {
+        super.closePanel(reason, animate);
+
         // If the close action is animated, the Layout will be hidden when
         // the animation is finished, so we should only hide the Layout
         // here when not animating.
         if (!animate && mSearchPanelHost != null) {
             mSearchPanelHost.hideLayout(true);
         }
-        mHasSearchContentViewBeenTouched = false;
 
-        super.closePanel(reason, animate);
+        mHasSearchContentViewBeenTouched = false;
     }
 
     @Override
@@ -716,6 +735,40 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     @Override
     public void setDidSearchInvolvePromo() {
         mPanelMetrics.setDidSearchInvolvePromo();
+    }
+
+    @Override
+    public <T extends Enum<?>> void addToAnimation(ChromeAnimation.Animatable<T> object, T prop,
+                                                   float start, float end, long duration,
+                                                   long startTime) {
+        super.addToAnimation(object, prop, start, end, duration, startTime);
+    }
+
+    // ============================================================================================
+    // Panel Rendering
+    // ============================================================================================
+
+    // TODO(pedrosimonetti): generalize the dispatching of panel updates.
+
+    @Override
+    protected void updatePanelForCloseOrPeek(float percentage) {
+        super.updatePanelForCloseOrPeek(percentage);
+
+        getPeekPromoControl().onUpdateFromCloseToPeek(percentage);
+    }
+
+    @Override
+    protected void updatePanelForExpansion(float percentage) {
+        super.updatePanelForExpansion(percentage);
+
+        getPeekPromoControl().onUpdateFromPeekToExpand(percentage);
+    }
+
+    @Override
+    protected void updatePanelForMaximization(float percentage) {
+        super.updatePanelForMaximization(percentage);
+
+        getPeekPromoControl().onUpdateFromExpandToMaximize(percentage);
     }
 
     // ============================================================================================
@@ -810,6 +863,48 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     private void resetSearchBarTermOpacity() {
         mSearchBarContextOpacity = 0.f;
         mSearchBarTermOpacity = 1.f;
+    }
+
+    // ============================================================================================
+    // Peek Promo
+    // ============================================================================================
+
+    private ContextualSearchPeekPromoControl mPeekPromoControl;
+
+    /**
+     * Creates the ContextualSearchPeekPromoControl, if needed.
+     */
+    public ContextualSearchPeekPromoControl getPeekPromoControl() {
+        assert mContainerView != null;
+        assert mResourceLoader != null;
+
+        if (mPeekPromoControl == null) {
+            mPeekPromoControl =
+                    new ContextualSearchPeekPromoControl(this, mContext, mContainerView,
+                            mResourceLoader);
+        }
+
+        return mPeekPromoControl;
+    }
+
+    /**
+     * Destroys the ContextualSearchPeekPromoControl.
+     */
+    private void destroyPeekPromoControl() {
+        if (mPeekPromoControl != null) {
+            mPeekPromoControl.destroy();
+            mPeekPromoControl = null;
+        }
+    }
+
+    @Override
+    protected float getPeekPromoHeightPeekingPx() {
+        return getPeekPromoControl().getHeightPeekingPx();
+    }
+
+    @Override
+    protected float getPeekPromoHeight() {
+        return getPeekPromoControl().getHeightPx();
     }
 
     // ============================================================================================

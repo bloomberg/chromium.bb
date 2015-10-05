@@ -510,6 +510,16 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
         mWereSearchResultsSeen = false;
 
+        // Show the Peek Promo only when the Panel wasn't previously visible, provided
+        // the policy allows it.
+        if (!mSearchPanelDelegate.isShowing()) {
+            boolean isPeekPromoAvailable = mPolicy.isPeekPromoAvailable(mSelectionController);
+            if (isPeekPromoAvailable) {
+                mSearchPanelDelegate.showPeekPromo();
+                mPolicy.registerPeekPromoSeen();
+            }
+        }
+
         // TODO(donnd): although we are showing the bar here, we have not yet set the text!
         // Refactor to show the bar and set the text at the same time!
         // TODO(donnd): If there was a previously ongoing contextual search, we should ensure
@@ -1086,36 +1096,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     public float getSearchContentViewVerticalScroll() {
         return mSearchPanelDelegate.getContentViewCore() != null
                 ? mSearchPanelDelegate.getContentViewCore().computeVerticalScrollOffset() : -1.f;
-    }
-
-    /**
-     * This is called when the search panel is shown or is hidden.
-     * @param isVisible True if the panel is now visible.
-     */
-    public void onContentViewVisibilityChanged(boolean isVisible) {
-        if (isVisible) {
-            mWereSearchResultsSeen = true;
-            // If there's no current request, then either a search term resolution
-            // is in progress or we should do a verbatim search now.
-            if (mSearchRequest == null
-                    && mPolicy.shouldCreateVerbatimRequest(mSelectionController,
-                            mNetworkCommunicator.getBasePageUrl())) {
-                mSearchRequest = new ContextualSearchRequest(
-                        mSelectionController.getSelectedText());
-                mDidStartLoadingResolvedSearchRequest = false;
-            }
-            if ((mSearchRequest != null && !mDidStartLoadingResolvedSearchRequest)
-                    || mShouldLoadDelayedSearch) {
-                // mShouldLoadDelayedSearch is used in the long-press case to load content. Since
-                // content is now created and destroyed for each request, was impossible to know if
-                // content was already loaded or recently needed to be; this is for the case where
-                // it needed to be.
-                mSearchRequest.setNormalPriority();
-                loadSearchUrl();
-            }
-            mShouldLoadDelayedSearch = true;
-            mPolicy.updateCountersForOpen();
-        }
     }
 
     @Override

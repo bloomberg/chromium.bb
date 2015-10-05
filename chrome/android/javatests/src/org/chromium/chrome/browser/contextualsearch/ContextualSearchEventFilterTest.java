@@ -126,7 +126,7 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
     // --------------------------------------------------------------------------------------------
 
     /**
-     * MockContextualSearchPanel stops creation of ContentViewCores.
+     * Mocks the ContextualSearchPanel, so it doesn't create ContentViewCore.
      */
     public static class MockContextualSearchPanel extends ContextualSearchPanel {
 
@@ -153,6 +153,12 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
 
             @Override
             public void removeLastHistoryEntry(String url, long timeInMs) {}
+        }
+
+        @Override
+        protected float getPeekPromoHeight() {
+            // Android Views are not used in this test so we cannot get the actual height.
+            return 0.f;
         }
     }
 

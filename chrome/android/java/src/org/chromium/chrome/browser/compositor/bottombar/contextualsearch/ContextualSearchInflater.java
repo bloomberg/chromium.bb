@@ -19,7 +19,7 @@ abstract class ContextualSearchInflater extends ViewResourceInflater {
     /**
      * The panel delegate used to get information about the panel layout.
      */
-    private ContextualSearchPanelDelegate mSearchPanelDelegate;
+    protected ContextualSearchPanelDelegate mSearchPanelDelegate;
 
     /**
      * Object Replacement Character that is used in place of HTML objects that cannot be represented

@@ -37,6 +37,11 @@ public class ContextualSearchFieldTrial {
     static final String TAP_RESOLVE_LIMIT_FOR_UNDECIDED = "tap_resolve_limit_for_undecided";
     static final String TAP_PREFETCH_LIMIT_FOR_UNDECIDED = "tap_prefetch_limit_for_undecided";
 
+    static final String PEEK_PROMO_FORCED = "peek_promo_forced";
+    static final String PEEK_PROMO_ENABLED = "peek_promo_enabled";
+    static final String PEEK_PROMO_MAX_SHOW_COUNT = "peek_promo_max_show_count";
+    static final int PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT = 10;
+
     private static final String CHINESE_LANGUAGE_CODE = "zh";
     private static final String JAPANESE_LANGUAGE_CODE = "ja";
     private static final String KOREAN_LANGUAGE_CODE = "ko";
@@ -53,8 +58,10 @@ public class ContextualSearchFieldTrial {
     private static final int DEFAULT_TAP_RESOLVE_LIMIT_FOR_UNDECIDED = 100;
     private static final int DEFAULT_TAP_PREFETCH_LIMIT_FOR_UNDECIDED = 10;
 
-    // Cached value to avoid repeated and redundant JNI operations.
+    // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
+    private static Boolean sIsPeekPromoEnabled;
+    private static Integer sPeekPromoMaxCount;
 
     /**
      * Don't instantiate.
@@ -227,6 +234,35 @@ public class ContextualSearchFieldTrial {
                 DEFAULT_TAP_PREFETCH_LIMIT_FOR_UNDECIDED);
     }
 
+    /**
+     * @return Whether the Peek Promo is forcibly enabled (used for testing).
+     */
+    static boolean isPeekPromoForced() {
+        return CommandLine.getInstance().hasSwitch(PEEK_PROMO_FORCED);
+    }
+
+    /**
+     * @return Whether the Peek Promo is enabled.
+     */
+    static boolean isPeekPromoEnabled() {
+        if (sIsPeekPromoEnabled == null) {
+            sIsPeekPromoEnabled = getBooleanParam(PEEK_PROMO_ENABLED);
+        }
+        return sIsPeekPromoEnabled.booleanValue();
+    }
+
+    /**
+     * @return The maximum number of times the Peek Promo should be displayed.
+     */
+    static int getPeekPromoMaxShowCount() {
+        if (sPeekPromoMaxCount == null) {
+            sPeekPromoMaxCount = getIntParamValueOrDefault(
+                    PEEK_PROMO_MAX_SHOW_COUNT,
+                    PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT);
+        }
+        return sPeekPromoMaxCount.intValue();
+    }
+
     // --------------------------------------------------------------------------------------------
     // Helpers.
     // --------------------------------------------------------------------------------------------
@@ -267,5 +303,17 @@ public class ContextualSearchFieldTrial {
         }
 
         return defaultValue;
+    }
+
+    /**
+     * Returns a string value for a Finch parameter. Also checks for a command-line switch.
+     * @param paramName The name of the Finch parameter (or command-line switch) to get a value for.
+     * @return The command-line value, if present, or the finch parameter value.
+     */
+    private static String getStringParam(String paramName) {
+        if (CommandLine.getInstance().hasSwitch(paramName)) {
+            return CommandLine.getInstance().getSwitchValue(paramName);
+        }
+        return VariationsAssociatedData.getVariationParamValue(FIELD_TRIAL_NAME, paramName);
     }
 }
