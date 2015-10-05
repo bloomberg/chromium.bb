@@ -514,12 +514,14 @@ struct SynchronousDACallbackData {
  public:
   SynchronousDACallbackData()
       : callback_called(false),
-        run_loop_running(false) {
+        run_loop_running(false),
+        can_log(true) {
   }
 
   base::ScopedCFTypeRef<DADissenterRef> dissenter;
   bool callback_called;
   bool run_loop_running;
+  bool can_log;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SynchronousDACallbackData);
@@ -570,19 +572,21 @@ bool SynchronousDAOperation(const char* name,
   }
 
   if (!callback_data->callback_called) {
-    LOG(ERROR) << name << ": timed out";
+    LOG_IF(ERROR, callback_data->can_log) << name << ": timed out";
     return false;
   } else if (callback_data->dissenter) {
-    CFStringRef status_string_cf =
-        DADissenterGetStatusString(callback_data->dissenter);
-    std::string status_string;
-    if (status_string_cf) {
-      status_string.assign(" ");
-      status_string.append(base::SysCFStringRefToUTF8(status_string_cf));
+    if (callback_data->can_log) {
+      CFStringRef status_string_cf =
+          DADissenterGetStatusString(callback_data->dissenter);
+      std::string status_string;
+      if (status_string_cf) {
+        status_string.assign(" ");
+        status_string.append(base::SysCFStringRefToUTF8(status_string_cf));
+      }
+      LOG(ERROR) << name << ": dissenter: "
+                 << DADissenterGetStatus(callback_data->dissenter)
+                 << status_string;
     }
-    LOG(ERROR) << name << ": dissenter: "
-               << DADissenterGetStatus(callback_data->dissenter)
-               << status_string;
     return false;
   }
 
@@ -590,8 +594,11 @@ bool SynchronousDAOperation(const char* name,
 }
 
 // Calls DADiskUnmount synchronously, returning the result.
-bool SynchronousDADiskUnmount(DADiskRef disk, DADiskUnmountOptions options) {
+bool SynchronousDADiskUnmount(DADiskRef disk,
+                              DADiskUnmountOptions options,
+                              bool can_log) {
   SynchronousDACallbackData callback_data;
+  callback_data.can_log = can_log;
   DADiskUnmount(disk, options, SynchronousDACallbackAdapter, &callback_data);
   return SynchronousDAOperation("DADiskUnmount", &callback_data);
 }
@@ -662,13 +669,14 @@ void EjectAndTrashDiskImage(const std::string& dmg_bsd_device_name) {
 
   // Retry the unmount in a loop to give crashpad_handler a chance to exit.
   int tries = 15;
-  while (!SynchronousDADiskUnmount(disk, kDADiskUnmountOptionWhole)) {
-    if (--tries > 0) {
-      sleep(1);
-    } else {
+  while (!SynchronousDADiskUnmount(disk,
+                                   kDADiskUnmountOptionWhole,
+                                   --tries == 0)) {
+    if (tries == 0) {
       LOG(ERROR) << "SynchronousDADiskUnmount";
       return;
     }
+    sleep(1);
   }
 
   if (!SynchronousDADiskEject(disk, kDADiskEjectOptionDefault)) {
