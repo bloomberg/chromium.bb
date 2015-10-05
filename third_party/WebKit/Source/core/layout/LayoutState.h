@@ -75,7 +75,6 @@ public:
 
     ~LayoutState();
 
-    void clearPaginationInformation();
     bool isPaginated() const { return m_isPaginated; }
 
     // The page logical offset is the object's offset from the top of the page in the page progression

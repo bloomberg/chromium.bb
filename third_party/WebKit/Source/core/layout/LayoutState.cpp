@@ -134,12 +134,6 @@ LayoutState::~LayoutState()
     }
 }
 
-void LayoutState::clearPaginationInformation()
-{
-    m_pageLogicalHeight = m_next->m_pageLogicalHeight;
-    m_pageOffset = m_next->m_pageOffset;
-}
-
 LayoutUnit LayoutState::pageLogicalOffset(const LayoutBox& child, const LayoutUnit& childLogicalOffset) const
 {
     if (child.isHorizontalWritingMode())
