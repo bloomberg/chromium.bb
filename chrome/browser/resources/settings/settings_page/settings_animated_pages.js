@@ -76,7 +76,7 @@ Polymer({
     }
 
     this.$.animatedPages.selected =
-        newRouteIsSubpage ? newRoute.subpage.slice(-1)[0] : '';
+        newRouteIsSubpage ? newRoute.subpage.slice(-1)[0] : 'main';
   },
 
   /**
