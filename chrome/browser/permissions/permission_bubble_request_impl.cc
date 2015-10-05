@@ -46,12 +46,12 @@ gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
       return gfx::VectorIconId::NOTIFICATIONS;
 #endif
 #if defined(OS_CHROMEOS)
+    // TODO(xhwang): fix this icon, see crrev.com/863263007
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+      return gfx::VectorIconId::CHROME_PRODUCT;
 #endif
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
-      // TODO(estade): add vector icons for these.
-      return gfx::VectorIconId::VECTOR_ICON_NONE;
+      return gfx::VectorIconId::MIDI;
     default:
       NOTREACHED();
       return gfx::VectorIconId::VECTOR_ICON_NONE;
@@ -62,7 +62,8 @@ gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
 }
 
 int PermissionBubbleRequestImpl::GetIconId() const {
-  int icon_id;
+  int icon_id = IDR_INFOBAR_WARNING;
+#if !defined(TOOLKIT_VIEWS)
   switch (type_) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       icon_id = IDR_INFOBAR_GEOLOCATION;
@@ -75,15 +76,10 @@ int PermissionBubbleRequestImpl::GetIconId() const {
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       icon_id = IDR_ALLOWED_MIDI_SYSEX;
       break;
-#if defined(OS_CHROMEOS)
-    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-      icon_id = IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
-      break;
-#endif
     default:
       NOTREACHED();
-      return IDR_INFOBAR_WARNING;
   }
+#endif
   return icon_id;
 }
 

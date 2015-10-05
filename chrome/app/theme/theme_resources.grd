@@ -387,29 +387,27 @@
         <structure type="chrome_scaled_image" name="IDR_INFOBAR_AUTOLOGIN" file="common/infobar_autologin.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_COOKIE" file="common/infobar_cookie.png" />
-      <structure type="chrome_scaled_image" name="IDR_INFOBAR_DESKTOP_NOTIFICATIONS" file="common/infobar_desktop_notifications.png" />
       <if expr="is_android">
         <!-- The actual image here is not used; this line only exists to
              reserve a valid ID, so the Android code can map it to the
              appropriate Android resource.  So we just refer to a random
              image. -->
+        <structure type="chrome_scaled_image" name="IDR_INFOBAR_DESKTOP_NOTIFICATIONS" file="chromium/product_logo_32.png" />
         <structure type="chrome_scaled_image" name="IDR_INFOBAR_FROZEN_TAB" file="chromium/product_logo_32.png" />
         <structure type="chrome_scaled_image" name="IDR_INFOBAR_FULLSCREEN" file="chromium/product_logo_32.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBAR_GEOLOCATION" file="chromium/product_logo_32.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER" file="chromium/product_logo_32.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_INFOBAR_GEOLOCATION" file="common/infobar_geolocation.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_INFOBAR_DESKTOP_NOTIFICATIONS" file="legacy/infobar_desktop_notifications.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBAR_GEOLOCATION" file="legacy/infobar_geolocation.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MEDIA_STREAM_CAMERA" file="common/infobar_media_stream_camera.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MEDIA_STREAM_MIC" file="common/infobar_media_stream_mic.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MIDI" file="common/infobar_midi.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="common/infobar_multiple_downloads.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_PLUGIN_CRASHED" file="common/infobar_plugin_crashed.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_PLUGIN_INSTALL" file="common/infobar_plugin_install.png" />
-      <if expr="is_android or chromeos">
-        <!-- The actual image here is not used; this line only exists to
-             reserve a valid ID, so the Android code can map it to the
-             appropriate Android resource.  So we just refer to a random
-             image. -->
-        <structure type="chrome_scaled_image" name="IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER" file="chromium/product_logo_32.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_RESTORE_SESSION" file="common/infobar_restore_session.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_SAVE_PASSWORD" file="common/infobar_save_password.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_THEME" file="common/infobar_theme.png" />
