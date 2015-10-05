@@ -182,7 +182,8 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
 
         @Override
         protected void computeContentPadding(Rect outContentPadding) {
-            outContentPadding.set(0, 0, mToolbarContainer.getWidth(), mToolbarActualHeightPx);
+            outContentPadding.set(0, ((View) mToolbar).getTop(), mToolbarContainer.getWidth(),
+                    mToolbarActualHeightPx);
         }
 
         @Override

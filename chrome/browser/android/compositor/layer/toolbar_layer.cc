@@ -37,6 +37,7 @@ void ToolbarLayer::PushResource(
   layer_->SetBounds(resource->padding.size());
 
   toolbar_background_layer_->SetBounds(resource->padding.size());
+  toolbar_background_layer_->SetPosition(resource->padding.origin());
   toolbar_background_layer_->SetBackgroundColor(toolbar_background_color);
 
   bitmap_layer_->SetUIResourceId(resource->ui_resource->id());
