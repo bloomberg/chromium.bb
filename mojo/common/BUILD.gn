@@ -5,7 +5,7 @@
 import("//testing/test.gni")
 
 group("common") {
-  deps = [
+  public_deps = [
     ":common_base",
     ":url_type_converters",
   ]
