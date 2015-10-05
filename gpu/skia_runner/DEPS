@@ -1,6 +1,0 @@
-include_rules = [
-  "+third_party/khronos",
-  "+third_party/skia",
-  "+third_party/WebKit/public/platform",
-  "+skia/ext",
-]
