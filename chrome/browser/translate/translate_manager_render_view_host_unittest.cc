@@ -32,11 +32,11 @@
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
-#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_language_list.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_script.h"
+#include "components/translate/core/browser/translate_ui_delegate.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "content/public/browser/navigation_details.h"
@@ -54,6 +54,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "url/gurl.h"
+
+#if !defined(USE_AURA)
+#include "components/translate/core/browser/translate_infobar_delegate.h"
+#endif
 
 // An observer that keeps track of whether a navigation entry was committed.
 class NavEntryCommittedObserver : public content::NotificationObserver {
@@ -149,6 +153,7 @@ class TranslateManagerRenderViewHostTest
     return InfoBarService::FromWebContents(web_contents());
   }
 
+#if !defined(USE_AURA)
   // Returns the translate infobar if there is 1 infobar and it is a translate
   // infobar.
   translate::TranslateInfoBarDelegate* GetTranslateInfoBar() {
@@ -192,6 +197,7 @@ class TranslateManagerRenderViewHostTest
     infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
     return true;
   }
+#endif  // defined(USE_AURA)
 
   void ReloadAndWait(bool successful_reload) {
     NavEntryCommittedObserver nav_observer(web_contents());
@@ -398,7 +404,117 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
   DISALLOW_COPY_AND_ASSIGN(MockTranslateBubbleFactory);
 };
 
+// A list of languages to fake being returned by the translate server.
+// Use only langauges for which Chrome's copy of ICU has
+// display names in English locale. To save space, Chrome's copy of ICU
+// does not have the display name for a language unless it's in the
+// Accept-Language list.
+static const char* server_language_list[] =
+    {"ach", "ak", "af", "en-CA", "zh", "yi", "fr-FR", "tl", "iw", "in", "xx"};
+static const char* alpha_language_list[] = {"ach", "yi"};
 
+// Test the fetching of languages from the translate server
+TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
+  std::vector<std::string> server_languages;
+  for (size_t i = 0; i < arraysize(server_language_list); ++i)
+    server_languages.push_back(server_language_list[i]);
+
+  std::vector<std::string> alpha_languages;
+  for (size_t i = 0; i < arraysize(alpha_language_list); ++i)
+    alpha_languages.push_back(alpha_language_list[i]);
+
+  // First, get the default languages list. Note that calling
+  // GetSupportedLanguages() invokes RequestLanguageList() internally.
+  std::vector<std::string> default_supported_languages;
+  translate::TranslateDownloadManager::GetSupportedLanguages(
+      &default_supported_languages);
+  // To make sure we got the defaults and don't confuse them with the mocks.
+  ASSERT_NE(default_supported_languages.size(), server_languages.size());
+
+  // Check that we still get the defaults until the URLFetch has completed.
+  std::vector<std::string> current_supported_languages;
+  translate::TranslateDownloadManager::GetSupportedLanguages(
+      &current_supported_languages);
+  EXPECT_EQ(default_supported_languages, current_supported_languages);
+
+  // Also check that it didn't change if we failed the URL fetch.
+  SimulateSupportedLanguagesURLFetch(
+      false, std::vector<std::string>(), true, std::vector<std::string>());
+  current_supported_languages.clear();
+  translate::TranslateDownloadManager::GetSupportedLanguages(
+      &current_supported_languages);
+  EXPECT_EQ(default_supported_languages, current_supported_languages);
+
+  // Now check that we got the appropriate set of languages from the server.
+  SimulateSupportedLanguagesURLFetch(
+      true, server_languages, true, alpha_languages);
+  current_supported_languages.clear();
+  translate::TranslateDownloadManager::GetSupportedLanguages(
+      &current_supported_languages);
+  // "xx" can't be displayed in the Translate infobar, so this is eliminated.
+  EXPECT_EQ(server_languages.size() - 1, current_supported_languages.size());
+  // Not sure we need to guarantee the order of languages, so we find them.
+  for (size_t i = 0; i < server_languages.size(); ++i) {
+    const std::string& lang = server_languages[i];
+    if (lang == "xx")
+      continue;
+    EXPECT_NE(current_supported_languages.end(),
+              std::find(current_supported_languages.begin(),
+                        current_supported_languages.end(),
+                        lang)) << "lang=" << lang;
+    bool is_alpha =
+        std::find(alpha_languages.begin(), alpha_languages.end(), lang) !=
+        alpha_languages.end();
+    EXPECT_EQ(translate::TranslateDownloadManager::IsAlphaLanguage(lang),
+              is_alpha)
+        << "lang=" << lang;
+  }
+}
+
+// Test the fetching of languages from the translate server without 'al'
+// parameter.
+TEST_F(TranslateManagerRenderViewHostTest,
+       FetchLanguagesFromTranslateServerWithoutAlpha) {
+  std::vector<std::string> server_languages;
+  for (size_t i = 0; i < arraysize(server_language_list); ++i)
+    server_languages.push_back(server_language_list[i]);
+
+  std::vector<std::string> alpha_languages;
+  for (size_t i = 0; i < arraysize(alpha_language_list); ++i)
+    alpha_languages.push_back(alpha_language_list[i]);
+
+  // call GetSupportedLanguages to call RequestLanguageList internally.
+  std::vector<std::string> default_supported_languages;
+  translate::TranslateDownloadManager::GetSupportedLanguages(
+      &default_supported_languages);
+
+  SimulateSupportedLanguagesURLFetch(
+      true, server_languages, false, alpha_languages);
+
+  std::vector<std::string> current_supported_languages;
+  translate::TranslateDownloadManager::GetSupportedLanguages(
+      &current_supported_languages);
+
+  // "xx" can't be displayed in the Translate infobar, so this is eliminated.
+  EXPECT_EQ(server_languages.size() - 1, current_supported_languages.size());
+
+  for (size_t i = 0; i < server_languages.size(); ++i) {
+    const std::string& lang = server_languages[i];
+    if (lang == "xx")
+      continue;
+    EXPECT_NE(current_supported_languages.end(),
+              std::find(current_supported_languages.begin(),
+                        current_supported_languages.end(),
+                        lang)) << "lang=" << lang;
+    EXPECT_FALSE(translate::TranslateDownloadManager::IsAlphaLanguage(lang))
+        << "lang=" << lang;
+  }
+}
+
+// The rest of the tests in this file depend on the translate infobar. They
+// should be ported to use the translate bubble. On Aura there is no infobar
+// so the tests are not compiled.
+#if !defined(USE_AURA)
 TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
   // See BubbleNormalTranslate for corresponding bubble UX testing.
   if (TranslateService::IsTranslateBubbleEnabled())
@@ -620,113 +736,6 @@ TEST_F(TranslateManagerRenderViewHostTest, TestLanguages) {
 
     if (infobar != NULL)
       EXPECT_TRUE(CloseTranslateInfoBar());
-  }
-}
-
-// A list of languages to fake being returned by the translate server.
-// Use only langauges for which Chrome's copy of ICU has
-// display names in English locale. To save space, Chrome's copy of ICU
-// does not have the display name for a language unless it's in the
-// Accept-Language list.
-static const char* server_language_list[] =
-    {"ach", "ak", "af", "en-CA", "zh", "yi", "fr-FR", "tl", "iw", "in", "xx"};
-static const char* alpha_language_list[] = {"ach", "yi"};
-
-// Test the fetching of languages from the translate server
-TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
-  std::vector<std::string> server_languages;
-  for (size_t i = 0; i < arraysize(server_language_list); ++i)
-    server_languages.push_back(server_language_list[i]);
-
-  std::vector<std::string> alpha_languages;
-  for (size_t i = 0; i < arraysize(alpha_language_list); ++i)
-    alpha_languages.push_back(alpha_language_list[i]);
-
-  // First, get the default languages list. Note that calling
-  // GetSupportedLanguages() invokes RequestLanguageList() internally.
-  std::vector<std::string> default_supported_languages;
-  translate::TranslateDownloadManager::GetSupportedLanguages(
-      &default_supported_languages);
-  // To make sure we got the defaults and don't confuse them with the mocks.
-  ASSERT_NE(default_supported_languages.size(), server_languages.size());
-
-  // Check that we still get the defaults until the URLFetch has completed.
-  std::vector<std::string> current_supported_languages;
-  translate::TranslateDownloadManager::GetSupportedLanguages(
-      &current_supported_languages);
-  EXPECT_EQ(default_supported_languages, current_supported_languages);
-
-  // Also check that it didn't change if we failed the URL fetch.
-  SimulateSupportedLanguagesURLFetch(
-      false, std::vector<std::string>(), true, std::vector<std::string>());
-  current_supported_languages.clear();
-  translate::TranslateDownloadManager::GetSupportedLanguages(
-      &current_supported_languages);
-  EXPECT_EQ(default_supported_languages, current_supported_languages);
-
-  // Now check that we got the appropriate set of languages from the server.
-  SimulateSupportedLanguagesURLFetch(
-      true, server_languages, true, alpha_languages);
-  current_supported_languages.clear();
-  translate::TranslateDownloadManager::GetSupportedLanguages(
-      &current_supported_languages);
-  // "xx" can't be displayed in the Translate infobar, so this is eliminated.
-  EXPECT_EQ(server_languages.size() - 1, current_supported_languages.size());
-  // Not sure we need to guarantee the order of languages, so we find them.
-  for (size_t i = 0; i < server_languages.size(); ++i) {
-    const std::string& lang = server_languages[i];
-    if (lang == "xx")
-      continue;
-    EXPECT_NE(current_supported_languages.end(),
-              std::find(current_supported_languages.begin(),
-                        current_supported_languages.end(),
-                        lang)) << "lang=" << lang;
-    bool is_alpha =
-        std::find(alpha_languages.begin(), alpha_languages.end(), lang) !=
-        alpha_languages.end();
-    EXPECT_EQ(translate::TranslateDownloadManager::IsAlphaLanguage(lang),
-              is_alpha)
-        << "lang=" << lang;
-  }
-}
-
-// Test the fetching of languages from the translate server without 'al'
-// parameter.
-TEST_F(TranslateManagerRenderViewHostTest,
-       FetchLanguagesFromTranslateServerWithoutAlpha) {
-  std::vector<std::string> server_languages;
-  for (size_t i = 0; i < arraysize(server_language_list); ++i)
-    server_languages.push_back(server_language_list[i]);
-
-  std::vector<std::string> alpha_languages;
-  for (size_t i = 0; i < arraysize(alpha_language_list); ++i)
-    alpha_languages.push_back(alpha_language_list[i]);
-
-  // call GetSupportedLanguages to call RequestLanguageList internally.
-  std::vector<std::string> default_supported_languages;
-  translate::TranslateDownloadManager::GetSupportedLanguages(
-      &default_supported_languages);
-
-  SimulateSupportedLanguagesURLFetch(
-      true, server_languages, false, alpha_languages);
-
-  std::vector<std::string> current_supported_languages;
-  translate::TranslateDownloadManager::GetSupportedLanguages(
-      &current_supported_languages);
-
-  // "xx" can't be displayed in the Translate infobar, so this is eliminated.
-  EXPECT_EQ(server_languages.size() - 1, current_supported_languages.size());
-
-  for (size_t i = 0; i < server_languages.size(); ++i) {
-    const std::string& lang = server_languages[i];
-    if (lang == "xx")
-      continue;
-    EXPECT_NE(current_supported_languages.end(),
-              std::find(current_supported_languages.begin(),
-                        current_supported_languages.end(),
-                        lang)) << "lang=" << lang;
-    EXPECT_FALSE(translate::TranslateDownloadManager::IsAlphaLanguage(lang))
-        << "lang=" << lang;
   }
 }
 
@@ -1673,3 +1682,4 @@ TEST_F(TranslateManagerRenderViewHostTest, BubbleUnknownLanguage) {
   EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_TRANSLATING,
             bubble->GetViewState());
 }
+#endif  // defined(USE_AURA)

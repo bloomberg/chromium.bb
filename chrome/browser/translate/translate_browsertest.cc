@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This entire test suite relies on the translate infobar which has been removed
+// from Aura. The file should be ported to use the bubble.
+#if !defined(USE_AURA)
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
@@ -359,3 +363,4 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
   translate = GetExistingTranslateInfoBarDelegate();
   EXPECT_FALSE(translate);
 }
+#endif  // !defined(USE_AURA)

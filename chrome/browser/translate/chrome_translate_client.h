@@ -84,8 +84,10 @@ class ChromeTranslateClient
   scoped_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
   translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages() override;
   int GetInfobarIconID() const override;
+#if !defined(USE_AURA)
   scoped_ptr<infobars::InfoBar> CreateInfoBar(
       scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const override;
+#endif
   void ShowTranslateUI(translate::TranslateStep step,
                        const std::string source_language,
                        const std::string target_language,

@@ -172,36 +172,38 @@ void ChromeTranslateClient::ShowTranslateUI(
   if (error_type != translate::TranslateErrors::NONE)
     step = translate::TRANSLATE_STEP_TRANSLATE_ERROR;
 
-  if (TranslateService::IsTranslateBubbleEnabled()) {
-    // Bubble UI.
-    if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE) {
-      // TODO(droger): Move this logic out of UI code.
-      GetLanguageState().SetTranslateEnabled(true);
-      if (!GetLanguageState().HasLanguageChanged())
-        return;
-
-      if (!triggered_from_menu) {
-        if (web_contents()->GetBrowserContext()->IsOffTheRecord())
-          return;
-        if (GetTranslatePrefs()->IsTooOftenDenied(source_language))
-          return;
-      }
-    }
-    ShowBubble(step, error_type);
+#if !defined(USE_AURA)
+  if (!TranslateService::IsTranslateBubbleEnabled()) {
+    // Infobar UI.
+    translate::TranslateInfoBarDelegate::Create(
+        step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
+        translate_manager_->GetWeakPtr(),
+        InfoBarService::FromWebContents(web_contents()),
+        web_contents()->GetBrowserContext()->IsOffTheRecord(),
+        step,
+        source_language,
+        target_language,
+        error_type,
+        triggered_from_menu);
     return;
   }
+#endif
 
-  // Infobar UI.
-  translate::TranslateInfoBarDelegate::Create(
-      step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
-      translate_manager_->GetWeakPtr(),
-      InfoBarService::FromWebContents(web_contents()),
-      web_contents()->GetBrowserContext()->IsOffTheRecord(),
-      step,
-      source_language,
-      target_language,
-      error_type,
-      triggered_from_menu);
+  // Bubble UI.
+  if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE) {
+    // TODO(droger): Move this logic out of UI code.
+    GetLanguageState().SetTranslateEnabled(true);
+    if (!GetLanguageState().HasLanguageChanged())
+      return;
+
+    if (!triggered_from_menu) {
+      if (web_contents()->GetBrowserContext()->IsOffTheRecord())
+        return;
+      if (GetTranslatePrefs()->IsTooOftenDenied(source_language))
+        return;
+    }
+  }
+  ShowBubble(step, error_type);
 }
 
 translate::TranslateDriver* ChromeTranslateClient::GetTranslateDriver() {
@@ -230,7 +232,12 @@ ChromeTranslateClient::GetTranslateAcceptLanguages() {
 }
 
 int ChromeTranslateClient::GetInfobarIconID() const {
+#if defined(USE_AURA)
+  NOTREACHED();
+  return 0;
+#else
   return IDR_INFOBAR_TRANSLATE;
+#endif
 }
 
 bool ChromeTranslateClient::IsTranslatableURL(const GURL& url) {

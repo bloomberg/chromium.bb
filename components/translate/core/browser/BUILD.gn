@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 source_set("browser") {
   sources = [
     "language_state.cc",
     "language_state.h",
-    "options_menu_model.cc",
-    "options_menu_model.h",
     "page_translated_details.h",
     "translate_accept_languages.cc",
     "translate_accept_languages.h",
@@ -20,8 +20,6 @@ source_set("browser") {
     "translate_error_details.h",
     "translate_event_details.cc",
     "translate_event_details.h",
-    "translate_infobar_delegate.cc",
-    "translate_infobar_delegate.h",
     "translate_language_list.cc",
     "translate_language_list.h",
     "translate_manager.cc",
@@ -38,6 +36,20 @@ source_set("browser") {
     "translate_url_util.cc",
     "translate_url_util.h",
   ]
+
+  if (!use_aura) {
+    sources += [
+      "translate_infobar_delegate.cc",
+      "translate_infobar_delegate.h",
+    ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "options_menu_model.cc",
+      "options_menu_model.h",
+    ]
+  }
 
   deps = [
     "//base",

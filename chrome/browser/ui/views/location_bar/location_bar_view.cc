@@ -975,9 +975,6 @@ void LocationBarView::OnDefaultZoomLevelChanged() {
 }
 
 void LocationBarView::RefreshTranslateIcon() {
-  if (!TranslateService::IsTranslateBubbleEnabled())
-    return;
-
   WebContents* web_contents = GetWebContents();
   if (!web_contents)
     return;

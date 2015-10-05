@@ -30,8 +30,6 @@
         # Note: sources list duplicated in GN build.
         'translate/core/browser/language_state.cc',
         'translate/core/browser/language_state.h',
-        'translate/core/browser/options_menu_model.cc',
-        'translate/core/browser/options_menu_model.h',
         'translate/core/browser/page_translated_details.h',
         'translate/core/browser/translate_accept_languages.cc',
         'translate/core/browser/translate_accept_languages.h',
@@ -44,8 +42,6 @@
         'translate/core/browser/translate_error_details.h',
         'translate/core/browser/translate_event_details.cc',
         'translate/core/browser/translate_event_details.h',
-        'translate/core/browser/translate_infobar_delegate.cc',
-        'translate/core/browser/translate_infobar_delegate.h',
         'translate/core/browser/translate_language_list.cc',
         'translate/core/browser/translate_language_list.h',
         'translate/core/browser/translate_manager.cc',
@@ -61,7 +57,21 @@
         'translate/core/browser/translate_url_fetcher.h',
         'translate/core/browser/translate_url_util.cc',
         'translate/core/browser/translate_url_util.h',
-       ],
+      ],
+      'conditions': [
+        ['use_aura==0', {
+          'sources': [
+            'translate/core/browser/translate_infobar_delegate.cc',
+            'translate/core/browser/translate_infobar_delegate.h',
+          ],
+        }],
+        ['OS == "mac"', {
+          'sources': [
+            'translate/core/browser/options_menu_model.cc',
+            'translate/core/browser/options_menu_model.h',
+          ],
+        }],
+      ],
     },
     {
       # GN version: //components/translate/core/common

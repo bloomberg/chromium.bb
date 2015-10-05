@@ -25,17 +25,6 @@ void DataReductionProxyInfoBarDelegate::Create(
               new DataReductionProxyInfoBarDelegate(link_url))));
 }
 
-#if !defined(OS_ANDROID)
-// This infobar currently only supports Android.
-
-// static
-scoped_ptr<infobars::InfoBar> DataReductionProxyInfoBarDelegate::CreateInfoBar(
-    infobars::InfoBarManager* infobar_manager,
-    scoped_ptr<DataReductionProxyInfoBarDelegate> delegate) {
-  return infobar_manager->CreateConfirmInfoBar(delegate.Pass());
-}
-#endif
-
 DataReductionProxyInfoBarDelegate::~DataReductionProxyInfoBarDelegate() {
 }
 
