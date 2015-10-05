@@ -405,14 +405,10 @@ bool Range::intersectsNode(Node* refNode, ExceptionState& exceptionState)
         return false;
 
     ContainerNode* parentNode = refNode->parentNode();
-    int nodeIndex = refNode->nodeIndex();
+    if (!parentNode)
+        return true;
 
-    if (!parentNode) {
-        // if the node is the top document we should return NODE_BEFORE_AND_AFTER
-        // but we throw to match firefox behavior
-        exceptionState.throwDOMException(NotFoundError, "The node provided has no parent.");
-        return false;
-    }
+    int nodeIndex = refNode->nodeIndex();
 
     if (comparePoint(parentNode, nodeIndex, exceptionState) < 0 // starts before start
         && comparePoint(parentNode, nodeIndex + 1, exceptionState) < 0) { // ends before start
@@ -435,14 +431,10 @@ bool Range::intersectsNode(Node* refNode, const Position& start, const Position&
         return false;
 
     ContainerNode* parentNode = refNode->parentNode();
-    int nodeIndex = refNode->nodeIndex();
+    if (!parentNode)
+        return true;
 
-    if (!parentNode) {
-        // if the node is the top document we should return NODE_BEFORE_AND_AFTER
-        // but we throw to match firefox behavior
-        exceptionState.throwDOMException(NotFoundError, "The node provided has no parent.");
-        return false;
-    }
+    int nodeIndex = refNode->nodeIndex();
 
     Node* startContainerNode = start.computeContainerNode();
     int startOffset = start.computeOffsetInContainerNode();

@@ -109,7 +109,8 @@ debug("");
 
 debug("2.3 Node has no parent");
 range.selectNode(document.getElementById("a2"));
-shouldThrow("range.intersectsNode(document)");
+intersects = range.intersectsNode(document);
+shouldBeTrue("intersects");
 debug("");
 
 debug("2.4 Range has no parent");
