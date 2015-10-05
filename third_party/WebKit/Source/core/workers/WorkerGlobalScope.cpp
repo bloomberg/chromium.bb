@@ -297,11 +297,8 @@ void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& di
 
 void WorkerGlobalScope::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleMessage)
 {
+    ASSERT(isContextThread());
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
-    if (!isContextThread()) {
-        postTask(FROM_HERE, AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
-        return;
-    }
     thread()->workerReportingProxy().reportConsoleMessage(consoleMessage);
     addMessageToWorkerConsole(consoleMessage.release());
 }
