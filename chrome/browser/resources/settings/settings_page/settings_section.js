@@ -165,6 +165,10 @@ Polymer({
     section.classList.remove('expanded');
 
     var card = section.$.card;
+    var placeholder = section.$.placeholder;
+    placeholder.style.top = card.offsetTop + 'px';
+    placeholder.style.height = card.offsetHeight + 'px';
+
     var newRect = card.getBoundingClientRect();
 
     section.classList.add('neon-animating');
