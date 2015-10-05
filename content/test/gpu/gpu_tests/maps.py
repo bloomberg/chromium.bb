@@ -22,7 +22,10 @@ from telemetry.story import story_set as story_set_module
 
 class MapsValidator(cloud_storage_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
+    # --test-type=gpu is used only to suppress the "Google API Keys are missing"
+    # infobar, which causes flakiness in tests.
+    options.AppendExtraBrowserArgs(['--enable-gpu-benchmarking',
+                                    '--test-type=gpu'])
 
   def ValidateAndMeasurePage(self, page, tab, results):
     # TODO: This should not be necessary, but it's not clear if the test is

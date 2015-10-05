@@ -51,7 +51,10 @@ def _DidTestSucceed(tab):
 
 class PixelValidator(cloud_storage_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
+    # --test-type=gpu is used only to suppress the "Google API Keys are missing"
+    # infobar, which causes flakiness in tests.
+    options.AppendExtraBrowserArgs(['--enable-gpu-benchmarking',
+                                    '--test-type=gpu'])
 
   def ValidateAndMeasurePage(self, page, tab, results):
     if not _DidTestSucceed(tab):

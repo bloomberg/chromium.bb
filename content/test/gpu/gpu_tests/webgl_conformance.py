@@ -82,10 +82,13 @@ class WebglConformanceValidator(gpu_test_base.ValidatorBase):
       raise page_test.Failure(_WebGLTestMessages(tab))
 
   def CustomizeBrowserOptions(self, options):
+    # --test-type=gpu is used only to suppress the "Google API Keys are missing"
+    # infobar, which causes flakiness in tests.
     options.AppendExtraBrowserArgs([
         '--disable-gesture-requirement-for-media-playback',
         '--disable-domain-blocking-for-3d-apis',
-        '--disable-gpu-process-crash-limit'
+        '--disable-gpu-process-crash-limit',
+        '--test-type=gpu'
     ])
     browser = browser_finder.FindBrowser(options.finder_options)
     if (browser.target_os.startswith('android') and
@@ -107,11 +110,14 @@ class Webgl2ConformanceValidator(WebglConformanceValidator):
     super(Webgl2ConformanceValidator, self).__init__()
 
   def CustomizeBrowserOptions(self, options):
+    # --test-type=gpu is used only to suppress the "Google API Keys are missing"
+    # infobar, which causes flakiness in tests.
     options.AppendExtraBrowserArgs([
         '--disable-gesture-requirement-for-media-playback',
         '--disable-domain-blocking-for-3d-apis',
         '--disable-gpu-process-crash-limit',
-        '--enable-unsafe-es3-apis'
+        '--enable-unsafe-es3-apis',
+        '--test-type=gpu'
     ])
 
 class WebglConformancePage(gpu_test_base.PageBase):

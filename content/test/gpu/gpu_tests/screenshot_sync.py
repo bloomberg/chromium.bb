@@ -18,7 +18,10 @@ data_path = os.path.join(
 
 class ScreenshotSyncValidator(gpu_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs('--force-gpu-rasterization')
+    # --test-type=gpu is used only to suppress the "Google API Keys are missing"
+    # infobar, which causes flakiness in tests.
+    options.AppendExtraBrowserArgs(['--force-gpu-rasterization',
+                                    '--test-type=gpu'])
 
   def ValidateAndMeasurePage(self, page, tab, results):
     if not tab.screenshot_supported:
