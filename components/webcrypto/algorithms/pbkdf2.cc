@@ -63,6 +63,9 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
 
     const blink::WebCryptoPbkdf2Params* params = algorithm.pbkdf2Params();
 
+    if (params->iterations() == 0)
+      return Status::ErrorPbkdf2Iterations0();
+
     const EVP_MD* digest_algorithm = GetDigest(params->hash());
     if (!digest_algorithm)
       return Status::ErrorUnsupported();

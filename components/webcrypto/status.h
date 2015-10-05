@@ -265,6 +265,9 @@ class Status {
   // No length parameter was provided for PBKDF2's Derive Bits operation.
   static Status ErrorPbkdf2DeriveBitsLengthNotSpecified();
 
+  // PBKDF2 was called with iterations == 0.
+  static Status ErrorPbkdf2Iterations0();
+
  private:
   enum Type { TYPE_ERROR, TYPE_SUCCESS };
 

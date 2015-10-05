@@ -124,3 +124,43 @@ function shouldEvaluateAs(actual, expectedValue)
         return shouldBeEqualToString(actual, expectedValue);
     return shouldEvaluateTo(actual, expectedValue);
 }
+
+// expectFailure() is a helper to convert a Promise that is expect
+// to fail into one that is epxected to succeed, for use in chaining
+// promises.
+//
+// For instance:
+//
+//    // Catches and logs the failure from importKey().
+//    return expectFailue("Import key...", crypto.subtle.importKey(...));
+function expectFailure(message, promise)
+{
+    debug("\n" + message);
+
+    return promise.then(function(result) {
+        debug("FAILED: Expected failure but got: " + result);
+
+        // Re-throw the error.
+        throw new Error("Test FAILED: " + message);
+    }, function(error) {
+        // Expected to fail, so consider this a success.
+        debug("SUCCESS (rejected): " + error.toString());
+        return error;
+    });
+}
+
+function expectSuccess(message, promise)
+{
+    debug("\n" + message);
+
+    return promise.then(function(result) {
+      // Expected to succeed.
+      debug("SUCCESS");
+      return result;
+    }, function(error) {
+      debug("FAILED: " + error.toString());
+
+      // Re-throw the error.
+      throw new Error("Test FAILED: " + message);
+    });
+}
