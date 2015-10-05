@@ -269,6 +269,9 @@ scoped_ptr<ui::TouchSelectionController> CreateSelectionController(
       gfx::ViewConfiguration::GetLongPressTimeoutInMs());
   config.tap_slop = gfx::ViewConfiguration::GetTouchSlopInDips();
   config.show_on_tap_for_empty_editable = false;
+  config.enable_adaptive_handle_orientation =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAdaptiveSelectionHandleOrientation);
   config.enable_longpress_drag_selection =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLongpressDragSelection);
@@ -1318,6 +1321,15 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     selection_controller_->OnSelectionBoundsChanged(
         ConvertSelectionBound(frame_metadata.selection.start),
         ConvertSelectionBound(frame_metadata.selection.end));
+
+    // Set parameters for adaptive handle orientation.
+    gfx::SizeF viewport_size(frame_metadata.scrollable_viewport_size);
+    viewport_size.Scale(frame_metadata.page_scale_factor);
+    gfx::RectF viewport_rect(
+        frame_metadata.location_bar_content_translation.x(),
+        frame_metadata.location_bar_content_translation.y(),
+        viewport_size.width(), viewport_size.height());
+    selection_controller_->OnViewportChanged(viewport_rect);
   }
 
   UpdateBackgroundColor(frame_metadata.root_background_color);

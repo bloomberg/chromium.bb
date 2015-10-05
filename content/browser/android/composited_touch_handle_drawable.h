@@ -22,10 +22,13 @@ class CompositedTouchHandleDrawable : public ui::TouchHandleDrawable {
 
   // ui::TouchHandleDrawable implementation.
   void SetEnabled(bool enabled) override;
-  void SetOrientation(ui::TouchHandleOrientation orientation) override;
+  void SetOrientation(ui::TouchHandleOrientation orientation,
+                      bool mirror_vertical,
+                      bool mirror_horizontal) override;
+  void SetOrigin(const gfx::PointF& origin) override;
   void SetAlpha(float alpha) override;
-  void SetFocus(const gfx::PointF& position) override;
   gfx::RectF GetVisibleBounds() const override;
+  float GetDrawableHorizontalPaddingRatio() const override;
 
   static bool RegisterHandleViewResources(JNIEnv* env);
 
@@ -34,9 +37,9 @@ class CompositedTouchHandleDrawable : public ui::TouchHandleDrawable {
   void UpdateLayerPosition();
 
   const float dpi_scale_;
+  float drawable_horizontal_padding_ratio_;
   ui::TouchHandleOrientation orientation_;
-  gfx::PointF focal_position_;
-  gfx::Vector2dF focal_offset_from_origin_;
+  gfx::PointF origin_position_;
   scoped_refptr<cc::UIResourceLayer> layer_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositedTouchHandleDrawable);

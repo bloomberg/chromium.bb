@@ -56,6 +56,10 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
     // Defaults to 8 DIPs.
     float tap_slop;
 
+    // Controls whether adaptive orientation for selection handles is enabled.
+    // Defaults to false.
+    bool enable_adaptive_handle_orientation;
+
     // Controls whether drag selection after a longpress is enabled.
     // Defaults to false.
     bool enable_longpress_drag_selection;
@@ -74,6 +78,10 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   // by an appropriate call to allow automatic showing.
   void OnSelectionBoundsChanged(const SelectionBound& start,
                                 const SelectionBound& end);
+
+  // To be called when the viewport rect has been changed. This is used for
+  // setting the state of the handles.
+  void OnViewportChanged(const gfx::RectF viewport_rect);
 
   // Allows touch-dragging of the handle.
   // Returns true iff the event was consumed, in which case the caller should
@@ -148,6 +156,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   void SetNeedsAnimate() override;
   scoped_ptr<TouchHandleDrawable> CreateDrawable() override;
   base::TimeDelta GetMaxTapDuration() const override;
+  bool IsAdaptiveHandleOrientationEnabled() const override;
 
   // LongPressDragSelectorClient implementation.
   void OnLongPressDragActiveStateChanged() override;
@@ -168,6 +177,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   bool ActivateSelectionIfNecessary();
   void DeactivateSelection();
   void ForceNextUpdateIfInactive();
+  void UpdateHandleLayoutIfNecessary();
 
   bool WillHandleTouchEventForLongPressDrag(const MotionEvent& event);
   void SetTemporarilyHiddenForLongPressDrag(bool hidden);
@@ -217,6 +227,8 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
   // Longpress drag allows direct manipulation of longpress-initiated selection.
   LongPressDragSelector longpress_drag_selector_;
+
+  gfx::RectF viewport_rect_;
 
   base::TimeTicks selection_start_time_;
   // Whether a selection handle was dragged during the current 'selection

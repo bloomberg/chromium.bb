@@ -24,11 +24,31 @@ class TouchHandle;
 class UI_TOUCH_SELECTION_EXPORT TouchHandleDrawable {
  public:
   virtual ~TouchHandleDrawable() {}
+
+  // Sets whether the handle is active, allowing resource cleanup if necessary.
   virtual void SetEnabled(bool enabled) = 0;
-  virtual void SetOrientation(TouchHandleOrientation orientation) = 0;
+
+  // Update the handle visuals to |orientation|.
+  // |mirror_vertical| and |mirror_horizontal| are used to invert the drawables
+  // if required for adaptive handle orientation.
+  virtual void SetOrientation(ui::TouchHandleOrientation orientation,
+                              bool mirror_vertical,
+                              bool mirror_horizontal) = 0;
+
+  // Sets the origin position of the touch handle.
+  // |origin| takes care of positioning the handle drawable based on
+  // its visible bounds.
+  virtual void SetOrigin(const gfx::PointF& origin) = 0;
+
+  // Sets the transparency |alpha| for the handle drawable.
   virtual void SetAlpha(float alpha) = 0;
-  virtual void SetFocus(const gfx::PointF& position) = 0;
+
+  // Returns the visible bounds of the handle drawable.
+  // The bounds includes the transparent horizontal padding.
   virtual gfx::RectF GetVisibleBounds() const = 0;
+
+  // Returns the transparent horizontal padding ratio of the handle drawable.
+  virtual float GetDrawableHorizontalPaddingRatio() const = 0;
 };
 
 // Interface through which |TouchHandle| communicates handle manipulation and
@@ -41,6 +61,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandleClient
   virtual void SetNeedsAnimate() = 0;
   virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() = 0;
   virtual base::TimeDelta GetMaxTapDuration() const = 0;
+  virtual bool IsAdaptiveHandleOrientationEnabled() const = 0;
 };
 
 // Responsible for displaying a selection or insertion handle for text
@@ -48,7 +69,9 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandleClient
 class UI_TOUCH_SELECTION_EXPORT TouchHandle : public TouchSelectionDraggable {
  public:
   // The drawable will be enabled but invisible until otherwise specified.
-  TouchHandle(TouchHandleClient* client, TouchHandleOrientation orientation);
+  TouchHandle(TouchHandleClient* client,
+              TouchHandleOrientation orientation,
+              const gfx::RectF& viewport_rect);
   ~TouchHandle() override;
 
   // TouchSelectionDraggable implementation.
@@ -67,10 +90,14 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle : public TouchSelectionDraggable {
   // If an animation is in-progress, it will be overriden appropriately.
   void SetVisible(bool visible, AnimationStyle animation_style);
 
-  // Update the handle placement to |position|.
+  // Update the focus points for the handles. The handle will be positioned
+  // either |top| or |bottom| based on the mirror parameters.
   // Note: If a fade out animation is active or the handle is invisible, the
   // handle position will not be updated until the handle regains visibility.
-  void SetPosition(const gfx::PointF& position);
+  void SetFocus(const gfx::PointF& top, const gfx::PointF& bottom);
+
+  // Update the viewport rect, based on which the handle decide its inversion.
+  void SetViewportRect(const gfx::RectF& viewport_rect);
 
   // Update the handle visuals to |orientation|.
   // Note: If the handle is being dragged, the orientation change will be
@@ -86,21 +113,30 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle : public TouchSelectionDraggable {
   // the bounds will be empty.
   gfx::RectF GetVisibleBounds() const;
 
-  const gfx::PointF& position() const { return position_; }
+  // Updates the handle layout if the is_handle_layout_update_required_ flag is
+  // set. Will be called once per frame update, avoids multiple updates for
+  // for the same frame update due to more than one parameter updates.
+  void UpdateHandleLayout();
+
+  const gfx::PointF& focus_bottom() const { return focus_bottom_; }
   TouchHandleOrientation orientation() const { return orientation_; }
 
  private:
+  gfx::PointF ComputeHandleOrigin() const;
   void BeginDrag();
   void EndDrag();
   void BeginFade();
   void EndFade();
   void SetAlpha(float alpha);
+  void SetUpdateLayoutRequired();
 
   scoped_ptr<TouchHandleDrawable> drawable_;
 
   TouchHandleClient* const client_;
 
-  gfx::PointF position_;
+  gfx::PointF focus_bottom_;
+  gfx::PointF focus_top_;
+  gfx::RectF viewport_rect_;
   TouchHandleOrientation orientation_;
   TouchHandleOrientation deferred_orientation_;
 
@@ -120,6 +156,12 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle : public TouchSelectionDraggable {
   bool is_visible_;
   bool is_dragging_;
   bool is_drag_within_tap_region_;
+  bool is_handle_layout_update_required_;
+
+  // Mirror variables determine if the handles should be inverted or not.
+  bool mirror_vertical_;
+  bool mirror_horizontal_;
+  float handle_horizontal_padding_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchHandle);
 };

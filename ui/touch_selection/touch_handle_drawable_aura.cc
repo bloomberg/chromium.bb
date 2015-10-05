@@ -77,7 +77,7 @@ TouchHandleDrawableAura::~TouchHandleDrawableAura() {
 
 void TouchHandleDrawableAura::UpdateBounds() {
   gfx::RectF new_bounds = relative_bounds_;
-  new_bounds.Offset(focal_position_.x(), focal_position_.y());
+  new_bounds.Offset(origin_position_.x(), origin_position_.y());
   window_->SetBounds(gfx::ToEnclosingRect(new_bounds));
 }
 
@@ -96,8 +96,13 @@ void TouchHandleDrawableAura::SetEnabled(bool enabled) {
     window_->Hide();
 }
 
-void TouchHandleDrawableAura::SetOrientation(
-    TouchHandleOrientation orientation) {
+void TouchHandleDrawableAura::SetOrientation(TouchHandleOrientation orientation,
+                                             bool mirror_vertical,
+                                             bool mirror_horizontal) {
+  // TODO(AviD): Implement adaptive handle orientation logic for Aura
+  DCHECK(!mirror_vertical);
+  DCHECK(!mirror_horizontal);
+
   if (orientation_ == orientation)
     return;
   orientation_ = orientation;
@@ -108,28 +113,15 @@ void TouchHandleDrawableAura::SetOrientation(
   gfx::Size image_size = image->Size();
   int window_width = image_size.width() + 2 * kSelectionHandlePadding;
   int window_height = image_size.height() + 2 * kSelectionHandlePadding;
-  // Due to the shape of the handle images, the window is aligned differently to
-  // the selection bound depending on the orientation.
-  int window_left = 0;
-  switch (orientation) {
-    case TouchHandleOrientation::LEFT:
-      window_left = -image_size.width() - kSelectionHandlePadding;
-      break;
-    case TouchHandleOrientation::RIGHT:
-      window_left = -kSelectionHandlePadding;
-      break;
-    case TouchHandleOrientation::CENTER:
-      window_left = -window_width / 2;
-      break;
-    case TouchHandleOrientation::UNDEFINED:
-      NOTREACHED() << "Undefined handle orientation.";
-      break;
-  };
-  relative_bounds_ = gfx::RectF(
-      window_left,
-      kSelectionHandleVerticalVisualOffset - kSelectionHandlePadding,
-      window_width,
-      window_height);
+  relative_bounds_ =
+      gfx::RectF(-kSelectionHandlePadding,
+                 kSelectionHandleVerticalVisualOffset - kSelectionHandlePadding,
+                 window_width, window_height);
+  UpdateBounds();
+}
+
+void TouchHandleDrawableAura::SetOrigin(const gfx::PointF& position) {
+  origin_position_ = position;
   UpdateBounds();
 }
 
@@ -145,11 +137,6 @@ void TouchHandleDrawableAura::SetAlpha(float alpha) {
     window_->Hide();
 }
 
-void TouchHandleDrawableAura::SetFocus(const gfx::PointF& position) {
-  focal_position_ = position;
-  UpdateBounds();
-}
-
 gfx::RectF TouchHandleDrawableAura::GetVisibleBounds() const {
   gfx::RectF bounds(window_->bounds());
   bounds.Inset(kSelectionHandlePadding,
@@ -157,6 +144,11 @@ gfx::RectF TouchHandleDrawableAura::GetVisibleBounds() const {
                kSelectionHandlePadding,
                kSelectionHandlePadding);
   return bounds;
+}
+
+float TouchHandleDrawableAura::GetDrawableHorizontalPaddingRatio() const {
+  // Aura does not have any transparent padding for its handle drawable.
+  return 0.0f;
 }
 
 }  // namespace ui

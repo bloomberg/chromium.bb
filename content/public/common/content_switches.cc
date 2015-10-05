@@ -879,6 +879,11 @@ const char kDisablePullToRefreshEffect[]   = "disable-pull-to-refresh-effect";
 // Disable the locking feature of the screen orientation API.
 const char kDisableScreenOrientationLock[]  = "disable-screen-orientation-lock";
 
+// Enable inverting of selection handles so that they are not clipped by the
+// viewport boundaries.
+const char kEnableAdaptiveSelectionHandleOrientation[] =
+    "enable-adaptive-selection-handle-orientation";
+
 // Enable external animation system for Android compositor.
 // See also kEnableCompositorAnimationTimelines for renderer compositors.
 const char kEnableAndroidCompositorAnimationTimelines[] =

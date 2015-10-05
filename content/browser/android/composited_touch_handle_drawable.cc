@@ -49,6 +49,9 @@ class HandleResources {
     left_bitmap_.setImmutable();
     right_bitmap_.setImmutable();
     center_bitmap_.setImmutable();
+
+    drawable_horizontal_padding_ratio_ =
+        Java_HandleViewResources_getHandleHorizontalPaddingRatio(env);
   }
 
   const SkBitmap& GetBitmap(ui::TouchHandleOrientation orientation) {
@@ -66,10 +69,16 @@ class HandleResources {
     return center_bitmap_;
   }
 
+  float GetDrawableHorizontalPaddingRatio() const {
+    DCHECK(loaded_);
+    return drawable_horizontal_padding_ratio_;
+  }
+
  private:
   SkBitmap left_bitmap_;
   SkBitmap right_bitmap_;
   SkBitmap center_bitmap_;
+  float drawable_horizontal_padding_ratio_;
   bool loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(HandleResources);
@@ -87,6 +96,8 @@ CompositedTouchHandleDrawable::CompositedTouchHandleDrawable(
       orientation_(ui::TouchHandleOrientation::UNDEFINED),
       layer_(cc::UIResourceLayer::Create(Compositor::LayerSettings())) {
   g_selection_resources.Get().LoadIfNecessary(context);
+  drawable_horizontal_padding_ratio_ =
+      g_selection_resources.Get().GetDrawableHorizontalPaddingRatio();
   DCHECK(root_layer);
   root_layer->AddChild(layer_.get());
 }
@@ -103,29 +114,38 @@ void CompositedTouchHandleDrawable::SetEnabled(bool enabled) {
 }
 
 void CompositedTouchHandleDrawable::SetOrientation(
-    ui::TouchHandleOrientation orientation) {
+    ui::TouchHandleOrientation orientation,
+    bool mirror_vertical,
+    bool mirror_horizontal) {
   DCHECK(layer_->parent());
+  bool orientation_changed = orientation_ != orientation;
+
   orientation_ = orientation;
 
-  const SkBitmap& bitmap = g_selection_resources.Get().GetBitmap(orientation);
-  layer_->SetBitmap(bitmap);
-  layer_->SetBounds(gfx::Size(bitmap.width(), bitmap.height()));
+  if (orientation_changed) {
+    const SkBitmap& bitmap = g_selection_resources.Get().GetBitmap(orientation);
+    const int bitmap_height = bitmap.height();
+    const int bitmap_width = bitmap.width();
+    layer_->SetBitmap(bitmap);
+    layer_->SetBounds(gfx::Size(bitmap_width, bitmap_height));
+  }
 
-  switch (orientation_) {
-    case ui::TouchHandleOrientation::LEFT:
-      focal_offset_from_origin_ = gfx::Vector2dF(bitmap.width() * 0.75f, 0);
-      break;
-    case ui::TouchHandleOrientation::RIGHT:
-      focal_offset_from_origin_ = gfx::Vector2dF(bitmap.width() * 0.25f, 0);
-      break;
-    case ui::TouchHandleOrientation::CENTER:
-      focal_offset_from_origin_ = gfx::Vector2dF(bitmap.width() * 0.5f, 0);
-      break;
-    case ui::TouchHandleOrientation::UNDEFINED:
-      NOTREACHED() << "Invalid touch handle orientation.";
-      break;
-  };
+  const int layer_height = layer_->bounds().height();
+  const int layer_width = layer_->bounds().width();
 
+  // Invert about X and Y axis based on the mirror values
+  gfx::Transform transform;
+  float scale_x = mirror_horizontal ? -1.f : 1.f;
+  float scale_y = mirror_vertical ? -1.f : 1.f;
+
+  layer_->SetTransformOrigin(
+      gfx::Point3F(layer_width * 0.5f, layer_height * 0.5f, 0));
+  transform.Scale(scale_x, scale_y);
+  layer_->SetTransform(transform);
+}
+
+void CompositedTouchHandleDrawable::SetOrigin(const gfx::PointF& origin) {
+  origin_position_ = gfx::ScalePoint(origin, dpi_scale_);
   UpdateLayerPosition();
 }
 
@@ -137,12 +157,6 @@ void CompositedTouchHandleDrawable::SetAlpha(float alpha) {
   layer_->SetHideLayerAndSubtree(hidden);
 }
 
-void CompositedTouchHandleDrawable::SetFocus(const gfx::PointF& position) {
-  DCHECK(layer_->parent());
-  focal_position_ = gfx::ScalePoint(position, dpi_scale_);
-  UpdateLayerPosition();
-}
-
 gfx::RectF CompositedTouchHandleDrawable::GetVisibleBounds() const {
   return gfx::ScaleRect(gfx::RectF(layer_->position().x(),
                                    layer_->position().y(),
@@ -151,12 +165,16 @@ gfx::RectF CompositedTouchHandleDrawable::GetVisibleBounds() const {
                         1.f / dpi_scale_);
 }
 
+float CompositedTouchHandleDrawable::GetDrawableHorizontalPaddingRatio() const {
+  return drawable_horizontal_padding_ratio_;
+}
+
 void CompositedTouchHandleDrawable::DetachLayer() {
   layer_->RemoveFromParent();
 }
 
 void CompositedTouchHandleDrawable::UpdateLayerPosition() {
-  layer_->SetPosition(focal_position_ - focal_offset_from_origin_);
+  layer_->SetPosition(origin_position_);
 }
 
 // static

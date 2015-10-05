@@ -29,6 +29,8 @@ PopupTouchHandleDrawable::PopupTouchHandleDrawable(JNIEnv* env,
                                                    float dpi_scale)
     : java_ref_(env, obj), dpi_scale_(dpi_scale) {
   DCHECK(!java_ref_.is_empty());
+  drawable_horizontal_padding_ratio_ =
+      Java_PopupTouchHandleDrawable_getHandleHorizontalPaddingRatio(env, obj);
 }
 
 PopupTouchHandleDrawable::~PopupTouchHandleDrawable() {
@@ -50,12 +52,25 @@ void PopupTouchHandleDrawable::SetEnabled(bool enabled) {
 }
 
 void PopupTouchHandleDrawable::SetOrientation(
-    ui::TouchHandleOrientation orientation) {
+    ui::TouchHandleOrientation orientation,
+    bool mirror_vertical,
+    bool mirror_horizontal) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null()) {
-    Java_PopupTouchHandleDrawable_setOrientation(env, obj.obj(),
-                                                 static_cast<int>(orientation));
+    Java_PopupTouchHandleDrawable_setOrientation(
+        env, obj.obj(), static_cast<int>(orientation), mirror_vertical,
+        mirror_horizontal);
+  }
+}
+
+void PopupTouchHandleDrawable::SetOrigin(const gfx::PointF& origin) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (!obj.is_null()) {
+    const gfx::PointF origin_pix = gfx::ScalePoint(origin, dpi_scale_);
+    Java_PopupTouchHandleDrawable_setOrigin(env, obj.obj(), origin_pix.x(),
+                                            origin_pix.y());
   }
 }
 
@@ -65,16 +80,6 @@ void PopupTouchHandleDrawable::SetAlpha(float alpha) {
   bool visible = alpha > 0;
   if (!obj.is_null())
     Java_PopupTouchHandleDrawable_setVisible(env, obj.obj(), visible);
-}
-
-void PopupTouchHandleDrawable::SetFocus(const gfx::PointF& position) {
-  const gfx::PointF position_pix = gfx::ScalePoint(position, dpi_scale_);
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj.is_null()) {
-    Java_PopupTouchHandleDrawable_setFocus(env, obj.obj(), position_pix.x(),
-                                           position_pix.y());
-  }
 }
 
 gfx::RectF PopupTouchHandleDrawable::GetVisibleBounds() const {
@@ -88,6 +93,10 @@ gfx::RectF PopupTouchHandleDrawable::GetVisibleBounds() const {
       Java_PopupTouchHandleDrawable_getVisibleWidth(env, obj.obj()),
       Java_PopupTouchHandleDrawable_getVisibleHeight(env, obj.obj()));
   return gfx::ScaleRect(unscaled_rect, 1.f / dpi_scale_);
+}
+
+float PopupTouchHandleDrawable::GetDrawableHorizontalPaddingRatio() const {
+  return drawable_horizontal_padding_ratio_;
 }
 
 // static

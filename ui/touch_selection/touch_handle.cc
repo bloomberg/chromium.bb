@@ -63,9 +63,11 @@ static std::ostream& operator<<(std::ostream& os,
 
 // Responsible for rendering a selection or insertion handle for text editing.
 TouchHandle::TouchHandle(TouchHandleClient* client,
-                         TouchHandleOrientation orientation)
+                         TouchHandleOrientation orientation,
+                         const gfx::RectF& viewport_rect)
     : drawable_(client->CreateDrawable()),
       client_(client),
+      viewport_rect_(viewport_rect),
       orientation_(orientation),
       deferred_orientation_(TouchHandleOrientation::UNDEFINED),
       alpha_(0.f),
@@ -73,12 +75,16 @@ TouchHandle::TouchHandle(TouchHandleClient* client,
       enabled_(true),
       is_visible_(false),
       is_dragging_(false),
-      is_drag_within_tap_region_(false) {
+      is_drag_within_tap_region_(false),
+      is_handle_layout_update_required_(false),
+      mirror_vertical_(false),
+      mirror_horizontal_(false) {
   DCHECK_NE(orientation, TouchHandleOrientation::UNDEFINED);
   drawable_->SetEnabled(enabled_);
-  drawable_->SetOrientation(orientation_);
+  drawable_->SetOrientation(orientation_, false, false);
+  drawable_->SetOrigin(focus_bottom_);
   drawable_->SetAlpha(alpha_);
-  drawable_->SetFocus(position_);
+  handle_horizontal_padding_ = drawable_->GetDrawableHorizontalPaddingRatio();
 }
 
 TouchHandle::~TouchHandle() {
@@ -104,7 +110,7 @@ void TouchHandle::SetVisible(bool visible, AnimationStyle animation_style) {
 
   // Handle repositioning may have been deferred while previously invisible.
   if (visible)
-    drawable_->SetFocus(position_);
+    SetUpdateLayoutRequired();
 
   bool animate = animation_style != ANIMATION_NONE;
   if (is_dragging_) {
@@ -118,16 +124,23 @@ void TouchHandle::SetVisible(bool visible, AnimationStyle animation_style) {
     EndFade();
 }
 
-void TouchHandle::SetPosition(const gfx::PointF& position) {
+void TouchHandle::SetFocus(const gfx::PointF& top, const gfx::PointF& bottom) {
   DCHECK(enabled_);
-  if (position_ == position)
+  if (focus_top_ == top && focus_bottom_ == bottom)
     return;
-  position_ = position;
-  // Suppress repositioning a handle while invisible or fading out to prevent it
-  // from "ghosting" outside the visible bounds. The position will be pushed to
-  // the drawable when the handle regains visibility (see |SetVisible()|).
-  if (is_visible_)
-    drawable_->SetFocus(position_);
+
+  focus_top_ = top;
+  focus_bottom_ = bottom;
+  SetUpdateLayoutRequired();
+}
+
+void TouchHandle::SetViewportRect(const gfx::RectF& viewport_rect) {
+  DCHECK(enabled_);
+  if (viewport_rect_ == viewport_rect)
+    return;
+
+  viewport_rect_ = viewport_rect;
+  SetUpdateLayoutRequired();
 }
 
 void TouchHandle::SetOrientation(TouchHandleOrientation orientation) {
@@ -142,7 +155,7 @@ void TouchHandle::SetOrientation(TouchHandleOrientation orientation) {
     return;
 
   orientation_ = orientation;
-  drawable_->SetOrientation(orientation);
+  SetUpdateLayoutRequired();
 }
 
 bool TouchHandle::WillHandleTouchEvent(const MotionEvent& event) {
@@ -170,7 +183,7 @@ bool TouchHandle::WillHandleTouchEvent(const MotionEvent& event) {
         return false;
       }
       touch_down_position_ = touch_point;
-      touch_drag_offset_ = position_ - touch_down_position_;
+      touch_drag_offset_ = focus_bottom_ - touch_down_position_;
       touch_down_time_ = event.GetEventTime();
       BeginDrag();
     } break;
@@ -217,8 +230,8 @@ bool TouchHandle::Animate(base::TimeTicks frame_time) {
 
   float time_u =
       1.f - (fade_end_time_ - frame_time).InMillisecondsF() / kFadeDurationMs;
-  float position_u =
-      (position_ - fade_start_position_).LengthSquared() / kFadeDistanceSquared;
+  float position_u = (focus_bottom_ - fade_start_position_).LengthSquared() /
+                     kFadeDistanceSquared;
   float u = std::max(time_u, position_u);
   SetAlpha(is_visible_ ? u : 1.f - u);
 
@@ -237,6 +250,86 @@ gfx::RectF TouchHandle::GetVisibleBounds() const {
   return drawable_->GetVisibleBounds();
 }
 
+void TouchHandle::UpdateHandleLayout() {
+  // Suppress repositioning a handle while invisible or fading out to prevent it
+  // from "ghosting" outside the visible bounds. The position will be pushed to
+  // the drawable when the handle regains visibility (see |SetVisible()|).
+  if (!is_visible_ || !is_handle_layout_update_required_)
+    return;
+
+  is_handle_layout_update_required_ = false;
+
+  // Update mirror values only when dragging has stopped to prevent unwanted
+  // inversion while dragging of handles.
+  if (client_->IsAdaptiveHandleOrientationEnabled() && !is_dragging_) {
+    gfx::RectF handle_bounds = drawable_->GetVisibleBounds();
+    bool mirror_horizontal = false;
+    bool mirror_vertical = false;
+
+    const float handle_width =
+        handle_bounds.width() * (1.0 - handle_horizontal_padding_);
+    const float handle_height = handle_bounds.height();
+
+    const float bottom_y_unmirrored =
+        focus_bottom_.y() + handle_height + viewport_rect_.y();
+    const float top_y_mirrored =
+        focus_top_.y() - handle_height + viewport_rect_.y();
+
+    // In case the viewport height is small, like webview, avoid inversion.
+    if (bottom_y_unmirrored > viewport_rect_.bottom() &&
+        top_y_mirrored > viewport_rect_.y()) {
+      mirror_vertical = true;
+    }
+
+    if (orientation_ == TouchHandleOrientation::LEFT &&
+        focus_bottom_.x() - handle_width < viewport_rect_.x()) {
+      mirror_horizontal = true;
+    } else if (orientation_ == TouchHandleOrientation::RIGHT &&
+               focus_bottom_.x() + handle_width > viewport_rect_.right()) {
+      mirror_horizontal = true;
+    }
+
+    mirror_horizontal_ = mirror_horizontal;
+    mirror_vertical_ = mirror_vertical;
+  }
+
+  drawable_->SetOrientation(orientation_, mirror_vertical_, mirror_horizontal_);
+  drawable_->SetOrigin(ComputeHandleOrigin());
+}
+
+gfx::PointF TouchHandle::ComputeHandleOrigin() const {
+  gfx::PointF focus = mirror_vertical_ ? focus_top_ : focus_bottom_;
+  gfx::RectF drawable_bounds = drawable_->GetVisibleBounds();
+  float drawable_width = drawable_->GetVisibleBounds().width();
+
+  // Calculate the focal offsets from origin for the handle drawable
+  // based on the orientation.
+  int focal_offset_x = 0;
+  int focal_offset_y = mirror_vertical_ ? drawable_bounds.height() : 0;
+  switch (orientation_) {
+    case ui::TouchHandleOrientation::LEFT:
+      focal_offset_x =
+          mirror_horizontal_
+              ? drawable_width * handle_horizontal_padding_
+              : drawable_width * (1.0f - handle_horizontal_padding_);
+      break;
+    case ui::TouchHandleOrientation::RIGHT:
+      focal_offset_x =
+          mirror_horizontal_
+              ? drawable_width * (1.0f - handle_horizontal_padding_)
+              : drawable_width * handle_horizontal_padding_;
+      break;
+    case ui::TouchHandleOrientation::CENTER:
+      focal_offset_x = drawable_width * 0.5f;
+      break;
+    case ui::TouchHandleOrientation::UNDEFINED:
+      NOTREACHED() << "Invalid touch handle orientation.";
+      break;
+  };
+
+  return focus - gfx::Vector2dF(focal_offset_x, focal_offset_y);
+}
+
 void TouchHandle::BeginDrag() {
   DCHECK(enabled_);
   if (is_dragging_)
@@ -244,7 +337,7 @@ void TouchHandle::BeginDrag() {
   EndFade();
   is_dragging_ = true;
   is_drag_within_tap_region_ = true;
-  client_->OnDragBegin(*this, position());
+  client_->OnDragBegin(*this, focus_bottom());
 }
 
 void TouchHandle::EndDrag() {
@@ -260,6 +353,9 @@ void TouchHandle::EndDrag() {
     TouchHandleOrientation deferred_orientation = deferred_orientation_;
     deferred_orientation_ = TouchHandleOrientation::UNDEFINED;
     SetOrientation(deferred_orientation);
+    // Handle layout may be deferred while the handle is dragged.
+    SetUpdateLayoutRequired();
+    UpdateHandleLayout();
   }
 
   if (animate_deferred_fade_) {
@@ -284,7 +380,7 @@ void TouchHandle::BeginFade() {
   fade_end_time_ = base::TimeTicks::Now() +
                    base::TimeDelta::FromMillisecondsD(
                        kFadeDurationMs * std::abs(target_alpha - alpha_));
-  fade_start_position_ = position_;
+  fade_start_position_ = focus_bottom_;
   client_->SetNeedsAnimate();
 }
 
@@ -301,6 +397,12 @@ void TouchHandle::SetAlpha(float alpha) {
     return;
   alpha_ = alpha;
   drawable_->SetAlpha(alpha);
+}
+
+void TouchHandle::SetUpdateLayoutRequired() {
+  // TODO(AviD): Make the layout call explicit to the caller by adding this in
+  // TouchHandleClient.
+  is_handle_layout_update_required_ = true;
 }
 
 }  // namespace ui

@@ -21,6 +21,11 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("content")
 public class HandleViewResources {
+    // Android handle drawables have a transparent horizontal padding,
+    // which is one-fourth of the image. This variable is to take the
+    // padding ratio into account while calculating the handle origin position.
+    private static final float HANDLE_HORIZONTAL_PADDING_RATIO = 0.25f;
+
     private static final int[] LEFT_HANDLE_ATTRS = {
         android.R.attr.textSelectHandleLeft,
     };
@@ -93,6 +98,11 @@ public class HandleViewResources {
         drawable.setBounds(0, 0, width, height);
         drawable.draw(canvas);
         return canvasBitmap;
+    }
+
+    @CalledByNative
+    public static float getHandleHorizontalPaddingRatio() {
+        return HANDLE_HORIZONTAL_PADDING_RATIO;
     }
 
     @CalledByNative

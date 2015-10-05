@@ -17,6 +17,7 @@ namespace {
 const int kDefaultTapDurationMs = 200;
 const double kDefaultTapSlop = 10.;
 const float kDefaultDrawableSize = 10.f;
+const gfx::RectF kDefaultViewportRect(0, 0, 560, 1200);
 
 struct MockDrawableData {
   MockDrawableData()
@@ -27,6 +28,8 @@ struct MockDrawableData {
         rect(0, 0, kDefaultDrawableSize, kDefaultDrawableSize) {}
   TouchHandleOrientation orientation;
   float alpha;
+  bool mirror_horizontal;
+  bool mirror_vertical;
   bool enabled;
   bool visible;
   gfx::RectF rect;
@@ -39,8 +42,16 @@ class MockTouchHandleDrawable : public TouchHandleDrawable {
 
   void SetEnabled(bool enabled) override { data_->enabled = enabled; }
 
-  void SetOrientation(TouchHandleOrientation orientation) override {
+  void SetOrientation(TouchHandleOrientation orientation,
+                      bool mirror_vertical,
+                      bool mirror_horizontal) override {
     data_->orientation = orientation;
+    data_->mirror_horizontal = mirror_horizontal;
+    data_->mirror_vertical = mirror_vertical;
+  }
+
+  void SetOrigin(const gfx::PointF& origin) override {
+    data_->rect.set_origin(origin);
   }
 
   void SetAlpha(float alpha) override {
@@ -48,10 +59,9 @@ class MockTouchHandleDrawable : public TouchHandleDrawable {
     data_->visible = alpha > 0;
   }
 
-  void SetFocus(const gfx::PointF& position) override {
-    // Anchor focus to the top left of the rect (regardless of orientation).
-    data_->rect.set_origin(position);
-  }
+  // TODO(AviD): Add unittests for non-zero values of padding ratio once the
+  // code refactoring is completed.
+  float GetDrawableHorizontalPaddingRatio() const override { return 0; }
 
   gfx::RectF GetVisibleBounds() const override {
     return data_->rect;
@@ -105,6 +115,11 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
     return base::TimeDelta::FromMilliseconds(kDefaultTapDurationMs);
   }
 
+  bool IsAdaptiveHandleOrientationEnabled() const override {
+    // Enable adaptive handle orientation by default for unittests
+    return true;
+  }
+
   void Animate(TouchHandle& handle) {
     needs_animate_ = false;
     base::TimeTicks now = base::TimeTicks::Now();
@@ -130,6 +145,31 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
     return needs_animate;
   }
 
+  void UpdateHandleFocus(TouchHandle& handle,
+                         gfx::PointF& top,
+                         gfx::PointF& bottom) {
+    handle.SetFocus(top, bottom);
+    handle.UpdateHandleLayout();
+  }
+
+  void UpdateHandleOrientation(TouchHandle& handle,
+                               TouchHandleOrientation orientation) {
+    handle.SetOrientation(orientation);
+    handle.UpdateHandleLayout();
+  }
+
+  void UpdateHandleVisibility(TouchHandle& handle,
+                              bool visible,
+                              TouchHandle::AnimationStyle animation_style) {
+    handle.SetVisible(visible, animation_style);
+    handle.UpdateHandleLayout();
+  }
+
+  void UpdateViewportRect(TouchHandle& handle, gfx::RectF viewport_rect) {
+    handle.SetViewportRect(viewport_rect);
+    handle.UpdateHandleLayout();
+  }
+
   bool IsDragging() const { return dragging_; }
   const gfx::PointF& DragPosition() const { return drag_position_; }
   bool NeedsAnimate() const { return needs_animate_; }
@@ -147,28 +187,30 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
 };
 
 TEST_F(TouchHandleTest, Visibility) {
-  TouchHandle handle(this, TouchHandleOrientation::CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER,
+                     kDefaultViewportRect);
   EXPECT_FALSE(drawable().visible);
 
-  handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
   EXPECT_TRUE(drawable().visible);
   EXPECT_EQ(1.f, drawable().alpha);
 
-  handle.SetVisible(false, TouchHandle::ANIMATION_NONE);
+  UpdateHandleVisibility(handle, false, TouchHandle::ANIMATION_NONE);
   EXPECT_FALSE(drawable().visible);
 
-  handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
   EXPECT_TRUE(drawable().visible);
   EXPECT_EQ(1.f, drawable().alpha);
 }
 
 TEST_F(TouchHandleTest, VisibilityAnimation) {
-  TouchHandle handle(this, TouchHandleOrientation::CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER,
+                     kDefaultViewportRect);
   ASSERT_FALSE(NeedsAnimate());
   ASSERT_FALSE(drawable().visible);
   ASSERT_EQ(0.f, drawable().alpha);
 
-  handle.SetVisible(true, TouchHandle::ANIMATION_SMOOTH);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_SMOOTH);
   EXPECT_TRUE(NeedsAnimate());
   EXPECT_FALSE(drawable().visible);
   EXPECT_EQ(0.f, drawable().alpha);
@@ -178,7 +220,7 @@ TEST_F(TouchHandleTest, VisibilityAnimation) {
   EXPECT_EQ(1.f, drawable().alpha);
 
   ASSERT_FALSE(NeedsAnimate());
-  handle.SetVisible(false, TouchHandle::ANIMATION_SMOOTH);
+  UpdateHandleVisibility(handle, false, TouchHandle::ANIMATION_SMOOTH);
   EXPECT_TRUE(NeedsAnimate());
   EXPECT_TRUE(drawable().visible);
   EXPECT_EQ(1.f, drawable().alpha);
@@ -187,87 +229,99 @@ TEST_F(TouchHandleTest, VisibilityAnimation) {
   EXPECT_FALSE(drawable().visible);
   EXPECT_EQ(0.f, drawable().alpha);
 
-  handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
   EXPECT_EQ(1.f, drawable().alpha);
   EXPECT_FALSE(GetAndResetNeedsAnimate());
-  handle.SetVisible(false, TouchHandle::ANIMATION_SMOOTH);
+  UpdateHandleVisibility(handle, false, TouchHandle::ANIMATION_SMOOTH);
   EXPECT_EQ(1.f, drawable().alpha);
   EXPECT_TRUE(GetAndResetNeedsAnimate());
-  handle.SetVisible(true, TouchHandle::ANIMATION_SMOOTH);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_SMOOTH);
   EXPECT_EQ(1.f, drawable().alpha);
   EXPECT_FALSE(GetAndResetNeedsAnimate());
 }
 
 TEST_F(TouchHandleTest, Orientation) {
-  TouchHandle handle(this, TouchHandleOrientation::CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER,
+                     kDefaultViewportRect);
   EXPECT_EQ(TouchHandleOrientation::CENTER, drawable().orientation);
 
-  handle.SetOrientation(TouchHandleOrientation::LEFT);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
+  UpdateHandleOrientation(handle, TouchHandleOrientation::LEFT);
   EXPECT_EQ(TouchHandleOrientation::LEFT, drawable().orientation);
 
-  handle.SetOrientation(TouchHandleOrientation::RIGHT);
+  UpdateHandleOrientation(handle, TouchHandleOrientation::RIGHT);
   EXPECT_EQ(TouchHandleOrientation::RIGHT, drawable().orientation);
 
-  handle.SetOrientation(TouchHandleOrientation::CENTER);
+  UpdateHandleOrientation(handle, TouchHandleOrientation::CENTER);
   EXPECT_EQ(TouchHandleOrientation::CENTER, drawable().orientation);
 }
 
 TEST_F(TouchHandleTest, Position) {
-  TouchHandle handle(this, TouchHandleOrientation::CENTER);
-  handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER,
+                     kDefaultViewportRect);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
 
-  gfx::PointF position;
-  EXPECT_EQ(gfx::PointF(), drawable().rect.origin());
+  const gfx::Vector2dF koffset_vector(kDefaultDrawableSize / 2.f, 0);
+  gfx::PointF focus_top;
+  gfx::PointF focus_bottom;
+  EXPECT_EQ(gfx::PointF() - koffset_vector, drawable().rect.origin());
 
-  position = gfx::PointF(7.3f, -3.7f);
-  handle.SetPosition(position);
-  EXPECT_EQ(position, drawable().rect.origin());
+  focus_top = gfx::PointF(7.3f, -3.7f);
+  focus_bottom = gfx::PointF(7.3f, -2.7f);
+  UpdateHandleFocus(handle, focus_top, focus_bottom);
+  EXPECT_EQ(focus_bottom - koffset_vector, drawable().rect.origin());
 
-  position = gfx::PointF(-7.3f, 3.7f);
-  handle.SetPosition(position);
-  EXPECT_EQ(position, drawable().rect.origin());
+  focus_top = gfx::PointF(-7.3f, 3.7f);
+  focus_bottom = gfx::PointF(-7.3f, 4.7f);
+  UpdateHandleFocus(handle, focus_top, focus_bottom);
+  EXPECT_EQ(focus_bottom - koffset_vector, drawable().rect.origin());
 }
 
 TEST_F(TouchHandleTest, PositionNotUpdatedWhileFadingOrInvisible) {
-  TouchHandle handle(this, TouchHandleOrientation::CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER,
+                     kDefaultViewportRect);
 
-  handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
   ASSERT_TRUE(drawable().visible);
   ASSERT_FALSE(NeedsAnimate());
 
-  gfx::PointF old_position(7.3f, -3.7f);
-  handle.SetPosition(old_position);
-  ASSERT_EQ(old_position, drawable().rect.origin());
+  const gfx::Vector2dF koffset_vector(kDefaultDrawableSize / 2.f, 0);
+  gfx::PointF old_focus_top(7.3f, -3.7f);
+  gfx::PointF old_focus_bottom(7.3f, -2.7f);
+  UpdateHandleFocus(handle, old_focus_top, old_focus_bottom);
+  ASSERT_EQ(old_focus_bottom - koffset_vector, drawable().rect.origin());
 
-  handle.SetVisible(false, TouchHandle::ANIMATION_SMOOTH);
+  UpdateHandleVisibility(handle, false, TouchHandle::ANIMATION_SMOOTH);
   ASSERT_TRUE(NeedsAnimate());
 
-  gfx::PointF new_position(3.7f, -3.7f);
-  handle.SetPosition(new_position);
-  EXPECT_EQ(old_position, drawable().rect.origin());
+  gfx::PointF new_position_top(3.7f, -3.7f);
+  gfx::PointF new_position_bottom(3.7f, -2.7f);
+  UpdateHandleFocus(handle, new_position_top, new_position_bottom);
+  EXPECT_EQ(old_focus_bottom - koffset_vector, drawable().rect.origin());
   EXPECT_TRUE(NeedsAnimate());
 
   // While the handle is fading, the new position should not take affect.
   base::TimeTicks now = base::TimeTicks::Now();
   while (handle.Animate(now)) {
-    EXPECT_EQ(old_position, drawable().rect.origin());
+    EXPECT_EQ(old_focus_bottom - koffset_vector, drawable().rect.origin());
     now += base::TimeDelta::FromMilliseconds(16);
   }
 
   // Even after the animation terminates, the new position will not be pushed.
-  EXPECT_EQ(old_position, drawable().rect.origin());
+  EXPECT_EQ(old_focus_bottom - koffset_vector, drawable().rect.origin());
 
   // As soon as the handle becomes visible, the new position will be pushed.
-  handle.SetVisible(true, TouchHandle::ANIMATION_SMOOTH);
-  EXPECT_EQ(new_position, drawable().rect.origin());
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_SMOOTH);
+  EXPECT_EQ(new_position_bottom - koffset_vector, drawable().rect.origin());
 }
 
 TEST_F(TouchHandleTest, Enabled) {
   // A newly created handle defaults to enabled.
-  TouchHandle handle(this, TouchHandleOrientation::CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER,
+                     kDefaultViewportRect);
   EXPECT_TRUE(drawable().enabled);
 
-  handle.SetVisible(true, TouchHandle::ANIMATION_SMOOTH);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_SMOOTH);
   EXPECT_TRUE(GetAndResetNeedsAnimate());
   EXPECT_EQ(0.f, drawable().alpha);
   handle.SetEnabled(false);
@@ -282,7 +336,7 @@ TEST_F(TouchHandleTest, Enabled) {
 
   // Disabling mid-animation should cancel the animation.
   handle.SetEnabled(true);
-  handle.SetVisible(false, TouchHandle::ANIMATION_SMOOTH);
+  UpdateHandleVisibility(handle, false, TouchHandle::ANIMATION_SMOOTH);
   EXPECT_TRUE(drawable().visible);
   EXPECT_TRUE(GetAndResetNeedsAnimate());
   handle.SetEnabled(false);
@@ -292,7 +346,7 @@ TEST_F(TouchHandleTest, Enabled) {
 
   // Disabling mid-drag should cancel the drag.
   handle.SetEnabled(true);
-  handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
   EXPECT_TRUE(IsDragging());
   handle.SetEnabled(false);
@@ -301,7 +355,8 @@ TEST_F(TouchHandleTest, Enabled) {
 }
 
 TEST_F(TouchHandleTest, Drag) {
-  TouchHandle handle(this, TouchHandleOrientation::CENTER);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER,
+                     kDefaultViewportRect);
 
   base::TimeTicks event_time = base::TimeTicks::Now();
   const float kOffset = kDefaultDrawableSize / 2.f;
@@ -311,7 +366,7 @@ TEST_F(TouchHandleTest, Drag) {
       MockMotionEvent::ACTION_DOWN, event_time, kOffset, kOffset);
   EXPECT_FALSE(handle.WillHandleTouchEvent(event));
   EXPECT_FALSE(IsDragging());
-  handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
 
   // ACTION_DOWN must fall within the drawable region to trigger drag.
   event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time, 50, 50);
@@ -355,16 +410,16 @@ TEST_F(TouchHandleTest, Drag) {
 }
 
 TEST_F(TouchHandleTest, DragDefersOrientationChange) {
-  TouchHandle handle(this, TouchHandleOrientation::RIGHT);
+  TouchHandle handle(this, TouchHandleOrientation::RIGHT, kDefaultViewportRect);
   ASSERT_EQ(drawable().orientation, TouchHandleOrientation::RIGHT);
-  handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
 
   MockMotionEvent event(MockMotionEvent::ACTION_DOWN);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
   EXPECT_TRUE(IsDragging());
 
   // Orientation changes will be deferred until the drag ends.
-  handle.SetOrientation(TouchHandleOrientation::LEFT);
+  UpdateHandleOrientation(handle, TouchHandleOrientation::LEFT);
   EXPECT_EQ(TouchHandleOrientation::RIGHT, drawable().orientation);
 
   event = MockMotionEvent(MockMotionEvent::ACTION_MOVE);
@@ -381,15 +436,16 @@ TEST_F(TouchHandleTest, DragDefersOrientationChange) {
 }
 
 TEST_F(TouchHandleTest, DragDefersFade) {
-  TouchHandle handle(this, TouchHandleOrientation::CENTER);
-  handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER,
+                     kDefaultViewportRect);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
 
   MockMotionEvent event(MockMotionEvent::ACTION_DOWN);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
   EXPECT_TRUE(IsDragging());
 
   // Fade will be deferred until the drag ends.
-  handle.SetVisible(false, TouchHandle::ANIMATION_SMOOTH);
+  UpdateHandleVisibility(handle, false, TouchHandle::ANIMATION_SMOOTH);
   EXPECT_FALSE(NeedsAnimate());
   EXPECT_TRUE(drawable().visible);
   EXPECT_EQ(1.f, drawable().alpha);
@@ -410,8 +466,12 @@ TEST_F(TouchHandleTest, DragDefersFade) {
 }
 
 TEST_F(TouchHandleTest, DragTargettingUsesTouchSize) {
-  TouchHandle handle(this, TouchHandleOrientation::CENTER);
-  handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER,
+                     kDefaultViewportRect);
+  gfx::PointF focus_top(kDefaultDrawableSize / 2, 0);
+  gfx::PointF focus_bottom(kDefaultDrawableSize / 2, 0);
+  UpdateHandleFocus(handle, focus_top, focus_bottom);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
 
   base::TimeTicks event_time = base::TimeTicks::Now();
   const float kTouchSize = 24.f;
@@ -469,8 +529,9 @@ TEST_F(TouchHandleTest, DragTargettingUsesTouchSize) {
 }
 
 TEST_F(TouchHandleTest, Tap) {
-  TouchHandle handle(this, TouchHandleOrientation::CENTER);
-  handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
+  TouchHandle handle(this, TouchHandleOrientation::CENTER,
+                     kDefaultViewportRect);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
 
   base::TimeTicks event_time = base::TimeTicks::Now();
 
@@ -513,6 +574,114 @@ TEST_F(TouchHandleTest, Tap) {
       MockMotionEvent::ACTION_UP, event_time, kDefaultTapSlop * 2.f, 0);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
   EXPECT_FALSE(GetAndResetHandleTapped());
+}
+
+TEST_F(TouchHandleTest, MirrorFocusChange) {
+  TouchHandle handle(this, TouchHandleOrientation::LEFT, kDefaultViewportRect);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
+
+  gfx::PointF focus_top;
+  gfx::PointF focus_bottom;
+  EXPECT_EQ(gfx::PointF(), drawable().rect.origin());
+
+  // Moving the selection to the bottom of the screen
+  // should mirror the handle vertically.
+  focus_top = gfx::PointF(17.3f, 1199.0f);
+  focus_bottom = gfx::PointF(17.3f, 1200.0f);
+  UpdateHandleFocus(handle, focus_top, focus_bottom);
+  EXPECT_TRUE(drawable().mirror_vertical);
+  EXPECT_FALSE(drawable().mirror_horizontal);
+
+  // Moving the left handle to the left edge of the viewport
+  // should mirror the handle horizontally as well.
+  focus_top = gfx::PointF(2.3f, 1199.0f);
+  focus_bottom = gfx::PointF(2.3f, 1200.0f);
+  UpdateHandleFocus(handle, focus_top, focus_bottom);
+  EXPECT_TRUE(drawable().mirror_vertical);
+  EXPECT_TRUE(drawable().mirror_horizontal);
+
+  // When the selection is not at the bottom, only the
+  // horizontal mirror flag should be true.
+  focus_top = gfx::PointF(2.3f, 7.3f);
+  focus_bottom = gfx::PointF(2.3f, 8.3f);
+  UpdateHandleFocus(handle, focus_top, focus_bottom);
+  EXPECT_FALSE(drawable().mirror_vertical);
+  EXPECT_TRUE(drawable().mirror_horizontal);
+
+  // When selection handles intersects the viewport fully,
+  // both mirror values should be false.
+  focus_top = gfx::PointF(23.3f, 7.3f);
+  focus_bottom = gfx::PointF(23.3f, 8.3f);
+  UpdateHandleFocus(handle, focus_top, focus_bottom);
+  EXPECT_FALSE(drawable().mirror_vertical);
+  EXPECT_FALSE(drawable().mirror_horizontal);
+
+  // Horizontal mirror should be true for Right handle when
+  // the handle is at theright edge of the viewport.
+  UpdateHandleOrientation(handle, TouchHandleOrientation::RIGHT);
+  focus_top = gfx::PointF(560.0f, 7.3f);
+  focus_bottom = gfx::PointF(560.0f, 8.3f);
+  UpdateHandleFocus(handle, focus_top, focus_bottom);
+  EXPECT_FALSE(drawable().mirror_vertical);
+  EXPECT_TRUE(drawable().mirror_horizontal);
+}
+
+TEST_F(TouchHandleTest, DragDefersMirrorChange) {
+  TouchHandle handle(this, TouchHandleOrientation::RIGHT, kDefaultViewportRect);
+  ASSERT_EQ(drawable().orientation, TouchHandleOrientation::RIGHT);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
+
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  const float kOffset = kDefaultDrawableSize / 2.f;
+
+  // Start the drag.
+  MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time, kOffset,
+                        kOffset);
+  EXPECT_TRUE(handle.WillHandleTouchEvent(event));
+  EXPECT_TRUE(IsDragging());
+
+  UpdateHandleOrientation(handle, TouchHandleOrientation::LEFT);
+  gfx::PointF focus_top(17.3f, 1199.0f);
+  gfx::PointF focus_bottom(17.3f, 1200.0f);
+  UpdateHandleFocus(handle, focus_top, focus_bottom);
+  EXPECT_FALSE(drawable().mirror_vertical);
+  EXPECT_FALSE(drawable().mirror_horizontal);
+
+  // Mirror flag changes will be deferred until the drag ends.
+  event = MockMotionEvent(MockMotionEvent::ACTION_UP);
+  EXPECT_TRUE(handle.WillHandleTouchEvent(event));
+  EXPECT_FALSE(GetAndResetHandleDragged());
+  EXPECT_FALSE(IsDragging());
+  EXPECT_TRUE(drawable().mirror_vertical);
+  EXPECT_FALSE(drawable().mirror_horizontal);
+}
+
+TEST_F(TouchHandleTest, ViewportSizeChange) {
+  TouchHandle handle(this, TouchHandleOrientation::RIGHT, kDefaultViewportRect);
+  ASSERT_EQ(drawable().orientation, TouchHandleOrientation::RIGHT);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_NONE);
+
+  gfx::PointF focus_top;
+  gfx::PointF focus_bottom;
+  EXPECT_EQ(gfx::PointF(), drawable().rect.origin());
+
+  focus_top = gfx::PointF(230.0f, 599.0f);
+  focus_bottom = gfx::PointF(230.0f, 600.0f);
+  UpdateHandleFocus(handle, focus_top, focus_bottom);
+  EXPECT_FALSE(drawable().mirror_vertical);
+  EXPECT_FALSE(drawable().mirror_horizontal);
+
+  UpdateViewportRect(handle, gfx::RectF(0, 0, 560, 600));
+  EXPECT_TRUE(drawable().mirror_vertical);
+  EXPECT_FALSE(drawable().mirror_horizontal);
+
+  UpdateViewportRect(handle, gfx::RectF(0, 0, 230, 600));
+  EXPECT_TRUE(drawable().mirror_vertical);
+  EXPECT_TRUE(drawable().mirror_horizontal);
+
+  UpdateViewportRect(handle, kDefaultViewportRect);
+  EXPECT_FALSE(drawable().mirror_vertical);
+  EXPECT_FALSE(drawable().mirror_horizontal);
 }
 
 }  // namespace ui

@@ -32,10 +32,13 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandleDrawableAura
 
   // TouchHandleDrawable:
   void SetEnabled(bool enabled) override;
-  void SetOrientation(TouchHandleOrientation orientation) override;
+  void SetOrientation(TouchHandleOrientation orientation,
+                      bool mirror_vertical,
+                      bool mirror_horizontal) override;
+  void SetOrigin(const gfx::PointF& position) override;
   void SetAlpha(float alpha) override;
-  void SetFocus(const gfx::PointF& position) override;
   gfx::RectF GetVisibleBounds() const override;
+  float GetDrawableHorizontalPaddingRatio() const override;
 
   aura_extra::ImageWindowDelegate* window_delegate_;
   scoped_ptr<aura::Window> window_;
@@ -43,10 +46,9 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandleDrawableAura
   float alpha_;
   ui::TouchHandleOrientation orientation_;
 
-  // Focal position of the handle set via SetFocus (normally located on the
-  // intersection of the cursor line and the text base line), in coordinate
-  // space of selection controller client (i.e. handle's parent).
-  gfx::PointF focal_position_;
+  // Origin position of the handle set via SetOrigin, in coordinate space of
+  // selection controller client (i.e. handle's parent).
+  gfx::PointF origin_position_;
 
   // Window bounds relative to the focal position.
   gfx::RectF relative_bounds_;

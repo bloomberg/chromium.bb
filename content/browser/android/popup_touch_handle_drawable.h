@@ -23,10 +23,13 @@ class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
 
   // ui::TouchHandleDrawable implementation.
   void SetEnabled(bool enabled) override;
-  void SetOrientation(ui::TouchHandleOrientation orientation) override;
+  void SetOrientation(ui::TouchHandleOrientation orientation,
+                      bool mirror_vertical,
+                      bool mirror_horizontal) override;
+  void SetOrigin(const gfx::PointF& origin) override;
   void SetAlpha(float alpha) override;
-  void SetFocus(const gfx::PointF& position) override;
   gfx::RectF GetVisibleBounds() const override;
+  float GetDrawableHorizontalPaddingRatio() const override;
 
   static bool RegisterPopupTouchHandleDrawable(JNIEnv* env);
 
@@ -36,6 +39,7 @@ class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
   JavaObjectWeakGlobalRef java_ref_;
 
   const float dpi_scale_;
+  float drawable_horizontal_padding_ratio_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupTouchHandleDrawable);
 };

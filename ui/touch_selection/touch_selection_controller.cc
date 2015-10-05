@@ -43,6 +43,7 @@ TouchHandleOrientation ToTouchHandleOrientation(SelectionBound::Type type) {
 TouchSelectionController::Config::Config()
     : max_tap_duration(base::TimeDelta::FromMilliseconds(300)),
       tap_slop(8),
+      enable_adaptive_handle_orientation(false),
       enable_longpress_drag_selection(false),
       show_on_tap_for_empty_editable(false) {}
 
@@ -141,6 +142,32 @@ void TouchSelectionController::OnSelectionBoundsChanged(
   }
 
   HideAndDisallowShowingAutomatically();
+}
+
+void TouchSelectionController::OnViewportChanged(
+    const gfx::RectF viewport_rect) {
+  // Trigger a force update if the viewport is changed, so that
+  // it triggers a call to change the mirror values if required.
+  if (viewport_rect_ == viewport_rect)
+    return;
+
+  viewport_rect_ = viewport_rect;
+
+  if (active_status_ == INACTIVE)
+    return;
+
+  if (active_status_ == INSERTION_ACTIVE) {
+    DCHECK(insertion_handle_);
+    insertion_handle_->SetViewportRect(viewport_rect);
+  } else if (active_status_ == SELECTION_ACTIVE) {
+    DCHECK(start_selection_handle_);
+    DCHECK(end_selection_handle_);
+    start_selection_handle_->SetViewportRect(viewport_rect);
+    end_selection_handle_->SetViewportRect(viewport_rect);
+  }
+
+  // Update handle layout after setting the new Viewport size.
+  UpdateHandleLayoutIfNecessary();
 }
 
 bool TouchSelectionController::WillHandleTouchEvent(const MotionEvent& event) {
@@ -387,6 +414,10 @@ base::TimeDelta TouchSelectionController::GetMaxTapDuration() const {
   return config_.max_tap_duration;
 }
 
+bool TouchSelectionController::IsAdaptiveHandleOrientationEnabled() const {
+  return config_.enable_adaptive_handle_orientation;
+}
+
 void TouchSelectionController::OnLongPressDragActiveStateChanged() {
   // The handles should remain hidden for the duration of a longpress drag,
   // including the time between a longpress and the start of drag motion.
@@ -447,8 +478,10 @@ void TouchSelectionController::OnInsertionChanged() {
   const bool activated = ActivateInsertionIfNecessary();
 
   const TouchHandle::AnimationStyle animation = GetAnimationStyle(!activated);
+  insertion_handle_->SetFocus(start_.edge_top(), start_.edge_bottom());
   insertion_handle_->SetVisible(GetStartVisible(), animation);
-  insertion_handle_->SetPosition(GetStartPosition());
+
+  UpdateHandleLayoutIfNecessary();
 
   client_->OnSelectionEvent(activated ? INSERTION_HANDLE_SHOWN
                                       : INSERTION_HANDLE_MOVED);
@@ -463,10 +496,17 @@ void TouchSelectionController::OnSelectionChanged() {
   const bool activated = ActivateSelectionIfNecessary();
 
   const TouchHandle::AnimationStyle animation = GetAnimationStyle(!activated);
+
+  start_selection_handle_->SetFocus(start_.edge_top(), start_.edge_bottom());
+  end_selection_handle_->SetFocus(end_.edge_top(), end_.edge_bottom());
+
+  start_selection_handle_->SetOrientation(start_orientation_);
+  end_selection_handle_->SetOrientation(end_orientation_);
+
   start_selection_handle_->SetVisible(GetStartVisible(), animation);
   end_selection_handle_->SetVisible(GetEndVisible(), animation);
-  start_selection_handle_->SetPosition(GetStartPosition());
-  end_selection_handle_->SetPosition(GetEndPosition());
+
+  UpdateHandleLayoutIfNecessary();
 
   client_->OnSelectionEvent(activated ? SELECTION_HANDLES_SHOWN
                                       : SELECTION_HANDLES_MOVED);
@@ -477,12 +517,13 @@ bool TouchSelectionController::ActivateInsertionIfNecessary() {
 
   if (!insertion_handle_) {
     insertion_handle_.reset(
-        new TouchHandle(this, TouchHandleOrientation::CENTER));
+        new TouchHandle(this, TouchHandleOrientation::CENTER, viewport_rect_));
   }
 
   if (active_status_ == INACTIVE) {
     active_status_ = INSERTION_ACTIVE;
     insertion_handle_->SetEnabled(true);
+    insertion_handle_->SetViewportRect(viewport_rect_);
     return true;
   }
   return false;
@@ -501,17 +542,19 @@ bool TouchSelectionController::ActivateSelectionIfNecessary() {
   DCHECK_NE(INSERTION_ACTIVE, active_status_);
 
   if (!start_selection_handle_) {
-    start_selection_handle_.reset(new TouchHandle(this, start_orientation_));
+    start_selection_handle_.reset(
+        new TouchHandle(this, start_orientation_, viewport_rect_));
   } else {
     start_selection_handle_->SetEnabled(true);
-    start_selection_handle_->SetOrientation(start_orientation_);
+    start_selection_handle_->SetViewportRect(viewport_rect_);
   }
 
   if (!end_selection_handle_) {
-    end_selection_handle_.reset(new TouchHandle(this, end_orientation_));
+    end_selection_handle_.reset(
+        new TouchHandle(this, end_orientation_, viewport_rect_));
   } else {
     end_selection_handle_->SetEnabled(true);
-    end_selection_handle_->SetOrientation(end_orientation_);
+    end_selection_handle_->SetViewportRect(viewport_rect_);
   }
 
   // As a long press received while a selection is already active may trigger
@@ -559,6 +602,18 @@ void TouchSelectionController::ForceNextUpdateIfInactive() {
   }
 }
 
+void TouchSelectionController::UpdateHandleLayoutIfNecessary() {
+  if (active_status_ == INSERTION_ACTIVE) {
+    DCHECK(insertion_handle_);
+    insertion_handle_->UpdateHandleLayout();
+  } else if (active_status_ == SELECTION_ACTIVE) {
+    DCHECK(start_selection_handle_);
+    DCHECK(end_selection_handle_);
+    start_selection_handle_->UpdateHandleLayout();
+    end_selection_handle_->UpdateHandleLayout();
+  }
+}
+
 void TouchSelectionController::RefreshHandleVisibility() {
   TouchHandle::AnimationStyle animation_style = GetAnimationStyle(true);
   if (active_status_ == SELECTION_ACTIVE) {
@@ -567,6 +622,9 @@ void TouchSelectionController::RefreshHandleVisibility() {
   }
   if (active_status_ == INSERTION_ACTIVE)
     insertion_handle_->SetVisible(GetStartVisible(), animation_style);
+
+  // Update handle layout if handle visibility is explicitly changed.
+  UpdateHandleLayoutIfNecessary();
 }
 
 gfx::Vector2dF TouchSelectionController::GetStartLineOffset() const {

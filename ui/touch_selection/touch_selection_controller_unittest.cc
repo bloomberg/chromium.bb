@@ -28,13 +28,16 @@ class MockTouchHandleDrawable : public TouchHandleDrawable {
       : intersects_rect_(contains_point) {}
   ~MockTouchHandleDrawable() override {}
   void SetEnabled(bool enabled) override {}
-  void SetOrientation(TouchHandleOrientation orientation) override {}
+  void SetOrientation(ui::TouchHandleOrientation orientation,
+                      bool mirror_vertical,
+                      bool mirror_horizontal) override {}
+  void SetOrigin(const gfx::PointF& origin) override {}
   void SetAlpha(float alpha) override {}
-  void SetFocus(const gfx::PointF& position) override {}
   gfx::RectF GetVisibleBounds() const override {
     return *intersects_rect_ ? gfx::RectF(-1000, -1000, 2000, 2000)
                              : gfx::RectF(-1000, -1000, 0, 0);
   }
+  float GetDrawableHorizontalPaddingRatio() const override { return 0; }
 
  private:
   bool* intersects_rect_;

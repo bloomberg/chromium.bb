@@ -5,6 +5,7 @@
 package org.chromium.content.browser.input;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -52,9 +53,9 @@ public class PopupTouchHandleDrawable extends View {
     private int mParentPositionX;
     private int mParentPositionY;
 
-    // The offset from this handles position to the "tip" of the handle.
-    private float mHotspotX;
-    private float mHotspotY;
+    // The mirror values based on which the handles are inverted about X and Y axes.
+    private boolean mMirrorHorizontal;
+    private boolean mMirrorVertical;
 
     private float mAlpha;
 
@@ -178,6 +179,27 @@ public class PopupTouchHandleDrawable extends View {
         }
     }
 
+    private static Drawable getHandleDrawable(Context context, int orientation) {
+        switch (orientation) {
+            case TouchHandleOrientation.LEFT: {
+                return HandleViewResources.getLeftHandleDrawable(context);
+            }
+
+            case TouchHandleOrientation.RIGHT: {
+                return HandleViewResources.getRightHandleDrawable(context);
+            }
+
+            case TouchHandleOrientation.CENTER: {
+                return HandleViewResources.getCenterHandleDrawable(context);
+            }
+
+            case TouchHandleOrientation.UNDEFINED:
+            default:
+                assert false;
+                return HandleViewResources.getCenterHandleDrawable(context);
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -200,46 +222,24 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     @CalledByNative
-    private void setOrientation(int orientation) {
+    private void setOrientation(int orientation, boolean mirrorVertical, boolean mirrorHorizontal) {
         assert (orientation >= TouchHandleOrientation.LEFT
                 && orientation <= TouchHandleOrientation.UNDEFINED);
-        if (mOrientation == orientation) return;
 
-        final boolean hadValidOrientation = mOrientation != TouchHandleOrientation.UNDEFINED;
+        final boolean orientationChanged = mOrientation != orientation;
+        final boolean mirroringChanged =
+                mMirrorHorizontal != mirrorHorizontal || mMirrorVertical != mirrorVertical;
         mOrientation = orientation;
+        mMirrorHorizontal = mirrorHorizontal;
+        mMirrorVertical = mirrorVertical;
 
-        final int oldAdjustedPositionX = getAdjustedPositionX();
-        final int oldAdjustedPositionY = getAdjustedPositionY();
+        // Create new InvertedDrawable only if orientation has changed.
+        // Otherwise, change the mirror values to scale canvas on draw() calls.
+        if (orientationChanged) mDrawable = getHandleDrawable(getContext(), mOrientation);
 
-        switch (orientation) {
-            case TouchHandleOrientation.LEFT: {
-                mDrawable = HandleViewResources.getLeftHandleDrawable(getContext());
-                mHotspotX = (mDrawable.getIntrinsicWidth() * 3) / 4f;
-                break;
-            }
-
-            case TouchHandleOrientation.RIGHT: {
-                mDrawable = HandleViewResources.getRightHandleDrawable(getContext());
-                mHotspotX = mDrawable.getIntrinsicWidth() / 4f;
-                break;
-            }
-
-            case TouchHandleOrientation.CENTER: {
-                mDrawable = HandleViewResources.getCenterHandleDrawable(getContext());
-                mHotspotX = mDrawable.getIntrinsicWidth() / 2f;
-                break;
-            }
-
-            case TouchHandleOrientation.UNDEFINED:
-            default:
-                break;
-        }
-        mHotspotY = 0;
-
-        // Force handle repositioning to accommodate the new orientation's hotspot.
-        if (hadValidOrientation) setFocus(oldAdjustedPositionX, oldAdjustedPositionY);
         if (mDrawable != null) mDrawable.setAlpha((int) (255 * mAlpha));
-        scheduleInvalidate();
+
+        if (orientationChanged || mirroringChanged) scheduleInvalidate();
     }
 
     private void updateParentPosition(int parentPositionX, int parentPositionY) {
@@ -388,27 +388,23 @@ public class PopupTouchHandleDrawable extends View {
     @Override
     protected void onDraw(Canvas c) {
         if (mDrawable == null) return;
+        final boolean needsMirror = mMirrorHorizontal || mMirrorVertical;
+        if (needsMirror) {
+            c.save();
+            float scaleX = mMirrorHorizontal ? -1.f : 1.f;
+            float scaleY = mMirrorVertical ? -1.f : 1.f;
+            c.scale(scaleX, scaleY, getWidth() / 2.0f, getHeight() / 2.0f);
+        }
         updateAlpha();
         mDrawable.setBounds(0, 0, getRight() - getLeft(), getBottom() - getTop());
         mDrawable.draw(c);
+        if (needsMirror) c.restore();
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         hide();
-    }
-
-    // Returns the x coordinate of the position that the handle appears to be pointing to relative
-    // to the handles "parent" view.
-    private int getAdjustedPositionX() {
-        return mPositionX + Math.round(mHotspotX);
-    }
-
-    // Returns the y coordinate of the position that the handle appears to be pointing to relative
-    // to the handles "parent" view.
-    private int getAdjustedPositionY() {
-        return mPositionY + Math.round(mHotspotY);
     }
 
     @CalledByNative
@@ -446,12 +442,10 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     @CalledByNative
-    private void setFocus(float focusX, float focusY) {
-        int x = (int) focusX - Math.round(mHotspotX);
-        int y = (int) focusY - Math.round(mHotspotY);
-        if (mPositionX == x && mPositionY == y) return;
-        mPositionX = x;
-        mPositionY = y;
+    private void setOrigin(float originX, float originY) {
+        if (mPositionX == originX && mPositionY == originY) return;
+        mPositionX = (int) originX;
+        mPositionY = (int) originY;
         if (getVisibility() == VISIBLE) scheduleInvalidate();
     }
 
@@ -465,6 +459,11 @@ public class PopupTouchHandleDrawable extends View {
     @CalledByNative
     private int getPositionX() {
         return mPositionX;
+    }
+
+    @CalledByNative
+    private float getHandleHorizontalPaddingRatio() {
+        return HandleViewResources.getHandleHorizontalPaddingRatio();
     }
 
     @CalledByNative
