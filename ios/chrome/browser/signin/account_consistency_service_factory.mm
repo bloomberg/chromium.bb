@@ -31,9 +31,6 @@ AccountConsistencyServiceFactory::~AccountConsistencyServiceFactory() {}
 // static
 AccountConsistencyService* AccountConsistencyServiceFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  if (!experimental_flags::IsWKWebViewEnabled()) {
-    return nullptr;
-  }
   return static_cast<AccountConsistencyService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -52,6 +49,9 @@ void AccountConsistencyServiceFactory::RegisterBrowserStatePrefs(
 scoped_ptr<KeyedService>
 AccountConsistencyServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
+  if (!experimental_flags::IsWKWebViewEnabled()) {
+    return nullptr;
+  }
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   return make_scoped_ptr(new AccountConsistencyService(
