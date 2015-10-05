@@ -89,6 +89,11 @@
             "group_name": "Enabled"
         }
     ],
+    "MaterialDesignDownloads": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "NetworkQualityEstimator": [
         {
             "group_name": "Enabled",

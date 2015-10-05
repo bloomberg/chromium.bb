@@ -59,6 +59,11 @@
             "group_name": "Enabled"
         }
     ],
+    "MaterialDesignDownloads": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "PluginPowerSaver": [
         {
             "group_name": "Enabled"
