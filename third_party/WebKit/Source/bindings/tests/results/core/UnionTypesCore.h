@@ -10,6 +10,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8TestDictionary.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
@@ -20,7 +21,6 @@ class Node;
 class NodeList;
 class TestArrayBuffer;
 class TestArrayBufferView;
-class TestDictionary;
 class TestInterface2;
 class TestInterfaceEmpty;
 class TestInterfaceGarbageCollected;
