@@ -65,6 +65,8 @@ class FakeTab(object):
     self.navigated_urls.append(url)
   def WaitForJavaScriptExpression(self, _, __):
     pass
+  def WaitForDocumentReadyStateToBeComplete(self, _):
+    pass
   @property
   def browser(self):
     return FakeBrowser()

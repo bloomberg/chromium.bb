@@ -104,14 +104,14 @@ class PageCycler(page_test.PageTest):
     keychain_metric.KeychainMetric.CustomizeBrowserOptions(options)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    tab.WaitForJavaScriptExpression('__pc_load_time', 60)
+    tab.WaitForDocumentReadyStateToBeComplete(60)
 
     chart_name_prefix = ('cold_' if self.IsRunCold(page.url) else
                          'warm_')
 
     results.AddValue(scalar.ScalarValue(
         results.current_page, '%stimes.page_load_time' % chart_name_prefix,
-        'ms', tab.EvaluateJavaScript('__pc_load_time'),
+        'ms', tab.EvaluateJavaScript('window.performance.now()'),
         description='Average page load time. Measured from '
                     'performance.timing.navigationStart until the completion '
                     'time of a layout after the window.load event. Cold times '
