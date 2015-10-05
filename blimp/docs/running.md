@@ -33,4 +33,4 @@ TBD
 
 ## Running the engine
 
-For running the engine in a container, see [container](docs/container.md).
+For running the engine in a container, see [container](container.md).
