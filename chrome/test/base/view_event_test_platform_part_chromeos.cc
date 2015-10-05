@@ -4,11 +4,13 @@
 
 #include "chrome/test/base/view_event_test_platform_part.h"
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
+#include "base/command_line.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
@@ -59,6 +61,8 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   init_params.delegate = shell_delegate;
   init_params.context_factory = context_factory;
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      ash::switches::kAshHostWindowBounds, "0+0-1280x800");
   ash::Shell::CreateInstance(init_params);
   ash::test::AshTestHelper::GetTestSessionStateDelegate()->
       SetActiveUserSessionStarted(true);
