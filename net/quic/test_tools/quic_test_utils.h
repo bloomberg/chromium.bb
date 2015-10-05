@@ -621,6 +621,11 @@ class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
                     int num_retransmitted_bytes,
                     QuicTime::Delta delta_largest_observed));
 
+  MOCK_METHOD3(OnPacketEvent,
+               void(int acked_bytes,
+                    int retransmitted_bytes,
+                    QuicTime::Delta delta_largest_observed));
+
  protected:
   // Object is ref counted.
   ~MockAckNotifierDelegate() override;

@@ -206,9 +206,14 @@ class MtuDiscoveryAckListener : public QuicAckNotifier::DelegateInterface {
                          int /*num_retransmittable_bytes*/,
                          QuicTime::Delta /*delta_largest_observed*/) override {
     // Since the probe was successful, increase the maximum packet size to that.
-    if (probe_size_ > connection_->max_packet_length()) {
-      connection_->SetMaxPacketLength(probe_size_);
-    }
+    MaybeIncreaseMtu();
+  }
+
+  void OnPacketEvent(int /*acked_bytes*/,
+                     int /*retransmitted_bytes*/,
+                     QuicTime::Delta /*delta_largest_observed*/) override {
+    // MTU discovery packets are not retransmittable, so it must be acked.
+    MaybeIncreaseMtu();
   }
 
  protected:
@@ -216,6 +221,12 @@ class MtuDiscoveryAckListener : public QuicAckNotifier::DelegateInterface {
   ~MtuDiscoveryAckListener() override {}
 
  private:
+  void MaybeIncreaseMtu() {
+    if (probe_size_ > connection_->max_packet_length()) {
+      connection_->SetMaxPacketLength(probe_size_);
+    }
+  }
+
   QuicConnection* connection_;
   QuicByteCount probe_size_;
 

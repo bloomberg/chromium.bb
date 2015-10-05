@@ -39,6 +39,10 @@ class NET_EXPORT_PRIVATE ServerHelloNotifier : public
                          int num_retransmitted_bytes,
                          QuicTime::Delta delta_largest_observed) override;
 
+  void OnPacketEvent(int acked_bytes,
+                     int retransmitted_bytes,
+                     QuicTime::Delta delta_largest_observed) override;
+
  private:
   ~ServerHelloNotifier() override {}
 

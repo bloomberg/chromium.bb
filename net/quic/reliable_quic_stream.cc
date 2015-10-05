@@ -56,10 +56,10 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
   explicit ProxyAckNotifierDelegate(DelegateInterface* delegate)
       : delegate_(delegate),
         pending_acks_(0),
+        pending_bytes_(0),
         wrote_last_data_(false),
         num_retransmitted_packets_(0),
-        num_retransmitted_bytes_(0) {
-  }
+        num_retransmitted_bytes_(0) {}
 
   void OnAckNotification(int num_retransmitted_packets,
                          int num_retransmitted_bytes,
@@ -76,9 +76,28 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
     }
   }
 
-  void WroteData(bool last_data) {
+  void OnPacketEvent(int acked_bytes,
+                     int retransmitted_bytes,
+                     QuicTime::Delta delta_largest_observed) override {
+    DCHECK_LE(acked_bytes, pending_bytes_);
+    pending_bytes_ -= acked_bytes;
+    if (retransmitted_bytes > 0) {
+      ++num_retransmitted_packets_;
+      num_retransmitted_bytes_ += retransmitted_bytes;
+    }
+
+    if (wrote_last_data_ && pending_bytes_ == 0) {
+      DCHECK_EQ(0, pending_bytes_);
+      delegate_->OnAckNotification(num_retransmitted_packets_,
+                                   num_retransmitted_bytes_,
+                                   delta_largest_observed);
+    }
+  }
+
+  void WroteData(bool last_data, size_t bytes_consumed) {
     DCHECK(!wrote_last_data_);
     ++pending_acks_;
+    pending_bytes_ += bytes_consumed;
     wrote_last_data_ = last_data;
   }
 
@@ -93,6 +112,9 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
 
   // Number of outstanding acks.
   int pending_acks_;
+
+  // Number of outstanding bytes.
+  int pending_bytes_;
 
   // True if no pending writes remain.
   bool wrote_last_data_;
@@ -295,7 +317,7 @@ void ReliableQuicStream::WriteOrBufferData(
 
   if ((proxy_delegate.get() != nullptr) &&
       (consumed_data.bytes_consumed > 0 || consumed_data.fin_consumed)) {
-    proxy_delegate->WroteData(write_completed);
+    proxy_delegate->WroteData(write_completed, consumed_data.bytes_consumed);
   }
 }
 
@@ -325,13 +347,13 @@ void ReliableQuicStream::OnCanWrite() {
         fin == consumed_data.fin_consumed) {
       queued_data_.pop_front();
       if (delegate != nullptr) {
-        delegate->WroteData(true);
+        delegate->WroteData(true, consumed_data.bytes_consumed);
       }
     } else {
       if (consumed_data.bytes_consumed > 0) {
         pending_data->offset += consumed_data.bytes_consumed;
         if (delegate != nullptr) {
-          delegate->WroteData(false);
+          delegate->WroteData(false, consumed_data.bytes_consumed);
         }
       }
       break;

@@ -29,6 +29,11 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
                                    int num_retransmitted_bytes,
                                    QuicTime::Delta delta_largest_observed) = 0;
 
+    // Called when a packet is acked or retransmitted.  Called once per packet.
+    virtual void OnPacketEvent(int acked_bytes,
+                               int retransmitted_bytes,
+                               QuicTime::Delta delta_largest_observed) = 0;
+
    protected:
     friend class base::RefCounted<DelegateInterface>;
 

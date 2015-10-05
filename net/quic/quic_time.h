@@ -12,6 +12,7 @@
 #define NET_QUIC_QUIC_TIME_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 
@@ -58,12 +59,12 @@ class NET_EXPORT_PRIVATE QuicTime {
     // Converts the time offset to a rounded number of microseconds.
     int64 ToMicroseconds() const;
 
-    Delta Add(const Delta& delta) const;
+    Delta Add(const Delta& delta) const WARN_UNUSED_RESULT;
 
-    Delta Subtract(const Delta& delta) const;
+    Delta Subtract(const Delta& delta) const WARN_UNUSED_RESULT;
 
-    Delta Multiply(int i) const;
-    Delta Multiply(double d) const;
+    Delta Multiply(int i) const WARN_UNUSED_RESULT;
+    Delta Multiply(double d) const WARN_UNUSED_RESULT;
 
     // Returns the later delta of time1 and time2.
     static Delta Max(Delta delta1, Delta delta2);
@@ -99,11 +100,11 @@ class NET_EXPORT_PRIVATE QuicTime {
 
   bool IsInitialized() const;
 
-  QuicTime Add(const Delta& delta) const;
+  QuicTime Add(const Delta& delta) const WARN_UNUSED_RESULT;
 
-  QuicTime Subtract(const Delta& delta) const;
+  QuicTime Subtract(const Delta& delta) const WARN_UNUSED_RESULT;
 
-  Delta Subtract(const QuicTime& other) const;
+  Delta Subtract(const QuicTime& other) const WARN_UNUSED_RESULT;
 
  private:
   friend bool operator==(QuicTime lhs, QuicTime rhs);
@@ -144,11 +145,11 @@ class NET_EXPORT_PRIVATE QuicWallTime {
 
   // Add returns a new QuicWallTime that represents the time of |this| plus
   // |delta|.
-  QuicWallTime Add(QuicTime::Delta delta) const;
+  QuicWallTime Add(QuicTime::Delta delta) const WARN_UNUSED_RESULT;
 
   // Subtract returns a new QuicWallTime that represents the time of |this|
   // minus |delta|.
-  QuicWallTime Subtract(QuicTime::Delta delta) const;
+  QuicWallTime Subtract(QuicTime::Delta delta) const WARN_UNUSED_RESULT;
 
  private:
   explicit QuicWallTime(uint64 seconds);

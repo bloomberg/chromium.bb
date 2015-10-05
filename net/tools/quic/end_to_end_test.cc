@@ -1639,6 +1639,13 @@ class TestAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
     has_been_notified_ = true;
   }
 
+  void OnPacketEvent(int /*acked_bytes*/,
+                     int /*retransmitted_bytes*/,
+                     QuicTime::Delta /*delta_largest_observed*/) override {
+    ASSERT_FALSE(has_been_notified_);
+    has_been_notified_ = true;
+  }
+
   bool has_been_notified() const { return has_been_notified_; }
 
  protected:
