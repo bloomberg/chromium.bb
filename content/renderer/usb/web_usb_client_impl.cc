@@ -68,8 +68,6 @@ void OnGetDevicesComplete(
 
 WebUSBClientImpl::WebUSBClientImpl(content::ServiceRegistry* service_registry) {
   service_registry->ConnectToRemoteService(mojo::GetProxy(&device_manager_));
-  device_manager_.set_connection_error_handler(
-      [this]() { LOG(ERROR) << "Device manager connection failed."; });
 }
 
 WebUSBClientImpl::~WebUSBClientImpl() {}
