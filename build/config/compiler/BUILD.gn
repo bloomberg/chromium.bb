@@ -110,6 +110,8 @@ config("compiler") {
     configs += [ "//build/config/win:compiler" ]
   } else if (is_android) {
     configs += [ "//build/config/android:compiler" ]
+  } else if (is_linux) {
+    configs += [ "//build/config/linux:compiler" ]
   }
 
   # In general, Windows is totally different, but all the other builds share
@@ -172,45 +174,9 @@ config("compiler") {
                                              "trim string") ]
   }
 
-  # Mac-specific compiler flags setup.
-  # ----------------------------------
-  if (is_mac || is_ios) {
-    # These flags are shared between the C compiler and linker.
-    common_mac_flags = []
-
-    # CPU architecture.
-    if (current_cpu == "x64") {
-      common_mac_flags += [
-        "-arch",
-        "x86_64",
-      ]
-    } else if (current_cpu == "x86") {
-      common_mac_flags += [
-        "-arch",
-        "i386",
-      ]
-    } else if (current_cpu == "arm") {
-      # TODO(GYP): we may need to distinguish between "arm64", "armv7",
-      # and "armv7s" for iOS, and hence need multiple current_cpu values
-      # rather than just "arm".
-      common_mac_flags += [
-        "-arch",
-        "arm64",
-      ]
-    }
-
-    cflags += common_mac_flags
-
-    # Without this, the constructors and destructors of a C++ object inside
-    # an Objective C struct won't be called, which is very bad.
-    cflags_objcc += [ "-fobjc-call-cxx-cdtors" ]
-
-    cflags_c += [ "-std=c99" ]
-
-    ldflags += common_mac_flags
-  } else if (is_posix) {
-    # Non-Mac Posix compiler flags setup.
-    # -----------------------------------
+  # Non-Mac Posix compiler flags setup.
+  # -----------------------------------
+  if (is_posix && !(is_mac || is_ios)) {
     if (enable_profiling && !is_debug) {
       # The GYP build spams this define into every compilation unit, as we do
       # here, but it only appears to be used in base and a couple other places.
@@ -391,10 +357,6 @@ config("compiler") {
 
   # Linux-specific compiler flags setup.
   # ------------------------------------
-  if (is_linux) {
-    cflags += [ "-pthread" ]
-    ldflags += [ "-pthread" ]
-  }
   if (use_gold) {
     ldflags += [
       "-B$gold_path",
