@@ -28,6 +28,14 @@ api::bookmarks::BookmarkTreeNode* GetBookmarkTreeNode(
     bool recurse,
     bool only_folders);
 
+// Populates |out_bookmark_tree_node| with given |node|.
+void PopulateBookmarkTreeNode(
+    bookmarks::ManagedBookmarkService* managed,
+    const bookmarks::BookmarkNode* node,
+    bool recurse,
+    bool only_folders,
+    api::bookmarks::BookmarkTreeNode* out_bookmark_tree_node);
+
 // Adds a JSON representation of |node| to the JSON |nodes|.
 void AddNode(bookmarks::ManagedBookmarkService* managed,
              const bookmarks::BookmarkNode* node,

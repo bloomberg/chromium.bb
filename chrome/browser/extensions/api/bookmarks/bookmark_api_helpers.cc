@@ -47,37 +47,49 @@ BookmarkTreeNode* GetBookmarkTreeNode(
     bool recurse,
     bool only_folders) {
   BookmarkTreeNode* bookmark_tree_node = new BookmarkTreeNode;
+  PopulateBookmarkTreeNode(managed, node, recurse, only_folders,
+                           bookmark_tree_node);
+  return bookmark_tree_node;
+}
 
-  bookmark_tree_node->id = base::Int64ToString(node->id());
+void PopulateBookmarkTreeNode(
+    bookmarks::ManagedBookmarkService* managed,
+    const bookmarks::BookmarkNode* node,
+    bool recurse,
+    bool only_folders,
+    api::bookmarks::BookmarkTreeNode* out_bookmark_tree_node) {
+  DCHECK(out_bookmark_tree_node);
+
+  out_bookmark_tree_node->id = base::Int64ToString(node->id());
 
   const BookmarkNode* parent = node->parent();
   if (parent) {
-    bookmark_tree_node->parent_id.reset(new std::string(
-        base::Int64ToString(parent->id())));
-    bookmark_tree_node->index.reset(new int(parent->GetIndexOf(node)));
+    out_bookmark_tree_node->parent_id.reset(
+        new std::string(base::Int64ToString(parent->id())));
+    out_bookmark_tree_node->index.reset(new int(parent->GetIndexOf(node)));
   }
 
   if (!node->is_folder()) {
-    bookmark_tree_node->url.reset(new std::string(node->url().spec()));
+    out_bookmark_tree_node->url.reset(new std::string(node->url().spec()));
   } else {
     // Javascript Date wants milliseconds since the epoch, ToDoubleT is seconds.
     base::Time t = node->date_folder_modified();
     if (!t.is_null()) {
-      bookmark_tree_node->date_group_modified.reset(
+      out_bookmark_tree_node->date_group_modified.reset(
           new double(floor(t.ToDoubleT() * 1000)));
     }
   }
 
-  bookmark_tree_node->title = base::UTF16ToUTF8(node->GetTitle());
+  out_bookmark_tree_node->title = base::UTF16ToUTF8(node->GetTitle());
   if (!node->date_added().is_null()) {
     // Javascript Date wants milliseconds since the epoch, ToDoubleT is seconds.
-    bookmark_tree_node->date_added.reset(
+    out_bookmark_tree_node->date_added.reset(
         new double(floor(node->date_added().ToDoubleT() * 1000)));
   }
 
   if (bookmarks::IsDescendantOf(node, managed->managed_node()) ||
       bookmarks::IsDescendantOf(node, managed->supervised_node())) {
-    bookmark_tree_node->unmodifiable =
+    out_bookmark_tree_node->unmodifiable =
         api::bookmarks::BOOKMARK_TREE_NODE_UNMODIFIABLE_MANAGED;
   }
 
@@ -91,10 +103,9 @@ BookmarkTreeNode* GetBookmarkTreeNode(
         children.push_back(child_node);
       }
     }
-    bookmark_tree_node->children.reset(
+    out_bookmark_tree_node->children.reset(
         new std::vector<linked_ptr<BookmarkTreeNode>>(children));
   }
-  return bookmark_tree_node;
 }
 
 void AddNode(bookmarks::ManagedBookmarkService* managed,

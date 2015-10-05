@@ -473,7 +473,8 @@
             "name": "removeInfo",
             "properties": {
               "parentId": { "type": "string" },
-              "index": { "type": "integer" }
+              "index": { "type": "integer" },
+              "node": { "$ref": "BookmarkTreeNode" }
             }
           }
         ]

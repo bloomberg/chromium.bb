@@ -63,7 +63,8 @@ function compareNode(left, right) {
   }
   if (left.url != right.url)
     return "url mismatch: " + left.url + " != " + right.url;
-  if (left.index != right.index)
+  // Check only when optional 'index' property exist.
+  if (left.index != undefined && left.index != right.index)
     return "index mismatch: " + left.index + " != " + right.index;
   if (left.unmodifiable != right.unmodifiable) {
     return "unmodifiable mismatch: " + left.unmodifiable +
@@ -397,6 +398,10 @@ chrome.test.runTests([
         })
       );
     }));
+
+    // Update test data for next tests.
+    node1.title = title;
+    node1.url = url;
   },
 
   function updateManaged() {
@@ -413,6 +418,9 @@ chrome.test.runTests([
       chrome.test.assertEq(id, node1.id);
       chrome.test.assertEq(removeInfo.parentId, parentId);
       chrome.test.assertEq(removeInfo.index, node1.index);
+
+      chrome.test.assertEq(removeInfo.node.title, node1.title);
+      chrome.test.assertEq(removeInfo.node.url, node1.url);
     });
     chrome.bookmarks.remove(node1.id, pass(function() {
       // Update expected to match.
@@ -448,6 +456,7 @@ chrome.test.runTests([
       chrome.test.assertEq(id, folder.id);
       chrome.test.assertEq(removeInfo.parentId, folder.parentId);
       chrome.test.assertEq(removeInfo.index, folder.index);
+      chrome.test.assertTrue(compareNode(removeInfo.node, folder));
     });
     chrome.bookmarks.removeTree(parentId, pass(function(){
       // Update expected to match.

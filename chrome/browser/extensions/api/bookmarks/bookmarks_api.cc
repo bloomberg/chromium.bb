@@ -312,6 +312,8 @@ void BookmarkEventRouter::BookmarkNodeRemoved(
   bookmarks::OnRemoved::RemoveInfo remove_info;
   remove_info.parent_id = base::Int64ToString(parent->id());
   remove_info.index = index;
+  bookmark_api_helpers::PopulateBookmarkTreeNode(managed_, node, true, false,
+                                                 &remove_info.node);
 
   DispatchEvent(events::BOOKMARKS_ON_REMOVED, bookmarks::OnRemoved::kEventName,
                 bookmarks::OnRemoved::Create(base::Int64ToString(node->id()),
