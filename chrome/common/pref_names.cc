@@ -1422,8 +1422,10 @@ const char kShutdownNumProcessesSlow[] = "shutdown.num_processes_slow";
 // before shutting everything down.
 const char kRestartLastSessionOnShutdown[] = "restart.last.session.on.shutdown";
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 // Set before autorestarting Chrome, cleared on clean exit.
 const char kWasRestarted[] = "was.restarted";
+#endif
 
 #if defined(OS_WIN)
 // Preference to be used while relaunching Chrome. This preference dictates if
@@ -1968,6 +1970,7 @@ const char kCustomHandlersEnabled[] = "custom_handlers.enabled";
 // by the cloud policy subsystem.
 const char kDevicePolicyRefreshRate[] = "policy.device_refresh_rate";
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 // A boolean where true means that the browser has previously attempted to
 // enable autoupdate and failed, so the next out-of-date browser start should
 // not prompt the user to enable autoupdate, it should offer to reinstall Chrome
@@ -1985,6 +1988,7 @@ const char kMediaGalleriesRememberedGalleries[] =
 
 // The last time a media scan completed.
 const char kMediaGalleriesLastScanTime[] = "media_galleries.last_scan_time";
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(USE_ASH)
 // |kShelfAlignment| and |kShelfAutoHideBehavior| have a local variant. The

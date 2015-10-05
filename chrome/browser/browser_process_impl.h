@@ -78,8 +78,10 @@ class BrowserProcessImpl : public BrowserProcess,
   // ChromeBrowserMain based on notifications from the content
   // framework, rather than in the destructor, so that we can
   // interleave cleanup with threads being stopped.
+#if !defined(OS_ANDROID)
   void StartTearDown();
   void PostDestroyThreads();
+#endif
 
   // BrowserProcess implementation.
   void ResourceDispatcherHostCreated() override;

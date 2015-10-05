@@ -97,6 +97,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kShutdownType, NOT_VALID);
   registry->RegisterIntegerPref(prefs::kShutdownNumProcesses, 0);
   registry->RegisterIntegerPref(prefs::kShutdownNumProcessesSlow, 0);
+  registry->RegisterBooleanPref(prefs::kRestartLastSessionOnShutdown, false);
 }
 
 ShutdownType GetShutdownType() {

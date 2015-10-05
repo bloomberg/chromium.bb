@@ -509,7 +509,10 @@ extern const char kShutdownNumProcesses[];
 extern const char kShutdownNumProcessesSlow[];
 
 extern const char kRestartLastSessionOnShutdown[];
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 extern const char kWasRestarted[];
+#endif
+
 #if defined(OS_WIN)
 extern const char kRelaunchMode[];
 #endif
@@ -709,11 +712,13 @@ extern const char kDebuggingFeaturesRequested[];
 extern const char kResolveDeviceTimezoneByGeolocation[];
 #endif  // defined(OS_CHROMEOS)
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 extern const char kAttemptedToEnableAutoupdate[];
 
 extern const char kMediaGalleriesUniqueId[];
 extern const char kMediaGalleriesRememberedGalleries[];
 extern const char kMediaGalleriesLastScanTime[];
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(USE_ASH)
 extern const char kShelfAlignment[];

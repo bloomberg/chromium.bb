@@ -33,8 +33,6 @@ bool UseTestingIntervals() {
 
 // static
 void UpgradeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kRestartLastSessionOnShutdown, false);
-  registry->RegisterBooleanPref(prefs::kWasRestarted, false);
   registry->RegisterBooleanPref(prefs::kAttemptedToEnableAutoupdate, false);
 }
 

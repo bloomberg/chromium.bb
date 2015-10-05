@@ -62,7 +62,6 @@
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -110,6 +109,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/chrome_device_client.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #endif
@@ -245,6 +245,7 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   g_browser_process = NULL;
 }
 
+#if !defined(OS_ANDROID)
 void BrowserProcessImpl::StartTearDown() {
     TRACE_EVENT0("shutdown", "BrowserProcessImpl::StartTearDown");
   // We need to destroy the MetricsServicesManager, IntranetRedirectDetector,
@@ -352,6 +353,7 @@ void BrowserProcessImpl::PostDestroyThreads() {
   // IO thread having stopped.
   io_thread_.reset();
 }
+#endif  // !defined(OS_ANDROID)
 
 unsigned int BrowserProcessImpl::AddRefModule() {
   DCHECK(CalledOnValidThread());
