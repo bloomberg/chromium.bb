@@ -118,6 +118,10 @@ class DataReductionProxyCompressionStats
   void GetHistoricalDataUsage(
       const HistoricalDataUsageCallback& get_data_usage_callback);
 
+  // Deletes browsing history from storage and memory for the given time
+  // range. Currently, this method deletes all data usage for the given range.
+  void DeleteBrowsingHistory(const base::Time& start, const base::Time& end);
+
   // Called by |net::NetworkChangeNotifier| when network type changes. Used to
   // keep track of connection type for reporting data usage breakdown by
   // connection type.

@@ -27,6 +27,8 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/predictor.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -43,6 +45,9 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/domain_reliability/service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -437,6 +442,21 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
                      base::Unretained(this)));
     }
 #endif
+
+    data_reduction_proxy::DataReductionProxySettings*
+        data_reduction_proxy_settings =
+            DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+                profile_);
+    // |data_reduction_proxy_settings| is null if |profile_| is off the record.
+    if (data_reduction_proxy_settings) {
+      data_reduction_proxy::DataReductionProxyService*
+          data_reduction_proxy_service =
+              data_reduction_proxy_settings->data_reduction_proxy_service();
+      if (data_reduction_proxy_service) {
+        data_reduction_proxy_service->compression_stats()
+            ->DeleteBrowsingHistory(delete_begin_, delete_end_);
+      }
+    }
   }
 
   if ((remove_mask & REMOVE_DOWNLOADS) && may_delete_history) {

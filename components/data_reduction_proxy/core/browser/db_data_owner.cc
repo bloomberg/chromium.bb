@@ -55,6 +55,13 @@ void DBDataOwner::DeleteHistoricalDataUsage() {
   data_usage_->DeleteHistoricalDataUsage();
 }
 
+void DBDataOwner::DeleteBrowsingHistory(const base::Time& start,
+                                        const base::Time& end) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
+  data_usage_->DeleteBrowsingHistory(start, end);
+}
+
 base::WeakPtr<DBDataOwner> DBDataOwner::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }

@@ -14,10 +14,8 @@
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 
 namespace base {
-
 class Time;
-
-}  // namespace base
+}
 
 namespace data_reduction_proxy {
 class DataStore;
@@ -49,11 +47,20 @@ class DataUsageStore {
   // Deletes all historical data usage from storage.
   void DeleteHistoricalDataUsage();
 
+  // Deletes historical data usage from storage.
+  void DeleteBrowsingHistory(const base::Time& start, const base::Time& end);
+
   // Returns whether |time| is within the current interval. Each hour is
   // divided into |kDataUsageBucketLengthMins| minute long intervals. Returns
   // true if |time| has NULL time since an uninitialized bucket can be assigned
   // to any interval.
   static bool IsInCurrentInterval(const base::Time& time);
+
+  // Returns whether the bucket that was last updated at |bucket_last_updated|
+  // overlaps in time with the interval [|start_interval|, |end_interval|].
+  static bool BucketOverlapsInterval(const base::Time& bucket_last_updated,
+                                     const base::Time& start_interval,
+                                     const base::Time& end_interval);
 
  private:
   friend class DataUsageStoreTest;
@@ -72,6 +79,13 @@ class DataUsageStore {
   // the last persisted bucket. Returns 1 if |current| belongs to the bucket
   // immediately after the last persisted bucket.
   int BucketOffsetFromLastSaved(const base::Time& current) const;
+
+  // Computes the index of the bucket for the given |time| relative to
+  // |current_bucket_index_| and |current_bucket_last_updated_|.
+  // |current_bucket_last_updated_| belongs at |current_bucket_index_| and
+  // bucket index is computed by going backwards or forwards from current index
+  // by one position for every |kDataUsageBucketLengthInMinutes| minutes.
+  int ComputeBucketIndex(const base::Time& time) const;
 
   // Loads the data usage bucket at the given index.
   DataStore::Status LoadBucketAtIndex(int index, DataUsageBucket* current);
