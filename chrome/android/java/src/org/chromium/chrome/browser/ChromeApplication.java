@@ -25,6 +25,7 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ApplicationStateListener;
 import org.chromium.base.BuildInfo;
+import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
@@ -115,6 +116,7 @@ import java.util.Locale;
  * chrome layer.
  */
 public class ChromeApplication extends ContentApplication {
+    public static final String COMMAND_LINE_FILE = "chrome-command-line";
 
     private static final String TAG = "ChromiumApplication";
     private static final String PREF_BOOT_TIMESTAMP =
@@ -486,7 +488,7 @@ public class ChromeApplication extends ContentApplication {
 
     @Override
     public void initCommandLine() {
-        ChromeCommandLineInitUtil.initChromeCommandLine(this);
+        CommandLineInitUtil.initCommandLine(this, COMMAND_LINE_FILE);
     }
 
     /**

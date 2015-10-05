@@ -2,25 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.base;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.provider.Settings;
-import android.util.Log;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.io.File;
 
 /**
- * Provides implementation of command line initialization for Chrome for Android.
+ * Provides implementation of command line initialization for Android.
  */
-public final class ChromeCommandLineInitUtil {
+public final class CommandLineInitUtil {
 
-    private static final String TAG = "ChromeCommandLineInitUtil";
+    private static final String TAG = "CommandLineInitUtil";
 
     /**
      * The location of the command line file needs to be in a protected
@@ -32,35 +30,41 @@ public final class ChromeCommandLineInitUtil {
 
     /**
      * This path (writable by the shell in regular non-rooted "user" builds) is used when:
-     * 1) The "debug app" is set to chrome
+     * 1) The "debug app" is set to the application calling this.
      * and
      * 2) ADB is enabled.
      *
      */
     private static final String COMMAND_LINE_FILE_PATH_DEBUG_APP = "/data/local/tmp";
-    private static final String COMMAND_LINE_FILE = "chrome-command-line";
 
-    private ChromeCommandLineInitUtil() {
+    private CommandLineInitUtil() {
     }
 
+    /**
+     * Initializes the CommandLine class, pulling command line arguments from {@code fileName}.
+     * @param context  The {@link Context} to use to query whether or not this application is being
+     *                 debugged, and whether or not the publicly writable command line file should
+     *                 be used.
+     * @param fileName The name of the command line file to pull arguments from.
+     */
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
-    public static void initChromeCommandLine(Context context) {
+    public static void initCommandLine(Context context, String fileName) {
         if (!CommandLine.isInitialized()) {
-            File commandLineFile = getAlternativeCommandLinePath(context);
+            File commandLineFile = getAlternativeCommandLinePath(context, fileName);
             if (commandLineFile == null) {
-                commandLineFile = new File(COMMAND_LINE_FILE_PATH, COMMAND_LINE_FILE);
+                commandLineFile = new File(COMMAND_LINE_FILE_PATH, fileName);
             }
             CommandLine.initFromFile(commandLineFile.getPath());
         }
     }
 
     /**
-     * Use an alternative path if adb is enabled and the debug app is chrome.
+     * Use an alternative path if adb is enabled and this is the debug app.
      */
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
-    private static File getAlternativeCommandLinePath(Context context) {
+    private static File getAlternativeCommandLinePath(Context context, String fileName) {
         File alternativeCommandLineFile =
-                new File(COMMAND_LINE_FILE_PATH_DEBUG_APP, COMMAND_LINE_FILE);
+                new File(COMMAND_LINE_FILE_PATH_DEBUG_APP, fileName);
         if (!alternativeCommandLineFile.exists()) return null;
         try {
             String debugApp = Build.VERSION.SDK_INT < 17

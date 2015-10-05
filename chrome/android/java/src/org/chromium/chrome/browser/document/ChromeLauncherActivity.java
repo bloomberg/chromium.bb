@@ -27,10 +27,10 @@ import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeCommandLineInitUtil;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -145,7 +145,7 @@ public class ChromeLauncherActivity extends Activity
         // time at which the intent was received.
         IntentHandler.addTimestampToIntent(getIntent());
         // Initialize the command line in case we've disabled document mode from there.
-        ChromeCommandLineInitUtil.initChromeCommandLine(this);
+        CommandLineInitUtil.initCommandLine(this, ChromeApplication.COMMAND_LINE_FILE);
 
         // Read partner browser customizations information asynchronously.
         // We want to initialize early because when there is no tabs to restore, we should possibly
