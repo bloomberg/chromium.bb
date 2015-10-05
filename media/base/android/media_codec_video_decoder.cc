@@ -292,8 +292,9 @@ void MediaCodecVideoDecoder::Render(int buffer_index,
       frame_statistics_->IncrementLateFrameCount();
     }
 
-    // Skip late frames
-    ReleaseOutputBuffer(buffer_index, pts, false, update_time, eos_encountered);
+    // Render late frames immediately.
+    ReleaseOutputBuffer(buffer_index, pts, render, update_time,
+                        eos_encountered);
     return;
   }
 
