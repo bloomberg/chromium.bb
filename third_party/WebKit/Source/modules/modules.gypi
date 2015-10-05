@@ -1820,6 +1820,8 @@
       'indexeddb/IDBKeyPathTest.cpp',
       'indexeddb/IDBRequestTest.cpp',
       'indexeddb/IDBTransactionTest.cpp',
+      'indexeddb/MockWebIDBDatabase.cpp',
+      'indexeddb/MockWebIDBDatabase.h',
       'mediastream/RTCDataChannelTest.cpp',
       'notifications/NotificationDataTest.cpp',
       'presentation/PresentationAvailabilityTest.cpp',

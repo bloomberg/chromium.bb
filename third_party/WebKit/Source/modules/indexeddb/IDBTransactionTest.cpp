@@ -36,8 +36,8 @@
 #include "core/dom/Document.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/MockWebIDBDatabase.h"
 #include "platform/SharedBuffer.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include <gtest/gtest.h>
 #include <v8.h>
 
@@ -77,18 +77,6 @@ private:
     RefPtrWillBePersistent<ExecutionContext> m_executionContext;
 };
 
-class FakeWebIDBDatabase final : public WebIDBDatabase {
-public:
-    static PassOwnPtr<FakeWebIDBDatabase> create() { return adoptPtr(new FakeWebIDBDatabase()); }
-
-    void commit(long long transactionId) override { }
-    void abort(long long transactionId) override { }
-    void close() override { }
-
-private:
-    FakeWebIDBDatabase() { }
-};
-
 class FakeIDBDatabaseCallbacks final : public IDBDatabaseCallbacks {
 public:
     static FakeIDBDatabaseCallbacks* create() { return new FakeIDBDatabaseCallbacks(); }
@@ -102,7 +90,9 @@ private:
 
 TEST_F(IDBTransactionTest, EnsureLifetime)
 {
-    OwnPtr<FakeWebIDBDatabase> backend = FakeWebIDBDatabase::create();
+    OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
+    EXPECT_CALL(*backend, close())
+        .Times(1);
     Persistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
 
     const int64_t transactionId = 1234;
@@ -132,10 +122,15 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
 
 TEST_F(IDBTransactionTest, TransactionFinish)
 {
-    OwnPtr<FakeWebIDBDatabase> backend = FakeWebIDBDatabase::create();
+    const int64_t transactionId = 1234;
+
+    OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
+    EXPECT_CALL(*backend, commit(transactionId))
+        .Times(1);
+    EXPECT_CALL(*backend, close())
+        .Times(1);
     Persistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
 
-    const int64_t transactionId = 1234;
     const HashSet<String> transactionScope = HashSet<String>();
     Persistent<IDBTransaction> transaction = IDBTransaction::create(scriptState(), transactionId, transactionScope, WebIDBTransactionModeReadOnly, db.get());
     PersistentHeapHashSet<WeakMember<IDBTransaction>> set;

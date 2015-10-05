@@ -34,12 +34,10 @@
 #include "core/testing/NullExecutionContext.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "modules/indexeddb/IDBValue.h"
+#include "modules/indexeddb/MockWebIDBDatabase.h"
 #include "platform/SharedBuffer.h"
-#include "public/platform/WebBlobInfo.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -115,32 +113,6 @@ TEST_F(IDBRequestTest, AbortErrorAfterAbort)
     executionContext()->stopActiveDOMObjects();
 }
 
-class MockWebIDBDatabase : public WebIDBDatabase {
-public:
-    static PassOwnPtr<MockWebIDBDatabase> create()
-    {
-        return adoptPtr(new MockWebIDBDatabase());
-    }
-    ~MockWebIDBDatabase() override
-    {
-        EXPECT_TRUE(m_closeCalled);
-    }
-
-    void close() override
-    {
-        m_closeCalled = true;
-    }
-    void abort(long long transactionId) override { }
-
-private:
-    MockWebIDBDatabase()
-        : m_closeCalled(false)
-    {
-    }
-
-    bool m_closeCalled;
-};
-
 TEST_F(IDBRequestTest, ConnectionsAfterStopping)
 {
     const int64_t transactionId = 1234;
@@ -151,6 +123,10 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
 
     {
         OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
+        EXPECT_CALL(*backend, abort(transactionId))
+            .Times(1);
+        EXPECT_CALL(*backend, close())
+            .Times(1);
         IDBOpenDBRequest* request = IDBOpenDBRequest::create(scriptState(), callbacks, transactionId, version);
         EXPECT_EQ(request->readyState(), "pending");
 
@@ -160,6 +136,8 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
 
     {
         OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
+        EXPECT_CALL(*backend, close())
+            .Times(1);
         IDBOpenDBRequest* request = IDBOpenDBRequest::create(scriptState(), callbacks, transactionId, version);
         EXPECT_EQ(request->readyState(), "pending");
 
