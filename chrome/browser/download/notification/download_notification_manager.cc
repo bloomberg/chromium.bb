@@ -24,7 +24,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 bool DownloadNotificationManager::IsEnabled() {
-  bool enable_download_notification = true;
+  // Disabled by default.
+  bool enable_download_notification = false;
+
   std::string arg = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kEnableDownloadNotification);
   if (!arg.empty()) {
