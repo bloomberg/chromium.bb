@@ -260,9 +260,7 @@ void DevToolsFileHelper::Save(const std::string& url,
            url,
            content,
            saveCallback),
-      Bind(&DevToolsFileHelper::SaveAsFileSelectionCanceled,
-           weak_factory_.GetWeakPtr(),
-           cancelCallback),
+      cancelCallback,
       web_contents_);
   select_file_dialog->Show(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
                            initial_path);
@@ -296,23 +294,42 @@ void DevToolsFileHelper::SaveAsFileSelected(const std::string& url,
                           Bind(&WriteToFile, path, content));
 }
 
-void DevToolsFileHelper::SaveAsFileSelectionCanceled(
-    const SaveCallback& callback) {
-  callback.Run();
-}
-
 void DevToolsFileHelper::AddFileSystem(
+    const std::string& file_system_path,
     const AddFileSystemCallback& callback,
     const ShowInfoBarCallback& show_info_bar_callback) {
-  scoped_refptr<SelectFileDialog> select_file_dialog = new SelectFileDialog(
-      Bind(&DevToolsFileHelper::InnerAddFileSystem,
-           weak_factory_.GetWeakPtr(),
-           callback,
-           show_info_bar_callback),
-      Bind(callback, FileSystem()),
-      web_contents_);
-  select_file_dialog->Show(ui::SelectFileDialog::SELECT_FOLDER,
-                           base::FilePath());
+  if (file_system_path.empty()) {
+    scoped_refptr<SelectFileDialog> select_file_dialog = new SelectFileDialog(
+        Bind(&DevToolsFileHelper::InnerAddFileSystem,
+             weak_factory_.GetWeakPtr(), callback, show_info_bar_callback),
+        Bind(callback, FileSystem()),
+        web_contents_);
+    select_file_dialog->Show(ui::SelectFileDialog::SELECT_FOLDER,
+                             base::FilePath());
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        Bind(&DevToolsFileHelper::CheckProjectFileExistsAndAddFileSystem,
+            weak_factory_.GetWeakPtr(), callback, show_info_bar_callback,
+            base::FilePath::FromUTF8Unsafe(file_system_path)));
+  }
+}
+
+void DevToolsFileHelper::CheckProjectFileExistsAndAddFileSystem(
+    const AddFileSystemCallback& callback,
+    const ShowInfoBarCallback& show_info_bar_callback,
+    const base::FilePath& path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  if (base::PathExists(path.Append(FILE_PATH_LITERAL(".devtools")))) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        Bind(&DevToolsFileHelper::InnerAddFileSystem,
+             weak_factory_.GetWeakPtr(),
+             callback, show_info_bar_callback, path));
+  } else {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            Bind(callback, FileSystem()));
+  }
 }
 
 void DevToolsFileHelper::UpgradeDraggedFileSystemPermissions(

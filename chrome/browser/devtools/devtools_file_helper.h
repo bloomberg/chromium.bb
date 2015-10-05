@@ -69,17 +69,21 @@ class DevToolsFileHelper {
               const std::string& content,
               const AppendCallback& callback);
 
-  // Shows select folder dialog.
-  // If user cancels folder selection, passes empty FileSystem struct to
-  // |callback|.
-  // Shows infobar by means of |show_info_bar_callback| to let the user decide
-  // whether to grant security permissions or not.
-  // If user allows adding file system in infobar, grants renderer read/write
-  // permissions, registers isolated file system for it and passes FileSystem
-  // struct to |callback|. Saves file system path to prefs.
-  // If user denies adding file system in infobar, passes error string to
-  // |callback|.
-  void AddFileSystem(const AddFileSystemCallback& callback,
+  // 1. If empty |file_system_path| is passed, shows select folder dialog.
+  //    If user cancels folder selection, passes empty FileSystem struct to
+  //    |callback|.
+  //    If non-empty |file_system_path| is passed, verifies that corresponding
+  //    folder contains the ".devtools" project file, if not, passes empty
+  //    FileSystem struct to |callback|.
+  // 2. Shows infobar by means of |show_info_bar_callback| to let the user
+  //    decide whether to grant security permissions or not.
+  //    If user allows adding file system in infobar, grants renderer
+  //    read/write permissions, registers isolated file system for it and
+  //    passes FileSystem struct to |callback|. Saves file system path to prefs.
+  //    If user denies adding file system in infobar, passes error string to
+  //    |callback|.
+  void AddFileSystem(const std::string& file_system_path,
+                     const AddFileSystemCallback& callback,
                      const ShowInfoBarCallback& show_info_bar_callback);
 
   // Upgrades dragged file system permissions to a read-write access.
@@ -112,8 +116,11 @@ class DevToolsFileHelper {
                           const std::string& content,
                           const SaveCallback& callback,
                           const base::FilePath& path);
-  void SaveAsFileSelectionCanceled(const SaveCallback& callback);
   void InnerAddFileSystem(
+      const AddFileSystemCallback& callback,
+      const ShowInfoBarCallback& show_info_bar_callback,
+      const base::FilePath& path);
+  void CheckProjectFileExistsAndAddFileSystem(
       const AddFileSystemCallback& callback,
       const ShowInfoBarCallback& show_info_bar_callback,
       const base::FilePath& path);
