@@ -168,7 +168,4 @@ bool TestInProcessContextProvider::DestroyedOnMainThread() { return false; }
 void TestInProcessContextProvider::SetLostContextCallback(
     const LostContextCallback& lost_context_callback) {}
 
-void TestInProcessContextProvider::SetMemoryPolicyChangedCallback(
-    const MemoryPolicyChangedCallback& memory_policy_changed_callback) {}
-
 }  // namespace cc

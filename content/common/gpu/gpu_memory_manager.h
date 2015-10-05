@@ -112,12 +112,6 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   void Manage();
   void SetClientsHibernatedState() const;
-  void AssignSurfacesAllocations();
-  void AssignNonSurfacesAllocations();
-
-  // Update the amount of GPU memory we think we have in the system, based
-  // on what the stubs' contexts report.
-  void UpdateAvailableGpuMemory();
 
   // Send memory usage stats to the browser process.
   void SendUmaStatsToBrowser();

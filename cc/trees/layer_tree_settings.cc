@@ -69,7 +69,10 @@ LayerTreeSettings::LayerTreeSettings()
       image_decode_tasks_enabled(false),
       use_compositor_animation_timelines(false),
       wait_for_beginframe_interval(true),
-      max_staging_buffer_usage_in_bytes(32 * 1024 * 1024) {}
+      max_staging_buffer_usage_in_bytes(32 * 1024 * 1024),
+      memory_policy_(64 * 1024 * 1024,
+                     gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
+                     ManagedMemoryPolicy::kDefaultNumResourcesLimit) {}
 
 LayerTreeSettings::~LayerTreeSettings() {}
 

@@ -598,15 +598,6 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_UpdateVSyncParameters,
 // Send to stub on surface visibility change.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetSurfaceVisible, bool /* visible */)
 
-// Sent to proxy when the gpu memory manager changes its memory allocation.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetMemoryAllocation,
-                    gpu::MemoryAllocation /* allocation */)
-
-// Sent to stub when proxy is assigned a memory allocation changed callback.
-IPC_MESSAGE_ROUTED1(
-    GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback,
-    bool /* has_callback */)
-
 // Inserts a sync point into the channel. This is handled on the IO thread, so
 // can be expected to be reasonably fast, but the sync point is actually
 // retired in order with respect to the other calls. The sync point is shared

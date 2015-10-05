@@ -212,11 +212,6 @@ void InProcessContextProvider::SetLostContextCallback(
   lost_context_callback_ = lost_context_callback;
 }
 
-void InProcessContextProvider::SetMemoryPolicyChangedCallback(
-    const MemoryPolicyChangedCallback& memory_policy_changed_callback) {
-  // There's no memory manager for the in-process implementation.
-}
-
 void InProcessContextProvider::OnLostContext() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
   {

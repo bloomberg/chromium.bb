@@ -44,8 +44,6 @@ class TestContextProvider : public ContextProvider {
   void DeleteCachedResources() override;
   bool DestroyedOnMainThread() override;
   void SetLostContextCallback(const LostContextCallback& cb) override;
-  void SetMemoryPolicyChangedCallback(
-      const MemoryPolicyChangedCallback& cb) override;
 
   TestWebGraphicsContext3D* TestContext3d();
 
@@ -56,8 +54,6 @@ class TestContextProvider : public ContextProvider {
   TestWebGraphicsContext3D* UnboundTestContext3d();
 
   TestContextSupport* support() { return &support_; }
-
-  void SetMemoryAllocation(const ManagedMemoryPolicy& policy);
 
   void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);
 
@@ -83,7 +79,6 @@ class TestContextProvider : public ContextProvider {
   base::Lock context_lock_;
 
   LostContextCallback lost_context_callback_;
-  MemoryPolicyChangedCallback memory_policy_changed_callback_;
   skia::RefPtr<class GrContext> gr_context_;
 
   base::WeakPtrFactory<TestContextProvider> weak_ptr_factory_;

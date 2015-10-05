@@ -100,8 +100,6 @@ class PerfContextProvider : public ContextProvider {
   void DeleteCachedResources() override {}
   bool DestroyedOnMainThread() override { return false; }
   void SetLostContextCallback(const LostContextCallback& cb) override {}
-  void SetMemoryPolicyChangedCallback(
-      const MemoryPolicyChangedCallback& cb) override {}
 
  private:
   ~PerfContextProvider() override {}

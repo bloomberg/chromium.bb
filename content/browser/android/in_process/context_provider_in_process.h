@@ -56,9 +56,6 @@ class ContextProviderInProcess
   bool DestroyedOnMainThread() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
-  void SetMemoryPolicyChangedCallback(
-      const MemoryPolicyChangedCallback& memory_policy_changed_callback)
-      override;
 
   void OnLostContext();
   void InitializeCapabilities();

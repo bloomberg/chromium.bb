@@ -181,11 +181,6 @@ void AwRenderThreadContextProvider::SetLostContextCallback(
   lost_context_callback_ = lost_context_callback;
 }
 
-void AwRenderThreadContextProvider::SetMemoryPolicyChangedCallback(
-    const MemoryPolicyChangedCallback& memory_policy_changed_callback) {
-  // There's no memory manager for the in-process implementation.
-}
-
 void AwRenderThreadContextProvider::OnLostContext() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 

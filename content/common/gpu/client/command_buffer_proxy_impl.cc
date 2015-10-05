@@ -68,8 +68,6 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(CommandBufferProxyImpl, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Destroyed, OnDestroyed);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ConsoleMsg, OnConsoleMessage);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetMemoryAllocation,
-                        OnSetMemoryAllocation);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncPointAck,
                         OnSignalSyncPointAck);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SwapBuffersCompleted,
@@ -128,17 +126,6 @@ void CommandBufferProxyImpl::OnConsoleMessage(
   }
 }
 
-void CommandBufferProxyImpl::SetMemoryAllocationChangedCallback(
-    const MemoryAllocationChangedCallback& callback) {
-  CheckLock();
-  if (last_state_.error != gpu::error::kNoError)
-    return;
-
-  memory_allocation_changed_callback_ = callback;
-  Send(new GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback(
-      route_id_, !memory_allocation_changed_callback_.is_null()));
-}
-
 void CommandBufferProxyImpl::AddDeletionObserver(DeletionObserver* observer) {
   CheckLock();
   deletion_observers_.AddObserver(observer);
@@ -148,12 +135,6 @@ void CommandBufferProxyImpl::RemoveDeletionObserver(
     DeletionObserver* observer) {
   CheckLock();
   deletion_observers_.RemoveObserver(observer);
-}
-
-void CommandBufferProxyImpl::OnSetMemoryAllocation(
-    const gpu::MemoryAllocation& allocation) {
-  if (!memory_allocation_changed_callback_.is_null())
-    memory_allocation_changed_callback_.Run(allocation);
 }
 
 void CommandBufferProxyImpl::OnSignalSyncPointAck(uint32 id) {

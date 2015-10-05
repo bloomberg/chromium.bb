@@ -63,11 +63,8 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
   base::AutoLock lock(main_thread_lock_);
 
   // Destroy references to the context3d_ before leaking it.
-  if (context3d_->GetCommandBufferProxy()) {
+  if (context3d_->GetCommandBufferProxy())
     context3d_->GetCommandBufferProxy()->SetLock(nullptr);
-    context3d_->GetCommandBufferProxy()->SetMemoryAllocationChangedCallback(
-        CommandBufferProxyImpl::MemoryAllocationChangedCallback());
-  }
   lost_context_callback_proxy_.reset();
 }
 
@@ -193,16 +190,6 @@ void ContextProviderCommandBuffer::OnLostContext() {
     gr_context_->OnLostContext();
 }
 
-void ContextProviderCommandBuffer::OnMemoryAllocationChanged(
-    const gpu::MemoryAllocation& allocation) {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  if (memory_policy_changed_callback_.is_null())
-    return;
-
-  memory_policy_changed_callback_.Run(cc::ManagedMemoryPolicy(allocation));
-}
-
 void ContextProviderCommandBuffer::InitializeCapabilities() {
   Capabilities caps;
   caps.gpu = context3d_->GetImplementation()->capabilities();
@@ -228,21 +215,6 @@ void ContextProviderCommandBuffer::SetLostContextCallback(
   DCHECK(lost_context_callback_.is_null() ||
          lost_context_callback.is_null());
   lost_context_callback_ = lost_context_callback;
-}
-
-void ContextProviderCommandBuffer::SetMemoryPolicyChangedCallback(
-    const MemoryPolicyChangedCallback& memory_policy_changed_callback) {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-  DCHECK(memory_policy_changed_callback_.is_null() ||
-         memory_policy_changed_callback.is_null());
-  memory_policy_changed_callback_ = memory_policy_changed_callback;
-
-  if (!memory_policy_changed_callback_.is_null()) {
-    DCHECK(context3d_->GetCommandBufferProxy());
-    context3d_->GetCommandBufferProxy()->SetMemoryAllocationChangedCallback(
-        base::Bind(&ContextProviderCommandBuffer::OnMemoryAllocationChanged,
-                   base::Unretained(this)));
-  }
 }
 
 }  // namespace content

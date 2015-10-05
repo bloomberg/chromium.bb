@@ -48,9 +48,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   bool DestroyedOnMainThread() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
-  void SetMemoryPolicyChangedCallback(
-      const MemoryPolicyChangedCallback& memory_policy_changed_callback)
-      override;
 
  protected:
   ContextProviderCommandBuffer(
@@ -59,7 +56,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   ~ContextProviderCommandBuffer() override;
 
   void OnLostContext();
-  void OnMemoryAllocationChanged(const gpu::MemoryAllocation& allocation);
 
  private:
   void InitializeCapabilities();
@@ -75,7 +71,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   std::string debug_name_;
 
   LostContextCallback lost_context_callback_;
-  MemoryPolicyChangedCallback memory_policy_changed_callback_;
 
   base::Lock main_thread_lock_;
   bool destroyed_;

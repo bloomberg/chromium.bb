@@ -203,9 +203,4 @@ void ContextProviderInProcess::SetLostContextCallback(
   lost_context_callback_ = lost_context_callback;
 }
 
-void ContextProviderInProcess::SetMemoryPolicyChangedCallback(
-    const MemoryPolicyChangedCallback& memory_policy_changed_callback) {
-  // There's no memory manager for the in-process implementation.
-}
-
 }  // namespace content

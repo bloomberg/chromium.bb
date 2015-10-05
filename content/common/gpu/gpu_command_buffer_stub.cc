@@ -205,7 +205,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       route_id_(route_id),
       offscreen_(offscreen),
       last_flush_count_(0),
-      last_memory_allocation_valid_(false),
       watchdog_(watchdog),
       waiting_for_sync_point_(false),
       previous_processed_num_(0),
@@ -278,9 +277,7 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
       message.type() != GpuCommandBufferMsg_RegisterTransferBuffer::ID &&
       message.type() != GpuCommandBufferMsg_DestroyTransferBuffer::ID &&
       message.type() != GpuCommandBufferMsg_RetireSyncPoint::ID &&
-      message.type() != GpuCommandBufferMsg_SignalSyncPoint::ID &&
-      message.type() !=
-          GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback::ID) {
+      message.type() != GpuCommandBufferMsg_SignalSyncPoint::ID) {
     if (!MakeCurrent())
       return false;
     have_context = true;
@@ -317,9 +314,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnSignalSyncPoint)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalQuery,
                         OnSignalQuery)
-    IPC_MESSAGE_HANDLER(
-        GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback,
-        OnSetClientHasMemoryAllocationChangedCallback)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateImage, OnCreateImage);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyImage, OnDestroyImage);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateStreamTexture,
@@ -476,8 +470,6 @@ void GpuCommandBufferStub::Destroy() {
           new GpuHostMsg_DidDestroyOffscreenContext(active_url_));
     }
   }
-
-  memory_manager_client_state_.reset();
 
   while (!sync_points_.empty())
     OnRetireSyncPoint(sync_points_.front());
@@ -924,10 +916,9 @@ void GpuCommandBufferStub::OnCreateVideoEncoder(
   // self-delete during destruction of this stub.
 }
 
+// TODO(sohanjg): cleanup this and the client side too.
 void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetSurfaceVisible");
-  if (memory_manager_client_state_)
-    memory_manager_client_state_->SetVisible(visible);
 }
 
 void GpuCommandBufferStub::AddSyncPoint(uint32 sync_point, bool retire) {
@@ -1020,22 +1011,6 @@ void GpuCommandBufferStub::OnSignalQuery(uint32 query_id, uint32 id) {
   }
   // Something went wrong, run callback immediately.
   OnSignalSyncPointAck(id);
-}
-
-
-void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
-    bool has_callback) {
-  TRACE_EVENT0(
-      "gpu",
-      "GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback");
-  if (has_callback) {
-    if (!memory_manager_client_state_) {
-      memory_manager_client_state_.reset(
-          GetMemoryManager()->CreateClientState(this, !offscreen_, true));
-    }
-  } else {
-    memory_manager_client_state_.reset();
-  }
 }
 
 void GpuCommandBufferStub::OnCreateImage(int32 id,
@@ -1141,18 +1116,6 @@ const gpu::gles2::FeatureInfo* GpuCommandBufferStub::GetFeatureInfo() const {
 
 gpu::gles2::MemoryTracker* GpuCommandBufferStub::GetMemoryTracker() const {
   return context_group_->memory_tracker();
-}
-
-void GpuCommandBufferStub::SetMemoryAllocation(
-    const gpu::MemoryAllocation& allocation) {
-  if (!last_memory_allocation_valid_ ||
-      !allocation.Equals(last_memory_allocation_)) {
-    Send(new GpuCommandBufferMsg_SetMemoryAllocation(
-        route_id_, allocation));
-  }
-
-  last_memory_allocation_valid_ = true;
-  last_memory_allocation_ = allocation;
 }
 
 void GpuCommandBufferStub::SuggestHaveFrontBuffer(

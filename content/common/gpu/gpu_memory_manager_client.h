@@ -30,10 +30,6 @@ class CONTENT_EXPORT GpuMemoryManagerClient {
   // Returns the memory tracker for this stub.
   virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const = 0;
 
-  // Sets buffer usage depending on Memory Allocation
-  virtual void SetMemoryAllocation(
-      const gpu::MemoryAllocation& allocation) = 0;
-
   virtual void SuggestHaveFrontBuffer(bool suggest_have_frontbuffer) = 0;
 
   // Returns in bytes the total amount of GPU memory for the GPU which this

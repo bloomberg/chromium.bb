@@ -163,12 +163,6 @@ void BlimpContextProvider::SetLostContextCallback(
   lost_context_callback_ = lost_context_callback;
 }
 
-void BlimpContextProvider::SetMemoryPolicyChangedCallback(
-    const MemoryPolicyChangedCallback& memory_policy_changed_callback) {
-  // There's no memory manager for the in-process implementation.
-  // TODO(dtrainor): Figure out if we need a memory manager for Blimp.
-}
-
 void BlimpContextProvider::OnLostContext() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 

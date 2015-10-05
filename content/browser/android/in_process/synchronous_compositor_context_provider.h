@@ -18,10 +18,6 @@ class SynchronousCompositorContextProvider
       scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
       CommandBufferContextType type);
 
-  void SetMemoryPolicyChangedCallback(
-      const MemoryPolicyChangedCallback& memory_policy_changed_callback)
-      override;
-
  private:
   ~SynchronousCompositorContextProvider() override;
 };

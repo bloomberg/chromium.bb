@@ -104,13 +104,6 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   virtual void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) = 0;
 
-  // Sets a callback to be called when the memory policy changes. This should be
-  // called from the same thread that the context is bound to.
-  typedef base::Callback<void(const ManagedMemoryPolicy& policy)>
-      MemoryPolicyChangedCallback;
-  virtual void SetMemoryPolicyChangedCallback(
-      const MemoryPolicyChangedCallback& memory_policy_changed_callback) = 0;
-
  protected:
   friend class base::RefCountedThreadSafe<ContextProvider>;
   virtual ~ContextProvider() {}

@@ -185,25 +185,11 @@ TestWebGraphicsContext3D* TestContextProvider::UnboundTestContext3d() {
   return context3d_.get();
 }
 
-void TestContextProvider::SetMemoryAllocation(
-    const ManagedMemoryPolicy& policy) {
-  if (memory_policy_changed_callback_.is_null())
-    return;
-  memory_policy_changed_callback_.Run(policy);
-}
-
 void TestContextProvider::SetLostContextCallback(
     const LostContextCallback& cb) {
   DCHECK(context_thread_checker_.CalledOnValidThread());
   DCHECK(lost_context_callback_.is_null() || cb.is_null());
   lost_context_callback_ = cb;
-}
-
-void TestContextProvider::SetMemoryPolicyChangedCallback(
-    const MemoryPolicyChangedCallback& cb) {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-  DCHECK(memory_policy_changed_callback_.is_null() || cb.is_null());
-  memory_policy_changed_callback_ = cb;
 }
 
 void TestContextProvider::SetMaxTransferBufferUsageBytes(

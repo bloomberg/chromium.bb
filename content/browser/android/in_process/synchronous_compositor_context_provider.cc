@@ -13,9 +13,4 @@ SynchronousCompositorContextProvider::SynchronousCompositorContextProvider(
 
 SynchronousCompositorContextProvider::~SynchronousCompositorContextProvider() {}
 
-void SynchronousCompositorContextProvider::SetMemoryPolicyChangedCallback(
-    const MemoryPolicyChangedCallback& memory_policy_changed_callback) {
-  // Intentional no-op.
-}
-
 }  // namespace content

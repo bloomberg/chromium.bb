@@ -127,10 +127,6 @@ class CommandBufferProxyImpl
   bool ProduceFrontBuffer(const gpu::Mailbox& mailbox);
   void SetContextLostCallback(const base::Closure& callback);
 
-  typedef base::Callback<void(const gpu::MemoryAllocation&)>
-      MemoryAllocationChangedCallback;
-  void SetMemoryAllocationChangedCallback(
-      const MemoryAllocationChangedCallback& callback);
   void AddDeletionObserver(DeletionObserver* observer);
   void RemoveDeletionObserver(DeletionObserver* observer);
 
@@ -186,7 +182,6 @@ class CommandBufferProxyImpl
   void OnDestroyed(gpu::error::ContextLostReason reason,
                    gpu::error::Error error);
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
-  void OnSetMemoryAllocation(const gpu::MemoryAllocation& allocation);
   void OnSignalSyncPointAck(uint32 id);
   void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info,
                               gfx::SwapResult result);
@@ -221,8 +216,6 @@ class CommandBufferProxyImpl
   int32 last_barrier_put_offset_;
 
   base::Closure context_lost_callback_;
-
-  MemoryAllocationChangedCallback memory_allocation_changed_callback_;
 
   GpuConsoleMessageCallback console_message_callback_;
 

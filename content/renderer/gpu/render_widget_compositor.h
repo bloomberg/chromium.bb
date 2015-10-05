@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/input/top_controls_state.h"
+#include "cc/output/managed_memory_policy.h"
 #include "cc/output/swap_promise.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
@@ -78,6 +79,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   bool SendMessageToMicroBenchmark(int id, scoped_ptr<base::Value> value);
   void StartCompositor();
   void SetSurfaceIdNamespace(uint32_t surface_id_namespace);
+  cc::ManagedMemoryPolicy GetGpuMemoryPolicy(
+      const cc::ManagedMemoryPolicy& policy);
 
   // WebLayerTreeView implementation.
   void setRootLayer(const blink::WebLayer& layer) override;

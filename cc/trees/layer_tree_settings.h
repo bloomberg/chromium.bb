@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/layer_tree_debug_state.h"
+#include "cc/output/managed_memory_policy.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -84,6 +85,7 @@ class CC_EXPORT LayerTreeSettings {
   bool use_compositor_animation_timelines;
   bool wait_for_beginframe_interval;
   int max_staging_buffer_usage_in_bytes;
+  ManagedMemoryPolicy memory_policy_;
 
   LayerTreeDebugState initial_debug_state;
 

@@ -1363,6 +1363,22 @@ TEST_F(TileManagerTilePriorityQueueTest,
   host_impl_.resource_pool()->ReleaseResource(resource, 0);
 }
 
+TEST_F(TileManagerTilePriorityQueueTest, DefaultMemoryPolicy) {
+  const gfx::Size layer_bounds(1000, 1000);
+  host_impl_.SetViewportSize(layer_bounds);
+  SetupDefaultTrees(layer_bounds);
+
+  host_impl_.tile_manager()->PrepareTiles(host_impl_.global_tile_state());
+
+  // 64MB is the default mem limit.
+  EXPECT_EQ(67108864u,
+            host_impl_.global_tile_state().hard_memory_limit_in_bytes);
+  EXPECT_EQ(TileMemoryLimitPolicy::ALLOW_ANYTHING,
+            host_impl_.global_tile_state().memory_limit_policy);
+  EXPECT_EQ(ManagedMemoryPolicy::kDefaultNumResourcesLimit,
+            host_impl_.global_tile_state().num_resources_limit);
+}
+
 TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
   // Verify that we use the real tile bounds when advancing phases during the
   // tile iteration.

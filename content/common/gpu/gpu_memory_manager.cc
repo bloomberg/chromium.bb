@@ -59,57 +59,6 @@ GpuMemoryManager::~GpuMemoryManager() {
   DCHECK(!bytes_allocated_unmanaged_current_);
 }
 
-void GpuMemoryManager::UpdateAvailableGpuMemory() {
-  // If the value was overridden on the command line, use the specified value.
-  static bool client_hard_limit_bytes_overridden =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceGpuMemAvailableMb);
-  if (client_hard_limit_bytes_overridden) {
-    base::StringToUint64(
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kForceGpuMemAvailableMb),
-        &client_hard_limit_bytes_);
-    client_hard_limit_bytes_ *= 1024 * 1024;
-    return;
-  }
-
-#if defined(OS_ANDROID)
-  // On non-Android, we use an operating system query when possible.
-  // We do not have a reliable concept of multiple GPUs existing in
-  // a system, so just be safe and go with the minimum encountered.
-  uint64 bytes_min = 0;
-
-  // Only use the clients that are visible, because otherwise the set of clients
-  // we are querying could become extremely large.
-  for (ClientStateList::const_iterator it = clients_visible_mru_.begin();
-      it != clients_visible_mru_.end();
-      ++it) {
-    const GpuMemoryManagerClientState* client_state = *it;
-    if (!client_state->has_surface_)
-      continue;
-    if (!client_state->visible_)
-      continue;
-
-    uint64 bytes = 0;
-    if (client_state->client_->GetTotalGpuMemory(&bytes)) {
-      if (!bytes_min || bytes < bytes_min)
-        bytes_min = bytes;
-    }
-  }
-
-  client_hard_limit_bytes_ = bytes_min;
-  // Clamp the observed value to a specific range on Android.
-  client_hard_limit_bytes_ = std::max(client_hard_limit_bytes_,
-                                      static_cast<uint64>(8 * 1024 * 1024));
-  client_hard_limit_bytes_ = std::min(client_hard_limit_bytes_,
-                                      static_cast<uint64>(256 * 1024 * 1024));
-#else
-  // Ignore what the system said and give all clients the same maximum
-  // allocation on desktop platforms.
-  client_hard_limit_bytes_ = 512 * 1024 * 1024;
-#endif
-}
-
 void GpuMemoryManager::ScheduleManage(
     ScheduleManageTime schedule_manage_time) {
   if (disable_schedule_manage_)
@@ -251,72 +200,12 @@ void GpuMemoryManager::Manage() {
   manage_immediate_scheduled_ = false;
   delayed_manage_callback_.Cancel();
 
-  // Update the amount of GPU memory available on the system.
-  UpdateAvailableGpuMemory();
-
   // Determine which clients are "hibernated" (which determines the
   // distribution of frontbuffers and memory among clients that don't have
   // surfaces).
   SetClientsHibernatedState();
 
-  // Assign memory allocations to clients that have surfaces.
-  AssignSurfacesAllocations();
-
-  // Assign memory allocations to clients that don't have surfaces.
-  AssignNonSurfacesAllocations();
-
   SendUmaStatsToBrowser();
-}
-
-void GpuMemoryManager::AssignSurfacesAllocations() {
-  // Send that allocation to the clients.
-  ClientStateList clients = clients_visible_mru_;
-  clients.insert(clients.end(),
-                 clients_nonvisible_mru_.begin(),
-                 clients_nonvisible_mru_.end());
-  for (ClientStateList::const_iterator it = clients.begin();
-       it != clients.end();
-       ++it) {
-    GpuMemoryManagerClientState* client_state = *it;
-
-    // Populate and send the allocation to the client
-    MemoryAllocation allocation;
-    allocation.bytes_limit_when_visible = client_hard_limit_bytes_;
-#if defined(OS_ANDROID)
-    // On Android, because there is only one visible tab at any time, allow
-    // that renderer to cache as much as it can.
-    allocation.priority_cutoff_when_visible =
-        MemoryAllocation::CUTOFF_ALLOW_EVERYTHING;
-#else
-    // On desktop platforms, instruct the renderers to cache only a smaller
-    // set, to play nice with other renderers and other applications. If this
-    // if not done, then the system can become unstable.
-    // http://crbug.com/145600 (Linux)
-    // http://crbug.com/141377 (Mac)
-    allocation.priority_cutoff_when_visible =
-        MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
-#endif
-
-    client_state->client_->SetMemoryAllocation(allocation);
-    client_state->client_->SuggestHaveFrontBuffer(!client_state->hibernated_);
-  }
-}
-
-void GpuMemoryManager::AssignNonSurfacesAllocations() {
-  for (ClientStateList::const_iterator it = clients_nonsurface_.begin();
-       it != clients_nonsurface_.end();
-       ++it) {
-    GpuMemoryManagerClientState* client_state = *it;
-    MemoryAllocation allocation;
-
-    if (!client_state->hibernated_) {
-      allocation.bytes_limit_when_visible = client_hard_limit_bytes_;
-      allocation.priority_cutoff_when_visible =
-          MemoryAllocation::CUTOFF_ALLOW_EVERYTHING;
-    }
-
-    client_state->client_->SetMemoryAllocation(allocation);
-  }
 }
 
 void GpuMemoryManager::SetClientsHibernatedState() const {
