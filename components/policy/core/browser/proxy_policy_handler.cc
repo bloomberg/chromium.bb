@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/proxy_policy_handler.h"
+#include "components/policy/core/browser/proxy_policy_handler.h"
 
 #include "base/logging.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"

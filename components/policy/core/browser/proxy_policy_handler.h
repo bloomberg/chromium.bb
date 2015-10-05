@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_PROXY_POLICY_HANDLER_H_
-#define CHROME_BROWSER_NET_PROXY_POLICY_HANDLER_H_
+#ifndef COMPONENTS_POLICY_CORE_BROWSER_PROXY_POLICY_HANDLER_H_
+#define COMPONENTS_POLICY_CORE_BROWSER_PROXY_POLICY_HANDLER_H_
 
 #include <string>
 
@@ -16,7 +16,7 @@ class ProxyMap;
 class ProxyErrorMap;
 
 // ConfigurationPolicyHandler for the proxy policies.
-class ProxyPolicyHandler : public ConfigurationPolicyHandler {
+class POLICY_EXPORT ProxyPolicyHandler : public ConfigurationPolicyHandler {
  public:
   // Constants for the "Proxy Server Mode" defined in the policies.
   // Note that these diverge from internal presentation defined in
@@ -61,4 +61,4 @@ class ProxyPolicyHandler : public ConfigurationPolicyHandler {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_NET_PROXY_POLICY_HANDLER_H_
+#endif  // COMPONENTS_POLICY_CORE_BROWSER_PROXY_POLICY_HANDLER_H_

@@ -40,6 +40,7 @@
         'autofill_core_common',
         'cloud_policy_proto',
         'policy',
+        'proxy_config',
       ],
       'sources': [
         'core/browser/autofill_policy_handler.cc',
@@ -60,6 +61,8 @@
         'core/browser/configuration_policy_pref_store.h',
         'core/browser/policy_error_map.cc',
         'core/browser/policy_error_map.h',
+        'core/browser/proxy_policy_handler.cc',
+        'core/browser/proxy_policy_handler.h',
         'core/browser/url_blacklist_policy_handler.cc',
         'core/browser/url_blacklist_policy_handler.h',
       ],

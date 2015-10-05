@@ -2,6 +2,7 @@ include_rules = [
   "+components/autofill/core/common",
   "+components/bookmarks",
   "+components/pref_registry",
+  "+components/proxy_config",
   "+components/url_formatter",
   "+components/url_matcher",
   "+grit/components_strings.h",

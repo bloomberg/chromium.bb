@@ -2159,8 +2159,6 @@
     # Files to use when configuration policy is enabled that are also shared
     # with iOS. Non-iOS policy files are below.
     'chrome_browser_policy_shared_with_ios_sources': [
-      'browser/net/proxy_policy_handler.cc',
-      'browser/net/proxy_policy_handler.h',
       'browser/policy/cloud/cloud_policy_invalidator.cc',
       'browser/policy/cloud/cloud_policy_invalidator.h',
       'browser/policy/cloud/policy_header_service_factory.cc',
