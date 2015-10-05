@@ -668,15 +668,15 @@ crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip
 
 crbug.com/517898 [ SnowLeopard Debug ] fast/text/international/bidi-neutral-run.html [ Crash ]
 
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001b.html [ Pass Fail ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001c.html [ Pass Fail ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001d.html [ Pass Fail ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001i.html [ Pass Fail ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001j.html [ Pass Fail ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ Pass Fail ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001n.html [ Pass Fail ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-022-rl.xht [ Pass Fail ImageOnlyFailure ]
-crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-024-rl.xht [ Pass Fail ImageOnlyFailure ]
+crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001b.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001c.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001d.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001i.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001j.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001n.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-022-rl.xht [ Pass Failure ImageOnlyFailure ]
+crbug.com/539425 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-024-rl.xht [ Pass Failure ImageOnlyFailure ]
 
 # crbug.com/396823 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
 
