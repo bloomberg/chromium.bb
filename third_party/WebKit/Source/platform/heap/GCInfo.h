@@ -153,19 +153,10 @@ private:
     static size_t s_gcInfoTableSize;
 };
 
-// This macro should be used when returning a unique 14 bit integer
+// GCInfotAtBaseType should be used when returning a unique 14 bit integer
 // for a given gcInfo.
-#define RETURN_GCINFO_INDEX()                                  \
-    static size_t gcInfoIndex = 0;                             \
-    ASSERT(s_gcInfoTable);                                     \
-    if (!acquireLoad(&gcInfoIndex))                            \
-        GCInfoTable::ensureGCInfoIndex(&gcInfo, &gcInfoIndex); \
-    ASSERT(gcInfoIndex >= 1);                                  \
-    ASSERT(gcInfoIndex < GCInfoTable::maxIndex);               \
-    return gcInfoIndex;
-
 template<typename T>
-struct GCInfoAtBase {
+struct GCInfoAtBaseType {
     static size_t index()
     {
         static_assert(sizeof(T), "T must be fully defined");
@@ -178,27 +169,34 @@ struct GCInfoAtBase {
             TypenameStringTrait<T>::get
 #endif
         };
-        RETURN_GCINFO_INDEX();
+
+        static size_t gcInfoIndex = 0;
+        ASSERT(s_gcInfoTable);
+        if (!acquireLoad(&gcInfoIndex))
+            GCInfoTable::ensureGCInfoIndex(&gcInfo, &gcInfoIndex);
+        ASSERT(gcInfoIndex >= 1);
+        ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
+        return gcInfoIndex;
     }
 };
 
-template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> struct GetGarbageCollectedBase;
+template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> struct GetGarbageCollectedType;
 
 template<typename T>
-struct GetGarbageCollectedBase<T, true> {
-    typedef typename T::GarbageCollectedBase type;
+struct GetGarbageCollectedType<T, true> {
+    using type = typename T::GarbageCollectedType;
 };
 
 template<typename T>
-struct GetGarbageCollectedBase<T, false> {
-    typedef T type;
+struct GetGarbageCollectedType<T, false> {
+    using type = T;
 };
 
 template<typename T>
 struct GCInfoTrait {
     static size_t index()
     {
-        return GCInfoAtBase<typename GetGarbageCollectedBase<T>::type>::index();
+        return GCInfoAtBaseType<typename GetGarbageCollectedType<T>::type>::index();
     }
 };
 

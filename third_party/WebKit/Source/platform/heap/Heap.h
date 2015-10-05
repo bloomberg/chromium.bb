@@ -356,7 +356,7 @@ protected:
 #endif
 
 public:
-    using GarbageCollectedBase = T;
+    using GarbageCollectedType = T;
 
     void* operator new(size_t size)
     {
