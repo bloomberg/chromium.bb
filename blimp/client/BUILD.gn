@@ -141,9 +141,17 @@ if (is_android) {
     deps = [
       ":blimp_java_resources",
       "//base:base_java",
+
+      # TODO(dtrainor): Remove the ui_java target once no more Android Toast
+      # notifications are used.
+      "//ui/android:ui_java",
+      google_play_services_library,
     ]
 
     java_files = [
+      "android/java/src/org/chromium/blimp/auth/RetryingTokenSource.java",
+      "android/java/src/org/chromium/blimp/auth/TokenSource.java",
+      "android/java/src/org/chromium/blimp/auth/TokenSourceImpl.java",
       "android/java/src/org/chromium/blimp/BlimpApplication.java",
       "android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "android/java/src/org/chromium/blimp/BlimpRendererActivity.java",
@@ -159,9 +167,13 @@ if (is_android) {
       ":blimp_java_resources",
       "//base:base_java",
       "//base:base_java_test_support",
+      google_play_services_library,
     ]
 
-    java_files = [ "android/javatests/src/org/chromium/blimp/DummyTest.java" ]
+    java_files = [
+      "android/javatests/src/org/chromium/blimp/auth/MockTokenSource.java",
+      "android/javatests/src/org/chromium/blimp/auth/RetryingTokenSourceTest.java",
+    ]
   }
 
   android_apk("blimp_apk") {
@@ -170,7 +182,9 @@ if (is_android) {
       ":blimp_java",
       ":blimp_java_resources",
       ":blimp_client",
+      ":blimp_java",
       "//base:base_java",
+      google_play_services_resources,
     ]
     apk_name = "Blimp"
     android_manifest = blimp_apk_manifest
@@ -184,6 +198,7 @@ if (is_android) {
     deps = [
       ":blimp_test_apk_manifest",
       ":blimp_test_java",
+      google_play_services_resources,
     ]
   }
 }

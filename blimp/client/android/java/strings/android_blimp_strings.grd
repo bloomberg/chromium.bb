@@ -94,6 +94,15 @@
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
       <!-- NOTE: Please add translateable="false" to all strings for now. -->
+      <message name="IDS_SIGNIN_GET_TOKEN_FAILED" desc="Message for when authenticating a user failed.">
+        Unable to authenticate user.
+      </message>
+      <message name="IDS_SIGNIN_GET_TOKEN_SUCCEEDED" desc="Message for when authenticating user was successful.">
+        Token retrieved.
+      </message>
+      <message name="IDS_SIGNIN_CHOOSER_DESCRIPTION" desc="Message shown with the Android signin chooser screen.">
+        Please choose an account to use with Blimp.
+      </message>
     </messages>
   </release>
 </grit>
