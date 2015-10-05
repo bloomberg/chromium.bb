@@ -203,7 +203,12 @@ def DoTreeMirror(target_dir, tree_sha1):
   """In order to save temporary space on bots that do not have enough space to
   download ISOs, unpack them, and copy to the target location, the whole tree
   is uploaded as a zip to internal storage, and then mirrored here."""
-  temp_dir, local_zip = DownloadUsingGsutil(tree_sha1 + '.zip')
+  use_local_zip = bool(int(os.environ.get('USE_LOCAL_ZIP', 0)))
+  if use_local_zip:
+    temp_dir = None
+    local_zip = tree_sha1 + '.zip'
+  else:
+    temp_dir, local_zip = DownloadUsingGsutil(tree_sha1 + '.zip')
   sys.stdout.write('Extracting %s...\n' % local_zip)
   sys.stdout.flush()
   with zipfile.ZipFile(local_zip, 'r', zipfile.ZIP_DEFLATED, True) as zf:
@@ -266,9 +271,9 @@ def main():
       if not CanAccessToolchainBucket():
         RequestGsAuthentication()
     if not should_use_gs:
-      print('Please follow the instructions at '
-            'http://www.chromium.org/developers/how-tos/'
-            'build-instructions-windows')
+      print('\n\n\nPlease follow the instructions at '
+            'https://www.chromium.org/developers/how-tos/'
+            'build-instructions-windows\n\n')
       return 1
     print('Windows toolchain out of date or doesn\'t exist, updating (Pro)...')
     print('  current_hash: %s' % current_hash)
