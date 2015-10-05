@@ -5,10 +5,15 @@
 #include "components/security_interstitials/core/metrics_helper.h"
 
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+
+using base::RecordAction;
+using base::UserMetricsAction;
 
 namespace security_interstitials {
 
@@ -42,6 +47,60 @@ void RecordSingleInteractionToMetrics(MetricsHelper::Interaction interaction,
   histogram->Add(interaction);
 }
 
+void MaybeRecordDecisionAsAction(MetricsHelper::Decision decision,
+                                 const std::string& metric_name) {
+  if (decision == MetricsHelper::PROCEED) {
+    if (metric_name == "malware")
+      RecordAction(UserMetricsAction("MalwareInterstitial.Proceed"));
+    else if (metric_name == "harmful")
+      RecordAction(UserMetricsAction("HarmfulInterstitial.Proceed"));
+    else if (metric_name == "ssl_overridable")
+      RecordAction(UserMetricsAction("SSLOverridableInterstitial.Proceed"));
+  } else if (decision == MetricsHelper::DONT_PROCEED) {
+    if (metric_name == "malware")
+      RecordAction(UserMetricsAction("MalwareInterstitial.Back"));
+    else if (metric_name == "harmful")
+      RecordAction(UserMetricsAction("HarmfulInterstitial.Back"));
+    else if (metric_name == "ssl_overridable")
+      RecordAction(UserMetricsAction("SSLOverridableInterstitial.Back"));
+    else if (metric_name == "ssl_nonoverridable")
+      RecordAction(UserMetricsAction("SSLNonOverridableInsterstitial.Back"));
+    else if (metric_name == "bad_clock")
+      RecordAction(UserMetricsAction("BadClockInterstitial.Back"));
+  }
+}
+
+void MaybeRecordInteractionAsAction(MetricsHelper::Interaction interaction,
+                                    const std::string& metric_name) {
+  if (interaction == MetricsHelper::TOTAL_VISITS) {
+    if (metric_name == "malware")
+      RecordAction(UserMetricsAction("MalwareInterstitial.Show"));
+    else if (metric_name == "harmful")
+      RecordAction(UserMetricsAction("HarmfulInterstitial.Show"));
+    else if (metric_name == "ssl_overridable")
+      RecordAction(UserMetricsAction("SSLOverridableInterstitial.Show"));
+    else if (metric_name == "ssl_nonoverridable")
+      RecordAction(UserMetricsAction("SSLNonOverridableInterstitial.Show"));
+    else if (metric_name == "bad_clock")
+      RecordAction(UserMetricsAction("BadClockInterstitial.Show"));
+  } else if (interaction == MetricsHelper::SHOW_ADVANCED) {
+    if (metric_name == "malware") {
+      RecordAction(UserMetricsAction("MalwareInterstitial.Advanced"));
+    } else if (metric_name == "harmful") {
+      RecordAction(UserMetricsAction("HarmfulInterstitial.Advanced"));
+    } else if (metric_name == "ssl_overridable" ||
+               metric_name == "ssl_nonoverridable") {
+      RecordAction(UserMetricsAction("SSLInterstitial.Advanced"));
+    }
+  } else if (interaction == MetricsHelper::RELOAD) {
+    if (metric_name == "ssl_nonoverridable")
+      RecordAction(UserMetricsAction("SSLInterstitial.Reload"));
+  } else if (interaction == MetricsHelper::OPEN_TIME_SETTINGS) {
+    if (metric_name == "bad_clock")
+      RecordAction(UserMetricsAction("BadClockInterstitial.Settings"));
+  }
+}
+
 }  // namespace
 
 MetricsHelper::ReportDetails::ReportDetails()
@@ -70,7 +129,6 @@ MetricsHelper::MetricsHelper(const GURL& request_url,
 void MetricsHelper::RecordUserDecision(Decision decision) {
   const std::string histogram_name(
       "interstitial." + settings_.metric_prefix + ".decision");
-
   RecordUserDecisionToMetrics(decision, histogram_name);
   // Record additional information about sites that users have visited before.
   // Report |decision| and SHOW together, filtered by the same history state
@@ -79,6 +137,8 @@ void MetricsHelper::RecordUserDecision(Decision decision) {
     RecordUserDecisionToMetrics(SHOW, histogram_name + ".repeat_visit");
     RecordUserDecisionToMetrics(decision, histogram_name + ".repeat_visit");
   }
+
+  MaybeRecordDecisionAsAction(decision, settings_.metric_prefix);
   RecordUserDecisionToRappor(decision);
   RecordExtraUserDecisionMetrics(decision);
 }
@@ -125,12 +185,13 @@ void MetricsHelper::RecordUserDecisionToRappor(Decision decision) {
 void MetricsHelper::RecordUserInteraction(Interaction interaction) {
   const std::string histogram_name(
       "interstitial." + settings_.metric_prefix + ".interaction");
-
   RecordSingleInteractionToMetrics(interaction, histogram_name);
   if (!settings_.extra_suffix.empty()) {
     RecordSingleInteractionToMetrics(
         interaction, histogram_name + "." + settings_.extra_suffix);
   }
+
+  MaybeRecordInteractionAsAction(interaction, settings_.metric_prefix);
   RecordExtraUserInteractionMetrics(interaction);
 }
 
