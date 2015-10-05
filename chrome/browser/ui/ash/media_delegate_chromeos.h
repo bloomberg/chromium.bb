@@ -19,8 +19,7 @@ class MediaDelegateChromeOS : public ash::MediaDelegate,
   void HandleMediaNextTrack() override;
   void HandleMediaPlayPause() override;
   void HandleMediaPrevTrack() override;
-  ash::MediaCaptureState GetMediaCaptureState(
-      content::BrowserContext* context) override;
+  ash::MediaCaptureState GetMediaCaptureState(ash::UserIndex index) override;
 
   // MediaCaptureDevicesDispatcher::Observer:
   void OnRequestUpdate(int render_process_id,

@@ -16,6 +16,12 @@ class ChromeShellContentState : public ash::ShellContentState {
 
   // Overridden from ash::ShellContentState:
   content::BrowserContext* GetActiveBrowserContext() override;
+  content::BrowserContext* GetBrowserContextByIndex(
+      ash::UserIndex index) override;
+  content::BrowserContext* GetBrowserContextForWindow(
+      aura::Window* window) override;
+  content::BrowserContext* GetUserPresentingBrowserContextForWindow(
+      aura::Window* window) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellContentState);
 };

@@ -5,6 +5,8 @@
 #ifndef ASH_MEDIA_DELEGATE_H_
 #define ASH_MEDIA_DELEGATE_H_
 
+#include "ash/session/session_types.h"
+
 namespace content {
 class BrowserContext;
 }
@@ -32,10 +34,9 @@ class MediaDelegate {
   // Handles the Previous Track Media shortcut key.
   virtual void HandleMediaPrevTrack() = 0;
 
-  // Returns the current media recording state of web contents
-  // that belongs to the |context|.
-  virtual MediaCaptureState GetMediaCaptureState(
-      content::BrowserContext* context) = 0;
+  // Returns the current media recording state of web contents that belongs to
+  // the the user @ |index|. See session_types.h for a description of UserIndex.
+  virtual MediaCaptureState GetMediaCaptureState(UserIndex index) = 0;
 };
 
 }  // namespace ash

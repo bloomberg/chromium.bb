@@ -19,4 +19,20 @@ content::BrowserContext* TestShellContentState::GetActiveBrowserContext() {
   return active_browser_context_.get();
 }
 
+content::BrowserContext* TestShellContentState::GetBrowserContextByIndex(
+    UserIndex index) {
+  return nullptr;
+}
+
+content::BrowserContext* TestShellContentState::GetBrowserContextForWindow(
+    aura::Window* window) {
+  return nullptr;
+}
+
+content::BrowserContext*
+TestShellContentState::GetUserPresentingBrowserContextForWindow(
+    aura::Window* window) {
+  return nullptr;
+}
+
 }  // namespace ash

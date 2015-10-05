@@ -65,7 +65,7 @@ const int kTrayUserTileHoverBorderInset = 10;
 const int kPopupMessageOffset = 25;
 
 // Switch to a user with the given |user_index|.
-void SwitchUser(ash::MultiProfileIndex user_index) {
+void SwitchUser(ash::UserIndex user_index) {
   // Do not switch users when the log screen is presented.
   if (ash::Shell::GetInstance()
           ->session_state_delegate()
@@ -193,9 +193,9 @@ void AddUserView::AddContent() {
 
 UserView::UserView(SystemTrayItem* owner,
                    user::LoginStatus login,
-                   MultiProfileIndex index,
+                   UserIndex index,
                    bool for_detailed_view)
-    : multiprofile_index_(index),
+    : user_index_(index),
       user_card_view_(NULL),
       owner_(owner),
       is_user_card_button_(false),
@@ -216,7 +216,7 @@ UserView::UserView(SystemTrayItem* owner,
   // The logout button must be added before the user card so that the user card
   // can correctly calculate the remaining available width.
   // Note that only the current multiprofile user gets a button.
-  if (!multiprofile_index_)
+  if (!user_index_)
     AddLogoutButton(login);
   AddUserCard(login);
 }
@@ -250,7 +250,7 @@ gfx::Rect UserView::GetBoundsInScreenOfUserButtonForTest() {
 gfx::Size UserView::GetPreferredSize() const {
   gfx::Size size = views::View::GetPreferredSize();
   // Only the active user panel will be forced to a certain height.
-  if (!multiprofile_index_) {
+  if (!user_index_) {
     size.set_height(
         std::max(size.height(), kTrayPopupItemHeight + GetInsets().height()));
   }
@@ -313,16 +313,16 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
         ash::UMA_STATUS_AREA_SIGN_OUT);
     RemoveAddUserMenuOption();
     Shell::GetInstance()->system_tray_delegate()->SignOut();
-  } else if (sender == user_card_view_ && !multiprofile_index_ &&
+  } else if (sender == user_card_view_ && !user_index_ &&
              IsMultiAccountSupportedAndUserActive()) {
     owner_->TransitionDetailedView();
   } else if (sender == user_card_view_ &&
              IsMultiProfileSupportedAndUserActive()) {
-    if (!multiprofile_index_) {
+    if (!user_index_) {
       ToggleAddUserMenuOption();
     } else {
       RemoveAddUserMenuOption();
-      SwitchUser(multiprofile_index_);
+      SwitchUser(user_index_);
       // Since the user list is about to change the system menu should get
       // closed.
       owner_->system_tray()->CloseSystemBubble();
@@ -390,8 +390,7 @@ void UserView::AddUserCard(user::LoginStatus login) {
       (2 * kTrayPopupPaddingHorizontal + kTrayPopupPaddingBetweenItems);
   if (logout_button_)
     max_card_width -= logout_button_->GetPreferredSize().width();
-  user_card_view_ =
-      new UserCardView(login, max_card_width, multiprofile_index_);
+  user_card_view_ = new UserCardView(login, max_card_width, user_index_);
   // The entry is clickable when no system modal dialog is open and one of the
   // multi user options is active.
   bool clickable = !Shell::GetInstance()->IsSystemModalWindowOpen() &&
@@ -400,7 +399,7 @@ void UserView::AddUserCard(user::LoginStatus login) {
   if (clickable) {
     // To allow the border to start before the icon, reduce the size before and
     // add an inset to the icon to get the spacing.
-    if (!multiprofile_index_) {
+    if (!user_index_) {
       SetBorder(views::Border::CreateEmptyBorder(
           kTrayPopupUserCardVerticalPadding,
           kTrayPopupPaddingHorizontal - kTrayUserTileHoverBorderInset,
@@ -413,7 +412,7 @@ void UserView::AddUserCard(user::LoginStatus login) {
     views::View* contents_view = user_card_view_;
     ButtonFromView* button = NULL;
     if (!for_detailed_view_) {
-      if (multiprofile_index_) {
+      if (user_index_) {
         // Since the activation border needs to be drawn around the tile, we
         // have to put the tile into another view which fills the menu panel,
         // but keeping the offsets of the content.
@@ -428,10 +427,7 @@ void UserView::AddUserCard(user::LoginStatus login) {
         contents_view->AddChildView(user_card_view_);
         insets = gfx::Insets(1, 1, 1, 3);
       }
-      button = new ButtonFromView(contents_view,
-                                  this,
-                                  !multiprofile_index_,
-                                  insets);
+      button = new ButtonFromView(contents_view, this, !user_index_, insets);
     } else {
       // We want user card for detailed view to have exactly the same look
       // as user card for default view. That's why we wrap it in a button

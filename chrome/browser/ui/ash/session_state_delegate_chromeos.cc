@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 
+#include "ash/content/shell_content_state.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/session/session_state_observer.h"
 #include "ash/system/chromeos/multi_user/user_switch_util.h"
@@ -18,16 +19,18 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_info.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "ui/gfx/image/image_skia.h"
 
 SessionStateDelegateChromeos::SessionStateDelegateChromeos()
     : session_state_(SESSION_STATE_LOGIN_PRIMARY) {
@@ -49,34 +52,6 @@ SessionStateDelegateChromeos::~SessionStateDelegateChromeos() {
   // LoginState is not initialized in unit_tests.
   if (chromeos::LoginState::IsInitialized())
     chromeos::LoginState::Get()->RemoveObserver(this);
-}
-
-content::BrowserContext* SessionStateDelegateChromeos::GetBrowserContextByIndex(
-    ash::MultiProfileIndex index) {
-  DCHECK_LT(index, NumberOfLoggedInUsers());
-  user_manager::User* user =
-      user_manager::UserManager::Get()->GetLRULoggedInUsers()[index];
-  CHECK(user);
-  return chromeos::ProfileHelper::Get()->GetProfileByUser(user);
-}
-
-content::BrowserContext*
-SessionStateDelegateChromeos::GetBrowserContextForWindow(
-    aura::Window* window) {
-  const std::string& user_id =
-      chrome::MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
-  return user_id.empty() ? NULL
-                         : multi_user_util::GetProfileFromUserID(user_id);
-}
-
-content::BrowserContext*
-SessionStateDelegateChromeos::GetUserPresentingBrowserContextForWindow(
-    aura::Window* window) {
-  const std::string& user_id =
-      chrome::MultiUserWindowManager::GetInstance()->GetUserPresentingWindow(
-          window);
-  return user_id.empty() ? NULL
-                         : multi_user_util::GetProfileFromUserID(user_id);
 }
 
 int SessionStateDelegateChromeos::GetMaximumNumberOfLoggedInUsers() const {
@@ -163,22 +138,22 @@ SessionStateDelegateChromeos::GetSessionState() const {
 }
 
 const user_manager::UserInfo* SessionStateDelegateChromeos::GetUserInfo(
-    ash::MultiProfileIndex index) const {
+    ash::UserIndex index) const {
   DCHECK_LT(index, NumberOfLoggedInUsers());
   return user_manager::UserManager::Get()->GetLRULoggedInUsers()[index];
-}
-
-const user_manager::UserInfo* SessionStateDelegateChromeos::GetUserInfo(
-    content::BrowserContext* context) const {
-  DCHECK(context);
-  return chromeos::ProfileHelper::Get()->GetUserByProfile(
-      Profile::FromBrowserContext(context));
 }
 
 bool SessionStateDelegateChromeos::ShouldShowAvatar(
     aura::Window* window) const {
   return chrome::MultiUserWindowManager::GetInstance()->
       ShouldShowAvatar(window);
+}
+
+gfx::ImageSkia SessionStateDelegateChromeos::GetAvatarImageForWindow(
+    aura::Window* window) const {
+  content::BrowserContext* context =
+      ash::ShellContentState::GetInstance()->GetBrowserContextForWindow(window);
+  return GetAvatarImageForContext(context);
 }
 
 void SessionStateDelegateChromeos::SwitchActiveUser(

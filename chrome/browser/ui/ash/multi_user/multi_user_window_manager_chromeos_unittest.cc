@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/content/shell_content_state.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -39,15 +40,31 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
-namespace ash {
-namespace test {
+namespace {
 
-class TestSessionStateDelegateChromeOS
-    : public ash::test::TestSessionStateDelegate {
+// TOOD(beng): This implementation seems only superficially different to the
+//             production impl. Evaluate whether or not we can just use that
+//             one.
+class TestShellContentState : public ash::ShellContentState {
  public:
-  TestSessionStateDelegateChromeOS() {}
+  TestShellContentState() {}
+  ~TestShellContentState() override {}
 
-  // TestSessionStateDelegate override:
+ private:
+  content::BrowserContext* GetActiveBrowserContext() override {
+    const user_manager::UserManager* user_manager =
+        user_manager::UserManager::Get();
+    const user_manager::User* active_user = user_manager->GetActiveUser();
+    return active_user
+               ? multi_user_util::GetProfileFromUserID(active_user->GetUserID())
+               : NULL;
+  }
+
+  content::BrowserContext* GetBrowserContextByIndex(
+      ash::UserIndex index) override {
+    return nullptr;
+  }
+
   content::BrowserContext* GetBrowserContextForWindow(
       aura::Window* window) override {
     const std::string& user_id =
@@ -65,39 +82,31 @@ class TestSessionStateDelegateChromeOS
                            : multi_user_util::GetProfileFromUserID(user_id);
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestSessionStateDelegateChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(TestShellContentState);
 };
 
-class TestShellDelegateChromeOS : public test::TestShellDelegate {
+class TestShellDelegateChromeOS : public ash::test::TestShellDelegate {
  public:
   TestShellDelegateChromeOS() {}
-
-  TestSessionStateDelegate* CreateSessionStateDelegate() override {
-    return new TestSessionStateDelegateChromeOS();
+  ash::test::TestSessionStateDelegate* CreateSessionStateDelegate() override {
+    return new ash::test::TestSessionStateDelegate;
   }
 
   bool CanShowWindowForUser(aura::Window* window) const override {
-    // Note that the implementation of GetActiveBrowserContext() here differs
-    // from the implementation in ChromeShellDelegate/session_util.cc.
     return ::CanShowWindowForUser(
-        window, base::Bind(&TestShellDelegateChromeOS::GetActiveBrowserContext,
-                           base::Unretained(
-                               const_cast<TestShellDelegateChromeOS*>(this))));
+        window,
+        base::Bind(&ash::ShellContentState::GetActiveBrowserContext,
+                   base::Unretained(ash::ShellContentState::GetInstance())));
   }
 
  private:
-  content::BrowserContext* GetActiveBrowserContext() {
-    const user_manager::UserManager* user_manager =
-        user_manager::UserManager::Get();
-    const user_manager::User* active_user = user_manager->GetActiveUser();
-    return active_user
-               ? multi_user_util::GetProfileFromUserID(active_user->GetUserID())
-               : NULL;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegateChromeOS);
 };
+
+}  // namespace
+
+namespace ash {
+namespace test {
 
 // A test class for preparing the chrome::MultiUserWindowManager. It creates
 // various windows and instantiates the chrome::MultiUserWindowManager.
@@ -169,7 +178,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   // Returns a test-friendly string format of GetOwnersOfVisibleWindows().
   std::string GetOwnersOfVisibleWindowsAsString();
 
-  TestSessionStateDelegateChromeOS* session_state_delegate() {
+  TestSessionStateDelegate* session_state_delegate() {
     return session_state_delegate_;
   }
 
@@ -238,7 +247,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager_;
 
   // The session state delegate.
-  TestSessionStateDelegateChromeOS* session_state_delegate_;
+  TestSessionStateDelegate* session_state_delegate_;
 
   chromeos::FakeChromeUserManager* fake_user_manager_;  // Not owned.
 
@@ -254,8 +263,9 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
 void MultiUserWindowManagerChromeOSTest::SetUp() {
   ash_test_helper()->set_test_shell_delegate(new TestShellDelegateChromeOS);
+  ash_test_helper()->set_content_state(new TestShellContentState);
   AshTestBase::SetUp();
-  session_state_delegate_ = static_cast<TestSessionStateDelegateChromeOS*>(
+  session_state_delegate_ = static_cast<TestSessionStateDelegate*>(
       ash::Shell::GetInstance()->session_state_delegate());
   profile_manager_.reset(
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));

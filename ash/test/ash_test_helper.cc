@@ -48,8 +48,9 @@ namespace test {
 
 AshTestHelper::AshTestHelper(base::MessageLoopForUI* message_loop)
     : message_loop_(message_loop),
-      test_shell_delegate_(NULL),
-      test_screenshot_delegate_(NULL) {
+      test_shell_delegate_(nullptr),
+      test_screenshot_delegate_(nullptr),
+      content_state_(nullptr) {
   CHECK(message_loop_);
 #if defined(OS_CHROMEOS)
   dbus_thread_manager_initialized_ = false;
@@ -99,7 +100,8 @@ void AshTestHelper::SetUp(bool start_session) {
   // created in AshTestBase tests.
   chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
-  ShellContentState::SetInstance(new TestShellContentState);
+  ShellContentState::SetInstance(content_state_ ? content_state_
+                                                : new TestShellContentState);
 
   ShellInitParams init_params;
   init_params.delegate = test_shell_delegate_;

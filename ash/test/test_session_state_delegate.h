@@ -31,12 +31,6 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   const user_manager::UserInfo* GetActiveUserInfo() const;
 
   // SessionStateDelegate:
-  content::BrowserContext* GetBrowserContextByIndex(
-      MultiProfileIndex index) override;
-  content::BrowserContext* GetBrowserContextForWindow(
-      aura::Window* window) override;
-  content::BrowserContext* GetUserPresentingBrowserContextForWindow(
-      aura::Window* window) override;
   int GetMaximumNumberOfLoggedInUsers() const override;
   int NumberOfLoggedInUsers() const override;
   bool IsActiveUserSessionStarted() const override;
@@ -48,10 +42,9 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   bool IsUserSessionBlocked() const override;
   SessionState GetSessionState() const override;
   const user_manager::UserInfo* GetUserInfo(
-      ash::MultiProfileIndex index) const override;
-  const user_manager::UserInfo* GetUserInfo(
-      content::BrowserContext* context) const override;
+      ash::UserIndex index) const override;
   bool ShouldShowAvatar(aura::Window* window) const override;
+  gfx::ImageSkia GetAvatarImageForWindow(aura::Window* window) const override;
   void SwitchActiveUser(const std::string& user_id) override;
   void CycleActiveUser(CycleUser cycle_user) override;
   bool IsMultiProfileAllowedByPrimaryUserPolicy() const override;

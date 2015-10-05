@@ -30,10 +30,6 @@ void ShellContentState::DestroyInstance() {
   instance_ = nullptr;
 }
 
-content::BrowserContext* ShellContentState::GetActiveBrowserContext() {
-  return nullptr;
-}
-
 ShellContentState::ShellContentState() {}
 ShellContentState::~ShellContentState() {}
 

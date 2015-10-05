@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,41 +6,27 @@
 #define ASH_SESSION_SESSION_STATE_DELEGATE_H_
 
 #include <string>
-#include <vector>
 
 #include "ash/ash_export.h"
-#include "base/strings/string16.h"
+#include "ash/session/session_types.h"
 
 namespace aura {
 class Window;
-}  // namespace aura
-
-namespace content {
-class BrowserContext;
 }
 
 namespace gfx {
 class ImageSkia;
-}  // namespace gfx
+}
 
 namespace user_manager {
 class UserInfo;
-}  // namespace user_manager
+}
 
 namespace ash {
 
 class SessionStateObserver;
 
-// The index for the multi-profile item to use. The list is always LRU sorted
-// So that the index #0 is the currently active user.
-typedef int MultiProfileIndex;
-
-// A list of user_id.
-typedef std::vector<std::string> UserIdList;
-
 // Delegate for checking and modifying the session state.
-// TODO(oshima): Replace MultiProfileIndex with BrowsreContext, bacause
-// GetUserXXX are useful for non multi profile scenario in ash_shell.
 class ASH_EXPORT SessionStateDelegate {
  public:
   // Defines the cycle direction for |CycleActiveUser|.
@@ -72,19 +58,6 @@ class ASH_EXPORT SessionStateDelegate {
   };
 
   virtual ~SessionStateDelegate() {};
-
-  // Returns the browser context for the user given by |index|.
-  virtual content::BrowserContext* GetBrowserContextByIndex(
-      MultiProfileIndex index) = 0;
-
-  // Returns the browser context associated with the window.
-  virtual content::BrowserContext* GetBrowserContextForWindow(
-      aura::Window* window) = 0;
-
-  // Returns the browser context on which the window is currently shown. NULL
-  // means the window will be shown for every user.
-  virtual content::BrowserContext* GetUserPresentingBrowserContextForWindow(
-      aura::Window* window) = 0;
 
   // Returns the maximum possible number of logged in users.
   virtual int GetMaximumNumberOfLoggedInUsers() const = 0;
@@ -128,19 +101,17 @@ class ASH_EXPORT SessionStateDelegate {
   // Returns current session state.
   virtual SessionState GetSessionState() const = 0;
 
-  // TODO(oshima): consolidate these two GetUserInfo.
-
-  // Gets the user info for the user with the given |index|.
+  // Gets the user info for the user with the given |index|. See session_types.h
+  // for a description of UserIndex.
   // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
-  virtual const user_manager::UserInfo* GetUserInfo(
-      MultiProfileIndex index) const = 0;
-
-  // Gets the avatar image for the user associated with the |context|.
-  virtual const user_manager::UserInfo* GetUserInfo(
-      content::BrowserContext* context) const = 0;
+  virtual const user_manager::UserInfo* GetUserInfo(UserIndex index) const = 0;
 
   // Whether or not the window's title should show the avatar.
   virtual bool ShouldShowAvatar(aura::Window* window) const = 0;
+
+  // Returns the avatar image for the specified window.
+  virtual gfx::ImageSkia GetAvatarImageForWindow(
+      aura::Window* window) const = 0;
 
   // Switches to another active user with |user_id|
   // (if that user has already signed in).

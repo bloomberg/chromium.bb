@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/media_delegate_chromeos.h"
 
+#include "ash/content/shell_content_state.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/message_loop/message_loop.h"
@@ -144,7 +145,9 @@ void MediaDelegateChromeOS::HandleMediaPrevTrack() {
 }
 
 ash::MediaCaptureState MediaDelegateChromeOS::GetMediaCaptureState(
-    content::BrowserContext* context) {
+    ash::UserIndex index) {
+  content::BrowserContext* context =
+      ash::ShellContentState::GetInstance()->GetBrowserContextByIndex(index);
   return GetMediaCaptureStateOfAllWebContents(context);
 }
 

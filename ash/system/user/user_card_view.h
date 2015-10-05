@@ -17,9 +17,7 @@ namespace tray {
 class UserCardView : public views::View {
  public:
   // |max_width| takes effect only if |login_status| is LOGGED_IN_PUBLIC.
-  UserCardView(user::LoginStatus login_status,
-               int max_width,
-               int multiprofile_index);
+  UserCardView(user::LoginStatus login_status, int max_width, int user_index);
   ~UserCardView() override;
 
   // views::View overrides.
@@ -29,11 +27,10 @@ class UserCardView : public views::View {
   // Creates the content for the public mode.
   void AddPublicModeUserContent(int max_width);
 
-  void AddUserContent(user::LoginStatus login_status, int multiprofile_index);
+  void AddUserContent(user::LoginStatus login_status, int user_index);
 
   // Create a user icon representation.
-  views::View* CreateIcon(user::LoginStatus login_status,
-                          int multiprofile_index);
+  views::View* CreateIcon(user::LoginStatus login_status, int user_index);
 
   DISALLOW_COPY_AND_ASSIGN(UserCardView);
 };

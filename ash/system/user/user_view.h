@@ -40,7 +40,7 @@ class UserView : public views::View,
  public:
   UserView(SystemTrayItem* owner,
            ash::user::LoginStatus login,
-           MultiProfileIndex index,
+           UserIndex index,
            bool for_detailed_view);
   ~UserView() override;
 
@@ -75,7 +75,7 @@ class UserView : public views::View,
   // Removes the add user menu option.
   void RemoveAddUserMenuOption();
 
-  MultiProfileIndex multiprofile_index_;
+  UserIndex user_index_;
   // The view of the user card.
   views::View* user_card_view_;
 

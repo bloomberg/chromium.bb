@@ -7,7 +7,6 @@
 #include <set>
 #include <vector>
 
-#include "ash/frame/frame_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"

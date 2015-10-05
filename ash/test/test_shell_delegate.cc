@@ -71,8 +71,7 @@ class MediaDelegateImpl : public MediaDelegate {
   void HandleMediaNextTrack() override {}
   void HandleMediaPlayPause() override {}
   void HandleMediaPrevTrack() override {}
-  MediaCaptureState GetMediaCaptureState(
-      content::BrowserContext* context) override {
+  MediaCaptureState GetMediaCaptureState(UserIndex index) override {
     return state_;
   }
 

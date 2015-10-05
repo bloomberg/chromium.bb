@@ -25,6 +25,7 @@ class ViewsDelegate;
 }
 
 namespace ash {
+class ShellContentState;
 namespace test {
 
 class TestScreenshotDelegate;
@@ -63,6 +64,9 @@ class AshTestHelper {
   TestScreenshotDelegate* test_screenshot_delegate() {
     return test_screenshot_delegate_;
   }
+  void set_content_state(ShellContentState* content_state) {
+    content_state_ = content_state;
+  }
 
   // True if the running environment supports multiple displays,
   // or false otherwise (e.g. win8 bot).
@@ -81,6 +85,8 @@ class AshTestHelper {
   TestScreenshotDelegate* test_screenshot_delegate_;
 
   scoped_ptr<views::ViewsDelegate> views_delegate_;
+
+  ShellContentState* content_state_;
 
 #if defined(OS_CHROMEOS)
   // Check if DBus Thread Manager was initialized here.

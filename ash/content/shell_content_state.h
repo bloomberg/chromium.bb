@@ -6,7 +6,12 @@
 #define ASH_CONTENT_SHELL_CONTENT_STATE_H_
 
 #include "ash/content/ash_with_content_export.h"
+#include "ash/session/session_types.h"
 #include "base/macros.h"
+
+namespace aura {
+class Window;
+}
 
 namespace content {
 class BrowserContext;
@@ -22,7 +27,20 @@ class ASH_WITH_CONTENT_EXPORT ShellContentState {
 
   // Provides the embedder a way to return an active browser context for the
   // current user scenario. Default implementation here returns nullptr.
-  virtual content::BrowserContext* GetActiveBrowserContext();
+  virtual content::BrowserContext* GetActiveBrowserContext() = 0;
+
+  // Returns the browser context for the user given by |index|.
+  virtual content::BrowserContext* GetBrowserContextByIndex(
+      UserIndex index) = 0;
+
+  // Returns the browser context associated with the window.
+  virtual content::BrowserContext* GetBrowserContextForWindow(
+      aura::Window* window) = 0;
+
+  // Returns the browser context on which the window is currently shown. NULL
+  // means the window will be shown for every user.
+  virtual content::BrowserContext* GetUserPresentingBrowserContextForWindow(
+      aura::Window* window) = 0;
 
  protected:
   ShellContentState();

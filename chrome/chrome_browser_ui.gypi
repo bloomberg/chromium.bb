@@ -528,6 +528,7 @@
       'browser/ui/ash/chrome_screenshot_grabber.h',
       'browser/ui/ash/chrome_shell_content_state.cc',
       'browser/ui/ash/chrome_shell_content_state.h',
+      'browser/ui/ash/chrome_shell_content_state_chromeos.cc',
       'browser/ui/ash/chrome_shell_delegate.cc',
       'browser/ui/ash/chrome_shell_delegate.h',
       'browser/ui/ash/chrome_shell_delegate_chromeos.cc',
@@ -617,6 +618,7 @@
     ],
     # Used when Ash is enabled but not ChromeOS.
     'chrome_browser_ui_ash_non_chromeos': [
+      'browser/ui/ash/chrome_shell_content_state_views.cc',
       'browser/ui/ash/chrome_shell_delegate_views.cc',
       'browser/ui/ash/multi_user/multi_user_context_menu.cc',
       'browser/ui/ash/multi_user/multi_user_context_menu.h',

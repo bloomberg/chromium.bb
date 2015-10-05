@@ -6,11 +6,10 @@
 
 #include <string>
 
-#include "ash/frame/frame_util.h"
-
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/session_util.h"
 
 #include "ui/gfx/image/image.h"
 
@@ -22,5 +21,5 @@ void AvatarMenu::GetImageForMenuButton(const base::FilePath& profile_path,
   *is_rectangle = false;
   Profile* profile =
       g_browser_process->profile_manager()->GetProfileByPath(profile_path);
-  *image = ash::GetAvatarImageForContext(profile);
+  *image = gfx::Image(GetAvatarImageForContext(profile));
 }

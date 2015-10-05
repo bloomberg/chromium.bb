@@ -26,6 +26,7 @@
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ash {
 namespace shell {
@@ -65,8 +66,7 @@ class MediaDelegateImpl : public MediaDelegate {
   void HandleMediaNextTrack() override {}
   void HandleMediaPlayPause() override {}
   void HandleMediaPrevTrack() override {}
-  MediaCaptureState GetMediaCaptureState(
-      content::BrowserContext* context) override {
+  MediaCaptureState GetMediaCaptureState(UserIndex index) override {
     return MEDIA_CAPTURE_VIDEO;
   }
 
@@ -82,18 +82,6 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
   ~SessionStateDelegateImpl() override {}
 
   // SessionStateDelegate:
-  content::BrowserContext* GetBrowserContextByIndex(
-      MultiProfileIndex index) override {
-    return ShellContentState::GetInstance()->GetActiveBrowserContext();
-  }
-  content::BrowserContext* GetBrowserContextForWindow(
-      aura::Window* window) override {
-    return ShellContentState::GetInstance()->GetActiveBrowserContext();
-  }
-  content::BrowserContext* GetUserPresentingBrowserContextForWindow(
-      aura::Window* window) override {
-    return NULL;
-  }
   int GetMaximumNumberOfLoggedInUsers() const override { return 3; }
   int NumberOfLoggedInUsers() const override {
     // ash_shell has 2 users.
@@ -120,16 +108,14 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
     return IsActiveUserSessionStarted() ? SESSION_STATE_ACTIVE
                                         : SESSION_STATE_LOGIN_PRIMARY;
   }
-  const user_manager::UserInfo* GetUserInfo(
-      MultiProfileIndex index) const override {
-    return user_info_.get();
-  }
-  const user_manager::UserInfo* GetUserInfo(
-      content::BrowserContext* context) const override {
+  const user_manager::UserInfo* GetUserInfo(UserIndex index) const override {
     return user_info_.get();
   }
   bool ShouldShowAvatar(aura::Window* window) const override {
     return !user_info_->GetImage().isNull();
+  }
+  gfx::ImageSkia GetAvatarImageForWindow(aura::Window* window) const override {
+    return gfx::ImageSkia();
   }
   void SwitchActiveUser(const std::string& user_id) override {}
   void CycleActiveUser(CycleUser cycle_user) override {}

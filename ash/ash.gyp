@@ -137,8 +137,6 @@
       'frame/default_header_painter.h',
       'frame/frame_border_hit_test_controller.cc',
       'frame/frame_border_hit_test_controller.h',
-      'frame/frame_util.cc',
-      'frame/frame_util.h',
       'frame/header_painter.h',
       'frame/header_painter_util.cc',
       'frame/header_painter_util.h',

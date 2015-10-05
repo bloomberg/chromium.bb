@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_SESSION_UTIL_H_
 
 #include "base/callback.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace aura {
 class Window;
@@ -27,5 +28,7 @@ using GetActiveBrowserContextCallback =
 bool CanShowWindowForUser(
     aura::Window* window,
     const GetActiveBrowserContextCallback& get_context_callback);
+
+gfx::ImageSkia GetAvatarImageForContext(content::BrowserContext* context);
 
 #endif  // CHROME_BROWSER_UI_ASH_SESSION_UTIL_H_

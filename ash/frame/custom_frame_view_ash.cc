@@ -11,7 +11,6 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
-#include "ash/frame/frame_util.h"
 #include "ash/frame/header_painter.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
@@ -252,9 +251,7 @@ void CustomFrameViewAsh::HeaderView::UpdateAvatarIcon() {
     delete avatar_icon_;
     avatar_icon_ = NULL;
   } else {
-    gfx::ImageSkia image = GetAvatarImageForContext(
-        delegate->GetBrowserContextForWindow(window)).AsImageSkia();
-    DCHECK(!image.isNull());
+    gfx::ImageSkia image = delegate->GetAvatarImageForWindow(window);
     DCHECK_EQ(image.width(), image.height());
     if (!avatar_icon_) {
       avatar_icon_ = new views::ImageView();

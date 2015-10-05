@@ -16,4 +16,20 @@ content::BrowserContext* ShellContentStateImpl::GetActiveBrowserContext() {
   return browser_context_;
 }
 
+content::BrowserContext* ShellContentStateImpl::GetBrowserContextByIndex(
+    UserIndex index) {
+  return browser_context_;
+}
+
+content::BrowserContext* ShellContentStateImpl::GetBrowserContextForWindow(
+    aura::Window* window) {
+  return browser_context_;
+}
+
+content::BrowserContext*
+ShellContentStateImpl::GetUserPresentingBrowserContextForWindow(
+    aura::Window* window) {
+  return browser_context_;
+}
+
 }  // namespace ash

@@ -39,9 +39,9 @@ const int kUserLabelToIconPadding = 5;
 
 namespace ash {
 
-TrayUser::TrayUser(SystemTray* system_tray, MultiProfileIndex index)
+TrayUser::TrayUser(SystemTray* system_tray, UserIndex index)
     : SystemTrayItem(system_tray),
-      multiprofile_index_(index),
+      user_index_(index),
       user_(nullptr),
       layout_view_(nullptr),
       avatar_(nullptr),
@@ -95,9 +95,8 @@ views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
 
   // If the screen is locked or a system modal dialog box is shown, show only
   // the currently active user.
-  if (multiprofile_index_ &&
-      (session_state_delegate->IsUserSessionBlocked() ||
-       Shell::GetInstance()->IsSystemModalWindowOpen()))
+  if (user_index_ && (session_state_delegate->IsUserSessionBlocked() ||
+                      Shell::GetInstance()->IsSystemModalWindowOpen()))
     return nullptr;
 
   CHECK(user_ == nullptr);
@@ -105,10 +104,10 @@ views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
   int logged_in_users = session_state_delegate->NumberOfLoggedInUsers();
 
   // Do not show more UserView's then there are logged in users.
-  if (multiprofile_index_ >= logged_in_users)
+  if (user_index_ >= logged_in_users)
     return nullptr;
 
-  user_ = new tray::UserView(this, status, multiprofile_index_, false);
+  user_ = new tray::UserView(this, status, user_index_, false);
   return user_;
 }
 
@@ -142,7 +141,7 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
   // Only the active user is represented in the tray.
   if (!layout_view_)
     return;
-  if (multiprofile_index_ > 0)
+  if (user_index_ > 0)
     return;
   bool need_label = false;
   bool need_avatar = false;
@@ -259,7 +258,7 @@ void TrayUser::OnUserAddedToSession() {
   SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
   // Only create views for user items which are logged in.
-  if (multiprofile_index_ >= session_state_delegate->NumberOfLoggedInUsers())
+  if (user_index_ >= session_state_delegate->NumberOfLoggedInUsers())
     return;
 
   // Enforce a layout change that newly added items become visible.
@@ -274,11 +273,11 @@ void TrayUser::UpdateAvatarImage(user::LoginStatus status) {
   SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
   if (!avatar_ ||
-      multiprofile_index_ >= session_state_delegate->NumberOfLoggedInUsers())
+      user_index_ >= session_state_delegate->NumberOfLoggedInUsers())
     return;
 
   const user_manager::UserInfo* user_info =
-      session_state_delegate->GetUserInfo(multiprofile_index_);
+      session_state_delegate->GetUserInfo(user_index_);
   CHECK(user_info);
   avatar_->SetImage(user_info->GetImage(),
                     gfx::Size(kTrayAvatarSize, kTrayAvatarSize));

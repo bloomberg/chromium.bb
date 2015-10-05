@@ -57,8 +57,7 @@ class MediaDelegateImpl : public ash::MediaDelegate {
   void HandleMediaNextTrack() override {}
   void HandleMediaPlayPause() override {}
   void HandleMediaPrevTrack() override {}
-  ash::MediaCaptureState GetMediaCaptureState(
-      content::BrowserContext* context) override {
+  ash::MediaCaptureState GetMediaCaptureState(ash::UserIndex index) override {
     return ash::MEDIA_CAPTURE_NONE;
   }
 

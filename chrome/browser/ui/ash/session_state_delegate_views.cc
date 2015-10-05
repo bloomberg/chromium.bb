@@ -16,24 +16,6 @@ SessionStateDelegate::SessionStateDelegate() {
 SessionStateDelegate::~SessionStateDelegate() {
 }
 
-content::BrowserContext* SessionStateDelegate::GetBrowserContextByIndex(
-    ash::MultiProfileIndex index) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-content::BrowserContext* SessionStateDelegate::GetBrowserContextForWindow(
-    aura::Window* window) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-content::BrowserContext*
-SessionStateDelegate::GetUserPresentingBrowserContextForWindow(
-    aura::Window* window) {
-  return NULL;
-}
-
 int SessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
   return 3;
 }
@@ -74,12 +56,7 @@ ash::SessionStateDelegate::SessionState SessionStateDelegate::GetSessionState()
 }
 
 const user_manager::UserInfo* SessionStateDelegate::GetUserInfo(
-    ash::MultiProfileIndex index) const {
-  return GetUserInfo(static_cast<content::BrowserContext*>(NULL));
-}
-
-const user_manager::UserInfo* SessionStateDelegate::GetUserInfo(
-    content::BrowserContext* context) const {
+    ash::UserIndex index) const {
   static const user_manager::UserInfo* kUserInfo =
       new user_manager::EmptyUserInfo();
   return kUserInfo;
@@ -87,6 +64,11 @@ const user_manager::UserInfo* SessionStateDelegate::GetUserInfo(
 
 bool SessionStateDelegate::ShouldShowAvatar(aura::Window* window) const {
   return false;
+}
+
+gfx::ImageSkia SessionStateDelegate::GetAvatarImageForWindow(
+    aura::Window* window) const {
+  return gfx::ImageSkia();
 }
 
 void SessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
