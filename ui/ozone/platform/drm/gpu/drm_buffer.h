@@ -35,6 +35,7 @@ class OZONE_EXPORT DrmBuffer : public ScanoutBuffer {
   uint32_t GetFramebufferPixelFormat() const override;
   uint32_t GetHandle() const override;
   gfx::Size GetSize() const override;
+  bool RequiresGlFinish() const override;
 
  protected:
   ~DrmBuffer() override;

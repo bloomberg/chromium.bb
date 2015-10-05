@@ -243,11 +243,13 @@ class DrmDevice::IOWatcher
   DISALLOW_COPY_AND_ASSIGN(IOWatcher);
 };
 
-DrmDevice::DrmDevice(const base::FilePath& device_path, base::File file)
+DrmDevice::DrmDevice(const base::FilePath& device_path,
+                     base::File file,
+                     bool is_primary_device)
     : device_path_(device_path),
       file_(file.Pass()),
-      page_flip_manager_(new PageFlipManager()) {
-}
+      page_flip_manager_(new PageFlipManager()),
+      is_primary_device_(is_primary_device) {}
 
 DrmDevice::~DrmDevice() {
   if (watcher_)

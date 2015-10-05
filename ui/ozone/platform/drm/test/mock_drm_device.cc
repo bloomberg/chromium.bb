@@ -46,7 +46,7 @@ class MockHardwareDisplayPlaneManager
 }  // namespace
 
 MockDrmDevice::MockDrmDevice()
-    : DrmDevice(base::FilePath(), base::File()),
+    : DrmDevice(base::FilePath(), base::File(), true /* is_primary_device */),
       get_crtc_call_count_(0),
       set_crtc_call_count_(0),
       restore_crtc_call_count_(0),
@@ -68,7 +68,7 @@ MockDrmDevice::MockDrmDevice()
 MockDrmDevice::MockDrmDevice(bool use_sync_flips,
                              std::vector<uint32_t> crtcs,
                              size_t planes_per_crtc)
-    : DrmDevice(base::FilePath(), base::File()),
+    : DrmDevice(base::FilePath(), base::File(), true /* is_primary_device */),
       get_crtc_call_count_(0),
       set_crtc_call_count_(0),
       restore_crtc_call_count_(0),

@@ -21,7 +21,8 @@ class DrmDeviceGenerator {
   // the DRM device.
   virtual scoped_refptr<DrmDevice> CreateDevice(
       const base::FilePath& device_path,
-      base::File file);
+      base::File file,
+      bool is_primary_device);
 
  public:
   DISALLOW_COPY_AND_ASSIGN(DrmDeviceGenerator);

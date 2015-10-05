@@ -37,15 +37,18 @@ void GbmSurfaceFactory::InitializeGpu(DrmDeviceManager* drm_device_manager,
 
 void GbmSurfaceFactory::RegisterSurface(gfx::AcceleratedWidget widget,
                                         GbmSurfaceless* surface) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   widget_to_surface_map_.insert(std::make_pair(widget, surface));
 }
 
 void GbmSurfaceFactory::UnregisterSurface(gfx::AcceleratedWidget widget) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   widget_to_surface_map_.erase(widget);
 }
 
 GbmSurfaceless* GbmSurfaceFactory::GetSurface(
     gfx::AcceleratedWidget widget) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   auto it = widget_to_surface_map_.find(widget);
   DCHECK(it != widget_to_surface_map_.end());
   return it->second;
@@ -102,8 +105,8 @@ scoped_ptr<SurfaceOzoneEGL>
 GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return make_scoped_ptr(new GbmSurfaceless(screen_manager_->GetWindow(widget),
-                                            drm_device_manager_, this));
+  return make_scoped_ptr(
+      new GbmSurfaceless(screen_manager_->GetWindow(widget), this));
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(

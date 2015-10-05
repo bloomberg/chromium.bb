@@ -16,7 +16,6 @@ class Size;
 
 namespace ui {
 
-class DrmDeviceManager;
 class DrmWindow;
 class GbmSurfaceFactory;
 
@@ -27,7 +26,6 @@ class GbmSurfaceFactory;
 class GbmSurfaceless : public SurfaceOzoneEGL {
  public:
   GbmSurfaceless(DrmWindow* window,
-                 DrmDeviceManager* drm_device_manager,
                  GbmSurfaceFactory* surface_manager);
   ~GbmSurfaceless() override;
 
@@ -43,7 +41,6 @@ class GbmSurfaceless : public SurfaceOzoneEGL {
 
  protected:
   DrmWindow* window_;
-  DrmDeviceManager* drm_device_manager_;
   GbmSurfaceFactory* surface_manager_;
   std::vector<OverlayPlane> planes_;
 

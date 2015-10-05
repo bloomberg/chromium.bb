@@ -49,7 +49,7 @@ bool DrmDeviceManager::AddDrmDevice(const base::FilePath& path,
   }
 
   scoped_refptr<DrmDevice> device =
-      drm_device_generator_->CreateDevice(path, file.Pass());
+      drm_device_generator_->CreateDevice(path, file.Pass(), !primary_device_);
   if (!device) {
     LOG(ERROR) << "Could not initialize DRM device for " << path.value();
     return false;

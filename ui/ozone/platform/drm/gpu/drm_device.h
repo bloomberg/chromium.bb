@@ -44,7 +44,11 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
                               unsigned int /* seconds */,
                               unsigned int /* useconds */)> PageFlipCallback;
 
-  DrmDevice(const base::FilePath& device_path, base::File file);
+  DrmDevice(const base::FilePath& device_path,
+            base::File file,
+            bool is_primary_device);
+
+  bool is_primary_device() const { return is_primary_device_; }
 
   // Open device.
   virtual bool Initialize(bool use_atomic);
@@ -199,6 +203,8 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   scoped_refptr<IOWatcher> watcher_;
 
   scoped_refptr<PageFlipManager> page_flip_manager_;
+
+  bool is_primary_device_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDevice);
 };

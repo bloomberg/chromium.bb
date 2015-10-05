@@ -13,7 +13,9 @@ namespace ui {
 
 class GbmDevice : public DrmDevice {
  public:
-  GbmDevice(const base::FilePath& device_path, base::File file);
+  GbmDevice(const base::FilePath& device_path,
+            base::File file,
+            bool is_primary_device);
 
   gbm_device* device() const { return device_; }
 

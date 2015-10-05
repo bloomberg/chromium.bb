@@ -64,4 +64,8 @@ uint32_t GbmBufferBase::GetFramebufferPixelFormat() const {
   return fb_pixel_format_;
 }
 
+bool GbmBufferBase::RequiresGlFinish() const {
+  return !drm_->is_primary_device();
+}
+
 }  // namespace ui

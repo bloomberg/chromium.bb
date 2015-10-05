@@ -32,6 +32,8 @@ class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
   // Size of the buffer.
   virtual gfx::Size GetSize() const = 0;
 
+  virtual bool RequiresGlFinish() const = 0;
+
  protected:
   virtual ~ScanoutBuffer() {}
 

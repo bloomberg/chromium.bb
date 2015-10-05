@@ -16,8 +16,10 @@ DrmDeviceGenerator::~DrmDeviceGenerator() {
 
 scoped_refptr<DrmDevice> DrmDeviceGenerator::CreateDevice(
     const base::FilePath& device_path,
-    base::File file) {
-  scoped_refptr<DrmDevice> drm = new DrmDevice(device_path, file.Pass());
+    base::File file,
+    bool is_primary_device) {
+  scoped_refptr<DrmDevice> drm =
+      new DrmDevice(device_path, file.Pass(), is_primary_device);
   if (drm->Initialize(false))
     return drm;
 

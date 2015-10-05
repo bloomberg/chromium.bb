@@ -96,8 +96,10 @@ class GbmDeviceGenerator : public DrmDeviceGenerator {
 
   // DrmDeviceGenerator:
   scoped_refptr<DrmDevice> CreateDevice(const base::FilePath& path,
-                                        base::File file) override {
-    scoped_refptr<DrmDevice> drm = new GbmDevice(path, file.Pass());
+                                        base::File file,
+                                        bool is_primary_device) override {
+    scoped_refptr<DrmDevice> drm =
+        new GbmDevice(path, file.Pass(), is_primary_device);
     if (drm->Initialize(use_atomic_))
       return drm;
 

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/thread_task_runner_handle.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
-#include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_vsync_provider.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
@@ -27,10 +26,8 @@ void PostedSwapResult(const SwapCompletionCallback& callback,
 }  // namespace
 
 GbmSurfaceless::GbmSurfaceless(DrmWindow* window,
-                               DrmDeviceManager* drm_device_manager,
                                GbmSurfaceFactory* surface_manager)
     : window_(window),
-      drm_device_manager_(drm_device_manager),
       surface_manager_(surface_manager) {
   surface_manager_->RegisterSurface(window_->GetAcceleratedWidget(), this);
 }
@@ -71,19 +68,7 @@ scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
 }
 
 bool GbmSurfaceless::IsUniversalDisplayLinkDevice() {
-  if (!drm_device_manager_)
-    return false;
-  scoped_refptr<DrmDevice> drm_primary =
-      drm_device_manager_->GetDrmDevice(gfx::kNullAcceleratedWidget);
-  DCHECK(drm_primary);
-
-  HardwareDisplayController* controller = window_->GetController();
-  if (!controller)
-    return false;
-  scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
-  DCHECK(drm);
-
-  return drm_primary != drm;
+  return planes_.empty() ? false : planes_[0].buffer->RequiresGlFinish();
 }
 
 }  // namespace ui

@@ -40,6 +40,7 @@ class MockScanoutBuffer : public ui::ScanoutBuffer {
   uint32_t GetFramebufferPixelFormat() const override {
     return DRM_FORMAT_XRGB8888;
   }
+  bool RequiresGlFinish() const override { return false; }
 
  private:
   ~MockScanoutBuffer() override {}

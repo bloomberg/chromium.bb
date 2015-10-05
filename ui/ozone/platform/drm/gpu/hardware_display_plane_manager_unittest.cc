@@ -39,6 +39,7 @@ class FakeScanoutBuffer : public ui::ScanoutBuffer {
   gfx::Size GetSize() const override { return gfx::Size(1, 1); }
   void SetFramebufferPixelFormat(uint32_t format) { format_ = format; }
   uint32_t GetFramebufferPixelFormat() const override { return format_; }
+  bool RequiresGlFinish() const override { return false; }
 
  protected:
   ~FakeScanoutBuffer() override {}
