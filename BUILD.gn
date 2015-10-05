@@ -228,6 +228,7 @@ group("both_gn_and_gyp") {
       "//build/android/rezip",
       "//third_party/errorprone:chromium_errorprone",
       "//tools/android:android_tools",
+      "//tools/android/heap_profiler:heap_profiler_unittests",
       "//tools/imagediff($host_toolchain)",
 
       # TODO(GYP): Remove these when the components_unittests work.
@@ -734,6 +735,7 @@ group("gn_mojo_targets") {
       "//media/mojo/services:cdm_service",
       "//media/mojo:tests",
       "//mojo:tests",
+
       # TODO(use-new-edk):
       #"//mojo/edk/js/test:js_integration_tests",
       #"//mojo/edk/js/tests:js_to_cpp_bindings_python",

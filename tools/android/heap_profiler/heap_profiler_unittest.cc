@@ -6,7 +6,6 @@
 #include <string.h>
 #include <map>
 
-#include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/android/heap_profiler/heap_profiler.h"
 
@@ -74,7 +73,7 @@ class HeapProfilerTest : public testing::Test {
       if (st->alloc_bytes == 0)
         continue;
       ++stack_traces_seen;
-      EXPECT_EQ(1, stacktrace_bytes_by_alloc.count(st));
+      EXPECT_EQ(1u, stacktrace_bytes_by_alloc.count(st));
       EXPECT_EQ(stacktrace_bytes_by_alloc[st], st->alloc_bytes);
     }
 
@@ -90,9 +89,9 @@ TEST_F(HeapProfilerTest, SimpleAlloc) {
   heap_profiler_alloc((void*)0x1000, 1024, st1.frames, st1.depth, 0);
   heap_profiler_alloc((void*)0x2000, 2048, st1.frames, st1.depth, 0);
 
-  EXPECT_EQ(2, stats_.num_allocs);
-  EXPECT_EQ(1, stats_.num_stack_traces);
-  EXPECT_EQ(1024 + 2048, stats_.total_alloc_bytes);
+  EXPECT_EQ(2u, stats_.num_allocs);
+  EXPECT_EQ(1u, stats_.num_stack_traces);
+  EXPECT_EQ(1024u + 2048, stats_.total_alloc_bytes);
   ExpectAlloc(0x1000, 0x13ff, st1, 0);
   ExpectAlloc(0x2000, 0x27ff, st1, 0);
 }
@@ -104,9 +103,9 @@ TEST_F(HeapProfilerTest, AllocMultipleStacks) {
   heap_profiler_alloc((void*)0x2000, 2048, st2.frames, st2.depth, 0);
   heap_profiler_alloc((void*)0x3000, 32, st1.frames, st1.depth, 0);
 
-  EXPECT_EQ(3, stats_.num_allocs);
-  EXPECT_EQ(2, stats_.num_stack_traces);
-  EXPECT_EQ(1024 + 2048 + 32, stats_.total_alloc_bytes);
+  EXPECT_EQ(3u, stats_.num_allocs);
+  EXPECT_EQ(2u, stats_.num_stack_traces);
+  EXPECT_EQ(1024u + 2048 + 32, stats_.total_alloc_bytes);
   ExpectAlloc(0x1000, 0x13ff, st1, 0);
   ExpectAlloc(0x2000, 0x27ff, st2, 0);
   ExpectAlloc(0x3000, 0x301f, st1, 0);
@@ -117,9 +116,9 @@ TEST_F(HeapProfilerTest, SimpleAllocAndFree) {
   heap_profiler_alloc((void*)0x1000, 1024, st1.frames, st1.depth, 0);
   heap_profiler_free((void*)0x1000, 1024, NULL);
 
-  EXPECT_EQ(0, stats_.num_allocs);
-  EXPECT_EQ(0, stats_.num_stack_traces);
-  EXPECT_EQ(0, stats_.total_alloc_bytes);
+  EXPECT_EQ(0u, stats_.num_allocs);
+  EXPECT_EQ(0u, stats_.num_stack_traces);
+  EXPECT_EQ(0u, stats_.total_alloc_bytes);
 }
 
 TEST_F(HeapProfilerTest, Realloc) {
@@ -139,9 +138,9 @@ TEST_F(HeapProfilerTest, AllocAndFreeMultipleStacks) {
   heap_profiler_free((void*)0x1000, 1024, NULL);
   heap_profiler_free((void*)0x3000, 32, NULL);
 
-  EXPECT_EQ(2, stats_.num_allocs);
-  EXPECT_EQ(2, stats_.num_stack_traces);
-  EXPECT_EQ(2048 + 64, stats_.total_alloc_bytes);
+  EXPECT_EQ(2u, stats_.num_allocs);
+  EXPECT_EQ(2u, stats_.num_stack_traces);
+  EXPECT_EQ(2048u + 64, stats_.total_alloc_bytes);
   ExpectAlloc(0x2000, 0x27ff, st1, 0);
   ExpectAlloc(0x4000, 0x403f, st2, 0);
 }
@@ -159,9 +158,9 @@ TEST_F(HeapProfilerTest, AllocAndFreeAll) {
   heap_profiler_free((void*)0x3000, 32, NULL);
   heap_profiler_free((void*)0x4000, 64, NULL);
 
-  EXPECT_EQ(0, stats_.num_allocs);
-  EXPECT_EQ(0, stats_.num_stack_traces);
-  EXPECT_EQ(0, stats_.total_alloc_bytes);
+  EXPECT_EQ(0u, stats_.num_allocs);
+  EXPECT_EQ(0u, stats_.num_stack_traces);
+  EXPECT_EQ(0u, stats_.total_alloc_bytes);
 }
 
 TEST_F(HeapProfilerTest, AllocAndFreeWithZeroSize) {
@@ -172,9 +171,9 @@ TEST_F(HeapProfilerTest, AllocAndFreeWithZeroSize) {
 
   heap_profiler_free((void*)0x1000, 0, NULL);
 
-  EXPECT_EQ(1, stats_.num_allocs);
-  EXPECT_EQ(1, stats_.num_stack_traces);
-  EXPECT_EQ(2048, stats_.total_alloc_bytes);
+  EXPECT_EQ(1u, stats_.num_allocs);
+  EXPECT_EQ(1u, stats_.num_stack_traces);
+  EXPECT_EQ(2048u, stats_.total_alloc_bytes);
 }
 
 TEST_F(HeapProfilerTest, AllocAndFreeContiguous) {
@@ -185,9 +184,9 @@ TEST_F(HeapProfilerTest, AllocAndFreeContiguous) {
 
   heap_profiler_free((void*)0x1000, 8192, NULL);
 
-  EXPECT_EQ(0, stats_.num_allocs);
-  EXPECT_EQ(0, stats_.num_stack_traces);
-  EXPECT_EQ(0, stats_.total_alloc_bytes);
+  EXPECT_EQ(0u, stats_.num_allocs);
+  EXPECT_EQ(0u, stats_.num_stack_traces);
+  EXPECT_EQ(0u, stats_.total_alloc_bytes);
 }
 
 TEST_F(HeapProfilerTest, SparseAllocsOneLargeOuterFree) {
@@ -200,9 +199,9 @@ TEST_F(HeapProfilerTest, SparseAllocsOneLargeOuterFree) {
   heap_profiler_alloc((void*)0x9000, 4096, st2.frames, st2.depth, 0);
 
   heap_profiler_free((void*)0x0800, 8192, NULL);
-  EXPECT_EQ(1, stats_.num_allocs);
-  EXPECT_EQ(1, stats_.num_stack_traces);
-  EXPECT_EQ(4096, stats_.total_alloc_bytes);
+  EXPECT_EQ(1u, stats_.num_allocs);
+  EXPECT_EQ(1u, stats_.num_stack_traces);
+  EXPECT_EQ(4096u, stats_.total_alloc_bytes);
   ExpectAlloc(0x9000, 0x9fff, st2, 0);
 }
 
@@ -223,9 +222,9 @@ TEST_F(HeapProfilerTest, SparseAllocsOneLargePartiallyOverlappingFree) {
   heap_profiler_alloc((void*)0x3000, 1024, st3.frames, st3.depth, 0);
 
   heap_profiler_free((void*)0x2040, 4096 - 64 - 64, NULL);
-  EXPECT_EQ(4, stats_.num_allocs);
-  EXPECT_EQ(3, stats_.num_stack_traces);
-  EXPECT_EQ(1024 + 64 + 64 + 1024, stats_.total_alloc_bytes);
+  EXPECT_EQ(4u, stats_.num_allocs);
+  EXPECT_EQ(3u, stats_.num_stack_traces);
+  EXPECT_EQ(1024u + 64 + 64 + 1024, stats_.total_alloc_bytes);
 
   ExpectAlloc(0x1000, 0x13ff, st1, 0);
   ExpectAlloc(0x2000, 0x203f, st2, 0);
@@ -241,25 +240,25 @@ TEST_F(HeapProfilerTest, AllocAndFreeScattered) {
   heap_profiler_alloc((void*)0x4000, 4096, st1.frames, st1.depth, 0);
 
   heap_profiler_free((void*)0x800, 4096, NULL);
-  EXPECT_EQ(4, stats_.num_allocs);
-  EXPECT_EQ(2048 + 4096 + 4096 + 4096, stats_.total_alloc_bytes);
+  EXPECT_EQ(4u, stats_.num_allocs);
+  EXPECT_EQ(2048u + 4096 + 4096 + 4096, stats_.total_alloc_bytes);
 
   heap_profiler_free((void*)0x1800, 4096, NULL);
-  EXPECT_EQ(3, stats_.num_allocs);
-  EXPECT_EQ(2048 + 4096 + 4096, stats_.total_alloc_bytes);
+  EXPECT_EQ(3u, stats_.num_allocs);
+  EXPECT_EQ(2048u + 4096 + 4096, stats_.total_alloc_bytes);
 
   heap_profiler_free((void*)0x2800, 4096, NULL);
-  EXPECT_EQ(2, stats_.num_allocs);
-  EXPECT_EQ(2048 + 4096, stats_.total_alloc_bytes);
+  EXPECT_EQ(2u, stats_.num_allocs);
+  EXPECT_EQ(2048u + 4096, stats_.total_alloc_bytes);
 
   heap_profiler_free((void*)0x3800, 4096, NULL);
-  EXPECT_EQ(1, stats_.num_allocs);
-  EXPECT_EQ(2048, stats_.total_alloc_bytes);
+  EXPECT_EQ(1u, stats_.num_allocs);
+  EXPECT_EQ(2048u, stats_.total_alloc_bytes);
 
   heap_profiler_free((void*)0x4800, 4096, NULL);
-  EXPECT_EQ(0, stats_.num_allocs);
-  EXPECT_EQ(0, stats_.num_stack_traces);
-  EXPECT_EQ(0, stats_.total_alloc_bytes);
+  EXPECT_EQ(0u, stats_.num_allocs);
+  EXPECT_EQ(0u, stats_.num_stack_traces);
+  EXPECT_EQ(0u, stats_.total_alloc_bytes);
 }
 
 TEST_F(HeapProfilerTest, AllocAndOverFreeContiguous) {
@@ -270,9 +269,9 @@ TEST_F(HeapProfilerTest, AllocAndOverFreeContiguous) {
 
   heap_profiler_free((void*)0, 16834, NULL);
 
-  EXPECT_EQ(0, stats_.num_allocs);
-  EXPECT_EQ(0, stats_.num_stack_traces);
-  EXPECT_EQ(0, stats_.total_alloc_bytes);
+  EXPECT_EQ(0u, stats_.num_allocs);
+  EXPECT_EQ(0u, stats_.num_stack_traces);
+  EXPECT_EQ(0u, stats_.total_alloc_bytes);
 }
 
 TEST_F(HeapProfilerTest, AllocContiguousAndPunchHole) {
@@ -284,9 +283,9 @@ TEST_F(HeapProfilerTest, AllocContiguousAndPunchHole) {
   // Punch a 4k hole in the middle of the two contiguous 4k allocs.
   heap_profiler_free((void*)0x1800, 4096, NULL);
 
-  EXPECT_EQ(2, stats_.num_allocs);
-  EXPECT_EQ(2, stats_.num_stack_traces);
-  EXPECT_EQ(4096, stats_.total_alloc_bytes);
+  EXPECT_EQ(2u, stats_.num_allocs);
+  EXPECT_EQ(2u, stats_.num_stack_traces);
+  EXPECT_EQ(4096u, stats_.total_alloc_bytes);
 }
 
 TEST_F(HeapProfilerTest, AllocAndPartialFree) {
@@ -305,9 +304,9 @@ TEST_F(HeapProfilerTest, AllocAndPartialFree) {
   heap_profiler_free((void*)0x4000, 512, NULL);  // Free up the 4th alloc...
   heap_profiler_free((void*)0x4200, 512, NULL);  // ...but do it in two halves.
 
-  EXPECT_EQ(4, stats_.num_allocs);  // 1 + 2 + two sides around the hole 3.
-  EXPECT_EQ(3, stats_.num_stack_traces);  // st4 should be gone.
-  EXPECT_EQ(896 + 896 + 512, stats_.total_alloc_bytes);
+  EXPECT_EQ(4u, stats_.num_allocs);  // 1 + 2 + two sides around the hole 3.
+  EXPECT_EQ(3u, stats_.num_stack_traces);  // st4 should be gone.
+  EXPECT_EQ(896u + 896 + 512, stats_.total_alloc_bytes);
 }
 
 TEST_F(HeapProfilerTest, RandomIndividualAllocAndFrees) {
@@ -364,21 +363,21 @@ TEST_F(HeapProfilerTest, UnwindStackTooLargeShouldSaturate) {
 
 TEST_F(HeapProfilerTest, NoUnwindShouldNotCrashButNoop) {
   heap_profiler_alloc((void*)0x1000, 1024, NULL, 0, 0);
-  EXPECT_EQ(0, stats_.num_allocs);
-  EXPECT_EQ(0, stats_.num_stack_traces);
-  EXPECT_EQ(0, stats_.total_alloc_bytes);
+  EXPECT_EQ(0u, stats_.num_allocs);
+  EXPECT_EQ(0u, stats_.num_stack_traces);
+  EXPECT_EQ(0u, stats_.total_alloc_bytes);
 }
 
 TEST_F(HeapProfilerTest, FreeNonExisting) {
   StackTrace st1 = GenStackTrace(5, 0x0);
   heap_profiler_free((void*)0x1000, 1024, NULL);
   heap_profiler_free((void*)0x1400, 1024, NULL);
-  EXPECT_EQ(0, stats_.num_allocs);
-  EXPECT_EQ(0, stats_.num_stack_traces);
-  EXPECT_EQ(0, stats_.total_alloc_bytes);
+  EXPECT_EQ(0u, stats_.num_allocs);
+  EXPECT_EQ(0u, stats_.num_stack_traces);
+  EXPECT_EQ(0u, stats_.total_alloc_bytes);
   heap_profiler_alloc((void*)0x1000, 1024, st1.frames, st1.depth, 0);
-  EXPECT_EQ(1, stats_.num_allocs);
-  EXPECT_EQ(1024, stats_.total_alloc_bytes);
+  EXPECT_EQ(1u, stats_.num_allocs);
+  EXPECT_EQ(1024u, stats_.total_alloc_bytes);
 }
 
 TEST_F(HeapProfilerTest, FlagsConsistency) {
@@ -395,11 +394,11 @@ TEST_F(HeapProfilerTest, FlagsConsistency) {
 
   ExpectAlloc(0x1000, 0x17ff, st1, 42);
   heap_profiler_free((void*)0x1000, 2048, &flags);
-  EXPECT_EQ(42, flags);
+  EXPECT_EQ(42u, flags);
 
   ExpectAlloc(0x2800, 0x2fff, st1, 142);
   heap_profiler_free((void*)0x2800, 2048, &flags);
-  EXPECT_EQ(142, flags);
+  EXPECT_EQ(142u, flags);
 }
 
 TEST_F(HeapProfilerTest, BeConsistentOnOOM) {
@@ -419,9 +418,9 @@ TEST_F(HeapProfilerTest, BeConsistentOnOOM) {
   for (uintptr_t i = 0; i < NUM_ALLOCS; ++i)
     heap_profiler_free((void*)(i * 32), 32, NULL);
 
-  EXPECT_EQ(0, stats_.num_allocs);
-  EXPECT_EQ(0, stats_.total_alloc_bytes);
-  EXPECT_EQ(0, stats_.num_stack_traces);
+  EXPECT_EQ(0u, stats_.num_allocs);
+  EXPECT_EQ(0u, stats_.total_alloc_bytes);
+  EXPECT_EQ(0u, stats_.num_stack_traces);
 }
 
 #ifdef __LP64__
@@ -436,22 +435,22 @@ TEST_F(HeapProfilerTest, Test64Bit) {
       (void*)0xfffffffffffff000L, 4096, st3.frames, st3.depth, 0);
   EXPECT_EQ(3, stats_.num_allocs);
   EXPECT_EQ(3, stats_.num_stack_traces);
-  EXPECT_EQ(4096 + 4096 + 4096, stats_.total_alloc_bytes);
+  EXPECT_EQ(4096u + 4096 + 4096, stats_.total_alloc_bytes);
 
   heap_profiler_free((void*)0x1000, 4096, NULL);
-  EXPECT_EQ(2, stats_.num_allocs);
-  EXPECT_EQ(2, stats_.num_stack_traces);
-  EXPECT_EQ(4096 + 4096, stats_.total_alloc_bytes);
+  EXPECT_EQ(2u, stats_.num_allocs);
+  EXPECT_EQ(2u, stats_.num_stack_traces);
+  EXPECT_EQ(4096u + 4096, stats_.total_alloc_bytes);
 
   heap_profiler_free((void*)0x7ffffffffffff000L, 4096, NULL);
-  EXPECT_EQ(1, stats_.num_allocs);
-  EXPECT_EQ(1, stats_.num_stack_traces);
-  EXPECT_EQ(4096, stats_.total_alloc_bytes);
+  EXPECT_EQ(1u, stats_.num_allocs);
+  EXPECT_EQ(1u, stats_.num_stack_traces);
+  EXPECT_EQ(4096u, stats_.total_alloc_bytes);
 
   heap_profiler_free((void*)0xfffffffffffff000L, 4096, NULL);
-  EXPECT_EQ(0, stats_.num_allocs);
-  EXPECT_EQ(0, stats_.num_stack_traces);
-  EXPECT_EQ(0, stats_.total_alloc_bytes);
+  EXPECT_EQ(0u, stats_.num_allocs);
+  EXPECT_EQ(0u, stats_.num_stack_traces);
+  EXPECT_EQ(0u, stats_.total_alloc_bytes);
 }
 #endif
 

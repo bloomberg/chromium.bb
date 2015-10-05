@@ -216,7 +216,7 @@ bool GetPagesForMemoryMap(int pagemap_fd,
   for (uint64 addr = memory_map.start_address, page_index = 0;
        addr < memory_map.end_address;
        addr += kPageSize, ++page_index) {
-    DCHECK_EQ(0, addr % kPageSize);
+    DCHECK_EQ(0u, addr % kPageSize);
     PageMapEntry page_map_entry = {};
     static_assert(sizeof(PageMapEntry) == sizeof(uint64), "unexpected size");
     ssize_t bytes = read(pagemap_fd, &page_map_entry, sizeof(page_map_entry));

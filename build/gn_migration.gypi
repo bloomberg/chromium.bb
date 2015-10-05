@@ -290,6 +290,7 @@
             '../breakpad/breakpad.gyp:dump_syms',
             '../build/android/rezip.gyp:rezip_apk_jar',
             #"//clank" TODO(GYP) - conditional somehow?
+            '../tools/android/heap_profiler/heap_profiler_unittests_apk',
             '../tools/imagediff/image_diff.gyp:image_diff#host',
             '../tools/telemetry/telemetry.gyp:bitmaptools#host',
 

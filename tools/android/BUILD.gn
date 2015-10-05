@@ -5,10 +5,36 @@
 # Intermediate target grouping the android tools needed to run native
 # unittests and instrumentation test apks.
 #
-# GYP: //android/tools/android_tools.gyp:android_tools
+# GYP: //tools/android/android_tools.gyp:android_tools
 group("android_tools") {
   deps = [
+    "//tools/android/adb_reboot",
+    "//tools/android/file_poller",
     "//tools/android/forwarder2",
     "//tools/android/md5sum",
+    "//tools/android/purge_ashmem",
+    "//tools/telemetry:bitmaptools($host_toolchain)",
+  ]
+}
+
+# GYP: //tools/android/android_tools.gyp:heap_profiler
+group("heap_profiler") {
+  deps = [
+    "//tools/android/heap_profiler:heap_dump",
+    "//tools/android/heap_profiler:heap_profiler",
+  ]
+}
+
+# GYP: //tools/android/android_tools.gyp:memdump
+group("memdump") {
+  deps = [
+    "//tools/android/memdump",
+  ]
+}
+
+# GYP: //tools/android/android_tools.gyp:ps_ext
+group("ps_ext") {
+  deps = [
+    "//tools/android/ps_ext",
   ]
 }

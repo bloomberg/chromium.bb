@@ -21,6 +21,7 @@
       ],
     },
     {
+      # GN: //tools/android:heap_profiler
       'target_name': 'heap_profiler',
       'type': 'none',
       'dependencies': [
@@ -29,6 +30,7 @@
       ],
     },
     {
+      # GN: //tools/android:memdump
       'target_name': 'memdump',
       'type': 'none',
       'dependencies': [
@@ -43,6 +45,7 @@
       ],
     },
     {
+      # GN: //tools/android:ps_ext
       'target_name': 'ps_ext',
       'type': 'none',
       'dependencies': [
@@ -50,6 +53,7 @@
       ],
     },
     {
+      # GN: //tools/android:customtabs_benchmark
       'target_name': 'customtabs_benchmark',
       'type': 'none',
       'dependencies': [
