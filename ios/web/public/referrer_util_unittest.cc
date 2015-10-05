@@ -10,107 +10,199 @@
 
 namespace {
 
-const char* test_urls[] = {
+const char* const kTestUrls[] = {
     "",
-    "http://insecure.com/foo/bar.html",
-    "https://secure.net/trustworthy.html",
+    "http://user:password@foo.com/a/b/c.html",
+    "https://foo.com/d.html#fragment",
+    "http://user:password@bar.net/e/f.html#fragment",
+    "https://user:password@bar.net/g/h.html",
 };
 
-enum { Empty = 0, Insecure, Secure };
+}  // namespace
 
-TEST(ReferrerUtilTest, Sanitization) {
-  GURL unsanitized("http://user:password@foo.com/bar/baz.html#fragment");
-  GURL sanitized = web::ReferrerForHeader(unsanitized);
-  EXPECT_EQ("http://foo.com/bar/baz.html", sanitized.spec());
+namespace web {
+
+// Tests that no matter what the transition and policy, the result is always
+// stripped of things that should not be in a referrer (e.g., passwords).
+TEST(ReferrerUtilTest, ReferrerSanitization) {
+  for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
+    for (unsigned int dest = 0; dest < arraysize(kTestUrls); ++dest) {
+      for (unsigned int policy = 0; policy <= ReferrerPolicyLast; ++policy) {
+        Referrer referrer(GURL(kTestUrls[source]),
+                          static_cast<ReferrerPolicy>(policy));
+        std::string value =
+            ReferrerHeaderValueForNavigation(GURL(kTestUrls[dest]), referrer);
+
+        EXPECT_EQ(GURL(value).GetAsReferrer().spec(), value);
+      }
+    }
+  }
 }
 
+// Tests that the Always policy works as expected.
+TEST(ReferrerUtilTest, AlwaysPolicy) {
+  for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
+    for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
+      GURL source_url(kTestUrls[source]);
+      GURL dest_url(kTestUrls[dest]);
+      Referrer referrer(source_url, ReferrerPolicyAlways);
+      std::string value = ReferrerHeaderValueForNavigation(dest_url, referrer);
+
+      // Everything should have a full referrer.
+      EXPECT_EQ(source_url.GetAsReferrer().spec(), value);
+    }
+  }
+}
+
+// Tests that the Default policy works as expected, and matches
+// NoReferrerWhenDowngrade.
 TEST(ReferrerUtilTest, DefaultPolicy) {
-  // Default: all but secure->insecure should have a full referrer.
-  for (unsigned int source = Empty; source < arraysize(test_urls); ++source) {
-    for (unsigned int dest = Insecure; dest < arraysize(test_urls); ++dest) {
-      web::Referrer referrer(GURL(test_urls[source]),
-                             web::ReferrerPolicyDefault);
-      std::string value = web::ReferrerHeaderValueForNavigation(
-          GURL(test_urls[dest]), referrer);
-      if (source == Empty)
-        EXPECT_EQ("", value);
-      else if (source == Secure && dest == Insecure)
+  for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
+    for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
+      GURL source_url(kTestUrls[source]);
+      GURL dest_url(kTestUrls[dest]);
+      Referrer referrer(source_url, ReferrerPolicyDefault);
+      std::string value = ReferrerHeaderValueForNavigation(dest_url, referrer);
+
+      // All but secure->insecure should have a full referrer.
+      if (source_url.SchemeIsCryptographic() &&
+          !dest_url.SchemeIsCryptographic())
         EXPECT_EQ("", value);
       else
-        EXPECT_EQ(test_urls[source], value);
+        EXPECT_EQ(source_url.GetAsReferrer().spec(), value);
 
-      net::URLRequest::ReferrerPolicy policy =
-          web::PolicyForNavigation(GURL(test_urls[dest]), referrer);
-      EXPECT_EQ(
-          net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-          policy);
+      // Default should match NoReferrerWhenDowngrade in all cases.
+      referrer.policy = ReferrerPolicyNoReferrerWhenDowngrade;
+      EXPECT_EQ(value, ReferrerHeaderValueForNavigation(dest_url, referrer));
     }
   }
 }
 
+// Tests that the Never policy works as expected.
 TEST(ReferrerUtilTest, NeverPolicy) {
-  // Never: always empty string.
-  for (unsigned int source = Empty; source < arraysize(test_urls); ++source) {
-    for (unsigned int dest = Insecure; dest < arraysize(test_urls); ++dest) {
-      web::Referrer referrer(GURL(test_urls[source]),
-                             web::ReferrerPolicyNever);
-      std::string value = web::ReferrerHeaderValueForNavigation(
-          GURL(test_urls[dest]), referrer);
+  for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
+    for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
+      GURL source_url(kTestUrls[source]);
+      GURL dest_url(kTestUrls[dest]);
+      Referrer referrer(source_url, ReferrerPolicyNever);
+      std::string value = ReferrerHeaderValueForNavigation(dest_url, referrer);
+
+      // No referrer in any navigation.
       EXPECT_EQ("", value);
-
-      net::URLRequest::ReferrerPolicy policy =
-          web::PolicyForNavigation(GURL(test_urls[dest]), referrer);
-      EXPECT_EQ(
-          net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-          policy);
     }
   }
 }
 
-TEST(ReferrerUtilTest, AlwaysPolicy) {
-  // Always: always the full referrer.
-  for (unsigned int source = Empty; source < arraysize(test_urls); ++source) {
-    for (unsigned int dest = Insecure; dest < arraysize(test_urls); ++dest) {
-      web::Referrer referrer(GURL(test_urls[source]),
-                             web::ReferrerPolicyAlways);
-      std::string value = web::ReferrerHeaderValueForNavigation(
-          GURL(test_urls[dest]), referrer);
-      EXPECT_EQ(test_urls[source], value);
-
-      net::URLRequest::ReferrerPolicy policy =
-          web::PolicyForNavigation(GURL(test_urls[dest]), referrer);
-      if (source == Empty) {
-        EXPECT_EQ(net::URLRequest::
-                      CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-                  policy);
-      } else {
-        EXPECT_EQ(net::URLRequest::NEVER_CLEAR_REFERRER, policy);
-      }
-    }
-  }
-}
-
+// Tests that the Origin policy works as expected.
 TEST(ReferrerUtilTest, OriginPolicy) {
-  // Always: always just the origin.
-  for (unsigned int source = Empty; source < arraysize(test_urls); ++source) {
-    for (unsigned int dest = Insecure; dest < arraysize(test_urls); ++dest) {
-      web::Referrer referrer(GURL(test_urls[source]),
-                             web::ReferrerPolicyOrigin);
-      std::string value = web::ReferrerHeaderValueForNavigation(
-          GURL(test_urls[dest]), referrer);
-      EXPECT_EQ(GURL(test_urls[source]).GetOrigin().spec(), value);
+  for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
+    for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
+      GURL source_url(kTestUrls[source]);
+      GURL dest_url(kTestUrls[dest]);
+      Referrer referrer(source_url, ReferrerPolicyOrigin);
+      std::string value = ReferrerHeaderValueForNavigation(dest_url, referrer);
 
-      net::URLRequest::ReferrerPolicy policy =
-          web::PolicyForNavigation(GURL(test_urls[dest]), referrer);
-      if (source == Empty) {
-        EXPECT_EQ(net::URLRequest::
-                      CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-                  policy);
-      } else {
-        EXPECT_EQ(net::URLRequest::NEVER_CLEAR_REFERRER, policy);
-      }
+      // Origin should be sent in all cases, even secure->insecure.
+      EXPECT_EQ(source_url.GetOrigin().spec(), value);
     }
   }
 }
 
-}  // namespace
+// Tests that the OriginWhenCrossOrigin policy works as expected.
+TEST(ReferrerUtilTest, OriginWhenCrossOriginPolicy) {
+  for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
+    for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
+      GURL source_url(kTestUrls[source]);
+      GURL dest_url(kTestUrls[dest]);
+      Referrer referrer(source_url, ReferrerPolicyOriginWhenCrossOrigin);
+      std::string value = ReferrerHeaderValueForNavigation(dest_url, referrer);
+
+      // Full URL for the same origin, and origin for all other cases (even
+      // secure->insecure).
+      if (source_url.GetOrigin() == dest_url.GetOrigin())
+        EXPECT_EQ(source_url.GetAsReferrer().spec(), value);
+      else
+        EXPECT_EQ(source_url.GetOrigin().spec(), value);
+    }
+  }
+}
+
+// Tests that PolicyForNavigation gives the right values.
+TEST(ReferrerUtilTest, PolicyForNavigation) {
+  // The request and destination URLs are unused in the current implementation,
+  // so use a dummy value.
+  GURL dummy_url;
+  for (unsigned int policy = 0; policy <= ReferrerPolicyLast; ++policy) {
+    Referrer referrer(dummy_url, static_cast<ReferrerPolicy>(policy));
+    net::URLRequest::ReferrerPolicy net_request_policy =
+        PolicyForNavigation(dummy_url, referrer);
+    // The test here is deliberately backward from the way the test would
+    // intuitively work so that it's structured differently from the code it's
+    // testing, and thus less likely to have a copy/paste bug that passes
+    // incorrect mappings.
+    switch (net_request_policy) {
+      case net::URLRequest::
+          REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
+        // Nothing currently maps to this policy on iOS.
+        FAIL();
+        break;
+      case net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
+        EXPECT_EQ(ReferrerPolicyOriginWhenCrossOrigin, policy);
+        break;
+      case net::URLRequest::NEVER_CLEAR_REFERRER:
+        // This request policy should be used when the referrer policy is always
+        // the same regardless of source and destination.
+        EXPECT_TRUE(policy == ReferrerPolicyAlways ||
+                    policy == ReferrerPolicyNever ||
+                    policy == ReferrerPolicyOrigin);
+        break;
+      case net::URLRequest::
+          CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
+        // This corresponds directly to ReferrerPolicyNoReferrerWhenDowngrade,
+        // which is also how Default works on iOS.
+        EXPECT_TRUE(policy == ReferrerPolicyDefault ||
+                    policy == ReferrerPolicyNoReferrerWhenDowngrade);
+        break;
+    }
+  }
+}
+
+// Tests that all the strings corresponding to web::ReferrerPolicy values are
+// correctly handled.
+TEST(ReferrerUtilTest, PolicyFromString) {
+  // The ordering here must match web::ReferrerPolicy; this makes the test
+  // simpler, at the cost of needing to re-order if the enum is re-ordered.
+  const char* const kPolicyStrings[] = {
+      "unsafe-url",
+      nullptr,  // Default is skipped, because no string maps to Default.
+      "no-referrer-when-downgrade",
+      "no-referrer",
+      "origin",
+      "origin-when-cross-origin",
+  };
+  // Test that all the values are supported.
+  for (int i = 0; i < ReferrerPolicyLast; ++i) {
+    if (!kPolicyStrings[i])
+      continue;
+    EXPECT_EQ(i, ReferrerPolicyFromString(kPolicyStrings[i]));
+  }
+
+  // Verify that if something is added to the enum, its string value gets added
+  // to the mapping function.
+  EXPECT_EQ(ReferrerPolicyLast + 1,
+            static_cast<int>(arraysize(kPolicyStrings)));
+
+  // Test the legacy policy names.
+  EXPECT_EQ(ReferrerPolicyNever, ReferrerPolicyFromString("never"));
+  // Note that per the spec, "default" maps to NoReferrerWhenDowngrade; the
+  // Default enum value is not actually a spec'd value.
+  EXPECT_EQ(ReferrerPolicyNoReferrerWhenDowngrade,
+            ReferrerPolicyFromString("default"));
+  EXPECT_EQ(ReferrerPolicyAlways, ReferrerPolicyFromString("always"));
+
+  // Test that invalid values map to Never.
+  EXPECT_EQ(ReferrerPolicyNever, ReferrerPolicyFromString(""));
+  EXPECT_EQ(ReferrerPolicyNever, ReferrerPolicyFromString("made-up"));
+}
+
+}  // namespace web

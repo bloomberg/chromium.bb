@@ -10,66 +10,67 @@
 
 namespace web {
 
-GURL ReferrerForHeader(const GURL& referrer) {
-  DCHECK(referrer.is_valid());
-  GURL::Replacements replacements;
-  replacements.ClearUsername();
-  replacements.ClearPassword();
-  replacements.ClearRef();
-  return referrer.ReplaceComponents(replacements);
-}
-
 std::string ReferrerHeaderValueForNavigation(
     const GURL& destination,
     const web::Referrer& referrer) {
-  std::string referrer_value;
-  bool leaving_secure_scheme = referrer.url.SchemeIsCryptographic() &&
-                               !destination.SchemeIsCryptographic();
-  if (referrer.policy == ReferrerPolicyAlways ||
-      (referrer.policy == ReferrerPolicyDefault && !leaving_secure_scheme)) {
-    if (referrer.url.is_valid())
-      referrer_value = ReferrerForHeader(referrer.url).spec();
-  } else if (referrer.policy == ReferrerPolicyOrigin) {
-    referrer_value = referrer.url.GetOrigin().spec();
-  } else {
-    // Policy is Never, or it's Default with a secure->insecure transition, so
-    // leave it empty.
+  bool is_downgrade = referrer.url.SchemeIsCryptographic() &&
+                      !destination.SchemeIsCryptographic();
+  switch (referrer.policy) {
+    case ReferrerPolicyAlways:
+      return referrer.url.GetAsReferrer().spec();
+    case ReferrerPolicyNever:
+      return std::string();
+    case ReferrerPolicyOrigin:
+      return referrer.url.GetOrigin().spec();
+    case ReferrerPolicyDefault:
+    case ReferrerPolicyNoReferrerWhenDowngrade:
+      if (is_downgrade)
+        return std::string();
+      return referrer.url.GetAsReferrer().spec();
+    case ReferrerPolicyOriginWhenCrossOrigin:
+      if (referrer.url.GetOrigin() != destination.GetOrigin())
+        return referrer.url.GetOrigin().spec();
+      return referrer.url.GetAsReferrer().spec();
   }
-  return referrer_value;
+  NOTREACHED();
+  return std::string();
 }
 
 net::URLRequest::ReferrerPolicy PolicyForNavigation(
     const GURL& destination,
     const web::Referrer& referrer) {
-  net::URLRequest::ReferrerPolicy net_referrer_policy =
-      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-  if (referrer.url.is_valid()) {
-    GURL referrer_url(ReferrerHeaderValueForNavigation(destination, referrer));
-    if (!referrer_url.is_empty()) {
-      switch (referrer.policy) {
-        case ReferrerPolicyDefault:
-          break;
-        case ReferrerPolicyAlways:
-        case ReferrerPolicyNever:
-        case ReferrerPolicyOrigin:
-          net_referrer_policy = net::URLRequest::NEVER_CLEAR_REFERRER;
-          break;
-        default:
-          NOTREACHED();
-      }
-    }
+  // Based on the matching logic in content's
+  // resource_dispatcher_host_impl.cc
+  switch (referrer.policy) {
+    case ReferrerPolicyAlways:
+    case ReferrerPolicyNever:
+    case ReferrerPolicyOrigin:
+      return net::URLRequest::NEVER_CLEAR_REFERRER;
+    case ReferrerPolicyNoReferrerWhenDowngrade:
+    case ReferrerPolicyDefault:
+      return net::URLRequest::
+          CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+    case ReferrerPolicyOriginWhenCrossOrigin:
+      return net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
   }
-  return net_referrer_policy;
+  NOTREACHED();
+  return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
 }
 
 ReferrerPolicy ReferrerPolicyFromString(const std::string& policy) {
-  if (policy == "never")
+  // https://w3c.github.io/webappsec-referrer-policy/#determine-policy-for-token
+  if (policy == "never" || policy == "no-referrer")
     return ReferrerPolicyNever;
-  if (policy == "always")
-    return ReferrerPolicyAlways;
   if (policy == "origin")
     return ReferrerPolicyOrigin;
-  return web::ReferrerPolicyDefault;
+  if (policy == "default" || policy == "no-referrer-when-downgrade")
+    return ReferrerPolicyNoReferrerWhenDowngrade;
+  if (policy == "origin-when-cross-origin")
+    return ReferrerPolicyOriginWhenCrossOrigin;
+  if (policy == "always" || policy == "unsafe-url")
+    return ReferrerPolicyAlways;
+  // Note that this is *not* Default; per spec, anything unknown is Never.
+  return web::ReferrerPolicyNever;
 }
 
 }  // namespace web

@@ -14,9 +14,6 @@ class GURL;
 
 namespace web {
 
-// Returns a sanitized version of |referrer| for use in a Referer header.
-GURL ReferrerForHeader(const GURL& referrer);
-
 // Returns the string that should be sent as the Referer header value for
 // navigating to |destination| from the given referrer, taking the referrer
 // policy into account. Returns an empty string if no Referer should be sent.
@@ -26,6 +23,8 @@ std::string ReferrerHeaderValueForNavigation(
 
 // Returns the policy that should be used to process subsequent forwards, if
 // any.
+// TODO(stuartmorgan): Replace this with ReferrerForNavigation, since it should
+// always be used with ReferrerHeaderValueForNavigation anyway.
 net::URLRequest::ReferrerPolicy PolicyForNavigation(
     const GURL& destination,
     const web::Referrer& referrer);
