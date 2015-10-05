@@ -10,6 +10,7 @@
 <translation id="111844081046043029">คุณแน่ใจหรือไม่ว่าต้องการออกจากหน้านี้</translation>
 <translation id="112840717907525620">แคชนโยบายใช้ได้</translation>
 <translation id="1132774398110320017">การตั้งค่าป้อนข้อความอัตโนมัติของ Chrome...</translation>
+<translation id="1146673768181266552">รหัสข้อขัดข้อง <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะระบบปฏิบัติการของคอมพิวเตอร์ของคุณไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="1152921474424827756">เข้าถึง<ph name="BEGIN_LINK" />สำเนาแคช<ph name="END_LINK" />ของ <ph name="URL" /></translation>
 <translation id="121201262018556460">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่มีคีย์ที่ไม่รัดกุม ผู้โจมตีอาจทำให้คีย์ส่วนตัวเสียหายไปแล้วและเซิร์ฟเวอร์นี้อาจไม่ใช่เซิร์ฟเวอร์ที่คุณคิด (คุณอาจกำลังติดต่อกับผู้โจมตี)</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">หน้าเว็บที่ <ph name="SITE" /> แจ้งว่า:</translation>
 <translation id="1706954506755087368">{1,plural, =1{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยควรจะเริ่มใช้งานได้ตั้งแต่วันพรุ่งนี้ โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ}other{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยควรจะเริ่มใช้งานได้ในอีก # วันข้างหน้า โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">ข้อบกพร่องของไฟล์</translation>
 <translation id="1763864636252898013">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะระบบปฏิบัติการของอุปกรณ์ของคุณไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="1821930232296380041">คำขอหรือพารามิเตอร์คำขอไม่ถูกต้อง</translation>
 <translation id="1871208020102129563">พร็อกซีถูกตั้งค่าให้ใช้พร็อกซีเซิร์ฟเวอร์แบบคงที่ ไม่ใช่ URL สคริปต์ .pac</translation>
-<translation id="1875753206475436906">ประเภทการเรียนรู้: <ph name="HEURISTIC_TYPE" />
-    ประเภทเซิร์ฟเวอร์: <ph name="SERVER_TYPE" />
-    ช่องลายเซ็น: <ph name="FIELD_SIGNATURE" />
-    ฟอร์มลายเซ็น: <ph name="FORM_SIGNATURE" />
-    รหัสการทดลอง: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">ไปที่ <ph name="LINK" /></translation>
 <translation id="1962204205936693436">บุ๊กมาร์กของ <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">ข้อผิดพลาดในการจัดเรียง</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">ใบอนุญาตหมด</translation>
 <translation id="3739623965217189342">ลิงก์ที่คุณคัดลอกมา</translation>
 <translation id="375403751935624634">การแปลล้มเหลวเนื่องจากข้อผิดพลาดของเซิร์ฟเวอร์</translation>
+<translation id="3759461132968374835">คุณไม่ได้รายงานข้อขัดข้องเมื่อเร็วๆ นี้ ข้อขัดข้องที่เกิดขึ้นเมื่อปิดใช้งานการรายงานข้อขัดข้อง จะไม่ปรากฏที่นี่</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3858027520442213535">อัปเดตวันที่และเวลา</translation>
 <translation id="3884278016824448484">ตัวชี้อุปกรณ์ขัดแย้งกัน</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">ลายเซ็นยืนยันไม่ถูกต้อง</translation>
 <translation id="4196861286325780578">&amp;ทำซ้ำการย้าย</translation>
+<translation id="4220128509585149162">การขัดข้อง</translation>
 <translation id="4250680216510889253">ไม่มี</translation>
 <translation id="4258748452823770588">ลายเซ็นไม่เหมาะสม</translation>
 <translation id="4269787794583293679">(ไม่มีชื่อผู้ใช้)</translation>
 <translation id="4300246636397505754">คำแนะนำระดับบนสุด</translation>
+<translation id="4325863107915753736">การค้นหาบทความล้มเหลว</translation>
 <translation id="4372948949327679948">ค่า <ph name="VALUE_TYPE" /> ที่คาดไว้</translation>
 <translation id="4377125064752653719">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่ใบรับรองที่เซิร์ฟเวอร์แจ้งมาถูกเพิกถอนโดยผู้ออกใบรับรอง ซึ่งหมายความว่าข้อมูลรับรองด้านความปลอดภัยที่เซิร์ฟเวอร์แจ้งมานั้นไม่สามารถเชื่อถือได้ คุณอาจกำลังติดต่อกับคนที่คิดจะโจมตีคุณ</translation>
 <translation id="4394049700291259645">ปิดการใช้งาน</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">แปลจาก <ph name="ORIGINAL_LANGUAGE" /> เป็น <ph name="TARGET_LANGUAGE" /> หรือไม่</translation>
 <translation id="5019198164206649151">ไม่สามารถจัดเก็บเนื่องจากระบบแบ็คเอนด์อยู่ในสถานะไม่ดี</translation>
 <translation id="5031870354684148875">เกี่ยวกับ Google แปลภาษา</translation>
+<translation id="5045550434625856497">รหัสผ่านไม่ถูกต้อง</translation>
 <translation id="5087286274860437796">ใบรับรองของเซิร์ฟเวอร์ไม่สามารถใช้ได้ในขณะนี้</translation>
 <translation id="5089810972385038852">รัฐ</translation>
 <translation id="5094747076828555589">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะ Chromium ไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">ระบบคลาวด์</translation>
 <translation id="5295309862264981122">ยืนยันการนำทาง</translation>
 <translation id="5299298092464848405">ข้อผิดพลาดในการแยกวิเคราะห์นโยบาย</translation>
+<translation id="5308689395849655368">การรายงานข้อขัดข้องถูกปิดใช้งาน</translation>
 <translation id="5316812925700871227">หมุนทวนเข็มนาฬิกา</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="536296301121032821">ไม่สามารถจัดเก็บการตั้งค่านโยบาย</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="6060685159320643512">ระวัง การทดลองนี้อาจเป็นอันตราย</translation>
+<translation id="6099520380851856040">เกิดขึ้นเมื่อ <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">ใบรับรองเซิร์ฟเวอร์มีระยะเวลาที่สามารถใช้ได้นานเกินไป</translation>
 <translation id="6154808779448689242">โทเค็นนโยบายที่ส่งกลับไม่ตรงกับโทเค็นปัจจุบัน</translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">ประเทศ</translation>
 <translation id="6458467102616083041">ไม่ใช้งานเนื่องจากการค้นหาเริ่มต้นถูกปิดใช้งานตามนโยบาย</translation>
 <translation id="647261751007945333">นโยบายอุปกรณ์</translation>
+<translation id="6489534406876378309">เริ่มอัปโหลดข้อขัดข้อง</translation>
 <translation id="6512448926095770873">ออกจากหน้านี้</translation>
 <translation id="6529602333819889595">&amp;ทำซ้ำการนำออก</translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">คุณแน่ใจหรือไม่ว่าต้องการโหลดหน้าเว็บนี้ซ้ำ</translation>
 <translation id="8349305172487531364">แถบบุ๊กมาร์ก</translation>
 <translation id="8364627913115013041">ไม่ได้ตั้งค่า</translation>
+<translation id="8412145213513410671">ข้อขัดข้อง (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;เลิกทำการย้าย</translation>
 <translation id="8488350697529856933">ใช้กับ</translation>
 <translation id="8530504477309582336">Google Payments ไม่สนับสนุนบัตรประเภทนี้ โปรดเลือกบัตรอื่น</translation>

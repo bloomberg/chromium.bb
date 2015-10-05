@@ -55,7 +55,6 @@
 <translation id="2705212601509139398">Trang web này đang sử dụng plugin Chromium Frame sắp không còn được hỗ trợ. Vui lòng gỡ cài đặt plugin này và tải xuống trình duyệt tương thích.</translation>
 <translation id="2718390899429598676">Để bảo mật hơn, Chromium sẽ mã hóa dữ liệu của bạn.</translation>
 <translation id="2732467638532545152">Máy tính của bạn đang chạy phiên bản Microsoft Windows cũ. Phiên bản này không thể xử lý chứng chỉ bảo mật của trang web này. Do sự cố này, Chromium không thể biết chứng chỉ đến từ <ph name="SITE" /> hay từ ai đó trên mạng của bạn giả làm <ph name="SITE" />. Vui lòng cập nhật máy tính của bạn lên phiên bản Windows mới hơn.</translation>
-<translation id="275588974610408078">Báo cáo sự cố hiện không khả dụng trong Chromium.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> là tệp độc hại và Chromium đã chặn tệp này.</translation>
 <translation id="2847479871509788944">Xóa khỏi Chromium...</translation>

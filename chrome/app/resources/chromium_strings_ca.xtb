@@ -55,7 +55,6 @@
 <translation id="2705212601509139398">Aquest lloc fa servir el connector Chromium Frame que aviat deixarà de ser compatible. Desinstal·leu-lo i baixeu un navegador compatible.</translation>
 <translation id="2718390899429598676">Per més seguretat, Chromium encriptarà les vostres dades.</translation>
 <translation id="2732467638532545152">El vostre ordinador funciona amb una versió antiga de Microsoft Windows que no pot processar el certificat de seguretat d'aquest lloc web. A causa d'aquest problema, Chromium no pot saber si el certificat prové del lloc <ph name="SITE" /> o d'algú de la vostra xarxa que es fa passar per <ph name="SITE" />. Feu l'actualització de l'ordinador a una versió més recent de Windows.</translation>
-<translation id="275588974610408078">La creació d'informes de bloqueig no està disponible a Chromium.</translation>
 <translation id="2770231113462710648">Canvia el navegador predeterminat a:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> és maliciós i Chromium l'ha bloquejat.</translation>
 <translation id="2847479871509788944">Suprimeix de Chromium...</translation>

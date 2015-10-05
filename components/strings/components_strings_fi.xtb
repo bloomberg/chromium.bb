@@ -10,6 +10,7 @@
 <translation id="111844081046043029">Haluatko varmasti poistua tältä sivulta?</translation>
 <translation id="112840717907525620">Käytännön välimuisti on OK</translation>
 <translation id="1132774398110320017">Chromen automaattisen täytön asetukset…</translation>
+<translation id="1146673768181266552">Kaatumistunnus <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; tietokoneesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="1152921474424827756">Käytä osoitteen <ph name="URL" /> <ph name="BEGIN_LINK" />välimuistiversiota<ph name="END_LINK" /></translation>
 <translation id="121201262018556460">Yritit yhdistää verkkotunnukseen <ph name="DOMAIN" />, mutta palvelin esitti varmenteen, joka käyttää heikkoa avainta. Hakkeri on saattanut murtaa avaimen. Palvelin ei siis välttämättä ole tavoittelemasi palvelin, vaan saatat viestiä hakkerin kanssa.</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">Sivu osoitteessa <ph name="SITE" /> ilmoittaa:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on päivätty huomiselle. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.}other{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on päivätty # päivää tulevaisuuteen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">Tiedostovirhe</translation>
 <translation id="1763864636252898013">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; laitteesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="1821930232296380041">Pyyntö on virheellinen tai pyynnön parametrit ovat virheelliset</translation>
 <translation id="1871208020102129563">Välityspalvelin on asetettu käyttämään kiinteitä välityspalvelimia, ei .pac-URL-osoitetta.</translation>
-<translation id="1875753206475436906">heuristinen tyyppi: <ph name="HEURISTIC_TYPE" />
-    palvelimen tyyppi: <ph name="SERVER_TYPE" />
-    kentän allekirjoitus: <ph name="FIELD_SIGNATURE" />
-    lomakkeen allekirjoitus: <ph name="FORM_SIGNATURE" />
-    kokeilutunnus: <ph name="EXPERIMENT_ID" /></translation>
 <translation id="194030505837763158">Siirry osoitteeseen <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Verkkotunnuksen <ph name="DOMAIN" /> kirjanmerkit</translation>
 <translation id="1973335181906896915">Sarjaesittämisen virhe</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Käyttöluvat ovat lopussa</translation>
 <translation id="3739623965217189342">Kopioimasi linkki</translation>
 <translation id="375403751935624634">Käännös epäonnistui palvelinvirheen vuoksi.</translation>
+<translation id="3759461132968374835">Ei viimeaikaisia kaatumisilmoituksia. Jos selain kaatui kaatumisilmoitusten ollessa pois käytöstä, ilmoituksia ei näytetä täällä.</translation>
 <translation id="385051799172605136">Edellinen</translation>
 <translation id="3858027520442213535">Päivitä päivämäärä ja aika</translation>
 <translation id="3884278016824448484">Ristiriitainen laitteen tunnus</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">Virheellinen vahvistusallekirjoitus.</translation>
 <translation id="4196861286325780578">&amp;Toista siirto</translation>
+<translation id="4220128509585149162">Kaatuu</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4258748452823770588">Virheellinen allekirjoitus</translation>
 <translation id="4269787794583293679">(Ei käyttäjänimeä)</translation>
 <translation id="4300246636397505754">Ylätason ehdotukset</translation>
+<translation id="4325863107915753736">Artikkelia ei löydy</translation>
 <translation id="4372948949327679948">Odotettu <ph name="VALUE_TYPE" />-arvo.</translation>
 <translation id="4377125064752653719">Yritit yhdistää sivustoon <ph name="DOMAIN" />, mutta varmenteen myöntäjä on kumonnut palvelimen esittämän varmenteen. Palvelimen esittämiin suojaustietoihin ei siis tule luottaa. Saatat olla tekemisissä hakkerin kanssa.</translation>
 <translation id="4394049700291259645">Poista käytöstä</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">Käännetäänkö kielestä <ph name="ORIGINAL_LANGUAGE" /> kielelle <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Tallennustila on virheellisessä tilassa</translation>
 <translation id="5031870354684148875">Tietoja Google-kääntäjästä</translation>
+<translation id="5045550434625856497">Väärä salasana</translation>
 <translation id="5087286274860437796">Palvelimen varmenne ei ole tällä hetkellä kelvollinen.</translation>
 <translation id="5089810972385038852">Osavaltio/alue</translation>
 <translation id="5094747076828555589">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; Chromium ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Pilvi</translation>
 <translation id="5295309862264981122">Vahvista liikkuminen</translation>
 <translation id="5299298092464848405">Virhe jäsennettäessä käytäntöä</translation>
+<translation id="5308689395849655368">Kaatumisraportit on poistettu käytöstä.</translation>
 <translation id="5316812925700871227">Käännä vastapäivään</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="536296301121032821">Käytännön asetuksien tallentaminen epäonnistui</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="6060685159320643512">Varoitus, nämä kokeilut saattavat puraista</translation>
+<translation id="6099520380851856040">Tapahtui <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Palvelimen varmenteen voimassaoloaika on liian pitkä.</translation>
 <translation id="6154808779448689242">Palautettu käytännön tunnus ei vastaa nykyistä tunnusta</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">Maa</translation>
 <translation id="6458467102616083041">Ohitettu, koska oletushaku on poistettu käytöstä käytännön mukaan.</translation>
 <translation id="647261751007945333">Laitekäytännöt</translation>
+<translation id="6489534406876378309">Aloita kaatumistietojen lähettäminen</translation>
 <translation id="6512448926095770873">Poistu tältä sivulta</translation>
 <translation id="6529602333819889595">&amp;Toista poisto</translation>
 <translation id="6550675742724504774">Asetukset</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">Haluatko varmasti päivittää tämän sivun?</translation>
 <translation id="8349305172487531364">Kirjanmerkkipalkki</translation>
 <translation id="8364627913115013041">Ei määritetty.</translation>
+<translation id="8412145213513410671">Kaatumiset (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">K&amp;umoa siirto</translation>
 <translation id="8488350697529856933">Käyttöalue</translation>
 <translation id="8530504477309582336">Google Payments ei tue tämän tyyppistä korttia. Valitse eri kortti.</translation>

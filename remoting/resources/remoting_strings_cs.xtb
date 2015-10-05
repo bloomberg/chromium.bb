@@ -16,6 +16,7 @@ Vzdálené počítače s jiným rozložením klávesnice než pro americkou angl
 Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí společnosti Google (http://goo.gl/SyrVzj) a zásadách ochrany soukromí prohlížeče Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(Tato funkce zatím pro váš počítač není k dispozici.)</translation>
 <translation id="1342297293546459414">Umožňuje zobrazit a ovládat sdílený počítač.</translation>
+<translation id="1389790901665088353">Stažení instalačního programu hostitele Vzdálené plochy Chrome</translation>
 <translation id="1450760146488584666">Požadovaný objekt neexistuje.</translation>
 <translation id="1480046233931937785">Poděkování</translation>
 <translation id="1520828917794284345">Přizpůsobit velikost plochy obrazovce</translation>
@@ -147,6 +148,7 @@ Chromoting</translation>
 <translation id="4572065712096155137">Přístup</translation>
 <translation id="4573676252416618192">Hostitel Vzdálené
 plochy Chrome</translation>
+<translation id="4619978527973181021">Přijmout a nainstalovat</translation>
 <translation id="4703799847237267011">Relace funkce Chromoting byla ukončena.</translation>
 <translation id="4736223761657662401">Historie připojení</translation>
 <translation id="4741792197137897469">Ověření selhalo. Přihlaste se do prohlížeče Chrome znovu.</translation>
@@ -159,6 +161,7 @@ plochy Chrome</translation>
 <translation id="4913529628896049296">čeká se na připojení...</translation>
 <translation id="4918086044614829423">Přijmout</translation>
 <translation id="492843737083352574">Mám problémy s klávesnicí nebo myší.</translation>
+<translation id="4973800994433240357">Stažením instalačního programu hostitele funkce Chromoting vyjadřujete souhlas se <ph name="LINK_BEGIN" />smluvními podmínkami<ph name="LINK_END" /> společnosti Google.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Vzdálený hostitelský server vyžaduje, abyste provedli ověření na stránce třetí strany. Aby bylo možné pokračovat, je nutné udělit Vzdálené ploše Chrome dodatečná oprávnění k přístupu na tuto adresu:</translation>
 <translation id="5156271271724754543">Zadejte do obou polí stejný kód PIN.</translation>
@@ -171,6 +174,7 @@ plochy Chrome</translation>
 <translation id="5308380583665731573">Připojení</translation>
 <translation id="5363265567587775042">Požádejte uživatele, k jehož počítači chcete získat přístup, aby kliknul na tlačítko <ph name="SHARE" /> a dal vám přístupový kód.</translation>
 <translation id="5379087427956679853">Vzdálená plocha Chrome vám umožňuje bezpečně sdílet svůj počítač přes internet. Oba uživatelé musí mít spuštěnou aplikaci Vzdálená plocha Chrome, kterou najdete na adrese <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Pro Mac (OS X 10.6 a novější)</translation>
 <translation id="5397086374758643919">Nástroj k odinstalaci hostitele Vzdálené plochy Chrome</translation>
 <translation id="5419185025274123272">Resetování aplikace se nezdařilo. Stále můžete odeslat zprávu o chybě.</translation>
 <translation id="544077782045763683">Hostitel byl vypnut.</translation>
@@ -223,6 +227,7 @@ plochy Chrome</translation>
 <translation id="6930242544192836755">Délka</translation>
 <translation id="6939719207673461467">Zobrazit či skrýt klávesnici</translation>
 <translation id="6944854424004126054">Obnovit okno</translation>
+<translation id="6962773374262604195">Pro Windows (XP a novější)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Opravdu chcete zakázat vzdálená připojení k počítači <ph name="HOSTNAME" />? Pokud později své rozhodnutí změníte, bude nutné připojení povolit přímo z uvedeného počítače.</translation>
 <translation id="6998989275928107238">Hostitel</translation>
@@ -252,6 +257,7 @@ plochy Chrome</translation>
 <translation id="7869445566579231750">Ke spuštění této aplikace nemáte oprávnění.</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
 <translation id="7970576581263377361">Ověření selhalo. Přihlaste se do prohlížeče Chromium znovu.</translation>
+<translation id="8041721485428375115">Stažením instalačního programu hostitele Vzdálené plochy Chrome vyjadřujete souhlas se <ph name="LINK_BEGIN" />smluvními podmínkami<ph name="LINK_END" /> společnosti Google.</translation>
 <translation id="8073845705237259513">Chcete-li používat Vzdálenou plochu Chrome, budete do zařízení muset přidat účet Google.</translation>
 <translation id="80739703311984697">Vzdálený hostitelský server vyžaduje, abyste provedli ověření na stránce třetí strany. Aby bylo možné pokračovat, je nutné udělit funkci Chromoting dodatečná oprávnění k přístupu na tuto adresu:</translation>
 <translation id="809687642899217504">Mé počítače</translation>
@@ -275,6 +281,7 @@ plochy Chrome</translation>
 <translation id="8642984861538780905">Přijatelná</translation>
 <translation id="8712909229180978490">Soubory uložené online na Disku Google se nezobrazují.</translation>
 <translation id="8759753423332885148">Další informace</translation>
+<translation id="8791202241915690908">Stažení instalačního programu hostitele funkce Chromoting</translation>
 <translation id="894763922177556086">Dobrá</translation>
 <translation id="897805526397249209">Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj aplikaci Chromoting a poté klikněte na tlačítko <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Hostitelský kontroler Vzdálené plochy Chrome</translation>

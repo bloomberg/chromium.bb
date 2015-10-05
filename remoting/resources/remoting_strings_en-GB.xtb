@@ -16,6 +16,7 @@ Remote computers with non US-English keyboards may receive incorrect text input.
 For information about privacy, please see the Google Privacy Policy (http://goo.gl/SyrVzj) and the Chrome Privacy Policy (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(this feature is not yet available for your computer)</translation>
 <translation id="1342297293546459414">See and control a shared computer.</translation>
+<translation id="1389790901665088353">Download Chrome Remote Desktop Host Installer</translation>
 <translation id="1450760146488584666">The requested object does not exist.</translation>
 <translation id="1480046233931937785">Credits</translation>
 <translation id="1520828917794284345">Resize desktop to fit</translation>
@@ -146,6 +147,7 @@ Host</translation>
 <translation id="4572065712096155137">Access</translation>
 <translation id="4573676252416618192">Chrome Remote
 Desktop Host</translation>
+<translation id="4619978527973181021">Accept and install</translation>
 <translation id="4703799847237267011">Your Chromoting session has ended.</translation>
 <translation id="4736223761657662401">Connection History</translation>
 <translation id="4741792197137897469">Authentication failed. Please sign in to Chrome again.</translation>
@@ -158,6 +160,7 @@ Desktop Host</translation>
 <translation id="4913529628896049296">waiting for connection…</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="492843737083352574">I'm having problems with my keyboard or mouse.</translation>
+<translation id="4973800994433240357">By downloading the Chromoting Host Installer, you are agreeing to the Google <ph name="LINK_BEGIN" />Terms of Service<ph name="LINK_END" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">The remote host requires you to authenticate to a third-party website. To continue, you must grant Chrome Remote Desktop additional permissions to access this address:</translation>
 <translation id="5156271271724754543">Please enter the same PIN in both boxes.</translation>
@@ -170,6 +173,7 @@ Desktop Host</translation>
 <translation id="5308380583665731573">Connect</translation>
 <translation id="5363265567587775042">Ask the user whose computer you wish to access to click “<ph name="SHARE" />” and give you the access code.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop allows you to securely share your computer over the Web. Both users must be running the Chrome Remote Desktop app, which can be found at <ph name="URL" />.</translation>
+<translation id="5394895745784982830">For Mac (OS X 10.6 and above)</translation>
 <translation id="5397086374758643919">Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="5419185025274123272">Could not reset the application. You can still send a bug report.</translation>
 <translation id="544077782045763683">Host has shut down.</translation>
@@ -222,6 +226,7 @@ Desktop Host</translation>
 <translation id="6930242544192836755">Duration</translation>
 <translation id="6939719207673461467">Show/hide keyboard.</translation>
 <translation id="6944854424004126054">Restore window</translation>
+<translation id="6962773374262604195">For Windows (XP and above)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Are you sure you want to disable remote connections to <ph name="HOSTNAME" />? If you change your mind, you'll need to visit that computer to re-enable connections.</translation>
 <translation id="6998989275928107238">To</translation>
@@ -251,6 +256,7 @@ Desktop Host</translation>
 <translation id="7869445566579231750">You do not have permission to run this application.</translation>
 <translation id="7948001860594368197">Screen options</translation>
 <translation id="7970576581263377361">Authentication failed. Please sign in to Chromium again.</translation>
+<translation id="8041721485428375115">By downloading the Chrome Remote Desktop Host Installer, you are agreeing to the Google <ph name="LINK_BEGIN" />Terms of Service<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">To use Chrome Remote Desktop, you'll need to add a Google Account to your device.</translation>
 <translation id="80739703311984697">The remote host requires you to authenticate to a third-party website. To continue, you must grant Chromoting additional permissions to access this address:</translation>
 <translation id="809687642899217504">My Computers</translation>
@@ -274,6 +280,7 @@ Desktop Host</translation>
 <translation id="8642984861538780905">Fair</translation>
 <translation id="8712909229180978490">I can't see my saved files online in Google Drive.</translation>
 <translation id="8759753423332885148">Learn more.</translation>
+<translation id="8791202241915690908">Download Chromoting Host Installer</translation>
 <translation id="894763922177556086">Good</translation>
 <translation id="897805526397249209">To enable remote connections to a different computer, install Chromoting there and click “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>

@@ -16,6 +16,7 @@ Computadores remotos que tenham teclados não compatíveis com o inglês dos EUA
 Para ver mais informações sobre privacidade, consulte a Política de Privacidade do Google (http://goo.gl/SyrVzj) e a Política de Privacidade do Google Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">Este recurso ainda não está disponível para seu computador</translation>
 <translation id="1342297293546459414">Ver e controlar um computador compartilhado.</translation>
+<translation id="1389790901665088353">Fazer o download do instalador do host da Área de trabalho remota do Google Chrome</translation>
 <translation id="1450760146488584666">O objeto solicitado não existe.</translation>
 <translation id="1480046233931937785">Créditos</translation>
 <translation id="1520828917794284345">Redimensionar área de trabalho para ajustar</translation>
@@ -146,6 +147,7 @@ Chromoting</translation>
 <translation id="4572065712096155137">Acessar</translation>
 <translation id="4573676252416618192">Host da Área de trabalho
 remota do Google Chrome</translation>
+<translation id="4619978527973181021">Aceitar e instalar</translation>
 <translation id="4703799847237267011">Sua sessão do Chromoting foi encerrada.</translation>
 <translation id="4736223761657662401">Histórico de conexões</translation>
 <translation id="4741792197137897469">Falha na autenticação. Faça login novamente no Chrome.</translation>
@@ -158,6 +160,7 @@ remota do Google Chrome</translation>
 <translation id="4913529628896049296">aguardando conexão...</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="492843737083352574">Meu teclado ou mouse estão com problemas.</translation>
+<translation id="4973800994433240357">Ao fazer o download do instalador do host do Chromoting, você concorda com os <ph name="LINK_BEGIN" />Termos de Serviço<ph name="LINK_END" /> do Google.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (off-line)</translation>
 <translation id="5070121137485264635">O host remoto requer a autenticação em um website de terceiros. Para continuar, você deve conceder à Área de trabalho remota do Google Chrome acesso a permissões adicionais para acessar este endereço:</translation>
 <translation id="5156271271724754543">Digite o mesmo PIN nas duas caixas.</translation>
@@ -170,6 +173,7 @@ remota do Google Chrome</translation>
 <translation id="5308380583665731573">Conectar-se</translation>
 <translation id="5363265567587775042">Peça ao usuário do computador que você deseja acessar que clique em "<ph name="SHARE" />" e forneça o código de acesso para você.</translation>
 <translation id="5379087427956679853">A Área de trabalho remota do Google Chrome permite que você compartilhe seu computador com segurança através da Web. Para isso, é preciso que os usuários executem simultaneamente o aplicativo da Área de trabalho remota do Google Chrome, disponível em <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Para Mac (OS X 10.6 e acima)</translation>
 <translation id="5397086374758643919">Desinstalador do host da Área de trabalho remota do Google Chrome</translation>
 <translation id="5419185025274123272">Não foi possível redefinir o aplicativo. Você ainda pode enviar um relatório de bug.</translation>
 <translation id="544077782045763683">O host foi encerrado.</translation>
@@ -222,6 +226,7 @@ remota do Google Chrome</translation>
 <translation id="6930242544192836755">Duração</translation>
 <translation id="6939719207673461467">Mostrar/ocultar teclado</translation>
 <translation id="6944854424004126054">Restaurar janela</translation>
+<translation id="6962773374262604195">Para Windows (XP e acima)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Tem certeza de que deseja desativar conexões remotas para <ph name="HOSTNAME" />? Se mudar de idéia, precisará visitar este computador para reativar as conexões.</translation>
 <translation id="6998989275928107238">Para</translation>
@@ -251,6 +256,7 @@ remota do Google Chrome</translation>
 <translation id="7869445566579231750">Você não tem permissão para executar este aplicativo.</translation>
 <translation id="7948001860594368197">Opções de tela</translation>
 <translation id="7970576581263377361">Falha na autenticação. Faça login novamente no Chromium.</translation>
+<translation id="8041721485428375115">Ao fazer o download do instalador do host da Área de trabalho remota do Google Chrome, você concorda com os <ph name="LINK_BEGIN" />Termos de Serviço<ph name="LINK_END" /> do Google.</translation>
 <translation id="8073845705237259513">Para usar a Área de trabalho remota do Google, adicione uma Conta do Google a seu dispositivo.</translation>
 <translation id="80739703311984697">O host remoto requer a autenticação em um website de terceiros. Para continuar, é preciso conceder ao Chromoting acesso a permissões adicionais para acessar este endereço:</translation>
 <translation id="809687642899217504">Meus computadores</translation>
@@ -274,6 +280,7 @@ remota do Google Chrome</translation>
 <translation id="8642984861538780905">Regular</translation>
 <translation id="8712909229180978490">Não consigo ver meus arquivos salvos on-line no Google Drive.</translation>
 <translation id="8759753423332885148">Saiba mais.</translation>
+<translation id="8791202241915690908">Fazer o download do instalador do host do Chromoting</translation>
 <translation id="894763922177556086">Boa</translation>
 <translation id="897805526397249209">Para ativar conexões remotas a um computador diferente, instale o Chromoting no computador desejado e clique em "<ph name="BUTTON_NAME" />".</translation>
 <translation id="8998327464021325874">Controlador do host da Área de trabalho remota do Google Chrome</translation>

@@ -407,7 +407,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3153348162326497318">Consente di specificare le estensioni che gli utenti NON possono installare. Se presenti nella blacklist, le estensioni precedentemente installate verranno rimosse. Un valore "*" riportato nella blacklist indica che tutte le estensioni sono state inserite nella blacklist a meno che non siano espressamente elencate nella whitelist. Se questa norma non viene impostata, gli utenti potranno installare qualsiasi estensione in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Questa impostazione non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_NAME" />. Il metodo consigliato per la configurazione di raccolte di estensioni/app ospitate dall'organizzazione consiste nell'includere il sito che ospita i pacchetti CRX in ExtensionInstallSources e inserire link di download diretti per i pacchetti in una pagina web. È possibile creare una funzione Avvio applicazioni per la pagina web utilizzando la norma ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">a partire dalla versione <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Consente di specificare se disattivare o meno la suddivisione dei record SSL. La suddivisione dei record è una soluzione a una debolezza di SSL 3.0 e TLS 1.0 ma potrebbe causare problemi di compatibilità con alcuni proxy e server HTTPS. Se la norma non viene impostata o viene impostata su false, la suddivisione dei record verrà utilizzata per le connessioni SSL/TLS che utilizzano ciphersuite CBC.</translation>
 <translation id="3213821784736959823">Controlla se il client DNS integrato è in uso in <ph name="PRODUCT_NAME" />.
 
       Se il criterio è impostato su True, verrà utilizzato il client DNS integrato, se disponibile.
@@ -1461,7 +1460,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="8955719471735800169">Torna all'inizio</translation>
 <translation id="8970205333161758602">Eliminazione del messaggio di richiesta di turndown di <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Timer accesso automatico a sessione pubblica</translation>
-<translation id="8987262643142408725">Disattiva suddivisione record SSL</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
 <translation id="9042911395677044526">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL" />.</translation>

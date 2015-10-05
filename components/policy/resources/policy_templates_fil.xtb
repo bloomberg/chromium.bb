@@ -481,7 +481,6 @@
           Kung hinayaang hindi nakatakda ang patakarang ito makakapag-install ng anumang extension sa <ph name="PRODUCT_NAME" /> ang user.</translation>
 <translation id="316778957754360075">Hindi na ginagamit ang setting na ito simula sa <ph name="PRODUCT_NAME" /> bersyon 29. Ang inirerekumendang paraan upang mag-set up ng mga koleksyon ng extension/app na hino-host ng samahan ay ang pagsama sa pag-host sa site sa mga CRX package sa ExtensionInstallSources at paglagay ng direktang link sa pag-download sa mga package sa isang web page.Maaaring gawin ang isang launcher para sa web page na iyon gamit ang patakaran na ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">mula pa noong bersyon <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Tinutukoy kung ang paghahati ng SSL record ay dapat hindi paganahin. Ang paghahati ng record ay isang remedyo para sa kahinaan sa SSL 3.0 at TLS 1.0, ngunit maaaring magdulot ng mga isyu sa pagiging tugma sa ilang server at proxy ng HTTPS. Kung hindi nakatakda ang patakaran, o nakatakda sa false, gagamitin ang paghahati ng record sa mga koneksyon ng SSL/TLS na gumagamit ng CBC ciphersuites.</translation>
 <translation id="3213821784736959823">Kinokontrol kung gagamitin ang built-in na DNS client sa <ph name="PRODUCT_NAME" />.
 
       Kung nakatakda sa true ang patakarang ito, gagamitin ang built-in na DNS client, kung available.
@@ -1750,7 +1749,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8955719471735800169">Bumalik sa tuktok</translation>
 <translation id="8970205333161758602">Pigilan ang turndown prompt sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Timer ng awtomatikong pag-log in sa pampublikong session</translation>
-<translation id="8987262643142408725">Huwag paganahin ang paghahati ng SSL record</translation>
 <translation id="8992176907758534924">Huwag payagan ang anumang site na magpakita ng mga larawan</translation>
 <translation id="9035964157729712237">Ang mga ID ng Extension upang maibukod mula sa blacklist</translation>
 <translation id="9042911395677044526">Nagbibigay-daan na malapat sa bawat user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME" /> na device. Ang configuration ng network ay isang naka-format sa JSON  na string tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL" /></translation>

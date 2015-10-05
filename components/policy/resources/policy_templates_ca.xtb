@@ -33,6 +33,7 @@
 <translation id="1265053460044691532">Limiteu el temps durant el qual un usuari autenticat mitjançant SAML pot iniciar la sessió fora de línia.</translation>
 <translation id="1283072268083088623">Especifica quins esquemes d'autenticació HTTP són compatibles amb <ph name="PRODUCT_NAME" />. Els valors possibles són "basic", "digest", "ntlm" i "negotiate". Separeu els diversos valors amb comes. Si no es defineix aquesta política, s'utilitzaran els quatre esquemes.</translation>
 <translation id="1297182715641689552">Fes servir un script de servidor intermediari .pac</translation>
+<translation id="1304973015437969093">Identificadors de les extensions i de les aplicacions i URL de les actualitzacions que s'instal·laran en silenci</translation>
 <translation id="1310699457130669094">Podeu especificar un URL a un fitxer .pac del servidor intermediari. Aquesta política només té efecte si heu seleccionat la configuració manual del servidor intermediari a "Triar la manera d'especificar la configuració del servidor intermediari". No heu de definir aquesta política si heu seleccionat alguna altra manera de definir les polítiques del servidor intermediari. Per obtenir exemples més detallats, visiteu: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la.
 
@@ -80,6 +81,13 @@
           Si s'estableix aquesta política, els usuaris la podran ignorar temporalment si activen o desactiven el mode de contrast elevat. No obstant això, l'elecció de l'usuari no es constant i l'estat predeterminat es restablirà quan la pantalla es torni a mostrar o si l'usuari es manté inactiu a la pantalla d'inici de sessió durant un minut.
 
           Si no s'estableix aquesta política, el mode de contrast elevat es desactivarà quan la pantalla d'inici de sessió es mostri per primera vegada. Els usuaris poden activar o desactivar el mode de contrast elevat en qualsevol moment i el seu estat a la pantalla d'inici de sessió es mantindrà entre els usuaris.</translation>
+<translation id="1468707346106619889">Si aquesta política s'estableix com a verdadera, es permet utilitzar l'escriptori unificat
+      i està activat de manera predeterminada. Així, les aplicacions poden ocupar diverses pantalles.
+      Per desactivar l'escriptori unificat en pantalles concretes, l'usuari pot
+      desmarcar l'opció corresponent a la configuració de pantalles.
+
+      Si aquesta política s'estableix com a falsa o no s'estableix, l'escriptori unificat
+      es desactivarà. En aquest cas, l'usuari no pot activar la funció.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Especifica el període en mil·lisegons durant el qual se sol·licita al servei de gestió de dispositius d'informació sobre les polítiques de dispositiu.
 
@@ -281,6 +289,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2518231489509538392">Permet reproduir àudio</translation>
 <translation id="2521581787935130926">Mostrar la drecera de les aplicacions a la barra d'adreces d'interès</translation>
 <translation id="2529700525201305165">Restricció dels usuaris que poden iniciar la sessió a <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">Configura la llista d'aplicacions i d'extensions instal·lades per força</translation>
 <translation id="253135976343875019">Retard d'advertiment d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2552966063069741410">Zona horària</translation>
 <translation id="2571066091915960923">Permet activar o desactivar el servidor intermediari de compressió de dades i evitar que els usuaris canvien aquesta configuració.
@@ -353,6 +362,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
           ExtensionInstallBlacklist té prioritat davant d'aquesta política. Això vol dir que no s'instal·larà cap extensió de la llista negra, encara que provingui d'un lloc d'aquesta llista.</translation>
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
+<translation id="2850122204195089673">Establiu que l'escriptori unificat estigui disponible i activat de manera predeterminada.</translation>
 <translation id="285480231336205327">Activa el mode de contrast elevat</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="2877225735001246144">Desactiva la cerca de CNAME en negociar l'autenticació de Kerberos</translation>
@@ -399,9 +409,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="3153348162326497318">Us permet especificar quines extensions NO poden instal·lar els usuaris. Les extensions ja instal·lades s'eliminaran si apareixen a la llista negra. Un valor de llista negra de "*" significa que totes les extensions apareixen a la llista negra llevat que apareguin explícitament a la llista blanca. Si no s'ha definit aquesta política, l'usuari podrà instal·lar qualsevol extensió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Aquesta versió no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />. La manera recomanada de definir col·leccions d'aplicacions/extensions allotjades per una organització és incloure el lloc que allotja els paquets CRX a ExtensionInstallSources i col·locar enllaços de baixada directa als paquets en una pàgina web. Es pot crear un menú d'aplicacions per a la pàgina web mitjançant la política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">des de la versió <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Especifica si la divisió del registre SSL s'ha de desactivar. La divisió del registre és una solució temporal per a la feblesa de SSL 3.0 i TLS 1.0, però pot causar problemes de compatibilitat amb determinats servidors o servidors intermediaris HTTPS.
-
-      Si aquesta política no es defineix, o bé si es defineix com a falsa, s'utilitzarà la divisió del registre en connexions SSL/TLS que facin servir un conjunt de xifratge CBC.</translation>
 <translation id="3213821784736959823">Controla si el client DNS integrat s'utilitza a <ph name="PRODUCT_NAME" />.
 
 Si aquesta política s'activa, s'utilitzarà el client DNS integrat, si està disponible.
@@ -1489,7 +1496,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8955719471735800169">Torna a dalt</translation>
 <translation id="8970205333161758602">Suprimeix l'avís de desactivació de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Cronometrador d'inici de sessió automàtic de sessió pública</translation>
-<translation id="8987262643142408725">Desactiva la divisió del registre SSL</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
 <translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>

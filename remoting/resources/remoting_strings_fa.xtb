@@ -16,6 +16,7 @@
 برای کسب اطلاعات درباره حریم خصوصی، لطفاً از خط‌مشی رازداری Google‏ (http://goo.gl/SyrVzj) و خط‌مشی رازداری Chrome‏ (http://goo.gl/0uXE5d) بازدید کنید.</translation>
 <translation id="1324095856329524885">(این ویژگی هنوز برای رایانه شما موجود نیست)</translation>
 <translation id="1342297293546459414">‏رایانه اشتراک‎گذاری ‎شده را مشاهده و کنترل کنید.</translation>
+<translation id="1389790901665088353">‏دانلود نصب‌کننده میزبان کنترل دسک‌تاپ از راه دور Chrome</translation>
 <translation id="1450760146488584666">شئ درخواست شده وجود ندارد.</translation>
 <translation id="1480046233931937785">دست‌اندرکاران</translation>
 <translation id="1520828917794284345">تغییر اندازه دسک‌تاپ جهت تناسب</translation>
@@ -145,6 +146,7 @@
 <translation id="4572065712096155137">دسترسی</translation>
 <translation id="4573676252416618192">‏برنامه میزبان کنترل
 دسک‌تاپ از راه دور Chrome</translation>
+<translation id="4619978527973181021">پذیرفتن و نصب</translation>
 <translation id="4703799847237267011">‏جلسه کار با Chrome پایان یافته است.</translation>
 <translation id="4736223761657662401">سابقه اتصال</translation>
 <translation id="4741792197137897469">‏احراز هویت انجام نشد. لطفاً دوباره وارد سیستم Chrome شوید.</translation>
@@ -157,6 +159,7 @@
 <translation id="4913529628896049296">در انتظار برقراری اتصال...</translation>
 <translation id="4918086044614829423">پذیرش</translation>
 <translation id="492843737083352574">با صفحه‌کلید یا موشواره‌ام مشکل دارم.</translation>
+<translation id="4973800994433240357">‏با دانلود «نصب‌کننده میزبان Chromoting»، موافقتتان را با <ph name="LINK_BEGIN" />شرایط خدمات<ph name="LINK_END" /> Google اعلام می‌کنید.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (آفلاین)</translation>
 <translation id="5070121137485264635">‏میزبان راه دور از شما می‌خواهد که در وب سایت شخص ثالثی تأیید هویت شوید. برای ادامه، باید با مجوزهای اضافی Chrome Remote Desktop برای دسترسی به این آدرس موافقت کنید:</translation>
 <translation id="5156271271724754543">لطفاً یک پین یکسان را در هر دو کادر وارد کنید.</translation>
@@ -169,6 +172,7 @@
 <translation id="5308380583665731573">اتصال</translation>
 <translation id="5363265567587775042">از کاربری که می‌خواهید به رایانه‌اش دسترسی داشته باشید بخواهید روی «<ph name="SHARE" />» کلیک کند و کد دسترسی را به شما بدهد.</translation>
 <translation id="5379087427956679853">‏کنترل دسک‌تاپ از راه دور Chrome به شما اجازه می‎دهد بطور امن رایانه خود را در وب به اشتراک بگذارید. هر دو کاربر باید برنامه کنترل دسک‌تاپ از راه دور Chrome را اجرا کنند، این برنامه در <ph name="URL" /> یافت می‎شود.</translation>
+<translation id="5394895745784982830">‏برای Mac‏ (OS X 10.6 و بالاتر)</translation>
 <translation id="5397086374758643919">‏حذف‌ نصب‌کننده میزبان کنترل دسک‌تاپ از راه دور Chrome</translation>
 <translation id="5419185025274123272">برنامه بازنشانی نمی‌شود. همچنان می‌توانید یک گزارش اشکال ارسال کنید.</translation>
 <translation id="544077782045763683">میزبان خاموش شد.</translation>
@@ -221,6 +225,7 @@
 <translation id="6930242544192836755">مدت زمان</translation>
 <translation id="6939719207673461467">نمایش/پنهان کردن صفحه‌کلید</translation>
 <translation id="6944854424004126054">بازگرداندن پنجره</translation>
+<translation id="6962773374262604195">‏برای Windows‏ (XP و بالاتر)</translation>
 <translation id="6965382102122355670">تأیید</translation>
 <translation id="6985691951107243942">آیا مطمئن هستید که می‌خواهید اتصالات راه دور به <ph name="HOSTNAME" /> را غیرفعال کنید؟ درصورتی‌که تصمیم خود را عوض کنید، باید از آن رایانه برای فعال کردن مجدد اتصال دیدن کنید.</translation>
 <translation id="6998989275928107238">به</translation>
@@ -250,6 +255,7 @@
 <translation id="7869445566579231750">مجوز اجرای این برنامه را ندارید.</translation>
 <translation id="7948001860594368197">گزینه‌های صفحه</translation>
 <translation id="7970576581263377361">‏احراز هویت انجام نشد. لطفاً دوباره وارد سیستم Chromium شوید.</translation>
+<translation id="8041721485428375115">‏با دانلود «نصب‌کننده میزبان کنترل دسک‌تاپ از راه دور Chrome»، موافقتتان را با <ph name="LINK_BEGIN" />شرایط خدمات<ph name="LINK_END" /> Google اعلام می‌کنید.</translation>
 <translation id="8073845705237259513">‏برای استفاده از کنترل دسک‌تاپ از راه دور Chrome، باید یک حساب Google به دستگاهتان اضافه کنید.</translation>
 <translation id="80739703311984697">‏میزبان راه دور از شما می‌خواهد که در وب سایت شخص ثالثی تأیید هویت شوید. برای ادامه، باید
 با مجوزهای اضافی Chromoting برای دسترسی به این آدرس موافقت کنید:</translation>
@@ -274,6 +280,7 @@
 <translation id="8642984861538780905">متوسط</translation>
 <translation id="8712909229180978490">‏نمی‌توانم فایل‌های ذخیره شده‌ام را آنلاین در Google Drive ببینم.</translation>
 <translation id="8759753423332885148">بیشتر بیاموزید.</translation>
+<translation id="8791202241915690908">‏دانلود نصب‌کننده میزبان Chromoting</translation>
 <translation id="894763922177556086">خوب</translation>
 <translation id="897805526397249209">‏برای فعال کردن اتصالات راه دور به رایانه دیگر، کار با Chrome را نصب کنید و روی «<ph name="BUTTON_NAME" />» کلیک کنید.</translation>
 <translation id="8998327464021325874">‏کنترل‌کننده برنامه میزبان کنترل دسک‌تاپ از راه دور Chrome</translation>

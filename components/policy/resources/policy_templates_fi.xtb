@@ -409,7 +409,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="3153348162326497318">Voit määrittää, mitä laajennuksia käyttäjät EIVÄT saa asentaa. Jo asennetut laajennukset poistetaan, jos ne ovat kiellettyjen luettelossa. Kiellettyjen luettelon arvo * tarkoittaa, että kaikki laajennukset ovat kiellettyjen luettelossa, ellei niitä ole mainittu sallittujen luettelossa. Jos tätä käytäntöä ei ole määritetty, käyttäjä voi asentaa tuotteeseen <ph name="PRODUCT_NAME" /> mitä tahansa laajennuksia.</translation>
 <translation id="316778957754360075">Tämä asetus on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 29 lähtien. Suositeltu tapa määrittää organisaation isännöimiä laajennuksia tai sovelluskokoelmia on sisällyttää CRX-paketteja sisältävä sivusto ExtensionInstallSources-luetteloon ja lisätä suorat latauslinkit paketteihin verkkosivulle. Kyseisen verkkosivun käynnistysohjelma voidaan luoda ExtensionInstallForcelist-käytännön avulla.</translation>
 <translation id="3185009703220253572">versiosta <ph name="SINCE_VERSION" /> alkaen</translation>
-<translation id="3195451902035818945">Määrittää, tuleeko SSL-tietueiden jakamisen olla pois käytöstä. Tietueiden jakaminen kiertää SSL 3.0:n ja TLS 1.0:n haavoittuvuuden, mutta voi aiheuttaa yhteensopivuusongelmia joidenkin HTTPS-palvelimien ja -välityspalvelimien kanssa. Jos käytäntöä ei ole määritetty tai se on poistettu käytöstä, tietueiden jakamista käytetään CBC-salausohjelmistoa käyttävissä SSL/TLS-yhteyksissä.</translation>
 <translation id="3213821784736959823">Hallinnoi, käytetäänkö tuotteessa <ph name="PRODUCT_NAME" /> sisäänrakennettua DNS-asiakassovellusta.
 
 Jos tämän käytännön arvo on true, sisäänrakennettua DNS-asiakassovellusta käytetään sen ollessa saatavilla.
@@ -1484,7 +1483,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8955719471735800169">Sivun alkuun</translation>
 <translation id="8970205333161758602">Torju tuotteen <ph name="PRODUCT_FRAME_NAME" /> hylkäyspyyntö</translation>
 <translation id="8971221018777092728">Julkisten istuntojen automaattisen kirjautumisen ajastin</translation>
-<translation id="8987262643142408725">Poista SSL-tietueiden jakaminen käytöstä</translation>
 <translation id="8992176907758534924">Älä anna sivustojen näyttää kuvia</translation>
 <translation id="9035964157729712237">Kieltoluettelosta poistettavat laajennuksien tunnukset</translation>
 <translation id="9042911395677044526">Antaa määrittää tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävien laitteiden verkkoasetukset käyttäjäkohtaisesti. Verkkoasetukset määritetään JSON-muotoiltuna merkkijonona Open Network Configuration -muodossa, josta on lisätietoja osoitteessa <ph name="ONC_SPEC_URL" /></translation>

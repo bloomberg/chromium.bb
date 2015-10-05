@@ -10,6 +10,7 @@
 <translation id="111844081046043029">Jeste li sigurni da želite zatvoriti ovu stranicu?</translation>
 <translation id="112840717907525620">Predmemorija pravila ispravna je</translation>
 <translation id="1132774398110320017">Postavke Automatskog popunjavanja u Chromeu...</translation>
+<translation id="1146673768181266552">ID rušenja <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; operativni sustav vašeg računala smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="1152921474424827756">Pristupite <ph name="BEGIN_LINK" />predmemoriranoj kopiji<ph name="END_LINK" /> stranice <ph name="URL" /></translation>
 <translation id="121201262018556460">Pokušali ste doseći domenu <ph name="DOMAIN" />, ali poslužitelj je predstavio certifikat potpisan slabim ključem. Napadač je možda otkrio privatni ključ, a poslužitelj možda nije očekivani poslužitelj (možda ste u komunikaciji s napadačem).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">Stranica na web-lokaciji <ph name="SITE" /> navodi sljedeće:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat navodno izdan sutra. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu.}one{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat navodno izdan # dan u budućnosti. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu.}few{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat navodno izdan # dana u budućnosti. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu.}other{Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer je sigurnosni certifikat navodno izdan # dana u budućnosti. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">Bug datoteke</translation>
 <translation id="1763864636252898013">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; operativni sustav vašeg uređaja smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="1821930232296380041">Nevažeći zahtjev ili parametri zahtjeva</translation>
 <translation id="1871208020102129563">Proxy poslužitelj postavljen je na upotrebu fiksnih proxy poslužitelja, a ne URL .pac skripte.</translation>
-<translation id="1875753206475436906">vrsta heuristike: <ph name="HEURISTIC_TYPE" />
-    vrsta poslužitelja: <ph name="SERVER_TYPE" />
-    potpis polja: <ph name="FIELD_SIGNATURE" />
-    potpis obrasca: <ph name="FORM_SIGNATURE" />
-    id eksperimenta: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">Posjetite <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Oznake s domene <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Pogreška postavljanja u seriju</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Licence su potrošene</translation>
 <translation id="3739623965217189342">Veza koju ste kopirali</translation>
 <translation id="375403751935624634">Prijevod nije uspio zbog poslužiteljske pogreške.</translation>
+<translation id="3759461132968374835">Nemate nedavnih izvješća o padu. Ovdje se neće prikazati padovi do kojih je došlo kada je izvješćivanje o padovima onemogućeno.</translation>
 <translation id="385051799172605136">Natrag</translation>
 <translation id="3858027520442213535">Ažuriraj datum i vrijeme</translation>
 <translation id="3884278016824448484">Identifikator uređaja sukobljen je</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">Potpis za potvrdu nije ispravan.</translation>
 <translation id="4196861286325780578">&amp;Ponovi premještanje</translation>
+<translation id="4220128509585149162">Padovi programa</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4258748452823770588">Potpis nije valjan</translation>
 <translation id="4269787794583293679">(Nema korisničkog imena)</translation>
 <translation id="4300246636397505754">Nadređeni prijedlozi</translation>
+<translation id="4325863107915753736">Članak nije pronađen</translation>
 <translation id="4372948949327679948">Očekivana vrijednost vrste <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Pokušali ste doseći domenu <ph name="DOMAIN" />, ali certifikat koji je poslužitelj predstavio povučen je od strane izdavača. Prema tome nikako ne biste trebali vjerovati sigurnosnim certifikatima koje predstavlja poslužitelj. Možda komunicirate s napadačem.</translation>
 <translation id="4394049700291259645">Onemogući</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">Želite li prijevod s jezika <ph name="ORIGINAL_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Sigurnosno pohranjivanje u neispravnom je stanju</translation>
 <translation id="5031870354684148875">O Google Prevoditelju</translation>
+<translation id="5045550434625856497">Netočna zaporka</translation>
 <translation id="5087286274860437796">Certifikat poslužitelja trenutačno nije važeći.</translation>
 <translation id="5089810972385038852">Država</translation>
 <translation id="5094747076828555589">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; Chromium smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Oblak</translation>
 <translation id="5295309862264981122">Potvrdi navigaciju</translation>
 <translation id="5299298092464848405">Pogreška u pravilu analize</translation>
+<translation id="5308689395849655368">Onemogućeno je izvješćivanje o padu.</translation>
 <translation id="5316812925700871227">Zakretanje u suprotnom smjeru od kazaljke na satu</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="536296301121032821">Pohrana postavki pravila nije uspjela</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="6060685159320643512">Oprez, ovi eksperimenti mogu ugristi</translation>
+<translation id="6099520380851856040">Dogodio se <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Certifikat poslužitelja ima predugo razdoblje valjanosti.</translation>
 <translation id="6154808779448689242">Vraćeni token pravila ne odgovara trenutačnom tokenu</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">Zemlja</translation>
 <translation id="6458467102616083041">Zanemareno jer je zadano pretraživanje onemogućeno pravilom.</translation>
 <translation id="647261751007945333">Pravila uređaja</translation>
+<translation id="6489534406876378309">Pokreni prijenos rušenja</translation>
 <translation id="6512448926095770873">Zatvori ovu stranicu</translation>
 <translation id="6529602333819889595">&amp;Ponovi brisanje</translation>
 <translation id="6550675742724504774">Opcije</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">Jeste li sigurni da želite ponovo učitati ovu stranicu?</translation>
 <translation id="8349305172487531364">Traka oznaka</translation>
 <translation id="8364627913115013041">Nije postavljeno.</translation>
+<translation id="8412145213513410671">Padovi (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;Poništi premještanje</translation>
 <translation id="8488350697529856933">Primjenjuje se na</translation>
 <translation id="8530504477309582336">Google Payments ne podržava tu vrstu kartice. Odaberite neku drugu karticu.</translation>

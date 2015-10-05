@@ -45,6 +45,7 @@
 
           Bu politika ayarlanmadan bırakılırsa, dört şema da kullanılır.</translation>
 <translation id="1297182715641689552">.pac proxy komut dosyası kullan</translation>
+<translation id="1304973015437969093">Uzantı/Uygulama kimlikleri ve güncelleme URL'leri sessizce yüklenir</translation>
 <translation id="1310699457130669094">Bir proxy .pac dosyasının URL'sini burada belirtebilirsiniz.
 
           Bu politika yalnızca 'Proxy sunucu ayarlarının nasıl belirtileceğini seçin' alanında el ile proxy ayarlarını seçtiyseniz etkili olur.
@@ -101,6 +102,14 @@
           Bu politikayı ayarlarsanız, kullanıcılar yüksek kontrast modunu etkinleştirip veya devre dışı bırakıp geçici olarak bu politikayı geçersiz kılabilir. Ancak, kullanıcının seçimi kalıcı değildir ve giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika boşta kalırsa varsayılan değer geri yüklenir.
 
           Bu politika ayarlanmadan bırakılırsa, giriş ekranı ilk kez gösterildiğinde yüksek kontrast modu devre dışıdır. Kullanıcılar yüksek kontrast modunu her zaman etkinleştirebilir veya devre dışı bırakabilir ve yüksek kontrast modunun giriş ekranındaki durumu kullanıcılar arasında kalıcıdır.</translation>
+<translation id="1468707346106619889">Bu politika "doğru" seçeneğine ayarlanırsa Birleşik Masaüstü'ne varsayılan olarak
+      izin verilir ve bu özellik etkinleştirilir. Bu şekilde, uygulamaların birden fazla
+      ekrana yayılmasına olanak sağlanır.
+      Kullanıcı, ekran ayarlarında tek tek ekranların işaretini kaldırarak bu ekranlara
+      ilişkin Birleşik Masaüstü'nü devre dışı bırakabilir.
+
+      Bu politika "yanlış" seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa
+      Birleşik Masaüstü devre dışı kalır. Bu durumda kullanıcı bu özelliği kullanamaz.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Cihaz yönetimi hizmetinin cihaz politikası bilgileri için sorgulandığı süreyi milisaniye cinsinden belirtir.
 
@@ -337,6 +346,7 @@
 <translation id="2518231489509538392">Ses çalmaya izin ver</translation>
 <translation id="2521581787935130926">Yer işareti çubuğunda uygulamalar kısayolunu göster</translation>
 <translation id="2529700525201305165"><ph name="PRODUCT_NAME" /> uygulamasında oturum açmasına izin verilen kullanıcıları kısıtla</translation>
+<translation id="2529880111512635313">Yüklenmeye zorlanan uygulama ve uzantıların listesini yapılandır</translation>
 <translation id="253135976343875019">AC güçle çalışırken boşta kalma uyarısı gecikmesi</translation>
 <translation id="2552966063069741410">Saat dilimi</translation>
 <translation id="2571066091915960923">Veri sıkıştırma proxy'sini etkinleştirir veya devre dışı bırakır ve kullanıcıların bu ayarı değiştirmesini önler.
@@ -415,6 +425,7 @@
 
           ExtensionInstallBlacklist, bu politikaya göre daha önceliklidir. Diğer bir deyişle, kara listedeki bir uzantı bu listedeki bir sitede bulunsa bile yüklenmeyecektir.</translation>
 <translation id="2824715612115726353">Gizli modu etkinleştir</translation>
+<translation id="2850122204195089673">Birleşik Masaüstü'nü kullanılabilir hale getir ve varsayılan olarak aç.</translation>
 <translation id="285480231336205327">Yüksek kontrast modunu etkinleştir</translation>
 <translation id="2872961005593481000">Kapat</translation>
 <translation id="2877225735001246144">Kerberos kimlik doğrulaması anlaşmasını yaparken CNAME aramasını devre dışı bırak</translation>
@@ -474,7 +485,6 @@
           Bu politika ayarlanmadan bırakılırsa, kullanıcı <ph name="PRODUCT_NAME" /> ürününe herhangi bir uzantıyı yükleyebilir.</translation>
 <translation id="316778957754360075">Bu ayar, <ph name="PRODUCT_NAME" /> Sürüm 29 itibariyle kullanımdan kaldırılmıştır. Kuruluş tarafından barındırılan uzantı/uygulama koleksiyonları oluşturmanın önerilen yöntemi, CRX paketlerini barındıran siteyi ExtensionInstallSources içine eklemek ve web sayfasına paketler için doğrudan indirme bağlantıları koymaktır. ExtensionInstallForcelist politikası kullanılarak bu web sayfası için bir başlatıcı oluşturulabilir.</translation>
 <translation id="3185009703220253572">Sürüm <ph name="SINCE_VERSION" /> ve sonrasında</translation>
-<translation id="3195451902035818945">SSL kayıt bölme işlevinin devre dışı bırakılıp bırakılmayacağını belirtir. Kayıt bölme, SSL 3.0 ve TLS 1.0'daki bir zayıflık için geçici bir çözümdür, ancak bazı HTTPS sunucuları ve proxy'leri ile uyumluluk sorunlarına neden olabilir. Politika ayarlanmamışsa veya false (yanlış) seçeneğine ayarlanmışsa, CBC şifre setleri kullanan SSL / TLS bağlantılarında kayıt bölme işlevi kullanılabilir.</translation>
 <translation id="3213821784736959823"><ph name="PRODUCT_NAME" /> ürününde dahili DNS istemcisinin kullanılıp kullanılmayacağını kontrol eder.
 
       Bu politika doğru seçeneğine ayarlandığında, dahili DNS istemcisi (varsa) kullanılır.
@@ -1739,7 +1749,6 @@ politikayı geçersiz kılamaz.
 <translation id="8955719471735800169">Başa dön</translation>
 <translation id="8970205333161758602"><ph name="PRODUCT_FRAME_NAME" /> reddetme sorusunu engelle</translation>
 <translation id="8971221018777092728">Herkese açık oturum otomatik giriş zamanlayıcısı</translation>
-<translation id="8987262643142408725">SSL kayıt bölme işlevini devre dışı bırak</translation>
 <translation id="8992176907758534924">Hiçbir sitenin resimleri görüntülemesine izin verme</translation>
 <translation id="9035964157729712237">Kara listeden muaf tutulacak uzantı kimlikleri</translation>
 <translation id="9042911395677044526">Kullanıcılara ayrı ayrı uygulanacak ağ yapılandırmasını bir <ph name="PRODUCT_OS_NAME" /> cihazına iletmeye olanak verir. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL" /> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>

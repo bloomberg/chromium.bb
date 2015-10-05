@@ -10,6 +10,7 @@
 <translation id="111844081046043029">이 페이지에서 벗어나시겠습니까?</translation>
 <translation id="112840717907525620">정책 캐시 확인</translation>
 <translation id="1132774398110320017">Chrome 자동완성 설정...</translation>
+<translation id="1146673768181266552">오류 ID <ph name="CRASH_ID" />(<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 컴퓨터의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1152921474424827756"><ph name="URL" />의 <ph name="BEGIN_LINK" />캐시된 사본<ph name="END_LINK" />에 액세스</translation>
 <translation id="121201262018556460"><ph name="DOMAIN" />에 접속하려 했으나 서버가 안전성이 낮은 키가 포함된 인증서를 전달했습니다. 공격자가 비공개 키를 손상시켰을 수 있으며 서버를 가장한 공격자와 통신 중일 수 있습니다.</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215"><ph name="SITE" />의 페이지 내용:</translation>
 <translation id="1706954506755087368">{1,plural, =1{서버의 보안 인증서가 내일 발효될 예정이며 이에 따라 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.}other{서버의 보안 인증서가 #일 후 발효될 예정이며 이에 따라 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">버그 신고</translation>
 <translation id="1763864636252898013">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 기기의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1821930232296380041">잘못된 요청 또는 요청 매개변수</translation>
 <translation id="1871208020102129563">프록시가 .pac 스크립트 URL이 아닌 고정 프록시 서버를 사용하도록 설정됩니다.</translation>
-<translation id="1875753206475436906">휴리스틱 유형: <ph name="HEURISTIC_TYPE" />
-    서버 유형: <ph name="SERVER_TYPE" />
-    필드 서명: <ph name="FIELD_SIGNATURE" />
-    양식 서명: <ph name="FORM_SIGNATURE" />
-    실험 ID: '<ph name="EXPERIMENT_ID" />'</translation>
 <translation id="194030505837763158"><ph name="LINK" />(으)로 이동</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> 북마크</translation>
 <translation id="1973335181906896915">일련화 오류</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">라이선스 만료됨</translation>
 <translation id="3739623965217189342">복사한 링크</translation>
 <translation id="375403751935624634">서버 오류가 발생하여 번역하지 못했습니다.</translation>
+<translation id="3759461132968374835">최근에 보고된 충돌이 없습니다. 충돌 보고를 사용 중지했을 때 발생한 충돌은 여기에 표시되지 않습니다.</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3858027520442213535">시간과 날짜 업데이트</translation>
 <translation id="3884278016824448484">기기 식별자 충돌</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">잘못된 인증 서명입니다.</translation>
 <translation id="4196861286325780578">이동 다시 실행(&amp;R)</translation>
+<translation id="4220128509585149162">다운</translation>
 <translation id="4250680216510889253">아니요</translation>
 <translation id="4258748452823770588">잘못된 서명</translation>
 <translation id="4269787794583293679">(사용자 이름 없음)</translation>
 <translation id="4300246636397505754">상위 추천</translation>
+<translation id="4325863107915753736">도움말을 찾지 못했습니다.</translation>
 <translation id="4372948949327679948">예상 <ph name="VALUE_TYPE" /> 값입니다.</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" />에 접속하려 했으나 발행기관에서 서버가 전달한 인증서를 폐기했습니다. 이는 서버가 제시한 보안 자격증명 정보를 신뢰할 수 없음을 의미합니다. 사용자는 현재 공격자와 통신 중일 수도 있습니다.</translation>
 <translation id="4394049700291259645">사용 중지</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" />에서 <ph name="TARGET_LANGUAGE" />로 번역하시겠습니까?</translation>
 <translation id="5019198164206649151">보조 기억 장치 상태가 잘못됨</translation>
 <translation id="5031870354684148875">Google 번역 정보</translation>
+<translation id="5045550434625856497">비밀번호가 잘못되었습니다.</translation>
 <translation id="5087286274860437796">서버의 인증서가 현재 유효하지 않습니다.</translation>
 <translation id="5089810972385038852">주</translation>
 <translation id="5094747076828555589">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 Chromium에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">클라우드</translation>
 <translation id="5295309862264981122">탐색 확인</translation>
 <translation id="5299298092464848405">정책을 파싱하는 중 오류 발생</translation>
+<translation id="5308689395849655368">충돌 보고가 사용 중지되었습니다.</translation>
 <translation id="5316812925700871227">반시계 방향으로 회전</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="536296301121032821">정책 설정 저장 실패</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6060685159320643512">이러한 실험실 기능은 문제를 일으킬 수 있습니다.</translation>
+<translation id="6099520380851856040">발생 시간: <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">서버 인증서의 유효 기간이 너무 깁니다.</translation>
 <translation id="6154808779448689242">반환된 정책 토큰이 현재 토큰과 일치하지 않음</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">국가</translation>
 <translation id="6458467102616083041">정책에 의해 기본 검색의 사용이 중지되었기 때문에 무시됨</translation>
 <translation id="647261751007945333">기기 정책</translation>
+<translation id="6489534406876378309">오류 업로드 시작하기</translation>
 <translation id="6512448926095770873">이 페이지 나오기</translation>
 <translation id="6529602333819889595">삭제 다시 실행(&amp;R)</translation>
 <translation id="6550675742724504774">옵션</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">이 페이지를 새로고침 하시겠습니까?</translation>
 <translation id="8349305172487531364">북마크바</translation>
 <translation id="8364627913115013041">설정 안됨</translation>
+<translation id="8412145213513410671">충돌(<ph name="CRASH_COUNT" />개)</translation>
 <translation id="8437238597147034694">이동 실행 취소(&amp;U)</translation>
 <translation id="8488350697529856933">적용 대상</translation>
 <translation id="8530504477309582336">Google Payments에서 지원하지 않는 카드 유형입니다. 다른 카드를 선택해 주세요.</translation>

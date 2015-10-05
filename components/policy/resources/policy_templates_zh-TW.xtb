@@ -408,9 +408,6 @@
 <translation id="3153348162326497318">允許您指定使用者不得安裝的擴充功能。如果已安裝的擴充功能在黑名單中，就會遭到移除。星號「*」代表排除所有的擴充功能，除非您特別將部分擴充功能列入許可清單。如果未設定這項政策，使用者即可在「<ph name="PRODUCT_NAME" />」中安裝任何擴充功能。</translation>
 <translation id="316778957754360075">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 移除這項設定。如要設定機構代管的擴充功能/應用程式集合，建議您將代管 CRX 封裝檔的網站加入 ExtensionInstallSources 中，並在網頁上提供該封裝檔的直接下載連結。您可以透過 ExtensionInstallForcelist 政策建立該網頁專用的啟動器。</translation>
 <translation id="3185009703220253572">自第 <ph name="SINCE_VERSION" /> 版起</translation>
-<translation id="3195451902035818945">指定是否應停用 SSL 記錄分割功能。記錄分割功能是解決 SSL 3.0 和 TLS 1.0 弱點的方法，但可能會造成與某些 HTTPS 伺服器和 Proxy 的相容性問題。
-
-      如果尚未設定這項政策，或設定為 False，則記錄分割功能會用於使用 CBC 加密套件的 SSL/TLS 連線。</translation>
 <translation id="3213821784736959823">控制是否要在 <ph name="PRODUCT_NAME" /> 中使用內建 DNS 用戶端。
 
       如果您將這項政策設為 True，系統就會使用內建 DNS 用戶端 (如果可用)。
@@ -1487,7 +1484,6 @@
 <translation id="8955719471735800169">返回頁首</translation>
 <translation id="8970205333161758602">隱藏停止支援 <ph name="PRODUCT_FRAME_NAME" />的提示</translation>
 <translation id="8971221018777092728">公開工作階段自動登入計時器</translation>
-<translation id="8987262643142408725">停用 SSL 記錄分割</translation>
 <translation id="8992176907758534924">不允許任何網站顯示圖片</translation>
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
 <translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME" /> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>

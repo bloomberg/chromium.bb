@@ -10,6 +10,7 @@
 <translation id="111844081046043029">¿Estás seguro de que deseas abandonar esta página?</translation>
 <translation id="112840717907525620">Caché de política correcta</translation>
 <translation id="1132774398110320017">Configuración de la función Autocompletar de Chrome…</translation>
+<translation id="1146673768181266552">ID del fallo: <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el sistema operativo de la computadora no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="1152921474424827756">Accede a una <ph name="BEGIN_LINK" />copia almacenada en caché<ph name="END_LINK" /> de <ph name="URL" />.</translation>
 <translation id="121201262018556460">Intentaste acceder a <ph name="DOMAIN" />, pero el servidor  presentó un certificado que contiene una clave no segura. Es posible que un atacante haya descifrado la clave privada y que este no sea el servidor esperado (es posible que hayas establecido comunicación con un atacante).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">La página en <ph name="SITE" /> dice:</translation>
 <translation id="1706954506755087368">{1,plural, =1{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; supuestamente, el certificado de seguridad entra en vigencia mañana. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión.}other{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; supuestamente, el certificado de seguridad entra en vigencia en # días. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">Incluir error</translation>
 <translation id="1763864636252898013">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el sistema operativo del dispositivo no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="1821930232296380041">Solicitud o parámetros de solicitud no válidos</translation>
 <translation id="1871208020102129563">El proxy está configurado para usar servidores proxy fijos, no una URL de script .pac.</translation>
-<translation id="1875753206475436906">tipo heurístico: <ph name="HEURISTIC_TYPE" />
-    tipo de servidor: <ph name="SERVER_TYPE" />
-    firma de campo: <ph name="FIELD_SIGNATURE" />
-    firma de formulario: <ph name="FORM_SIGNATURE" />
-    id de experimento: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">Ir a <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Error de serialización</translation>
@@ -66,7 +63,7 @@
 <translation id="2354001756790975382">Otros marcadores</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2367567093518048410">Nivel</translation>
-<translation id="2384307209577226199">Predeterminada de Enterprise</translation>
+<translation id="2384307209577226199">Empresa (predeterminada)</translation>
 <translation id="2386255080630008482">Se ha revocado el certificado del servidor.</translation>
 <translation id="2392959068659972793">Mostrar políticas sin valor establecido</translation>
 <translation id="2396249848217231973">&amp;Deshacer Eliminar</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Licencias agotadas</translation>
 <translation id="3739623965217189342">Vínculo copiado</translation>
 <translation id="375403751935624634">Falló la traducción debido a un error de servidor.</translation>
+<translation id="3759461132968374835">No has notificado ningún bloqueo recientemente. Los bloqueos que se hayan producido mientras la función de notificación de bloqueos estaba desactivada no aparecerán en esta página.</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3858027520442213535">Actualizar fecha y hora</translation>
 <translation id="3884278016824448484">Hay un identificador de dispositivo en conflicto.</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">La firma de verificación no es válida.</translation>
 <translation id="4196861286325780578">&amp;Rehacer Mover</translation>
+<translation id="4220128509585149162">Fallos</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4258748452823770588">Firma no válida</translation>
 <translation id="4269787794583293679">(Sin nombre de usuario)</translation>
 <translation id="4300246636397505754">Sugerencias para padres</translation>
+<translation id="4325863107915753736">Se produjo un error al buscar el artículo</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
 <translation id="4377125064752653719">Intentaste acceder a <ph name="DOMAIN" />, pero el emisor anuló el certificado que presentó el servidor. Esto significa que no se debe confiar en absoluto en las credenciales de seguridad que presentó el servidor. Te puedes estar comunicando con un atacante.</translation>
 <translation id="4394049700291259645">Inhabilitar</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">¿Quieres traducir del <ph name="ORIGINAL_LANGUAGE" /> al <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">La memoria auxiliar se encuentra en mal estado.</translation>
 <translation id="5031870354684148875">Acerca de Google Traductor</translation>
+<translation id="5045550434625856497">Contraseña incorrecta</translation>
 <translation id="5087286274860437796">El certificado del servidor no es válido en este momento.</translation>
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5094747076828555589">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; Chromium no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Nube</translation>
 <translation id="5295309862264981122">Confirmar navegación</translation>
 <translation id="5299298092464848405">Error al analizar la política</translation>
+<translation id="5308689395849655368">Notificación de fallas desactivada.</translation>
 <translation id="5316812925700871227">Girar a la izquierda</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="536296301121032821">Error al almacenar la configuración de la política</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6060685159320643512">Cuidado, estos experimentos pueden dañarte</translation>
+<translation id="6099520380851856040">Se produjo a las <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">El certificado de servidor tiene un período de validez demasiado extenso.</translation>
 <translation id="6154808779448689242">El token de política devuelto no coincide con el token actual.</translation>
 <translation id="6165508094623778733">Más información</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">País</translation>
 <translation id="6458467102616083041">Se ignora porque la política inhabilita la búsqueda predeterminada.</translation>
 <translation id="647261751007945333">Políticas de dispositivos</translation>
+<translation id="6489534406876378309">Comenzar a cargar fallos</translation>
 <translation id="6512448926095770873">Abandonar esta página</translation>
 <translation id="6529602333819889595">&amp;Rehacer Eliminar</translation>
 <translation id="6550675742724504774">Opciones</translation>
@@ -288,7 +292,7 @@
 <translation id="7983301409776629893">Siempre traducir del <ph name="ORIGINAL_LANGUAGE" /> al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7988324688042446538">Marcadores de escritorio</translation>
 <translation id="7995512525968007366">Sin especificar</translation>
-<translation id="8003882219468422867">Anulación de Enterprise</translation>
+<translation id="8003882219468422867">Empresa (sin anulación)</translation>
 <translation id="8034522405403831421">Esta página está en <ph name="SOURCE_LANGUAGE" />. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8088680233425245692">Error al visualizar artículo</translation>
 <translation id="8091372947890762290">La activación está pendiente en el servidor.</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">¿Estás seguro de que quieres volver a cargar esta página?</translation>
 <translation id="8349305172487531364">Barra de marcadores</translation>
 <translation id="8364627913115013041">Sin establecer</translation>
+<translation id="8412145213513410671">Bloqueos (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;Deshacer Mover</translation>
 <translation id="8488350697529856933">Se aplica a</translation>
 <translation id="8530504477309582336">Google Payments no admite este tipo de tarjeta. Selecciona otra tarjeta.</translation>

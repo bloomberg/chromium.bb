@@ -481,8 +481,6 @@
           Als dit beleid niet wordt ingesteld, kan de gebruiker alle extensies installeren in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Deze instelling wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 29. De aanbevolen manier om verzamelingen van extensies/apps die door de organisatie worden gehost in te stellen, is het opnemen van de site die de CRX-pakketten in ExtensionInstallSources host en het plaatsen van rechtstreekse downloadlinks naar de pakketten op een webpagina. Je kunt voor die webpagina een startprogramma maken met het beleid ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">sinds versie <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Geeft aan of het splitsen van SSL-records moet worden uitgeschakeld. Het splitsen van records is een tijdelijke oplossing voor een fout in SSL 3.0 en TLS 1.0, maar kan compatibiliteitsproblemen met bepaalde HTTPS-servers en -proxy's veroorzaken.
-Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het splitsen van records gebruikt bij SSL-/TLS-verbindingen die gebruikmaken van CBC-coderingssuites.</translation>
 <translation id="3213821784736959823">Hiermee wordt bepaald of de ingebouwde DNS-client wordt gebruikt in <ph name="PRODUCT_NAME" />.
 
       Als dit beleid is ingesteld op 'waar', wordt de ingebouwde DNS-client gebruikt (indien beschikbaar).
@@ -1758,7 +1756,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8955719471735800169">Bovenkant pagina</translation>
 <translation id="8970205333161758602">De prompt <ph name="PRODUCT_FRAME_NAME" /> negeren</translation>
 <translation id="8971221018777092728">Timer voor automatisch inloggen bij de openbare sessie</translation>
-<translation id="8987262643142408725">Splitsen van SSL-records uitschakelen</translation>
 <translation id="8992176907758534924">Niet toestaan dat sites afbeeldingen weergeven</translation>
 <translation id="9035964157729712237">Extensie-id's die zijn vrijgesteld van de zwarte lijst</translation>
 <translation id="9042911395677044526">Hiermee kun je een gebruikerspecifieke netwerkconfiguratie toepassen op een <ph name="PRODUCT_OS_NAME" />-apparaat. De netwerkconfiguratie is een tekenreeks met JSON-indeling, zoals gedefinieerd door de indeling voor open netwerkconfiguratie, beschreven op <ph name="ONC_SPEC_URL" /></translation>

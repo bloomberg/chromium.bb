@@ -16,6 +16,7 @@
 गोपनीयतेविषयीच्या माहितीसाठी, कृपया Google गोपनीयता धोरण (http://goo.gl/SyrVzj) आणि Chrome गोपनीयता धोरण (http://goo.gl/0uXE5d) पहा.</translation>
 <translation id="1324095856329524885">(हे वैशिष्ट्य अद्याप आपल्या संगणकासाठी उपलब्ध नाही)</translation>
 <translation id="1342297293546459414">सामायिक केलेला संगणक पहा आणि नियंत्रित करा.</translation>
+<translation id="1389790901665088353">Chrome दूरस्थ डेस्कटॉप होस्ट इन्स्टॉलर डाउनलोड करा</translation>
 <translation id="1450760146488584666">विनंती केलेले ऑब्जेक्ट अस्तित्वात नाही.</translation>
 <translation id="1480046233931937785">क्रेडिट</translation>
 <translation id="1520828917794284345">फिट करण्यासाठी डेस्कटॉपचा आकार बदला</translation>
@@ -64,7 +65,7 @@
 <translation id="2353140552984634198">Chromoting वापरून आपण या संगणकावर सुरक्षितरितीने प्रवेश करू शकता.</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
 <translation id="2366718077645204424">होस्‍टवर पोहोचण्‍यात अक्षम. हे बहुदा आपण वापरत असलेल्या नेटवर्कच्या कॉन्फिगरेशनमुळे झाले आहे.</translation>
-<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  अंतिम अॉनलाइन पाहिले<ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> अंतिम अॉनलाइन पाहिले <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">मदत आणि अभिप्राय</translation>
 <translation id="2499160551253595098">आम्हाला वापर आकडेवारी आणि क्रॅश अहवाल संकलित करण्‍यासाठी अनुमती देऊन आम्हाला Chrome दूरस्थ डेस्कटॉप सुधारण्यास मदत करा.</translation>
 <translation id="2512228156274966424">टीप: सर्व कीबोर्ड शॉर्टकट उपलब्ध असल्याचे सुनिश्चित करण्यासाठी, आपण ‘विंडो म्हणून उघडण्यासाठी’ Chrome दूरस्थ डेस्कटॉप कॉन्फिगर करू शकता.</translation>
@@ -146,6 +147,7 @@
 <translation id="4572065712096155137">प्रवेश</translation>
 <translation id="4573676252416618192">Chrome दूरस्थ
 डेस्कटॉप होस्ट</translation>
+<translation id="4619978527973181021">स्वीकार करा आणि स्थापित करा</translation>
 <translation id="4703799847237267011">आपले Chromoting सत्र समाप्त झाले.</translation>
 <translation id="4736223761657662401">कनेक्शन इतिहास</translation>
 <translation id="4741792197137897469">प्रमाणीकरण अयशस्वी. कृपया Chrome वर पुन्हा साइन इन करा.</translation>
@@ -158,6 +160,7 @@
 <translation id="4913529628896049296">कनेक्शनसाठी प्रतीक्षा करत आहे…</translation>
 <translation id="4918086044614829423">स्वीकारा</translation>
 <translation id="492843737083352574">मला माझ्या कीबोर्ड किंवा माऊसमध्ये समस्या येत आहेत.</translation>
+<translation id="4973800994433240357">Chromoting होस्ट इन्स्टॉलर डाउनलोड करून, आपण Google <ph name="LINK_BEGIN" />सेवा अटी<ph name="LINK_END" /> शी सहमत होता.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ऑफलाइन)</translation>
 <translation id="5070121137485264635">दूरस्थ होस्टसाठी आपण एका तृतीय-पक्ष वेबसाइटवर प्रमाणीकृत करणे आवश्यक आहे. सुरू ठेवण्यासाठी, या पत्त्यामध्ये प्रवेश करण्यासाठी आपण Chrome दूरस्थ डेस्कटॉपला अतिरिक्त परवानग्या मंजूर करणे आवश्यक आहे:</translation>
 <translation id="5156271271724754543">कृपया दोन्ही बॉक्सेसमध्‍ये सारखाच PIN प्रविष्‍ट करा.</translation>
@@ -170,6 +173,7 @@
 <translation id="5308380583665731573">कनेक्‍ट करा</translation>
 <translation id="5363265567587775042">आपण ज्या वापरकर्त्याच्या संगणकामध्‍ये प्रवेश करू इच्छिता त्यास “<ph name="SHARE" />” क्लिक करण्‍यास आणि आपल्‍याला प्रवेश कोड देण्‍यास सांगा.</translation>
 <translation id="5379087427956679853">Chrome दूरस्थ डेस्कटॉप आपल्याला वेबवर आपला संगणक सुरक्षितपणे सामायिक करण्‍याची अनुमती देतो. दोन्ही वापरकर्त्यांनी Chrome दूरस्थ डेस्कटॉप अ‍ॅप चालवत असणे आवश्‍यक आहे, जो <ph name="URL" /> येथे सापडू शकतो.</translation>
+<translation id="5394895745784982830">Mac (OS X 10.6 आणि त्यानंतरचे) साठी</translation>
 <translation id="5397086374758643919">Chrome दूरस्थ डेस्कटॉप होस्ट विस्थापनकर्ता</translation>
 <translation id="5419185025274123272">अनुप्रयोग रीसेट करणे शक्य झाले नाही. आपण तरीही एक दोष अहवाल पाठवू शकता.</translation>
 <translation id="544077782045763683">होस्टने बंद केले आहे.</translation>
@@ -222,6 +226,7 @@
 <translation id="6930242544192836755">कालावधी</translation>
 <translation id="6939719207673461467">कीबोर्ड दर्शवा/लपवा.</translation>
 <translation id="6944854424004126054">विंडो पुनर्संचयित करा</translation>
+<translation id="6962773374262604195">Windows (XP आणि त्यानंतरचे) साठी</translation>
 <translation id="6965382102122355670">ठीक आहे</translation>
 <translation id="6985691951107243942">आपल्याला खात्री आहे की <ph name="HOSTNAME" /> ची दूरस्थ कनेक्शन आपण अक्षम करू इच्छिता? आपण आपला विचार बदलल्यास, आपल्याला कनेक्शन पुन्हा-सक्षम करण्‍यासाठी त्या संगणकाला भेट देणे आवश्यक असेल.</translation>
 <translation id="6998989275928107238">प्रति</translation>
@@ -251,6 +256,7 @@
 <translation id="7869445566579231750">आपल्याला हा अनुप्रयोग चालविण्याची परवानगी नाही.</translation>
 <translation id="7948001860594368197">स्क्रीन पर्याय</translation>
 <translation id="7970576581263377361">प्रमाणीकरण अयशस्वी. कृपया Chromium वर पुन्हा साइन इन करा.</translation>
+<translation id="8041721485428375115">Chrome दूरस्थ डेस्कटॉप होस्ट इन्स्टॉलर डाउनलोड करून, आपण Google <ph name="LINK_BEGIN" />सेवा अटी<ph name="LINK_END" /> शी सहमत होता.</translation>
 <translation id="8073845705237259513">Chrome दूरस्थ डेस्कटॉप वापरण्यासाठी, आपल्याला आपल्या डिव्हाइसमध्ये एक Google खाते जोडणे आवश्यक असेल.</translation>
 <translation id="80739703311984697">दूरस्थ होस्टसाठी आपण एका तृतीय-पक्ष वेबसाइटवर प्रमाणीकृत करणे आवश्यक आहे. सुरू ठेवण्यासाठी, या पत्त्यामध्ये प्रवेश करण्यासाठी आपण Chromoting ला अतिरिक्त परवानग्या मंजूर करणे आवश्यक आहे:</translation>
 <translation id="809687642899217504">माझे संगणक</translation>
@@ -274,6 +280,7 @@
 <translation id="8642984861538780905">मध्यम</translation>
 <translation id="8712909229180978490">मी Google ड्राइव्हमध्ये माझ्या जतन केलेल्या फायली ऑनलाइन पाहू शकत नाही.</translation>
 <translation id="8759753423332885148">अधिक जाणून घ्या.</translation>
+<translation id="8791202241915690908">Chromoting होस्ट इन्स्टॉलर डाउनलोड करा</translation>
 <translation id="894763922177556086">चांगला</translation>
 <translation id="897805526397249209">एका वेगळ्या संगणकावर दूरस्थ कनेक्शन सक्षम करण्यासाठी, तेथे Chromoting स्थापित करा आणि “<ph name="BUTTON_NAME" />” क्लिक करा.</translation>
 <translation id="8998327464021325874">Chrome दूरस्थ डेस्कटॉप होस्ट नियंत्रक</translation>

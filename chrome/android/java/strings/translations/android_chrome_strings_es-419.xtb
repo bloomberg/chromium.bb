@@ -22,6 +22,7 @@
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
 <translation id="1312168552565502328">Cookies, datos del sitio</translation>
+<translation id="1346090444609141578">No hay páginas guardadas aquí</translation>
 <translation id="1369915414381695676">Se agregó el sitio <ph name="SITE_NAME" />.</translation>
 <translation id="1373696734384179344">Memoria insuficiente para descargar el contenido seleccionado</translation>
 <translation id="1379156015317873965">Mejorar el rendimiento de carga de la página</translation>
@@ -482,7 +483,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8026334261755873520">Eliminar datos de navegación</translation>
 <translation id="8035133914807600019">Nueva carpeta…</translation>
 <translation id="8050319187894766337">Guardada. Casi sin espacio.</translation>
-<translation id="8068648041423924542">No es posible seleccionar un certificado.</translation>
+<translation id="8068648041423924542">No es posible seleccionar un certificado</translation>
 <translation id="8069239273282989646">Poscompresión</translation>
 <translation id="8073388330009372546">Abrir imagen en pestaña nueva</translation>
 <translation id="8084156870963450514">Accede a tu cuenta para ver tu contenido web en cualquier dispositivo.</translation>
@@ -545,7 +546,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8912362522468806198">Cuenta de Google</translation>
 <translation id="8920114477895755567">Esperando los detalles parentales</translation>
 <translation id="8928220460877261598">Accediste a Chrome.</translation>
-<translation id="8934455786738644694">Arrastra el elemento desde la parte superior y toca el botón "Atrás" para salir de la pantalla completa.</translation>
+<translation id="8934455786738644694">Arrastra el dedo desde la parte superior y toca el botón "Atrás" para salir de la pantalla completa.</translation>
 <translation id="8941248009481596111">Tu conexión con este sitio es privada.</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
 <translation id="8959122750345127698">Navegación inaccesible: <ph name="URL" /></translation>

@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
+<translation id="1203161113033984675">BEGIN_LINK இயல்நிலை இணையம் END_LINK இயக்கத்தில் உள்ளது.</translation>
+<translation id="1418775127135578229">நகலெடுத்த இணைப்பைத் திற</translation>
+<translation id="1487576085940433465">BEGIN_LINK அருகிலுள்ள சாதனங்கள் இணையப் பக்கங்களை வலைபரப்புகின்றன END_LINK. இந்த முடிவுகளின் தரத்தை மேம்படுத்த ஏதேனும் Google சேவை பயன்படுத்தப்படும்.</translation>
+<translation id="2026797012398135445">உங்கள் சாதனத்தை இயக்க, தடைநீக்கவும்.</translation>
 <translation id="2316129865977710310">வேண்டாம், நன்றி</translation>
 <translation id="3435896845095436175">இயக்கு</translation>
 <translation id="4394049700291259645">முடக்கு</translation>
 <translation id="5301954838959518834">சரி, புரிந்தது</translation>
+<translation id="5508399372551154686">BEGIN_LINK இயல்நிலை இணையம் END_LINK முடக்கத்தில் உள்ளது.</translation>
+<translation id="5815960189179094695">BEGIN_LINK இயல்நிலை இணையச் END_LINK சாதனங்களை ஸ்கேன் செய்கிறது...</translation>
 <translation id="6196207969502475924">குரல் தேடல்</translation>
+<translation id="6722203589267124394">அருகிலுள்ள BEGIN_LINK இயல்நிலை இணையச் END_LINK சாதனங்களைப் பார்க்க புளூடூத்தை இயக்கவும்.</translation>
 <translation id="7554791636758816595">புதிய தாவல்</translation>
+<translation id="7588950540487816470">இயல்நிலை இணையம்</translation>
+<translation id="8800384372516194324">மேலும் முடிவுகளைக் காட்டு</translation>
 </translationbundle>

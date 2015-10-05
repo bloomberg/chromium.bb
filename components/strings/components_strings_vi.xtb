@@ -10,6 +10,7 @@
 <translation id="111844081046043029">Bạn có chắc chắn muốn thoát khỏi trang này không?</translation>
 <translation id="112840717907525620">Bộ nhớ cache chính sách OK</translation>
 <translation id="1132774398110320017">Cài đặt tự động điền trên Chrome...</translation>
+<translation id="1146673768181266552">ID sự cố <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành máy tính của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="1152921474424827756">Truy cập <ph name="BEGIN_LINK" />bản sao được lưu trong bộ nhớ cache<ph name="END_LINK" /> của <ph name="URL" /></translation>
 <translation id="121201262018556460">Bạn đã cố truy cập vào <ph name="DOMAIN" /> nhưng máy chủ xuất trình chứng chỉ chứa khóa yếu. Kẻ tấn công có thể đã phá khóa cá nhân và máy chủ đó có thể không phải là máy chủ bạn mong đợi (bạn có thể đang giao tiếp với một kẻ tấn công).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">Trang trên <ph name="SITE" /> cho biết:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này được đề từ ngày mai. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.}other{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này được đề # ngày trong tương lai. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">Lỗi tệp</translation>
 <translation id="1763864636252898013">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành thiết bị của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="1821930232296380041">Yêu cầu hoặc tham số yêu cầu không hợp lệ</translation>
 <translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
-<translation id="1875753206475436906">loại heuristic: <ph name="HEURISTIC_TYPE" />
-    loại máy chủ: <ph name="SERVER_TYPE" />
-    chữ ký trường: <ph name="FIELD_SIGNATURE" />
-    chữ ký biểu mẫu: <ph name="FORM_SIGNATURE" />
-    id thử nghiệm: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">Truy cập <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Dấu trang của <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Lỗi nối tiếp hóa</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Giấy phép không đủ</translation>
 <translation id="3739623965217189342">Liên kết đã sao chép</translation>
 <translation id="375403751935624634">Không thể dịch do lỗi máy chủ.</translation>
+<translation id="3759461132968374835">Bạn không nhận được báo cáo sự cố nào gần đây. Sự cố xảy ra khi báo cáo sự cố đã bị tắt sẽ không xuất hiện ở đây.</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3858027520442213535">Cập nhật ngày và giờ</translation>
 <translation id="3884278016824448484">Số nhận dạng thiết bị xung đột</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">Chữ ký xác minh không hợp lệ</translation>
 <translation id="4196861286325780578">&amp;Làm lại di chuyển</translation>
+<translation id="4220128509585149162">Sự cố</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="4258748452823770588">Chữ ký không hợp lệ</translation>
 <translation id="4269787794583293679">(Không có tên người dùng)</translation>
 <translation id="4300246636397505754">Đề xuất chính</translation>
+<translation id="4325863107915753736">Không tìm được bài viết</translation>
 <translation id="4372948949327679948">Giá trị <ph name="VALUE_TYPE" /> mong đợi.</translation>
 <translation id="4377125064752653719">Bạn đã cố truy cập vào <ph name="DOMAIN" /> nhưng chứng chỉ mà máy chủ xuất trình đã bị nhà phát hành thu hồi. Điều này có nghĩa là giấy ủy nhiệm bảo mật mà máy chủ xuất trình hoàn toàn không đáng tin cậy. Bạn có thể đang giao tiếp với kẻ tấn công.</translation>
 <translation id="4394049700291259645">Vô hiệu hóa</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">Dịch từ <ph name="ORIGINAL_LANGUAGE" /> sang <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
 <translation id="5031870354684148875">Giới thiệu về Google Dịch</translation>
+<translation id="5045550434625856497">Mật khẩu sai</translation>
 <translation id="5087286274860437796">Chứng chỉ của máy chủ không hợp lệ tại thời điểm này.</translation>
 <translation id="5089810972385038852">Tiểu bang</translation>
 <translation id="5094747076828555589">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được Chromium tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Đám mây</translation>
 <translation id="5295309862264981122">Xác nhận Điều hướng</translation>
 <translation id="5299298092464848405">Lỗi phân tích cú pháp chính sách</translation>
+<translation id="5308689395849655368">Báo cáo sự cố bị tắt.</translation>
 <translation id="5316812925700871227">Xoay ngược chiều kim đồng hồ</translation>
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="536296301121032821">Không thể lưu trữ cài đặt chính sách</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="6060685159320643512">Hãy cẩn thận, thử nghiệm này có thể gây lỗi</translation>
+<translation id="6099520380851856040">Xảy ra vào <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Chứng chỉ máy chủ có thời gian hiệu lực quá dài.</translation>
 <translation id="6154808779448689242">Mã thông báo chính sách trả lại không phù hợp với mã thông báo hiện tại</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">Quốc gia</translation>
 <translation id="6458467102616083041">Bị bỏ qua vì chính sách đã tắt tìm kiếm mặc định.</translation>
 <translation id="647261751007945333">Chính sách thiết bị</translation>
+<translation id="6489534406876378309">Bắt đầu tải lên sự cố</translation>
 <translation id="6512448926095770873">Rời khỏi Trang này</translation>
 <translation id="6529602333819889595">&amp;Làm lại xóa</translation>
 <translation id="6550675742724504774">Tùy chọn</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">Bạn có chắc chắn muốn tải lại trang này không?</translation>
 <translation id="8349305172487531364">Thanh dấu trang</translation>
 <translation id="8364627913115013041">Chưa được đặt.</translation>
+<translation id="8412145213513410671">Sự cố (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;Hoàn tác di chuyển</translation>
 <translation id="8488350697529856933">Áp dụng cho</translation>
 <translation id="8530504477309582336">Google Payments không hỗ trợ loại thẻ này. Vui lòng chọn thẻ khác.</translation>

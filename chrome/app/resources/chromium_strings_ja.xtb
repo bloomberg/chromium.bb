@@ -55,7 +55,6 @@
 <translation id="2705212601509139398">このサイトで使用されている Chromium Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、互換性のあるブラウザをダウンロードしてください。</translation>
 <translation id="2718390899429598676">セキュリティ強化のため、Chromium ではデータが暗号化されます。</translation>
 <translation id="2732467638532545152">ご使用のパソコンは、このウェブサイトのセキュリティ証明書を処理できない旧バージョンの Microsoft Windows を実行しています。このため Chromium では、証明書が <ph name="SITE" /> から発行されたものか、それとも <ph name="SITE" /> になりすましたネットワーク上の別のユーザーによって発行されたものかを判別することができません。パソコンを新しいバージョンの Windows に更新してください。</translation>
-<translation id="275588974610408078">Chromium では、障害レポートをご利用いただけません。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> は不正なファイルです。Chromium はこのファイルをブロックしました。</translation>
 <translation id="2847479871509788944">Chromium から削除...</translation>

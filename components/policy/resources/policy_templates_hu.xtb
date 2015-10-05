@@ -407,7 +407,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="3153348162326497318">Lehetővé teszi annak meghatározását, hogy melyek azok a bővítmények, amelyeket NEM telepíthetnek a felhasználók. A már telepített, de a tiltólistán szereplő bővítményeket a rendszer eltávolítja. A tiltólista "*" értéke azt jelenti, hogy az összes bővítmény tiltólistás, kivéve, ha az adott bővítményt az engedélyezőlista tartalmazza. Ha ez a házirend beállítatlanul marad, a felhasználó bármilyen bővítményt telepíthet a(z) <ph name="PRODUCT_NAME" /> alkalmazásban.</translation>
 <translation id="316778957754360075">Ez a házirend többé nincs jelen a <ph name="PRODUCT_NAME" /> 29-es verziójától kezdve. A szervezet által tárolt bővítmény- és alkalmazásgyűjtemények beállításához azt javasoljuk, hogy a CRX-csomagokat tartalmazó webhelyet vegye fel az ExtensionInstallSources házirendbe, és helyezzen el a csomagokra mutató közvetlen letöltési linkeket egy weboldalon. A weboldalhoz az ExtensionInstallForcelist házirend használatával lehet indítót létrehozni.</translation>
 <translation id="3185009703220253572">a(z) <ph name="SINCE_VERSION" /> verzió óta</translation>
-<translation id="3195451902035818945">Megadja, hogy az SSL-rekord felosztása le legyen-e tiltva. A rekordfelosztás egy kerülőmegoldás az SSL 3.0 és a TLS 1.0 egyik gyengeségének kiküszöbölésére, de kompatibilitási problémákat okozhat bizonyos HTTPS szerverekkel és proxykkal. Ha a házirend nincs beállítva, vagy ha hamis értékre van állítva, akkor a rekordfelosztás használatban lesz a CBC kriptográfiai protokollt használó SSL/TLS kapcsolatok esetében.</translation>
 <translation id="3213821784736959823">Azt szabályozza, hogy a beépített DNS-ügyfél van-e használatban a(z) <ph name="PRODUCT_NAME" /> termékben.
 
       Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített DNS-ügyfelet használja, ha rendelkezésre áll ilyen.
@@ -1485,7 +1484,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="8955719471735800169">Vissza az oldal tetejére</translation>
 <translation id="8970205333161758602">A(z) <ph name="PRODUCT_FRAME_NAME" /> kikapcsolási figyelmeztetésének elrejtése</translation>
 <translation id="8971221018777092728">Nyilvános munkamenet automatikus bejelentkezési időzítője</translation>
-<translation id="8987262643142408725">Az SSL-rekord felosztásának letiltása</translation>
 <translation id="8992176907758534924">Egy webhely sem jeleníthet meg képeket</translation>
 <translation id="9035964157729712237">A feketelista alól kivételt képező bővítményazonosítók.</translation>
 <translation id="9042911395677044526">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását <ph name="PRODUCT_OS_NAME" /> eszközre. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>

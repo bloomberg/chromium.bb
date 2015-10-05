@@ -16,6 +16,7 @@
 ስለግላዊነት መረጃ ለማግኘት እባክዎ የGoogle ግላዊነት መመሪያን (http://goo.gl/SyrVzj) እና የChrome ግላዊነት መመሪያን (http://goo.gl/0uXE5d) ይመልከቱ።</translation>
 <translation id="1324095856329524885">(ይህ ባህሪ ገና ለኮምፒውተርዎ አይገኝም)</translation>
 <translation id="1342297293546459414">አንድ የተጋራ ኮምፒውተር ይመልከቱ እና ይቆጣጠሩ።</translation>
+<translation id="1389790901665088353">Chrome የርቀት ዴስክቶፕ አስተናጋጅ ጫኚ ያውርዱ</translation>
 <translation id="1450760146488584666">የተጠየቀው ነገር አይገኝም።</translation>
 <translation id="1480046233931937785">ክሬዲቶች</translation>
 <translation id="1520828917794284345">እንዲመጣጠን የዴስክቶፑን መጠን ይቀይሩ</translation>
@@ -146,6 +147,7 @@
 <translation id="4572065712096155137">መዳረሻ</translation>
 <translation id="4573676252416618192">Chrome የርቀት
 ዴስክቶፕ አስተናጋጅ</translation>
+<translation id="4619978527973181021">ተቀበልና ጫን</translation>
 <translation id="4703799847237267011">የChromoting ክፍለ-ጊዜዎ ተጠናቅቋል።</translation>
 <translation id="4736223761657662401">የግንኙነት ታሪክ</translation>
 <translation id="4741792197137897469">ማረጋገጥ አልተሳካም። እባክዎ እንደገና ወደ Chrome ይግቡ።</translation>
@@ -158,6 +160,7 @@
 <translation id="4913529628896049296">ግንኙነትን በመጠበቅ ላይ…</translation>
 <translation id="4918086044614829423">ይቀበሉ</translation>
 <translation id="492843737083352574">ከእኔ ቁልፍ ሰሌዳ ወይም መዳፊት ጋር ችግር እያጋጠመኝ ነው።</translation>
+<translation id="4973800994433240357">የChromoting ዴስክቶፕ አስተናጋጅ ጫኚውን በማውረድ በGoogle <ph name="LINK_BEGIN" />የአገልግሎት ውል<ph name="LINK_END" />ይስማማሉ።</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ከመስመር ውጪ)</translation>
 <translation id="5070121137485264635">የርቀት አስተናጋጁ ለሶስተኛ ወገን ድር ጣቢያ እንዲያረጋግጡ ይፈልጋል። ለመቀጠል Chrome የርቀት ዴስክቶፕ ይህን አድራሻ እንዲደርስበት ተጨማሪ ፍቃዶችን መስጠት አለብዎት፦</translation>
 <translation id="5156271271724754543">እባክዎ ተመሳሳዩን ፒን በሁለቱም ሳጥኖች ውስጥ ያስገቡ።</translation>
@@ -170,6 +173,7 @@
 <translation id="5308380583665731573">ይገናኙ</translation>
 <translation id="5363265567587775042">«<ph name="SHARE" />» ጠቅ ለማድረግ ለመድረስ የሚፈልጉትን ኮምፒዩተር ተጠቃሚ ይጠይቁ እና የመድረሻ ኮድ ይሰጡዎታል።</translation>
 <translation id="5379087427956679853">Chrome የርቀት ዴስክቶፕ ኮምፒውተርዎን ደህንነቱ በተጠበቀ መልኩ ድሩ ላይ እንዲያጋሩት ያስችልዎታል። ሁለቱም ተጠቃሚዎች የChrome ርቀት ዴስክቶፕ መተግበሪያውን ማሄድ አለባቸው፣ እሱም <ph name="URL" /> ላይ ሊገኝ ይችላል።</translation>
+<translation id="5394895745784982830">ለMac (OS X 10.6 እና ከዚያ በላይ)</translation>
 <translation id="5397086374758643919">Chrome የርቀት ዴስክቶፕ አስተናጋጅ ማራገፊያ</translation>
 <translation id="5419185025274123272">መተግበሪያውን ዳግም ማስጀመር አልተቻለም። አሁንም የሳንካ ሪፖርት መላክ ይችላሉ።</translation>
 <translation id="544077782045763683">አስተናጋጅ ተዘግቷል።</translation>
@@ -222,6 +226,7 @@
 <translation id="6930242544192836755">ጊዜ</translation>
 <translation id="6939719207673461467">የቁልፍ ሰሌዳን አሳይ/ደብቅ።</translation>
 <translation id="6944854424004126054">መስኮት ወደነበረበት ይመልሱ</translation>
+<translation id="6962773374262604195">ለWindows (XP እና ከዚያ በላይ)</translation>
 <translation id="6965382102122355670">ይሁን</translation>
 <translation id="6985691951107243942">እርግጠኛ ነዎት ከ<ph name="HOSTNAME" /> ጋር ያሉትን የርቀት ግንኙነቶች ማሰናከል ይፈልጋሉ? ሐሳብዎን ከቀየሩ ግንኙነቶችን ዳግም ለማንቃት ያንን ኮምፒውተር መጎብኘት ይኖርብዎታል።</translation>
 <translation id="6998989275928107238">ለ</translation>
@@ -251,6 +256,7 @@
 <translation id="7869445566579231750">ይህን መተግበሪያ ለማሄድ ፍቃድ የለዎትም።</translation>
 <translation id="7948001860594368197">የማያ ገጽ አማራጮች</translation>
 <translation id="7970576581263377361">ማረጋገጥ አልተሳካም። እባክዎ እንደገና ወደ Chromium ይግቡ።</translation>
+<translation id="8041721485428375115">የChrome የርቀት ዴስክቶፕ አስተናጋጅ ጫኚውን በማውረድዎ በGoogle <ph name="LINK_BEGIN" />የአገልግሎት ውል<ph name="LINK_END" />ይስማማሉ።</translation>
 <translation id="8073845705237259513">Chrome የርቀት ዴስክቶፕን ለመጠቀም የአንድ የGoogle መለያ በመሣሪያዎ ላይ ማከል አለብዎት።</translation>
 <translation id="80739703311984697">የርቀት አስተናጋጁ ለሶስተኛ ወገን ድር ጣቢያ እንዲያረጋግጡ ይፈልጋል። ለመቀጠል Chromoting ይህን አድራሻ እንዲደርስበት ተጨማሪ ፍቃዶችን መስጠት አለብዎት፦</translation>
 <translation id="809687642899217504">የእኔ ኮምፒውተሮች</translation>
@@ -274,6 +280,7 @@
 <translation id="8642984861538780905">ደህና</translation>
 <translation id="8712909229180978490">የእኔን በGoogle አንጻፊ ላይ የተቀመጡ ፋይሎች ማየት አልችልም።</translation>
 <translation id="8759753423332885148">ተጨማሪ ለመረዳት።</translation>
+<translation id="8791202241915690908">Chromoting አስተናጋጅ ጫኚውን በማውረድ ላይ</translation>
 <translation id="894763922177556086">ጥሩ</translation>
 <translation id="897805526397249209">ከአንድ ሌላ ኮምፒውተር ጋር የርቀት ግንኙነቶችን ለማንቃት Chromotingን እዚያው ይጫኑና «<ph name="BUTTON_NAME" />»ን ይጫኑ።</translation>
 <translation id="8998327464021325874">Chrome የርቀት ዴስክቶፕ አስተናጋጅ ምርጫዎች መቆጣጠሪያ</translation>

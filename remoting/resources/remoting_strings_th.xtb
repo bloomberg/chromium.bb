@@ -16,6 +16,7 @@
 สำหรับข้อมูลเกี่ยวกับความเป็นส่วนตัว โปรดดูนโยบายส่วนบุคคลของ Google (http://goo.gl/SyrVzj) และนโยบายส่วนบุคคลของ Chrome (http://goo.gl/0uXE5d)</translation>
 <translation id="1324095856329524885">(คุณลักษณะนี้ยังไม่มีให้ใช้งานในคอมพิวเตอร์ของคุณ)</translation>
 <translation id="1342297293546459414">ดูและควบคุมคอมพิวเตอร์ที่ใช้งานร่วมกัน</translation>
+<translation id="1389790901665088353">ดาวน์โหลด Chrome Remote Desktop Host Installer</translation>
 <translation id="1450760146488584666">ออบเจ็กต์ที่ขอไม่มีอยู่</translation>
 <translation id="1480046233931937785">เครดิต</translation>
 <translation id="1520828917794284345">ปรับขนาดเดสก์ท็อปให้พอดี</translation>
@@ -146,6 +147,7 @@ Host</translation>
 <translation id="4572065712096155137">เข้าถึง</translation>
 <translation id="4573676252416618192">Chrome Remote
 Desktop Host</translation>
+<translation id="4619978527973181021">ยอมรับและติดตั้ง</translation>
 <translation id="4703799847237267011">เซสชัน Chromoting ของคุณได้สิ้นสุดลงแล้ว</translation>
 <translation id="4736223761657662401">ประวัติการเชื่อมต่อ</translation>
 <translation id="4741792197137897469">การตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chrome อีกครั้ง</translation>
@@ -158,6 +160,7 @@ Desktop Host</translation>
 <translation id="4913529628896049296">กำลังรอการเชื่อมต่อ...</translation>
 <translation id="4918086044614829423">ยอมรับ</translation>
 <translation id="492843737083352574">ฉันมีปัญหาเกี่ยวกับแป้นพิมพ์หรือเมาส์</translation>
+<translation id="4973800994433240357">การดาวน์โหลด Chromoting Host Installer หมายถึงคุณยอมรับ<ph name="LINK_BEGIN" />ข้อกำหนดในการให้บริการ<ph name="LINK_END" />ของ Google</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ออฟไลน์)</translation>
 <translation id="5070121137485264635">โฮสต์ระยะไกลกำหนดให้คุณตรวจสอบสิทธิ์กับเว็บไซต์ของบุคคลที่สาม หากต้องการดำเนินการต่อ คุณต้องให้สิทธิ์อนุญาตเพิ่มเติมแก่ Chrome Remote Desktop เพื่อเข้าถึงที่อยู่นี้:</translation>
 <translation id="5156271271724754543">โปรดป้อน PIN เดียวกันลงในทั้งสองช่อง</translation>
@@ -170,6 +173,7 @@ Desktop Host</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="5363265567587775042">ขอให้ผู้ใช้ที่เป็นเจ้าของคอมพิวเตอร์ที่คุณต้องการใช้งานคลิก “<ph name="SHARE" />” และให้รหัสการเข้าถึงแก่คุณ</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop อนุญาตให้คุณแชร์คอมพิวเตอร์ของคุณผ่านเว็บอย่างปลอดภัย ผู้ใช้ทั้งสองฝ่ายจะต้องเรียกใช้แอปพลิเคชัน Chrome Remote Desktop ซึ่งสามารถรับได้ที่ <ph name="URL" /></translation>
+<translation id="5394895745784982830">สำหรับ Mac (OS X 10.6 ขึ้นไป)</translation>
 <translation id="5397086374758643919">Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="5419185025274123272">ไม่สามารถรีเซ็ตแอปพลิเคชันนี้ คุณยังคงสามารถส่งรายงานข้อบกพร่องได้</translation>
 <translation id="544077782045763683">โฮสต์ปิดตัวลงแล้ว</translation>
@@ -222,6 +226,7 @@ Desktop Host</translation>
 <translation id="6930242544192836755">ระยะเวลา</translation>
 <translation id="6939719207673461467">แสดง/ซ่อนแป้นพิมพ์</translation>
 <translation id="6944854424004126054">กู้คืนหน้าต่าง</translation>
+<translation id="6962773374262604195">สำหรับ Windows (XP ขึ้นไป)</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="6985691951107243942">คุณแน่ใจหรือไม่ว่าต้องการปิดใช้งานการเชื่อมต่อระยะไกลกับ <ph name="HOSTNAME" /> หากคุณเปลี่ยนใจภายหลัง คุณจะต้องไปที่คอมพิวเตอร์เครื่องนั้นเพื่อเปิดใช้งานการเชื่อมต่ออีกครั้ง</translation>
 <translation id="6998989275928107238">ถึง</translation>
@@ -251,6 +256,7 @@ Desktop Host</translation>
 <translation id="7869445566579231750">คุณไม่มีสิทธิ์ในการเรียกใช้แอปพลิเคชันนี้</translation>
 <translation id="7948001860594368197">ตัวเลือกหน้าจอ</translation>
 <translation id="7970576581263377361">การตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chromium อีกครั้ง</translation>
+<translation id="8041721485428375115">การดาวน์โหลด Chrome Remote Desktop Host Installer หมายถึงคุณยอมรับ<ph name="LINK_BEGIN" />ข้อกำหนดในการให้บริการ<ph name="LINK_END" />ของ Google</translation>
 <translation id="8073845705237259513">ในการใช้ Chrome Remote Desktop คุณจะต้องเพิ่มบัญชี Google ลงในอุปกรณ์ของคุณ</translation>
 <translation id="80739703311984697">โฮสต์ระยะไกลกำหนดให้คุณตรวจสอบสิทธิ์กับเว็บไซต์ของบุคคลที่สาม หากต้องการดำเนินการต่อ คุณต้องให้สิทธิ์อนุญาตเพิ่มเติมแก่ Chromoting เพื่อเข้าถึงที่อยู่นี้:</translation>
 <translation id="809687642899217504">คอมพิวเตอร์ของฉัน</translation>
@@ -274,6 +280,7 @@ Desktop Host</translation>
 <translation id="8642984861538780905">พอใช้</translation>
 <translation id="8712909229180978490">ฉันไม่เห็นไฟล์ที่บันทึกไว้แบบออนไลน์ใน Google ไดรฟ์</translation>
 <translation id="8759753423332885148">เรียนรู้เพิ่มเติม</translation>
+<translation id="8791202241915690908">ดาวน์โหลด Chromoting Host Installer</translation>
 <translation id="894763922177556086">ดี</translation>
 <translation id="897805526397249209">ในการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์เครื่องอื่น ให้ติดตั้ง Chromoting ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก "<ph name="BUTTON_NAME" />"</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>

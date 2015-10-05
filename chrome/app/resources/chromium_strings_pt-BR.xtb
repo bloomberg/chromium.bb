@@ -56,7 +56,6 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE" />, 
 <translation id="2705212601509139398">Este site está usando o plug-in Chromium Frame, que não será mais compatível em breve. Desinstale-o e faça o download de um navegador compatível.</translation>
 <translation id="2718390899429598676">Para maior segurança, o Chromium criptografará seus dados.</translation>
 <translation id="2732467638532545152">Seu computador está executando uma versão antiga do Microsoft Windows que não consegue processar o certificado de segurança deste website. Devido a esse problema, o Chromium não consegue identificar se o certificado veio de <ph name="SITE" /> ou de alguém da sua rede fingindo ser <ph name="SITE" />. Atualize seu computador para uma versão mais recente do Windows.</translation>
-<translation id="275588974610408078">O relatório de erros não está disponível no Chromium.</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> é malicioso e foi bloqueado pelo Chromium.</translation>
 <translation id="2847479871509788944">Remover do Chromium</translation>

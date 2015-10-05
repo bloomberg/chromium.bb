@@ -22,6 +22,7 @@
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
 <translation id="1312168552565502328">Effacer les cookies et les données du site</translation>
+<translation id="1346090444609141578">Aucune page enregistrée ici</translation>
 <translation id="1369915414381695676">Site "<ph name="SITE_NAME" />" ajouté</translation>
 <translation id="1373696734384179344">Mémoire insuffisante pour télécharger le contenu sélectionné.</translation>
 <translation id="1379156015317873965">Améliorer les performances de chargement des pages</translation>
@@ -184,7 +185,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4023950129927433024">Si vous avez oublié votre phrase secrète, interrompez la synchronisation, puis reconfigurez-la via <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
 <translation id="4042870126885713738">Afficher d'autres solutions lorsqu'une adresse Web ne peut pas être résolue ou qu'une connexion ne peut pas être établie</translation>
 <translation id="4056223980640387499">Sépia</translation>
-<translation id="4059119910594077751">Appuyez sur le bouton Arrière pour quitter le mode plein écran.</translation>
+<translation id="4059119910594077751">Appuyez sur le bouton Retour pour quitter le mode plein écran.</translation>
 <translation id="4062305924942672200">Informations légales</translation>
 <translation id="4084682180776658562">Favori</translation>
 <translation id="4089831646916293264">Cette fonctionnalité peut perturber l'accès aux services de données premium fournis par votre opérateur.</translation>
@@ -545,7 +546,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8912362522468806198">Compte Google</translation>
 <translation id="8920114477895755567">En attente des coordonnées des parents…</translation>
 <translation id="8928220460877261598">Vous êtes désormais connecté à Chrome.</translation>
-<translation id="8934455786738644694">Pour quitter le mode plein écran, faites glisser le site à partir du haut de l'écran, puis appuyez sur le bouton Retour.</translation>
+<translation id="8934455786738644694">Pour quitter le mode plein écran, faites glisser un doigt du haut vers le bas, puis appuyez sur le bouton Retour.</translation>
 <translation id="8941248009481596111">Votre connexion à ce site est privée.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Impossible d'accéder à <ph name="URL" />.</translation>

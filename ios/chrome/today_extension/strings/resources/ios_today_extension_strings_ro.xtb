@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="1203161113033984675">BEGIN_LINKWebul materialEND_LINK este activat.</translation>
+<translation id="1418775127135578229">Deschide linkul copiat</translation>
+<translation id="1487576085940433465">BEGIN_LINKObiecte din apropiere transmit pagini webEND_LINK. Pentru a îmbunătăți calitatea acestor rezultate, va fi folosit un serviciu Google.</translation>
+<translation id="2026797012398135445">Deblochează dispozitivul pentru a activa.</translation>
 <translation id="2316129865977710310">Nu, mulțumesc</translation>
 <translation id="3435896845095436175">Activează</translation>
 <translation id="4394049700291259645">Dezactivează</translation>
 <translation id="5301954838959518834">OK, am înțeles</translation>
+<translation id="5508399372551154686">BEGIN_LINKWebul materialEND_LINK este dezactivat.</translation>
+<translation id="5815960189179094695">Se caută obiecte din BEGIN_LINKWebul materialEND_LINK...</translation>
 <translation id="6196207969502475924">Căutare vocală</translation>
+<translation id="6722203589267124394">Vezi obiectele din BEGIN_LINKWebul materialEND_LINK din apropiere activând Bluetooth.</translation>
 <translation id="7554791636758816595">Filă nouă</translation>
+<translation id="7588950540487816470">Web material</translation>
+<translation id="8800384372516194324">Afișează mai multe rezultate</translation>
 </translationbundle>

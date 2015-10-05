@@ -476,9 +476,6 @@
 <translation id="3153348162326497318">Võimaldab määrata, milliseid laiendusi kasutajad EI saa installida. Juba installitud rakendused eemaldatakse, kui need on mustas nimekirjas. Kui mustas nimekirjas on väärtus „*”, siis kantakse kõik laiendused musta nimekirja, kui need ei ole eraldi lisatud lubatud nimekirja. Kui reeglit ei määrata, siis saab kasutaja rakenduses <ph name="PRODUCT_NAME" /> installida kõik laiendused.</translation>
 <translation id="316778957754360075">See seade on alates rakenduse <ph name="PRODUCT_NAME" /> versioonist 29 kasutusest kõrvaldatud. Organisatsiooni majutatud laienduse-/rakendusekogude seadistamiseks on soovitatav kaasata sait, mis hostib üksuses ExtensionInstallSources CRX-pakette ja paneb pakettide allalaadimise otselingid veebilehele. Selle veebilehe käivitaja saab luua reegliga ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">alates versioonist <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Määrab, kas SSL-kirjete jagamine on keelatud. Kirjete jagamine võib tõsta SSL 3.0 ja TLS 1.0 turvalisust, kuid see võib põhjustada ühilduvusprobleeme HTTPS-serverite ja -puhverserveritega.
-
-Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jagamist SSL-/TLS-ühenduste puhul, mis põhinevad CBC-šifril.</translation>
 <translation id="3213821784736959823">Määrab, kas rakenduses <ph name="PRODUCT_NAME" /> kasutatakse sisseehitatud DNS-i klienti.
 
       Kui reegel on lubatud, kasutatakse võimalusel sisseehitatud DNS-i klienti.
@@ -1741,7 +1738,6 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
 <translation id="8955719471735800169">Tagasi üles</translation>
 <translation id="8970205333161758602">Toote <ph name="PRODUCT_FRAME_NAME" /> tagasilükkamisviiba keelamine</translation>
 <translation id="8971221018777092728">Avaliku seansi automaatse sisselogimise ajasti</translation>
-<translation id="8987262643142408725">Keela SSL-kirje jagamine</translation>
 <translation id="8992176907758534924">Keela kõigil saitidel kujutiste näitamine</translation>
 <translation id="9035964157729712237">Mustast nimekirjast välistatud laienduste ID-d</translation>
 <translation id="9042911395677044526">Võimaldab võrguseadistuse kasutajapõhiselt teenuse <ph name="PRODUCT_OS_NAME" /> seadmes jõustada. Võrguseadistus on JSON-i vormingus string, mille määratleb Open Network Configuration vorming, mida kirjeldatakse aadressil <ph name="ONC_SPEC_URL" /></translation>

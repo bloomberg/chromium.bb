@@ -16,6 +16,7 @@ Externe computers met toetsenborden met een niet-Amerikaanse indeling kunnen onj
 Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http://goo.gl/SyrVzj) en het Privacybeleid van Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(deze functie is nog niet beschikbaar voor je computer)</translation>
 <translation id="1342297293546459414">Een gedeelde computer bekijken en beheren.</translation>
+<translation id="1389790901665088353">Installatieprogramma voor Chrome Remote Desktop-host downloaden</translation>
 <translation id="1450760146488584666">Het gevraagde object bestaat niet.</translation>
 <translation id="1480046233931937785">Credits</translation>
 <translation id="1520828917794284345">Formaat van bureaublad aanpassen</translation>
@@ -146,6 +147,7 @@ host</translation>
 <translation id="4572065712096155137">Verbinding maken</translation>
 <translation id="4573676252416618192">Chrome Remote
 Desktop-host</translation>
+<translation id="4619978527973181021">Accepteren en installeren</translation>
 <translation id="4703799847237267011">Je Chromoting-sessie is beëindigd.</translation>
 <translation id="4736223761657662401">Verbindingsgeschiedenis</translation>
 <translation id="4741792197137897469">Verificatie mislukt. Log opnieuw in bij Chrome.</translation>
@@ -158,6 +160,7 @@ Desktop-host</translation>
 <translation id="4913529628896049296">wachten op verbinding…</translation>
 <translation id="4918086044614829423">Accepteren</translation>
 <translation id="492843737083352574">Ik ondervind problemen met mijn toetsenbord of muis.</translation>
+<translation id="4973800994433240357">Door het installatieprogramma voor de Chromoting-host te downloaden, ga je akkoord met de <ph name="LINK_BEGIN" />Servicevoorwaarden<ph name="LINK_END" /> van Google.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">De externe host vereist dat je op een website van derden wordt geverifieerd. Als je wilt doorgaan, moet je Chrome Remote Desktop aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
 <translation id="5156271271724754543">Geef dezelfde pincode in beide vakken op.</translation>
@@ -170,6 +173,7 @@ Desktop-host</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="5363265567587775042">Vraag de gebruiker tot wiens computer je toegang wilt hebben, op <ph name="SHARE" /> te klikken en je de toegangscode te geven.</translation>
 <translation id="5379087427956679853">Met Chrome Remote Desktop kun je je computer veilig delen via internet. Beide gebruikers moeten hiervoor de app Chrome Remote Desktop uitvoeren, die beschikbaar is op <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Voor Mac (OS X 10.6 en hoger)</translation>
 <translation id="5397086374758643919">Verwijderprogramma voor Chrome Remote Desktop-host</translation>
 <translation id="5419185025274123272">Kan de app niet opnieuw instellen. Je kunt nog steeds een foutmelding verzenden.</translation>
 <translation id="544077782045763683">Host is afgesloten.</translation>
@@ -222,6 +226,7 @@ Desktop-host</translation>
 <translation id="6930242544192836755">Duur</translation>
 <translation id="6939719207673461467">Toetsenbord weergeven/verbergen.</translation>
 <translation id="6944854424004126054">Venster herstellen</translation>
+<translation id="6962773374262604195">Voor Windows (XP en hoger)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Weet je zeker dat je externe verbindingen met <ph name="HOSTNAME" /> wilt uitschakelen? Als je van gedachten verandert, moet je naar die computer gaan om de verbindingen weer in te schakelen.</translation>
 <translation id="6998989275928107238">Aan</translation>
@@ -251,6 +256,7 @@ Desktop-host</translation>
 <translation id="7869445566579231750">Je hebt geen toestemming om deze app uit te voeren.</translation>
 <translation id="7948001860594368197">Schermopties</translation>
 <translation id="7970576581263377361">Verificatie mislukt. Log opnieuw in bij Chromium.</translation>
+<translation id="8041721485428375115">Door het installatieprogramma voor de Chrome Remote Desktop-host te downloaden, ga je akkoord met de <ph name="LINK_BEGIN" />Servicevoorwaarden<ph name="LINK_END" /> van Google.</translation>
 <translation id="8073845705237259513">Als je Chrome Remote Desktop wilt gebruiken, moet je een Google-account aan je apparaat toevoegen.</translation>
 <translation id="80739703311984697">De externe host vereist dat je op een website van derden wordt geverifieerd. Als je wilt doorgaan, moet je Chromoting aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
 <translation id="809687642899217504">Mijn computers</translation>
@@ -274,6 +280,7 @@ Desktop-host</translation>
 <translation id="8642984861538780905">Redelijk</translation>
 <translation id="8712909229180978490">Ik kan mijn opgeslagen bestanden niet online zien in Google Drive.</translation>
 <translation id="8759753423332885148">Meer informatie.</translation>
+<translation id="8791202241915690908">Installatieprogramma voor Chromoting-host downloaden</translation>
 <translation id="894763922177556086">Goed</translation>
 <translation id="897805526397249209">Als je externe verbindingen met een andere computer mogelijk wilt maken, installeer je Chromoting en klik je op '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="8998327464021325874">Controller voor Chrome Remote Desktop-host</translation>

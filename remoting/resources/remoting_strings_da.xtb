@@ -16,6 +16,7 @@ Fjerncomputere, som ikke har engelsk tastatur, kan modtage forkert tekstinput. U
 Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (http://goo.gl/SyrVzj) og Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(denne funktion er endnu ikke tilgængelig på din computer)</translation>
 <translation id="1342297293546459414">Få vist og kontrollér en delt computer.</translation>
+<translation id="1389790901665088353">Download installationsprogrammet til host for Chrome Fjernskrivebord</translation>
 <translation id="1450760146488584666">Det ønskede objekt findes ikke.</translation>
 <translation id="1480046233931937785">Medvirkende</translation>
 <translation id="1520828917794284345">Tilpas størrelse på skrivebord</translation>
@@ -146,6 +147,7 @@ host</translation>
 <translation id="4572065712096155137">Adgang</translation>
 <translation id="4573676252416618192">Host for Chrome
 Fjernskrivebord</translation>
+<translation id="4619978527973181021">Acceptér, og installer</translation>
 <translation id="4703799847237267011">Din session med Chromoting er afsluttet.</translation>
 <translation id="4736223761657662401">Forbindelseshistorik</translation>
 <translation id="4741792197137897469">Godkendelsen mislykkedes. Log ind på Chrome igen.</translation>
@@ -158,6 +160,7 @@ Fjernskrivebord</translation>
 <translation id="4913529628896049296">venter på forbindelse...</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="492843737083352574">Jeg har problemer med mit tastatur eller min mus.</translation>
+<translation id="4973800994433240357">Når du downloader installationsprogrammet til Chromoting-host, accepterer du automatisk Google <ph name="LINK_BEGIN" />Servicevilkår<ph name="LINK_END" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chrome Fjernskrivebord yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
 <translation id="5156271271724754543">Indtast den samme pinkode i begge felter.</translation>
@@ -170,6 +173,7 @@ Fjernskrivebord</translation>
 <translation id="5308380583665731573">Få forbindelse</translation>
 <translation id="5363265567587775042">Bed den bruger, hvis computer du ønsker at få adgang til, om at klikke på "<ph name="SHARE" />" for at give dig adgangskoden.</translation>
 <translation id="5379087427956679853">Med Chrome Fjernskrivebord får du mulighed for sikkert at dele din computer via internettet. Begge brugere skal køre appen Chrome Fjernskrivebord, som kan findes på <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Til Mac (OS X 10.6 og nyere)</translation>
 <translation id="5397086374758643919">Afinstallationsprogram til host for Chrome Fjernskrivebord</translation>
 <translation id="5419185025274123272">Applikationen kunne ikke nulstilles. Du kan stadig sende en fejlrapport.</translation>
 <translation id="544077782045763683">Hosten har lukket ned.</translation>
@@ -222,6 +226,7 @@ Fjernskrivebord</translation>
 <translation id="6930242544192836755">Varighed</translation>
 <translation id="6939719207673461467">Vis/skjul tastatur.</translation>
 <translation id="6944854424004126054">Gendan vinduet</translation>
+<translation id="6962773374262604195">Til Windows (XP og nyere)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Er du sikker på, at du vil deaktivere fjernforbindelserne til <ph name="HOSTNAME" />? Hvis du ombestemmer dig, skal du genaktivere forbindelserne på den computer.</translation>
 <translation id="6998989275928107238">Til</translation>
@@ -251,6 +256,7 @@ Fjernskrivebord</translation>
 <translation id="7869445566579231750">Du har ikke tilladelse til at køre denne applikation.</translation>
 <translation id="7948001860594368197">Valgmuligheder for skærm</translation>
 <translation id="7970576581263377361">Godkendelse mislykkedes. Log ind på Chromium igen.</translation>
+<translation id="8041721485428375115">Når du downloader installationsprogrammet til host for Chrome Fjernskrivebord, accepterer du automatisk Google <ph name="LINK_BEGIN" />Servicevilkår<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Hvis du vil bruge Chrome Fjernskrivebord, skal du føje en Google-konto til din enhed.</translation>
 <translation id="80739703311984697">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chromoting yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
 <translation id="809687642899217504">Mine computere</translation>
@@ -274,6 +280,7 @@ Fjernskrivebord</translation>
 <translation id="8642984861538780905">Rimelig</translation>
 <translation id="8712909229180978490">Jeg kan ikke se mine gemte filer online i Google Drev.</translation>
 <translation id="8759753423332885148">Få flere oplysninger.</translation>
+<translation id="8791202241915690908">Download installationsprogrammet til Chromoting-host</translation>
 <translation id="894763922177556086">God</translation>
 <translation id="897805526397249209">Hvis du vil aktivere fjernforbindelser til en anden computer, skal du installere Chromoting på den pågældende computer og klikke på "<ph name="BUTTON_NAME" />".</translation>
 <translation id="8998327464021325874">Administration af host for Chrome Fjernskrivebord</translation>

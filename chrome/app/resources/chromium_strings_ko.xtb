@@ -58,7 +58,6 @@
 <translation id="2705212601509139398">이 사이트에서 곧 지원이 중단되는 Chromium 프레임 플러그인을 사용하고 있습니다. 이 플러그인을 제거하고 호환되는 브라우저를 다운로드하세요.</translation>
 <translation id="2718390899429598676">보안 강화를 위해 Chromium에서 사용자 데이터를 암호화합니다.</translation>
 <translation id="2732467638532545152">컴퓨터에서 이 웹사이트의 보안 인증서를 처리할 수 없는 이전 버전의 Microsoft Windows를 실행 중입니다. 이 문제로 인해 <ph name="SITE" />에서 제공한 인증서인지 <ph name="SITE" />(으)로 위장한 네트워크의 사용자가 제공한 인증서인지 Chromium에서 확인할 수 없습니다. 컴퓨터를 최신 버전의 Windows로 업데이트하시기 바랍니다.</translation>
-<translation id="275588974610408078">오류 보고서는 Chromium에서 사용할 수 없습니다.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" />은(는) 악성 파일이므로 Chromium에서 차단했습니다.</translation>
 <translation id="2847479871509788944">Chromium에서 제거...</translation>

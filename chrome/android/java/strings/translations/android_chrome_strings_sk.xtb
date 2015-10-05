@@ -22,6 +22,7 @@
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
 <translation id="129553762522093515">Naposledy zatvorené</translation>
 <translation id="1312168552565502328">Súbory cookie, údaje stránok</translation>
+<translation id="1346090444609141578">Nie sú tu uložené žiadne stránky</translation>
 <translation id="1369915414381695676">Boli pridané stránky <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Vybraný obsah nie je možné stiahnuť z dôvodu nedostatku pamäte</translation>
 <translation id="1379156015317873965">Zlepšite výkonnosť načítania stránok</translation>
@@ -79,7 +80,7 @@
 <translation id="219985413780390209">Ochráňte seba aj svoje zariadenie pred nebezpečnými stránkami</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikácia: <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Upraviť</translation>
-<translation id="2315043854645842844">Príslušný operačný systém nepodporuje výber certifikátu na strane klienta.</translation>
+<translation id="2315043854645842844">Operačný systém nepodporuje výber certifikátu na strane klienta.</translation>
 <translation id="2316129865977710310">Nie, ďakujem</translation>
 <translation id="2321958826496381788">Presúvajte posúvač, dokým nebude čítanie tohto textu pohodlné. Po dvojitom klepnutí na odsek by mal byť text aspoň takto veľký.</translation>
 <translation id="2343328333327081434">Inštaluje sa…</translation>

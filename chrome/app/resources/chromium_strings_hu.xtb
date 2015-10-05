@@ -55,7 +55,6 @@
 <translation id="2705212601509139398">Ez a webhely a Chromium Frame beépülő modult használja, amelynek támogatása hamarosan megszűnik. Kérjük, távolítsa el, majd töltsön le egy kompatibilis böngészőt.</translation>
 <translation id="2718390899429598676">A nagyobb biztonság érdekében a Chromium titkosítja az Ön adatait.</translation>
 <translation id="2732467638532545152">Számítógépe a Microsoft Windows régebbi változatát futtatja, amely nem tudja feldolgozni a webhely biztonsági tanúsítványát. A hiba miatt a Chromium nem tudja eldönteni, hogy a tanúsítvány a(z) <ph name="SITE" /> webhelytől származik, vagy valakitől az Ön hálózatán, aki a(z) <ph name="SITE" /> webhelynek adja ki magát. Frissítse számítógépén a Windows rendszert egy újabb verzióra.</translation>
-<translation id="275588974610408078">A hibajelentések nem állnak rendelkezésre a Chromiumban.</translation>
 <translation id="2770231113462710648">Alapértelmezett böngésző beállítása:</translation>
 <translation id="2801146392936645542">A(z) <ph name="FILE_NAME" /> fájl rosszindulatú, ezért a Chromium letiltotta.</translation>
 <translation id="2847479871509788944">Eltávolítás a Chromiumból…</translation>

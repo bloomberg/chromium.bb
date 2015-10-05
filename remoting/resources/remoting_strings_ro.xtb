@@ -16,6 +16,7 @@ Este posibil ca textul introdus să fie recunoscut incorect pe computerele la di
 Pentru informații privind confidențialitatea, accesați Politica de confidențialitate Google (http://goo.gl/SyrVzj) și Politica de confidențialitate Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(această funcție nu este încă disponibilă pe computerul tău)</translation>
 <translation id="1342297293546459414">Vedeți și controlați un computer la care se permite accesul.</translation>
+<translation id="1389790901665088353">Descarcă programul de instalare pentru Gazda pentru Desktop la distanță Chrome</translation>
 <translation id="1450760146488584666">Obiectul solicitat nu există.</translation>
 <translation id="1480046233931937785">Mulțumiri</translation>
 <translation id="1520828917794284345">Redimensionați desktopul pentru a încăpea</translation>
@@ -64,6 +65,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="2353140552984634198">Puteți accesa acest computer în siguranță utilizând Chromoting.</translation>
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="2366718077645204424">Gazda nu poate fi accesată. Acest lucru este cauzat, probabil, de configurația rețelei pe care o utilizați.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Ultima dată online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Ajutor și feedback</translation>
 <translation id="2499160551253595098">Ajutați-ne să îmbunătățim Desktop la distanță Chrome, permițându-ne să colectăm statistici de utilizare și rapoarte de blocare.</translation>
 <translation id="2512228156274966424">NOTĂ: pentru a vă asigura că toate comenzile rapide de la tastatură sunt disponibile, puteți seta Desktop la distanță Chrome în modul „Deschideți ca fereastră”.</translation>
@@ -109,6 +111,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="3596628256176442606">Acest serviciu permite conexiuni primite de la clienți Chromoting.</translation>
 <translation id="3606997049964069799">Nu te-ai conectat la Chromium. Conectează-te și încearcă din nou.</translation>
 <translation id="3649256019230929621">Minimizați fereastra</translation>
+<translation id="369442766917958684">Offline.</translation>
 <translation id="3776024066357219166">Sesiunea Desktop la distanță Chrome s-a încheiat.</translation>
 <translation id="3785447812627779171">Gazdă
 Chromoting</translation>
@@ -144,6 +147,7 @@ Chromoting</translation>
 <translation id="4572065712096155137">Accesați</translation>
 <translation id="4573676252416618192">Gazdă pentru Desktop
 la distanță Chrome</translation>
+<translation id="4619978527973181021">Acceptă și instalează</translation>
 <translation id="4703799847237267011">Sesiunea Chromoting s-a încheiat.</translation>
 <translation id="4736223761657662401">Istoricul conexiunilor</translation>
 <translation id="4741792197137897469">Autentificarea nu a reușit. Conectează-te din nou la Chrome.</translation>
@@ -156,6 +160,7 @@ la distanță Chrome</translation>
 <translation id="4913529628896049296">se așteaptă realizarea conexiunii...</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="492843737083352574">Întâmpin probleme cu tastatura sau cu mouse-ul.</translation>
+<translation id="4973800994433240357">Descărcând programul de instalare pentru Gazda pentru Chromoting, accepți <ph name="LINK_BEGIN" />Termenii și condițiile<ph name="LINK_END" /> Google.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Gazda la distanță solicită să vă autentificați pe un site terță parte. Pentru a continua, trebuie să acordați permisiuni suplimentare aplicației Desktop la distanță Chrome pentru a accesa această adresă:</translation>
 <translation id="5156271271724754543">Introduceți același cod PIN în ambele casete.</translation>
@@ -168,6 +173,7 @@ la distanță Chrome</translation>
 <translation id="5308380583665731573">Conectează-te</translation>
 <translation id="5363265567587775042">Roagă utilizatorul al cărui computer dorești să îl accesezi să dea clic pe „<ph name="SHARE" />” și să îți trimită codul de acces.</translation>
 <translation id="5379087427956679853">Cu aplicația Desktop la distanță Chrome, puteți permite accesul în siguranță la computerul dvs. pe web. Ambii utilizatori trebuie să ruleze aplicația Desktop la distanță Chrome, care poate fi găsită la <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Pentru Mac (OS X 10.6 și versiuni ulterioare)</translation>
 <translation id="5397086374758643919">Program de dezinstalare a gazdei pentru Desktop la distanță Chrome</translation>
 <translation id="5419185025274123272">Aplicația nu a putut fi resetată. Poți totuși să trimiți un raport de eroare.</translation>
 <translation id="544077782045763683">Gazda a fost închisă.</translation>
@@ -183,6 +189,7 @@ la distanță Chrome</translation>
 <translation id="579702532610384533">Reconectează-te</translation>
 <translation id="5843054235973879827">De ce este această operație sigură?</translation>
 <translation id="5859141382851488196">Fereastră nouă...</translation>
+<translation id="5885438903806970186">Online.</translation>
 <translation id="6001953797859482435">Preferințe privind gazda pentru Desktop la distanță Chrome</translation>
 <translation id="6011539954251327702">Utilizând Chromoting, puteți permite accesul în siguranță la computerul dvs. pe web. Ambii utilizatori trebuie să ruleze aplicația Chromoting, care poate fi găsită la <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Închide</translation>
@@ -219,6 +226,7 @@ la distanță Chrome</translation>
 <translation id="6930242544192836755">Durată</translation>
 <translation id="6939719207673461467">Afișați/Ascundeți tastatura.</translation>
 <translation id="6944854424004126054">Restabiliți fereastra</translation>
+<translation id="6962773374262604195">Pentru Windows (XP și versiuni ulterioare)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Sigur doriți să dezactivați conexiunile la distanță la <ph name="HOSTNAME" />? Dacă vă răzgândiți, va trebui să accesați computerul respectiv pentru a reactiva conexiunile.</translation>
 <translation id="6998989275928107238">La</translation>
@@ -248,6 +256,7 @@ la distanță Chrome</translation>
 <translation id="7869445566579231750">Nu ai permisiunea să rulezi această aplicație.</translation>
 <translation id="7948001860594368197">Opțiuni ecran</translation>
 <translation id="7970576581263377361">Autentificarea nu a reușit. Conectează-te din nou la Chromium.</translation>
+<translation id="8041721485428375115">Descărcând programul de instalare pentru Gazda pentru Desktop la distanță Chrome, accepți <ph name="LINK_BEGIN" />Termenii și condițiile<ph name="LINK_END" /> Google.</translation>
 <translation id="8073845705237259513">Pentru a folosi Desktop la distanță Chrome, va trebui să adăugați un Cont Google pe dispozitiv.</translation>
 <translation id="80739703311984697">Gazda la distanță solicită să vă autentificați pe un site terță parte. Pentru a continua, trebuie să acordați permisiuni suplimentare serviciului Chromoting pentru a accesa această adresă:</translation>
 <translation id="809687642899217504">Computerele mele</translation>
@@ -271,6 +280,7 @@ la distanță Chrome</translation>
 <translation id="8642984861538780905">Acceptabilă</translation>
 <translation id="8712909229180978490">Nu pot vedea fișierele salvate online în Google Drive.</translation>
 <translation id="8759753423332885148">Aflați mai multe.</translation>
+<translation id="8791202241915690908">Descarcă programul de instalare pentru Gazda pentru Chromoting</translation>
 <translation id="894763922177556086">Bună</translation>
 <translation id="897805526397249209">Pentru a activa conexiunile la distanță pentru un alt computer, instalați Chromoting pe acesta și dați clic pe „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Controler gazdă pentru Desktop la distanță Chrome</translation>

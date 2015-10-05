@@ -55,7 +55,6 @@
 <translation id="2705212601509139398">Ta strona korzysta z wtyczki Chromium Frame, która wkrótce nie będzie obsługiwana. Odinstaluj wtyczkę i pobierz zgodną przeglądarkę.</translation>
 <translation id="2718390899429598676">Dla większego bezpieczeństwa Chromium szyfruje dane.</translation>
 <translation id="2732467638532545152">Twój komputer ma starą wersję Microsoft Windows, która nie potrafi przetworzyć certyfikatu bezpieczeństwa tej witryny. Przez ten problem Chromium nie może ustalić, czy ten certyfikat pochodzi z <ph name="SITE" /> czy od kogoś w Twojej sieci podszywającego się pod <ph name="SITE" />. Zaktualizuj Windows na komputerze do nowszej wersji.</translation>
-<translation id="275588974610408078">Zgłaszanie awarii nie jest dostępne w Chromium.</translation>
 <translation id="2770231113462710648">Zmień przeglądarkę domyślną na:</translation>
 <translation id="2801146392936645542">Plik <ph name="FILE_NAME" /> jest złośliwy i został zablokowany przez Chromium.</translation>
 <translation id="2847479871509788944">Usuń z Chromium...</translation>

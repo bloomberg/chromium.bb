@@ -10,6 +10,7 @@
 <translation id="111844081046043029">آیا می‌خواهید این صفحه را ترک کنید؟</translation>
 <translation id="112840717907525620">حافظه پنهان خط‌مشی مورد تأیید است</translation>
 <translation id="1132774398110320017">‏تنظیمات تکمیل خودکار Chrome...</translation>
+<translation id="1146673768181266552">شناسه خرابی <ph name="CRASH_ID" />‏ (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورد اعتماد سیستم عامل رایانه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="1152921474424827756">دسترسی به یک <ph name="BEGIN_LINK" />نسخه ذخیره شده در حافظه پنهان<ph name="END_LINK" /> از <ph name="URL" /></translation>
 <translation id="121201262018556460">شما می‌خواستید به <ph name="DOMAIN" /> دسترسی یابید، اما سرور یک گواهی دارای کلید ضعیف ارائه داد. یک مهاجم ممکن است کلید خصوصی را تخریب کرده باشد و سرور، همان سروری نباشد که شما انتظار داشتید (ممکن است در حال ارتباط با یک مهاجم باشید).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">صفحه <ph name="SITE" /> نشان می‌دهد:</translation>
 <translation id="1706954506755087368">{1,plural, =1{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن ظاهراً فردا شروع می‌شود. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند.}one{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن ظاهراً # روز دیگر شروع می‌شود. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند.}other{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن ظاهراً # روز دیگر شروع می‌شود. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">اشکال پرونده</translation>
 <translation id="1763864636252898013">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورد اعتماد سیستم عامل دستگاه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="1821930232296380041">پارامترهای درخواست یا درخواست نامعتبر</translation>
 <translation id="1871208020102129563">‏تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
-<translation id="1875753206475436906">نوع غیرمستدل: <ph name="HEURISTIC_TYPE" />
-    نوع سرور: <ph name="SERVER_TYPE" />
-    امضای فیلد: <ph name="FIELD_SIGNATURE" />
-    امضای فرم: <ph name="FORM_SIGNATURE" />
-    شناسه آزمایش: «<ph name="EXPERIMENT_ID" />»</translation>
 <translation id="194030505837763158">رفتن به <ph name="LINK" /></translation>
 <translation id="1962204205936693436">نشانک‌های <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">خطای ترتیب</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">مجوزها دیگر معتبر نیستند</translation>
 <translation id="3739623965217189342">پیوندی که کپی کرده‌اید</translation>
 <translation id="375403751935624634">بدلیل خطای سرور ترجمه انجام نشد.</translation>
+<translation id="3759461132968374835">شما اخیراً گزارش خرابی ارسال نکرده‌اید. مشکلاتی که در هنگام غیرفعال بودن ویژگی ارائه گزارش خرابی ایجاد شده است، در اینجا نمایش داده نمی‌شود.</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3858027520442213535">به‌روزرسانی تاریخ و زمان</translation>
 <translation id="3884278016824448484">شناسه دستگاه یکسان نیست</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">امضای تأیید نامناسب</translation>
 <translation id="4196861286325780578">&amp;انجام مجدد انتقال</translation>
+<translation id="4220128509585149162">خرابی ها</translation>
 <translation id="4250680216510889253">خیر</translation>
 <translation id="4258748452823770588">امضای نادرست</translation>
 <translation id="4269787794583293679">(بدون نام کاربری)</translation>
 <translation id="4300246636397505754">پیشنهادات والدین</translation>
+<translation id="4325863107915753736">مقاله یافت نشد.</translation>
 <translation id="4372948949327679948">مقدار مورد انتظار <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">شما سعی در دسترسی به <ph name="DOMAIN" /> را داشتید، اما صادر کننده، گواهی ارائه شده از سوی سرور را باطل کرده است. یعنی اصلاً نباید به اطلاعات کاربری که این سرور ارائه می‌کند اطمینان کرد. ممکن است شما با مهاجمی در ارتباط باشید.</translation>
 <translation id="4394049700291259645">غیر فعال کردن</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">از <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود؟</translation>
 <translation id="5019198164206649151">پشتیبان‌گیری ذخیره در وضعیت نادرست است</translation>
 <translation id="5031870354684148875">‏درباره Google Translate</translation>
+<translation id="5045550434625856497">گذرواژه نامعتبر</translation>
 <translation id="5087286274860437796">در حال حاضر گواهی سرور معتبر نیست.</translation>
 <translation id="5089810972385038852">ایالت</translation>
 <translation id="5094747076828555589">‏این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیت آن مورد اعتماد Chromium نیست. علت این موضوع می‌توان پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5295309862264981122">تأیید پیمایش</translation>
 <translation id="5299298092464848405">خطا در تجزیه خط‌‌مشی</translation>
+<translation id="5308689395849655368">گزارش خرابی غیر فعال است.</translation>
 <translation id="5316812925700871227">چرخش خلاف جهت عقربه‌های ساعت</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="536296301121032821">تنظیمات خط‌‌مشی ذخیره نشد</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6060685159320643512">مراقب باشید، این آزمایشات ممکن است خطرناک باشند</translation>
+<translation id="6099520380851856040">تاریخ وقوع <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">دوره اعتبار گواهینامه سرور بسیار طولانی است.</translation>
 <translation id="6154808779448689242">نشانه خط‌مشی بازگشتی با نشانه فعلی تطابق ندارد</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">کشور</translation>
 <translation id="6458467102616083041">نادیده گرفته شد زیرا جستجوی پیش‌فرض توسط قانون غیرفعال شده است.</translation>
 <translation id="647261751007945333">خط‌‌مشی‌های دستگاه</translation>
+<translation id="6489534406876378309">شروع آپلود کردن خرابی‌ها</translation>
 <translation id="6512448926095770873">ترک کردن این صفحه</translation>
 <translation id="6529602333819889595">&amp;انجام مجدد حذف</translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">آیا مطمئن هستید که می‌خواهید این صفحه را تازه‌سازی کنید؟</translation>
 <translation id="8349305172487531364">نوار نشانک‌ها</translation>
 <translation id="8364627913115013041">تنظیم نشده است.</translation>
+<translation id="8412145213513410671">خرابی ها (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;واگرد انتقال</translation>
 <translation id="8488350697529856933">اعمال برای</translation>
 <translation id="8530504477309582336">‏Google Payments این نوع کارت را پشتیبانی نمی‌کند. لطفاً کارت دیگری انتخاب کنید.</translation>

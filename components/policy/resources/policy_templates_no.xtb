@@ -40,7 +40,7 @@
 
           Hvis denne retningslinjen ikke angis, vil alle de fire skjemaene brukes.</translation>
 <translation id="1297182715641689552">Bruk et .pac-skript for mellomtjener</translation>
-<translation id="1304973015437969093">Utvidelsers/appers ID-er og oppdateringsnettadresser for stum installasjon</translation>
+<translation id="1304973015437969093">ID-er for utvidelser/apper og oppdateringsnettadresser som skal installeres stille</translation>
 <translation id="1310699457130669094">Du kan angi nettadresse til en .pac-fil til mellomtjener her.
 
           Denne retningslinjen trer i kraft bare hvis du har valgt manuelle mellomtjenerinnstulinger under «Velg hvordan du skal angi proxytjenerinnstillinger».
@@ -97,12 +97,12 @@
           Hvis du angir denne innstillingen, kan brukere midlertidig overstyre den ved å aktivere eller deaktivere høykontrastmodus. Brukernes valg er imidlertid ikke permanent, og standardinnstillingen gjenopprettes når påloggingssiden vises på nytt, eller brukeren har vært inaktiv på påloggingssiden i ett minutt.
 
           Hvis denne innstillingen angis, deaktiveres høykontrastmodus når påloggingssiden vises for første gang. Brukere kan aktivere eller deaktivere høykontrastmodus når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
-<translation id="1468707346106619889">Hvis denne retningslinjen settes til sann, blir det enhetlige skrivebordet tillatt og
-      slått på som standard, noe som gjør at apper kan fordeles over flere skjermer.
+<translation id="1468707346106619889">Hvis disse retningslinjene settes til sann, blir det enhetlige skrivebordet tillatt og
+      slått på som standard, slik at apper kan fordeles over flere skjermer.
       Brukeren kan slå av det enhetlige skrivebordet for individuelle skjermer ved
       å fjerne merket for det i visningsinnstillingene.
 
-      Hvis denne retningslinjen settes til usann eller ikke konfigureres, blir det enhetlige
+      Hvis disse retningslinjene settes til usann eller ikke angis, blir det enhetlige
       skrivebordet slått av. I så fall kan ikke brukeren slå på denne funksjonen.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Spesifiserer perioden i millisekunder – angir frekvens for hvor ofte tjenesten for enhetsadministrasjon blir kontaktet for informasjon om enhetsretningslinjer.
@@ -458,7 +458,6 @@
          Hvis denne retningslinjen ikke er angitt, kan brukeren installere alle utvidelse i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_NAME" /> versjon 29. Den anbefalte måten å konfigurere utvidelses- og appsamlinger fra organisasjoner på, er å inkludere nettstedet som leverer CRX-pakkene i ExtensionInstallSources, og legge direktenedlastingslinkene til pakkene på en nettside. En appvelger for denne nettsiden kan opprettes ved hjelp av innstillingen for ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">siden versjon <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Angir hvorvidt splitting av SSL-oppføringer skal være deaktivert. Splitting av oppføringer er en problemløsning for en svakhet i SSL 3.0 og TLS 1.0, men kan føre til kompatibilitetsproblemer med enkelte HTTPS-tjenere og mellomtjenere. Hvis disse retningslinjene ikke angis, eller er deaktivert, blir splitting av oppføringer tatt i bruk for SSL/TLS-tilkoblinger som bruker «CBC ciphersuites» (kombinasjonssystem for sikkerhet).</translation>
 <translation id="3213821784736959823">Kontrollerer hvorvidt den innebygde DNS-klinten brukes i <ph name="PRODUCT_NAME" />.
 
       Hvis denne innstillingen er angitt som «true», blir den innebygde DNS-klienten brukt, så sant den er tilgjengelig.
@@ -1678,7 +1677,6 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
 <translation id="8955719471735800169">Tilbake til toppen</translation>
 <translation id="8970205333161758602">Ignorer avslagsforespørsel for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Tidtaker for automatisk påloggging til offentlig økt</translation>
-<translation id="8987262643142408725">Deaktiver splitting av SSL-oppføringer</translation>
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
 <translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>

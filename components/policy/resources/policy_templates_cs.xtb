@@ -477,9 +477,6 @@ Pokud tuto zásadu ponecháte nenastavenou, bude tato možnost aktivována, ale 
          Pokud zásadu nenastavíte, mohou uživatelé v aplikaci <ph name="PRODUCT_NAME" /> instalovat libovolná rozšíření.</translation>
 <translation id="316778957754360075">V prohlížečích <ph name="PRODUCT_NAME" /> verze 29 a novějších bylo toto nastavení zrušeno. Doporučený způsob, jak nastavit sbírky rozšíření nebo aplikací hostovaných organizací, je zahrnout web hostující balíčky CRX do seznamu ExtensionInstallSources a na webovou stránku umístit přímé odkazy pro stažení balíčků. Spouštěč pro danou webovou stránku lze vytvořit pomocí zásady ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od verze <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Určuje, zda by mělo být dělení záznamů protokolu SSL zakázáno. Dělení záznamů je náhradní řešení pro slabé stránky protokolů SSL 3.0 a TLS 1.0. U některých serverů HTTPS a serverů proxy však může způsobit problémy s kompatibilitou.
-
-      Pokud zásada není nastavena, nebo je nastavena na hodnotu False, použije se dělení záznamů u připojení SSL/TLS, která používají šifrovací nástroje CBC.</translation>
 <translation id="3213821784736959823">Řídí, zda se v prohlížeči <ph name="PRODUCT_NAME" /> používá integrovaný klient DNS.
 
       Pokud je tato zásada nastavena na hodnotu true, bude použit integrovaný klient DNS (pokud je k dispozici).
@@ -1748,7 +1745,6 @@ Hodnota prodloužení musí být 100 % nebo více. Hodnoty, které by prodlevu 
 <translation id="8955719471735800169">Zpět na začátek</translation>
 <translation id="8970205333161758602">Potlačení oznámení o ukončení podpory pluginu <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Časovač automatického přihlášení do veřejné relace</translation>
-<translation id="8987262643142408725">Zakázat dělení záznamů protokolu SSL</translation>
 <translation id="8992176907758534924">Nepovolit zobrazení obrázků žádným webovým stránkám</translation>
 <translation id="9035964157729712237">ID rozšíření, která mají být vyňata ze seznamu zakázaných</translation>
 <translation id="9042911395677044526">Umožňuje přenést nastavení sítě, která se uplatní pro jednotlivé uživatele v zařízení se systémem <ph name="PRODUCT_OS_NAME" />. Konfigurace sítě je řetězec ve formátu JSON, který se řídí definicí formátu Open Network Configuration popsanou na stránce <ph name="ONC_SPEC_URL" />.</translation>

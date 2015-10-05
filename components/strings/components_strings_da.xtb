@@ -10,6 +10,7 @@
 <translation id="111844081046043029">Er du sikker på, at du vil forlade denne side?</translation>
 <translation id="112840717907525620">Cache for politik er OK</translation>
 <translation id="1132774398110320017">Indstillinger for Autofyld i Chrome...</translation>
+<translation id="1146673768181266552">Nedbruds-id <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din computer ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1152921474424827756">Få adgang til en <ph name="BEGIN_LINK" />cachelagret kopi<ph name="END_LINK" /> af <ph name="URL" /></translation>
 <translation id="121201262018556460">Du har forsøgt at få fat i <ph name="DOMAIN" />, men serveren har præsenteret et certifikat med en svag nøgle. En hacker kan have knækket den private nøgle, og serveren er muligvis ikke den forventede server (du kommunikerer muligvis med en hacker).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">Siden på <ph name="SITE" /> siger:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat tilsyneladende først gælder fra i morgen. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.}one{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat tilsyneladende først gælder fra om # dag. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.}other{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat tilsyneladende først gælder fra om # dage. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">Indgiv fejl</translation>
 <translation id="1763864636252898013">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din enhed ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1821930232296380041">Ugyldig anmodning eller anmodningsparametre</translation>
 <translation id="1871208020102129563">Proxy er indstillet til at bruge faste proxyservere, ikke webadresser til .pac-scripts.</translation>
-<translation id="1875753206475436906">heuristisk type: <ph name="HEURISTIC_TYPE" />
-    servertype: <ph name="SERVER_TYPE" />
-    feltsignatur: <ph name="FIELD_SIGNATURE" />
-    formsignatur: <ph name="FORM_SIGNATURE" />
-    eksperiment-id: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">Gå til <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Bogmærker fra <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Serialiseringsfejl</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Licenserne er opbrugt</translation>
 <translation id="3739623965217189342">Link, du har kopieret</translation>
 <translation id="375403751935624634">Oversættelsen mislykkedes på grund af en serverfejl.</translation>
+<translation id="3759461132968374835">Du har ingen nyligt rapporterede nedbrud. Nedbrud, der opstod, mens rapportering om nedbrud var deaktiveret, vises ikke her.</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3858027520442213535">Opdater dato og tid</translation>
 <translation id="3884278016824448484">Modstridende enheds-id</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">Ugyldig verifikationssignatur</translation>
 <translation id="4196861286325780578">&amp;Annuller fortryd flytning</translation>
+<translation id="4220128509585149162">Nedbrud</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4258748452823770588">Forkert signatur</translation>
 <translation id="4269787794583293679">(Intet brugernavn)</translation>
 <translation id="4300246636397505754">Forslag fra forældre</translation>
+<translation id="4325863107915753736">Artiklen blev ikke fundet.</translation>
 <translation id="4372948949327679948">Forventet <ph name="VALUE_TYPE" />-værdi.</translation>
 <translation id="4377125064752653719">Du har forsøgt at få fat på <ph name="DOMAIN" />, men serverens certifikat er blevet tilbagekaldt af udgiveren. Det betyder, at du bestemt ikke bør have tillid til serverens sikkerhedsoplysninger. Du kommunikerer muligvis med en hacker.</translation>
 <translation id="4394049700291259645">Deaktiver</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">Vil du oversætte fra <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Sikkerhedskopien er fejlbehæftet</translation>
 <translation id="5031870354684148875">Om Google Oversæt</translation>
+<translation id="5045550434625856497">Ugyldig adgangskode</translation>
 <translation id="5087286274860437796">Serverens certifikatet er ikke gyldigt i øjeblikket.</translation>
 <translation id="5089810972385038852">Delstat</translation>
 <translation id="5094747076828555589">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da Chromium ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Skyen</translation>
 <translation id="5295309862264981122">Bekræft navigation</translation>
 <translation id="5299298092464848405">Der opstod en fejl ved parsing af politik</translation>
+<translation id="5308689395849655368">Rapportering af nedbrud er deaktiveret.</translation>
 <translation id="5316812925700871227">Rotér mod uret</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="536296301121032821">Der kunne ikke gemmes indstillinger for politik</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Luk</translation>
 <translation id="6060685159320643512">Vær forsigtig. Disse eksperimenter kan være farlige</translation>
+<translation id="6099520380851856040">Forekom <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Servercertifikatet har en gyldighedsperiode, der er for lang.</translation>
 <translation id="6154808779448689242">Det returnerede token for politikken stemmer ikke overens med det nuværende token</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">Land</translation>
 <translation id="6458467102616083041">Ignoreret, fordi standardsøgning er deaktiveret af politikken.</translation>
 <translation id="647261751007945333">Enhedspolitikker</translation>
+<translation id="6489534406876378309">Start upload af nedbrud</translation>
 <translation id="6512448926095770873">Forlad denne side</translation>
 <translation id="6529602333819889595">&amp;Annuller fortryd slet</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">Er du sikker på, at du vil genindlæse denne side?</translation>
 <translation id="8349305172487531364">Bogmærkelinje</translation>
 <translation id="8364627913115013041">Ikke angivet.</translation>
+<translation id="8412145213513410671">Nedbrud (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;Fortryd flytning</translation>
 <translation id="8488350697529856933">Gælder for</translation>
 <translation id="8530504477309582336">Denne korttype understøttes ikke af Google Payments. Vælg et andet kort.</translation>

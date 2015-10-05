@@ -410,7 +410,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="3153348162326497318">Memungkinkan Anda menentukan ekstensi mana yang TIDAK dapat dipasang oleh pengguna. Ekstensi yang sudah terpasang akan dihapus jika masuk dalam daftar hitam. Nilai daftar hitam '*' berarti semua ekstensi tercantum dalam daftar hitam kecuali secara eksplisit tercantum dalam daftar putih. Jika kebijakan ini dibiarkan tanpa disetel, pengguna dapat memasang ekstensi apa pun di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Setelan ini tidak lagi digunakan sejak <ph name="PRODUCT_NAME" /> versi 29. Cara yang disarankan untuk menyiapkan koleksi aplikasi/ekstensi yang dihosting organisasi adalah dengan menyertakan situs yang menghosting paket CRX di ExtensionInstallSources dan meletakkan tautan unduhan langsung di paket dalam laman web. Peluncur untuk laman web tersebut dapat dibuat menggunakan kebijakan ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">sejak versi <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Menentukan apakah pembagian catatan SSL harus dinonaktifkan. Pembagian catatan merupakan solusi untuk kelemahan dalam SSL 3.0 dan TLS 1.0 tetapi dapat menyebabkan masalah kompatibilitas dengan beberapa server HTTPS dan proxy. Jika kebijakan ini tidak disetel, atau disetel ke false, maka pembagian catatan akan digunakan di sambungan SSL/TLS yang menggunakan ciphersuite CBC.</translation>
 <translation id="3213821784736959823">Mengontrol apakah klien DNS di dalamnya digunakan di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan ini disetel ke benar, klien DNS yang ada di dalamnya akan digunakan, jika tersedia.
@@ -1488,7 +1487,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="8955719471735800169">Kembali ke atas</translation>
 <translation id="8970205333161758602">Tindas permintaan penghentian <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Pewaktu masuk otomatis sesi publik</translation>
-<translation id="8987262643142408725">Nonaktifkan pembagian catatan SSL</translation>
 <translation id="8992176907758534924">Jangan izinkan situs apa pun menampilkan gambar</translation>
 <translation id="9035964157729712237">ID Ekstensi yang dikeluarkan dari daftar hitam</translation>
 <translation id="9042911395677044526">Memungkinkan konfigurasi jaringan dorongan untuk diterapkan per pengguna ke perangkat <ph name="PRODUCT_OS_NAME" />. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka yang diuraikan di <ph name="ONC_SPEC_URL" /></translation>

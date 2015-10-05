@@ -10,6 +10,7 @@
 <translation id="111844081046043029">هل تريد بالتأكيد مغادرة هذه الصفحة؟</translation>
 <translation id="112840717907525620">ذاكرة التخزين المؤقت للسياسة بحالة جيدة</translation>
 <translation id="1132774398110320017">‏إعدادات الملء التلقائي في Chrome...</translation>
+<translation id="1146673768181266552">معرِّف العطل <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثقة من خلال نظام تشغيل الكمبيوتر. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="1152921474424827756">الدخول إلى <ph name="BEGIN_LINK" />النسخة المخزنة مؤقتًا<ph name="END_LINK" /> من <ph name="URL" /></translation>
 <translation id="121201262018556460">لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن الخادم قدّم شهادة تحتوي على مفتاح ضعيف. ربما قام أحد المهاجمين باختراق المفتاح الخاص، ولا يكون الخادم هو الخادم الذي تتوقعه (قد تكون على اتصال بأحد المهاجمين).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">تعرض الصفحة في <ph name="SITE" />:</translation>
 <translation id="1706954506755087368">{1,plural, =1{هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ من المفترض أن تبدأ شهادة أمانه من الغد. ربما يكون السبب في ذلك خطأ في التهيئة أو مهاجمًا يعترض اتصالك.}zero{هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ من المفترض أن تبدأ شهادة أمانه خلال # يوم في المستقبل. ربما يكون السبب في ذلك خطأ في التهيئة أو مهاجمًا يعترض اتصالك.}two{هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ من المفترض أن تبدأ شهادة أمانه خلال يومين (#) في المستقبل. ربما يكون السبب في ذلك خطأ في التهيئة أو مهاجمًا يعترض اتصالك.}few{هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ من المفترض أن تبدأ شهادة أمانه خلال # أيام في المستقبل. ربما يكون السبب في ذلك خطأ في التهيئة أو مهاجمًا يعترض اتصالك.}many{هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ من المفترض أن تبدأ شهادة أمانه خلال # يومًا في المستقبل. ربما يكون السبب في ذلك خطأ في التهيئة أو مهاجمًا يعترض اتصالك.}other{هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ من المفترض أن تبدأ شهادة أمانه خلال # يوم في المستقبل. ربما يكون السبب في ذلك خطأ في التهيئة أو مهاجمًا يعترض اتصالك.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">الإبلاغ عن خطأ</translation>
 <translation id="1763864636252898013">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثوقة من خلال نظام تشغيل جهازك. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="1821930232296380041">طلب غير صالح، أو معلمات طلب غير صالحة</translation>
 <translation id="1871208020102129563">‏تم تعيين الخادم الوكيل لاستخدام الخوادم الوكيلة الثابتة وليس عنوان URL لنص برمجي pac.</translation>
-<translation id="1875753206475436906">نوع الموجّه: <ph name="HEURISTIC_TYPE" />
-    نوع الخادم: <ph name="SERVER_TYPE" />
-    توقيع الحقل: <ph name="FIELD_SIGNATURE" />
-    توقيع النموذج: <ph name="FORM_SIGNATURE" />
-    معرِّف التجربة: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">الانتقال إلى <ph name="LINK" /></translation>
 <translation id="1962204205936693436">إشارات <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">خطأ أثناء التسلسل</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">التراخيص مستنفذة</translation>
 <translation id="3739623965217189342">الرابط الذي نسخته</translation>
 <translation id="375403751935624634">أخفقت الترجمة بسبب حدوث خطأ في الخادم.</translation>
+<translation id="3759461132968374835">ليس لديك أي أعطال تم الإبلاغ عنها مؤخرًا. الأعطال التي حدثت عندما تم تعطيل الإبلاغ عن الأعطال لن تظهر هنا.</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3858027520442213535">تحديث التاريخ والوقت</translation>
 <translation id="3884278016824448484">معرف جهاز متضارب</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">توقيع تحقق سيئ</translation>
 <translation id="4196861286325780578">إ&amp;عادة النقل</translation>
+<translation id="4220128509585149162">الأعطال</translation>
 <translation id="4250680216510889253">لا</translation>
 <translation id="4258748452823770588">توقيع غير صالح</translation>
 <translation id="4269787794583293679">(اسم المستخدم غير موجود)</translation>
 <translation id="4300246636397505754">اقتراحات الآباء</translation>
+<translation id="4325863107915753736">أخفق العثور على المقالة</translation>
 <translation id="4372948949327679948">القيمة <ph name="VALUE_TYPE" /> المتوقعة.</translation>
 <translation id="4377125064752653719">لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن جهة إصدار الشهادة التي قدمها الخادم قد أبطلت الشهادة. وهذا يعني أن بيانات اعتماد الأمان التي قدمها الخادم يجب عدم الوثوق بها مطلقًا. فقد تكون على اتصال بأحد المهاجمين.</translation>
 <translation id="4394049700291259645">تعطيل</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">هل تريد الترجمة من <ph name="ORIGINAL_LANGUAGE" /> إلى <ph name="TARGET_LANGUAGE" />؟</translation>
 <translation id="5019198164206649151">التخزين المساعد في حالة سيئة</translation>
 <translation id="5031870354684148875">‏معلومات عن الترجمة من Google</translation>
+<translation id="5045550434625856497">كلمة مرور غير صحيحة</translation>
 <translation id="5087286274860437796">شهادة الخادم ليست صالحة حاليًا.</translation>
 <translation id="5089810972385038852">بلد/دولة</translation>
 <translation id="5094747076828555589">‏هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثوقة من قبل Chromium. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">السحاب</translation>
 <translation id="5295309862264981122">تأكيد التصفح</translation>
 <translation id="5299298092464848405">خطأ في تحليل السياسة</translation>
+<translation id="5308689395849655368">ميزة الإبلاغ عن الأعطال معطلة.</translation>
 <translation id="5316812925700871227">تدوير عكس اتجاه عقارب الساعة</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="536296301121032821">أخفق تخزين إعدادات السياسة</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6060685159320643512">احذر، هذه التجارب غير مضمونة النتائج</translation>
+<translation id="6099520380851856040">حدث في <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">فترة صلاحية شهادة الخادم طويلة جدًا.</translation>
 <translation id="6154808779448689242">لا يتطابق الرمز المميز لسياسة الإرجاع مع الرمز المميز الحالي</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">البلد</translation>
 <translation id="6458467102616083041">تم التجاهل نظرًا لتعطيل البحث الافتراضي بواسطة السياسة.</translation>
 <translation id="647261751007945333">سياسات الأجهزة</translation>
+<translation id="6489534406876378309">بدء تحميل الأعطال</translation>
 <translation id="6512448926095770873">مغادرة هذه الصفحة</translation>
 <translation id="6529602333819889595">إعادة الح&amp;ذف</translation>
 <translation id="6550675742724504774">خيارات</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">هل تريد بالتأكيد إعادة تحميل هذه الصفحة؟</translation>
 <translation id="8349305172487531364">شريط الإشارات</translation>
 <translation id="8364627913115013041">لم يتم تعيينها.</translation>
+<translation id="8412145213513410671">الأعطال (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">تراجع عن ال&amp;نقل</translation>
 <translation id="8488350697529856933">تنطبق على</translation>
 <translation id="8530504477309582336">‏هذا النوع من البطاقات غير متوافق مع Google Payments. يُرجى تحديد بطاقة مختلفة.</translation>

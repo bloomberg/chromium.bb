@@ -10,6 +10,7 @@
 <translation id="111844081046043029">您確定要離開此網頁嗎?</translation>
 <translation id="112840717907525620">政策快取正確</translation>
 <translation id="1132774398110320017">Chrome 自動填入設定...</translation>
+<translation id="1146673768181266552">當機 ID：<ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您電腦作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="1152921474424827756">存取 <ph name="URL" /> 的<ph name="BEGIN_LINK" />頁庫存檔副本<ph name="END_LINK" /></translation>
 <translation id="121201262018556460">您嘗試前往 <ph name="DOMAIN" />，但伺服器所提供的憑證含有防護力薄弱的金鑰。攻擊者可能已破壞私密金鑰，而該伺服器可能並非您的目標伺服器 (您的連線對象可能是攻擊者的電腦)。</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215"><ph name="SITE" /> 的網頁顯示：</translation>
 <translation id="1706954506755087368">{1,plural, =1{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證預定明天才生效。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。}other{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證預定 # 天後才生效。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">回報錯誤</translation>
 <translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您裝置作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="1821930232296380041">要求或要求參數無效</translation>
 <translation id="1871208020102129563">Proxy 設定為使用固定的 Proxy 伺服器，而非 .pac 指令碼網址。</translation>
-<translation id="1875753206475436906">啟發式演算法類型：<ph name="HEURISTIC_TYPE" />
-    伺服器類型：<ph name="SERVER_TYPE" />
-    欄位簽名：<ph name="FIELD_SIGNATURE" />
-    表單簽名：<ph name="FORM_SIGNATURE" />
-    實驗 ID：「<ph name="EXPERIMENT_ID" />」</translation>
 <translation id="194030505837763158">前往 <ph name="LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> 書籤</translation>
 <translation id="1973335181906896915">序列化錯誤</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">授權已用盡</translation>
 <translation id="3739623965217189342">您複製的連結</translation>
 <translation id="375403751935624634">伺服器錯誤，翻譯作業失敗。</translation>
+<translation id="3759461132968374835">最近沒有收到當機資訊。當機回報功能停用時發生的當機不會列在這裡。</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3858027520442213535">更新日期和時間</translation>
 <translation id="3884278016824448484">裝置識別碼發生衝突</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">驗證簽名無效</translation>
 <translation id="4196861286325780578">重做移動(&amp;R)</translation>
+<translation id="4220128509585149162">當機</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4258748452823770588">簽名有誤</translation>
 <translation id="4269787794583293679">(沒有使用者名稱)</translation>
 <translation id="4300246636397505754">家長建議</translation>
+<translation id="4325863107915753736">找不到文章</translation>
 <translation id="4372948949327679948">預期的「<ph name="VALUE_TYPE" />」值。</translation>
 <translation id="4377125064752653719">您嘗試前往 <ph name="DOMAIN" />，但是發行者已撤銷伺服器提供的憑證。在這種情況下，請勿信任伺服器提供的安全性憑證，因為您的連線對象可能是攻擊者的電腦。</translation>
 <translation id="4394049700291259645">停用</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">將網頁內容由<ph name="ORIGINAL_LANGUAGE" />翻譯成<ph name="TARGET_LANGUAGE" />？</translation>
 <translation id="5019198164206649151">備份儲存狀態不佳</translation>
 <translation id="5031870354684148875">關於「Google 翻譯」</translation>
+<translation id="5045550434625856497">密碼不正確</translation>
 <translation id="5087286274860437796">伺服器憑證目前無效。</translation>
 <translation id="5089810972385038852">州</translation>
 <translation id="5094747076828555589">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得 Chromium 的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">雲端</translation>
 <translation id="5295309862264981122">確認瀏覽</translation>
 <translation id="5299298092464848405">解析政策時發生錯誤</translation>
+<translation id="5308689395849655368">當機報告功能已停用。</translation>
 <translation id="5316812925700871227">逆時針旋轉</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="536296301121032821">無法儲存政策設定</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6060685159320643512">請注意，這些實驗性功能可能對電腦有害</translation>
+<translation id="6099520380851856040">當機時間：<ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">伺服器憑證的有效期限太長。</translation>
 <translation id="6154808779448689242">傳回的政策符記與目前符記不相符</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">國家/地區</translation>
 <translation id="6458467102616083041">由於政策停用了預設搜尋，因此遭到略過。</translation>
 <translation id="647261751007945333">裝置政策</translation>
+<translation id="6489534406876378309">開始上傳當機報告</translation>
 <translation id="6512448926095770873">離開此頁</translation>
 <translation id="6529602333819889595">重做刪除(&amp;R)</translation>
 <translation id="6550675742724504774">選項</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">您確定要重新載入這個網頁？</translation>
 <translation id="8349305172487531364">書籤列</translation>
 <translation id="8364627913115013041">未設定。</translation>
+<translation id="8412145213513410671">當機次數 (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">復原移動(&amp;U)</translation>
 <translation id="8488350697529856933">適用對象</translation>
 <translation id="8530504477309582336">Google Payments 不支援此類型卡片，請選取其他卡片。</translation>

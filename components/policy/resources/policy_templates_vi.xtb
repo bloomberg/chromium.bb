@@ -45,7 +45,7 @@
 
           Nếu không thiết lập chính sách này, tất cả bốn giao thức sẽ được sử dụng.</translation>
 <translation id="1297182715641689552">Sử dụng tập lệnh proxy .pac</translation>
-<translation id="1304973015437969093">Cần tự động cài đặt ID tiện ích/ứng dụng và URL cập nhật</translation>
+<translation id="1304973015437969093">Cần ID tiện ích/ứng dụng và URL cập nhật để tự động cài đặt</translation>
 <translation id="1310699457130669094">Bạn có thể chỉ định URL tới tệp .pac proxy tại đây.
 
           Chính sách này chỉ có hiệu lực nếu bạn đã chọn cài đặt proxy theo cách thủ công tại 'Chọn cách chỉ định cài đặt máy chủ proxy'.
@@ -419,7 +419,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           ExtensionInstallBlacklist được ưu tiên hơn so với chính sách này. Điều đó có nghĩa là tiện ích trên danh sách đen sẽ không được cài đặt, ngay cả khi cài đặt này diễn ra từ một trang web trên danh sách này.</translation>
 <translation id="2824715612115726353">Bật chế độ Ẩn danh</translation>
-<translation id="2850122204195089673">Cung cấp Màn hình hợp nhất và bật theo mặc định.</translation>
+<translation id="2850122204195089673">Cho phép Màn hình hợp nhất và bật theo mặc định.</translation>
 <translation id="285480231336205327">Bật chế độ tương phản cao</translation>
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="2877225735001246144">Tắt tra cứu CNAME khi thỏa thuận xác thực Kerberos</translation>
@@ -478,9 +478,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu không thiết lập chính sách này, người dùng có thể cài đặt mọi tiện ích trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Cài đặt này đã bị xóa kể từ phiên bản <ph name="PRODUCT_NAME" /> 29. Phương thức được đề xuất để thiết lập bộ sưu tập tiện ích/ứng dụng được tổ chức lưu trữ là đưa trang web lưu trữ gói CRX vào ExtensionInstallSources và đặt liên kết tải xuống trực tiếp vào trong các gói trên trang web. Có thể tạo trình chạy cho trang web đó bằng chính sách ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">kể từ phiên bản <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Chỉ định xem chia tách bản ghi SSL có bị vô hiệu hóa không. Chia tách bản ghi là một giải pháp cho điểm yếu trong SSL 3.0 và TLS 1.0 nhưng có thể gây ra các sự cố về tính tương thích với một số proxy và máy chủ HTTPS.
-
-      Nếu chính sách chưa được đặt, hoặc được đặt sai, thì chia tách bản ghi sẽ được sử dụng trên các kết nối SSL/TLS sử dụng bộ mật mã CBC.</translation>
 <translation id="3213821784736959823">Kiểm soát xem máy khách DNS tích hợp có được sử dụng trong <ph name="PRODUCT_NAME" />.
 
       Nếu chính sách được đặt thành đúng, máy khách DNS tích hợp sẽ được sử dụng, nếu có sẵn.
@@ -1736,7 +1733,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8955719471735800169">Quay lại đầu trang</translation>
 <translation id="8970205333161758602">Loại bỏ lời nhắc từ chối <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Bộ tính giờ tự động đăng nhập vào phiên công khai</translation>
-<translation id="8987262643142408725">Vô hiệu hóa chia tách bản ghi SSL</translation>
 <translation id="8992176907758534924">Không cho phép bất kỳ trang web nào hiển thị hình ảnh</translation>
 <translation id="9035964157729712237">Các ID tiện ích được miễn khỏi danh sách đen</translation>
 <translation id="9042911395677044526">Cho phép áp dụng cấu hình mạng cho mỗi người dùng thiết bị <ph name="PRODUCT_OS_NAME" />. Cấu hình mạng là chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại <ph name="ONC_SPEC_URL" /></translation>

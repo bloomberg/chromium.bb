@@ -16,6 +16,7 @@ Kaugarvutid, mis ei kasuta Ameerika inglise keele klaviatuuri, võivad saada val
 Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo.gl/SyrVzj) ja Chrome'i privaatsuseeskirjadest (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(see funktsioon ei ole veel teie arvutis saadaval)</translation>
 <translation id="1342297293546459414">Vaadake ja juhtige jagatud arvutit.</translation>
+<translation id="1389790901665088353">Chrome Remote Desktopi hosti installiprogrammi allalaadimine</translation>
 <translation id="1450760146488584666">Nõutavat objekti ei ole.</translation>
 <translation id="1480046233931937785">Tiitrid</translation>
 <translation id="1520828917794284345">Muuda suurust töölaua sobitamiseks</translation>
@@ -146,6 +147,7 @@ Host</translation>
 <translation id="4572065712096155137">Sisene</translation>
 <translation id="4573676252416618192">Chrome Remote
 Desktopi host</translation>
+<translation id="4619978527973181021">Nõustu ja installi</translation>
 <translation id="4703799847237267011">Teie rakenduse Chromoting seanss on lõppenud.</translation>
 <translation id="4736223761657662401">Ühenduse ajalugu</translation>
 <translation id="4741792197137897469">Autentimine ebaõnnestus. Logige uuesti Chrome'i sisse.</translation>
@@ -158,6 +160,7 @@ Desktopi host</translation>
 <translation id="4913529628896049296">ühenduse ootamine ...</translation>
 <translation id="4918086044614829423">Nõustu</translation>
 <translation id="492843737083352574">Mul on probleeme klaviatuuri või hiirega.</translation>
+<translation id="4973800994433240357">Chromootimise hosti installiprogrammi allalaadimisel nõustute Google’i <ph name="LINK_BEGIN" />teenusetingimustega<ph name="LINK_END" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (võrguühenduseta)</translation>
 <translation id="5070121137485264635">Kaughost vajab autentimist kolmanda osapoole veebisaidil. Jätkamiseks peate andma Chrome Remote Desktopile täiendavad load juurdepääsuks sellele aadressile:</translation>
 <translation id="5156271271724754543">Sisestage mõlemale väljale sama PIN-kood.</translation>
@@ -170,6 +173,7 @@ Desktopi host</translation>
 <translation id="5308380583665731573">Ühendamine</translation>
 <translation id="5363265567587775042">Paluge kasutajal, kelle arvutile soovite juurde pääseda, klõpsata nupul „<ph name="SHARE" />” ja anda teile juurdepääsukood.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop võimaldab arvutit turvaliselt veebi kaudu jagada. Mõlema kasutaja arvutis peab töötama rakendus Chrome Remote Desktop, mille leiate aadressilt <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Macile (OS X 10.6 ja uuemad versioonid)</translation>
 <translation id="5397086374758643919">Chrome Remote Desktopi hosti desinstaller</translation>
 <translation id="5419185025274123272">Rakendust ei saanud lähtestada. Saate siiski saata veaaruande.</translation>
 <translation id="544077782045763683">Host on välja lülitatud.</translation>
@@ -222,6 +226,7 @@ Desktopi host</translation>
 <translation id="6930242544192836755">Kestus</translation>
 <translation id="6939719207673461467">Kuva/peida klaviatuur.</translation>
 <translation id="6944854424004126054">Akna taastamine</translation>
+<translation id="6962773374262604195">Windowsile (XP ja uuemad versioonid)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Kas olete kindel, et soovite keelata kaugühenduse hostiga <ph name="HOSTNAME" />? Kui mõtlete ümber, peate selles arvutis ühendused uuesti lubama.</translation>
 <translation id="6998989275928107238">Host</translation>
@@ -251,6 +256,7 @@ Desktopi host</translation>
 <translation id="7869445566579231750">Teil puudub luba selle rakenduse käitamiseks.</translation>
 <translation id="7948001860594368197">Ekraani valikud</translation>
 <translation id="7970576581263377361">Autentimine ebaõnnestus. Logige uuesti Chromiumi sisse.</translation>
+<translation id="8041721485428375115">Chrome Remote Desktopi hosti installiprogrammi allalaadimisel nõustute Google'i <ph name="LINK_BEGIN" />teenusetingimustega<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Chrome Remote Desktopi kasutamiseks peate lisama seadmele Google'i konto.</translation>
 <translation id="80739703311984697">Kaughost vajab autentimist kolmanda osapoole veebisaidil. Jätkamiseks peate andma chromootimisele täiendavad load juurdepääsuks sellele aadressile:</translation>
 <translation id="809687642899217504">Minu arvutid</translation>
@@ -274,6 +280,7 @@ Desktopi host</translation>
 <translation id="8642984861538780905">Rahuldav</translation>
 <translation id="8712909229180978490">Ma ei näe võrgus oma salvestatud faile Google Drive'is.</translation>
 <translation id="8759753423332885148">Lisateave.</translation>
+<translation id="8791202241915690908">Chromootimise hosti installiprogrammi allalaadimine</translation>
 <translation id="894763922177556086">Hea</translation>
 <translation id="897805526397249209">Muu arvutiga kaugühenduste lubamiseks installige sellesse rakendus Chromoting ja klõpsake nupul „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Chrome Remote Desktopi hosti kontroller</translation>

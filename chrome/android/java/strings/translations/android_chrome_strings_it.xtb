@@ -22,6 +22,7 @@
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
 <translation id="129553762522093515">Chiusi di recente</translation>
 <translation id="1312168552565502328">Cookie, dati dei siti</translation>
+<translation id="1346090444609141578">Nessuna pagina salvata qui</translation>
 <translation id="1369915414381695676">Sito <ph name="SITE_NAME" /> aggiunto</translation>
 <translation id="1373696734384179344">Memoria non sufficiente per scaricare i contenuti selezionati.</translation>
 <translation id="1379156015317873965">Migliora le prestazioni di caricamento delle pagine</translation>
@@ -79,7 +80,7 @@
 <translation id="219985413780390209">Proteggi te stesso e il tuo dispositivo da siti pericolosi</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, app web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Perfeziona</translation>
-<translation id="2315043854645842844">La selezione del certificato lato cliente non è supportata dal sistema operativo.</translation>
+<translation id="2315043854645842844">La selezione del certificato lato client non è supportata dal sistema operativo.</translation>
 <translation id="2316129865977710310">No, grazie</translation>
 <translation id="2321958826496381788">Trascina il cursore finché leggi il testo senza problemi. Il testo dovrebbe avere queste dimensioni minime quando tocchi due volte un paragrafo.</translation>
 <translation id="2343328333327081434">Installazione…</translation>
@@ -129,7 +130,7 @@
 <translation id="3029704984691124060">Le passphrase non corrispondono</translation>
 <translation id="3039671569659952257">Elimina cartella</translation>
 <translation id="3063601790762993062">Salva video</translation>
-<translation id="306566828762083630">Lo spazio di archiviazione del dispositivo è esaurito. Rimuovi altri contenuti multimediali per liberare spazio.</translation>
+<translation id="306566828762083630">Lo spazio di archiviazione del dispositivo è pieno. Rimuovi altri contenuti multimediali per liberare spazio.</translation>
 <translation id="307329814453917357">Proponi di tradurre le pagine utilizzando Google Traduttore</translation>
 <translation id="3089395242580810162">Apri in scheda in incognito</translation>
 <translation id="3090193911106258841">Accesso all'input audio e video in corso</translation>
@@ -271,7 +272,7 @@ Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…"</transla
 <translation id="5302048478445481009">Lingua</translation>
 <translation id="5304593522240415983">Questo campo non può essere vuoto</translation>
 <translation id="5305985456140490686">Ultima sincronizzazione: <ph name="MINUTES" /> minuti fa</translation>
-<translation id="5308933389783727448">Cerca pagine salvate</translation>
+<translation id="5308933389783727448">Cerca nelle pagine salvate</translation>
 <translation id="5313967007315987356">Aggiungi sito</translation>
 <translation id="5317780077021120954">Salva</translation>
 <translation id="5323972449344932352">Avvia Chrome</translation>

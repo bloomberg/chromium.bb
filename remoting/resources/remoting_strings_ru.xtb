@@ -16,6 +16,7 @@
 Данные в приложении подпадают под действие Политики конфиденциальности Google (http://www.google.com/intl/ru/policies/privacy/) и Примечания о конфиденциальности Chrome (https://www.google.ru/intl/ru/chrome/browser/privacy/).</translation>
 <translation id="1324095856329524885">(эта функция пока недоступна для вашего компьютера)</translation>
 <translation id="1342297293546459414">Вы сможете получить доступ к общему компьютеру.</translation>
+<translation id="1389790901665088353">Установка хоста для Удаленного рабочего стола Chrome</translation>
 <translation id="1450760146488584666">Запрошенный объект не существует.</translation>
 <translation id="1480046233931937785">Авторы</translation>
 <translation id="1520828917794284345">Подогнать размер рабочего стола</translation>
@@ -64,6 +65,7 @@
 <translation id="2353140552984634198">Вы можете безопасно подключиться к этому компьютеру с помощью Пульта Chrome.</translation>
 <translation id="2359808026110333948">Далее</translation>
 <translation id="2366718077645204424">Не удалось связаться с хостом. Вероятная причина – используемые вами настройки сети.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Последний раз в Интернете <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Справка/отзыв</translation>
 <translation id="2499160551253595098">Разрешить Google собирать данные статистики использования и отчеты о сбоях для улучшения работы Удаленного рабочего стола Chrome</translation>
 <translation id="2512228156274966424">ПРИМЕЧАНИЕ. Чтобы пользоваться всеми быстрыми клавишами, Удаленный рабочий стол Chrome можно открывать в отдельном окне, задав соответствующие настройки.</translation>
@@ -109,6 +111,7 @@
 <translation id="3596628256176442606">Данная служба обеспечивает входящие соединения от клиентов Пульта Chrome.</translation>
 <translation id="3606997049964069799">Ошибка. Войдите в Chromium и повторите попытку.</translation>
 <translation id="3649256019230929621">Свернуть окно</translation>
+<translation id="369442766917958684">Офлайн.</translation>
 <translation id="3776024066357219166">Сеанс Удаленного рабочего стола Chrome завершен.</translation>
 <translation id="3785447812627779171">Хост
 Пульта Chrome</translation>
@@ -144,6 +147,7 @@
 <translation id="4572065712096155137">Доступ</translation>
 <translation id="4573676252416618192">Хост Удаленного
 рабочего стола Chrome</translation>
+<translation id="4619978527973181021">Принять условия и установить</translation>
 <translation id="4703799847237267011">Сеанс Пульта Chrome завершен.</translation>
 <translation id="4736223761657662401">История подключений</translation>
 <translation id="4741792197137897469">Ошибка аутентификации. Войдите в Chrome ещё раз.</translation>
@@ -156,6 +160,7 @@
 <translation id="4913529628896049296">ожидание подключения…</translation>
 <translation id="4918086044614829423">Принять</translation>
 <translation id="492843737083352574">Возникли проблемы с клавиатурой или мышью.</translation>
+<translation id="4973800994433240357">Скачивая установщик, вы принимаете <ph name="LINK_BEGIN" />Условия использования<ph name="LINK_END" /> Google.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (не в сети)</translation>
 <translation id="5070121137485264635">Для удаленного доступа к сайту требуется пройти аутентификацию. Дайте Удаленному рабочему столу Chrome дополнительные разрешения для доступа к следующему адресу:</translation>
 <translation id="5156271271724754543">Введите в обоих полях одинаковый PIN-код.</translation>
@@ -168,6 +173,7 @@
 <translation id="5308380583665731573">Подключение</translation>
 <translation id="5363265567587775042">Владелец компьютера, к которому вы хотите подключиться, должен нажать "<ph name="SHARE" />" и предоставить вам код доступа.</translation>
 <translation id="5379087427956679853">Удаленный рабочий стол Chrome обеспечит безопасный доступ к компьютеру через Интернет. Приложение должно быть установлено на обоих компьютерах: вашем и удаленном. Загрузить его можно на странице <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Для Mac (OS X 10.6 и выше)</translation>
 <translation id="5397086374758643919">Приложение Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="5419185025274123272">Не удалось сбросить настройки приложения. Вы можете отправить сообщение об ошибке.</translation>
 <translation id="544077782045763683">Хост отключен.</translation>
@@ -183,6 +189,7 @@
 <translation id="579702532610384533">Подключиться повторно</translation>
 <translation id="5843054235973879827">Безопасно ли это?</translation>
 <translation id="5859141382851488196">Новое окно...</translation>
+<translation id="5885438903806970186">В Интернете.</translation>
 <translation id="6001953797859482435">Настройки Удаленного рабочего стола Chrome</translation>
 <translation id="6011539954251327702">Пульт Chrome обеспечит безопасный доступ к компьютеру через Интернет. Приложение должно быть установлено на обоих компьютерах: вашем и удаленном. Загрузить его можно на странице <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Закрыть</translation>
@@ -219,6 +226,7 @@
 <translation id="6930242544192836755">Продолжительность</translation>
 <translation id="6939719207673461467">Показать/скрыть клавиатуру</translation>
 <translation id="6944854424004126054">Восстановить окно</translation>
+<translation id="6962773374262604195">Для Windows (XP и выше)</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6985691951107243942">Заблокировать подключения к <ph name="HOSTNAME" />? Восстановить их можно будет только на соответствующем компьютере.</translation>
 <translation id="6998989275928107238">Хост</translation>
@@ -248,6 +256,7 @@
 <translation id="7869445566579231750">У вас нет разрешения на запуск этого приложения.</translation>
 <translation id="7948001860594368197">Параметры экрана</translation>
 <translation id="7970576581263377361">Ошибка аутентификации. Войдите в Chromium ещё раз.</translation>
+<translation id="8041721485428375115">Скачивая установщик, вы принимаете <ph name="LINK_BEGIN" />Условия использования<ph name="LINK_END" /> Google.</translation>
 <translation id="8073845705237259513">Чтобы использовать Удаленный рабочий стол Chrome, необходимо добавить на устройство аккаунт Google.</translation>
 <translation id="80739703311984697">Для удаленного доступа к сайту требуется пройти аутентификацию. Дайте Пульту Chrome дополнительные разрешения для доступа к следующему адресу:</translation>
 <translation id="809687642899217504">Мои компьютеры</translation>
@@ -271,6 +280,7 @@
 <translation id="8642984861538780905">среднее</translation>
 <translation id="8712909229180978490">Не удается посмотреть сохраненные на Диске файлы онлайн.</translation>
 <translation id="8759753423332885148">Подробнее…</translation>
+<translation id="8791202241915690908">Установка хоста для Пульта Chrome</translation>
 <translation id="894763922177556086">высокое</translation>
 <translation id="897805526397249209">Чтобы разрешить удаленные подключения на другом компьютере, установите на него Пульт Chrome и нажмите кнопку "<ph name="BUTTON_NAME" />".</translation>
 <translation id="8998327464021325874">Контроллер хоста Удаленного рабочего стола Chrome</translation>

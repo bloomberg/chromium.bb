@@ -55,7 +55,6 @@
 <translation id="2705212601509139398">Dette website anvender Chromium Frame-pluginnet, som snart ikke længere understøttes. Afinstaller det, og download en kompatibel browser.</translation>
 <translation id="2718390899429598676">Som et ekstra sikkerhedsniveau krypterer Chromium dine data.</translation>
 <translation id="2732467638532545152">Din computer kører en gammel version af Microsoft Windows, som ikke kan behandle sikkerhedscertifikatet for dette website. Som følge af dette problem, kan Chromium ikke afgøre, om certifikatet kom fra <ph name="SITE" /> eller fra en bruger på dit netværk,, som udgav sig for at være <ph name="SITE" />. Opdater din computer til en nyere version af Windows.</translation>
-<translation id="275588974610408078">Nedbrudsrapportering er ikke tilgængeligt i Chromium.</translation>
 <translation id="2770231113462710648">Skift standardbrowser til:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> er skadelig, og Chromium har blokeret den.</translation>
 <translation id="2847479871509788944">Fjern fra Chromium...</translation>

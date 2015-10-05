@@ -55,7 +55,6 @@
 <translation id="2705212601509139398">此网站使用的 Chromium 内嵌框架插件即将不受支持。请卸载该插件，然后下载一款兼容的浏览器。</translation>
 <translation id="2718390899429598676">为了提高安全性，Chromium 将对您的数据进行加密。</translation>
 <translation id="2732467638532545152">您的计算机运行的是旧版Microsoft Windows，无法处理此网站的安全证书。因此，Chromium无法确定该证书是来自<ph name="SITE" />，还是来自您所在的网络中假冒<ph name="SITE" />的用户。请将您的计算机更新到更高版本的Windows。</translation>
-<translation id="275588974610408078">Chromium 未提供崩溃报告。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> 是恶意文件，Chromium 已将其拦截。</translation>
 <translation id="2847479871509788944">从Chromium中移除…</translation>

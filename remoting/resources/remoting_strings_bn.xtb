@@ -16,6 +16,7 @@
 গোপনীয়তা সম্পর্কিত তথ্যের জন্য, দয়া করে Google এর গোপনীয়তা নীতি (http://goo.gl/SyrVzj) এবং Chrome এর গোপনীয়তা নীতি (http://goo.gl/0uXE5d) দেখুন৷</translation>
 <translation id="1324095856329524885">(এই বৈশিষ্ট্যটি এখনও আপনার কম্পিউটারের জন্য উপলব্ধ নয়)</translation>
 <translation id="1342297293546459414">একটি ভাগ করা কম্পিউটার দেখুন ও নিয়ন্ত্রণ করুন৷</translation>
+<translation id="1389790901665088353">Chrome দূরবর্তী ডেস্কটপ হোস্ট ইনস্টলার ডাউনলোড করুন</translation>
 <translation id="1450760146488584666">অনুরোধের বস্তুটির কোনো অস্তিত্ব নেই৷</translation>
 <translation id="1480046233931937785">কৃতিত্ব</translation>
 <translation id="1520828917794284345">মানানসই করতে ডেস্কটপের আকার পরিবর্তন করুন</translation>
@@ -64,6 +65,7 @@
 <translation id="2353140552984634198">Chromoting ব্যবহার করে আপনি হয়ত নিরাপদভাবে এই কম্পিউটারটিকে অ্যাক্সেস করতে পারবেন৷</translation>
 <translation id="2359808026110333948">অবিরত</translation>
 <translation id="2366718077645204424">হোস্টে পৌঁছাতে পারেনি৷ আপনার ব্যবহার করা নেটওয়ার্কের কনফিগারেশনের কারণে সম্ভবত এটি হয়েছে৷</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> অনলাইনে সর্বশেষ <ph name="RELATIVE_TIMESTAMP" /> দেখা গেছে।</translation>
 <translation id="2498359688066513246">সহায়তা ও প্রতিক্রিয়া</translation>
 <translation id="2499160551253595098">আমাদের ব্যবহার পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদনগুলি সংগ্রহের অনুমতি দিয়ে, Chrome দূরবর্তী ডেস্কটপের উন্নতিতে আমাদের সাহায্য করুন৷</translation>
 <translation id="2512228156274966424">দ্রষ্টব্য: সমস্ত কীবোর্ড শর্টকাট উপলব্ধ থাকাকে নিশ্চিত করতে, আপনি Chrome দূরবর্তী ডেস্কটপ ‘উইন্ডো হিসাবে খোলার জন্য’ কনফিগার করতে পারেন৷</translation>
@@ -109,6 +111,7 @@
 <translation id="3596628256176442606">এই পরিষেবাটি Chromoting থেকে আগত সংযোগুলি সক্ষম করে৷</translation>
 <translation id="3606997049964069799">আপনি Chromium এ সাইন ইন করা অবস্থায় নেই৷ অনুগ্রহ করে সাইন ইন করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="3649256019230929621">উইন্ডো সংক্ষিপ্তায়ন করুন</translation>
+<translation id="369442766917958684">অফলাইন।</translation>
 <translation id="3776024066357219166">আপনার Chrome দূরবর্তী ডেস্কটপ অধিবেশন শেষ হয়েছে৷</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -144,6 +147,7 @@ Host</translation>
 <translation id="4572065712096155137">অ্যাক্সেস করুন</translation>
 <translation id="4573676252416618192">Chrome দূরবর্তী 
 ডেস্কটপ হোস্ট</translation>
+<translation id="4619978527973181021">স্বীকার করুন এবং ইনস্টল করুন</translation>
 <translation id="4703799847237267011">আপনার Chromoting অধিবেশন শেষ হয়েছে৷</translation>
 <translation id="4736223761657662401">সংযোগ ইতিহাস</translation>
 <translation id="4741792197137897469">প্রমাণীকরণ ব্যর্থ হয়েছে৷ অনুগ্রহ করে আবার Chrome-এ সাইন ইন করুন৷</translation>
@@ -156,6 +160,7 @@ Host</translation>
 <translation id="4913529628896049296">সংযোগের জন্য প্রতীক্ষারত…</translation>
 <translation id="4918086044614829423">স্বীকার</translation>
 <translation id="492843737083352574">আমার কীবোর্ড বা মাউসের সমস্যা হয়েছে।</translation>
+<translation id="4973800994433240357">Chromoting হোস্ট ইনস্টলার ডাউনলোড করার মাধ্যমে আপনি Google <ph name="LINK_BEGIN" />পরিষেবার শর্তাবলি<ph name="LINK_END" /> স্বীকার করছেন।</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (অফলাইন)</translation>
 <translation id="5070121137485264635">একটি তৃতীয়-পক্ষ ওয়েবসাইট প্রমাণীকরণ করতে রিমোট হোস্টটির আপনাকে প্রয়োজন। অবিরত রাখতে, এই ওয়েবসাইট অ্যাক্সেস করতে আপনাকে অবশ্যই Chrome দূরবর্তী ডেস্কটপ অতিরিক্ত অনুমতির মঞ্জুরি দিতে হবে:</translation>
 <translation id="5156271271724754543">উভয় বক্সে দয়া করে একই পিন লিখুন৷</translation>
@@ -168,6 +173,7 @@ Host</translation>
 <translation id="5308380583665731573">সংযুক্ত করুন</translation>
 <translation id="5363265567587775042">“<ph name="SHARE" />” এ ক্লিক করতে এবং আপনাকে অ্যাক্সেস কোড দিতে আপনি কার কম্পিউটার অ্যাক্সেস করতে চান তা ব্যবহারকারিকে জিজ্ঞেস করুন।</translation>
 <translation id="5379087427956679853">Chrome দূরবর্তী ডেস্কটপ আপনাকে ওয়েবে আপনার কম্পিউটার নিরাপদভাবে ভাগ করার মঞ্জুরি দেয়৷ উভয় ব্যবহারকারীকেই Chrome দূরবর্তী ডেস্কটপ অ্যাপ্লিকেশন চালাতে হবে যা <ph name="URL" />এ পেতে পারেন৷</translation>
+<translation id="5394895745784982830">Mac এর জন্য (OS X 10.6 ও এর উর্ধ্বে)</translation>
 <translation id="5397086374758643919">Chrome দূরবর্তী ডেস্কটপ হোস্ট আনইনস্টলার</translation>
 <translation id="5419185025274123272">অ্যাপ্লিকেশান রিসেট করা গেল না। আপনি এখনও বাগ রিপোর্ট পাঠাতে পারবেন।</translation>
 <translation id="544077782045763683">হোস্ট বন্ধ হয়ে গেছে৷</translation>
@@ -183,6 +189,7 @@ Host</translation>
 <translation id="579702532610384533">পুনরায সংযোগ করুন</translation>
 <translation id="5843054235973879827">এটি কেন নিরাপদ?</translation>
 <translation id="5859141382851488196">নতুন উইন্ডো...</translation>
+<translation id="5885438903806970186">অনলাইন।</translation>
 <translation id="6001953797859482435">Chrome দূরবর্তী ডেস্কটপ হোস্ট পছন্দগুলি</translation>
 <translation id="6011539954251327702">Chromoting আপনাকে নিরাপদভাবে ওয়েবে আপনার কম্পিউটারকে ভাগ করার অনুমতি দেয়৷ ব্যবহারকারীদের উভয়ের Chromoting অ্যাপ্লিকেশন চালনা করা অবশ্যক, যা <ph name="URL" /> এ পেতে পারেন৷</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
@@ -219,6 +226,7 @@ Host</translation>
 <translation id="6930242544192836755">সময়কাল</translation>
 <translation id="6939719207673461467">কীবোর্ড দেখান/লুকান৷</translation>
 <translation id="6944854424004126054">উইন্ডো পুনরুদ্ধার করুন</translation>
+<translation id="6962773374262604195">Windows এর জন্য (XP ও এর উর্ধ্বে)</translation>
 <translation id="6965382102122355670">ওকে</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" />এ দূরবর্তী সংযোগগুলি অক্ষম করার ব্যাপারে আপনি কি নিশ্চিত? আপনি যদি মন বদলান, তাহলে সংযোগগুলি পুনঃসক্ষম করতে আপনাকে এই কম্পিউটারে যেতে হবে৷</translation>
 <translation id="6998989275928107238">প্রতি</translation>
@@ -248,6 +256,7 @@ Host</translation>
 <translation id="7869445566579231750">এই অ্যাপ্লিকেশান চালানোর মতো অনুমতি আপনার নেই।</translation>
 <translation id="7948001860594368197">স্ক্রীন বিকল্পগুলি</translation>
 <translation id="7970576581263377361">প্রমাণীকরণ ব্যর্থ হয়েছে৷ অনুগ্রহ করে আবার Chromium এ সাইন ইন করুন৷</translation>
+<translation id="8041721485428375115">Chrome দূরবর্তী ডেস্কটপ হোস্ট ইনস্টলার ডাউনলোড করার মাধ্যমে আপনি Google <ph name="LINK_BEGIN" />পরিষেবার শর্তাবলি<ph name="LINK_END" /> স্বীকার করছেন।</translation>
 <translation id="8073845705237259513">Chrome দূরবর্তী ডেস্কটপ ব্যবহার করার জন্য, আপনাকে আপনার ডিভাইসে একটি Google অ্যাকাউন্ট যোগ করতে হবে৷</translation>
 <translation id="80739703311984697">একটি তৃতীয়-পক্ষ ওয়েবসাইট প্রমাণীকরণ করতে রিমোট হোস্টটির আপনাকে প্রয়োজন। অবিরত রাখতে, এই ওয়েবসাইট অ্যাক্সেস করতে আপনাকে অবশ্যই Chromoting অতিরিক্ত অনুমতির মঞ্জুরি দিতে হবে:</translation>
 <translation id="809687642899217504">আমার কম্পিউটারগুলি</translation>
@@ -271,6 +280,7 @@ Host</translation>
 <translation id="8642984861538780905">মোটামুটি</translation>
 <translation id="8712909229180978490">আমি Google ড্রাইভে আমার সংরক্ষিত ফাইলগুলি অনলাইন হিসেবে দেখতে পাচ্ছি না।</translation>
 <translation id="8759753423332885148">আরো জানুন৷</translation>
+<translation id="8791202241915690908">Chromoting হোস্ট ইনস্টলার ডাউনলোড হচ্ছে</translation>
 <translation id="894763922177556086">শক্তিশালী</translation>
 <translation id="897805526397249209">কোনো অন্য কম্পিউটারে দূরবর্তী সংযোগগুলি সক্ষম করতে সেখানে Chromoting ইনস্টল করুন এবং “<ph name="BUTTON_NAME" />” এ ক্লিক করুন৷</translation>
 <translation id="8998327464021325874">Chrome দূরবর্তী ডেস্কটপ হোস্ট নিয়ন্ত্রণকারী</translation>

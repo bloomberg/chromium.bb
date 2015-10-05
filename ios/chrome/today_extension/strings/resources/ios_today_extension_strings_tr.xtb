@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
+<translation id="1203161113033984675">BEGIN_LINKFiziksel WebEND_LINK açık.</translation>
+<translation id="1418775127135578229">Kopyalanan Bağlantıyı Aç</translation>
+<translation id="1487576085940433465">BEGIN_LINKYakındaki nesneler web sayfaları yayınlıyorEND_LINK. Bu sonuçların kalitesini iyileştirmek için bir Google hizmeti kullanılacaktır.</translation>
+<translation id="2026797012398135445">Etkinleştirmek için cihazınızın kilidini açın.</translation>
 <translation id="2316129865977710310">Hayır, teşekkürler</translation>
 <translation id="3435896845095436175">Etkinleştir</translation>
 <translation id="4394049700291259645">Devre dışı bırak</translation>
 <translation id="5301954838959518834">Evet, anladım</translation>
+<translation id="5508399372551154686">BEGIN_LINKFiziksel WebEND_LINK kapalı.</translation>
+<translation id="5815960189179094695">BEGIN_LINKFiziksel WebEND_LINK nesneleri taranıyor...</translation>
 <translation id="6196207969502475924">Sesli Arama</translation>
+<translation id="6722203589267124394">Etraftaki BEGIN_LINKFiziksel WebEND_LINK nesnelerini görmek için Bluetooth'u açın.</translation>
 <translation id="7554791636758816595">Yeni Sekme</translation>
+<translation id="7588950540487816470">Fiziksel Web</translation>
+<translation id="8800384372516194324">Daha Fazla Sonuç Göster</translation>
 </translationbundle>

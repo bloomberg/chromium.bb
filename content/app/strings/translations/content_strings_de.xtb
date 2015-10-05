@@ -25,7 +25,7 @@
 <translation id="2148716181193084225">Heute</translation>
 <translation id="2226276347425096477">Kürzen Sie diesen Text auf max. <ph name="MAX_CHARACTERS" /> Zeichen. Zurzeit verwenden Sie <ph name="CURRENT_LENGTH" /> Zeichen.</translation>
 <translation id="2247351761944213033">Woche <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
-<translation id="2291999235780842123">Kontrollkästchen</translation>
+<translation id="2291999235780842123">Kästchen</translation>
 <translation id="248395913932153421">Tag</translation>
 <translation id="2507943997699731163">Füllen Sie dieses Feld aus.</translation>
 <translation id="2548326553472216322">Keine vor Kurzem durchgeführte Suchanfragen</translation>
@@ -35,7 +35,7 @@
 <translation id="2674318244760992338">Fußzeile</translation>
 <translation id="2723001399770238859">Audio</translation>
 <translation id="2746543609216772311">Verwenden Sie <ph name="MINIMUM_DATE_OR_TIME" /> oder einen späteren Wert.</translation>
-<translation id="2761667185364618470">Aktivieren Sie dieses Kontrollkästchen, wenn Sie fortfahren möchten.</translation>
+<translation id="2761667185364618470">Aktivieren Sie dieses Kästchen, wenn Sie fortfahren möchten.</translation>
 <translation id="2846343701378493991">1024 (mittlere Stufe)</translation>
 <translation id="2901282870647571346">Aktueller Filmstatus</translation>
 <translation id="2908441821576996758">Geben Sie eine durch Kommas getrennte Liste der E-Mail-Adressen ein.</translation>

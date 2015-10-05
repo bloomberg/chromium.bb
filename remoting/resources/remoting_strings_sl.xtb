@@ -16,6 +16,7 @@ Vnos besedila v oddaljene računalnike, ki ne uporabljajo tipkovnice za angleš�
 Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http://goo.gl/SyrVzj) in Chrome pravilnik o zasebnosti (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(ta funkcija še ni na voljo za vaš računalnik)</translation>
 <translation id="1342297293546459414">Ogled in nadziranje računalnika v skupni rabi.</translation>
+<translation id="1389790901665088353">Prenos namestitvenega programa za gostitelja za Oddaljeno namizje za Chrome</translation>
 <translation id="1450760146488584666">Zahtevani predmet ne obstaja.</translation>
 <translation id="1480046233931937785">Seznam sodelujočih</translation>
 <translation id="1520828917794284345">Prilagodi velikost namizja</translation>
@@ -64,7 +65,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="2353140552984634198">Oddaljeno povezovanje s Chromom omogoča varen dostop do tega računalnika.</translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
 <translation id="2366718077645204424">Ni mogoče vzpostaviti povezave z gostiteljem; verjetno zaradi konfiguracije omrežja, ki ga uporabljate.</translation>
-<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Nazadnje z vzpostavljeno povezavo: <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Zadnji odziv z vzpostavljeno povezavo: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Pomoč in povratne informacije</translation>
 <translation id="2499160551253595098">Pomagajte nam izboljšati Oddaljeno namizje za Chrome, tako da nam dovolite zbiranje statističnih podatkov o uporabi in poročil o zrušitvah.</translation>
 <translation id="2512228156274966424">OPOMBA: Če želite zagotoviti, da bodo na voljo vse bližnjične tipke, lahko Oddaljeno namizje za Chrome konfigurirate na »Odpri kot okno«.</translation>
@@ -146,6 +147,7 @@ povezovanje s Chromom</translation>
 <translation id="4572065712096155137">Dostop</translation>
 <translation id="4573676252416618192">Gostitelj za Oddaljeno
 namizje za Chrome</translation>
+<translation id="4619978527973181021">Sprejmite in namestite</translation>
 <translation id="4703799847237267011">Seja Oddaljenega povezovanja s Chromom je končana.</translation>
 <translation id="4736223761657662401">Zgodovina povezav</translation>
 <translation id="4741792197137897469">Preverjanje pristnosti ni uspelo. Še enkrat se prijavite v Chrome.</translation>
@@ -158,6 +160,7 @@ namizje za Chrome</translation>
 <translation id="4913529628896049296">čakanje na povezavo ...</translation>
 <translation id="4918086044614829423">Sprejmi</translation>
 <translation id="492843737083352574">Imam težave s tipkovnico ali miško.</translation>
+<translation id="4973800994433240357">Če prenesete namestitveni program za gostitelja za Oddaljeno povezovanje s Chromom, sprejemate Googlove <ph name="LINK_BEGIN" />pogoje storitve<ph name="LINK_END" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (brez povezave)</translation>
 <translation id="5070121137485264635">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu namizju za Chrome dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
 <translation id="5156271271724754543">V polji vnesite isto kodo PIN.</translation>
@@ -170,6 +173,7 @@ namizje za Chrome</translation>
 <translation id="5308380583665731573">Povezovanje</translation>
 <translation id="5363265567587775042">Uporabnika, do čigar računalnika želite dostopati, prosite, da klikne »<ph name="SHARE" />« in vam da kodo za dostop.</translation>
 <translation id="5379087427956679853">Oddaljeno namizje za Chrome omogoča varno skupno rabo računalnika v spletu. Oba uporabnika morata uporabljati aplikacijo Oddaljeno namizje za Chrome, ki je na voljo na <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Za Mac OS (OS X 10.6 in novejši)</translation>
 <translation id="5397086374758643919">Odstranitveni program gostitelja za Oddaljeno namizje za Chrome</translation>
 <translation id="5419185025274123272">Aplikacije ni bilo mogoče ponastaviti. Kljub temu lahko pošljete poročilo o napakah.</translation>
 <translation id="544077782045763683">Gostitelj se je zaustavil.</translation>
@@ -222,6 +226,7 @@ namizje za Chrome</translation>
 <translation id="6930242544192836755">Trajanje</translation>
 <translation id="6939719207673461467">Pokaži/skrij tipkovnico.</translation>
 <translation id="6944854424004126054">Obnovi okno</translation>
+<translation id="6962773374262604195">Za sistem Windows (XP in novejše različice)</translation>
 <translation id="6965382102122355670">V redu</translation>
 <translation id="6985691951107243942">Ali ste prepričani, da želite onemogočiti oddaljene povezave z gostiteljem <ph name="HOSTNAME" />? Če si premislite, boste morali v tistem računalniku znova omogočiti povezave.</translation>
 <translation id="6998989275928107238">Za</translation>
@@ -251,6 +256,7 @@ namizje za Chrome</translation>
 <translation id="7869445566579231750">Nimate dovoljenja za izvajanje te aplikacije.</translation>
 <translation id="7948001860594368197">Možnosti zaslona</translation>
 <translation id="7970576581263377361">Preverjanje pristnosti ni uspelo. Še enkrat se prijavite v Chromium.</translation>
+<translation id="8041721485428375115">Če prenesete namestitveni program za gostitelja za oddaljeno namizje za Chrome, sprejemate Googlove <ph name="LINK_BEGIN" />pogoje storitve<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Če želite uporabljati Oddaljeno namizje za Chrome, morate v napravo dodati Google Račun.</translation>
 <translation id="80739703311984697">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu povezovanju s Chromom dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
 <translation id="809687642899217504">Moji računalniki</translation>
@@ -274,6 +280,7 @@ namizje za Chrome</translation>
 <translation id="8642984861538780905">Zadovoljiva</translation>
 <translation id="8712909229180978490">V spletu ne vidim shranjenih datotek v Googlu Drive.</translation>
 <translation id="8759753423332885148">Več o tem</translation>
+<translation id="8791202241915690908">Prenos namestitvenega programa za gostitelja za Oddaljeno povezovanje s Chromom</translation>
 <translation id="894763922177556086">Dobra</translation>
 <translation id="897805526397249209">Če želite omogočiti oddaljene povezave z drugim računalnikom, vanj namestite Oddaljeno povezovanje s Chromom in kliknite »<ph name="BUTTON_NAME" />«.</translation>
 <translation id="8998327464021325874">Krmilnik gostitelja za Oddaljeno namizje za Chrome</translation>

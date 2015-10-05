@@ -16,6 +16,7 @@
 למידע על פרטיות, עדיין במדיניות הפרטיות של Google ‏(http://goo.gl/SyrVzj) ומדיניות הפרטיות של Chrome ‏(http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(התכונה הזו אינה זמינה עדיין בשביל המחשב שלך)</translation>
 <translation id="1342297293546459414">הצג תוכן של מחשב משותף ושלוט בו.</translation>
+<translation id="1389790901665088353">‏הורד את מתקין מארח שולחן העבודה המרוחק של Chrome</translation>
 <translation id="1450760146488584666">האובייקט המבוקש אינו קיים.</translation>
 <translation id="1480046233931937785">שותפים לעשייה</translation>
 <translation id="1520828917794284345">שנה את גודל שולחן העבודה</translation>
@@ -146,6 +147,7 @@ Chromoting</translation>
 <translation id="4572065712096155137">גישה</translation>
 <translation id="4573676252416618192">‏מארח שולחן העבודה
 המרוחק של Chrome</translation>
+<translation id="4619978527973181021">קבל והתקן</translation>
 <translation id="4703799847237267011">‏הפעילות של Chromoting הסתיימה.</translation>
 <translation id="4736223761657662401">היסטוריית חיבורים</translation>
 <translation id="4741792197137897469">‏האימות נכשל. היכנס שוב ל-Chrome.</translation>
@@ -158,6 +160,7 @@ Chromoting</translation>
 <translation id="4913529628896049296">ממתין לחיבור...</translation>
 <translation id="4918086044614829423">אשר</translation>
 <translation id="492843737083352574">נתקלתי בקשיים עם המקלדת או העכבר.</translation>
+<translation id="4973800994433240357">‏בהורדת מתקין מארח Chromoting, אתה מסכים לקבל את <ph name="LINK_BEGIN" />תנאי השירות<ph name="LINK_END" /> של Google.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (לא מקוון)</translation>
 <translation id="5070121137485264635">‏המארח המרוחק דורש שתבצע אימות מול אתר של צד שלישי. כדי להמשיך, עליך להעניק לשולחן העבודה המרוחק של Chrome הרשאות נוספות כדי לגשת לכתובת זו:</translation>
 <translation id="5156271271724754543">‏הזן את אותו PIN בשתי התיבות.</translation>
@@ -170,6 +173,7 @@ Chromoting</translation>
 <translation id="5308380583665731573">התחברות</translation>
 <translation id="5363265567587775042">בקש מבעל המחשב שאליו אתה רוצה לגשת שילחץ על “<ph name="SHARE" />” וייתן לך את קוד הגישה.</translation>
 <translation id="5379087427956679853">‏'שולחן עבודה מרוחק של Chrome' מאפשר לך לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום 'שולחן עבודה מרוחק של Chrome', שניתן למצוא בכתובת <ph name="URL" />.</translation>
+<translation id="5394895745784982830">‏עבור Mac (OS X 10.6 ואילך)</translation>
 <translation id="5397086374758643919">‏מסיר ההתקנה של מארח שולחן העבודה המרוחק של Chrome‏</translation>
 <translation id="5419185025274123272">לא ניתן היה לאפס את היישום. תוכל עדיין לשלוח דוח באגים.</translation>
 <translation id="544077782045763683">המארח כבה.</translation>
@@ -222,6 +226,7 @@ Chromoting</translation>
 <translation id="6930242544192836755">משך החיבור</translation>
 <translation id="6939719207673461467">הצג/הסתר מקלדת.</translation>
 <translation id="6944854424004126054">שחזר חלון</translation>
+<translation id="6962773374262604195">‏עבור Windows (XP ואילך)</translation>
 <translation id="6965382102122355670">אישור</translation>
 <translation id="6985691951107243942">האם אתה בטוח שברצונך להשבית את החיבורים המרוחקים אל <ph name="HOSTNAME" />? אם תשנה את דעתך, יהיה עליך להיכנס למחשב זה כדי להפעיל מחדש את החיבורים.</translation>
 <translation id="6998989275928107238">אל</translation>
@@ -251,6 +256,7 @@ Chromoting</translation>
 <translation id="7869445566579231750">אין לך הרשאה להריץ את היישום הזה.</translation>
 <translation id="7948001860594368197">אפשרויות מסך</translation>
 <translation id="7970576581263377361">‏האימות נכשל. היכנס שוב ל-Chromium.</translation>
+<translation id="8041721485428375115">‏בהורדת מתקין מארח שולחן העבודה המרוחק של Chrome, אתה מסכים לקבל את <ph name="LINK_BEGIN" />תנאי השירות<ph name="LINK_END" /> של Google.</translation>
 <translation id="8073845705237259513">‏כדי להשתמש ב'שולחן עבודה מרוחק של Chrome', עליך להוסיף חשבון Google למכשיר שלך.</translation>
 <translation id="80739703311984697">‏המארח המרוחק דורש שתבצע אימות מול אתר של צד שלישי. כדי להמשיך, עליך להעניק ל-Chromoting הרשאות נוספות כדי לגשת לכתובת זו:</translation>
 <translation id="809687642899217504">המחשבים שלי</translation>
@@ -274,6 +280,7 @@ Chromoting</translation>
 <translation id="8642984861538780905">איכות סבירה</translation>
 <translation id="8712909229180978490">‏איני יכול לראות את הקבצים השמורים שלי ב-Google Drive באינטרנט.</translation>
 <translation id="8759753423332885148">למידע נוסף</translation>
+<translation id="8791202241915690908">‏הורד את מתקין מארח Chromoting</translation>
 <translation id="894763922177556086">איכות טובה</translation>
 <translation id="897805526397249209">‏כדי להפעיל חיבורים מרוחקים למחשב אחר, התקן את Chromoting במחשב האחר ולחץ על '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="8998327464021325874">‏בקר מארח שולחן העבודה המרוחק של Chrome</translation>

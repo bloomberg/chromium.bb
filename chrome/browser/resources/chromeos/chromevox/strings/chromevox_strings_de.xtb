@@ -107,10 +107,10 @@
 <translation id="2359897517538099099">Tabellenmodus ist nicht aktiviert.</translation>
 <translation id="241124561063364910">gefolgt von</translation>
 <translation id="2417569100218200841">Inhaltsinfo</translation>
-<translation id="2422937916923936891">Kontrollkästchen für Menüpunkt</translation>
+<translation id="2422937916923936891">Kästchen für Menüpunkt</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> ist jetzt der neue Modifikator für ChromeVox.</translation>
-<translation id="2450814015951372393">Kontrollkästchen</translation>
+<translation id="2450814015951372393">Kästchen</translation>
 <translation id="2462626033734746142">Optionsfeldgruppe</translation>
 <translation id="2471138580042810658">Überschrift 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{Sternchen}other{# Sternchen}}</translation>
@@ -145,7 +145,7 @@
 <translation id="2841013758207633010">Zeit</translation>
 <translation id="2843837985843789981">Vorherige Gruppe</translation>
 <translation id="2844995807198708617">Kontextmenü</translation>
-<translation id="2849332794118375855">Kein nächstes Kontrollkästchen</translation>
+<translation id="2849332794118375855">Kein nächstes Kästchen</translation>
 <translation id="2864481629947106776">Vorheriger Link</translation>
 <translation id="2873259058405069099">Zum Anfang der Tabelle gehen</translation>
 <translation id="2894654529758326923">Informationen</translation>
@@ -258,7 +258,7 @@
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{Fragezeichen}other{# Fragezeichen}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{Caret-Zeichen}other{# Caret-Zeichen}}</translation>
-<translation id="3568702578574425662">Kontrollkästchen "<ph name="NAME" />" ist nicht aktiviert.</translation>
+<translation id="3568702578574425662">Kästchen "<ph name="NAME" />" ist nicht aktiviert.</translation>
 <translation id="3599054940393788245">Nicht in Mathematik</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{Backtick}other{# Backticks}}</translation>
@@ -442,7 +442,7 @@
 <translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5583640892426849032">Rücktaste</translation>
 <translation id="5585044216466955529">Text bearbeiten, E-Mail-Eintrag</translation>
-<translation id="5597170376237141345">Nächstes Kontrollkästchen</translation>
+<translation id="5597170376237141345">Nächstes Kästchen</translation>
 <translation id="5597933780944041114">Keine nächste Überschrift</translation>
 <translation id="5598905979683743333">Optionsfeld "<ph name="NAME" />" ist nicht aktiviert.</translation>
 <translation id="5601172225407283979">Standardaktion ausführen</translation>
@@ -457,7 +457,7 @@
 <translation id="5678161956734658133">mled</translation>
 <translation id="5681643281275621376">def</translation>
 <translation id="5682113568322255809">Markierung</translation>
-<translation id="5683155931978483559">Vorheriges Kontrollkästchen</translation>
+<translation id="5683155931978483559">Vorheriges Kästchen</translation>
 <translation id="5684277895745049190">Liste</translation>
 <translation id="5700650669149824506">Keine vorherige Überschrift der Ebene 4</translation>
 <translation id="5709192780268610569">Keine ausführliche Beschreibung</translation>
@@ -673,7 +673,7 @@
 <translation id="8428603554127842284">Ebene <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">Keine nächste Überschrift der Ebene 3</translation>
 <translation id="8430049249787218991">mnubr</translation>
-<translation id="844681116543532394">Kein vorheriges Kontrollkästchen</translation>
+<translation id="844681116543532394">Kein vorheriges Kästchen</translation>
 <translation id="8455868257606149352">Max.: <ph name="X" /></translation>
 <translation id="84575901236241018">verfügt über den Zugriffsschlüssel <ph name="KEY" />.</translation>
 <translation id="8503360654911991865">Navigationsgenauigkeit verringern</translation>
@@ -684,7 +684,7 @@
 <translation id="8561322612995434619">enthält ein Pop-up-Fenster</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Nächstes Listenelement</translation>
-<translation id="860150890330522909">Kontrollkästchen "<ph name="NAME" />" aktiviert</translation>
+<translation id="860150890330522909">Kästchen "<ph name="NAME" />" aktiviert</translation>
 <translation id="8606621670302093223">Steuerung für Datum</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> Elemente ausgewählt</translation>
 <translation id="8638532244051952400">Koordinaten der aktuellen Zelle ansagen</translation>

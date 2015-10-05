@@ -57,7 +57,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2705212601509139398">På den här webbplatsen används pluginprogrammet Chromium Frame som snart slutar stödjas. Avinstallera det och ladda ned en kompatibel webbläsare.</translation>
 <translation id="2718390899429598676">Din data krypteras i Chromium för att öka säkerheten.</translation>
 <translation id="2732467638532545152">En gammal version av Microsoft Windows som inte kan behandla webbplatsens säkerhetscertifikat körs på datorn. På grund av detta kan inte Chromium avgöra om certifikatet kommer från <ph name="SITE" /> eller från någon i ditt nätverk som utger sig för att vara <ph name="SITE" />. Uppdatera datorn till en nyare version av Windows.</translation>
-<translation id="275588974610408078">Felrapportering är inte tillgängligt i Chromium.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chromium.</translation>
 <translation id="2847479871509788944">Ta bort från Chromium …</translation>

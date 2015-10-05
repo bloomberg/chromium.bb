@@ -403,9 +403,6 @@
 <translation id="3153348162326497318">可让您指定哪些扩展程序是用户无法安装的。已安装的扩展程序如果列入黑名单，就会遭到删除。黑名单中的“*”值表示：除了在白名单中明确列出的扩展程序，其他所有扩展程序均列入黑名单。如果未设置此政策，用户就可以在 <ph name="PRODUCT_NAME" />中安装任何扩展程序。</translation>
 <translation id="316778957754360075">此设置从 <ph name="PRODUCT_NAME" />版本 29 起开始弃用。我们建议您将托管 CRX 软件包的网站包含在 ExtensionInstallSources 中，然后将上述软件包的直接下载链接放在某网页上，从而建立一个由企业托管的扩展程序/应用包。相关网页的启动器可使用 ExtensionInstallForcelist 政策创建。</translation>
 <translation id="3185009703220253572">从版本 <ph name="SINCE_VERSION" /> 开始</translation>
-<translation id="3195451902035818945">指定是否应停用 SSL 记录分割。记录分割是针对 SSL 3.0 和 TLS 1.0 中的弱点采用的解决方法，但是会导致有关某些 HTTPS 服务器和代理出现兼容性问题。
-
-      如果未设置此政策或将其设为 False，就会对采用 CBC 密码套件的 SSL/TLS 连接使用记录分割。</translation>
 <translation id="3213821784736959823">控制是否在 <ph name="PRODUCT_NAME" /> 中使用内置 DNS 客户端。
 
       如果此策略设置为 True，系统将使用内置 DNS 客户端（如果有）。
@@ -1477,7 +1474,6 @@
 <translation id="8955719471735800169">返回页首</translation>
 <translation id="8970205333161758602">阻止显示 <ph name="PRODUCT_FRAME_NAME" />停止支持的提示</translation>
 <translation id="8971221018777092728">公开会话自动登录计时器</translation>
-<translation id="8987262643142408725">停用 SSL 记录分割</translation>
 <translation id="8992176907758534924">不允许任何网站显示图片</translation>
 <translation id="9035964157729712237">要从黑名单中排除的扩展程序 ID</translation>
 <translation id="9042911395677044526">允许将要按用户应用的网络配置推送到 <ph name="PRODUCT_OS_NAME" />设备。网络配置是 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL" /> 中的开放网络配置格式所述。</translation>

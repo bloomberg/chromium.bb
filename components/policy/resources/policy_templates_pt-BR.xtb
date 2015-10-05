@@ -394,7 +394,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3153348162326497318">Permite que você especifique quais extensões os usuários NÃO podem instalar. Extensões já instaladas serão removidas se adicionadas à lista negra. Um valor "*" na lista negra significa que todas as extensões são proibidas a menos que sejam listadas explicitamente na lista de permissões. Se esta política for deixada sem definição, o usuário pode instalar qualquer extensão em <ph name="PRODUCT_NAME" /> .</translation>
 <translation id="316778957754360075">Esta configuração foi descontinuada a partir da versão 29 do <ph name="PRODUCT_NAME" />. O modo recomendado de configurar as coleções de extensões/aplicativos hospedados pela organização é incluir na hospedagem do site os pacotes CRX em ExtensionInstallSources e colocar links de download direto para os pacotes em uma página da Web. É possível criar um iniciador da página da Web usando a política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Especifica se a divisão de registro SSL deve ser desativada. A divisão de registro é uma solução alternativa para uma fraqueza no SSL 3.0 e TLS 1.0, mas pode causar problemas de compatibilidade com alguns servidores HTTPS e proxies. Se a política não for configurada, ou for configurada para false, a divisão de registro será usada nas conexões SSL/TLS que usam ciphersuites CBC.</translation>
 <translation id="3213821784736959823">Controla se o cliente DNS integrado é usado no <ph name="PRODUCT_NAME" />.
 
       Se esta política estiver definida como verdadeira, o cliente DNS integrado será usado, se disponível.
@@ -1455,7 +1454,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8955719471735800169">Voltar ao início</translation>
 <translation id="8970205333161758602">Remover a solicitação de recusa do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Temporizador de login automático na sessão pública</translation>
-<translation id="8987262643142408725">Desativar divisão de registro SSL</translation>
 <translation id="8992176907758534924">Não permitir que nenhum site exiba imagens</translation>
 <translation id="9035964157729712237">IDs de extensão que serão isentos da lista negra</translation>
 <translation id="9042911395677044526">Permite aplicar a configuração de rede por usuário de dispositivo <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration descrito em <ph name="ONC_SPEC_URL" /></translation>

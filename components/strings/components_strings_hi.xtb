@@ -10,6 +10,7 @@
 <translation id="111844081046043029">क्या आप वाकई इस पृष्ठ को छोड़ना चाहते हैं ?</translation>
 <translation id="112840717907525620">नीति संचय ठीक है</translation>
 <translation id="1132774398110320017">Chrome स्‍वत:-भरण सेटिंग...</translation>
+<translation id="1146673768181266552">क्रैश आईडी <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके कंप्यूटर के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="1152921474424827756"><ph name="URL" /> की <ph name="BEGIN_LINK" />संचित प्रति<ph name="END_LINK" /> एक्सेस करें</translation>
 <translation id="121201262018556460">आपने <ph name="DOMAIN" /> तक पहुंचने का प्रयास किया, लेकिन लेकिन सर्वर ने कमज़ोर कुंजी वाला प्रमाणपत्र प्रस्‍तुत किया. संभवत: हमलावर ने निजी कुंजी का पता लगा लिया है, और हो सकता है कि सर्वर आपका अपेक्षित सर्वर न हो (हो सकता है कि आप किसी हमलावर से बातचीत कर रहे हों).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215"><ph name="SITE" /> पर मौजूद पृष्ठ कहता है:</translation>
 <translation id="1706954506755087368">{1,plural, =1{यह सर्वर प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र कल से माना जाएगा. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन को बाधित करने के कारण हो सकता है.}one{यह सर्वर प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र # दिन बाद से माना जाएगा. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन को बाधित करने के कारण हो सकता है.}other{यह सर्वर प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र # दिन बाद से माना जाएगा. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन को बाधित करने के कारण हो सकता है.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">बग की सूचना दें</translation>
 <translation id="1763864636252898013">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके डिवाइस के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="1821930232296380041">अमान्य अनुरोध या अनुरोध पैरामीटर</translation>
 <translation id="1871208020102129563">प्रॉक्‍सी को फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर का उपयोग करने के लिए सेट किया गया है, .pac स्‍क्रिप्‍ट फ़ाइल का उपयोग करने के लिए नहीं.</translation>
-<translation id="1875753206475436906">अनुमानी प्रकार: <ph name="HEURISTIC_TYPE" />
-    सर्वर प्रकार: <ph name="SERVER_TYPE" />
-    फ़ील्ड हस्ताक्षर: <ph name="FIELD_SIGNATURE" />
-    फ़ॉर्म हस्ताक्षर: <ph name="FORM_SIGNATURE" />
-    प्रयोग आईडी: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158"><ph name="LINK" /> पर जाएं</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> बुकमार्क</translation>
 <translation id="1973335181906896915">क्रमबद्ध करने में त्रुटि</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">लाइसेंस समाप्त हो गए</translation>
 <translation id="3739623965217189342">काॅपी किया गया लिंक</translation>
 <translation id="375403751935624634">सर्वर त्रुटि के कारण अनुवाद विफल.</translation>
+<translation id="3759461132968374835">आपके पास हाल ही में रिपोर्ट किए गए क्रैश नहीं हैं.  क्रैश रिपोर्टिंग अक्षम होने के दौरान होने वाले क्रैश यहां दिखाई नहीं देंगे.</translation>
 <translation id="385051799172605136">वापस</translation>
 <translation id="3858027520442213535">दिनांक और समय अपडेट करें</translation>
 <translation id="3884278016824448484">विरोधाभासी डिवाइस पहचानकर्ता</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">गलत सत्यापन हस्ताक्षर</translation>
 <translation id="4196861286325780578">&amp;ले जाना फिर से करें</translation>
+<translation id="4220128509585149162">क्रैश</translation>
 <translation id="4250680216510889253">नहीं</translation>
 <translation id="4258748452823770588">खराब हस्ताक्षर</translation>
 <translation id="4269787794583293679">(कोई उपयोगकर्ता नाम नहीं)</translation>
 <translation id="4300246636397505754">अभिभावक सुझाव</translation>
+<translation id="4325863107915753736">लेख ढूंढने में विफल</translation>
 <translation id="4372948949327679948">अपेक्षित <ph name="VALUE_TYPE" /> मान.</translation>
 <translation id="4377125064752653719">आपने <ph name="DOMAIN" /> तक पहुंचने का प्रयास किया, लेकिन सर्वर द्वारा प्रस्तुत प्रमाणपत्र को उसके जारीकर्ता द्वारा रद्द कर दिया गया है. इसका अर्थ है कि सर्वर द्वारा प्रस्तुत सुरक्षा प्रमाणिकता पर पूर्णतया विश्वास नहीं करना चाहिए. हो सकता है कि आप किसी हमलावर से बातचीत कर रहे हों.</translation>
 <translation id="4394049700291259645">अक्षम करें</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" /> से <ph name="TARGET_LANGUAGE" /> में अनुवाद करें?</translation>
 <translation id="5019198164206649151">बैकिंग संग्रह खराब स्थिति में है</translation>
 <translation id="5031870354684148875">Google अनुवाद के बारे में</translation>
+<translation id="5045550434625856497">गलत पासवर्ड</translation>
 <translation id="5087286274860437796">सर्वर का प्रमाण पत्र इस समय मान्य नहीं है.</translation>
 <translation id="5089810972385038852">राज्य</translation>
 <translation id="5094747076828555589">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र Chromium द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">क्लाउड</translation>
 <translation id="5295309862264981122">नेवीगेशन की दुबारा पूछें</translation>
 <translation id="5299298092464848405">नीति पार्स करने में त्रुटि</translation>
+<translation id="5308689395849655368">क्रैश की रिपोर्ट करना अक्षम कर दिया गया है.</translation>
 <translation id="5316812925700871227">घड़ी की विपरीत दिशा में घुमाएं</translation>
 <translation id="5317780077021120954">सहेजें</translation>
 <translation id="536296301121032821">नीति सेटिंग संग्रहीत करने में विफल</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="6060685159320643512">सावधान, ये प्रयोग नुकसान पहुंचा सकते हैं</translation>
+<translation id="6099520380851856040">क्रैश का समय <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">सर्वर प्रमाणपत्र की मान्‍यता अवधि बहुत लंबी है.</translation>
 <translation id="6154808779448689242">वापस लौटे नीति टोकन का मिलान वर्तमान टोकन से नहीं होता</translation>
 <translation id="6165508094623778733">अधिक जानें</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">देश</translation>
 <translation id="6458467102616083041">नीति के द्वारा डिफ़ॉल्‍ट खोज अक्षम कर दिए जाने के कारण उपेक्षित.</translation>
 <translation id="647261751007945333">डिवाइस नीतियां</translation>
+<translation id="6489534406876378309">क्रैश अपलोड करना प्रारंभ करें</translation>
 <translation id="6512448926095770873">इस पृष्ठ से जाएं</translation>
 <translation id="6529602333819889595">&amp;हटाना फिर से करें</translation>
 <translation id="6550675742724504774">विकल्प</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">क्‍या आप वाकई इस पृष्ठ को पुन: लोड करना चाहते हैं?</translation>
 <translation id="8349305172487531364">बुकमार्क बार</translation>
 <translation id="8364627913115013041">सेट नहीं है.</translation>
+<translation id="8412145213513410671">क्रैश (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;ले जाना वापस लाएं</translation>
 <translation id="8488350697529856933">इस पर लागू होती है</translation>
 <translation id="8530504477309582336">कार्ड का यह प्रकार Google पेमेंट्स द्वारा समर्थित नहीं है. कृपया कोई भिन्न कार्ड चुनें.</translation>

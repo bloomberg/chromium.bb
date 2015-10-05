@@ -102,12 +102,12 @@
           Jei nustatysite šią politiką, naudotojai galės laikinai nepaisyti jos įgalinę arba išjungę didelio kontrasto režimą. Tačiau naudotojo pasirinkimas nėra ilgalaikis ir numatytasis nustatymas atkuriamas, kai prisijungimo ekranas rodomas iš naujo arba kai naudotojas vieną minutę neatlieka jokių veiksmų prisijungimo ekrane.
 
           Jei ši politika nenustatyta, didelio kontrasto režimas yra išjungtas, kai prisijungimo ekranas rodomas pirmą kartą. Naudotojai gali bet kada įgalinti arba išjungti didelio kontrasto režimą, o jo būsena skirtingiems naudotojams prisijungimo ekrane bus vienoda.</translation>
-<translation id="1468707346106619889">Jei ši politika nustatyta į „true“, vienas darbalaukis bus leidžiamas ir
+<translation id="1468707346106619889">Jei ši politika nustatyta į „true“, Sujungiamasis darbalaukis bus leidžiamas ir
       įgalintas pagal numatytuosius nustatymus. Taip programoms bus leidžiama užimti kelis ekranus.
-      Naudotojas gali išjungti vieno darbalaukio režimą atskiruose ekranuose atžymėdamas
+      Naudotojas gali išjungti Sujungiamojo darbalaukio režimą atskiruose ekranuose atžymėdamas
       jį ekrano nustatymuose.
 
-      Jei ši politika nustatyta į „false“ arba nenustatyta, vienas darbalaukis bus
+      Jei ši politika nustatyta į „false“ arba nenustatyta, Sujungiamasis darbalaukis bus
       išjungtas. Tokiu atveju naudotojas negalės įgalinti funkcijos.</translation>
 <translation id="1477934438414550161">1.2 versijos TLS</translation>
 <translation id="1492145937778428165">Nurodomas laikotarpis milisekundėmis, kuriuo įrenginio valdymo paslaugai pateikiama užklausa dėl įrenginio politikos informacijos.
@@ -484,9 +484,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Nenustačius šios politikos, naudotojas (-a) gali įdiegti bet kurį plėtinį „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="316778957754360075">Šis nustatymas nebenaudojamas 29 ir naujesnėse „<ph name="PRODUCT_NAME" />“ versijose. Rekomenduojamas būdas nustatyti organizacijos valdomą plėtinių / programų rinkinius yra įtraukti svetaines priglobiančius CRX paketus į politiką „ExtensionInstallSources“ ir nuorodas įdėti tiesiogiai į tinklalapio paketus. Tam tinklalapiui skirtą paleidimo priemonę galima sukurti naudojant politiką „ExtensionInstallForcelist“.</translation>
 <translation id="3185009703220253572">nuo <ph name="SINCE_VERSION" /> versijos</translation>
-<translation id="3195451902035818945">Apibrėžiama, ar SSL įrašų skaidymas turi būti neleidžiamas. Įrašų skaidymas naudojamas SSL 3.0 ir TLS 1.0 trūkumams apeiti, bet kai kuriuose HTTPS ir įgaliotuosiuose serveriuose gali sukelti suderinamumo problemų.
-
-      Jei ši politika nenustatyta ar nustatyta į „Ne“, įrašų skaidymas bus taikomas SSL / TLS ryšiams, kurie naudoja CBC šifro komplektus.</translation>
 <translation id="3213821784736959823">Valdoma, ar integruota DNS kliento programa naudojama „<ph name="PRODUCT_NAME" />“.
 
       Jei ši politika aktyvinta, esant galimybei integruota DNS kliento programa bus naudojama.
@@ -1778,7 +1775,6 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="8955719471735800169">Į pradžią</translation>
 <translation id="8970205333161758602">Nerodyti „<ph name="PRODUCT_FRAME_NAME" />“ išjungimo paraginimo</translation>
 <translation id="8971221018777092728">Viešos sesijos automatinio prisijungimo laikmatis</translation>
-<translation id="8987262643142408725">Neleisti SSL įrašų skaidymo</translation>
 <translation id="8992176907758534924">Neleisti jokioje svetainėje rodyti vaizdų</translation>
 <translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME" />“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>

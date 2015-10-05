@@ -10,6 +10,7 @@
 <translation id="111844081046043029">Yakin ingin meninggalkan laman ini?</translation>
 <translation id="112840717907525620">Cache kebijakan Oke</translation>
 <translation id="1132774398110320017">Setelan IsiOtomatis Chrome...</translation>
+<translation id="1146673768181266552">ID Kerusakan <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi komputer Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="1152921474424827756">Akses <ph name="BEGIN_LINK" />salinan yang disimpan dalam cache<ph name="END_LINK" /> dari <ph name="URL" /></translation>
 <translation id="121201262018556460">Anda bermaksud membuka <ph name="DOMAIN" />, namun server menyajikan sertifikat yang berisi kunci yang lemah. Penyerang mungkin telah merusak kunci pribadi, dan server mungkin bukan yang diharapkan (Anda mungkin sedang berkomunikasi dengan penyerang).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">Laman di <ph name="SITE" /> menyatakan:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya sepertinya dari esok hari. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang memintas sambungan internet Anda.}other{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya sepertinya dari # hari mendatang. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang memintas sambungan internet Anda.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">Bug file</translation>
 <translation id="1763864636252898013">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi perangkat Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="1821930232296380041">Permintaan atau parameter permintaan tidak valid</translation>
 <translation id="1871208020102129563">Proxy disetel untuk menggunakan server proxy tetap, bukan URL skrip .pac.</translation>
-<translation id="1875753206475436906">jenis heuristik: <ph name="HEURISTIC_TYPE" />
-    jenis server: <ph name="SERVER_TYPE" />
-    tanda tangan bidang: <ph name="FIELD_SIGNATURE" />
-    tanda tangan formulir: <ph name="FORM_SIGNATURE" />
-    id eksperimen: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">Buka <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Bookmark <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Kesalahan serialisasi</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Lisensi habis</translation>
 <translation id="3739623965217189342">Tautan yang Anda salin</translation>
 <translation id="375403751935624634">Terjemahan gagal karena kesalahan server.</translation>
+<translation id="3759461132968374835">Tidak ada laporan kondisi ngadat saat ini. Kondisi ngadat yang terjadi saat pelaporan kondisi ngadat tidak diaktifkan tidak akan tampil di sini.</translation>
 <translation id="385051799172605136">Mundur</translation>
 <translation id="3858027520442213535">Perbarui tanggal dan waktu</translation>
 <translation id="3884278016824448484">Pengenal perangkat bertentangan</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">Tanda tangan verifikasi tidak valid</translation>
 <translation id="4196861286325780578">&amp;Ulangi pemindahan</translation>
+<translation id="4220128509585149162">Kerusakan</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4258748452823770588">Tanda tangan salah</translation>
 <translation id="4269787794583293679">(Tidak ada nama pengguna)</translation>
 <translation id="4300246636397505754">Saran induk</translation>
+<translation id="4325863107915753736">Gagal menemukan artikel</translation>
 <translation id="4372948949327679948">Nilai <ph name="VALUE_TYPE" /> yang diharapkan.</translation>
 <translation id="4377125064752653719">Anda berusaha menjangkau <ph name="DOMAIN" />, tetapi sertifikat yang disajikan oleh server telah dibatalkan oleh penerbitnya. Artinya informasi rahasia keamanan yang disajikan tidak dapat dipercaya. Anda mungkin sedang berkomunikasi dengan penyerang.</translation>
 <translation id="4394049700291259645">Nonaktifkan</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">Terjemahkan dari <ph name="ORIGINAL_LANGUAGE" /> ke <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Penyimpanan cadangan dalam kondisi buruk</translation>
 <translation id="5031870354684148875">Tentang Google Terjemahan</translation>
+<translation id="5045550434625856497">Sandi salah</translation>
 <translation id="5087286274860437796">Sertifikat server saat ini tidak valid.</translation>
 <translation id="5089810972385038852">Negara bagian</translation>
 <translation id="5094747076828555589">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh Chromium. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5295309862264981122">Konfirmasikan Navigasi</translation>
 <translation id="5299298092464848405">Kebijakan kesalahan penguraian</translation>
+<translation id="5308689395849655368">Pelaporan kondisi ngadat dinonaktifkan.</translation>
 <translation id="5316812925700871227">Putar berlawanan arah jarum jam</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="536296301121032821">Gagal menyimpan setelan kebijakan</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6060685159320643512">Hati-hati, eksperimen ini dapat menimbulkan masalah</translation>
+<translation id="6099520380851856040">Terjadi pada <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Sertifikat server memiliki masa berlaku yang terlalu panjang.</translation>
 <translation id="6154808779448689242">Token kebijakan yang dikembalikan tidak cocok dengan token saat ini</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">Negara</translation>
 <translation id="6458467102616083041">Diabaikan karena penelusuran default dinonaktifkan oleh kebijakan.</translation>
 <translation id="647261751007945333">Kebijakan perangkat</translation>
+<translation id="6489534406876378309">Mulai mengunggah kerusakan</translation>
 <translation id="6512448926095770873">Keluar dari Laman</translation>
 <translation id="6529602333819889595">&amp;Ulangi Penghapusan</translation>
 <translation id="6550675742724504774">Opsi</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">Yakin ingin memuat ulang laman ini?</translation>
 <translation id="8349305172487531364">Bilah bookmark</translation>
 <translation id="8364627913115013041">Tidak disetel.</translation>
+<translation id="8412145213513410671">Ngadat (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;Urungkan pemindahan</translation>
 <translation id="8488350697529856933">Berlaku untuk</translation>
 <translation id="8530504477309582336">Kartu jenis ini tidak didukung oleh Google Payments. Pilih kartu lain.</translation>

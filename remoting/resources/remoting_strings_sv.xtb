@@ -16,6 +16,7 @@ Det kan uppstå fel i textinmatningen vid fjärranslutning till en dator som int
 Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/SyrVzj) och Chromes sekretesspolicy (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(den här funktionen är ännu inte tillgänglig för din dator)</translation>
 <translation id="1342297293546459414">Visa och styra en delad dator.</translation>
+<translation id="1389790901665088353">Ladda ned installationsprogrammet för fjärranslutningsvärden Chrome Remote Desktop</translation>
 <translation id="1450760146488584666">Det begärda objektet finns inte.</translation>
 <translation id="1480046233931937785">Medverkande</translation>
 <translation id="1520828917794284345">Anpassa skrivbordets storlek</translation>
@@ -146,6 +147,7 @@ Host</translation>
 <translation id="4572065712096155137">Åtkomst</translation>
 <translation id="4573676252416618192">Chrome Remote
 Desktop Host</translation>
+<translation id="4619978527973181021">Godkänn och installera</translation>
 <translation id="4703799847237267011">Chromoting-sessionen har avslutats.</translation>
 <translation id="4736223761657662401">Anslutningshistorik</translation>
 <translation id="4741792197137897469">Autentiseringen misslyckades. Logga in i Chrome igen.</translation>
@@ -158,6 +160,7 @@ Desktop Host</translation>
 <translation id="4913529628896049296">väntar på anslutning ...</translation>
 <translation id="4918086044614829423">Acceptera</translation>
 <translation id="492843737083352574">Jag har problem med tangentbordet eller musen.</translation>
+<translation id="4973800994433240357">När du laddar ned installationsprogrammet för fjärranslutningsvärden Chromoting godkänner du Googles <ph name="LINK_BEGIN" />användarvillkor<ph name="LINK_END" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Fjärrvärden kräver att du autentiserar via en tredje parts webbplats. Om du vill fortsätta måste du ge Chrome Remote Desktop ytterligare behörigheter att komma åt den här adressen:</translation>
 <translation id="5156271271724754543">Ange samma PIN-kod i båda rutorna.</translation>
@@ -170,6 +173,7 @@ Desktop Host</translation>
 <translation id="5308380583665731573">Ansluta</translation>
 <translation id="5363265567587775042">Be användaren vars dator du vill använda att klicka på <ph name="SHARE" /> och ge dig åtkomstkoden.</translation>
 <translation id="5379087427956679853">Med Chrome Remote Desktop kan du dela din dator via internet på ett säkert sätt. Båda användarna måste köra appen Chrome Remote Desktop som du hittar på <ph name="URL" />.</translation>
+<translation id="5394895745784982830">För Mac (OS X 10.6 eller senare)</translation>
 <translation id="5397086374758643919">Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="5419185025274123272">Det gick inte att återställa programmet. Du kan fortfarande skicka en felrapport.</translation>
 <translation id="544077782045763683">Värdenheten har stängts av.</translation>
@@ -222,6 +226,7 @@ Desktop Host</translation>
 <translation id="6930242544192836755">Varaktighet</translation>
 <translation id="6939719207673461467">Visa/dölj tangentbordet.</translation>
 <translation id="6944854424004126054">Återställ fönstret</translation>
+<translation id="6962773374262604195">För Windows (XP eller senare)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Är du säker på att du vill inaktivera fjärranslutningar till <ph name="HOSTNAME" />? Om du ångrar dig måste du besöka datorn för att kunna aktivera anslutningar igen.</translation>
 <translation id="6998989275928107238">Till</translation>
@@ -251,6 +256,7 @@ Desktop Host</translation>
 <translation id="7869445566579231750">Du har inte behörighet att köra den här appen.</translation>
 <translation id="7948001860594368197">Skärmalternativ</translation>
 <translation id="7970576581263377361">Autentiseringen misslyckades. Logga in i Chromium igen.</translation>
+<translation id="8041721485428375115">När du laddar ned installationsprogrammet för fjärranslutningsvärden Chrome Remote Desktop godkänner du Googles <ph name="LINK_BEGIN" />användarvillkor<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Om du vill använda Chrome Remote Desktop måste du lägga till ett Google-konto på enheten.</translation>
 <translation id="80739703311984697">Fjärrvärden kräver att du autentiserar via en tredje parts webbplats. Om du vill fortsätta måste du ge Chromoting ytterligare behörigheter att komma åt den här adressen:</translation>
 <translation id="809687642899217504">Mina datorer</translation>
@@ -274,6 +280,7 @@ Desktop Host</translation>
 <translation id="8642984861538780905">OK</translation>
 <translation id="8712909229180978490">Jag ser inte mina sparade filer online på Google Drive.</translation>
 <translation id="8759753423332885148">Läs mer.</translation>
+<translation id="8791202241915690908">Ladda ned installationsprogrammet för fjärranslutningsvärden Chromoting</translation>
 <translation id="894763922177556086">Bra</translation>
 <translation id="897805526397249209">Om du vill aktivera fjärranslutningar till en annan dator installerar du Chromoting på datorn och klickar på <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>

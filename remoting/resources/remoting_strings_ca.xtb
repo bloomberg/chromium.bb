@@ -16,6 +16,7 @@
 Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de Google (http://goo.gl/SyrVzj) i la Política de privadesa de Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(aquesta funció encara no està disponible al vostre ordinador)</translation>
 <translation id="1342297293546459414">Vegeu i controleu un ordinador compartit.</translation>
+<translation id="1389790901665088353">Baixeu l'instal·lador de l'amfitrió d'Escriptori remot de Chrome</translation>
 <translation id="1450760146488584666">L'objecte sol·licitat no existeix.</translation>
 <translation id="1480046233931937785">Crèdits</translation>
 <translation id="1520828917794284345">Ajusta la mida de l'escriptori</translation>
@@ -64,6 +65,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2353140552984634198">Podeu accedir de manera segura a aquest ordinador mitjançant Chromoting.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2366718077645204424">No es pot connectar amb l'amfitrió. Probablement, això passa a causa de la configuració de la xarxa que esteu fent servir.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> L'última connexió va ser <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Ajuda i suggeriments </translation>
 <translation id="2499160551253595098">Ajudeu-nos a millorar l'escriptori remot de Chrome: permeteu-nos recollir estadístiques d'ús i informes d'error.</translation>
 <translation id="2512228156274966424">NOTA: Per assegurar-vos que totes les tecles de drecera estiguin disponibles, podeu configurar l'escriptori remot de Chrome amb l'opció "Obre com a finestra".</translation>
@@ -109,6 +111,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="3596628256176442606">Aquest servei permet les connexions entrants dels clients de Chromoting.</translation>
 <translation id="3606997049964069799">No heu iniciat la sessió a Chromium. Inicieu-hi la sessió i torneu-ho a provar.</translation>
 <translation id="3649256019230929621">Minimitza la finestra</translation>
+<translation id="369442766917958684">Sense connexió</translation>
 <translation id="3776024066357219166">La sessió de l'escriptori remot de Chrome ha finalitzat.</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -144,6 +147,7 @@ Host</translation>
 <translation id="4572065712096155137">Accedeix</translation>
 <translation id="4573676252416618192">Amfitrió de l'escriptori
 remot de Chrome</translation>
+<translation id="4619978527973181021">Accepta i instal·la</translation>
 <translation id="4703799847237267011">La vostra sessió de Chromoting ha finalitzat.</translation>
 <translation id="4736223761657662401">Historial de connexions</translation>
 <translation id="4741792197137897469">L'autenticació ha fallat. Torneu a iniciar la sessió a Chrome.</translation>
@@ -156,6 +160,7 @@ remot de Chrome</translation>
 <translation id="4913529628896049296">s'està esperant que hi hagi connexió...</translation>
 <translation id="4918086044614829423">Accepta</translation>
 <translation id="492843737083352574">Tinc problemes amb el teclat o amb el ratolí.</translation>
+<translation id="4973800994433240357">En baixar l'instal·lador de l'amfitrió de Chromoting accepteu les <ph name="LINK_BEGIN" />Condicions del servei<ph name="LINK_END" /> de Google.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (fora de línia)</translation>
 <translation id="5070121137485264635">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a l'escriptori remot de Chrome per accedir a aquesta adreça:</translation>
 <translation id="5156271271724754543">Introduïu el mateix PIN als dos quadres.</translation>
@@ -168,6 +173,7 @@ remot de Chrome</translation>
 <translation id="5308380583665731573">Connexió</translation>
 <translation id="5363265567587775042">Demaneu a l'usuari de l'ordinador al qual voleu accedir que faci clic a <ph name="SHARE" /> i que us faciliti el codi d'accés.</translation>
 <translation id="5379087427956679853">L'escriptori remot de Chrome us permet compartir el vostre ordinador de manera segura al web. Els dos usuaris han d'executar l'aplicació d'escriptori remot de Chrome, que podeu trobar a la pàgina <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Per a Mac (OS X 10.6 i versions posteriors)</translation>
 <translation id="5397086374758643919">Programa de desinstal·lació de l'amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="5419185025274123272">No es pot restablir l'aplicació. Podeu enviar un informe d'errors.</translation>
 <translation id="544077782045763683">L'amfitrió s'ha tancat.</translation>
@@ -183,6 +189,7 @@ remot de Chrome</translation>
 <translation id="579702532610384533">Torna a connectar</translation>
 <translation id="5843054235973879827">Per què és segur?</translation>
 <translation id="5859141382851488196">Finestra nova...</translation>
+<translation id="5885438903806970186">En línia</translation>
 <translation id="6001953797859482435">Preferències de l'amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="6011539954251327702">Chromoting us permet compartir l'ordinador de manera segura al web. Els dos usuaris han d'executar l'aplicació Chromoting, que podeu trobar a la pàgina <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Tanca</translation>
@@ -219,6 +226,7 @@ remot de Chrome</translation>
 <translation id="6930242544192836755">Durada</translation>
 <translation id="6939719207673461467">Mostra o amaga el teclat</translation>
 <translation id="6944854424004126054">Restaura la finestra</translation>
+<translation id="6962773374262604195">Per a Windows (XP i versions posteriors)</translation>
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="6985691951107243942">Esteu segur que voleu desactivar les connexions remotes a <ph name="HOSTNAME" />? Si canvieu de parer, haureu de visitar aquest ordinador per tornar-les a activar.</translation>
 <translation id="6998989275928107238">Per a</translation>
@@ -248,6 +256,7 @@ remot de Chrome</translation>
 <translation id="7869445566579231750">No teniu permís per executar aquesta aplicació.</translation>
 <translation id="7948001860594368197">Opcions de pantalla</translation>
 <translation id="7970576581263377361">L'autenticació ha fallat. Torneu a iniciar la sessió a Chromium.</translation>
+<translation id="8041721485428375115">En baixar l'instal·lador de l'amfitrió d'Escriptori remot de Chrome accepteu les <ph name="LINK_BEGIN" />Condicions del servei<ph name="LINK_END" /> de Google.</translation>
 <translation id="8073845705237259513">Per utilitzar l'escriptori remot de Chrome, haureu d'afegir un compte de Google al dispositiu.</translation>
 <translation id="80739703311984697">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a Chromoting per accedir a aquesta adreça:</translation>
 <translation id="809687642899217504">Els meus ordinadors</translation>
@@ -271,6 +280,7 @@ remot de Chrome</translation>
 <translation id="8642984861538780905">Suficient</translation>
 <translation id="8712909229180978490">No puc veure els meus fitxers desats en línia a Google Drive.</translation>
 <translation id="8759753423332885148">Més informació</translation>
+<translation id="8791202241915690908">Baixeu l'instal·lador de l'amfitrió de Chromoting</translation>
 <translation id="894763922177556086">Bona</translation>
 <translation id="897805526397249209">Per activar les connexions remotes a un altre ordinador, instal·leu-hi Chromoting i feu clic a <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Controlador de l'amfitrió de l'escriptori remot de Chrome</translation>

@@ -55,7 +55,6 @@
 <translation id="2705212601509139398">‏هذا الموقع يستخدم المكون الإضافي Chromium Frame الذي سيصبح غير معتمد قريبًا. يُرجى إزالته وتنزيل متصفح متوافق.</translation>
 <translation id="2718390899429598676">‏لمزيد من الأمان، سيشفر Chromium بياناتك</translation>
 <translation id="2732467638532545152">‏يشغل جهاز الكمبيوتر إصدارًا قديمًا من Microsoft Windows لا يمكنها معالجة شهادة أمان موقع الويب. وبسبب هذه المشكلة، لا يمكن لـ Chromium أن يخبر ما إذا كانت الشهادة جاءت من <ph name="SITE" /> أو من شخص ما على الشبكة يتظاهر بأنه <ph name="SITE" />. يُرجى تحديث جهاز الكمبيوتر إلى الإصدار الأكثر حداثة من Windows.</translation>
-<translation id="275588974610408078">‏تقارير الأعطال غير متاحة في Chromium.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
 <translation id="2801146392936645542">‏يُعد <ph name="FILE_NAME" /> برنامجًا ضارًا، وقد أجرى Chromium حظره.</translation>
 <translation id="2847479871509788944">‏إزالة من Chromium</translation>

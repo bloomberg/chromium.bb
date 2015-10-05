@@ -56,7 +56,6 @@ invulgares e incorretas. É possível que um utilizador mal intencionado esteja 
 <translation id="2705212601509139398">Este site está a utilizar o plug-in Chromium Frame, que em breve deixará de ser suportado. Desinstale-o e transfira um navegador compatível.</translation>
 <translation id="2718390899429598676">Para uma segurança adicional, o Chromium encripta os seus dados.</translation>
 <translation id="2732467638532545152">O computador está a executar uma versão antiga do Microsoft Windows que não consegue processar o certificado de segurança deste Website. Dado este problema, o Chromium não consegue determinar se o certificado é proveniente de <ph name="SITE" /> ou de alguém na sua rede a fazer-se passar por <ph name="SITE" />. Atualize o computador para uma versão mais recente do Windows.</translation>
-<translation id="275588974610408078">O relatório de falha não está disponível no Chromium.</translation>
 <translation id="2770231113462710648">Alterar o navegador predefinido para:</translation>
 <translation id="2801146392936645542">O ficheiro <ph name="FILE_NAME" /> é malicioso e o Chromium bloqueou-o.</translation>
 <translation id="2847479871509788944">Remover do Chromium...</translation>

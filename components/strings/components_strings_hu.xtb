@@ -10,6 +10,7 @@
 <translation id="111844081046043029">Biztos, hogy el szeretné hagyni ezt az oldalt?</translation>
 <translation id="112840717907525620">Irányelv-gyorsítótár OK</translation>
 <translation id="1132774398110320017">A Chrome Automatikus kitöltési beállításai…</translation>
+<translation id="1146673768181266552"><ph name="CRASH_ID" /> összeomlás-azonosító (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön számítógépének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="1152921474424827756">A(z) <ph name="URL" /> egy <ph name="BEGIN_LINK" />tárolt változatának<ph name="END_LINK" /> megtekintése</translation>
 <translation id="121201262018556460">Megpróbálta elérni a(z) <ph name="DOMAIN" /> webhelyet, de a szerver egy gyenge kulccsal rendelkező tanúsítványt adott. Egy támadó feltörhette a privát kulcsot, és lehet, hogy a szerver nem a várt kiszolgáló (lehet, hogy Ön egy támadóval kommunikál).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">A <ph name="SITE" /> webhelyen lévő oldal közlendője:</translation>
 <translation id="1706954506755087368">{1,plural, =1{A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa elméletileg holnaptól érvényes. Ennek oka lehet konfigurációs hiba, de az is lehet, hogy egy támadó eltérítette az Ön kapcsolódását.}other{A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa elméletileg # nap múlva lép érvénybe. Ennek oka lehet konfigurációs hiba, de az is lehet, hogy egy támadó eltérítette az Ön kapcsolódását.}}</translation>
 <translation id="1734864079702812349">American Express</translation>
+<translation id="1737968601308870607">Programhiba bejegyzése</translation>
 <translation id="1763864636252898013">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön eszközének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="1821930232296380041">Érvénytelen kérés vagy kérésparaméter</translation>
 <translation id="1871208020102129563">A proxy fix proxyszerverek használatára van beállítva, nem pedig .pac típusú szkript URL címének használatára.</translation>
-<translation id="1875753206475436906">heurisztika típusa: <ph name="HEURISTIC_TYPE" />
-    szerver típusa: <ph name="SERVER_TYPE" />
-    mező aláírása: <ph name="FIELD_SIGNATURE" />
-    űrlap aláírása: <ph name="FORM_SIGNATURE" />
-    kísérlet azonosítója: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">Ugrás ide: <ph name="LINK" /></translation>
 <translation id="1962204205936693436">A(z) <ph name="DOMAIN" /> könyvjelzői</translation>
 <translation id="1973335181906896915">Szerializálási hiba</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Az engedélyek elfogytak</translation>
 <translation id="3739623965217189342">Átmásolt link</translation>
 <translation id="375403751935624634">A fordítás a szerver hibája miatt nem sikerült.</translation>
+<translation id="3759461132968374835">Nincs a közelmúltban bejelentett rendszerösszeomlás. A kikapcsolt jelentésküldés során történt összeomlások nem jelennek meg itt.</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3858027520442213535">Dátum és idő frissítése</translation>
 <translation id="3884278016824448484">Eszközazonosító-ütközés</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">Hibás igazoló aláírás.</translation>
 <translation id="4196861286325780578">&amp;Áthelyezés újra</translation>
+<translation id="4220128509585149162">Összeomlások</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="4258748452823770588">Rossz aláírás</translation>
 <translation id="4269787794583293679">(Nincs felhasználónév)</translation>
 <translation id="4300246636397505754">Szülői javaslatok</translation>
+<translation id="4325863107915753736">Nem sikerült megtalálni a cikket</translation>
 <translation id="4372948949327679948">Várt <ph name="VALUE_TYPE" /> érték.</translation>
 <translation id="4377125064752653719">A(z) <ph name="DOMAIN" /> webhelyet próbálta megnyitni, de a kiállító visszavonta a szerver által bemutatott tanúsítványt. Ez azt jelenti, hogy a szerver biztonsági igazolásaiban egyáltalán nem lehet megbízni. Lehet, hogy egy támadóval áll kapcsolatban.</translation>
 <translation id="4394049700291259645">Kikapcsolás</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">Lefordítja <ph name="ORIGINAL_LANGUAGE" /> nyelvről <ph name="TARGET_LANGUAGE" /> nyelvre?</translation>
 <translation id="5019198164206649151">A háttértároló állapota nem megfelelő</translation>
 <translation id="5031870354684148875">A Google Fordító leírása</translation>
+<translation id="5045550434625856497">Téves jelszó</translation>
 <translation id="5087286274860437796">A szerver tanúsítványa jelenleg nem érvényes.</translation>
 <translation id="5089810972385038852">Állam</translation>
 <translation id="5094747076828555589">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa a Chromium szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Felhő</translation>
 <translation id="5295309862264981122">Navigálás megerősítése</translation>
 <translation id="5299298092464848405">Irányelv-előfeldolgozási hiba</translation>
+<translation id="5308689395849655368">A hibabejelentés ki van kapcsolva.</translation>
 <translation id="5316812925700871227">Forgatás balra</translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="536296301121032821">Az irányelv-beállítások tárolása sikertelen</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="6060685159320643512">Óvatosan, ezek a kísérletek haraphatnak</translation>
+<translation id="6099520380851856040">Időpont: <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">A szervertanúsítvány érvényességi ideje túl hosszú.</translation>
 <translation id="6154808779448689242">A visszaadott irányelvtoken nem egyezik az aktuális tokennel</translation>
 <translation id="6165508094623778733">További információ</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">Ország</translation>
 <translation id="6458467102616083041">A rendszer figyelmen kívül hagyja, mivel az alapértelmezett keresést házirend tiltja le.</translation>
 <translation id="647261751007945333">Eszközházirendek</translation>
+<translation id="6489534406876378309">Feltöltési összeomlások indítása</translation>
 <translation id="6512448926095770873">Az oldal elhagyása</translation>
 <translation id="6529602333819889595">&amp;Törlés újra</translation>
 <translation id="6550675742724504774">Beállítások</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">Biztos, hogy újra szeretné tölteni ezt az oldalt?</translation>
 <translation id="8349305172487531364">Könyvjelzősáv</translation>
 <translation id="8364627913115013041">Nincs beállítva.</translation>
+<translation id="8412145213513410671">Rendszerösszeomlások ( <ph name="CRASH_COUNT" /> )</translation>
 <translation id="8437238597147034694">&amp;Áthelyezés visszavonása</translation>
 <translation id="8488350697529856933">A következőre érvényes</translation>
 <translation id="8530504477309582336">A Google Payments nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon egy másikat.</translation>

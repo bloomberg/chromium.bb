@@ -33,6 +33,7 @@
 <translation id="1265053460044691532">Limitați intervalul de timp pentru care un utilizator autentificat prin SAML se poate conecta offline</translation>
 <translation id="1283072268083088623">Specifică schemele de autentificare HTTP acceptate de <ph name="PRODUCT_NAME" />. Valorile posibile sunt „basic”, „digest”, „ntml” și „negotiate”. Separați valorile multiple prin virgulă. Dacă această politică este lăsată nesetată, vor fi utilizate toate cele patru scheme.</translation>
 <translation id="1297182715641689552">Utilizează un script .pac pentru proxy</translation>
+<translation id="1304973015437969093">ID-uri pentru extensii/aplicații și adrese URL pentru actualizări de instalat în fundal</translation>
 <translation id="1310699457130669094">Aici puteți specifica adresa URL a unui fișier .pac pentru proxy. Această politică are efect numai dacă ați selectat manual setările proxy la „Alegeți modul de specificare a setărilor serverului proxy”. Trebuie să lăsați această politică nesetată dacă ați selectat alt mod pentru setarea politicilor de proxy. Pentru mai multe opțiuni și exemple detaliate, accesați: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Specifică procentul de ajustare a intervalului până la reducerea luminozității ecranului atunci când se înregistrează activități ale utilizatorului în timp ce luminozitatea ecranului este redusă sau la scurt timp după ce ecranul a fost oprit.
 
@@ -80,6 +81,14 @@
           Dacă această politică este configurată, utilizatorii o pot ignora temporar, activând sau dezactivând modul de contrast ridicat. Totuși, alegerea utilizatorului nu este definitivă și se revine la setările prestabilite de fiecare dată când este afișat din nou ecranul de conectare sau când utilizatorul este inactiv pe ecranul de conectare timp de un minut.
 
           Dacă această politică nu este configurată, modul de contrast ridicat este dezactivat la afișarea inițială a ecranului de conectare. Utilizatorii pot oricând să activeze sau să dezactiveze modul de contrast ridicat, iar starea sa pe ecranul de conectare persistă de la un utilizator la altul.</translation>
+<translation id="1468707346106619889">Dacă această politică este activată, modul Desktop unificat este permis și
+      activat în mod prestabilit, ceea ce permite afișarea
+      aplicațiilor pe mai multe ecrane.
+      Utilizatorul poate dezactiva Desktopul unificat pentru anumite ecrane
+      debifând modul în setările de afișare.
+
+      Dacă această politică este dezactivată sau nu este configurată, Desktopul unificat
+      va fi dezactivat. În acest caz, utilizatorul nu poate activa funcția.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Această politică specifică intervalul, în milisecunde, la care serviciul de gestionare a dispozitivului este interogat pentru informații privind politica dispozitivului.
 
@@ -287,6 +296,7 @@
 <translation id="2518231489509538392">Permiteți redarea audio</translation>
 <translation id="2521581787935130926">Afișați comanda rapidă pentru aplicații în bara de marcaje</translation>
 <translation id="2529700525201305165">Restricționați utilizatorii care au permisiunea de a se conecta la <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2529880111512635313">Configurează lista aplicațiilor și a extensiilor cu instalare forțată</translation>
 <translation id="253135976343875019">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="2552966063069741410">Fus orar</translation>
 <translation id="2571066091915960923">Activează sau dezactivează serverul proxy pentru comprimarea datelor și împiedică utilizatorii să modifice această setare.
@@ -361,6 +371,7 @@
 
           ExtensionInstallBlacklist are prioritate față de această politică. Aceasta înseamnă că o extensie de pe lista neagră nu va fi instalată, chiar dacă provine de la un site de pe această listă.</translation>
 <translation id="2824715612115726353">Activează modul incognito</translation>
+<translation id="2850122204195089673">Setează modul Desktop unificat ca fiind disponibil și activează-l în mod prestabilit.</translation>
 <translation id="285480231336205327">Activați modul de contrast ridicat</translation>
 <translation id="2872961005593481000">Închide</translation>
 <translation id="2877225735001246144">Dezactivează căutarea CNAME la negocierea autentificării pentru Kerberos</translation>
@@ -407,7 +418,6 @@
 <translation id="3153348162326497318">Vă permite să specificați extensiile pe care utilizatorii NU le pot instala. Extensiile deja instalate vor fi eliminate, dacă sunt pe lista neagră. O valoare „*” din lista neagră înseamnă că toate extensiile apar în lista neagră, cu excepția cazului în care acestea sunt explicit specificate în lista albă. Dacă această politică este lăsată nesetată, utilizatorul poate instala orice extensie în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 29. Pentru a crea colecții de extensii/aplicații găzduite la nivel de organizație, se recomandă să includeți site-ul care găzduiește pachetele CRX în ExtensionInstallSources și să afișați pe o pagină web linkuri de descărcare directă spre pachete. Puteți crea un lansator pentru respectiva pagină web utilizând politica ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">de la versiunea <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Specifică dacă trebuie dezactivată divizarea înregistrărilor SSL. Divizarea înregistrărilor este o soluție pentru o vulnerabilitate din SSL 3.0 și TLS 1.0, dar poate provoca probleme de compatibilitate cu unele servere și proxy-uri HTTPS. Dacă politica nu este setată sau nu este activată, atunci divizarea înregistrărilor va fi utilizată pentru conexiuni SSL/TLS care utilizează combinații de algoritmi de criptare CBC.</translation>
 <translation id="3213821784736959823">Stabilește dacă clientul DNS integrat este utilizat în <ph name="PRODUCT_NAME" />.
 
       Dacă această politică este activată, va fi utilizat clientul DNS integrat, atunci când este disponibil.
@@ -1505,7 +1515,6 @@
 <translation id="8955719471735800169">Înapoi sus</translation>
 <translation id="8970205333161758602">Eliminați solicitarea de refuzare <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Temporizator pentru conectarea automată la sesiunea publică</translation>
-<translation id="8987262643142408725">Dezactivați divizarea înregistrărilor SSL</translation>
 <translation id="8992176907758534924">Nu permite niciunui site să afișeze imagini</translation>
 <translation id="9035964157729712237">ID-urile extensiilor excluse din lista neagră</translation>
 <translation id="9042911395677044526">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru fiecare utilizator pe un dispozitiv cu <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, conform definirii acestuia de către formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>

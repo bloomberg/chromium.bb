@@ -10,6 +10,7 @@
 <translation id="111844081046043029">האם אתה בטוח שברצונך לצאת מדף זה?</translation>
 <translation id="112840717907525620">הקובץ השמור של המדיניות תקין</translation>
 <translation id="1132774398110320017">‏הגדרות מילוי אוטומטי של Chrome...</translation>
+<translation id="1146673768181266552">מזהה קריסה <ph name="CRASH_ID" /> ‏(<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המחשב. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="1152921474424827756">גש אל <ph name="BEGIN_LINK" />עותק בקובץ שמור<ph name="END_LINK" /> של <ph name="URL" /></translation>
 <translation id="121201262018556460">ניסית להגיע אל <ph name="DOMAIN" />, אך השרת הציג אישור המכיל מפתח חלש. ייתכן שתוקף פרץ את המפתח הפרטי, והשרת אינו השרת שרצית (ייתכן שאתה מתקשר עם תוקף).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">הדף ב-<ph name="SITE" /> אומר:</translation>
 <translation id="1706954506755087368">{1,plural, =1{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אמור להיכנס לתוקף רק מחר. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך.}two{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אמור להיכנס לתוקף רק בעוד יומיים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך.}many{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אמור להיכנס לתוקף רק בעוד # ימים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך.}other{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אמור להיכנס לתוקף רק בעוד # ימים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">דווח על באג</translation>
 <translation id="1763864636252898013">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המכשיר. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="1821930232296380041">הבקשה או הפרמטרים של הבקשה אינם חוקיים</translation>
 <translation id="1871208020102129563">‏שרת ה-Proxy מוגדר להשתמש בשרתי Proxy קבועים, לא בכתובת אתר של סקריפט ‎.Pac</translation>
-<translation id="1875753206475436906">סוג היוריסטיקה: <ph name="HEURISTIC_TYPE" />
-    סוג שרת: <ph name="SERVER_TYPE" />
-    חתימת שדה: <ph name="FIELD_SIGNATURE" />
-    חתימת טופס: <ph name="FORM_SIGNATURE" />
-    מזהה ניסוי: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">עבור ל-<ph name="LINK" /></translation>
 <translation id="1962204205936693436">סימניות של <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">שגיאה בעריכה בסידרה</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">אין מספיק רישיונות</translation>
 <translation id="3739623965217189342">קישור שהעתקת</translation>
 <translation id="375403751935624634">התרגום נכשל עקב שגיאת שרת.</translation>
+<translation id="3759461132968374835">לא התקבלו דיווחים על קריסות לאחרונה. קריסות שהתרחשו בזמן שאפשרות הדיווח על קריסות היתה מושבתת לא יופיעו כאן.</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="3858027520442213535">עדכן את התאריך והשעה</translation>
 <translation id="3884278016824448484">מזהה מכשיר מתנגש</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">חתימת אימות לא חוקית</translation>
 <translation id="4196861286325780578">&amp;ביצוע מחדש של העברה</translation>
+<translation id="4220128509585149162">קריסה</translation>
 <translation id="4250680216510889253">לא</translation>
 <translation id="4258748452823770588">חתימה שגויה</translation>
 <translation id="4269787794583293679">(אין שם משתמש)</translation>
 <translation id="4300246636397505754">הצעות להורים</translation>
+<translation id="4325863107915753736">לא ניתן היה למצוא את הפריט</translation>
 <translation id="4372948949327679948">צפוי ערך מסוג <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">ניסית להשיג את <ph name="DOMAIN" />, אך האישור שהשרת הציג בוטל על ידי המנפיק שלו. פירוש הדבר שאין כל אפשרות לתת אמון באישורי האבטחה שהשרת הציג. ייתכן שאתה מתקשר עם תוקף.</translation>
 <translation id="4394049700291259645">השבת</translation>
@@ -179,6 +179,7 @@ Del</translation>
 <translation id="498957508165411911">האם לתרגם מ<ph name="ORIGINAL_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">האחסון המשמש כגיבוי אינו תקין</translation>
 <translation id="5031870354684148875">‏מידע על Google Translate</translation>
+<translation id="5045550434625856497">סיסמה שגויה</translation>
 <translation id="5087286274860437796">האישור של השרת אינו תקף כעת.</translation>
 <translation id="5089810972385038852">מדינה</translation>
 <translation id="5094747076828555589">‏השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי Chromium. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
@@ -191,6 +192,7 @@ Del</translation>
 <translation id="5251803541071282808">ענן</translation>
 <translation id="5295309862264981122">אשר ניווט</translation>
 <translation id="5299298092464848405">שגיאה בניתוח המדיניות</translation>
+<translation id="5308689395849655368">דיווח קריסות מושבת.</translation>
 <translation id="5316812925700871227">סובב נגד כיוון השעון</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="536296301121032821">אחסון הגדרות המדיניות נכשל</translation>
@@ -216,6 +218,7 @@ Del</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">סגור</translation>
 <translation id="6060685159320643512">זהירות, ניסויים אלה עלולים לנשוך</translation>
+<translation id="6099520380851856040">התרחש ב: <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">תקופת התוקף של אישור השרת ארוכה מדי.</translation>
 <translation id="6154808779448689242">אסימון המדיניות שהוחזר אינו תואם לאסימון הנוכחי</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
@@ -228,6 +231,7 @@ Del</translation>
 <translation id="6445051938772793705">ארץ</translation>
 <translation id="6458467102616083041">המערכת התעלמה מערך מדיניות זה, משום שלפי המדיניות, חיפוש ברירת המחדל מושבת.</translation>
 <translation id="647261751007945333">מדיניות המכשיר</translation>
+<translation id="6489534406876378309">התחל להעלות קריסות</translation>
 <translation id="6512448926095770873">צא מדף זה</translation>
 <translation id="6529602333819889595">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
@@ -306,6 +310,7 @@ Del</translation>
 <translation id="8311778656528046050">האם אתה בטוח שברצונך לטעון מחדש דף זה?</translation>
 <translation id="8349305172487531364">סרגל סימניות</translation>
 <translation id="8364627913115013041">לא מוגדר.</translation>
+<translation id="8412145213513410671">קריסות (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;ביטול העברה</translation>
 <translation id="8488350697529856933">חל על</translation>
 <translation id="8530504477309582336">‏סוג הכרטיס הזה אינו נתמך על ידי Google Payments. בחר כרטיס אחר.</translation>

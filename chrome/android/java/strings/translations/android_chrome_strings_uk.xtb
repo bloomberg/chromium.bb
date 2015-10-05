@@ -22,6 +22,7 @@
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
 <translation id="129553762522093515">Нещодавно закриті</translation>
 <translation id="1312168552565502328">Файли cookie, дані сайтів</translation>
+<translation id="1346090444609141578">Немає збережених сторінок</translation>
 <translation id="1369915414381695676">Сайт <ph name="SITE_NAME" /> додано</translation>
 <translation id="1373696734384179344">Недостатньо пам’яті, щоб завантажити вибраний вміст.</translation>
 <translation id="1379156015317873965">Покращувати ефективність завантаження сторінок</translation>
@@ -544,7 +545,7 @@
 <translation id="8912362522468806198">Обліковий запис Google</translation>
 <translation id="8920114477895755567">Очікування даних батьків.</translation>
 <translation id="8928220460877261598">Тепер ви ввійшли в Chrome.</translation>
-<translation id="8934455786738644694">Щоб вийти з повноекранного режиму, проведіть пальцем згори й торкніться кнопки "Назад".</translation>
+<translation id="8934455786738644694">Щоб вийти з повноекранного режиму, проведіть пальцем по екрану згори вниз і торкніться кнопки "Назад".</translation>
 <translation id="8941248009481596111">Ваше з’єднання з цим сайтом конфіденційне.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Веб-сторінка <ph name="URL" /> недоступна</translation>

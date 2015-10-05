@@ -409,7 +409,6 @@
 <translation id="3153348162326497318">Omogućuje da odredite koja proširenja korisnici NE mogu instalirati. Proširenja koja su već instalirana bit će uklonjena ako se nalaze na popisu zabranjenih proširenja. Vrijednost popisa zabranjenih proširenja "*" znači da nije dopušteno nijedno proširenje, osim ako nisu izričito navedena na popisu dopuštenih. Ako pravilo nije postavljeno, korisnik može instalirati bilo koje proširenje u <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />. Preporučuje se da se pri postavljanju zbirki proširenja ili aplikacija koje hostira određena organizacija web-lokacija koja hostira CRX pakete uključi u pravilo ExtensionInstallSources te da se u pakete na web-stanici postave izravne veze za preuzimanje. Pokretač za tu web-stranicu može se izraditi pomoću pravila ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od verzije <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Određuje hoće li se omogućiti dijeljenje zapisa SSL-a. Dijeljenje zapisa rješavanje je slabosti za SSL 3.0 i TLS 1.0, ali može uzrokovati probleme s kompatibilnošću s nekim HTTPS poslužitelja i proxijima. Ako pravilo nije postavljeno ili je postavljeno na "false" (lažno), znači da će se dijeljenje zapisa upotrebljavati na vezama SSL/TLS koje upotrebljavaju CBC paket šifri.</translation>
 <translation id="3213821784736959823">Kontrolira primjenjuje li se ugrađeni DNS klijent u proizvodu <ph name="PRODUCT_NAME" />.
 
       Ako je to pravilo postavljeno na točno, primijenit će se ugrađeni DNS klijent ako je dostupan.
@@ -1487,7 +1486,6 @@
 <translation id="8955719471735800169">Natrag na vrh</translation>
 <translation id="8970205333161758602">Zaustavljanje upita za odbijanje usluge <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Odbrojavanje za automatsku prijavu u javnu sesiju</translation>
-<translation id="8987262643142408725">Onemogućavanje dijeljenja zapisa SSL-a</translation>
 <translation id="8992176907758534924">Ne dopuštaj web-lokacijama prikazivanje slika</translation>
 <translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
 <translation id="9042911395677044526">Omogućuje nametanje mrežne konfiguracije za primjenu po korisniku na uređaju <ph name="PRODUCT_OS_NAME" />. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom "Open Network Configuration" koji je opisan na adresi <ph name="ONC_SPEC_URL" /></translation>

@@ -55,7 +55,6 @@
 <translation id="2705212601509139398">Web-lokacija upotrebljava dodatak Chromium Frame koji se uskoro više neće podržavati. Deinstalirajte ga i preuzmite kompatibilan preglednik.</translation>
 <translation id="2718390899429598676">Radi dodatne sigurnosti Chromium će šifrirati vaše podatke.</translation>
 <translation id="2732467638532545152">Vaše računalo ima staru verziju Microsoft Windowsa koja ne može obraditi sigurnosni certifikat ove web-lokacije. Zbog tog problema Chromium ne može odrediti je li certifikat s domene <ph name="SITE" /> ili od nekog u vašoj mreži tko se pretvara da je <ph name="SITE" />. Ažurirajte Windows na računalu na noviju verziju.</translation>
-<translation id="275588974610408078">Prijavljivanje padova nije dostupno u pregledniku Chromium.</translation>
 <translation id="2770231113462710648">Promijeni zadani preglednik na:</translation>
 <translation id="2801146392936645542">Datoteka <ph name="FILE_NAME" /> zlonamjerna je i Chromium ju je blokirao.</translation>
 <translation id="2847479871509788944">Ukloni iz Chromiuma...</translation>

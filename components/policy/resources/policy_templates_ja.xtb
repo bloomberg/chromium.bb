@@ -413,9 +413,6 @@
 <translation id="3153348162326497318">ユーザーがインストールできない拡張機能を指定できます。インストール済みの拡張機能がブラックリストに登録されると、削除されます。ブラックリストに値「*」を登録すると、すべての拡張機能が禁止されます（明示的にホワイトリストに登録されている拡張機能を除きます）。このポリシーが未設定の場合、ユーザーは <ph name="PRODUCT_NAME" /> にすべての拡張機能をインストールできます。</translation>
 <translation id="316778957754360075">この設定は <ph name="PRODUCT_NAME" /> バージョン 29 で廃止されました。組織でホストする拡張機能/アプリのコレクションを設定するには、CRX パッケージをホストするサイトを ExtensionInstallSources の中で指定し、パッケージへの直接ダウンロード リンクをウェブページに置くことをおすすめします。そのウェブページのランチャーは、ExtensionInstallForcelist ポリシーを使用して作成できます。</translation>
 <translation id="3185009703220253572">バージョン <ph name="SINCE_VERSION" /> 以降</translation>
-<translation id="3195451902035818945">SSL レコード分割を無効にするかどうかを指定します。レコード分割は、SSL 3.0 と TLS 1.0 の脆弱性を回避するための策ですが、一部の HTTPS サーバーやプロキシでは互換性の問題が発生することがあります。
-
-      このポリシーが未設定または無効になっている場合、CBC 暗号スイートを使用した SSL/TLS 接続でレコード分割が使用されます。</translation>
 <translation id="3213821784736959823">組み込みの DNS クライアントが <ph name="PRODUCT_NAME" /> で使用されるかどうかを指定します。
 
       このポリシーが true に設定されている場合、組み込みの DNS クライアントが使用されます（使用可能な場合）。
@@ -1500,7 +1497,6 @@
 <translation id="8955719471735800169">トップへ戻る</translation>
 <translation id="8970205333161758602"><ph name="PRODUCT_FRAME_NAME" /> のサポート終了メッセージを抑制する</translation>
 <translation id="8971221018777092728">公開セッションの自動ログイン タイマー</translation>
-<translation id="8987262643142408725">SSL レコード分割を無効にする</translation>
 <translation id="8992176907758534924">すべてのサイトに対して画像表示を許可しない</translation>
 <translation id="9035964157729712237">ブラックリストから除外する拡張機能 ID</translation>
 <translation id="9042911395677044526"><ph name="PRODUCT_OS_NAME" /> 端末のユーザーごとにプッシュ型ネットワーク設定を適用できます。ネットワーク設定は、Open Network Configuration 形式（<ph name="ONC_SPEC_URL" /> を参照）で定義された JSON 形式の文字列です。</translation>

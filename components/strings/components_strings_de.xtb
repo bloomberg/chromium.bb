@@ -10,6 +10,7 @@
 <translation id="111844081046043029">Möchten Sie diese Seite wirklich verlassen?</translation>
 <translation id="112840717907525620">Richtlinien-Cache einwandfrei</translation>
 <translation id="1132774398110320017">AutoFill-Einstellungen für Chrome...</translation>
+<translation id="1146673768181266552">Absturz-ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Computers als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1152921474424827756">Rufen Sie eine <ph name="BEGIN_LINK" />im Cache gespeicherte Kopie<ph name="END_LINK" /> von <ph name="URL" /> auf.</translation>
 <translation id="121201262018556460">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat jedoch ein Zertifikat mit einem schwachen Schlüssel übermittelt. Ein Hacker könnte den privaten Schlüssel geknackt haben, sodass es sich möglicherweise nicht um den erwarteten Server handelt, sondern Sie stattdessen mit einem Hacker kommunizieren.</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">Die Seite auf <ph name="SITE" /> meldet:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat gilt vermutlich erst ab morgen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.}other{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat gilt vermutlich erst in # Tagen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.}}</translation>
 <translation id="1734864079702812349">American Express</translation>
+<translation id="1737968601308870607">Fehler melden</translation>
 <translation id="1763864636252898013">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Geräts als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1821930232296380041">Anfrage oder Anfrageparameter ungültig</translation>
 <translation id="1871208020102129563">Der Proxy ist zur Verwendung von festen Proxyservern konfiguriert, nicht zur Verwendung einer PAC-Skript-URL.</translation>
-<translation id="1875753206475436906">Heuristischer Typ: <ph name="HEURISTIC_TYPE" />
-    Servertyp: <ph name="SERVER_TYPE" />
-    Feldsignatur: <ph name="FIELD_SIGNATURE" />
-    Formularsignatur: <ph name="FORM_SIGNATURE" />
-    Test-ID: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">Besuchen Sie die Seite <ph name="LINK" />.</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" />-Lesezeichen</translation>
 <translation id="1973335181906896915">Fehler bei der Serialisierung</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Lizenzen aufgebraucht</translation>
 <translation id="3739623965217189342">Von Ihnen kopierter Link</translation>
 <translation id="375403751935624634">Aufgrund eines Serverfehlers ist die Übersetzung fehlgeschlagen.</translation>
+<translation id="3759461132968374835">Es liegen keine kürzlich gemeldeten Abstürze vor. Abstürze, die bei deaktivierter Absturzberichtsfunktion aufgetreten sind, werden hier nicht angezeigt.</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3858027520442213535">Datum und Uhrzeit aktualisieren</translation>
 <translation id="3884278016824448484">In Konflikt stehende Gerätekennung</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">Ungültige Bestätigungssignatur</translation>
 <translation id="4196861286325780578">&amp;Verschieben wiederholen</translation>
+<translation id="4220128509585149162">Abstürze</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="4258748452823770588">Fehlerhafte Signatur</translation>
 <translation id="4269787794583293679">(Kein Nutzername)</translation>
 <translation id="4300246636397505754">Vorschläge für Eltern</translation>
+<translation id="4325863107915753736">Der Artikel wurde nicht gefunden.</translation>
 <translation id="4372948949327679948">Erwarteter <ph name="VALUE_TYPE" />-Wert</translation>
 <translation id="4377125064752653719">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, das vom Server übermittelte Zertifikat wurde jedoch vom entsprechenden Aussteller widerrufen. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen nicht vertrauenswürdig sind. Möglicherweise kommunizieren Sie mit einem Hacker.</translation>
 <translation id="4394049700291259645">Deaktivieren</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">Übersetzen (<ph name="ORIGINAL_LANGUAGE" /> &gt; <ph name="TARGET_LANGUAGE" />)?</translation>
 <translation id="5019198164206649151">Sicherungsspeicher ist fehlerhaft.</translation>
 <translation id="5031870354684148875">Über Google Übersetzer</translation>
+<translation id="5045550434625856497">Falsches Passwort</translation>
 <translation id="5087286274860437796">Das Serverzertifikat ist zurzeit ungültig.</translation>
 <translation id="5089810972385038852">Bundesstaat/-land</translation>
 <translation id="5094747076828555589">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird von Chromium als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5295309862264981122">Navigation bestätigen</translation>
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
+<translation id="5308689395849655368">Die Absturzberichtsfunktion ist deaktiviert.</translation>
 <translation id="5316812925700871227">Gegen den Uhrzeigersinn drehen</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="536296301121032821">Fehler beim Speichern der Richtlinieneinstellungen</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6060685159320643512">Vorsichtig, diese Experimente können gefährlich sein!</translation>
+<translation id="6099520380851856040">Aufgetreten am <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Die Gültigkeitsdauer des Serverzertifikats ist zu lang.</translation>
 <translation id="6154808779448689242">Zurückgegebenes Token der Richtlinie entspricht nicht dem aktuellen Token.</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">Land</translation>
 <translation id="6458467102616083041">Ignoriert, da Standardsuche durch Richtlinie deaktiviert</translation>
 <translation id="647261751007945333">Geräterichtlinien</translation>
+<translation id="6489534406876378309">Hochladen von Abstürzen starten</translation>
 <translation id="6512448926095770873">Diese Seite verlassen</translation>
 <translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
 <translation id="6550675742724504774">Optionen</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">Möchten Sie diese Seite wirklich aktualisieren?</translation>
 <translation id="8349305172487531364">Lesezeichenleiste</translation>
 <translation id="8364627913115013041">Nicht eingerichtet</translation>
+<translation id="8412145213513410671">Abstürze (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;Verschieben rückgängig machen</translation>
 <translation id="8488350697529856933">Gilt für</translation>
 <translation id="8530504477309582336">Dieser Kartentyp wird von Google Payments nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>

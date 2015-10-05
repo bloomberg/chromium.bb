@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="1203161113033984675">BEGIN_LINKФизическата мрежаEND_LINK е включена.</translation>
+<translation id="1418775127135578229">Отваряне на копираната връзка</translation>
+<translation id="1487576085940433465">BEGIN_LINKОбекти наблизо излъчват уеб странициEND_LINK. За подобряване на качеството на тези резултати ще се използва услуга на Google.</translation>
+<translation id="2026797012398135445">За активиране отключете устройството си.</translation>
 <translation id="2316129865977710310">Не, благодаря</translation>
 <translation id="3435896845095436175">Активиране</translation>
 <translation id="4394049700291259645">Деактивиране</translation>
 <translation id="5301954838959518834">Добре, разбрах</translation>
+<translation id="5508399372551154686">BEGIN_LINKФизическата мрежаEND_LINK е изключена.</translation>
+<translation id="5815960189179094695">Сканира се за обекти във BEGIN_LINKфизическата мрежаEND_LINK...</translation>
 <translation id="6196207969502475924">Гласово търсене</translation>
+<translation id="6722203589267124394">Вкл. Bluetooth и вижте обекти наблизо във BEGIN_LINKфиз. мрежаEND_LINK.</translation>
 <translation id="7554791636758816595">Нов раздел</translation>
+<translation id="7588950540487816470">Физическа мрежа</translation>
+<translation id="8800384372516194324">Показване на още резултати</translation>
 </translationbundle>

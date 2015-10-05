@@ -16,6 +16,7 @@
 للحصول على معلومات حول الخصوصية، يُرجى الاطلاع على سياسة خصوصية Google (http://goo.gl/SyrVzj) وسياسة خصوصية Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(هذه الميزة غير متاحة بعد لجهاز الكمبيوتر)</translation>
 <translation id="1342297293546459414">الاطلاع على جهاز كمبيوتر تمت مشاركته والتحكم فيه.</translation>
+<translation id="1389790901665088353">‏تنزيل أداة تثبيت مضيف سطح المكتب البعيد من Chrome</translation>
 <translation id="1450760146488584666">العنصر المطلوب غير موجود.</translation>
 <translation id="1480046233931937785">أسماء المشاركين</translation>
 <translation id="1520828917794284345">تغيير حجم سطح المكتب للملاءمة</translation>
@@ -147,6 +148,7 @@
 <translation id="4572065712096155137">الدخول</translation>
 <translation id="4573676252416618192">‏مضيف سطح المكتب
 البعيد من Chrome</translation>
+<translation id="4619978527973181021">قبول وتثبيت</translation>
 <translation id="4703799847237267011">‏انتهت جلسة تطبيق التوافق مع نظام التشغيل Chrome.</translation>
 <translation id="4736223761657662401">سجل الاتصالات</translation>
 <translation id="4741792197137897469">‏أخفقت المصادقة،يُرجى تسجيل الدخول إلى Chrome مرة أخرى.</translation>
@@ -159,6 +161,7 @@
 <translation id="4913529628896049296">في انتظار الاتصال...</translation>
 <translation id="4918086044614829423">قبول</translation>
 <translation id="492843737083352574">أواجه مشكلات مع لوحة المفاتيح أو الماوس.</translation>
+<translation id="4973800994433240357">‏من خلال تنزيل أداة تثبيت مضيف التوافق مع نظام التشغيل Chrome، توافق على <ph name="LINK_BEGIN" />بنود خدمة<ph name="LINK_END" /> Google.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (في وضع عدم اتصال)</translation>
 <translation id="5070121137485264635">‏يتطلب منك المضيف البعيد مصادقة موقع ويب لجهة خارجية. للمتابعة، يجب منح تطبيق سطح المكتب البعيد من Chrome أذونات إضافية للدخول إلى هذا العنوان:</translation>
 <translation id="5156271271724754543">الرجاء إدخال رقم التعريف الشخصي نفسه في كلا المربعين.</translation>
@@ -171,6 +174,7 @@
 <translation id="5308380583665731573">اتصال</translation>
 <translation id="5363265567587775042">اطلب من المستخدم الذي ترغب في الدخول إلى جهاز الكمبيوتر التابع له أن ينقر على "<ph name="SHARE" />" وأن يمنحك رمز الدخول.</translation>
 <translation id="5379087427956679853">‏يسمح لك سطح المكتب البعيد من Chrome بمشاركة جهاز الكمبيوتر التابع لك بشكل آمن عبر الويب. ويجب أن يشغّل كلا المستخدمَين تطبيق سطح المكتب البعيد من Chrome، والذي يمكن العثور عليه على <ph name="URL" />.</translation>
+<translation id="5394895745784982830">‏لأجهزة Mac (OS X 10.6 والإصدارات الأحدث)</translation>
 <translation id="5397086374758643919">‏أداة إزالة مضيف سطح المكتب البعيد من Chrome</translation>
 <translation id="5419185025274123272">تعذر إعادة ضبط التطبيق. لا يزال بإمكانك إرسال تقرير للإبلاغ عن خلل.</translation>
 <translation id="544077782045763683">تم إيقاف تشغيل المضيف.</translation>
@@ -223,6 +227,7 @@
 <translation id="6930242544192836755">المدة</translation>
 <translation id="6939719207673461467">عرض/إخفاء لوحة المفاتيح</translation>
 <translation id="6944854424004126054">استعادة النافذة</translation>
+<translation id="6962773374262604195">‏لنظام التشغيل Windows (XP والإصدارات الأحدث)</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="6985691951107243942">هل تريد بالتأكيد تعطيل الاتصالات عن بُعد بـ <ph name="HOSTNAME" />؟ إذا عدلت عن هذا القرار، فسيلزمك الانتقال إلى جهاز الكمبيوتر لإعادة تمكين الاتصالات.</translation>
 <translation id="6998989275928107238">إلى</translation>
@@ -252,6 +257,7 @@
 <translation id="7869445566579231750">ليس لديك إذن لتشغيل هذا التطبيق.</translation>
 <translation id="7948001860594368197">خيارات الشاشة</translation>
 <translation id="7970576581263377361">‏أخفقت المصادقة.يُرجى تسجيل الدخول إلى Chromium مرة أخرى.</translation>
+<translation id="8041721485428375115">‏من خلال تنزيل أداة تثبيت مضيف سطح المكتب البعيد من Chrome، توافق على <ph name="LINK_BEGIN" />بنود خدمة<ph name="LINK_END" /> Google.</translation>
 <translation id="8073845705237259513">‏لاستخدام سطح المكتب البعيد من Chrome، يجب إضافة حساب في Google إلى جهازك.</translation>
 <translation id="80739703311984697">‏يتطلب منك المضيف البعيد مصادقة موقع ويب لجهة خارجية. للمتابعة، يجب منح عملية التوافق مع نظام التشغيل Chrome أذونات إضافية للدخول إلى هذا العنوان:</translation>
 <translation id="809687642899217504">أجهزة الكمبيوتر الخاصة بي</translation>
@@ -275,6 +281,7 @@
 <translation id="8642984861538780905">متوسطة</translation>
 <translation id="8712909229180978490">‏لا أستطيع أن أرى الملفات المحفوظة عبر الإنترنت في Google Drive.</translation>
 <translation id="8759753423332885148">معرفة المزيد.</translation>
+<translation id="8791202241915690908">‏تنزيل أداة تثبيت مضيف التوافق مع نظام التشغيل Chrome</translation>
 <translation id="894763922177556086">جيدة</translation>
 <translation id="897805526397249209">لتمكين الاتصالات عن بُعد بجهاز كمبيوتر مختلف، ثبِّت 
 تطبيق التوافق مع نظام التشغيل عليه وانقر على “<ph name="BUTTON_NAME" />”.</translation>

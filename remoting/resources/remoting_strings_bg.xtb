@@ -16,6 +16,7 @@
 За информация относно поверителността, моля, вижте Декларацията за поверителност на Google (http://goo.gl/SyrVzj) и тази на Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(тази функция още не е налице за компютъра ви)</translation>
 <translation id="1342297293546459414">Вижте и контролирайте споделен компютър.</translation>
+<translation id="1389790901665088353">Изтегляне на инсталационната програма за хоста на отдалечения работен плот на Chrome</translation>
 <translation id="1450760146488584666">Заявеният обект не съществува.</translation>
 <translation id="1480046233931937785">Признание</translation>
 <translation id="1520828917794284345">Преоразмеряване на работния плот с цел уеднаквяване</translation>
@@ -64,6 +65,7 @@
 <translation id="2353140552984634198">Може да осъществите надеждно достъп до този компютър посредством Chromoting.</translation>
 <translation id="2359808026110333948">Напред</translation>
 <translation id="2366718077645204424">Не можем да се свържем с хоста. Това вероятно се дължи на конфигурацията на използваната от вас мрежа.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Последно онлайн: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Помощ и отзиви</translation>
 <translation id="2499160551253595098">Помогнете ни да подобрим отдалечения работен плот на Chrome, като ни разрешите да събираме статистически данни за употребата и сигнали за сривове.</translation>
 <translation id="2512228156274966424">ЗАБЕЛЕЖКА: За да се гарантира, че всички клавишни комбинации са налице, можете да конфигурирате отдалечения работен плот на Chrome да се отваря като прозорец.</translation>
@@ -109,6 +111,7 @@
 <translation id="3596628256176442606">Тази услуга активира входящите връзки от клиентски програми за Chromoting.</translation>
 <translation id="3606997049964069799">Не сте влезли в Chromium. Моля, направете го и опитайте отново.</translation>
 <translation id="3649256019230929621">Намаляване на прозореца</translation>
+<translation id="369442766917958684">Офлайн.</translation>
 <translation id="3776024066357219166">Сесията ви в отдалечения работен плот на Chrome приключи.</translation>
 <translation id="3785447812627779171">Хост на
 Chromoting</translation>
@@ -144,6 +147,7 @@ Chromoting</translation>
 <translation id="4572065712096155137">Достъп</translation>
 <translation id="4573676252416618192">Хост на отдалечения
 работен плот на Chrome</translation>
+<translation id="4619978527973181021">Приемам и инсталирам</translation>
 <translation id="4703799847237267011">Сесията ви в Chromoting приключи.</translation>
 <translation id="4736223761657662401">История на връзките</translation>
 <translation id="4741792197137897469">Удостоверяването не бе успешно. Моля, влезте отново в Chrome.</translation>
@@ -156,6 +160,7 @@ Chromoting</translation>
 <translation id="4913529628896049296">изчаква се връзка…</translation>
 <translation id="4918086044614829423">Приемам</translation>
 <translation id="492843737083352574">Имам проблеми с клавиатурата или мишката.</translation>
+<translation id="4973800994433240357">С изтеглянето на инсталационната програма за хоста на Chromoting приемате <ph name="LINK_BEGIN" />Общите условия<ph name="LINK_END" /> на Google.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (офлайн)</translation>
 <translation id="5070121137485264635">Отдалеченият хост изисква да удостоверите самоличността си пред уебсайт на трета страна. За да продължите, трябва да предоставите на отдалечения работен плот на Chrome допълнителни разрешения за достъп до този адрес:</translation>
 <translation id="5156271271724754543">Моля, въведете един и същ ПИН код и в двете полета.</translation>
@@ -168,6 +173,7 @@ Chromoting</translation>
 <translation id="5308380583665731573">Свързване</translation>
 <translation id="5363265567587775042">Помолете потребителя, до чийто компютър искате достъп, да кликне върху „<ph name="SHARE" />“ и да ви предостави съответния код.</translation>
 <translation id="5379087427956679853">Отдалеченият работен плот на Chrome ви позволява да споделяте надеждно компютъра си през мрежата. И двамата потребители трябва да изпълняват приложението, което може да бъде намерено на адрес <ph name="URL" />.</translation>
+<translation id="5394895745784982830">За Mac (OS X 10.6 и по-нови версии)</translation>
 <translation id="5397086374758643919">Деинсталираща програма за хоста на отдалечения работен плот на Chrome</translation>
 <translation id="5419185025274123272">Приложението не можа да се рестартира. Пак можете да изпратите сигнал за програмна грешка.</translation>
 <translation id="544077782045763683">Хостът се изключи.</translation>
@@ -183,6 +189,7 @@ Chromoting</translation>
 <translation id="579702532610384533">Повторно свързване</translation>
 <translation id="5843054235973879827">Защо това е безопасно?</translation>
 <translation id="5859141382851488196">Нов прозорец…</translation>
+<translation id="5885438903806970186">Онлайн.</translation>
 <translation id="6001953797859482435">Предпочитания за хоста на отдалечения работен плот на Chrome</translation>
 <translation id="6011539954251327702">Chromoting ви позволява да споделяте надеждно компютъра си през мрежата. И двамата потребители трябва да изпълняват приложението, което може да бъде намерено на адрес <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Затваряне</translation>
@@ -219,6 +226,7 @@ Chromoting</translation>
 <translation id="6930242544192836755">Продължителност</translation>
 <translation id="6939719207673461467">Показване/скриване на клавиатурата.</translation>
 <translation id="6944854424004126054">Възстановяване на прозореца</translation>
+<translation id="6962773374262604195">За Windows (XP и по-нови версии)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Наистина ли искате да деактивирате отдалечените връзки с/ъс <ph name="HOSTNAME" />? Ако промените решението си, ще трябва да посетите този компютър, за да ги активирате отново.</translation>
 <translation id="6998989275928107238">До</translation>
@@ -248,6 +256,7 @@ Chromoting</translation>
 <translation id="7869445566579231750">Нямате разрешение да стартирате това приложение.</translation>
 <translation id="7948001860594368197">Опции за екрана</translation>
 <translation id="7970576581263377361">Удостоверяването не бе успешно. Моля, влезте отново в Chromium.</translation>
+<translation id="8041721485428375115">С изтеглянето на инсталационната програма за хоста на отдалечения работен плот на Chrome приемате <ph name="LINK_BEGIN" />Общите условия<ph name="LINK_END" /> на Google.</translation>
 <translation id="8073845705237259513">За да използвате отдалечения работен плот на Chrome, ще се наложи да добавите профил в Google към устройството си.</translation>
 <translation id="80739703311984697">Отдалеченият хост изисква да удостоверите самоличността си пред уебсайт на трета страна. За да продължите, трябва да предоставите на Chromoting допълнителни разрешения за достъп до този адрес:</translation>
 <translation id="809687642899217504">Моите компютри</translation>
@@ -271,6 +280,7 @@ Chromoting</translation>
 <translation id="8642984861538780905">задоволителна</translation>
 <translation id="8712909229180978490">Не виждам запазените си файлове онлайн в Google Диск.</translation>
 <translation id="8759753423332885148">Научете повече.</translation>
+<translation id="8791202241915690908">Изтегляне на инсталационната програма за хоста на Chromoting</translation>
 <translation id="894763922177556086">добра</translation>
 <translation id="897805526397249209">За да активирате отдалечените връзки към друг компютър, инсталирайте на него Chromoting и кликнете върху „<ph name="BUTTON_NAME" />“.</translation>
 <translation id="8998327464021325874">Контролер за хоста на отдалечения работен плот на Chrome</translation>

@@ -10,6 +10,7 @@
 <translation id="111844081046043029">Vai jūs tiešām vēlaties pamest šo lapu?</translation>
 <translation id="112840717907525620">Politikas kešatmiņa ir labā stāvoklī.</translation>
 <translation id="1132774398110320017">Chrome automātiskās aizpildes iestatījumi...</translation>
+<translation id="1146673768181266552">Avārijas ID: <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu jūsu datora operētājsistēmā. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="1152921474424827756">Piekļūstiet vietnes <ph name="URL" /> <ph name="BEGIN_LINK" />kešatmiņā saglabātajai kopijai<ph name="END_LINK" /></translation>
 <translation id="121201262018556460">Jūs centāties sasniegt <ph name="DOMAIN" />, bet servera uzrādītais sertifikāts satur vāju atslēgu. Iespējams, uzbrucējs ir uzlauzis privāto atslēgu un serveris var nebūt tas, ko centāties sasniegt (iespējams, jūs sazināties ar uzbrucēju).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">Lapa vietnē <ph name="SITE" /> saka:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; šķiet, ka tā drošības sertifikāts sāks darboties rīt. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu.}zero{Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; šķiet, ka tā drošības sertifikāts sāks darboties pēc # dienām. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu.}one{Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; šķiet, ka tā drošības sertifikāts sāks darboties pēc # dienas. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu.}other{Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; šķiet, ka tā drošības sertifikāts sāks darboties pēc # dienām. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">Faila blusa</translation>
 <translation id="1763864636252898013">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu jūsu ierīces operētājsistēmā. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="1821930232296380041">Pieprasījums vai tā parametri nebija derīgi.</translation>
 <translation id="1871208020102129563">Starpniekserveris ir iestatīts, lai tas lietotu fiksētus starpniekserverus, nevis .pac skripta URL.</translation>
-<translation id="1875753206475436906">heristiskais tips: <ph name="HEURISTIC_TYPE" />
-    servera tips: <ph name="SERVER_TYPE" />
-    lauka paraksts: <ph name="FIELD_SIGNATURE" />
-    veidlapas paraksts: <ph name="FORM_SIGNATURE" />
-    eksperimenta ID: <ph name="EXPERIMENT_ID" /></translation>
 <translation id="194030505837763158">Apmeklējiet vietni <ph name="LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> grāmatzīmes</translation>
 <translation id="1973335181906896915">Radās serializēšanas kļūda.</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Nav pietiekami daudz licenču.</translation>
 <translation id="3739623965217189342">Jūsu kopētā saite</translation>
 <translation id="375403751935624634">Tulkojums neizdevās servera kļūdas dēļ.</translation>
+<translation id="3759461132968374835">Pēdējā laikā neesat ziņojis par avārijām. Šeit nebūs redzamas avārijas, kas radās laikā, kad avāriju pārskatu izveide bija atspējota.</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3858027520442213535">Atjaunināt datumu un laiku</translation>
 <translation id="3884278016824448484">Ierīces identifikators rada konfliktu.</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">Verifikācijas paraksts nav derīgs.</translation>
 <translation id="4196861286325780578">&amp;Atcelt pārvietošanas atsaukšanu</translation>
+<translation id="4220128509585149162">Avārijas</translation>
 <translation id="4250680216510889253">Nē</translation>
 <translation id="4258748452823770588">Paraksts nav derīgs.</translation>
 <translation id="4269787794583293679">(Nav lietotājvārda)</translation>
 <translation id="4300246636397505754">Vecāku ieteikumi</translation>
+<translation id="4325863107915753736">Rakstu neizdevās atrast.</translation>
 <translation id="4372948949327679948">Tika gaidīta vērtība <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Jūs mēģinājāt sasniegt <ph name="DOMAIN" />, bet izdevējs atsauca servera uzrādīto sertifikātu. Tas nozīmē, ka servera uzrādītie drošības akreditācijas dati itin nemaz nav uzticami. Iespējams, jūs sazināties ar uzbrucēju.</translation>
 <translation id="4394049700291259645">Atspējot</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">Vai tulkot no <ph name="ORIGINAL_LANGUAGE" /> valodas <ph name="TARGET_LANGUAGE" /> valodā?</translation>
 <translation id="5019198164206649151">Dublējumu krātuve nav labā stāvoklī.</translation>
 <translation id="5031870354684148875">Par Google tulkotāju</translation>
+<translation id="5045550434625856497">Nepareiza parole</translation>
 <translation id="5087286274860437796">Servera sertifikāts šobrīd nav derīgs.</translation>
 <translation id="5089810972385038852">Štats</translation>
 <translation id="5094747076828555589">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu Chromium sistēmā. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Mākonis</translation>
 <translation id="5295309862264981122">Apstiprināt navigāciju</translation>
 <translation id="5299298092464848405">Parsējot politiku, radās kļūda.</translation>
+<translation id="5308689395849655368">Avāriju pārskatu izveide ir atspējota.</translation>
 <translation id="5316812925700871227">Pagriezt pretēji pulksteņrādītāju kustības virzienam</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="536296301121032821">Neizdevās saglabāt politikas iestatījumus.</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="6060685159320643512">Esiet uzmanīgs! Šie eksperimenti var jums kaitēt</translation>
+<translation id="6099520380851856040">Kad notika: <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Šī servera sertifikāta derīguma periods ir pārāk ilgs.</translation>
 <translation id="6154808779448689242">Atgrieztais politikas marķieris neatbilst pašreizējam marķierim.</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">Valsts</translation>
 <translation id="6458467102616083041">Ignorēta, jo ar politiku ir atspējota noklusējuma meklēšana.</translation>
 <translation id="647261751007945333">Ierīces politikas</translation>
+<translation id="6489534406876378309">Sākt avāriju datu augšupielādi</translation>
 <translation id="6512448926095770873">Pamest šo lapu</translation>
 <translation id="6529602333819889595">&amp;Dzēšanas atsaukuma atcelšana</translation>
 <translation id="6550675742724504774">Opcijas</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">Vai jūs tiešām vēlaties atkārtoti ielādēt šo lapu?</translation>
 <translation id="8349305172487531364">Grāmatzīmju josla</translation>
 <translation id="8364627913115013041">Nav iestatīta.</translation>
+<translation id="8412145213513410671">Avārijas (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;Atsaukt pārvietošanu</translation>
 <translation id="8488350697529856933">Attiecas uz</translation>
 <translation id="8530504477309582336">Šis kartes veids netiek atbalstīts pakalpojumā Google Payments. Lūdzu, atlasiet citu karti.</translation>

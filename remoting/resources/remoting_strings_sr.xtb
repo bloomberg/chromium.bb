@@ -16,6 +16,7 @@
 За информације о приватности погледајте Google политику приватности (http://goo.gl/SyrVzj) и Политику приватности за Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(ова функција још увек није доступна за ваш рачунар)</translation>
 <translation id="1342297293546459414">Прегледајте и контролишите дељени рачунар.</translation>
+<translation id="1389790901665088353">Преузмите програм за инсталацију хоста за Chrome удаљени рачунар</translation>
 <translation id="1450760146488584666">Захтевани објекат не постоји.</translation>
 <translation id="1480046233931937785">Заслуге</translation>
 <translation id="1520828917794284345">Промени величину радне површине да би се уклопила</translation>
@@ -144,6 +145,7 @@
 <translation id="4563926062592110512">Клијент чија је веза прекинута: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">Приступи</translation>
 <translation id="4573676252416618192">Хост за Chrome удаљени рачунар</translation>
+<translation id="4619978527973181021">Прихвати и инсталирај</translation>
 <translation id="4703799847237267011">Сесија Chromoting-а се завршила.</translation>
 <translation id="4736223761657662401">Историја повезивања</translation>
 <translation id="4741792197137897469">Потврда аутентичности није успела. Пријавите се поново у Chrome.</translation>
@@ -156,6 +158,7 @@
 <translation id="4913529628896049296">чека се успостављање везе…</translation>
 <translation id="4918086044614829423">Прихвати</translation>
 <translation id="492843737083352574">Имам проблема са тастатуром или мишем.</translation>
+<translation id="4973800994433240357">Преузимањем програма за инсталацију хоста за Chromoting прихватате Google <ph name="LINK_BEGIN" />услове коришћења<ph name="LINK_END" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ван мреже)</translation>
 <translation id="5070121137485264635">Удаљени хост захтева да потврдите аутентичност на веб-сајту треће стране. Да бисте наставили, морате да дате Chrome удаљеном рачунару додатне дозволе за приступ овој адреси:</translation>
 <translation id="5156271271724754543">Унесите исти PIN у оба оквира.</translation>
@@ -168,6 +171,7 @@
 <translation id="5308380583665731573">Повезивање</translation>
 <translation id="5363265567587775042">Затражите од корисника чијем рачунару желите да приступите да кликне на „<ph name="SHARE" />“ и да вам да приступни кôд.</translation>
 <translation id="5379087427956679853">Chrome удаљени рачунар вам омогућава да безбедно делите рачунар на вебу. Потребно је да оба корисника покрену апликацију Chrome удаљени рачунар, која може да се пронађе на <ph name="URL" />.</translation>
+<translation id="5394895745784982830">За Mac (OS X 10.6 и новији)</translation>
 <translation id="5397086374758643919">Алатка за деинсталацију хоста за Chrome удаљени рачунар</translation>
 <translation id="5419185025274123272">Ресетовање апликације није успело. И даље можете да пошаљете извештај о грешци.</translation>
 <translation id="544077782045763683">Хост се искључио.</translation>
@@ -220,6 +224,7 @@
 <translation id="6930242544192836755">Трајање</translation>
 <translation id="6939719207673461467">Прикажи/сакриј тастатуру.</translation>
 <translation id="6944854424004126054">Вратите прозор</translation>
+<translation id="6962773374262604195">За Windows (XP и новији)</translation>
 <translation id="6965382102122355670">Потврди</translation>
 <translation id="6985691951107243942">Желите ли стварно да онемогућите даљинско повезивање са хостом <ph name="HOSTNAME" />? Ако се предомислите, треба да посетите тај рачунар да бисте поново омогућили везе.</translation>
 <translation id="6998989275928107238">Коме</translation>
@@ -249,6 +254,7 @@
 <translation id="7869445566579231750">Немате дозволу за покретање ове апликације.</translation>
 <translation id="7948001860594368197">Опције екрана</translation>
 <translation id="7970576581263377361">Потврда аутентичности није успела. Пријавите се поново у Chromium.</translation>
+<translation id="8041721485428375115">Преузимањем програма за инсталацију хоста за Chrome удаљени рачунар прихватате Google <ph name="LINK_BEGIN" />услове коришћења<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Да бисте користили Chrome удаљени рачунар, морате да додате Google налог на уређај.</translation>
 <translation id="80739703311984697">Удаљени хост захтева да потврдите аутентичност на веб-сајту треће стране. Да бисте наставили, морате да дате Chromoting-у додатне дозволе за приступ овој адреси:</translation>
 <translation id="809687642899217504">Моји рачунари</translation>
@@ -272,6 +278,7 @@
 <translation id="8642984861538780905">Задовољавајућа</translation>
 <translation id="8712909229180978490">Не могу да видим сачуване датотеке онлајн на Google диску.</translation>
 <translation id="8759753423332885148">Сазнајте више.</translation>
+<translation id="8791202241915690908">Преузмите програм за инсталацију хоста за Chromoting</translation>
 <translation id="894763922177556086">Добра</translation>
 <translation id="897805526397249209">Да бисте омогућили даљинско повезивање са неким другим рачунаром, инсталирајте Chromoting на њега и кликните на „<ph name="BUTTON_NAME" />“.</translation>
 <translation id="8998327464021325874">Контролер хоста за Chrome удаљени рачунар</translation>

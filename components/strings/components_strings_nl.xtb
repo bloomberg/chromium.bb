@@ -10,6 +10,7 @@
 <translation id="111844081046043029">Pagina verlaten?</translation>
 <translation id="112840717907525620">Cachegeheugen van beleid is OK</translation>
 <translation id="1132774398110320017">Instellingen voor automatisch aanvullen in Chrome...</translation>
+<translation id="1146673768181266552">Crash-ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je computer. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1152921474424827756">Een <ph name="BEGIN_LINK" />gecacht exemplaar<ph name="END_LINK" /> van <ph name="URL" /> openen</translation>
 <translation id="121201262018556460">Je probeert <ph name="DOMAIN" /> te bereiken, maar de server heeft een certificaat geretourneerd met een zwakke sleutel. Een hacker kan de persoonlijke sleutel hebben aangepast en het is mogelijk dat de server zelf een imitatie is (wellicht een server die je schade probeert te berokkenen).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">De pagina op <ph name="SITE" /> meldt het volgende:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is zogenaamd van morgen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.}other{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is zogenaamd van # dagen in de toekomst. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">Bug indienen</translation>
 <translation id="1763864636252898013">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je apparaat. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1821930232296380041">Ongeldige aanvraag of aanvraagparameters</translation>
 <translation id="1871208020102129563">Proxy is ingesteld op het gebruik van vaste proxyservers, niet op een script-URL van het PAC-type.</translation>
-<translation id="1875753206475436906">heuristisch type: <ph name="HEURISTIC_TYPE" />
-    servertype: <ph name="SERVER_TYPE" />
-    veldhandtekening: <ph name="FIELD_SIGNATURE" />
-    formulierhandtekening: <ph name="FORM_SIGNATURE" />
-    experiment-id: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">Ga naar <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Bladwijzers voor <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Serialisatiefout</translation>
@@ -66,7 +63,7 @@
 <translation id="2354001756790975382">Andere bladwijzers</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2367567093518048410">Niveau</translation>
-<translation id="2384307209577226199">Enterprise-standaard</translation>
+<translation id="2384307209577226199">Standaardinstelling van bedrijf</translation>
 <translation id="2386255080630008482">Het servercertificaat is ingetrokken.</translation>
 <translation id="2392959068659972793">Beleid weergeven zonder waarde ingesteld</translation>
 <translation id="2396249848217231973">&amp;Verwijderen ongedaan maken</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Licenties zijn verbruikt</translation>
 <translation id="3739623965217189342">Link die je hebt gekopieerd</translation>
 <translation id="375403751935624634">Het vertalen is mislukt wegens een serverfout.</translation>
+<translation id="3759461132968374835">Je hebt geen onlangs gemelde crashes. Crashes die zich voordeden toen de crashrapportage was uitgeschakeld, worden hier niet weergegeven.</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3858027520442213535">Datum en tijd updaten</translation>
 <translation id="3884278016824448484">Conflicterende apparaat-ID's</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">Onjuiste verificatiehandtekening</translation>
 <translation id="4196861286325780578">&amp;Opnieuw verplaatsen</translation>
+<translation id="4220128509585149162">Crashes</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="4258748452823770588">Onjuiste handtekening</translation>
 <translation id="4269787794583293679">(Geen gebruikersnaam)</translation>
 <translation id="4300246636397505754">Bovenliggende suggesties</translation>
+<translation id="4325863107915753736">Kan artikel niet vinden</translation>
 <translation id="4372948949327679948">Verwachte <ph name="VALUE_TYPE" /> waarde.</translation>
 <translation id="4377125064752653719">Je probeert <ph name="DOMAIN" /> te bereiken, maar het certificaat dat de server heeft geretourneerd, is ingetrokken door de uitgever. Dat betekent dat de veiligheidsgaranties die de server heeft geretourneerd, absoluut niet kunnen worden vertrouwd. Het kan zijn dat je met een hacker aan het communiceren bent.</translation>
 <translation id="4394049700291259645">Uitschakelen</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">Vertalen uit het <ph name="ORIGINAL_LANGUAGE" /> naar het <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Backend-opslag in slechte staat</translation>
 <translation id="5031870354684148875">Over Google Translate</translation>
+<translation id="5045550434625856497">Onjuist wachtwoord</translation>
 <translation id="5087286274860437796">Het servercertificaat is momenteel niet geldig.</translation>
 <translation id="5089810972385038852">Staat</translation>
 <translation id="5094747076828555589">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door Chromium. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5295309862264981122">Navigatie bevestigen</translation>
 <translation id="5299298092464848405">Fout bij het parseren van het beleid</translation>
+<translation id="5308689395849655368">Crashrapportage is uitgeschakeld.</translation>
 <translation id="5316812925700871227">Linksom draaien</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="536296301121032821">Opslaan van beleidsinstellingen is mislukt</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="6060685159320643512">Pas op, dit zijn geen experimenten om zonder handschoenen aan te pakken</translation>
+<translation id="6099520380851856040">Opgetreden op <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Het servercertificaat heeft een te lange geldigheidsperiode.</translation>
 <translation id="6154808779448689242">Geretourneerde beleidstoken komt niet overeen met huidige token</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">Land</translation>
 <translation id="6458467102616083041">Genegeerd omdat de standaardzoekoptie door het beleid is uitgeschakeld.</translation>
 <translation id="647261751007945333">Apparaatbeleid</translation>
+<translation id="6489534406876378309">Uploaden van crashes starten</translation>
 <translation id="6512448926095770873">Deze pagina verlaten</translation>
 <translation id="6529602333819889595">&amp;Opnieuw verwijderen</translation>
 <translation id="6550675742724504774">Opties</translation>
@@ -288,7 +292,7 @@
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" /> altijd vertalen in het <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7988324688042446538">Desktopbladwijzers</translation>
 <translation id="7995512525968007366">Niet opgegeven</translation>
-<translation id="8003882219468422867">Enterprise-override</translation>
+<translation id="8003882219468422867">Overschrijving door bedrijf</translation>
 <translation id="8034522405403831421">Deze pagina is in het <ph name="SOURCE_LANGUAGE" />. Vertalen naar het <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8088680233425245692">Kan artikel niet bekijken.</translation>
 <translation id="8091372947890762290">Activering is in behandeling op de server</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">Weet je zeker dat je deze pagina opnieuw wilt laden?</translation>
 <translation id="8349305172487531364">Bladwijzerbalk</translation>
 <translation id="8364627913115013041">Niet ingesteld.</translation>
+<translation id="8412145213513410671">Crashes (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;Verplaatsen ongedaan maken</translation>
 <translation id="8488350697529856933">Van toepassing op</translation>
 <translation id="8530504477309582336">Dit type kaart wordt niet ondersteund door Google Payments. Selecteer een andere kaart.</translation>

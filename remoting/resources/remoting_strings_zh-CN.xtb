@@ -16,6 +16,7 @@
 有关隐私权方面的信息，请参阅《Google隐私权政策》(http://goo.gl/SyrVzj)和《Chrome隐私权政策》(http://goo.gl/0uXE5d)。</translation>
 <translation id="1324095856329524885">（您的计算机尚不支持该功能）</translation>
 <translation id="1342297293546459414">查看和控制共享的计算机。</translation>
+<translation id="1389790901665088353">下载 Chrome 远程桌面主机安装程序</translation>
 <translation id="1450760146488584666">请求的对象不存在。</translation>
 <translation id="1480046233931937785">鸣谢</translation>
 <translation id="1520828917794284345">将桌面调整为合适大小</translation>
@@ -146,6 +147,7 @@
 <translation id="4572065712096155137">访问</translation>
 <translation id="4573676252416618192">Chrome 远程
 桌面主机</translation>
+<translation id="4619978527973181021">接受并安装</translation>
 <translation id="4703799847237267011">您的 Chrome 远程访问会话已结束。</translation>
 <translation id="4736223761657662401">连接历史记录</translation>
 <translation id="4741792197137897469">身份验证失败。请重新登录 Chrome。</translation>
@@ -158,6 +160,7 @@
 <translation id="4913529628896049296">正在等待建立连接…</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="492843737083352574">我的键盘或鼠标无法正常使用。</translation>
+<translation id="4973800994433240357">下载 Chrome 远程访问主机安装程序，即表示您同意遵守 Google <ph name="LINK_BEGIN" />服务条款<ph name="LINK_END" />。</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />（离线）</translation>
 <translation id="5070121137485264635">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
 <translation id="5156271271724754543">请在两个框中输入相同的 PIN。</translation>
@@ -170,6 +173,7 @@
 <translation id="5308380583665731573">连接</translation>
 <translation id="5363265567587775042">请让您想访问其计算机的用户点击“<ph name="SHARE" />”，然后向您提供访问代码。</translation>
 <translation id="5379087427956679853">Chrome 远程桌面可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程桌面应用（下载地址为 <ph name="URL" />）。</translation>
+<translation id="5394895745784982830">适用于 Mac（OS X 10.6 及更高版本）</translation>
 <translation id="5397086374758643919">Chrome 远程桌面主机卸载程序</translation>
 <translation id="5419185025274123272">无法重置该应用。您仍可以发送错误报告。</translation>
 <translation id="544077782045763683">主机已关机。</translation>
@@ -222,6 +226,7 @@
 <translation id="6930242544192836755">持续时间</translation>
 <translation id="6939719207673461467">显示/隐藏键盘。</translation>
 <translation id="6944854424004126054">恢复窗口</translation>
+<translation id="6962773374262604195">适用于 Windows（XP 及更高版本）</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="6985691951107243942">您确定要停用与“<ph name="HOSTNAME" />”的远程连接吗？如果您日后想要重新启用连接，需要访问该计算机。</translation>
 <translation id="6998989275928107238">指向</translation>
@@ -251,6 +256,7 @@
 <translation id="7869445566579231750">您无权运行该应用。</translation>
 <translation id="7948001860594368197">屏幕选项</translation>
 <translation id="7970576581263377361">身份验证失败。请重新登录 Chromium。</translation>
+<translation id="8041721485428375115">下载 Chrome 远程桌面主机安装程序，即表示您同意遵守 Google <ph name="LINK_BEGIN" />服务条款<ph name="LINK_END" />。</translation>
 <translation id="8073845705237259513">要使用Chrome远程桌面，您需要先为自己的设备添加一个Google帐户。</translation>
 <translation id="80739703311984697">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
 <translation id="809687642899217504">我的计算机</translation>
@@ -274,6 +280,7 @@
 <translation id="8642984861538780905">一般</translation>
 <translation id="8712909229180978490">我无法在 Google 云端硬盘中在线查看自己保存的文件。</translation>
 <translation id="8759753423332885148">了解详情。</translation>
+<translation id="8791202241915690908">下载 Chrome 远程访问主机安装程序</translation>
 <translation id="894763922177556086">良好</translation>
 <translation id="897805526397249209">要启用到另一台计算机的远程连接，请在该计算机上安装 Chrome 远程访问并点击“<ph name="BUTTON_NAME" />”。</translation>
 <translation id="8998327464021325874">Chrome 远程桌面主机控制器</translation>

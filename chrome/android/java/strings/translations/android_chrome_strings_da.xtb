@@ -22,6 +22,7 @@
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
 <translation id="1312168552565502328">Cookies, websitedata</translation>
+<translation id="1346090444609141578">Der er ingen gemte sider her</translation>
 <translation id="1369915414381695676">Websitet <ph name="SITE_NAME" /> blev tilføjet</translation>
 <translation id="1373696734384179344">Der er ikke nok hukommelse til at downloade det valgte indhold.</translation>
 <translation id="1379156015317873965">Gør indlæsningen af siden bedre</translation>
@@ -184,7 +185,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4023950129927433024">Hvis du har glemt din adgangssætning, skal du stoppe og nulstille synkroniseringen via <ph name="BEGIN_LINK" />Google Betjeningspanel<ph name="END_LINK" />.</translation>
 <translation id="4042870126885713738">Vis forslag, hvis en webadresse ikke bliver fundet, eller hvis der ikke kan oprettes forbindelse</translation>
 <translation id="4056223980640387499">Sepia</translation>
-<translation id="4059119910594077751">Tryk på tilbageknappen igen for at afslutte fuld skærm.</translation>
+<translation id="4059119910594077751">Tryk på tilbageknappen for at afslutte fuld skærm.</translation>
 <translation id="4062305924942672200">Juridiske oplysninger</translation>
 <translation id="4084682180776658562">Bogmærke</translation>
 <translation id="4089831646916293264">Denne funktion kan forstyrre adgangen til eksklusive datatjenester, der leveres af dit mobilselskab.</translation>

@@ -26,6 +26,7 @@
 স্যুইচ করতে Shift + Alt টিপুন৷</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> তে প্রতিবিম্বিত হচ্ছে</translation>
 <translation id="1923539912171292317">স্বয়ংক্রিয় ক্লিকগুলি</translation>
+<translation id="1950626184269948555">কার্য পরিচালক শর্টকাটটি পরিবর্তিত হয়েছে। দয়া করে Shift+Esc এর পরিবর্তে Search+Esc ব্যবহার করুন।</translation>
 <translation id="1957803754585243749">০°</translation>
 <translation id="1963814843110128691">১ ডলার থেকে ২ ডলারে কাস্ট করা হচ্ছে</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
@@ -151,6 +152,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6165508094623778733">আরো জানুন</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">প্রস্থান করার জন্য দুবার Control Shift Q টিপুন৷</translation>
+<translation id="6287020362823083378">স্ক্রীন লক শর্টকাটটি পরিবর্তিত হয়েছে। দয়া করে Ctrl+Shift+L এর পরিবর্তে Search+L ব্যবহার করুন।</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> আবর্তিত হয়েছে</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" />-এর থেকে SMS...</translation>
 <translation id="639644700271529076">CAPS LOCK বন্ধ আছে</translation>

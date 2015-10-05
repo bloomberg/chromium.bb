@@ -10,6 +10,7 @@
 <translation id="111844081046043029">Naozaj chcete odísť z tejto stránky?</translation>
 <translation id="112840717907525620">Vyrovnávacia pamäť pravidla je v poriadku</translation>
 <translation id="1132774398110320017">Nastavenia Automatického dopĺňania prehliadača Chrome...</translation>
+<translation id="1146673768181266552">ID zlyhania <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho počítača nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1152921474424827756">Prístup ku <ph name="BEGIN_LINK" />kópii vo vyrovnávacej pamäti<ph name="END_LINK" /> stránky <ph name="URL" /></translation>
 <translation id="121201262018556460">Pokúsili ste sa o prístup na stránky <ph name="DOMAIN" />, server však predložil certifikát obsahujúci slabý kľúč. Útočník mohol tento súkromný kľúč prelomiť a môže ísť o iný server, než ste očakávali (môžete komunikovať s útočníkom).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">Stránka na lokalite <ph name="SITE" />:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; jej certifikát by mal začať platiť od zajtra. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom.}few{Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; jej certifikát by mal začať platiť o # dni. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom.}many{Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; jej certifikát by mal začať platiť o # dňa. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom.}other{Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; jej certifikát by mal začať platiť o # dní. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">Nahlásiť chybu</translation>
 <translation id="1763864636252898013">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho zariadenia nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1821930232296380041">Neplatná žiadosť alebo parametre žiadosti</translation>
 <translation id="1871208020102129563">Proxy je nastavené na použitie pevne daných serverov proxy, nie skriptov PAC webovej adresy.</translation>
-<translation id="1875753206475436906">typ heuristiky: <ph name="HEURISTIC_TYPE" />
-    typ servera: <ph name="SERVER_TYPE" />
-    podpis poľa: <ph name="FIELD_SIGNATURE" />
-    podpis formulára: <ph name="FORM_SIGNATURE" />
-    ID experimentu: „<ph name="EXPERIMENT_ID" />“</translation>
 <translation id="194030505837763158">Prejdite na stránku <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Záložky (<ph name="DOMAIN" />)</translation>
 <translation id="1973335181906896915">Chyba serializácie</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Vyčerpané licencie</translation>
 <translation id="3739623965217189342">Skopírovaný odkaz</translation>
 <translation id="375403751935624634">Preklad zlyhal v dôsledku chyby servera.</translation>
+<translation id="3759461132968374835">Nemáte žiadne nedávno nahlásené zlyhania. Na tejto stránke sa nezobrazujú zlyhania, ktoré nastali pri zakázanej možnosti hlásení zlyhaní.</translation>
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="3858027520442213535">Aktualizovať dátum a čas</translation>
 <translation id="3884278016824448484">Kolidujúci identifikátor zariadenia</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">Nesprávny overovací podpis</translation>
 <translation id="4196861286325780578">&amp;Znova presunúť</translation>
+<translation id="4220128509585149162">Zlyhania</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4258748452823770588">Chybný podpis</translation>
 <translation id="4269787794583293679">(Žiadne používateľské meno)</translation>
 <translation id="4300246636397505754">Návrhy rodiča</translation>
+<translation id="4325863107915753736">Článok sa nepodarilo nájsť</translation>
 <translation id="4372948949327679948">Očakávaná hodnota <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Pokúsili ste sa o prístup na stránky <ph name="DOMAIN" />, avšak certifikát poskytnutý serverom bol vydavateľom zrušený. Znamená to, že povereniam zabezpečenia, ktoré predložil server, sa celkom nedá dôverovať. Je možné, že komunikujete s útočníkom.</translation>
 <translation id="4394049700291259645">Zakázať</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">Preložiť z jazyka <ph name="ORIGINAL_LANGUAGE" /> do jazyka <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Zlý stav záložného ukladacieho priestoru</translation>
 <translation id="5031870354684148875">O službe Prekladač Google</translation>
+<translation id="5045550434625856497">Nesprávne heslo</translation>
 <translation id="5087286274860437796">Certifikát servera je momentálne neplatný</translation>
 <translation id="5089810972385038852">Štát</translation>
 <translation id="5094747076828555589">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, Chromium nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5295309862264981122">Potvrdiť navigáciu</translation>
 <translation id="5299298092464848405">Pri analýze pravidla sa vyskytla chyba</translation>
+<translation id="5308689395849655368">Hlásenie zlyhaní je zakázané.</translation>
 <translation id="5316812925700871227">Otočiť proti smeru hodinových ručičiek</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="536296301121032821">Nastavenia pravidla sa nepodarilo uložiť</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Zatvoriť</translation>
 <translation id="6060685159320643512">Opatrne, tieto experimenty môžu spôsobiť problémy</translation>
+<translation id="6099520380851856040">Výskyt <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Obdobie platnosti certifikátu servera je príliš dlhé</translation>
 <translation id="6154808779448689242">Vrátený token pravidla sa nezhoduje s aktuálnym tokenom</translation>
 <translation id="6165508094623778733">Viac informácií</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">Krajina</translation>
 <translation id="6458467102616083041">Ignorované, pretože predvolený vyhľadávač je podľa pravidla zakázaný.</translation>
 <translation id="647261751007945333">Pravidlá zariadenia</translation>
+<translation id="6489534406876378309">Spustiť nahrávanie správ o zlyhaní</translation>
 <translation id="6512448926095770873">Odísť z tejto stránky</translation>
 <translation id="6529602333819889595">&amp;Znova odstrániť</translation>
 <translation id="6550675742724504774">Možnosti</translation>
@@ -288,7 +292,7 @@
 <translation id="7983301409776629893">Vždy preložiť jazyk <ph name="ORIGINAL_LANGUAGE" /> do jazyka <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7988324688042446538">Záložky plochy</translation>
 <translation id="7995512525968007366">Nie je upresnené</translation>
-<translation id="8003882219468422867">Prepisovanie na podnikovej úrovni</translation>
+<translation id="8003882219468422867">Prekonanie na podnikovej úrovni</translation>
 <translation id="8034522405403831421">Táto stránka je v jazyku <ph name="SOURCE_LANGUAGE" />. Chcete ju preložiť do jazyka <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8088680233425245692">Článok sa nepodarilo zobraziť.</translation>
 <translation id="8091372947890762290">Aktivácia čaká na server</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">Naozaj chcete znova načítať túto stránku?</translation>
 <translation id="8349305172487531364">Panel so záložkami</translation>
 <translation id="8364627913115013041">Nenastavené.</translation>
+<translation id="8412145213513410671">Zlyhania (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;Vrátiť späť presunutie</translation>
 <translation id="8488350697529856933">Platí pre</translation>
 <translation id="8530504477309582336">Služba Google Payments nepodporuje tento typ karty. Vyberte inú kartu.</translation>

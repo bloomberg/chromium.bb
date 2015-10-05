@@ -16,6 +16,7 @@ Nuotoliniuose kompiuteriuose, kuriuose yra ne anglų (JAV) klaviatūra, gali bū
 Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (http://goo.gl/SyrVzj) ir „Chrome“ privatumo politiką (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(ši funkcija dar nepasiekiama jūsų kompiuteryje)</translation>
 <translation id="1342297293546459414">Matykite ir valdykite bendrinamą kompiuterį.</translation>
+<translation id="1389790901665088353">„Chrome“ nuotolinio kompiuterio valdymo prieglobos diegimo programos atsisiuntimas</translation>
 <translation id="1450760146488584666">Prašomas objektas neegzistuoja.</translation>
 <translation id="1480046233931937785">Titrai</translation>
 <translation id="1520828917794284345">Sumažinti darbalaukį, kad tilptų</translation>
@@ -146,6 +147,7 @@ priegloba</translation>
 <translation id="4572065712096155137">Prieiga</translation>
 <translation id="4573676252416618192">„Chrome“ nuotolinio kompiuterio
 valdymo priegloba</translation>
+<translation id="4619978527973181021">Sutikti ir įdiegti</translation>
 <translation id="4703799847237267011">„Chrome“ nuotolinio ryšio sesija baigėsi.</translation>
 <translation id="4736223761657662401">Ryšių istorija</translation>
 <translation id="4741792197137897469">Nepavyko autentifikuoti. Dar kartą prisijunkite prie „Chrome“.</translation>
@@ -158,6 +160,7 @@ valdymo priegloba</translation>
 <translation id="4913529628896049296">Laukiama ryšio...</translation>
 <translation id="4918086044614829423">Priimti</translation>
 <translation id="492843737083352574">Kyla problemų dėl klaviatūros ir pelės.</translation>
+<translation id="4973800994433240357">Atsisiųsdami „Chrome“ nuotolinio ryšio prieglobos diegimo programą sutinkate su „Google“ <ph name="LINK_BEGIN" />paslaugų teikimo sąlygomis<ph name="LINK_END" />.</translation>
 <translation id="5064360042339518108">„<ph name="HOSTNAME" />“ (neprisijungta)</translation>
 <translation id="5070121137485264635">Nuotolinė priegloba reikalauja autentifikuoti trečiosios šalies svetainę. Jei norite tęsti, turite suteikti „Chrome“ nuotolinio kompiuterio valdymo programai papildomas teises pasiekti šį adresą</translation>
 <translation id="5156271271724754543">Įveskite tą patį PIN kodą abiejuose laukeliuose.</translation>
@@ -170,6 +173,7 @@ valdymo priegloba</translation>
 <translation id="5308380583665731573">Prisijungti</translation>
 <translation id="5363265567587775042">Paprašykite naudotojo, kurio kompiuterį norite pasiekti, spustelėti „<ph name="SHARE" />“ ir suteikti pasiekiamumo kodą.</translation>
 <translation id="5379087427956679853">Naudodami „Chrome“ nuotolinį kompiuterio valdymą, galite saugiai bendrinti kompiuterį žiniatinklyje. Abu naudotojai turi paleisti „Chrome“ nuotolinio kompiuterio valdymo programą, kurią galima rasti adresu <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Skirta „Mac“ (10.6 ir naujesnės versijos „OS X“)</translation>
 <translation id="5397086374758643919">„Chrome“ nuotolinio kompiuterio valdymo prieglobos pašalinimo priemonė</translation>
 <translation id="5419185025274123272">Nepavyko iš naujo nustatyti programos. Vis tiek galite išsiųsti rikto ataskaitą.</translation>
 <translation id="544077782045763683">Priegloba išjungta.</translation>
@@ -222,6 +226,7 @@ valdymo priegloba</translation>
 <translation id="6930242544192836755">Trukmė</translation>
 <translation id="6939719207673461467">Rodyti / slėpti klaviatūrą.</translation>
 <translation id="6944854424004126054">Atkurti langą</translation>
+<translation id="6962773374262604195">Skirta „Windows“ (XP ir naujesnės versijos)</translation>
 <translation id="6965382102122355670">Gerai</translation>
 <translation id="6985691951107243942">Ar tikrai norite neleisti nuotolinio ryšio su „<ph name="HOSTNAME" />“? Jei apsigalvosite, turėsite iš naujo įgalinti ryšį tame kompiuteryje.</translation>
 <translation id="6998989275928107238">Ryšys užmezgamas su</translation>
@@ -251,6 +256,7 @@ valdymo priegloba</translation>
 <translation id="7869445566579231750">Neturite leidimo paleisti šią programą.</translation>
 <translation id="7948001860594368197">Ekrano parinktys</translation>
 <translation id="7970576581263377361">Nepavyko autentifikuoti. Dar kartą prisijunkite prie „Chromium“.</translation>
+<translation id="8041721485428375115">Atsisiųsdami „Chrome“ nuotolinio kompiuterio valdymo prieglobos diegimo programą sutinkate su „Google“ <ph name="LINK_BEGIN" />paslaugų teikimo sąlygomis<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Jei norite naudoti „Chrome“ nuotolinį kompiuterio valdymą, įrenginyje turite pridėti „Google“ paskyrą.</translation>
 <translation id="80739703311984697">Nuotolinė priegloba reikalauja autentifikuoti trečiosios šalies svetainę. Jei norite tęsti, turite suteikti „Chrome“ nuotolinio ryšio programai papildomas teises pasiekti šį adresą</translation>
 <translation id="809687642899217504">Mano kompiuteriai</translation>
@@ -274,6 +280,7 @@ valdymo priegloba</translation>
 <translation id="8642984861538780905">Neblogas</translation>
 <translation id="8712909229180978490">Prisijungus nerodomi „Google“ diske išsaugoti failai.</translation>
 <translation id="8759753423332885148">Sužinokite daugiau.</translation>
+<translation id="8791202241915690908">„Chrome“ nuotolinio ryšio prieglobos diegimo programos atsisiuntimas</translation>
 <translation id="894763922177556086">Geras</translation>
 <translation id="897805526397249209">Jei norite įgalinti nuotolinį ryšį su kitu kompiuteriu, jame įdiekite „Chrome“ nuotolinį ryšį ir spustelėkite „<ph name="BUTTON_NAME" />“.</translation>
 <translation id="8998327464021325874">„Chrome“ nuotolinio kompiuterio valdymo prieglobos valdymo priemonė</translation>

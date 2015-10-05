@@ -10,6 +10,7 @@
 <translation id="111844081046043029">确定要离开此页吗？</translation>
 <translation id="112840717907525620">策略缓存良好</translation>
 <translation id="1132774398110320017">Chrome自动填充设置…</translation>
+<translation id="1146673768181266552">崩溃ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN" />；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1152921474424827756">访问<ph name="URL" />的<ph name="BEGIN_LINK" />缓存副本<ph name="END_LINK" /></translation>
 <translation id="121201262018556460">您尝试访问的是 <ph name="DOMAIN" />，但是服务器出示的证书包含弱密钥。攻击者可能已经破解了私钥，因此这可能并不是您想要访问的服务器（您可能正在与攻击者进行通信）。</translation>
@@ -26,19 +27,15 @@
 <translation id="1549470594296187301">必须启用 JavaScript 才能使用此功能。</translation>
 <translation id="1640180200866533862">用户政策</translation>
 <translation id="1644184664548287040">网络配置无效，无法导入。</translation>
-<translation id="1655462015569774233">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在昨天过期。出现此问题的原因可能是配置有误或您的连接被拦截了。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在 # 天前过期。出现此问题的原因可能是配置有误或您的连接被拦截了。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}}</translation>
+<translation id="1655462015569774233">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在昨天过期。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在 # 天前过期。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}}</translation>
 <translation id="168841957122794586">服务器证书包含弱加密密钥。</translation>
 <translation id="1693754753824026215"><ph name="SITE" /> 上的网页显示：</translation>
-<translation id="1706954506755087368">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书明天才会生效。出现此问题的原因可能是配置有误或您的连接被拦截了。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书 # 天后才会生效。出现此问题的原因可能是配置有误或您的连接被拦截了。}}</translation>
+<translation id="1706954506755087368">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书明天才会生效。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书 # 天后才会生效。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。}}</translation>
 <translation id="1734864079702812349">美国运通卡</translation>
+<translation id="1737968601308870607">提交错误</translation>
 <translation id="1763864636252898013">此服务器无法证明它是<ph name="DOMAIN" />；您设备的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1821930232296380041">请求或请求参数无效</translation>
 <translation id="1871208020102129563">代理已设置为使用固定的代理服务器，而不是 .pac 脚本网址。</translation>
-<translation id="1875753206475436906">试探法类型：<ph name="HEURISTIC_TYPE" />
-    服务器类型：<ph name="SERVER_TYPE" />
-    字段签名：<ph name="FIELD_SIGNATURE" />
-    表单签名：<ph name="FORM_SIGNATURE" />
-    实验ID：<ph name="EXPERIMENT_ID" /></translation>
 <translation id="194030505837763158">请访问<ph name="LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" />书签</translation>
 <translation id="1973335181906896915">序列化错误</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">许可已用尽</translation>
 <translation id="3739623965217189342">您复制的链接</translation>
 <translation id="375403751935624634">由于服务器出错，翻译失败。</translation>
+<translation id="3759461132968374835">您最近未收到崩溃报告。崩溃报告停用时发生的崩溃不会在此处显示。</translation>
 <translation id="385051799172605136">后退</translation>
 <translation id="3858027520442213535">更新日期和时间</translation>
 <translation id="3884278016824448484">设备标识符存在冲突</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">验证签名无效</translation>
 <translation id="4196861286325780578">恢复移动(&amp;R)</translation>
+<translation id="4220128509585149162">崩溃</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4258748452823770588">签名无效</translation>
 <translation id="4269787794583293679">（无用户名）</translation>
 <translation id="4300246636397505754">家长建议</translation>
+<translation id="4325863107915753736">找不到文章</translation>
 <translation id="4372948949327679948">应使用<ph name="VALUE_TYPE" />值。</translation>
 <translation id="4377125064752653719">您尝试访问的是 <ph name="DOMAIN" />，但服务器出示的证书已被其颁发者吊销。这表明绝对不应该信任此服务器出示的安全凭据。您可能正在与攻击者进行通信。</translation>
 <translation id="4394049700291259645">停用</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">是否将<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="TARGET_LANGUAGE" />？</translation>
 <translation id="5019198164206649151">后备存储状态不佳</translation>
 <translation id="5031870354684148875">关于 Google 翻译</translation>
+<translation id="5045550434625856497">密码不正确</translation>
 <translation id="5087286274860437796">服务器的证书目前无效。</translation>
 <translation id="5089810972385038852">州</translation>
 <translation id="5094747076828555589">此服务器无法证明它是<ph name="DOMAIN" />；Chromium不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">云端</translation>
 <translation id="5295309862264981122">确认导航</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
+<translation id="5308689395849655368">已停用崩溃报告。</translation>
 <translation id="5316812925700871227">逆时针旋转</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="536296301121032821">无法存储策略设置</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6060685159320643512">请小心，这些实验性功能可能有风险</translation>
+<translation id="6099520380851856040">发生时间：<ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">该服务器证书的有效期过长。</translation>
 <translation id="6154808779448689242">返回的策略令牌与当前令牌不匹配</translation>
 <translation id="6165508094623778733">了解详情</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">国家/地区</translation>
 <translation id="6458467102616083041">由于默认搜索被政策停用，政策值已被忽略。</translation>
 <translation id="647261751007945333">设备政策</translation>
+<translation id="6489534406876378309">开始上传崩溃数据</translation>
 <translation id="6512448926095770873">离开此页</translation>
 <translation id="6529602333819889595">恢复删除(&amp;R)</translation>
 <translation id="6550675742724504774">选项</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">确定要重新加载此网页吗？</translation>
 <translation id="8349305172487531364">书签栏</translation>
 <translation id="8364627913115013041">未设置。</translation>
+<translation id="8412145213513410671">崩溃次数（<ph name="CRASH_COUNT" /> 次）</translation>
 <translation id="8437238597147034694">撤消移动(&amp;U)</translation>
 <translation id="8488350697529856933">适用对象</translation>
 <translation id="8530504477309582336">Google Payments 不支持这种类型的信用卡，请选择其他卡。</translation>

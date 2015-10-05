@@ -33,7 +33,7 @@
 <translation id="1265053460044691532">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge på offline</translation>
 <translation id="1283072268083088623">Angiver, hvilke ordninger for HTTP Authentication, der understøttes af <ph name="PRODUCT_NAME" />. Mulige værdier er "grundlæggende", "fordøje", "NTLM" og "forhandle". Adskil flere værdier med kommaer. Hvis denne politik ikke er angivet, anvendes alle fire ordninger.</translation>
 <translation id="1297182715641689552">Brug et .pac-proxyscript</translation>
-<translation id="1304973015437969093">Udvidelses-/app-id'er og opdateringswebadresser, der skal installeres ubemærket</translation>
+<translation id="1304973015437969093">Udvidelses-/app-id'er og opdateringswebadresser skal installeres ubemærket</translation>
 <translation id="1310699457130669094">Du kan angive en webadresse til en proxy .pac-fil her. Denne politik fungerer kun, hvis du har valgt indstillinger for manuel proxy i "Vælg, hvordan du kan angive indstillinger for proxyserver". Du bør ikke angive denne politik, hvis du har valgt en anden tilstand for angivelse af proxypolitikker. Få detaljerede eksempler på: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Angiver den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når der observeres brugeraktivitet, mens skærmen er nedtonet, eller umiddelbart efter skærmen slukkes.
 
@@ -413,7 +413,6 @@
           Hvis denne politik ikke er angivet, kan brugeren installere alle udvidelser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Denne indstilling er blevet trukket tilbage fra og med <ph name="PRODUCT_NAME" /> version 29. Den anbefalede metode til konfiguration af organisationshostede udvidelse-/app-samlinger er at medtage det website, der hoster CRX-pakkerne, i ExtensionInstallSources og placere direkte downloadlinks til pakkerne på en webside. Du kan oprette en applikationsliste for denne webside vha. politikken ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">siden version <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Angiver, om opdeling af SSL-poster skal deaktiveres. Opdeling af poster er en løsning for en svaghed i SSL 3.0 og TLS 1.0, men kan medføre kompatibilitetsproblemer på nogle HTTPS-servere og proxyservere. Hvis politikken ikke er angivet, eller hvis den er angivet som Falsk, anvendes opdeling af poster på SSL/TLS-forbindelser, der anvender CBC-ciphersuites.</translation>
 <translation id="3213821784736959823">Styrer, om den indbyggede DNS-klient bruges i <ph name="PRODUCT_NAME" />.
 
       Hvis denne politik er angivet som Sand, anvendes den indbyggede DNS-klient, hvis den er tilgængelig.
@@ -1526,7 +1525,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="8955719471735800169">Tilbage til toppen</translation>
 <translation id="8970205333161758602">Undertryk opfordringen til afvisning for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Timer for login på offentlig session</translation>
-<translation id="8987262643142408725">Deaktiver opdeling af SSL-post</translation>
 <translation id="8992176907758534924">Tillad ikke, at websites viser billeder</translation>
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
 <translation id="9042911395677044526">Tillader, at netværkskonfigurationen gøres gældende pr. bruger til en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL" /></translation>

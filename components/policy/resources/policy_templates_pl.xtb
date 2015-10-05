@@ -406,7 +406,6 @@
 <translation id="3153348162326497318">Pozwala określić rozszerzenia, których użytkownicy NIE mogą instalować. Zainstalowane rozszerzenia zostaną usunięte w przypadku umieszczenia ich na tej liście. Wartość „*” na liście blokad oznacza, że zablokowane są wszystkie rozszerzenia, które nie znajdują się na liście dozwolonych rozszerzeń. Jeśli zasada ta nie zostanie skonfigurowana, użytkownicy mogą instalować dowolne rozszerzenia w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">To ustawienie zostało wycofane w <ph name="PRODUCT_NAME" /> w wersji 29. Zalecany sposób konfigurowania kolekcji rozszerzeń lub aplikacji udostępnianych przez organizację polega na tym, że witrynę z pakietami CRX umieszcza się w zasadzie ExtensionInstallSources, a na stronie internetowej udostępnia się bezpośrednie linki do pakietów do pobrania. Program uruchamiający tę stronę internetową można utworzyć, korzystając z zasady ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od wersji <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Wyłącza dzielenie rekordów SSL. Pozwala on uniknąć luki w zabezpieczeniach protokołów SSL 3.0 i TLS 1.0, ale może powodować problemy ze zgodnością z niektórymi serwerami HTTPS i proxy. Jeśli zasada nie jest ustawiona lub jest wyłączona, dzielenie rekordów obowiązuje przy połączeniach SSL/TLS z szyfrowaniem CBC.</translation>
 <translation id="3213821784736959823">Określa, czy w <ph name="PRODUCT_NAME" /> jest używany wbudowany klient DNS.
 
       W przypadku włączenia tej opcji będzie używany wbudowany klient DNS (jeśli będzie dostępny).
@@ -1476,7 +1475,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8955719471735800169">Powrót do góry</translation>
 <translation id="8970205333161758602">Pomiń monit o odinstalowanie <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Zegar automatycznego logowania do sesji publicznej</translation>
-<translation id="8987262643142408725">Wyłącz dzielenie rekordów SSL</translation>
 <translation id="8992176907758534924">Nie zezwalaj na pokazywanie grafik w żadnej witrynie</translation>
 <translation id="9035964157729712237">Identyfikatory rozszerzeń nieobjętych czarną listą</translation>
 <translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>

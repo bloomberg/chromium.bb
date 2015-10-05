@@ -481,7 +481,6 @@
           Ja šī politika nav iestatīta, lietotājs var instalēt produktā <ph name="PRODUCT_NAME" /> jebkuru paplašinājumu.</translation>
 <translation id="316778957754360075">Šī iestatījuma darbība ir pārtraukta ar <ph name="PRODUCT_NAME" /> versiju 29. Uzņēmumu mitinātas paplašinājumu/lietotņu kolekcijas ieteicams iestatīt, ietverot vietnes mitināšanu CRX pakotnēs politikā ExtensionInstallSources un vietnē ievietojot tiešas saites uz pakotņu lejupielādēm. Lietojumprogrammu palaidēju attiecīgajai tīmekļa lapai var izveidot, izmantojot politiku ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">, sākot no <ph name="SINCE_VERSION" /> versijas</translation>
-<translation id="3195451902035818945">Norāda, vai SSL ieraksta sadalīšana ir jāatspējo. Ieraksta sadalīšana ir risinājums, lai apietu SSL 3.0 un TLS 1.0 trūkumus, bet var izraisīt saderības problēmas ar dažiem HTTPS serveriem un starpniekserveriem. Ja politika nav iestatīta vai tai piešķirts statuss Aplami, ieraksta sadalīšana tiks izmantota SSL/TLS savienojumiem, kas izmanto CBC šifra komplektus.</translation>
 <translation id="3213821784736959823">Tiek noteikts, vai pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots iebūvētais DNS klients.
 
       Ja šai politikai ir iestatīta vērtība Patiess, tiks izmantots iebūvētais DNS klients (ja iespējams).
@@ -1770,7 +1769,6 @@
 <translation id="8955719471735800169">Augšup</translation>
 <translation id="8970205333161758602"><ph name="PRODUCT_FRAME_NAME" /> noraidīšanas uzvednes aizliegšana</translation>
 <translation id="8971221018777092728">Automātiskās pieteikšanās taimeris izmantošanai publiskā sesijā</translation>
-<translation id="8987262643142408725">Atspējot SSL ieraksta sadalīšanu</translation>
 <translation id="8992176907758534924">Neatļaut nevienai vietnei rādīt attēlus</translation>
 <translation id="9035964157729712237">Paplašinājumu ID numuri, kas noņemami no melnā saraksta</translation>
 <translation id="9042911395677044526">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot konkrētam lietotājam <ph name="PRODUCT_OS_NAME" /> ierīcē. Tīkla konfigurācija ir JSON formatēta virkne, kā 

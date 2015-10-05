@@ -58,7 +58,6 @@ e incorrectas. Por tanto, es posible que un atacante esté intentando suplantar 
 <translation id="2705212601509139398">Este sitio utiliza el complemento Chromium Frame, que pronto dejará de estar disponible. Desinstálalo y descarga un navegador compatible.</translation>
 <translation id="2718390899429598676">Para mayor seguridad, Chromium cifrará tus datos.</translation>
 <translation id="2732467638532545152">Tu ordenador utiliza una versión antigua de Microsoft Windows que no puede procesar el certificado de seguridad de este sitio web. Debido a este problema, Chromium no puede saber si el certificado procede de <ph name="SITE" /> o de un atacante de tu red que quiera hacerse pasar por <ph name="SITE" />. Instala una versión más reciente de Windows en el ordenador.</translation>
-<translation id="275588974610408078">Los informes de errores no se encuentran disponibles en Chromium.</translation>
 <translation id="2770231113462710648">Cambiar navegador predeterminado por:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> es un archivo malicioso y Chromium lo ha bloqueado.</translation>
 <translation id="2847479871509788944">Desinstalar de Chromium...</translation>

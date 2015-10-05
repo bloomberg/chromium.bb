@@ -56,7 +56,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2705212601509139398">Ce site utilise le plug-in Chromium Frame, dont le développement va bientôt être abandonné. Veuillez désinstaller ce plug-in, puis télécharger un navigateur compatible.</translation>
 <translation id="2718390899429598676">Pour plus de sécurité, vos données seront chiffrées dans Chromium.</translation>
 <translation id="2732467638532545152">La version de Microsoft Windows installée sur votre ordinateur ne permet pas d'analyser le certificat de sécurité de ce site Web. Par conséquent, il est impossible de déterminer dans Chromium si le certificat provient du site <ph name="SITE" /> ou d'un membre de votre réseau se faisant passer pour le site <ph name="SITE" />. Veuillez installer une version de Windows plus récente.</translation>
-<translation id="275588974610408078">Les rapports sur les plantages ne sont pas disponibles dans Chromium.</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
 <translation id="2801146392936645542">Le fichier "<ph name="FILE_NAME" />" a été bloqué dans Chromium, car son contenu est malveillant.</translation>
 <translation id="2847479871509788944">Supprimer de Chromium</translation>

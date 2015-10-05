@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="1203161113033984675">BEGIN_LINK বাস্তবিক ওয়েব END_LINK চালু আছে।</translation>
+<translation id="1418775127135578229">অনুলিপি করা লিঙ্ক খুলুন</translation>
+<translation id="1487576085940433465">BEGIN_LINK আশেপাশের বস্তুগুলি ওয়েব পৃষ্ঠাগুলি সম্প্রচার করছেEND_LINK। এই ফলাফলগুলির গুণমান উন্নয়নের জন্যএকটি Google পরিষেবা ব্যবহার করা হবে ।</translation>
+<translation id="2026797012398135445">সক্ষম করার জন্য আপনার ডিভাইস আনলক করুন।</translation>
 <translation id="2316129865977710310">না, ধন্যবাদ</translation>
 <translation id="3435896845095436175">সক্ষম করুন</translation>
 <translation id="4394049700291259645">অক্ষম</translation>
 <translation id="5301954838959518834">আচ্ছা, বুঝেছি</translation>
+<translation id="5508399372551154686">BEGIN_LINK বাস্তবিক ওয়েব END_LINK বন্ধ রয়েছে।</translation>
+<translation id="5815960189179094695">BEGIN_LINK বাস্তুবিক ওয়েব END_LINK বস্তুগুলির জন্য স্ক্যান করা হচ্ছে...</translation>
 <translation id="6196207969502475924">ভয়েস অনুসন্ধান</translation>
+<translation id="6722203589267124394">আশেপাশের BEGIN_LINK ফিজিক্যাল ওয়েব END_LINK বস্তুগুলি দেখতে Bluetooth চালু করুন।</translation>
 <translation id="7554791636758816595">নতুন ট্যাব</translation>
+<translation id="7588950540487816470">বাস্তবিক ওয়েব</translation>
+<translation id="8800384372516194324">আরো ফলাফল দেখান</translation>
 </translationbundle>

@@ -56,7 +56,6 @@ web sitesi alışılmışın dışında ve hatalı kimlik bilgileri gönderdi. Y
 <translation id="2705212601509139398">Bu site, kısa bir süre sonra artık destek verilmeyecek olan Chromium Frame eklentisini kullanıyor. Lütfen bu eklentinin yüklemesini kaldırın ve uyumlu bir tarayıcı indirin.</translation>
 <translation id="2718390899429598676">Chromium ek güvenlik için verilerinizi şifreler.</translation>
 <translation id="2732467638532545152">Bilgisayarınız, bu web sitesinin güvenlik sertifikasını işleyemeyen eski bir Microsoft Windows sürümünü çalıştırıyor. Bu sorundan dolayı Chromium, sertifikanın <ph name="SITE" /> sitesinden mi, yoksa ağınızdaki <ph name="SITE" /> gibi görünen başka bir kişiden mi gönderildiğini bildiremiyor. Lütfen bilgisayarınızı daha yeni bir Windows sürümüne güncelleyin.</translation>
-<translation id="275588974610408078">Chromium'da kilitlenmeyi raporlama özelliği yoktur.</translation>
 <translation id="2770231113462710648">Varsayılan tarayıcıyı şuna dönüştür:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> kötü amaçlı ve Chromium tarafından engellendi.</translation>
 <translation id="2847479871509788944">Chromium'dan kaldır...</translation>

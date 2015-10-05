@@ -16,6 +16,7 @@ Ang mga remote na computer na may mga keyboard na hindi US-Ingles ay maaaring ma
 Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa Privacy ng Google (http://goo.gl/SyrVzj) at ang Patakaran sa Privacy ng Chrome Privacy Policy (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(hindi pa available ang feature na ito para sa iyong computer)</translation>
 <translation id="1342297293546459414">Tumingin at magkontrol ng nakabahaging computer.</translation>
+<translation id="1389790901665088353">i-download ang Host Installer ng Remote na Desktop ng Chrome</translation>
 <translation id="1450760146488584666">Hindi umiiral ang hiniling na bagay.</translation>
 <translation id="1480046233931937785">Mga Credit</translation>
 <translation id="1520828917794284345">Baguhin ang laki ng desktop upang kumasya</translation>
@@ -146,6 +147,7 @@ Host</translation>
 <translation id="4572065712096155137">I-access</translation>
 <translation id="4573676252416618192">Host ng Remote na
 Desktop ng Chrome</translation>
+<translation id="4619978527973181021">Tanggapin at I-install</translation>
 <translation id="4703799847237267011">Natapos na ang iyong session ng Chromoting.</translation>
 <translation id="4736223761657662401">Kasaysayan ng Koneksyon</translation>
 <translation id="4741792197137897469">Hindi naisagawa ang pagpapatotoo. Mangyaring muling mag-sign in sa Chrome.</translation>
@@ -158,6 +160,7 @@ Desktop ng Chrome</translation>
 <translation id="4913529628896049296">naghihintay ng koneksyon…</translation>
 <translation id="4918086044614829423">Tanggapin</translation>
 <translation id="492843737083352574">Nagkakaroon ako ng mga problema sa aking keyboard o mouse.</translation>
+<translation id="4973800994433240357">Sa pamamagitan ng pagda-download ng Chromoting Host Installer, sumasang-ayon ka sa <ph name="LINK_BEGIN" />Mga Tuntunin ng Serbisyo<ph name="LINK_END" /> ng Google.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Remote na Desktop ng Chrome upang ma-access ang address na ito:</translation>
 <translation id="5156271271724754543">Pakilagay ang parehong PIN sa parehong kahon.</translation>
@@ -170,6 +173,7 @@ Desktop ng Chrome</translation>
 <translation id="5308380583665731573">Kumonekta</translation>
 <translation id="5363265567587775042">Hilingin sa user na may-ari ng computer na gusto mong i-access na i-click ang “<ph name="SHARE" />” at ibigay sa iyo ang access code.</translation>
 <translation id="5379087427956679853">Binibigyang-daan ka ng Remote na Desktop ng Chrome na ligtas na maibahagi ang iyong computer sa Web. Dapat na nagpapatakbo ang parehong user ng app ng Remote na Desktop ng Chrome, na matatagpuan sa <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Para sa Mac (OS X 10.6 at mas bago)</translation>
 <translation id="5397086374758643919">Uninstaller ng Host ng Remote na Desktop ng Chrome</translation>
 <translation id="5419185025274123272">Hindi ma-reset ang application. Maaari ka pa ring magpadala ng ulat sa bug.</translation>
 <translation id="544077782045763683">Nag-shut down ang host.</translation>
@@ -222,6 +226,7 @@ Desktop ng Chrome</translation>
 <translation id="6930242544192836755">Tagal</translation>
 <translation id="6939719207673461467">Ipakita/itago ang keyboard.</translation>
 <translation id="6944854424004126054">Ibalik ang window</translation>
+<translation id="6962773374262604195">Para sa Windows (XP at mas bago)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Sigurado ka bang nais mong hindi paganahin ang mga malayuang koneksyon sa <ph name="HOSTNAME" />? Kung magbago ang iyong isip, kakailanganin mong bisitahin ang computer na iyon upang muling paganahin ang mga koneksyon.</translation>
 <translation id="6998989275928107238">Para kay</translation>
@@ -251,6 +256,7 @@ Desktop ng Chrome</translation>
 <translation id="7869445566579231750">Wala kang pahintulot na gamitin ang application na ito.</translation>
 <translation id="7948001860594368197">Mga pagpipilian sa screen</translation>
 <translation id="7970576581263377361">Hindi naisagawa ang pagpapatotoo. Mangyaring muling mag-sign in sa Chromium.</translation>
+<translation id="8041721485428375115">Sa pamamagitan ng pagda-download ng Host Installer ng Remote na Desktop ng Chrome, sumasang-ayon ka sa <ph name="LINK_BEGIN" />Mga Tuntunin ng Serbisyo<ph name="LINK_END" /> ng Google.</translation>
 <translation id="8073845705237259513">Upang magamit ang Chrome Remote Desktop, kakailanganin mong magdagdag ng Google Account sa iyong device.</translation>
 <translation id="80739703311984697">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Chromoting upang ma-access ang address na ito:</translation>
 <translation id="809687642899217504">Aking Mga Computer</translation>
@@ -274,6 +280,7 @@ Desktop ng Chrome</translation>
 <translation id="8642984861538780905">Medyo Malakas</translation>
 <translation id="8712909229180978490">Hindi ko makita ang aking mga naka-save file habang on-line sa Google Drive.</translation>
 <translation id="8759753423332885148">Matuto nang higit pa.</translation>
+<translation id="8791202241915690908">I-download ang Chromoting Host Installer</translation>
 <translation id="894763922177556086">Malakas</translation>
 <translation id="897805526397249209">Upang paganahin ang mga malayuang koneksyon sa ibang computer, i-install ang Chromoting doon at i-click ang “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Controller ng Host ng Remote na Desktop ng Chrome</translation>

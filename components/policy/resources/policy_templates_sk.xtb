@@ -484,7 +484,6 @@
           Ak toto pravidlo ponecháte nenastavené, používateľ bude môcť do prehliadača <ph name="PRODUCT_NAME" /> inštalovať ľubovoľné rozšírenia.</translation>
 <translation id="316778957754360075">Toto nastavenie sa prestalo používať v prehliadači <ph name="PRODUCT_NAME" /> verzie 29. Odporúčaným spôsobom na nastavenie zbierok rozšírení/aplikácií hostených organizáciou je zahrnúť stránky hostiace balíky CRX do zoznamu ExtensionInstallSources a vložiť na webovú stránku priame odkazy na balíky. Spúšťač pre danú webovú stránku je možné vytvoriť pomocou pravidla ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od verzie <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Toto pravidlo určuje, či by malo byť delenie záznamov protokolu SSL zakázané. Delenie záznamov je náhradné riešenie pre slabé stránky protokolov SSL 3.0 a TLS 1.0. U niektorých serverov HTTPS a serverov proxy však môže spôsobiť problémy s kompatibilitou. Ak toto pravidlo nie je nastavené, alebo je nastavené na hodnotu False, delenie záznamov sa použije u pripojení SSL / TLS, ktoré používajú šifrovacie nástroje CBC.</translation>
 <translation id="3213821784736959823">Ovláda, či sa v prehliadači <ph name="PRODUCT_NAME" /> používa vstavaný klient DNS.
 
       Ak je toto pravidlo nastavené na hodnotu True, vstavaný klient DNS sa použije (pokiaľ je k dispozícii).
@@ -1752,7 +1751,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8955719471735800169">Späť na začiatok</translation>
 <translation id="8970205333161758602">Potlačiť výzvu o zamietnutie od rámca <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Časovač automatického prihlásenia do verejnej relácie</translation>
-<translation id="8987262643142408725">Zakázať delenie záznamov protokolu SSL</translation>
 <translation id="8992176907758534924">Zakázať všetkým stránkam zobrazovať obrázky</translation>
 <translation id="9035964157729712237">ID rozšírení, ktoré majú byť zo zoznamu zakázaných rozšírení vyňaté</translation>
 <translation id="9042911395677044526">Umožňuje preniesť konfiguráciu siete, ktorá sa použije pre jednotlivých používateľov v zariadení so systémom <ph name="PRODUCT_OS_NAME" />. Konfigurácia siete je reťazec vo formáte JSON, ktorý sa riadi definíciou formátu Open Network Configuration uvedenou na adrese <ph name="ONC_SPEC_URL" /></translation>

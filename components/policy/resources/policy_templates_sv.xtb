@@ -486,9 +486,6 @@
           Om policyn inte ställs in kan användaren installera alla tillägg i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Den här inställningen finns inte med i version 29 av <ph name="PRODUCT_NAME" /> och senare. Det rekommenderade sättet att konfigurera tillägg/appsamlingar som värdlagras hos företaget är att ta med platsen där CRX-paketen finns på listan ExtensionInstallSources och infoga direkta nedladdningslänkar till paketen på en webbsida. Det går att skapa ett startprogram för den aktuella webbsidan med hjälp av principen ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Anger om delade SSL-poster ska inaktiveras. Delade poster är ett sätt att komma runt en svaghet i SSL 3.0 och TLS 1.0, men funktionen kan orsaka kompatibilitetsproblem med vissa HTTPS-servrar och proxyservrar.
-
-      Om policyn inte är angiven eller inställd på False kommer delade poster att användas på SSL/TLS-anslutningar som använder CBC-krypteringsmetoder.</translation>
 <translation id="3213821784736959823">Styr huruvida den inbyggda DNS-klienten används i <ph name="PRODUCT_NAME" />.
 
       Om policyn tillämpas används den inbyggda DNS-klienten om den är tillgänglig.
@@ -1779,7 +1776,6 @@
 <translation id="8955719471735800169">Tillbaka till början</translation>
 <translation id="8970205333161758602">Visa inte avvisningsmeddelandet i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Timer för automatisk inloggning till offentlig session</translation>
-<translation id="8987262643142408725">Inaktivera delade SSL-poster</translation>
 <translation id="8992176907758534924">Tillåt inte att bilder visas på någon webbplats</translation>
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>

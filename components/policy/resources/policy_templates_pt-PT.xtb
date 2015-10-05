@@ -415,7 +415,6 @@
 <translation id="3153348162326497318">Permite especificar as extensões que NÃO podem ser instaladas pelos utilizadores. Se constarem da lista negra, as extensões já instaladas serão removidas. Um valor de lista negra "*" significa que todas as extensões constam da lista negra, a menos que estejam expressamente indicadas na lista de autorizações. Se esta política não for definida, o utilizador pode instalar qualquer extensão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Esta definição foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />. A forma recomendada de configurar coleções de extensões/aplicações alojadas na entidade é incluir no alojamento do site os pacotes CRX em ExtensionInstallSources e colocar links de transferência diretos para os pacotes numa página Web. Pode ser criado um iniciador para essa página Web utilizando a política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Especifica se a divisão de registos SSL deve estar desativada. A divisão de registos é uma solução para uma vulnerabilidade no SSL 3.0 e TLS 1.0, mas pode causar problemas de compatibilidade com alguns proxies e servidores HTTPS. Se a política não estiver definida ou estiver definida como "false", a divisão de registos será utilizada nas ligações SSL/TLS que utilizam conjuntos de cifras CBC.</translation>
 <translation id="3213821784736959823">Controla se o cliente DNS incorporado é utilizado no <ph name="PRODUCT_NAME" />.
 
       Se esta política estiver definida como verdadeira, será utilizado o cliente DNS incorporado, caso esteja disponível.
@@ -1493,7 +1492,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8955719471735800169">Voltar ao início</translation>
 <translation id="8970205333161758602">Suprimir o pedido de recusa do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Temporizador do início automático da sessão pública</translation>
-<translation id="8987262643142408725">Desativar divisão de registos SSL</translation>
 <translation id="8992176907758534924">Não permitir que os sites mostrem imagens</translation>
 <translation id="9035964157729712237">IDs de extensões a excluir da lista negra</translation>
 <translation id="9042911395677044526">Permite que a configuração de rede seja aplicada por utilizador para um aparelho <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>

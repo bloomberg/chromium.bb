@@ -16,6 +16,7 @@ Komputery zdalne z klawiaturami z układem innym niż amerykański angielski mog
 Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http://goo.gl/SyrVzj) i Polityce prywatności Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(ta funkcja nie jest jeszcze dostępna na tym komputerze)</translation>
 <translation id="1342297293546459414">Zobacz i kontroluj udostępniony komputer.</translation>
+<translation id="1389790901665088353">Pobierz instalatora hosta Pulpitu zdalnego Chrome</translation>
 <translation id="1450760146488584666">Żądany obiekt nie istnieje.</translation>
 <translation id="1480046233931937785">Autorzy</translation>
 <translation id="1520828917794284345">Dopasuj pulpit</translation>
@@ -146,6 +147,7 @@ Chromoting</translation>
 <translation id="4572065712096155137">Połącz</translation>
 <translation id="4573676252416618192">Host Pulpitu
 zdalnego Chrome</translation>
+<translation id="4619978527973181021">Zaakceptuj i zainstaluj</translation>
 <translation id="4703799847237267011">Sesja Chromoting została zakończona.</translation>
 <translation id="4736223761657662401">Historia połączeń</translation>
 <translation id="4741792197137897469">Uwierzytelnianie nie powiodło się. Zaloguj się ponownie do Chrome.</translation>
@@ -158,6 +160,7 @@ zdalnego Chrome</translation>
 <translation id="4913529628896049296">czekam na połączenie…</translation>
 <translation id="4918086044614829423">Akceptuj</translation>
 <translation id="492843737083352574">Mam problem z klawiaturą lub myszą.</translation>
+<translation id="4973800994433240357">Pobierając instalatora hosta funkcji Chromoting, akceptujesz <ph name="LINK_BEGIN" />Warunki korzystania z usługi<ph name="LINK_END" /> Google.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Host zdalny wymaga uwierzytelnienia w witrynie innej firmy. Aby kontynuować, musisz udzielić Pulpitowi zdalnemu Chrome dodatkowych uprawnień dostępu do tego adresu:</translation>
 <translation id="5156271271724754543">Wpisz ten sam PIN w obu polach.</translation>
@@ -170,6 +173,7 @@ zdalnego Chrome</translation>
 <translation id="5308380583665731573">Połącz</translation>
 <translation id="5363265567587775042">Poproś użytkownika, z którego komputera chcesz korzystać, by kliknął „<ph name="SHARE" />” i udostępnił Ci kod dostępu.</translation>
 <translation id="5379087427956679853">Pulpit zdalny Chrome pozwala na bezpieczne udostępnianie komputera przez internet. Obaj użytkownicy muszą mieć uruchomioną aplikację Pulpit zdalny Chrome, którą można znaleźć na <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Mac (OS X 10.6 lub nowszy)</translation>
 <translation id="5397086374758643919">Program do odinstalowywania hosta Pulpitu zdalnego Chrome</translation>
 <translation id="5419185025274123272">Nie można zresetować aplikacji. Wciąż możesz przesłać zgłoszenie błędu.</translation>
 <translation id="544077782045763683">Host został wyłączony.</translation>
@@ -222,6 +226,7 @@ zdalnego Chrome</translation>
 <translation id="6930242544192836755">Czas trwania</translation>
 <translation id="6939719207673461467">Pokaż/ukryj klawiaturę.</translation>
 <translation id="6944854424004126054">Przywróć okno</translation>
+<translation id="6962773374262604195">Windows (XP lub nowszy)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Na pewno chcesz wyłączyć połączenia zdalne z: <ph name="HOSTNAME" />? Jeśli zmienisz zdanie, połączenia będzie trzeba włączyć na tamtym komputerze.</translation>
 <translation id="6998989275928107238">Do</translation>
@@ -251,6 +256,7 @@ zdalnego Chrome</translation>
 <translation id="7869445566579231750">Nie masz uprawnień do uruchamiania tej aplikacji.</translation>
 <translation id="7948001860594368197">Opcje ekranu</translation>
 <translation id="7970576581263377361">Uwierzytelnianie nie powiodło się. Zaloguj się ponownie do Chromium.</translation>
+<translation id="8041721485428375115">Pobierając instalatora hosta Pulpitu zdalnego Chrome, akceptujesz <ph name="LINK_BEGIN" />Warunki korzystania z usługi<ph name="LINK_END" /> Google.</translation>
 <translation id="8073845705237259513">Aby użyć Pulpitu zdalnego Chrome, musisz dodać do urządzenia konto Google.</translation>
 <translation id="80739703311984697">Host zdalny wymaga uwierzytelnienia w witrynie innej firmy. Aby kontynuować, musisz udzielić funkcji Chromoting dodatkowych uprawnień dostępu do tego adresu:</translation>
 <translation id="809687642899217504">Moje komputery</translation>
@@ -274,6 +280,7 @@ zdalnego Chrome</translation>
 <translation id="8642984861538780905">Średnia</translation>
 <translation id="8712909229180978490">Nie widzę moich plików zapisanych na Dysku Google, gdy jestem online.</translation>
 <translation id="8759753423332885148">Więcej informacji.</translation>
+<translation id="8791202241915690908">Pobierz instalatora hosta funkcji Chromoting</translation>
 <translation id="894763922177556086">Dobra</translation>
 <translation id="897805526397249209">Aby umożliwić zdalne połączenia z innym komputerem, zainstaluj na nim Chromoting i kliknij „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Kontroler hosta Pulpitu zdalnego Chrome</translation>

@@ -16,6 +16,7 @@ Eksterne datamaskiner som bruker andre tastaturspråk enn engelsk (USA) kan ha p
 Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl/SyrVzj) og personvernreglene for Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(Denne funksjonen er ikke tilgjengelig for datamaskinen din ennå.)</translation>
 <translation id="1342297293546459414">Se og kontrollér en delt datamaskin.</translation>
+<translation id="1389790901665088353">Last ned installasjonsprogrammet for verten for Chrome Eksternt skrivebord</translation>
 <translation id="1450760146488584666">Det forespurte elementet finnes ikke.</translation>
 <translation id="1480046233931937785">Medvirkende</translation>
 <translation id="1520828917794284345">Tilpass størrelsen på skrivebordet</translation>
@@ -110,7 +111,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="3596628256176442606">Med denne tjenesten kan du motta innkommende tilkoblinger fra Chromoting-klienter.</translation>
 <translation id="3606997049964069799">Du er ikke logget på Chromium. Logg på, og prøv på nytt.</translation>
 <translation id="3649256019230929621">Minimerer vinduet</translation>
-<translation id="369442766917958684">Uten nett.</translation>
+<translation id="369442766917958684">Utenfor nettet.</translation>
 <translation id="3776024066357219166">Chrome Eksternt skrivebord-økten din er avsluttet.</translation>
 <translation id="3785447812627779171">Chromoting
 Vert</translation>
@@ -146,6 +147,7 @@ Vert</translation>
 <translation id="4572065712096155137">Tilgang</translation>
 <translation id="4573676252416618192">Chrome Eksternt
 skrivebord-vert</translation>
+<translation id="4619978527973181021">Godta og installer</translation>
 <translation id="4703799847237267011">Chromoting-økten er avsluttet.</translation>
 <translation id="4736223761657662401">Tilkoblingslogg</translation>
 <translation id="4741792197137897469">Autentiseringen mislyktes. Logg på Chrome på nytt.</translation>
@@ -158,6 +160,7 @@ skrivebord-vert</translation>
 <translation id="4913529628896049296">venter på tilkobling …</translation>
 <translation id="4918086044614829423">Godta</translation>
 <translation id="492843737083352574">Jeg har problemer med tastaturet eller musen.</translation>
+<translation id="4973800994433240357">Ved å laste ned installasjonsprogrammet for Chromoting-verten samtykker du i Googles <ph name="LINK_BEGIN" />vilkår for bruk<ph name="LINK_END" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ikke på nett)</translation>
 <translation id="5070121137485264635">Den eksterne verten krever at du godkjenner via et tredjepartsnettsted. For å fortsette må du gi Chrome Eksternt skrivebord ytterligere tillatelser til å åpne denne adressen:</translation>
 <translation id="5156271271724754543">Skriv inn samme PIN-kode i begge feltene.</translation>
@@ -170,6 +173,7 @@ skrivebord-vert</translation>
 <translation id="5308380583665731573">Koble til</translation>
 <translation id="5363265567587775042">Be brukeren av datamaskinen du vil ha tilgang til, om å klikke på «<ph name="SHARE" />» og gi deg tilgangskoden.</translation>
 <translation id="5379087427956679853">Med Chrome Eksternt skrivebord kan du trygt dele datamaskinen din på nettet. Begge brukerne må installere Chrome Eksternt skrivebord-appen, som er å finne på <ph name="URL" /></translation>
+<translation id="5394895745784982830">For Mac (OS X 10.6 og høyere)</translation>
 <translation id="5397086374758643919">Avinstalleringsprogram for Chrome Eksternt skrivebord-vert</translation>
 <translation id="5419185025274123272">Programmet kunne ikke tilbakestilles. Du kan likevel sende inn en feilrapport.</translation>
 <translation id="544077782045763683">Verten har slått seg av.</translation>
@@ -222,6 +226,7 @@ skrivebord-vert</translation>
 <translation id="6930242544192836755">Varighet</translation>
 <translation id="6939719207673461467">Vis/skjul tastaturet.</translation>
 <translation id="6944854424004126054">Gjenopprett vinduet</translation>
+<translation id="6962773374262604195">For Windows (XP og nyere)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Er du sikker på at du vil deaktivere eksterne tilkoblinger til <ph name="HOSTNAME" />? Hvis du ombestemmer deg, må du tilbake til datamaskinen for å gjenopprette tilkoblingene.</translation>
 <translation id="6998989275928107238">Til</translation>
@@ -251,6 +256,7 @@ skrivebord-vert</translation>
 <translation id="7869445566579231750">Du har ikke tillatelse til å kjøre dette programmet.</translation>
 <translation id="7948001860594368197">Skjermalternativer</translation>
 <translation id="7970576581263377361">Autentiseringen mislyktes. Logg på Chromium på nytt.</translation>
+<translation id="8041721485428375115">Ved å laste ned installasjonsprogrammet for verten for Chrome Eksternt skrivebord samtykker du i Googles <ph name="LINK_BEGIN" />vilkår for bruk<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Hvis du vil bruke Chrome Eksternt skrivebord, må du legge til en Google-konto på enheten din.</translation>
 <translation id="80739703311984697">Den eksterne verten krever at du godkjenner via et tredjepartsnettsted. For å fortsette må du gi Chromoting ytterligere tillatelser til å åpne denne adressen:</translation>
 <translation id="809687642899217504">Mine datamaskiner</translation>
@@ -274,6 +280,7 @@ skrivebord-vert</translation>
 <translation id="8642984861538780905">Akseptabel</translation>
 <translation id="8712909229180978490">Jeg ser ikke de lagrede filene mine på nettet i Google Disk.</translation>
 <translation id="8759753423332885148">Finn ut mer</translation>
+<translation id="8791202241915690908">Last ned installasjonsprogrammet for Chromoting-verten</translation>
 <translation id="894763922177556086">God</translation>
 <translation id="897805526397249209">For å aktivere eksterne tilkoblinger til en annen datamaskin, må du installere Chromoting på maskinen, og klikke på «<ph name="BUTTON_NAME" />».</translation>
 <translation id="8998327464021325874">Kontroller for Chrome Eksternt skrivebord-vert</translation>

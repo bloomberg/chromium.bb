@@ -16,6 +16,7 @@ Komputer jarak jauh dengan keyboard non Inggris-AS mungkin menerima masukan teks
 Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/SyrVzj) dan Kebijakan Privasi Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(Fitur ini belum tersedia untuk komputer Anda)</translation>
 <translation id="1342297293546459414">Melihat dan mengontrol komputer bersama.</translation>
+<translation id="1389790901665088353">Unduh Pemasang Host Chrome Desktop Jarak Jauh</translation>
 <translation id="1450760146488584666">Objek yang diminta tidak ada.</translation>
 <translation id="1480046233931937785">Kredit</translation>
 <translation id="1520828917794284345">Ubah ukuran desktop agar sesuai</translation>
@@ -146,6 +147,7 @@ Chromoting</translation>
 <translation id="4572065712096155137">Akses</translation>
 <translation id="4573676252416618192">Host Chrome
 Desktop Jarak Jauh</translation>
+<translation id="4619978527973181021">Setuju dan Pasang</translation>
 <translation id="4703799847237267011">Sesi Chromoting Anda berakhir.</translation>
 <translation id="4736223761657662401">Riwayat Sambungan</translation>
 <translation id="4741792197137897469">Autentikasi gagal. Masuk ke Chrome lagi.</translation>
@@ -158,6 +160,7 @@ Desktop Jarak Jauh</translation>
 <translation id="4913529628896049296">menunggu sambungan...</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="492843737083352574">Saya mengalami masalah dengan keyboard atau mouse.</translation>
+<translation id="4973800994433240357">Dengan mengunduh Pemasang Host Chrome Desktop Jarak Jauh, Anda menyetujui <ph name="LINK_BEGIN" />Persyaratan Layanan<ph name="LINK_END" /> Google.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
 <translation id="5156271271724754543">Masukkan PIN yang sama di kedua kotak.</translation>
@@ -170,6 +173,7 @@ Desktop Jarak Jauh</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
 <translation id="5363265567587775042">Minta pengguna yang menggunakan komputer yang ingin Anda akses untuk mengeklik “<ph name="SHARE" />” dan memberikan kode akses kepada Anda.</translation>
 <translation id="5379087427956679853">Chrome Desktop Jarak Jauh memungkinkan Anda berbagi komputer melalui web dengan aman. Kedua pengguna harus menjalankan aplikasi Chrome Desktop Jarak Jauh yang dapat ditemukan di <ph name="URL" />.</translation>
+<translation id="5394895745784982830">Untuk Mac (OS X 10.6 dan yang lebih tinggi)</translation>
 <translation id="5397086374758643919">Pencopot Pemasangan Host Chrome Desktop Jarak Jauh</translation>
 <translation id="5419185025274123272">Tidak dapat menyetel ulang aplikasi. Anda masih dapat mengirim laporan bug.</translation>
 <translation id="544077782045763683">Hosting telah dimatikan.</translation>
@@ -222,6 +226,7 @@ Desktop Jarak Jauh</translation>
 <translation id="6930242544192836755">Durasi</translation>
 <translation id="6939719207673461467">Tunjukkan/sembunyikan keyboard.</translation>
 <translation id="6944854424004126054">Pulihkan jendela</translation>
+<translation id="6962773374262604195">Untuk Windows (XP dan yang lebih tinggi)</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6985691951107243942">Yakin ingin menonaktifkan sambungan jarak jauh dengan <ph name="HOSTNAME" />? Jika Anda berubah pikiran, Anda harus mengunjungi komputer tersebut untuk mengaktifkan kembali sambungan.</translation>
 <translation id="6998989275928107238">Ke</translation>
@@ -251,6 +256,7 @@ Desktop Jarak Jauh</translation>
 <translation id="7869445566579231750">Anda tidak memiliki izin untuk menjalankan aplikasi ini.</translation>
 <translation id="7948001860594368197">Opsi layar</translation>
 <translation id="7970576581263377361">Autentikasi gagal. Masuk ke Chromium lagi.</translation>
+<translation id="8041721485428375115">Dengan mengunduh Pemasang Host Chrome Desktop Jarak Jauh, Anda menyetujui <ph name="LINK_BEGIN" />Persyaratan Layanan<ph name="LINK_END" /> Google.</translation>
 <translation id="8073845705237259513">Untuk menggunakan Chrome Desktop Jarak Jauh, Anda perlu menambahkan Akun Google ke perangkat.</translation>
 <translation id="80739703311984697">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chromoting untuk mengakses alamat ini:</translation>
 <translation id="809687642899217504">Komputer Saya</translation>
@@ -274,6 +280,7 @@ Desktop Jarak Jauh</translation>
 <translation id="8642984861538780905">Sedang</translation>
 <translation id="8712909229180978490">Saya tidak dapat melihat file saya yang tersimpan secara online di Google Drive.</translation>
 <translation id="8759753423332885148">Pelajari lebih lanjut.</translation>
+<translation id="8791202241915690908">Unduh Pemasang Host Chromoting</translation>
 <translation id="894763922177556086">Baik</translation>
 <translation id="897805526397249209">Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, pasang Chromoting di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Pengontrol Host Chrome Desktop Jarak Jauh</translation>

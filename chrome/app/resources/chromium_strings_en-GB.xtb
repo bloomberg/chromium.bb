@@ -58,7 +58,6 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
 <translation id="2705212601509139398">This site is using the Chromium Frame plug-in that will soon be unsupported. Please uninstall it and download a compatible browser.</translation>
 <translation id="2718390899429598676">For added security, Chromium will encrypt your data.</translation>
 <translation id="2732467638532545152">Your computer is running an old version of Microsoft Windows that cannot process this website's security certificate. Because of this problem, Chromium can't tell whether the certificate came from <ph name="SITE" /> or from someone on your network pretending to be <ph name="SITE" />. Please update your computer to a more recent version of Windows.</translation>
-<translation id="275588974610408078">Crash reporting is not available in Chromium.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> is malicious and Chromium has blocked it.</translation>
 <translation id="2847479871509788944">Remove from Chromium...</translation>

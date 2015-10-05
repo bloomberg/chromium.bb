@@ -56,7 +56,6 @@ ja valed mandaadid. Kas proovib ründaja teeselda, et on <ph name="SITE" />, võ
 <translation id="2705212601509139398">See sait kasutab pistikprogrammi Chromium Frame, mille tugi peagi lõpeb. Desinstallige see ja laadige alla ühilduv brauser.</translation>
 <translation id="2718390899429598676">Turvalisuse suurendamiseks krüptib Chromium teie andmed.</translation>
 <translation id="2732467638532545152">Teie arvuti käitab Microsoft Windowsi vana versiooni, mis ei suuda töödelda selle veebisaidi turvasertifikaati. Seetõttu ei saa Chromium tuvastada, kas sertifikaat pärineb saidilt <ph name="SITE" /> või kelleltki võrgus, kes teeskleb saiti <ph name="SITE" />. Viige arvuti üle uuemale Windowsi versioonile.</translation>
-<translation id="275588974610408078">Krahhiaruandlus ei ole Chromiumis saadaval.</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> on pahatahtlik ja Chromium on selle blokeerinud.</translation>
 <translation id="2847479871509788944">Chromiumist eemaldamine ...</translation>

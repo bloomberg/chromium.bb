@@ -480,9 +480,6 @@
           이 정책을 설정하지 않은 경우 사용자가 <ph name="PRODUCT_NAME" />에 모든 확장 프로그램을 설치할 수 있습니다.</translation>
 <translation id="316778957754360075">이 설정은 <ph name="PRODUCT_NAME" /> 버전 29를 기준으로 지원 중단되었습니다. 기관/단체에서 호스팅하는 확장 프로그램/앱 컬렉션을 설정하는 가장 좋은 방법은 CRX 패키지를 호스팅하는 사이트를 ExtensionInstallSources에 포함시키고 패키지에 대한 직접 다운로드 링크를 웹페이지에 제공하는 것입니다. 웹페이지 실행기는 ExtensionInstallForcelist 정책을 사용하여 만들 수 있습니다.</translation>
 <translation id="3185009703220253572">버전 <ph name="SINCE_VERSION" /> 이상</translation>
-<translation id="3195451902035818945">SSL 레코드 분할을 사용하지 않도록 설정할지 여부를 지정합니다. 레코드 분할은 SSL 3.0 및 TLS 1.0의 취약성을 해결하지만 일부  HTTPS 서버와 프록시에서 호환성 문제를 일으킬 수 있습니다.
-
-      정책을 설정하지 않거나 false로 설정하면 레코드 분할이 CBC ciphersuites를 사용하는 SSL/TLS 연결에 사용됩니다.</translation>
 <translation id="3213821784736959823">내장 DNS 클라이언트를 <ph name="PRODUCT_NAME" />에서 사용할지 여부를 제어합니다.
 
       이 정책이 true로 설정되어 있으면 사용 가능한 경우 내장 DNS 클라이언트를 사용합니다.
@@ -1757,7 +1754,6 @@
 <translation id="8955719471735800169">맨위로</translation>
 <translation id="8970205333161758602"><ph name="PRODUCT_FRAME_NAME" /> 종료 프롬프트를 표시하지 않음</translation>
 <translation id="8971221018777092728">공개 세션 자동 로그인 타이머</translation>
-<translation id="8987262643142408725">SSL 레코드 분할 사용 안함</translation>
 <translation id="8992176907758534924">모든 사이트에서 이미지 표시 허용 안함</translation>
 <translation id="9035964157729712237">차단목록에서 제외할 확장 프로그램 ID</translation>
 <translation id="9042911395677044526"><ph name="PRODUCT_OS_NAME" /> 기기에 사용자별로 적용되는 네트워크 구성을 사용하도록 허용합니다. 네트워크 구성은 <ph name="ONC_SPEC_URL" />에서 설명한 개방형 네트워크 구성에서 정의한 대로 JSON 형식의 문자열입니다. </translation>

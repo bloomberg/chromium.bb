@@ -22,6 +22,7 @@
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="129553762522093515">Nylig lukket</translation>
 <translation id="1312168552565502328">Informasjonskapsler, data fra nettsteder</translation>
+<translation id="1346090444609141578">Det er ingen lagrede sider her</translation>
 <translation id="1369915414381695676">Nettstedet <ph name="SITE_NAME" /> er lagt til</translation>
 <translation id="1373696734384179344">Det er ikke nok ledig minne til å laste ned det valgte innholdet.</translation>
 <translation id="1379156015317873965">Forbedre ytelsen ved sideinnlasting</translation>
@@ -129,7 +130,7 @@
 <translation id="3029704984691124060">Passordfrasene stemmer ikke overens</translation>
 <translation id="3039671569659952257">Slett mappen</translation>
 <translation id="3063601790762993062">Lagre videoen</translation>
-<translation id="306566828762083630">Lagringsplassen på enheten er full. Du må fjerne andre filer for å gjøre plass.</translation>
+<translation id="306566828762083630">Lagringsplassen på enheten er full. Du må fjerne noen medier for å lage plass.</translation>
 <translation id="307329814453917357">Tilby oversettelse av nettsider ved hjelp av Google Oversetter</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
 <translation id="3090193911106258841">Åpner lyd- og videoinngang</translation>

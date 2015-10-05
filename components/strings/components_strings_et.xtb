@@ -10,6 +10,7 @@
 <translation id="111844081046043029">Olete kindel, et soovite sellele lehelt lahkuda?</translation>
 <translation id="112840717907525620">Reegli vahemälu töötab probleemideta</translation>
 <translation id="1132774398110320017">Chrome'i automaattäite seaded ...</translation>
+<translation id="1146673768181266552">Krahhi ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, arvuti operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="1152921474424827756">Hankige juurdepääs aadressi <ph name="URL" /> <ph name="BEGIN_LINK" />vahemällu salvestatud koopiale<ph name="END_LINK" /></translation>
 <translation id="121201262018556460">Proovisite jõuda saidile <ph name="DOMAIN" />, kuid server esitas nõrka võtit sisaldava sertifikaadi. Võimalik, et ründaja on privaatvõtme lahti murdnud ja tegemist ei pruugi olla oodatud serveriga (võimalik, et suhtlete ründajaga).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">Teade veebilehelt aadressil <ph name="SITE" />:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />, selle turvasertifikaat hakkab väidetavalt kehtima homme. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja.}other{Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />, selle turvasertifikaat hakkab väidetavalt kehtima # päeva pärast. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">Faili viga</translation>
 <translation id="1763864636252898013">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, seadme operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="1821930232296380041">Taotlus või selle parameetrid on kehtetud</translation>
 <translation id="1871208020102129563">Puhverserver on seatud kasutama fikseeritud puhverservereid, mitte pac-skripti URL-i.</translation>
-<translation id="1875753206475436906">heuristiline tüüp: <ph name="HEURISTIC_TYPE" />
-    serveri tüüp: <ph name="SERVER_TYPE" />
-    välja allkiri: <ph name="FIELD_SIGNATURE" />
-    vormi allkiri: <ph name="FORM_SIGNATURE" />
-    katse id: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">Avage <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Domeeni <ph name="DOMAIN" /> järjehoidjad</translation>
 <translation id="1973335181906896915">Viga jadaks teisendamisel</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Litsentsid on ammendunud</translation>
 <translation id="3739623965217189342">Teie kopeeritud link</translation>
 <translation id="375403751935624634">Tõlkimine ebaõnnestus serverivea tõttu.</translation>
+<translation id="3759461132968374835">Hiljuti teatatud krahhe ei ole. Siin ei ilmu krahhid, mis toimusid siis, kui krahhide aruandlus oli keelatud.</translation>
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="3858027520442213535">Värskenda kuupäeva ja kellaaega</translation>
 <translation id="3884278016824448484">Seadme identifikaator on konfliktne</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">Sobimatu kinnitusallkiri</translation>
 <translation id="4196861286325780578">&amp;Teisalda uuesti</translation>
+<translation id="4220128509585149162">Krahhid</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4258748452823770588">Sobimatu allkiri</translation>
 <translation id="4269787794583293679">(Kasutajanimi puudub)</translation>
 <translation id="4300246636397505754">Vanema soovitused</translation>
+<translation id="4325863107915753736">Artiklit ei leitud</translation>
 <translation id="4372948949327679948">Oodatud väärtus: <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Püüdsite jõuda saidile <ph name="DOMAIN" />, kuid sertifikaadi väljaandja on serveri esitatud sertifikaadi tagasi võtnud. See tähendab, et serveri esitatud turvamandaate ei tohiks mingil juhul usaldada. Võimalik, et suhtlete ründajaga.</translation>
 <translation id="4394049700291259645">Keela</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">Kas tõlkida <ph name="ORIGINAL_LANGUAGE" /> keelest <ph name="TARGET_LANGUAGE" /> keelde?</translation>
 <translation id="5019198164206649151">Varusalves esineb probleeme</translation>
 <translation id="5031870354684148875">Teave Google'i tõlke kohta</translation>
+<translation id="5045550434625856497">Vale parool</translation>
 <translation id="5087286274860437796">Serveri sertifikaat pole praegu kehtiv.</translation>
 <translation id="5089810972385038852">Osariik</translation>
 <translation id="5094747076828555589">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, Chromium ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Pilv</translation>
 <translation id="5295309862264981122">Kinnita navigatsiooni</translation>
 <translation id="5299298092464848405">Reegli sõelumisel ilmnes viga</translation>
+<translation id="5308689395849655368">Krahhide aruandlus on keelatud.</translation>
 <translation id="5316812925700871227">Pööra vastupäeva</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="536296301121032821">Reegli seadete talletamine ebaõnnestus</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Sule</translation>
 <translation id="6060685159320643512">Ettevaatust, need katsed võivad hammustada.</translation>
+<translation id="6099520380851856040">Ilmnes <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">Serveri sertifikaadi kehtivusaeg on liiga pikk.</translation>
 <translation id="6154808779448689242">Tagastatud reegli luba ei kattu praeguse loaga</translation>
 <translation id="6165508094623778733">Lisateave</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">Riik</translation>
 <translation id="6458467102616083041">Seda eiratakse, kuna vaikeotsing on reegliga keelatud.</translation>
 <translation id="647261751007945333">Seadme reeglid</translation>
+<translation id="6489534406876378309">Krahhide üleslaadimise alustamine</translation>
 <translation id="6512448926095770873">Lahku sellelt leheküljelt</translation>
 <translation id="6529602333819889595">&amp;Kustuta uuesti</translation>
 <translation id="6550675742724504774">Valikud</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">Kas soovite kindlasti lehe uuesti laadida?</translation>
 <translation id="8349305172487531364">Järjehoidjariba</translation>
 <translation id="8364627913115013041">Määramata.</translation>
+<translation id="8412145213513410671">Krahhid (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;Võta teisaldamine tagasi</translation>
 <translation id="8488350697529856933">Kehtib:</translation>
 <translation id="8530504477309582336">Google Payments ei toeta seda tüüpi kaarti. Valige teine kaart.</translation>

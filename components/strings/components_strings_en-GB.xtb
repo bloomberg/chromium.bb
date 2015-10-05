@@ -10,6 +10,7 @@
 <translation id="111844081046043029">Are you sure that you want to leave this page?</translation>
 <translation id="112840717907525620">Policy cache OK</translation>
 <translation id="1132774398110320017">Chrome Auto-fill settings...</translation>
+<translation id="1146673768181266552">Crash ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="1152921474424827756">Access a <ph name="BEGIN_LINK" />cached copy<ph name="END_LINK" /> of <ph name="URL" /></translation>
 <translation id="121201262018556460">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate containing a weak key. An attacker could have broken the private key and the server may not be the server you expected (you may be communicating with an attacker).</translation>
@@ -31,14 +32,10 @@
 <translation id="1693754753824026215">The page at <ph name="SITE" /> says:</translation>
 <translation id="1706954506755087368">{1,plural, =1{This server could not prove that it is <ph name="DOMAIN" />; its security certificate is supposedly from tomorrow. This may be caused by a misconfiguration or an attacker intercepting your connection.}other{This server could not prove that it is <ph name="DOMAIN" />; its security certificate is supposedly from # days in the future. This may be caused by a misconfiguration or an attacker intercepting your connection.}}</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1737968601308870607">File bug</translation>
 <translation id="1763864636252898013">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your device's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
 <translation id="1871208020102129563">Proxy is set to use fixed proxy servers, not a .pac script URL.</translation>
-<translation id="1875753206475436906">heuristic type: <ph name="HEURISTIC_TYPE" />
-    server type: <ph name="SERVER_TYPE" />
-    field signature: <ph name="FIELD_SIGNATURE" />
-    form signature: <ph name="FORM_SIGNATURE" />
-    experiment id: "<ph name="EXPERIMENT_ID" />"</translation>
 <translation id="194030505837763158">Go to <ph name="LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> Bookmarks</translation>
 <translation id="1973335181906896915">Serialisation error</translation>
@@ -130,6 +127,7 @@
 <translation id="3712624925041724820">Licenses exhausted</translation>
 <translation id="3739623965217189342">Link that you copied</translation>
 <translation id="375403751935624634">The translation failed because of a server error.</translation>
+<translation id="3759461132968374835">You have no recently reported crashes.  Crashes that occurred when crash reporting was disabled will not appear here.</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3858027520442213535">Update date and time</translation>
 <translation id="3884278016824448484">Conflicting device identifier</translation>
@@ -147,10 +145,12 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4171400957073367226">Bad verification signature</translation>
 <translation id="4196861286325780578">&amp;Redo move</translation>
+<translation id="4220128509585149162">Crashes</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4258748452823770588">Bad signature</translation>
 <translation id="4269787794583293679">(No username)</translation>
 <translation id="4300246636397505754">Parent suggestions</translation>
+<translation id="4325863107915753736">Failed to find article</translation>
 <translation id="4372948949327679948">Expected <ph name="VALUE_TYPE" /> value.</translation>
 <translation id="4377125064752653719">You attempted to reach <ph name="DOMAIN" />, but the certificate that the server presented has been revoked by its issuer. This means that the security credentials the server presented absolutely should not be trusted. You may be communicating with an attacker.</translation>
 <translation id="4394049700291259645">Disable</translation>
@@ -175,6 +175,7 @@
 <translation id="498957508165411911">Translate from <ph name="ORIGINAL_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Backing store in bad state</translation>
 <translation id="5031870354684148875">About Google Translate</translation>
+<translation id="5045550434625856497">Incorrect password</translation>
 <translation id="5087286274860437796">Server's certificate is not valid at this time.</translation>
 <translation id="5089810972385038852">County</translation>
 <translation id="5094747076828555589">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
@@ -187,6 +188,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5295309862264981122">Confirm Navigation</translation>
 <translation id="5299298092464848405">Error parsing policy</translation>
+<translation id="5308689395849655368">Crash reporting is disabled.</translation>
 <translation id="5316812925700871227">Rotate Anti-clockwise</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="536296301121032821">Failed to store policy settings</translation>
@@ -212,6 +214,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="6060685159320643512">Careful, these experiments may bite</translation>
+<translation id="6099520380851856040">Occurred <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">The server certificate has a validity period that is too long.</translation>
 <translation id="6154808779448689242">Returned policy token doesn't match current token</translation>
 <translation id="6165508094623778733">Learn more</translation>
@@ -224,6 +227,7 @@
 <translation id="6445051938772793705">Country</translation>
 <translation id="6458467102616083041">Ignored because default search is disabled by policy.</translation>
 <translation id="647261751007945333">Device policies</translation>
+<translation id="6489534406876378309">Start uploading crashes</translation>
 <translation id="6512448926095770873">Leave this Page</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
 <translation id="6550675742724504774">Options</translation>
@@ -302,6 +306,7 @@
 <translation id="8311778656528046050">Are you sure you want to reload this page?</translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>
 <translation id="8364627913115013041">Not set.</translation>
+<translation id="8412145213513410671">Crashes (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8437238597147034694">&amp;Undo move</translation>
 <translation id="8488350697529856933">Applies to</translation>
 <translation id="8530504477309582336">This type of card is not supported by Google Payments. Please select a different card.</translation>

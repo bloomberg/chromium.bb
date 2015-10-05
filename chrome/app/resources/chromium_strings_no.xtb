@@ -56,7 +56,6 @@ og feil legitimasjon. Enten utgir en hacker seg for å være <ph name="SITE" />,
 <translation id="2705212601509139398">Dette nettstedet bruker Chromium Frame-programtillegget. Støtten for dette programtillegget utløper snart, og du bør derfor avinstallere det og laste ned en kompatibel nettleser.</translation>
 <translation id="2718390899429598676">Chromium krypterer dataene dine for å øke sikkerheten.</translation>
 <translation id="2732467638532545152">Datamaskinen din kjører en gammel versjon av Microsoft Windows som ikke kan behandle dette nettstedets sikkerhetssertifikat. På grunn av dette problemet kan ikke Chromium vite om sertifikatet kom fra <ph name="SITE" /> eller fra noen på nettverket ditt som utgir seg for å være <ph name="SITE" />. Oppdater datamaskinen din til en nyere versjon av Windows.</translation>
-<translation id="275588974610408078">Krasjrapportering er ikke tilgjengelig i Chromium.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
 <translation id="2801146392936645542">Filen <ph name="FILE_NAME" /> er skadelig, og Chromium har blokkert den.</translation>
 <translation id="2847479871509788944">Fjern fra Chromium</translation>

@@ -484,9 +484,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is left unset, the user can install any extension in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">This setting has been retired as of <ph name="PRODUCT_NAME" /> version 29. The recommended way to set up organisation-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION" /></translation>
-<translation id="3195451902035818945">Specifies whether SSL record splitting should be disabled. Record splitting is a workaround for a weakness in SSL 3.0 and TLS 1.0 but can cause compatibility issues with some HTTPS servers and proxies.
-
-      If the policy is not set, or is set to false, then record splitting will be used on SSL/TLS connections which use CBC cipher suites.</translation>
 <translation id="3213821784736959823">Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME" />.
 
       If this policy is set to true, the built-in DNS client will be used, if available.
@@ -1771,7 +1768,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8955719471735800169">Back to top</translation>
 <translation id="8970205333161758602">Suppress the <ph name="PRODUCT_FRAME_NAME" /> turn-down prompt</translation>
 <translation id="8971221018777092728">Public session auto-login timer</translation>
-<translation id="8987262643142408725">Disable SSL record splitting</translation>
 <translation id="8992176907758534924">Do not allow any site to show images</translation>
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
 <translation id="9042911395677044526">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
