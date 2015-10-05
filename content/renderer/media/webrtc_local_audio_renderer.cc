@@ -94,14 +94,12 @@ void WebRtcLocalAudioRenderer::OnSetFormat(
 WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer(
     const blink::WebMediaStreamTrack& audio_track,
     int source_render_frame_id,
-    int session_id,
-    int frames_per_buffer)
+    int session_id)
     : audio_track_(audio_track),
       source_render_frame_id_(source_render_frame_id),
       session_id_(session_id),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       playing_(false),
-      frames_per_buffer_(frames_per_buffer),
       volume_(0.0),
       sink_started_(false) {
   DVLOG(1) << "WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer()";
@@ -263,9 +261,6 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
   // the new format.
 
   source_params_ = params;
-  sink_params_ = source_params_;
-  sink_params_.set_frames_per_buffer(WebRtcAudioRenderer::GetOptimalBufferSize(
-      source_params_.sample_rate(), frames_per_buffer_));
   {
     // Note: The max buffer is fairly large, but will rarely be used.
     // Cast needs the buffer to hold at least one second of audio.
@@ -292,6 +287,11 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
 
   sink_ = AudioDeviceFactory::NewOutputDevice(
       source_render_frame_id_, session_id_, std::string(), url::Origin());
+  DCHECK_EQ(sink_->GetDeviceStatus(), media::OUTPUT_DEVICE_STATUS_OK);
+  int frames_per_buffer = sink_->GetOutputParameters().frames_per_buffer();
+  sink_params_ = source_params_;
+  sink_params_.set_frames_per_buffer(WebRtcAudioRenderer::GetOptimalBufferSize(
+      source_params_.sample_rate(), frames_per_buffer));
   MaybeStartSink();
 }
 

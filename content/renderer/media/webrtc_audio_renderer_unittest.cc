@@ -68,7 +68,14 @@ class FakeAudioOutputDevice
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Play, void());
   MOCK_METHOD1(SetVolume, bool(double volume));
-  MOCK_METHOD0(GetOutputDevice, media::OutputDevice*());
+  media::OutputDeviceStatus GetDeviceStatus() override {
+    return media::OUTPUT_DEVICE_STATUS_OK;
+  }
+  media::AudioParameters GetOutputParameters() override {
+    return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                  media::CHANNEL_LAYOUT_STEREO,
+                                  kHardwareSampleRate, 16, kHardwareBufferSize);
+  }
 
  protected:
   virtual ~FakeAudioOutputDevice() {}
@@ -113,9 +120,7 @@ class WebRtcAudioRendererTest : public testing::Test {
         renderer_(new WebRtcAudioRenderer(message_loop_->task_runner(),
                                           stream_,
                                           1,
-                                          1,
-                                          44100,
-                                          kHardwareBufferSize)) {
+                                          1)) {
     EXPECT_CALL(*factory_.get(), CreateOutputDevice(1, _, _, _))
         .WillOnce(Return(mock_output_device_.get()));
     EXPECT_CALL(*mock_output_device_.get(), Start());

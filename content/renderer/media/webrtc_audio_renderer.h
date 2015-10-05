@@ -79,9 +79,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
       const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
       const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
       int source_render_frame_id,
-      int session_id,
-      int sample_rate,
-      int frames_per_buffer);
+      int session_id);
 
   // Initialize function called by clients like WebRtcAudioDeviceImpl.
   // Stop() has to be called before |source| is deleted.

@@ -170,9 +170,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
     const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
     int source_render_frame_id,
-    int session_id,
-    int sample_rate,
-    int frames_per_buffer)
+    int session_id)
     : state_(UNINITIALIZED),
       source_render_frame_id_(source_render_frame_id),
       session_id_(session_id),
@@ -184,14 +182,14 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       audio_delay_milliseconds_(0),
       fifo_delay_milliseconds_(0),
       sink_params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                   media::CHANNEL_LAYOUT_STEREO, sample_rate, 16,
-                   frames_per_buffer),
+                   media::CHANNEL_LAYOUT_STEREO,
+                   0,
+                   16,
+                   0),
       render_callback_count_(0) {
   WebRtcLogMessage(base::StringPrintf(
-      "WAR::WAR. source_render_frame_id=%d"
-      ", session_id=%d, sample_rate=%d, frames_per_buffer=%d, effects=%i",
-      source_render_frame_id, session_id, sample_rate, frames_per_buffer,
-      sink_params_.effects()));
+      "WAR::WAR. source_render_frame_id=%d, session_id=%d, effects=%i",
+      source_render_frame_id, session_id, sink_params_.effects()));
 }
 
 WebRtcAudioRenderer::~WebRtcAudioRenderer() {
@@ -208,13 +206,16 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   DCHECK(!sink_.get());
   DCHECK(!source_);
 
+  sink_ = AudioDeviceFactory::NewOutputDevice(
+      source_render_frame_id_, session_id_, std::string(), url::Origin());
+  DCHECK_EQ(sink_->GetDeviceStatus(), media::OUTPUT_DEVICE_STATUS_OK);
   // WebRTC does not yet support higher rates than 96000 on the client side
   // and 48000 is the preferred sample rate. Therefore, if 192000 is detected,
   // we change the rate to 48000 instead. The consequence is that the native
   // layer will be opened up at 192kHz but WebRTC will provide data at 48kHz
   // which will then be resampled by the audio converted on the browser side
   // to match the native audio layer.
-  int sample_rate = sink_params_.sample_rate();
+  int sample_rate = sink_->GetOutputParameters().sample_rate();
   DVLOG(1) << "Audio output hardware sample rate: " << sample_rate;
   if (sample_rate == 192000) {
     DVLOG(1) << "Resampling from 48000 to 192000 is required";
@@ -240,8 +241,8 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
       sink_params_.channel_layout(), sample_rate, 16, frames_per_10ms);
   source_params.set_channels_for_discrete(sink_params_.channels());
 
-  const int frames_per_buffer =
-      GetOptimalBufferSize(sample_rate, sink_params_.frames_per_buffer());
+  const int frames_per_buffer = GetOptimalBufferSize(
+      sample_rate, sink_->GetOutputParameters().frames_per_buffer());
 
   sink_params_.Reset(sink_params_.format(), sink_params_.channel_layout(),
                      sample_rate, 16, frames_per_buffer);
@@ -272,8 +273,6 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   // Configure the audio rendering client and start rendering.
   DCHECK_GE(session_id_, 0);
-  sink_ = AudioDeviceFactory::NewOutputDevice(
-      source_render_frame_id_, session_id_, std::string(), url::Origin());
   sink_->Initialize(sink_params_, this);
 
   sink_->Start();
