@@ -258,7 +258,7 @@ void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
   DCHECK(job->using_spdy());
 
   // Note: |spdy_session| may be NULL. In that case, |delegate_| should still
-  // receive |stream| so the error propogates up correctly, however there is no
+  // receive |stream| so the error propagates up correctly, however there is no
   // point in broadcasting |spdy_session| to other requests.
 
   // The first case is the usual case.

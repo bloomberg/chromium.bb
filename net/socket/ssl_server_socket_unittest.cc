@@ -76,7 +76,7 @@ class FakeDataChannel {
       read_buf_len_ = buf_len;
       return ERR_IO_PENDING;
     }
-    return PropogateData(buf, buf_len);
+    return PropagateData(buf, buf_len);
   }
 
   int Write(IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
@@ -114,7 +114,7 @@ class FakeDataChannel {
     if (read_callback_.is_null() || data_.empty())
       return;
 
-    int copied = PropogateData(read_buf_, read_buf_len_);
+    int copied = PropagateData(read_buf_, read_buf_len_);
     CompletionCallback callback = read_callback_;
     read_callback_.Reset();
     read_buf_ = NULL;
@@ -131,7 +131,7 @@ class FakeDataChannel {
     callback.Run(ERR_CONNECTION_RESET);
   }
 
-  int PropogateData(scoped_refptr<IOBuffer> read_buf, int read_buf_len) {
+  int PropagateData(scoped_refptr<IOBuffer> read_buf, int read_buf_len) {
     scoped_refptr<DrainableIOBuffer> buf = data_.front();
     int copied = std::min(buf->BytesRemaining(), read_buf_len);
     memcpy(read_buf->data(), buf->data(), copied);

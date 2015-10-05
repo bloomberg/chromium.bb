@@ -266,7 +266,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                              int result);
 
   // Called after validating the checksums on an entry. Passes through the
-  // original result if successful, propogates the error if the checksum does
+  // original result if successful, propagates the error if the checksum does
   // not validate.
   void ChecksumOperationComplete(
       int stream_index,
