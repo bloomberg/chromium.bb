@@ -27,7 +27,7 @@ import scm
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-RETURN_CODE_OK               = 0  # any other failure, likely patch apply one.
+RETURN_CODE_OK               = 0
 RETURN_CODE_OTHER_FAILURE    = 1  # any other failure, likely patch apply one.
 RETURN_CODE_ARGPARSE_FAILURE = 2  # default in python.
 RETURN_CODE_INFRA_FAILURE    = 3  # considered as infra failure.
