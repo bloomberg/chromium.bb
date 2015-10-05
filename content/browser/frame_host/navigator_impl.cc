@@ -158,8 +158,8 @@ void NavigatorImpl::DidStartProvisionalLoad(
     render_frame_host->SetNavigationHandle(scoped_ptr<NavigationHandleImpl>());
   }
 
-  render_frame_host->SetNavigationHandle(
-      NavigationHandleImpl::Create(validated_url, is_main_frame, delegate_));
+  render_frame_host->SetNavigationHandle(NavigationHandleImpl::Create(
+      validated_url, render_frame_host->frame_tree_node()));
 }
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(
@@ -686,7 +686,7 @@ void NavigatorImpl::OnBeginNavigation(
           controller_->GetLastCommittedEntryIndex(),
           controller_->GetEntryCount()));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
-  navigation_request->CreateNavigationHandle(delegate_);
+  navigation_request->CreateNavigationHandle();
 
   if (frame_tree_node->IsMainFrame()) {
     // Renderer-initiated main-frame navigations that need to swap processes
@@ -855,7 +855,7 @@ void NavigatorImpl::RequestNavigation(
           navigation_type, is_same_document_history_load, navigation_start,
           controller_));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
-  navigation_request->CreateNavigationHandle(delegate_);
+  navigation_request->CreateNavigationHandle();
 
   // Have the current renderer execute its beforeunload event if needed. If it
   // is not needed (when beforeunload dispatch is not needed or this navigation

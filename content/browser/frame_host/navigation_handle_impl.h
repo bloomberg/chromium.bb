@@ -55,9 +55,9 @@ struct NavigationRequestInfo;
 // the RenderFrameHost still apply.
 class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
  public:
-  static scoped_ptr<NavigationHandleImpl> Create(const GURL& url,
-                                                 bool is_main_frame,
-                                                 NavigatorDelegate* delegate);
+  static scoped_ptr<NavigationHandleImpl> Create(
+      const GURL& url,
+      FrameTreeNode* frame_tree_node);
   ~NavigationHandleImpl() override;
 
   // NavigationHandle implementation:
@@ -87,7 +87,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const GURL& new_referrer_url,
       bool new_is_external_protocol) override;
 
-  NavigatorDelegate* delegate() const { return delegate_; }
+  NavigatorDelegate* GetDelegate() const;
 
   void set_net_error_code(net::Error net_error_code) {
     net_error_code_ = net_error_code;
@@ -142,12 +142,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   };
 
   NavigationHandleImpl(const GURL& url,
-                       const bool is_main_frame,
-                       NavigatorDelegate* delegate);
+                       FrameTreeNode* frame_tree_node);
 
   // See NavigationHandle for a description of those member variables.
   GURL url_;
-  const bool is_main_frame_;
   bool is_post_;
   Referrer sanitized_referrer_;
   bool has_user_gesture_;
@@ -164,9 +162,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // the DidStartProvisionalLoad is received from the new renderer.
   bool is_transferring_;
 
-  // The delegate that should be notified about events related to this
-  // navigation.
-  NavigatorDelegate* delegate_;
+  // The FrameTreeNode this navigation is happening in.
+  FrameTreeNode* frame_tree_node_;
 
   // A list of Throttles registered for this navigation.
   ScopedVector<NavigationThrottle> throttles_;

@@ -96,8 +96,7 @@ class CONTENT_EXPORT NavigationHandle {
 
   static scoped_ptr<NavigationHandle> CreateNavigationHandleForTesting(
       const GURL& url,
-      bool is_main_frame,
-      WebContents* web_contents);
+      RenderFrameHost* render_frame_host);
 
   // Registers a NavigationThrottle for tests. The throttle can
   // modify the request, pause the request or cancel the request. This will

@@ -128,7 +128,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   // Creates a NavigationHandle. This should be called after any previous
   // NavigationRequest for the FrameTreeNode has been destroyed.
-  void CreateNavigationHandle(NavigatorDelegate* delegate);
+  void CreateNavigationHandle();
 
   // Transfers the ownership of the NavigationHandle to |render_frame_host|.
   // This should be called when the navigation is ready to commit, because the

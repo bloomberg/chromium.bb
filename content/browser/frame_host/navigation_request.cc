@@ -211,9 +211,9 @@ bool NavigationRequest::BeginNavigation() {
   // DidStartProvisionalLoadForFrame for the navigation.
 }
 
-void NavigationRequest::CreateNavigationHandle(NavigatorDelegate* delegate) {
+void NavigationRequest::CreateNavigationHandle() {
   navigation_handle_ = NavigationHandleImpl::Create(
-      common_params_.url, frame_tree_node_->IsMainFrame(), delegate);
+      common_params_.url, frame_tree_node_);
 }
 
 void NavigationRequest::TransferNavigationHandleOwnership(

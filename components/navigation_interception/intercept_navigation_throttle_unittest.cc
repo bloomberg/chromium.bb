@@ -60,7 +60,7 @@ class InterceptNavigationThrottleTest
   SimulateWillStart(const GURL& url, const GURL& sanitized_url, bool is_post) {
     scoped_ptr<content::NavigationHandle> test_handle =
         content::NavigationHandle::CreateNavigationHandleForTesting(
-            url, true, web_contents());
+            url, main_rfh());
     test_handle->RegisterThrottleForTesting(
         scoped_ptr<NavigationThrottle>(
             new InterceptNavigationThrottle(
@@ -76,7 +76,7 @@ class InterceptNavigationThrottleTest
   NavigationThrottle::ThrottleCheckResult Simulate302() {
     scoped_ptr<content::NavigationHandle> test_handle =
         content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(kTestUrl), true, web_contents());
+            GURL(kTestUrl),  main_rfh());
     test_handle->RegisterThrottleForTesting(
         scoped_ptr<NavigationThrottle>(
             new InterceptNavigationThrottle(

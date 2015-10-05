@@ -915,8 +915,7 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // message.
   if (!navigation_handle_) {
     navigation_handle_ = NavigationHandleImpl::Create(
-        validated_params.url, frame_tree_node_->IsMainFrame(),
-        frame_tree_node_->navigator()->GetDelegate());
+        validated_params.url, frame_tree_node_);
   }
 
   accessibility_reset_count_ = 0;

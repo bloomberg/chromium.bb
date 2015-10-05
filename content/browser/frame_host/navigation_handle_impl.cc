@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/navigation_handle_impl.h"
 
+#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -14,17 +16,14 @@ namespace content {
 // static
 scoped_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     const GURL& url,
-    bool is_main_frame,
-    NavigatorDelegate* delegate) {
+    FrameTreeNode* frame_tree_node) {
   return scoped_ptr<NavigationHandleImpl>(
-      new NavigationHandleImpl(url, is_main_frame, delegate));
+      new NavigationHandleImpl(url, frame_tree_node));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(const GURL& url,
-                                           const bool is_main_frame,
-                                           NavigatorDelegate* delegate)
+                                           FrameTreeNode* frame_tree_node)
     : url_(url),
-      is_main_frame_(is_main_frame),
       is_post_(false),
       has_user_gesture_(false),
       transition_(ui::PAGE_TRANSITION_LINK),
@@ -34,12 +33,16 @@ NavigationHandleImpl::NavigationHandleImpl(const GURL& url,
       is_same_page_(false),
       state_(INITIAL),
       is_transferring_(false),
-      delegate_(delegate) {
-  delegate_->DidStartNavigation(this);
+      frame_tree_node_(frame_tree_node) {
+  GetDelegate()->DidStartNavigation(this);
 }
 
 NavigationHandleImpl::~NavigationHandleImpl() {
-  delegate_->DidFinishNavigation(this);
+  GetDelegate()->DidFinishNavigation(this);
+}
+
+NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
+  return frame_tree_node_->navigator()->GetDelegate();
 }
 
 const GURL& NavigationHandleImpl::GetURL() {
@@ -47,7 +50,7 @@ const GURL& NavigationHandleImpl::GetURL() {
 }
 
 bool NavigationHandleImpl::IsInMainFrame() {
-  return is_main_frame_;
+  return frame_tree_node_->IsMainFrame();
 }
 
 bool NavigationHandleImpl::IsPost() {
@@ -193,7 +196,7 @@ NavigationHandleImpl::WillRedirectRequest(const GURL& new_url,
 
 void NavigationHandleImpl::DidRedirectNavigation(const GURL& new_url) {
   url_ = new_url;
-  delegate_->DidRedirectNavigation(this);
+  GetDelegate()->DidRedirectNavigation(this);
 }
 
 void NavigationHandleImpl::ReadyToCommitNavigation(
@@ -201,7 +204,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
   CHECK(!render_frame_host_);
   render_frame_host_ = render_frame_host;
   state_ = READY_TO_COMMIT;
-  delegate_->ReadyToCommitNavigation(this);
+  GetDelegate()->ReadyToCommitNavigation(this);
 }
 
 void NavigationHandleImpl::DidCommitNavigation(
