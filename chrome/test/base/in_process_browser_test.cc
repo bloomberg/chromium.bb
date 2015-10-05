@@ -68,8 +68,6 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "ui/base/win/atl_module.h"
-#include "win8/test/metro_registration_helper.h"
-#include "win8/test/test_registrar_constants.h"
 #endif
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -269,8 +267,6 @@ void InProcessBrowserTest::SetUp() {
           switches::kAshBrowserTests)) {
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
     ui::win::CreateATLModuleIfNeeded();
-    if (version >= base::win::VERSION_WIN8)
-      ASSERT_TRUE(win8::MakeTestDefaultBrowserSynchronously());
   }
 #endif
 
@@ -284,17 +280,6 @@ void InProcessBrowserTest::PrepareTestCommandLine(
 
   // This is a Browser test.
   command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
-
-#if defined(OS_WIN)
-  if (command_line->HasSwitch(switches::kAshBrowserTests)) {
-    command_line->AppendSwitchNative(switches::kViewerLaunchViaAppId,
-                                     win8::test::kDefaultTestAppUserModelId);
-    // Ash already launches with a single browser opened, add kSilentLaunch to
-    // make sure StartupBrowserCreator doesn't attempt to launch a browser on
-    // the native desktop on startup.
-    command_line->AppendSwitch(switches::kSilentLaunch);
-  }
-#endif
 
 #if defined(OS_MACOSX)
   // Explicitly set the path of the binary used for child processes, otherwise

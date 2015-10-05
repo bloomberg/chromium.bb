@@ -18,8 +18,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/base/win/atl_module.h"
-#include "win8/test/metro_registration_helper.h"
-#include "win8/test/test_registrar_constants.h"
 #endif
 
 namespace ash {
@@ -45,8 +43,6 @@ void AuraShellTestSuite::Initialize() {
           ash::switches::kForceAshToDesktop)) {
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
     ui::win::CreateATLModuleIfNeeded();
-    if (version >= base::win::VERSION_WIN8)
-      ASSERT_TRUE(win8::MakeTestDefaultBrowserSynchronously());
   }
 #endif
 

@@ -46,8 +46,6 @@
         'test_registrar_constants',
       ],
       'sources': [
-        'test/metro_registration_helper.cc',
-        'test/metro_registration_helper.h',
         'test/open_with_dialog_async.cc',
         'test/open_with_dialog_async.h',
         'test/open_with_dialog_controller.cc',

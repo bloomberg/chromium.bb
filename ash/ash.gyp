@@ -1099,16 +1099,7 @@
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
-            '../ipc/ipc.gyp:ipc',
-            '../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
             '../ui/platform_window/win/win_window.gyp:win_window',
-            '../win8/win8.gyp:metro_viewer',
-            '../win8/win8.gyp:test_support_win8',
-            '../win8/win8_tests.gyp:test_registrar',
-          ],
-          'sources': [
-            'test/test_metro_viewer_process_host.cc',
-            'test/test_metro_viewer_process_host.h',
           ],
         }],
       ],
@@ -1294,7 +1285,7 @@
       'dependencies': [
         'ash_shell_lib',
         '../content/content_shell_and_tests.gyp:content_shell_lib',
-        '../content/content.gyp:content',     
+        '../content/content.gyp:content',
         '../skia/skia.gyp:skia',
       ],
       'sources': [

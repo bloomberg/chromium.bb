@@ -39,12 +39,9 @@
 #endif
 
 #if defined(OS_WIN)
-#include "ash/test/test_metro_viewer_process_host.h"
-#include "base/win/metro.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/aura/window_tree_host_win.h"
-#include "ui/gfx/win/metro_mode.h"
 #include "ui/platform_window/win/win_window.h"
 #include "win8/test/test_registrar_constants.h"
 #endif
@@ -148,22 +145,8 @@ void AshTestBase::SetUp() {
   gesture_config->set_max_touch_move_in_pixels_for_click(5);
 
 #if defined(OS_WIN)
-  if (!command_line->HasSwitch(ash::switches::kForceAshToDesktop)) {
-    if (gfx::win::ShouldUseMetroMode()) {
-      ipc_thread_.reset(new base::Thread("test_metro_viewer_ipc_thread"));
-      base::Thread::Options options;
-      options.message_loop_type = base::MessageLoop::TYPE_IO;
-      ipc_thread_->StartWithOptions(options);
-      metro_viewer_host_.reset(
-          new TestMetroViewerProcessHost(ipc_thread_->task_runner()));
-      CHECK(metro_viewer_host_->LaunchViewerAndWaitForConnection(
-          win8::test::kDefaultTestAppUserModelId));
-      aura::RemoteWindowTreeHostWin* window_tree_host =
-          aura::RemoteWindowTreeHostWin::Instance();
-      CHECK(window_tree_host != NULL);
-    }
+  if (!command_line->HasSwitch(ash::switches::kForceAshToDesktop))
     ash::WindowPositioner::SetMaximizeFirstWindow(true);
-  }
 #endif
 }
 
@@ -173,23 +156,9 @@ void AshTestBase::TearDown() {
   // Flush the message loop to finish pending release tasks.
   RunAllPendingInMessageLoop();
 
-#if defined(OS_WIN)
-  if (gfx::win::ShouldUseMetroMode() &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kForceAshToDesktop)) {
-    // Check that our viewer connection is still established.
-    CHECK(!metro_viewer_host_->closed_unexpectedly());
-  }
-#endif
-
   ash_test_helper_->TearDown();
 #if defined(OS_WIN)
   ui::test::SetUsePopupAsRootWindowForTest(false);
-  // Kill the viewer process if we spun one up.
-  if (metro_viewer_host_) {
-    metro_viewer_host_->TerminateViewer();
-    metro_viewer_host_.reset();
-  }
 #endif
 
   event_generator_.reset();

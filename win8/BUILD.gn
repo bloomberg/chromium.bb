@@ -34,8 +34,6 @@ source_set("test_support_win8") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   sources = [
-    "test/metro_registration_helper.cc",
-    "test/metro_registration_helper.h",
     "test/open_with_dialog_async.cc",
     "test/open_with_dialog_async.h",
     "test/open_with_dialog_controller.cc",

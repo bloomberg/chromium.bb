@@ -149,10 +149,6 @@ class AshTestBase : public testing::Test {
   scoped_ptr<AshTestHelper> ash_test_helper_;
   scoped_ptr<ui::test::EventGenerator> event_generator_;
 #if defined(OS_WIN)
-  // Note that the order is important here as ipc_thread_ should be destroyed
-  // after metro_viewer_host_->channel_.
-  scoped_ptr<base::Thread> ipc_thread_;
-  scoped_ptr<TestMetroViewerProcessHost> metro_viewer_host_;
   ui::ScopedOleInitializer ole_initializer_;
 #endif
 

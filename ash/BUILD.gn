@@ -190,18 +190,7 @@ source_set("test_support") {
   ]
 
   if (is_win) {
-    sources += [
-      "test/test_metro_viewer_process_host.cc",
-      "test/test_metro_viewer_process_host.h",
-    ]
-    deps += [
-      "//ipc",
-      "//ui/metro_viewer",
-      "//ui/platform_window/win",
-      "//win8:metro_viewer",
-      "//win8:test_support_win8",
-      "//win8:test_registrar",
-    ]
+    deps += [ "//ui/platform_window/win" ]
   }
 }
 
