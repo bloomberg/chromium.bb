@@ -373,13 +373,6 @@ IPC_SYNC_MESSAGE_CONTROL1_3(GpuHostMsg_EstablishGpuChannel,
                             IPC::ChannelHandle /* handle to channel */,
                             gpu::GPUInfo /* stats about GPU process*/)
 
-// A renderer sends this to the browser process when it wants to
-// create a GL context associated with the given view_id.
-IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_CreateViewCommandBuffer,
-                            GPUCreateCommandBufferConfig, /* init_params */
-                            int32,                        /* route_id */
-                            content::CreateCommandBufferResult /* result */)
-
 // Response from GPU to a GputMsg_Initialize message.
 IPC_MESSAGE_CONTROL2(GpuHostMsg_Initialized,
                      bool /* result */,

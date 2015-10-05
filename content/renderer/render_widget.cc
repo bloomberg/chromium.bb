@@ -2353,15 +2353,10 @@ RenderWidget::CreateGraphicsContext3D(bool compositor) {
     limits.min_transfer_buffer_size = 64 * 1024;
   }
 
-  // TODO(piman): we still need to create a View command buffer until
-  // crbug.com/526196 is fixed. The surface_id doesn't matter, it just needs to
-  // be !0.
-  const int32 kDummySurfaceId = 1;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
-          kDummySurfaceId, GetURLForGraphicsContext3D(),
-          gpu_channel_host.get(), attributes, lose_context_when_out_of_memory,
-          limits, NULL));
+          0, GetURLForGraphicsContext3D(), gpu_channel_host.get(), attributes,
+          lose_context_when_out_of_memory, limits, NULL));
   return context.Pass();
 }
 

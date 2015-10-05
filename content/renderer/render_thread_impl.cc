@@ -1548,29 +1548,15 @@ RenderThreadImpl::GetIOThreadTaskRunner() {
 
 scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
     size_t size) {
-  return scoped_ptr<base::SharedMemory>(
-      HostAllocateSharedMemoryBuffer(size));
+  return HostAllocateSharedMemoryBuffer(size);
 }
 
 CreateCommandBufferResult RenderThreadImpl::CreateViewCommandBuffer(
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) {
-  TRACE_EVENT1("gpu",
-               "RenderThreadImpl::CreateViewCommandBuffer",
-               "surface_id",
-               surface_id);
-
-  CreateCommandBufferResult result = CREATE_COMMAND_BUFFER_FAILED;
-  IPC::Message* message = new GpuHostMsg_CreateViewCommandBuffer(
-      init_params,
-      route_id,
-      &result);
-
-  // Allow calling this from the compositor thread.
-  thread_safe_sender()->Send(message);
-
-  return result;
+  NOTREACHED();
+  return CREATE_COMMAND_BUFFER_FAILED;
 }
 
 void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
