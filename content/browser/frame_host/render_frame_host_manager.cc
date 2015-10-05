@@ -1507,6 +1507,36 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   return SiteInstanceDescriptor(browser_context, dest_url, true);
 }
 
+bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
+    RenderFrameHostImpl* rfh,
+    const GURL& dest_url) {
+  // A transfer is not needed if the current SiteInstance doesn't yet have a
+  // site.  This is the case for tests that use NavigateToURL.
+  if (!rfh->GetSiteInstance()->HasSite())
+    return false;
+
+  // We do not currently swap processes for navigations in webview tag guests.
+  if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme))
+    return false;
+
+  GURL effective_url = SiteInstanceImpl::GetEffectiveURL(
+      rfh->GetSiteInstance()->GetBrowserContext(), dest_url);
+
+  // TODO(nasko, nick): These following --site-per-process checks are
+  // overly simplistic. Update them to match all the cases
+  // considered by DetermineSiteInstanceForURL.
+  if (SiteInstance::IsSameWebSite(rfh->GetSiteInstance()->GetBrowserContext(),
+                                  rfh->GetSiteInstance()->GetSiteURL(),
+                                  dest_url)) {
+    return false;  // The same site, no transition needed.
+  }
+
+  // The sites differ. If either one requires a dedicated process,
+  // then a transfer is needed.
+  return rfh->GetSiteInstance()->RequiresDedicatedProcess() ||
+         SiteIsolationPolicy::DoesSiteRequireDedicatedProcess(effective_url);
+}
+
 SiteInstance* RenderFrameHostManager::ConvertToSiteInstance(
     const SiteInstanceDescriptor& descriptor,
     SiteInstance* candidate_instance) {

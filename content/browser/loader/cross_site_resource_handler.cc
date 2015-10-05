@@ -86,47 +86,6 @@ void OnCrossSiteResponseHelper(const CrossSiteResponseParams& params) {
   }
 }
 
-// Determines whether a navigation to |dest_url| may be completed using an
-// existing RenderFrameHost, or whether transferring to a new RenderFrameHost
-// backed by a different render process is required. This is a security policy
-// check determined by the current site isolation mode, and must be done
-// before the resource at |dest_url| is delivered to |rfh|.
-//
-// When this function returns true for a subframe, an out-of-process iframe
-// must be created.
-//
-// TODO(nick): Move this function to RFHM.
-bool IsRendererTransferNeededForNavigation(RenderFrameHostImpl* rfh,
-                                           const GURL& dest_url) {
-  // A transfer is not needed if the current SiteInstance doesn't yet have a
-  // site.  This is the case for tests that use NavigateToURL.
-  if (!rfh->GetSiteInstance()->HasSite())
-    return false;
-
-  // For now, GuestViews never transfer on cross-site navigations.
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh));
-  if (web_contents->GetBrowserPluginGuest())
-    return false;
-
-  GURL effective_url = SiteInstanceImpl::GetEffectiveURL(
-      rfh->GetSiteInstance()->GetBrowserContext(), dest_url);
-
-  // TODO(nasko, nick): These following --site-per-process checks are
-  // overly simplistic. Update them to match all the cases
-  // considered by RenderFrameHostManager::DetermineSiteInstanceForURL.
-  if (SiteInstance::IsSameWebSite(rfh->GetSiteInstance()->GetBrowserContext(),
-                                  rfh->GetSiteInstance()->GetSiteURL(),
-                                  dest_url)) {
-    return false;  // The same site, no transition needed.
-  }
-
-  // The sites differ. If either one requires a dedicated process,
-  // then a transfer is needed.
-  return rfh->GetSiteInstance()->RequiresDedicatedProcess() ||
-         SiteIsolationPolicy::DoesSiteRequireDedicatedProcess(effective_url);
-}
-
 // Returns whether a transfer is needed by doing a check on the UI thread.
 CrossSiteResourceHandler::NavigationDecision
 CheckNavigationPolicyOnUI(GURL real_url, int process_id, int render_frame_id) {
@@ -140,7 +99,8 @@ CheckNavigationPolicyOnUI(GURL real_url, int process_id, int render_frame_id) {
   if (!rfh)
     return CrossSiteResourceHandler::NavigationDecision::CANCEL_REQUEST;
 
-  if (IsRendererTransferNeededForNavigation(rfh, real_url))
+  RenderFrameHostManager* manager = rfh->frame_tree_node()->render_manager();
+  if (manager->IsRendererTransferNeededForNavigation(rfh, real_url))
     return CrossSiteResourceHandler::NavigationDecision::TRANSFER_REQUIRED;
   else
     return CrossSiteResourceHandler::NavigationDecision::USE_EXISTING_RENDERER;

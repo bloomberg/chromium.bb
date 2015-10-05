@@ -323,6 +323,20 @@ class CONTENT_EXPORT RenderFrameHostManager {
       ui::PageTransition page_transition,
       bool should_replace_current_entry);
 
+  // Determines whether a navigation to |dest_url| may be completed using an
+  // existing RenderFrameHost, or whether transferring to a new RenderFrameHost
+  // backed by a different render process is required. This is a security policy
+  // check determined by the current site isolation mode, and must be done
+  // before the resource at |dest_url| is delivered to |existing_rfh|.
+  //
+  // |existing_rfh| must belong to this RFHM, but it can be a pending or current
+  // host.
+  //
+  // When this function returns true for a subframe, an out-of-process iframe
+  // must be created.
+  bool IsRendererTransferNeededForNavigation(RenderFrameHostImpl* existing_rfh,
+                                             const GURL& dest_url);
+
   // Called when a renderer's frame navigates.
   void DidNavigateFrame(RenderFrameHostImpl* render_frame_host,
                         bool was_caused_by_user_gesture);
