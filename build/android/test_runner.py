@@ -17,7 +17,6 @@ import threading
 import unittest
 
 from devil import base_error
-from devil import devil_env
 from devil.android import apk_helper
 from devil.android import device_blacklist
 from devil.android import device_errors
@@ -48,10 +47,6 @@ from pylib.results import json_results
 from pylib.results import report_results
 from pylib.uiautomator import setup as uiautomator_setup
 from pylib.uiautomator import test_options as uiautomator_test_options
-
-
-_DEVIL_STATIC_CONFIG_FILE = os.path.abspath(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'build', 'android', 'devil_config.json'))
 
 
 def AddCommonOptions(parser):
@@ -118,22 +113,6 @@ def ProcessCommonOptions(args):
     constants.SetOutputDirectory(args.output_directory)
   if args.adb_path:
     constants.SetAdbPath(args.adb_path)
-
-  output_binary = lambda p: os.path.join(constants.GetOutDirectory(), p)
-  devil_dynamic_deps = {
-    'md5sum_host': [output_binary('md5sum_bin_host')],
-    'md5sum_device': [output_binary('md5sum_dist')],
-    'forwarder_host': [output_binary('host_forwarder')],
-    'forwarder_device': [output_binary('forwarder_dist')],
-  }
-  if args.adb_path:
-    devil_dynamic_deps['adb_path'] = [args.adb_path]
-
-  devil_dynamic_config = devil_env.GenerateDynamicConfig(devil_dynamic_deps)
-  devil_env.config.Initialize(
-      configs=[devil_dynamic_config],
-      config_files=[_DEVIL_STATIC_CONFIG_FILE])
-
   # Some things such as Forwarder require ADB to be in the environment path.
   adb_dir = os.path.dirname(constants.GetAdbPath())
   if adb_dir and adb_dir not in os.environ['PATH'].split(os.pathsep):

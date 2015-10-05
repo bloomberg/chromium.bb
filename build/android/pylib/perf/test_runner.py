@@ -74,7 +74,6 @@ _GIT_CR_POS_RE = re.compile(r'^Cr-Commit-Position: refs/heads/master@{#(\d+)}$')
 
 
 def _GetChromiumRevision():
-  # pylint: disable=line-too-long
   """Get the git hash and commit position of the chromium master branch.
 
   See: https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/runtest.py#212
@@ -82,7 +81,6 @@ def _GetChromiumRevision():
   Returns:
     A dictionary with 'revision' and 'commit_pos' keys.
   """
-  # pylint: enable=line-too-long
   status, output = cmd_helper.GetCmdStatusAndOutput(
       ['git', 'log', '-n', '1', '--pretty=format:%H%n%B', 'HEAD'],
       constants.DIR_SOURCE_ROOT)
