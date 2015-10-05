@@ -113,8 +113,6 @@ public:
     void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
     void adjustViewportConstrainedOffset(LayoutRect&, ViewportConstrainedPosition) const;
 
-    void invalidatePaintForRectangle(const LayoutRect&, PaintInvalidationReason) const;
-
     void invalidatePaintForViewAndCompositedLayers();
 
     void paint(const PaintInfo&, const LayoutPoint&) const override;

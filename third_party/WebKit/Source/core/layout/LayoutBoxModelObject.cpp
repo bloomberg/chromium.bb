@@ -392,6 +392,8 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintI
 
 void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
+    ASSERT(!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
     ASSERT(compositingState() != NotComposited);

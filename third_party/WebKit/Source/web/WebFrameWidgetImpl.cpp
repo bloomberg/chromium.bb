@@ -1069,8 +1069,6 @@ void WebFrameWidgetImpl::setIsAcceleratedCompositingActive(bool active)
         updateLayerTreeViewport();
         m_isAcceleratedCompositingActive = true;
     }
-    if (m_localRoot->frameView())
-        m_localRoot->frameView()->setClipsRepaints(!m_isAcceleratedCompositingActive);
 }
 
 PaintLayerCompositor* WebFrameWidgetImpl::compositor() const

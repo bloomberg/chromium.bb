@@ -402,22 +402,6 @@ void LayoutView::setShouldDoFullPaintInvalidationForViewAndAllDescendants()
     setShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(this);
 }
 
-void LayoutView::invalidatePaintForRectangle(const LayoutRect& paintInvalidationRect, PaintInvalidationReason invalidationReason) const
-{
-    ASSERT(!paintInvalidationRect.isEmpty());
-
-    if (document().printing() || !m_frameView)
-        return;
-
-    ASSERT(layer()->compositingState() == PaintsIntoOwnBacking || !frame()->ownerLayoutObject());
-
-    if (layer()->compositingState() == PaintsIntoOwnBacking) {
-        setBackingNeedsPaintInvalidationInRect(paintInvalidationRect, invalidationReason);
-    } else {
-        m_frameView->contentRectangleForPaintInvalidation(enclosingIntRect(paintInvalidationRect));
-    }
-}
-
 void LayoutView::invalidatePaintForViewAndCompositedLayers()
 {
     setShouldDoFullPaintInvalidation();

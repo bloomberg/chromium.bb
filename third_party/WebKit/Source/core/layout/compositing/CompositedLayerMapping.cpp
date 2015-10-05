@@ -2044,6 +2044,7 @@ struct SetContentsNeedsDisplayInRectFunctor {
 // r is in the coordinate space of the layer's layout object
 void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason)
 {
+    ASSERT(!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
     // FIXME: need to split out paint invalidations for the background.
     // FIXME: need to distinguish invalidations for different layers (e.g. the main layer and scrolling layer). crbug.com/416535.
     SetContentsNeedsDisplayInRectFunctor functor = {

@@ -370,8 +370,6 @@ void WebViewImpl::setMainFrame(WebFrame* frame)
     if (frame->isWebLocalFrame()) {
         WebLocalFrameImpl* localFrame = toWebLocalFrameImpl(frame);
         localFrame->initializeCoreFrame(&page()->frameHost(), 0, nullAtom, nullAtom);
-        // Composited WebViews want repaints outside the frame visible rect.
-        localFrame->frame()->view()->setClipsRepaints(!m_layerTreeView);
     } else {
         toWebRemoteFrameImpl(frame)->initializeCoreFrame(&page()->frameHost(), 0, nullAtom);
     }

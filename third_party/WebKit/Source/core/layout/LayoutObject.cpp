@@ -79,6 +79,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/style/ContentData.h"
 #include "core/style/ShadowList.h"
+#include "platform/HostWindow.h"
 #include "platform/JSONValues.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
@@ -1163,14 +1164,33 @@ LayoutRect LayoutObject::computePaintInvalidationRect(const LayoutBoxModelObject
     return clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
 }
 
-void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& r, PaintInvalidationReason invalidationReason) const
+
+static void invalidatePaintRectangleOnWindow(const LayoutBoxModelObject& paintInvalidationContainer, const IntRect& dirtyRect)
+{
+    FrameView* frameView = paintInvalidationContainer.frameView();
+    ASSERT(paintInvalidationContainer.isLayoutView() && paintInvalidationContainer.layer()->compositingState() == NotComposited);
+    if (!frameView || paintInvalidationContainer.document().printing())
+        return;
+
+    ASSERT(!frameView->frame().ownerLayoutObject());
+
+    IntRect paintRect = dirtyRect;
+    paintRect.intersect(frameView->visibleContentRect());
+    if (paintRect.isEmpty())
+        return;
+
+    if (HostWindow* window = frameView->hostWindow())
+        window->invalidateRect(frameView->contentsToRootFrame(paintRect));
+}
+
+void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& dirtyRect, PaintInvalidationReason invalidationReason) const
 {
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         return;
 
     ASSERT(gDisablePaintInvalidationStateAsserts || document().lifecycle().state() == DocumentLifecycle::InPaintInvalidation);
 
-    if (r.isEmpty())
+    if (dirtyRect.isEmpty())
         return;
 
     RELEASE_ASSERT(isRooted());
@@ -1182,17 +1202,15 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& pai
         "data", InspectorPaintInvalidationTrackingEvent::data(this, paintInvalidationContainer));
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "LayoutObject::invalidatePaintUsingContainer()",
         "object", this->debugName().ascii(),
-        "info", jsonObjectForPaintInvalidationInfo(r, paintInvalidationReasonToString(invalidationReason)));
+        "info", jsonObjectForPaintInvalidationInfo(dirtyRect, paintInvalidationReasonToString(invalidationReason)));
 
-    if (paintInvalidationContainer.isLayoutView()) {
-        toLayoutView(&paintInvalidationContainer)->invalidatePaintForRectangle(r, invalidationReason);
-        return;
-    }
+    // This conditional handles situations where non-rooted (and hence non-composited) frames are
+    // painted, such as SVG images. 
+    if (!paintInvalidationContainer.isPaintInvalidationContainer())
+        invalidatePaintRectangleOnWindow(paintInvalidationContainer, enclosingIntRect(dirtyRect));
 
-    if (paintInvalidationContainer.view()->usesCompositing()) {
-        ASSERT(paintInvalidationContainer.isPaintInvalidationContainer());
-        paintInvalidationContainer.setBackingNeedsPaintInvalidationInRect(r, invalidationReason);
-    }
+    if (paintInvalidationContainer.view()->usesCompositing() && paintInvalidationContainer.isPaintInvalidationContainer())
+        paintInvalidationContainer.setBackingNeedsPaintInvalidationInRect(dirtyRect, invalidationReason);
 }
 
 void LayoutObject::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient) const
