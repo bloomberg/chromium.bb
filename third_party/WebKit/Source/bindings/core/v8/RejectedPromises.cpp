@@ -15,12 +15,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ScriptArguments.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/Task.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebScheduler.h"
-#include "public/platform/WebTaskRunner.h"
-#include "public/platform/WebThread.h"
-#include "wtf/Functional.h"
 
 namespace blink {
 
@@ -65,7 +59,7 @@ public:
         // Either collected or https://crbug.com/450330
         if (value.IsEmpty() || !value->IsPromise())
             return;
-        ASSERT(!hasHandler());
+        ASSERT(!v8::Local<v8::Promise>::Cast(value)->HasHandler());
 
         EventTarget* target = executionContext->errorEventTarget();
         if (RuntimeEnabledFeatures::promiseRejectionEventEnabled() && target) {
@@ -130,27 +124,6 @@ public:
         }
     }
 
-    void makePromiseWeak()
-    {
-        ASSERT(!m_promise.isEmpty() && !m_promise.isWeak());
-        m_promise.setWeak(this, &Message::didCollectPromise);
-    }
-
-    void makePromiseStrong()
-    {
-        ASSERT(!m_promise.isEmpty() && m_promise.isWeak());
-        m_promise.clearWeak();
-    }
-
-    bool hasHandler()
-    {
-        if (isCollected())
-            return false;
-        ScriptState::Scope scope(m_scriptState);
-        v8::Local<v8::Value> value = m_promise.newLocal(m_scriptState->isolate());
-        return v8::Local<v8::Promise>::Cast(value)->HasHandler();
-    }
-
 private:
     Message(ScriptState* scriptState, v8::Local<v8::Promise> promise, const ScriptValue& exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
         : m_scriptState(scriptState)
@@ -166,6 +139,7 @@ private:
         , m_collected(false)
         , m_shouldLogToConsole(true)
     {
+        m_promise.setWeak(this, &Message::didCollectPromise);
     }
 
     static void didCollectPromise(const v8::WeakCallbackInfo<Message>& data)
@@ -219,8 +193,7 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
     for (size_t i = 0; i < m_reportedAsErrors.size(); ++i) {
         auto& message = m_reportedAsErrors.at(i);
         if (!message->isCollected() && message->hasPromise(data.GetPromise())) {
-            message->makePromiseStrong();
-            Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(FROM_HERE, new Task(bind(&RejectedPromises::revokeNow, this, message.release())));
+            message->revoke();
             m_reportedAsErrors.remove(i);
             return;
         }
@@ -229,23 +202,10 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
 
 void RejectedPromises::dispose()
 {
-    if (!m_queue.isEmpty()) {
-        OwnPtrWillBeRawPtr<WillBeHeapDeque<OwnPtrWillBeMember<Message>>> queue = adoptPtr(new WillBeHeapDeque<OwnPtrWillBeMember<Message>>());
-        queue->swap(m_queue);
-        processQueueNow(queue.release());
-    }
+    processQueue();
 }
 
 void RejectedPromises::processQueue()
-{
-    if (m_queue.isEmpty())
-        return;
-    OwnPtrWillBeRawPtr<WillBeHeapDeque<OwnPtrWillBeMember<Message>>> queue = adoptPtr(new WillBeHeapDeque<OwnPtrWillBeMember<Message>>());
-    queue->swap(m_queue);
-    Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(FROM_HERE, new Task(bind(&RejectedPromises::processQueueNow, this, queue.release())));
-}
-
-void RejectedPromises::processQueueNow(PassOwnPtrWillBeRawPtr<WillBeHeapDeque<OwnPtrWillBeMember<Message>>> queue)
 {
     // Remove collected handlers.
     for (size_t i = 0; i < m_reportedAsErrors.size();) {
@@ -255,21 +215,16 @@ void RejectedPromises::processQueueNow(PassOwnPtrWillBeRawPtr<WillBeHeapDeque<Ow
             ++i;
     }
 
-    while (!queue->isEmpty()) {
-        OwnPtrWillBeRawPtr<Message> message = queue->takeFirst();
-        if (!message->hasHandler()) {
-            message->report();
-            message->makePromiseWeak();
-            m_reportedAsErrors.append(message.release());
-            if (m_reportedAsErrors.size() > maxReportedHandlersPendingResolution)
-                m_reportedAsErrors.remove(0, maxReportedHandlersPendingResolution / 10);
-        }
-    }
-}
+    while (!m_queue.isEmpty()) {
+        OwnPtrWillBeRawPtr<Message> message = m_queue.takeFirst();
+        if (message->isCollected())
+            continue;
 
-void RejectedPromises::revokeNow(PassOwnPtrWillBeRawPtr<Message> message)
-{
-    message->revoke();
+        message->report();
+        m_reportedAsErrors.append(message.release());
+        if (m_reportedAsErrors.size() > maxReportedHandlersPendingResolution)
+            m_reportedAsErrors.remove(0, maxReportedHandlersPendingResolution / 10);
+    }
 }
 
 } // namespace blink

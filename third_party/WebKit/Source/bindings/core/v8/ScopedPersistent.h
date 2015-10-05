@@ -72,11 +72,6 @@ public:
         m_handle.SetWeak(parameters, callback, type);
     }
 
-    void clearWeak()
-    {
-        m_handle.template ClearWeak<void>();
-    }
-
     bool isEmpty() const { return m_handle.IsEmpty(); }
     bool isWeak() const { return m_handle.IsWeak(); }
 
