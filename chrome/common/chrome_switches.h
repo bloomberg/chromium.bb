@@ -198,7 +198,7 @@ extern const char kKioskMode[];
 extern const char kKioskModePrinting[];
 extern const char kLoadComponentExtension[];
 extern const char kLoadExtension[];
-#if !defined(OFFICIAL_BUILD)
+#if !defined(GOOGLE_CHROME_BUILD)
 extern const char kLocalNtpReload[];
 #endif
 extern const char kMakeDefaultBrowser[];
