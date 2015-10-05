@@ -259,6 +259,16 @@ public class AwContentsClientBridge {
         mClient.handleJsBeforeUnload(url, message, handler);
     }
 
+    @CalledByNative
+    private boolean shouldOverrideUrlLoading(
+            String url, boolean hasUserGesture, boolean isRedirect) {
+        if (mClient.hasWebViewClient()) {
+            return mClient.shouldOverrideUrlLoading(url);
+        } else {
+            return AwContentsClient.sendBrowsingIntent(mContext, url, hasUserGesture, isRedirect);
+        }
+    }
+
     void confirmJsResult(int id, String prompt) {
         if (mNativeContentsClientBridge == 0) return;
         nativeConfirmJsResult(mNativeContentsClientBridge, id, prompt);

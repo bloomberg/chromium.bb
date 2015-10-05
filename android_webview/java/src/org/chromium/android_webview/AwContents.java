@@ -279,6 +279,10 @@ public class AwContents implements SmartClipProvider,
 
     private PostMessageSender mPostMessageSender;
 
+    // This flag indicates that ShouldOverrideUrlNavigation should be posted
+    // through the resourcethrottle. This is only used for popup windows.
+    private boolean mDeferredShouldOverrideUrlLoadingIsPendingForPopup;
+
     // This is a workaround for some qualcomm devices discarding buffer on
     // Activity restore.
     private boolean mInvalidateRootViewOnNextDraw;
@@ -488,42 +492,26 @@ public class AwContents implements SmartClipProvider,
         @Override
         public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
             final String url = navigationParams.url;
-
-            final int transitionType = navigationParams.pageTransitionType;
-            final boolean isLoadUrl = (transitionType & PageTransition.FROM_API) != 0;
-            final boolean isBackForward = (transitionType & PageTransition.FORWARD_BACK) != 0;
-            final boolean isReload =
-                    (transitionType & PageTransition.CORE_MASK) == PageTransition.RELOAD;
-            final boolean isRedirect = navigationParams.isRedirect;
-
             boolean ignoreNavigation = false;
-            // Any navigation from loadUrl, goBack/Forward, or reload, are considered application
-            // initiated and hence will not yield a shouldOverrideUrlLoading() callback.
-            if ((!isLoadUrl || isRedirect) && !isBackForward && !isReload
-                    && !navigationParams.isPost) {
-                if (!mContentsClient.hasWebViewClient()) {
-                    ignoreNavigation = AwContentsClient.sendBrowsingIntent(mContext, url,
-                            navigationParams.hasUserGesture
-                            || navigationParams.hasUserGestureCarryover,
-                            navigationParams.isRedirect);
-                } else {
-                    ignoreNavigation = mContentsClient.shouldOverrideUrlLoading(url);
+            if (mDeferredShouldOverrideUrlLoadingIsPendingForPopup) {
+                mDeferredShouldOverrideUrlLoadingIsPendingForPopup = false;
+                // If this is used for all navigations in future, cases for application initiated
+                // load, redirect and backforward should also be filtered out.
+                if (!navigationParams.isPost) {
+                    if (!mContentsClient.hasWebViewClient()) {
+                        ignoreNavigation = AwContentsClient.sendBrowsingIntent(mContext, url,
+                                navigationParams.hasUserGesture
+                                        || navigationParams.hasUserGestureCarryover,
+                                navigationParams.isRedirect);
+                    } else {
+                        ignoreNavigation = mContentsClient.shouldOverrideUrlLoading(url);
+                    }
                 }
             }
-
             // The shouldOverrideUrlLoading call might have resulted in posting messages to the
             // UI thread. Using sendMessage here (instead of calling onPageStarted directly)
             // will allow those to run in order.
-            if (isRedirect) {
-                mContentsClient.getCallbackHelper().postOnPageStarted(url);
-                // We can post onPageFinished here since we know that the navigation will fail.
-                // Also AwWebContentsObserver.didFail does not call OnPageFinished when the
-                // navigation is overridden because we don't want an onPageFinished for such a
-                // navigation unless it is a redirect.
-                if (ignoreNavigation) {
-                    mContentsClient.getCallbackHelper().postOnPageFinished(url);
-                }
-            } else if (!ignoreNavigation) {
+            if (!ignoreNavigation) {
                 mContentsClient.getCallbackHelper().postOnPageStarted(url);
             }
             return ignoreNavigation;
@@ -1010,6 +998,7 @@ public class AwContents implements SmartClipProvider,
     // Recap: supplyContentsForPopup() is called on the parent window's content, this method is
     // called on the popup window's content.
     private void receivePopupContents(long popupNativeAwContents) {
+        mDeferredShouldOverrideUrlLoadingIsPendingForPopup = true;
         // Save existing view state.
         final boolean wasAttached = mIsAttachedToWindow;
         final boolean wasViewVisible = mIsViewVisible;
