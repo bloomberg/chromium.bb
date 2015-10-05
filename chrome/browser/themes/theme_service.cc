@@ -228,6 +228,12 @@ SkColor ThemeService::GetColor(int id) const {
   // For backward compat with older themes, some newer colors are generated from
   // older ones if they are missing.
   switch (id) {
+    case Properties::COLOR_TOOLBAR_BUTTON_ICON:
+      return color_utils::HSLShift(gfx::kChromeIconGrey,
+                                   GetTint(Properties::TINT_BUTTONS));
+    case Properties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE:
+      return color_utils::HSLShift(SkColorSetA(gfx::kChromeIconGrey, 0x33),
+                                   GetTint(Properties::TINT_BUTTONS));
     case Properties::COLOR_NTP_SECTION_HEADER_TEXT:
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.30);
     case Properties::COLOR_NTP_SECTION_HEADER_TEXT_HOVER:

@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -62,6 +63,8 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/controls/menu/menu_listener.h"
@@ -797,25 +800,47 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
 void ToolbarView::LoadImages() {
   ui::ThemeProvider* tp = GetThemeProvider();
 
-  back_->SetImage(views::Button::STATE_NORMAL,
-                  *(tp->GetImageSkiaNamed(IDR_BACK)));
-  back_->SetImage(views::Button::STATE_DISABLED,
-                  *(tp->GetImageSkiaNamed(IDR_BACK_D)));
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    const int kButtonSize = 16;
+    const SkColor normal_color =
+        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+    const SkColor disabled_color =
+        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
 
-  forward_->SetImage(views::Button::STATE_NORMAL,
-                    *(tp->GetImageSkiaNamed(IDR_FORWARD)));
-  forward_->SetImage(views::Button::STATE_DISABLED,
-                     *(tp->GetImageSkiaNamed(IDR_FORWARD_D)));
+    back_->SetImage(views::Button::STATE_NORMAL,
+                    gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_BACK,
+                                          kButtonSize, normal_color));
+    back_->SetImage(views::Button::STATE_DISABLED,
+                    gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_BACK,
+                                          kButtonSize, disabled_color));
+    forward_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_FORWARD, kButtonSize,
+                              normal_color));
+    forward_->SetImage(
+        views::Button::STATE_DISABLED,
+        gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_FORWARD, kButtonSize,
+                              disabled_color));
+    home_->SetImage(views::Button::STATE_NORMAL,
+                    gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_HOME,
+                                          kButtonSize, normal_color));
+    app_menu_->SetImage(views::Button::STATE_NORMAL,
+                        gfx::CreateVectorIcon(gfx::VectorIconId::BROWSER_TOOLS,
+                                              kButtonSize, normal_color));
+  } else {
+    back_->SetImage(views::Button::STATE_NORMAL,
+                    *(tp->GetImageSkiaNamed(IDR_BACK)));
+    back_->SetImage(views::Button::STATE_DISABLED,
+                    *(tp->GetImageSkiaNamed(IDR_BACK_D)));
+    forward_->SetImage(views::Button::STATE_NORMAL,
+                       *(tp->GetImageSkiaNamed(IDR_FORWARD)));
+    forward_->SetImage(views::Button::STATE_DISABLED,
+                       *(tp->GetImageSkiaNamed(IDR_FORWARD_D)));
+    home_->SetImage(views::Button::STATE_NORMAL,
+                    *(tp->GetImageSkiaNamed(IDR_HOME)));
+  }
 
   reload_->LoadImages();
-
-  home_->SetImage(views::Button::STATE_NORMAL,
-                  *(tp->GetImageSkiaNamed(IDR_HOME)));
-
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    app_menu_->SetImage(views::Button::STATE_NORMAL,
-                        *(tp->GetImageSkiaNamed(IDR_TOOLS)));
-  }
 }
 
 void ToolbarView::ShowCriticalNotification() {

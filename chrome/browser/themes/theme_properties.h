@@ -81,6 +81,11 @@ class ThemeProperties {
     COLOR_CONTROL_BACKGROUND = 1000,
     COLOR_TOOLBAR_SEPARATOR,
 
+    // The color of a normal toolbar button's icon.
+    COLOR_TOOLBAR_BUTTON_ICON,
+    // The color of a disabled toolbar button's icon.
+    COLOR_TOOLBAR_BUTTON_ICON_INACTIVE,
+
     // These colors don't have constant default values. They are derived from
     // the runtime value of other colors.
     COLOR_NTP_SECTION_HEADER_TEXT,
@@ -102,6 +107,7 @@ class ThemeProperties {
     COLOR_TOOLBAR_BEZEL,
     COLOR_TOOLBAR_STROKE,
     COLOR_TOOLBAR_STROKE_INACTIVE,
+    // The color of a toolbar button's border.
     COLOR_TOOLBAR_BUTTON_STROKE,
     COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
     GRADIENT_FRAME_INCOGNITO,
