@@ -996,6 +996,13 @@ void WebMediaPlayerAndroid::OnDidExitFullscreen() {
 }
 
 void WebMediaPlayerAndroid::OnMediaPlayerPlay() {
+  // The MediaPlayer might request the video to be played after it lost its
+  // stream texture proxy or the peer connection, for example, if the video was
+  // paused while fullscreen then fullscreen state was left.
+  TryCreateStreamTextureProxyIfNeeded();
+  if (needs_establish_peer_)
+    EstablishSurfaceTexturePeer();
+
   UpdatePlayingState(true);
   client_->playbackStateChanged();
 }
