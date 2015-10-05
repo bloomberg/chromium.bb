@@ -11,10 +11,12 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -30,6 +32,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/variations/entropy_provider.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -116,6 +119,9 @@ class PersonalDataManagerTest : public testing::Test {
 
     test::DisableSystemServices(prefs_.get());
     ResetPersonalDataManager(USER_MODE_NORMAL);
+
+    // There are no field trials enabled by default.
+    field_trial_list_.reset();
   }
 
   void TearDown() override {
@@ -167,6 +173,14 @@ class PersonalDataManagerTest : public testing::Test {
     ASSERT_EQ(1U, personal_data_->GetProfiles().size());
   }
 
+  void EnableAutofillProfileOrderByFrecencyFieldTrial() {
+    field_trial_list_.reset(
+        new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
+    field_trial_ = base::FieldTrialList::CreateFieldTrial(
+        "AutofillProfileOrderByFrecency", "Enabled");
+    field_trial_->group();
+  }
+
   // The temporary directory should be deleted at the end to ensure that
   // files are not used anymore and deletion succeeds.
   base::ScopedTempDir temp_dir_;
@@ -179,6 +193,9 @@ class PersonalDataManagerTest : public testing::Test {
   AutofillTable* autofill_table_;  // weak ref
   PersonalDataLoadedObserverMock personal_data_observer_;
   scoped_ptr<PersonalDataManager> personal_data_;
+
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  scoped_refptr<base::FieldTrial> field_trial_;
 };
 
 TEST_F(PersonalDataManagerTest, AddProfile) {
@@ -3364,6 +3381,63 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile_FromOneAddressLineToTwo) {
             profiles2.front()->GetRawInfo(ADDRESS_HOME_LINE1));
   ASSERT_EQ(base::UTF8ToUTF16("unit 5"),
             profiles2.front()->GetRawInfo(ADDRESS_HOME_LINE2));
+}
+
+// Tests that GetProfileSuggestions orders its suggestions based on MRU by
+// default and based on the the frecency formula if the appropriate field trial
+// is set.
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_RankByMru) {
+  // Set up the profiles. They are named with number suffixes X_Y so the X is
+  // the order in which they should be ordered by MRU and Y is the order in
+  // which they should be ranked by frecency.
+  AutofillProfile profile3(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile3, "Marion3_3", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  profile3.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  profile3.set_use_count(5);
+  personal_data_->AddProfile(profile3);
+
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile1, "Marion2_1", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  profile1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  profile1.set_use_count(10);
+  personal_data_->AddProfile(profile1);
+
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile2, "Marion1_2", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  profile2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
+  profile2.set_use_count(300);
+  personal_data_->AddProfile(profile2);
+
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  // Verify that the profiles are sorted by MRU by default.
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(NAME_FIRST), base::ASCIIToUTF16("Ma"), false,
+      std::vector<ServerFieldType>());
+  ASSERT_EQ(3, static_cast<int>(suggestions.size()));
+  EXPECT_EQ(suggestions[0].value, base::ASCIIToUTF16("Marion1_2"));
+  EXPECT_EQ(suggestions[1].value, base::ASCIIToUTF16("Marion2_1"));
+  EXPECT_EQ(suggestions[2].value, base::ASCIIToUTF16("Marion3_3"));
+
+  // Verify the profiles are sorted by frecency when the flag is set.
+  EnableAutofillProfileOrderByFrecencyFieldTrial();
+
+  suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(NAME_FIRST), base::ASCIIToUTF16("Ma"), false,
+      std::vector<ServerFieldType>());
+  ASSERT_EQ(3, static_cast<int>(suggestions.size()));
+  EXPECT_EQ(suggestions[0].value, base::ASCIIToUTF16("Marion2_1"));
+  EXPECT_EQ(suggestions[1].value, base::ASCIIToUTF16("Marion1_2"));
+  EXPECT_EQ(suggestions[2].value, base::ASCIIToUTF16("Marion3_3"));
 }
 
 }  // namespace autofill

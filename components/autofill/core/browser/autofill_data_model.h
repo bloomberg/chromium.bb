@@ -49,6 +49,13 @@ class AutofillDataModel : public FormGroup {
     modification_date_ = time;
   }
 
+  // Compares two data models according to their frecency score. The score uses
+  // a combination of frequency and recency to determine the relevance of the
+  // profile. |comparison_time_| allows consistent sorting throughout the
+  // comparisons.
+  bool CompareFrecency(const AutofillDataModel* other,
+                       base::Time comparison_time) const;
+
  private:
   // A globally unique ID for this object.
   std::string guid_;
@@ -69,6 +76,12 @@ class AutofillDataModel : public FormGroup {
 
   // The last time data in the model was modified.
   base::Time modification_date_;
+
+  // Returns a score based on both the recency (relative to |time|) and
+  // frequency for the model. The score is a negative number where a higher
+  // value is more relevant. |time| is passed as a parameter to ensure
+  // consistent results.
+  double GetFrecencyScore(base::Time time) const;
 };
 
 }  // namespace autofill

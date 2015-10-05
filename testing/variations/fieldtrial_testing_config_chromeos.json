@@ -9,6 +9,11 @@
             "group_name": "Enabled"
         }
     ],
+    "AutofillProfileOrderByFrecency": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "CaptivePortalInterstitial": [
         {
             "group_name": "Enabled"

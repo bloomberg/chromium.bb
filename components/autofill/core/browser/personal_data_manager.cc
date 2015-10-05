@@ -4,15 +4,9 @@
 
 #include "components/autofill/core/browser/personal_data_manager.h"
 
-#include <algorithm>
-#include <functional>
-#include <iterator>
-
-#include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
-#include "base/logging.h"
-#include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
@@ -201,6 +195,13 @@ bool RankByMfu(const AutofillDataModel* a, const AutofillDataModel* b) {
 
   // Ties are broken by MRU.
   return a->use_date() > b->use_date();
+}
+
+// Returns whether sorting autofill profile suggestions by frecency is enabled.
+bool IsAutofillProfileSortingByFrecencyEnabled() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("AutofillProfileOrderByFrecency");
+  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
 }  // namespace
@@ -786,7 +787,17 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
       AutofillProfile::CanonicalizeProfileString(field_contents);
 
   std::vector<AutofillProfile*> profiles = GetProfiles(true);
-  std::sort(profiles.begin(), profiles.end(), RankByMfu);
+
+  if (IsAutofillProfileSortingByFrecencyEnabled()) {
+    base::Time comparison_time = base::Time::Now();
+    std::sort(profiles.begin(), profiles.end(),
+              [comparison_time](const AutofillDataModel* a,
+                                const AutofillDataModel* b) {
+                return a->CompareFrecency(b, comparison_time);
+              });
+  } else {
+    std::sort(profiles.begin(), profiles.end(), RankByMfu);
+  }
 
   std::vector<Suggestion> suggestions;
   // Match based on a prefix search.

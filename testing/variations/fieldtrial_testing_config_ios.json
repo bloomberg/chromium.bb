@@ -4,6 +4,11 @@
             "group_name": "Enabled"
         }
     ],
+    "AutofillProfileOrderByFrecency": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "ChromotingQUIC": [
         {
             "group_name": "Enabled"
