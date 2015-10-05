@@ -9,6 +9,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -70,6 +71,15 @@ public final class OfflinePageBridge {
          * Called when the native side of offline pages is loaded and now in usable state.
          */
         void offlinePageModelLoaded();
+    }
+
+    private static int getFreeSpacePercentage() {
+        return (int) (1.0 * OfflinePageUtils.getFreeSpaceInBytes()
+                / OfflinePageUtils.getTotalSpaceInBytes() * 100);
+    }
+
+    private static int getFreeSpaceMB() {
+        return (int) (OfflinePageUtils.getFreeSpaceInBytes() / (1024 * 1024));
     }
 
     /**
@@ -157,6 +167,10 @@ public final class OfflinePageBridge {
     public void savePage(
             WebContents webContents, BookmarkId bookmarkId, SavePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
+        RecordHistogram.recordEnumeratedHistogram(
+                "OfflinePages.SavePage.FreeSpacePercentage", getFreeSpacePercentage(), 101);
+        RecordHistogram.recordCustomCountHistogram(
+                "OfflinePages.SavePage.FreeSpaceMB", getFreeSpaceMB(), 1, 500000, 50);
         nativeSavePage(mNativeOfflinePageBridge, callback, webContents, bookmarkId.getId());
     }
 
@@ -180,6 +194,10 @@ public final class OfflinePageBridge {
     @VisibleForTesting
     public void deletePage(BookmarkId bookmarkId, DeletePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
+        RecordHistogram.recordEnumeratedHistogram(
+                "OfflinePages.DeletePage.FreeSpacePercentage", getFreeSpacePercentage(), 101);
+        RecordHistogram.recordCustomCountHistogram(
+                "OfflinePages.DeletePage.FreeSpaceMB", getFreeSpaceMB(), 1, 500000, 50);
         nativeDeletePage(mNativeOfflinePageBridge, callback, bookmarkId.getId());
     }
 

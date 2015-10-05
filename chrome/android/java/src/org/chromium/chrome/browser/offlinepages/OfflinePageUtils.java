@@ -33,6 +33,20 @@ public class OfflinePageUtils {
     private static final long STORAGE_ALMOST_FULL_THRESHOLD_BYTES = 10L * (1 << 20); // 10M
 
     /**
+     * Returns the number of free bytes on the storage.
+     */
+    public static long getFreeSpaceInBytes() {
+        return Environment.getExternalStorageDirectory().getUsableSpace();
+    }
+
+    /**
+     * Returns the number of total bytes on the storage.
+     */
+    public static long getTotalSpaceInBytes() {
+        return Environment.getExternalStorageDirectory().getTotalSpace();
+    }
+
+    /**
      * Returns true if the stoarge is almost full which indicates that the user probably needs to
      * free up some space.
      */

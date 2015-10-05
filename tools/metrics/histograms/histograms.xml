@@ -29057,6 +29057,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.DeletePage.FreeSpaceMB" units="MB">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    The amount of free space available, in megabytes, on the user's device when
+    the page is being deleted.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.DeletePage.FreeSpacePercentage" units="%">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    The percentage of free space available on the user's device when the page is
+    being deleted.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.DeletePageResult"
     enum="OfflinePagesDeletePageResult">
   <owner>jianli@chromium.org</owner>
@@ -29087,6 +29103,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Number of saved pages restored from the offline pages metadata store when it
     is logged.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.SavePage.FreeSpaceMB" units="MB">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    The amount of free space available, in megabytes, on the user's device when
+    the page is being saved.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.SavePage.FreeSpacePercentage" units="%">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    The percentage of free space available on the user's device when the page is
+    being saved.
   </summary>
 </histogram>
 
