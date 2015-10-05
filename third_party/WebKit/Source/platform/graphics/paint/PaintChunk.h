@@ -1,0 +1,53 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef PaintChunk_h
+#define PaintChunk_h
+
+#include "platform/graphics/paint/PaintProperties.h"
+#include <iosfwd>
+
+namespace blink {
+
+// A contiguous sequence of drawings with common paint properties.
+//
+// This is expected to be owned by the paint artifact which also owns the
+// related drawings.
+//
+// This is a Slimming Paint v2 class.
+struct PaintChunk {
+    PaintChunk() : beginIndex(0), endIndex(0) { }
+    PaintChunk(unsigned begin, unsigned end, const PaintProperties& props)
+        : beginIndex(begin), endIndex(end), properties(props) { }
+
+    // Index of the first drawing in this chunk.
+    unsigned beginIndex;
+
+    // Index of the first drawing not in this chunk, so that there are
+    // |endIndex - beginIndex| drawings in the chunk.
+    unsigned endIndex;
+
+    // The paint properties which apply to this chunk.
+    PaintProperties properties;
+};
+
+inline bool operator==(const PaintChunk& a, const PaintChunk& b)
+{
+    return a.beginIndex == b.beginIndex
+        && a.endIndex == b.endIndex
+        && a.properties == b.properties;
+}
+
+inline bool operator!=(const PaintChunk& a, const PaintChunk& b)
+{
+    return !(a == b);
+}
+
+// Redeclared here to avoid ODR issues.
+// See platform/testing/PaintPrinters.h.
+void PrintTo(const PaintChunk&, std::ostream*);
+
+} // namespace blink
+
+#endif // PaintChunk_h

@@ -21,7 +21,8 @@ class DisplayItemListTest : public ::testing::Test {
 public:
     DisplayItemListTest()
         : m_displayItemList(DisplayItemList::create())
-        , m_originalSlimmingPaintSubsequenceCachingEnabled(RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled()) { }
+        , m_originalSlimmingPaintSubsequenceCachingEnabled(RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled())
+        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
 
 protected:
     DisplayItemList& displayItemList() { return *m_displayItemList; }
@@ -30,10 +31,12 @@ private:
     void TearDown() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(m_originalSlimmingPaintSubsequenceCachingEnabled);
+        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
     }
 
     OwnPtr<DisplayItemList> m_displayItemList;
     bool m_originalSlimmingPaintSubsequenceCachingEnabled;
+    bool m_originalSlimmingPaintV2Enabled;
 };
 
 const DisplayItem::Type foregroundDrawingType = static_cast<DisplayItem::Type>(DisplayItem::DrawingPaintPhaseFirst + 4);
@@ -770,6 +773,21 @@ TEST_F(DisplayItemListTest, OptimizeNoopPairs)
     EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType));
+}
+
+TEST_F(DisplayItemListTest, SmallDisplayItemListHasOnePaintChunk)
+{
+    RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
+    TestDisplayItemClient client("test client");
+
+    GraphicsContext context(&displayItemList());
+    drawRect(context, client, backgroundDrawingType, FloatRect(0, 0, 100, 100));
+
+    displayItemList().commitNewDisplayItems();
+    const auto& paintChunks = displayItemList().paintChunks();
+    ASSERT_EQ(1u, paintChunks.size());
+    EXPECT_EQ(0u, paintChunks[0].beginIndex);
+    EXPECT_EQ(1u, paintChunks[0].endIndex);
 }
 
 } // namespace blink

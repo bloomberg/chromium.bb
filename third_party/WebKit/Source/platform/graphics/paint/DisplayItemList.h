@@ -12,6 +12,8 @@
 #include "platform/graphics/ContiguousContainer.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/paint/DisplayItem.h"
+#include "platform/graphics/paint/PaintChunk.h"
+#include "platform/graphics/paint/PaintChunker.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
 #include "wtf/Alignment.h"
 #include "wtf/HashMap.h"
@@ -75,6 +77,11 @@ public:
 #endif
 
     // These methods are called during painting.
+
+    // Provide a new set of paint properties to apply to recorded display items,
+    // for Slimming Paint v2.
+    void updateCurrentPaintProperties(const PaintProperties&);
+
     template <typename DisplayItemClass, typename... Args>
     DisplayItemClass& createAndAppend(Args&&... args)
     {
@@ -113,6 +120,9 @@ public:
 
     // Get the paint list generated after the last painting.
     const DisplayItems& displayItems() const;
+
+    // Get the paint chunks generated after the last painting.
+    const Vector<PaintChunk>& paintChunks() const;
 
     bool clientCacheIsValid(DisplayItemClient) const;
 
@@ -197,6 +207,12 @@ private:
 
     DisplayItems m_currentDisplayItems;
     DisplayItems m_newDisplayItems;
+
+    // In Slimming Paint v2, paint properties (e.g. transform) useful for
+    // compositing are stored in corresponding paint chunks instead of in the
+    // display items.
+    Vector<PaintChunk> m_currentPaintChunks;
+    PaintChunker m_newPaintChunks;
 
     // Contains all clients having valid cached paintings if updated.
     // It's lazily updated in updateValidlyCachedClientsIfNeeded().

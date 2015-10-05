@@ -24,6 +24,12 @@ const DisplayItems& DisplayItemList::displayItems() const
     return m_currentDisplayItems;
 }
 
+const Vector<PaintChunk>& DisplayItemList::paintChunks() const
+{
+    ASSERT(m_newPaintChunks.isInInitialState());
+    return m_currentPaintChunks;
+}
+
 bool DisplayItemList::lastDisplayItemIsNoopBegin() const
 {
     if (m_newDisplayItems.isEmpty())
@@ -48,6 +54,9 @@ void DisplayItemList::removeLastDisplayItem()
     }
 #endif
     m_newDisplayItems.removeLast();
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        m_newPaintChunks.decrementDisplayItemIndex();
 }
 
 void DisplayItemList::processNewItem(DisplayItem& displayItem)
@@ -85,6 +94,14 @@ void DisplayItemList::processNewItem(DisplayItem& displayItem)
 
     if (skippingCache())
         displayItem.setSkippedCache();
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        m_newPaintChunks.incrementDisplayItemIndex();
+}
+
+void DisplayItemList::updateCurrentPaintProperties(const PaintProperties& newPaintProperties)
+{
+    m_newPaintChunks.updateCurrentPaintProperties(newPaintProperties);
 }
 
 void DisplayItemList::beginScope()
@@ -287,6 +304,7 @@ void DisplayItemList::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
             ASSERT(!item.isCached());
 #endif
         m_currentDisplayItems.swap(m_newDisplayItems);
+        m_currentPaintChunks = m_newPaintChunks.releasePaintChunks();
         m_validlyCachedClientsDirty = true;
         m_numCachedItems = 0;
         return;
@@ -303,6 +321,7 @@ void DisplayItemList::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
 
     // TODO(jbroman): Consider revisiting this heuristic.
     DisplayItems updatedList(std::max(m_currentDisplayItems.usedCapacityInBytes(), m_newDisplayItems.usedCapacityInBytes()));
+    Vector<PaintChunk> updatedPaintChunks;
     DisplayItems::iterator currentIt = m_currentDisplayItems.begin();
     DisplayItems::iterator currentEnd = m_currentDisplayItems.end();
     for (DisplayItems::iterator newIt = m_newDisplayItems.begin(); newIt != m_newDisplayItems.end(); ++newIt) {
@@ -364,6 +383,10 @@ void DisplayItemList::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
     if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
         checkNoRemainingCachedDisplayItems();
 #endif // ENABLE(ASSERT)
+
+    // TODO(jbroman): When subsequence caching applies to SPv2, we'll need to
+    // merge the paint chunks as well.
+    m_currentPaintChunks = m_newPaintChunks.releasePaintChunks();
 
     m_newDisplayItems.clear();
     m_validlyCachedClientsDirty = true;

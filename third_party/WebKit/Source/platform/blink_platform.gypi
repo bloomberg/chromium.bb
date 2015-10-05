@@ -683,6 +683,10 @@
       'graphics/paint/FixedPositionDisplayItem.h',
       'graphics/paint/FloatClipDisplayItem.cpp',
       'graphics/paint/FloatClipDisplayItem.h',
+      'graphics/paint/PaintChunk.h',
+      'graphics/paint/PaintChunker.cpp',
+      'graphics/paint/PaintChunker.h',
+      'graphics/paint/PaintProperties.h',
       'graphics/paint/ScrollDisplayItem.cpp',
       'graphics/paint/ScrollDisplayItem.h',
       'graphics/paint/SkPictureBuilder.h',
@@ -993,6 +997,7 @@
       'graphics/paint/DisplayItemPropertyTreeBuilderTest.cpp',
       'graphics/paint/DisplayItemListTest.cpp',
       'graphics/paint/DisplayItemTest.cpp',
+      'graphics/paint/PaintChunkerTest.cpp',
       'image-decoders/FastSharedBufferReaderTest.cpp',
       'image-decoders/ImageDecoderTest.cpp',
       'mac/VersionUtilMacTest.mm',
@@ -1050,6 +1055,8 @@
     'platform_test_support_files': [
       'testing/GeometryPrinters.cpp',
       'testing/GeometryPrinters.h',
+      'testing/PaintPrinters.cpp',
+      'testing/PaintPrinters.h',
     ],
     'conditions': [
       ['OS=="win"',
