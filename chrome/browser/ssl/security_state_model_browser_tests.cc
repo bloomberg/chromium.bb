@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, SHA1Broken) {
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::DEPRECATED_SHA1_BROKEN,
+      SecurityStateModel::DEPRECATED_SHA1_MAJOR,
       SecurityStateModel::NO_MIXED_CONTENT,
       false /* expect cert status error */);
 }
@@ -302,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, MixedContentWithBrokenSHA1) {
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::DEPRECATED_SHA1_BROKEN,
+      SecurityStateModel::DEPRECATED_SHA1_MAJOR,
       SecurityStateModel::DISPLAYED_MIXED_CONTENT,
       false /* expect cert status error */);
 
@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, MixedContentWithBrokenSHA1) {
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::DEPRECATED_SHA1_BROKEN,
+      SecurityStateModel::DEPRECATED_SHA1_MAJOR,
       SecurityStateModel::NO_MIXED_CONTENT,
       false /* expect cert status error */);
   // Load the insecure image.
@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, MixedContentWithBrokenSHA1) {
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::DEPRECATED_SHA1_BROKEN,
+      SecurityStateModel::DEPRECATED_SHA1_MAJOR,
       SecurityStateModel::DISPLAYED_MIXED_CONTENT,
       false /* expect cert status error */);
 
@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, MixedContentWithBrokenSHA1) {
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::DEPRECATED_SHA1_BROKEN,
+      SecurityStateModel::DEPRECATED_SHA1_MAJOR,
       SecurityStateModel::RAN_MIXED_CONTENT,
       false /* expect cert status error */);
 
@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, MixedContentWithBrokenSHA1) {
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::DEPRECATED_SHA1_BROKEN,
+      SecurityStateModel::DEPRECATED_SHA1_MAJOR,
       SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT,
       false /* expect cert status error */);
 }

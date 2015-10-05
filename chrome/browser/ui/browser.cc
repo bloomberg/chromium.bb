@@ -1341,18 +1341,18 @@ content::SecurityStyle Browser::GetSecurityStyle(
   }
 
   if (security_info.sha1_deprecation_status ==
-      SecurityStateModel::DEPRECATED_SHA1_BROKEN) {
+      SecurityStateModel::DEPRECATED_SHA1_MAJOR) {
     security_style_explanations->broken_explanations.push_back(
         content::SecurityStyleExplanation(
-            l10n_util::GetStringUTF8(IDS_BROKEN_SHA1),
-            l10n_util::GetStringUTF8(IDS_BROKEN_SHA1_DESCRIPTION),
+            l10n_util::GetStringUTF8(IDS_MAJOR_SHA1),
+            l10n_util::GetStringUTF8(IDS_MAJOR_SHA1_DESCRIPTION),
             security_info.cert_id));
   } else if (security_info.sha1_deprecation_status ==
-             SecurityStateModel::DEPRECATED_SHA1_WARNING) {
+             SecurityStateModel::DEPRECATED_SHA1_MINOR) {
     security_style_explanations->warning_explanations.push_back(
         content::SecurityStyleExplanation(
-            l10n_util::GetStringUTF8(IDS_WARNING_SHA1),
-            l10n_util::GetStringUTF8(IDS_WARNING_SHA1_DESCRIPTION),
+            l10n_util::GetStringUTF8(IDS_MINOR_SHA1),
+            l10n_util::GetStringUTF8(IDS_MINOR_SHA1_DESCRIPTION),
             security_info.cert_id));
   }
 

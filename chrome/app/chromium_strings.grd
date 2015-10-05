@@ -509,9 +509,6 @@ Chromium is unable to recover your settings.
       <message name="IDS_PAGE_INFO_INTERNAL_PAGE" desc="Message to display in the page info bubble when the page you are on is a chrome:// page or about:something.">
         You are viewing a secure Chromium page.
       </message>
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM" desc="The text of the identity section when the site is using a certificate that will stop working in future versions of Chrome.">
-        The certificate chain for this website contains at least one certificate that was signed using a deprecated signature algorithm based on SHA-1.
-      </message>
 
       <!-- Print Preview -->
       <message name="IDS_PRINT_PREVIEW_NO_PLUGIN" desc="Message to display when the PDF viewer is missing.">

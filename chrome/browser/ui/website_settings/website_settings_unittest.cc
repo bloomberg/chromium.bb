@@ -456,7 +456,7 @@ TEST_F(WebsiteSettingsTest, HTTPSPolicyCertConnection) {
   EXPECT_EQ(base::string16(), website_settings()->organization_name());
 }
 
-TEST_F(WebsiteSettingsTest, HTTPSSHA1Connection) {
+TEST_F(WebsiteSettingsTest, HTTPSSHA1Minor) {
   security_info_.security_level = SecurityStateModel::NONE;
   security_info_.scheme_is_cryptographic = true;
   security_info_.cert_id = cert_id();
@@ -467,17 +467,47 @@ TEST_F(WebsiteSettingsTest, HTTPSSHA1Connection) {
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
   security_info_.connection_status = status;
   security_info_.sha1_deprecation_status =
-      SecurityStateModel::DEPRECATED_SHA1_WARNING;
+      SecurityStateModel::DEPRECATED_SHA1_MINOR;
 
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
             website_settings()->site_connection_status());
-  EXPECT_EQ(
-      WebsiteSettings::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM,
-      website_settings()->site_identity_status());
+  EXPECT_EQ(WebsiteSettings::
+                SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR,
+            website_settings()->site_identity_status());
   EXPECT_EQ(base::string16(), website_settings()->organization_name());
+  EXPECT_EQ(IDR_PAGEINFO_WARNING_MINOR,
+            WebsiteSettingsUI::GetIdentityIconID(
+                website_settings()->site_identity_status()));
+}
+
+TEST_F(WebsiteSettingsTest, HTTPSSHA1Major) {
+  security_info_.security_level = SecurityStateModel::NONE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = 0;
+  security_info_.security_bits = 81;  // No error if > 80.
+  int status = 0;
+  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+  security_info_.connection_status = status;
+  security_info_.sha1_deprecation_status =
+      SecurityStateModel::DEPRECATED_SHA1_MAJOR;
+
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::
+                SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR,
+            website_settings()->site_identity_status());
+  EXPECT_EQ(base::string16(), website_settings()->organization_name());
+  EXPECT_EQ(IDR_PAGEINFO_BAD,
+            WebsiteSettingsUI::GetIdentityIconID(
+                website_settings()->site_identity_status()));
 }
 
 #if !defined(OS_ANDROID)

@@ -107,7 +107,10 @@ base::string16 WebsiteSettingsUI::IdentityInfo::GetSecuritySummary() const {
           return l10n_util::GetStringUTF16(
               IDS_WEBSITE_SETTINGS_SECURE_TRANSPORT);
       }
-    case WebsiteSettings::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
+    case WebsiteSettings::
+        SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR:
+    case WebsiteSettings::
+        SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR:
       return l10n_util::GetStringUTF16(
           IDS_WEBSITE_DEPRECATED_SIGNATURE_ALGORITHM);
     case WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
@@ -315,8 +318,13 @@ int WebsiteSettingsUI::GetIdentityIconID(
     case WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
       resource_id = IDR_PAGEINFO_ENTERPRISE_MANAGED;
       break;
-    case WebsiteSettings::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
+    case WebsiteSettings::
+        SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR:
       resource_id = IDR_PAGEINFO_WARNING_MINOR;
+      break;
+    case WebsiteSettings::
+        SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR:
+      resource_id = IDR_PAGEINFO_BAD;
       break;
     default:
       NOTREACHED();

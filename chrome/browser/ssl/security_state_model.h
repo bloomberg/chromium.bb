@@ -71,11 +71,11 @@ class SecurityStateModel
     // The connection used a certificate with a SHA1 signature in the
     // chain, and policy says that the connection should be treated with a
     // warning.
-    DEPRECATED_SHA1_WARNING,
+    DEPRECATED_SHA1_MINOR,
     // The connection used a certificate with a SHA1 signature in the
     // chain, and policy says that the connection should be treated as
     // broken HTTPS.
-    DEPRECATED_SHA1_BROKEN,
+    DEPRECATED_SHA1_MAJOR,
   };
 
   // Describes the type of mixed content (if any) that a site

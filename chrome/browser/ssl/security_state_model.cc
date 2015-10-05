@@ -81,10 +81,10 @@ SecurityStateModel::SHA1DeprecationStatus GetSHA1DeprecationStatus(
   // See http://crbug.com/401365 for details.
   static const int64_t kJanuary2017 = INT64_C(13127702400000000);
   if (cert->valid_expiry() >= base::Time::FromInternalValue(kJanuary2017))
-    return SecurityStateModel::DEPRECATED_SHA1_BROKEN;
+    return SecurityStateModel::DEPRECATED_SHA1_MAJOR;
   static const int64_t kJanuary2016 = INT64_C(13096080000000000);
   if (cert->valid_expiry() >= base::Time::FromInternalValue(kJanuary2016))
-    return SecurityStateModel::DEPRECATED_SHA1_WARNING;
+    return SecurityStateModel::DEPRECATED_SHA1_MINOR;
 
   return SecurityStateModel::NO_DEPRECATED_SHA1;
 }
@@ -145,9 +145,9 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
         return SecurityStateModel::SECURITY_POLICY_WARNING;
 #endif
 
-      if (sha1_status == SecurityStateModel::DEPRECATED_SHA1_BROKEN)
+      if (sha1_status == SecurityStateModel::DEPRECATED_SHA1_MAJOR)
         return SecurityStateModel::SECURITY_ERROR;
-      if (sha1_status == SecurityStateModel::DEPRECATED_SHA1_WARNING)
+      if (sha1_status == SecurityStateModel::DEPRECATED_SHA1_MINOR)
         return SecurityStateModel::NONE;
 
       // Active mixed content is downgraded to the BROKEN style and

@@ -67,7 +67,8 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
     SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT,
     // The website provided a valid certificate, but the certificate or chain
     // is using a deprecated signature algorithm.
-    SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM,
+    SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR,
+    SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR,
   };
 
   // UMA statistics for WebsiteSettings. Do not reorder or remove existing

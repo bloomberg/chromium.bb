@@ -45,7 +45,7 @@ TEST_F(SecurityStateModelTest, SHA1Warning) {
   ASSERT_NO_FATAL_FAILURE(GetTestSSLStatus(process()->GetID(), &ssl_status));
   SecurityStateModel::SecurityInfoForRequest(url, ssl_status, test_profile,
                                              &security_info);
-  EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_WARNING,
+  EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
 }
@@ -61,7 +61,7 @@ TEST_F(SecurityStateModelTest, SHA1WarningMixedContent) {
   ssl_status.content_status = content::SSLStatus::DISPLAYED_INSECURE_CONTENT;
   SecurityStateModel::SecurityInfoForRequest(url, ssl_status, test_profile,
                                              &security_info);
-  EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_WARNING,
+  EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::DISPLAYED_MIXED_CONTENT,
             security_info.mixed_content_status);
@@ -71,7 +71,7 @@ TEST_F(SecurityStateModelTest, SHA1WarningMixedContent) {
   ssl_status.content_status = content::SSLStatus::RAN_INSECURE_CONTENT;
   SecurityStateModel::SecurityInfoForRequest(url, ssl_status, test_profile,
                                              &security_info);
-  EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_WARNING,
+  EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::RAN_MIXED_CONTENT,
             security_info.mixed_content_status);
@@ -90,7 +90,7 @@ TEST_F(SecurityStateModelTest, SHA1WarningBrokenHTTPS) {
   ssl_status.cert_status |= net::CERT_STATUS_DATE_INVALID;
   SecurityStateModel::SecurityInfoForRequest(url, ssl_status, test_profile,
                                              &security_info);
-  EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_WARNING,
+  EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
 }

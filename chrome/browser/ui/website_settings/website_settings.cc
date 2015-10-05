@@ -457,14 +457,26 @@ void WebsiteSettings::Init(
                 security_info.sct_verify_statuses, false /* not EV */),
             issuer_name));
       }
-      if (security_info.sha1_deprecation_status !=
-          SecurityStateModel::NO_DEPRECATED_SHA1) {
-        site_identity_status_ =
-            SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM;
-        site_identity_details_ +=
-            UTF8ToUTF16("\n\n") +
-            l10n_util::GetStringUTF16(
-                IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM);
+      switch (security_info.sha1_deprecation_status) {
+        case SecurityStateModel::DEPRECATED_SHA1_MINOR:
+          site_identity_status_ =
+              SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR;
+          site_identity_details_ +=
+              UTF8ToUTF16("\n\n") +
+              l10n_util::GetStringUTF16(
+                  IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM_MINOR);
+          break;
+        case SecurityStateModel::DEPRECATED_SHA1_MAJOR:
+          site_identity_status_ =
+              SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR;
+          site_identity_details_ +=
+              UTF8ToUTF16("\n\n") +
+              l10n_util::GetStringUTF16(
+                  IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR);
+          break;
+        case SecurityStateModel::NO_DEPRECATED_SHA1:
+          // Nothing to do.
+          break;
       }
     }
   } else {
@@ -630,7 +642,9 @@ void WebsiteSettings::Init(
       site_identity_status_ == SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN ||
       site_identity_status_ == SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT ||
       site_identity_status_ ==
-          SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM) {
+          SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR ||
+      site_identity_status_ ==
+          SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR) {
     tab_id = WebsiteSettingsUI::TAB_ID_CONNECTION;
     RecordWebsiteSettingsAction(
       WEBSITE_SETTINGS_CONNECTION_TAB_SHOWN_IMMEDIATELY);
