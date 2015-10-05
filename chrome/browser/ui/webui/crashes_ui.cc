@@ -18,12 +18,17 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/google_chrome_strings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
+#include "grit/components_chromium_strings.h"
+#include "grit/components_google_chrome_strings.h"
+#include "grit/components_resources.h"
+#include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -42,22 +47,22 @@ content::WebUIDataSource* CreateCrashesUIHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUICrashesHost);
 
   source->AddLocalizedString("shortProductName", IDS_SHORT_PRODUCT_NAME);
-  source->AddLocalizedString("crashesTitle", IDS_CRASHES_TITLE);
+  source->AddLocalizedString("crashesTitle", IDS_CRASH_TITLE);
   source->AddLocalizedString("crashCountFormat",
-                             IDS_CRASHES_CRASH_COUNT_BANNER_FORMAT);
+                             IDS_CRASH_CRASH_COUNT_BANNER_FORMAT);
   source->AddLocalizedString("crashHeaderFormat",
-                             IDS_CRASHES_CRASH_HEADER_FORMAT);
-  source->AddLocalizedString("crashTimeFormat", IDS_CRASHES_CRASH_TIME_FORMAT);
-  source->AddLocalizedString("bugLinkText", IDS_CRASHES_BUG_LINK_LABEL);
+                             IDS_CRASH_CRASH_HEADER_FORMAT);
+  source->AddLocalizedString("crashTimeFormat", IDS_CRASH_CRASH_TIME_FORMAT);
+  source->AddLocalizedString("bugLinkText", IDS_CRASH_BUG_LINK_LABEL);
   source->AddLocalizedString("noCrashesMessage",
-                             IDS_CRASHES_NO_CRASHES_MESSAGE);
-  source->AddLocalizedString("disabledHeader", IDS_CRASHES_DISABLED_HEADER);
-  source->AddLocalizedString("disabledMessage", IDS_CRASHES_DISABLED_MESSAGE);
+                             IDS_CRASH_NO_CRASHES_MESSAGE);
+  source->AddLocalizedString("disabledHeader", IDS_CRASH_DISABLED_HEADER);
+  source->AddLocalizedString("disabledMessage", IDS_CRASH_DISABLED_MESSAGE);
   source->AddLocalizedString("uploadCrashesLinkText",
-                             IDS_CRASHES_UPLOAD_MESSAGE);
+                             IDS_CRASH_UPLOAD_MESSAGE);
   source->SetJsonPath("strings.js");
-  source->AddResourcePath("crashes.js", IDR_CRASHES_JS);
-  source->SetDefaultResource(IDR_CRASHES_HTML);
+  source->AddResourcePath("crashes.js", IDR_CRASH_CRASHES_JS);
+  source->SetDefaultResource(IDR_CRASH_CRASHES_HTML);
   return source;
 }
 

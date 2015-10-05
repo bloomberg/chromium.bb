@@ -166,6 +166,11 @@
         </message>
       </if>
 
+      <!-- chrome://crashes strings -->
+      <message name="IDS_CRASH_DISABLED_MESSAGE" desc="The explanatory message for chrome://crashes when crash reporting is disabled">
+        This page only shows information on your recent crashes if you <ph name="BEGIN_LINK">&lt;a href="https://support.google.com/chrome/answer/96817"&gt;</ph>enable crash reporting<ph name="END_LINK">&lt;/a&gt;</ph>.
+      </message>
+
     </messages>
   </release>
 </grit>
