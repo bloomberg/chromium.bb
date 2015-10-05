@@ -256,7 +256,7 @@ void WindowTreeHost::CreateCompositor() {
 }
 
 void WindowTreeHost::OnAcceleratedWidgetAvailable() {
-  compositor_->SetAcceleratedWidgetAndStartCompositor(GetAcceleratedWidget());
+  compositor_->SetAcceleratedWidget(GetAcceleratedWidget());
   prop_.reset(new ui::ViewProp(GetAcceleratedWidget(),
                                kWindowTreeHostForAcceleratedWidget, this));
 }

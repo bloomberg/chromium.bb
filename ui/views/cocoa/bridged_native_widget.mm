@@ -1028,8 +1028,7 @@ void BridgedNativeWidget::CreateCompositor() {
       new ui::AcceleratedWidgetMac(needs_gl_finish_workaround));
   compositor_.reset(
       new ui::Compositor(context_factory, GetCompositorTaskRunner()));
-  compositor_->SetAcceleratedWidgetAndStartCompositor(
-      compositor_widget_->accelerated_widget());
+  compositor_->SetAcceleratedWidget(compositor_widget_->accelerated_widget());
   compositor_widget_->SetNSView(this);
 }
 

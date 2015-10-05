@@ -68,6 +68,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
     : context_factory_(context_factory),
       root_layer_(NULL),
       widget_(gfx::kNullAcceleratedWidget),
+      widget_valid_(false),
+      output_surface_requested_(false),
       surface_id_allocator_(context_factory->CreateSurfaceIdAllocator()),
       task_runner_(task_runner),
       vsync_manager_(new CompositorVSyncManager()),
@@ -173,6 +175,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
                       base::TimeTicks::Now() - before_create);
   host_->SetRootLayer(root_web_layer_);
   host_->set_surface_id_namespace(surface_id_allocator_->id_namespace());
+  host_->SetLayerTreeHostClientReady();
 }
 
 Compositor::~Compositor() {
@@ -201,6 +204,7 @@ Compositor::~Compositor() {
 
 void Compositor::SetOutputSurface(
     scoped_ptr<cc::OutputSurface> output_surface) {
+  output_surface_requested_ = false;
   host_->SetOutputSurface(output_surface.Pass());
 }
 
@@ -294,12 +298,18 @@ void Compositor::SetAuthoritativeVSyncInterval(
   vsync_manager_->SetAuthoritativeVSyncInterval(interval);
 }
 
-void Compositor::SetAcceleratedWidgetAndStartCompositor(
-    gfx::AcceleratedWidget widget) {
+void Compositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
   // This function should only get called once.
-  DCHECK_EQ(gfx::kNullAcceleratedWidget, widget_);
+  DCHECK(!widget_valid_);
   widget_ = widget;
-  host_->SetLayerTreeHostClientReady();
+  widget_valid_ = true;
+  if (output_surface_requested_)
+    context_factory_->CreateOutputSurface(weak_ptr_factory_.GetWeakPtr());
+}
+
+gfx::AcceleratedWidget Compositor::widget() const {
+  DCHECK(widget_valid_);
+  return widget_;
 }
 
 scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {
@@ -384,7 +394,10 @@ void Compositor::Layout() {
 }
 
 void Compositor::RequestNewOutputSurface() {
-  context_factory_->CreateOutputSurface(weak_ptr_factory_.GetWeakPtr());
+  DCHECK(!output_surface_requested_);
+  output_surface_requested_ = true;
+  if (widget_valid_)
+    context_factory_->CreateOutputSurface(weak_ptr_factory_.GetWeakPtr());
 }
 
 void Compositor::DidInitializeOutputSurface() {

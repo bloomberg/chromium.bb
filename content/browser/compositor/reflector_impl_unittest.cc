@@ -124,8 +124,7 @@ class ReflectorImplTest : public testing::Test {
     compositor_task_runner_ = new FakeTaskRunner();
     compositor_.reset(
         new ui::Compositor(context_factory, compositor_task_runner_.get()));
-    compositor_->SetAcceleratedWidgetAndStartCompositor(
-        gfx::kNullAcceleratedWidget);
+    compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
     context_provider_ = cc::TestContextProvider::Create(
         cc::TestWebGraphicsContext3D::Create().Pass());
     output_surface_ =

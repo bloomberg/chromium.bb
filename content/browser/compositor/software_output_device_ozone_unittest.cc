@@ -89,8 +89,7 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
       &window_delegate_, gfx::Rect(size));
   compositor_.reset(
       new ui::Compositor(context_factory, base::ThreadTaskRunnerHandle::Get()));
-  compositor_->SetAcceleratedWidgetAndStartCompositor(
-      window_delegate_.GetAcceleratedWidget());
+  compositor_->SetAcceleratedWidget(window_delegate_.GetAcceleratedWidget());
   compositor_->SetScaleAndSize(1.0f, size);
 
   output_device_.reset(new content::SoftwareOutputDeviceOzone(

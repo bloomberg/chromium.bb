@@ -36,8 +36,7 @@ class CompositorTest : public testing::Test {
         ui::InitializeContextFactoryForTests(false);
 
     compositor_.reset(new ui::Compositor(context_factory, task_runner_));
-    compositor_->SetAcceleratedWidgetAndStartCompositor(
-        gfx::kNullAcceleratedWidget);
+    compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
   }
   void TearDown() override {
     compositor_.reset();

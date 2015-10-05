@@ -73,7 +73,7 @@ void TestCompositorHostX11::Show() {
     if (event.type == MapNotify && event.xmap.window == window_)
       break;
   }
-  compositor_.SetAcceleratedWidgetAndStartCompositor(window_);
+  compositor_.SetAcceleratedWidget(window_);
   compositor_.SetScaleAndSize(1.0f, bounds_.size());
 }
 

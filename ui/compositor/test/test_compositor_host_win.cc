@@ -20,7 +20,7 @@ class TestCompositorHostWin : public TestCompositorHost,
     Init(NULL, bounds);
     compositor_.reset(new ui::Compositor(context_factory,
                                          base::ThreadTaskRunnerHandle::Get()));
-    compositor_->SetAcceleratedWidgetAndStartCompositor(hwnd());
+    compositor_->SetAcceleratedWidget(hwnd());
     compositor_->SetScaleAndSize(1.0f, GetSize());
   }
 

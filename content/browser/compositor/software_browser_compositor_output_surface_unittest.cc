@@ -91,8 +91,7 @@ void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
 
   compositor_.reset(
       new ui::Compositor(context_factory, base::ThreadTaskRunnerHandle::Get()));
-  compositor_->SetAcceleratedWidgetAndStartCompositor(
-      gfx::kNullAcceleratedWidget);
+  compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 }
 
 void SoftwareBrowserCompositorOutputSurfaceTest::TearDown() {

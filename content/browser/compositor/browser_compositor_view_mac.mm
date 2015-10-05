@@ -44,7 +44,7 @@ BrowserCompositorMac::BrowserCompositorMac()
           new ui::AcceleratedWidgetMac(WidgetNeedsGLFinishWorkaround())),
       compositor_(content::GetContextFactory(),
                   ui::WindowResizeHelperMac::Get()->task_runner()) {
-  compositor_.SetAcceleratedWidgetAndStartCompositor(
+  compositor_.SetAcceleratedWidget(
       accelerated_widget_mac_->accelerated_widget());
   compositor_.SetLocksWillTimeOut(false);
   Suspend();

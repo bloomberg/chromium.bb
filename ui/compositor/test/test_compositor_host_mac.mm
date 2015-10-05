@@ -133,7 +133,7 @@ void TestCompositorHostMac::Show() {
                               defer:NO];
   base::scoped_nsobject<AcceleratedTestView> view(
       [[AcceleratedTestView alloc] init]);
-  compositor_.SetAcceleratedWidgetAndStartCompositor(view);
+  compositor_.SetAcceleratedWidget(view);
   compositor_.SetScaleAndSize(1.0f, bounds_.size());
   [view setCompositor:&compositor_];
   [window_ setContentView:view];

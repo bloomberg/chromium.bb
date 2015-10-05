@@ -40,8 +40,7 @@ class BeginFrameObserverProxyTest : public testing::Test {
     compositor_task_runner_ = new base::TestSimpleTaskRunner();
     compositor_.reset(
         new ui::Compositor(context_factory, compositor_task_runner_));
-    compositor_->SetAcceleratedWidgetAndStartCompositor(
-        gfx::kNullAcceleratedWidget);
+    compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
   }
 
   void TearDown() override {
