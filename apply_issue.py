@@ -27,9 +27,10 @@ import scm
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-RETURN_CODE_ARG_PARSER = 2     # default in python.
-RETURN_CODE_INFRA_FAILURE = 3  # considered as infra failure.
-RETURN_CODE_OTHERWISE = 1      # any other failure, likely patch apply one.
+RETURN_CODE_OK               = 0  # any other failure, likely patch apply one.
+RETURN_CODE_OTHER_FAILURE    = 1  # any other failure, likely patch apply one.
+RETURN_CODE_ARGPARSE_FAILURE = 2  # default in python.
+RETURN_CODE_INFRA_FAILURE    = 3  # considered as infra failure.
 
 
 class Unbuffered(object):
@@ -178,7 +179,7 @@ def main():
         properties = rietveld_obj.get_issue_properties(options.issue, False)
       except rietveld.upload.ClientLoginError as e:
         print('Accessing the issue requires proper credentials.')
-        return RETURN_CODE_OTHERWISE
+        return RETURN_CODE_OTHER_FAILURE
       except urllib2.URLError:
         logging.exception('failed to fetch issue properties')
         return RETURN_CODE_INFRA_FAILURE
@@ -241,7 +242,7 @@ def main():
               options.server, issue_to_apply)
       # If we got this far, then this is likely missing patchset.
       # Thus, it's not infra failure.
-      return RETURN_CODE_OTHERWISE
+      return RETURN_CODE_OTHER_FAILURE
     except urllib2.URLError:
       logging.exception(
           'Failed to fetch the patch for issue %d, patchset %d',
@@ -282,7 +283,7 @@ def main():
       print(str(e))
       print('CWD=%s' % os.getcwd())
       print('Checkout path=%s' % scm_obj.project_path)
-      return RETURN_CODE_OTHERWISE
+      return RETURN_CODE_OTHER_FAILURE
 
   if ('DEPS' in map(os.path.basename, patchset.filenames)
       and not options.ignore_deps):
@@ -313,7 +314,7 @@ def main():
           annotated_gclient.emit_buildprops(revisions)
 
         return retcode
-  return 0
+  return RETURN_CODE_OK
 
 
 if __name__ == "__main__":
@@ -322,4 +323,4 @@ if __name__ == "__main__":
     sys.exit(main())
   except KeyboardInterrupt:
     sys.stderr.write('interrupted\n')
-    sys.exit(RETURN_CODE_OTHERWISE)
+    sys.exit(RETURN_CODE_OTHER_FAILURE)
