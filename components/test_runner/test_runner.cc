@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "components/test_runner/mock_credential_manager_client.h"
 #include "components/test_runner/mock_web_speech_recognizer.h"
 #include "components/test_runner/test_interfaces.h"
@@ -1648,7 +1649,7 @@ void TestRunner::Reset() {
     web_view_->setZoomLevel(0);
     web_view_->setTextZoomFactor(1);
     web_view_->setTabKeyCyclesThroughElements(true);
-#if !defined(__APPLE__) && !defined(WIN32) // Actually, TOOLKIT_GTK
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
     // (Constants copied because we can't depend on the header that defined
     // them from this file.)
     web_view_->setSelectionColors(
