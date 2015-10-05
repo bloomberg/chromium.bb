@@ -18,6 +18,9 @@
         'build_pnacl_newlib': 0,
         'build_nonsfi_helper': 1,
       },
+      'compile_flags': [
+        '-fgnu-inline-asm',
+      ],
       'sources': [
         '../../untrusted/irt/irt_query_list.c',
         '../../untrusted/pthread/nc_condvar.c',
