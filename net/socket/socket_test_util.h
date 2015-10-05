@@ -823,6 +823,7 @@ class DeterministicMockUDPClientSocket
   const BoundNetLog& NetLog() const override;
 
   // DatagramClientSocket implementation.
+  int BindToNetwork(NetworkChangeNotifier::NetworkHandle network) override;
   int Connect(const IPEndPoint& address) override;
 
   void set_source_port(uint16 port) { source_port_ = port; }
@@ -945,6 +946,7 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   const BoundNetLog& NetLog() const override;
 
   // DatagramClientSocket implementation.
+  int BindToNetwork(NetworkChangeNotifier::NetworkHandle network) override;
   int Connect(const IPEndPoint& address) override;
 
   // AsyncSocket implementation.

@@ -28,6 +28,11 @@
 #include "net/socket/socket_descriptor.h"
 #include "net/udp/udp_net_log_parameters.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#include "base/native_library.h"
+#include "base/strings/utf_string_conversions.h"
+#endif
 
 namespace net {
 
@@ -317,6 +322,42 @@ int UDPSocketPosix::Bind(const IPEndPoint& address) {
   is_connected_ = true;
   local_address_.reset();
   return rv;
+}
+
+int UDPSocketPosix::BindToNetwork(
+    NetworkChangeNotifier::NetworkHandle network) {
+#if defined(OS_ANDROID)
+  DCHECK_NE(socket_, kInvalidSocket);
+  DCHECK(CalledOnValidThread());
+  DCHECK(!is_connected());
+  // Android prior to Lollipop didn't have support for binding sockets to
+  // networks.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_LOLLIPOP) {
+    return ERR_NOT_IMPLEMENTED;
+  }
+  // NOTE(pauljensen): This does rely on Android implementation details, but
+  // these details are unlikely to change.
+  typedef int (*SetNetworkForSocket)(unsigned netId, int socketFd);
+  static SetNetworkForSocket setNetworkForSocket;
+  // This is racy, but all racers should come out with the same answer so it
+  // shouldn't matter.
+  if (setNetworkForSocket == nullptr) {
+    // Android's netd client library should always be loaded in our address
+    // space as it shims libc functions like connect().
+    base::FilePath file(base::FilePath::FromUTF16Unsafe(
+        base::GetNativeLibraryName(base::ASCIIToUTF16("netd_client"))));
+    base::NativeLibrary lib = base::LoadNativeLibrary(file, nullptr);
+    setNetworkForSocket = reinterpret_cast<SetNetworkForSocket>(
+        base::GetFunctionPointerFromNativeLibrary(lib, "setNetworkForSocket"));
+  }
+  if (setNetworkForSocket == nullptr)
+    return ERR_NOT_IMPLEMENTED;
+  return MapSystemError(setNetworkForSocket(network, socket_));
+#else
+  NOTIMPLEMENTED();
+  return ERR_NOT_IMPLEMENTED;
+#endif
 }
 
 int UDPSocketPosix::SetReceiveBufferSize(int32 size) {

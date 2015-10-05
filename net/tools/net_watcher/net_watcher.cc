@@ -199,7 +199,7 @@ int main(int argc, char* argv[]) {
 
   LOG(INFO) << "Initial connection type: "
             << ConnectionTypeToString(
-                network_change_notifier->GetCurrentConnectionType());
+                   net::NetworkChangeNotifier::GetConnectionType());
 
   {
     net::ProxyConfig config;

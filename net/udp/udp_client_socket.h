@@ -24,6 +24,7 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
   ~UDPClientSocket() override;
 
   // DatagramClientSocket implementation.
+  int BindToNetwork(NetworkChangeNotifier::NetworkHandle network) override;
   int Connect(const IPEndPoint& address) override;
   int Read(IOBuffer* buf,
            int buf_len,

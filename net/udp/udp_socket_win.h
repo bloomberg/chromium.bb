@@ -40,6 +40,13 @@ class NET_EXPORT UDPSocketWin
   // Returns a net error code.
   int Open(AddressFamily address_family);
 
+  // Binds this socket to |network|. All data traffic on the socket will be sent
+  // and received via |network|. Must be called before Connect(). This call will
+  // fail if |network| has disconnected. Communication using this socket will
+  // fail if |network| disconnects.
+  // Returns a net error code.
+  int BindToNetwork(NetworkChangeNotifier::NetworkHandle network);
+
   // Connects the socket to connect with a certain |address|.
   // Should be called after Open().
   // Returns a net error code.

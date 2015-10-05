@@ -52,11 +52,19 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
   void GetCurrentMaxBandwidthAndConnectionType(
       double* max_bandwidth_mbps,
       ConnectionType* connection_type) const override;
+  void GetCurrentConnectedNetworks(NetworkList* network_list) const override;
+  ConnectionType GetCurrentNetworkConnectionType(
+      NetworkHandle network) const override;
+  NetworkHandle GetCurrentDefaultNetwork() const override;
 
   // NetworkChangeNotifierDelegateAndroid::Observer:
   void OnConnectionTypeChanged() override;
   void OnMaxBandwidthChanged(double max_bandwidth_mbps,
                              ConnectionType type) override;
+  void OnNetworkConnected(NetworkHandle network) override;
+  void OnNetworkSoonToDisconnect(NetworkHandle network) override;
+  void OnNetworkDisconnected(NetworkHandle network) override;
+  void OnNetworkMadeDefault(NetworkHandle network) override;
 
   static bool Register(JNIEnv* env);
 

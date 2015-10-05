@@ -57,6 +57,10 @@ class TestUDPClientSocket : public DatagramClientSocket {
     *address = local_endpoint_;
     return OK;
   }
+  int BindToNetwork(NetworkChangeNotifier::NetworkHandle network) override {
+    NOTIMPLEMENTED();
+    return OK;
+  }
 
   int Connect(const IPEndPoint& remote) override {
     if (connected_)

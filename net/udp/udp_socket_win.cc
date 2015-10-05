@@ -482,6 +482,11 @@ int UDPSocketWin::Bind(const IPEndPoint& address) {
   return rv;
 }
 
+int UDPSocketWin::BindToNetwork(NetworkChangeNotifier::NetworkHandle network) {
+  NOTIMPLEMENTED();
+  return ERR_NOT_IMPLEMENTED;
+}
+
 int UDPSocketWin::SetReceiveBufferSize(int32 size) {
   DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(CalledOnValidThread());

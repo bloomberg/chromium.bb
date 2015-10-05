@@ -5,6 +5,7 @@
 #ifndef NET_UDP_DATAGRAM_CLIENT_SOCKET_H_
 #define NET_UDP_DATAGRAM_CLIENT_SOCKET_H_
 
+#include "net/base/network_change_notifier.h"
 #include "net/socket/socket.h"
 #include "net/udp/datagram_socket.h"
 
@@ -16,6 +17,13 @@ class NET_EXPORT_PRIVATE DatagramClientSocket : public DatagramSocket,
                                                 public Socket {
  public:
   ~DatagramClientSocket() override {}
+
+  // Binds this socket to |network|. All data traffic on the socket will be sent
+  // and received via |network|. Must be called before Connect(). This call will
+  // fail if |network| has disconnected. Communication using this socket will
+  // fail if |network| disconnects.
+  // Returns a net error code.
+  virtual int BindToNetwork(NetworkChangeNotifier::NetworkHandle network) = 0;
 
   // Initialize this socket as a client socket to server at |address|.
   // Returns a network error code.

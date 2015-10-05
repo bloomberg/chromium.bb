@@ -5,6 +5,8 @@
 #ifndef NET_ANDROID_NETWORK_CHANGE_NOTIFIER_DELEGATE_ANDROID_H_
 #define NET_ANDROID_NETWORK_CHANGE_NOTIFIER_DELEGATE_ANDROID_H_
 
+#include <string>
+
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -23,13 +25,15 @@ namespace net {
 class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
  public:
   typedef NetworkChangeNotifier::ConnectionType ConnectionType;
+  typedef NetworkChangeNotifier::NetworkHandle NetworkHandle;
+  typedef NetworkChangeNotifier::NetworkList NetworkList;
 
   // Observer interface implemented by NetworkChangeNotifierAndroid which
   // subscribes to network change notifications fired by the delegate (and
   // initiated by the Java side).
-  class Observer {
+  class Observer : public NetworkChangeNotifier::NetworkObserver {
    public:
-    virtual ~Observer() {}
+    ~Observer() override {}
 
     // Updates the current connection type.
     virtual void OnConnectionTypeChanged() = 0;
@@ -42,16 +46,17 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
   NetworkChangeNotifierDelegateAndroid();
   ~NetworkChangeNotifierDelegateAndroid();
 
-  // Called from NetworkChangeNotifierAndroid.java on the JNI thread whenever
+  // Called from NetworkChangeNotifier.java on the JNI thread whenever
   // the connection type changes. This updates the current connection type seen
   // by this class and forwards the notification to the observers that
   // subscribed through AddObserver().
   void NotifyConnectionTypeChanged(JNIEnv* env,
                                    jobject obj,
-                                   jint new_connection_type);
+                                   jint new_connection_type,
+                                   jint default_netid);
   jint GetConnectionType(JNIEnv* env, jobject obj) const;
 
-  // Called from NetworkChangeNotifierAndroid.java on the JNI thread whenever
+  // Called from NetworkChangeNotifier.java on the JNI thread whenever
   // the maximum bandwidth of the connection changes. This updates the current
   // max bandwidth seen by this class and forwards the notification to the
   // observers that subscribed through AddObserver().
@@ -59,18 +64,39 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
                                  jobject obj,
                                  jdouble new_max_bandwidth);
 
+  // Called from NetworkChangeNotifier.java on the JNI thread to push
+  // down notifications of network connectivity events. These functions in
+  // turn:
+  //   1) Update |network_map_| and |default_network_|.
+  //   2) Push notifications to NetworkChangeNotifier which in turn pushes
+  //      notifications to its NetworkObservers. Note that these functions
+  //      perform valuable transformations on the signals like deduplicating.
+  // For descriptions of what individual calls mean, see
+  // NetworkChangeNotifierAutoDetect.Observer functions of the same names.
+  void NotifyOfNetworkConnect(JNIEnv* env,
+                              jobject obj,
+                              jint net_id,
+                              jint connection_type);
+  void NotifyOfNetworkSoonToDisconnect(JNIEnv* env, jobject obj, jint net_id);
+  void NotifyOfNetworkDisconnect(JNIEnv* env, jobject obj, jint net_id);
+  void NotifyUpdateActiveNetworkList(JNIEnv* env,
+                                     jobject obj,
+                                     jintArray active_networks);
+
   // These methods can be called on any thread. Note that the provided observer
   // will be notified on the thread AddObserver() is called on.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Can be called from any thread.
+  // These methods are simply implementations of NetworkChangeNotifier APIs of
+  // the same name. They can be called from any thread.
   ConnectionType GetCurrentConnectionType() const;
-
-  // Can be called from any thread.
   void GetCurrentMaxBandwidthAndConnectionType(
       double* max_bandwidth_mbps,
       ConnectionType* connection_type) const;
+  ConnectionType GetNetworkConnectionType(NetworkHandle network) const;
+  NetworkHandle GetCurrentDefaultNetwork() const;
+  void GetCurrentlyConnectedNetworks(NetworkList* network_list) const;
 
   // Initializes JNI bindings.
   static bool Register(JNIEnv* env);
@@ -78,20 +104,39 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
  private:
   friend class BaseNetworkChangeNotifierAndroidTest;
 
+  // Map of active connected networks and their connection type.
+  typedef std::map<NetworkHandle, ConnectionType> NetworkMap;
+
+  // Converts a Java int[] into a NetworkMap. Expects int[] to contain
+  // repeated instances of: NetworkHandle, ConnectionType
+  static void JavaIntArrayToNetworkMap(JNIEnv* env,
+                                       jintArray int_array,
+                                       NetworkMap* network_map);
+
+  // Setters that grab appropriate lock.
   void SetCurrentConnectionType(ConnectionType connection_type);
   void SetCurrentMaxBandwidth(double max_bandwidth);
+  void SetCurrentDefaultNetwork(NetworkHandle default_network);
+  void SetCurrentNetworksAndTypes(NetworkMap network_map);
 
   // Methods calling the Java side exposed for testing.
   void SetOnline();
   void SetOffline();
+  void FakeNetworkConnected(NetworkHandle network, ConnectionType type);
+  void FakeNetworkSoonToBeDisconnected(NetworkHandle network);
+  void FakeNetworkDisconnected(NetworkHandle network);
+  void FakeUpdateActiveNetworkList(NetworkList networks);
+  void FakeDefaultNetwork(NetworkHandle network, ConnectionType type);
 
   base::ThreadChecker thread_checker_;
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
-  scoped_refptr<base::SingleThreadTaskRunner> jni_task_runner_;
   base::android::ScopedJavaGlobalRef<jobject> java_network_change_notifier_;
+
   mutable base::Lock connection_lock_;  // Protects the state below.
   ConnectionType connection_type_;
   double connection_max_bandwidth_;
+  NetworkHandle default_network_;
+  NetworkMap network_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierDelegateAndroid);
 };

@@ -1285,6 +1285,11 @@ int DeterministicMockUDPClientSocket::CompleteRead() {
   return helper_.CompleteRead();
 }
 
+int DeterministicMockUDPClientSocket::BindToNetwork(
+    NetworkChangeNotifier::NetworkHandle network) {
+  return ERR_NOT_IMPLEMENTED;
+}
+
 int DeterministicMockUDPClientSocket::Connect(const IPEndPoint& address) {
   if (connected_)
     return OK;
@@ -1649,6 +1654,11 @@ int MockUDPClientSocket::GetLocalAddress(IPEndPoint* address) const {
 
 const BoundNetLog& MockUDPClientSocket::NetLog() const {
   return net_log_;
+}
+
+int MockUDPClientSocket::BindToNetwork(
+    NetworkChangeNotifier::NetworkHandle network) {
+  return ERR_NOT_IMPLEMENTED;
 }
 
 int MockUDPClientSocket::Connect(const IPEndPoint& address) {

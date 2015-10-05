@@ -19,6 +19,11 @@ UDPClientSocket::UDPClientSocket(DatagramSocket::BindType bind_type,
 UDPClientSocket::~UDPClientSocket() {
 }
 
+int UDPClientSocket::BindToNetwork(
+    NetworkChangeNotifier::NetworkHandle network) {
+  return socket_.BindToNetwork(network);
+}
+
 int UDPClientSocket::Connect(const IPEndPoint& address) {
   int rv = socket_.Open(address.GetFamily());
   if (rv != OK)

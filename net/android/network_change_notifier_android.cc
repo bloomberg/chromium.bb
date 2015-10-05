@@ -65,6 +65,17 @@
 
 namespace net {
 
+// Expose kInvalidNetworkHandle out to Java as NetId.INVALID. The notion of
+// a NetID is an Android framework one, see android.net.Network.netId.
+// NetworkChangeNotifierAndroid implements NetworkHandle to simply be the NetID.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
+enum NetId {
+  // Cannot use |kInvalidNetworkHandle| here as the Java generator fails,
+  // instead enforce their equality with CHECK in
+  // NetworkChangeNotifierAndroid().
+  INVALID = -1
+};
+
 // Thread on which we can run DnsConfigService, which requires a TYPE_IO
 // message loop to monitor /system/etc/hosts.
 class NetworkChangeNotifierAndroid::DnsConfigServiceThread
@@ -151,6 +162,22 @@ void NetworkChangeNotifierAndroid::GetCurrentMaxBandwidthAndConnectionType(
                                                      connection_type);
 }
 
+void NetworkChangeNotifierAndroid::GetCurrentConnectedNetworks(
+    NetworkChangeNotifier::NetworkList* networks) const {
+  delegate_->GetCurrentlyConnectedNetworks(networks);
+}
+
+NetworkChangeNotifier::ConnectionType
+NetworkChangeNotifierAndroid::GetCurrentNetworkConnectionType(
+    NetworkHandle network) const {
+  return delegate_->GetNetworkConnectionType(network);
+}
+
+NetworkChangeNotifier::NetworkHandle
+NetworkChangeNotifierAndroid::GetCurrentDefaultNetwork() const {
+  return delegate_->GetCurrentDefaultNetwork();
+}
+
 void NetworkChangeNotifierAndroid::OnConnectionTypeChanged() {
   DnsConfigServiceThread::NotifyNetworkChangeNotifierObservers();
 }
@@ -160,6 +187,28 @@ void NetworkChangeNotifierAndroid::OnMaxBandwidthChanged(
     ConnectionType type) {
   NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChange(max_bandwidth_mbps,
                                                              type);
+}
+
+void NetworkChangeNotifierAndroid::OnNetworkConnected(NetworkHandle network) {
+  NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
+      NetworkChangeType::CONNECTED, network);
+}
+
+void NetworkChangeNotifierAndroid::OnNetworkSoonToDisconnect(
+    NetworkHandle network) {
+  NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
+      NetworkChangeType::SOON_TO_DISCONNECT, network);
+}
+
+void NetworkChangeNotifierAndroid::OnNetworkDisconnected(
+    NetworkHandle network) {
+  NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
+      NetworkChangeType::DISCONNECTED, network);
+}
+
+void NetworkChangeNotifierAndroid::OnNetworkMadeDefault(NetworkHandle network) {
+  NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
+      NetworkChangeType::MADE_DEFAULT, network);
 }
 
 // static
@@ -174,6 +223,8 @@ NetworkChangeNotifierAndroid::NetworkChangeNotifierAndroid(
       delegate_(delegate),
       dns_config_service_thread_(
           new DnsConfigServiceThread(dns_config_for_testing)) {
+  CHECK_EQ(NetId::INVALID, NetworkChangeNotifier::kInvalidNetworkHandle)
+      << "kInvalidNetworkHandle doesn't match NetId::INVALID";
   delegate_->AddObserver(this);
   dns_config_service_thread_->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
