@@ -7,6 +7,7 @@
 #include "chrome/browser/ssl/ssl_error_classification.h"
 
 #include "base/build_time.h"
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -85,7 +86,7 @@ int GetLevensteinDistance(const std::string& str1,
 }
 
 // The time to use when doing build time operations in browser tests.
-base::Time g_testing_build_time;
+base::LazyInstance<base::Time> g_testing_build_time = LAZY_INSTANCE_INITIALIZER;
 
 } // namespace
 
@@ -162,8 +163,8 @@ void SSLErrorClassification::RecordUMAStatistics(
 
 bool SSLErrorClassification::IsUserClockInThePast(const base::Time& time_now) {
   base::Time build_time;
-  if (!g_testing_build_time.is_null()) {
-    build_time = g_testing_build_time;
+  if (!g_testing_build_time.Get().is_null()) {
+    build_time = g_testing_build_time.Get();
   } else {
 #if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
     return false;
@@ -180,8 +181,8 @@ bool SSLErrorClassification::IsUserClockInThePast(const base::Time& time_now) {
 bool SSLErrorClassification::IsUserClockInTheFuture(
     const base::Time& time_now) {
   base::Time build_time;
-  if (!g_testing_build_time.is_null()) {
-    build_time = g_testing_build_time;
+  if (!g_testing_build_time.Get().is_null()) {
+    build_time = g_testing_build_time.Get();
   } else {
 #if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
     return false;
@@ -198,7 +199,7 @@ bool SSLErrorClassification::IsUserClockInTheFuture(
 // static
 void SSLErrorClassification::SetBuildTimeForTesting(
     const base::Time& testing_time) {
-  g_testing_build_time = testing_time;
+  g_testing_build_time.Get() = testing_time;
 }
 
 bool SSLErrorClassification::MaybeWindowsLacksSHA256Support() {
