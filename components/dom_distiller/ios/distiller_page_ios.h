@@ -35,7 +35,6 @@ class DistillerPageIOS : public DistillerPage {
 
  protected:
   bool StringifyOutput() override;
-  bool CreateNewContext() override;
   void DistillPageImpl(const GURL& url, const std::string& script) override;
 
  private:

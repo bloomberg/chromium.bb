@@ -26,12 +26,10 @@ namespace {
 
 const char* kOptionsPlaceholder = "$$OPTIONS";
 const char* kStringifyPlaceholder = "$$STRINGIFY";
-const char* kNewContextPlaceholder = "$$NEW_CONTEXT";
 
 std::string GetDistillerScriptWithOptions(
     const dom_distiller::proto::DomDistillerOptions& options,
-    bool stringify_output,
-    bool create_new_context) {
+    bool stringify_output) {
   std::string script = ResourceBundle::GetSharedInstance()
                            .GetRawDataResource(IDR_DISTILLER_JS)
                            .as_string();
@@ -61,15 +59,6 @@ std::string GetDistillerScriptWithOptions(
                           strlen(kStringifyPlaceholder),
                           stringify);
 
-  std::string new_context = create_new_context ? "true" : "false";
-  size_t new_context_offset = script.find(kNewContextPlaceholder);
-  DCHECK_NE(std::string::npos, new_context_offset);
-  DCHECK_EQ(std::string::npos,
-            script.find(kNewContextPlaceholder, new_context_offset + 1));
-  script = script.replace(new_context_offset,
-                          strlen(kNewContextPlaceholder),
-                          new_context);
-
   return script;
 }
 
@@ -92,8 +81,7 @@ void DistillerPage::DistillPage(
   distiller_page_callback_ = callback;
   distillation_start_ = base::TimeTicks::Now();
   DistillPageImpl(gurl, GetDistillerScriptWithOptions(options,
-                                                      StringifyOutput(),
-                                                      CreateNewContext()));
+                                                      StringifyOutput()));
 }
 
 void DistillerPage::OnDistillationDone(const GURL& page_url,

@@ -59,10 +59,6 @@ class DistillerPage {
   // either a dictionary with all the content, or a stringified version.
   virtual bool StringifyOutput() = 0;
 
-  // If true, forces the creation of a new window context to evaluate the
-  // JavaScript.
-  virtual bool CreateNewContext() = 0;
-
  private:
   bool ready_;
   DistillerPageCallback distiller_page_callback_;
