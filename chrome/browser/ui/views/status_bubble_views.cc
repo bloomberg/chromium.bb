@@ -581,17 +581,13 @@ void StatusBubbleViews::Init() {
       view_ = new StatusView(popup_.get(), frame->GetThemeProvider());
     if (!expand_view_.get())
       expand_view_.reset(new StatusViewExpander(this, view_));
-    // On Windows use TYPE_MENU to ensure that this window uses the software
-    // compositor which avoids the UI thread blocking issue during command
-    // buffer creation. We can revert this change once http://crbug.com/125248
-    // is fixed.
-#if defined(OS_WIN)
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_MENU);
-    // The menu style assumes a top most window. We don't want that in this
-    // case.
-    params.keep_on_top = false;
-#else
+
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+#if defined(OS_WIN)
+  // On Windows use the software compositor to ensure that we don't block
+  // the UI thread blocking issue during command buffer creation. We can
+  // revert this change once http://crbug.com/125248 is fixed.
+  params.force_software_compositing = true;
 #endif
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.accept_events = false;

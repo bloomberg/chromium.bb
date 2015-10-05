@@ -140,7 +140,7 @@ void DesktopWindowTreeHostWin::Init(aura::Window* content_window,
 
   gfx::Rect pixel_bounds = gfx::win::DIPToScreenRect(params.bounds);
   message_handler_->Init(parent_hwnd, pixel_bounds);
-  if (params.type == Widget::InitParams::TYPE_MENU) {
+  if (params.force_software_compositing) {
     ::SetProp(GetAcceleratedWidget(),
               kForceSoftwareCompositor,
               reinterpret_cast<HANDLE>(true));

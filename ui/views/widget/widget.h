@@ -265,6 +265,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     std::string wm_role_name;
     std::string wm_class_name;
     std::string wm_class_class;
+
+    // If true then the widget uses software compositing. Defaults to false.
+    // Only used on Windows.
+    bool force_software_compositing;
   };
 
   Widget();

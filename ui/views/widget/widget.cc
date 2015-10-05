@@ -123,7 +123,8 @@ Widget::InitParams::InitParams()
       desktop_window_tree_host(NULL),
       layer_type(ui::LAYER_TEXTURED),
       context(NULL),
-      force_show_in_taskbar(false) {
+      force_show_in_taskbar(false),
+      force_software_compositing(false) {
 }
 
 Widget::InitParams::InitParams(Type type)
@@ -146,7 +147,8 @@ Widget::InitParams::InitParams(Type type)
       desktop_window_tree_host(NULL),
       layer_type(ui::LAYER_TEXTURED),
       context(NULL),
-      force_show_in_taskbar(false) {
+      force_show_in_taskbar(false),
+      force_software_compositing(false) {
 }
 
 Widget::InitParams::~InitParams() {

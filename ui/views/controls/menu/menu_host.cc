@@ -52,6 +52,12 @@ void MenuHost::InitMenuHost(Widget* parent,
       Widget::InitParams::OPAQUE_WINDOW;
   params.parent = parent ? parent->GetNativeView() : NULL;
   params.bounds = bounds;
+#if defined(OS_WIN)
+  // On Windows use the software compositor to ensure that we don't block
+  // the UI thread blocking issue during command buffer creation. We can
+  // revert this change once http://crbug.com/125248 is fixed.
+  params.force_software_compositing = true;
+#endif
   Init(params);
 
   SetContentsView(contents_view);
