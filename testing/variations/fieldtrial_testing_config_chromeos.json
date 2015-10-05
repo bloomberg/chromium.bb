@@ -116,5 +116,10 @@
         {
             "group_name": "Enabled"
         }
+    ],
+    "WebRTC-PeerConnectionDTLS1.2": [
+        {
+            "group_name": "Enabled"
+        }
     ]
 }
