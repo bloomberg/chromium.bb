@@ -7,7 +7,7 @@
   @apply(--layout-fit);
   @apply(--paper-font-body1);
   -webkit-user-select: none;
-  background-color: rgb(230, 230, 230);
+  background-color: #f2f2f2;
   color: rgba(0, 0, 0, .87);
 }
 
@@ -21,7 +21,7 @@ paper-toolbar {
 paper-drawer-panel {
   @apply(--layout-flex);
   --paper-drawer-panel-left-drawer-container: {
-    background-color: rgb(230, 230, 230);
+    background-color: #f2f2f2;
     margin-top: 34px;
   };
   position: relative;
