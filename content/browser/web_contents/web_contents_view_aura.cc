@@ -218,10 +218,10 @@ void PrepareDragForDownload(
 }
 #endif  // defined(OS_WIN)
 
-// Returns the CustomFormat to store file system files.
-const ui::OSExchangeData::CustomFormat& GetFileSystemFileCustomFormat() {
+// Returns the FormatType to store file system files.
+const ui::Clipboard::FormatType& GetFileSystemFileFormatType() {
   static const char kFormatString[] = "chromium/x-file-system-files";
-  CR_DEFINE_STATIC_LOCAL(ui::OSExchangeData::CustomFormat,
+  CR_DEFINE_STATIC_LOCAL(ui::Clipboard::FormatType,
                          format,
                          (ui::Clipboard::GetFormatType(kFormatString)));
   return format;
@@ -298,7 +298,7 @@ void PrepareDragData(const DropData& drop_data,
   if (!drop_data.file_system_files.empty()) {
     base::Pickle pickle;
     WriteFileSystemFilesToPickle(drop_data.file_system_files, &pickle);
-    provider->SetPickledData(GetFileSystemFileCustomFormat(), pickle);
+    provider->SetPickledData(GetFileSystemFileFormatType(), pickle);
   }
   if (!drop_data.custom_data.empty()) {
     base::Pickle pickle;
@@ -338,7 +338,7 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
 
   base::Pickle pickle;
   std::vector<DropData::FileSystemFileInfo> file_system_files;
-  if (data.GetPickledData(GetFileSystemFileCustomFormat(), &pickle) &&
+  if (data.GetPickledData(GetFileSystemFileFormatType(), &pickle) &&
       ReadFileSystemFilesFromPickle(pickle, &file_system_files))
     drop_data->file_system_files = file_system_files;
 

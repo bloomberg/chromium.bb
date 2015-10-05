@@ -68,7 +68,7 @@ class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
   // Drag and drop methods. These are forwarded to the MenuController.
   bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) override;
+      std::set<ui::Clipboard::FormatType>* format_types) override;
   bool AreDropTypesRequired() override;
   bool CanDrop(const OSExchangeData& data) override;
   void OnDragEntered(const ui::DropTargetEvent& event) override;

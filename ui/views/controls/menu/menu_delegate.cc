@@ -100,7 +100,7 @@ bool MenuDelegate::CanDrop(MenuItemView* menu, const OSExchangeData& data) {
 bool MenuDelegate::GetDropFormats(
     MenuItemView* menu,
     int* formats,
-    std::set<OSExchangeData::CustomFormat>* custom_formats) {
+    std::set<ui::Clipboard::FormatType>* format_types) {
   return false;
 }
 

@@ -194,7 +194,7 @@ class OmniboxViewViews
   void OnGetDragOperationsForTextfield(int* drag_operations) override;
   void AppendDropFormats(
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+      std::set<ui::Clipboard::FormatType>* format_types) override;
   int OnDrop(const ui::OSExchangeData& data) override;
   void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) override;
 

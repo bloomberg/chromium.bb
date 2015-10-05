@@ -73,7 +73,7 @@ void OSExchangeDataProviderAura::SetFilenames(
 }
 
 void OSExchangeDataProviderAura::SetPickledData(
-    const OSExchangeData::CustomFormat& format,
+    const Clipboard::FormatType& format,
     const base::Pickle& data) {
   pickle_data_[format] = data;
   formats_ |= OSExchangeData::PICKLED_DATA;
@@ -121,7 +121,7 @@ bool OSExchangeDataProviderAura::GetFilenames(
 }
 
 bool OSExchangeDataProviderAura::GetPickledData(
-    const OSExchangeData::CustomFormat& format,
+    const Clipboard::FormatType& format,
     base::Pickle* data) const {
   PickleData::const_iterator i = pickle_data_.find(format);
   if (i == pickle_data_.end())
@@ -150,7 +150,7 @@ bool OSExchangeDataProviderAura::HasFile() const {
 }
 
 bool OSExchangeDataProviderAura::HasCustomFormat(
-    const OSExchangeData::CustomFormat& format) const {
+    const Clipboard::FormatType& format) const {
   return pickle_data_.find(format) != pickle_data_.end();
 }
 

@@ -72,10 +72,11 @@ const char* WrenchToolbarButton::GetClassName() const {
 }
 
 bool WrenchToolbarButton::GetDropFormats(
-    int* formats, std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
+    int* formats,
+    std::set<ui::Clipboard::FormatType>* format_types) {
   return allow_extension_dragging_ ?
-      BrowserActionDragData::GetDropFormats(custom_formats) :
-      views::View::GetDropFormats(formats, custom_formats);
+      BrowserActionDragData::GetDropFormats(format_types) :
+      views::View::GetDropFormats(formats, format_types);
 }
 bool WrenchToolbarButton::AreDropTypesRequired() {
   return allow_extension_dragging_ ?

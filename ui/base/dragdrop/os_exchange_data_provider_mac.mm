@@ -63,7 +63,7 @@ void OSExchangeDataProviderMac::SetFilenames(
 }
 
 void OSExchangeDataProviderMac::SetPickledData(
-    const OSExchangeData::CustomFormat& format,
+    const Clipboard::FormatType& format,
     const base::Pickle& data) {
   NSData* ns_data = [NSData dataWithBytes:data.data() length:data.size()];
   [pasteboard_ setData:ns_data forType:format.ToNSString()];
@@ -135,7 +135,7 @@ bool OSExchangeDataProviderMac::GetFilenames(
 }
 
 bool OSExchangeDataProviderMac::GetPickledData(
-    const OSExchangeData::CustomFormat& format,
+    const Clipboard::FormatType& format,
     base::Pickle* data) const {
   DCHECK(data);
   NSData* ns_data = [pasteboard_ dataForType:format.ToNSString()];
@@ -164,7 +164,7 @@ bool OSExchangeDataProviderMac::HasFile() const {
 }
 
 bool OSExchangeDataProviderMac::HasCustomFormat(
-    const OSExchangeData::CustomFormat& format) const {
+    const Clipboard::FormatType& format) const {
   return [[pasteboard_ types] containsObject:format.ToNSString()];
 }
 

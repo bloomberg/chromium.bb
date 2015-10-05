@@ -1022,7 +1022,7 @@ void OmniboxViewViews::OnGetDragOperationsForTextfield(int* drag_operations) {
 
 void OmniboxViewViews::AppendDropFormats(
     int* formats,
-    std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
+    std::set<ui::Clipboard::FormatType>* format_types) {
   *formats = *formats | ui::OSExchangeData::URL;
 }
 

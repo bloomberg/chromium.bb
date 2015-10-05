@@ -448,8 +448,8 @@ void BrowserActionsContainer::OnMouseEntered(const ui::MouseEvent& event) {
 
 bool BrowserActionsContainer::GetDropFormats(
     int* formats,
-    std::set<OSExchangeData::CustomFormat>* custom_formats) {
-  return BrowserActionDragData::GetDropFormats(custom_formats);
+    std::set<ui::Clipboard::FormatType>* format_types) {
+  return BrowserActionDragData::GetDropFormats(format_types);
 }
 
 bool BrowserActionsContainer::AreDropTypesRequired() {

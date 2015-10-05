@@ -101,7 +101,7 @@ class ChevronMenuButton::MenuController : public views::MenuDelegate {
   bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+      std::set<ui::Clipboard::FormatType>* format_types) override;
   bool AreDropTypesRequired(views::MenuItemView* menu) override;
   bool CanDrop(views::MenuItemView* menu,
                const ui::OSExchangeData& data) override;
@@ -272,8 +272,8 @@ void ChevronMenuButton::MenuController::DropMenuClosed(
 bool ChevronMenuButton::MenuController::GetDropFormats(
     views::MenuItemView* menu,
     int* formats,
-    std::set<OSExchangeData::CustomFormat>* custom_formats) {
-  return BrowserActionDragData::GetDropFormats(custom_formats);
+    std::set<ui::Clipboard::FormatType>* format_types) {
+  return BrowserActionDragData::GetDropFormats(format_types);
 }
 
 bool ChevronMenuButton::MenuController::AreDropTypesRequired(
@@ -385,8 +385,8 @@ scoped_ptr<views::LabelButtonBorder> ChevronMenuButton::CreateDefaultBorder()
 
 bool ChevronMenuButton::GetDropFormats(
     int* formats,
-    std::set<OSExchangeData::CustomFormat>* custom_formats) {
-  return BrowserActionDragData::GetDropFormats(custom_formats);
+    std::set<ui::Clipboard::FormatType>* format_types) {
+  return BrowserActionDragData::GetDropFormats(format_types);
 }
 
 bool ChevronMenuButton::AreDropTypesRequired() {

@@ -101,17 +101,17 @@ View* DropHelper::CalculateTargetViewImpl(
   }
 #else
   int formats = 0;
-  std::set<OSExchangeData::CustomFormat> custom_formats;
+  std::set<ui::Clipboard::FormatType> format_types;
   while (view && view != target_view_) {
     if (view->enabled() &&
-        view->GetDropFormats(&formats, &custom_formats) &&
-        data.HasAnyFormat(formats, custom_formats) &&
+        view->GetDropFormats(&formats, &format_types) &&
+        data.HasAnyFormat(formats, format_types) &&
         (!check_can_drop || view->CanDrop(data))) {
       // Found the view.
       return view;
     }
     formats = 0;
-    custom_formats.clear();
+    format_types.clear();
     view = view->parent();
   }
 #endif

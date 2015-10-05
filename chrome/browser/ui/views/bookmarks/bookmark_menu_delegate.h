@@ -107,7 +107,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats);
+      std::set<ui::Clipboard::FormatType>* format_types);
   bool AreDropTypesRequired(views::MenuItemView* menu);
   bool CanDrop(views::MenuItemView* menu, const ui::OSExchangeData& data);
   int GetDropOperation(views::MenuItemView* item,

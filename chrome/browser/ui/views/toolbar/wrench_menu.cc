@@ -917,12 +917,12 @@ bool WrenchMenu::IsTriggerableEvent(views::MenuItemView* menu,
 }
 
 bool WrenchMenu::GetDropFormats(
-      MenuItemView* menu,
-      int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
+    MenuItemView* menu,
+    int* formats,
+    std::set<ui::Clipboard::FormatType>* format_types) {
   CreateBookmarkMenu();
   return bookmark_menu_delegate_.get() &&
-      bookmark_menu_delegate_->GetDropFormats(menu, formats, custom_formats);
+      bookmark_menu_delegate_->GetDropFormats(menu, formats, format_types);
 }
 
 bool WrenchMenu::AreDropTypesRequired(MenuItemView* menu) {

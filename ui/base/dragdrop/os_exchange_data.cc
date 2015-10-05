@@ -52,7 +52,7 @@ void OSExchangeData::SetFilenames(
   provider_->SetFilenames(filenames);
 }
 
-void OSExchangeData::SetPickledData(const CustomFormat& format,
+void OSExchangeData::SetPickledData(const Clipboard::FormatType& format,
                                     const base::Pickle& data) {
   provider_->SetPickledData(format, data);
 }
@@ -71,12 +71,11 @@ bool OSExchangeData::GetFilename(base::FilePath* path) const {
   return provider_->GetFilename(path);
 }
 
-bool OSExchangeData::GetFilenames(
-    std::vector<FileInfo>* filenames) const {
+bool OSExchangeData::GetFilenames(std::vector<FileInfo>* filenames) const {
   return provider_->GetFilenames(filenames);
 }
 
-bool OSExchangeData::GetPickledData(const CustomFormat& format,
+bool OSExchangeData::GetPickledData(const Clipboard::FormatType& format,
                                     base::Pickle* data) const {
   return provider_->GetPickledData(format, data);
 }
@@ -93,13 +92,14 @@ bool OSExchangeData::HasFile() const {
   return provider_->HasFile();
 }
 
-bool OSExchangeData::HasCustomFormat(const CustomFormat& format) const {
+bool OSExchangeData::HasCustomFormat(
+    const Clipboard::FormatType& format) const {
   return provider_->HasCustomFormat(format);
 }
 
 bool OSExchangeData::HasAnyFormat(
     int formats,
-    const std::set<CustomFormat>& custom_formats) const {
+    const std::set<Clipboard::FormatType>& format_types) const {
   if ((formats & STRING) != 0 && HasString())
     return true;
   if ((formats & URL) != 0 && HasURL(CONVERT_FILENAMES))
@@ -114,9 +114,8 @@ bool OSExchangeData::HasAnyFormat(
 #endif
   if ((formats & FILE_NAME) != 0 && provider_->HasFile())
     return true;
-  for (std::set<CustomFormat>::const_iterator i = custom_formats.begin();
-       i != custom_formats.end(); ++i) {
-    if (HasCustomFormat(*i))
+  for (const auto& format : format_types) {
+    if (HasCustomFormat(format))
       return true;
   }
   return false;

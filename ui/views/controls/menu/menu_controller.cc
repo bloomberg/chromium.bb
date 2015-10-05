@@ -655,9 +655,9 @@ void MenuController::OnGestureEvent(SubmenuView* source,
 bool MenuController::GetDropFormats(
       SubmenuView* source,
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) {
+      std::set<ui::Clipboard::FormatType>* format_types) {
   return source->GetMenuItem()->GetDelegate()->GetDropFormats(
-      source->GetMenuItem(), formats, custom_formats);
+      source->GetMenuItem(), formats, format_types);
 }
 
 bool MenuController::AreDropTypesRequired(SubmenuView* source) {

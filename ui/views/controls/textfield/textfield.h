@@ -225,7 +225,7 @@ class VIEWS_EXPORT Textfield : public View,
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
   bool GetDropFormats(
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+      std::set<ui::Clipboard::FormatType>* format_types) override;
   bool CanDrop(const ui::OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;

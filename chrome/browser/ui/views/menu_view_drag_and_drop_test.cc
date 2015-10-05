@@ -64,7 +64,7 @@ class TestTargetView : public views::View {
   // views::View:
   bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) override;
+      std::set<ui::Clipboard::FormatType>* format_types) override;
   bool AreDropTypesRequired() override;
   bool CanDrop(const OSExchangeData& data) override;
   void OnDragEntered(const ui::DropTargetEvent& event) override;
@@ -102,7 +102,8 @@ TestTargetView::~TestTargetView() {
 }
 
 bool TestTargetView::GetDropFormats(
-    int* formats, std::set<OSExchangeData::CustomFormat>* custom_formats) {
+    int* formats,
+    std::set<ui::Clipboard::FormatType>* format_types) {
   *formats = ui::OSExchangeData::STRING;
   return true;
 }
@@ -155,7 +156,7 @@ class MenuViewDragAndDropTest : public MenuTestBase {
   bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+      std::set<ui::Clipboard::FormatType>* format_types) override;
   bool AreDropTypesRequired(views::MenuItemView* menu) override;
   bool CanDrop(views::MenuItemView* menu,
                const ui::OSExchangeData& data) override;
@@ -210,7 +211,7 @@ void MenuViewDragAndDropTest::BuildMenu(views::MenuItemView* menu) {
 bool MenuViewDragAndDropTest::GetDropFormats(
     views::MenuItemView* menu,
     int* formats,
-    std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
+    std::set<ui::Clipboard::FormatType>* format_types) {
   *formats = ui::OSExchangeData::STRING;
   return true;
 }

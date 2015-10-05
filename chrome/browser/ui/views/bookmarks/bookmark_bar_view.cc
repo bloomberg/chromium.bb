@@ -1014,12 +1014,12 @@ void BookmarkBarView::PaintChildren(const ui::PaintContext& context) {
 }
 
 bool BookmarkBarView::GetDropFormats(
-      int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
+    int* formats,
+    std::set<ui::Clipboard::FormatType>* format_types) {
   if (!model_ || !model_->loaded())
     return false;
   *formats = ui::OSExchangeData::URL;
-  custom_formats->insert(BookmarkNodeData::GetBookmarkFormatType());
+  format_types->insert(BookmarkNodeData::GetBookmarkFormatType());
   return true;
 }
 

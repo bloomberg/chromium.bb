@@ -214,11 +214,11 @@ void SubmenuView::PaintChildren(const ui::PaintContext& context) {
 }
 
 bool SubmenuView::GetDropFormats(
-      int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) {
+    int* formats,
+    std::set<ui::Clipboard::FormatType>* format_types) {
   DCHECK(GetMenuItem()->GetMenuController());
   return GetMenuItem()->GetMenuController()->GetDropFormats(this, formats,
-                                                            custom_formats);
+                                                            format_types);
 }
 
 bool SubmenuView::AreDropTypesRequired() {

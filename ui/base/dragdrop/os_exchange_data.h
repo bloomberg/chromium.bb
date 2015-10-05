@@ -52,11 +52,6 @@ struct FileInfo;
 // compiled on windows.
 class UI_BASE_EXPORT OSExchangeData {
  public:
-  // CustomFormats are used for non-standard data types. For example, bookmark
-  // nodes are written using a CustomFormat.
-  // TODO(dcheng): Remove this completely and just use Clipboard::FormatType.
-  typedef Clipboard::FormatType CustomFormat;
-
   // Enumeration of the known formats.
   enum Format {
     STRING         = 1 << 0,
@@ -100,9 +95,8 @@ class UI_BASE_EXPORT OSExchangeData {
     virtual void SetString(const base::string16& data) = 0;
     virtual void SetURL(const GURL& url, const base::string16& title) = 0;
     virtual void SetFilename(const base::FilePath& path) = 0;
-    virtual void SetFilenames(
-        const std::vector<FileInfo>& file_names) = 0;
-    virtual void SetPickledData(const CustomFormat& format,
+    virtual void SetFilenames(const std::vector<FileInfo>& file_names) = 0;
+    virtual void SetPickledData(const Clipboard::FormatType& format,
                                 const base::Pickle& data) = 0;
 
     virtual bool GetString(base::string16* data) const = 0;
@@ -110,15 +104,14 @@ class UI_BASE_EXPORT OSExchangeData {
                                 GURL* url,
                                 base::string16* title) const = 0;
     virtual bool GetFilename(base::FilePath* path) const = 0;
-    virtual bool GetFilenames(
-        std::vector<FileInfo>* file_names) const = 0;
-    virtual bool GetPickledData(const CustomFormat& format,
+    virtual bool GetFilenames(std::vector<FileInfo>* file_names) const = 0;
+    virtual bool GetPickledData(const Clipboard::FormatType& format,
                                 base::Pickle* data) const = 0;
 
     virtual bool HasString() const = 0;
     virtual bool HasURL(FilenameToURLPolicy policy) const = 0;
     virtual bool HasFile() const = 0;
-    virtual bool HasCustomFormat(const CustomFormat& format) const = 0;
+    virtual bool HasCustomFormat(const Clipboard::FormatType& format) const = 0;
 
 #if (!defined(OS_CHROMEOS) && defined(USE_X11)) || defined(OS_WIN)
     virtual void SetFileContents(const base::FilePath& filename,
@@ -184,7 +177,8 @@ class UI_BASE_EXPORT OSExchangeData {
   void SetFilenames(
       const std::vector<FileInfo>& file_names);
   // Adds pickled data of the specified format.
-  void SetPickledData(const CustomFormat& format, const base::Pickle& data);
+  void SetPickledData(const Clipboard::FormatType& format,
+                      const base::Pickle& data);
 
   // These functions retrieve data of the specified type. If data exists, the
   // functions return and the result is in the out parameter. If the data does
@@ -198,21 +192,21 @@ class UI_BASE_EXPORT OSExchangeData {
                       base::string16* title) const;
   // Return the path of a file, if available.
   bool GetFilename(base::FilePath* path) const;
-  bool GetFilenames(
-      std::vector<FileInfo>* file_names) const;
-  bool GetPickledData(const CustomFormat& format, base::Pickle* data) const;
+  bool GetFilenames(std::vector<FileInfo>* file_names) const;
+  bool GetPickledData(const Clipboard::FormatType& format,
+                      base::Pickle* data) const;
 
   // Test whether or not data of certain types is present, without actually
   // returning anything.
   bool HasString() const;
   bool HasURL(FilenameToURLPolicy policy) const;
   bool HasFile() const;
-  bool HasCustomFormat(const CustomFormat& format) const;
+  bool HasCustomFormat(const Clipboard::FormatType& format) const;
 
   // Returns true if this OSExchangeData has data in any of the formats in
   // |formats| or any custom format in |custom_formats|.
   bool HasAnyFormat(int formats,
-                     const std::set<CustomFormat>& custom_formats) const;
+                    const std::set<Clipboard::FormatType>& types) const;
 
 #if defined(OS_WIN)
   // Adds the bytes of a file (CFSTR_FILECONTENTS and CFSTR_FILEDESCRIPTOR on

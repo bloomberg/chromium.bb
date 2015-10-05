@@ -87,7 +87,7 @@ class BookmarkMenuController : public bookmarks::BaseBookmarkModelObserver,
   bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+      std::set<ui::Clipboard::FormatType>* format_types) override;
   bool AreDropTypesRequired(views::MenuItemView* menu) override;
   bool CanDrop(views::MenuItemView* menu,
                const ui::OSExchangeData& data) override;

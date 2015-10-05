@@ -140,10 +140,9 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   bool OnMouseWheel(SubmenuView* source, const ui::MouseWheelEvent& event);
   void OnGestureEvent(SubmenuView* source, ui::GestureEvent* event);
 
-  bool GetDropFormats(
-      SubmenuView* source,
-      int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats);
+  bool GetDropFormats(SubmenuView* source,
+                      int* formats,
+                      std::set<ui::Clipboard::FormatType>* format_types);
   bool AreDropTypesRequired(SubmenuView* source);
   bool CanDrop(SubmenuView* source, const ui::OSExchangeData& data);
   void OnDragEntered(SubmenuView* source, const ui::DropTargetEvent& event);

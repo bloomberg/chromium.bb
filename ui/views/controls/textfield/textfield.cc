@@ -857,22 +857,21 @@ bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 
 bool Textfield::GetDropFormats(
     int* formats,
-    std::set<OSExchangeData::CustomFormat>* custom_formats) {
+    std::set<ui::Clipboard::FormatType>* format_types) {
   if (!enabled() || read_only())
     return false;
   // TODO(msw): Can we support URL, FILENAME, etc.?
   *formats = ui::OSExchangeData::STRING;
   if (controller_)
-    controller_->AppendDropFormats(formats, custom_formats);
+    controller_->AppendDropFormats(formats, format_types);
   return true;
 }
 
 bool Textfield::CanDrop(const OSExchangeData& data) {
   int formats;
-  std::set<OSExchangeData::CustomFormat> custom_formats;
-  GetDropFormats(&formats, &custom_formats);
-  return enabled() && !read_only() &&
-      data.HasAnyFormat(formats, custom_formats);
+  std::set<ui::Clipboard::FormatType> format_types;
+  GetDropFormats(&formats, &format_types);
+  return enabled() && !read_only() && data.HasAnyFormat(formats, format_types);
 }
 
 int Textfield::OnDragUpdated(const ui::DropTargetEvent& event) {

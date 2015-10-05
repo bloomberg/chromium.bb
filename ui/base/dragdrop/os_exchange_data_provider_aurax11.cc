@@ -206,7 +206,7 @@ void OSExchangeDataProviderAuraX11::SetFilenames(
 }
 
 void OSExchangeDataProviderAuraX11::SetPickledData(
-    const OSExchangeData::CustomFormat& format,
+    const Clipboard::FormatType& format,
     const base::Pickle& pickle) {
   const unsigned char* data =
       reinterpret_cast<const unsigned char*>(pickle.data());
@@ -325,7 +325,7 @@ bool OSExchangeDataProviderAuraX11::GetFilenames(
 }
 
 bool OSExchangeDataProviderAuraX11::GetPickledData(
-    const OSExchangeData::CustomFormat& format,
+    const Clipboard::FormatType& format,
     base::Pickle* pickle) const {
   std::vector< ::Atom> requested_types;
   requested_types.push_back(atom_cache_.GetAtom(format.ToString().c_str()));
@@ -409,7 +409,7 @@ bool OSExchangeDataProviderAuraX11::HasFile() const {
 }
 
 bool OSExchangeDataProviderAuraX11::HasCustomFormat(
-    const OSExchangeData::CustomFormat& format) const {
+    const Clipboard::FormatType& format) const {
   std::vector< ::Atom> url_atoms;
   url_atoms.push_back(atom_cache_.GetAtom(format.ToString().c_str()));
   std::vector< ::Atom> requested_types;

@@ -102,10 +102,10 @@ bool BookmarkMenuController::ShouldExecuteCommandWithoutClosingMenu(
 }
 
 bool BookmarkMenuController::GetDropFormats(
-      MenuItemView* menu,
-      int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
-  return menu_delegate_->GetDropFormats(menu, formats, custom_formats);
+    MenuItemView* menu,
+    int* formats,
+    std::set<ui::Clipboard::FormatType>* format_types) {
+  return menu_delegate_->GetDropFormats(menu, formats, format_types);
 }
 
 bool BookmarkMenuController::AreDropTypesRequired(MenuItemView* menu) {

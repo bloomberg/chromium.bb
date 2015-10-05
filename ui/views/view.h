@@ -903,7 +903,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // support dropping.
   virtual bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats);
+      std::set<ui::Clipboard::FormatType>* format_types);
 
   // Override and return true if the data must be available before any drop
   // methods should be invoked. The default is false.

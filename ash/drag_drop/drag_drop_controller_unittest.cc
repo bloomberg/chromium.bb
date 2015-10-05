@@ -93,7 +93,7 @@ class DragTestView : public views::View {
 
   bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) override {
+      std::set<ui::Clipboard::FormatType>* format_types) override {
     *formats = ui::OSExchangeData::STRING;
     return true;
   }

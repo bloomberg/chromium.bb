@@ -202,7 +202,7 @@ class BrowserActionsContainer
   void OnMouseEntered(const ui::MouseEvent& event) override;
   bool GetDropFormats(
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+      std::set<ui::Clipboard::FormatType>* format_types) override;
   bool AreDropTypesRequired() override;
   bool CanDrop(const ui::OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;

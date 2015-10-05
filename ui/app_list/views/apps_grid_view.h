@@ -141,7 +141,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
       const ViewHierarchyChangedDetails& details) override;
   bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) override;
+      std::set<ui::Clipboard::FormatType>* format_types) override;
   bool CanDrop(const OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
 

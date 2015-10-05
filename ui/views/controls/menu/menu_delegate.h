@@ -168,7 +168,7 @@ class VIEWS_EXPORT MenuDelegate {
   virtual bool GetDropFormats(
       MenuItemView* menu,
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats);
+      std::set<ui::Clipboard::FormatType>* format_types);
 
   // See view for a description of this method.
   virtual bool AreDropTypesRequired(MenuItemView* menu);

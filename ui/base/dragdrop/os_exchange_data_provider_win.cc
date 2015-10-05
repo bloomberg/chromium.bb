@@ -23,9 +23,9 @@
 
 namespace ui {
 
-static const OSExchangeData::CustomFormat& GetRendererTaintCustomType() {
+static const Clipboard::FormatType& GetRendererTaintFormatType() {
   CR_DEFINE_STATIC_LOCAL(
-      ui::OSExchangeData::CustomFormat,
+      Clipboard::FormatType,
       format,
       (ui::Clipboard::GetFormatType("chromium/x-renderer-taint")));
   return format;
@@ -281,11 +281,11 @@ OSExchangeData::Provider* OSExchangeDataProviderWin::Clone() const {
 void OSExchangeDataProviderWin::MarkOriginatedFromRenderer() {
   STGMEDIUM* storage = GetStorageForString(std::string());
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
-      GetRendererTaintCustomType().ToFormatEtc(), storage));
+      GetRendererTaintFormatType().ToFormatEtc(), storage));
 }
 
 bool OSExchangeDataProviderWin::DidOriginateFromRenderer() const {
-  return HasCustomFormat(GetRendererTaintCustomType());
+  return HasCustomFormat(GetRendererTaintFormatType());
 }
 
 void OSExchangeDataProviderWin::SetString(const base::string16& data) {
@@ -363,7 +363,7 @@ void OSExchangeDataProviderWin::SetFilenames(
 }
 
 void OSExchangeDataProviderWin::SetPickledData(
-    const OSExchangeData::CustomFormat& format,
+    const Clipboard::FormatType& format,
     const base::Pickle& data) {
   STGMEDIUM* storage = GetStorageForBytes(data.data(), data.size());
   data_->contents_.push_back(
@@ -448,7 +448,7 @@ bool OSExchangeDataProviderWin::GetFilenames(
 }
 
 bool OSExchangeDataProviderWin::GetPickledData(
-    const OSExchangeData::CustomFormat& format,
+    const Clipboard::FormatType& format,
     base::Pickle* data) const {
   DCHECK(data);
   bool success = false;
@@ -512,7 +512,7 @@ bool OSExchangeDataProviderWin::HasHtml() const {
 }
 
 bool OSExchangeDataProviderWin::HasCustomFormat(
-    const OSExchangeData::CustomFormat& format) const {
+    const Clipboard::FormatType& format) const {
   FORMATETC format_etc = format.ToFormatEtc();
   return (source_object_->QueryGetData(&format_etc) == S_OK);
 }

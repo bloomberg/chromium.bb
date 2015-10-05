@@ -68,7 +68,7 @@ class VIEWS_EXPORT TextfieldController {
   // Enables the controller to append to the accepted drop formats.
   virtual void AppendDropFormats(
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {}
+      std::set<ui::Clipboard::FormatType>* format_types) {}
 
   // Called when a drop of dragged data happens on the textfield. This method is
   // called before regular handling of the drop. If this returns a drag

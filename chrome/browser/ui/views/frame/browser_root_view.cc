@@ -32,7 +32,7 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
 
 bool BrowserRootView::GetDropFormats(
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
+      std::set<ui::Clipboard::FormatType>* format_types) {
   if (tabstrip() && tabstrip()->visible()) {
     *formats = ui::OSExchangeData::URL | ui::OSExchangeData::STRING;
     return true;

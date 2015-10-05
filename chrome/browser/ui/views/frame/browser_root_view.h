@@ -30,7 +30,7 @@ class BrowserRootView : public views::internal::RootView {
   // Overridden from views::View:
   bool GetDropFormats(
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
+      std::set<ui::Clipboard::FormatType>* format_types) override;
   bool AreDropTypesRequired() override;
   bool CanDrop(const ui::OSExchangeData& data) override;
   void OnDragEntered(const ui::DropTargetEvent& event) override;

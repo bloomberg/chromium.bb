@@ -1218,28 +1218,28 @@ TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
   base::string16 string(ASCIIToUTF16("string "));
   data.SetString(string);
   int formats = 0;
-  std::set<OSExchangeData::CustomFormat> custom_formats;
+  std::set<ui::Clipboard::FormatType> format_types;
 
   // Ensure that disabled textfields do not accept drops.
   textfield_->SetEnabled(false);
-  EXPECT_FALSE(textfield_->GetDropFormats(&formats, &custom_formats));
+  EXPECT_FALSE(textfield_->GetDropFormats(&formats, &format_types));
   EXPECT_EQ(0, formats);
-  EXPECT_TRUE(custom_formats.empty());
+  EXPECT_TRUE(format_types.empty());
   EXPECT_FALSE(textfield_->CanDrop(data));
   textfield_->SetEnabled(true);
 
   // Ensure that read-only textfields do not accept drops.
   textfield_->SetReadOnly(true);
-  EXPECT_FALSE(textfield_->GetDropFormats(&formats, &custom_formats));
+  EXPECT_FALSE(textfield_->GetDropFormats(&formats, &format_types));
   EXPECT_EQ(0, formats);
-  EXPECT_TRUE(custom_formats.empty());
+  EXPECT_TRUE(format_types.empty());
   EXPECT_FALSE(textfield_->CanDrop(data));
   textfield_->SetReadOnly(false);
 
   // Ensure that enabled and editable textfields do accept drops.
-  EXPECT_TRUE(textfield_->GetDropFormats(&formats, &custom_formats));
+  EXPECT_TRUE(textfield_->GetDropFormats(&formats, &format_types));
   EXPECT_EQ(ui::OSExchangeData::STRING, formats);
-  EXPECT_TRUE(custom_formats.empty());
+  EXPECT_TRUE(format_types.empty());
   EXPECT_TRUE(textfield_->CanDrop(data));
   gfx::Point drop_point(GetCursorPositionX(6), 0);
   ui::DropTargetEvent drop(data, drop_point, drop_point,
@@ -1252,7 +1252,7 @@ TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
   // Ensure that textfields do not accept non-OSExchangeData::STRING types.
   ui::OSExchangeData bad_data;
   bad_data.SetFilename(base::FilePath(FILE_PATH_LITERAL("x")));
-  ui::OSExchangeData::CustomFormat fmt = ui::Clipboard::GetBitmapFormatType();
+  ui::Clipboard::FormatType fmt = ui::Clipboard::GetBitmapFormatType();
   bad_data.SetPickledData(fmt, base::Pickle());
   bad_data.SetFileContents(base::FilePath(L"x"), "x");
   bad_data.SetHtml(base::string16(ASCIIToUTF16("x")), GURL("x.org"));
@@ -1317,7 +1317,7 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheRight) {
   ui::OSExchangeData data;
   int formats = 0;
   int operations = 0;
-  std::set<OSExchangeData::CustomFormat> custom_formats;
+  std::set<ui::Clipboard::FormatType> format_types;
 
   // Start dragging "ello".
   textfield_->SelectRange(gfx::Range(1, 5));
@@ -1335,9 +1335,9 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheRight) {
   textfield_->WriteDragDataForView(NULL, click_a.location(), &data);
   EXPECT_TRUE(data.GetString(&string));
   EXPECT_EQ(textfield_->GetSelectedText(), string);
-  EXPECT_TRUE(textfield_->GetDropFormats(&formats, &custom_formats));
+  EXPECT_TRUE(textfield_->GetDropFormats(&formats, &format_types));
   EXPECT_EQ(ui::OSExchangeData::STRING, formats);
-  EXPECT_TRUE(custom_formats.empty());
+  EXPECT_TRUE(format_types.empty());
 
   // Drop "ello" after "w".
   const gfx::Point kDropPoint(GetCursorPositionX(7), 0);
@@ -1371,7 +1371,7 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheLeft) {
   ui::OSExchangeData data;
   int formats = 0;
   int operations = 0;
-  std::set<OSExchangeData::CustomFormat> custom_formats;
+  std::set<ui::Clipboard::FormatType> format_types;
 
   // Start dragging " worl".
   textfield_->SelectRange(gfx::Range(5, 10));
@@ -1389,9 +1389,9 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheLeft) {
   textfield_->WriteDragDataForView(NULL, click_a.location(), &data);
   EXPECT_TRUE(data.GetString(&string));
   EXPECT_EQ(textfield_->GetSelectedText(), string);
-  EXPECT_TRUE(textfield_->GetDropFormats(&formats, &custom_formats));
+  EXPECT_TRUE(textfield_->GetDropFormats(&formats, &format_types));
   EXPECT_EQ(ui::OSExchangeData::STRING, formats);
-  EXPECT_TRUE(custom_formats.empty());
+  EXPECT_TRUE(format_types.empty());
 
   // Drop " worl" after "h".
   EXPECT_TRUE(textfield_->CanDrop(data));
