@@ -40,17 +40,24 @@
 
 namespace blink {
 
+void RootLayerScrollsFrameSettingOverride(Settings& settings)
+{
+    settings.setRootLayerScrolls(true);
+}
+
 PassOwnPtr<DummyPageHolder> DummyPageHolder::create(
     const IntSize& initialViewSize,
     Page::PageClients* pageClients,
-    PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient) {
-    return adoptPtr(new DummyPageHolder(initialViewSize, pageClients, frameLoaderClient));
+    PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient,
+    FrameSettingOverrideFunction settingOverrider) {
+    return adoptPtr(new DummyPageHolder(initialViewSize, pageClients, frameLoaderClient, settingOverrider));
 }
 
 DummyPageHolder::DummyPageHolder(
     const IntSize& initialViewSize,
     Page::PageClients* pageClientsArgument,
-    PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient)
+    PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient,
+    FrameSettingOverrideFunction settingOverrider)
 {
     Page::PageClients pageClients;
     if (!pageClientsArgument) {
@@ -67,6 +74,8 @@ DummyPageHolder::DummyPageHolder(
     // FIXME: http://crbug.com/363843. This needs to find a better way to
     // not create graphics layers.
     settings.setAcceleratedCompositingEnabled(false);
+    if (settingOverrider)
+        (*settingOverrider)(settings);
 
     m_frameLoaderClient = frameLoaderClient;
     if (!m_frameLoaderClient)

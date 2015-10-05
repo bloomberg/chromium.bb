@@ -50,7 +50,7 @@ void RenderingTest::SetUp()
     fillWithEmptyClients(pageClients);
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FakeChromeClient>, chromeClient, (FakeChromeClient::create()));
     pageClients.chromeClient = chromeClient.get();
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
+    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients, nullptr, settingOverrider());
 
     // This ensures that the minimal DOM tree gets attached
     // correctly for tests that don't call setBodyInnerHTML.

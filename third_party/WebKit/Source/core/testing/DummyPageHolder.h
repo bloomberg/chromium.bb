@@ -46,6 +46,11 @@ class Document;
 class LocalFrame;
 class FrameView;
 class IntSize;
+class Settings;
+
+typedef void (*FrameSettingOverrideFunction)(Settings&);
+
+extern void RootLayerScrollsFrameSettingOverride(Settings&);
 
 // Creates a dummy Page, LocalFrame, and FrameView whose clients are all no-op.
 //
@@ -63,7 +68,8 @@ public:
     static PassOwnPtr<DummyPageHolder> create(
         const IntSize& initialViewSize = IntSize(),
         Page::PageClients* = 0,
-        PassOwnPtrWillBeRawPtr<FrameLoaderClient> = nullptr);
+        PassOwnPtrWillBeRawPtr<FrameLoaderClient> = nullptr,
+        FrameSettingOverrideFunction = nullptr);
     ~DummyPageHolder();
 
     Page& page() const;
@@ -72,7 +78,7 @@ public:
     Document& document() const;
 
 private:
-    DummyPageHolder(const IntSize& initialViewSize, Page::PageClients*, PassOwnPtrWillBeRawPtr<FrameLoaderClient>);
+    DummyPageHolder(const IntSize& initialViewSize, Page::PageClients*, PassOwnPtrWillBeRawPtr<FrameLoaderClient>, FrameSettingOverrideFunction settingOverrider);
 
     OwnPtrWillBePersistent<Page> m_page;
     RefPtrWillBePersistent<LocalFrame> m_frame;

@@ -18,6 +18,9 @@ namespace blink {
 
 class RenderingTest : public testing::Test {
     WTF_MAKE_FAST_ALLOCATED(RenderingTest);
+public:
+    virtual FrameSettingOverrideFunction settingOverrider() const { return nullptr; }
+
 protected:
     void SetUp() override;
 
