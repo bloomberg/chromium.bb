@@ -25,16 +25,17 @@
 #define UIEventWithKeyState_h
 
 #include "core/CoreExport.h"
+#include "core/events/EventModifierInit.h"
 #include "core/events/UIEvent.h"
 
 namespace blink {
 
 class CORE_EXPORT UIEventWithKeyState : public UIEvent {
 public:
-    bool ctrlKey() const { return m_ctrlKey; }
-    bool shiftKey() const { return m_shiftKey; }
-    bool altKey() const { return m_altKey; }
-    bool metaKey() const { return m_metaKey; }
+    bool ctrlKey() const { return m_modifiers & PlatformEvent::CtrlKey; }
+    bool shiftKey() const { return m_modifiers & PlatformEvent::ShiftKey; }
+    bool altKey() const { return m_modifiers & PlatformEvent::AltKey; }
+    bool metaKey() const { return m_modifiers & PlatformEvent::MetaKey; }
 
     // We ignore the new tab modifiers (ctrl or meta, depending on OS) set by JavaScript when processing events.
     // However, scripts running in isolated worlds (aka content scripts) are not subject to this restriction. Since it is possible that an event created by a content script is caught and recreated by the web page's script, we resort to a global flag.
@@ -44,30 +45,25 @@ public:
 
     bool getModifierState(const String& keyIdentifier) const;
 
+    PlatformEvent::Modifiers modifiers() const { return static_cast<PlatformEvent::Modifiers>(m_modifiers); }
+
 protected:
     UIEventWithKeyState()
-        : m_ctrlKey(false)
-        , m_altKey(false)
-        , m_shiftKey(false)
-        , m_metaKey(false)
+        : m_modifiers(0)
     {
     }
 
     UIEventWithKeyState(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
-        int detail, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, InputDeviceCapabilities* sourceCapabilities = nullptr)
+        int detail, PlatformEvent::Modifiers modifiers, InputDeviceCapabilities* sourceCapabilities = nullptr)
         : UIEvent(type, canBubble, cancelable, view, detail, sourceCapabilities)
-        , m_ctrlKey(ctrlKey)
-        , m_altKey(altKey)
-        , m_shiftKey(shiftKey)
-        , m_metaKey(metaKey)
+        , m_modifiers(modifiers)
     {
     }
 
-    // Expose these so init functions can set them.
-    bool m_ctrlKey : 1;
-    bool m_altKey : 1;
-    bool m_shiftKey : 1;
-    bool m_metaKey : 1;
+    UIEventWithKeyState(const AtomicString& type, const EventModifierInit& initializer);
+    void initModifiers(bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
+
+    unsigned m_modifiers;
 
 private:
     static bool s_newTabModifierSetFromIsolatedWorld;

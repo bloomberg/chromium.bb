@@ -25,6 +25,7 @@
 #define MouseRelatedEvent_h
 
 #include "core/CoreExport.h"
+#include "core/events/MouseEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
 #include "platform/geometry/LayoutPoint.h"
 
@@ -72,10 +73,10 @@ protected:
     // sourceCapabilities even when it is null, see https://crbug.com/476530.
     MouseRelatedEvent(const AtomicString& type, bool canBubble, bool cancelable,
         PassRefPtrWillBeRawPtr<AbstractView>, int detail, const IntPoint& screenLocation,
-        const IntPoint& rootFrameLocation, const IntPoint& movementDelta, bool ctrlKey, bool altKey,
-        bool shiftKey, bool metaKey, PositionType, InputDeviceCapabilities* sourceCapabilities = nullptr);
+        const IntPoint& rootFrameLocation, const IntPoint& movementDelta, PlatformEvent::Modifiers, PositionType, InputDeviceCapabilities* sourceCapabilities = nullptr);
 
-    void initCoordinates();
+    MouseRelatedEvent(const AtomicString& type, const MouseEventInit& initializer);
+
     void initCoordinates(const LayoutPoint& clientLocation);
     void receivedTarget() final;
 

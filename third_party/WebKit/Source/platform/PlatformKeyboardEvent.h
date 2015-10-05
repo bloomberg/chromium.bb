@@ -88,7 +88,7 @@ public:
     bool isSystemKey() const { return m_isSystemKey; }
 
     PLATFORM_EXPORT static bool currentCapsLockState();
-    PLATFORM_EXPORT static void getCurrentModifierState(bool& shiftKey, bool& ctrlKey, bool& altKey, bool& metaKey);
+    PLATFORM_EXPORT static Modifiers getCurrentModifierState();
 
 protected:
     String m_text;

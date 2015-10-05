@@ -69,39 +69,40 @@ PassRefPtrWillBeRawPtr<KeyboardEvent> KeyboardEvent::create(ScriptState* scriptS
 
 KeyboardEvent::KeyboardEvent()
     : m_location(DOM_KEY_LOCATION_STANDARD)
-    , m_isAutoRepeat(false)
 {
 }
 
 KeyboardEvent::KeyboardEvent(const PlatformKeyboardEvent& key, AbstractView* view)
-    : UIEventWithKeyState(eventTypeForKeyboardEventType(key.type()), true, true, view, 0, key.ctrlKey(), key.altKey(), key.shiftKey(), key.metaKey(), InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities())
+    : UIEventWithKeyState(eventTypeForKeyboardEventType(key.type()), true, true, view, 0, key.modifiers(), InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities())
     , m_keyEvent(adoptPtr(new PlatformKeyboardEvent(key)))
     , m_keyIdentifier(key.keyIdentifier())
     , m_code(key.code())
     , m_key(key.key())
     , m_location(keyLocationCode(key))
-    , m_isAutoRepeat(key.isAutoRepeat())
 {
     setPlatformTimeStamp(key.timestamp());
+    initLocationModifiers(m_location);
 }
 
 KeyboardEvent::KeyboardEvent(const AtomicString& eventType, const KeyboardEventInit& initializer)
-    : UIEventWithKeyState(eventType, initializer.bubbles(), initializer.cancelable(), initializer.view(), initializer.detail(), initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(), initializer.metaKey(), initializer.sourceCapabilities())
+    : UIEventWithKeyState(eventType, initializer)
     , m_keyIdentifier(initializer.keyIdentifier())
     , m_location(initializer.location())
-    , m_isAutoRepeat(initializer.repeat())
 {
+    if (initializer.repeat())
+        m_modifiers |= PlatformEvent::IsAutoRepeat;
+    initLocationModifiers(initializer.location());
 }
 
-KeyboardEvent::KeyboardEvent(const AtomicString& eventType, bool canBubble, bool cancelable, AbstractView *view,
-    const String& keyIdentifier, const String& code, const String& key, unsigned location, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
-    : UIEventWithKeyState(eventType, canBubble, cancelable, view, 0, ctrlKey, altKey, shiftKey, metaKey, InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities())
+KeyboardEvent::KeyboardEvent(const AtomicString& eventType, bool canBubble, bool cancelable, AbstractView* view,
+    const String& keyIdentifier, const String& code, const String& key, unsigned location, PlatformEvent::Modifiers modifiers)
+    : UIEventWithKeyState(eventType, canBubble, cancelable, view, 0, modifiers, InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities())
     , m_keyIdentifier(keyIdentifier)
     , m_code(code)
     , m_key(key)
     , m_location(location)
-    , m_isAutoRepeat(false)
 {
+    initLocationModifiers(location);
 }
 
 KeyboardEvent::~KeyboardEvent()
@@ -121,10 +122,8 @@ void KeyboardEvent::initKeyboardEvent(ScriptState* scriptState, const AtomicStri
 
     m_keyIdentifier = keyIdentifier;
     m_location = location;
-    m_ctrlKey = ctrlKey;
-    m_shiftKey = shiftKey;
-    m_altKey = altKey;
-    m_metaKey = metaKey;
+    initModifiers(ctrlKey, altKey, shiftKey, metaKey);
+    initLocationModifiers(location);
 }
 
 int KeyboardEvent::keyCode() const
@@ -175,6 +174,21 @@ int KeyboardEvent::which() const
     // Netscape's "which" returns a virtual key code for keydown and keyup, and a character code for keypress.
     // That's exactly what IE's "keyCode" returns. So they are the same for keyboard events.
     return keyCode();
+}
+
+void KeyboardEvent::initLocationModifiers(unsigned location)
+{
+    switch (location) {
+    case KeyboardEvent::DOM_KEY_LOCATION_NUMPAD:
+        m_modifiers |= PlatformEvent::IsKeyPad;
+        break;
+    case KeyboardEvent::DOM_KEY_LOCATION_LEFT:
+        m_modifiers |= PlatformEvent::IsLeft;
+        break;
+    case KeyboardEvent::DOM_KEY_LOCATION_RIGHT:
+        m_modifiers |= PlatformEvent::IsRight;
+        break;
+    }
 }
 
 PassRefPtrWillBeRawPtr<EventDispatchMediator> KeyboardEvent::createMediator()

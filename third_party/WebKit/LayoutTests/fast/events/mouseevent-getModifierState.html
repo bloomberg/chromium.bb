@@ -1,5 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <script src="../../resources/js-test.js"></script>
+<script src="resources/input-modifiers.js"></script>
 <script>
 description("Tests MouseEvent.getModifierState()");
 
@@ -7,20 +8,22 @@ var lastMouseEvent;
 
 function recordMouseEvent(ev) {
     lastMouseEvent = ev;
+    ev.preventDefault();
 }
-
-var allEventModifiers = ["ctrlKey", "shiftKey", "metaKey", "altKey"];
-var allKeyModifiers = ["Control", "Shift", "Meta", "Alt"];
 
 function testMouseEventWithModifiers(button, eventModifiers) {
     eventSender.mouseDown(button, eventModifiers);
     shouldBe("lastMouseEvent.type", '"mousedown"');
     shouldEvaluateTo("lastMouseEvent.button", button);
-    for (var i = 0; i < allEventModifiers.length; ++i) {
-        var expectedModifierState = eventModifiers.indexOf(allEventModifiers[i]) >= 0;
-        shouldEvaluateTo("lastMouseEvent.getModifierState('" + allKeyModifiers[i] + "')", expectedModifierState);
-        shouldEvaluateTo("lastMouseEvent." + allEventModifiers[i], expectedModifierState);
-    }
+    forEachModifier(function(modifierInitName, modifierName, eventSenderName) {
+        var expectedModifierState = eventModifiers.indexOf(eventSenderName) >= 0;
+        shouldEvaluateTo("lastMouseEvent.getModifierState('" + modifierName + "')", expectedModifierState);
+    });
+
+    forEachLegacyModifier(function(attr) {
+        var expectedModifierState = eventModifiers.indexOf(attr) >= 0;
+        shouldEvaluateTo("lastMouseEvent." + attr, expectedModifierState);
+    });
 }
 
 if (window.eventSender) {
@@ -32,6 +35,15 @@ if (window.eventSender) {
     testMouseEventWithModifiers(1, ["ctrlKey", "shiftKey"]);
     testMouseEventWithModifiers(2, ["ctrlKey", "shiftKey", "altKey"]);
     testMouseEventWithModifiers(1, ["ctrlKey", "shiftKey", "altKey", "metaKey"]);
+
+    forEachModifier( function(eventInitName, eventModifierName, eventSenderName) {
+      testMouseEventWithModifiers(1, [eventSenderName]);
+    });
+    var isMacOSX = navigator.userAgent.indexOf("Mac OS X") != -1;
+    eventSender.mouseDown(2, [isMacOSX ? "metaKey" : "ctrlKey"]);
+    shouldBe("lastMouseEvent.type", '"mousedown"');
+    shouldEvaluateTo("lastMouseEvent.button", 2);
+    shouldEvaluateTo("lastMouseEvent.getModifierState('Accel')", "true");
 } else {
     debug("This test requires DumpRenderTree.");
 }

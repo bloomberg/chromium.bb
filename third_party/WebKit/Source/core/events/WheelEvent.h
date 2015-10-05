@@ -61,10 +61,10 @@ public:
     static PassRefPtrWillBeRawPtr<WheelEvent> create(const FloatPoint& wheelTicks,
         const FloatPoint& rawDelta, unsigned deltaMode, PassRefPtrWillBeRawPtr<AbstractView> view,
         const IntPoint& screenLocation, const IntPoint& windowLocation,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode)
+        PlatformEvent::Modifiers modifiers, unsigned short buttons, bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode)
     {
         return adoptRefWillBeNoop(new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
-            screenLocation, windowLocation, ctrlKey, altKey, shiftKey, metaKey, buttons, canScroll, resendingPluginId, hasPreciseScrollingDeltas, railsMode));
+            screenLocation, windowLocation, modifiers, buttons, canScroll, resendingPluginId, hasPreciseScrollingDeltas, railsMode));
     }
 
     double deltaX() const { return m_deltaX; } // Positive when scrolling right.
@@ -94,7 +94,7 @@ private:
     WheelEvent(const AtomicString&, const WheelEventInit&);
     WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
         unsigned, PassRefPtrWillBeRawPtr<AbstractView>, const IntPoint& screenLocation, const IntPoint& windowLocation,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode);
+        PlatformEvent::Modifiers, unsigned short buttons, bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode);
 
     IntPoint m_wheelDelta;
     double m_deltaX;

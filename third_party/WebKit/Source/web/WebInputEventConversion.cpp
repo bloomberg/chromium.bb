@@ -86,46 +86,6 @@ static FloatPoint convertHitPointToWindow(const Widget* widget, FloatPoint point
         (point.y() - offset.height()) / scale + visualViewport.y() + overscrollOffset.height());
 }
 
-static unsigned toPlatformEventModifiers(int webModifiers)
-{
-    unsigned newModifiers = 0;
-    if (webModifiers & WebInputEvent::ShiftKey)
-        newModifiers |= PlatformEvent::ShiftKey;
-    if (webModifiers & WebInputEvent::ControlKey)
-        newModifiers |= PlatformEvent::CtrlKey;
-    if (webModifiers & WebInputEvent::AltKey)
-        newModifiers |= PlatformEvent::AltKey;
-    if (webModifiers & WebInputEvent::MetaKey)
-        newModifiers |= PlatformEvent::MetaKey;
-    return newModifiers;
-}
-
-static unsigned toPlatformKeyboardEventModifiers(int webModifiers)
-{
-    unsigned newModifiers = toPlatformEventModifiers(webModifiers);
-    if (webModifiers & WebInputEvent::IsKeyPad)
-        newModifiers |= PlatformEvent::IsKeyPad;
-    if (webModifiers & WebInputEvent::IsAutoRepeat)
-        newModifiers |= PlatformEvent::IsAutoRepeat;
-    if (webModifiers & WebInputEvent::IsLeft)
-        newModifiers |= PlatformEvent::IsLeft;
-    if (webModifiers & WebInputEvent::IsRight)
-        newModifiers |= PlatformEvent::IsRight;
-    return newModifiers;
-}
-
-unsigned toPlatformMouseEventModifiers(int webModifiers)
-{
-    unsigned newModifiers = toPlatformEventModifiers(webModifiers);
-    if (webModifiers & WebInputEvent::LeftButtonDown)
-        newModifiers |= PlatformEvent::LeftButtonDown;
-    if (webModifiers & WebInputEvent::MiddleButtonDown)
-        newModifiers |= PlatformEvent::MiddleButtonDown;
-    if (webModifiers & WebInputEvent::RightButtonDown)
-        newModifiers |= PlatformEvent::RightButtonDown;
-    return newModifiers;
-}
-
 static unsigned toPlatformModifierFrom(WebMouseEvent::Button button)
 {
     if (button == WebMouseEvent::ButtonNone)
@@ -150,7 +110,7 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_movementDelta = IntPoint(scaleDeltaToWindow(widget, e.movementX), scaleDeltaToWindow(widget, e.movementY));
     m_button = static_cast<MouseButton>(e.button);
-    m_modifiers = toPlatformMouseEventModifiers(e.modifiers);
+    m_modifiers = e.modifiers;
 
     m_timestamp = e.timeStampSeconds;
     m_clickCount = e.clickCount;
@@ -195,7 +155,7 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
 
     m_type = PlatformEvent::Wheel;
 
-    m_modifiers = toPlatformMouseEventModifiers(e.modifiers);
+    m_modifiers = e.modifiers;
 
     m_hasPreciseScrollingDeltas = e.hasPreciseScrollingDeltas;
     m_canScroll = e.canScroll;
@@ -293,7 +253,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
     m_position = widget->convertFromContainingWindow(flooredIntPoint(convertHitPointToWindow(widget, FloatPoint(e.x, e.y))));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_timestamp = e.timeStampSeconds;
-    m_modifiers = toPlatformEventModifiers(e.modifiers);
+    m_modifiers = e.modifiers;
 }
 
 // MakePlatformKeyboardEvent --------------------------------------------------
@@ -327,7 +287,7 @@ PlatformKeyboardEventBuilder::PlatformKeyboardEventBuilder(const WebKeyboardEven
     m_code = Platform::current()->domCodeStringFromEnum(e.domCode);
     m_key = Platform::current()->domKeyStringFromEnum(e.domKey);
 
-    m_modifiers = toPlatformKeyboardEventModifiers(e.modifiers);
+    m_modifiers = e.modifiers;
     m_timestamp = e.timeStampSeconds;
     m_windowsVirtualKeyCode = e.windowsKeyCode;
 }
@@ -430,7 +390,7 @@ PlatformTouchPointBuilder::PlatformTouchPointBuilder(Widget* widget, const WebTo
 PlatformTouchEventBuilder::PlatformTouchEventBuilder(Widget* widget, const WebTouchEvent& event)
 {
     m_type = toPlatformTouchEventType(event.type);
-    m_modifiers = toPlatformEventModifiers(event.modifiers);
+    m_modifiers = event.modifiers;
     m_timestamp = event.timeStampSeconds;
     m_causesScrollingIfUncanceled = event.causesScrollingIfUncanceled;
 
@@ -438,20 +398,6 @@ PlatformTouchEventBuilder::PlatformTouchEventBuilder(Widget* widget, const WebTo
         m_touchPoints.append(PlatformTouchPointBuilder(widget, event.touches[i]));
 
     m_cancelable = event.cancelable;
-}
-
-static int getWebInputModifiers(const UIEventWithKeyState& event)
-{
-    int modifiers = 0;
-    if (event.ctrlKey())
-        modifiers |= WebInputEvent::ControlKey;
-    if (event.shiftKey())
-        modifiers |= WebInputEvent::ShiftKey;
-    if (event.altKey())
-        modifiers |= WebInputEvent::AltKey;
-    if (event.metaKey())
-        modifiers |= WebInputEvent::MetaKey;
-    return modifiers;
 }
 
 static FloatPoint convertAbsoluteLocationForLayoutObjectFloat(const LayoutPoint& location, const LayoutObject& layoutObject)
@@ -469,7 +415,7 @@ static IntPoint convertAbsoluteLocationForLayoutObject(const LayoutPoint& locati
 static void updateWebMouseEventFromCoreMouseEvent(const MouseRelatedEvent& event, const Widget* widget, const LayoutObject& layoutObject, WebMouseEvent& webEvent)
 {
     webEvent.timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
-    webEvent.modifiers = getWebInputModifiers(event);
+    webEvent.modifiers = event.modifiers();
 
     FrameView* view = widget ? toFrameView(widget->parent()) : 0;
     // FIXME: If view == nullptr, pointInRootFrame will really be pointInRootContent.
@@ -562,7 +508,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const LayoutObj
     // we should instead use |Event::platformTimeStamp| which is the actual
     // platform monotonic time. See: crbug.com/538199
     timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
-    modifiers = getWebInputModifiers(event);
+    modifiers = event.modifiers();
 
     // The mouse event co-ordinates should be generated from the co-ordinates of the touch point.
     FrameView* view =  toFrameView(widget->parent());
@@ -612,13 +558,7 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
     else
         return; // Skip all other keyboard events.
 
-    modifiers = getWebInputModifiers(event);
-    if (event.location() == KeyboardEvent::DOM_KEY_LOCATION_NUMPAD)
-        modifiers |= WebInputEvent::IsKeyPad;
-    else if (event.location() == KeyboardEvent::DOM_KEY_LOCATION_LEFT)
-        modifiers |= WebInputEvent::IsLeft;
-    else if (event.location() == KeyboardEvent::DOM_KEY_LOCATION_RIGHT)
-        modifiers |= WebInputEvent::IsRight;
+    modifiers = event.modifiers();
 
     timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
     windowsKeyCode = event.keyCode();
@@ -712,7 +652,7 @@ WebTouchEventBuilder::WebTouchEventBuilder(const LayoutObject* layoutObject, con
         return;
     }
 
-    modifiers = getWebInputModifiers(event);
+    modifiers = event.modifiers();
     timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
     cancelable = event.cancelable();
     causesScrollingIfUncanceled = event.causesScrollingIfUncanceled();
@@ -757,7 +697,7 @@ WebGestureEventBuilder::WebGestureEventBuilder(const LayoutObject* layoutObject,
     }
 
     timeStampSeconds = convertDOMTimeStampToSeconds(event.createTime());
-    modifiers = getWebInputModifiers(event);
+    modifiers = event.modifiers();
 
     globalX = event.screenX();
     globalY = event.screenY();

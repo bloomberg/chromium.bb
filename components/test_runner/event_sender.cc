@@ -102,6 +102,28 @@ int GetKeyModifier(const std::string& modifier_name) {
     return WebInputEvent::MiddleButtonDown;
   } else if (!strcmp(characters, "rightButton")) {
     return WebInputEvent::RightButtonDown;
+  } else if (!strcmp(characters, "capsLockOn")) {
+    return WebInputEvent::CapsLockOn;
+  } else if (!strcmp(characters, "numLockOn")) {
+    return WebInputEvent::NumLockOn;
+  } else if (!strcmp(characters, "locationLeft")) {
+    return WebInputEvent::IsLeft;
+  } else if (!strcmp(characters, "locationRight")) {
+    return WebInputEvent::IsRight;
+  } else if (!strcmp(characters, "locationNumpad")) {
+    return WebInputEvent::IsKeyPad;
+  } else if (!strcmp(characters, "isComposing")) {
+    return WebInputEvent::IsComposing;
+  } else if (!strcmp(characters, "altGraphKey")) {
+    return WebInputEvent::AltGrKey;
+  } else if (!strcmp(characters, "osKey")) {
+    return WebInputEvent::OSKey;
+  } else if (!strcmp(characters, "fnKey")) {
+    return WebInputEvent::FnKey;
+  } else if (!strcmp(characters, "symbolKey")) {
+    return WebInputEvent::SymbolKey;
+  } else if (!strcmp(characters, "scrollLockOn")) {
+    return WebInputEvent::ScrollLockOn;
   }
 
   return 0;

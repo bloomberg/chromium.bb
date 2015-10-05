@@ -72,21 +72,36 @@ public:
         TouchCancel,
     };
 
+    // These values are direct mappings of the values in WebInputEvent so the values can be cast between the
+    // enumerations. static_asserts checking this are in web/WebInputEventConversion.cpp.
     enum Modifiers {
-        AltKey      = 1 << 0,
+        NoModifiers = 0,
+        ShiftKey    = 1 << 0,
         CtrlKey     = 1 << 1,
-        MetaKey     = 1 << 2,
-        ShiftKey    = 1 << 3,
+        AltKey      = 1 << 2,
+        MetaKey     = 1 << 3,
 
-        IsKeyPad         = 1 << 4,
-        IsAutoRepeat     = 1 << 5,
+        IsKeyPad     = 1 << 4,
+        IsAutoRepeat = 1 << 5,
 
         LeftButtonDown   = 1 << 6,
         MiddleButtonDown = 1 << 7,
         RightButtonDown  = 1 << 8,
 
-        IsLeft           = 1 << 11,
-        IsRight          = 1 << 12,
+        CapsLockOn = 1 << 9,
+        NumLockOn  = 1 << 10,
+
+        IsLeft      = 1 << 11,
+        IsRight     = 1 << 12,
+        IsTouchAccessibility = 1 << 13,
+        IsComposing = 1 << 14,
+
+        AltGrKey  = 1 << 15,
+        OSKey     = 1 << 16,
+        FnKey     = 1 << 17,
+        SymbolKey = 1 << 18,
+
+        ScrollLockOn = 1 << 19,
     };
 
     enum RailsMode {
@@ -102,14 +117,14 @@ public:
     bool altKey() const { return m_modifiers & AltKey; }
     bool metaKey() const { return m_modifiers & MetaKey; }
 
-    unsigned modifiers() const { return m_modifiers; }
+    Modifiers modifiers() const { return static_cast<Modifiers>(m_modifiers); }
 
     double timestamp() const { return m_timestamp; }
 
 protected:
     PlatformEvent()
         : m_type(NoType)
-        , m_modifiers(0)
+        , m_modifiers()
         , m_timestamp(0)
     {
     }
@@ -126,21 +141,6 @@ protected:
         , m_modifiers(modifiers)
         , m_timestamp(timestamp)
     {
-    }
-
-    PlatformEvent(Type type, bool shiftKey, bool ctrlKey, bool altKey, bool metaKey, double timestamp)
-        : m_type(type)
-        , m_modifiers(0)
-        , m_timestamp(timestamp)
-    {
-        if (shiftKey)
-            m_modifiers |= ShiftKey;
-        if (ctrlKey)
-            m_modifiers |= CtrlKey;
-        if (altKey)
-            m_modifiers |= AltKey;
-        if (metaKey)
-            m_modifiers |= MetaKey;
     }
 
     // Explicit protected destructor so that people don't accidentally

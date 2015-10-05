@@ -95,26 +95,31 @@ bool PlatformKeyboardEvent::currentCapsLockState()
     }
 }
 
-void PlatformKeyboardEvent::getCurrentModifierState(bool& shiftKey, bool& ctrlKey, bool& altKey, bool& metaKey)
+PlatformEvent::Modifiers PlatformKeyboardEvent::getCurrentModifierState()
 {
+    unsigned modifiers = 0;
 #if OS(WIN)
-    shiftKey = GetKeyState(VK_SHIFT) & HIGHBITMASKSHORT;
-    ctrlKey = GetKeyState(VK_CONTROL) & HIGHBITMASKSHORT;
-    altKey = GetKeyState(VK_MENU) & HIGHBITMASKSHORT;
-    metaKey = false;
+    if (GetKeyState(VK_SHIFT) & HIGHBITMASKSHORT)
+        modifiers |= ShiftKey;
+    if (GetKeyState(VK_CONTROL) & HIGHBITMASKSHORT)
+        modifiers |= CtrlKey;
+    if (GetKeyState(VK_MENU) & HIGHBITMASKSHORT)
+        modifiers |= AltKey;
 #elif OS(MACOSX)
     UInt32 currentModifiers = GetCurrentKeyModifiers();
-    shiftKey = currentModifiers & ::shiftKey;
-    ctrlKey = currentModifiers & ::controlKey;
-    altKey = currentModifiers & ::optionKey;
-    metaKey = currentModifiers & ::cmdKey;
+    if (currentModifiers & ::shiftKey)
+        modifiers |= ShiftKey;
+    if (currentModifiers & ::controlKey)
+        modifiers |= CtrlKey;
+    if (currentModifiers & ::optionKey)
+        modifiers |= AltKey;
+    if (currentModifiers & ::cmdKey)
+        modifiers |= MetaKey;
 #else
-    shiftKey = false;
-    ctrlKey = false;
-    altKey = false;
-    metaKey = false;
+    // See https://crbug.com/538289
     notImplemented();
 #endif
+    return static_cast<Modifiers>(modifiers);
 }
 
 } // namespace blink

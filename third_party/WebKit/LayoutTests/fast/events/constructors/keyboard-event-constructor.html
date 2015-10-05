@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
+<script src="../resources/input-modifiers.js"></script>
 </head>
 <body>
 <script>
@@ -113,6 +114,12 @@ shouldBe("new KeyboardEvent('eventType', { location: {valueOf: function () { ret
 ["ctrlKey", "altKey", "shiftKey", "metaKey", "repeat"].forEach(function (attr) {
     shouldBe("new KeyboardEvent('eventType', { " + attr + ": false })." + attr, "false");
     shouldBe("new KeyboardEvent('eventType', { " + attr + ": true })." + attr, "true");
+});
+
+// all modifiers are passed correctly.
+forEachModifier(function(attr, modifierName) {
+    shouldBe("new KeyboardEvent('eventType', { " + attr + ": false }).getModifierState('" + modifierName + "');", "false");
+    shouldBe("new KeyboardEvent('eventType', { " + attr + ": true }).getModifierState('" + modifierName + "');", "true");
 });
 
 // All initializers are passed.

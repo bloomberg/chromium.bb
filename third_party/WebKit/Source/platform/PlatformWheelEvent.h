@@ -75,28 +75,6 @@ public:
     {
     }
 
-    PlatformWheelEvent(IntPoint position, IntPoint globalPosition, float deltaX, float deltaY, float wheelTicksX, float wheelTicksY, PlatformWheelEventGranularity granularity, int resendingPluginId, bool shiftKey, bool ctrlKey, bool altKey, bool metaKey)
-        : PlatformEvent(PlatformEvent::Wheel, shiftKey, ctrlKey, altKey, metaKey, 0)
-        , m_position(position)
-        , m_globalPosition(globalPosition)
-        , m_deltaX(deltaX)
-        , m_deltaY(deltaY)
-        , m_wheelTicksX(wheelTicksX)
-        , m_wheelTicksY(wheelTicksY)
-        , m_granularity(granularity)
-        , m_hasPreciseScrollingDeltas(false)
-        , m_canScroll(true)
-        , m_resendingPluginId(resendingPluginId)
-        , m_railsMode(RailsModeFree)
-#if OS(MACOSX)
-        , m_phase(PlatformWheelEventPhaseNone)
-        , m_momentumPhase(PlatformWheelEventPhaseNone)
-        , m_canRubberbandLeft(true)
-        , m_canRubberbandRight(true)
-#endif
-    {
-    }
-
     const IntPoint& position() const { return m_position; } // PlatformWindow coordinates.
     const IntPoint& globalPosition() const { return m_globalPosition; } // Screen coordinates.
 

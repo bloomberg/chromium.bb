@@ -1300,7 +1300,7 @@ bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTa
         true, true, m_frame->document()->domWindow(),
         0, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
-        event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
+        event.modifiers(),
         0, MouseEvent::platformModifiersToButtons(event.modifiers()), nullptr, dataTransfer, event.syntheticEventType(), event.timestamp());
 
     dragTarget->dispatchEvent(me.get());
@@ -2826,7 +2826,7 @@ bool EventHandler::sendContextMenuEventForKey(Element* overrideTargetElement)
     if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
         eventType = PlatformEvent::MouseReleased;
 
-    PlatformMouseEvent mouseEvent(locationInRootFrame, globalPosition, RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
+    PlatformMouseEvent mouseEvent(locationInRootFrame, globalPosition, RightButton, eventType, 1, PlatformEvent::NoModifiers, PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
 
     return sendContextMenuEvent(mouseEvent, overrideTargetElement);
 }
@@ -2935,12 +2935,7 @@ void EventHandler::fakeMouseMoveEventTimerFired(Timer<EventHandler>* timer)
     if (!isCursorVisible())
         return;
 
-    bool shiftKey;
-    bool ctrlKey;
-    bool altKey;
-    bool metaKey;
-    PlatformKeyboardEvent::getCurrentModifierState(shiftKey, ctrlKey, altKey, metaKey);
-    PlatformMouseEvent fakeMouseMoveEvent(m_lastKnownMousePosition, m_lastKnownMouseGlobalPosition, NoButton, PlatformEvent::MouseMoved, 0, shiftKey, ctrlKey, altKey, metaKey, PlatformMouseEvent::RealOrIndistinguishable, currentTime());
+    PlatformMouseEvent fakeMouseMoveEvent(m_lastKnownMousePosition, m_lastKnownMouseGlobalPosition, NoButton, PlatformEvent::MouseMoved, 0, PlatformKeyboardEvent::getCurrentModifierState(), PlatformMouseEvent::RealOrIndistinguishable, currentTime());
     handleMouseMoveEvent(fakeMouseMoveEvent);
 }
 
@@ -3769,8 +3764,7 @@ bool EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
             RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(
                 touches.get(), touchesByTarget.get(touchEventTarget), changedTouches[state].m_touches.get(),
                 eventName, touchEventTarget->toNode()->document().domWindow(),
-                event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
-                event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
+                event.modifiers(), event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
 
             touchEventTarget->dispatchEvent(touchEvent.get());
             swallowedEvent = swallowedEvent || touchEvent->defaultPrevented() || touchEvent->defaultHandled();
@@ -4033,10 +4027,10 @@ void EventHandler::focusDocumentView()
     page->focusController().focusDocumentView(m_frame);
 }
 
-unsigned EventHandler::accessKeyModifiers()
+PlatformEvent::Modifiers EventHandler::accessKeyModifiers()
 {
 #if OS(MACOSX)
-    return PlatformEvent::CtrlKey | PlatformEvent::AltKey;
+    return static_cast<PlatformEvent::Modifiers>(PlatformEvent::CtrlKey | PlatformEvent::AltKey);
 #else
     return PlatformEvent::AltKey;
 #endif

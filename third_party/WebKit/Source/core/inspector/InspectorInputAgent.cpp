@@ -38,6 +38,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/JSONValues.h"
+#include "platform/PlatformEvent.h"
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformTouchPoint.h"
 #include "platform/geometry/FloatSize.h"
@@ -47,6 +48,29 @@
 #include "wtf/CurrentTime.h"
 
 namespace {
+
+enum Modifiers {
+    AltKey = 1 << 0,
+    CtrlKey = 1 << 1,
+    MetaKey = 1 << 2,
+    ShiftKey = 1 << 3
+};
+
+unsigned GetEventModifiers(const int* modifiers)
+{
+    if (!modifiers)
+        return 0;
+    unsigned platformModifiers = 0;
+    if (*modifiers & AltKey)
+        platformModifiers |= blink::PlatformEvent::AltKey;
+    if (*modifiers & CtrlKey)
+        platformModifiers |= blink::PlatformEvent::CtrlKey;
+    if (*modifiers & MetaKey)
+        platformModifiers |= blink::PlatformEvent::MetaKey;
+    if (*modifiers & ShiftKey)
+        platformModifiers |= blink::PlatformEvent::ShiftKey;
+    return platformModifiers;
+}
 
 class SyntheticInspectorTouchPoint : public blink::PlatformTouchPoint {
 public:
@@ -111,7 +135,7 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
         return;
     }
 
-    unsigned convertedModifiers = modifiers ? *modifiers : 0;
+    unsigned convertedModifiers = GetEventModifiers(modifiers);
 
     SyntheticInspectorTouchEvent event(convertedType, convertedModifiers, timestamp ? *timestamp : currentTime());
 

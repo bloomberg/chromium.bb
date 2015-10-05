@@ -176,7 +176,7 @@ public:
 
     void setMouseDownMayStartAutoscroll() { m_mouseDownMayStartAutoscroll = true; }
 
-    static unsigned accessKeyModifiers();
+    static PlatformEvent::Modifiers accessKeyModifiers();
     bool handleAccessKey(const PlatformKeyboardEvent&);
     bool keyEvent(const PlatformKeyboardEvent&);
     void defaultKeyboardEventHandler(KeyboardEvent*);

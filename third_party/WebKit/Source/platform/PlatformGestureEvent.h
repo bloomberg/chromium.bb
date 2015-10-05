@@ -45,8 +45,8 @@ public:
 
     PlatformGestureEvent(Type type, const IntPoint& position,
         const IntPoint& globalPosition, const IntSize& area, double timestamp,
-        bool shiftKey, bool ctrlKey, bool altKey, bool metaKey)
-        : PlatformEvent(type, shiftKey, ctrlKey, altKey, metaKey, timestamp)
+        PlatformEvent::Modifiers modifiers)
+        : PlatformEvent(type, modifiers, timestamp)
         , m_position(position)
         , m_globalPosition(globalPosition)
         , m_area(area)

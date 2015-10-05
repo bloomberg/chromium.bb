@@ -44,8 +44,8 @@ public:
 
     static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, int screenX, int screenY, int windowX, int windowY,
-        int movementX, int movementY,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, short button, unsigned short buttons,
+        int movementX, int movementY, PlatformEvent::Modifiers,
+        short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
         PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable,
         double uiCreateTime = 0);
@@ -64,12 +64,6 @@ public:
         int detail, int screenX, int screenY, int clientX, int clientY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
         short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, unsigned short buttons = 0);
-
-    void initMouseEventInternal(ScriptState*, const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
-        int detail, int screenX, int screenY, int clientX, int clientY,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
-        short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, InputDeviceCapabilities* sourceCapabilities, unsigned short buttons = 0);
-
 
     // WinIE uses 1,4,2 for left/middle/right but not for click (just for mousedown/up, maybe others),
     // but we will match the standard DOM.
@@ -100,7 +94,7 @@ protected:
     MouseEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, int screenX, int screenY, int windowX, int windowY,
         int movementX, int movementY,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, short button, unsigned short buttons,
+        PlatformEvent::Modifiers, short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
         PlatformMouseEvent::SyntheticEventType, double uiCreateTime = 0);
 
@@ -109,6 +103,12 @@ protected:
     MouseEvent();
 
 private:
+    friend class MouseEventDispatchMediator;
+    void initMouseEventInternal(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
+        int detail, int screenX, int screenY, int clientX, int clientY,
+        PlatformEvent::Modifiers,
+        short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, InputDeviceCapabilities* sourceCapabilities, unsigned short buttons = 0);
+
     short m_button;
     unsigned short m_buttons;
     RefPtrWillBeMember<EventTarget> m_relatedTarget;

@@ -3,6 +3,7 @@
 <head>
 <link rel="help" href="http://www.w3.org/TR/DOM-Level-3-Events/#events-KeyboardEvent-getModifierState" />
 <script src="../../resources/js-test.js"></script>
+<script src="resources/input-modifiers.js"></script>
 </head>
 <body>
 <script>
@@ -16,27 +17,28 @@ function recordKeyEvent(ev) {
     if (window.eventSender) {
         lastKeyboardEvent = ev;
     } else {
-        debug("Type=" + ev.type + "," +
-              "keyCode=" + ev.keyCode + ',' +
-              "ctrlKey=" + ev.getModifierState("Control") + "," +
-              "shiftKey=" + ev.getModifierState("Shift") + "," +
-              "altKey=" + ev.getModifierState("Alt") + "," +
-              "metaKey=" + ev.getModifierState("Meta"));
+        var debugString = "Type=" + ev.type + ",keyCode=" + ev.keyCode + ",";
+        forEachModifier(function(eventInitName, eventModifierName, eventSenderName) {
+            debugString += eventModifierName + "=" + ev.getModifierState(eventModifierName) + ",";
+        });
+        debug(debugString);
     }
 }
-
-var allEventModifiers = ["ctrlKey", "shiftKey", "metaKey", "altKey"];
-var allKeyModifiers = ["Control", "Shift", "Meta", "Alt"];
 
 function testKeyEventWithModifiers(evString, eventModifiers, expectedKeyCode) {
     eventSender.keyDown(evString, eventModifiers);
     shouldBe("lastKeyboardEvent.type", '"keydown"');
     shouldEvaluateTo("lastKeyboardEvent.keyCode", expectedKeyCode);
-    for (var i = 0; i < allEventModifiers.length; ++i) {
-        var expectedModifierState = eventModifiers.indexOf(allEventModifiers[i]) >= 0;
-        shouldEvaluateTo("lastKeyboardEvent.getModifierState('" + allKeyModifiers[i] + "')", expectedModifierState);
-        shouldEvaluateTo("lastKeyboardEvent." + allEventModifiers[i], expectedModifierState);
-    }
+
+    forEachModifier(function(modifierInitName, modifierName, eventSenderName) {
+        var expectedModifierState = eventModifiers.indexOf(eventSenderName) >= 0;
+        shouldEvaluateTo("lastKeyboardEvent.getModifierState('" + modifierName + "')", expectedModifierState);
+    });
+
+    forEachLegacyModifier(function(attr) {
+        var expectedModifierState = eventModifiers.indexOf(attr) >= 0;
+        shouldEvaluateTo("lastKeyboardEvent." + attr, expectedModifierState);
+    });
 }
 
 var textarea = document.createElement("textarea");
@@ -45,6 +47,7 @@ document.body.insertBefore(textarea, document.body.firstChild);
 textarea.focus();
 
 if (window.eventSender) {
+
     testKeyEventWithModifiers("pageUp", ["ctrlKey"], 33);
     testKeyEventWithModifiers("pageDown", ["shiftKey"], 34);
     testKeyEventWithModifiers("home", ["altKey"], 36);
@@ -52,6 +55,16 @@ if (window.eventSender) {
     testKeyEventWithModifiers("leftArrow", ["ctrlKey", "shiftKey"], 37);
     testKeyEventWithModifiers("rightArrow", ["ctrlKey", "shiftKey", "altKey"], 39);
     testKeyEventWithModifiers("upArrow", ["ctrlKey", "shiftKey", "altKey", "metaKey"], 38);
+
+    forEachModifier( function(eventInitName, eventModifierName, eventSenderName) {
+      testKeyEventWithModifiers("leftArrow", [eventSenderName], 37);
+    });
+
+    var isMacOSX = navigator.userAgent.indexOf("Mac OS X") != -1;
+    eventSender.keyDown("pageUp", [isMacOSX ? "metaKey" : "ctrlKey"]);
+    shouldBe("lastKeyboardEvent.type", '"keydown"');
+    shouldEvaluateTo("lastKeyboardEvent.keyCode", 33);
+    shouldEvaluateTo("lastKeyboardEvent.getModifierState('Accel')", "true");
 } else {
     debug("This test requires DumpRenderTree.  To manually test, 1) focus on the textarea above and press keys while holding modifiers 2) see if the ctrlKey/shiftKey/altKey/metaKey= values are correctly reported.");
 }

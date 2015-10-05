@@ -14,7 +14,7 @@ namespace blink {
 PassRefPtrWillBeRawPtr<DragEvent> DragEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
     int detail, int screenX, int screenY, int windowX, int windowY,
     int movementX, int movementY,
-    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
+    PlatformEvent::Modifiers modifiers,
     short button, unsigned short buttons,
     PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, DataTransfer* dataTransfer, PlatformMouseEvent::SyntheticEventType syntheticEventType,
     double uiCreateTime)
@@ -22,7 +22,7 @@ PassRefPtrWillBeRawPtr<DragEvent> DragEvent::create(const AtomicString& type, bo
     return adoptRefWillBeNoop(new DragEvent(type, canBubble, cancelable, view,
         detail, screenX, screenY, windowX, windowY,
         movementX, movementY,
-        ctrlKey, altKey, shiftKey, metaKey, button, buttons, relatedTarget, dataTransfer, syntheticEventType, uiCreateTime));
+        modifiers, button, buttons, relatedTarget, dataTransfer, syntheticEventType, uiCreateTime));
 }
 
 
@@ -39,12 +39,12 @@ DragEvent::DragEvent(DataTransfer* dataTransfer)
 DragEvent::DragEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
     int detail, int screenX, int screenY, int windowX, int windowY,
     int movementX, int movementY,
-    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
+    PlatformEvent::Modifiers modifiers,
     short button, unsigned short buttons, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
     DataTransfer* dataTransfer, PlatformMouseEvent::SyntheticEventType syntheticEventType,
     double uiCreateTime)
     : MouseEvent(eventType, canBubble, cancelable, view, detail, screenX, screenY,
-        windowX, windowY, movementX, movementY, ctrlKey, altKey, shiftKey, metaKey, button, buttons, relatedTarget,
+        windowX, windowY, movementX, movementY, modifiers, button, buttons, relatedTarget,
         syntheticEventType, uiCreateTime)
     , m_dataTransfer(dataTransfer)
 

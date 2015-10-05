@@ -74,7 +74,7 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
     default:
         return nullptr;
     }
-    return adoptRefWillBeNoop(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), deltaX, deltaY, velocityX, velocityY, inertial, event.timestamp(), event.resendingPluginId()));
+    return adoptRefWillBeNoop(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.modifiers(), deltaX, deltaY, velocityX, velocityY, inertial, event.timestamp(), event.resendingPluginId()));
 }
 
 const AtomicString& GestureEvent::interfaceName() const
@@ -100,8 +100,8 @@ GestureEvent::GestureEvent()
 {
 }
 
-GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double timestamp, int resendingPluginId)
-    : MouseRelatedEvent(type, true, true, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), ctrlKey, altKey, shiftKey, metaKey, PositionType::Position)
+GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double timestamp, int resendingPluginId)
+    : MouseRelatedEvent(type, true, true, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), modifiers, PositionType::Position)
     , m_deltaX(deltaX)
     , m_deltaY(deltaY)
     , m_velocityX(velocityX)

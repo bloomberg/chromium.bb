@@ -55,8 +55,8 @@ static LayoutSize contentsScrollOffset(AbstractView* abstractView)
 MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> abstractView,
     int detail, const IntPoint& screenLocation, const IntPoint& rootFrameLocation,
     const IntPoint& movementDelta,
-    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, PositionType positionType, InputDeviceCapabilities* sourceCapabilities)
-    : UIEventWithKeyState(eventType, canBubble, cancelable, abstractView, detail, ctrlKey, altKey, shiftKey, metaKey, sourceCapabilities)
+    PlatformEvent::Modifiers modifiers, PositionType positionType, InputDeviceCapabilities* sourceCapabilities)
+    : UIEventWithKeyState(eventType, canBubble, cancelable, abstractView, detail, modifiers, sourceCapabilities)
     , m_screenLocation(screenLocation)
     , m_movementDelta(movementDelta)
     , m_positionType(positionType)
@@ -80,11 +80,6 @@ MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, bool canBubb
     m_clientLocation = adjustedPageLocation - toLayoutSize(scrollPosition);
     m_pageLocation = adjustedPageLocation;
 
-    initCoordinates();
-}
-
-void MouseRelatedEvent::initCoordinates()
-{
     // Set up initial values for coordinates.
     // Correct values are computed lazily, see computeRelativePosition.
     m_layerLocation = m_pageLocation;
@@ -92,6 +87,15 @@ void MouseRelatedEvent::initCoordinates()
 
     computePageLocation();
     m_hasCachedRelativePosition = false;
+}
+
+MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, const MouseEventInit& initializer)
+    : UIEventWithKeyState(eventType, initializer)
+    , m_screenLocation(IntPoint(initializer.screenX(), initializer.screenY()))
+    , m_movementDelta(IntPoint(initializer.movementX(), initializer.movementY()))
+    , m_positionType(PositionType::Position)
+{
+    initCoordinates(IntPoint(initializer.clientX(), initializer.clientY()));
 }
 
 void MouseRelatedEvent::initCoordinates(const LayoutPoint& clientLocation)

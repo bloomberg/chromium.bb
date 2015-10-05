@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
+<script src="../resources/input-modifiers.js"></script>
 </head>
 <body>
 <script>
@@ -100,6 +101,12 @@ var MIN_CLIENT_SIZE = "-33554432";
 ["ctrlKey", "altKey", "shiftKey", "metaKey"].forEach(function (attr) {
     shouldBe("new MouseEvent('eventType', { " + attr + ": false })." + attr, "false");
     shouldBe("new MouseEvent('eventType', { " + attr + ": true })." + attr, "true");
+});
+
+// all modifiers are passed correctly.
+forEachModifier(function(attr, modifierName) {
+    shouldBe("new MouseEvent('eventType', { " + attr + ": false }).getModifierState('" + modifierName + "');", "false");
+    shouldBe("new MouseEvent('eventType', { " + attr + ": true }).getModifierState('" + modifierName + "');", "true");
 });
 
 // button is passed.

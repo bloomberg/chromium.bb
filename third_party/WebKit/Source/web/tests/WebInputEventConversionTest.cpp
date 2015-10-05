@@ -54,7 +54,7 @@ namespace blink {
 
 PassRefPtrWillBeRawPtr<KeyboardEvent> createKeyboardEventWithLocation(KeyboardEvent::KeyLocationCode location)
 {
-    return KeyboardEvent::create("keydown", true, true, 0, "", "", "", location, false, false, false, false);
+    return KeyboardEvent::create("keydown", true, true, 0, "", "", "", location, PlatformEvent::NoModifiers);
 }
 
 int getModifiersForKeyLocationCode(KeyboardEvent::KeyLocationCode location)
@@ -126,7 +126,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
     {
         RefPtrWillBeRawPtr<TouchList> touchList = TouchList::create();
         touchList->append(touch0);
-        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchstart, domWindow, false, false, false, false, false, false);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchstart, domWindow, PlatformEvent::NoModifiers, false, false);
 
         WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(1u, webTouchBuilder.touchesLength);
@@ -149,7 +149,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         activeTouchList->append(touch0);
         activeTouchList->append(touch1);
         movedTouchList->append(touch0);
-        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), movedTouchList.get(), EventTypeNames::touchmove, domWindow, false, false, false, false, false, false);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), movedTouchList.get(), EventTypeNames::touchmove, domWindow, PlatformEvent::NoModifiers, false, false);
 
         WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
@@ -167,7 +167,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         activeTouchList->append(touch0);
         activeTouchList->append(touch1);
         movedTouchList->append(touch1);
-        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), movedTouchList.get(), EventTypeNames::touchmove, domWindow, false, false, false, false, false, false);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), movedTouchList.get(), EventTypeNames::touchmove, domWindow, PlatformEvent::NoModifiers, false, false);
 
         WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
@@ -184,7 +184,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         RefPtrWillBeRawPtr<TouchList> releasedTouchList = TouchList::create();
         activeTouchList->append(touch0);
         releasedTouchList->append(touch1);
-        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), releasedTouchList.get(), EventTypeNames::touchend, domWindow, false, false, false, false, false, false);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), releasedTouchList.get(), EventTypeNames::touchend, domWindow, PlatformEvent::NoModifiers, false, false);
 
         WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
@@ -201,7 +201,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         RefPtrWillBeRawPtr<TouchList> cancelledTouchList = TouchList::create();
         cancelledTouchList->append(touch0);
         cancelledTouchList->append(touch1);
-        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), cancelledTouchList.get(), EventTypeNames::touchcancel, domWindow, false, false, false, false, false, false);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), cancelledTouchList.get(), EventTypeNames::touchcancel, domWindow, PlatformEvent::NoModifiers, false, false);
 
         WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
@@ -221,7 +221,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
             touchList->append(touch);
             changedTouchList->append(touch);
         }
-        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchstart, domWindow, false, false, false, false, false, false);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchstart, domWindow, PlatformEvent::NoModifiers, false, false);
 
         WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(static_cast<unsigned>(WebTouchEvent::touchesLengthCap), webTouchBuilder.touchesLength);
@@ -412,7 +412,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     // Reverse builders should *not* go back to physical pixels, as they are used for plugins
     // which expect CSS pixel coordinates.
     {
-        PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), LeftButton, PlatformEvent::MouseMoved, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, 0);
+        PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), LeftButton, PlatformEvent::MouseMoved, 1, PlatformEvent::NoModifiers, PlatformMouseEvent::RealOrIndistinguishable, 0);
         RefPtrWillBeRawPtr<MouseEvent> mouseEvent = MouseEvent::create(EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
         WebMouseEventBuilder webMouseBuilder(view, documentLayoutView, *mouseEvent);
 
@@ -425,7 +425,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     }
 
     {
-        PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), NoButton, PlatformEvent::MouseMoved, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, 0);
+        PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), NoButton, PlatformEvent::MouseMoved, 1, PlatformEvent::NoModifiers, PlatformMouseEvent::RealOrIndistinguishable, 0);
         RefPtrWillBeRawPtr<MouseEvent> mouseEvent = MouseEvent::create(EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
         WebMouseEventBuilder webMouseBuilder(view, documentLayoutView, *mouseEvent);
         EXPECT_EQ(WebMouseEvent::ButtonNone, webMouseBuilder.button);
@@ -433,7 +433,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
 
     {
         PlatformGestureEvent platformGestureEvent(PlatformEvent::GestureScrollUpdate, IntPoint(10, 12), IntPoint(20, 22), IntSize(25, 27), 0,
-            false, false, false, false);
+            PlatformEvent::NoModifiers);
         platformGestureEvent.setScrollGestureData(30, 32, 40, 42, true, true, -1 /* null plugin id */);
         // FIXME: GestureEvent does not preserve velocityX, velocityY,
         // or preventPropagation. It also fails to scale
@@ -459,7 +459,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         RefPtrWillBeRawPtr<Touch> touch = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), 0, FloatPoint(10, 9.5), FloatPoint(3.5, 2), FloatSize(4, 4.5), 0, 0);
         RefPtrWillBeRawPtr<TouchList> touchList = TouchList::create();
         touchList->append(touch);
-        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchmove, domWindow, false, false, false, false, false, false);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchmove, domWindow, PlatformEvent::NoModifiers, false, false);
 
         WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(1u, webTouchBuilder.touchesLength);
@@ -873,8 +873,8 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
 
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     RefPtrWillBeRawPtr<WheelEvent> event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
-        WheelEvent::DOM_DELTA_PAGE, document.get()->domWindow(),  IntPoint(2, 6), IntPoint(10, 30),
-        true, false, false, false, 0, true, -1 /* null plugin id */, true, Event::RailsModeHorizontal);
+        WheelEvent::DOM_DELTA_PAGE, document.get()->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
+        PlatformEvent::CtrlKey, 0, true, -1 /* null plugin id */, true, Event::RailsModeHorizontal);
     WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document.get()->layoutView(), *event);
     EXPECT_EQ(1, webMouseWheel.wheelTicksX);
     EXPECT_EQ(3, webMouseWheel.wheelTicksY);

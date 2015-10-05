@@ -454,6 +454,27 @@ STATIC_ASSERT_MATCHING_ENUM(WebIconURL::TypeFavicon, Favicon);
 STATIC_ASSERT_MATCHING_ENUM(WebIconURL::TypeTouch, TouchIcon);
 STATIC_ASSERT_MATCHING_ENUM(WebIconURL::TypeTouchPrecomposed, TouchPrecomposedIcon);
 
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::ShiftKey, PlatformEvent::ShiftKey);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::ControlKey, PlatformEvent::CtrlKey);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::AltKey, PlatformEvent::AltKey);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::MetaKey, PlatformEvent::MetaKey);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::AltGrKey, PlatformEvent::AltGrKey);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::OSKey, PlatformEvent::OSKey);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::FnKey, PlatformEvent::FnKey);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::SymbolKey, PlatformEvent::SymbolKey);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::IsKeyPad, PlatformEvent::IsKeyPad);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::IsAutoRepeat, PlatformEvent::IsAutoRepeat);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::IsLeft, PlatformEvent::IsLeft);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::IsRight, PlatformEvent::IsRight);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::IsTouchAccessibility, PlatformEvent::IsTouchAccessibility);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::IsComposing, PlatformEvent::IsComposing);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::LeftButtonDown, PlatformEvent::LeftButtonDown);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::MiddleButtonDown, PlatformEvent::MiddleButtonDown);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::RightButtonDown, PlatformEvent::RightButtonDown);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::CapsLockOn, PlatformEvent::CapsLockOn);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::NumLockOn, PlatformEvent::NumLockOn);
+STATIC_ASSERT_MATCHING_ENUM(WebInputEvent::ScrollLockOn, PlatformEvent::ScrollLockOn);
+
 STATIC_ASSERT_MATCHING_ENUM(WebMediaPlayer::ReadyStateHaveNothing, HTMLMediaElement::HAVE_NOTHING);
 STATIC_ASSERT_MATCHING_ENUM(WebMediaPlayer::ReadyStateHaveMetadata, HTMLMediaElement::HAVE_METADATA);
 STATIC_ASSERT_MATCHING_ENUM(WebMediaPlayer::ReadyStateHaveCurrentData, HTMLMediaElement::HAVE_CURRENT_DATA);

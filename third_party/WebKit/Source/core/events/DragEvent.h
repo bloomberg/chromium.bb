@@ -30,7 +30,7 @@ public:
     static PassRefPtrWillBeRawPtr<DragEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, int screenX, int screenY, int windowX, int windowY,
         int movementX, int movementY,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, short button, unsigned short buttons,
+        PlatformEvent::Modifiers, short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, DataTransfer*,
         PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable,
         double uiCreateTime = 0);
@@ -55,7 +55,7 @@ private:
     DragEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, int screenX, int screenY, int windowX, int windowY,
         int movementX, int movementY,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, short button, unsigned short buttons,
+        PlatformEvent::Modifiers, short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, DataTransfer*,
         PlatformMouseEvent::SyntheticEventType, double uiCreateTime = 0);
 

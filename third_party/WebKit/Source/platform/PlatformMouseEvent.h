@@ -74,16 +74,6 @@ public:
     {
     }
 
-    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, PlatformEvent::Type type, int clickCount, bool shiftKey, bool ctrlKey, bool altKey, bool metaKey, SyntheticEventType synthesized, double timestamp)
-        : PlatformEvent(type, shiftKey, ctrlKey, altKey, metaKey, timestamp)
-        , m_position(position)
-        , m_globalPosition(globalPosition)
-        , m_button(button)
-        , m_clickCount(clickCount)
-        , m_synthesized(synthesized)
-    {
-    }
-
     const IntPoint& position() const { return m_position; }
     const IntPoint& globalPosition() const { return m_globalPosition; }
     const IntPoint& movementDelta() const { return m_movementDelta; }

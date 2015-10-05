@@ -144,6 +144,10 @@ public:
         TypeLast = TouchTypeLast
     };
 
+    // The modifier constants cannot change their values since pepper
+    // does a 1-1 mapping of its values; see
+    // content/renderer/pepper/event_conversion.cc
+    //
     // A Java counterpart will be generated for this enum.
     // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.web
     // GENERATED_JAVA_CLASS_NAME_OVERRIDE: WebInputEventModifier
@@ -163,20 +167,26 @@ public:
         MiddleButtonDown = 1 << 7,
         RightButtonDown  = 1 << 8,
 
-        // Toggle modifiers for all events. Danger: these are not reflected
-        // into WebCore, so round-tripping from WebInputEvent to a WebCore
-        // event and back will not preserve these flags.
+        // Toggle modifers for all events.
         CapsLockOn       = 1 << 9,
         NumLockOn        = 1 << 10,
 
-        // Left/right modifiers for keyboard events.
         IsLeft           = 1 << 11,
         IsRight          = 1 << 12,
 
         // Indicates that an event was generated on the touch screen while
         // touch accessibility is enabled, so the event should be handled
         // by accessibility code first before normal input event processing.
-        IsTouchAccessibility = 1 << 13
+        IsTouchAccessibility = 1 << 13,
+
+        IsComposing      = 1 << 14,
+
+        AltGrKey         = 1 << 15,
+        OSKey            = 1 << 16,
+        FnKey            = 1 << 17,
+        SymbolKey        = 1 << 18,
+
+        ScrollLockOn     = 1 << 19,
     };
 
     // The rail mode for a wheel event specifies the axis on which scrolling is

@@ -1595,7 +1595,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithRelayoutsWhenHeightChanged
     ASSERT_NE(nullptr, element);
     EXPECT_EQ(String("oldValue"), element->innerText());
 
-    PlatformGestureEvent gestureEvent(PlatformEvent::Type::GestureTap, hitPoint, hitPoint, IntSize(0, 0), 0, false, false, false, false);
+    PlatformGestureEvent gestureEvent(PlatformEvent::Type::GestureTap, hitPoint, hitPoint, IntSize(0, 0), 0, PlatformEvent::NoModifiers);
     webViewHelper.webViewImpl()->mainFrameImpl()->frame()->eventHandler().handleGestureEvent(gestureEvent);
     // when pressed, the button changes its own text to "updatedValue"
     EXPECT_EQ(String("updatedValue"), element->innerText());
@@ -5760,7 +5760,7 @@ TEST_P(ParameterizedWebFrameTest, SimulateFragmentAnchorMiddleClick)
     destination.setFragmentIdentifier("test");
 
     RefPtrWillBeRawPtr<Event> event = MouseEvent::create(EventTypeNames::click, false, false,
-        document->domWindow(), 0, 0, 0, 0, 0, 0, 0, false, false, false, false, 1, 0, nullptr);
+        document->domWindow(), 0, 0, 0, 0, 0, 0, 0, PlatformEvent::NoModifiers, 1, 0, nullptr);
     FrameLoadRequest frameRequest(document, ResourceRequest(destination));
     frameRequest.setTriggeringEvent(event);
     toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->loader().load(frameRequest);
@@ -5809,7 +5809,7 @@ TEST_P(ParameterizedWebFrameTest, ModifiedClickNewWindow)
 
     // ctrl+click event
     RefPtrWillBeRawPtr<Event> event = MouseEvent::create(EventTypeNames::click, false, false,
-        document->domWindow(), 0, 0, 0, 0, 0, 0, 0, true, false, false, false, 0, 0, nullptr);
+        document->domWindow(), 0, 0, 0, 0, 0, 0, 0, PlatformEvent::CtrlKey, 0, 0, nullptr);
     FrameLoadRequest frameRequest(document, ResourceRequest(destination));
     frameRequest.setTriggeringEvent(event);
     UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
