@@ -4851,8 +4851,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ContentSettings.LastSettingParsed" enum="LastSettingParsed">
-<!-- TODO: Remove histogram by 2015. crbug.com/433475 -->
-
+  <obsolete>
+    Deprecated 2015-10-05 in Issue 433475. Histogram was used temorarily for
+    diagnosing crash causes.
+  </obsolete>
   <owner>scheib@chromium.org</owner>
   <summary>
     Numer of results of parsing WebsiteSettingsHandler::last_setting_ success or
@@ -63328,6 +63330,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="LastSettingParsed" type="int">
+  <obsolete>
+    Deprecated 2015-10-05 in Issue 433475. Histogram was used temorarily for
+    diagnosing crash causes.
+  </obsolete>
   <int value="0" label="Update Empty"/>
   <int value="1" label="Update Parsed"/>
   <int value="2" label="Update Invalid"/>
