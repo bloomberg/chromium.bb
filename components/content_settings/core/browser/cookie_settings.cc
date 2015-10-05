@@ -114,9 +114,8 @@ void CookieSettings::ResetCookieSetting(
 }
 
 bool CookieSettings::IsStorageDurable(const GURL& origin) const {
-  // TODO(dgrogan): DCHECK somewhere that secondary doesn't get set for DURABLE.
-  // TODO(dgrogan): Should "resource_identifier" be something other than
-  // std::string()?
+  // TODO(dgrogan): Don't use host_content_settings_map_ directly.
+  // https://crbug.com/539538
   ContentSetting setting = host_content_settings_map_->GetContentSetting(
       origin /*primary*/, origin /*secondary*/,
       CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,

@@ -24,8 +24,7 @@ using bookmarks::BookmarkModel;
 
 DurableStoragePermissionContext::DurableStoragePermissionContext(
     Profile* profile)
-    : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE) {
-}
+    : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE) {}
 
 void DurableStoragePermissionContext::DecidePermission(
     content::WebContents* web_contents,
@@ -88,6 +87,21 @@ void DurableStoragePermissionContext::DecidePermission(
 
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                       false /* persist */, CONTENT_SETTING_DEFAULT);
+}
+
+void DurableStoragePermissionContext::UpdateContentSetting(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin_ignored,
+    ContentSetting content_setting) {
+  DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
+  DCHECK_EQ(embedding_origin_ignored, embedding_origin_ignored.GetOrigin());
+  DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
+         content_setting == CONTENT_SETTING_BLOCK);
+
+  HostContentSettingsMapFactory::GetForProfile(profile())->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(requesting_origin),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
+      std::string(), content_setting);
 }
 
 bool DurableStoragePermissionContext::IsRestrictedToSecureOrigins() const {

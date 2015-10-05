@@ -22,6 +22,11 @@ class DurableStoragePermissionContext : public PermissionContextBase {
                         const GURL& embedding_origin,
                         bool user_gesture,
                         const BrowserPermissionCallback& callback) override;
+
+  void UpdateContentSetting(const GURL& requesting_origin,
+                            const GURL& embedding_origin,
+                            ContentSetting content_setting) override;
+
   bool IsRestrictedToSecureOrigins() const override;
 
  private:
