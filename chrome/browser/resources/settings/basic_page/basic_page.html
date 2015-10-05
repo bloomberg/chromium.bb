@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
 <link rel="import" href="chrome://md-settings/appearance_page/appearance_page.html">
 <link rel="import" href="chrome://md-settings/search_page/search_page.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
@@ -10,9 +9,20 @@
 <link rel="import" href="chrome://md-settings/users_page/users_page.html">
 </if>
 
+<if expr="not chromeos">
+<link rel="import" href="chrome://md-settings/signin_page/signin_page.html">
+</if>
+
 <dom-module id="cr-settings-basic-page">
   <link rel="import" type="css" href="basic_page.css">
   <template>
+<if expr="not chromeos">
+    <settings-section i18n-values="page-title:signinPageTitle"
+        current-route="[[currentRoute]]" section="signin">
+      <settings-signin-page current-route="{{currentRoute}}">
+      </settings-signin-page>
+    </settings-section>
+</if>
 <if expr="chromeos">
     <settings-section i18n-values="page-title:internetPageTitle"
         current-route="[[currentRoute]]" section="internet">

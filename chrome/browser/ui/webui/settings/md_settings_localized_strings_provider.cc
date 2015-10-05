@@ -421,6 +421,12 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SEARCH_ENGINES_ADD_BUTTON_LABEL);
 }
 
+#if !defined(OS_CHROMEOS)
+void AddSigninSettingsStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("signinPageTitle", IDS_SETTINGS_SIGNIN);
+}
+#endif
+
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("siteSettingsPageTitle",
                                   IDS_SETTINGS_SITE_SETTINGS);
@@ -553,6 +559,9 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddPrivacyStrings(html_source);
   AddSearchEnginesStrings(html_source);
   AddSearchStrings(html_source);
+#if !defined(OS_CHROMEOS)
+  AddSigninSettingsStrings(html_source);
+#endif
   AddSiteSettingsStrings(html_source);
   AddSyncStrings(html_source);
   AddUsersStrings(html_source);

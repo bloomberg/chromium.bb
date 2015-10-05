@@ -3,7 +3,7 @@
 <grit-part>
   <!-- Policy Indicators -->
   <message name="IDS_SETTINGS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings indicator tooltip when a setting's value is enforced by an extension.">
-    This setting is controlled by extension <ph name="NAME">$1<ex>Settings Extension</ex></ph> 
+    This setting is controlled by extension <ph name="NAME">$1<ex>Settings Extension</ex></ph>
   </message>
 
   <if expr="chromeos">
@@ -446,6 +446,11 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_URL" desc="Label for site URL text entry in site settings.">
     Site URL
+  </message>
+
+  <!-- Sign-in Page -->
+  <message name="IDS_SETTINGS_SIGNIN" desc="Name of the settings page which manages Chrome's signed-in Google profile.">
+    Sign in
   </message>
 
   <!-- Sync Page -->

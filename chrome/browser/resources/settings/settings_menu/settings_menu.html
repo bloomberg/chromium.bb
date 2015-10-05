@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/notification-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/social-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-icon-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-submenu.html">
@@ -24,6 +24,12 @@
           <paper-icon-item>
             <iron-icon icon="settings-ethernet" item-icon></iron-icon>
             <span i18n-content="internetPageTitle"></span>
+          </paper-icon-item>
+</if>
+<if expr="not chromeos">
+          <paper-icon-item>
+            <iron-icon icon="social:person" item-icon></iron-icon>
+            <span i18n-content="signinPageTitle"></span>
           </paper-icon-item>
 </if>
           <paper-icon-item>
@@ -72,10 +78,6 @@
             <span i18n-content="a11yPageTitle"></span>
           </paper-icon-item>
 </if>
-          <paper-icon-item>
-            <iron-icon icon="notification:sync" item-icon></iron-icon>
-            <span i18n-content="syncPageTitle"></span>
-          </paper-icon-item>
         </paper-menu>
       </paper-submenu>
     </paper-menu>

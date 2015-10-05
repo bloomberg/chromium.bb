@@ -112,6 +112,13 @@ Polymer({
       subpageTitles: ['searchEnginesPageTitle', 'advancedPageTitle'],
     },
     {
+      url: '/syncSetup',
+      page: 'basic',
+      section: 'signin',
+      subpage: ['sync'],
+      subpageTitles: ['syncPageTitle'],
+    },
+    {
       url: '/certificates',
       page: 'advanced',
       section: 'privacy',

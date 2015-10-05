@@ -1,0 +1,27 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://md-settings/sync_page/sync_page.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
+
+<dom-module id="settings-signin-page">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_page/settings_page.css">
+  <template>
+    <settings-animated-pages id="pages" current-route="{{currentRoute}}"
+        section="signin">
+      <neon-animatable id="">
+        <paper-button i18n-content="syncPageTitle" on-tap="onSyncTap_" raised>
+        </paper-button>
+      </neon-animatable>
+      <neon-animatable id="sync">
+        <settings-subheader i18n-values="page-title:syncPageTitle">
+        </settings-subheader>
+        <cr-settings-sync-page current-route="[[currentRoute]]">
+        </cr-settings-sync-page>
+      </neon-animatable>
+    </settings-animated-pages>
+  </template>
+  <script src="signin_page.js"></script>
+</dom-module>
