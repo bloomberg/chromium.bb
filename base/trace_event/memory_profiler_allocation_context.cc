@@ -25,14 +25,11 @@ void DestructAllocationContextTracker(void* alloc_ctx_tracker) {
 }
 
 AllocationContextTracker* AllocationContextTracker::GetThreadLocalTracker() {
-  AllocationContextTracker* tracker;
+  auto tracker =
+      static_cast<AllocationContextTracker*>(g_tls_alloc_ctx_tracker.Get());
 
-  if (g_tls_alloc_ctx_tracker.initialized()) {
-    tracker =
-        static_cast<AllocationContextTracker*>(g_tls_alloc_ctx_tracker.Get());
-  } else {
+  if (!tracker) {
     tracker = new AllocationContextTracker();
-    g_tls_alloc_ctx_tracker.Initialize(DestructAllocationContextTracker);
     g_tls_alloc_ctx_tracker.Set(tracker);
   }
 
@@ -44,9 +41,14 @@ AllocationContextTracker::~AllocationContextTracker() {}
 
 // static
 void AllocationContextTracker::SetCaptureEnabled(bool enabled) {
-  // There is no memory barrier here for performance reasons, a little lag is
-  // not an issue.
-  subtle::NoBarrier_Store(&capture_enabled_, enabled);
+  // When enabling capturing, also initialize the TLS slot. This does not create
+  // a TLS instance yet.
+  if (enabled && !g_tls_alloc_ctx_tracker.initialized())
+    g_tls_alloc_ctx_tracker.Initialize(DestructAllocationContextTracker);
+
+  // Release ordering ensures that when a thread observes |capture_enabled_| to
+  // be true through an acquire load, the TLS slot has been initialized.
+  subtle::Release_Store(&capture_enabled_, enabled);
 }
 
 // static

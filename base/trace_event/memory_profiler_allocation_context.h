@@ -72,8 +72,15 @@ class BASE_EXPORT AllocationContextTracker {
   inline static bool capture_enabled() {
     // A little lag after heap profiling is enabled or disabled is fine, it is
     // more important that the check is as cheap as possible when capturing is
-    // not enabled, so do not issue a memory barrier.
-    return subtle::NoBarrier_Load(&capture_enabled_) != 0;
+    // not enabled, so do not issue a memory barrier in the fast path.
+    if (subtle::NoBarrier_Load(&capture_enabled_) == 0)
+        return false;
+
+    // In the slow path, an acquire load is required to pair with the release
+    // store in |SetCaptureEnabled|. This is to ensure that the TLS slot for
+    // the thread-local allocation context tracker has been initialized if
+    // |capture_enabled| returns true.
+    return subtle::Acquire_Load(&capture_enabled_) != 0;
   }
 
   // Pushes a frame onto the thread-local pseudo stack.
