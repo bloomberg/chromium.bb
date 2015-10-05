@@ -1,0 +1,63 @@
+{
+  "config_type": "BaseConfig",
+  "dependencies": {
+    "android_sdk": {
+      "file_info": {
+        "linux_android": {
+          "local_paths": [
+            "../../third_party/android_tools/sdk"
+          ]
+        }
+      }
+    },
+    "forwarder_device": {
+      "file_info": {
+        "linux_android": {
+          "local_paths": [
+            "../../out/Debug/forwarder_dist",
+            "../../out/Release/forwarder_dist"
+          ]
+        }
+      }
+    },
+    "forwarder_host": {
+      "file_info": {
+        "linux_android": {
+          "local_paths": [
+            "../../out/Debug/host_forwarder",
+            "../../out/Release/host_forwarder"
+          ]
+        }
+      }
+    },
+    "md5sum_device": {
+      "file_info": {
+        "linux_android": {
+          "local_paths": [
+            "../../out/Debug/md5sum_dist",
+            "../../out/Release/md5sum_dist"
+          ]
+        }
+      }
+    },
+    "md5sum_host": {
+      "file_info": {
+        "linux_android": {
+          "local_paths": [
+            "../../out/Debug/md5sum_bin_host",
+            "../../out/Release/md5sum_bin_host"
+          ]
+        }
+      }
+    },
+    "pymock": {
+      "file_info": {
+        "linux_android": {
+          "local_paths": [
+            "../../third_party/pymock"
+          ]
+        }
+      }
+    }
+  }
+}

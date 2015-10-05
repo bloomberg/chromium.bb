@@ -21,6 +21,7 @@ import subprocess
 import sys
 import time
 
+from devil import devil_env
 from devil.android import battery_utils
 from devil.android import device_blacklist
 from devil.android import device_errors
@@ -481,6 +482,8 @@ def main():
   constants.SetBuildType(args.target)
 
   run_tests_helper.SetLogLevel(args.verbose)
+
+  devil_env.config.Initialize()
 
   return ProvisionDevices(args)
 
