@@ -323,7 +323,7 @@
       'filepath': 'chrome/browser/resources/downloads/|' \
                   'chrome/browser/ui/webui/.*downloads|' \
                   'chrome/browser/ui/views/download/|' \
-                  'chrome/browser/ui/cocoa/download/|' \
+                  'chrome/browser/ui/cocoa/download/'
     },
     'drive': {
       'filepath': 'chrome/browser/chromeos/drive/|' \
