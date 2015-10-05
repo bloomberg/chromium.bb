@@ -142,5 +142,10 @@
                 "fetch_period_min": "30"
             }
         }
+    ],
+    "WebRTC-LocalIPPermissionCheck": [
+        {
+            "group_name": "Enabled"
+        }
     ]
 }
