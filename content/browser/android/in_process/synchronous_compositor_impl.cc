@@ -145,11 +145,6 @@ void SynchronousCompositor::SetGpuService(
       CreateInProcessGpuThreadForSynchronousCompositor);
 }
 
-// static
-void SynchronousCompositor::SetUseIpcCommandBuffer() {
-  g_factory.Get().SetUseIpcCommandBuffer();
-}
-
 void SynchronousCompositorImpl::DidInitializeRendererObjects(
     SynchronousCompositorOutputSurface* output_surface,
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source,

@@ -45,10 +45,6 @@ class CONTENT_EXPORT SynchronousCompositor {
   static void SetGpuService(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
 
-  // Turn on using ipc-based command buffer at run time. This should be removed
-  // once this feature is fully launched.
-  static void SetUseIpcCommandBuffer();
-
   // "On demand" hardware draw. The content is first clipped to |damage_area|,
   // then transformed through |transform|, and finally clipped to |view_size|.
   virtual scoped_ptr<cc::CompositorFrame> DemandDrawHw(

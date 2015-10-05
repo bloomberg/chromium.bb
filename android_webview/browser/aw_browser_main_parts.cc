@@ -88,13 +88,6 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
   media::SetMediaClientAndroid(
       new AwMediaClientAndroid(AwResource::GetConfigKeySystemUuidMapping()));
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseInProcCommandBuffer)) {
-    gfx::GLSurface::InitializeOneOff();
-  } else {
-    content::SynchronousCompositor::SetUseIpcCommandBuffer();
-  }
-
   content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
 
   // This is needed for WebView Classic backwards compatibility

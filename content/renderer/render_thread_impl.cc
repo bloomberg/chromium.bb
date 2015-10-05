@@ -1408,19 +1408,8 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
   DCHECK(IsMainThread());
   if (!shared_main_thread_contexts_.get() ||
       shared_main_thread_contexts_->DestroyedOnMainThread()) {
-    shared_main_thread_contexts_ = NULL;
-#if defined(OS_ANDROID)
-    SynchronousCompositorFactory* factory =
-        SynchronousCompositorFactory::GetInstance();
-    if (factory && factory->OverrideWithFactory()) {
-      shared_main_thread_contexts_ = factory->CreateOffscreenContextProvider(
-          GetOffscreenAttribs(), "Offscreen-MainThread");
-    }
-#endif
-    if (!shared_main_thread_contexts_.get()) {
-      shared_main_thread_contexts_ = ContextProviderCommandBuffer::Create(
-          CreateOffscreenContext3d(), RENDERER_MAINTHREAD_CONTEXT);
-    }
+    shared_main_thread_contexts_ = ContextProviderCommandBuffer::Create(
+        CreateOffscreenContext3d(), RENDERER_MAINTHREAD_CONTEXT);
     if (shared_main_thread_contexts_.get() &&
         !shared_main_thread_contexts_->BindToCurrentThread())
       shared_main_thread_contexts_ = NULL;
