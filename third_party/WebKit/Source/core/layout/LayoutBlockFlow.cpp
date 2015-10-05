@@ -705,7 +705,7 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
     if (paginationStrut) {
         // We are willing to propagate out to our parent block as long as we were at the top of the block prior
         // to collapsing our margins, and as long as we didn't clear or move as a result of other pagination.
-        if (atBeforeSideOfBlock && logicalTop == newLogicalTop && !isOutOfFlowPositioned() && !isTableCell()) {
+        if (atBeforeSideOfBlock && logicalTop == newLogicalTop && allowsPaginationStrut()) {
             // FIXME: Should really check if we're exceeding the page height before propagating the strut, but we don't
             // have all the information to do so (the strut only has the remaining amount to push). Gecko gets this wrong too
             // and pushes to the next page anyway, so not too concerned about it.
@@ -781,16 +781,7 @@ static inline bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const Roo
         if (totalLogicalHeight < pageLogicalHeightAtNewOffset)
             wantsStrutOnBlock = true;
     }
-    // The block needs to be contained by a LayoutBlockFlow (and not by e.g. a flexbox or a table
-    // (which would be the case for table cell or table caption)). The reason for this limitation is
-    // simply that LayoutBlockFlow child layout code is the only place where we pick up the struts
-    // and handle them. We handle floats and regular in-flow children, and that's all. We could
-    // handle this in other layout modes as well (and even for out-of-flow children), but currently
-    // we don't.
-    if (!wantsStrutOnBlock || block.isOutOfFlowPositioned())
-        return false;
-    LayoutBlock* containingBlock = block.containingBlock();
-    return containingBlock && containingBlock->isLayoutBlockFlow();
+    return wantsStrutOnBlock && block.allowsPaginationStrut();
 }
 
 void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, LayoutUnit& delta)
@@ -2907,6 +2898,21 @@ void LayoutBlockFlow::getSelectionGapInfo(SelectionState state, bool& leftGap, b
     rightGap = (state == SelectionInside)
         || (state == SelectionStart && ltr)
         || (state == SelectionEnd && !ltr);
+}
+
+bool LayoutBlockFlow::allowsPaginationStrut() const
+{
+    // The block needs to be contained by a LayoutBlockFlow (and not by e.g. a flexbox, grid, or a
+    // table (the latter being the case for table cell or table caption)). The reason for this
+    // limitation is simply that LayoutBlockFlow child layout code is the only place where we pick
+    // up the struts and handle them. We handle floats and regular in-flow children, and that's
+    // all. We could handle this in other layout modes as well (and even for out-of-flow children),
+    // but currently we don't.
+    // TODO(mstensho): But we *should*.
+    if (isOutOfFlowPositioned())
+        return false;
+    LayoutBlock* containingBlock = this->containingBlock();
+    return containingBlock && containingBlock->isLayoutBlockFlow();
 }
 
 void LayoutBlockFlow::setPaginationStrut(LayoutUnit strut)
