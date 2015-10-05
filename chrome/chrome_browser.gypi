@@ -3249,6 +3249,7 @@
             '../components/components.gyp:web_modal',
             '../components/components.gyp:web_resource',
             '../content/app/resources/content_resources.gyp:content_resources',
+            '../device/devices_app/devices_app.gyp:device_usb_mojo_bindings_lib',
             '../gpu/gpu.gyp:gpu',
             '../media/media.gyp:media',
             '../media/midi/midi.gyp:midi',
