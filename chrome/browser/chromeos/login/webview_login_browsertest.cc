@@ -83,25 +83,8 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowGuest) {
   WaitForGaiaPageLoad();
   JsExpect("!$('guest-user-header-bar-item').hidden");
-  CrosSettings::Get()->SetBoolean(kAccountsPrefAllowGuest, false);
+  chromeos::CrosSettings::Get()->SetBoolean(kAccountsPrefAllowGuest, false);
   JsExpect("$('guest-user-header-bar-item').hidden");
-}
-
-// Create new account option should be available only if the settings allow it.
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowNewUser) {
-  WaitForGaiaPageLoad();
-
-  std::string frame_url = "$('gaia-signin').gaiaAuthHost_.initialFrameUrl_";
-  // New users are allowed.
-  JsExpect(frame_url + ".search('flow=nosignup') == -1");
-
-  // Disallow new users - we also need to set a whitelist due to weird logic.
-  CrosSettings::Get()->Set(kAccountsPrefUsers, base::ListValue());
-  CrosSettings::Get()->SetBoolean(kAccountsPrefAllowNewUser, false);
-  WaitForGaiaPageReload();
-
-  // flow=nosignup indicates that user creation is not allowed.
-  JsExpect(frame_url + ".search('flow=nosignup') != -1");
 }
 
 }  // namespace chromeos

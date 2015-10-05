@@ -214,10 +214,7 @@ WebUILoginDisplay* OobeBaseTest::GetLoginDisplay() {
 
 void OobeBaseTest::WaitForGaiaPageLoad() {
   WaitForSigninScreen();
-  WaitForGaiaPageReload();
-}
 
-void OobeBaseTest::WaitForGaiaPageReload() {
   JS().Evaluate(
       "$('gaia-signin').gaiaAuthHost_.addEventListener('ready',"
       "function() {"
