@@ -1,29 +1,29 @@
-ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 5 characters). sub-message=
-ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 5 characters). sub-message=
+ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 6 characters). sub-message=
+ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 6 characters). sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
-ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 5 characters). sub-message=
-ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 5 characters). sub-message=
+ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 6 characters). sub-message=
+ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 6 characters). sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
-ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 5 characters). sub-message=
-ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 5 characters). sub-message=
+ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 6 characters). sub-message=
+ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 6 characters). sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
-ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 5 characters). sub-message=
-ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 5 characters). sub-message=
+ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 6 characters). sub-message=
+ValidationMessageClient: main-message=Please shorten this text to 4 characters or less (you are currently using 6 characters). sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
-ValidationMessageClient: main-message=Please shorten this text to 20 characters or less (you are currently using 21 characters). sub-message=
-ValidationMessageClient: main-message=Please shorten this text to 20 characters or less (you are currently using 21 characters). sub-message=
+ValidationMessageClient: main-message=Please shorten this text to 20 characters or less (you are currently using 22 characters). sub-message=
+ValidationMessageClient: main-message=Please shorten this text to 20 characters or less (you are currently using 22 characters). sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please enter a URL. sub-message=
@@ -31,9 +31,7 @@ ValidationMessageClient: main-message=Please enter a URL. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
 CONSOLE WARNING: The specified value "a" is not a valid email address.
-ValidationMessageClient: main-message=Please shorten this text to 10 characters or less (you are currently using 15 characters). sub-message=
 CONSOLE WARNING: The specified value "a" is not a valid email address.
-ValidationMessageClient: main-message=Please shorten this text to 10 characters or less (you are currently using 15 characters). sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 CONSOLE WARNING: The specified value "abc" is not a valid email address.
@@ -134,8 +132,8 @@ PASS [INPUT in URL status] suffering from being missing
 PASS [INPUT in URL status] suffering from being missing (in a form) 
 PASS [INPUT in EMAIL status] no constraint 
 PASS [INPUT in EMAIL status] no constraint (in a form) 
-PASS [INPUT in EMAIL status] suffering from being too long 
-PASS [INPUT in EMAIL status] suffering from being too long (in a form) 
+FAIL [INPUT in EMAIL status] suffering from being too long assert_false: The reportValidity method should be false. expected false got true
+FAIL [INPUT in EMAIL status] suffering from being too long (in a form) assert_false: The reportValidity method of the element's form owner should return false. expected false got true
 PASS [INPUT in EMAIL status] suffering from a pattern mismatch 
 PASS [INPUT in EMAIL status] suffering from a pattern mismatch (in a form) 
 PASS [INPUT in EMAIL status] suffering from a type mismatch 

@@ -404,6 +404,14 @@ imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_
 # https://github.com/w3c/web-platform-tests/issues/1875  The test has a syntax error.
 imported/web-platform-tests/html/semantics/forms/the-input-element/email.html [ Skip ]
 
+# This test requires manual interventions.
+imported/web-platform-tests/pointerevents/pointerevent_pointermove-on-chorded-mouse-button.html [ Skip ]
+
+# https://github.com/w3c/web-platform-tests/issues/2215  Wrong path to testharness.js/css
+imported/web-platform-tests/shadow-dom/Element-interface-attachShadow.html [ Skip ]
+imported/web-platform-tests/shadow-dom/Element-interface-shadowRoot-attribute.html [ Skip ]
+imported/web-platform-tests/shadow-dom/ShadowRoot-interface.html [ Skip ]
+
 # CSS Writing Modes Level 3: Following tests require applying writing-mode to table-cell, which we do not support today. crbug.com/409155
 imported/csswg-test/css-writing-modes-3/block-flow-direction-017.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/block-flow-direction-018.xht [ Skip ]

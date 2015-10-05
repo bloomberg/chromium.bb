@@ -374,6 +374,7 @@ crbug.com/108417 imported/web-platform-tests/html/rendering/non-replaced-element
 crbug.com/525872 imported/web-platform-tests/html/rendering/non-replaced-elements/tables/table-border-2.html [ ImageOnlyFailure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
 crbug.com/525896 imported/web-platform-tests/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-01.html [ ImageOnlyFailure ]
+crbug.com/490511 imported/web-platform-tests/html/semantics/forms/constraints/form-validation-reportValidity.html [ NeedsRebaseline ]
 crbug.com/508725 imported/web-platform-tests/html/semantics/forms/textfieldselection/textfieldselection-setRangeText.html [ Failure Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ]
 crbug.com/526920 imported/web-platform-tests/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure ]
@@ -554,6 +555,10 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-002.
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-004.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-005.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vlr-001.html [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vlr-004.html [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-001.html [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-004.html [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-stretch-001.html [ ImageOnlyFailure ]
 
 # Either "combo" or split should run: http://testthewebforward.org/docs/css-naming.html
@@ -634,6 +639,7 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression-009.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-006.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-007.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-026-rl.xht [ ImageOnlyFailure ]
 
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ ImageOnlyFailure ]
 

@@ -17,7 +17,7 @@ PASS [INPUT in URL status] validity.valid must be false if validity.tooLong is t
 PASS [INPUT in URL status] validity.valid must be false if validity.patternMismatch is true 
 PASS [INPUT in URL status] validity.valid must be false if validity.typeMismatch is true 
 PASS [INPUT in URL status] validity.valid must be false if validity.valueMissing is true 
-PASS [INPUT in EMAIL status] validity.valid must be false if validity.tooLong is true 
+FAIL [INPUT in EMAIL status] validity.valid must be false if validity.tooLong is true assert_false: The validity.valid should be false. expected false got true
 PASS [INPUT in EMAIL status] validity.valid must be false if validity.patternMismatch is true 
 PASS [INPUT in EMAIL status] validity.valid must be false if validity.typeMismatch is true 
 PASS [INPUT in EMAIL status] validity.valid must be false if validity.valueMissing is true 
