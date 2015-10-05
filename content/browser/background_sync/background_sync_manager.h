@@ -185,10 +185,12 @@ class CONTENT_EXPORT BackgroundSyncManager
       BackgroundSyncRegistrationHandle::HandleId handle_id);
 
   // Disable the manager. Already queued operations will abort once they start
-  // to run (in their impl methods). Future operations will not queue. Any
-  // registrations are cleared from memory and the backend (if it's still
-  // functioning). The manager will reenable itself once it receives the
-  // OnStorageWiped message or on browser restart.
+  // to run (in their impl methods). Future operations will not queue. The one
+  // exception is already firing events -- their responses will be processed in
+  // order to notify their final state.
+  // The list of active registrations is cleared and the backend is also cleared
+  // (if it's still functioning). The manager will reenable itself once it
+  // receives the OnStorageWiped message or on browser restart.
   void DisableAndClearManager(const base::Closure& callback);
   void DisableAndClearDidGetRegistrations(
       const base::Closure& callback,

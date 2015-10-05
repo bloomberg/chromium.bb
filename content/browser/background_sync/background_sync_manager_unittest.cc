@@ -1372,6 +1372,62 @@ TEST_F(BackgroundSyncManagerTest, OverwriteFiringRegistrationWhichFails) {
   EXPECT_EQ(BACKGROUND_SYNC_STATE_FAILED, sync_state);
 }
 
+TEST_F(BackgroundSyncManagerTest, DisableWhilePendingNotifiesDone) {
+  InitSyncEventTest();
+
+  // Register a one-shot that must wait for network connectivity before it
+  // can fire.
+  SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
+  EXPECT_TRUE(Register(sync_options_1_));
+
+  // Listen for notification of completion.
+  bool notify_done_called = false;
+  BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
+  BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
+  callback_registration_handle_->NotifyWhenDone(base::Bind(
+      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(notify_done_called);
+
+  // Corrupting the backend should result in the manager disabling itself on the
+  // next operation. While disabling, it should finalize any pending
+  // registrations.
+  test_background_sync_manager_->set_corrupt_backend(true);
+  EXPECT_FALSE(Register(sync_options_2_));
+  EXPECT_TRUE(notify_done_called);
+  EXPECT_EQ(BACKGROUND_SYNC_STATE_UNREGISTERED, sync_state);
+}
+
+TEST_F(BackgroundSyncManagerTest, DisableWhileFiringNotifiesDone) {
+  InitDelayedSyncEventTest();
+
+  // Register a one-shot that pauses mid-fire.
+  RegisterAndVerifySyncEventDelayed(sync_options_1_);
+
+  // Listen for notification of completion.
+  bool notify_done_called = false;
+  BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
+  BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
+  callback_registration_handle_->NotifyWhenDone(base::Bind(
+      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(notify_done_called);
+
+  // Corrupting the backend should result in the manager disabling itself on the
+  // next operation. Even though the manager is disabled, the firing sync event
+  // should still be able to complete successfully and notify as much.
+  test_background_sync_manager_->set_corrupt_backend(true);
+  EXPECT_FALSE(Register(sync_options_2_));
+  EXPECT_FALSE(notify_done_called);
+  test_background_sync_manager_->set_corrupt_backend(false);
+
+  // Successfully complete the firing event.
+  sync_fired_callback_.Run(SERVICE_WORKER_OK);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(notify_done_called);
+  EXPECT_EQ(BACKGROUND_SYNC_STATE_SUCCESS, sync_state);
+}
+
 // TODO(jkarlin): Change this to a periodic test as one-shots can't be power
 // dependent according to spec.
 TEST_F(BackgroundSyncManagerTest, OneShotFiresOnPowerChange) {

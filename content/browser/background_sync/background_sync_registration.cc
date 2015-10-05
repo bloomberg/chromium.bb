@@ -62,4 +62,20 @@ bool BackgroundSyncRegistration::HasCompleted() const {
   return false;
 }
 
+void BackgroundSyncRegistration::SetUnregisteredState() {
+  DCHECK(!HasCompleted());
+  bool firing = sync_state_ == BACKGROUND_SYNC_STATE_FIRING ||
+                sync_state_ == BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING;
+
+  sync_state_ = firing ? BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING
+                       : BACKGROUND_SYNC_STATE_UNREGISTERED;
+
+  if (!firing) {
+    // If the registration is currently firing then wait to run
+    // RunDoneCallbacks until after it has finished as it might
+    // change state to SUCCESS first.
+    RunDoneCallbacks();
+  }
+}
+
 }  // namespace content

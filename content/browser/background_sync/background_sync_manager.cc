@@ -407,22 +407,7 @@ void BackgroundSyncManager::RegisterImpl(
                 CreateRegistrationHandle(existing_registration_ref).Pass())));
     return;
     } else {
-      DCHECK(!existing_registration_ref->value()->HasCompleted());
-      bool firing = existing_registration_ref->value()->sync_state() ==
-                        BACKGROUND_SYNC_STATE_FIRING ||
-                    existing_registration_ref->value()->sync_state() ==
-                        BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING;
-
-      existing_registration_ref->value()->set_sync_state(
-          firing ? BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING
-                 : BACKGROUND_SYNC_STATE_UNREGISTERED);
-
-      if (!firing) {
-        // If the registration is currently firing then wait to run
-        // RunDoneCallbacks until after it has finished as it might
-        // change state to SUCCESS first.
-        existing_registration_ref->value()->RunDoneCallbacks();
-      }
+      existing_registration_ref->value()->SetUnregisteredState();
     }
   }
 
@@ -458,6 +443,16 @@ void BackgroundSyncManager::DisableAndClearManager(
   }
 
   disabled_ = true;
+
+  for (auto& sw_id_and_registrations : active_registrations_) {
+    for (auto& key_and_registration :
+         sw_id_and_registrations.second.registration_map) {
+      BackgroundSyncRegistration* registration =
+          key_and_registration.second->value();
+      registration->SetUnregisteredState();
+    }
+  }
+
   active_registrations_.clear();
 
   // Delete all backend entries. The memory representation of registered syncs
@@ -760,23 +755,7 @@ void BackgroundSyncManager::UnregisterImpl(
     return;
   }
 
-  DCHECK(!existing_registration->value()->HasCompleted());
-
-  bool firing = existing_registration->value()->sync_state() ==
-                    BACKGROUND_SYNC_STATE_FIRING ||
-                existing_registration->value()->sync_state() ==
-                    BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING;
-
-  existing_registration->value()->set_sync_state(
-      firing ? BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING
-             : BACKGROUND_SYNC_STATE_UNREGISTERED);
-
-  if (!firing) {
-    // If the registration is currently firing then wait to run
-    // RunDoneCallbacks until after it has finished as it might
-    // change state to SUCCESS first.
-    existing_registration->value()->RunDoneCallbacks();
-  }
+  existing_registration->value()->SetUnregisteredState();
 
   RemoveActiveRegistration(sw_registration_id, registration_key);
 
@@ -869,13 +848,6 @@ void BackgroundSyncManager::NotifyWhenDoneDidFinish(
     const StatusAndStateCallback& callback,
     BackgroundSyncState sync_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (disabled_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-                              BACKGROUND_SYNC_STATE_FAILED));
-    return;
-  }
 
   callback.Run(BACKGROUND_SYNC_STATUS_OK, sync_state);
 }
@@ -1118,8 +1090,9 @@ void BackgroundSyncManager::EventComplete(
     const base::Closure& callback,
     ServiceWorkerStatusCode status_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (disabled_)
-    return;
+
+  // Do not check for disabled as events that were firing when disabled should
+  // be allowed to complete (for NotifyWhenDone).
 
   op_scheduler_.ScheduleOperation(base::Bind(
       &BackgroundSyncManager::EventCompleteImpl, weak_ptr_factory_.GetWeakPtr(),
@@ -1134,15 +1107,10 @@ void BackgroundSyncManager::EventCompleteImpl(
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (disabled_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback));
-    return;
-  }
-
   BackgroundSyncRegistration* registration =
       registration_handle->registration();
   DCHECK(registration);
+  DCHECK(!registration->HasCompleted());
 
   // The event ran to completion, we should count it, no matter what happens
   // from here.
@@ -1173,6 +1141,12 @@ void BackgroundSyncManager::EventCompleteImpl(
   } else {
     // TODO(jkarlin): Add support for running periodic syncs. (crbug.com/479674)
     NOTREACHED();
+  }
+
+  if (disabled_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback));
+    return;
   }
 
   StoreRegistrations(
