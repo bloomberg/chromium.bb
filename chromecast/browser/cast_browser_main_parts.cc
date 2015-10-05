@@ -339,9 +339,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       new RemoteDebuggingServer(cast_browser_process_->browser_client()->
           EnableRemoteDebuggingImmediately())));
 
-  media::MediaMessageLoop::GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&media::CastMediaShlib::Initialize, cmd_line->argv()));
+  media::CastMediaShlib::Initialize(cmd_line->argv());
   ::media::InitializeMediaLibrary();
 
   cast_browser_process_->SetCastService(
