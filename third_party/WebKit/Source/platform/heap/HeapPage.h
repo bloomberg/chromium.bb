@@ -191,7 +191,7 @@ public:
         ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
         ASSERT(size < nonLargeObjectPageSizeMax);
         ASSERT(!(size & allocationMask));
-        m_encoded = (gcInfoIndex << headerGCInfoIndexShift) | size | (gcInfoIndex ? 0 : headerFreedBitMask);
+        m_encoded = (gcInfoIndex << headerGCInfoIndexShift) | size | (gcInfoIndex == gcInfoIndexForFreeListHeader ? headerFreedBitMask : 0);
     }
 
     NO_SANITIZE_ADDRESS
