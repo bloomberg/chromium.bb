@@ -763,9 +763,11 @@ template("create_apk") {
     _rebased_src_manifest = rebase_path(_android_manifest, root_build_dir)
     _rebased_incremental_manifest =
         rebase_path(_incremental_android_manifest, root_build_dir)
+    _rebased_depfile = rebase_path(depfile, root_build_dir)
     args = [
       "--src-manifest=$_rebased_src_manifest",
       "--out-manifest=$_rebased_incremental_manifest",
+      "--depfile=$_rebased_depfile",
     ]
     if (disable_incremental_isolated_processes) {
       args += [ "--disable-isolated-processes" ]
