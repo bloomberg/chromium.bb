@@ -714,10 +714,11 @@ TEST_F(OfflinePageModelTest, GetPageByOfflineURL) {
 // clean up, hence the numbers in time delta.
 TEST_F(OfflinePageModelTest, GetPagesToCleanUp) {
   base::Time now = base::Time::Now();
+  base::Time forty_days_ago = now - base::TimeDelta::FromDays(40);
   OfflinePageItem page_1(
       GURL(kTestUrl), kTestPageBookmarkId1,
       base::FilePath(FILE_PATH_LITERAL("/test/location/page1.mhtml")),
-      kTestFileSize, now - base::TimeDelta::FromDays(40));
+      kTestFileSize, forty_days_ago);
   GetStore()->AddOrUpdateOfflinePage(
       page_1,
       base::Bind(&OfflinePageModelTest::OnStoreUpdateDone, AsWeakPtr()));
@@ -726,7 +727,8 @@ TEST_F(OfflinePageModelTest, GetPagesToCleanUp) {
   OfflinePageItem page_2(
       GURL(kTestUrl2), kTestPageBookmarkId2,
       base::FilePath(FILE_PATH_LITERAL("/test/location/page2.mhtml")),
-      kTestFileSize, now - base::TimeDelta::FromDays(31));
+      kTestFileSize, forty_days_ago);
+  page_2.last_access_time = now - base::TimeDelta::FromDays(31);
   GetStore()->AddOrUpdateOfflinePage(
       page_2,
       base::Bind(&OfflinePageModelTest::OnStoreUpdateDone, AsWeakPtr()));
@@ -735,7 +737,8 @@ TEST_F(OfflinePageModelTest, GetPagesToCleanUp) {
   OfflinePageItem page_3(
       GURL("http://test.xyz"), 42,
       base::FilePath(FILE_PATH_LITERAL("/test/location/page3.mhtml")),
-      kTestFileSize, now - base::TimeDelta::FromDays(29));
+      kTestFileSize, forty_days_ago);
+  page_3.last_access_time = now - base::TimeDelta::FromDays(29);
   GetStore()->AddOrUpdateOfflinePage(
       page_3,
       base::Bind(&OfflinePageModelTest::OnStoreUpdateDone, AsWeakPtr()));
