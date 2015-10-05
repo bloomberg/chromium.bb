@@ -20,7 +20,7 @@ function test()
 
     function onDialogFulfilled()
     {
-        WebInspector.Dialog.currentInstance()._delegate._delegate.selectItem(1, "")
+        WebInspector.StyleSheetOutlineDialog._instanceForTests.selectItem(1, "");
         var selection = textEditor.selection();
         if (!selection.isEmpty()) {
             InspectorTest.addResult("ERROR: selection is not empty.");

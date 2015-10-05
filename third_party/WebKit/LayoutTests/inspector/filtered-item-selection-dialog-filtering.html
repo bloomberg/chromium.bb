@@ -50,7 +50,7 @@ function test()
         for (var i = 0; i < items.length; ++i)
             output.push(delegate.itemKeyAt(items[i]));
         InspectorTest.addResult("Output:" + JSON.stringify(output));
-        filteredSelectionDialog.onEnter();
+        filteredSelectionDialog._onEnter(InspectorTest.createKeyEvent("Enter"));
     }
 
     checkQuery("Empty query matches everything", "", ["a", "bc"]);
