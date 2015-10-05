@@ -1091,6 +1091,9 @@ void LayoutGrid::populateExplicitGridAndOrderIterator()
     ASSERT(m_gridItemsIndexesMap.isEmpty());
     size_t childIndex = 0;
     for (LayoutBox* child = firstChildBox(); child; child = child->nextInFlowSiblingBox()) {
+        if (child->isOutOfFlowPositioned())
+            continue;
+
         populator.collectChild(child);
         m_gridItemsIndexesMap.set(child, childIndex++);
 
@@ -1414,12 +1417,18 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
 
     GridPosition startPosition = (direction == ForColumns) ? child.style()->gridColumnStart() : child.style()->gridRowStart();
     GridPosition endPosition = (direction == ForColumns) ? child.style()->gridColumnEnd() : child.style()->gridRowEnd();
-    bool startIsAuto = startPosition.isAuto() || (startPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(startPosition.namedGridLine(), styleRef(), GridResolvedPosition::initialPositionSide(direction)));
-    bool endIsAuto = endPosition.isAuto() || (endPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(endPosition.namedGridLine(), styleRef(), GridResolvedPosition::finalPositionSide(direction)));
+    size_t lastTrackIndex = (direction == ForColumns ? gridColumnCount() : gridRowCount()) - 1;
+
+    bool startIsAuto = startPosition.isAuto()
+        || (startPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(startPosition.namedGridLine(), styleRef(), GridResolvedPosition::initialPositionSide(direction)))
+        || (positions->resolvedInitialPosition.toInt() > lastTrackIndex);
+    bool endIsAuto = endPosition.isAuto()
+        || (endPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(endPosition.namedGridLine(), styleRef(), GridResolvedPosition::finalPositionSide(direction)))
+        || (positions->resolvedFinalPosition.toInt() > lastTrackIndex);
 
     GridResolvedPosition firstPosition = GridResolvedPosition(0);
     GridResolvedPosition initialPosition = startIsAuto ? firstPosition : positions->resolvedInitialPosition;
-    GridResolvedPosition lastPosition = GridResolvedPosition((direction == ForColumns ? gridColumnCount() : gridRowCount()) - 1);
+    GridResolvedPosition lastPosition = GridResolvedPosition(lastTrackIndex);
     GridResolvedPosition finalPosition = endIsAuto ? lastPosition : positions->resolvedFinalPosition;
 
     // Positioned children do not grow the grid, so we need to clamp the positions to avoid ending up outside of it.
