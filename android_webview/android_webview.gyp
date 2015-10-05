@@ -47,7 +47,7 @@
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
               '<(grit_out_dir)/aw_resources.pak',
             ],
-            'pak_output': '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
+            'pak_output': '<(webview_chromium_pak_path)',
           },
          'includes': [ '../build/repack_action.gypi' ],
         },
@@ -114,10 +114,12 @@
       'target_name': 'android_webview_locale_paks',
       'type': 'none',
       'variables': {
-        'locale_pak_files': [ '<@(webview_locales_input_paks)' ],
+        'locale_pak_files': [
+          '<@(webview_locales_input_common_paks)',
+          '<@(webview_locales_input_individual_paks)',
+        ],
       },
       'includes': [
-        'apk/system_webview_locales_paks.gypi',
         '../build/android/locale_pak_resources.gypi',
       ],
     },
@@ -428,5 +430,6 @@
   ],
   'includes': [
     'android_webview_tests.gypi',
+    'apk/system_webview_paks.gypi',
   ],
 }
