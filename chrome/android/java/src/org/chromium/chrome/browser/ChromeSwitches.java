@@ -181,6 +181,12 @@ public abstract class ChromeSwitches {
      */
     public static final String ENABLE_THEME_COLOR_IN_TABBED_MODE =
             "enable-theme-color-in-tabbed-mode";
+    /**
+     * Enable keyboard accessory view that shows autofill suggestions on top of the keyboard.
+     * Native switch - autofill::switches::kEnableAccessorySuggestionView
+     */
+    public static final String ENABLE_AUTOFILL_KEYBOARD_ACCESSORY =
+            "enable-autofill-keyboard-accessory-view";
 
     /**
      * Enables hung renderer InfoBar activation for unresponsive web content.
