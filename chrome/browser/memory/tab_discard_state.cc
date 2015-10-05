@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/tabs/tab_discard_state.h"
+#include "chrome/browser/memory/tab_discard_state.h"
 
 #include "base/metrics/histogram.h"
 #include "content/public/browser/browser_thread.h"
@@ -16,6 +16,8 @@ namespace {
 const char kDiscardStateKey[] = "TabDiscardState";
 
 }  // namespace
+
+namespace memory {
 
 // static
 TabDiscardState* TabDiscardState::Get(WebContents* web_contents) {
@@ -102,3 +104,5 @@ TabDiscardState::TabDiscardState()
       discard_count_(0),
       is_recently_audible_(false),
       last_audio_change_time_(TimeTicks::UnixEpoch()) {}
+
+}  // namespace memory

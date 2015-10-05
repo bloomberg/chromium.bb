@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TABS_TAB_DISCARD_STATE_H_
-#define CHROME_BROWSER_UI_TABS_TAB_DISCARD_STATE_H_
+#ifndef CHROME_BROWSER_MEMORY_TAB_DISCARD_STATE_H_
+#define CHROME_BROWSER_MEMORY_TAB_DISCARD_STATE_H_
 
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
@@ -11,6 +11,8 @@
 namespace content {
 class WebContents;
 }
+
+namespace memory {
 
 // Manages the information about the discarding state of a tab. This data is
 // stored in WebContents.
@@ -74,4 +76,6 @@ class TabDiscardState : public base::SupportsUserData::Data {
   base::TimeTicks last_audio_change_time_;
 };
 
-#endif  // CHROME_BROWSER_UI_TABS_TAB_DISCARD_STATE_H_
+}  // namespace memory
+
+#endif  // CHROME_BROWSER_MEMORY_TAB_DISCARD_STATE_H_

@@ -16,10 +16,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/memory/tab_discard_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tabs/tab_discard_state.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
@@ -2142,8 +2142,10 @@ TEST_F(TabStripModelTest, DiscardWebContentsAt) {
   // Discard one of the tabs.
   WebContents* null_contents1 = tabstrip.DiscardWebContentsAt(0);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_TRUE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(0)));
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      memory::TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      memory::TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
   ASSERT_EQ(null_contents1, tabstrip.GetWebContentsAt(0));
   ASSERT_EQ(contents2, tabstrip.GetWebContentsAt(1));
   ASSERT_EQ(1, tabstrip_observer.GetStateCount());
@@ -2155,8 +2157,10 @@ TEST_F(TabStripModelTest, DiscardWebContentsAt) {
   // Discard the same tab again.
   WebContents* null_contents2 = tabstrip.DiscardWebContentsAt(0);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_TRUE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(0)));
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      memory::TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      memory::TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
   ASSERT_EQ(null_contents2, tabstrip.GetWebContentsAt(0));
   ASSERT_EQ(contents2, tabstrip.GetWebContentsAt(1));
   ASSERT_EQ(1, tabstrip_observer.GetStateCount());
@@ -2168,14 +2172,18 @@ TEST_F(TabStripModelTest, DiscardWebContentsAt) {
   // Activating the tab should clear its discard state.
   tabstrip.ActivateTabAt(0, true /* user_gesture */);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(0)));
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      memory::TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      memory::TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
 
   // Don't discard active tab.
   tabstrip.DiscardWebContentsAt(0);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(0)));
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      memory::TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      memory::TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
 
   tabstrip.CloseAllTabs();
 }
@@ -2196,13 +2204,16 @@ TEST_F(TabStripModelTest, ReloadDiscardedTabContextMenu) {
   // so the reload can happen.
   WebContentsTester::For(test_contents)
       ->NavigateAndCommit(GURL("chrome://newtab"));
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      memory::TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
 
   tabstrip.DiscardWebContentsAt(1);
-  EXPECT_TRUE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      memory::TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
 
   tabstrip.GetWebContentsAt(1)->GetController().Reload(false);
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      memory::TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
 
   tabstrip.CloseAllTabs();
 }

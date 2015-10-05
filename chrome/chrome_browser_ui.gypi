@@ -1682,8 +1682,6 @@
       'browser/ui/tabs/pinned_tab_service.h',
       'browser/ui/tabs/pinned_tab_service_factory.cc',
       'browser/ui/tabs/pinned_tab_service_factory.h',
-      'browser/ui/tabs/tab_discard_state.cc',
-      'browser/ui/tabs/tab_discard_state.h',
       'browser/ui/tabs/tab_menu_model.cc',
       'browser/ui/tabs/tab_menu_model.h',
       'browser/ui/tabs/tab_strip_model.cc',

@@ -26,12 +26,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/oom_memory_details.h"
+#include "chrome/browser/memory/tab_discard_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/ui/tabs/tab_discard_state.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_constants.h"
@@ -210,7 +210,7 @@ bool TabManager::DiscardTabById(int64 target_web_contents_id) {
 
   WebContents* web_contents = model->GetWebContentsAt(idx);
   // Can't discard tabs that are already discarded.
-  if (TabDiscardState::IsDiscarded(web_contents))
+  if (memory::TabDiscardState::IsDiscarded(web_contents))
     return false;
 
   VLOG(1) << "Discarding tab " << idx << " id " << target_web_contents_id;
@@ -240,11 +240,11 @@ void TabManager::TabChangedAt(content::WebContents* contents,
   if (change_type != TabChangeType::ALL)
     return;
 
-  bool old_state = TabDiscardState::IsRecentlyAudible(contents);
+  bool old_state = memory::TabDiscardState::IsRecentlyAudible(contents);
   bool current_state = contents->WasRecentlyAudible();
   if (old_state != current_state) {
-    TabDiscardState::SetRecentlyAudible(contents, current_state);
-    TabDiscardState::SetLastAudioChangeTime(contents, TimeTicks::Now());
+    memory::TabDiscardState::SetRecentlyAudible(contents, current_state);
+    memory::TabDiscardState::SetLastAudioChangeTime(contents, TimeTicks::Now());
   }
 }
 
@@ -381,10 +381,10 @@ void TabManager::AddTabStats(BrowserList* browser_list,
         stats.is_playing_audio = IsAudioTab(contents);
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = browser_active && model->IsTabSelected(i);
-        stats.is_discarded = TabDiscardState::IsDiscarded(contents);
+        stats.is_discarded = memory::TabDiscardState::IsDiscarded(contents);
         stats.has_form_entry =
             contents->GetPageImportanceSignals().had_form_interaction;
-        stats.discard_count = TabDiscardState::DiscardCount(contents);
+        stats.discard_count = memory::TabDiscardState::DiscardCount(contents);
         stats.last_active = contents->GetLastActiveTime();
         stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
         stats.child_process_host_id = contents->GetRenderProcessHost()->GetID();
@@ -454,7 +454,7 @@ bool TabManager::CanDiscardTab(int64 target_web_contents_id) const {
     return false;
 
   // Do not discard a previously discarded tab if that's the desired behavior.
-  if (discard_once_ && TabDiscardState::DiscardCount(web_contents) > 0)
+  if (discard_once_ && memory::TabDiscardState::DiscardCount(web_contents) > 0)
     return false;
 
   return true;
@@ -487,7 +487,7 @@ bool TabManager::IsAudioTab(WebContents* contents) const {
   if (contents->WasRecentlyAudible())
     return true;
   auto delta =
-      TimeTicks::Now() - TabDiscardState::LastAudioChangeTime(contents);
+      TimeTicks::Now() - memory::TabDiscardState::LastAudioChangeTime(contents);
   return delta < TimeDelta::FromSeconds(kAudioProtectionTimeSeconds);
 }
 

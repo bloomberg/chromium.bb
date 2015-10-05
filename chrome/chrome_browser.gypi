@@ -1179,6 +1179,8 @@
       'browser/media_galleries/win/snapshot_file_details.h',
       'browser/memory/oom_memory_details.cc',
       'browser/memory/oom_memory_details.h',
+      'browser/memory/tab_discard_state.cc',
+      'browser/memory/tab_discard_state.h',
       'browser/memory/tab_manager.cc',
       'browser/memory/tab_manager.h',
       'browser/memory/tab_manager_delegate_chromeos.cc',
