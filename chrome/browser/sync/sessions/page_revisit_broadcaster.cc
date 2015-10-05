@@ -7,13 +7,9 @@
 #include <vector>
 
 #include "base/metrics/field_trial.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_session_util.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
-#include "chrome/common/pref_names.h"
 #include "components/sync_driver/revisit/sessions_page_revisit_observer.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace browser_sync {
 
