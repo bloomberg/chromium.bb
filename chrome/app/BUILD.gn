@@ -134,38 +134,6 @@ if (is_android) {
   }
 }
 
-# GYP version: chrome/chrome_resources.gyp:chrome_strings_map
-action("make_generated_resources_map") {
-  # Targets should depend on generated_resources_map instead.
-  visibility = [ ":generated_resources_map" ]
-
-  script = "//chrome/browser/metrics/variations/generate_resources_map.py"
-
-  inputs = [
-    "$root_gen_dir/chrome/grit/generated_resources.h",
-  ]
-  outputs = [
-    "$root_gen_dir/chrome/generated_resources_map.cc",
-  ]
-
-  args =
-      rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
-
-  deps = [
-    ":generated_resources",
-  ]
-}
-
-# Collect the generated .cc file from make_generated_resources_map and put it
-# in a source set so targets that depend on it will link the source rather than
-# specifying it manually. This doesn't happen in the GYP build.
-source_set("generated_resources_map") {
-  sources = get_target_outputs(":make_generated_resources_map")
-  deps = [
-    ":make_generated_resources_map",
-  ]
-}
-
 # GYP version: chrome/chrome_resources.gyp:chrome_strings
 #              (generate_google_chrome_strings action)
 grit("google_chrome_strings") {

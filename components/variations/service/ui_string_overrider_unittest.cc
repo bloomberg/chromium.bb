@@ -4,14 +4,29 @@
 
 #include "components/variations/service/ui_string_overrider.h"
 
-#include "chrome/browser/metrics/variations/generated_resources_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// TODO(sdefresne): componentize this tests as part of the resolution
-// of http://crbug.com/534257 ("Decouple iOS port from using //chrome's
-// VariationsService client").
-
 namespace chrome_variations {
+
+namespace {
+
+const size_t kNumResources = 4;
+
+const uint32_t kResourceHashes[] = {
+    301430091U,  // IDS_BOOKMARKS_NO_ITEMS
+    2654138887U,  // IDS_BOOKMARK_BAR_IMPORT_LINK
+    2894469061U,  // IDS_BOOKMARK_GROUP_FROM_IE
+    3847176170U,  // IDS_BOOKMARK_GROUP_FROM_FIREFOX
+};
+
+const int kResourceIndices[] = {
+    12500,  // IDS_BOOKMARKS_NO_ITEMS
+    12501,  // IDS_BOOKMARK_BAR_IMPORT_LINK
+    12502,  // IDS_BOOKMARK_GROUP_FROM_IE
+    12503,  // IDS_BOOKMARK_GROUP_FROM_FIREFOX
+};
+
+}  // namespace
 
 class UIStringOverriderTest : public ::testing::Test {
  public:
@@ -33,8 +48,8 @@ TEST_F(UIStringOverriderTest, LookupNotFound) {
   EXPECT_EQ(-1, GetResourceIndex(kResourceHashes[kNumResources - 1] + 1));
 
   // Lookup a hash that shouldn't exist.
-  // 13257681U is 1 + the hash for IDS_ZOOM_NORMAL
-  EXPECT_EQ(-1, GetResourceIndex(13257681U));
+  // 3847176171U is 1 + the hash for IDS_BOOKMARK_GROUP_FROM_FIREFOX.
+  EXPECT_EQ(-1, GetResourceIndex(3847176171U));
 }
 
 TEST_F(UIStringOverriderTest, LookupFound) {

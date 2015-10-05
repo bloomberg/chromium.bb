@@ -718,6 +718,7 @@
       'variations/experiment_labels_unittest.cc',
       'variations/metrics_util_unittest.cc',
       'variations/net/variations_http_header_provider_unittest.cc',
+      'variations/service/ui_string_overrider_unittest.cc',
       'variations/service/variations_service_unittest.cc',
       'variations/study_filtering_unittest.cc',
       'variations/variations_associated_data_unittest.cc',

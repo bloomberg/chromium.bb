@@ -16,7 +16,7 @@ namespace variations {
 // array of resource name hashes, and |resource_indices| an array of resource
 // indices in the same order.
 //
-// The mapping is created by generate_resources_map.py based on generated
+// The mapping is created by generate_ui_string_overrider.py based on generated
 // resources header files. The script ensure that if one header file contains
 // |#define IDS_FOO 12345| then for some index |i|, |resource_hashes[i]| will
 // be equal to |HASH("IDS_FOO")| and |resource_indices[i]| will be equal to
