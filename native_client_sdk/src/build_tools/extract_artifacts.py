@@ -26,12 +26,9 @@ import oshelpers
 DOWNLOAD_ARCHIVE_DIR = build_paths.BUILD_ARCHIVE_DIR
 
 PLATFORM = getos.GetPlatform()
-NEWLIB_X86_TC_DIR = os.path.join('toolchain', '%s_x86_newlib' % PLATFORM)
-NEWLIB_ARM_TC_DIR = os.path.join('toolchain', '%s_arm_newlib' % PLATFORM)
 GLIBC_X86_TC_DIR = os.path.join('toolchain', '%s_x86_glibc' % PLATFORM)
 PNACL_TC_DIR = os.path.join('toolchain', '%s_pnacl' % PLATFORM)
 PNACL_TRANSLATOR_DIR = os.path.join(PNACL_TC_DIR, 'translator')
-BIONIC_TC_DIR = os.path.join('toolchain', '%s_arm_bionic' % PLATFORM)
 
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 TAR = oshelpers.FindExeInPath('tar')
@@ -41,18 +38,6 @@ options = None
 
 PPAPI_ARCHIVE = os.path.join(DOWNLOAD_ARCHIVE_DIR,
                              '%s_ppapi.tar.bz2' % PLATFORM)
-
-
-NEWLIB_ARCHIVE_MAP = [
-  ('newlib', NEWLIB_X86_TC_DIR),
-  ('arm', NEWLIB_ARM_TC_DIR),
-  ('newlib_headers', [
-      os.path.join(NEWLIB_X86_TC_DIR, 'x86_64-nacl', 'include'),
-      os.path.join(NEWLIB_ARM_TC_DIR, 'arm-nacl', 'include')]),
-  ('newlib_arm_libs', os.path.join(NEWLIB_ARM_TC_DIR, 'arm-nacl', 'lib')),
-  ('newlib_x86_32_libs',
-      os.path.join(NEWLIB_X86_TC_DIR, 'x86_64-nacl', 'lib32')),
-  ('newlib_x86_64_libs', os.path.join(NEWLIB_X86_TC_DIR, 'x86_64-nacl', 'lib'))]
 
 GLIBC_ARCHIVE_MAP = [
   ('glibc', GLIBC_X86_TC_DIR),
@@ -71,17 +56,9 @@ PNACL_ARCHIVE_MAP = [
   ('pnacl_translator_x86_64_libs',
       os.path.join(PNACL_TRANSLATOR_DIR, 'x86-64', 'lib'))]
 
-BIONIC_ARCHIVE_MAP = [
-  ('bionic', BIONIC_TC_DIR),
-  ('bionic_headers', os.path.join(BIONIC_TC_DIR, 'arm-nacl', 'include')),
-  ('bionic_arm_libs', os.path.join(BIONIC_TC_DIR, 'arm-nacl', 'lib'))]
-
-
 TOOLCHAIN_ARCHIVE_MAPS = {
-  'newlib': NEWLIB_ARCHIVE_MAP,
   'glibc': GLIBC_ARCHIVE_MAP,
   'pnacl': PNACL_ARCHIVE_MAP,
-  'bionic': BIONIC_ARCHIVE_MAP,
 }
 
 TOOLS_ARCHIVE_MAP = [('tools', 'tools')]

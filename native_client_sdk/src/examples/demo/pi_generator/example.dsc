@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'linux', 'mac', 'clang-newlib'],
+  'TOOLS': ['clang-newlib', 'glibc', 'pnacl', 'linux', 'mac'],
   'TARGETS': [
     {
       'NAME' : 'pi_generator',

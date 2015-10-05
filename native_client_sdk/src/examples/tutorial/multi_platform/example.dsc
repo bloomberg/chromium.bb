@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc'],
+  'TOOLS': ['clang-newlib', 'glibc'],
   'TARGETS': [
     {
       'NAME': 'multi_platform',

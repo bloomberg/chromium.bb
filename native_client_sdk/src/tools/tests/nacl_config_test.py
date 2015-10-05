@@ -49,7 +49,6 @@ class TestNaclConfig(unittest.TestCase):
 
   def testCFlags(self):
     cases = {
-        'newlib': '-I/sdk_root/include -I/sdk_root/include/newlib',
         'glibc': '-I/sdk_root/include -I/sdk_root/include/glibc',
         'pnacl': '-I/sdk_root/include -I/sdk_root/include/pnacl',
         'win': '-I/sdk_root/include -I/sdk_root/include/win',
@@ -62,7 +61,6 @@ class TestNaclConfig(unittest.TestCase):
 
   def testIncludeDirs(self):
     cases = {
-        'newlib': '/sdk_root/include /sdk_root/include/newlib',
         'glibc': '/sdk_root/include /sdk_root/include/glibc',
         'pnacl': '/sdk_root/include /sdk_root/include/pnacl',
         'win': '/sdk_root/include /sdk_root/include/win',
@@ -81,13 +79,6 @@ class TestNaclConfig(unittest.TestCase):
     pnacl_tool = pnacl_tool or tool
 
     cases = {
-        ('newlib', 'x86_32'):
-            '/sdk_root/toolchain/mac_x86_newlib/bin/i686-nacl-%s' % nacl_tool,
-        ('newlib', 'x86_64'):
-            '/sdk_root/toolchain/mac_x86_newlib/bin/x86_64-nacl-%s' % nacl_tool,
-        ('newlib', 'arm'):
-            '/sdk_root/toolchain/mac_arm_newlib/bin/arm-nacl-%s' % nacl_tool,
-
         ('glibc', 'arm'):
             '/sdk_root/toolchain/mac_arm_glibc/bin/arm-nacl-%s' % nacl_tool,
         ('glibc', 'x86_32'):
@@ -134,8 +125,8 @@ class TestNaclConfig(unittest.TestCase):
 
   def testGDB(self):
     # We always use the same gdb (it supports multiple toolchains/architectures)
-    expected = '/sdk_root/toolchain/mac_x86_newlib/bin/x86_64-nacl-gdb'
-    for toolchain in ('newlib', 'glibc', 'pnacl'):
+    expected = '/sdk_root/toolchain/mac_x86_glibc/bin/x86_64-nacl-gdb'
+    for toolchain in ('glibc', 'pnacl'):
       for arch in ('x86_32', 'x86_64', 'arm'):
         self.assertEqual(expected,
                          nacl_config.GetToolPath(toolchain, arch, 'gdb'))

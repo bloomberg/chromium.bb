@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'clang-newlib'],
+  'TOOLS': ['clang-newlib'],
   'TARGETS': [
     {
       'NAME' : 'error_handling',

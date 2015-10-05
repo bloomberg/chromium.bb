@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'bionic', 'linux', 'mac', 'clang-newlib'],
+  'TOOLS': ['clang-newlib', 'glibc', 'pnacl', 'bionic', 'linux', 'mac'],
   'TARGETS': [
     {
       'NAME' : 'nacl_io_demo',

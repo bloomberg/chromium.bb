@@ -37,12 +37,9 @@ class PosixTestCase(BasePosixTestCase):
 
   def testGetToolchainNaClLib(self):
     tests = [
-        (('newlib', 'x86_32'), 'foo/x86_64-nacl/lib32'),
-        (('newlib', 'x86_64'), 'foo/x86_64-nacl/lib'),
-        (('newlib', 'arm'), 'foo/arm-nacl/lib'),
-        (('glibc', 'x86_32'), 'foo/x86_64-nacl/lib32'),
-        (('glibc', 'x86_64'), 'foo/x86_64-nacl/lib'),
-        (('bionic', 'arm'), 'foo/arm-nacl/lib'),
+        (('glibc_x86', 'x86_32'), 'foo/x86_64-nacl/lib32'),
+        (('glibc_x86', 'x86_64'), 'foo/x86_64-nacl/lib'),
+        (('glibc_arm', 'arm'), 'foo/arm-nacl/lib'),
         (('pnacl', None), 'foo/le32-nacl/lib'),
     ]
 
@@ -53,11 +50,9 @@ class PosixTestCase(BasePosixTestCase):
 
   def testGetGypBuiltLib(self):
     tests = [
-        (('newlib', 'x86_32'), 'foo/Release/gen/tc_newlib/lib32'),
-        (('newlib', 'x86_64'), 'foo/Release/gen/tc_newlib/lib64'),
-        (('newlib', 'arm'), 'foo/Release/gen/tc_newlib/libarm'),
-        (('glibc', 'x86_32'), 'foo/Release/gen/tc_glibc/lib32'),
-        (('glibc', 'x86_64'), 'foo/Release/gen/tc_glibc/lib64'),
+        (('glibc_x86', 'x86_32'), 'foo/Release/gen/tc_glibc/lib32'),
+        (('glibc_x86', 'x86_64'), 'foo/Release/gen/tc_glibc/lib64'),
+        (('glibc_arm', 'arm'), 'foo/Release/gen/tc_glibc/libarm'),
         (('pnacl', None), 'foo/Release/gen/tc_pnacl_newlib/lib')
     ]
 
@@ -68,27 +63,20 @@ class PosixTestCase(BasePosixTestCase):
 
   def testGetGypToolchainLib(self):
     tests = [
-        (('newlib', 'x86_32'),
-         'foo/Release/gen/sdk/posix_x86/nacl_x86_newlib/x86_64-nacl/lib32'),
-        (('newlib', 'x86_64'),
-         'foo/Release/gen/sdk/posix_x86/nacl_x86_newlib/x86_64-nacl/lib'),
-        (('newlib', 'arm'),
-         'foo/Release/gen/sdk/posix_x86/nacl_arm_newlib/arm-nacl/lib'),
-        (('glibc', 'x86_32'),
+        (('glibc_x86', 'x86_32'),
          'foo/Release/gen/sdk/posix_x86/nacl_x86_glibc/x86_64-nacl/lib32'),
-        (('glibc', 'x86_64'),
+        (('glibc_x86', 'x86_64'),
          'foo/Release/gen/sdk/posix_x86/nacl_x86_glibc/x86_64-nacl/lib'),
-        # Bionic uses the newlib toolchain lib directory
-        (('bionic', 'arm'),
-         'foo/Release/gen/sdk/posix_x86/nacl_arm_newlib/arm-nacl/lib'),
+        (('glibc_arm', 'arm'),
+         'foo/Release/gen/sdk/posix_x86/nacl_arm_glibc/arm-nacl/lib'),
         (('pnacl', None),
          'foo/Release/gen/sdk/posix_x86/pnacl_newlib/le32-nacl/lib'),
     ]
 
-    for test in tests:
+    for tc_info, expected in tests:
       self.assertEqual(
-        build_artifacts.GetGypToolchainLib('foo', test[0][0], test[0][1]),
-        test[1])
+        build_artifacts.GetGypToolchainLib('foo', tc_info[0], tc_info[1]),
+        expected)
 
   @patch('build_artifacts.all_archives', ['foo.tar.bz2', 'bar.tar.bz2'])
   @patch('build_version.ChromeMajorVersion', Mock(return_value='40'))

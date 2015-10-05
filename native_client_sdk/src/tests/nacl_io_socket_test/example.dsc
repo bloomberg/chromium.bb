@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'linux', 'mac'],
+  'TOOLS': ['clang-newlib', 'glibc', 'pnacl', 'linux', 'mac'],
   'TARGETS': [
     {
       'NAME' : 'nacl_io_socket_test',

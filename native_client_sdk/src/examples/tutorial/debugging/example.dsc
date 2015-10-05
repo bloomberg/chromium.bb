@@ -1,6 +1,6 @@
 {
   'DISABLE_PACKAGE': True,  # Doesn't work in packaged apps yet.
-  'TOOLS': ['newlib'],
+  'TOOLS': ['clang-newlib'],
   'TARGETS': [
     {
       'NAME' : 'debugging',

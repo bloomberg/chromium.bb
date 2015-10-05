@@ -10,14 +10,14 @@
 #
 # Toolchain
 #
-# By default the VALID_TOOLCHAINS list contains pnacl, newlib and glibc.  If
-# your project only builds in one or the other then this should be overridden
+# By default the VALID_TOOLCHAINS list contains pnacl, clang-newlib and glibc.
+# If your project only builds in one or the other then this should be overridden
 # accordingly.
 #
 ifneq ($(ENABLE_BIONIC),)
-ALL_TOOLCHAINS ?= pnacl newlib glibc clang-newlib bionic
+ALL_TOOLCHAINS ?= pnacl glibc clang-newlib bionic
 else
-ALL_TOOLCHAINS ?= pnacl newlib glibc clang-newlib
+ALL_TOOLCHAINS ?= pnacl glibc clang-newlib
 endif
 
 VALID_TOOLCHAINS ?= $(ALL_TOOLCHAINS)
@@ -428,7 +428,7 @@ ifneq (,$(findstring $(TOOLCHAIN),win))
 include $(NACL_SDK_ROOT)/tools/host_vc.mk
 endif
 
-ifneq (,$(findstring $(TOOLCHAIN),glibc newlib bionic clang-newlib))
+ifneq (,$(findstring $(TOOLCHAIN),glibc bionic clang-newlib))
 include $(NACL_SDK_ROOT)/tools/nacl_gcc.mk
 endif
 

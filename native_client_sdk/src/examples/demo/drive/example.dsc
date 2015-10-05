@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['clang-newlib', 'glibc', 'pnacl'],
   'TARGETS': [
     {
       'NAME' : 'drive',

@@ -53,10 +53,8 @@ all_archives = []
 # Mapping from toolchain name to the equivalent package_version.py directory
 # name.
 TOOLCHAIN_PACKAGE_MAP = {
-    'newlib': 'nacl_x86_newlib',
-    'bionic': 'nacl_arm_bionic',
-    'arm': 'nacl_arm_newlib',
-    'glibc': 'nacl_x86_glibc',
+    'glibc_x86': 'nacl_x86_glibc',
+    'glibc_arm': 'nacl_arm_glibc',
     'pnacl': 'pnacl_newlib'}
 
 
@@ -330,6 +328,8 @@ def GetToolchainNaClLib(tcname, tcpath, xarch):
 def GetGypBuiltLib(root, tcname, xarch=None):
   if tcname == 'pnacl':
     tcname = 'pnacl_newlib'
+  if tcname in ('glibc_arm', 'glibc_x86'):
+    tcname = 'glibc'
   if xarch == 'x86_32':
     xarch = '32'
   elif xarch == 'x86_64':
@@ -340,13 +340,8 @@ def GetGypBuiltLib(root, tcname, xarch=None):
 
 
 def GetGypToolchainLib(root, tcname, xarch):
-  if xarch == 'arm':
-    toolchain = xarch
-  else:
-    toolchain = tcname
-
   tcpath = os.path.join(root, 'Release', 'gen', 'sdk', '%s_x86' % PLATFORM,
-                        TOOLCHAIN_PACKAGE_MAP[toolchain])
+                        TOOLCHAIN_PACKAGE_MAP[tcname])
   return GetToolchainNaClLib(tcname, tcpath, xarch)
 
 
@@ -402,21 +397,6 @@ def MakeGypArchives():
     archive.Copy(join(tmpdir, 'Release'), breakpad_targets)
   archive.Tar()
 
-  # newlib x86 libs archives
-  for arch in ('x86_32', 'x86_64'):
-    archive = Archive('newlib_%s_libs' % arch)
-    archive.Copy(GetGypBuiltLib(tmpdir, 'newlib', arch),
-                      GetNewlibToolchainLibs())
-    archive.Copy(GetGypToolchainLib(tmpdir, 'newlib', arch), 'crt1.o')
-    archive.Tar()
-
-  # newlib arm libs archive
-  archive = Archive('newlib_arm_libs')
-  archive.Copy(GetGypBuiltLib(tmpdir_arm, 'newlib', 'arm'),
-                    GetNewlibToolchainLibs())
-  archive.Copy(GetGypToolchainLib(tmpdir_arm, 'newlib', 'arm'), 'crt1.o')
-  archive.Tar()
-
   # glibc x86 libs archives
   for arch in ('x86_32', 'x86_64'):
     archive = Archive('glibc_%s_libs' % arch)
@@ -428,14 +408,6 @@ def MakeGypArchives():
   archive = Archive('pnacl_libs')
   archive.Copy(GetGypBuiltLib(tmpdir, 'pnacl'), GetPNaClToolchainLibs())
   archive.Tar()
-
-  if PLATFORM == 'linux':
-    # bionic arm libs archive (use newlib-built files)
-    archive = Archive('bionic_arm_libs')
-    archive.Copy(GetGypBuiltLib(tmpdir_arm, 'newlib', 'arm'),
-                      GetBionicToolchainLibs())
-    archive.Copy(GetGypToolchainLib(tmpdir_arm, 'newlib', 'arm'), 'crt1.o')
-    archive.Tar()
 
   # Destroy the temporary directories
   tmpdir_obj.Destroy()
@@ -511,11 +483,6 @@ def MakeToolchainHeaderArchives():
   archive.Copy(SRC_DIR, GetGlibcHeaders())
   archive.Tar()
 
-  if PLATFORM == 'linux':
-    archive = Archive('bionic_headers')
-    archive.Copy(SRC_DIR, GetBionicHeaders())
-    archive.Tar()
-
 
 def MakePepperArchive():
   archive = Archive('ppapi')
@@ -567,9 +534,7 @@ def main(args):
   global options
   options = parser.parse_args(args)
 
-  toolchains = ['pnacl', 'newlib', 'glibc', 'arm']
-  if PLATFORM == 'linux':
-    toolchains.append('bionic')
+  toolchains = ['pnacl', 'glibc_x86', 'glibc_arm']
 
   MakeVersionJson()
   for tc in toolchains:

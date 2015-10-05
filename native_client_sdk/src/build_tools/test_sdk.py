@@ -126,7 +126,7 @@ def StepRunSelLdrTests(pepperdir, sanitizer):
       if sanitizer:
         continue
 
-      for toolchain in ('clang-newlib', 'newlib', 'glibc', 'pnacl'):
+      for toolchain in ('clang-newlib', 'glibc', 'pnacl'):
         for arch in archs:
           # TODO(sbc): Remove this once we get elf_loader.nexe added to the SDK
           if toolchain == 'glibc' and arch == 'arm':
@@ -184,7 +184,7 @@ def main(args):
 
   pepper_ver = str(int(build_version.ChromeMajorVersion()))
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
-  toolchains = ['clang-newlib', 'newlib', 'glibc', 'pnacl']
+  toolchains = ['clang-newlib', 'glibc', 'pnacl']
   toolchains.append(getos.GetPlatform())
 
   if options.verbose:

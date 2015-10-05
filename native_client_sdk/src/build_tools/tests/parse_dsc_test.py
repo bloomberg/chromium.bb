@@ -19,7 +19,7 @@ import generate_make
 import parse_dsc
 
 BASIC_DESC = {
-  'TOOLS': ['newlib', 'glibc'],
+  'TOOLS': ['clang-newlib', 'glibc'],
   'TARGETS': [
     {
       'NAME' : 'hello_world',
@@ -68,17 +68,17 @@ class TestValidateFormat(unittest.TestCase):
 
   def testBadValue(self):
     testdesc = copy.deepcopy(BASIC_DESC)
-    testdesc['TOOLS'] = ['newlib', 'glibc', 'badtool']
+    testdesc['TOOLS'] = ['clang-newlib', 'glibc', 'badtool']
     self._validate(testdesc, 'Value badtool not expected in TOOLS.')
 
   def testExpectStr(self):
     testdesc = copy.deepcopy(BASIC_DESC)
-    testdesc['TOOLS'] = ['newlib', True, 'glibc']
+    testdesc['TOOLS'] = ['clang-newlib', True, 'glibc']
     self._validate(testdesc, 'Value True not expected in TOOLS.')
 
   def testExpectList(self):
     testdesc = copy.deepcopy(BASIC_DESC)
-    testdesc['TOOLS'] = 'newlib'
+    testdesc['TOOLS'] = 'clang-newlib'
     self._validate(testdesc, 'Key TOOLS expects LIST not STR.')
 
 # TODO(bradnelson):  Add test which generates a real make and runs it.

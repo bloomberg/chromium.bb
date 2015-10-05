@@ -65,9 +65,7 @@ options = None
 
 # Map of: ToolchainName: (PackageName, SDKDir, arch).
 TOOLCHAIN_PACKAGE_MAP = {
-    'arm_newlib': ('nacl_arm_newlib', '%(platform)s_arm_newlib', 'arm'),
     'arm_glibc': ('nacl_arm_glibc', '%(platform)s_arm_glibc', 'arm'),
-    'x86_newlib': ('nacl_x86_newlib', '%(platform)s_x86_newlib', 'x86'),
     'x86_glibc': ('nacl_x86_glibc', '%(platform)s_x86_glibc', 'x86'),
     'arm_bionic': ('nacl_arm_bionic', '%(platform)s_arm_bionic', 'arm'),
     'pnacl': ('pnacl_newlib', '%(platform)s_pnacl', 'pnacl')
@@ -452,7 +450,7 @@ def GypNinjaInstall(pepperdir, toolchains):
       xarches = (None, 'ia32', 'x64', 'arm')
     elif tc in ('x86_glibc', 'x86_newlib'):
       xarches = ('ia32', 'x64')
-    elif tc in ('arm_glibc', 'arm_newlib', 'arm_bionic'):
+    elif tc in ('arm_glibc', 'arm_bionic'):
       xarches = ('arm',)
     else:
       raise AssertionError('unexpected toolchain value: %s' % tc)
@@ -597,7 +595,7 @@ def BuildStepBuildToolchains(pepperdir, toolchains, build, clean):
       GypNinjaBuild_PPAPI('x64', GYPBUILD_DIR + '-x64',
                           ['use_nacl_clang=0'])
 
-    if set(toolchains) & set(['arm_glibc', 'arm_newlib']):
+    if 'arm_glibc' in toolchains:
       GypNinjaBuild_PPAPI('arm', GYPBUILD_DIR + '-arm',
                           ['use_nacl_clang=0'] )
 
@@ -953,8 +951,7 @@ def main(args):
 
   # NOTE: order matters here. This will be the order that is specified in the
   # Makefiles; the first toolchain will be the default.
-  toolchains = ['pnacl', 'x86_newlib', 'x86_glibc', 'arm_newlib', 'arm_glibc',
-                'clang-newlib', 'host']
+  toolchains = ['pnacl', 'x86_glibc', 'arm_glibc', 'clang-newlib', 'host']
 
   # Changes for experimental bionic builder
   if options.bionic:
