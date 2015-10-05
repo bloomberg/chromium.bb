@@ -35,6 +35,7 @@ group("all_components") {
     "//components/leveldb_proto",
     "//components/pref_registry",
     "//components/omnibox/browser",
+    "//components/infobars/core",
   ]
 
   if (!is_ios) {
@@ -78,7 +79,6 @@ group("all_components") {
       "//components/history/core/browser",
       "//components/history/core/common",
       "//components/history/core/test",
-      "//components/infobars/core",
       "//components/invalidation/impl",
       "//components/json_schema",
       "//components/keyed_service/content",
