@@ -162,7 +162,7 @@ def run_command(command, cwd, tmp_dir, hard_timeout, grace_period):
         if proc and not had_signal:
           logging.info('Received signal %d', signum)
           had_signal.append(True)
-          raise subprocess42.TimeoutExpired()
+          raise subprocess42.TimeoutExpired(command, None)
 
       proc = subprocess42.Popen(command, cwd=cwd, env=env, detached=True)
       with subprocess42.set_signal_handler(subprocess42.STOP_SIGNALS, handler):
