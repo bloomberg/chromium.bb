@@ -23,7 +23,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.Callable;
 
 /**
  * Test suite for the bookmarks sync data type.
@@ -348,29 +348,27 @@ public class BookmarksTest extends SyncTestBase {
     }
 
     private BookmarkId addClientBookmark(final String title, final String url) {
-        final AtomicReference<BookmarkId> id = new AtomicReference<BookmarkId>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+        BookmarkId id = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<BookmarkId>() {
             @Override
-            public void run() {
+            public BookmarkId call() throws Exception {
                 BookmarkId parentId = mBookmarksBridge.getMobileFolderId();
-                id.set(mBookmarksBridge.addBookmark(parentId, 0, title, url));
+                return mBookmarksBridge.addBookmark(parentId, 0, title, url);
             }
         });
-        assertNotNull("Failed to create bookmark.", id.get());
-        return id.get();
+        assertNotNull("Failed to create bookmark.", id);
+        return id;
     }
 
     private BookmarkId addClientBookmarkFolder(final String title) {
-        final AtomicReference<BookmarkId> id = new AtomicReference<BookmarkId>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+        BookmarkId id = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<BookmarkId>() {
             @Override
-            public void run() {
+            public BookmarkId call() throws Exception {
                 BookmarkId parentId = mBookmarksBridge.getMobileFolderId();
-                id.set(mBookmarksBridge.addFolder(parentId, 0, title));
+                return mBookmarksBridge.addFolder(parentId, 0, title);
             }
         });
-        assertNotNull("Failed to create bookmark folder.", id.get());
-        return id.get();
+        assertNotNull("Failed to create bookmark folder.", id);
+        return id;
     }
 
     private void addServerBookmark(String title, String url) throws InterruptedException {

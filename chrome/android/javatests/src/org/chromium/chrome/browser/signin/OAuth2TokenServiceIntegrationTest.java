@@ -21,7 +21,7 @@ import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.AccountHolder;
 import org.chromium.sync.test.util.MockAccountManager;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.Callable;
 
 /**
  * Integration test for the OAuth2TokenService.
@@ -124,15 +124,12 @@ public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
      * @return the OAuth2TokenService.
      */
     private static OAuth2TokenService getOAuth2TokenServiceOnUiThread() {
-        final AtomicReference<OAuth2TokenService> service =
-                new AtomicReference<OAuth2TokenService>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<OAuth2TokenService>() {
             @Override
-            public void run() {
-                service.set(OAuth2TokenService.getForProfile(Profile.getLastUsedProfile()));
+            public OAuth2TokenService call() throws Exception {
+                return OAuth2TokenService.getForProfile(Profile.getLastUsedProfile());
             }
         });
-        return service.get();
     }
 
     private void addObserver(final TestObserver observer) {

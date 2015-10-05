@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -53,14 +52,12 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
             throws InterruptedException, ExecutionException {
         waitForTemplateUrlServiceToLoad();
 
-        final AtomicBoolean loadedResult = new AtomicBoolean();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+        assertTrue(ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public void run() {
-                loadedResult.set(TemplateUrlService.getInstance().isLoaded());
+            public Boolean call() throws Exception {
+                return TemplateUrlService.getInstance().isLoaded();
             }
-        });
-        assertTrue(loadedResult.get());
+        }));
 
         validateQuery(QUERY_VALUE, ALTERNATIVE_VALUE, true);
         validateQuery(QUERY_VALUE, ALTERNATIVE_VALUE, false);
@@ -92,41 +89,37 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"SearchEngines"})
     public void testLoadUrlService() throws InterruptedException {
-        final AtomicBoolean loadedResult = new AtomicBoolean();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+        assertFalse(ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public void run() {
-                loadedResult.set(TemplateUrlService.getInstance().isLoaded());
+            public Boolean call() throws Exception {
+                return TemplateUrlService.getInstance().isLoaded();
             }
-        });
-        assertFalse(loadedResult.get());
+        }));
 
         waitForTemplateUrlServiceToLoad();
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+        assertTrue(ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public void run() {
-                loadedResult.set(TemplateUrlService.getInstance().isLoaded());
-
+            public Boolean call() throws Exception {
+                return TemplateUrlService.getInstance().isLoaded();
             }
-        });
-        assertTrue(loadedResult.get());
+        }));
     }
 
     @SmallTest
     @Feature({"SearchEngines"})
     public void testSetAndGetSearchEngine() throws InterruptedException {
         final TemplateUrlService templateUrlService = waitForTemplateUrlServiceToLoad();
-        final AtomicInteger searchEngineIndex = new AtomicInteger();
 
         // Ensure known state of default search index before running test.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                searchEngineIndex.set(templateUrlService.getDefaultSearchEngineIndex());
-            }
-        });
-        assertEquals(0, searchEngineIndex.get());
+        int searchEngineIndex = ThreadUtils.runOnUiThreadBlockingNoException(
+                new Callable<Integer>() {
+                    @Override
+                    public Integer call() throws Exception {
+                        return templateUrlService.getDefaultSearchEngineIndex();
+                    }
+                });
+        assertEquals(0, searchEngineIndex);
 
         // Set search engine index and verified it stuck.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -137,10 +130,16 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
                 assertTrue("There must be more than one search engine to change searchEngines",
                         searchEngines.size() > 1);
                 templateUrlService.setSearchEngine(1);
-                searchEngineIndex.set(templateUrlService.getDefaultSearchEngineIndex());
             }
         });
-        assertEquals(1, searchEngineIndex.get());
+        searchEngineIndex = ThreadUtils.runOnUiThreadBlockingNoException(
+                new Callable<Integer>() {
+                    @Override
+                    public Integer call() throws Exception {
+                        return templateUrlService.getDefaultSearchEngineIndex();
+                    }
+                });
+        assertEquals(1, searchEngineIndex);
     }
 
     private TemplateUrlService waitForTemplateUrlServiceToLoad() throws InterruptedException {

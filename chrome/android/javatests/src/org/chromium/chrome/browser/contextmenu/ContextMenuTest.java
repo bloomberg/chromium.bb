@@ -14,6 +14,7 @@ import android.view.KeyEvent;
 
 import junit.framework.Assert;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -32,8 +33,8 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPage
 import org.chromium.content.browser.test.util.TestTouchUtils;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Context menu related tests
@@ -123,15 +124,14 @@ public class ContextMenuTest extends DownloadTestBase {
         String expectedUrl = TestHttpServerClient.getUrl(
                 "chrome/test/data/android/contextmenu/test_image.png");
 
-        final AtomicReference<String> actualUrl = new AtomicReference<String>();
-        getInstrumentation().runOnMainSync(new Runnable() {
+        String actualUrl = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
             @Override
-            public void run() {
-                actualUrl.set(tab.getUrl());
+            public String call() throws Exception {
+                return tab.getUrl();
             }
         });
 
-        assertEquals("Failed to navigate to the image", expectedUrl, actualUrl.get());
+        assertEquals("Failed to navigate to the image", expectedUrl, actualUrl);
     }
 
     @MediumTest
@@ -150,15 +150,14 @@ public class ContextMenuTest extends DownloadTestBase {
 
         callback.waitForCallback(callbackCount);
 
-        final AtomicReference<String> actualTitle = new AtomicReference<String>();
-        getInstrumentation().runOnMainSync(new Runnable() {
+        String actualTitle = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
             @Override
-            public void run() {
-                actualTitle.set(tab.getTitle());
+            public String call() throws Exception {
+                return tab.getTitle();
             }
         });
 
-        assertTrue("Navigated to the wrong page.", actualTitle.get().startsWith("test_image.png"));
+        assertTrue("Navigated to the wrong page.", actualTitle.startsWith("test_image.png"));
     }
 
     @MediumTest
