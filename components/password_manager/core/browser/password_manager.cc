@@ -470,8 +470,7 @@ void PasswordManager::CreatePendingLoginManagers(
         continue;
       }
       old_manager_found = true;
-      if (old_manager->HasCompletedMatching())
-        old_manager->ProcessFrame(driver->AsWeakPtr());
+      old_manager->ProcessFrame(driver->AsWeakPtr());
       break;
     }
     if (old_manager_found)
