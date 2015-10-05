@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 group("blimp") {
+  # TODO(maniscalco): Remove the testonly attribute once blimp_engine no longer
+  # depends on content_shell (crbug.com/538353).
+  testonly = true
   deps = [
     "//blimp/client:blimp_client",
     "//blimp/common:blimp_common",
@@ -10,6 +13,10 @@ group("blimp") {
 
   if (is_android) {
     deps += [ "//blimp/client:blimp_apk" ]
+  }
+
+  if (is_linux) {
+    deps += [ "//blimp/engine:blimp_engine" ]
   }
 }
 

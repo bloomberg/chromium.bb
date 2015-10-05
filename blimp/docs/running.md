@@ -30,3 +30,7 @@ adb_run_blimp_client
 ### Linux Client
 
 TBD
+
+## Running the engine
+
+For running the engine in a container, see [container](docs/container.md).
