@@ -2015,3 +2015,10 @@ webcore_shared.dll!blink::ScriptController::callFunction
 ...
 webcore_shared.dll!blink::LocalDOMWindow::dispatchEvent
 
+UNINITIALIZED READ
+name=bug_519041_a
+ntdll.dll!RtlSetLastWin32ErrorAndNtStatusFromNtStatus
+
+UNINITIALIZED READ
+name=bug_519041_b
+ntdll.dll!RtlDecodePointer
