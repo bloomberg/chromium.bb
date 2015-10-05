@@ -26,6 +26,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/image_util.h"
+#include "extensions/common/permissions/permission_message_provider.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 
@@ -284,7 +286,8 @@ void ExtensionSyncService::ApplySyncData(
   // Extension from sync was uninstalled by the user as an external extension.
   // Honor user choice and skip installation/enabling.
   // TODO(treib): Should we still apply pref changes?
-  if (ExtensionPrefs::Get(profile_)->IsExternalExtensionUninstalled(id)) {
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
+  if (extension_prefs->IsExternalExtensionUninstalled(id)) {
     LOG(WARNING) << "Extension with id " << id
                  << " from sync was uninstalled as external extension";
     return;
@@ -297,19 +300,33 @@ void ExtensionSyncService::ApplySyncData(
   if (extension_sync_data.enabled()) {
     DCHECK(!extension_sync_data.disable_reasons());
 
-    // Only grant permissions if the sync data explicitly sets the disable
-    // reasons to Extension::DISABLE_NONE (as opposed to the legacy (<M45) case
-    // where they're not set at all), and if the version from sync matches our
-    // local one. Otherwise we just enable it without granting permissions. If
-    // any permissions are missing, CheckPermissionsIncrease will soon disable
-    // it again.
-    bool grant_permissions =
-        extension_sync_data.supports_disable_reasons() &&
-        extension && (version_compare_result == 0);
-    if (grant_permissions)
-      extension_service()->GrantPermissionsAndEnableExtension(extension);
-    else
+    if (extension) {
+      // Only grant permissions if the sync data explicitly sets the disable
+      // reasons to Extension::DISABLE_NONE (as opposed to the legacy (<M45)
+      // case where they're not set at all), and if the version from sync
+      // matches our local one.
+      bool grant_permissions = extension_sync_data.supports_disable_reasons() &&
+                               (version_compare_result == 0);
+      if (grant_permissions) {
+        extension_service()->GrantPermissionsAndEnableExtension(extension);
+      } else {
+        // Only enable if the extension already has all required permissions.
+        scoped_ptr<const extensions::PermissionSet> granted_permissions =
+            extension_prefs->GetGrantedPermissions(extension->id());
+        DCHECK(granted_permissions.get());
+        bool is_privilege_increase =
+            extensions::PermissionMessageProvider::Get()->IsPrivilegeIncrease(
+                *granted_permissions,
+                extension->permissions_data()->active_permissions(),
+                extension->GetType());
+        if (!is_privilege_increase)
+          extension_service()->EnableExtension(id);
+      }
+    } else {
+      // The extension is not installed yet. Set it to enabled; we'll check for
+      // permission increase when it's actually installed.
       extension_service()->EnableExtension(id);
+    }
   } else {
     int disable_reasons = extension_sync_data.disable_reasons();
     if (extension_sync_data.remote_install()) {
@@ -328,7 +345,7 @@ void ExtensionSyncService::ApplySyncData(
     // In the non-legacy case (>=M45), clear any existing disable reasons first.
     // Otherwise sync can't remove just some of them.
     if (extension_sync_data.supports_disable_reasons())
-      ExtensionPrefs::Get(profile_)->ClearDisableReasons(id);
+      extension_prefs->ClearDisableReasons(id);
 
     extension_service()->DisableExtension(id, disable_reasons);
   }

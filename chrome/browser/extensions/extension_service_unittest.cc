@@ -6927,21 +6927,22 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataPermissionApproval) {
     const std::string& sync_version;  // The version coming in from Sync.
     // The disable reason(s) coming in from Sync, or -1 for "not set".
     int sync_disable_reasons;
+    // The expected set of disable reasons after processing the Sync update. The
+    // extension should be enabled iff this is 0.
+    int expect_disable_reasons;
     // Whether the extension's permissions should be auto-granted.
     bool expect_permissions_granted;
   } test_cases[] = {
     // Sync tells us to re-enable an older version. No permissions should be
     // granted, since we can't be sure if the user actually approved the right
-    // set of permissions. Note that the extension will get disabled again the
-    // next time ExtensionService::CheckPermissionsIncrease runs because of the
-    // extra permissions.
-    { "OldVersion", v1, 0, false },
+    // set of permissions.
+    { "OldVersion", v1, 0, Extension::DISABLE_PERMISSIONS_INCREASE, false },
     // Legacy case: Sync tells us to re-enable the extension, but doesn't
     // specify disable reasons. No permissions should be granted.
-    { "Legacy", v2, -1, false },
+    { "Legacy", v2, -1, Extension::DISABLE_PERMISSIONS_INCREASE, false },
     // Sync tells us to re-enable the extension and explicitly removes the
     // disable reasons. Now the extension should have its permissions granted.
-    { "GrantPermissions", v2, 0, true },
+    { "GrantPermissions", v2, 0, Extension::DISABLE_NONE, true },
   };
 
   for (const TestCase& test_case : test_cases) {
@@ -6998,7 +6999,9 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataPermissionApproval) {
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
 
     // Check expectations.
-    EXPECT_TRUE(registry()->GetExtensionById(id, ExtensionRegistry::ENABLED));
+    const bool expect_enabled = !test_case.expect_disable_reasons;
+    EXPECT_EQ(expect_enabled, service()->IsExtensionEnabled(id));
+    EXPECT_EQ(test_case.expect_disable_reasons, prefs->GetDisableReasons(id));
     scoped_ptr<const PermissionSet> granted_permissions =
         prefs->GetGrantedPermissions(id);
     if (test_case.expect_permissions_granted) {
@@ -7008,10 +7011,10 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataPermissionApproval) {
     } else {
       EXPECT_EQ(*granted_permissions, *granted_permissions_v1);
     }
-    EXPECT_EQ(Extension::DISABLE_NONE, prefs->GetDisableReasons(id));
 
     // Remove the extension again, so we can install it again for the next case.
-    UninstallExtension(id, false);
+    UninstallExtension(id, false, expect_enabled ? Extension::ENABLED
+                                                 : Extension::DISABLED);
   }
 }
 
@@ -7180,7 +7183,8 @@ TEST_P(ExtensionServiceTestSupervisedUserPermissionIncrease,
   std::string old_version = extension->VersionString();
 
   // Update to a new version with increased permissions.
-  EXPECT_CALL(*creator, CreateExtensionUpdateRequest(id + ":2", testing::_))
+  EXPECT_CALL(*creator,
+              CreateExtensionUpdateRequest(id + ":2", testing::_))
       .Times(need_custodian_approval ? 1 : 0);
   path = base_path.AppendASCII("v2");
   PackCRXAndUpdateExtension(id, path, pem_path, DISABLED);
