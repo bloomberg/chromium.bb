@@ -186,7 +186,8 @@ Status WaitForDevToolsAndCheckVersion(
     device_metrics.reset(new DeviceMetrics(*capabilities->device_metrics));
 
   scoped_ptr<DevToolsHttpClient> client(new DevToolsHttpClient(
-      address, context_getter, socket_factory, device_metrics.Pass()));
+      address, context_getter, socket_factory, device_metrics.Pass(),
+      capabilities->window_types));
   base::TimeTicks deadline =
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(60);
   Status status = client->Init(deadline - base::TimeTicks::Now());

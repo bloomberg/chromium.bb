@@ -52,8 +52,7 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
   // Check for newly-opened web views.
   for (size_t i = 0; i < views_info.GetSize(); ++i) {
     const WebViewInfo& view = views_info.Get(i);
-    if (view.type == WebViewInfo::kPage ||
-        view.type == WebViewInfo::kApp ||
+    if (devtools_http_client_->IsBrowserWindow(view.type) ||
         (view.type == WebViewInfo::kOther &&
          (view.url.find("chrome-extension://") == 0 ||
           view.url == "chrome://print/" ||

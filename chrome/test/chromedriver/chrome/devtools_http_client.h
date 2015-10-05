@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_DEVTOOLS_HTTP_CLIENT_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_DEVTOOLS_HTTP_CLIENT_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -69,7 +70,8 @@ class DevToolsHttpClient {
       const NetAddress& address,
       scoped_refptr<URLRequestContextGetter> context_getter,
       const SyncWebSocketFactory& socket_factory,
-      scoped_ptr<DeviceMetrics> device_metrics);
+      scoped_ptr<DeviceMetrics> device_metrics,
+      const std::set<WebViewInfo::Type>& window_types);
   ~DevToolsHttpClient();
 
   Status Init(const base::TimeDelta& timeout);
@@ -84,6 +86,7 @@ class DevToolsHttpClient {
 
   const BrowserInfo* browser_info();
   const DeviceMetrics* device_metrics();
+  bool IsBrowserWindow(WebViewInfo::Type window_type) const;
 
  private:
   Status CloseFrontends(const std::string& for_client_id);
@@ -97,13 +100,15 @@ class DevToolsHttpClient {
   std::string web_socket_url_prefix_;
   BrowserInfo browser_info_;
   scoped_ptr<DeviceMetrics> device_metrics_;
+  std::set<WebViewInfo::Type> window_types_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpClient);
 };
 
+Status ParseType(const std::string& data, WebViewInfo::Type* type);
+
 namespace internal {
 Status ParseWebViewsInfo(const std::string& data, WebViewsInfo* views_info);
-Status ParseType(const std::string& data, WebViewInfo::Type* type);
 }  // namespace internal
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_DEVTOOLS_HTTP_CLIENT_H_

@@ -375,6 +375,26 @@ Status ParsePerfLoggingPrefs(const base::Value& option,
   return Status(kOk);
 }
 
+Status ParseWindowTypes(const base::Value& option, Capabilities* capabilities) {
+  const base::ListValue* window_types = NULL;
+  if (!option.GetAsList(&window_types))
+    return Status(kUnknownError, "must be a list");
+  std::set<WebViewInfo::Type> window_types_tmp;
+  for (size_t i = 0; i < window_types->GetSize(); ++i) {
+    std::string window_type;
+    if (!window_types->GetString(i, &window_type)) {
+      return Status(kUnknownError, "each window type must be a string");
+    }
+    WebViewInfo::Type type;
+    Status status = ParseType(window_type, &type);
+    if (status.IsError())
+      return status;
+    window_types_tmp.insert(type);
+  }
+  capabilities->window_types.swap(window_types_tmp);
+  return Status(kOk);
+}
+
 Status ParseChromeOptions(
     const base::Value& capability,
     Capabilities* capabilities) {
@@ -393,6 +413,7 @@ Status ParseChromeOptions(
   parser_map["extensions"] = base::Bind(&IgnoreCapability);
 
   parser_map["perfLoggingPrefs"] = base::Bind(&ParsePerfLoggingPrefs);
+  parser_map["windowTypes"] = base::Bind(&ParseWindowTypes);
 
   if (is_android) {
     parser_map["androidActivity"] =

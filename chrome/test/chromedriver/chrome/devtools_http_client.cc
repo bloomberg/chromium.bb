@@ -58,13 +58,18 @@ DevToolsHttpClient::DevToolsHttpClient(
     const NetAddress& address,
     scoped_refptr<URLRequestContextGetter> context_getter,
     const SyncWebSocketFactory& socket_factory,
-    scoped_ptr<DeviceMetrics> device_metrics)
+    scoped_ptr<DeviceMetrics> device_metrics,
+    const std::set<WebViewInfo::Type>& window_types)
     : context_getter_(context_getter),
       socket_factory_(socket_factory),
       server_url_("http://" + address.ToString()),
       web_socket_url_prefix_(base::StringPrintf(
           "ws://%s/devtools/page/", address.ToString().c_str())),
-      device_metrics_(device_metrics.Pass()) {}
+      device_metrics_(device_metrics.Pass()),
+      window_types_(window_types) {
+  window_types_.insert(WebViewInfo::kPage);
+  window_types_.insert(WebViewInfo::kApp);
+}
 
 DevToolsHttpClient::~DevToolsHttpClient() {}
 
@@ -139,6 +144,10 @@ const BrowserInfo* DevToolsHttpClient::browser_info() {
 
 const DeviceMetrics* DevToolsHttpClient::device_metrics() {
   return device_metrics_.get();
+}
+
+bool DevToolsHttpClient::IsBrowserWindow(WebViewInfo::Type window_type) const {
+  return window_types_.find(window_type) != window_types_.end();
 }
 
 Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
@@ -229,6 +238,29 @@ bool DevToolsHttpClient::FetchUrlAndLog(const std::string& url,
   return ok;
 }
 
+Status ParseType(const std::string& type_as_string, WebViewInfo::Type* type) {
+  if (type_as_string == "app")
+    *type = WebViewInfo::kApp;
+  else if (type_as_string == "background_page")
+    *type = WebViewInfo::kBackgroundPage;
+  else if (type_as_string == "page")
+    *type = WebViewInfo::kPage;
+  else if (type_as_string == "worker")
+    *type = WebViewInfo::kWorker;
+  else if (type_as_string == "webview")
+    *type = WebViewInfo::kWebView;
+  else if (type_as_string == "iframe")
+    *type = WebViewInfo::kIFrame;
+  else if (type_as_string == "other")
+    *type = WebViewInfo::kOther;
+  else if (type_as_string == "service_worker")
+    *type = WebViewInfo::kServiceWorker;
+  else
+    return Status(kUnknownError,
+                  "DevTools returned unknown type:" + type_as_string);
+  return Status(kOk);
+}
+
 namespace internal {
 
 Status ParseWebViewsInfo(const std::string& data, WebViewsInfo* views_info) {
@@ -262,29 +294,6 @@ Status ParseWebViewsInfo(const std::string& data, WebViewsInfo* views_info) {
     temp_views_info.push_back(WebViewInfo(id, debugger_url, url, type));
   }
   *views_info = WebViewsInfo(temp_views_info);
-  return Status(kOk);
-}
-
-Status ParseType(const std::string& type_as_string, WebViewInfo::Type* type) {
-  if (type_as_string == "app")
-    *type = WebViewInfo::kApp;
-  else if (type_as_string == "background_page")
-    *type = WebViewInfo::kBackgroundPage;
-  else if (type_as_string == "page")
-    *type = WebViewInfo::kPage;
-  else if (type_as_string == "worker")
-    *type = WebViewInfo::kWorker;
-  else if (type_as_string == "webview")
-    *type = WebViewInfo::kWebView;
-  else if (type_as_string == "iframe")
-    *type = WebViewInfo::kIFrame;
-  else if (type_as_string == "other")
-    *type = WebViewInfo::kOther;
-  else if (type_as_string == "service_worker")
-    *type = WebViewInfo::kServiceWorker;
-  else
-    return Status(kUnknownError,
-                  "DevTools returned unknown type:" + type_as_string);
   return Status(kOk);
 }
 
