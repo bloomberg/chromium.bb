@@ -1487,7 +1487,7 @@ crbug.com/521764 [ Win10 ] transitions/equivalent-background-image-no-transition
 crbug.com/505086 css3/filters/effect-blur-hw.html [ NeedsManualRebaseline ]
 crbug.com/505086 css3/filters/effect-brightness-clamping-hw.html [ NeedsManualRebaseline ]
 crbug.com/505086 css3/filters/effect-combined-hw.html [ NeedsManualRebaseline ]
-crbug.com/505086 css3/filters/effect-reference-zoom-hw.html [ NeedsManualRebaseline ]
+crbug.com/505086 css3/filters/effect-reference-zoom-hw.html [ Crash NeedsManualRebaseline ]
 
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
@@ -1581,11 +1581,9 @@ crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ 
 
 crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [ Slow Pass Failure ]
 
-crbug.com/538522 css3/filters/effect-reference-colorspace-hw.html [ ImageOnlyFailure ]
-crbug.com/539227 [ Linux Mac Win Debug ] css3/filters/effect-reference-colorspace-hw.html [ Crash ]
+crbug.com/538522 css3/filters/effect-reference-colorspace-hw.html [ Crash ImageOnlyFailure ]
 crbug.com/539227 [ Linux Mac Win Debug ] css3/filters/effect-reference-hw.html [ Crash ]
 crbug.com/539227 [ Linux Mac Win Debug ] css3/filters/effect-reference-subregion-hw.html [ Crash ]
-crbug.com/539227 [ Linux Mac Win Debug ] css3/filters/effect-reference-zoom-hw.html [ Crash ]
 
 crbug.com/524646 [ Yosemite ] fast/dom/shadow/shadowdom-for-button.html [ ImageOnlyFailure ]
 
