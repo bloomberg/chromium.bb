@@ -183,14 +183,13 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
       // Fill the prefetch cache as requested.
       std::vector<IndexedDBKey> keys;
       std::vector<IndexedDBKey> primary_keys(prefetch_count);
-      std::vector<WebData> values(prefetch_count);
-      std::vector<WebVector<WebBlobInfo> > blob_info;
+      std::vector<WebIDBValue> values(prefetch_count);
       for (int i = 0; i < prefetch_count; ++i) {
         keys.push_back(IndexedDBKey(expected_key + i, WebIDBKeyTypeNumber));
-        blob_info.push_back(
-            WebVector<WebBlobInfo>(static_cast<size_t>(expected_key + i)));
+        values[i].webBlobInfo =
+            WebVector<WebBlobInfo>(static_cast<size_t>(expected_key + i));
       }
-      cursor.SetPrefetchData(keys, primary_keys, values, blob_info);
+      cursor.SetPrefetchData(keys, primary_keys, values);
 
       // Note that the real dispatcher would call cursor->CachedContinue()
       // immediately after cursor->SetPrefetchData() to service the request
@@ -243,14 +242,13 @@ TEST_F(WebIDBCursorImplTest, AdvancePrefetchTest) {
   int expected_key = 0;
   std::vector<IndexedDBKey> keys;
   std::vector<IndexedDBKey> primary_keys(prefetch_count);
-  std::vector<WebData> values(prefetch_count);
-  std::vector<WebVector<WebBlobInfo> > blob_info;
+  std::vector<WebIDBValue> values(prefetch_count);
   for (int i = 0; i < prefetch_count; ++i) {
     keys.push_back(IndexedDBKey(expected_key + i, WebIDBKeyTypeNumber));
-    blob_info.push_back(
-        WebVector<WebBlobInfo>(static_cast<size_t>(expected_key + i)));
+    values[i].webBlobInfo =
+        WebVector<WebBlobInfo>(static_cast<size_t>(expected_key + i));
   }
-  cursor.SetPrefetchData(keys, primary_keys, values, blob_info);
+  cursor.SetPrefetchData(keys, primary_keys, values);
 
   // Note that the real dispatcher would call cursor->CachedContinue()
   // immediately after cursor->SetPrefetchData() to service the request
@@ -318,9 +316,8 @@ TEST_F(WebIDBCursorImplTest, PrefetchReset) {
   int prefetch_count = dispatcher_->last_prefetch_count();
   std::vector<IndexedDBKey> keys(prefetch_count);
   std::vector<IndexedDBKey> primary_keys(prefetch_count);
-  std::vector<WebData> values(prefetch_count);
-  std::vector<WebVector<WebBlobInfo> > blob_info(prefetch_count);
-  cursor.SetPrefetchData(keys, primary_keys, values, blob_info);
+  std::vector<WebIDBValue> values(prefetch_count);
+  cursor.SetPrefetchData(keys, primary_keys, values);
 
   // No reset should have been sent since prefetch data hasn't been used.
   EXPECT_EQ(0, dispatcher_->reset_calls());

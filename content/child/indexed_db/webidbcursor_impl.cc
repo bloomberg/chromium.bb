@@ -126,12 +126,10 @@ void WebIDBCursorImpl::postSuccessHandlerCallback() {
 void WebIDBCursorImpl::SetPrefetchData(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
-    const std::vector<WebData>& values,
-    const std::vector<blink::WebVector<blink::WebBlobInfo> >& blob_info) {
+    const std::vector<WebIDBValue>& values) {
   prefetch_keys_.assign(keys.begin(), keys.end());
   prefetch_primary_keys_.assign(primary_keys.begin(), primary_keys.end());
   prefetch_values_.assign(values.begin(), values.end());
-  prefetch_blob_info_.assign(blob_info.begin(), blob_info.end());
 
   used_prefetches_ = 0;
   pending_onsuccess_callbacks_ = 0;
@@ -142,13 +140,11 @@ void WebIDBCursorImpl::CachedAdvance(unsigned long count,
   DCHECK_GE(prefetch_keys_.size(), count);
   DCHECK_EQ(prefetch_primary_keys_.size(), prefetch_keys_.size());
   DCHECK_EQ(prefetch_values_.size(), prefetch_keys_.size());
-  DCHECK_EQ(prefetch_blob_info_.size(), prefetch_keys_.size());
 
   while (count > 1) {
     prefetch_keys_.pop_front();
     prefetch_primary_keys_.pop_front();
     prefetch_values_.pop_front();
-    prefetch_blob_info_.pop_front();
     ++used_prefetches_;
     --count;
   }
@@ -160,16 +156,14 @@ void WebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
   DCHECK_GT(prefetch_keys_.size(), 0ul);
   DCHECK_EQ(prefetch_primary_keys_.size(), prefetch_keys_.size());
   DCHECK_EQ(prefetch_values_.size(), prefetch_keys_.size());
-  DCHECK_EQ(prefetch_blob_info_.size(), prefetch_keys_.size());
 
   IndexedDBKey key = prefetch_keys_.front();
   IndexedDBKey primary_key = prefetch_primary_keys_.front();
-  WebIDBValue value(prefetch_values_.front(), prefetch_blob_info_.front());
+  WebIDBValue value = prefetch_values_.front();
 
   prefetch_keys_.pop_front();
   prefetch_primary_keys_.pop_front();
   prefetch_values_.pop_front();
-  prefetch_blob_info_.pop_front();
   ++used_prefetches_;
 
   ++pending_onsuccess_callbacks_;
@@ -197,9 +191,9 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
 
   // Ack any unused blobs.
   std::vector<std::string> uuids;
-  for (const auto& blobs : prefetch_blob_info_) {
-    for (size_t i = 0, size = blobs.size(); i < size; ++i)
-      uuids.push_back(blobs[i].uuid().latin1());
+  for (const auto& value : prefetch_values_) {
+    for (size_t i = 0, size = value.webBlobInfo.size(); i < size; ++i)
+      uuids.push_back(value.webBlobInfo[i].uuid().latin1());
   }
   if (!uuids.empty())
     thread_safe_sender_->Send(new IndexedDBHostMsg_AckReceivedBlobs(uuids));
@@ -214,7 +208,6 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
   prefetch_keys_.clear();
   prefetch_primary_keys_.clear();
   prefetch_values_.clear();
-  prefetch_blob_info_.clear();
 
   pending_onsuccess_callbacks_ = 0;
 }

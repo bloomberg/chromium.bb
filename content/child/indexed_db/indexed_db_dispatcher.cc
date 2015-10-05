@@ -576,32 +576,6 @@ static void PrepareReturnWebValue(const IndexedDBMsg_ReturnValue& value,
   web_value->keyPath = WebIDBKeyPathBuilder::Build(value.key_path);
 }
 
-static void PrepareWebValueAndBlobInfo(
-    const IndexedDBMsg_Value& value,
-    WebData* web_value,
-    blink::WebVector<WebBlobInfo>* web_blob_info) {
-  if (value.bits.empty())
-    return;
-
-  web_value->assign(&*value.bits.begin(), value.bits.size());
-  blink::WebVector<WebBlobInfo> local_blob_info(value.blob_or_file_info.size());
-  for (size_t i = 0; i < value.blob_or_file_info.size(); ++i) {
-    const IndexedDBMsg_BlobOrFileInfo& info = value.blob_or_file_info[i];
-    if (info.is_file) {
-      local_blob_info[i] = WebBlobInfo(WebString::fromUTF8(info.uuid.c_str()),
-                                       info.file_path,
-                                       info.file_name,
-                                       info.mime_type,
-                                       info.last_modified,
-                                       info.size);
-    } else {
-      local_blob_info[i] = WebBlobInfo(
-          WebString::fromUTF8(info.uuid.c_str()), info.mime_type, info.size);
-    }
-  }
-  web_blob_info->swap(local_blob_info);
-}
-
 void IndexedDBDispatcher::OnSuccessArray(
     const IndexedDBMsg_CallbacksSuccessArray_Params& p) {
   DCHECK_EQ(p.ipc_thread_id, CurrentWorkerId());
@@ -710,18 +684,15 @@ void IndexedDBDispatcher::OnSuccessCursorPrefetch(
   DCHECK_EQ(p.ipc_thread_id, CurrentWorkerId());
   int32 ipc_callbacks_id = p.ipc_callbacks_id;
   int32 ipc_cursor_id = p.ipc_cursor_id;
-  const std::vector<IndexedDBKey>& keys = p.keys;
-  const std::vector<IndexedDBKey>& primary_keys = p.primary_keys;
-  std::vector<WebData> values(p.values.size());
-  std::vector<WebVector<WebBlobInfo>> blob_infos(p.values.size());
+  std::vector<WebIDBValue> values(p.values.size());
   for (size_t i = 0; i < p.values.size(); ++i)
-    PrepareWebValueAndBlobInfo(p.values[i], &values[i], &blob_infos[i]);
+    PrepareWebValue(p.values[i], &values[i]);
   std::map<int32, WebIDBCursorImpl*>::const_iterator cur_iter =
       cursors_.find(ipc_cursor_id);
   if (cur_iter == cursors_.end())
     return;
 
-  cur_iter->second->SetPrefetchData(keys, primary_keys, values, blob_infos);
+  cur_iter->second->SetPrefetchData(p.keys, p.primary_keys, values);
 
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
   DCHECK(callbacks);
