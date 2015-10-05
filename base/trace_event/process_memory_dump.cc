@@ -56,6 +56,14 @@ MemoryAllocatorDump* ProcessMemoryDump::GetAllocatorDump(
   return it == allocator_dumps_.end() ? nullptr : it->second;
 }
 
+MemoryAllocatorDump* ProcessMemoryDump::GetOrCreateAllocatorDump(
+    const std::string& absolute_name) {
+  MemoryAllocatorDump* mad = GetAllocatorDump(absolute_name);
+  if (mad)
+    return mad;
+  return CreateAllocatorDump(absolute_name);
+}
+
 MemoryAllocatorDump* ProcessMemoryDump::CreateSharedGlobalAllocatorDump(
     const MemoryAllocatorDumpGuid& guid) {
   // A shared allocator dump can be shared within a process and the guid could

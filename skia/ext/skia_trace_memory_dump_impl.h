@@ -57,10 +57,6 @@ class SK_API SkiaTraceMemoryDumpImpl : public SkTraceMemoryDump {
   }
 
  private:
-  // Helper to create allocator dumps.
-  base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
-      const char* dumpName);
-
   std::string dump_name_prefix_;
 
   base::trace_event::ProcessMemoryDump* process_memory_dump_;

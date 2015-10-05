@@ -37,7 +37,7 @@ void SkiaTraceMemoryDumpImpl::dumpNumericValue(const char* dumpName,
                                                const char* valueName,
                                                const char* units,
                                                uint64_t value) {
-  auto dump = GetOrCreateAllocatorDump(dumpName);
+  auto dump = process_memory_dump_->GetOrCreateAllocatorDump(dumpName);
   dump->AddScalar(valueName, units, value);
 }
 
@@ -45,7 +45,7 @@ void SkiaTraceMemoryDumpImpl::setMemoryBacking(const char* dumpName,
                                                const char* backingType,
                                                const char* backingObjectId) {
   if (strcmp(backingType, kMallocBackingType) == 0) {
-    auto dump = GetOrCreateAllocatorDump(dumpName);
+    auto dump = process_memory_dump_->GetOrCreateAllocatorDump(dumpName);
     const char* system_allocator_name =
         base::trace_event::MemoryDumpManager::GetInstance()
             ->system_allocator_pool_name();
@@ -73,15 +73,6 @@ void SkiaTraceMemoryDumpImpl::setDiscardableMemoryBacking(
 SkTraceMemoryDump::LevelOfDetail SkiaTraceMemoryDumpImpl::getRequestedDetails()
     const {
   return request_level_;
-}
-
-base::trace_event::MemoryAllocatorDump*
-SkiaTraceMemoryDumpImpl::GetOrCreateAllocatorDump(const char* dumpName) {
-  std::string name = dump_name_prefix_ + dumpName;
-  auto dump = process_memory_dump_->GetAllocatorDump(name);
-  if (!dump)
-    dump = process_memory_dump_->CreateAllocatorDump(name);
-  return dump;
 }
 
 }  // namespace skia

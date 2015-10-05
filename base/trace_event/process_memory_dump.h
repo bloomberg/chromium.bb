@@ -64,6 +64,9 @@ class BASE_EXPORT ProcessMemoryDump {
   // nullptr if not found.
   MemoryAllocatorDump* GetAllocatorDump(const std::string& absolute_name) const;
 
+  MemoryAllocatorDump* GetOrCreateAllocatorDump(
+      const std::string& absolute_name);
+
   // Creates a shared MemoryAllocatorDump, to express cross-process sharing.
   // Shared allocator dumps are allowed to have duplicate guids within the
   // global scope, in order to reference the same dump from multiple processes.
