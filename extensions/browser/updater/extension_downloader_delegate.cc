@@ -36,9 +36,4 @@ std::string ExtensionDownloaderDelegate::GetUpdateUrlData(
   return std::string();
 }
 
-bool ExtensionDownloaderDelegate::ShouldForceUpdate(const std::string& id,
-                                                    std::string* source) {
-  return false;
-}
-
 }  // namespace extensions

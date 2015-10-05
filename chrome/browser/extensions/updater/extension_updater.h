@@ -163,11 +163,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
 
   struct ThrottleInfo;
 
-  // Callback used to continue CheckNow after determining which extensions
-  // should be force-updated.
-  void OnForcedUpdatesDetermined(const CheckParams& params,
-                                 const std::set<std::string>& forced_updates);
-
   // Ensure that we have a valid ExtensionDownloader instance referenced by
   // |downloader|.
   void EnsureDownloaderCreated();
@@ -211,8 +206,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   bool IsExtensionPending(const std::string& id) override;
   bool GetExtensionExistingVersion(const std::string& id,
                                    std::string* version) override;
-  bool ShouldForceUpdate(const std::string& extension_id,
-                         std::string* source) override;
 
   void UpdatePingData(const std::string& id, const PingResult& ping_result);
 
@@ -285,10 +278,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Keeps track of when an extension tried to update itself, so we can throttle
   // checks to prevent too many requests from being made.
   std::map<std::string, ThrottleInfo> throttle_info_;
-
-  // Keeps track of extensions (by ID) whose update should be forced during the
-  // next update check.
-  std::set<std::string> forced_updates_;
 
   base::WeakPtrFactory<ExtensionUpdater> weak_ptr_factory_;
 
