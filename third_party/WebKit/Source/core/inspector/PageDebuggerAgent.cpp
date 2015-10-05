@@ -168,7 +168,7 @@ void PageDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scri
 
     String sourceURL = m_compiledScriptURLs.take(scriptId);
     LocalFrame* frame = toDocument(executionContext)->frame();
-    TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(frame, sourceURL, TextPosition::minimumPosition().m_line.oneBasedInt()));
+    TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(frame, sourceURL, TextPosition::minimumPosition()));
 
     RefPtrWillBeRawPtr<LocalFrame> protect(frame);
     InspectorDebuggerAgent::runScript(errorString, scriptId, executionContextId, objectGroup, doNotPauseOnExceptionsAndMuteConsole, result, exceptionDetails);

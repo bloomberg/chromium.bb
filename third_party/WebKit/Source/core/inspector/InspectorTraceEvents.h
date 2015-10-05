@@ -13,6 +13,10 @@
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
 
+namespace WTF {
+class TextPosition;
+}
+
 namespace blink {
 class Animation;
 class CSSStyleSheetResource;
@@ -266,7 +270,11 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
 }
 
 namespace InspectorEvaluateScriptEvent {
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*, const String& url, int lineNumber);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*, const String& url, const WTF::TextPosition&);
+}
+
+namespace InspectorCompileScriptEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& url, const WTF::TextPosition&);
 }
 
 namespace InspectorFunctionCallEvent {

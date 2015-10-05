@@ -6,6 +6,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/animation/Animation.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/css/invalidation/InvalidationSet.h"
@@ -31,6 +32,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
+#include "wtf/text/TextPosition.h"
 #include <inttypes.h>
 #include <v8.h>
 
@@ -645,14 +647,28 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorUpdateLayerTreeEvent::
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorEvaluateScriptEvent::data(LocalFrame* frame, const String& url, int lineNumber)
+namespace {
+PassRefPtr<TracedValue> fillLocation(const String& url, const TextPosition& textPosition)
 {
     RefPtr<TracedValue> value = TracedValue::create();
-    value->setString("frame", toHexString(frame));
     value->setString("url", url);
-    value->setInteger("lineNumber", lineNumber);
+    value->setInteger("lineNumber", textPosition.m_line.oneBasedInt());
+    value->setInteger("columnNumber", textPosition.m_column.oneBasedInt());
+    return value.release();
+}
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorEvaluateScriptEvent::data(LocalFrame* frame, const String& url, const TextPosition& textPosition)
+{
+    RefPtr<TracedValue> value = fillLocation(url, textPosition);
+    value->setString("frame", toHexString(frame));
     setCallStack(value.get());
     return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorCompileScriptEvent::data(const String& url, const TextPosition& textPosition)
+{
+    return fillLocation(url, textPosition);
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorFunctionCallEvent::data(ExecutionContext* context, int scriptId, const String& scriptName, int scriptLine)

@@ -143,7 +143,9 @@ FunctionCall Properties:
 }
 EvaluateScript Properties:
 {
+    children : <object>
     data : {
+        columnNumber : <number>
         frame : <string>
         lineNumber : <number>
         stackTrace : <object>

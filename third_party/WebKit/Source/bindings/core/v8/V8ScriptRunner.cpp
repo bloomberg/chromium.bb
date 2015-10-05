@@ -345,7 +345,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const String& code, con
 
 v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(v8::Local<v8::String> code, const String& fileName, const String& sourceMapUrl, const TextPosition& scriptStartPosition, v8::Isolate* isolate, ScriptResource* resource, ScriptStreamer* streamer, CachedMetadataHandler* cacheHandler, AccessControlStatus accessControlStatus, V8CacheOptions cacheOptions, bool isInternalScript)
 {
-    TRACE_EVENT1("v8", "v8.compile", "fileName", fileName.utf8());
+    TRACE_EVENT2("v8,devtools.timeline", "v8.compile", "fileName", fileName.utf8(), "data", InspectorCompileScriptEvent::data(fileName, scriptStartPosition));
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Compile");
 
     ASSERT(!streamer || resource);
