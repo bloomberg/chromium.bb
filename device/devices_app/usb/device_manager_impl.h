@@ -13,10 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
 #include "device/devices_app/usb/public/interfaces/permission_provider.mojom.h"
-#include "device/usb/usb_service.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
@@ -37,17 +35,15 @@ class DeviceManagerDelegate;
 
 // Implementation of the public DeviceManager interface. This interface can be
 // requested from the devices app located at "mojo:devices", if available.
-class DeviceManagerImpl : public DeviceManager,
-                          public device::UsbService::Observer {
+class DeviceManagerImpl : public DeviceManager {
  public:
   using DeviceList = std::vector<scoped_refptr<UsbDevice>>;
   using DeviceMap = std::map<std::string, scoped_refptr<device::UsbDevice>>;
 
-  static void Create(PermissionProviderPtr permission_provider,
-                     mojo::InterfaceRequest<DeviceManager> request);
-
-  DeviceManagerImpl(PermissionProviderPtr permission_provider,
-                    mojo::InterfaceRequest<DeviceManager> request);
+  DeviceManagerImpl(
+      mojo::InterfaceRequest<DeviceManager> request,
+      PermissionProviderPtr permission_provider,
+      scoped_refptr<base::SequencedTaskRunner> service_task_runner);
   ~DeviceManagerImpl() override;
 
   void set_connection_error_handler(const mojo::Closure& error_handler) {
@@ -55,6 +51,8 @@ class DeviceManagerImpl : public DeviceManager,
   }
 
  private:
+  class ServiceThreadHelper;
+
   // DeviceManager implementation:
   void GetDevices(EnumerationOptionsPtr options,
                   const GetDevicesCallback& callback) override;
@@ -63,6 +61,8 @@ class DeviceManagerImpl : public DeviceManager,
                  mojo::InterfaceRequest<Device> device_request) override;
 
   // Callbacks to handle the async responses from the underlying UsbService.
+  void OnGetDevice(mojo::InterfaceRequest<Device> device_request,
+                   scoped_refptr<UsbDevice> device);
   void OnGetDevicePermissionCheckComplete(
       scoped_refptr<device::UsbDevice> device,
       mojo::InterfaceRequest<Device> device_request,
@@ -71,11 +71,9 @@ class DeviceManagerImpl : public DeviceManager,
                     const GetDevicesCallback& callback,
                     const DeviceList& devices);
 
-  // UsbService::Observer implementation:
-  void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override;
-  void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
-  void WillDestroyUsbService() override;
-
+  // Methods called by |helper_| when devices are added or removed.
+  void OnDeviceAdded(scoped_refptr<device::UsbDevice> device);
+  void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device);
   void MaybeRunDeviceChangesCallback();
   void OnEnumerationPermissionCheckComplete(
       const DeviceMap& devices_added,
@@ -83,6 +81,7 @@ class DeviceManagerImpl : public DeviceManager,
       mojo::Array<mojo::String> allowed_guids);
 
   PermissionProviderPtr permission_provider_;
+  scoped_refptr<base::SequencedTaskRunner> service_task_runner_;
 
   // If there are unfinished calls to GetDeviceChanges their callbacks
   // are stored in |device_change_callbacks_|. Otherwise device changes
@@ -95,8 +94,9 @@ class DeviceManagerImpl : public DeviceManager,
   // only perform a single request to |permission_provider_| at a time.
   bool permission_request_pending_ = false;
 
-  UsbService* usb_service_;
-  ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
+  // |helper_| is owned by the service thread and holds a weak reference
+  // back to the device manager that created it.
+  ServiceThreadHelper* helper_;
 
   mojo::Closure connection_error_handler_;
 

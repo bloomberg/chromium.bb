@@ -302,7 +302,6 @@ source_set("browser") {
       "//components/web_cache/browser",
       "//components/web_modal",
       "//content/app/resources",
-      "//device/devices_app/usb/public/interfaces",
       "//media",
       "//media/midi",
       "//mojo/application/public/cpp",

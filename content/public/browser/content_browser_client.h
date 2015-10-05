@@ -624,12 +624,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       ServiceRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 
-  // Allows to register browser Mojo services exposed through the
-  // RenderFrameHost.
-  virtual void RegisterRenderFrameMojoServices(
-      ServiceRegistry* registry,
-      RenderFrameHost* render_frame_host) {}
-
   using StaticMojoApplicationMap =
       std::map<GURL, base::Callback<scoped_ptr<mojo::ApplicationDelegate>()>>;
 

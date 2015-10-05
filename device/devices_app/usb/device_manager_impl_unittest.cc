@@ -58,8 +58,9 @@ class USBDeviceManagerImplTest : public testing::Test {
     PermissionProviderPtr permission_provider;
     permission_provider_.Bind(mojo::GetProxy(&permission_provider));
     DeviceManagerPtr device_manager;
-    DeviceManagerImpl::Create(permission_provider.Pass(),
-                              mojo::GetProxy(&device_manager));
+    new DeviceManagerImpl(mojo::GetProxy(&device_manager),
+                          permission_provider.Pass(),
+                          base::ThreadTaskRunnerHandle::Get());
     return device_manager.Pass();
   }
 

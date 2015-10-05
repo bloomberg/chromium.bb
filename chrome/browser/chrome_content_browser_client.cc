@@ -85,7 +85,6 @@
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
-#include "chrome/browser/usb/web_usb_permission_provider.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -139,7 +138,8 @@
 #include "content/public/common/service_registry.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "device/devices_app/usb/device_manager_impl.h"
+#include "device/devices_app/public/cpp/constants.h"
+#include "device/devices_app/public/cpp/devices_app_factory.h"
 #include "gin/v8_initializer.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "net/base/mime_util.h"
@@ -265,6 +265,10 @@
 
 #if defined(ENABLE_MEDIA_ROUTER)
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/browser/usb/web_usb_permission_provider.h"
 #endif
 
 using base::FileDescriptor;
@@ -624,18 +628,6 @@ void GetGuestViewDefaultContentSettingRules(
                                   incognito));
 }
 #endif  // defined(ENABLE_EXTENSIONS)
-
-void CreateUsbDeviceManager(
-    RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<device::usb::DeviceManager> request) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  device::usb::PermissionProviderPtr permission_provider;
-  WebUSBPermissionProvider::Create(render_frame_host,
-                                   mojo::GetProxy(&permission_provider));
-  device::usb::DeviceManagerImpl::Create(permission_provider.Pass(),
-                                         request.Pass());
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
-}
 
 }  // namespace
 
@@ -2558,12 +2550,19 @@ void ChromeContentBrowserClient::RegisterFrameMojoShellServices(
       base::Bind(&chromeos::attestation::PlatformVerificationImpl::Create,
                  render_frame_host));
 #endif
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  registry->AddService(
+      base::Bind(&WebUSBPermissionProvider::Create, render_frame_host));
+#endif
 }
 
-void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
-    content::ServiceRegistry* registry,
-    content::RenderFrameHost* render_frame_host) {
-  registry->AddService(base::Bind(&CreateUsbDeviceManager, render_frame_host));
+void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
+    StaticMojoApplicationMap* apps) {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  apps->insert(std::make_pair(GURL(device::kDevicesMojoAppUrl),
+                              base::Bind(&device::DevicesAppFactory::CreateApp,
+                                         base::ThreadTaskRunnerHandle::Get())));
+#endif
 }
 
 void ChromeContentBrowserClient::OpenURL(

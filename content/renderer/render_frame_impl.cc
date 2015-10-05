@@ -3874,7 +3874,9 @@ blink::WebBluetooth* RenderFrameImpl::bluetooth() {
 blink::WebUSBClient* RenderFrameImpl::usbClient() {
 #if !defined(OS_ANDROID)
   if (!usb_client_) {
-    usb_client_.reset(new WebUSBClientImpl(GetServiceRegistry()));
+    mojo::ServiceProviderPtr device_services =
+        ConnectToApplication(GURL(device::kDevicesMojoAppUrl));
+    usb_client_.reset(new WebUSBClientImpl(device_services.Pass()));
   }
 #endif
   return usb_client_.get();

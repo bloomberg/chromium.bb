@@ -8,6 +8,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace mojo {
 class ApplicationDelegate;
 }
@@ -20,7 +24,13 @@ class DevicesAppFactory {
   // Creates a DevicesApp delegate which can be used to launch a new instance
   // of the devices app on a mojo application runner. The caller owns the
   // delegate.
-  static scoped_ptr<mojo::ApplicationDelegate> CreateApp();
+  //
+  // |service_task_runner| is the thread TaskRunner on which the UsbService
+  // lives. This argument should be removed once UsbService is owned by the
+  // USB device manager and no longer part of the public device API. If null,
+  // the app will construct its own DeviceClient and UsbService.
+  static scoped_ptr<mojo::ApplicationDelegate> CreateApp(
+      scoped_refptr<base::SequencedTaskRunner> service_task_runner);
 };
 
 }  // namespace device

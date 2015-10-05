@@ -72,15 +72,22 @@ class DevicesApp::USBServiceInitializer {
   DISALLOW_COPY_AND_ASSIGN(USBServiceInitializer);
 };
 
-DevicesApp::DevicesApp()
-    : app_impl_(nullptr), active_device_manager_count_(0) {}
+DevicesApp::DevicesApp(
+    scoped_refptr<base::SequencedTaskRunner> service_task_runner)
+    : app_impl_(nullptr),
+      service_task_runner_(service_task_runner),
+      active_device_manager_count_(0) {
+}
 
 DevicesApp::~DevicesApp() {
 }
 
 void DevicesApp::Initialize(mojo::ApplicationImpl* app) {
   app_impl_ = app;
-  service_initializer_.reset(new USBServiceInitializer);
+  if (!service_task_runner_) {
+    service_initializer_.reset(new USBServiceInitializer);
+    service_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  }
   StartIdleTimer();
 }
 
@@ -103,8 +110,8 @@ void DevicesApp::Create(mojo::ApplicationConnection* connection,
   connection->ConnectToService(&permission_provider);
 
   // Owned by its message pipe.
-  usb::DeviceManagerImpl* device_manager =
-      new usb::DeviceManagerImpl(permission_provider.Pass(), request.Pass());
+  usb::DeviceManagerImpl* device_manager = new usb::DeviceManagerImpl(
+      request.Pass(), permission_provider.Pass(), service_task_runner_);
   device_manager->set_connection_error_handler(
       base::Bind(&DevicesApp::OnConnectionError, base::Unretained(this)));
 
