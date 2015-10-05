@@ -171,6 +171,11 @@ BluetoothDispatcherHost::BluetoothDispatcherHost(int render_process_id)
           /*is_repeating=*/false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Bind all future weak pointers to the UI thread.
+  weak_ptr_on_ui_thread_ = weak_ptr_factory_.GetWeakPtr();
+  weak_ptr_on_ui_thread_.get();  // Associates with UI thread.
+
   if (BluetoothAdapterFactory::IsBluetoothAdapterAvailable())
     BluetoothAdapterFactory::GetAdapter(
         base::Bind(&BluetoothDispatcherHost::set_adapter,
@@ -278,6 +283,7 @@ void BluetoothDispatcherHost::set_adapter(
 void BluetoothDispatcherHost::StartDeviceDiscovery(
     RequestDeviceSession* session,
     int chooser_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (session->discovery_session) {
     // Already running; just increase the timeout.
     discovery_session_timer_.Reset();
@@ -287,13 +293,14 @@ void BluetoothDispatcherHost::StartDeviceDiscovery(
     adapter_->StartDiscoverySessionWithFilter(
         session->ComputeScanFilter(),
         base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStarted,
-                   weak_ptr_factory_.GetWeakPtr(), chooser_id),
+                   weak_ptr_on_ui_thread_, chooser_id),
         base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStartedError,
-                   weak_ptr_factory_.GetWeakPtr(), chooser_id));
+                   weak_ptr_on_ui_thread_, chooser_id));
   }
 }
 
 void BluetoothDispatcherHost::StopDeviceDiscovery() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (IDMap<RequestDeviceSession, IDMapOwnPointer>::iterator iter(
            &request_device_sessions_);
        !iter.IsAtEnd(); iter.Advance()) {
@@ -311,6 +318,7 @@ void BluetoothDispatcherHost::StopDeviceDiscovery() {
 void BluetoothDispatcherHost::AdapterPoweredChanged(
     device::BluetoothAdapter* adapter,
     bool powered) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const BluetoothChooser::AdapterPresence presence =
       powered ? BluetoothChooser::AdapterPresence::POWERED_ON
               : BluetoothChooser::AdapterPresence::POWERED_OFF;
@@ -325,6 +333,7 @@ void BluetoothDispatcherHost::AdapterPoweredChanged(
 
 void BluetoothDispatcherHost::DeviceAdded(device::BluetoothAdapter* adapter,
                                           device::BluetoothDevice* device) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(1) << "Adding device to all choosers: " << device->GetAddress();
   for (IDMap<RequestDeviceSession, IDMapOwnPointer>::iterator iter(
            &request_device_sessions_);
@@ -336,6 +345,7 @@ void BluetoothDispatcherHost::DeviceAdded(device::BluetoothAdapter* adapter,
 
 void BluetoothDispatcherHost::DeviceRemoved(device::BluetoothAdapter* adapter,
                                             device::BluetoothDevice* device) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(1) << "Marking device removed on all choosers: " << device->GetAddress();
   for (IDMap<RequestDeviceSession, IDMapOwnPointer>::iterator iter(
            &request_device_sessions_);
@@ -407,7 +417,7 @@ void BluetoothDispatcherHost::OnRequestDevice(
 
   BluetoothChooser::EventHandler chooser_event_handler =
       base::Bind(&BluetoothDispatcherHost::OnBluetoothChooserEvent,
-                 weak_ptr_factory_.GetWeakPtr(), chooser_id);
+                 weak_ptr_on_ui_thread_, chooser_id);
   if (WebContents* web_contents =
           WebContents::FromRenderFrameHost(render_frame_host)) {
     if (WebContentsDelegate* delegate = web_contents->GetDelegate()) {
@@ -466,10 +476,10 @@ void BluetoothDispatcherHost::OnConnectGATT(
   }
   device->CreateGattConnection(
       base::Bind(&BluetoothDispatcherHost::OnGATTConnectionCreated,
-                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
+                 weak_ptr_on_ui_thread_, thread_id, request_id,
                  device_instance_id, start_time),
       base::Bind(&BluetoothDispatcherHost::OnCreateGATTConnectionError,
-                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
+                 weak_ptr_on_ui_thread_, thread_id, request_id,
                  device_instance_id, start_time));
 }
 
@@ -491,7 +501,7 @@ void BluetoothDispatcherHost::OnGetPrimaryService(
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&BluetoothDispatcherHost::OnServicesDiscovered,
-                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
+                 weak_ptr_on_ui_thread_, thread_id, request_id,
                  device_instance_id, service_uuid),
       base::TimeDelta::FromSeconds(current_delay_time_));
 }
@@ -619,9 +629,9 @@ void BluetoothDispatcherHost::OnReadValue(
 
   characteristic->ReadRemoteCharacteristic(
       base::Bind(&BluetoothDispatcherHost::OnCharacteristicValueRead,
-                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id),
+                 weak_ptr_on_ui_thread_, thread_id, request_id),
       base::Bind(&BluetoothDispatcherHost::OnCharacteristicReadValueError,
-                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id));
+                 weak_ptr_on_ui_thread_, thread_id, request_id));
 }
 
 void BluetoothDispatcherHost::OnWriteValue(
@@ -689,9 +699,9 @@ void BluetoothDispatcherHost::OnWriteValue(
   }
   characteristic->WriteRemoteCharacteristic(
       value, base::Bind(&BluetoothDispatcherHost::OnWriteValueSuccess,
-                        weak_ptr_factory_.GetWeakPtr(), thread_id, request_id),
+                        weak_ptr_on_ui_thread_, thread_id, request_id),
       base::Bind(&BluetoothDispatcherHost::OnWriteValueFailed,
-                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id));
+                 weak_ptr_on_ui_thread_, thread_id, request_id));
 }
 
 void BluetoothDispatcherHost::OnDiscoverySessionStarted(
@@ -730,6 +740,7 @@ void BluetoothDispatcherHost::OnBluetoothChooserEvent(
     int chooser_id,
     BluetoothChooser::Event event,
     const std::string& device_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RequestDeviceSession* session = request_device_sessions_.Lookup(chooser_id);
   DCHECK(session) << "Shouldn't receive an event (" << static_cast<int>(event)
                   << ") from a closed chooser.";
@@ -751,7 +762,7 @@ void BluetoothDispatcherHost::OnBluetoothChooserEvent(
       if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
               base::Bind(&BluetoothDispatcherHost::FinishClosingChooser,
-                         weak_ptr_factory_.GetWeakPtr(), chooser_id, event,
+                         weak_ptr_on_ui_thread_, chooser_id, event,
                          device_id))) {
         LOG(WARNING) << "No TaskRunner; not closing requestDevice dialog.";
       }
@@ -773,6 +784,7 @@ void BluetoothDispatcherHost::FinishClosingChooser(
     int chooser_id,
     BluetoothChooser::Event event,
     const std::string& device_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RequestDeviceSession* session = request_device_sessions_.Lookup(chooser_id);
   DCHECK(session) << "Session removed unexpectedly.";
 
@@ -828,6 +840,7 @@ void BluetoothDispatcherHost::OnGATTConnectionCreated(
     const std::string& device_instance_id,
     base::TimeTicks start_time,
     scoped_ptr<device::BluetoothGattConnection> connection) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(ortuno): Save the BluetoothGattConnection so we can disconnect
   // from it.
   RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
@@ -842,6 +855,7 @@ void BluetoothDispatcherHost::OnCreateGATTConnectionError(
     const std::string& device_instance_id,
     base::TimeTicks start_time,
     device::BluetoothDevice::ConnectErrorCode error_code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // There was an error creating the ATT Bearer so we reject with
   // NetworkError.
   // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
@@ -897,6 +911,7 @@ void BluetoothDispatcherHost::OnCharacteristicValueRead(
     int thread_id,
     int request_id,
     const std::vector<uint8>& value) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::SUCCESS);
   Send(new BluetoothMsg_ReadCharacteristicValueSuccess(thread_id, request_id,
                                                        value));
@@ -906,6 +921,7 @@ void BluetoothDispatcherHost::OnCharacteristicReadValueError(
     int thread_id,
     int request_id,
     device::BluetoothGattService::GattErrorCode error_code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TranslateGATTError calls RecordGATTOperationOutcome.
   Send(new BluetoothMsg_ReadCharacteristicValueError(
       thread_id, request_id,
@@ -914,6 +930,7 @@ void BluetoothDispatcherHost::OnCharacteristicReadValueError(
 
 void BluetoothDispatcherHost::OnWriteValueSuccess(int thread_id,
                                                   int request_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::SUCCESS);
   Send(new BluetoothMsg_WriteCharacteristicValueSuccess(thread_id, request_id));
 }
@@ -922,6 +939,7 @@ void BluetoothDispatcherHost::OnWriteValueFailed(
     int thread_id,
     int request_id,
     device::BluetoothGattService::GattErrorCode error_code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TranslateGATTError calls RecordGATTOperationOutcome.
   Send(new BluetoothMsg_WriteCharacteristicValueError(
       thread_id, request_id,
@@ -929,14 +947,17 @@ void BluetoothDispatcherHost::OnWriteValueFailed(
 }
 
 void BluetoothDispatcherHost::ShowBluetoothOverviewLink() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   NOTIMPLEMENTED();
 }
 
 void BluetoothDispatcherHost::ShowBluetoothPairingLink() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   NOTIMPLEMENTED();
 }
 
 void BluetoothDispatcherHost::ShowBluetoothAdapterOffLink() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   NOTIMPLEMENTED();
 }
 

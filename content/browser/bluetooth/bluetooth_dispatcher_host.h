@@ -187,7 +187,10 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // sessions when other sessions are active.
   base::Timer discovery_session_timer_;
 
-  // Must be last member, see base/memory/weak_ptr.h documentation
+  // |weak_ptr_on_ui_thread_| provides weak pointers, e.g. for callbacks, and
+  // because it exists and has been bound to the UI thread enforces that all
+  // copies verify they are also used on the UI thread.
+  base::WeakPtr<BluetoothDispatcherHost> weak_ptr_on_ui_thread_;
   base::WeakPtrFactory<BluetoothDispatcherHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDispatcherHost);

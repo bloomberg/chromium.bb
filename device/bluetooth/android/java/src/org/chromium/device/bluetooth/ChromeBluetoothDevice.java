@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.ParcelUuid;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -133,15 +134,20 @@ final class ChromeBluetoothDevice {
     // Implements callbacks related to a GATT connection.
     private class BluetoothGattCallbackImpl extends Wrappers.BluetoothGattCallbackWrapper {
         @Override
-        public void onConnectionStateChange(int status, int newState) {
+        public void onConnectionStateChange(final int status, final int newState) {
             Log.i(TAG, "onConnectionStateChange status:%d newState:%s", status,
                     (newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED)
                             ? "Connected"
                             : "Disconnected");
-            if (mNativeBluetoothDeviceAndroid != 0) {
-                nativeOnConnectionStateChange(mNativeBluetoothDeviceAndroid, status,
-                        newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED);
-            }
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mNativeBluetoothDeviceAndroid != 0) {
+                        nativeOnConnectionStateChange(mNativeBluetoothDeviceAndroid, status,
+                                newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED);
+                    }
+                }
+            });
         }
     }
 
