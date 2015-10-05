@@ -21,22 +21,22 @@ class ProcessMemoryDump;
 
 namespace skia {
 
-class SK_API SkTraceMemoryDump_Chrome : public SkTraceMemoryDump {
+class SK_API SkiaTraceMemoryDumpImpl : public SkTraceMemoryDump {
  public:
   // This should never outlive the OnMemoryDump call since the
   // ProcessMemoryDump is valid only in that timeframe. Optional
   // |dump_name_prefix| argument specifies the prefix appended to the dump
   // name skia provides. By default it is taken as empty string.
-  SkTraceMemoryDump_Chrome(
+  SkiaTraceMemoryDumpImpl(
       base::trace_event::MemoryDumpLevelOfDetail level_of_detail,
       base::trace_event::ProcessMemoryDump* process_memory_dump);
 
-  SkTraceMemoryDump_Chrome(
+  SkiaTraceMemoryDumpImpl(
       const std::string& dump_name_prefix,
       base::trace_event::MemoryDumpLevelOfDetail level_of_detail,
       base::trace_event::ProcessMemoryDump* process_memory_dump);
 
-  ~SkTraceMemoryDump_Chrome() override;
+  ~SkiaTraceMemoryDumpImpl() override;
 
   // SkTraceMemoryDump implementation:
   void dumpNumericValue(const char* dumpName,
@@ -68,7 +68,7 @@ class SK_API SkTraceMemoryDump_Chrome : public SkTraceMemoryDump {
   // Stores the level of detail for the current dump.
   LevelOfDetail request_level_;
 
-  DISALLOW_COPY_AND_ASSIGN(SkTraceMemoryDump_Chrome);
+  DISALLOW_COPY_AND_ASSIGN(SkiaTraceMemoryDumpImpl);
 };
 
 }  // namespace skia

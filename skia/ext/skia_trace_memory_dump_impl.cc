@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "skia/ext/SkTraceMemoryDump_chrome.h"
+#include "skia/ext/skia_trace_memory_dump_impl.h"
 
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -15,12 +15,12 @@ namespace {
 const char kMallocBackingType[] = "malloc";
 }
 
-SkTraceMemoryDump_Chrome::SkTraceMemoryDump_Chrome(
+SkiaTraceMemoryDumpImpl::SkiaTraceMemoryDumpImpl(
     base::trace_event::MemoryDumpLevelOfDetail level_of_detail,
     base::trace_event::ProcessMemoryDump* process_memory_dump)
-    : SkTraceMemoryDump_Chrome("", level_of_detail, process_memory_dump) {}
+    : SkiaTraceMemoryDumpImpl("", level_of_detail, process_memory_dump) {}
 
-SkTraceMemoryDump_Chrome::SkTraceMemoryDump_Chrome(
+SkiaTraceMemoryDumpImpl::SkiaTraceMemoryDumpImpl(
     const std::string& dump_name_prefix,
     base::trace_event::MemoryDumpLevelOfDetail level_of_detail,
     base::trace_event::ProcessMemoryDump* process_memory_dump)
@@ -31,19 +31,19 @@ SkTraceMemoryDump_Chrome::SkTraceMemoryDump_Chrome(
               ? SkTraceMemoryDump::kLight_LevelOfDetail
               : SkTraceMemoryDump::kObjectsBreakdowns_LevelOfDetail) {}
 
-SkTraceMemoryDump_Chrome::~SkTraceMemoryDump_Chrome() {}
+SkiaTraceMemoryDumpImpl::~SkiaTraceMemoryDumpImpl() {}
 
-void SkTraceMemoryDump_Chrome::dumpNumericValue(const char* dumpName,
-                                                const char* valueName,
-                                                const char* units,
-                                                uint64_t value) {
+void SkiaTraceMemoryDumpImpl::dumpNumericValue(const char* dumpName,
+                                               const char* valueName,
+                                               const char* units,
+                                               uint64_t value) {
   auto dump = GetOrCreateAllocatorDump(dumpName);
   dump->AddScalar(valueName, units, value);
 }
 
-void SkTraceMemoryDump_Chrome::setMemoryBacking(const char* dumpName,
-                                                const char* backingType,
-                                                const char* backingObjectId) {
+void SkiaTraceMemoryDumpImpl::setMemoryBacking(const char* dumpName,
+                                               const char* backingType,
+                                               const char* backingObjectId) {
   if (strcmp(backingType, kMallocBackingType) == 0) {
     auto dump = GetOrCreateAllocatorDump(dumpName);
     const char* system_allocator_name =
@@ -58,7 +58,7 @@ void SkTraceMemoryDump_Chrome::setMemoryBacking(const char* dumpName,
   }
 }
 
-void SkTraceMemoryDump_Chrome::setDiscardableMemoryBacking(
+void SkiaTraceMemoryDumpImpl::setDiscardableMemoryBacking(
     const char* dumpName,
     const SkDiscardableMemory& discardableMemoryObject) {
   std::string name = dump_name_prefix_ + dumpName;
@@ -70,13 +70,13 @@ void SkTraceMemoryDump_Chrome::setDiscardableMemoryBacking(
   DCHECK(dump);
 }
 
-SkTraceMemoryDump::LevelOfDetail SkTraceMemoryDump_Chrome::getRequestedDetails()
+SkTraceMemoryDump::LevelOfDetail SkiaTraceMemoryDumpImpl::getRequestedDetails()
     const {
   return request_level_;
 }
 
 base::trace_event::MemoryAllocatorDump*
-SkTraceMemoryDump_Chrome::GetOrCreateAllocatorDump(const char* dumpName) {
+SkiaTraceMemoryDumpImpl::GetOrCreateAllocatorDump(const char* dumpName) {
   std::string name = dump_name_prefix_ + dumpName;
   auto dump = process_memory_dump_->GetAllocatorDump(name);
   if (!dump)

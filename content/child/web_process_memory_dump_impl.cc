@@ -6,7 +6,7 @@
 
 #include "base/trace_event/process_memory_dump.h"
 #include "content/child/web_memory_allocator_dump_impl.h"
-#include "skia/ext/SkTraceMemoryDump_chrome.h"
+#include "skia/ext/skia_trace_memory_dump_impl.h"
 
 namespace content {
 
@@ -144,7 +144,7 @@ void WebProcessMemoryDumpImpl::AddSuballocation(
 
 SkTraceMemoryDump* WebProcessMemoryDumpImpl::CreateDumpAdapterForSkia(
     const blink::WebString& dumpNamePrefix) {
-  sk_trace_dump_list_.push_back(new skia::SkTraceMemoryDump_Chrome(
+  sk_trace_dump_list_.push_back(new skia::SkiaTraceMemoryDumpImpl(
       dumpNamePrefix.utf8(), level_of_detail_, process_memory_dump_));
   return sk_trace_dump_list_.back();
 }

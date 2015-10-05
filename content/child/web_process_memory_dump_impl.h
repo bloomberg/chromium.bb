@@ -21,7 +21,7 @@ class ProcessMemoryDump;
 }  // namespace trace_event
 
 namespace skia {
-class SkTraceMemoryDump_Chrome;
+class SkiaTraceMemoryDumpImpl;
 }  // namespace skia
 
 namespace content {
@@ -95,7 +95,7 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
       memory_allocator_dumps_;
 
   // Stores SkTraceMemoryDump for the current ProcessMemoryDump.
-  ScopedVector<skia::SkTraceMemoryDump_Chrome> sk_trace_dump_list_;
+  ScopedVector<skia::SkiaTraceMemoryDumpImpl> sk_trace_dump_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebProcessMemoryDumpImpl);
 };

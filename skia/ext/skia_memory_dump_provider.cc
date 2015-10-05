@@ -7,7 +7,7 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
-#include "skia/ext/SkTraceMemoryDump_chrome.h"
+#include "skia/ext/skia_trace_memory_dump_impl.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 
 namespace skia {
@@ -26,8 +26,8 @@ SkiaMemoryDumpProvider::~SkiaMemoryDumpProvider() {}
 bool SkiaMemoryDumpProvider::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* process_memory_dump) {
-  SkTraceMemoryDump_Chrome skia_dumper(args.level_of_detail,
-                                       process_memory_dump);
+  SkiaTraceMemoryDumpImpl skia_dumper(args.level_of_detail,
+                                      process_memory_dump);
   SkGraphics::DumpMemoryStatistics(&skia_dumper);
 
   return true;
