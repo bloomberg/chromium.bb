@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore.InternalAccessDelegate;
@@ -262,9 +263,13 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         assertWaitForScroll(false, false);
     }
 
+    /*
     @SmallTest
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
+    crbug.com/538781
+    */
+    @DisabledTest
     public void testJoystickScroll() throws Throwable {
         scrollTo(0, 0);
         assertWaitForScroll(true, true);
