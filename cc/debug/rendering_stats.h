@@ -45,6 +45,8 @@ struct CC_EXPORT RenderingStats {
   int64 visible_content_area;
   int64 approximated_visible_content_area;
   int64 checkerboarded_visible_content_area;
+  int64 checkerboarded_no_recording_content_area;
+  int64 checkerboarded_needs_raster_content_area;
 
   TimeDeltaList draw_duration;
   TimeDeltaList draw_duration_estimate;

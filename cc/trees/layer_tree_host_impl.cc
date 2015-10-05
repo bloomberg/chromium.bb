@@ -834,6 +834,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
   int num_missing_tiles = 0;
   int num_incomplete_tiles = 0;
+  int64 checkerboarded_no_recording_content_area = 0;
+  int64 checkerboarded_needs_raster_content_area = 0;
   bool have_copy_request = false;
   bool have_missing_animated_tiles = false;
 
@@ -910,9 +912,17 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         append_quads_data.approximated_visible_content_area);
     rendering_stats_instrumentation_->AddCheckerboardedVisibleContentArea(
         append_quads_data.checkerboarded_visible_content_area);
+    rendering_stats_instrumentation_->AddCheckerboardedNoRecordingContentArea(
+        append_quads_data.checkerboarded_no_recording_content_area);
+    rendering_stats_instrumentation_->AddCheckerboardedNeedsRasterContentArea(
+        append_quads_data.checkerboarded_needs_raster_content_area);
 
     num_missing_tiles += append_quads_data.num_missing_tiles;
     num_incomplete_tiles += append_quads_data.num_incomplete_tiles;
+    checkerboarded_no_recording_content_area +=
+        append_quads_data.checkerboarded_no_recording_content_area;
+    checkerboarded_needs_raster_content_area +=
+        append_quads_data.checkerboarded_needs_raster_content_area;
 
     if (append_quads_data.num_missing_tiles) {
       bool layer_has_animating_transform =
@@ -982,6 +992,14 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     UMA_HISTOGRAM_COUNTS_100(
         "Compositing.RenderPass.AppendQuadData.NumIncompleteTiles",
         num_incomplete_tiles);
+    UMA_HISTOGRAM_COUNTS(
+        "Compositing.RenderPass.AppendQuadData."
+        "CheckerboardedNoRecordingContentArea",
+        checkerboarded_no_recording_content_area);
+    UMA_HISTOGRAM_COUNTS(
+        "Compositing.RenderPass.AppendQuadData."
+        "CheckerboardedNeedRasterContentArea",
+        checkerboarded_needs_raster_content_area);
   }
 
   // Should only have one render pass in resourceless software mode.

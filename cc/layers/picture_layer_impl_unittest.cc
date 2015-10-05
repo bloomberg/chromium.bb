@@ -2067,6 +2067,34 @@ TEST_F(PictureLayerImplTest,
   EXPECT_FALSE(active_layer_->only_used_low_res_last_append_quads());
 }
 
+TEST_F(PictureLayerImplTest, AppendQuadsDataForCheckerboard) {
+  host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(200, 200);
+  gfx::Rect recorded_viewport(0, 0, 150, 150);
+
+  scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
+      FakeDisplayListRasterSource::CreatePartiallyFilled(layer_bounds,
+                                                         recorded_viewport);
+  SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
+  ActivateTree();
+
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData data;
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
+  active_layer_->AppendQuads(render_pass.get(), &data);
+  active_layer_->DidDraw(nullptr);
+
+  EXPECT_EQ(1u, render_pass->quad_list.size());
+  EXPECT_EQ(1u, data.num_missing_tiles);
+  EXPECT_EQ(0u, data.num_incomplete_tiles);
+  EXPECT_EQ(40000, data.checkerboarded_visible_content_area);
+  EXPECT_EQ(17500, data.checkerboarded_no_recording_content_area);
+  EXPECT_EQ(22500, data.checkerboarded_needs_raster_content_area);
+  EXPECT_TRUE(active_layer_->only_used_low_res_last_append_quads());
+}
+
 TEST_F(PictureLayerImplTest, HighResRequiredWhenActiveAllReady) {
   gfx::Size layer_bounds(400, 400);
   gfx::Size tile_size(100, 100);

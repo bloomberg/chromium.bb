@@ -4660,8 +4660,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Compositing.RenderPass.AppendQuadData.CheckerboardedNeedsRasterContentArea"
+    units="pixels/frame">
+  <owner>weiliangc@chromium.org</owner>
+  <summary>
+    Checkerboarded area, in number of pixels, that has recording but does not
+    have time to finish rastering yet. A sample is recorded everytime a frame is
+    drawn while a scroll is in progress. Tracking bug 535732.
+  </summary>
+</histogram>
+
+<histogram
+    name="Compositing.RenderPass.AppendQuadData.CheckerboardedNoRecordingContentArea"
+    units="pixels/frame">
+  <owner>weiliangc@chromium.org</owner>
+  <summary>
+    Checkerboarded area, in number of pixels, that has no recording to raster
+    from. A sample is recorded everytime a frame is drawn while a scroll is in
+    progress. Tracking bug 535732.
+  </summary>
+</histogram>
+
 <histogram name="Compositing.RenderPass.AppendQuadData.NumIncompleteTiles">
-  <owner>weiliangc@chromium.org.</owner>
+  <owner>weiliangc@chromium.org</owner>
   <summary>
     Keeps track of number of incomplete tiles in a drawn compositor frame while
     scrolling. This is a rough measurement of ugliness during user interaction.
@@ -4671,7 +4693,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Compositing.RenderPass.AppendQuadData.NumMissingTiles">
-  <owner>weiliangc@chromium.org.</owner>
+  <owner>weiliangc@chromium.org</owner>
   <summary>
     Keeps track of number of missing tiles in a drawn compositor frame while
     scrolling. This is a rough measurement of ugliness during user interaction.

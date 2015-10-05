@@ -16,7 +16,9 @@ struct AppendQuadsData {
         num_missing_tiles(0),
         visible_layer_area(0),
         approximated_visible_content_area(0),
-        checkerboarded_visible_content_area(0) {}
+        checkerboarded_visible_content_area(0),
+        checkerboarded_no_recording_content_area(0),
+        checkerboarded_needs_raster_content_area(0) {}
 
   // Set by the layer appending quads.
   int64 num_incomplete_tiles;
@@ -26,8 +28,12 @@ struct AppendQuadsData {
   int64 visible_layer_area;
   // Set by the layer appending quads.
   int64 approximated_visible_content_area;
-  // Set by the layer appending quads.
+  // Set by the layer appending quads. This is total of the following two areas.
   int64 checkerboarded_visible_content_area;
+  // Set by the layer appending quads. This is the area outside interest rect.
+  int64 checkerboarded_no_recording_content_area;
+  // Set by the layer appending quads. This is the area within interest rect.
+  int64 checkerboarded_needs_raster_content_area;
 };
 
 }  // namespace cc

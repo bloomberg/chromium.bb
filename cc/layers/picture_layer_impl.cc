@@ -270,6 +270,8 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
   size_t missing_tile_count = 0u;
   size_t on_demand_missing_tile_count = 0u;
   only_used_low_res_last_append_quads_ = true;
+  gfx::Rect scaled_recorded_viewport = gfx::ScaleToEnclosingRect(
+      raster_source_->RecordedViewport(), max_contents_scale);
   for (PictureLayerTilingSet::CoverageIterator iter(
            tilings_.get(), max_contents_scale,
            shared_quad_state->visible_quad_layer_rect, ideal_contents_scale_);
@@ -346,8 +348,23 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
         append_quads_data->num_missing_tiles++;
         ++missing_tile_count;
       }
-      append_quads_data->checkerboarded_visible_content_area +=
+      int64 checkerboarded_area =
           visible_geometry_rect.width() * visible_geometry_rect.height();
+      append_quads_data->checkerboarded_visible_content_area +=
+          checkerboarded_area;
+      // Intersect checkerboard rect with interest rect to generate rect where
+      // we checkerboarded and has recording. The area where we don't have
+      // recording is not necessarily a Rect, and its area is calculated using
+      // subtraction.
+      gfx::Rect visible_rect_has_recording = visible_geometry_rect;
+      visible_rect_has_recording.Intersect(scaled_recorded_viewport);
+      int64 checkerboarded_has_recording_area =
+          visible_rect_has_recording.width() *
+          visible_rect_has_recording.height();
+      append_quads_data->checkerboarded_needs_raster_content_area +=
+          checkerboarded_has_recording_area;
+      append_quads_data->checkerboarded_no_recording_content_area +=
+          checkerboarded_area - checkerboarded_has_recording_area;
       continue;
     }
 
