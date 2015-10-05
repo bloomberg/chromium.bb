@@ -551,9 +551,6 @@ class CONTENT_EXPORT WebContentsImpl
   void SetMainFrameMimeType(const std::string& mime_type) override;
   bool CanOverscrollContent() const override;
   void NotifyChangedNavigationState(InvalidateTypes changed_flags) override;
-  void AboutToNavigateRenderFrame(
-      RenderFrameHostImpl* old_host,
-      RenderFrameHostImpl* new_host) override;
   void DidStartNavigationToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type) override;

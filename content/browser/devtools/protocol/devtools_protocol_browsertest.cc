@@ -37,7 +37,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
  public:
   DevToolsProtocolTest()
       : last_sent_id_(0),
-        waiting_for_notifications_count_(0),
+        waiting_for_command_result_id_(0),
         in_dispatch_(false) {
   }
 
@@ -62,8 +62,10 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     agent_host_->DispatchProtocolMessage(json_command);
     // Some messages are dispatched synchronously.
     // Only run loop if we are not finished yet.
-    if (in_dispatch_ && wait)
+    if (in_dispatch_ && wait) {
+      waiting_for_command_result_id_ = last_sent_id_;
       base::MessageLoop::current()->Run();
+    }
     in_dispatch_ = false;
   }
 
@@ -104,8 +106,8 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     }
   }
 
-  void WaitForNotifications(int count) {
-    waiting_for_notifications_count_ = count;
+  void WaitForNotification(const std::string& notification) {
+    waiting_for_notification_ = notification;
     RunMessageLoop();
   }
 
@@ -127,16 +129,17 @@ class DevToolsProtocolTest : public ContentBrowserTest,
       EXPECT_TRUE(root->GetDictionary("result", &result));
       result_.reset(result->DeepCopy());
       in_dispatch_ = false;
-      if (base::MessageLoop::current()->is_running())
+      if (id && id == waiting_for_command_result_id_) {
+        waiting_for_command_result_id_ = 0;
         base::MessageLoop::current()->QuitNow();
+      }
     } else {
       std::string notification;
       EXPECT_TRUE(root->GetString("method", &notification));
       notifications_.push_back(notification);
-      if (waiting_for_notifications_count_) {
-        waiting_for_notifications_count_--;
-        if (!waiting_for_notifications_count_)
-          base::MessageLoop::current()->QuitNow();
+      if (waiting_for_notification_ == notification) {
+        waiting_for_notification_ = std::string();
+        base::MessageLoop::current()->QuitNow();
       }
     }
   }
@@ -145,7 +148,8 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     EXPECT_TRUE(false);
   }
 
-  int waiting_for_notifications_count_;
+  std::string waiting_for_notification_;
+  int waiting_for_command_result_id_;
   bool in_dispatch_;
 };
 
@@ -383,17 +387,31 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ReconnectPreservesState) {
   Attach();
   SendCommand("Runtime.enable", nullptr);
 
-  size_t notification_count = notifications_.size();
   agent_host_->DisconnectWebContents();
   agent_host_->ConnectWebContents(second->web_contents());
-  WaitForNotifications(1);
+  WaitForNotification("Runtime.executionContextsCleared");
+}
 
-  bool found_notification = false;
-  for (size_t i = notification_count; i < notifications_.size(); ++i) {
-    if (notifications_[i] == "Runtime.executionContextsCleared")
-      found_notification = true;
-  }
-  EXPECT_TRUE(found_notification);
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSitePauseInBeforeUnload) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  content::SetupCrossSiteRedirector(embedded_test_server());
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(),
+      embedded_test_server()->GetURL("A.com", "/devtools/navigation.html"), 1);
+  Attach();
+  SendCommand("Debugger.enable", nullptr);
+
+  ASSERT_TRUE(content::ExecuteScript(
+      shell()->web_contents(),
+      "window.onbeforeunload = function() { debugger; return null; }"));
+
+  shell()->LoadURL(
+      embedded_test_server()->GetURL("B.com", "/devtools/navigation.html"));
+  WaitForNotification("Debugger.paused");
+  TestNavigationObserver observer(shell()->web_contents(), 1);
+  SendCommand("Debugger.resume", nullptr);
+  observer.Wait();
 }
 
 }  // namespace content

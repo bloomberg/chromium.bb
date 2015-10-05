@@ -97,11 +97,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   // WebContents::NotifyNavigationStateChanged.
   virtual void NotifyChangedNavigationState(InvalidateTypes changed_flags) {}
 
-  // Notifies the Navigator embedder that it is beginning to navigate a frame.
-  virtual void AboutToNavigateRenderFrame(
-      RenderFrameHostImpl* old_host,
-      RenderFrameHostImpl* new_host) {}
-
   // Notifies the Navigator embedder that a navigation to the pending
   // NavigationEntry has started in the browser process.
   virtual void DidStartNavigationToPendingEntry(

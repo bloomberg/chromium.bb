@@ -206,16 +206,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // ---------------------------------------------------------------------------
 
-  // This method is invoked after the WebContents decides which RenderFrameHost
-  // to use for the next browser-initiated navigation, but before the navigation
-  // starts.  It is not called for most renderer-initiated navigations, and it
-  // does not guarantee that the navigation will commit (e.g., 204s, downloads).
-  //
-  // DEPRECATED.  This method is difficult to use correctly and should be
-  // removed.  TODO(creis): Remove in http://crbug.com/424641.
-  virtual void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
-                                          RenderFrameHost* new_host) {}
-
   // This method is invoked after the browser process starts a navigation to a
   // pending NavigationEntry. It is not called for renderer-initiated
   // navigations unless they are sent to the browser process via OpenURL. It may

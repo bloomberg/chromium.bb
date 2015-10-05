@@ -320,12 +320,6 @@ bool NavigatorImpl::NavigateToEntry(
   // Double check that here.
   CheckWebUIRendererDoesNotDisplayNormalURL(dest_render_frame_host, dest_url);
 
-  // Notify observers that we will navigate in this RenderFrame.
-  if (delegate_) {
-    delegate_->AboutToNavigateRenderFrame(frame_tree_node->current_frame_host(),
-                                          dest_render_frame_host);
-  }
-
   // Navigate in the desired RenderFrameHost.
   // We can skip this step in the rare case that this is a transfer navigation
   // which began in the chosen RenderFrameHost, since the request has already

@@ -2868,16 +2868,6 @@ void WebContentsImpl::NotifyChangedNavigationState(
   NotifyNavigationStateChanged(changed_flags);
 }
 
-void WebContentsImpl::AboutToNavigateRenderFrame(
-      RenderFrameHostImpl* old_host,
-      RenderFrameHostImpl* new_host) {
-  // Notify observers that we will navigate in this RenderFrame.
-  FOR_EACH_OBSERVER(
-      WebContentsObserver,
-      observers_,
-      AboutToNavigateRenderFrame(old_host, new_host));
-}
-
 void WebContentsImpl::DidStartNavigationToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type) {

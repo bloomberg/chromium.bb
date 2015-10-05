@@ -289,6 +289,14 @@ void RenderFrameDevToolsAgentHost::OnCancelPendingNavigation(
   }
 }
 
+// static
+void RenderFrameDevToolsAgentHost::OnBeforeNavigation(
+    RenderFrameHost* current, RenderFrameHost* pending) {
+  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(current);
+  if (agent_host)
+    agent_host->AboutToNavigateRenderFrame(current, pending);
+}
+
 RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     RenderFrameHostImpl* host)
     : dom_handler_(new devtools::dom::DOMHandler()),
@@ -467,7 +475,6 @@ RenderFrameDevToolsAgentHost::~RenderFrameDevToolsAgentHost() {
     g_instances.Get().erase(it);
 }
 
-// TODO(creis): Consider removing this in favor of RenderFrameHostChanged.
 void RenderFrameDevToolsAgentHost::AboutToNavigateRenderFrame(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {

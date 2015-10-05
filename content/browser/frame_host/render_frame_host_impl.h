@@ -614,6 +614,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // frames, it will return the current frame's view.
   RenderWidgetHostViewBase* GetViewForAccessibility();
 
+  // Sends a navigate message to the RenderFrame and notifies DevTools about
+  // navigation happening. Should be used instead of sending the message
+  // directly.
+  void SendNavigateMessage(
+      const content::CommonNavigationParams& common_params,
+      const content::StartNavigationParams& start_params,
+      const content::RequestNavigationParams& request_params);
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring

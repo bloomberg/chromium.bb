@@ -17,6 +17,7 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/frame_mojo_shell.h"
@@ -1712,9 +1713,7 @@ void RenderFrameHostImpl::Navigate(
     // Get back to a clean state, in case we start a new navigation without
     // completing a RFH swap or unload handler.
     SetState(RenderFrameHostImpl::STATE_DEFAULT);
-
-    Send(new FrameMsg_Navigate(routing_id_, common_params, start_params,
-                               request_params));
+    SendNavigateMessage(common_params, start_params, request_params);
   }
 
   // Force the throbber to start. This is done because Blink's "started loading"
@@ -2121,10 +2120,9 @@ void RenderFrameHostImpl::SetNavigationsSuspended(
     DCHECK(!proceed_time.is_null());
     suspended_nav_params_->request_params.browser_navigation_start =
         proceed_time;
-    Send(new FrameMsg_Navigate(routing_id_,
-                               suspended_nav_params_->common_params,
-                               suspended_nav_params_->start_params,
-                               suspended_nav_params_->request_params));
+    SendNavigateMessage(suspended_nav_params_->common_params,
+                        suspended_nav_params_->start_params,
+                        suspended_nav_params_->request_params);
     suspended_nav_params_.reset();
   }
 }
@@ -2137,6 +2135,16 @@ void RenderFrameHostImpl::CancelSuspendedNavigations() {
   TRACE_EVENT_ASYNC_END0("navigation",
                          "RenderFrameHostImpl navigation suspended", this);
   navigations_suspended_ = false;
+}
+
+void RenderFrameHostImpl::SendNavigateMessage(
+    const CommonNavigationParams& common_params,
+    const StartNavigationParams& start_params,
+    const RequestNavigationParams& request_params) {
+  RenderFrameDevToolsAgentHost::OnBeforeNavigation(
+      frame_tree_node_->current_frame_host(), this);
+  Send(new FrameMsg_Navigate(
+      routing_id_, common_params, start_params, request_params));
 }
 
 void RenderFrameHostImpl::DidUseGeolocationPermission() {

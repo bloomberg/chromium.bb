@@ -51,6 +51,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   static void OnCancelPendingNavigation(RenderFrameHost* pending,
                                         RenderFrameHost* current);
+  static void OnBeforeNavigation(RenderFrameHost* current,
+                                 RenderFrameHost* pending);
 
   void SynchronousSwapCompositorFrame(
       const cc::CompositorFrameMetadata& frame_metadata);
@@ -86,8 +88,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void InspectElement(int x, int y) override;
 
   // WebContentsObserver overrides.
-  void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
-                                  RenderFrameHost* new_host) override;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
   void FrameDeleted(RenderFrameHost* rfh) override;
@@ -108,6 +108,9 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       int error_code,
       const base::string16& error_description,
       bool was_ignored_by_handler) override;
+
+  void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
+                                  RenderFrameHost* new_host);
 
   void SetPending(RenderFrameHostImpl* host);
   void CommitPending();

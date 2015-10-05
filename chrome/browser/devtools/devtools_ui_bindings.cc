@@ -300,11 +300,9 @@ class DevToolsUIBindings::FrontendWebContentsObserver
  private:
   // contents::WebContentsObserver:
   void RenderProcessGone(base::TerminationStatus status) override;
-  // TODO(creis): Replace with RenderFrameCreated when http://crbug.com/425397
-  // is fixed.  See also http://crbug.com/424641.
-  void AboutToNavigateRenderFrame(
-      content::RenderFrameHost* old_host,
-      content::RenderFrameHost* new_host) override;
+  void DidStartNavigationToPendingEntry(
+      const GURL& url,
+      content::NavigationController::ReloadType reload_type) override;
   void DocumentOnLoadCompletedInMainFrame() override;
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
@@ -346,12 +344,11 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
-    AboutToNavigateRenderFrame(content::RenderFrameHost* old_host,
-                               content::RenderFrameHost* new_host) {
-  if (new_host->GetParent())
-    return;
+    DidStartNavigationToPendingEntry(
+        const GURL& url,
+        content::NavigationController::ReloadType reload_type) {
   devtools_bindings_->frontend_host_.reset(
-      content::DevToolsFrontendHost::Create(new_host,
+      content::DevToolsFrontendHost::Create(web_contents()->GetMainFrame(),
                                             devtools_bindings_));
 }
 
