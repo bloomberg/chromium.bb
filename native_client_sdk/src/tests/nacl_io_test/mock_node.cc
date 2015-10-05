@@ -4,6 +4,8 @@
 
 #include "mock_node.h"
 
+using ::testing::Return;
+
 MockNode::MockNode(nacl_io::Filesystem* mount) : Node(mount) {}
 
 MockNode::~MockNode() {}

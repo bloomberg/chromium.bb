@@ -70,6 +70,8 @@ source_set("nacl_io") {
     "socket/tcp_node.cc",
     "socket/udp_event_emitter.cc",
     "socket/udp_node.cc",
+    "socket/unix_event_emitter.cc",
+    "socket/unix_node.cc",
     "stream/stream_event_emitter.cc",
     "stream/stream_fs.cc",
     "stream/stream_node.cc",

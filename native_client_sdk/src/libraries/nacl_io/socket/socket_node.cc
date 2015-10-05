@@ -375,6 +375,8 @@ Error SocketNode::RecvFrom(const HandleAttr& attr,
                            socklen_t* addrlen,
                            int* out_len) {
   PP_Resource addr = 0;
+  if (0 == socket_resource_)
+    return EBADF;
   Error err = RecvHelper(attr, buf, len, flags, &addr, out_len);
   if (0 == err && 0 != addr) {
     if (src_addr)
@@ -392,9 +394,6 @@ Error SocketNode::RecvHelper(const HandleAttr& attr,
                              int flags,
                              PP_Resource* addr,
                              int* out_len) {
-  if (0 == socket_resource_)
-    return EBADF;
-
   if (TestStreamFlags(SSF_RECV_ENDOFSTREAM)) {
     *out_len = 0;
     return 0;
@@ -429,6 +428,11 @@ Error SocketNode::Send(const HandleAttr& attr,
                        size_t len,
                        int flags,
                        int* out_len) {
+  if (0 == socket_resource_)
+    return EBADF;
+
+  if (0 == remote_addr_)
+    return ENOTCONN;
   return SendHelper(attr, buf, len, flags, remote_addr_, out_len);
 }
 
@@ -446,6 +450,9 @@ Error SocketNode::SendTo(const HandleAttr& attr,
   if (0 == addr)
     return EINVAL;
 
+  if (0 == socket_resource_)
+    return EBADF;
+
   Error err = SendHelper(attr, buf, len, flags, addr, out_len);
   filesystem_->ppapi()->ReleaseResource(addr);
   return err;
@@ -457,12 +464,6 @@ Error SocketNode::SendHelper(const HandleAttr& attr,
                              int flags,
                              PP_Resource addr,
                              int* out_len) {
-  if (0 == socket_resource_)
-    return EBADF;
-
-  if (0 == addr)
-    return ENOTCONN;
-
   int ms = write_timeout_;
   if ((flags & MSG_DONTWAIT) || !attr.IsBlocking())
     ms = 0;
