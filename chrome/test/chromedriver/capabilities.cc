@@ -144,20 +144,22 @@ Status ParseMobileEmulation(const base::Value& option,
     double device_scale_factor = 0;
     bool touch = true;
     bool mobile = true;
-    if (!metrics->GetInteger("width", &width) ||
-        !metrics->GetInteger("height", &height) ||
+
+    if (metrics->HasKey("width") && !metrics->GetInteger("width", &width))
+      return Status(kUnknownError, "'width' must be an integer");
+
+    if (metrics->HasKey("height") && !metrics->GetInteger("height", &height))
+      return Status(kUnknownError, "'height' must be an integer");
+
+    if (metrics->HasKey("pixelRatio") &&
         !metrics->GetDouble("pixelRatio", &device_scale_factor))
-      return Status(kUnknownError, "invalid 'deviceMetrics'");
+      return Status(kUnknownError, "'pixelRatio' must be a double");
 
-    if (metrics->HasKey("touch")) {
-      if (!metrics->GetBoolean("touch", &touch))
-        return Status(kUnknownError, "'touch' must be a boolean");
-    }
+    if (metrics->HasKey("touch") && !metrics->GetBoolean("touch", &touch))
+      return Status(kUnknownError, "'touch' must be a boolean");
 
-    if (metrics->HasKey("mobile")) {
-      if (!metrics->GetBoolean("mobile", &mobile))
-        return Status(kUnknownError, "'mobile' must be a boolean");
-    }
+    if (metrics->HasKey("mobile") && !metrics->GetBoolean("mobile", &mobile))
+      return Status(kUnknownError, "'mobile' must be a boolean");
 
     DeviceMetrics* device_metrics =
         new DeviceMetrics(width, height, device_scale_factor, touch, mobile);
