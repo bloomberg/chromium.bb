@@ -15,4 +15,7 @@ declare_args() {
 
   # Use Playready CDMs.
   use_playready = false
+
+  # Set this true to perform an audio-only build.
+  disable_display = false
 }

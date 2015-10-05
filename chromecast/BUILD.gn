@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromecast/build/tests/cast_test.gni")
 import("//chromecast/chromecast.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 import("//ui/ozone/ozone.gni")
 
@@ -33,17 +33,118 @@ component("chromecast") {
   ]
 }
 
-group("chromecast_unittests") {
-  testonly = true
-
-  deps = [
-    # TODO(slan): Get this target building and comment it in.
-    # "//chromecast/app:cast_shell_unittests",
+# A list of all public test() binaries. This is an organizational target that
+# cannot be depended upon or built directly. Build cast_group_test_list instead.
+cast_test_group("cast_tests") {
+  tests = [
+    "//base:base_unittests",
     "//chromecast/base:cast_base_unittests",
     "//chromecast/crypto:cast_crypto_unittests",
     "//chromecast/crash:cast_crash_unittests",
-    "//chromecast/media:cast_media_unittests",
+    "//content/test:content_unittests",
+    "//crypto:crypto_unittests",
+    "//ipc:ipc_tests",
+    "//jingle:jingle_unittests",
+    "//media:media_unittests",
+    "//media/midi:midi_unittests",
+    "//net:net_unittests",
+    "//ppapi:ppapi_unittests",
+    "//sandbox/linux:sandbox_linux_unittests",
+    "//sql:sql_unittests",
+    "//sync:sync_unit_tests",
+    "//third_party/cacheinvalidation:cacheinvalidation_unittests",
+    "//ui/base:ui_base_unittests",
+    "//url:url_unittests",
   ]
+
+  filters = []
+
+  if (target_cpu == "arm" && target_os == "linux") {
+    filters += [
+      # Run net_unittests first to avoid random failures due to slow python startup
+      # KeygenHandlerTest.SmokeTest and KeygenHandlerTest.ConcurrencyTest fail due to
+      # readonly certdb (b/8153161)
+      # URLRequestTestHTTP.GetTest_ManyCookies takes roughly 55s to run. Increase
+      # timeout to 90s from 45s to allow it to pass (b/19821476)
+      # ProxyScriptFetcherImplTest.HttpMimeType is flaking (b/19848784)
+      # Running a batch of net_unittests has high overhead. Run tests in batches of 25 to reduce number of batches (b/23156294).
+      "net_unittests --gtest_filter=-KeygenHandlerTest.SmokeTest:KeygenHandlerTest.ConcurrencyTest:ProxyScriptFetcherImplTest.HttpMimeType --test-launcher-timeout=90000 --test-launcher-batch-limit=25",
+
+      # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
+      # Disable ProcessUtilTest.* (need to define OS_ANDROID)
+      # Disable StackContainer.BufferAlignment (don't support 16-byte alignment)
+      # Disable SystemMetrics2Test.GetSystemMemoryInfo (buffers>0 can't be guaranteed)
+      "base_unittests --gtest_filter=-ProcessMetricsTest.GetNumberOfThreads:ProcessUtilTest.*:StackContainer.BufferAlignment:SystemMetrics2Test.GetSystemMemoryInfo",
+
+      # DesktopCaptureDeviceTest.*: No capture device on Eureka
+      # Disable PepperGamepadHostTest.WaitForReply (pepper not supported on Eureka)
+      # Disable GpuDataManagerImplPrivateTest.SetGLStrings and
+      # RenderWidgetHostTest.Background because we disable the blacklist to enable WebGL (b/16142554)
+      "content_unittests --gtest_filter=-DOMStorageDatabaseTest.TestCanOpenAndReadWebCoreDatabase:DesktopCaptureDeviceTest.Capture:GamepadProviderTest.PollingAccess:GpuDataManagerImplPrivateTest.SetGLStrings:PepperGamepadHostTest.WaitForReply:RenderWidgetHostTest.Background",
+
+      # Disable VP9 related tests (b/18593324)
+      #   PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM
+      #   PipelineIntegrationTest.BasicPlayback_VideoOnly_VP9_WebM
+      #   PipelineIntegrationTest.BasicPlayback_VP9*
+      #   PipelineIntegrationTest.P444_VP9_WebM
+      # Disable VP8A tests (b/18593324)
+      #   PipelineIntegrationTest.BasicPlayback_VP8A*
+      # Disable OpusAudioDecoderTest/AudioDecoderTest.ProduceAudioSamples/0 (unit
+      # test fails when Opus decoder uses fixed-point)
+      # Due to b/16456550, disable the following four test cases:
+      #   AudioOutputControllerTest.PlayDivertSwitchDeviceRevertClose
+      #   AudioOutputControllerTest.PlaySwitchDeviceClose
+      #   AudioStreamHandlerTest.Play
+      #   SoundsManagerTest.Play
+      # Disable AudioStreamHandlerTest.ConsecutivePlayRequests (b/16539293)
+      "media_unittests --gtest_filter=-AudioOutputControllerTest.PlayDivertSwitchDeviceRevertClose:AudioOutputControllerTest.PlaySwitchDeviceClose:AudioStreamHandlerTest.Play:AudioStreamHandlerTest.ConsecutivePlayRequests:PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM:PipelineIntegrationTest.BasicPlayback_VideoOnly_VP9_WebM:PipelineIntegrationTest.BasicPlayback_VP9*:PipelineIntegrationTest.P444_VP9_WebM:PipelineIntegrationTest.BasicPlayback_VP8A*:OpusAudioDecoderTest/AudioDecoderTest.ProduceAudioSamples/0:SoundsManagerTest.Play",
+      "sync_unit_tests --gtest_filter=-SyncHttpBridgeTest.*",
+
+      # DoAppendUTF8Invalid fails because of dcheck_always_on flag in Eng builds
+      "url_unittests --gtest_filter=-URLCanonTest.DoAppendUTF8Invalid",
+    ]
+  } else if (target_cpu != "arm" || target_os == "android") {
+    filters += [
+      # Disable PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM (not supported)
+      "media_unittests --gtest_filter=-PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM",
+    ]
+  }
+
+  if (!is_android) {
+    tests += [
+      "//chromecast/app:cast_shell_unittests",
+      "//chromecast/browser:cast_shell_browser_test",
+      "//chromecast/media:cast_media_unittests",
+    ]
+
+    filters += [ "cast_shell_browser_test --no-sandbox --disable-gpu" ]
+  }
+
+  if (!disable_display) {
+    tests += [ "//gpu:gpu_unittests" ]
+  } else {
+    filters += [
+      # These are not supported by the backend right now. b/21737919
+      "cast_media_unittests --gtest_filter=-AudioVideoPipelineDeviceTest.VorbisPlayback:AudioVideoPipelineDeviceTest.WebmPlayback",
+    ]
+  }
+}
+
+# Creates the build and run lists for all test targets.
+cast_test_group_list("cast_test_lists") {
+  build_list_path = "$root_out_dir/tests/build_test_list.txt"
+
+  run_list_path = "$root_out_dir/tests/run_test_list.txt"
+
+  additional_options = [ "--ozone-platform=test" ]
+
+  build_tests = true
+
+  test_groups = [ ":cast_tests" ]
+
+  if (chromecast_branding != "public") {
+    test_groups += [ "//chromecast/internal:internal_cast_tests" ]
+  }
 }
 
 source_set("cast_shell_common") {

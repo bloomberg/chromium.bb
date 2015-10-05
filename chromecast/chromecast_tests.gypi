@@ -101,6 +101,7 @@
         '../media/media.gyp:media_unittests',
         '../media/midi/midi.gyp:midi_unittests',
         '../net/net.gyp:net_unittests',
+        '../ppapi/ppapi_internal.gyp:ppapi_unittests',
         '../sandbox/sandbox.gyp:sandbox_linux_unittests',
         '../sql/sql.gyp:sql_unittests',
         '../sync/sync.gyp:sync_unit_tests',
@@ -183,11 +184,6 @@
               'cast_media_unittests --gtest_filter=-AudioVideoPipelineDeviceTest.VorbisPlayback:AudioVideoPipelineDeviceTest.WebmPlayback',
             ],
           }
-        }],
-        ['enable_plugins==1', {
-          'dependencies': [
-            '../ppapi/ppapi_internal.gyp:ppapi_unittests',
-          ],
         }],
       ],
       'includes': ['build/tests/test_list.gypi'],
@@ -311,6 +307,7 @@
       ],  # end of targets
     }, {  # OS!="android"
       'targets': [
+        # GN target: //chromecast/browser:test_support
         {
           'target_name': 'cast_shell_test_support',
           'type': '<(component)',
@@ -343,6 +340,7 @@
             'browser/test/chromecast_shell_browser_test.cc',
           ],
         },
+        # GN target: //chromecast/app:cast_shell_unittests
         {
           'target_name': 'cast_shell_unittests',
           'type': '<(gtest_target_type)',
@@ -360,6 +358,7 @@
         # Note: producing a predetermined list of dependent inputs on which to
         # regenerate this output is difficult with GYP. This file is not
         # guaranteed to be regenerated outside of a clean build.
+        # GN target: //chromecast:cast_test_lists
         {
           'target_name': 'cast_test_lists',
           'type': 'none',
