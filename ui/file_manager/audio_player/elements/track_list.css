@@ -32,7 +32,7 @@
   width: 100%;
 }
 
-:host(:not([expanded]):host) > .track:not([active]) {
+:host(:not([expanded])) > .track:not([active]) {
   display: none;
 }
 

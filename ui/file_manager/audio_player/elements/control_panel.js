@@ -163,8 +163,8 @@
       if (this.volumeSliderShown) {
         // If the focus goes out of the volume, hide the volume control.
         if (!event.relatedTarget ||
-            (event.relatedTarget !== this.$.volumeButton &&
-             event.relatedTarget !== this.$.volumeSlider)) {
+            (!this.$.volumeButton.contains(event.relatedTarget) &&
+             !this.$.volumeSlider.contains(event.relatedTarget))) {
           this.volumeSliderShown = false;
         }
       }
