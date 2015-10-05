@@ -361,7 +361,8 @@ public:
     LayoutRect scrollIntoView(
         const LayoutRect& rectInContent,
         const ScrollAlignment& alignX,
-        const ScrollAlignment& alignY) override;
+        const ScrollAlignment& alignY,
+        ScrollType = ProgrammaticScroll) override;
 
     // The window that hosts the FrameView. The FrameView will communicate scrolls and repaints to the
     // host window in the window's coordinate space.

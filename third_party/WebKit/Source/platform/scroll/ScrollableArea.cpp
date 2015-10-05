@@ -213,15 +213,18 @@ void ScrollableArea::userScrollHelper(const DoublePoint& position, ScrollBehavio
 {
     cancelProgrammaticScrollAnimation();
 
+    double x = userInputScrollable(HorizontalScrollbar) ? position.x() : scrollAnimator()->currentPosition().x();
+    double y = userInputScrollable(VerticalScrollbar) ? position.y() : scrollAnimator()->currentPosition().y();
+
     // Smooth user scrolls (keyboard, wheel clicks) are handled via the userScroll method.
     // TODO(bokan): The userScroll method should probably be modified to call this method
     //              and ScrollAnimator to have a simpler animateToOffset method like the
     //              ProgrammaticScrollAnimator.
     ASSERT(scrollBehavior == ScrollBehaviorInstant);
-    scrollAnimator()->scrollToOffsetWithoutAnimation(toFloatPoint(position));
+    scrollAnimator()->scrollToOffsetWithoutAnimation(FloatPoint(x, y));
 }
 
-LayoutRect ScrollableArea::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
+LayoutRect ScrollableArea::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType)
 {
     // TODO(bokan): This should really be implemented here but ScrollAlignment is in Core which is a dependency violation.
     ASSERT_NOT_REACHED();

@@ -3678,7 +3678,7 @@ bool FrameView::shouldPlaceVerticalScrollbarOnLeft() const
     return false;
 }
 
-LayoutRect FrameView::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
+LayoutRect FrameView::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType scrollType)
 {
     LayoutRect viewRect(visibleContentRect());
     LayoutRect exposeRect = ScrollAlignment::getRectToExpose(viewRect, rectInContent, alignX, alignY);
@@ -3686,7 +3686,7 @@ LayoutRect FrameView::scrollIntoView(const LayoutRect& rectInContent, const Scro
     double xOffset = exposeRect.x();
     double yOffset = exposeRect.y();
 
-    setScrollPosition(DoublePoint(xOffset, yOffset), ProgrammaticScroll);
+    setScrollPosition(DoublePoint(xOffset, yOffset), scrollType);
 
     // Scrolling the FrameView cannot change the input rect's location relative to the document.
     return rectInContent;

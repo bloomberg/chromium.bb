@@ -334,7 +334,7 @@ public:
 
     void scrollToOffset(const DoubleSize&, ScrollBehavior = ScrollBehaviorInstant);
     void scrollByRecursively(const DoubleSize& delta, ScrollOffsetClamping = ScrollOffsetUnclamped);
-    void scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
+    void scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType = ProgrammaticScroll);
 
     LayoutRectOutsets marginBoxOutsets() const override { return m_marginBoxOutsets; }
     LayoutUnit marginTop() const override { return m_marginBoxOutsets.top(); }

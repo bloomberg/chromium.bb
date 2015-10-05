@@ -180,7 +180,7 @@ public:
     // FIXME: We shouldn't allow access to m_overflowRect outside this class.
     LayoutRect overflowRect() const { return m_overflowRect; }
 
-    void scrollToPosition(const DoublePoint& scrollPosition, ScrollOffsetClamping = ScrollOffsetUnclamped, ScrollBehavior = ScrollBehaviorInstant);
+    void scrollToPosition(const DoublePoint& scrollPosition, ScrollOffsetClamping = ScrollOffsetUnclamped, ScrollBehavior = ScrollBehaviorInstant, ScrollType = ProgrammaticScroll);
 
     void scrollToOffset(const DoubleSize& scrollOffset, ScrollOffsetClamping clamp = ScrollOffsetUnclamped, ScrollBehavior scrollBehavior = ScrollBehaviorInstant)
     {
@@ -245,7 +245,7 @@ public:
 
     bool hitTestResizerInFragments(const PaintLayerFragments&, const HitTestLocation&) const;
 
-    LayoutRect scrollIntoView(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY) override;
+    LayoutRect scrollIntoView(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType = ProgrammaticScroll) override;
 
     // Returns true if scrollable area is in the FrameView's collection of scrollable areas. This can
     // only happen if we're scrollable, visible to hit test, and do in fact overflow. This means that

@@ -638,13 +638,13 @@ void PaintLayerScrollableArea::computeScrollDimensions()
     setScrollOrigin(IntPoint(-scrollableLeftOverflow, -scrollableTopOverflow));
 }
 
-void PaintLayerScrollableArea::scrollToPosition(const DoublePoint& scrollPosition, ScrollOffsetClamping clamp, ScrollBehavior scrollBehavior)
+void PaintLayerScrollableArea::scrollToPosition(const DoublePoint& scrollPosition, ScrollOffsetClamping clamp, ScrollBehavior scrollBehavior, ScrollType scrollType)
 {
     cancelProgrammaticScrollAnimation();
 
     DoublePoint newScrollPosition = clamp == ScrollOffsetClamped ? clampScrollPosition(scrollPosition) : scrollPosition;
     if (newScrollPosition != scrollPositionDouble())
-        ScrollableArea::setScrollPosition(newScrollPosition, ProgrammaticScroll, scrollBehavior);
+        ScrollableArea::setScrollPosition(newScrollPosition, scrollType, scrollBehavior);
 }
 
 void PaintLayerScrollableArea::updateScrollDimensions(DoubleSize& scrollOffset, bool& autoHorizontalScrollBarChanged, bool& autoVerticalScrollBarChanged)
@@ -1001,6 +1001,10 @@ static inline const LayoutObject& layoutObjectForScrollbar(const LayoutObject& l
             if (frameLayoutObject && frameLayoutObject->style()->hasPseudoStyle(SCROLLBAR))
                 return *frameLayoutObject;
         }
+
+        if (layoutObject.styleRef().hasPseudoStyle(SCROLLBAR))
+            return layoutObject;
+
         if (ShadowRoot* shadowRoot = node->containingShadowRoot()) {
             if (shadowRoot->type() == ShadowRootType::UserAgent)
                 return *shadowRoot->host()->layoutObject();
@@ -1351,7 +1355,7 @@ void PaintLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSize
     // FIXME (Radar 4118564): We should also autoscroll the window as necessary to keep the point under the cursor in view.
 }
 
-LayoutRect PaintLayerScrollableArea::scrollIntoView(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
+LayoutRect PaintLayerScrollableArea::scrollIntoView(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType scrollType)
 {
     LayoutRect localExposeRect(box().absoluteToLocalQuad(FloatQuad(FloatRect(rect)), UseTransforms).boundingBox());
     localExposeRect.move(-box().borderLeft(), -box().borderTop());
@@ -1363,7 +1367,7 @@ LayoutRect PaintLayerScrollableArea::scrollIntoView(const LayoutRect& rect, cons
         return rect;
 
     DoubleSize oldScrollOffset = adjustedScrollOffset();
-    scrollToPosition(clampedScrollPosition);
+    scrollToPosition(clampedScrollPosition, ScrollOffsetUnclamped, ScrollBehaviorInstant, scrollType);
     DoubleSize scrollOffsetDifference = adjustedScrollOffset() - oldScrollOffset;
     localExposeRect.move(-LayoutSize(scrollOffsetDifference));
     return LayoutRect(box().localToAbsoluteQuad(FloatQuad(FloatRect(localExposeRect)), UseTransforms).boundingBox());

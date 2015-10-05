@@ -93,7 +93,7 @@ ScrollBehavior RootFrameViewport::scrollBehaviorStyle() const
     return layoutViewport().scrollBehaviorStyle();
 }
 
-LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
+LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType scrollType)
 {
     // We want to move the rect into the viewport that excludes the scrollbars so we intersect
     // the visual viewport with the scrollbar-excluded frameView content rect. However, we don't
@@ -113,7 +113,7 @@ LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, co
         ScrollAlignment::getRectToExpose(viewRectInContent, rectInContent, alignX, alignY);
     DoublePoint targetOffset(targetViewport.x(), targetViewport.y());
 
-    setScrollPosition(targetOffset, ProgrammaticScroll);
+    setScrollPosition(targetOffset, scrollType, ScrollBehaviorInstant);
 
     // RootFrameViewport only changes the viewport relative to the document so we can't change the input
     // rect's location relative to the document origin.

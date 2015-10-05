@@ -37,7 +37,8 @@ public:
     LayoutRect scrollIntoView(
         const LayoutRect& rectInContent,
         const ScrollAlignment& alignX,
-        const ScrollAlignment& alignY) override;
+        const ScrollAlignment& alignY,
+        ScrollType = ProgrammaticScroll) override;
     DoubleRect visibleContentRectDouble(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
     IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
     bool shouldUseIntegerScrollOffset() const override;

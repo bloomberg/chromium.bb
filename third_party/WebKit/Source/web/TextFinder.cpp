@@ -636,7 +636,7 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect)
     if (!activeMatchBoundingBox.isEmpty()) {
         if (m_activeMatch->firstNode() && m_activeMatch->firstNode()->layoutObject()) {
             m_activeMatch->firstNode()->layoutObject()->scrollRectToVisible(
-                LayoutRect(activeMatchBoundingBox), ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded);
+                LayoutRect(activeMatchBoundingBox), ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded, UserScroll);
         }
 
         // Zoom to the active match.

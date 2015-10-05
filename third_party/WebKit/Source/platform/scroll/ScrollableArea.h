@@ -94,7 +94,7 @@ public:
     // Note, in the case of a Document container, such as FrameView, the output will always be the input rect
     // since scrolling it can't change the location of content relative to the document, unlike an overflowing
     // element.
-    virtual LayoutRect scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
+    virtual LayoutRect scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType = ProgrammaticScroll);
 
     static bool scrollBehaviorFromString(const String&, ScrollBehavior&);
 

@@ -622,13 +622,13 @@ PaintLayer* LayoutObject::enclosingLayer() const
     return nullptr;
 }
 
-bool LayoutObject::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
+bool LayoutObject::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType scrollType)
 {
     LayoutBox* enclosingBox = this->enclosingBox();
     if (!enclosingBox)
         return false;
 
-    enclosingBox->scrollRectToVisible(rect, alignX, alignY);
+    enclosingBox->scrollRectToVisible(rect, alignX, alignY, scrollType);
     return true;
 }
 

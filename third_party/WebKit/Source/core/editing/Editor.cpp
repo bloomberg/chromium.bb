@@ -1167,7 +1167,7 @@ static PassRefPtrWillBeRawPtr<Range> findStringAndScrollToVisibleAlgorithm(Edito
         return nullptr;
 
     nextMatch->firstNode()->layoutObject()->scrollRectToVisible(LayoutRect(nextMatch->boundingBox()),
-        ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded);
+        ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded, UserScroll);
 
     return nextMatch.release();
 }
