@@ -221,6 +221,8 @@
         #'--last_chrome_installer=C:/Temp/base',
         #'--setup_exe_format=DIFF',
         #'--diff_algorithm=COURGETTE',
+        # Optional argument for verbose archiving output.
+        #'--verbose',
       ],
       'message': 'Create installer archive',
     },
