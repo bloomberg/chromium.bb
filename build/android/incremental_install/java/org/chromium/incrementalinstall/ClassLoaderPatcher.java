@@ -120,12 +120,12 @@ final class ClassLoaderPatcher {
         // data directory first.
         // https://code.google.com/p/android/issues/detail?id=79480
         if (mIsPrimaryProcess) {
+            ensureAppFilesSubDirExists();
             LockFile lockFile = LockFile.acquireRuntimeLock(copyLibsLockFile);
             if (lockFile == null) {
                 LockFile.waitForRuntimeLock(copyLibsLockFile, 10 * 1000);
             } else {
                 try {
-                    ensureAppFilesSubDirExists();
                     localLibsDir.mkdir();
                     localLibsDir.setReadable(true, false);
                     localLibsDir.setExecutable(true, false);
