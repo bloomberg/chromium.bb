@@ -16,6 +16,8 @@
           '../testing/scripts/run_telemetry_as_googletest.py',
           # The following represent the actual tests.
           '../content/test/gpu/',
+          # For webgl_conformance_expectations_unittest
+          '../third_party/webgl/src/sdk/tests/',
         ],
         'command': [
           '../testing/scripts/run_telemetry_as_googletest.py',

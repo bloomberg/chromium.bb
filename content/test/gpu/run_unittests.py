@@ -12,11 +12,12 @@ import os
 import subprocess
 import sys
 
+from gpu_tests import path_util
 
 if __name__ == '__main__':
   gpu_test_dir = os.path.dirname(os.path.realpath(__file__))
-  telemetry_dir = os.path.realpath(
-    os.path.join(gpu_test_dir, '..', '..', '..', 'tools', 'telemetry'))
+  telemetry_dir = os.path.join(path_util.GetChromiumSrcDir(), 'tools',
+                               'telemetry')
 
   env = os.environ.copy()
   if 'PYTHONPATH' in env:
@@ -24,7 +25,10 @@ if __name__ == '__main__':
   else:
     env['PYTHONPATH'] = telemetry_dir
 
-  path_to_run_tests = os.path.join(telemetry_dir, 'telemetry', 'testing',
-                                   'run_tests.py')
-  argv = ['--no-browser', '--top-level-dir', gpu_test_dir] + sys.argv[1:]
+  path_to_run_tests = os.path.realpath(os.path.join(
+      telemetry_dir, 'telemetry', 'testing', 'run_tests.py'))
+  client_config = os.path.join(path_util.GetChromiumSrcDir(), 'tools', 'perf',
+                               'core', 'binary_dependencies.json')
+  argv = ['--no-browser', '--top-level-dir', gpu_test_dir,
+          '--client-config', client_config] + sys.argv[1:]
   sys.exit(subprocess.call([sys.executable, path_to_run_tests] + argv, env=env))
