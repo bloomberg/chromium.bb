@@ -71,6 +71,6 @@ private:
     WebPrivateOwnPtr<Impl> m_impl;
 };
 
-} // WebKit
+} // namespace blink
 
 #endif

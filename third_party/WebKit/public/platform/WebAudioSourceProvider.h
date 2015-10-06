@@ -43,6 +43,6 @@ public:
     virtual void setClient(WebAudioSourceProviderClient*) { }
 };
 
-} // WebKit
+} // namespace blink
 
 #endif // WebAudioSourceProvider_h
