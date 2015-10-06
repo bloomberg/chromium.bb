@@ -45,6 +45,9 @@ class DownloadItemNotification : public DownloadNotification,
   void OnNotificationButtonClick(int button_index) override;
   std::string GetNotificationId() const override;
 
+  // Disables popup by setting low priority.
+  void DisablePopup();
+
  private:
   friend class test::DownloadItemNotificationTest;
 

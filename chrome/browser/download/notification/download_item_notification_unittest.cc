@@ -250,4 +250,14 @@ TEST_F(DownloadItemNotificationTest, OpenWhenComplete) {
   // automatically due to the open-when-complete flag.
 }
 
+TEST_F(DownloadItemNotificationTest, DisablePopup) {
+  CreateDownloadItemNotification();
+  download_item_->NotifyObserversDownloadOpened();
+
+  EXPECT_EQ(message_center::DEFAULT_PRIORITY, notification()->priority());
+
+  download_item_notification_->DisablePopup();
+  EXPECT_EQ(message_center::LOW_PRIORITY, notification()->priority());
+}
+
 }  // namespace test

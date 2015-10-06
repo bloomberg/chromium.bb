@@ -60,8 +60,9 @@ static const TestAccountInfo kTestAccounts[] = {
     {"charlie@invalid.domain",   "10003", "hashcharl", "Charlie"},
 };
 
+template <typename T>
 bool IsInNotifications(
-    const message_center::NotificationList::Notifications& notifications,
+    const T& notifications,
     const std::string& id) {
   for (const auto& notification : notifications) {
     if (notification->id() == id)
@@ -722,9 +723,24 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
   EXPECT_EQ(1u, downloads.size());
   content::DownloadItem* download1or2 = downloads[0];
 
+  // Confirms that there is a notifications.
+  message_center::NotificationList::Notifications
+      visible_notifications = GetMessageCenter()->GetVisibleNotifications();
+  EXPECT_EQ(1u, visible_notifications.size());
+  EXPECT_TRUE(IsInNotifications(visible_notifications, notification_id1));
+
+  // Confirms that there is a popup notifications.
+  message_center::NotificationList::PopupNotifications
+      popup_notifications = GetMessageCenter()->GetPopupNotifications();
+  EXPECT_EQ(1u, popup_notifications.size());
+  EXPECT_TRUE(IsInNotifications(popup_notifications, notification_id1));
+
   // Starts the 2nd download and waits for a notification.
-  NotificationAddObserver download_start_notification_observer2;
+  NotificationAddObserver download_start_notification_observer2(2);
   ui_test_utils::NavigateToURL(browser(), url2);
+  // 2 notifications should be added. One is for new download (url2), and the
+  // other one is for reshowing the existing download (url1) as a low-priority
+  // notification.
   EXPECT_TRUE(download_start_notification_observer2.Wait());
 
   // Confirms that there are 2 downloads.
@@ -737,8 +753,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
   EXPECT_TRUE(download1 == download1or2 || download2 == download1or2);
 
   // Confirms that there are 2 notifications.
-  message_center::NotificationList::Notifications
-      visible_notifications = GetMessageCenter()->GetVisibleNotifications();
+  visible_notifications = GetMessageCenter()->GetVisibleNotifications();
   EXPECT_EQ(2u, visible_notifications.size());
 
   std::string notification_id2;
@@ -752,6 +767,23 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
   }
   EXPECT_TRUE(!notification_id2.empty());
 
+  // Confirms that the both notifications are visible either as popup or in the
+  // message center.
+  EXPECT_TRUE(IsInNotifications(visible_notifications, notification_id1));
+  EXPECT_TRUE(IsInNotifications(visible_notifications, notification_id2));
+
+  // Confirms that the new one is popup, and the old one is not.
+  popup_notifications = GetMessageCenter()->GetPopupNotifications();
+  EXPECT_EQ(1u, popup_notifications.size());
+  EXPECT_FALSE(IsInNotifications(popup_notifications, notification_id1));
+  EXPECT_TRUE(IsInNotifications(popup_notifications, notification_id2));
+
+  // Confirms that the old one is low priority, and the new one is default.
+  EXPECT_EQ(message_center::LOW_PRIORITY,
+            GetNotification(notification_id1)->priority());
+  EXPECT_EQ(message_center::DEFAULT_PRIORITY,
+            GetNotification(notification_id2)->priority());
+
   // Requests to complete the downloads.
   ui_test_utils::NavigateToURL(
       browser(), GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
@@ -763,12 +795,24 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
     download_change_notification_observer.Wait();
   }
 
+  // Confirms that the both notifications are visible either as popup or in the
+  // message center.
   visible_notifications = GetMessageCenter()->GetVisibleNotifications();
   EXPECT_EQ(2u, visible_notifications.size());
-  EXPECT_TRUE(IsInNotifications(visible_notifications,
-                                notification_id1));
-  EXPECT_TRUE(IsInNotifications(visible_notifications,
-                                notification_id2));
+  EXPECT_TRUE(IsInNotifications(visible_notifications, notification_id1));
+  EXPECT_TRUE(IsInNotifications(visible_notifications, notification_id2));
+
+  // Confirms that the both are popup'd.
+  popup_notifications = GetMessageCenter()->GetPopupNotifications();
+  EXPECT_EQ(2u, popup_notifications.size());
+  EXPECT_TRUE(IsInNotifications(popup_notifications, notification_id1));
+  EXPECT_TRUE(IsInNotifications(popup_notifications, notification_id2));
+
+  // Confirms that the both are default priority after downloads finish.
+  EXPECT_EQ(message_center::DEFAULT_PRIORITY,
+            GetNotification(notification_id1)->priority());
+  EXPECT_EQ(message_center::DEFAULT_PRIORITY,
+            GetNotification(notification_id2)->priority());
 
   // Confirms the types of download notifications are correct.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,

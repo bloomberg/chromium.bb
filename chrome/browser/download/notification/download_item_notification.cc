@@ -181,6 +181,8 @@ DownloadItemNotification::DownloadItemNotification(
   notification_->set_progress(0);
   notification_->set_never_timeout(false);
   notification_->set_adjust_icon(false);
+
+  Update();
 }
 
 DownloadItemNotification::~DownloadItemNotification() {
@@ -352,12 +354,13 @@ void DownloadItemNotification::UpdateNotificationData(
 
   notification_->set_title(GetTitle());
   notification_->set_message(GetStatusString());
-  notification_->set_priority(message_center::DEFAULT_PRIORITY);
 
   if (item_->IsDangerous()) {
     notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
     if (!model.MightBeMalicious())
       notification_->set_priority(message_center::HIGH_PRIORITY);
+    else
+      notification_->set_priority(message_center::DEFAULT_PRIORITY);
   } else {
     switch (item_->GetState()) {
       case content::DownloadItem::IN_PROGRESS: {
@@ -374,6 +377,7 @@ void DownloadItemNotification::UpdateNotificationData(
       }
       case content::DownloadItem::COMPLETE:
         DCHECK(item_->IsDone());
+        notification_->set_priority(message_center::DEFAULT_PRIORITY);
         notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
         notification_->set_progress(100);
         break;
@@ -391,6 +395,7 @@ void DownloadItemNotification::UpdateNotificationData(
         // be updated. (same as the case of type = COMPLETE)
         notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
         notification_->set_progress(0);
+        notification_->set_priority(message_center::DEFAULT_PRIORITY);
         break;
       case content::DownloadItem::MAX_DOWNLOAD_STATE:  // sentinel
         NOTREACHED();
@@ -561,6 +566,17 @@ void DownloadItemNotification::SetNotificationVectorIcon(gfx::VectorIconId id,
   vector_icon_params_ = std::make_pair(id, color);
   image_resource_id_ = 0;
   notification_->set_icon(gfx::Image(gfx::CreateVectorIcon(id, 40, color)));
+}
+
+void DownloadItemNotification::DisablePopup() {
+  if (notification_->priority() == message_center::LOW_PRIORITY)
+    return;
+  // Hides a notification from popup notifications if it's a pop-up, by
+  // decreasing its priority and reshowing itself. Low-priority notifications
+  // doesn't pop-up itself so this logic works as disabling pop-up.
+  CloseNotificationByNonUser();
+  notification_->set_priority(message_center::LOW_PRIORITY);
+  g_browser_process->notification_ui_manager()->Add(*notification_, profile());
 }
 
 void DownloadItemNotification::OnImageLoaded(const std::string& image_data) {
