@@ -112,6 +112,7 @@ void SendUInt32(mach_port_t port, uint32_t message) {
   header->msgh_local_port = MACH_PORT_NULL;
   header->msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, 0);
   header->msgh_reserved = 0;
+  header->msgh_id = 0;
   header->msgh_size = total_size;
   memcpy(static_cast<char*>(buffer) + sizeof(mach_msg_header_t), &message,
          message_size);
