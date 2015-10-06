@@ -19,27 +19,6 @@ NSString* const kNSErrorPeerCertificateChainKey =
 
 namespace {
 
-// Creates certificate from subject string.
-net::X509Certificate* CreateCertFromSubject(NSString* subject) {
-  std::string issuer = "";
-  base::Time start_date;
-  base::Time expiration_date;
-  return new net::X509Certificate(base::SysNSStringToUTF8(subject),
-                                  issuer,
-                                  start_date,
-                                  expiration_date);
-}
-
-// Creates certificate using information extracted from NSError.
-scoped_refptr<net::X509Certificate> CreateCertFromSSLError(NSError* error) {
-  scoped_refptr<net::X509Certificate> cert = web::CreateCertFromChain(
-      error.userInfo[web::kNSErrorPeerCertificateChainKey]);
-  if (cert)
-    return cert;
-  return CreateCertFromSubject(
-      error.userInfo[NSURLErrorFailingURLStringErrorKey]);
-}
-
 // Maps NSError code to net::CertStatus.
 net::CertStatus GetCertStatusFromNSErrorCode(NSInteger code) {
   switch (code) {
@@ -99,21 +78,34 @@ void EnsureFutureTrustEvaluationSucceeds(SecTrustRef trust) {
   SecTrustSetExceptions(trust, exceptions);
 }
 
-BOOL IsWKWebViewSSLError(NSError* error) {
-  // SSL errors range is (-2000..-1200], represented by kCFURLError constants:
-  // (kCFURLErrorCannotLoadFromNetwork..kCFURLErrorSecureConnectionFailed].
-  // It's reasonable to expect that all SSL errors will have the error code
-  // less or equal to NSURLErrorSecureConnectionFailed but greater than
-  // NSURLErrorCannotLoadFromNetwork.
-  return [error.domain isEqualToString:NSURLErrorDomain] &&
-         (error.code <= NSURLErrorSecureConnectionFailed &&
-          NSURLErrorCannotLoadFromNetwork < error.code);
+BOOL IsWKWebViewSSLCertError(NSError* error) {
+  if (![error.domain isEqualToString:NSURLErrorDomain]) {
+    return NO;
+  }
+
+  switch (error.code) {
+    case NSURLErrorServerCertificateHasBadDate:
+    case NSURLErrorServerCertificateUntrusted:
+    case NSURLErrorServerCertificateHasUnknownRoot:
+    case NSURLErrorServerCertificateNotYetValid:
+      return YES;
+    case NSURLErrorSecureConnectionFailed:
+      // Although the finer-grained errors above exist, iOS never uses them
+      // and instead signals NSURLErrorSecureConnectionFailed for both
+      // certificate failures and other SSL connection failures. Instead, check
+      // if the error has a certificate attached (crbug.com/539735).
+      return [error.userInfo[web::kNSErrorPeerCertificateChainKey] count] > 0;
+    default:
+      return NO;
+  }
 }
 
-void GetSSLInfoFromWKWebViewSSLError(NSError* error, net::SSLInfo* ssl_info) {
-  DCHECK(IsWKWebViewSSLError(error));
+void GetSSLInfoFromWKWebViewSSLCertError(NSError* error,
+                                         net::SSLInfo* ssl_info) {
+  DCHECK(IsWKWebViewSSLCertError(error));
   ssl_info->cert_status = GetCertStatusFromNSErrorCode(error.code);
-  ssl_info->cert = CreateCertFromSSLError(error);
+  ssl_info->cert = web::CreateCertFromChain(
+      error.userInfo[web::kNSErrorPeerCertificateChainKey]);
 }
 
 }  // namespace web

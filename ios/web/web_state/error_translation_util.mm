@@ -115,6 +115,27 @@ bool GetNetErrorFromIOSErrorCode(NSInteger ios_error_code,
     case kCFURLErrorDataLengthExceedsMaximum:
       *net_error_code = net::ERR_FILE_TOO_BIG;
       break;
+    case kCFURLErrorSecureConnectionFailed:
+      *net_error_code = net::ERR_SSL_PROTOCOL_ERROR;
+      break;
+    case kCFURLErrorServerCertificateHasBadDate:
+      *net_error_code = net::ERR_CERT_DATE_INVALID;
+      break;
+    case kCFURLErrorServerCertificateUntrusted:
+      *net_error_code = net::ERR_CERT_AUTHORITY_INVALID;
+      break;
+    case kCFURLErrorServerCertificateHasUnknownRoot:
+      *net_error_code = net::ERR_CERT_AUTHORITY_INVALID;
+      break;
+    case kCFURLErrorServerCertificateNotYetValid:
+      *net_error_code = net::ERR_CERT_DATE_INVALID;
+      break;
+    case kCFURLErrorClientCertificateRejected:
+      *net_error_code = net::ERR_BAD_SSL_CLIENT_AUTH_CERT;
+      break;
+    case kCFURLErrorClientCertificateRequired:
+      *net_error_code = net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
+      break;
     default:
       translation_success = false;
       break;

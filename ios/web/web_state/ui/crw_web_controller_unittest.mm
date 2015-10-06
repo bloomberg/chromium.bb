@@ -33,8 +33,11 @@
 #import "ios/web/web_state/ui/crw_web_controller+protected.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/web_state_impl.h"
+#import "ios/web/web_state/wk_web_view_security_util.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/base/test_data_directory.h"
 #include "net/ssl/ssl_info.h"
+#include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
@@ -879,15 +882,21 @@ WEB_TEST_F(CRWUIWebViewWebControllerTest,
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 // Tests that presentSSLError:forSSLStatus:recoverable:callback: is called with
 // correct arguments if WKWebView fails to load a page with bad SSL cert.
-TEST_F(CRWWKWebViewWebControllerTest, SSLError) {
+TEST_F(CRWWKWebViewWebControllerTest, SSLCertError) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
   ASSERT_FALSE([mockDelegate_ SSLInfo].is_valid());
 
+  scoped_refptr<net::X509Certificate> cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+
+  NSArray* chain = @[ static_cast<id>(cert->os_cert_handle()) ];
   NSError* error =
       [NSError errorWithDomain:NSURLErrorDomain
                           code:NSURLErrorServerCertificateHasUnknownRoot
-                      userInfo:nil];
+                      userInfo:@{
+                        web::kNSErrorPeerCertificateChainKey : chain,
+                      }];
   WKWebView* webView = static_cast<WKWebView*>([webController_ webView]);
   [static_cast<id<WKNavigationDelegate>>(webController_.get()) webView:webView
                                           didFailProvisionalNavigation:nil

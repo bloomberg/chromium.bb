@@ -240,8 +240,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)didBlockPopupWithURL:(GURL)popupURL sourceURL:(GURL)sourceURL;
 
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
-// Called when a load ends in an SSL error.
-- (void)handleSSLError:(NSError*)error;
+// Called when a load ends in an SSL error and certificate chain.
+- (void)handleSSLCertError:(NSError*)error;
 #endif
 
 // Adds an activity indicator tasks for this web controller.
@@ -835,11 +835,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 }
 
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
-- (void)handleSSLError:(NSError*)error {
-  DCHECK(web::IsWKWebViewSSLError(error));
+- (void)handleSSLCertError:(NSError*)error {
+  DCHECK(web::IsWKWebViewSSLCertError(error));
 
   net::SSLInfo sslInfo;
-  web::GetSSLInfoFromWKWebViewSSLError(error, &sslInfo);
+  web::GetSSLInfoFromWKWebViewSSLCertError(error, &sslInfo);
 
   web::SSLStatus sslStatus;
   sslStatus.security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
@@ -1326,8 +1326,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 #endif  // defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
-  if (web::IsWKWebViewSSLError(error))
-    [self handleSSLError:error];
+  if (web::IsWKWebViewSSLCertError(error))
+    [self handleSSLCertError:error];
   else
 #endif
     [self handleLoadError:error inMainFrame:YES];

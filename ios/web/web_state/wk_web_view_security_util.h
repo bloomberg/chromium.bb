@@ -32,13 +32,14 @@ scoped_refptr<net::X509Certificate> CreateCertFromTrust(SecTrustRef trust);
 // or trust represents a valid certificate chain.
 void EnsureFutureTrustEvaluationSucceeds(SecTrustRef trust);
 
-// Returns YES if geven error is a SSL error.
-BOOL IsWKWebViewSSLError(NSError* error);
+// Returns YES if given error is an SSL certificate error.
+BOOL IsWKWebViewSSLCertError(NSError* error);
 
 // Fills SSLInfo object with information extracted from |error|. Callers are
 // responsible to ensure that given |error| is an SSL error by calling
-// |web::IsSSLError| function.
-void GetSSLInfoFromWKWebViewSSLError(NSError* error, net::SSLInfo* ssl_info);
+// |web::IsWKWebViewSSLCertError| function.
+void GetSSLInfoFromWKWebViewSSLCertError(NSError* error,
+                                         net::SSLInfo* ssl_info);
 
 }  // namespace web
 
