@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
-#include "chrome/browser/sync/glue/autofill_wallet_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/sync/sessions/session_data_type_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/autofill/core/browser/autofill_wallet_data_type_controller.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
@@ -187,7 +187,10 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!wallet_disabled) {
     sync_service->RegisterDataTypeController(
         new browser_sync::AutofillWalletDataTypeController(
-            sync_client, syncer::AUTOFILL_WALLET_DATA));
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+            base::Bind(&ChromeReportUnrecoverableError), sync_client,
+            syncer::AUTOFILL_WALLET_DATA));
   }
 
   // Wallet metadata sync depends on Wallet data sync and is disabled by
@@ -196,7 +199,10 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!wallet_disabled && enabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
     sync_service->RegisterDataTypeController(
         new browser_sync::AutofillWalletDataTypeController(
-            sync_client, syncer::AUTOFILL_WALLET_METADATA));
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+            base::Bind(&ChromeReportUnrecoverableError), sync_client,
+            syncer::AUTOFILL_WALLET_DATA));
   }
 
   // Bookmark sync is enabled by default.  Register unless explicitly

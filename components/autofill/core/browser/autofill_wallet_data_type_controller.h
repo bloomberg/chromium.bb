@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
-#define CHROME_BROWSER_SYNC_GLUE_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_GLUE_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_SYNC_DRIVER_GLUE_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
 
 #include "base/basictypes.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -17,6 +17,9 @@ class AutofillWalletDataTypeController
  public:
   // |model_type| should be either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
   AutofillWalletDataTypeController(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const base::Closure& error_callback,
       sync_driver::SyncClient* sync_client,
       syncer::ModelType model_type);
 
@@ -41,6 +44,12 @@ class AutofillWalletDataTypeController
   // Returns true if the prefs are set such that wallet sync should be enabled.
   bool IsEnabled();
 
+  // A reference to the UI thread's task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+
+  // A reference to the DB thread's task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+
   sync_driver::SyncClient* const sync_client_;
   bool callback_registered_;
   syncer::ModelType model_type_;
@@ -57,4 +66,4 @@ class AutofillWalletDataTypeController
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_GLUE_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_

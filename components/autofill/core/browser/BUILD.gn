@@ -60,6 +60,8 @@ source_set("browser") {
     "autofill_sync_constants.h",
     "autofill_type.cc",
     "autofill_type.h",
+    "autofill_wallet_data_type_controller.cc",
+    "autofill_wallet_data_type_controller.h",
     "autofill_xml_parser.cc",
     "autofill_xml_parser.h",
     "card_unmask_delegate.cc",
