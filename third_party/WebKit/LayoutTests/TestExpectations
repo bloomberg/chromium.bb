@@ -753,8 +753,6 @@ crbug.com/400841 media/video-canvas-draw.html [ ImageOnlyFailure ]
 crbug.com/400829 media/video-object-fit.html [ ImageOnlyFailure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ ImageOnlyFailure ]
 
-crbug.com/539546 [ Debug ] css3/filters/effect-reference-tile-hw.html [ Pass Failure ImageOnlyFailure ]
-
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/441553 virtual/stable/web-animations-api [ Skip ]
 crbug.com/368946 virtual/stable/web-animations-api/eased-keyframes.html [ Pass ]
@@ -1130,6 +1128,10 @@ crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failur
 
 # Unclear semantics of ToString (actually ToPrimitive) across iframes.
 crbug.com/532469 http/tests/security/cross-frame-access-custom.html [ NeedsManualRebaseline ]
+
+crbug.com/538692 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
+crbug.com/538692 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
+crbug.com/538692 css3/filters/effect-reference-tile-hw.html [ NeedsRebaseline ]
 
 # Win10 specific failures that still need triaging.
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-properties-after-frame-navigated.html [ Failure ]
@@ -1607,8 +1609,6 @@ crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ 
 crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [ Slow Pass Failure ]
 
 crbug.com/538522 css3/filters/effect-reference-colorspace-hw.html [ Crash ImageOnlyFailure ]
-crbug.com/539227 [ Linux Mac Win Debug ] css3/filters/effect-reference-hw.html [ Crash ]
-crbug.com/539227 [ Linux Mac Win Debug ] css3/filters/effect-reference-subregion-hw.html [ Crash ]
 
 crbug.com/524646 [ Yosemite ] fast/dom/shadow/shadowdom-for-button.html [ ImageOnlyFailure ]
 
