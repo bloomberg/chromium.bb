@@ -112,25 +112,25 @@ class CSSValueKeywordsWriter(in_generator.Writer):
                         }
 
         self._value_keywords = self.in_file.name_dictionaries
-        first_property_id = 1
-        for offset, property in enumerate(self._value_keywords):
-            property['lower_name'] = property['name'].lower()
-            property['enum_name'] = self._enum_name_from_value_keyword(property['name'])
-            property['enum_value'] = first_property_id + offset
-            if property['name'].startswith('-internal-'):
-                assert property['mode'] is None, 'Can\'t specify mode for value keywords with the prefix "-internal-".'
-                property['mode'] = 'UASheet'
+        first_keyword_id = 1
+        for offset, keyword in enumerate(self._value_keywords):
+            keyword['lower_name'] = keyword['name'].lower()
+            keyword['enum_name'] = self._enum_name_from_value_keyword(keyword['name'])
+            keyword['enum_value'] = first_keyword_id + offset
+            if keyword['name'].startswith('-internal-'):
+                assert keyword['mode'] is None, 'Can\'t specify mode for value keywords with the prefix "-internal-".'
+                keyword['mode'] = 'UASheet'
             else:
-                assert property['mode'] != 'UASheet', 'UASheet mode only value keywords should have the prefix "-internal-".'
+                assert keyword['mode'] != 'UASheet', 'UASheet mode only value keywords should have the prefix "-internal-".'
 
     def _enum_name_from_value_keyword(self, value_keyword):
         return "CSSValue" + "".join(upper_first_letter(w) for w in value_keyword.split("-"))
 
-    def _enum_declaration(self, property):
-        return "    %(enum_name)s = %(enum_value)s," % property
+    def _enum_declaration(self, keyword):
+        return "    %(enum_name)s = %(enum_value)s," % keyword
 
-    def _case_value_keyword(self, property):
-        return "case %(enum_name)s:" % property
+    def _case_value_keyword(self, keyword):
+        return "case %(enum_name)s:" % keyword
 
     def generate_header(self):
         enum_enties = map(self._enum_declaration, [{'enum_name': 'CSSValueInvalid', 'enum_value': 0}] + self._value_keywords)
@@ -139,11 +139,11 @@ class CSSValueKeywordsWriter(in_generator.Writer):
             'class_name': self.class_name,
             'value_keyword_enums': "\n".join(enum_enties),
             'value_keywords_count': len(enum_enties),
-            'max_value_keyword_length': reduce(max, map(len, map(lambda property: property['name'], self._value_keywords))),
+            'max_value_keyword_length': max(len(keyword['name']) for keyword in self._value_keywords),
         }
 
     def _value_keywords_with_mode(self, mode):
-        return filter(lambda property: property['mode'] == mode, self._value_keywords)
+        return filter(lambda keyword: keyword['mode'] == mode, self._value_keywords)
 
     def generate_implementation(self):
         keyword_offsets = []
@@ -155,8 +155,8 @@ class CSSValueKeywordsWriter(in_generator.Writer):
         gperf_input = GPERF_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'class_name': self.class_name,
-            'value_keyword_strings': '\n'.join(map(lambda property: '    "%(name)s\\0"' % property, self._value_keywords)),
-            'value_keyword_offsets': '\n'.join(map(lambda offset: '  %d,' % offset, keyword_offsets)),
+            'value_keyword_strings': '\n'.join('    "%(name)s\\0"' % keyword for keyword in self._value_keywords),
+            'value_keyword_offsets': '\n'.join('  %d,' % offset for offset in keyword_offsets),
             'value_keyword_to_enum_map': '\n'.join('%(lower_name)s, %(enum_name)s' % keyword for keyword in self._value_keywords),
             'ua_sheet_mode_values_keywords': '\n        '.join(map(self._case_value_keyword, self._value_keywords_with_mode('UASheet'))),
             'quirks_mode_or_ua_sheet_mode_values_keywords': '\n    '.join(map(self._case_value_keyword, self._value_keywords_with_mode('QuirksOrUASheet'))),
