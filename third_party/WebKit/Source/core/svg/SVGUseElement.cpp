@@ -797,19 +797,13 @@ void SVGUseElement::notifyFinished(Resource* resource)
 
 bool SVGUseElement::resourceIsStillLoading() const
 {
-    if (m_resource && m_resource->isLoading())
-        return true;
-    return false;
+    return m_resource && m_resource->isLoading();
 }
 
 bool SVGUseElement::instanceTreeIsLoading(const SVGElement* targetInstance)
 {
-    for (const SVGElement* element = Traversal<SVGElement>::firstChild(*targetInstance); element; element = Traversal<SVGElement>::nextSibling(*element)) {
-        if (const SVGUseElement* use = element->correspondingUseElement()) {
-            if (use->resourceIsStillLoading())
-                return true;
-        }
-        if (element->hasChildren() && instanceTreeIsLoading(element))
+    for (const SVGElement* element = targetInstance; element; element = Traversal<SVGElement>::next(*element, targetInstance)) {
+        if (isSVGUseElement(*element) && toSVGUseElement(*element).resourceIsStillLoading())
             return true;
     }
     return false;
