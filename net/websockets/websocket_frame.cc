@@ -4,6 +4,9 @@
 
 #include "net/websockets/websocket_frame.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/basictypes.h"
@@ -16,6 +19,21 @@
 namespace net {
 
 namespace {
+
+// GCC (and Clang) can transparently use vector ops. Only try to do this on
+// architectures where we know it works, otherwise gcc will attempt to emulate
+// the vector ops, which is unlikely to be efficient.
+// TODO(ricea): Add ARCH_CPU_ARM_FAMILY when arm_neon=1 becomes the default.
+#if defined(COMPILER_GCC) && defined(ARCH_CPU_X86_FAMILY) && !defined(OS_NACL)
+
+using PackedMaskType = uint32_t __attribute__((vector_size(16)));
+
+#else
+
+using PackedMaskType = size_t;
+
+#endif  // defined(COMPILER_GCC) && defined(ARCH_CPU_X86_FAMILY) &&
+        // !defined(OS_NACL)
 
 const uint8 kFinalBit = 0x80;
 const uint8 kReserved1Bit = 0x40;
@@ -171,16 +189,14 @@ void MaskWebSocketFramePayload(const WebSocketMaskingKey& masking_key,
 
   DCHECK_GE(data_size, 0);
 
-  // Most of the masking is done one word at a time, except for the beginning
-  // and the end of the buffer which may be unaligned. We use size_t to get the
-  // word size for this architecture. We require it be a multiple of
-  // kMaskingKeyLength in size.
-  typedef size_t PackedMaskType;
-  PackedMaskType packed_mask_key = 0;
+  // Most of the masking is done in chunks of sizeof(PackedMaskType), except for
+  // the beginning and the end of the buffer which may be unaligned.
+  // PackedMaskType must be a multiple of kMaskingKeyLength in size.
+  PackedMaskType packed_mask_key;
   static const size_t kPackedMaskKeySize = sizeof(packed_mask_key);
   static_assert((kPackedMaskKeySize >= kMaskingKeyLength &&
                  kPackedMaskKeySize % kMaskingKeyLength == 0),
-                "word size is not a multiple of mask length");
+                "PackedMaskType size is not a multiple of mask length");
   char* const end = data + data_size;
   // If the buffer is too small for the vectorised version to be useful, revert
   // to the byte-at-a-time implementation early.

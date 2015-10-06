@@ -53,6 +53,14 @@ TEST_F(WebSocketFrameTestMaskBenchmark, BenchmarkMaskLongPayload) {
   Benchmark("Frame_mask_long_payload", &payload.front(), payload.size());
 }
 
+// A 31-byte payload is guaranteed to do 7 byte mask operations and 3 vector
+// mask operations with an 8-byte vector. With a 16-byte vector it will fall
+// back to the byte-only code path and do 31 byte mask operations.
+TEST_F(WebSocketFrameTestMaskBenchmark, Benchmark31BytePayload) {
+  std::vector<char> payload(31, 'a');
+  Benchmark("Frame_mask_31_payload", &payload.front(), payload.size());
+}
+
 }  // namespace
 
 }  // namespace net
