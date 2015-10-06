@@ -780,6 +780,8 @@ crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/fra
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/frameworks-steppings.html [ Crash ]
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-async/async-callstack-get-as-string.html [ Crash ]
 
+crbug.com/539725 [ Linux Debug ] inspector/elements/shadow/elements-panel-shadow-selection-on-refresh.html [ Slow Failure ]
+
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
 
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass Slow ]
