@@ -403,16 +403,15 @@ void GaiaScreenHandler::RegisterMessages() {
 void GaiaScreenHandler::OnPortalDetectionCompleted(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
-  VLOG(1) << "OnPortalDetectionCompleted " << state.status;
+  VLOG(1) << "OnPortalDetectionCompleted "
+          << NetworkPortalDetector::CaptivePortalStatusString(state.status);
 
-  NetworkPortalDetector::CaptivePortalStatus status = state.status;
+  const NetworkPortalDetector::CaptivePortalStatus status = state.status;
   if (status == captive_portal_status_)
     return;
 
-  // Only consider online/portal status.
-  if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE ||
-      status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL) {
-    captive_portal_status_ = status;
+  captive_portal_status_ = status;
+  if (signin_screen_handler_->ShouldLoadGaia()) {
     LoadAuthExtension(true /* force */, true /* silent_load */,
                       false /* offline */);
   }
@@ -841,15 +840,15 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
 }
 
 void GaiaScreenHandler::MaybePreloadAuthExtension() {
-  VLOG(1) << "MaybePreloadAuthExtension() call.";
+  VLOG(1) << "MaybePreloadAuthExtension";
 
   if (!network_portal_detector_) {
     NetworkPortalDetectorImpl* detector = new NetworkPortalDetectorImpl(
         g_browser_process->system_request_context(), false);
     detector->set_portal_test_url(GURL(kRestrictiveProxyURL));
     network_portal_detector_.reset(detector);
+    network_portal_detector_->AddObserver(this);
     network_portal_detector_->Enable(true);
-    network_portal_detector_->AddAndFireObserver(this);
   }
 
   // If cookies clearing was initiated or |dns_clear_task_running_| then auth
@@ -878,6 +877,9 @@ void GaiaScreenHandler::ShowWhitelistCheckFailedError() {
 void GaiaScreenHandler::LoadAuthExtension(bool force,
                                           bool silent_load,
                                           bool offline) {
+  VLOG(1) << "LoadAuthExtension, force: " << force
+          << ", silent_load: " << silent_load
+          << ", offline: " << offline;
   GaiaContext context;
   context.force_reload = force;
   context.is_local = offline;
@@ -916,7 +918,9 @@ SigninScreenHandlerDelegate* GaiaScreenHandler::Delegate() {
 
 bool GaiaScreenHandler::IsRestrictiveProxy() const {
   return captive_portal_status_ ==
-         NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
+             NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL ||
+         captive_portal_status_ ==
+             NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
 }
 
 }  // namespace chromeos
