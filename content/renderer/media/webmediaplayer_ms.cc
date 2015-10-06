@@ -180,8 +180,7 @@ void WebMediaPlayerMS::load(LoadType load_type,
 
   RenderFrame* const frame = RenderFrame::FromWebFrame(frame_);
   audio_renderer_ = renderer_factory_->GetAudioRenderer(
-    url,
-    frame->GetRoutingID());
+      url, frame->GetRoutingID(), std::string(), url::Origin());
 
   if (!video_frame_provider_ && !audio_renderer_) {
     SetNetworkState(WebMediaPlayer::NetworkStateNetworkError);

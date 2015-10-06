@@ -170,7 +170,9 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
     const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
     int source_render_frame_id,
-    int session_id)
+    int session_id,
+    const std::string& device_id,
+    const url::Origin& security_origin)
     : state_(UNINITIALIZED),
       source_render_frame_id_(source_render_frame_id),
       session_id_(session_id),
@@ -186,6 +188,8 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
                    0,
                    16,
                    0),
+      output_device_id_(device_id),
+      security_origin_(security_origin),
       render_callback_count_(0) {
   WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_frame_id=%d, session_id=%d, effects=%i",
@@ -206,8 +210,9 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   DCHECK(!sink_.get());
   DCHECK(!source_);
 
-  sink_ = AudioDeviceFactory::NewOutputDevice(
-      source_render_frame_id_, session_id_, std::string(), url::Origin());
+  sink_ =
+      AudioDeviceFactory::NewOutputDevice(source_render_frame_id_, session_id_,
+                                          output_device_id_, security_origin_);
   DCHECK_EQ(sink_->GetDeviceStatus(), media::OUTPUT_DEVICE_STATUS_OK);
   // WebRTC does not yet support higher rates than 96000 on the client side
   // and 48000 is the preferred sample rate. Therefore, if 192000 is detected,

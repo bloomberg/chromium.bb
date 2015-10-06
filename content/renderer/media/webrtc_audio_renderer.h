@@ -79,7 +79,9 @@ class CONTENT_EXPORT WebRtcAudioRenderer
       const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
       const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
       int source_render_frame_id,
-      int session_id);
+      int session_id,
+      const std::string& device_id,
+      const url::Origin& security_origin);
 
   // Initialize function called by clients like WebRtcAudioDeviceImpl.
   // Stop() has to be called before |source| is deleted.
@@ -227,6 +229,11 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   // Audio params used by the sink of the renderer.
   media::AudioParameters sink_params_;
+
+  // The preferred device id of the output device or empty for the default
+  // output device.
+  const std::string output_device_id_;
+  const url::Origin security_origin_;
 
   // Maps audio sources to a list of active audio renderers.
   // Pointers to PlayingState objects are only kept in this map while the

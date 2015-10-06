@@ -29,6 +29,8 @@ namespace {
 
 const int kHardwareSampleRate = 44100;
 const int kHardwareBufferSize = 512;
+const char kDefaultOutputDeviceId[] = "";
+const char kOtherOutputDeviceId[] = "other-output-device";
 
 class MockAudioOutputIPC : public media::AudioOutputIPC {
  public:
@@ -57,20 +59,26 @@ class FakeAudioOutputDevice
  public:
   FakeAudioOutputDevice(
       scoped_ptr<media::AudioOutputIPC> ipc,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const std::string& device_id)
       : AudioOutputDevice(ipc.Pass(),
                           io_task_runner,
                           0,
                           std::string(),
-                          url::Origin()) {}
+                          url::Origin()),
+        device_id_(device_id) {}
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Play, void());
   MOCK_METHOD1(SetVolume, bool(double volume));
+
   media::OutputDeviceStatus GetDeviceStatus() override {
     return media::OUTPUT_DEVICE_STATUS_OK;
   }
+
+  std::string GetDeviceId() const { return device_id_; }
+
   media::AudioParameters GetOutputParameters() override {
     return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                   media::CHANNEL_LAYOUT_STEREO,
@@ -79,18 +87,9 @@ class FakeAudioOutputDevice
 
  protected:
   virtual ~FakeAudioOutputDevice() {}
-};
 
-class MockAudioDeviceFactory : public AudioDeviceFactory {
- public:
-  MockAudioDeviceFactory() {}
-  virtual ~MockAudioDeviceFactory() {}
-  MOCK_METHOD4(CreateOutputDevice,
-               media::AudioOutputDevice*(int,
-                                         int,
-                                         const std::string&,
-                                         const url::Origin&));
-  MOCK_METHOD1(CreateInputDevice, media::AudioInputDevice*(int));
+ private:
+  const std::string device_id_;
 };
 
 class MockAudioRendererSource : public WebRtcAudioRendererSource {
@@ -106,26 +105,43 @@ class MockAudioRendererSource : public WebRtcAudioRendererSource {
 
 }  // namespace
 
-class WebRtcAudioRendererTest : public testing::Test {
+class WebRtcAudioRendererTest : public testing::Test,
+                                public AudioDeviceFactory {
  protected:
   WebRtcAudioRendererTest()
       : message_loop_(new base::MessageLoopForIO),
-        mock_ipc_(new MockAudioOutputIPC()),
-        mock_output_device_(new FakeAudioOutputDevice(
-            scoped_ptr<media::AudioOutputIPC>(mock_ipc_),
-            message_loop_->task_runner())),
-        factory_(new MockAudioDeviceFactory()),
+        mock_ipc_(nullptr),
         source_(new MockAudioRendererSource()),
-        stream_(new rtc::RefCountedObject<MockMediaStream>("label")),
-        renderer_(new WebRtcAudioRenderer(message_loop_->task_runner(),
-                                          stream_,
-                                          1,
-                                          1)) {
-    EXPECT_CALL(*factory_.get(), CreateOutputDevice(1, _, _, _))
-        .WillOnce(Return(mock_output_device_.get()));
-    EXPECT_CALL(*mock_output_device_.get(), Start());
+        stream_(new rtc::RefCountedObject<MockMediaStream>("label")) {}
+
+  void SetupRenderer(const std::string& device_id) {
+    renderer_ = new WebRtcAudioRenderer(message_loop_->task_runner(), stream_,
+                                        1, 1, device_id, url::Origin());
+    EXPECT_CALL(*this, MockCreateOutputDevice(1, _, device_id, _));
     EXPECT_TRUE(renderer_->Initialize(source_.get()));
     renderer_proxy_ = renderer_->CreateSharedAudioRendererProxy(stream_);
+  }
+
+  MOCK_METHOD1(CreateInputDevice, media::AudioInputDevice*(int));
+  MOCK_METHOD4(MockCreateOutputDevice,
+               media::AudioOutputDevice*(int,
+                                         int,
+                                         const std::string&,
+                                         const url::Origin&));
+  media::AudioOutputDevice* CreateOutputDevice(
+      int render_frame_id,
+      int session_id,
+      const std::string& device_id,
+      const url::Origin& security_origin) {
+    mock_output_device_ = nullptr;
+    mock_ipc_ = new MockAudioOutputIPC();
+    mock_output_device_ =
+        new FakeAudioOutputDevice(scoped_ptr<media::AudioOutputIPC>(mock_ipc_),
+                                  message_loop_->task_runner(), device_id);
+    MockCreateOutputDevice(render_frame_id, session_id, device_id,
+                           security_origin);
+    EXPECT_CALL(*mock_output_device_.get(), Start());
+    return mock_output_device_.get();
   }
 
   // Used to construct |mock_output_device_|.
@@ -133,7 +149,6 @@ class WebRtcAudioRendererTest : public testing::Test {
   MockAudioOutputIPC* mock_ipc_;  // Owned by AudioOuputDevice.
 
   scoped_refptr<FakeAudioOutputDevice> mock_output_device_;
-  scoped_ptr<MockAudioDeviceFactory> factory_;
   scoped_ptr<MockAudioRendererSource> source_;
   scoped_refptr<webrtc::MediaStreamInterface> stream_;
   scoped_refptr<WebRtcAudioRenderer> renderer_;
@@ -142,6 +157,7 @@ class WebRtcAudioRendererTest : public testing::Test {
 
 // Verify that the renderer will be stopped if the only proxy is stopped.
 TEST_F(WebRtcAudioRendererTest, StopRenderer) {
+  SetupRenderer(kDefaultOutputDeviceId);
   renderer_proxy_->Start();
 
   // |renderer_| has only one proxy, stopping the proxy should stop the sink of
@@ -154,6 +170,7 @@ TEST_F(WebRtcAudioRendererTest, StopRenderer) {
 // Verify that the renderer will not be stopped unless the last proxy is
 // stopped.
 TEST_F(WebRtcAudioRendererTest, MultipleRenderers) {
+  SetupRenderer(kDefaultOutputDeviceId);
   renderer_proxy_->Start();
 
   // Create a vector of renderer proxies from the |renderer_|.
@@ -186,6 +203,7 @@ TEST_F(WebRtcAudioRendererTest, MultipleRenderers) {
 // Verify that the sink of the renderer is using the expected sample rate and
 // buffer size.
 TEST_F(WebRtcAudioRendererTest, VerifySinkParameters) {
+  SetupRenderer(kDefaultOutputDeviceId);
   renderer_proxy_->Start();
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   static const int kExpectedBufferSize = kHardwareSampleRate / 100;
@@ -198,6 +216,24 @@ TEST_F(WebRtcAudioRendererTest, VerifySinkParameters) {
   EXPECT_EQ(kExpectedBufferSize, renderer_->frames_per_buffer());
   EXPECT_EQ(kHardwareSampleRate, renderer_->sample_rate());
   EXPECT_EQ(2, renderer_->channels());
+
+  EXPECT_CALL(*mock_output_device_.get(), Stop());
+  EXPECT_CALL(*source_.get(), RemoveAudioRenderer(renderer_.get()));
+  renderer_proxy_->Stop();
+}
+
+TEST_F(WebRtcAudioRendererTest, NonDefaultDevice) {
+  SetupRenderer(kDefaultOutputDeviceId);
+  EXPECT_EQ(mock_output_device_->GetDeviceId(), kDefaultOutputDeviceId);
+  renderer_proxy_->Start();
+
+  EXPECT_CALL(*mock_output_device_.get(), Stop());
+  EXPECT_CALL(*source_.get(), RemoveAudioRenderer(renderer_.get()));
+  renderer_proxy_->Stop();
+
+  SetupRenderer(kOtherOutputDeviceId);
+  EXPECT_EQ(mock_output_device_->GetDeviceId(), kOtherOutputDeviceId);
+  renderer_proxy_->Start();
 
   EXPECT_CALL(*mock_output_device_.get(), Stop());
   EXPECT_CALL(*source_.get(), RemoveAudioRenderer(renderer_.get()));

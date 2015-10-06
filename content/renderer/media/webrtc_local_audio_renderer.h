@@ -53,7 +53,9 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // Called on the main thread.
   WebRtcLocalAudioRenderer(const blink::WebMediaStreamTrack& audio_track,
                            int source_render_frame_id,
-                           int session_id);
+                           int session_id,
+                           const std::string& device_id,
+                           const url::Origin& security_origin);
 
   // MediaStreamAudioRenderer implementation.
   // Called on the main thread.
@@ -147,6 +149,7 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // The preferred device id of the output device or empty for the default
   // output device.
   const std::string output_device_id_;
+  const url::Origin security_origin_;
 
   // Cache value for the volume.
   float volume_;

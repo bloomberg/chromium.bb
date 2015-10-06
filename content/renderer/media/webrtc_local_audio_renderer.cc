@@ -94,12 +94,16 @@ void WebRtcLocalAudioRenderer::OnSetFormat(
 WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer(
     const blink::WebMediaStreamTrack& audio_track,
     int source_render_frame_id,
-    int session_id)
+    int session_id,
+    const std::string& device_id,
+    const url::Origin& security_origin)
     : audio_track_(audio_track),
       source_render_frame_id_(source_render_frame_id),
       session_id_(session_id),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       playing_(false),
+      output_device_id_(device_id),
+      security_origin_(security_origin),
       volume_(0.0),
       sink_started_(false) {
   DVLOG(1) << "WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer()";
@@ -119,8 +123,9 @@ void WebRtcLocalAudioRenderer::Start() {
   MediaStreamAudioSink::AddToAudioTrack(this, audio_track_);
   // ...and |sink_| will get audio data from us.
   DCHECK(!sink_.get());
-  sink_ = AudioDeviceFactory::NewOutputDevice(
-      source_render_frame_id_, session_id_, std::string(), url::Origin());
+  sink_ =
+      AudioDeviceFactory::NewOutputDevice(source_render_frame_id_, session_id_,
+                                          output_device_id_, security_origin_);
 
   base::AutoLock auto_lock(thread_lock_);
   last_render_time_ = base::TimeTicks::Now();
@@ -237,7 +242,8 @@ void WebRtcLocalAudioRenderer::MaybeStartSink() {
     audio_shifter_->Flush();
   }
 
-  if (!sink_params_.IsValid() || !playing_ || !volume_ || sink_started_)
+  if (!sink_params_.IsValid() || !playing_ || !volume_ || sink_started_ ||
+      sink_->GetDeviceStatus() != media::OUTPUT_DEVICE_STATUS_OK)
     return;
 
   DVLOG(1) << "WebRtcLocalAudioRenderer::MaybeStartSink() -- Starting sink_.";
@@ -280,14 +286,18 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
   if (!sink_.get())
     return;  // WebRtcLocalAudioRenderer has not yet been started.
 
+  scoped_refptr<media::AudioOutputDevice> new_sink =
+      AudioDeviceFactory::NewOutputDevice(source_render_frame_id_, session_id_,
+                                          output_device_id_, security_origin_);
+  if (new_sink->GetDeviceStatus() != media::OUTPUT_DEVICE_STATUS_OK)
+    return;
+
   // Stop |sink_| and re-create a new one to be initialized with different audio
   // parameters.  Then, invoke MaybeStartSink() to restart everything again.
   sink_->Stop();
   sink_started_ = false;
 
-  sink_ = AudioDeviceFactory::NewOutputDevice(
-      source_render_frame_id_, session_id_, std::string(), url::Origin());
-  DCHECK_EQ(sink_->GetDeviceStatus(), media::OUTPUT_DEVICE_STATUS_OK);
+  sink_ = new_sink;
   int frames_per_buffer = sink_->GetOutputParameters().frames_per_buffer();
   sink_params_ = source_params_;
   sink_params_.set_frames_per_buffer(WebRtcAudioRenderer::GetOptimalBufferSize(

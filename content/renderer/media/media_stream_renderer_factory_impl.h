@@ -21,7 +21,9 @@ class MediaStreamRendererFactoryImpl : public MediaStreamRendererFactory {
 
   scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const GURL& url,
-      int render_frame_id) override;
+      int render_frame_id,
+      const std::string& device_id,
+      const url::Origin& security_origin) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaStreamRendererFactoryImpl);
