@@ -2,7 +2,7 @@
 This is a testharness.js-based test.
 PASS Named access test.  Window's members should have priority over named properties. 
 FAIL WindowProperties object should exist. assert_equals: expected "[object WindowProperties]" but got "[object Object]"
-FAIL WindowProperties object should provide named access. assert_equals: Named access shouldn't work when WindowProperties is not available. expected (undefined) undefined but got (object) Element node <a id="myAnchor"></a>
+PASS WindowProperties object should provide named access. 
 PASS Window's members should be own members. 
 Harness: the test ran to completion.
 

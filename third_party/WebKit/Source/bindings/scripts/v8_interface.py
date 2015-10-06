@@ -122,6 +122,10 @@ def interface_context(interface):
     # [DependentLifetime]
     is_dependent_lifetime = 'DependentLifetime' in extended_attributes
 
+    # [PrimaryGlobal] and [Global]
+    is_global = ('PrimaryGlobal' in extended_attributes or
+                 'Global' in extended_attributes)
+
     # [MeasureAs]
     is_measure_as = 'MeasureAs' in extended_attributes
     if is_measure_as:
@@ -183,6 +187,7 @@ def interface_context(interface):
         'is_check_security': is_check_security,
         'is_event_target': is_event_target,
         'is_exception': interface.is_exception,
+        'is_global': is_global,
         'is_node': inherits_interface(interface.name, 'Node'),
         'is_partial': interface.is_partial,
         'is_typed_array_type': is_typed_array_type,
@@ -586,6 +591,9 @@ def interface_context(interface):
         'named_property_getter': property_getter(interface.named_property_getter, ['propertyName']),
         'named_property_setter': property_setter(interface.named_property_setter, interface),
         'named_property_deleter': property_deleter(interface.named_property_deleter),
+    })
+    context.update({
+        'has_named_properties_object': is_global and context['named_property_getter'],
     })
 
     return context

@@ -46,6 +46,9 @@ public:
     {% else %}
     static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
     {{exported}}static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
+    {% if has_named_properties_object %}
+    {{exported}}static v8::Local<v8::FunctionTemplate> domTemplateForNamedPropertiesObject(v8::Isolate*);
+    {% endif %}
     static {{cpp_class}}* toImpl(v8::Local<v8::Object> object)
     {
         return toScriptWrappable(object)->toImpl<{{cpp_class}}>();

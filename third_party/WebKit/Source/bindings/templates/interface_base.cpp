@@ -298,6 +298,8 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
 
     v8::Local<v8::Signature> defaultSignature;
     {% set parent_template =
+           '%s::domTemplateForNamedPropertiesObject(isolate)' % v8_class
+           if has_named_properties_object else
            'V8%s::domTemplate(isolate)' % parent_interface
            if parent_interface else 'v8::Local<v8::FunctionTemplate>()' %}
     {% if runtime_enabled_function %}
@@ -367,62 +369,11 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {{install_constants() | indent}}
     {% endif %}
     {# Special operations #}
-    {# V8 has access-check callback API and it\'s used on Window instead of
-       deleters or enumerators; see ObjectTemplate::SetAccessCheckCallbacks.
-       In addition, the getter should be set on the prototype template, to get
-       the implementation straight out of the Window prototype, regardless of
-       what prototype is actually set on the object. #}
-    {% set set_on_template = 'PrototypeTemplate' if interface_name == 'Window'
-                        else 'InstanceTemplate' %}
     {% if indexed_property_getter %}
-    {# if have indexed properties, MUST have an indexed property getter #}
-    {% set indexed_property_getter_callback =
-           '%sV8Internal::indexedPropertyGetterCallback' % cpp_class %}
-    {% set indexed_property_setter_callback =
-           '%sV8Internal::indexedPropertySetterCallback' % cpp_class
-           if indexed_property_setter else '0' %}
-    {% set indexed_property_query_callback = '0' %}{# Unused #}
-    {% set indexed_property_deleter_callback =
-           '%sV8Internal::indexedPropertyDeleterCallback' % cpp_class
-           if indexed_property_deleter else '0' %}
-    {% set indexed_property_enumerator_callback =
-           'indexedPropertyEnumerator<%s>' % cpp_class
-           if indexed_property_getter.is_enumerable else '0' %}
-    {
-        v8::IndexedPropertyHandlerConfiguration config({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, {{indexed_property_enumerator_callback}});
-        {% if indexed_property_getter.do_not_check_security %}
-        config.flags = v8::PropertyHandlerFlags::kAllCanRead;
-        {% endif %}
-        functionTemplate->{{set_on_template}}()->SetHandler(config);
-    }
+    {{install_indexed_property_handler('instanceTemplate') | indent}}
     {% endif %}
-    {% if named_property_getter %}
-    {# if have named properties, MUST have a named property getter #}
-    {% set named_property_getter_callback =
-           '%sV8Internal::namedPropertyGetterCallback' % cpp_class %}
-    {% set named_property_setter_callback =
-           '%sV8Internal::namedPropertySetterCallback' % cpp_class
-           if named_property_setter else '0' %}
-    {% set named_property_query_callback =
-           '%sV8Internal::namedPropertyQueryCallback' % cpp_class
-           if named_property_getter.is_enumerable else '0' %}
-    {% set named_property_deleter_callback =
-           '%sV8Internal::namedPropertyDeleterCallback' % cpp_class
-           if named_property_deleter else '0' %}
-    {% set named_property_enumerator_callback =
-           '%sV8Internal::namedPropertyEnumeratorCallback' % cpp_class
-           if named_property_getter.is_enumerable else '0' %}
-    {
-        int flags = static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings);
-        {% if named_property_getter.do_not_check_security %}
-        flags |= static_cast<int>(v8::PropertyHandlerFlags::kAllCanRead);
-        {% endif %}
-        {% if not is_override_builtins %}
-        flags |= static_cast<int>(v8::PropertyHandlerFlags::kNonMasking);
-        {% endif %}
-        v8::NamedPropertyHandlerConfiguration config({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}}, v8::Handle<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(flags));
-        functionTemplate->{{set_on_template}}()->SetHandler(config);
-    }
+    {% if named_property_getter and not has_named_properties_object %}
+    {{install_named_property_handler('instanceTemplate') | indent}}
     {% endif %}
     {% if iterator_method %}
     {% filter exposed(iterator_method.exposed_test) %}
@@ -463,12 +414,10 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% if not is_partial %}
     {% if interface_name == 'Window' %}
 
-    prototypeTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
-    functionTemplate->SetHiddenPrototype(true);
     instanceTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
-    {% elif interface_name in [
-           'HTMLDocument', 'DedicatedWorkerGlobalScope', 'CompositorWorkerGlobalScope',
-           'SharedWorkerGlobalScope', 'ServiceWorkerGlobalScope'] %}
+    prototypeTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
+    {% endif %}
+    {% if is_global or interface_name == 'HTMLDocument' %}
     functionTemplate->SetHiddenPrototype(true);
     {% endif %}
 
@@ -481,6 +430,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
 {% endblock %}
 {##############################################################################}
 {% block get_dom_template %}{% endblock %}
+{% block get_dom_template_for_named_properties_object %}{% endblock %}
 {% block has_instance %}{% endblock %}
 {% block to_impl %}{% endblock %}
 {% block to_impl_with_type_check %}{% endblock %}

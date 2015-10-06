@@ -86,16 +86,10 @@ static void installV8TestSpecialOperationsNotEnumerableTemplate(v8::Local<v8::Fu
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
-    {
-        v8::IndexedPropertyHandlerConfiguration config(TestSpecialOperationsNotEnumerableV8Internal::indexedPropertyGetterCallback, 0, 0, 0, 0);
-        functionTemplate->InstanceTemplate()->SetHandler(config);
-    }
-    {
-        int flags = static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings);
-        flags |= static_cast<int>(v8::PropertyHandlerFlags::kNonMasking);
-        v8::NamedPropertyHandlerConfiguration config(TestSpecialOperationsNotEnumerableV8Internal::namedPropertyGetterCallback, 0, 0, 0, 0, v8::Handle<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(flags));
-        functionTemplate->InstanceTemplate()->SetHandler(config);
-    }
+    v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestSpecialOperationsNotEnumerableV8Internal::indexedPropertyGetterCallback, 0, 0, 0, 0, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
+    instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
+    v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestSpecialOperationsNotEnumerableV8Internal::namedPropertyGetterCallback, 0, 0, 0, 0, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
+    instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());

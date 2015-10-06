@@ -12999,16 +12999,10 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> function
     static_assert(4 == TestObject::FEATURE2_ENABLED_CONST2, "the value of TestObject_FEATURE2_ENABLED_CONST2 does not match with implementation");
     static_assert(5 == TestObject::FEATURE3_ENABLED_CONST1, "the value of TestObject_FEATURE3_ENABLED_CONST1 does not match with implementation");
     static_assert(1 == TestObject::CONST_IMPL, "the value of TestObject_CONST_IMPL does not match with implementation");
-    {
-        v8::IndexedPropertyHandlerConfiguration config(TestObjectV8Internal::indexedPropertyGetterCallback, TestObjectV8Internal::indexedPropertySetterCallback, 0, TestObjectV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestObject>);
-        functionTemplate->InstanceTemplate()->SetHandler(config);
-    }
-    {
-        int flags = static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings);
-        flags |= static_cast<int>(v8::PropertyHandlerFlags::kNonMasking);
-        v8::NamedPropertyHandlerConfiguration config(TestObjectV8Internal::namedPropertyGetterCallback, TestObjectV8Internal::namedPropertySetterCallback, TestObjectV8Internal::namedPropertyQueryCallback, TestObjectV8Internal::namedPropertyDeleterCallback, TestObjectV8Internal::namedPropertyEnumeratorCallback, v8::Handle<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(flags));
-        functionTemplate->InstanceTemplate()->SetHandler(config);
-    }
+    v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestObjectV8Internal::indexedPropertyGetterCallback, TestObjectV8Internal::indexedPropertySetterCallback, 0, TestObjectV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestObject>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
+    instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
+    v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestObjectV8Internal::namedPropertyGetterCallback, TestObjectV8Internal::namedPropertySetterCallback, TestObjectV8Internal::namedPropertyQueryCallback, TestObjectV8Internal::namedPropertyDeleterCallback, TestObjectV8Internal::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
+    instanceTemplate->SetHandler(namedPropertyHandlerConfig);
     const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestObjectV8Internal::iteratorMethodCallback, 0, v8::DontDelete, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
     V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, symbolKeyedIteratorConfiguration);
     if (RuntimeEnabledFeatures::featureNameEnabled()) {

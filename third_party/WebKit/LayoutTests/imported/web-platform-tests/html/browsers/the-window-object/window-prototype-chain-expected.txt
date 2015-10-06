@@ -3,6 +3,6 @@ FAIL window object assert_equals: expected "[object Window]" but got "[object gl
 FAIL Window.prototype assert_equals: expected "[object WindowPrototype]" but got "[object Object]"
 FAIL Global scope polluter assert_equals: expected "[object WindowProperties]" but got "[object Object]"
 FAIL EventTarget.prototype assert_equals: expected "[object EventTargetPrototype]" but got "[object Object]"
-FAIL Object.prototype assert_equals: expected "[object Object]" but got "[object Null]"
+PASS Object.prototype 
 Harness: the test ran to completion.
 

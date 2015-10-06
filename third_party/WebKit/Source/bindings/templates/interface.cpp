@@ -646,6 +646,63 @@ V8DOMConfiguration::installAttribute(isolate, {{instance_template}}, {{prototype
 
 
 {##############################################################################}
+{% macro install_indexed_property_handler(target) %}
+{% set indexed_property_getter_callback =
+       '%sV8Internal::indexedPropertyGetterCallback' % cpp_class %}
+{% set indexed_property_setter_callback =
+       '%sV8Internal::indexedPropertySetterCallback' % cpp_class
+       if indexed_property_setter else '0' %}
+{% set indexed_property_query_callback = '0' %}{# Unused #}
+{% set indexed_property_deleter_callback =
+       '%sV8Internal::indexedPropertyDeleterCallback' % cpp_class
+       if indexed_property_deleter else '0' %}
+{% set indexed_property_enumerator_callback =
+       'indexedPropertyEnumerator<%s>' % cpp_class
+       if indexed_property_getter.is_enumerable else '0' %}
+{% set property_handler_flags =
+       'v8::PropertyHandlerFlags::kAllCanRead'
+       if indexed_property_getter.do_not_check_security
+       else 'v8::PropertyHandlerFlags::kNone' %}
+v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, {{indexed_property_enumerator_callback}}, v8::Local<v8::Value>(), {{property_handler_flags}});
+{{target}}->SetHandler(indexedPropertyHandlerConfig);
+{%- endmacro %}
+
+
+{##############################################################################}
+{% macro install_named_property_handler(target) %}
+{% set named_property_getter_callback =
+       '%sV8Internal::namedPropertyGetterCallback' % cpp_class %}
+{% set named_property_setter_callback =
+       '%sV8Internal::namedPropertySetterCallback' % cpp_class
+       if named_property_setter else '0' %}
+{% set named_property_query_callback =
+       '%sV8Internal::namedPropertyQueryCallback' % cpp_class
+       if named_property_getter.is_enumerable else '0' %}
+{% set named_property_deleter_callback =
+       '%sV8Internal::namedPropertyDeleterCallback' % cpp_class
+       if named_property_deleter else '0' %}
+{% set named_property_enumerator_callback =
+       '%sV8Internal::namedPropertyEnumeratorCallback' % cpp_class
+       if named_property_getter.is_enumerable else '0' %}
+{% set property_handler_flags_list =
+       ['int(v8::PropertyHandlerFlags::kOnlyInterceptStrings)'] %}
+{% if named_property_getter.do_not_check_security %}
+{% set property_handler_flags_list =
+       property_handler_flags_list + ['int(v8::PropertyHandlerFlags::kAllCanRead)'] %}
+{% endif %}
+{% if not is_override_builtins %}
+{% set property_handler_flags_list =
+       property_handler_flags_list + ['int(v8::PropertyHandlerFlags::kNonMasking)'] %}
+{% endif %}
+{% set property_handler_flags =
+       'static_cast<v8::PropertyHandlerFlags>(%s)' %
+           ' | '.join(property_handler_flags_list) %}
+v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}}, v8::Local<v8::Value>(), {{property_handler_flags}});
+{{target}}->SetHandler(namedPropertyHandlerConfig);
+{%- endmacro %}
+
+
+{##############################################################################}
 {% block get_dom_template %}
 {% if not is_array_buffer_or_view %}
 v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
@@ -658,6 +715,28 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
     {% endif %}
 {% set installTemplateFunction = '%s::install%sTemplateFunction' % (v8_class, v8_class) if has_partial_interface else 'install%sTemplate' % v8_class %}
     return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), {{installTemplateFunction}});
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block get_dom_template_for_named_properties_object %}
+{% if has_named_properties_object %}
+v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplateForNamedPropertiesObject(v8::Isolate* isolate)
+{
+    v8::Local<v8::FunctionTemplate> parentTemplate = V8{{parent_interface}}::domTemplate(isolate);
+
+    v8::Local<v8::FunctionTemplate> namedPropertiesObjectFunctionTemplate = v8::FunctionTemplate::New(isolate);
+    namedPropertiesObjectFunctionTemplate->SetClassName(v8AtomicString(isolate, "{{interface_name}}Properties"));
+    namedPropertiesObjectFunctionTemplate->Inherit(parentTemplate);
+
+    v8::Local<v8::ObjectTemplate> namedPropertiesObjectTemplate = namedPropertiesObjectFunctionTemplate->PrototypeTemplate();
+    namedPropertiesObjectTemplate->SetInternalFieldCount({{v8_class}}::internalFieldCount);
+    {{install_named_property_handler('namedPropertiesObjectTemplate') | indent}}
+
+    return namedPropertiesObjectFunctionTemplate;
 }
 
 {% endif %}
@@ -902,6 +981,7 @@ void {{v8_class}}::register{{method.name | blink_capitalize}}MethodForPartialInt
 {
     {{cpp_class}}V8Internal::{{method.name}}MethodForPartialInterface = method;
 }
+
 {% endfor %}
 {% endif %}
 {% endblock %}

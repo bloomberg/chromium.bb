@@ -976,16 +976,10 @@ static void installV8TestInterface5Template(v8::Local<v8::FunctionTemplate> func
         {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::ConstantTypeShort},
     };
     V8DOMConfiguration::installConstants(isolate, functionTemplate, prototypeTemplate, V8TestInterface5Constants, WTF_ARRAY_LENGTH(V8TestInterface5Constants));
-    {
-        v8::IndexedPropertyHandlerConfiguration config(TestInterface5ImplementationV8Internal::indexedPropertyGetterCallback, TestInterface5ImplementationV8Internal::indexedPropertySetterCallback, 0, TestInterface5ImplementationV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterface5Implementation>);
-        functionTemplate->InstanceTemplate()->SetHandler(config);
-    }
-    {
-        int flags = static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings);
-        flags |= static_cast<int>(v8::PropertyHandlerFlags::kNonMasking);
-        v8::NamedPropertyHandlerConfiguration config(TestInterface5ImplementationV8Internal::namedPropertyGetterCallback, TestInterface5ImplementationV8Internal::namedPropertySetterCallback, TestInterface5ImplementationV8Internal::namedPropertyQueryCallback, TestInterface5ImplementationV8Internal::namedPropertyDeleterCallback, TestInterface5ImplementationV8Internal::namedPropertyEnumeratorCallback, v8::Handle<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(flags));
-        functionTemplate->InstanceTemplate()->SetHandler(config);
-    }
+    v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestInterface5ImplementationV8Internal::indexedPropertyGetterCallback, TestInterface5ImplementationV8Internal::indexedPropertySetterCallback, 0, TestInterface5ImplementationV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterface5Implementation>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
+    instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
+    v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestInterface5ImplementationV8Internal::namedPropertyGetterCallback, TestInterface5ImplementationV8Internal::namedPropertySetterCallback, TestInterface5ImplementationV8Internal::namedPropertyQueryCallback, TestInterface5ImplementationV8Internal::namedPropertyDeleterCallback, TestInterface5ImplementationV8Internal::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
+    instanceTemplate->SetHandler(namedPropertyHandlerConfig);
     const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface5ImplementationV8Internal::iteratorMethodCallback, 0, v8::DontDelete, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
     V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, symbolKeyedIteratorConfiguration);
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler(V8TestInterface5::legacyCallCustom);

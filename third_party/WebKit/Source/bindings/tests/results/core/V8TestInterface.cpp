@@ -2485,18 +2485,10 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTempl
         const V8DOMConfiguration::ConstantConfiguration constantPartialDoubleConfiguration = {"PARTIAL_DOUBLE", 0, 3.14, V8DOMConfiguration::ConstantTypeDouble};
         V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantPartialDoubleConfiguration);
     }
-    {
-        v8::IndexedPropertyHandlerConfiguration config(TestInterfaceImplementationV8Internal::indexedPropertyGetterCallback, TestInterfaceImplementationV8Internal::indexedPropertySetterCallback, 0, TestInterfaceImplementationV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterfaceImplementation>);
-        config.flags = v8::PropertyHandlerFlags::kAllCanRead;
-        functionTemplate->InstanceTemplate()->SetHandler(config);
-    }
-    {
-        int flags = static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings);
-        flags |= static_cast<int>(v8::PropertyHandlerFlags::kAllCanRead);
-        flags |= static_cast<int>(v8::PropertyHandlerFlags::kNonMasking);
-        v8::NamedPropertyHandlerConfiguration config(TestInterfaceImplementationV8Internal::namedPropertyGetterCallback, TestInterfaceImplementationV8Internal::namedPropertySetterCallback, TestInterfaceImplementationV8Internal::namedPropertyQueryCallback, TestInterfaceImplementationV8Internal::namedPropertyDeleterCallback, TestInterfaceImplementationV8Internal::namedPropertyEnumeratorCallback, v8::Handle<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(flags));
-        functionTemplate->InstanceTemplate()->SetHandler(config);
-    }
+    v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestInterfaceImplementationV8Internal::indexedPropertyGetterCallback, TestInterfaceImplementationV8Internal::indexedPropertySetterCallback, 0, TestInterfaceImplementationV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterfaceImplementation>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kAllCanRead);
+    instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
+    v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestInterfaceImplementationV8Internal::namedPropertyGetterCallback, TestInterfaceImplementationV8Internal::namedPropertySetterCallback, TestInterfaceImplementationV8Internal::namedPropertyQueryCallback, TestInterfaceImplementationV8Internal::namedPropertyDeleterCallback, TestInterfaceImplementationV8Internal::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kAllCanRead) | int(v8::PropertyHandlerFlags::kNonMasking)));
+    instanceTemplate->SetHandler(namedPropertyHandlerConfig);
     const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterfaceImplementationV8Internal::iteratorMethodCallback, 0, v8::DontDelete, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
     V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, symbolKeyedIteratorConfiguration);
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler(V8TestInterface::legacyCallCustom);
@@ -2729,25 +2721,31 @@ void V8TestInterface::registerVoidMethodPartialOverloadMethodForPartialInterface
 {
     TestInterfaceImplementationV8Internal::voidMethodPartialOverloadMethodForPartialInterface = method;
 }
+
 void V8TestInterface::registerStaticVoidMethodPartialOverloadMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
 {
     TestInterfaceImplementationV8Internal::staticVoidMethodPartialOverloadMethodForPartialInterface = method;
 }
+
 void V8TestInterface::registerPromiseMethodPartialOverloadMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
 {
     TestInterfaceImplementationV8Internal::promiseMethodPartialOverloadMethodForPartialInterface = method;
 }
+
 void V8TestInterface::registerStaticPromiseMethodPartialOverloadMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
 {
     TestInterfaceImplementationV8Internal::staticPromiseMethodPartialOverloadMethodForPartialInterface = method;
 }
+
 void V8TestInterface::registerPartial2VoidMethodMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
 {
     TestInterfaceImplementationV8Internal::partial2VoidMethodMethodForPartialInterface = method;
 }
+
 void V8TestInterface::registerPartial2StaticVoidMethodMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
 {
     TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethodForPartialInterface = method;
 }
+
 } // namespace blink
 #endif // ENABLE(CONDITION)

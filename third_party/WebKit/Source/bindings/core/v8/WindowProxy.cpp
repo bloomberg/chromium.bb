@@ -352,7 +352,12 @@ bool WindowProxy::installDOMWindow()
         return false;
     windowWrapper = V8DOMWrapper::associateObjectWithWrapper(m_isolate, window, wrapperTypeInfo, windowWrapper);
 
-    V8DOMWrapper::setNativeInfo(v8::Local<v8::Object>::Cast(windowWrapper->GetPrototype()), wrapperTypeInfo, window);
+    v8::Local<v8::Object> windowPrototype = v8::Local<v8::Object>::Cast(windowWrapper->GetPrototype());
+    RELEASE_ASSERT(!windowPrototype.IsEmpty());
+    V8DOMWrapper::setNativeInfo(windowPrototype, wrapperTypeInfo, window);
+    v8::Local<v8::Object> windowProperties = v8::Local<v8::Object>::Cast(windowPrototype->GetPrototype());
+    RELEASE_ASSERT(!windowProperties.IsEmpty());
+    V8DOMWrapper::setNativeInfo(windowProperties, wrapperTypeInfo, window);
 
     // Install the windowWrapper as the prototype of the innerGlobalObject.
     // The full structure of the global object is as follows:
@@ -361,6 +366,7 @@ bool WindowProxy::installDOMWindow()
     //   -- has prototype --> innerGlobalObject (Holds global variables, changes during navigation)
     //   -- has prototype --> DOMWindow instance
     //   -- has prototype --> Window.prototype
+    //   -- has prototype --> WindowProperties (named properties object)
     //   -- has prototype --> EventTarget.prototype
     //   -- has prototype --> Object.prototype
     //
