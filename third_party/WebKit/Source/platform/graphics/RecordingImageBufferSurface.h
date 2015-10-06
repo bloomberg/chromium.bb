@@ -9,7 +9,6 @@
 #include "platform/graphics/ImageBufferSurface.h"
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "wtf/LinkedStack.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
