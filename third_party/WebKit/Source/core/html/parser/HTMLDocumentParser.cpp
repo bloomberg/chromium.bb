@@ -1113,10 +1113,21 @@ void HTMLDocumentParser::flush()
     if (isDetached() || needsDecoder())
         return;
 
-    if (m_haveBackgroundParser)
+    if (shouldUseThreading()) {
+        // In some cases, flush() is called without any invocation of
+        // appendBytes. Fallback to synchronous parsing in that case.
+        if (!m_haveBackgroundParser) {
+            m_shouldUseThreading = false;
+            m_token = adoptPtr(new HTMLToken);
+            m_tokenizer = HTMLTokenizer::create(m_options);
+            DecodedDataDocumentParser::flush();
+            return;
+        }
+
         HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::flush, AllowCrossThreadAccess(m_backgroundParser)));
-    else
+    } else {
         DecodedDataDocumentParser::flush();
+    }
 }
 
 void HTMLDocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
