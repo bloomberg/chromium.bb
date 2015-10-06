@@ -19,6 +19,7 @@
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMNodeIds.h"
+#include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
@@ -32,10 +33,11 @@ static const char animationAgentEnabled[] = "animationAgentEnabled";
 
 namespace blink {
 
-InspectorAnimationAgent::InspectorAnimationAgent(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent)
+InspectorAnimationAgent::InspectorAnimationAgent(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>("Animation")
     , m_pageAgent(pageAgent)
     , m_domAgent(domAgent)
+    , m_injectedScriptManager(injectedScriptManager)
     , m_isCloning(false)
 {
 }
@@ -264,6 +266,33 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
         timing->setDuration(unrestrictedDuration);
         timing->setDelay(delay);
     }
+}
+
+void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const String& animationId, RefPtr<TypeBuilder::Runtime::RemoteObject>& result)
+{
+    Animation* animation = assertAnimation(errorString, animationId);
+    if (!animation)
+        return;
+    if (m_idToAnimationClone.get(animationId))
+        animation = m_idToAnimationClone.get(animationId);
+    const Element* element = toKeyframeEffect(animation->effect())->target();
+    Document* document = element->ownerDocument();
+    LocalFrame* frame = document ? document->frame() : nullptr;
+    if (!frame) {
+        *errorString = "Element not associated with a document.";
+        return;
+    }
+
+    ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
+    if (injectedScript.isEmpty())
+        return;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Isolate* isolate = scriptState->isolate();
+    ScriptValue scriptValue = ScriptValue(scriptState, toV8(animation, scriptState->context()->Global(), isolate));
+    injectedScript.releaseObjectGroup("animation");
+    result = injectedScript.wrapObject(scriptValue, "animation");
 }
 
 void InspectorAnimationAgent::didCreateAnimation(unsigned sequenceNumber)

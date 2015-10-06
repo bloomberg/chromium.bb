@@ -18,6 +18,7 @@ class Animation;
 class AnimationNode;
 class AnimationTimeline;
 class Element;
+class InjectedScriptManager;
 class InspectorDOMAgent;
 class InspectorPageAgent;
 class TimingFunction;
@@ -25,9 +26,9 @@ class TimingFunction;
 class CORE_EXPORT InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>, public InspectorBackendDispatcher::AnimationCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InjectedScriptManager* injectedScriptManager)
     {
-        return adoptPtrWillBeNoop(new InspectorAnimationAgent(pageAgent, domAgent));
+        return adoptPtrWillBeNoop(new InspectorAnimationAgent(pageAgent, domAgent, injectedScriptManager));
     }
 
     // Base agent methods.
@@ -41,6 +42,7 @@ public:
     void getCurrentTime(ErrorString*, const String& animationId, double* currentTime) override;
     void setTiming(ErrorString*, const String& animationId, double duration, double delay) override;
     void seekAnimations(ErrorString*, const RefPtr<JSONArray>& animationIds, double currentTime) override;
+    void resolveAnimation(ErrorString*, const String& animationId, RefPtr<TypeBuilder::Runtime::RemoteObject>& result) override;
 
     // API for InspectorInstrumentation
     void didCreateAnimation(unsigned);
@@ -56,7 +58,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InspectorAnimationAgent(InspectorPageAgent*, InspectorDOMAgent*);
+    InspectorAnimationAgent(InspectorPageAgent*, InspectorDOMAgent*, InjectedScriptManager*);
 
     typedef TypeBuilder::Animation::Animation::Type::Enum AnimationType;
 
@@ -68,6 +70,7 @@ private:
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
+    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimation;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimationClone;
     WillBeHeapHashMap<String, AnimationType> m_idToAnimationType;

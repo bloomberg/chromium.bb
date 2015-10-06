@@ -1,0 +1,4 @@
+Animation started
+Remote object:
+Animation
+

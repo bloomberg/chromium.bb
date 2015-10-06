@@ -453,7 +453,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_cssAgent = cssAgentPtr.get();
     m_agents.append(cssAgentPtr.release());
 
-    m_agents.append(InspectorAnimationAgent::create(m_pageAgent, m_domAgent));
+    m_agents.append(InspectorAnimationAgent::create(m_pageAgent, m_domAgent, injectedScriptManager));
 
     m_agents.append(InspectorMemoryAgent::create());
 
