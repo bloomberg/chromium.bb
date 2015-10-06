@@ -8,3 +8,5 @@ declare_args() {
   # is being used instead.
   is_nacl_glibc = false
 }
+
+nacl_toolchain_dir = "//native_client/toolchain/${host_os}_x86"

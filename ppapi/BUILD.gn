@@ -209,78 +209,140 @@ if (enable_nacl) {
       }
     }
 
+    if (current_cpu == "pnacl") {
+      action("translate_pexe_to_nexe") {
+        pexe = "${root_out_dir}/ppapi_nacl_tests.pexe"
+        nexe = "${root_out_dir}/ppapi_nacl_tests.nexe"
+
+        script = "${nacl_toolchain_dir}/pnacl_newlib/bin/pydir/loader.py"
+        sources = [
+          pexe,
+        ]
+        outputs = [
+          nexe,
+        ]
+
+        # TODO(phosek): remove the following once change 1360243003 is rolled
+        # into Chrome and use $target_cpu directly.
+        if (target_cpu == "x86") {
+          arch = "i686"
+        } else if (target_cpu == "x64") {
+          arch = "x86-64"
+        } else if (target_cpu == "arm") {
+          arch = "armv7"
+        }
+
+        # The pre-translated object file has to be linked with an IRT shim to
+        # get a runnable nexe. This is handled by pnacl-translate, which passes
+        # -l:libpnacl_irt_shim.a to native linker, and we need to ensure the
+        # linker can find the correct library.
+        pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:clang_newlib_${target_cpu})"
+
+        args = [
+          "pnacl-translate",
+          rebase_path(pexe, root_build_dir),
+          "-o",
+          rebase_path(nexe, root_build_dir),
+          "-arch",
+          arch,
+          "-Wl,-L" +
+              rebase_path(get_label_info(pnacl_irt_shim, "target_out_dir")),
+        ]
+        deps = [
+          ":ppapi_nacl_tests",
+        ]
+        data_deps = [
+          pnacl_irt_shim,
+        ]
+      }
+    }
+
     copy("nacl_tests_copy") {
       sources = [
         "${root_out_dir}/ppapi_nacl_tests.nexe",
       ]
-      if (is_nacl_glibc) {
-        suffix = "glibc"
-      } else {
-        suffix = "newlib"
-      }
 
       # The CPU names used in tests/ppapi_nacl_tests_newlib.nmf
       # are the ones used in GYP (x32 for x86).
       if (target_cpu == "x86") {
         nmf_cpu = "x32"
-      } else {
+      } else if (current_cpu != "pnacl") {
         nmf_cpu = target_cpu
       }
+      if (is_nacl_glibc) {
+        suffix = "glibc_${nmf_cpu}"
+      } else if (current_cpu == "pnacl") {
+        suffix = "pnacl"
+      } else {
+        suffix = "newlib_${nmf_cpu}"
+      }
       outputs = [
-        "${root_build_dir}/{{source_name_part}}_${suffix}_${nmf_cpu}.nexe",
+        "${root_build_dir}/{{source_name_part}}_${suffix}.nexe",
       ]
-      deps = [
-        ":ppapi_nacl_tests",
-      ]
+      if (current_cpu == "pnacl") {
+        deps = [
+          ":translate_pexe_to_nexe",
+        ]
+      } else {
+        deps = [
+          ":ppapi_nacl_tests",
+        ]
+      }
     }
 
     action("generate_nmf") {
-      nacl_toolchain_dir = rebase_path("//native_client/toolchain")
-      os_toolchain_dir = "${nacl_toolchain_dir}/${host_os}_x86"
       if (is_nacl_glibc) {
-        toolchain_dir = "${os_toolchain_dir}/nacl_x86_glibc"
+        toolchain_dir = "${nacl_toolchain_dir}/nacl_x86_glibc"
         nmf = "${root_build_dir}/ppapi_nacl_tests_glibc.nmf"
+      } else if (current_cpu == "pnacl") {
+        toolchain_dir = "${nacl_toolchain_dir}/pnacl_newlib"
+        nmf = "${root_build_dir}/ppapi_nacl_tests_pnacl.nmf"
       } else {
-        toolchain_dir = "${os_toolchain_dir}/nacl_x86_newlib"
+        toolchain_dir = "${nacl_toolchain_dir}/nacl_x86_newlib"
         nmf = "${root_build_dir}/ppapi_nacl_tests_newlib.nmf"
       }
+      nexe = "${root_out_dir}/ppapi_nacl_tests.nexe"
+
       script = "//native_client_sdk/src/tools/create_nmf.py"
-      sources = get_target_outputs(":nacl_tests_copy")
+      sources = [
+        nexe,
+      ]
       outputs = [
         nmf,
+      ]
+      data = [
+        nexe,
       ]
       nmf_flags = []
       if (is_nacl_glibc) {
         nmf_flags += [ "--library-path=" + rebase_path(root_out_dir) ]
         if (current_cpu == "x86") {
           nmf_flags += [ "--library-path=" +
-                         rebase_path("${toolchain_dir}/x86_64-nacl/lib32",
-                                     root_build_dir) ]
-          data = [
-            "$root_build_dir/lib32/",
-          ]
+                         rebase_path("${toolchain_dir}/x86_64-nacl/lib32") ]
+          data += [ "$root_build_dir/lib32/" ]
         }
         if (target_cpu == "x64" || (target_cpu == "x86" && is_win)) {
           nmf_flags += [ "--library-path=" +
-                         rebase_path("${toolchain_dir}/x86_64-nacl/lib",
-                                     root_build_dir) ]
-          data = [
-            "$root_build_dir/lib64/",
-          ]
+                         rebase_path("${toolchain_dir}/x86_64-nacl/lib") ]
+          data += [ "$root_build_dir/lib64/" ]
         }
       }
       args = [
                "--no-default-libpath",
-               "--objdump=${toolchain_dir}/bin/x86_64-nacl-objdump",
+               "--objdump=" +
+                   rebase_path("${toolchain_dir}/bin/x86_64-nacl-objdump"),
                "--output=" + rebase_path(nmf, root_build_dir),
                "--stage-dependencies=" + rebase_path(root_build_dir),
              ] + nmf_flags + rebase_path(sources, root_build_dir)
-      deps = [
-        ":nacl_tests_copy",
-      ]
-      data_deps = [
-        ":nacl_tests_copy",
-      ]
+      if (current_cpu == "pnacl") {
+        deps = [
+          ":translate_pexe_to_nexe",
+        ]
+      } else {
+        deps = [
+          ":ppapi_nacl_tests",
+        ]
+      }
     }
   }
 
@@ -291,6 +353,7 @@ if (enable_nacl) {
         ":copy_test_files",
         ":nacl_tests_copy(//build/toolchain/nacl:clang_newlib_${target_cpu})",
         ":generate_nmf(//build/toolchain/nacl:glibc_${target_cpu})",
+        ":generate_nmf(//build/toolchain/nacl:newlib_pnacl)",
       ]
     }
   }
