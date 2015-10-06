@@ -63,7 +63,7 @@ bool RTCStatsRequestImpl::hasSelector()
 
 MediaStreamComponent* RTCStatsRequestImpl::component()
 {
-    return m_component.get();
+    return m_component;
 }
 
 void RTCStatsRequestImpl::requestSucceeded(RTCStatsResponseBase* response)
@@ -88,6 +88,7 @@ void RTCStatsRequestImpl::clear()
 DEFINE_TRACE(RTCStatsRequestImpl)
 {
     visitor->trace(m_successCallback);
+    visitor->trace(m_component);
     visitor->trace(m_requester);
     RTCStatsRequest::trace(visitor);
     ActiveDOMObject::trace(visitor);

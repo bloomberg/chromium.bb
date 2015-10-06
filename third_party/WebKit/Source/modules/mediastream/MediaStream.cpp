@@ -89,12 +89,12 @@ MediaStream* MediaStream::create(ExecutionContext* context, const MediaStreamTra
     return new MediaStream(context, audioTracks, videoTracks);
 }
 
-MediaStream* MediaStream::create(ExecutionContext* context, PassRefPtr<MediaStreamDescriptor> streamDescriptor)
+MediaStream* MediaStream::create(ExecutionContext* context, MediaStreamDescriptor* streamDescriptor)
 {
     return new MediaStream(context, streamDescriptor);
 }
 
-MediaStream::MediaStream(ExecutionContext* context, PassRefPtr<MediaStreamDescriptor> streamDescriptor)
+MediaStream::MediaStream(ExecutionContext* context, MediaStreamDescriptor* streamDescriptor)
     : ContextLifecycleObserver(context)
     , m_stopped(false)
     , m_descriptor(streamDescriptor)
@@ -143,7 +143,7 @@ MediaStream::MediaStream(ExecutionContext* context, const MediaStreamTrackVector
 
     m_descriptor = MediaStreamDescriptor::create(audioComponents, videoComponents);
     m_descriptor->setClient(this);
-    MediaStreamCenter::instance().didCreateMediaStream(m_descriptor.get());
+    MediaStreamCenter::instance().didCreateMediaStream(m_descriptor);
 
     m_audioTracks = audioTracks;
     m_videoTracks = videoTracks;
@@ -154,7 +154,6 @@ MediaStream::MediaStream(ExecutionContext* context, const MediaStreamTrackVector
 
 MediaStream::~MediaStream()
 {
-    m_descriptor->setClient(0);
 }
 
 bool MediaStream::emptyOrOnlyEndedTracks()
@@ -209,7 +208,7 @@ void MediaStream::addTrack(MediaStreamTrack* track, ExceptionState& exceptionSta
         scheduleDispatchEvent(Event::create(EventTypeNames::active));
     }
 
-    MediaStreamCenter::instance().didAddMediaStreamTrack(m_descriptor.get(), track->component());
+    MediaStreamCenter::instance().didAddMediaStreamTrack(m_descriptor, track->component());
 }
 
 void MediaStream::removeTrack(MediaStreamTrack* track, ExceptionState& exceptionState)
@@ -243,7 +242,7 @@ void MediaStream::removeTrack(MediaStreamTrack* track, ExceptionState& exception
         scheduleDispatchEvent(Event::create(EventTypeNames::inactive));
     }
 
-    MediaStreamCenter::instance().didRemoveMediaStreamTrack(m_descriptor.get(), track->component());
+    MediaStreamCenter::instance().didRemoveMediaStreamTrack(m_descriptor, track->component());
 }
 
 MediaStreamTrack* MediaStream::getTrackById(String id)
@@ -412,9 +411,11 @@ DEFINE_TRACE(MediaStream)
 {
     visitor->trace(m_audioTracks);
     visitor->trace(m_videoTracks);
+    visitor->trace(m_descriptor);
     visitor->trace(m_scheduledEvents);
     RefCountedGarbageCollectedEventTargetWithInlineData<MediaStream>::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
+    MediaStreamDescriptorClient::trace(visitor);
 }
 
 } // namespace blink

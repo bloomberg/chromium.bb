@@ -39,17 +39,17 @@
 
 namespace blink {
 
-PassRefPtr<MediaStreamComponent> MediaStreamComponent::create(PassRefPtr<MediaStreamSource> source)
+MediaStreamComponent* MediaStreamComponent::create(MediaStreamSource* source)
 {
-    return adoptRef(new MediaStreamComponent(createCanonicalUUIDString(), source));
+    return new MediaStreamComponent(createCanonicalUUIDString(), source);
 }
 
-PassRefPtr<MediaStreamComponent> MediaStreamComponent::create(const String& id, PassRefPtr<MediaStreamSource> source)
+MediaStreamComponent* MediaStreamComponent::create(const String& id, MediaStreamSource* source)
 {
-    return adoptRef(new MediaStreamComponent(id, source));
+    return new MediaStreamComponent(id, source);
 }
 
-MediaStreamComponent::MediaStreamComponent(const String& id, PassRefPtr<MediaStreamSource> source)
+MediaStreamComponent::MediaStreamComponent(const String& id, MediaStreamSource* source)
     : m_source(source)
     , m_id(id)
     , m_enabled(true)
@@ -87,5 +87,9 @@ void MediaStreamComponent::AudioSourceProviderImpl::provideInput(AudioBus* bus, 
 }
 #endif // #if ENABLE(WEB_AUDIO)
 
-} // namespace blink
+DEFINE_TRACE(MediaStreamComponent)
+{
+    visitor->trace(m_source);
+}
 
+} // namespace blink

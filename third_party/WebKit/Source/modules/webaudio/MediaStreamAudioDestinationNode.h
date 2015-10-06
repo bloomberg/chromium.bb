@@ -54,7 +54,7 @@ private:
 
     // This Persistent doesn't make a reference cycle.
     Persistent<MediaStream> m_stream;
-    RefPtr<MediaStreamSource> m_source;
+    Persistent<MediaStreamSource> m_source;
     RefPtr<AudioBus> m_mixBus;
 };
 

@@ -46,7 +46,7 @@ class MODULES_EXPORT MediaStreamTrack final
     , public ActiveDOMObject
     , public MediaStreamSource::Observer {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaStreamTrack);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
+    USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static MediaStreamTrack* create(ExecutionContext*, MediaStreamComponent*);
@@ -73,7 +73,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(ended);
 
-    MediaStreamComponent* component();
+    MediaStreamComponent* component() { return m_component; }
     bool ended() const;
 
     void registerMediaStream(MediaStream*);
@@ -104,7 +104,7 @@ private:
     HeapHashSet<Member<MediaStream>> m_registeredMediaStreams;
     bool m_isIteratingRegisteredMediaStreams;
     bool m_stopped;
-    RefPtr<MediaStreamComponent> m_component;
+    Member<MediaStreamComponent> m_component;
 };
 
 typedef HeapVector<Member<MediaStreamTrack>> MediaStreamTrackVector;
