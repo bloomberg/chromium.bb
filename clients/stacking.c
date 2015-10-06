@@ -256,14 +256,10 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_translate(cr, allocation.x, allocation.y);
 
 	/* Draw background. */
-	cairo_push_group(cr);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	set_window_background_colour(cr, window);
 	cairo_rectangle(cr, 0, 0, allocation.width, allocation.height);
 	cairo_fill(cr);
-
-	cairo_pop_group_to_source(cr);
-	cairo_paint(cr);
 
 	/* Print the instructions. */
 	cairo_move_to(cr, 5, 15);
