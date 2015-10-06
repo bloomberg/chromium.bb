@@ -148,9 +148,9 @@ void LocalToRemoteSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   } else if (active_ancestor_path != path) {
     if (!active_ancestor_path.AppendRelativePath(path, &missing_entries)) {
       NOTREACHED();
-      token->RecordLog(base::StringPrintf(
-          "Detected invalid ancestor: %s",
-          active_ancestor_path.value().c_str()));
+      token->RecordLog(
+          base::StringPrintf("Detected invalid ancestor: %" PRIsFP,
+                             active_ancestor_path.value().c_str()));
       SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
       return;
     }

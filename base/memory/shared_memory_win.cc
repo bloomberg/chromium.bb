@@ -146,7 +146,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     // So, we generate a random name when we need to enforce read-only.
     uint64_t rand_values[4];
     RandBytes(&rand_values, sizeof(rand_values));
-    name_ = StringPrintf(L"CrSharedMem_%016x%016x%016x%016x",
+    name_ = StringPrintf(L"CrSharedMem_%016llx%016llx%016llx%016llx",
                          rand_values[0], rand_values[1],
                          rand_values[2], rand_values[3]);
   }

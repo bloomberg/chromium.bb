@@ -224,7 +224,7 @@ void AddGenericDllEvictionPolicy(sandbox::TargetPolicy* policy) {
 // Returns the object path prepended with the current logon session.
 base::string16 PrependWindowsSessionPath(const base::char16* object) {
   // Cache this because it can't change after process creation.
-  static uintptr_t s_session_id = 0;
+  static DWORD s_session_id = 0;
   if (s_session_id == 0) {
     HANDLE token;
     DWORD session_id_length;
@@ -238,7 +238,7 @@ base::string16 PrependWindowsSessionPath(const base::char16* object) {
       s_session_id = session_id;
   }
 
-  return base::StringPrintf(L"\\Sessions\\%d%ls", s_session_id, object);
+  return base::StringPrintf(L"\\Sessions\\%lu%ls", s_session_id, object);
 }
 
 // Checks if the sandbox should be let to run without a job object assigned.

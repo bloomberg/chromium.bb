@@ -966,7 +966,7 @@ bool ParamTraits<HANDLE>::Read(const Message* m,
 }
 
 void ParamTraits<HANDLE>::Log(const param_type& p, std::string* l) {
-  l->append(base::StringPrintf("0x%X", p));
+  l->append(base::StringPrintf("0x%p", p));
 }
 
 void ParamTraits<LOGFONT>::Write(Message* m, const param_type& p) {

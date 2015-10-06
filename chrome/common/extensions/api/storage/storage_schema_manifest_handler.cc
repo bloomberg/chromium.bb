@@ -49,13 +49,13 @@ policy::Schema StorageSchemaManifestHandler::GetSchema(
   }
   file = extension->path().AppendASCII(path);
   if (!base::PathExists(file)) {
-    *error =
-        base::StringPrintf("File does not exist: %s", file.value().c_str());
+    *error = base::StringPrintf("File does not exist: %" PRIsFP,
+                                file.value().c_str());
     return policy::Schema();
   }
   std::string content;
   if (!base::ReadFileToString(file, &content)) {
-    *error = base::StringPrintf("Can't read %s", file.value().c_str());
+    *error = base::StringPrintf("Can't read %" PRIsFP, file.value().c_str());
     return policy::Schema();
   }
   return policy::Schema::Parse(content, error);

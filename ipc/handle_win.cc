@@ -48,7 +48,7 @@ bool ParamTraits<HandleWin>::Read(const Message* m,
 
 // static
 void ParamTraits<HandleWin>::Log(const param_type& p, std::string* l) {
-  l->append(base::StringPrintf("0x%X", p.get_handle()));
+  l->append(base::StringPrintf("0x%p", p.get_handle()));
   l->append(base::IntToString(p.get_permissions()));
 }
 

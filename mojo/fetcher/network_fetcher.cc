@@ -90,8 +90,8 @@ void NetworkFetcher::RecordCacheToURLMapping(const base::FilePath& path,
   base::FilePath map_path = temp_dir.AppendASCII(map_name);
 
   // TODO(eseidel): Paths or URLs with spaces will need quoting.
-  std::string map_entry =
-      base::StringPrintf("%s %s\n", path.value().c_str(), url.spec().c_str());
+  std::string map_entry = base::StringPrintf(
+      "%" PRIsFP " %s\n", path.value().c_str(), url.spec().c_str());
   // TODO(eseidel): AppendToFile is missing O_CREAT, crbug.com/450696
   if (!PathExists(map_path)) {
     base::WriteFile(map_path, map_entry.data(),
