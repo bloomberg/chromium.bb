@@ -336,20 +336,20 @@ KURL HitTestResult::absoluteImageURL() const
     if (!innerNodeOrImageMapImage)
         return KURL();
 
-    LayoutObject* layoutObject = innerNodeOrImageMapImage->layoutObject();
-    if (!(layoutObject && layoutObject->isImage()))
-        return KURL();
-
     AtomicString urlString;
-    if (isHTMLEmbedElement(*innerNodeOrImageMapImage)
-        || isHTMLImageElement(*innerNodeOrImageMapImage)
-        || isHTMLInputElement(*innerNodeOrImageMapImage)
-        || isHTMLObjectElement(*innerNodeOrImageMapImage)
-        || isSVGImageElement(*innerNodeOrImageMapImage)) {
+    // Always return a url for image elements and input elements with type=image, even if they
+    // don't have a LayoutImage (e.g. because the image didn't load and we are using an alt container).
+    // For other elements we don't create alt containers so ensure they contain a loaded image.
+    if (isHTMLImageElement(*innerNodeOrImageMapImage)
+        || (isHTMLInputElement(*innerNodeOrImageMapImage) && toHTMLInputElement(innerNodeOrImageMapImage)->isImage()))
         urlString = toElement(*innerNodeOrImageMapImage).imageSourceURL();
-    } else {
+    else if ((innerNodeOrImageMapImage->layoutObject() && innerNodeOrImageMapImage->layoutObject()->isImage())
+        && (isHTMLEmbedElement(*innerNodeOrImageMapImage)
+        || isHTMLObjectElement(*innerNodeOrImageMapImage)
+        || isSVGImageElement(*innerNodeOrImageMapImage)))
+        urlString = toElement(*innerNodeOrImageMapImage).imageSourceURL();
+    if (urlString.isEmpty())
         return KURL();
-    }
 
     return innerNodeOrImageMapImage->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
 }

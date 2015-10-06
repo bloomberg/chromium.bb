@@ -33,6 +33,7 @@
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebURLError.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
 
@@ -58,6 +59,18 @@ void registerMockedURLLoad(const WebURL& fullURL, const WebString& fileName, con
     response.setHTTPStatusCode(200);
 
     registerMockedURLLoadWithCustomResponse(fullURL, fileName, relativeBaseDirectory, response);
+}
+
+void registerMockedErrorURLLoad(const WebURL& fullURL)
+{
+    WebURLResponse response;
+    response.initialize();
+    response.setMIMEType("image/png");
+    response.setHTTPStatusCode(404);
+
+    WebURLError error;
+    error.reason = 404;
+    Platform::current()->unitTestSupport()->registerMockedErrorURL(fullURL, response, error);
 }
 
 void registerMockedURLLoadWithCustomResponse(const WebURL& fullURL, const WebString& fileName, const WebString& relativeBaseDirectory, WebURLResponse response)

@@ -56,6 +56,7 @@ void registerMockedURLFromBaseURL(const WebString& baseURL, const WebString& fil
 void registerMockedURLLoad(const WebURL& fullURL, const WebString& fileName, const WebString& mimeType = WebString::fromUTF8("text/html"));
 void registerMockedURLLoad(const WebURL& fullURL, const WebString& fileName, const WebString& relativeBaseDirectory, const WebString& mimeType);
 void registerMockedURLLoadWithCustomResponse(const WebURL& fullURL, const WebString& fileName, const WebString& relativeBaseDirectory, WebURLResponse);
+void registerMockedErrorURLLoad(const WebURL& fullURL);
 
 } // namespace URLTestHelpers
 } // namespace blink

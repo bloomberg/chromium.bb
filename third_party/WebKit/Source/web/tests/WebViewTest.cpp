@@ -445,6 +445,42 @@ TEST_F(WebViewTest, ImageMapUrls)
     EXPECT_EQ(imageUrl, hitTestAbsoluteUrl(webView, 75, 25));
 }
 
+TEST_F(WebViewTest, BrokenImage)
+{
+    URLTestHelpers::registerMockedErrorURLLoad(KURL(toKURL(m_baseURL), "non_existent.png"));
+    std::string url = m_baseURL + "image-broken.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-broken.html");
+
+    WebView* webView = m_webViewHelper.initialize();
+    webView->settings()->setLoadsImagesAutomatically(true);
+    loadFrame(webView->mainFrame(), url);
+    webView->resize(WebSize(400, 400));
+
+    std::string imageUrl = "http://www.test.com/non_existent.png";
+
+    EXPECT_EQ("image", hitTestElementId(webView, 25, 25));
+    EXPECT_TRUE(hitTestUrlElement(webView, 25, 25).isNull());
+    EXPECT_EQ(imageUrl, hitTestAbsoluteUrl(webView, 25, 25));
+}
+
+TEST_F(WebViewTest, BrokenInputImage)
+{
+    URLTestHelpers::registerMockedErrorURLLoad(KURL(toKURL(m_baseURL), "non_existent.png"));
+    std::string url = m_baseURL + "input-image-broken.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "input-image-broken.html");
+
+    WebView* webView = m_webViewHelper.initialize();
+    webView->settings()->setLoadsImagesAutomatically(true);
+    loadFrame(webView->mainFrame(), url);
+    webView->resize(WebSize(400, 400));
+
+    std::string imageUrl = "http://www.test.com/non_existent.png";
+
+    EXPECT_EQ("image", hitTestElementId(webView, 25, 25));
+    EXPECT_TRUE(hitTestUrlElement(webView, 25, 25).isNull());
+    EXPECT_EQ(imageUrl, hitTestAbsoluteUrl(webView, 25, 25));
+}
+
 TEST_F(WebViewTest, SetBaseBackgroundColor)
 {
     const WebColor kWhite    = 0xFFFFFFFF;
