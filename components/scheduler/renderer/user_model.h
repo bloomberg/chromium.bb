@@ -37,7 +37,7 @@ class SCHEDULER_EXPORT UserModel {
   // The prediction may change after |prediction_valid_duration| has elapsed.
   bool IsGestureExpectedSoon(RendererScheduler::UseCase use_case,
                              const base::TimeTicks now,
-                             base::TimeDelta* prediction_valid_duration) const;
+                             base::TimeDelta* prediction_valid_duration);
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -53,13 +53,21 @@ class SCHEDULER_EXPORT UserModel {
   static const int kExpectSubsequentGestureMillis = 2000;
 
   // Clears input signals.
-  void Reset();
+  void Reset(base::TimeTicks now);
 
  private:
+  bool IsGestureExpectedSoonImpl(
+      RendererScheduler::UseCase use_case,
+      const base::TimeTicks now,
+      base::TimeDelta* prediction_valid_duration) const;
+
   int pending_input_event_count_;
   base::TimeTicks last_input_signal_time_;
   base::TimeTicks last_gesture_start_time_;
   base::TimeTicks last_continuous_gesture_time_;  // Doesn't include Taps.
+  base::TimeTicks last_gesture_expected_start_time_;
+  base::TimeTicks last_reset_time_;
+  bool is_gesture_expected_;
 
   DISALLOW_COPY_AND_ASSIGN(UserModel);
 };

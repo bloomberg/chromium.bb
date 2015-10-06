@@ -37174,6 +37174,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.UserModel.GestureDuration"
+    units="milliseconds">
+  <owner>alexclarke@chromium.org</owner>
+  <summary>Duration of gestures (scrolls and pinches).</summary>
+</histogram>
+
+<histogram name="RendererScheduler.UserModel.GesturePredictedCorrectly"
+    units="GesturePredictionResult">
+  <owner>alexclarke@chromium.org</owner>
+  <summary>Whether a user gesture was predicted correctly.</summary>
+</histogram>
+
+<histogram name="RendererScheduler.UserModel.GestureStartTimeSinceModelReset"
+    units="milliseconds">
+  <owner>alexclarke@chromium.org</owner>
+  <summary>
+    Time between when the UserModel was last reset (which happens on navigation)
+    and a gesture starting.
+  </summary>
+</histogram>
+
+<histogram name="RendererScheduler.UserModel.TimeBetweenGestures"
+    units="milliseconds">
+  <owner>alexclarke@chromium.org</owner>
+  <summary>Time between subsequent gestures (scrolls and pinches).</summary>
+</histogram>
+
 <histogram name="RendererSyncIPC.ElapsedTime" units="milliseconds">
   <owner>ppi@chromium.org</owner>
   <summary>
@@ -61391,6 +61418,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="18" label="Window size button tap"/>
   <int value="19" label="Area surrounding tabstrip tap"/>
   <int value="20" label="Window resized double tap"/>
+</enum>
+
+<enum name="GesturePredictionResult" type="int">
+  <int value="0" label="Gesture occured and was predicted"/>
+  <int value="1" label="Gesture occured but was not predicted"/>
+  <int value="2" label="Gesture predicted but didn't occur"/>
 </enum>
 
 <enum name="GetPerfDataOutcome" type="int">

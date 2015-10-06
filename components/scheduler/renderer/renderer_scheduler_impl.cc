@@ -921,7 +921,7 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
   // Make sure that we don't initially assume there is no idle time.
   MainThreadOnly().short_idle_period_duration.InsertSample(
       cc::BeginFrameArgs::DefaultInterval());
-  AnyThread().user_model.Reset();
+  AnyThread().user_model.Reset(helper_.Now());
   MainThreadOnly().have_seen_a_begin_main_frame = false;
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
