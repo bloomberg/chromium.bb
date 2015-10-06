@@ -58,7 +58,6 @@ static gfx::Rect ComputePaddingPosition(const gfx::Size& bounds,
 
 void TabLayer::SetProperties(int id,
                              bool can_use_live_layer,
-                             bool can_use_ntp_fallback,
                              int toolbar_resource_id,
                              int close_button_resource_id,
                              int shadow_resource_id,
@@ -375,8 +374,8 @@ void TabLayer::SetProperties(int id,
         round(desired_content_size.width()),
         round(desired_content_size.height()));
 
-    content_->SetProperties(id, can_use_live_layer, can_use_ntp_fallback,
-                            static_to_view_blend, true, alpha, saturation,
+    content_->SetProperties(id, can_use_live_layer, static_to_view_blend,
+                            true, alpha, saturation,
                             rounded_descaled_content_area,
                             gfx::Size(content_width, content_height));
   } else if (back_logo_resource) {

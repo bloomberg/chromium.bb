@@ -55,7 +55,6 @@ static bool DoesLeafDrawContents(scoped_refptr<cc::Layer> layer) {
 
 void ContentLayer::SetProperties(int id,
                                  bool can_use_live_layer,
-                                 bool can_use_ntp_fallback,
                                  float static_to_view_blend,
                                  bool should_override_content_alpha,
                                  float content_alpha_override,

@@ -47,7 +47,6 @@ class StaticTabSceneLayer : public SceneLayer {
                       jint id,
                       jint toolbar_resource_id,
                       jboolean can_use_live_layer,
-                      jboolean can_use_ntp_fallback,
                       jint default_background_color,
                       jfloat x,
                       jfloat y,

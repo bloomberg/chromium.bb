@@ -266,8 +266,8 @@ public class LayoutManagerDocument extends LayoutManager
         boolean isNativePage = url != null && url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
         boolean canUseLiveTexture =
                 tab.getContentViewCore() != null && !tab.isShowingSadTab() && !isNativePage;
-        layoutTab.initFromHost(tab.getBackgroundColor(), tab.getFallbackTextureId(),
-                tab.shouldStall(), canUseLiveTexture, tab.getThemeColor(),
+        layoutTab.initFromHost(tab.getBackgroundColor(), tab.shouldStall(), canUseLiveTexture,
+                tab.getThemeColor(),
                 ColorUtils.getTextBoxColorForToolbarBackground(tab.getThemeColor()));
 
         mHost.requestRender();

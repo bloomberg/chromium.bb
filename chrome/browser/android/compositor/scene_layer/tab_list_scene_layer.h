@@ -50,7 +50,6 @@ class TabListSceneLayer : public SceneLayer {
                 jint back_logo_resource_id,
                 jint border_resource_id,
                 jboolean can_use_live_layer,
-                jboolean can_use_ntp_fallback,
                 jint tab_background_color,
                 jint background_color,
                 jint back_logo_color,

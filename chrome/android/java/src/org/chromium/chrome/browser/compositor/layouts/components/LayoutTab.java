@@ -126,8 +126,6 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
 
     private int mTextBoxBackgroundColor = Color.WHITE;
 
-    private int mFallbackThumbnailId = Tab.INVALID_TAB_ID;
-
     // End section --------------
 
     /**
@@ -209,12 +207,11 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
      *                              wait for the content layer to load.
      * @param canUseLiveTexture     Whether the tab can use a live texture when being displayed.
      */
-    public void initFromHost(int backgroundColor, int fallbackThumbnailId, boolean shouldStall,
-            boolean canUseLiveTexture, int toolbarBackgroundColor, int textBoxBackgroundColor) {
+    public void initFromHost(int backgroundColor, boolean shouldStall, boolean canUseLiveTexture,
+            int toolbarBackgroundColor, int textBoxBackgroundColor) {
         mBackgroundColor = backgroundColor;
         mToolbarBackgroundColor = toolbarBackgroundColor;
         mTextBoxBackgroundColor = textBoxBackgroundColor;
-        mFallbackThumbnailId = fallbackThumbnailId;
         mShouldStall = shouldStall;
         mCanUseLiveTexture = canUseLiveTexture;
         mInitFromHostCalled = true;
@@ -885,14 +882,6 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
      */
     public int getTextBoxBackgroundColor() {
         return mTextBoxBackgroundColor;
-    }
-
-    /**
-     * @return The id of a snapshot that would be acceptable to use if the snapshot for this tab
-     *         is unavailable.
-     */
-    public int getFallbackThumbnailId() {
-        return mFallbackThumbnailId;
     }
 
     /**

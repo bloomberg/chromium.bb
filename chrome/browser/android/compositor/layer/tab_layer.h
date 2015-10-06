@@ -47,7 +47,6 @@ class TabLayer : public Layer {
 
   void SetProperties(int id,
                      bool can_use_live_layer,
-                     bool can_use_ntp_fallback,
                      int toolbar_resource_id,
                      int close_button_resource_id,
                      int shadow_resource_id,

@@ -44,7 +44,6 @@ void StaticTabSceneLayer::UpdateTabLayer(JNIEnv* env,
                                          jint id,
                                          jint toolbar_resource_id,
                                          jboolean can_use_live_layer,
-                                         jboolean can_use_ntp_fallback,
                                          jint default_background_color,
                                          jfloat x,
                                          jfloat y,
@@ -75,7 +74,7 @@ void StaticTabSceneLayer::UpdateTabLayer(JNIEnv* env,
   content_layer_->layer()->SetBounds(gfx::Size(width, height));
   content_layer_->layer()->SetPosition(gfx::Point(x, y));
   content_layer_->SetProperties(
-      id, can_use_live_layer, can_use_ntp_fallback, static_to_view_blend,
+      id, can_use_live_layer, static_to_view_blend,
       should_override_content_alpha, content_alpha_override, saturation,
       gfx::Rect(content_viewport_size), content_viewport_size);
 

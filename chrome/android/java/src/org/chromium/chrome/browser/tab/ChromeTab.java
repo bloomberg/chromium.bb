@@ -369,13 +369,6 @@ public class ChromeTab extends Tab {
         return delegate != null && delegate.shouldIgnoreNewTab(url, incognito);
     }
 
-    /**
-     * @return A potential fallback texture id to use when trying to draw this tab.
-     */
-    public int getFallbackTextureId() {
-        return INVALID_TAB_ID;
-    }
-
     @Override
     public InterceptNavigationDelegateImpl getInterceptNavigationDelegate() {
         return (InterceptNavigationDelegateImpl) super.getInterceptNavigationDelegate();
