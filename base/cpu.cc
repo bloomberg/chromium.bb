@@ -43,7 +43,6 @@ CPU::CPU()
     has_sse41_(false),
     has_sse42_(false),
     has_avx_(false),
-    has_avx_hardware_(false),
     has_avx2_(false),
     has_aesni_(false),
     has_non_stop_time_stamp_counter_(false),
@@ -232,8 +231,6 @@ void CPU::Initialize() {
     has_ssse3_ = (cpu_info[2] & 0x00000200) != 0;
     has_sse41_ = (cpu_info[2] & 0x00080000) != 0;
     has_sse42_ = (cpu_info[2] & 0x00100000) != 0;
-    has_avx_hardware_ =
-                 (cpu_info[2] & 0x10000000) != 0;
     // AVX instructions will generate an illegal instruction exception unless
     //   a) they are supported by the CPU,
     //   b) XSAVE is supported by the CPU and
@@ -245,7 +242,7 @@ void CPU::Initialize() {
     // Because of that, we also test the XSAVE bit because its description in
     // the CPUID documentation suggests that it signals xgetbv support.
     has_avx_ =
-        has_avx_hardware_ &&
+        (cpu_info[2] & 0x10000000) != 0 &&
         (cpu_info[2] & 0x04000000) != 0 /* XSAVE */ &&
         (cpu_info[2] & 0x08000000) != 0 /* OSXSAVE */ &&
         (_xgetbv(0) & 6) == 6 /* XSAVE enabled by kernel */;
