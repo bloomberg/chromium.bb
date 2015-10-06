@@ -36,6 +36,7 @@ class CONTENT_EXPORT BackgroundSyncNetworkObserver
  private:
   friend class BackgroundSyncBrowserTest;
   friend class BackgroundSyncManagerTest;
+  friend class BackgroundSyncServiceImplTest;
 
   // Calls NotifyNetworkChanged if the connection type has changed.
   void NotifyManagerIfNetworkChanged(
