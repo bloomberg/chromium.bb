@@ -74,6 +74,12 @@ def main():
                       default=True,
                       dest='threading',
                       help='Do not install and push concurrently')
+  parser.add_argument('--no-cache',
+                      action='store_false',
+                      default=True,
+                      dest='cache',
+                      help='Do not use cached information about what files are '
+                           'currently on the target device.')
   parser.add_argument('-v',
                       '--verbose',
                       dest='verbose_count',
@@ -177,6 +183,9 @@ def main():
 
   cache_path = '%s/files-cache.json' % device_incremental_dir
   def restore_cache():
+    if not args.cache:
+      logging.info('Ignoring device cache')
+      return
     # Delete the cached file so that any exceptions cause the next attempt
     # to re-compute md5s.
     cmd = 'P=%s;cat $P 2>/dev/null && rm $P' % cache_path
