@@ -486,18 +486,15 @@ find_toplevel_surface(struct shell_surface *in_surface)
 {
 	struct shell_surface *surface = in_surface;
 
-	if (!surface)
-		return NULL;
-
-	while (surface->parent)
+	while (surface) {
+		if (surface->type == SHELL_SURFACE_TOPLEVEL)
+			return surface;
 		surface = get_shell_surface(surface->parent);
+	}
 
 	/* If no top level surface was found, just use whatever surface was
 	   originally provided. */
-	if (!surface || surface->type != SHELL_SURFACE_TOPLEVEL)
-		surface = in_surface;
-
-	return surface;
+	return in_surface;
 }
 
 static void
