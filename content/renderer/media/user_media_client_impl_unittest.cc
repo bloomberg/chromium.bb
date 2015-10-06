@@ -371,7 +371,7 @@ TEST_F(UserMediaClientImplTest, StopSourceWhenMediaStreamGoesOutOfScope) {
   // Makes sure the test itself don't hold a reference to the created
   // MediaStream.
   used_media_impl_->ClearLastGeneratedStream();
-  blink::WebHeap::collectGarbageForTesting();
+  blink::WebHeap::collectAllGarbageForTesting();
 
   // Expect the sources to be stopped when the MediaStream goes out of scope.
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
@@ -385,6 +385,7 @@ TEST_F(UserMediaClientImplTest, FrameWillClose) {
   blink::WebMediaStream mixed_desc = RequestLocalMediaStream();
   blink::WebMediaStream desc2 = RequestLocalMediaStream();
   used_media_impl_->FrameWillClose();
+  blink::WebHeap::collectAllGarbageForTesting();
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 }
@@ -398,7 +399,7 @@ TEST_F(UserMediaClientImplTest, MediaVideoSourceFailToStart) {
             used_media_impl_->request_state());
   EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE,
             used_media_impl_->error_reason());
-  blink::WebHeap::collectGarbageForTesting();
+  blink::WebHeap::collectAllGarbageForTesting();
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
@@ -414,7 +415,7 @@ TEST_F(UserMediaClientImplTest, MediaAudioSourceFailToInitialize) {
             used_media_impl_->request_state());
   EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE,
             used_media_impl_->error_reason());
-  blink::WebHeap::collectGarbageForTesting();
+  blink::WebHeap::collectAllGarbageForTesting();
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
@@ -462,6 +463,7 @@ TEST_F(UserMediaClientImplTest, StopTrackAfterReload) {
   blink::WebMediaStream mixed_desc = RequestLocalMediaStream();
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   used_media_impl_->FrameWillClose();
+  blink::WebHeap::collectAllGarbageForTesting();
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 
