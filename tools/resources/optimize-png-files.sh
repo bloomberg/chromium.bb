@@ -258,7 +258,7 @@ function optimize_size {
 
   info -ne "\b\b\b\b\b\b\b\bfilter.."
   local old_color_type=$(get_color_type $file)
-  optipng -q -zc9 -zm8 -zs0-3 -f0-5 $file -out $file.tmp.png
+  optipng -q -zc9 -zm8 -zs0-3 -f0-5 -out $file.tmp.png $file
   local new_color_type=$(get_color_type $file.tmp.png)
   # optipng may corrupt a png file when reducing the color type
   # to grayscale/grayscale+alpha. Just skip such cases until
