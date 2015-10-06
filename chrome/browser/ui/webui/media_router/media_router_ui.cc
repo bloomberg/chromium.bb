@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/guid.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/create_presentation_session_request.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/issues_observer.h"
@@ -26,14 +28,20 @@
 #include "chrome/browser/ui/webui/media_router/media_router_resources_provider.h"
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 namespace media_router {
 
 namespace {
+
+// The amount of time to wait for a response when creating a new route.
+const int kCreateRouteTimeoutSeconds = 20;
 
 std::string GetHostFromURL(const GURL& gurl) {
   if (gurl.is_empty())
@@ -42,6 +50,20 @@ std::string GetHostFromURL(const GURL& gurl) {
   if (base::StartsWith(host, "www.", base::CompareCase::INSENSITIVE_ASCII))
     host = host.substr(4);
   return host;
+}
+
+std::string GetTruncatedHostFromURL(const GURL& gurl) {
+  std::string host = GetHostFromURL(gurl);
+
+  const std::string truncated =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          host,
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  // The truncation will be empty in some scenarios (e.g. host is
+  // simply an IP address). Fail gracefully.
+  if (truncated.empty())
+    return host;
+  return truncated;
 }
 
 }  // namespace
@@ -102,8 +124,9 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui),
       handler_(new MediaRouterWebUIMessageHandler(this)),
       ui_initialized_(false),
-      has_pending_route_request_(false),
       requesting_route_for_default_source_(false),
+      current_route_request_id_(-1),
+      route_request_counter_(0),
       initiator_(nullptr),
       router_(nullptr),
       weak_factory_(this) {
@@ -261,7 +284,7 @@ std::string MediaRouterUI::GetInitialHeaderText() const {
     return std::string();
 
   return MediaCastModeToDescription(GetPreferredCastMode(cast_modes_),
-                                    GetHostFromURL(frame_url_));
+                                    GetTruncatedHostFromURL(frame_url_));
 }
 
 std::string MediaRouterUI::GetInitialHeaderTextTooltip() const {
@@ -289,19 +312,25 @@ void MediaRouterUI::OnRoutesUpdated(const std::vector<MediaRoute>& routes) {
     handler_->UpdateRoutes(routes_);
 }
 
-void MediaRouterUI::OnRouteResponseReceived(const MediaSink::Id& sink_id,
+void MediaRouterUI::OnRouteResponseReceived(const int route_request_id,
+                                            const MediaSink::Id& sink_id,
                                             const MediaRoute* route,
                                             const std::string& presentation_id,
                                             const std::string& error) {
   DVLOG(1) << "OnRouteResponseReceived";
+  // If we receive a new route that we aren't expecting, do nothing.
+  if (route_request_id != current_route_request_id_)
+    return;
+
   if (!route) {
     // The provider will handle sending an issue for a failed route request.
     DVLOG(0) << "MediaRouteResponse returned error: " << error;
   }
 
   handler_->OnCreateRouteResponseReceived(sink_id, route);
-  has_pending_route_request_ = false;
   requesting_route_for_default_source_ = false;
+  current_route_request_id_ = -1;
+  route_creation_timer_.Stop();
 }
 
 bool MediaRouterUI::DoCreateRoute(const MediaSink::Id& sink_id,
@@ -321,8 +350,8 @@ bool MediaRouterUI::DoCreateRoute(const MediaSink::Id& sink_id,
     return false;
   }
 
-  has_pending_route_request_ = true;
   requesting_route_for_default_source_ = cast_mode == MediaCastMode::DEFAULT;
+  current_route_request_id_ = ++route_request_counter_;
   GURL origin;
   // TODO(imcheng): What is the origin if not creating route in DEFAULT mode?
   if (requesting_route_for_default_source_) {
@@ -349,7 +378,8 @@ bool MediaRouterUI::DoCreateRoute(const MediaSink::Id& sink_id,
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(
       base::Bind(&MediaRouterUI::OnRouteResponseReceived,
-                 weak_factory_.GetWeakPtr(), sink_id));
+                 weak_factory_.GetWeakPtr(), current_route_request_id_,
+                 sink_id));
   if (requesting_route_for_default_source_) {
     if (presentation_request_) {
       // |presentation_request_| will be nullptr after this call, as the
@@ -364,10 +394,37 @@ bool MediaRouterUI::DoCreateRoute(const MediaSink::Id& sink_id,
     }
   }
 
+  // Start the timer.
+  route_creation_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kCreateRouteTimeoutSeconds),
+      this, &MediaRouterUI::RouteCreationTimeout);
+
   router_->CreateRoute(source.id(), sink_id, origin,
                        SessionTabHelper::IdForTab(initiator_),
                        route_response_callbacks);
   return true;
+}
+
+void MediaRouterUI::RouteCreationTimeout() {
+  requesting_route_for_default_source_ = false;
+  current_route_request_id_ = -1;
+
+  base::string16 host = base::UTF8ToUTF16(GetTruncatedHostFromURL(frame_url_));
+
+  // TODO(apacible): Update error messages based on current cast mode
+  // (e.g. desktop).
+  std::string issue_title = host.empty() ?
+      l10n_util::GetStringUTF8(
+          IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB) :
+      l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
+                                host);
+
+  Issue issue(issue_title, std::string(),
+      IssueAction(IssueAction::TYPE_DISMISS),
+      std::vector<IssueAction>(), std::string(), Issue::NOTIFICATION,
+      false, std::string());
+  AddIssue(issue);
+  handler_->NotifyRouteCreationTimeout();
 }
 
 std::string MediaRouterUI::GetFrameURLHost() const {

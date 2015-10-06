@@ -55,41 +55,4 @@ TEST(MediaCastModeTest, IsValidCastModeNum) {
   EXPECT_FALSE(IsValidCastModeNum(-1));
 }
 
-TEST(MediaCastModeTest, ProperlyTruncatesHostnames) {
-  EXPECT_THAT(
-      MediaCastModeToDescription(MediaCastMode::DEFAULT,
-                                 "www.kurtisawesome.com"),
-      Not(HasSubstr("www")));
-  EXPECT_THAT(
-      MediaCastModeToDescription(MediaCastMode::DEFAULT,
-                                 "www.kurtisawesome.com"),
-      HasSubstr("kurtisawesome.com"));
-
-  EXPECT_THAT(
-      MediaCastModeToDescription(MediaCastMode::DEFAULT,
-                                 "www.kurtisawesome.co.uk"),
-      Not(HasSubstr("www")));
-  EXPECT_THAT(
-      MediaCastModeToDescription(MediaCastMode::DEFAULT,
-                                 "www.kurtisawesome.co.uk"),
-      HasSubstr("kurtisawesome.co.uk"));
-
-  EXPECT_THAT(
-      MediaCastModeToDescription(MediaCastMode::DEFAULT,
-                                 "www.my.kurtisawesome.qld.edu.au"),
-      Not(HasSubstr("www")));
-  EXPECT_THAT(
-      MediaCastModeToDescription(MediaCastMode::DEFAULT,
-                                 "www.my.kurtisawesome.qld.edu.au"),
-      Not(HasSubstr("www")));
-  EXPECT_THAT(
-      MediaCastModeToDescription(MediaCastMode::DEFAULT,
-                                 "www.my.kurtisawesome.qld.edu.au"),
-      HasSubstr("kurtisawesome.qld.edu.au"));
-
-  EXPECT_THAT(
-      MediaCastModeToDescription(MediaCastMode::DEFAULT, "192.168.0.1"),
-      HasSubstr("192.168.0.1"));
-}
-
 }  // namespace media_router

@@ -30,6 +30,8 @@ const char kCloseDialog[] = "closeDialog";
 
 // JS function names.
 const char kSetInitialData[] = "media_router.ui.setInitialData";
+const char kNotifyRouteCreationTimeout[] =
+    "media_router.ui.onNotifyRouteCreationTimeout";
 const char kOnCreateRouteResponseReceived[] =
     "media_router.ui.onCreateRouteResponseReceived";
 const char kSetIssue[] = "media_router.ui.setIssue";
@@ -49,7 +51,6 @@ scoped_ptr<base::ListValue> SinksToValue(
     sink_val->SetString("id", sink.id());
     sink_val->SetString("name", sink.name());
     sink_val->SetInteger("iconType", sink.icon_type());
-    sink_val->SetBoolean("isLaunching", sink.is_launching());
 
     scoped_ptr<base::ListValue> cast_modes_val(new base::ListValue);
     for (MediaCastMode cast_mode : sink_with_cast_modes.cast_modes)
@@ -219,6 +220,11 @@ void MediaRouterWebUIMessageHandler::UpdateIssue(const Issue* issue) {
   }
 }
 
+void MediaRouterWebUIMessageHandler::NotifyRouteCreationTimeout() {
+  DVLOG(2) << "NotifyRouteCreationTimeout";
+  web_ui()->CallJavascriptFunction(kNotifyRouteCreationTimeout);
+}
+
 void MediaRouterWebUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kRequestInitialData,
@@ -293,7 +299,7 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
 
   MediaRouterUI* media_router_ui =
       static_cast<MediaRouterUI*>(web_ui()->GetController());
-  if (media_router_ui->has_pending_route_request()) {
+  if (media_router_ui->HasPendingRouteRequest()) {
     DVLOG(1) << "UI already has pending route request. Ignoring.";
     Issue issue(
         l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_ISSUE_PENDING_ROUTE),

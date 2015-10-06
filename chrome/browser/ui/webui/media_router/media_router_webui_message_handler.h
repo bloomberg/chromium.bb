@@ -42,6 +42,9 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // there are no more issues.
   void UpdateIssue(const Issue* issue);
 
+  // Notifies the dialog that the route creation attempt timed out.
+  void NotifyRouteCreationTimeout();
+
  private:
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;

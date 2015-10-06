@@ -25,8 +25,8 @@
             id="cast-mode-header-text">[[selectCastModeHeaderText_]]</span>
       </div>
       <paper-icon-button icon="[[computeArrowDropIcon_(currentView_)]]"
-          disabled$="[[isLaunching_(sinkList)]]" id="arrow-drop-icon"
-          on-click="toggleCastModeHidden_">
+          disabled$="[[computeIsLaunching_(currentLaunchingSinkId_)]]"
+          id="arrow-drop-icon" on-click="toggleCastModeHidden_">
       </paper-icon-button>
       <paper-icon-button icon="close" id="close-button"
           on-click="onCloseButtonClick_">
@@ -86,10 +86,11 @@
             <div class="sink-content">
               <div>
                 <iron-icon icon="[[computeSinkIcon_(item)]]"
-                    hidden$="[[item.isLaunching]]"
+                    hidden$="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.id)]]"
                     class$="[[computeSinkIconClass_(item.id, sinkToRouteMap_)]]">
                 </iron-icon>
-                <template is="dom-if" if="[[item.isLaunching]]">
+                <template is="dom-if"
+                    if="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.id)]]">
                   <paper-spinner class="sink-icon" active>
                   </paper-spinner>
                 </template>

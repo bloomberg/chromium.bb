@@ -31,7 +31,6 @@ define('media_router_bindings', [
       'name': sink.friendlyName,
       'sink_id': sink.id,
       'icon_type': sinkIconTypeToMojo(sink.iconType),
-      'is_launching': sink.isLaunching_,
     });
   }
 

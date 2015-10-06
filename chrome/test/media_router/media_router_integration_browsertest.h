@@ -77,6 +77,10 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // route did not show up before the timeout.
   void WaitUntilRouteCreated();
 
+  // Wait for route creation to timeout. Fails if a route shows up before the
+  // timeout.
+  void WaitUntilRouteCreationTimeout();
+
  private:
   // Get the full path of the resource file.
   // |relative_path|: The relative path to

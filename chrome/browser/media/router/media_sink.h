@@ -25,17 +25,11 @@ class MediaSink {
             const std::string& name,
             const IconType icon_type);
 
-  MediaSink(const MediaSink::Id& sink_id,
-            const std::string& name,
-            const IconType icon_type,
-            bool is_launching);
-
   ~MediaSink();
 
   const MediaSink::Id& id() const { return sink_id_; }
   const std::string& name() const { return name_; }
   MediaSink::IconType icon_type() const { return icon_type_; }
-  bool is_launching() const { return is_launching_; }
 
   bool Equals(const MediaSink& other) const;
   bool Empty() const;
@@ -48,8 +42,6 @@ class MediaSink {
   std::string name_;
   // The type of icon that corresponds with the MediaSink.
   MediaSink::IconType icon_type_;
-  // True when the media router is creating a route to this sink.
-  bool is_launching_;
 };
 
 }  // namespace media_router

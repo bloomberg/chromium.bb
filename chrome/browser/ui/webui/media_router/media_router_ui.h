@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
@@ -121,7 +122,9 @@ class MediaRouterUI
 
   // Returns the hostname of the default source's parent frame URL.
   std::string GetFrameURLHost() const;
-  bool has_pending_route_request() const { return has_pending_route_request_; }
+  bool HasPendingRouteRequest() const {
+    return current_route_request_id_ != -1;
+  }
   const GURL& frame_url() const { return frame_url_; }
   const std::vector<MediaSinkWithCastModes>& sinks() const { return sinks_; }
   const std::vector<MediaRoute>& routes() const { return routes_; }
@@ -168,12 +171,16 @@ class MediaRouterUI
 
   // Callback passed to MediaRouter to receive response to route creation
   // requests.
-  void OnRouteResponseReceived(const MediaSink::Id& sink_id,
+  void OnRouteResponseReceived(const int route_request_id,
+                               const MediaSink::Id& sink_id,
                                const MediaRoute* route,
                                const std::string& presentation_id,
                                const std::string& error);
 
   bool DoCreateRoute(const MediaSink::Id& sink_id, MediaCastMode cast_mode);
+
+  // Creates and sends an issue if route creation times out.
+  void RouteCreationTimeout();
 
   // Sets the source host name to be displayed in the UI.
   // Gets cast modes from |query_result_manager_| and forwards it to UI.
@@ -202,10 +209,14 @@ class MediaRouterUI
   // Set to true by |handler_| when the UI has been initialized.
   bool ui_initialized_;
 
-  // Set to |true| if there is a pending route request for this UI.
-  bool has_pending_route_request_;
-
   bool requesting_route_for_default_source_;
+
+  // Set to -1 if not tracking a pending route request.
+  int current_route_request_id_;
+
+  // Sequential counter for route requests. Used to update
+  // |current_route_request_id_| when there is a new route request.
+  int route_request_counter_;
 
   std::vector<MediaSinkWithCastModes> sinks_;
   std::vector<MediaRoute> routes_;
@@ -231,6 +242,9 @@ class MediaRouterUI
 
   // Pointer to the MediaRouter for this instance's BrowserContext.
   MediaRouterMojoImpl* router_;
+
+  // Timer used to implement a timeout on a create route request.
+  base::OneShotTimer route_creation_timer_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   // Therefore |weak_factory_| must be placed at the end.

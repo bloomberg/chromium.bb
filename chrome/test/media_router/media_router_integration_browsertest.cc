@@ -18,12 +18,14 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 
 namespace media_router {
@@ -244,6 +246,13 @@ void MediaRouterIntegrationBrowserTest::CloseRouteOnUI() {
                  base::Unretained(this))));
 }
 
+void MediaRouterIntegrationBrowserTest::WaitUntilRouteCreationTimeout() {
+  ASSERT_FALSE(ConditionalWait(
+      base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
+      base::Bind(&MediaRouterIntegrationBrowserTest::IsRouteCreatedOnUI,
+                 base::Unretained(this))));
+}
+
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* web_contents =
@@ -275,7 +284,18 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   ExecuteJavaScriptAPI(web_contents, kWaitDeviceScript);
   StartSession(web_contents);
   ChooseSink(web_contents, kTestSinkName);
+  WaitUntilRouteCreationTimeout();
   ExecuteJavaScriptAPI(web_contents, kCheckSessionFailedScript);
+
+  content::WebContents* dialog_contents = GetMRDialog(web_contents);
+  std::string script = base::StringPrintf(
+      "domAutomationController.send(window.document.getElementById("
+      "'media-router-container').issue.title)");
+  std::string issue_title = ExecuteScriptAndExtractString(
+      dialog_contents, script);
+  ASSERT_EQ(l10n_util::GetStringUTF8(
+                IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT),
+            issue_title);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,

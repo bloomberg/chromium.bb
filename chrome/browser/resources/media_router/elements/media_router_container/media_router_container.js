@@ -38,6 +38,15 @@ Polymer({
     },
 
     /**
+     * The ID of the Sink currently being launched.
+     * @private {string}
+     */
+    currentLaunchingSinkId_: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * The current route.
      * @private {?media_router.Route}
      */
@@ -275,6 +284,15 @@ Polymer({
   },
 
   /**
+   * @param {string} The ID of the sink that is currently launching, or empty
+   *     string if none exists.
+   * @private
+   */
+  computeIsLaunching_: function(currentLaunchingSinkId) {
+    return currentLaunchingSinkId != '';
+  },
+
+  /**
    * @param {?media_router.Issue} issue The current issue.
    * @return {string} The class for the issue banner.
    * @private
@@ -393,6 +411,16 @@ Polymer({
   },
 
   /**
+   * @param {!string} currentLauchingSinkid The ID of the sink that is
+   *     currently launching.
+   * @param {!string} sinkId A sink ID.
+   * @private
+   */
+  computeSinkIsLaunching_: function(currentLaunchingSinkId, sinkId) {
+    return currentLaunchingSinkId == sinkId;
+  },
+
+  /**
    * @param {!Array<!media_router.Sink>} The list of sinks.
    * @return {boolean} Whether or not to hide the sink list.
    * @private
@@ -419,17 +447,6 @@ Polymer({
    */
   computeSpinnerHidden_: function(justOpened) {
     return !justOpened;
-  },
-
-  /**
-   * Checks if there is a sink whose isLaunching is true.
-   *
-   * @param {!Array<!media_router.Sink>} sinks
-   * @return {boolean}
-   * @private
-   */
-  isLaunching_: function(sinks) {
-    return sinks.some(function(sink) { return sink.isLaunching; });
   },
 
   /**
@@ -484,8 +501,8 @@ Polymer({
    *     if succeeded; null otherwise.
    */
   onCreateRouteResponseReceived: function(sinkId, route) {
-    this.setLaunchState_(sinkId, false);
-    // TODO(apacible) Show launch failure.
+    this.currentLaunchingSinkId_ = '';
+    // The provider will handle sending an issue for a failed route request.
     if (!route)
       return;
 
@@ -499,6 +516,10 @@ Polymer({
     // which results in the correct sink to route mapping.
     this.routeList.push(route);
     this.showRouteDetails_(route);
+  },
+
+  onNotifyRouteCreationTimeout: function() {
+    this.currentLaunchingSinkId_ = '';
   },
 
   /**
@@ -572,23 +593,6 @@ Polymer({
   },
 
   /**
-   * Temporarily overrides the "isLaunching" bit for a sink.
-   *
-   * @param {string} sinkId The ID of the sink.
-   * @param {boolean} isLaunching Whether or not the media router is creating
-   *    a route to the sink.
-   * @private
-   */
-  setLaunchState_: function(sinkId, isLaunching) {
-    for (var index = 0; index < this.sinkList.length; index++) {
-      if (this.sinkList[index].id == sinkId) {
-        this.set(['sinkList', index, 'isLaunching'], isLaunching);
-        return;
-      }
-    }
-  },
-
-  /**
    * Shows the cast mode list.
    *
    * @private
@@ -609,13 +613,13 @@ Polymer({
     var route = this.sinkToRouteMap_[sink.id];
     if (route) {
       this.showRouteDetails_(route);
-    } else if (!this.isLaunching_(this.sinkList)) {
+    } else if (this.currentLaunchingSinkId_ == '') {
       // Allow one launch at a time.
-      this.setLaunchState_(sink.id, true);
       this.fire('create-route', {
         sinkId: sink.id,
         selectedCastModeValue: this.selectedCastModeValue_
       });
+      this.currentLaunchingSinkId_ = sink.id;
     }
   },
 
