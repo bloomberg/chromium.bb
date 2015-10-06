@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/picture_layer.h"
-#include "cc/playback/recording_source.h"
+#include "cc/playback/display_list_recording_source.h"
 
 namespace cc {
 class FakePictureLayer : public PictureLayer {
@@ -21,7 +21,7 @@ class FakePictureLayer : public PictureLayer {
   static scoped_refptr<FakePictureLayer> CreateWithRecordingSource(
       const LayerSettings& settings,
       ContentLayerClient* client,
-      scoped_ptr<RecordingSource> source) {
+      scoped_ptr<DisplayListRecordingSource> source) {
     return make_scoped_refptr(
         new FakePictureLayer(settings, client, source.Pass()));
   }
@@ -46,7 +46,7 @@ class FakePictureLayer : public PictureLayer {
   FakePictureLayer(const LayerSettings& settings, ContentLayerClient* client);
   FakePictureLayer(const LayerSettings& settings,
                    ContentLayerClient* client,
-                   scoped_ptr<RecordingSource> source);
+                   scoped_ptr<DisplayListRecordingSource> source);
   ~FakePictureLayer() override;
 
   int update_count_;

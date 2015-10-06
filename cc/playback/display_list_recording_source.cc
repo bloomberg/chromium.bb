@@ -175,8 +175,8 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     case RECORD_WITH_CONSTRUCTION_DISABLED:
       painting_control = ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
       break;
-    default:
-      // case RecordingSource::RECORD_WITH_SK_NULL_CANVAS should not be reached
+    case RECORD_WITH_SK_NULL_CANVAS:
+    case RECORDING_MODE_COUNT:
       NOTREACHED();
   }
 

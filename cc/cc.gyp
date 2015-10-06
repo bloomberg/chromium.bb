@@ -370,7 +370,6 @@
         'playback/raster_source.h',
         'playback/raster_source_helper.cc',
         'playback/raster_source_helper.h',
-        'playback/recording_source.h',
         'playback/transform_display_item.cc',
         'playback/transform_display_item.h',
         'quads/content_draw_quad_base.cc',

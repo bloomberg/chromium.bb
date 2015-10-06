@@ -4481,7 +4481,8 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   scoped_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
   host->SetRootLayer(layer);
-  RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
+  DisplayListRecordingSource* recording_source =
+      layer->GetDisplayListRecordingSourceForTesting();
 
   int frame_number = 0;
 
@@ -4490,7 +4491,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   Region invalidation(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
       &client, &invalidation, layer_bounds, layer_rect, frame_number++,
-      RecordingSource::RECORD_NORMALLY);
+      DisplayListRecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> pending_raster_source =
       recording_source->CreateRasterSource(true);
@@ -4544,7 +4545,8 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   scoped_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
   host->SetRootLayer(layer);
-  RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
+  DisplayListRecordingSource* recording_source =
+      layer->GetDisplayListRecordingSourceForTesting();
 
   int frame_number = 0;
 
@@ -4553,7 +4555,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   Region invalidation1(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
       &client, &invalidation1, layer_bounds, layer_rect, frame_number++,
-      RecordingSource::RECORD_NORMALLY);
+      DisplayListRecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source1 =
       recording_source->CreateRasterSource(true);
@@ -4572,7 +4574,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   Region invalidation2(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
       &client, &invalidation2, layer_bounds, layer_rect, frame_number++,
-      RecordingSource::RECORD_NORMALLY);
+      DisplayListRecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source2 =
       recording_source->CreateRasterSource(true);

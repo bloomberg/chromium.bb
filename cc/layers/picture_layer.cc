@@ -32,7 +32,7 @@ PictureLayer::PictureLayer(const LayerSettings& settings,
 
 PictureLayer::PictureLayer(const LayerSettings& settings,
                            ContentLayerClient* client,
-                           scoped_ptr<RecordingSource> source)
+                           scoped_ptr<DisplayListRecordingSource> source)
     : PictureLayer(settings, client) {
   recording_source_ = source.Pass();
 }
@@ -150,7 +150,7 @@ bool PictureLayer::Update() {
   DCHECK(client_);
   updated |= recording_source_->UpdateAndExpandInvalidation(
       client_, &recording_invalidation_, layer_size, update_rect,
-      update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
+      update_source_frame_number_, DisplayListRecordingSource::RECORD_NORMALLY);
   last_updated_visible_layer_rect_ = visible_layer_rect();
 
   if (updated) {
@@ -169,18 +169,19 @@ void PictureLayer::SetIsMask(bool is_mask) {
 }
 
 skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
-  // We could either flatten the RecordingSource into a single SkPicture,
-  // or paint a fresh one depending on what we intend to do with the
+  // We could either flatten the DisplayListRecordingSource into a single
+  // SkPicture, or paint a fresh one depending on what we intend to do with the
   // picture. For now we just paint a fresh one to get consistent results.
   if (!DrawsContent())
     return skia::RefPtr<SkPicture>();
 
   gfx::Size layer_size = bounds();
-  scoped_ptr<RecordingSource> recording_source(new DisplayListRecordingSource);
+  scoped_ptr<DisplayListRecordingSource> recording_source(
+      new DisplayListRecordingSource);
   Region recording_invalidation;
   recording_source->UpdateAndExpandInvalidation(
       client_, &recording_invalidation, layer_size, gfx::Rect(layer_size),
-      update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
+      update_source_frame_number_, DisplayListRecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source =
       recording_source->CreateRasterSource(false);

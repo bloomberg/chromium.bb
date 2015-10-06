@@ -66,7 +66,7 @@ TEST(DiscardableImageMapTest, GetDiscardableImagesInRect) {
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
-      1, RecordingSource::RECORD_NORMALLY);
+      1, DisplayListRecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
   DiscardableImageMap image_map;
@@ -147,7 +147,7 @@ TEST(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, layer_size, visible_rect, 1,
-      RecordingSource::RECORD_NORMALLY);
+      DisplayListRecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
   DiscardableImageMap image_map;
@@ -252,7 +252,7 @@ TEST(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
-      1, RecordingSource::RECORD_NORMALLY);
+      1, DisplayListRecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
   DiscardableImageMap image_map;
@@ -295,7 +295,7 @@ TEST(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
-      1, RecordingSource::RECORD_NORMALLY);
+      1, DisplayListRecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
   DiscardableImageMap image_map;

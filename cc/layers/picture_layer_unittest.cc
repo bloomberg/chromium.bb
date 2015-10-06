@@ -101,7 +101,7 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   Region invalidation(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
       &client, &invalidation, layer_bounds, layer_rect, 1,
-      RecordingSource::RECORD_NORMALLY);
+      DisplayListRecordingSource::RECORD_NORMALLY);
 
   // Layer is suitable for gpu rasterization by default.
   EXPECT_TRUE(recording_source->IsSuitableForGpuRasterization());

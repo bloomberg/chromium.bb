@@ -18,9 +18,10 @@ FakePictureLayer::FakePictureLayer(const LayerSettings& settings,
   SetIsDrawable(true);
 }
 
-FakePictureLayer::FakePictureLayer(const LayerSettings& settings,
-                                   ContentLayerClient* client,
-                                   scoped_ptr<RecordingSource> source)
+FakePictureLayer::FakePictureLayer(
+    const LayerSettings& settings,
+    ContentLayerClient* client,
+    scoped_ptr<DisplayListRecordingSource> source)
     : PictureLayer(settings, client, source.Pass()),
       update_count_(0),
       push_properties_count_(0),

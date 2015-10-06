@@ -231,20 +231,20 @@ TEST(DisplayListRecordingSourceTest,
 
   recording_source.UpdateAndExpandInvalidation(
       &client, &invalidation, layer_size, visible_rect, 0,
-      RecordingSource::RECORD_NORMALLY);
+      DisplayListRecordingSource::RECORD_NORMALLY);
   EXPECT_EQ(gfx::Rect(0, 0, 4256, 4256), recording_source.recorded_viewport());
 
   visible_rect.Offset(0, 512);
   recording_source.UpdateAndExpandInvalidation(
       &client, &invalidation, layer_size, visible_rect, 0,
-      RecordingSource::RECORD_NORMALLY);
+      DisplayListRecordingSource::RECORD_NORMALLY);
   EXPECT_EQ(gfx::Rect(0, 0, 4256, 4256), recording_source.recorded_viewport());
 
   // Move past the threshold for enough exposed new area.
   visible_rect.Offset(0, 1);
   recording_source.UpdateAndExpandInvalidation(
       &client, &invalidation, layer_size, visible_rect, 0,
-      RecordingSource::RECORD_NORMALLY);
+      DisplayListRecordingSource::RECORD_NORMALLY);
   EXPECT_EQ(gfx::Rect(0, 0, 4256, 4769), recording_source.recorded_viewport());
 
   // Make the bottom of the potential new recorded viewport coincide with the
@@ -252,7 +252,7 @@ TEST(DisplayListRecordingSourceTest,
   visible_rect.Offset(0, 231);
   recording_source.UpdateAndExpandInvalidation(
       &client, &invalidation, layer_size, visible_rect, 0,
-      RecordingSource::RECORD_NORMALLY);
+      DisplayListRecordingSource::RECORD_NORMALLY);
   EXPECT_EQ(gfx::Rect(0, 0, 4256, 4769), recording_source.recorded_viewport());
 }
 

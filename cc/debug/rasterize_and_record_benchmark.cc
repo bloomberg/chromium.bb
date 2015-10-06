@@ -17,6 +17,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/playback/display_item_list.h"
+#include "cc/playback/display_list_recording_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "skia/ext/analysis_canvas.h"
@@ -34,11 +35,8 @@ const int kTimeLimitMillis = 1;
 const int kWarmupRuns = 0;
 const int kTimeCheckInterval = 1;
 
-const char* kModeSuffixes[RecordingSource::RECORDING_MODE_COUNT] = {
-    "",
-    "_sk_null_canvas",
-    "_painting_disabled",
-    "_caching_disabled",
+const char* kModeSuffixes[DisplayListRecordingSource::RECORDING_MODE_COUNT] = {
+    "", "_sk_null_canvas", "_painting_disabled", "_caching_disabled",
     "_construction_disabled"};
 
 }  // namespace
@@ -77,7 +75,7 @@ void RasterizeAndRecordBenchmark::DidUpdateLayers(LayerTreeHost* host) {
   results_->SetInteger("picture_memory_usage",
                        static_cast<int>(record_results_.bytes_used));
 
-  for (int i = 0; i < RecordingSource::RECORDING_MODE_COUNT; i++) {
+  for (int i = 0; i < DisplayListRecordingSource::RECORDING_MODE_COUNT; i++) {
     std::string name = base::StringPrintf("record_time%s_ms", kModeSuffixes[i]);
     results_->SetDouble(name,
                         record_results_.total_best_time[i].InMillisecondsF());
@@ -121,24 +119,26 @@ void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
     const gfx::Rect& visible_layer_rect) {
   ContentLayerClient* painter = layer->client();
 
-  for (int mode_index = 0; mode_index < RecordingSource::RECORDING_MODE_COUNT;
+  for (int mode_index = 0;
+       mode_index < DisplayListRecordingSource::RECORDING_MODE_COUNT;
        mode_index++) {
     ContentLayerClient::PaintingControlSetting painting_control =
         ContentLayerClient::PAINTING_BEHAVIOR_NORMAL;
-    switch (static_cast<RecordingSource::RecordingMode>(mode_index)) {
-      case RecordingSource::RECORD_NORMALLY:
+    switch (
+        static_cast<DisplayListRecordingSource::RecordingMode>(mode_index)) {
+      case DisplayListRecordingSource::RECORD_NORMALLY:
         // Already setup for normal recording.
         break;
-      case RecordingSource::RECORD_WITH_SK_NULL_CANVAS:
+      case DisplayListRecordingSource::RECORD_WITH_SK_NULL_CANVAS:
         // Not supported for Display List recording.
         continue;
-      case RecordingSource::RECORD_WITH_PAINTING_DISABLED:
+      case DisplayListRecordingSource::RECORD_WITH_PAINTING_DISABLED:
         painting_control = ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED;
         break;
-      case RecordingSource::RECORD_WITH_CACHING_DISABLED:
+      case DisplayListRecordingSource::RECORD_WITH_CACHING_DISABLED:
         painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
         break;
-      case RecordingSource::RECORD_WITH_CONSTRUCTION_DISABLED:
+      case DisplayListRecordingSource::RECORD_WITH_CONSTRUCTION_DISABLED:
         painting_control =
             ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
         break;
@@ -180,7 +180,7 @@ void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
         min_time = duration;
     }
 
-    if (mode_index == RecordingSource::RECORD_NORMALLY) {
+    if (mode_index == DisplayListRecordingSource::RECORD_NORMALLY) {
       record_results_.bytes_used +=
           memory_used + painter->GetApproximateUnsharedMemoryUsage();
       record_results_.pixels_recorded +=
