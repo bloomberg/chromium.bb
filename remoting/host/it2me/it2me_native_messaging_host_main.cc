@@ -65,7 +65,6 @@ int StartIt2MeNativeMessagingHost() {
 
   remoting::LoadResources("");
 
-  // Cannot use TOOLKIT_GTK because it is not defined when aura is enabled.
 #if defined(OS_LINUX)
   // Required in order for us to run multiple X11 threads.
   XInitThreads();
