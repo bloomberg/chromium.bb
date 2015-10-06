@@ -245,7 +245,8 @@ class InputApi(object):
   DEFAULT_BLACK_LIST = (
       r"testing_support[\\\/]google_appengine[\\\/].*",
       r".*\bexperimental[\\\/].*",
-      r".*\bthird_party[\\\/].*",
+      # Exclude third_party/.* but NOT third_party/WebKit (crbug.com/539768).
+      r".*\bthird_party[\\\/](?!WebKit[\\\/]).*",
       # Output directories (just in case)
       r".*\bDebug[\\\/].*",
       r".*\bRelease[\\\/].*",
