@@ -98,6 +98,7 @@
         '<(DEPTH)/chrome/chrome.gyp:browser',
         '<(DEPTH)/chrome/chrome.gyp:renderer',
         '<(DEPTH)/chrome/chrome.gyp:test_support_common',
+        '<(DEPTH)/chrome/chrome.gyp:test_support_ui',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
         '<(DEPTH)/chrome/chrome_resources.gyp:packed_extra_resources',

@@ -1392,7 +1392,6 @@
     ],
     'chrome_unit_tests_win_sources': [
       'app/chrome_dll.rc',
-      'browser/search_engines/template_url_scraper_unittest.cc',
       'test/data/resource.rc',
     ],
     'chrome_unit_tests_mac_sources': [
@@ -1741,8 +1740,6 @@
         'browser/notifications/notification_test_util.h',
         'browser/password_manager/mock_password_store_service.cc',
         'browser/password_manager/mock_password_store_service.h',
-        'browser/password_manager/password_manager_test_base.cc',
-        'browser/password_manager/password_manager_test_base.h',
         'browser/password_manager/test_password_store_service.cc',
         'browser/password_manager/test_password_store_service.h',
         'browser/profile_resetter/profile_resetter_test_base.cc',
@@ -1792,8 +1789,6 @@
         'browser/ui/views/toolbar/browser_action_test_util_views.cc',
         'browser/ui/website_settings/mock_permission_bubble_request.cc',
         'browser/ui/website_settings/mock_permission_bubble_request.h',
-        'browser/ui/webui/signin/login_ui_test_utils.cc',
-        'browser/ui/webui/signin/login_ui_test_utils.h',
         'renderer/chrome_mock_render_thread.cc',
         'renderer/chrome_mock_render_thread.h',
         'renderer/safe_browsing/mock_feature_extractor_clock.cc',
@@ -1817,9 +1812,6 @@
         'test/base/find_in_page_observer.h',
         'test/base/history_index_restore_observer.cc',
         'test/base/history_index_restore_observer.h',
-        'test/base/in_process_browser_test.cc',
-        'test/base/in_process_browser_test.h',
-        'test/base/in_process_browser_test_mac.cc',
         'test/base/profile_mock.cc',
         'test/base/profile_mock.h',
         'test/base/scoped_browser_locale.cc',
@@ -1848,8 +1840,6 @@
         'test/base/testing_profile_manager.h',
         'test/base/tracing.cc',
         'test/base/tracing.h',
-        'test/base/ui_test_utils.cc',
-        'test/base/ui_test_utils.h',
         'test/logging/win/file_logger.cc',
         'test/logging/win/file_logger.h',
         'test/logging/win/log_file_printer.cc',
@@ -1908,8 +1898,6 @@
         }],
         ['OS=="android"', {
           'sources!': [
-            'browser/password_manager/password_manager_test_base.cc',
-            'browser/password_manager/password_manager_test_base.h',
             'browser/sessions/session_service_test_helper.cc',
             'browser/sessions/session_service_test_helper.h',
             'browser/ui/exclusive_access/fullscreen_controller_state_test.cc',
@@ -1917,16 +1905,10 @@
             'browser/ui/exclusive_access/fullscreen_controller_state_tests.h',
             'browser/ui/exclusive_access/fullscreen_controller_test.cc',
             'browser/ui/exclusive_access/fullscreen_controller_test.h',
-            'browser/ui/webui/signin/login_ui_test_utils.cc',
-            'browser/ui/webui/signin/login_ui_test_utils.h',
             'test/base/dialog_test_browser_window.cc',
             'test/base/dialog_test_browser_window.h',
-            'test/base/in_process_browser_test.cc',
-            'test/base/in_process_browser_test.h',
             'test/base/test_browser_window.cc',
             'test/base/test_browser_window.h',
-            'test/base/ui_test_utils.cc',
-            'test/base/ui_test_utils.h',
           ],
         }],
         ['chromeos==1', {
@@ -2127,10 +2109,6 @@
           ],
         }],
         ['enable_plugins==1', {
-          "sources" : [
-            'test/ppapi/ppapi_test.cc',
-            'test/ppapi/ppapi_test.h',
-          ],
           'dependencies': [
             '../pdf/pdf.gyp:pdf',
           ],

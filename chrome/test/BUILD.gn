@@ -45,9 +45,6 @@ source_set("test_support") {
     "base/find_in_page_observer.h",
     "base/history_index_restore_observer.cc",
     "base/history_index_restore_observer.h",
-    "base/in_process_browser_test.cc",
-    "base/in_process_browser_test.h",
-    "base/in_process_browser_test_mac.cc",
     "base/profile_mock.cc",
     "base/profile_mock.h",
     "base/scoped_browser_locale.cc",
@@ -76,8 +73,6 @@ source_set("test_support") {
     "base/testing_profile_manager.h",
     "base/tracing.cc",
     "base/tracing.h",
-    "base/ui_test_utils.cc",
-    "base/ui_test_utils.h",
     "logging/win/file_logger.cc",
     "logging/win/file_logger.h",
     "logging/win/log_file_printer.cc",
@@ -169,12 +164,8 @@ source_set("test_support") {
     sources -= [
       "base/dialog_test_browser_window.cc",
       "base/dialog_test_browser_window.h",
-      "base/in_process_browser_test.cc",
-      "base/in_process_browser_test.h",
       "base/test_browser_window.cc",
       "base/test_browser_window.h",
-      "base/ui_test_utils.cc",
-      "base/ui_test_utils.h",
     ]
   }
 
@@ -212,10 +203,6 @@ source_set("test_support") {
   }
 
   if (enable_plugins) {
-    sources += [
-      "ppapi/ppapi_test.cc",
-      "ppapi/ppapi_test.h",
-    ]
     deps += [ "//pdf" ]
   }
 
@@ -230,6 +217,38 @@ source_set("test_support") {
     deps += [
       "//chrome/common/extensions/api",
       "//extensions:test_support",
+    ]
+  }
+}
+
+# GYP version: chrome/chrome_tests.gypi:test_support_ui
+source_set("test_support_ui") {
+  defines = []
+  testonly = true
+
+  sources = [
+    "base/in_process_browser_test.cc",
+    "base/in_process_browser_test.h",
+    "base/in_process_browser_test_mac.cc",
+    "base/ui_test_utils.cc",
+    "base/ui_test_utils.h",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+
+  public_deps = [
+    "//chrome/browser:test_support_ui",
+  ]
+  deps = [
+    "//components/metrics:test_support",
+    "//skia",
+    "//testing/gtest",
+  ]
+
+  if (enable_plugins) {
+    sources += [
+      "ppapi/ppapi_test.cc",
+      "ppapi/ppapi_test.h",
     ]
   }
 }
@@ -305,11 +324,12 @@ if (!is_android) {
     ldflags = []
 
     deps = [
+      ":test_support",
+      ":test_support_ui",
       "//base/allocator",
       "//chrome/browser",
       "//chrome/browser/devtools",
       "//chrome/renderer",
-      "//chrome/test:test_support",
       "//chrome:resources",
       "//chrome:strings",
       "//chrome:packed_extra_resources",
@@ -777,6 +797,7 @@ if (!is_android) {
       ":browser_tests_js_webui",
       ":sync_integration_test_support",
       ":test_support",
+      ":test_support_ui",
       "//base",
       "//base:i18n",
       "//base/allocator",
@@ -1249,6 +1270,7 @@ if (!is_android) {
     deps = [
       ":sync_integration_test_support",
       ":test_support",
+      ":test_support_ui",
       "//base/allocator",
       "//chrome:packed_extra_resources",
       "//chrome:packed_resources",
@@ -1333,6 +1355,7 @@ if (!is_android) {
 
     deps = [
       ":sync_integration_test_support",
+      ":test_support_ui",
       "//base/allocator",
       "//crypto:platform",
       "//sync",
@@ -2034,6 +2057,7 @@ if (!is_android) {
 
       deps = [
         ":test_support",
+        ":test_support_ui",
         "//base",
         "//base:i18n",
         "//base/test:test_support",

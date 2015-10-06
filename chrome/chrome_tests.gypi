@@ -399,6 +399,7 @@
       'browser/safe_json_parser_browsertest.cc',
       'browser/search/hotword_installer_browsertest.cc',
       'browser/search/suggestions/image_fetcher_impl_browsertest.cc',
+      'browser/search_engines/template_url_scraper_browsertest.cc',
       'browser/service_process/service_process_control_browsertest.cc',
       'browser/services/gcm/fake_gcm_profile_service.cc',
       'browser/services/gcm/fake_gcm_profile_service.h',
@@ -1551,6 +1552,41 @@
   ],
   'targets': [
     {
+      # This target contains non-unittest test utilities that don't belong in
+      # production libraries but are used by more than one test executable.
+      #
+      # GN version: //chrome/test:test_support_ui
+      'target_name': 'test_support_ui',
+      'type': 'static_library',
+      'dependencies': [
+        '../components/components.gyp:metrics_test_support',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'browser/password_manager/password_manager_test_base.cc',
+        'browser/password_manager/password_manager_test_base.h',
+        'browser/ui/webui/signin/login_ui_test_utils.cc',
+        'browser/ui/webui/signin/login_ui_test_utils.h',
+        'test/base/in_process_browser_test.cc',
+        'test/base/in_process_browser_test.h',
+        'test/base/in_process_browser_test_mac.cc',
+        'test/base/ui_test_utils.cc',
+        'test/base/ui_test_utils.h',
+      ],
+      'conditions': [
+        ['enable_plugins==1', {
+          "sources" : [
+            'test/ppapi/ppapi_test.cc',
+            'test/ppapi/ppapi_test.h',
+          ],
+        }],
+      ],
+    },
+    {
       # GN version: //chrome/test:interactive_ui_tests
       'target_name': 'interactive_ui_tests',
       'type': 'executable',
@@ -1563,6 +1599,7 @@
         'debugger',
         'renderer',
         'test_support_common',
+        'test_support_ui',
         '../components/components.gyp:guest_view_test_support',
         '../components/components_resources.gyp:components_resources',
         '../content/app/resources/content_resources.gyp:content_resources',
@@ -2055,6 +2092,7 @@
         'renderer',
         'test_support_common',
         'test_support_sync_integration',
+        'test_support_ui',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
@@ -2589,6 +2627,7 @@
         'chrome_resources.gyp:packed_resources',
         'renderer',
         'test_support_common',
+        'test_support_ui',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
@@ -2821,6 +2860,7 @@
         'renderer',
         'test_support_common',
         'test_support_sync_integration',
+        'test_support_ui',
         '../sync/sync.gyp:sync',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -2905,9 +2945,9 @@
             '../ui/views/views.gyp:views',
           ],
         }],
-	['chromeos == 0', {
-	  'sources!': [
-	    # Note: this list is duplicated in the GN build.
+        ['chromeos == 0', {
+          'sources!': [
+            # Note: this list is duplicated in the GN build.
             'browser/sync/test/integration/single_client_wifi_credentials_sync_test.cc',
             'browser/sync/test/integration/two_client_wifi_credentials_sync_test.cc',
           ],
@@ -2936,6 +2976,7 @@
       'type': 'executable',
       'dependencies': [
         'test_support_sync_integration',
+        'test_support_ui',
         '../sync/sync.gyp:sync',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',

@@ -315,6 +315,7 @@ test("chromevox_tests") {
     "//chrome/browser",
     "//chrome/renderer",
     "//chrome/test:test_support",
+    "//chrome/test:test_support_ui",
     "//testing/gmock",
     "//testing/gtest",
     ":chromevox_extjs_tests",

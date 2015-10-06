@@ -1017,8 +1017,6 @@ source_set("test_support") {
     "notifications/notification_test_util.h",
     "password_manager/mock_password_store_service.cc",
     "password_manager/mock_password_store_service.h",
-    "password_manager/password_manager_test_base.cc",
-    "password_manager/password_manager_test_base.h",
     "password_manager/test_password_store_service.cc",
     "password_manager/test_password_store_service.h",
     "profile_resetter/profile_resetter_test_base.cc",
@@ -1045,8 +1043,6 @@ source_set("test_support") {
     "sync/profile_sync_components_factory_mock.h",
     "sync/profile_sync_service_mock.cc",
     "sync/profile_sync_service_mock.h",
-    "ui/webui/signin/login_ui_test_utils.cc",
-    "ui/webui/signin/login_ui_test_utils.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -1084,12 +1080,8 @@ source_set("test_support") {
 
   if (is_android) {
     sources -= [
-      "password_manager/password_manager_test_base.cc",
-      "password_manager/password_manager_test_base.h",
       "sessions/session_service_test_helper.cc",
       "sessions/session_service_test_helper.h",
-      "ui/webui/signin/login_ui_test_utils.cc",
-      "ui/webui/signin/login_ui_test_utils.h",
     ]
   }
 
@@ -1227,6 +1219,29 @@ source_set("test_support") {
       "local_discovery/wifi/mock_wifi_manager.h",
     ]
   }
+}
+
+# In GYP this is part of test_support_ui.
+source_set("test_support_ui") {
+  testonly = true
+
+  # Always include this via the main test support UI target.
+  visibility = [ "//chrome/test:test_support_ui" ]
+
+  sources = [
+    "password_manager/password_manager_test_base.cc",
+    "password_manager/password_manager_test_base.h",
+    "ui/webui/signin/login_ui_test_utils.cc",
+    "ui/webui/signin/login_ui_test_utils.h",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+
+  deps = [
+    "//components/metrics:test_support",
+    "//skia",
+    "//testing/gtest",
+  ]
 }
 
 if (enable_rlz_support) {
