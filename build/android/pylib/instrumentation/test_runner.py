@@ -321,7 +321,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     extras['class'] = test
     return self.device.StartInstrumentation(
         '%s/%s' % (self.test_pkg.GetPackageName(), self.options.test_runner),
-        raw=True, extras=extras, timeout=timeout, retries=3)
+        raw=True, extras=extras, timeout=timeout, retries=0)
 
   # pylint: disable=no-self-use
   def _GenerateTestResult(self, test, instr_result_code, instr_result_bundle,
