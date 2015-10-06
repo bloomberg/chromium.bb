@@ -376,15 +376,8 @@ void gcPrologueForMajorGC(v8::Isolate* isolate, bool constructRetainedObjectInfo
 
 void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
 {
-    // Finish Oilpan's complete sweeping before running a V8 GC.
-    // This will let the GC collect more V8 objects.
-    //
-    // TODO(haraken): It's a bit too late for a major GC to schedule
-    // completeSweep() here, because gcPrologue for a major GC is called
-    // not at the point where the major GC started but at the point where
-    // the major GC requests object grouping.
     if (ThreadState::current())
-        ThreadState::current()->completeSweep();
+        ThreadState::current()->willStartV8GC();
 
     if (isMainThread()) {
         ScriptForbiddenScope::enter();

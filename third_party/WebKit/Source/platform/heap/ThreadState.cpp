@@ -690,6 +690,29 @@ void ThreadState::scheduleV8FollowupGCIfNeeded(V8GCType gcType)
     }
 }
 
+void ThreadState::willStartV8GC()
+{
+    // Finish Oilpan's complete sweeping before running a V8 GC.
+    // This will let the GC collect more V8 objects.
+    //
+    // TODO(haraken): It's a bit too late for a major GC to schedule
+    // completeSweep() here, because gcPrologue for a major GC is called
+    // not at the point where the major GC started but at the point where
+    // the major GC requests object grouping.
+    completeSweep();
+
+    // The fact that the PageNavigation GC is scheduled means that there is
+    // a dead frame. In common cases, a sequence of Oilpan's GC => V8 GC =>
+    // Oilpan's GC is needed to collect the dead frame. So we force the
+    // PageNavigation GC before running the V8 GC.
+    if (gcState() == PageNavigationGCScheduled) {
+#if PRINT_HEAP_STATS
+        dataLogF("Scheduled PageNavigationGC\n");
+#endif
+        Heap::collectGarbage(HeapPointersOnStack, GCWithSweep, Heap::PageNavigationGC);
+    }
+}
+
 void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
 {
     ASSERT(checkThread());
