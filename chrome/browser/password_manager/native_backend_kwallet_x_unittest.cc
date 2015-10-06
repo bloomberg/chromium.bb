@@ -37,6 +37,8 @@ using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
 using testing::_;
 using testing::Invoke;
+using testing::TestWithParam;
+using testing::Values;
 using testing::Return;
 
 namespace {
@@ -144,8 +146,9 @@ const int NativeBackendKWallet::kInvalidKWalletHandle;
 // Subclass NativeBackendKWallet to promote some members to public for testing.
 class NativeBackendKWalletStub : public NativeBackendKWallet {
  public:
-  explicit NativeBackendKWalletStub(LocalProfileId id)
-      :  NativeBackendKWallet(id) {
+  NativeBackendKWalletStub(LocalProfileId id,
+                           base::nix::DesktopEnvironment desktop_env)
+      :  NativeBackendKWallet(id, desktop_env) {
   }
   using NativeBackendKWallet::InitWithBus;
   using NativeBackendKWallet::kInvalidKWalletHandle;
@@ -153,7 +156,8 @@ class NativeBackendKWalletStub : public NativeBackendKWallet {
 };
 
 // Provide some test forms to avoid having to set them up in each test.
-class NativeBackendKWalletTestBase : public testing::Test {
+class NativeBackendKWalletTestBase :
+    public testing::TestWithParam<base::nix::DesktopEnvironment> {
  protected:
   NativeBackendKWalletTestBase() {
     old_form_google_.origin = GURL("http://www.google.com/");
@@ -261,7 +265,8 @@ class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
       : ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB), klauncher_ret_(0),
         klauncher_contacted_(false), kwallet_runnable_(true),
-        kwallet_running_(true), kwallet_enabled_(true) {
+        kwallet_running_(true), kwallet_enabled_(true),
+        desktop_env_(GetParam()) {
   }
 
   void SetUp() override;
@@ -312,6 +317,9 @@ class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
   bool kwallet_running_;
   bool kwallet_enabled_;
 
+  // Used for switching between kwalletd and kwalletd5
+  base::nix::DesktopEnvironment desktop_env_;
+
   TestKWallet wallet_;
 
   // For all method names contained in |failing_methods_|, the mocked KWallet
@@ -341,10 +349,17 @@ void NativeBackendKWalletTest::SetUp() {
       .WillRepeatedly(
            Invoke(this, &NativeBackendKWalletTest::KLauncherMethodCall));
 
-  mock_kwallet_proxy_ =
-      new dbus::MockObjectProxy(mock_session_bus_.get(),
-                                "org.kde.kwalletd",
-                                dbus::ObjectPath("/modules/kwalletd"));
+  if (desktop_env_ == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
+    mock_kwallet_proxy_ =
+        new dbus::MockObjectProxy(mock_session_bus_.get(),
+                                  "org.kde.kwalletd5",
+                                  dbus::ObjectPath("/modules/kwalletd5"));
+  } else {
+    mock_kwallet_proxy_ =
+        new dbus::MockObjectProxy(mock_session_bus_.get(),
+                                  "org.kde.kwalletd",
+                                  dbus::ObjectPath("/modules/kwalletd"));
+  }
   EXPECT_CALL(*mock_kwallet_proxy_.get(), MockCallMethodAndBlock(_, _))
       .WillRepeatedly(
            Invoke(this, &NativeBackendKWalletTest::KWalletMethodCall));
@@ -353,10 +368,19 @@ void NativeBackendKWalletTest::SetUp() {
       *mock_session_bus_.get(),
       GetObjectProxy("org.kde.klauncher", dbus::ObjectPath("/KLauncher")))
       .WillRepeatedly(Return(mock_klauncher_proxy_.get()));
-  EXPECT_CALL(
-      *mock_session_bus_.get(),
-      GetObjectProxy("org.kde.kwalletd", dbus::ObjectPath("/modules/kwalletd")))
-      .WillRepeatedly(Return(mock_kwallet_proxy_.get()));
+  if (desktop_env_ == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
+    EXPECT_CALL(
+        *mock_session_bus_.get(),
+        GetObjectProxy("org.kde.kwalletd5",
+                       dbus::ObjectPath("/modules/kwalletd5")))
+        .WillRepeatedly(Return(mock_kwallet_proxy_.get()));
+  } else {
+    EXPECT_CALL(
+        *mock_session_bus_.get(),
+        GetObjectProxy("org.kde.kwalletd",
+                       dbus::ObjectPath("/modules/kwalletd")))
+        .WillRepeatedly(Return(mock_kwallet_proxy_.get()));
+  }
 
   EXPECT_CALL(*mock_session_bus_.get(), ShutdownAndBlock()).WillOnce(Return())
       .WillRepeatedly(Return());
@@ -371,7 +395,7 @@ void NativeBackendKWalletTest::TearDown() {
 
 void NativeBackendKWalletTest::TestRemoveLoginsBetween(
     RemoveBetweenMethod date_to_test) {
-  NativeBackendKWalletStub backend(42);
+  NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
   form_google_.date_synced = base::Time();
@@ -459,7 +483,10 @@ dbus::Response* NativeBackendKWalletTest::KLauncherMethodCall(
   EXPECT_TRUE(reader.PopString(&startup_id));
   EXPECT_TRUE(reader.PopBool(&blind));
 
-  EXPECT_EQ("kwalletd", service_name);
+  if (desktop_env_ == base::nix::DESKTOP_ENVIRONMENT_KDE5)
+    EXPECT_EQ("kwalletd5", service_name);
+  else
+    EXPECT_EQ("kwalletd", service_name);
   EXPECT_TRUE(urls.empty());
   EXPECT_TRUE(envs.empty());
   EXPECT_TRUE(startup_id.empty());
@@ -619,44 +646,44 @@ void NativeBackendKWalletTest::CheckPasswordForms(
   }
 }
 
-TEST_F(NativeBackendKWalletTest, NotEnabled) {
-  NativeBackendKWalletStub kwallet(42);
+TEST_P(NativeBackendKWalletTest, NotEnabled) {
+  NativeBackendKWalletStub kwallet(42, desktop_env_);
   kwallet_enabled_ = false;
   EXPECT_FALSE(kwallet.InitWithBus(mock_session_bus_));
   EXPECT_FALSE(klauncher_contacted_);
 }
 
-TEST_F(NativeBackendKWalletTest, NotRunnable) {
-  NativeBackendKWalletStub kwallet(42);
+TEST_P(NativeBackendKWalletTest, NotRunnable) {
+  NativeBackendKWalletStub kwallet(42, desktop_env_);
   kwallet_runnable_ = false;
   kwallet_running_ = false;
   EXPECT_FALSE(kwallet.InitWithBus(mock_session_bus_));
   EXPECT_TRUE(klauncher_contacted_);
 }
 
-TEST_F(NativeBackendKWalletTest, NotRunningOrEnabled) {
-  NativeBackendKWalletStub kwallet(42);
+TEST_P(NativeBackendKWalletTest, NotRunningOrEnabled) {
+  NativeBackendKWalletStub kwallet(42, desktop_env_);
   kwallet_running_ = false;
   kwallet_enabled_ = false;
   EXPECT_FALSE(kwallet.InitWithBus(mock_session_bus_));
   EXPECT_TRUE(klauncher_contacted_);
 }
 
-TEST_F(NativeBackendKWalletTest, NotRunning) {
-  NativeBackendKWalletStub kwallet(42);
+TEST_P(NativeBackendKWalletTest, NotRunning) {
+  NativeBackendKWalletStub kwallet(42, desktop_env_);
   kwallet_running_ = false;
   EXPECT_TRUE(kwallet.InitWithBus(mock_session_bus_));
   EXPECT_TRUE(klauncher_contacted_);
 }
 
-TEST_F(NativeBackendKWalletTest, BasicStartup) {
-  NativeBackendKWalletStub kwallet(42);
+TEST_P(NativeBackendKWalletTest, BasicStartup) {
+  NativeBackendKWalletStub kwallet(42, desktop_env_);
   EXPECT_TRUE(kwallet.InitWithBus(mock_session_bus_));
   EXPECT_FALSE(klauncher_contacted_);
 }
 
-TEST_F(NativeBackendKWalletTest, BasicAddLogin) {
-  NativeBackendKWalletStub backend(42);
+TEST_P(NativeBackendKWalletTest, BasicAddLogin) {
+  NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
   BrowserThread::PostTaskAndReplyWithResult(
@@ -678,8 +705,8 @@ TEST_F(NativeBackendKWalletTest, BasicAddLogin) {
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 
-TEST_F(NativeBackendKWalletTest, BasicUpdateLogin) {
-  NativeBackendKWalletStub backend(42);
+TEST_P(NativeBackendKWalletTest, BasicUpdateLogin) {
+  NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
   BrowserThread::PostTask(
@@ -717,8 +744,8 @@ TEST_F(NativeBackendKWalletTest, BasicUpdateLogin) {
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 
-TEST_F(NativeBackendKWalletTest, BasicListLogins) {
-  NativeBackendKWalletStub backend(42);
+TEST_P(NativeBackendKWalletTest, BasicListLogins) {
+  NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
   BrowserThread::PostTask(
@@ -747,8 +774,8 @@ TEST_F(NativeBackendKWalletTest, BasicListLogins) {
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 
-TEST_F(NativeBackendKWalletTest, BasicRemoveLogin) {
-  NativeBackendKWalletStub backend(42);
+TEST_P(NativeBackendKWalletTest, BasicRemoveLogin) {
+  NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
   BrowserThread::PostTask(
@@ -781,8 +808,8 @@ TEST_F(NativeBackendKWalletTest, BasicRemoveLogin) {
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 
-TEST_F(NativeBackendKWalletTest, UpdateNonexistentLogin) {
-  NativeBackendKWalletStub backend(42);
+TEST_P(NativeBackendKWalletTest, UpdateNonexistentLogin) {
+  NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
   // First add an unrelated login.
@@ -816,8 +843,8 @@ TEST_F(NativeBackendKWalletTest, UpdateNonexistentLogin) {
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 
-TEST_F(NativeBackendKWalletTest, RemoveNonexistentLogin) {
-  NativeBackendKWalletStub backend(42);
+TEST_P(NativeBackendKWalletTest, RemoveNonexistentLogin) {
+  NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
   // First add an unrelated login.
@@ -861,8 +888,8 @@ TEST_F(NativeBackendKWalletTest, RemoveNonexistentLogin) {
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 
-TEST_F(NativeBackendKWalletTest, AddDuplicateLogin) {
-  NativeBackendKWalletStub backend(42);
+TEST_P(NativeBackendKWalletTest, AddDuplicateLogin) {
+  NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
   PasswordStoreChangeList changes;
@@ -901,8 +928,8 @@ TEST_F(NativeBackendKWalletTest, AddDuplicateLogin) {
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 
-TEST_F(NativeBackendKWalletTest, AndroidCredentials) {
-  NativeBackendKWalletStub backend(42);
+TEST_P(NativeBackendKWalletTest, AndroidCredentials) {
+  NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
   PasswordForm observed_android_form;
@@ -940,16 +967,16 @@ TEST_F(NativeBackendKWalletTest, AndroidCredentials) {
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 
-TEST_F(NativeBackendKWalletTest, RemoveLoginsCreatedBetween) {
+TEST_P(NativeBackendKWalletTest, RemoveLoginsCreatedBetween) {
   TestRemoveLoginsBetween(CREATED);
 }
 
-TEST_F(NativeBackendKWalletTest, RemoveLoginsSyncedBetween) {
+TEST_P(NativeBackendKWalletTest, RemoveLoginsSyncedBetween) {
   TestRemoveLoginsBetween(SYNCED);
 }
 
-TEST_F(NativeBackendKWalletTest, ReadDuplicateForms) {
-  NativeBackendKWalletStub backend(42);
+TEST_P(NativeBackendKWalletTest, ReadDuplicateForms) {
+  NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
   // Add 2 slightly different password forms.
@@ -999,6 +1026,36 @@ TEST_F(NativeBackendKWalletTest, ReadDuplicateForms) {
   expected.push_back(make_pair(std::string(form_google_.signon_realm), forms));
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
+
+// Check that if KWallet fails to respond, the backend propagates the error.
+TEST_P(NativeBackendKWalletTest, GetAllLoginsErrorHandling) {
+  NativeBackendKWalletStub backend(42, desktop_env_);
+  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
+  // Make KWallet fail on calling readEntry.
+  failing_methods_.insert("readEntry");
+
+  // Store some non-blacklisted logins to be potentially returned.
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&NativeBackendKWalletStub::AddLogin,
+                 base::Unretained(&backend), form_google_),
+      base::Bind(&CheckPasswordChanges,
+                 PasswordStoreChangeList(1, PasswordStoreChange(
+                      PasswordStoreChange::ADD, form_google_))));
+
+  // Verify that nothing is in fact returned, because KWallet fails to respond.
+  ScopedVector<autofill::PasswordForm> form_list;
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+                          base::Bind(&CheckGetAutofillableLoginsFails,
+                                     base::Unretained(&backend), &form_list));
+  RunDBThread();
+  EXPECT_EQ(0u, form_list.size());
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        NativeBackendKWalletTest,
+                        ::testing::Values(base::nix::DESKTOP_ENVIRONMENT_KDE4,
+                                          base::nix::DESKTOP_ENVIRONMENT_KDE5));
 
 // TODO(mdm): add more basic tests here at some point.
 // (For example tests for storing >1 password per realm pickle.)
@@ -1194,31 +1251,6 @@ void NativeBackendKWalletPickleTest::CheckVersion0Pickle(
   EXPECT_EQ(1u, form_list.size());
   if (form_list.size() > 0)
     CheckPasswordForm(form, *form_list[0], false);
-}
-
-// Check that if KWallet fails to respond, the backend propagates the error.
-TEST_F(NativeBackendKWalletTest, GetAllLoginsErrorHandling) {
-  NativeBackendKWalletStub backend(42);
-  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
-  // Make KWallet fail on calling readEntry.
-  failing_methods_.insert("readEntry");
-
-  // Store some non-blacklisted logins to be potentially returned.
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendKWalletStub::AddLogin,
-                 base::Unretained(&backend), form_google_),
-      base::Bind(&CheckPasswordChanges,
-                 PasswordStoreChangeList(1, PasswordStoreChange(
-                      PasswordStoreChange::ADD, form_google_))));
-
-  // Verify that nothing is in fact returned, because KWallet fails to respond.
-  ScopedVector<autofill::PasswordForm> form_list;
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                          base::Bind(&CheckGetAutofillableLoginsFails,
-                                     base::Unretained(&backend), &form_list));
-  RunDBThread();
-  EXPECT_EQ(0u, form_list.size());
 }
 
 // We try both SCHEME_HTML and SCHEME_BASIC since the scheme is stored right

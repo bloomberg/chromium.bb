@@ -39,8 +39,12 @@ const int kPickleVersion = 7;
 const char kKWalletFolder[] = "Chrome Form Data";
 
 // DBus service, path, and interface names for klauncher and kwalletd.
+const char kKWalletDName[] = "kwalletd";
+const char kKWalletD5Name[] = "kwalletd5";
 const char kKWalletServiceName[] = "org.kde.kwalletd";
+const char kKWallet5ServiceName[] = "org.kde.kwalletd5";
 const char kKWalletPath[] = "/modules/kwalletd";
+const char kKWallet5Path[] = "/modules/kwalletd5";
 const char kKWalletInterface[] = "org.kde.KWallet";
 const char kKLauncherServiceName[] = "org.kde.klauncher";
 const char kKLauncherPath[] = "/KLauncher";
@@ -268,11 +272,22 @@ void UMALogDeserializationStatus(bool success) {
 
 }  // namespace
 
-NativeBackendKWallet::NativeBackendKWallet(LocalProfileId id)
+NativeBackendKWallet::NativeBackendKWallet(
+    LocalProfileId id, base::nix::DesktopEnvironment desktop_env)
     : profile_id_(id),
       kwallet_proxy_(nullptr),
       app_name_(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)) {
   folder_name_ = GetProfileSpecificFolderName();
+
+  if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
+    dbus_service_name_ = kKWallet5ServiceName;
+    dbus_path_ = kKWallet5Path;
+    kwalletd_name_ = kKWalletD5Name;
+  } else {
+    dbus_service_name_ = kKWalletServiceName;
+    dbus_path_ = kKWalletPath;
+    kwalletd_name_ = kKWalletDName;
+  }
 }
 
 NativeBackendKWallet::~NativeBackendKWallet() {
@@ -329,8 +344,8 @@ void NativeBackendKWallet::InitOnDBThread(scoped_refptr<dbus::Bus> optional_bus,
     session_bus_ = new dbus::Bus(options);
   }
   kwallet_proxy_ =
-      session_bus_->GetObjectProxy(kKWalletServiceName,
-                                   dbus::ObjectPath(kKWalletPath));
+      session_bus_->GetObjectProxy(dbus_service_name_,
+                                   dbus::ObjectPath(dbus_path_));
   // kwalletd may not be running. If we get a temporary failure initializing it,
   // try to start it and then try again. (Note the short-circuit evaluation.)
   const InitResult result = InitWallet();
@@ -352,7 +367,7 @@ bool NativeBackendKWallet::StartKWalletd() {
                                "start_service_by_desktop_name");
   dbus::MessageWriter builder(&method_call);
   std::vector<std::string> empty;
-  builder.AppendString("kwalletd");     // serviceName
+  builder.AppendString(kwalletd_name_); // serviceName
   builder.AppendArrayOfStrings(empty);  // urls
   builder.AppendArrayOfStrings(empty);  // envs
   builder.AppendString(std::string());  // startup_id
@@ -361,7 +376,7 @@ bool NativeBackendKWallet::StartKWalletd() {
       klauncher->CallMethodAndBlock(
           &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
   if (!response.get()) {
-    LOG(ERROR) << "Error contacting klauncher to start kwalletd";
+    LOG(ERROR) << "Error contacting klauncher to start " << kwalletd_name_;
     return false;
   }
   dbus::MessageReader reader(response.get());
@@ -371,13 +386,13 @@ bool NativeBackendKWallet::StartKWalletd() {
   int32_t pid = -1;
   if (!reader.PopInt32(&ret) || !reader.PopString(&dbus_name) ||
       !reader.PopString(&error) || !reader.PopInt32(&pid)) {
-    LOG(ERROR) << "Error reading response from klauncher to start kwalletd: "
-               << response->ToString();
+    LOG(ERROR) << "Error reading response from klauncher to start "
+               << kwalletd_name_ << ": " << response->ToString();
     return false;
   }
   if (!error.empty() || ret) {
-    LOG(ERROR) << "Error launching kwalletd: error '" << error << "' "
-               << " (code " << ret << ")";
+    LOG(ERROR) << "Error launching " << kwalletd_name_ << ": error '" << error
+               << "' (code " << ret << ")";
     return false;
   }
 
@@ -393,19 +408,19 @@ NativeBackendKWallet::InitResult NativeBackendKWallet::InitWallet() {
         kwallet_proxy_->CallMethodAndBlock(
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(ERROR) << "Error contacting kwalletd (isEnabled)";
+      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (isEnabled)";
       return TEMPORARY_FAIL;
     }
     dbus::MessageReader reader(response.get());
     bool enabled = false;
     if (!reader.PopBool(&enabled)) {
-      LOG(ERROR) << "Error reading response from kwalletd (isEnabled): "
-                 << response->ToString();
+      LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                 << " (isEnabled): " << response->ToString();
       return PERMANENT_FAIL;
     }
     // Not enabled? Don't use KWallet. But also don't warn here.
     if (!enabled) {
-      VLOG(1) << "kwalletd reports that KWallet is not enabled.";
+      VLOG(1) << kwalletd_name_ << " reports that KWallet is not enabled.";
       return PERMANENT_FAIL;
     }
   }
@@ -417,13 +432,13 @@ NativeBackendKWallet::InitResult NativeBackendKWallet::InitWallet() {
         kwallet_proxy_->CallMethodAndBlock(
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(ERROR) << "Error contacting kwalletd (networkWallet)";
+      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (networkWallet)";
       return TEMPORARY_FAIL;
     }
     dbus::MessageReader reader(response.get());
     if (!reader.PopString(&wallet_name_)) {
-      LOG(ERROR) << "Error reading response from kwalletd (networkWallet): "
-                 << response->ToString();
+      LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                 << " (networkWallet): " << response->ToString();
       return PERMANENT_FAIL;
     }
   }
@@ -582,14 +597,14 @@ bool NativeBackendKWallet::GetLoginsList(
         kwallet_proxy_->CallMethodAndBlock(
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(ERROR) << "Error contacting kwalletd (hasEntry)";
+      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (hasEntry)";
       return false;
     }
     dbus::MessageReader reader(response.get());
     bool has_entry = false;
     if (!reader.PopBool(&has_entry)) {
-      LOG(ERROR) << "Error reading response from kwalletd (hasEntry): "
-                 << response->ToString();
+      LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                 << " (hasEntry): " << response->ToString();
       return false;
     }
     if (!has_entry) {
@@ -609,15 +624,15 @@ bool NativeBackendKWallet::GetLoginsList(
         kwallet_proxy_->CallMethodAndBlock(
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(ERROR) << "Error contacting kwalletd (readEntry)";
+      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (readEntry)";
       return false;
     }
     dbus::MessageReader reader(response.get());
     const uint8_t* bytes = nullptr;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
-      LOG(ERROR) << "Error reading response from kwalletd (readEntry): "
-                 << response->ToString();
+      LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                 << " (readEntry): " << response->ToString();
       return false;
     }
     if (!bytes)
@@ -699,13 +714,13 @@ bool NativeBackendKWallet::GetAllLogins(
         kwallet_proxy_->CallMethodAndBlock(
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(ERROR) << "Error contacting kwalletd (entryList)";
+      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (entryList)";
       return false;
     }
     dbus::MessageReader reader(response.get());
     if (!reader.PopArrayOfStrings(&realm_list)) {
-      LOG(ERROR) << "Error reading response from kwalletd (entryList): "
-                 << response->ToString();
+      LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                 << "(entryList): " << response->ToString();
       return false;
     }
   }
@@ -722,15 +737,15 @@ bool NativeBackendKWallet::GetAllLogins(
         kwallet_proxy_->CallMethodAndBlock(
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(ERROR) << "Error contacting kwalletd (readEntry)";
+      LOG(ERROR) << "Error contacting " << kwalletd_name_ << "(readEntry)";
       return false;
     }
     dbus::MessageReader reader(response.get());
     const uint8_t* bytes = nullptr;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
-      LOG(ERROR) << "Error reading response from kwalletd (readEntry): "
-                 << response->ToString();
+      LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                 << " (readEntry): " << response->ToString();
       return false;
     }
     if (!bytes || !CheckSerializedValue(bytes, length, signon_realm))
@@ -759,14 +774,14 @@ bool NativeBackendKWallet::SetLoginsList(
         kwallet_proxy_->CallMethodAndBlock(
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(ERROR) << "Error contacting kwalletd (removeEntry)";
+      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (removeEntry)";
       return kInvalidKWalletHandle;
     }
     dbus::MessageReader reader(response.get());
     int ret = 0;
     if (!reader.PopInt32(&ret)) {
-      LOG(ERROR) << "Error reading response from kwalletd (removeEntry): "
-                 << response->ToString();
+      LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                 << " (removeEntry): " << response->ToString();
       return false;
     }
     if (ret != 0)
@@ -789,14 +804,14 @@ bool NativeBackendKWallet::SetLoginsList(
       kwallet_proxy_->CallMethodAndBlock(
           &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
   if (!response.get()) {
-    LOG(ERROR) << "Error contacting kwalletd (writeEntry)";
+    LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (writeEntry)";
     return kInvalidKWalletHandle;
   }
   dbus::MessageReader reader(response.get());
   int ret = 0;
   if (!reader.PopInt32(&ret)) {
-    LOG(ERROR) << "Error reading response from kwalletd (writeEntry): "
-               << response->ToString();
+    LOG(ERROR) << "Error reading response from " << kwalletd_name_
+               << " (writeEntry): " << response->ToString();
     return false;
   }
   if (ret != 0)
@@ -826,21 +841,21 @@ bool NativeBackendKWallet::RemoveLoginsBetween(
     scoped_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(ERROR) << "Error contacting kwalletd (entryList)";
+      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (entryList)";
       return false;
     }
     dbus::MessageReader reader(response.get());
     dbus::MessageReader array(response.get());
     if (!reader.PopArray(&array)) {
-      LOG(ERROR) << "Error reading response from kwalletd (entryList): "
-                 << response->ToString();
+      LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                 << " (entryList): " << response->ToString();
       return false;
     }
     while (array.HasMoreData()) {
       std::string realm;
       if (!array.PopString(&realm)) {
-        LOG(ERROR) << "Error reading response from kwalletd (entryList): "
-                   << response->ToString();
+        LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                   << " (entryList): " << response->ToString();
         return false;
       }
       realm_list.push_back(realm);
@@ -859,15 +874,15 @@ bool NativeBackendKWallet::RemoveLoginsBetween(
     scoped_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(ERROR) << "Error contacting kwalletd (readEntry)";
+      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (readEntry)";
       continue;
     }
     dbus::MessageReader reader(response.get());
     const uint8_t* bytes = nullptr;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
-      LOG(ERROR) << "Error reading response from kwalletd (readEntry): "
-                 << response->ToString();
+      LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                 << " (readEntry): " << response->ToString();
       continue;
     }
     if (!bytes || !CheckSerializedValue(bytes, length, signon_realm))
@@ -957,13 +972,13 @@ int NativeBackendKWallet::WalletHandle() {
         kwallet_proxy_->CallMethodAndBlock(
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(ERROR) << "Error contacting kwalletd (open)";
+      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (open)";
       return kInvalidKWalletHandle;
     }
     dbus::MessageReader reader(response.get());
     if (!reader.PopInt32(&handle)) {
-      LOG(ERROR) << "Error reading response from kwalletd (open): "
-                 << response->ToString();
+      LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                 << " (open): " << response->ToString();
       return kInvalidKWalletHandle;
     }
     if (handle == kInvalidKWalletHandle) {
@@ -984,13 +999,13 @@ int NativeBackendKWallet::WalletHandle() {
         kwallet_proxy_->CallMethodAndBlock(
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(ERROR) << "Error contacting kwalletd (hasFolder)";
+      LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (hasFolder)";
       return kInvalidKWalletHandle;
     }
     dbus::MessageReader reader(response.get());
     if (!reader.PopBool(&has_folder)) {
-      LOG(ERROR) << "Error reading response from kwalletd (hasFolder): "
-                 << response->ToString();
+      LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                 << " (hasFolder): " << response->ToString();
       return kInvalidKWalletHandle;
     }
   }
@@ -1006,14 +1021,15 @@ int NativeBackendKWallet::WalletHandle() {
         kwallet_proxy_->CallMethodAndBlock(
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(ERROR) << "Error contacting kwalletd (createFolder)";
+      LOG(ERROR) << "Error contacting << " << kwalletd_name_
+                 << " (createFolder)";
       return kInvalidKWalletHandle;
     }
     dbus::MessageReader reader(response.get());
     bool success = false;
     if (!reader.PopBool(&success)) {
-      LOG(ERROR) << "Error reading response from kwalletd (createFolder): "
-                 << response->ToString();
+      LOG(ERROR) << "Error reading response from " << kwalletd_name_
+                 << " (createFolder): " << response->ToString();
       return kInvalidKWalletHandle;
     }
     if (!success) {

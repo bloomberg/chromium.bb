@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
+#include "base/nix/xdg_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_x.h"
@@ -34,7 +35,8 @@ class ObjectProxy;
 // NativeBackend implementation using KWallet.
 class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
  public:
-  explicit NativeBackendKWallet(LocalProfileId id);
+  NativeBackendKWallet(LocalProfileId id,
+                       base::nix::DesktopEnvironment desktop_env);
 
   ~NativeBackendKWallet() override;
 
@@ -149,6 +151,13 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   std::string wallet_name_;
   // The application name (e.g. "Chromium"), shown in KWallet auth dialogs.
   const std::string app_name_;
+
+  // KWallet DBus name
+  std::string dbus_service_name_;
+  // DBus path to KWallet interfaces
+  std::string dbus_path_;
+  // The name used for logging and by klauncher when starting KWallet
+  std::string kwalletd_name_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeBackendKWallet);
 };

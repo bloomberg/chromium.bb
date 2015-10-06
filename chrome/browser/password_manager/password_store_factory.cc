@@ -276,6 +276,8 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
   LinuxBackendUsed used_backend = PLAINTEXT;
   if (store_type == "kwallet") {
     used_desktop_env = base::nix::DESKTOP_ENVIRONMENT_KDE4;
+  } else if (store_type == "kwallet5") {
+    used_desktop_env = base::nix::DESKTOP_ENVIRONMENT_KDE5;
   } else if (store_type == "gnome") {
     used_desktop_env = base::nix::DESKTOP_ENVIRONMENT_GNOME;
   } else if (store_type == "basic") {
@@ -296,7 +298,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
       used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
     // KDE3 didn't use DBus, which our KWallet store uses.
     VLOG(1) << "Trying KWallet for password storage.";
-    backend.reset(new NativeBackendKWallet(id));
+    backend.reset(new NativeBackendKWallet(id, used_desktop_env));
     if (backend->Init()) {
       VLOG(1) << "Using KWallet for password storage.";
       used_backend = KWALLET;
