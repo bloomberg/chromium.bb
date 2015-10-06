@@ -17,9 +17,13 @@ class _MemoryBenchmark(perf_benchmark.PerfBenchmark):
   """Base class for timeline based memory benchmarks."""
 
   def SetExtraBrowserOptions(self, options):
-    # TODO(perezju): Temporary workaround to disable periodic memory dumps.
-    # See: http://crbug.com/513692
-    options.AppendExtraBrowserArgs('--enable-memory-benchmarking')
+    options.AppendExtraBrowserArgs([
+        # TODO(perezju): Temporary workaround to disable periodic memory dumps.
+        # See: http://crbug.com/513692
+        '--enable-memory-benchmarking',
+        # TODO(ssid): Remove this flag after fixing http://crbug.com/461788.
+        '--no-sandbox'
+    ])
 
   def CreateTimelineBasedMeasurementOptions(self):
     # Enable only memory-infra, to get memory dumps, and blink.console, to get
@@ -64,8 +68,6 @@ class RendererMemoryBlinkMemoryMobile(_MemoryBenchmark):
     super(RendererMemoryBlinkMemoryMobile, self).SetExtraBrowserOptions(
         options)
     options.AppendExtraBrowserArgs([
-        # TODO(bashi): Temporary workaround for http://crbug.com/461788
-        '--no-sandbox',
         # Ignore certs errors because record_wpr cannot handle certs correctly
         # in some cases (e.g. WordPress).
         '--ignore-certificate-errors',
@@ -78,3 +80,13 @@ class RendererMemoryBlinkMemoryMobile(_MemoryBenchmark):
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
     return bool(cls._RE_RENDERER_VALUES.match(value.name))
+
+
+class MemoryBenchmarkTop10Mobile(_MemoryBenchmark):
+  """Timeline based benchmark for measuring memory on top 10 mobile sites."""
+
+  page_set = page_sets.MemoryInfraTop10MobilePageSet
+
+  @classmethod
+  def Name(cls):
+    return 'memory.top_10_mobile'
