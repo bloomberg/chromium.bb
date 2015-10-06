@@ -9,6 +9,8 @@
 # This script is intended to run continuously as a background daemon
 # process, running under an ordinary (non-root) user account.
 
+from __future__ import print_function
+
 import atexit
 import errno
 import fcntl
@@ -139,7 +141,7 @@ class Config:
     """
     if not self.changed:
       return
-    old_umask = os.umask(0066)
+    old_umask = os.umask(0o066)
     try:
       settings_file = open(self.path, 'w')
       settings_file.write(json.dumps(self.data, indent=2))
@@ -262,7 +264,7 @@ class Desktop:
         "USER",
         "USERNAME",
         LOG_FILE_ENV_VAR]:
-      if os.environ.has_key(key):
+      if key in os.environ:
         self.child_env[key] = os.environ[key]
 
     # Ensure that the software-rendering GL drivers are loaded by the desktop
@@ -313,7 +315,7 @@ class Desktop:
     try:
       if not os.path.exists(pulse_path):
         os.mkdir(pulse_path)
-    except IOError, e:
+    except IOError as e:
       logging.error("Failed to create pulseaudio pipe: " + str(e))
       return False
 
@@ -331,7 +333,7 @@ class Desktop:
            "rate=48000 channels=2 format=s16le\n") %
           (sink_name, pipe_name))
       pulse_script.close()
-    except IOError, e:
+    except IOError as e:
       logging.error("Failed to write pulseaudio config: " + str(e))
       return False
 
@@ -350,7 +352,7 @@ class Desktop:
   def _launch_x_server(self, extra_x_args):
     x_auth_file = os.path.expanduser("~/.Xauthority")
     self.child_env["XAUTHORITY"] = x_auth_file
-    devnull = open(os.devnull, "rw")
+    devnull = open(os.devnull, "r+")
     display = self.get_unused_display_number()
 
     # Run "xauth add" with |child_env| so that it modifies the same XAUTHORITY
@@ -518,7 +520,7 @@ class Desktop:
       raise Exception("Could not start Chrome Remote Desktop host")
 
     try:
-      self.host_proc.stdin.write(json.dumps(host_config.data))
+      self.host_proc.stdin.write(json.dumps(host_config.data).encode('UTF-8'))
       self.host_proc.stdin.flush()
     except IOError as e:
       # This can occur in rare situations, for example, if the machine is
@@ -671,7 +673,7 @@ class ParentProcessLogger(object):
     old_flags = fcntl.fcntl(write_pipe, fcntl.F_GETFD)
     fcntl.fcntl(write_pipe, fcntl.F_SETFD, old_flags | fcntl.FD_CLOEXEC)
     self._read_file = os.fdopen(read_pipe, 'r')
-    self._write_file = os.fdopen(write_pipe, 'a')
+    self._write_file = os.fdopen(write_pipe, 'w')
     self._logging_handler = None
     ParentProcessLogger.__instance = self
 
@@ -704,8 +706,8 @@ class ParentProcessLogger(object):
     # This signal will cause the read loop below to stop with an EINTR IOError.
     def sigint_handler(signum, frame):
       _ = signum, frame
-      print >> sys.stderr, ("Interrupted. The daemon is still running in the "
-                            "background.")
+      print("Interrupted. The daemon is still running in the background.",
+            file=sys.stderr)
 
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -714,8 +716,8 @@ class ParentProcessLogger(object):
     # This signal will cause the read loop below to stop with an EINTR IOError.
     def sigalrm_handler(signum, frame):
       _ = signum, frame
-      print >> sys.stderr, ("No response from daemon. It may have crashed, or "
-                            "may still be running in the background.")
+      print("No response from daemon. It may have crashed, or may still be "
+            "running in the background.", file=sys.stderr)
 
     signal.signal(signal.SIGALRM, sigalrm_handler)
     signal.alarm(30)
@@ -730,7 +732,7 @@ class ParentProcessLogger(object):
     except IOError as e:
       if e.errno != errno.EINTR:
         raise
-    print >> sys.stderr, "Log file: %s" % os.environ[LOG_FILE_ENV_VAR]
+    print("Log file: %s" % os.environ[LOG_FILE_ENV_VAR], file=sys.stderr)
 
   @staticmethod
   def instance():
@@ -755,7 +757,7 @@ def daemonize():
   # The mode is provided, since Python otherwise sets a default mode of 0777,
   # which would result in the new file having permissions of 0777 & ~umask,
   # possibly leaving the executable bits set.
-  if not os.environ.has_key(LOG_FILE_ENV_VAR):
+  if not LOG_FILE_ENV_VAR in os.environ:
     log_file_prefix = "chrome_remote_desktop_%s_" % time.strftime(
         '%Y%m%d_%H%M%S', time.localtime(time.time()))
     log_file = tempfile.NamedTemporaryFile(prefix=log_file_prefix, delete=False)
@@ -763,7 +765,7 @@ def daemonize():
     log_fd = log_file.file.fileno()
   else:
     log_fd = os.open(os.environ[LOG_FILE_ENV_VAR],
-                     os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0600)
+                     os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
 
   devnull_fd = os.open(os.devnull, os.O_RDONLY)
 
@@ -963,7 +965,7 @@ def waitpid_handle_exceptions(pid, deadline):
       else:
         pid_result, status = waitpid_with_timeout(pid, deadline)
       return (pid_result, status)
-    except OSError, e:
+    except OSError as e:
       if e.errno == errno.EINTR:
         continue
       elif e.errno == errno.ECHILD:
@@ -1075,11 +1077,11 @@ Web Store: https://chrome.google.com/remotedesktop"""
   if options.get_status:
     proc = get_daemon_proc()
     if proc is not None:
-      print "STARTED"
+      print("STARTED")
     elif is_supported_platform():
-      print "STOPPED"
+      print("STOPPED")
     else:
-      print "NOT_IMPLEMENTED"
+      print("NOT_IMPLEMENTED")
     return 0
 
   # TODO(sergeyu): Remove --check-running once NPAPI plugin and NM host are
@@ -1091,14 +1093,14 @@ Web Store: https://chrome.google.com/remotedesktop"""
   if options.stop:
     proc = get_daemon_proc()
     if proc is None:
-      print "The daemon is not currently running"
+      print("The daemon is not currently running")
     else:
-      print "Killing process %s" % proc.pid
+      print("Killing process %s" % proc.pid)
       proc.terminate()
       try:
         proc.wait(timeout=30)
       except psutil.TimeoutExpired:
-        print "Timed out trying to kill daemon process"
+        print("Timed out trying to kill daemon process")
         return 1
     return 0
 
@@ -1167,7 +1169,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   if not options.start:
     # If no modal command-line options specified, print an error and exit.
-    print >> sys.stderr, EPILOG
+    print(EPILOG, file=sys.stderr)
     return 1
 
   # If a RANDR-supporting Xvfb is not available, limit the default size to
@@ -1179,7 +1181,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   # Collate the list of sizes that XRANDR should support.
   if not options.size:
-    if os.environ.has_key(DEFAULT_SIZES_ENV_VAR):
+    if DEFAULT_SIZES_ENV_VAR in os.environ:
       default_sizes = os.environ[DEFAULT_SIZES_ENV_VAR]
     options.size = default_sizes.split(",")
 
@@ -1210,7 +1212,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
   try:
     host_config.load()
   except (IOError, ValueError) as e:
-    print >> sys.stderr, "Failed to load config: " + str(e)
+    print("Failed to load config: " + str(e), file=sys.stderr)
     return 1
 
   # Register handler to re-load the configuration in response to signals.
@@ -1232,7 +1234,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
   if proc is not None:
     # Debian policy requires that services should "start" cleanly and return 0
     # if they are already running.
-    print "Service already running."
+    print("Service already running.")
     return 0
 
   # Detach a separate "daemon" process to run the session, unless specifically
