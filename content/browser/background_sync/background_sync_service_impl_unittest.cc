@@ -315,6 +315,12 @@ TEST_F(BackgroundSyncServiceImplTest, Unregister) {
             unregister_error);
 }
 
+// Fails on Android: https://crbug.com/539313
+#if defined(OS_ANDROID)
+#define MAYBE_UnregisterWithRegisteredSync DISABLED_UnregisterWithRegisteredSync
+#else
+#define MAYBE_UnregisterWithRegisteredSync UnregisterWithRegisteredSync
+#endif
 TEST_F(BackgroundSyncServiceImplTest, UnregisterWithRegisteredSync) {
   bool register_called = false;
   bool unregister_called = false;
