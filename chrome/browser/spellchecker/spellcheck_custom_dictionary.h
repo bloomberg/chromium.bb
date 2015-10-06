@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -91,6 +92,22 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
     virtual void OnCustomDictionaryChanged(const Change& dictionary_change) = 0;
   };
 
+  struct LoadFileResult {
+    LoadFileResult();
+    ~LoadFileResult();
+
+    // The contents of the custom dictionary file or its backup. Does not
+    // contain data that failed checksum. Does not contain invalid words.
+    std::set<std::string> words;
+
+    // True when the custom dictionary file on disk has a valid checksum and
+    // contains only valid words.
+    bool is_valid_file;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(LoadFileResult);
+  };
+
   // The dictionary will be saved in |dictionary_directory_name|.
   explicit SpellcheckCustomDictionary(
       const base::FilePath& dictionary_directory_name);
@@ -144,10 +161,9 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   friend class SpellcheckCustomDictionaryTest;
 
   // Returns the list of words in the custom spellcheck dictionary at |path|.
-  // Makes sure that the custom dictionary file does not have duplicates and
-  // contains only valid words. Must be called on the FILE thread. The caller
-  // owns the result.
-  static scoped_ptr<std::set<std::string>> LoadDictionaryFile(
+  // Validates that the custom dictionary file does not have duplicates and
+  // contains only valid words. Must be called on the FILE thread.
+  static scoped_ptr<LoadFileResult> LoadDictionaryFile(
       const base::FilePath& path);
 
   // Applies the change in |dictionary_change| to the custom spellcheck
@@ -157,12 +173,15 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
                                    const base::FilePath& path);
 
   // The reply point for PostTaskAndReplyWithResult, called when
-  // LoadDictionaryFile finishes reading the dictionary file. Takes ownership of
-  // |custom_words|.
-  void OnLoaded(scoped_ptr<std::set<std::string>> custom_words);
+  // LoadDictionaryFile finishes reading the dictionary file.
+  void OnLoaded(scoped_ptr<LoadFileResult> result);
 
   // Applies the |dictionary_change| to the in-memory copy of the dictionary.
   void Apply(const Change& dictionary_change);
+
+  // Schedules a write of the words in |load_file_result| to disk when the
+  // custom dictionary file is invalid.
+  void FixInvalidFile(scoped_ptr<LoadFileResult> load_file_result);
 
   // Schedules a write of |dictionary_change| to disk. Takes ownership of
   // |dictionary_change| to pass it to the FILE thread.
@@ -194,6 +213,9 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
 
   // True if the dictionary has been loaded. Otherwise false.
   bool is_loaded_;
+
+  // A post-startup task to fix the invalid custom dictionary file.
+  base::CancelableClosure fix_invalid_file_;
 
   // Used to create weak pointers for an instance of this class.
   base::WeakPtrFactory<SpellcheckCustomDictionary> weak_ptr_factory_;

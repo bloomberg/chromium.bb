@@ -72,7 +72,7 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
   // A wrapper around SpellcheckCustomDictionary::LoadDictionaryFile private
   // function to avoid a large number of FRIEND_TEST declarations in
   // SpellcheckCustomDictionary.
-  scoped_ptr<std::set<std::string>> LoadDictionaryFile(
+  scoped_ptr<SpellcheckCustomDictionary::LoadFileResult> LoadDictionaryFile(
       const base::FilePath& path) {
     return SpellcheckCustomDictionary::LoadDictionaryFile(path);
   }
@@ -91,8 +91,12 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
   // avoid a large number of FRIEND_TEST declarations in
   // SpellcheckCustomDictionary.
   void OnLoaded(SpellcheckCustomDictionary& dictionary,
-                scoped_ptr<std::set<std::string>> custom_words) {
-    dictionary.OnLoaded(custom_words.Pass());
+                scoped_ptr<std::set<std::string>> words) {
+    scoped_ptr<SpellcheckCustomDictionary::LoadFileResult> result(
+        new SpellcheckCustomDictionary::LoadFileResult);
+    result->is_valid_file = true;
+    result->words = *words;
+    dictionary.OnLoaded(result.Pass());
   }
 
   // A wrapper around SpellcheckCustomDictionary::Apply private method to avoid
@@ -161,7 +165,7 @@ TEST_F(SpellcheckCustomDictionaryTest, SaveAndLoad) {
       profile_.GetPath().Append(chrome::kCustomDictionaryFileName);
 
   // The custom word list should be empty now.
-  EXPECT_TRUE(LoadDictionaryFile(path)->empty());
+  EXPECT_TRUE(LoadDictionaryFile(path)->words.empty());
 
   scoped_ptr<SpellcheckCustomDictionary::Change> change(
       new SpellcheckCustomDictionary::Change);
@@ -174,14 +178,14 @@ TEST_F(SpellcheckCustomDictionaryTest, SaveAndLoad) {
   expected.insert("foo");
 
   // The custom word list should include written words.
-  EXPECT_EQ(expected, *LoadDictionaryFile(path));
+  EXPECT_EQ(expected, LoadDictionaryFile(path)->words);
 
   scoped_ptr<SpellcheckCustomDictionary::Change> change2(
       new SpellcheckCustomDictionary::Change);
   change2->RemoveWord("bar");
   change2->RemoveWord("foo");
   UpdateDictionaryFile(change2.Pass(), path);
-  EXPECT_TRUE(LoadDictionaryFile(path)->empty());
+  EXPECT_TRUE(LoadDictionaryFile(path)->words.empty());
 }
 
 TEST_F(SpellcheckCustomDictionaryTest, MultiProfile) {
@@ -224,7 +228,7 @@ TEST_F(SpellcheckCustomDictionaryTest, LegacyEmptyDictionaryShouldBeConverted) {
 
   std::string content;
   base::WriteFile(path, content.c_str(), content.length());
-  EXPECT_TRUE(LoadDictionaryFile(path)->empty());
+  EXPECT_TRUE(LoadDictionaryFile(path)->words.empty());
 }
 
 // Legacy dictionary with two words should be converted to new format dictionary
@@ -239,7 +243,7 @@ TEST_F(SpellcheckCustomDictionaryTest,
   std::set<std::string> expected;
   expected.insert("bar");
   expected.insert("foo");
-  EXPECT_EQ(expected, *LoadDictionaryFile(path));
+  EXPECT_EQ(expected, LoadDictionaryFile(path)->words);
 }
 
 // Illegal words should be removed. Leading and trailing whitespace should be
@@ -257,7 +261,7 @@ TEST_F(SpellcheckCustomDictionaryTest,
   expected.insert("bar");
   expected.insert("foo");
   expected.insert("foo bar");
-  EXPECT_EQ(expected, *LoadDictionaryFile(path));
+  EXPECT_EQ(expected, LoadDictionaryFile(path)->words);
 }
 
 // Write to dictionary should backup previous version and write the word to the
@@ -272,7 +276,7 @@ TEST_F(SpellcheckCustomDictionaryTest, CorruptedWriteShouldBeRecovered) {
   std::set<std::string> expected;
   expected.insert("bar");
   expected.insert("foo");
-  EXPECT_EQ(expected, *LoadDictionaryFile(path));
+  EXPECT_EQ(expected, LoadDictionaryFile(path)->words);
 
   scoped_ptr<SpellcheckCustomDictionary::Change> change(
       new SpellcheckCustomDictionary::Change);
@@ -282,7 +286,7 @@ TEST_F(SpellcheckCustomDictionaryTest, CorruptedWriteShouldBeRecovered) {
   base::ReadFileToString(path, &content);
   content.append("corruption");
   base::WriteFile(path, content.c_str(), content.length());
-  EXPECT_EQ(expected, *LoadDictionaryFile(path));
+  EXPECT_EQ(expected, LoadDictionaryFile(path)->words);
 }
 
 TEST_F(SpellcheckCustomDictionaryTest,
@@ -1179,7 +1183,7 @@ TEST_F(SpellcheckCustomDictionaryTest, RecordSizeStatsCorrectly) {
   // Load the dictionary which should be empty.
   base::FilePath path =
       profile_.GetPath().Append(chrome::kCustomDictionaryFileName);
-  EXPECT_TRUE(LoadDictionaryFile(path)->empty());
+  EXPECT_TRUE(LoadDictionaryFile(path)->words.empty());
 
   // We expect there to be an entry with 0.
   histogram =
@@ -1197,7 +1201,7 @@ TEST_F(SpellcheckCustomDictionaryTest, RecordSizeStatsCorrectly) {
   UpdateDictionaryFile(change.Pass(), path);
 
   // Load the dictionary again and it should have 2 entries.
-  EXPECT_EQ(2u, LoadDictionaryFile(path)->size());
+  EXPECT_EQ(2u, LoadDictionaryFile(path)->words.size());
 
   histogram =
       StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");
