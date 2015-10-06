@@ -26,7 +26,7 @@ TEST(CPU, RunExtendedInstructions) {
   ASSERT_TRUE(cpu.has_sse());
   ASSERT_TRUE(cpu.has_sse2());
 
-// TODO(fbarchard): consider enabling for clangcl.
+// GCC and clang instruction test.
 #if defined(COMPILER_GCC)
   // Execute an MMX instruction.
   __asm__ __volatile__("emms\n" : : : "mm0");
@@ -67,8 +67,9 @@ TEST(CPU, RunExtendedInstructions) {
     __asm__ __volatile__("vpunpcklbw %%ymm0, %%ymm0, %%ymm0\n" : : : "xmm0");
   }
 
-// TODO(jschuh): crbug.com/168866 Find a way to enable this on Win64.
-#elif defined(COMPILER_MSVC) && defined(ARCH_CPU_32_BITS)
+// Visual C 32 bit and ClangCL 32/64 bit test.
+#elif defined(COMPILER_MSVC) && (defined(ARCH_CPU_32_BITS) || \
+      (defined(ARCH_CPU_64_BITS) && defined(__clang__)))
 
   // Execute an MMX instruction.
   __asm emms;
