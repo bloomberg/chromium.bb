@@ -15,6 +15,7 @@
 #include "net/base/net_export.h"
 #include "net/spdy/hpack/hpack_header_table.h"
 #include "net/spdy/hpack/hpack_input_stream.h"
+#include "net/spdy/spdy_headers_handler_interface.h"
 #include "net/spdy/spdy_protocol.h"
 
 // An HpackDecoder decodes header sets as outlined in
@@ -42,6 +43,12 @@ class NET_EXPORT_PRIVATE HpackDecoder {
     header_table_.SetSettingsHeaderTableSize(size_setting);
   }
 
+  // If a SpdyHeadersHandlerInterface is provided, HpackDecoder will emit
+  // headers to it rather than accumulating them in a SpdyHeaderBlock.
+  void HandleControlFrameHeadersStart(SpdyHeadersHandlerInterface* handler) {
+    handler_ = handler;
+  }
+
   // Called as headers data arrives. Returns false if an error occurred.
   // TODO(jgraettinger): A future version of this method will incrementally
   // parse and deliver headers via SpdyHeadersHandlerInterface. For now,
@@ -55,20 +62,18 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   // occurred.  |compressed_len| if non-null will be set to the size
   // of the encoded buffered block that was accumulated in
   // HandleControlFrameHeadersData(), to support subsequent
-  // calculation of compression percentage.  TODO(jgraettinger): A
+  // calculation of compression percentage. Clears |handler_|.
+  // TODO(jgraettinger): A
   // future version of this method will simply deliver the Cookie
   // header (which has been incrementally reconstructed) and notify
-  // the visitor that the block is finished. For now, this method
-  // decodes the complete buffered block, and stores results to
-  // |decoded_block_|.
+  // the visitor that the block is finished.
   bool HandleControlFrameHeadersComplete(SpdyStreamId stream_id,
                                          size_t* compressed_len);
 
   // Accessor for the most recently decoded headers block. Valid until the next
   // call to HandleControlFrameHeadersData().
-  // TODO(jgraettinger): This was added to facilitate re-encoding the block in
-  // SPDY3 format for delivery to the SpdyFramer visitor, and will be removed
-  // with the migration to SpdyHeadersHandlerInterface.
+  // TODO(birenroy): Remove this method when all users of HpackDecoder specify
+  // a SpdyHeadersHandlerInterface.
   const SpdyHeaderBlock& decoded_block() { return decoded_block_; }
 
  private:
@@ -85,8 +90,6 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   // MUST be treated as malformed, as per sections 8.1.2.3. of the HTTP2
   // specification (RFC 7540).
   //
-  // TODO(jgraettinger): This method will eventually emit to the
-  // SpdyHeadersHandlerInterface visitor.
   bool HandleHeaderRepresentation(base::StringPiece name,
                                   base::StringPiece value);
 
@@ -99,13 +102,19 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   std::string headers_block_buffer_;
   SpdyHeaderBlock decoded_block_;
 
-  // Flag to keep track of having seen a regular header field.
-  bool regular_header_seen_;
-
   // Huffman table to be applied to decoded Huffman literals,
   // and scratch space for storing those decoded literals.
   const HpackHuffmanTable& huffman_table_;
   std::string key_buffer_, value_buffer_;
+
+  // If non-NULL, handles decoded headers.
+  SpdyHeadersHandlerInterface* handler_;
+
+  // Flag to keep track of having seen a regular header field.
+  bool regular_header_seen_;
+
+  // Flag to keep track of having seen the header block start.
+  bool header_block_started_;
 
   // Handlers for decoding HPACK opcodes and header representations
   // (or parts thereof). These methods return true on success and

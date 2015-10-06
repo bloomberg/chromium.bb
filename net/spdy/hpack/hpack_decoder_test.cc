@@ -13,6 +13,8 @@
 #include "net/spdy/hpack/hpack_encoder.h"
 #include "net/spdy/hpack/hpack_input_stream.h"
 #include "net/spdy/hpack/hpack_output_stream.h"
+#include "net/spdy/spdy_headers_handler_interface.h"
+#include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +24,37 @@ namespace test {
 
 using base::StringPiece;
 using std::string;
+
+// A test implementation of SpdyHeadersHandlerInterface.
+class TestHeadersHandler : public SpdyHeadersHandlerInterface {
+ public:
+  TestHeadersHandler() : header_bytes_parsed_(0) {}
+
+  void OnHeaderBlockStart() override { block_.clear(); }
+
+  void OnHeader(StringPiece key, StringPiece value) override {
+    auto it = block_.find(key);
+    if (it == block_.end()) {
+      block_[key] = value;
+    } else {
+      string new_value = it->second.as_string();
+      new_value.append((key == "cookie") ? "; " : string(1, '\0'));
+      value.AppendToString(&new_value);
+      block_.ReplaceOrAppendHeader(key, new_value);
+    }
+  }
+
+  void OnHeaderBlockEnd(size_t header_bytes_parsed) override {
+    header_bytes_parsed_ = header_bytes_parsed;
+  }
+
+  const SpdyHeaderBlock& decoded_block() const { return block_; }
+  size_t header_bytes_parsed() { return header_bytes_parsed_; }
+
+ private:
+  SpdyHeaderBlock block_;
+  size_t header_bytes_parsed_;
+};
 
 class HpackDecoderPeer {
  public:
@@ -56,20 +89,25 @@ using testing::Pair;
 
 const size_t kLiteralBound = 1024;
 
-class HpackDecoderTest : public ::testing::Test {
+class HpackDecoderTest : public ::testing::TestWithParam<bool> {
  protected:
   HpackDecoderTest()
       : decoder_(ObtainHpackHuffmanTable()), decoder_peer_(&decoder_) {}
 
   bool DecodeHeaderBlock(StringPiece str) {
+    if (GetParam()) {
+      decoder_.HandleControlFrameHeadersStart(&handler_);
+    }
     return decoder_.HandleControlFrameHeadersData(0, str.data(), str.size()) &&
            decoder_.HandleControlFrameHeadersComplete(0, nullptr);
   }
 
   const SpdyHeaderBlock& decoded_block() const {
-    // TODO(jgraettinger): HpackDecoderTest should implement
-    // SpdyHeadersHandlerInterface, and collect headers for examination.
-    return decoder_peer_.decoded_block();
+    if (GetParam()) {
+      return handler_.decoded_block();
+    } else {
+      return decoder_peer_.decoded_block();
+    }
   }
 
   const SpdyHeaderBlock& DecodeBlockExpectingSuccess(StringPiece str) {
@@ -90,9 +128,14 @@ class HpackDecoderTest : public ::testing::Test {
 
   HpackDecoder decoder_;
   test::HpackDecoderPeer decoder_peer_;
+  TestHeadersHandler handler_;
 };
 
-TEST_F(HpackDecoderTest, HandleControlFrameHeadersData) {
+INSTANTIATE_TEST_CASE_P(WithAndWithoutHeadersHandler,
+                        HpackDecoderTest,
+                        ::testing::Bool());
+
+TEST_P(HpackDecoderTest, HandleControlFrameHeadersData) {
   // Strings under threshold are concatenated in the buffer.
   EXPECT_TRUE(
       decoder_.HandleControlFrameHeadersData(0, "small string one", 16));
@@ -106,7 +149,11 @@ TEST_F(HpackDecoderTest, HandleControlFrameHeadersData) {
             "small string onesmall string two");
 }
 
-TEST_F(HpackDecoderTest, HandleHeaderRepresentation) {
+TEST_P(HpackDecoderTest, HandleHeaderRepresentation) {
+  if (GetParam()) {
+    decoder_.HandleControlFrameHeadersStart(&handler_);
+  }
+
   // All cookie crumbs are joined.
   decoder_peer_.HandleHeaderRepresentation("cookie", " part 1");
   decoder_peer_.HandleHeaderRepresentation("cookie", "part 2 ");
@@ -147,7 +194,7 @@ TEST_F(HpackDecoderTest, HandleHeaderRepresentation) {
 }
 
 // Decoding an encoded name with a valid string literal should work.
-TEST_F(HpackDecoderTest, DecodeNextNameLiteral) {
+TEST_P(HpackDecoderTest, DecodeNextNameLiteral) {
   HpackInputStream input_stream(kLiteralBound, StringPiece("\x00\x04name", 6));
 
   StringPiece string_piece;
@@ -156,7 +203,7 @@ TEST_F(HpackDecoderTest, DecodeNextNameLiteral) {
   EXPECT_FALSE(input_stream.HasMoreData());
 }
 
-TEST_F(HpackDecoderTest, DecodeNextNameLiteralWithHuffmanEncoding) {
+TEST_P(HpackDecoderTest, DecodeNextNameLiteralWithHuffmanEncoding) {
   string input = a2b_hex("008825a849e95ba97d7f");
   HpackInputStream input_stream(kLiteralBound, input);
 
@@ -167,7 +214,7 @@ TEST_F(HpackDecoderTest, DecodeNextNameLiteralWithHuffmanEncoding) {
 }
 
 // Decoding an encoded name with a valid index should work.
-TEST_F(HpackDecoderTest, DecodeNextNameIndexed) {
+TEST_P(HpackDecoderTest, DecodeNextNameIndexed) {
   HpackInputStream input_stream(kLiteralBound, "\x01");
 
   StringPiece string_piece;
@@ -177,7 +224,7 @@ TEST_F(HpackDecoderTest, DecodeNextNameIndexed) {
 }
 
 // Decoding an encoded name with an invalid index should fail.
-TEST_F(HpackDecoderTest, DecodeNextNameInvalidIndex) {
+TEST_P(HpackDecoderTest, DecodeNextNameInvalidIndex) {
   // One more than the number of static table entries.
   HpackInputStream input_stream(kLiteralBound, "\x3e");
 
@@ -186,7 +233,7 @@ TEST_F(HpackDecoderTest, DecodeNextNameInvalidIndex) {
 }
 
 // Decoding indexed static table field should work.
-TEST_F(HpackDecoderTest, IndexedHeaderStatic) {
+TEST_P(HpackDecoderTest, IndexedHeaderStatic) {
   // Reference static table entries #2 and #5.
   SpdyHeaderBlock header_set1 = DecodeBlockExpectingSuccess("\x82\x85");
   SpdyHeaderBlock expected_header_set1;
@@ -201,7 +248,7 @@ TEST_F(HpackDecoderTest, IndexedHeaderStatic) {
   EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_header_set2, header_set2));
 }
 
-TEST_F(HpackDecoderTest, IndexedHeaderDynamic) {
+TEST_P(HpackDecoderTest, IndexedHeaderDynamic) {
   // First header block: add an entry to header table.
   SpdyHeaderBlock header_set1 = DecodeBlockExpectingSuccess(
       "\x40\x03"
@@ -231,7 +278,7 @@ TEST_F(HpackDecoderTest, IndexedHeaderDynamic) {
 }
 
 // Test a too-large indexed header.
-TEST_F(HpackDecoderTest, InvalidIndexedHeader) {
+TEST_P(HpackDecoderTest, InvalidIndexedHeader) {
   // High-bit set, and a prefix of one more than the number of static entries.
   EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\xbe", 1)));
 }
@@ -239,21 +286,21 @@ TEST_F(HpackDecoderTest, InvalidIndexedHeader) {
 // Test that a header block with a pseudo-header field following a regular one
 // is treated as malformed.  (HTTP2 draft-14 8.1.2.1., HPACK draft-09 3.1.)
 
-TEST_F(HpackDecoderTest, InvalidPseudoHeaderPositionStatic) {
+TEST_P(HpackDecoderTest, InvalidPseudoHeaderPositionStatic) {
   // Okay: ":path" (static entry 4) followed by "allow" (static entry 20).
   EXPECT_TRUE(DecodeHeaderBlock(a2b_hex("8494")));
   // Malformed: "allow" (static entry 20) followed by ":path" (static entry 4).
   EXPECT_FALSE(DecodeHeaderBlock(a2b_hex("9484")));
 }
 
-TEST_F(HpackDecoderTest, InvalidPseudoHeaderPositionLiteral) {
+TEST_P(HpackDecoderTest, InvalidPseudoHeaderPositionLiteral) {
   // Okay: literal ":bar" followed by literal "foo".
   EXPECT_TRUE(DecodeHeaderBlock(a2b_hex("40043a626172004003666f6f00")));
   // Malformed: literal "foo" followed by literal ":bar".
   EXPECT_FALSE(DecodeHeaderBlock(a2b_hex("4003666f6f0040043a62617200")));
 }
 
-TEST_F(HpackDecoderTest, ContextUpdateMaximumSize) {
+TEST_P(HpackDecoderTest, ContextUpdateMaximumSize) {
   EXPECT_EQ(kDefaultHeaderTableSizeSetting,
             decoder_peer_.header_table()->max_size());
   string input;
@@ -293,7 +340,7 @@ TEST_F(HpackDecoderTest, ContextUpdateMaximumSize) {
 
 // Decoding two valid encoded literal headers with no indexing should
 // work.
-TEST_F(HpackDecoderTest, LiteralHeaderNoIndexing) {
+TEST_P(HpackDecoderTest, LiteralHeaderNoIndexing) {
   // First header with indexed name, second header with string literal
   // name.
   const char input[] = "\x04\x0c/sample/path\x00\x06:path2\x0e/sample/path/2";
@@ -308,7 +355,7 @@ TEST_F(HpackDecoderTest, LiteralHeaderNoIndexing) {
 
 // Decoding two valid encoded literal headers with incremental
 // indexing and string literal names should work.
-TEST_F(HpackDecoderTest, LiteralHeaderIncrementalIndexing) {
+TEST_P(HpackDecoderTest, LiteralHeaderIncrementalIndexing) {
   const char input[] = "\x44\x0c/sample/path\x40\x06:path2\x0e/sample/path/2";
   SpdyHeaderBlock header_set =
       DecodeBlockExpectingSuccess(StringPiece(input, arraysize(input) - 1));
@@ -319,7 +366,7 @@ TEST_F(HpackDecoderTest, LiteralHeaderIncrementalIndexing) {
   EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_header_set, header_set));
 }
 
-TEST_F(HpackDecoderTest, LiteralHeaderWithIndexingInvalidNameIndex) {
+TEST_P(HpackDecoderTest, LiteralHeaderWithIndexingInvalidNameIndex) {
   decoder_.ApplyHeaderTableSizeSetting(0);
 
   // Name is the last static index. Works.
@@ -328,14 +375,14 @@ TEST_F(HpackDecoderTest, LiteralHeaderWithIndexingInvalidNameIndex) {
   EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x7e\x03ooo")));
 }
 
-TEST_F(HpackDecoderTest, LiteralHeaderNoIndexingInvalidNameIndex) {
+TEST_P(HpackDecoderTest, LiteralHeaderNoIndexingInvalidNameIndex) {
   // Name is the last static index. Works.
   EXPECT_TRUE(DecodeHeaderBlock(StringPiece("\x0f\x2e\x03ooo")));
   // Name is one beyond the last static index. Fails.
   EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x0f\x2f\x03ooo")));
 }
 
-TEST_F(HpackDecoderTest, LiteralHeaderNeverIndexedInvalidNameIndex) {
+TEST_P(HpackDecoderTest, LiteralHeaderNeverIndexedInvalidNameIndex) {
   // Name is the last static index. Works.
   EXPECT_TRUE(DecodeHeaderBlock(StringPiece("\x1f\x2e\x03ooo")));
   // Name is one beyond the last static index. Fails.
@@ -343,7 +390,7 @@ TEST_F(HpackDecoderTest, LiteralHeaderNeverIndexedInvalidNameIndex) {
 }
 
 // Round-tripping the header set from E.2.1 should work.
-TEST_F(HpackDecoderTest, BasicE21) {
+TEST_P(HpackDecoderTest, BasicE21) {
   HpackEncoder encoder(ObtainHpackHuffmanTable());
 
   SpdyHeaderBlock expected_header_set;
@@ -360,7 +407,7 @@ TEST_F(HpackDecoderTest, BasicE21) {
   EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_header_set, decoded_block()));
 }
 
-TEST_F(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
+TEST_P(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
   SpdyHeaderBlock header_set;
 
   // 82                                      | == Indexed - Add ==
@@ -470,7 +517,7 @@ TEST_F(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
   EXPECT_EQ(164u, decoder_peer_.header_table()->size());
 }
 
-TEST_F(HpackDecoderTest, SectionD6ResponseHuffmanExamples) {
+TEST_P(HpackDecoderTest, SectionD6ResponseHuffmanExamples) {
   SpdyHeaderBlock header_set;
   decoder_.ApplyHeaderTableSizeSetting(256);
 
