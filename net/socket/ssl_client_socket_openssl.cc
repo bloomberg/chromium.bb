@@ -55,6 +55,10 @@
 #include "net/ssl/ssl_platform_key.h"
 #endif
 
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
+#include "net/cert_net/nss_ocsp.h"
+#endif
+
 namespace net {
 
 namespace {
@@ -790,6 +794,14 @@ int SSLClientSocketOpenSSL::SetSendBufferSize(int32 size) {
 int SSLClientSocketOpenSSL::Init() {
   DCHECK(!ssl_);
   DCHECK(!transport_bio_);
+
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
+  if (ssl_config_.cert_io_enabled) {
+    // TODO(davidben): Move this out of SSLClientSocket. See
+    // https://crbug.com/539520.
+    EnsureNSSHttpIOInit();
+  }
+#endif
 
   SSLContext* context = SSLContext::GetInstance();
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
