@@ -186,6 +186,7 @@ MessageChannel::MessageChannel(PepperPluginInstanceImpl* instance)
     : gin::NamedPropertyInterceptor(instance->GetIsolate(), this),
       instance_(instance),
       js_message_queue_state_(WAITING_TO_START),
+      drain_js_message_queue_scheduled_(false),
       blocking_message_depth_(0),
       plugin_message_queue_state_(WAITING_TO_START),
       var_converter_(instance->pp_instance(),
@@ -432,6 +433,9 @@ void MessageChannel::DrainCompletedPluginMessages() {
 }
 
 void MessageChannel::DrainJSMessageQueue() {
+  DCHECK(drain_js_message_queue_scheduled_);
+  drain_js_message_queue_scheduled_ = false;
+
   if (!instance_)
     return;
   if (js_message_queue_state_ == SEND_DIRECTLY)
@@ -449,9 +453,13 @@ void MessageChannel::DrainJSMessageQueue() {
 }
 
 void MessageChannel::DrainJSMessageQueueSoon() {
+  if (drain_js_message_queue_scheduled_)
+    return;
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&MessageChannel::DrainJSMessageQueue,
                             weak_ptr_factory_.GetWeakPtr()));
+  drain_js_message_queue_scheduled_ = true;
 }
 
 void MessageChannel::UnregisterSyncMessageStatusObserver() {
