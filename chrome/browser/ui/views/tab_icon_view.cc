@@ -54,7 +54,7 @@ void TabIconView::InitializeIfNeeded() {
   }
 }
 
-TabIconView::TabIconView(chrome::TabIconViewModel* model,
+TabIconView::TabIconView(TabIconViewModel* model,
                          views::MenuButtonListener* listener)
     : views::MenuButton(NULL, base::string16(), listener, false),
       model_(model),

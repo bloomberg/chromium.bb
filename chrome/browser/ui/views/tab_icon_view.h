@@ -5,15 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TAB_ICON_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TAB_ICON_VIEW_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/view.h"
 
-namespace chrome {
 class TabIconViewModel;
-}
 
 namespace gfx {
 class ImageSkia;
@@ -24,7 +20,7 @@ class TabIconView : public views::MenuButton {
  public:
   static void InitializeIfNeeded();
 
-  TabIconView(chrome::TabIconViewModel* model,
+  TabIconView(TabIconViewModel* model,
               views::MenuButtonListener* menu_button_listener);
   ~TabIconView() override;
 
@@ -44,7 +40,7 @@ class TabIconView : public views::MenuButton {
   void PaintFavicon(gfx::Canvas* canvas, const gfx::ImageSkia& image);
 
   // Our model.
-  chrome::TabIconViewModel* model_;
+  TabIconViewModel* model_;
 
   // Whether we should display our light or dark style.
   bool is_light_;

@@ -420,7 +420,7 @@ void BrowserNonClientFrameViewAsh::OnMaximizeModeEnded() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// chrome::TabIconViewModel:
+// TabIconViewModel:
 
 bool BrowserNonClientFrameViewAsh::ShouldTabIconViewAnimate() const {
   // This function is queried during the creation of the window as the

@@ -9,8 +9,6 @@ namespace gfx {
 class ImageSkia;
 }
 
-namespace chrome {
-
 // Classes implement this interface to provide state for the TabIconView.
 class TabIconViewModel {
  public:
@@ -23,7 +21,5 @@ class TabIconViewModel {
  protected:
   virtual ~TabIconViewModel() {}
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TAB_ICON_VIEW_MODEL_H_

@@ -30,7 +30,7 @@ class Label;
 class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
                                public views::ButtonListener,
                                public views::MenuButtonListener,
-                               public chrome::TabIconViewModel,
+                               public TabIconViewModel,
                                public OpaqueBrowserFrameViewLayoutDelegate {
  public:
   // Constructs a non-client view for an BrowserFrame.
@@ -65,7 +65,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void OnMenuButtonClicked(views::View* source,
                            const gfx::Point& point) override;
 
-  // chrome::TabIconViewModel:
+  // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;
   gfx::ImageSkia GetFaviconForTabIconView() override;
 

@@ -20,7 +20,7 @@ class Label;
 
 class PanelFrameView : public views::NonClientFrameView,
                        public views::ButtonListener,
-                       public chrome::TabIconViewModel {
+                       public TabIconViewModel {
  public:
   enum PaintState {
     PAINT_AS_INACTIVE,
@@ -81,7 +81,7 @@ class PanelFrameView : public views::NonClientFrameView,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // Overridden from chrome::TabIconViewModel:
+  // Overridden from TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;
   gfx::ImageSkia GetFaviconForTabIconView() override;
 

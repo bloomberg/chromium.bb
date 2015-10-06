@@ -29,7 +29,7 @@ class ToggleImageButton;
 
 class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                                      public ash::ShellObserver,
-                                     public chrome::TabIconViewModel,
+                                     public TabIconViewModel,
                                      public views::ButtonListener {
  public:
   static const char kViewClassName[];
@@ -70,7 +70,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
 
-  // chrome::TabIconViewModel:
+  // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;
   gfx::ImageSkia GetFaviconForTabIconView() override;
 
