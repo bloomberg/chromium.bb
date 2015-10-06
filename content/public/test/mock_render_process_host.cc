@@ -138,8 +138,6 @@ int MockRenderProcessHost::VisibleWidgetCount() const {
   return 1;
 }
 
-void MockRenderProcessHost::AudioStateChanged() {}
-
 bool MockRenderProcessHost::IsForGuestsOnly() const {
   return is_for_guests_only_;
 }

@@ -113,7 +113,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void WidgetRestored() override;
   void WidgetHidden() override;
   int VisibleWidgetCount() const override;
-  void AudioStateChanged() override;
   bool IsForGuestsOnly() const override;
   StoragePartition* GetStoragePartition() const override;
   bool Shutdown(int exit_code, bool wait) override;
@@ -318,10 +317,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const base::CommandLine& browser_cmd,
       base::CommandLine* renderer_cmd) const;
 
-  // Inspects the current object state and sets/removes background priority if
-  // appropriate. Should be called after any of the involved data members
-  // change.
-  void UpdateProcessPriority();
+  // Callers can reduce the RenderProcess' priority.
+  void SetBackgrounded(bool backgrounded);
 
   // Handle termination of our process.
   void ProcessDied(bool already_dead, RendererClosedDetails* known_details);
@@ -353,9 +350,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // backgrounded.
   int32 visible_widgets_;
 
-  // Whether this process currently has backgrounded priority. Tracked so that
-  // UpdateProcessPriority() can avoid redundantly setting the priority.
-  bool is_process_backgrounded_;
+  // Does this process have backgrounded priority.
+  bool backgrounded_;
 
   // Used to allow a RenderWidgetHost to intercept various messages on the
   // IO thread.

@@ -104,16 +104,6 @@ std::string TranslateDefaultId(const std::string& device_id) {
                            : device_id;
 }
 
-void NotifyRenderProcessHostThatAudioStateChanged(int render_process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  RenderProcessHost* render_process_host =
-      RenderProcessHost::FromID(render_process_id);
-
-  if (render_process_host)
-    render_process_host->AudioStateChanged();
-}
-
 }  // namespace
 
 class AudioRendererHost::AudioEntry
@@ -766,27 +756,11 @@ void AudioRendererHost::UpdateNumPlayingStreams(AudioEntry* entry,
         !RenderFrameHasActiveAudio(entry->render_frame_id());
     entry->set_playing(true);
     base::AtomicRefCountInc(&num_playing_streams_);
-
-    // Inform the RenderProcessHost when audio starts playing for the first
-    // time.
-    if (base::AtomicRefCountIsOne(&num_playing_streams_)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&NotifyRenderProcessHostThatAudioStateChanged,
-                     render_process_id_));
-    }
   } else {
     entry->set_playing(false);
     should_alert_resource_scheduler =
         !RenderFrameHasActiveAudio(entry->render_frame_id());
-
-    // Inform the RenderProcessHost when there is no more audio playing.
-    if (!base::AtomicRefCountDec(&num_playing_streams_)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&NotifyRenderProcessHostThatAudioStateChanged,
-                     render_process_id_));
-    }
+    base::AtomicRefCountDec(&num_playing_streams_);
   }
 
   if (should_alert_resource_scheduler && ResourceDispatcherHostImpl::Get()) {

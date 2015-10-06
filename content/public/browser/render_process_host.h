@@ -99,9 +99,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void WidgetHidden() = 0;
   virtual int VisibleWidgetCount() const = 0;
 
-  // Called when the audio state changes for this render process host.
-  virtual void AudioStateChanged() = 0;
-
   // Indicates whether the current RenderProcessHost is exclusively hosting
   // guest RenderFrames. Not all guest RenderFrames are created equal.  A guest,
   // as indicated by BrowserPluginGuest::IsGuest, may coexist with other
