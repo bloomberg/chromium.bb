@@ -31,6 +31,7 @@ const base::FilePath::CharType kRefreshTokenToDeviceIdMapFile[] =
 
 char kSecondUserEmail[] = "second_user@gmail.com";
 char kSecondUserPassword[] = "password";
+char kSecondUserGaiaId[] = "4321";
 char kSecondUserRefreshToken1[] = "refresh_token_second_user_1";
 char kSecondUserRefreshToken2[] = "refresh_token_second_user_2";
 
@@ -98,13 +99,15 @@ class DeviceIDTest : public OobeBaseTest,
 
   void SignInOnline(const std::string& user_id,
                     const std::string& password,
-                    const std::string& refresh_token) {
+                    const std::string& refresh_token,
+                    const std::string& gaia_id) {
     WaitForGaiaPageLoad();
 
     FakeGaia::MergeSessionParams params;
     params.email = user_id;
     params.refresh_token = refresh_token;
     fake_gaia_->UpdateMergeSessionParams(params);
+    fake_gaia_->MapEmailToGaiaId(user_id, gaia_id);
 
     GetLoginDisplay()->ShowSigninScreenForCreds(user_id, password);
     WaitForSessionStart();
@@ -171,7 +174,8 @@ class DeviceIDTest : public OobeBaseTest,
 
 // Add the first user and check that device ID is consistent.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_PRE_PRE_PRE_NewUsers) {
-  SignInOnline(kFakeUserEmail, kFakeUserPassword, kRefreshToken1);
+  SignInOnline(kFakeUserEmail, kFakeUserPassword, kRefreshToken1,
+               kFakeUserGaiaId);
   CheckDeviceIDIsConsistent(kFakeUserEmail, kRefreshToken1);
 }
 
@@ -182,7 +186,8 @@ IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_PRE_PRE_NewUsers) {
   EXPECT_FALSE(device_id.empty());
   EXPECT_EQ(device_id, GetDeviceIdFromGAIA(kRefreshToken1));
 
-  SignInOnline(kFakeUserEmail, kFakeUserPassword, kRefreshToken2);
+  SignInOnline(kFakeUserEmail, kFakeUserPassword, kRefreshToken2,
+               kFakeUserGaiaId);
   CheckDeviceIDIsConsistent(kFakeUserEmail, kRefreshToken2);
 
   CHECK_EQ(device_id, GetDeviceId(kFakeUserEmail));
@@ -205,7 +210,8 @@ IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_PRE_NewUsers) {
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_NewUsers) {
   WaitForSigninScreen();
   JS().ExecuteAsync("chrome.send('showAddUser')");
-  SignInOnline(kSecondUserEmail, kSecondUserPassword, kSecondUserRefreshToken1);
+  SignInOnline(kSecondUserEmail, kSecondUserPassword, kSecondUserRefreshToken1,
+               kSecondUserGaiaId);
   CheckDeviceIDIsConsistent(kSecondUserEmail, kSecondUserRefreshToken1);
 }
 
@@ -218,7 +224,8 @@ IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_NewUsers) {
 // Add the second user back. Verify that device ID has been changed.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, NewUsers) {
   EXPECT_TRUE(GetDeviceId(kSecondUserEmail).empty());
-  SignInOnline(kSecondUserEmail, kSecondUserPassword, kSecondUserRefreshToken2);
+  SignInOnline(kSecondUserEmail, kSecondUserPassword, kSecondUserRefreshToken2,
+               kSecondUserGaiaId);
   CheckDeviceIDIsConsistent(kSecondUserEmail, kSecondUserRefreshToken2);
   EXPECT_NE(GetDeviceIdFromGAIA(kSecondUserRefreshToken1),
             GetDeviceId(kSecondUserEmail));
@@ -226,7 +233,8 @@ IN_PROC_BROWSER_TEST_F(DeviceIDTest, NewUsers) {
 
 // Set up a user that has a device ID stored in preference only.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_Migration) {
-  SignInOnline(kFakeUserEmail, kFakeUserPassword, kRefreshToken1);
+  SignInOnline(kFakeUserEmail, kFakeUserPassword, kRefreshToken1,
+               kFakeUserGaiaId);
 
   // Simulate user that has device ID saved only in preferences (pre-M44).
   PrefService* prefs =
@@ -252,7 +260,8 @@ IN_PROC_BROWSER_TEST_F(DeviceIDTest, Migration) {
 
 // Set up a user that doesn't have a device ID.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_LegacyUsers) {
-  SignInOnline(kFakeUserEmail, kFakeUserPassword, kRefreshToken1);
+  SignInOnline(kFakeUserEmail, kFakeUserPassword, kRefreshToken1,
+               kFakeUserGaiaId);
 
   PrefService* prefs =
       ProfileHelper::Get()

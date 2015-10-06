@@ -217,6 +217,11 @@ class GaiaScreenHandler : public BaseScreenHandler,
   FrameState frame_state() const { return frame_state_; }
   net::Error frame_error() const { return frame_error_; }
 
+  // Returns user canonical e-mail. Finds already used account alias, if
+  // user has already signed in.
+  std::string GetCanonicalEmail(const std::string& authenticated_email,
+                                const std::string& gaia_id) const;
+
   // Current state of Gaia frame.
   FrameState frame_state_ = FRAME_STATE_UNKNOWN;
 
