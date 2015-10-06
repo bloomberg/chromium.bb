@@ -12,6 +12,7 @@
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "url/gurl.h"
 
 namespace web_view {
 
@@ -69,6 +70,9 @@ class FrameTreeDelegate {
 
   // Invoked when blink has started displaying the frame.
   virtual void DidCommitProvisionalLoad(Frame* frame) = 0;
+
+  // Invoked when the frame has changed its own URL.
+  virtual void DidNavigateLocally(Frame* source, const GURL& url) = 0;
 
   // Notification of various frame state changes. Generally only useful for
   // tests.

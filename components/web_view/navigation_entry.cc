@@ -9,6 +9,9 @@ namespace web_view {
 NavigationEntry::NavigationEntry(mojo::URLRequestPtr original_request)
     : url_request_(original_request.Pass()) {}
 
+NavigationEntry::NavigationEntry(const GURL& raw_url)
+    : url_request_(raw_url) {}
+
 NavigationEntry::~NavigationEntry() {}
 
 mojo::URLRequestPtr NavigationEntry::BuildURLRequest() const {

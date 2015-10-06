@@ -6,8 +6,15 @@
 
 #include "base/logging.h"
 #include "mojo/common/data_pipe_utils.h"
+#include "mojo/common/url_type_converters.h"
 
 namespace web_view {
+
+// TODO(erg): In the long run, we might not want to have a stack of
+// URLRequestPtrs, but another type that captures most of the data. When I saw
+// NavigationController the first time, I didn't understand why they made their
+// own datastructure which kept track of everything in a request. The reason is
+// that they have to build requests from multiple different datatypes.
 
 URLRequestCloneable::URLRequestCloneable(mojo::URLRequestPtr original_request)
     : url_(original_request->url),
@@ -23,6 +30,16 @@ URLRequestCloneable::URLRequestCloneable(mojo::URLRequestPtr original_request)
     mojo::common::BlockingCopyToString(original_request->body[i].Pass(),
                                        &body_[i]);
   }
+}
+
+URLRequestCloneable::URLRequestCloneable(const GURL& raw_url)
+    : url_(mojo::String::From(raw_url)),
+      method_("GET"),
+      headers_(),
+      response_body_buffer_size_(0),
+      auto_follow_redirects_(false),
+      bypass_cache_(false),
+      original_body_null_(true) {
 }
 
 URLRequestCloneable::~URLRequestCloneable() {}

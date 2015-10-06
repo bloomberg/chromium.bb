@@ -17,6 +17,7 @@
 #include "components/web_view/frame_user_data.h"
 #include "components/web_view/frame_utils.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
+#include "mojo/common/url_type_converters.h"
 #include "url/gurl.h"
 
 using mus::View;
@@ -550,7 +551,7 @@ void Frame::RequestNavigate(mojom::NavigationTargetType target_type,
 }
 
 void Frame::DidNavigateLocally(const mojo::String& url) {
-  NOTIMPLEMENTED();
+  tree_->DidNavigateLocally(this, url.To<GURL>());
 }
 
 void Frame::DispatchLoadEventToParent() {

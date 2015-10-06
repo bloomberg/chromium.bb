@@ -8,6 +8,7 @@
 #include "base/memory/scoped_vector.h"
 
 #include "components/web_view/public/interfaces/web_view.mojom.h"
+#include "url/gurl.h"
 
 namespace web_view {
 
@@ -55,8 +56,15 @@ class NavigationController {
   // Called when a frame is committed.
   void FrameDidCommitProvisionalLoad(Frame* frame);
 
+  // Called when a frame navigated by itself. Adds the new url to the
+  // back/forward stack.
+  void FrameDidNavigateLocally(Frame* frame, const GURL& url);
+
  private:
   using NavigationEntries = ScopedVector<NavigationEntry>;
+
+  void ClearForwardEntries();
+
   NavigationEntries entries_;
 
   // An entry we haven't gotten a response for yet.  This will be discarded

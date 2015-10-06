@@ -7,6 +7,8 @@
 
 #include "components/web_view/url_request_cloneable.h"
 
+#include "url/gurl.h"
+
 namespace web_view {
 
 // Contains all information needed about an individual navigation in the
@@ -14,6 +16,7 @@ namespace web_view {
 class NavigationEntry {
  public:
   explicit NavigationEntry(mojo::URLRequestPtr original_request);
+  explicit NavigationEntry(const GURL& raw_url);
   ~NavigationEntry();
 
   // Builds a copy of the URLRequest that generated this navigation. This

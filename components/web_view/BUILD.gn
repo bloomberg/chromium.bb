@@ -59,6 +59,7 @@ source_set("lib") {
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/interfaces",
     "//mojo/common:common_base",
+    "//mojo/common:url_type_converters",
     "//mojo/converters/geometry",
     "//mojo/services/network/public/interfaces",
     "//mojo/services/tracing/public/interfaces",

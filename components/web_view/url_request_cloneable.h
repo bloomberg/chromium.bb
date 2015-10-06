@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "url/gurl.h"
 
 namespace web_view {
 
@@ -21,6 +22,7 @@ namespace web_view {
 class URLRequestCloneable {
  public:
   explicit URLRequestCloneable(mojo::URLRequestPtr original_request);
+  explicit URLRequestCloneable(const GURL& raw_url);
   ~URLRequestCloneable();
 
   // Creates a new URLRequest.

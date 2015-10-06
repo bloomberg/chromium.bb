@@ -157,14 +157,7 @@ void NavigationController::FrameDidCommitProvisionalLoad(Frame* frame) {
   // appears that blink can change some of the data during the navigation. Do
   // it for now for bootstrapping purposes.
   if (pending_entry_index_ == -1 && pending_entry_) {
-    int current_size = static_cast<int>(entries_.size());
-    if (current_size > 0) {
-      while (last_committed_entry_index_ < (current_size - 1)) {
-        entries_.pop_back();
-        current_size--;
-      }
-    }
-
+    ClearForwardEntries();
     entries_.push_back(pending_entry_);
     last_committed_entry_index_ = static_cast<int>(entries_.size() - 1);
     pending_entry_ = nullptr;
@@ -182,6 +175,35 @@ void NavigationController::FrameDidCommitProvisionalLoad(Frame* frame) {
   DiscardPendingEntry(false);
 
   delegate_->OnDidNavigate();
+}
+
+void NavigationController::FrameDidNavigateLocally(Frame* frame,
+                                                   const GURL& url) {
+  // If this is a local navigation of a non-top frame, don't try to commit
+  // it.
+  if (frame->parent())
+    return;
+
+  ClearForwardEntries();
+
+  // TODO(erg): This is overly cheap handling of local navigations in
+  // frames. We don't have all the information needed to construct a real
+  // URLRequest.
+
+  entries_.push_back(new NavigationEntry(url));
+  last_committed_entry_index_ = static_cast<int>(entries_.size() - 1);
+
+  delegate_->OnDidNavigate();
+}
+
+void NavigationController::ClearForwardEntries() {
+  int current_size = static_cast<int>(entries_.size());
+  if (current_size > 0) {
+    while (last_committed_entry_index_ < (current_size - 1)) {
+      entries_.pop_back();
+      current_size--;
+    }
+  }
 }
 
 }  // namespace web_view

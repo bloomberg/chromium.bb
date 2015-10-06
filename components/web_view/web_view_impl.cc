@@ -215,6 +215,13 @@ void WebViewImpl::DidCommitProvisionalLoad(Frame* frame) {
   navigation_controller_.FrameDidCommitProvisionalLoad(frame);
 }
 
+void WebViewImpl::DidNavigateLocally(Frame* source,
+                                     const GURL& url) {
+  navigation_controller_.FrameDidNavigateLocally(source, url);
+  if (source == frame_tree_->root())
+    client_->TopLevelNavigationStarted(url.spec());
+}
+
 void WebViewImpl::DidDestroyFrame(Frame* frame) {
   find_controller_.DidDestroyFrame(frame);
 }

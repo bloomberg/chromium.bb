@@ -82,6 +82,10 @@ void FrameTree::DidCommitProvisionalLoad(Frame* source) {
   delegate_->DidCommitProvisionalLoad(source);
 }
 
+void FrameTree::DidNavigateLocally(Frame* source, const GURL& url) {
+  delegate_->DidNavigateLocally(source, url);
+}
+
 void FrameTree::ClientPropertyChanged(const Frame* source,
                                       const mojo::String& name,
                                       const mojo::Array<uint8_t>& value) {

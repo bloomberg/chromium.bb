@@ -50,6 +50,7 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
                         const CanNavigateFrameCallback& callback) override;
   void DidStartNavigation(Frame* frame) override;
   void DidCommitProvisionalLoad(Frame* frame) override;
+  void DidNavigateLocally(Frame* source, const GURL& url) override;
   void DidCreateFrame(Frame* frame) override;
   void DidDestroyFrame(Frame* frame) override;
   void OnViewEmbeddedInFrameDisconnected(Frame* frame) override;
