@@ -18,16 +18,16 @@
 #include "ui/views/controls/menu/submenu_view.h"
 
 namespace {
-// The delay before we close the wrench menu if this was opened for a drop so
-// that the user can see a browser action if one was moved.
+// The delay before we close the app menu if this was opened for a drop so that
+// the user can see a browser action if one was moved.
 // This can be changed for tests.
 int g_close_menu_delay = 300;
 }
 
 ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
-                                                   WrenchMenu* wrench_menu)
+                                                   WrenchMenu* app_menu)
     : browser_(browser),
-      wrench_menu_(wrench_menu),
+      app_menu_(app_menu),
       container_(nullptr),
       max_height_(0),
       browser_actions_container_observer_(this),
@@ -42,8 +42,7 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
   // that will be visible in ShouldShow().
   container_->Layout();
 
-  // Listen for the drop to finish so we can close the wrench menu, if
-  // necessary.
+  // Listen for the drop to finish so we can close the app menu, if necessary.
   browser_actions_container_observer_.Add(container_);
   browser_actions_container_observer_.Add(main);
 
@@ -60,8 +59,8 @@ ExtensionToolbarMenuView::~ExtensionToolbarMenuView() {
 }
 
 bool ExtensionToolbarMenuView::ShouldShow() {
-  return wrench_menu_->for_drop() ||
-      container_->VisibleBrowserActionsAfterAnimation();
+  return app_menu_->for_drop() ||
+         container_->VisibleBrowserActionsAfterAnimation();
 }
 
 gfx::Size ExtensionToolbarMenuView::GetPreferredSize() const {
@@ -101,20 +100,20 @@ void ExtensionToolbarMenuView::OnBrowserActionsContainerDestroyed(
 }
 
 void ExtensionToolbarMenuView::OnBrowserActionDragDone() {
-  // We need to close the wrench menu if it was just opened for the drag and
-  // drop, or if there are no more extensions in the overflow menu after a drag
-  // and drop
-  if (wrench_menu_->for_drop() ||
+  // We need to close the app menu if it was just opened for the drag and drop,
+  // or if there are no more extensions in the overflow menu after a drag and
+  // drop.
+  if (app_menu_->for_drop() ||
       container_->toolbar_actions_bar()->GetIconCount() == 0) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&ExtensionToolbarMenuView::CloseWrenchMenu,
+        FROM_HERE, base::Bind(&ExtensionToolbarMenuView::CloseAppMenu,
                               weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(g_close_menu_delay));
   }
 }
 
-void ExtensionToolbarMenuView::CloseWrenchMenu() {
-  wrench_menu_->CloseMenu();
+void ExtensionToolbarMenuView::CloseAppMenu() {
+  app_menu_->CloseMenu();
 }
 
 int ExtensionToolbarMenuView::start_padding() const {

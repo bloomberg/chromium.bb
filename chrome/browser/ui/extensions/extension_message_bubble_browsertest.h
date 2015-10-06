@@ -14,7 +14,7 @@ class ExtensionMessageBubbleBrowserTest
  protected:
   enum AnchorPosition {
     ANCHOR_BROWSER_ACTION,
-    ANCHOR_WRENCH_MENU,
+    ANCHOR_APP_MENU,
   };
 
   ExtensionMessageBubbleBrowserTest();
@@ -42,16 +42,16 @@ class ExtensionMessageBubbleBrowserTest
   // there are extensions with actions.
   void TestBubbleAnchoredToExtensionAction();
 
-  // Tests that an extension bubble will be anchored to the wrench menu when
-  // there aren't any extensions with actions.
+  // Tests that an extension bubble will be anchored to the app menu when there
+  // aren't any extensions with actions.
   // This also tests that the crashes in crbug.com/476426 are fixed.
-  void TestBubbleAnchoredToWrenchMenu();
+  void TestBubbleAnchoredToAppMenu();
 
-  // Tests that an extension bubble will be anchored to the wrench menu if there
+  // Tests that an extension bubble will be anchored to the app menu if there
   // are no highlighted extensions, even if there's a benevolent extension with
   // an action.
   // Regression test for crbug.com/485614.
-  void TestBubbleAnchoredToWrenchMenuWithOtherAction();
+  void TestBubbleAnchoredToAppMenuWithOtherAction();
 
   // Tests that uninstalling the extension between when the bubble is originally
   // slated to show and when it does show is handled gracefully.

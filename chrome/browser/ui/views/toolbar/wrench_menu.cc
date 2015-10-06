@@ -731,12 +731,10 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
 // items.
 class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
  public:
-  RecentTabsMenuModelDelegate(WrenchMenu* wrench_menu,
+  RecentTabsMenuModelDelegate(WrenchMenu* app_menu,
                               ui::MenuModel* model,
                               views::MenuItemView* menu_item)
-      : wrench_menu_(wrench_menu),
-        model_(model),
-        menu_item_(menu_item) {
+      : app_menu_(app_menu), model_(model), menu_item_(menu_item) {
     model_->SetMenuModelDelegate(this);
   }
 
@@ -775,10 +773,10 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
       // Remove all elements in |WrenchMenu::command_id_to_entry_| that map to
       // |model_|.
       WrenchMenu::CommandIDToEntry::iterator iter =
-          wrench_menu_->command_id_to_entry_.begin();
-      while (iter != wrench_menu_->command_id_to_entry_.end()) {
+          app_menu_->command_id_to_entry_.begin();
+      while (iter != app_menu_->command_id_to_entry_.end()) {
         if (iter->second.first == model_)
-          wrench_menu_->command_id_to_entry_.erase(iter++);
+          app_menu_->command_id_to_entry_.erase(iter++);
         else
           ++iter;
       }
@@ -786,7 +784,7 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 
     // Add all menu items from |model| to submenu.
     for (int i = 0; i < model_->GetItemCount(); ++i) {
-      wrench_menu_->AddMenuItem(menu_item_, i, model_, i, model_->GetTypeAt(i));
+      app_menu_->AddMenuItem(menu_item_, i, model_, i, model_->GetTypeAt(i));
     }
 
     // In case recent tabs submenu was open when items were changing, force a
@@ -795,7 +793,7 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
   }
 
  private:
-  WrenchMenu* wrench_menu_;
+  WrenchMenu* app_menu_;
   ui::MenuModel* model_;
   views::MenuItemView* menu_item_;
 
@@ -837,7 +835,7 @@ void WrenchMenu::Init(ui::MenuModel* model) {
 
   int32 types = views::MenuRunner::HAS_MNEMONICS;
   if (for_drop()) {
-    // We add NESTED_DRAG since currently the only operation to open the wrench
+    // We add NESTED_DRAG since currently the only operation to open the app
     // menu for is an extension action drag, which is controlled by the child
     // BrowserActionsContainer view.
     types |= views::MenuRunner::FOR_DROP | views::MenuRunner::NESTED_DRAG;
@@ -1071,9 +1069,9 @@ void WrenchMenu::WillShowMenu(MenuItemView* menu) {
 }
 
 void WrenchMenu::WillHideMenu(MenuItemView* menu) {
-  // Turns off the fade out animation of the wrench menus if
-  // |feedback_menu_item_| or |screenshot_menu_item_| is selected.  This
-  // excludes the wrench menu itself from the screenshot.
+  // Turns off the fade out animation of the app menus if |feedback_menu_item_|
+  // or |screenshot_menu_item_| is selected. This excludes the app menu itself
+  // from the screenshot.
   if (menu->HasSubmenu() &&
       ((feedback_menu_item_ && feedback_menu_item_->IsSelected()) ||
        (screenshot_menu_item_ && screenshot_menu_item_->IsSelected()))) {
@@ -1215,7 +1213,7 @@ MenuItemView* WrenchMenu::AddMenuItem(MenuItemView* parent,
 
   if (command_id > -1) {  // Don't add separators to |command_id_to_entry_|.
     // All command ID's should be unique except for IDC_SHOW_HISTORY which is
-    // in both wrench menu and RecentTabs submenu,
+    // in both app menu and RecentTabs submenu,
     if (command_id != IDC_SHOW_HISTORY) {
       DCHECK(command_id_to_entry_.find(command_id) ==
              command_id_to_entry_.end())

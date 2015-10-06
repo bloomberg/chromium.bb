@@ -16,16 +16,16 @@ class WrenchMenu;
 
 // ExtensionToolbarMenuView is the view containing the extension actions that
 // overflowed from the BrowserActionsContainer, and is contained in and owned by
-// the wrench menu.
-// In the event that the WrenchMenu was opened for an Extension Action drag-and-
+// the app menu.
+// In the event that the app menu was opened for an Extension Action drag-and-
 // drop, this will also close the menu upon completion.
 class ExtensionToolbarMenuView : public views::ScrollView,
                                  public BrowserActionsContainerObserver {
  public:
-  ExtensionToolbarMenuView(Browser* browser, WrenchMenu* wrench_menu);
+  ExtensionToolbarMenuView(Browser* browser, WrenchMenu* app_menu);
   ~ExtensionToolbarMenuView() override;
 
-  // Returns whether the wrench menu should show this view. This is true when
+  // Returns whether the app menu should show this view. This is true when
   // either |container_| has icons to display or the menu was opened for a drag-
   // and-drop operation.
   bool ShouldShow();
@@ -39,7 +39,7 @@ class ExtensionToolbarMenuView : public views::ScrollView,
     return container_;
   }
 
-  // Sets the time delay the wrench menu takes to close after a drag-and-drop
+  // Sets the time delay the app menu takes to close after a drag-and-drop
   // operation.
   static void set_close_menu_delay_for_testing(int delay);
 
@@ -49,8 +49,8 @@ class ExtensionToolbarMenuView : public views::ScrollView,
       BrowserActionsContainer* browser_actions_container) override;
   void OnBrowserActionDragDone() override;
 
-  // Closes the |wrench_menu_|.
-  void CloseWrenchMenu();
+  // Closes the |app_menu_|.
+  void CloseAppMenu();
 
   // Returns the padding before the BrowserActionsContainer in the menu.
   int start_padding() const;
@@ -58,8 +58,8 @@ class ExtensionToolbarMenuView : public views::ScrollView,
   // The associated browser.
   Browser* browser_;
 
-  // The WrenchMenu, which may need to be closed after a drag-and-drop.
-  WrenchMenu* wrench_menu_;
+  // The app menu, which may need to be closed after a drag-and-drop.
+  WrenchMenu* app_menu_;
 
   // The overflow BrowserActionsContainer which is nested in this view.
   BrowserActionsContainer* container_;

@@ -194,12 +194,13 @@ void BrowserActionsContainer::OnToolbarActionViewDragDone() {
 }
 
 views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
-  // With traditional overflow, the reference is the chevron. With the
-  // redesign, we use the wrench menu instead.
-  return chevron_ ?
-      static_cast<views::MenuButton*>(chevron_) :
-      static_cast<views::MenuButton*>(BrowserView::GetBrowserViewForBrowser(
-          browser_)->toolbar()->app_menu());
+  // With traditional overflow, the reference is the chevron. With the redesign,
+  // we use the app menu instead.
+  return chevron_ ? static_cast<views::MenuButton*>(chevron_)
+                  : static_cast<views::MenuButton*>(
+                        BrowserView::GetBrowserViewForBrowser(browser_)
+                            ->toolbar()
+                            ->app_menu_button());
 }
 
 void BrowserActionsContainer::OnMouseEnteredToolbarActionView() {
@@ -330,9 +331,12 @@ void BrowserActionsContainer::ShowExtensionMessageBubble(
   // The container shouldn't be asked to show a bubble if it's animating.
   DCHECK(!animating());
 
-  views::View* reference_view = anchor_action ?
-      static_cast<views::View*>(GetViewForId(anchor_action->GetId())) :
-      BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->app_menu();
+  views::View* reference_view =
+      anchor_action
+          ? static_cast<views::View*>(GetViewForId(anchor_action->GetId()))
+          : BrowserView::GetBrowserViewForBrowser(browser_)
+                ->toolbar()
+                ->app_menu_button();
 
   extensions::ExtensionMessageBubbleController* weak_controller =
       controller.get();

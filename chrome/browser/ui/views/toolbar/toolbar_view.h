@@ -24,17 +24,11 @@ class Browser;
 class HomeButton;
 class ReloadButton;
 class ToolbarButton;
-class WrenchMenu;
-class WrenchMenuModel;
 class WrenchToolbarButton;
 
 namespace extensions {
 class Command;
 class Extension;
-}
-
-namespace views {
-class MenuListener;
 }
 
 // The Browser Window's toolbar.
@@ -75,12 +69,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // Returns true if the app menu is focused.
   bool IsAppMenuFocused();
 
-  // Add a listener to receive a callback when the menu opens.
-  void AddMenuListener(views::MenuListener* listener);
-
-  // Remove a menu listener.
-  void RemoveMenuListener(views::MenuListener* listener);
-
   virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel);
 
   // Returns the view to which the bookmark bubble should be anchored.
@@ -93,21 +81,15 @@ class ToolbarView : public views::AccessiblePaneView,
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command);
 
-  // Shows the app (wrench) menu. |for_drop| indicates whether the menu is
-  // opened for a drag-and-drop operation.
-  void ShowAppMenu(bool for_drop);
-
-  // Closes the App Menu, if it's open.
-  void CloseAppMenu();
 
   // Accessors.
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
   ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
-  WrenchToolbarButton* app_menu() const { return app_menu_; }
+  WrenchToolbarButton* app_menu_button() const { return app_menu_button_; }
   HomeButton* home_button() const { return home_; }
-  WrenchMenuBadgeController* wrench_menu_badge_controller() {
+  WrenchMenuBadgeController* app_menu_badge_controller() {
     return &badge_controller_;
   }
 
@@ -162,9 +144,6 @@ class ToolbarView : public views::AccessiblePaneView,
   const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& acc) override;
 
-  // Whether the wrench/hotdogs menu is currently showing.
-  bool IsWrenchMenuShowing() const;
-
   // Whether the toolbar view needs its background painted by the
   // BrowserNonClientFrameView.
   bool ShouldPaintBackground() const;
@@ -178,8 +157,6 @@ class ToolbarView : public views::AccessiblePaneView,
     // the standard spacing.
     kVertSpacing = 5,
   };
-
-  WrenchMenu* wrench_menu_for_testing() { return wrench_menu_.get(); }
 
  protected:
   // AccessiblePaneView:
@@ -216,10 +193,10 @@ class ToolbarView : public views::AccessiblePaneView,
     return display_mode_ == DISPLAYMODE_NORMAL;
   }
 
-  // Shows the critical notification bubble against the wrench menu.
+  // Shows the critical notification bubble against the app menu.
   void ShowCriticalNotification();
 
-  // Shows the outdated install notification bubble against the wrench menu.
+  // Shows the outdated install notification bubble against the app menu.
   // |auto_update_enabled| is set to true when auto-upate is on.
   void ShowOutdatedInstallNotification(bool auto_update_enabled);
 
@@ -234,7 +211,7 @@ class ToolbarView : public views::AccessiblePaneView,
   HomeButton* home_;
   LocationBarView* location_bar_;
   BrowserActionsContainer* browser_actions_;
-  WrenchToolbarButton* app_menu_;
+  WrenchToolbarButton* app_menu_button_;
   Browser* browser_;
 
   WrenchMenuBadgeController badge_controller_;
@@ -244,15 +221,6 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // The display mode used when laying out the toolbar.
   DisplayMode display_mode_;
-
-  // Wrench model and menu.
-  // Note that the menu should be destroyed before the model it uses, so the
-  // menu should be listed later.
-  scoped_ptr<WrenchMenuModel> wrench_menu_model_;
-  scoped_ptr<WrenchMenu> wrench_menu_;
-
-  // A list of listeners to call when the menu opens.
-  base::ObserverList<views::MenuListener> menu_listeners_;
 
   content::NotificationRegistrar registrar_;
 

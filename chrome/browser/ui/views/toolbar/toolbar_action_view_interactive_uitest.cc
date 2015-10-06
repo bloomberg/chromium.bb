@@ -20,18 +20,20 @@
 
 namespace {
 
-// Tests clicking on an overflowed toolbar action. This is called when the
-// wrench menu is open, and handles actually clicking on the action.
+// Tests clicking on an overflowed toolbar action. This is called when the app
+// menu is open, and handles actually clicking on the action.
 void TestOverflowedToolbarAction(Browser* browser,
                                  const base::Closure& quit_closure) {
   // A bunch of plumbing to safely get at the overflowed toolbar action.
-  ToolbarView* toolbar =
-      BrowserView::GetBrowserViewForBrowser(browser)->toolbar();
-  EXPECT_TRUE(toolbar->IsWrenchMenuShowing());
-  WrenchMenu* wrench_menu = toolbar->wrench_menu_for_testing();
-  ASSERT_TRUE(wrench_menu);
+  WrenchToolbarButton* app_menu_button =
+      BrowserView::GetBrowserViewForBrowser(browser)
+          ->toolbar()
+          ->app_menu_button();
+  EXPECT_TRUE(app_menu_button->IsMenuShowing());
+  WrenchMenu* app_menu = app_menu_button->app_menu_for_testing();
+  ASSERT_TRUE(app_menu);
   ExtensionToolbarMenuView* menu_view =
-      wrench_menu->extension_toolbar_for_testing();
+      app_menu->extension_toolbar_for_testing();
   ASSERT_TRUE(menu_view);
   BrowserActionsContainer* overflow_container =
       menu_view->container_for_testing();
@@ -104,21 +106,23 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   // opened. Listen for the message.
   ExtensionTestMessageListener listener("Popup opened", false);
 
-  ToolbarView* toolbar_view =
-      BrowserView::GetBrowserViewForBrowser(browser())->toolbar();
+  WrenchToolbarButton* app_menu_button =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()
+          ->app_menu_button();
 
-  // Click on the wrench.
-  gfx::Point wrench_button_loc =
-      test::GetCenterInScreenCoordinates(toolbar_view->app_menu());
+  // Click on the app button.
+  gfx::Point app_button_loc =
+      test::GetCenterInScreenCoordinates(app_menu_button);
   base::RunLoop loop;
-  ui_controls::SendMouseMove(wrench_button_loc.x(), wrench_button_loc.y());
+  ui_controls::SendMouseMove(app_button_loc.x(), app_button_loc.y());
   ui_controls::SendMouseEventsNotifyWhenDone(
       ui_controls::LEFT,
       ui_controls::DOWN | ui_controls::UP,
       base::Bind(&TestOverflowedToolbarAction, browser(), loop.QuitClosure()));
   loop.Run();
-  // The wrench menu should no longer me showing.
-  EXPECT_FALSE(toolbar_view->IsWrenchMenuShowing());
+  // The app menu should no longer be showing.
+  EXPECT_FALSE(app_menu_button->IsMenuShowing());
 
   // And the extension should have been activated.
   listener.WaitUntilSatisfied();

@@ -10,9 +10,15 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/toolbar/wrench_icon_painter.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/view.h"
+
+class WrenchMenu;
+class WrenchMenuModel;
 
 namespace views {
 class LabelButtonBorder;
+class MenuListener;
 }
 
 class ToolbarView;
@@ -26,15 +32,33 @@ class WrenchToolbarButton : public views::MenuButton,
 
   void SetSeverity(WrenchIconPainter::Severity severity, bool animate);
 
+  // Shows the app menu. |for_drop| indicates whether the menu is opened for a
+  // drag-and-drop operation.
+  void ShowMenu(bool for_drop);
+
+  // Closes the app menu, if it's open.
+  void CloseMenu();
+
+  WrenchMenu* app_menu_for_testing() { return menu_.get(); }
+
+  // Whether the app/hotdogs menu is currently showing.
+  bool IsMenuShowing() const;
+
+  // Adds a listener to receive a callback when the menu opens.
+  void AddMenuListener(views::MenuListener* listener);
+
+  // Removes a menu listener.
+  void RemoveMenuListener(views::MenuListener* listener);
+
   // views::MenuButton:
   gfx::Size GetPreferredSize() const override;
 
   // WrenchIconPainter::Delegate:
   void ScheduleWrenchIconPaint() override;
 
-  // Opens the wrench menu immediately during a drag-and-drop operation.
+  // Opens the app menu immediately during a drag-and-drop operation.
   // Used only in testing.
-  static bool g_open_wrench_immediately_for_testing;
+  static bool g_open_app_immediately_for_testing;
 
  private:
   // views::MenuButton:
@@ -50,17 +74,23 @@ class WrenchToolbarButton : public views::MenuButton,
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
 
-  // Show the extension action overflow menu (which is in the app menu).
-  void ShowOverflowMenu();
-
   scoped_ptr<WrenchIconPainter> wrench_icon_painter_;
 
   // Our owning toolbar view.
   ToolbarView* toolbar_view_;
 
   // Whether or not we should allow dragging extension icons onto this button
-  // (in order to open the overflow in the app/wrench menu).
+  // (in order to open the overflow in the app menu).
   bool allow_extension_dragging_;
+
+  // Listeners to call when the menu opens.
+  base::ObserverList<views::MenuListener> menu_listeners_;
+
+  // App model and menu.
+  // Note that the menu should be destroyed before the model it uses, so the
+  // menu should be listed later.
+  scoped_ptr<WrenchMenuModel> menu_model_;
+  scoped_ptr<WrenchMenu> menu_;
 
   // Used to spawn weak pointers for delayed tasks to open the overflow menu.
   base::WeakPtrFactory<WrenchToolbarButton> weak_factory_;

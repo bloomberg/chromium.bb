@@ -53,7 +53,7 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToExtensionAction() {
   CloseBubble(second_browser);
 }
 
-void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToWrenchMenu() {
+void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToAppMenu() {
   scoped_refptr<const extensions::Extension> no_action_extension =
       extensions::extension_action_test_util::CreateActionExtension(
           "no_action_extension",
@@ -65,12 +65,12 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToWrenchMenu() {
       Browser::CreateParams(profile(), browser()->host_desktop_type()));
   base::RunLoop().RunUntilIdle();
 
-  CheckBubble(second_browser, ANCHOR_WRENCH_MENU);
+  CheckBubble(second_browser, ANCHOR_APP_MENU);
   CloseBubble(second_browser);
 }
 
 void ExtensionMessageBubbleBrowserTest::
-TestBubbleAnchoredToWrenchMenuWithOtherAction() {
+    TestBubbleAnchoredToAppMenuWithOtherAction() {
   scoped_refptr<const extensions::Extension> no_action_extension =
       extensions::extension_action_test_util::CreateActionExtension(
           "no_action_extension",
@@ -89,7 +89,7 @@ TestBubbleAnchoredToWrenchMenuWithOtherAction() {
       Browser::CreateParams(profile(), browser()->host_desktop_type()));
   base::RunLoop().RunUntilIdle();
 
-  CheckBubble(second_browser, ANCHOR_WRENCH_MENU);
+  CheckBubble(second_browser, ANCHOR_APP_MENU);
   CloseBubble(second_browser);
 }
 

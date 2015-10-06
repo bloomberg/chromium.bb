@@ -9,20 +9,24 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/layout_constants.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/toolbar/wrench_menu.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/metrics.h"
 #include "ui/views/painter.h"
 
 // static
-bool WrenchToolbarButton::g_open_wrench_immediately_for_testing = false;
+bool WrenchToolbarButton::g_open_app_immediately_for_testing = false;
 
 WrenchToolbarButton::WrenchToolbarButton(ToolbarView* toolbar_view)
     : views::MenuButton(NULL, base::string16(), toolbar_view, false),
@@ -46,6 +50,48 @@ void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
 
   wrench_icon_painter_->SetSeverity(severity, animate);
   SchedulePaint();
+}
+
+void WrenchToolbarButton::ShowMenu(bool for_drop) {
+  if (menu_ && menu_->IsShowing())
+    return;
+
+#if defined(USE_AURA)
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller && keyboard_controller->keyboard_visible()) {
+    keyboard_controller->HideKeyboard(
+        keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+  }
+#endif
+
+  Browser* browser = toolbar_view_->browser();
+
+  menu_.reset(new WrenchMenu(browser, for_drop ? WrenchMenu::FOR_DROP : 0));
+  menu_model_.reset(new WrenchMenuModel(toolbar_view_, browser));
+  menu_->Init(menu_model_.get());
+
+  FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());
+
+  menu_->RunMenu(this);
+}
+
+void WrenchToolbarButton::CloseMenu() {
+  if (menu_)
+    menu_->CloseMenu();
+  menu_.reset();
+}
+
+bool WrenchToolbarButton::IsMenuShowing() const {
+  return menu_ && menu_->IsShowing();
+}
+
+void WrenchToolbarButton::AddMenuListener(views::MenuListener* listener) {
+  menu_listeners_.AddObserver(listener);
+}
+
+void WrenchToolbarButton::RemoveMenuListener(views::MenuListener* listener) {
+  menu_listeners_.RemoveObserver(listener);
 }
 
 gfx::Size WrenchToolbarButton::GetPreferredSize() const {
@@ -93,13 +139,13 @@ bool WrenchToolbarButton::CanDrop(const ui::OSExchangeData& data) {
 void WrenchToolbarButton::OnDragEntered(const ui::DropTargetEvent& event) {
   DCHECK(allow_extension_dragging_);
   DCHECK(!weak_factory_.HasWeakPtrs());
-  if (!g_open_wrench_immediately_for_testing) {
+  if (!g_open_app_immediately_for_testing) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&WrenchToolbarButton::ShowOverflowMenu,
-                              weak_factory_.GetWeakPtr()),
+        FROM_HERE, base::Bind(&WrenchToolbarButton::ShowMenu,
+                              weak_factory_.GetWeakPtr(), true),
         base::TimeDelta::FromMilliseconds(views::GetMenuShowDelay()));
   } else {
-    ShowOverflowMenu();
+    ShowMenu(true);
   }
 }
 
@@ -126,8 +172,4 @@ void WrenchToolbarButton::OnPaint(gfx::Canvas* canvas) {
                               GetThemeProvider(),
                               gfx::Rect(size()),
                               WrenchIconPainter::BEZEL_NONE);
-}
-
-void WrenchToolbarButton::ShowOverflowMenu() {
-  toolbar_view_->ShowAppMenu(true);  // For drop.
 }

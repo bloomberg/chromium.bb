@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -42,7 +41,6 @@
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
-#include "chrome/browser/ui/views/toolbar/wrench_menu.h"
 #include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -67,7 +65,6 @@
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/native_theme/native_theme_aura.h"
-#include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -128,7 +125,7 @@ ToolbarView::ToolbarView(Browser* browser)
       home_(NULL),
       location_bar_(NULL),
       browser_actions_(NULL),
-      app_menu_(NULL),
+      app_menu_button_(NULL),
       browser_(browser),
       badge_controller_(browser->profile(), this) {
   set_id(VIEW_ID_TOOLBAR);
@@ -213,11 +210,13 @@ void ToolbarView::Init() {
       browser_,
       NULL);  // No master container for this one (it is master).
 
-  app_menu_ = new WrenchToolbarButton(this);
-  app_menu_->EnableCanvasFlippingForRTLUI(true);
-  app_menu_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_APP));
-  app_menu_->SetTooltipText(l10n_util::GetStringUTF16(IDS_APPMENU_TOOLTIP));
-  app_menu_->set_id(VIEW_ID_APP_MENU);
+  app_menu_button_ = new WrenchToolbarButton(this);
+  app_menu_button_->EnableCanvasFlippingForRTLUI(true);
+  app_menu_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_APP));
+  app_menu_button_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_APPMENU_TOOLTIP));
+  app_menu_button_->set_id(VIEW_ID_APP_MENU);
 
   // Always add children in order from left to right, for accessibility.
   AddChildView(back_);
@@ -226,7 +225,7 @@ void ToolbarView::Init() {
   AddChildView(home_);
   AddChildView(location_bar_);
   AddChildView(browser_actions_);
-  AddChildView(app_menu_);
+  AddChildView(app_menu_button_);
 
   LoadImages();
 
@@ -245,8 +244,9 @@ void ToolbarView::Init() {
 #endif  // OS_CHROMEOS
 
   // Add any necessary badges to the menu item based on the system state.
-  // Do this after |app_menu_| has been added as a bubble may be shown that
-  // needs the widget (widget found by way of app_menu_->GetWidget()).
+  // Do this after |app_menu_button_| has been added as a bubble may be shown
+  // that needs the widget (widget found by way of app_menu_button_->
+  // GetWidget()).
   badge_controller_.UpdateDelegate();
 
   location_bar_->Init();
@@ -296,63 +296,29 @@ void ToolbarView::ResetTabState(WebContents* tab) {
 }
 
 void ToolbarView::SetPaneFocusAndFocusAppMenu() {
-  SetPaneFocus(app_menu_);
+  SetPaneFocus(app_menu_button_);
 }
 
 bool ToolbarView::IsAppMenuFocused() {
-  return app_menu_->HasFocus();
-}
-
-void ToolbarView::AddMenuListener(views::MenuListener* listener) {
-  menu_listeners_.AddObserver(listener);
-}
-
-void ToolbarView::RemoveMenuListener(views::MenuListener* listener) {
-  menu_listeners_.RemoveObserver(listener);
+  return app_menu_button_->HasFocus();
 }
 
 views::View* ToolbarView::GetBookmarkBubbleAnchor() {
   views::View* star_view = location_bar()->star_view();
-  return (star_view && star_view->visible()) ? star_view : app_menu_;
+  return (star_view && star_view->visible()) ? star_view : app_menu_button_;
 }
 
 views::View* ToolbarView::GetTranslateBubbleAnchor() {
   views::View* translate_icon_view = location_bar()->translate_icon_view();
-  return (translate_icon_view && translate_icon_view->visible()) ?
-      translate_icon_view : app_menu_;
+  return (translate_icon_view && translate_icon_view->visible())
+             ? translate_icon_view
+             : app_menu_button_;
 }
 
 void ToolbarView::ExecuteExtensionCommand(
     const extensions::Extension* extension,
     const extensions::Command& command) {
   browser_actions_->ExecuteExtensionCommand(extension, command);
-}
-
-void ToolbarView::ShowAppMenu(bool for_drop) {
-  if (wrench_menu_.get() && wrench_menu_->IsShowing())
-    return;
-
-#if defined(USE_AURA)
-  if (keyboard::KeyboardController::GetInstance() &&
-      keyboard::KeyboardController::GetInstance()->keyboard_visible()) {
-    keyboard::KeyboardController::GetInstance()->HideKeyboard(
-        keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
-  }
-#endif
-
-  wrench_menu_.reset(
-      new WrenchMenu(browser_, for_drop ? WrenchMenu::FOR_DROP : 0));
-  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_));
-  wrench_menu_->Init(wrench_menu_model_.get());
-
-  FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());
-
-  wrench_menu_->RunMenu(app_menu_);
-}
-
-void ToolbarView::CloseAppMenu() {
-  if (wrench_menu_)
-    wrench_menu_->CloseMenu();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -385,7 +351,7 @@ void ToolbarView::OnMenuButtonClicked(views::View* source,
                                       const gfx::Point& point) {
   TRACE_EVENT0("views", "ToolbarView::OnMenuButtonClicked");
   DCHECK_EQ(VIEW_ID_APP_MENU, source->id());
-  ShowAppMenu(false);  // Not for drop.
+  app_menu_button_->ShowMenu(false);  // Not for drop.
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -509,7 +475,7 @@ gfx::Size ToolbarView::GetPreferredSize() const {
         GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING) +
         browser_actions_width +
         (browser_actions_width > 0 ? element_padding : 0) +
-        app_menu_->GetPreferredSize().width();
+        app_menu_button_->GetPreferredSize().width();
     size.Enlarge(content_width, 0);
   }
   return SizeForContentSize(size);
@@ -533,7 +499,7 @@ gfx::Size ToolbarView::GetMinimumSize() const {
         GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING) +
         browser_actions_width +
         (browser_actions_width > 0 ? element_padding : 0) +
-        app_menu_->GetMinimumSize().width();
+        app_menu_button_->GetMinimumSize().width();
     size.Enlarge(content_width, 0);
   }
   return SizeForContentSize(size);
@@ -599,7 +565,7 @@ void ToolbarView::Layout() {
 
   int browser_actions_desired_width =
       browser_actions_->GetPreferredSize().width();
-  int app_menu_width = app_menu_->GetPreferredSize().width();
+  int app_menu_width = app_menu_button_->GetPreferredSize().width();
   const int location_bar_right_padding =
       GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING);
 
@@ -642,7 +608,8 @@ void ToolbarView::Layout() {
   // we extend the back button to the left edge.
   if (maximized)
     app_menu_width += insets.right();
-  app_menu_->SetBounds(next_element_x, child_y, app_menu_width, child_height);
+  app_menu_button_->SetBounds(next_element_x, child_y, app_menu_width,
+                              child_height);
 }
 
 void ToolbarView::OnPaint(gfx::Canvas* canvas) {
@@ -672,10 +639,6 @@ bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (focused_view && (focused_view->id() == VIEW_ID_OMNIBOX))
     return false;  // Let the omnibox handle all accelerator events.
   return AccessiblePaneView::AcceleratorPressed(accelerator);
-}
-
-bool ToolbarView::IsWrenchMenuShowing() const {
-  return wrench_menu_.get() && wrench_menu_->IsShowing();
 }
 
 bool ToolbarView::ShouldPaintBackground() const {
@@ -726,17 +689,17 @@ bool ToolbarView::DoesIntersectRect(const views::View* target,
 void ToolbarView::UpdateBadgeSeverity(WrenchMenuBadgeController::BadgeType type,
                                       WrenchIconPainter::Severity severity,
                                       bool animate)  {
-  // Showing the bubble requires |app_menu_| to be in a widget. See comment
-  // in ConflictingModuleView for details.
-  DCHECK(app_menu_->GetWidget());
+  // Showing the bubble requires |app_menu_button_| to be in a widget. See
+  // comment in ConflictingModuleView for details.
+  DCHECK(app_menu_button_->GetWidget());
 
   base::string16 accname_app = l10n_util::GetStringUTF16(IDS_ACCNAME_APP);
   if (type == WrenchMenuBadgeController::BADGE_TYPE_UPGRADE_NOTIFICATION) {
     accname_app = l10n_util::GetStringFUTF16(
         IDS_ACCNAME_APP_UPGRADE_RECOMMENDED, accname_app);
   }
-  app_menu_->SetAccessibleName(accname_app);
-  app_menu_->SetSeverity(severity, animate);
+  app_menu_button_->SetAccessibleName(accname_app);
+  app_menu_button_->SetSeverity(severity, animate);
 
   // Keep track of whether we were showing the badge before, so we don't send
   // multiple UMA events for example when multiple Chrome windows are open.
@@ -749,7 +712,7 @@ void ToolbarView::UpdateBadgeSeverity(WrenchMenuBadgeController::BadgeType type,
     if (!was_showing) {
       content::RecordAction(UserMetricsAction("ConflictBadge"));
 #if defined(OS_WIN)
-      ConflictingModuleView::MaybeShow(browser_, app_menu_);
+      ConflictingModuleView::MaybeShow(browser_, app_menu_button_);
 #endif
     }
     incompatibility_badge_showing = true;
@@ -824,9 +787,10 @@ void ToolbarView::LoadImages() {
     home_->SetImage(views::Button::STATE_NORMAL,
                     gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_HOME,
                                           kButtonSize, normal_color));
-    app_menu_->SetImage(views::Button::STATE_NORMAL,
-                        gfx::CreateVectorIcon(gfx::VectorIconId::BROWSER_TOOLS,
-                                              kButtonSize, normal_color));
+    app_menu_button_->SetImage(views::Button::STATE_NORMAL,
+                               gfx::CreateVectorIcon(
+                                  gfx::VectorIconId::BROWSER_TOOLS,
+                                  kButtonSize, normal_color));
   } else {
     back_->SetImage(views::Button::STATE_NORMAL,
                     *(tp->GetImageSkiaNamed(IDR_BACK)));
@@ -846,15 +810,15 @@ void ToolbarView::LoadImages() {
 void ToolbarView::ShowCriticalNotification() {
 #if defined(OS_WIN)
   CriticalNotificationBubbleView* bubble_delegate =
-      new CriticalNotificationBubbleView(app_menu_);
+      new CriticalNotificationBubbleView(app_menu_button_);
   views::BubbleDelegateView::CreateBubble(bubble_delegate)->Show();
 #endif
 }
 
 void ToolbarView::ShowOutdatedInstallNotification(bool auto_update_enabled) {
   if (OutdatedUpgradeBubbleView::IsAvailable()) {
-    OutdatedUpgradeBubbleView::ShowBubble(
-        app_menu_, browser_, auto_update_enabled);
+    OutdatedUpgradeBubbleView::ShowBubble(app_menu_button_, browser_,
+                                          auto_update_enabled);
   }
 }
 

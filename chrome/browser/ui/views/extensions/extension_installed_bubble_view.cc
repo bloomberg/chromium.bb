@@ -522,7 +522,7 @@ void ExtensionInstalledBubbleView::Show() {
 
   // Default case.
   if (reference_view == NULL)
-    reference_view = browser_view->GetToolbarView()->app_menu();
+    reference_view = browser_view->GetToolbarView()->app_menu_button();
   SetAnchorView(reference_view);
 
   set_arrow(bubble_->type() == bubble_->OMNIBOX_KEYWORD

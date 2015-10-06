@@ -95,7 +95,7 @@ void ExtensionMessageBubbleBrowserTestMac::CheckBubble(
     case ANCHOR_BROWSER_ACTION:
       anchorView = [actionsController buttonWithIndex:0];
       break;
-    case ANCHOR_WRENCH_MENU:
+    case ANCHOR_APP_MENU:
       anchorView = [toolbarController wrenchButton];
       break;
   }
@@ -125,13 +125,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
-                       ExtensionBubbleAnchoredToWrenchMenu) {
-  TestBubbleAnchoredToWrenchMenu();
+                       ExtensionBubbleAnchoredToAppMenu) {
+  TestBubbleAnchoredToAppMenu();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
-                       ExtensionBubbleAnchoredToWrenchMenuWithOtherAction) {
-  TestBubbleAnchoredToWrenchMenuWithOtherAction();
+                       ExtensionBubbleAnchoredToAppMenuWithOtherAction) {
+  TestBubbleAnchoredToAppMenuWithOtherAction();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,

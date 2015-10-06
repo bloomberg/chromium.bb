@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -54,26 +55,28 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     content::TestNavigationObserver nav_observer(NULL);
     nav_observer.StartWatchingNewWebContents();
 
-    ToolbarView* toolbar =
-        BrowserView::GetBrowserViewForBrowser(browser())->toolbar();
+    WrenchToolbarButton* app_menu_button =
+        BrowserView::GetBrowserViewForBrowser(browser())
+            ->toolbar()
+            ->app_menu_button();
 
     // When the Media Router Action executes, it opens a dialog with web
     // contents to chrome://media-router.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-        base::Bind(&MediaRouterUIBrowserTest::ExecuteMediaRouterAction,
-                   this,
-                   toolbar));
-    toolbar->ShowAppMenu(false);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&MediaRouterUIBrowserTest::ExecuteMediaRouterAction, this,
+                   app_menu_button));
+    app_menu_button->ShowMenu(false);
 
-    EXPECT_FALSE(toolbar->IsWrenchMenuShowing());
+    EXPECT_FALSE(app_menu_button->IsMenuShowing());
     nav_observer.Wait();
     ASSERT_EQ(chrome::kChromeUIMediaRouterURL,
         nav_observer.last_navigation_url().spec());
     nav_observer.StopWatchingNewWebContents();
   }
 
-  void ExecuteMediaRouterAction(ToolbarView* toolbar) {
-    EXPECT_TRUE(toolbar->IsWrenchMenuShowing());
+  void ExecuteMediaRouterAction(WrenchToolbarButton* app_menu_button) {
+    EXPECT_TRUE(app_menu_button->IsMenuShowing());
     media_router_action_->ExecuteAction(true);
   }
 

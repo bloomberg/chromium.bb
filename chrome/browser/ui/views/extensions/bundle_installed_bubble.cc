@@ -176,6 +176,6 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
 void BundleInstaller::ShowInstalledBubble(
     const BundleInstaller* bundle, Browser* browser) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  views::View* anchor = browser_view->GetToolbarView()->app_menu();
+  views::View* anchor = browser_view->GetToolbarView()->app_menu_button();
   new BundleInstalledBubble(bundle, anchor, views::BubbleBorder::TOP_RIGHT);
 }

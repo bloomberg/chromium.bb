@@ -69,9 +69,8 @@ void MaybeShowExtensionControlledSearchNotification(
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     ToolbarView* toolbar =
         BrowserView::GetBrowserViewForBrowser(browser)->toolbar();
-    ShowSettingsApiBubble(BUBBLE_TYPE_SEARCH_ENGINE,
-                          browser,
-                          toolbar->app_menu(),
+    ShowSettingsApiBubble(BUBBLE_TYPE_SEARCH_ENGINE, browser,
+                          toolbar->app_menu_button(),
                           views::BubbleBorder::TOP_RIGHT);
   }
 }
@@ -107,9 +106,10 @@ void MaybeShowExtensionControlledNewTabPage(
 
   NtpOverriddenBubbleController* controller = ntp_overridden_bubble.get();
   ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
-      BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->app_menu(),
-      views::BubbleBorder::TOP_RIGHT,
-      ntp_overridden_bubble.Pass());
+      BrowserView::GetBrowserViewForBrowser(browser)
+          ->toolbar()
+          ->app_menu_button(),
+      views::BubbleBorder::TOP_RIGHT, ntp_overridden_bubble.Pass());
   views::BubbleDelegateView::CreateBubble(bubble_delegate);
   controller->Show(bubble_delegate);
 }

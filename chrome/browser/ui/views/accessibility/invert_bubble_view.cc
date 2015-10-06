@@ -159,7 +159,7 @@ namespace chrome {
 void MaybeShowInvertBubbleView(BrowserView* browser_view) {
   Browser* browser = browser_view->browser();
   PrefService* pref_service = browser->profile()->GetPrefs();
-  views::View* anchor = browser_view->toolbar()->app_menu();
+  views::View* anchor = browser_view->toolbar()->app_menu_button();
   if (color_utils::IsInvertedColorScheme() && anchor && anchor->GetWidget() &&
       !pref_service->GetBoolean(prefs::kInvertNotificationShown)) {
     pref_service->SetBoolean(prefs::kInvertNotificationShown, true);

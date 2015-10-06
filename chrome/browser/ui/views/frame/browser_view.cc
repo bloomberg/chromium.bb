@@ -933,7 +933,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
 
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
   GetLocationBarView()->ZoomChangedForActiveTab(
-      can_show_bubble && !toolbar_->IsWrenchMenuShowing());
+      can_show_bubble && !toolbar_->app_menu_button()->IsMenuShowing());
 }
 
 gfx::Rect BrowserView::GetRestoredBounds() const {
@@ -1326,7 +1326,7 @@ void BrowserView::ShowOneClickSigninBubble(
 
   views::View* anchor_view;
   if (type == BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE)
-    anchor_view = toolbar_->app_menu();
+    anchor_view = toolbar_->app_menu_button();
   else
     anchor_view = toolbar_->location_bar();
 
@@ -1403,7 +1403,7 @@ void BrowserView::ShowAppMenu() {
       immersive_mode_controller_->GetRevealedLock(
           ImmersiveModeController::ANIMATE_REVEAL_NO));
 
-  toolbar_->app_menu()->Activate();
+  toolbar_->app_menu_button()->Activate();
 }
 
 bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,

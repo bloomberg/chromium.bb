@@ -33,7 +33,7 @@ enum {
 
 const int kMaxBubbleViewWidth = 262;
 
-// The vertical inset of the wrench bubble anchor from the wrench menu button.
+// The vertical inset of the app bubble anchor from the app menu button.
 const int kAnchorVerticalInset = 5;
 
 const int kBubblePadding = 19;
@@ -50,12 +50,9 @@ GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowStandardBubbleView(
     Browser* browser,
     const base::WeakPtr<GlobalErrorWithStandardBubble>& error) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  views::View* wrench_button = browser_view->toolbar()->app_menu();
-  GlobalErrorBubbleView* bubble_view =
-      new GlobalErrorBubbleView(wrench_button,
-                                views::BubbleBorder::TOP_RIGHT,
-                                browser,
-                                error);
+  views::View* app_menu_button = browser_view->toolbar()->app_menu_button();
+  GlobalErrorBubbleView* bubble_view = new GlobalErrorBubbleView(
+      app_menu_button, views::BubbleBorder::TOP_RIGHT, browser, error);
   views::BubbleDelegateView::CreateBubble(bubble_view);
   bubble_view->GetWidget()->Show();
   return bubble_view;

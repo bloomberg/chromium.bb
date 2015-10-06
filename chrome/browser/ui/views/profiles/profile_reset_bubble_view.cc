@@ -151,8 +151,9 @@ class FeedbackView : public views::View {
 ProfileResetBubbleView* ProfileResetBubbleView::ShowBubble(
     const base::WeakPtr<ProfileResetGlobalError>& global_error,
     Browser* browser) {
-  views::View* anchor_view =
-      BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->app_menu();
+  views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)
+                                 ->toolbar()
+                                 ->app_menu_button();
   ProfileResetBubbleView* reset_bubble = new ProfileResetBubbleView(
       global_error, anchor_view, browser, browser->profile());
   views::BubbleDelegateView::CreateBubble(reset_bubble)->Show();

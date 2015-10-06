@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 
 // static
 scoped_ptr<MediaRouterActionPlatformDelegate>
@@ -25,8 +26,10 @@ MediaRouterActionPlatformDelegateViews::
 }
 
 void MediaRouterActionPlatformDelegateViews::CloseOverflowMenuIfOpen() {
-  ToolbarView* toolbar =
-      BrowserView::GetBrowserViewForBrowser(browser_)->toolbar();
-  if (toolbar->IsWrenchMenuShowing())
-    toolbar->CloseAppMenu();
+  WrenchToolbarButton* app_menu_button =
+      BrowserView::GetBrowserViewForBrowser(browser_)
+          ->toolbar()
+          ->app_menu_button();
+  if (app_menu_button->IsMenuShowing())
+    app_menu_button->CloseMenu();
 }

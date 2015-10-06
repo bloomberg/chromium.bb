@@ -71,8 +71,8 @@ void ExtensionMessageBubbleViewBrowserTest::CheckBubble(Browser* browser,
     case ANCHOR_BROWSER_ACTION:
       anchor_view = container->GetToolbarActionViewAt(0);
       break;
-    case ANCHOR_WRENCH_MENU:
-      anchor_view = toolbar_view->app_menu();
+    case ANCHOR_APP_MENU:
+      anchor_view = toolbar_view->app_menu_button();
       break;
   }
   CheckBubbleAndReferenceView(bubble, anchor_view);
@@ -100,13 +100,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
-                       ExtensionBubbleAnchoredToWrenchMenu) {
-  TestBubbleAnchoredToWrenchMenu();
+                       ExtensionBubbleAnchoredToAppMenu) {
+  TestBubbleAnchoredToAppMenu();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
-                       ExtensionBubbleAnchoredToWrenchMenuWithOtherAction) {
-  TestBubbleAnchoredToWrenchMenuWithOtherAction();
+                       ExtensionBubbleAnchoredToAppMenuWithOtherAction) {
+  TestBubbleAnchoredToAppMenuWithOtherAction();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,

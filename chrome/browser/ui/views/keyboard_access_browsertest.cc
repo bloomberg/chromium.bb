@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -81,17 +82,19 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
 
 class SendKeysMenuListener : public views::MenuListener {
  public:
-  SendKeysMenuListener(ToolbarView* toolbar_view,
+  SendKeysMenuListener(WrenchToolbarButton* app_menu_button,
                        Browser* browser,
                        bool test_dismiss_menu)
-      : toolbar_view_(toolbar_view), browser_(browser), menu_open_count_(0),
+      : app_menu_button_(app_menu_button),
+        browser_(browser),
+        menu_open_count_(0),
         test_dismiss_menu_(test_dismiss_menu) {
-    toolbar_view_->AddMenuListener(this);
+    app_menu_button_->AddMenuListener(this);
   }
 
   ~SendKeysMenuListener() override {
     if (test_dismiss_menu_)
-      toolbar_view_->RemoveMenuListener(this);
+      app_menu_button_->RemoveMenuListener(this);
   }
 
   int menu_open_count() const {
@@ -103,7 +106,7 @@ class SendKeysMenuListener : public views::MenuListener {
   void OnMenuOpened() override {
     menu_open_count_++;
     if (!test_dismiss_menu_) {
-      toolbar_view_->RemoveMenuListener(this);
+      app_menu_button_->RemoveMenuListener(this);
       // Press DOWN to select the first item, then RETURN to select it.
       SendKeyPress(browser_, ui::VKEY_DOWN);
       SendKeyPress(browser_, ui::VKEY_RETURN);
@@ -116,7 +119,7 @@ class SendKeysMenuListener : public views::MenuListener {
     }
   }
 
-  ToolbarView* toolbar_view_;
+  WrenchToolbarButton* app_menu_button_;
   Browser* browser_;
   // Keeps track of the number of times the menu was opened.
   int menu_open_count_;
@@ -168,7 +171,7 @@ class KeyboardAccessTest : public InProcessBrowserTest {
   void TestSystemMenuWithKeyboard();
 #endif
 
-  // Uses the keyboard to select the wrench menu i.e. with the F10 key.
+  // Uses the keyboard to select the app menu i.e. with the F10 key.
   // It verifies that the menu when dismissed by sending the ESC key it does
   // not display twice.
   void TestMenuKeyboardAccessAndDismiss();
@@ -198,15 +201,15 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
 
   BrowserView* browser_view = reinterpret_cast<BrowserView*>(
       browser()->window());
-  ToolbarView* toolbar_view = browser_view->GetToolbarView();
-  SendKeysMenuListener menu_listener(toolbar_view, browser(), false);
+  SendKeysMenuListener menu_listener(
+    browser_view->GetToolbarView()->app_menu_button(), browser(), false);
 
   if (focus_omnibox)
     browser()->window()->GetLocationBar()->FocusLocation(false);
 
 #if defined(OS_CHROMEOS)
-  // Chrome OS doesn't have a way to just focus the wrench menu, so we use Alt+F
-  // to bring up the menu.
+  // Chrome OS doesn't have a way to just focus the app menu, so we use Alt+F to
+  // bring up the menu.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_F, false, shift, true, false));
 #else
@@ -310,8 +313,8 @@ void KeyboardAccessTest::TestMenuKeyboardAccessAndDismiss() {
 
   BrowserView* browser_view = reinterpret_cast<BrowserView*>(
       browser()->window());
-  ToolbarView* toolbar_view = browser_view->GetToolbarView();
-  SendKeysMenuListener menu_listener(toolbar_view, browser(), true);
+  SendKeysMenuListener menu_listener(
+    browser_view->GetToolbarView()->app_menu_button(), browser(), true);
 
   browser()->window()->GetLocationBar()->FocusLocation(false);
 

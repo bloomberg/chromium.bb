@@ -193,8 +193,9 @@ void SessionCrashedBubbleView::ShowForReal(
     return;
   }
 
-  views::View* anchor_view =
-      BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->app_menu();
+  views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)
+                                 ->toolbar()
+                                 ->app_menu_button();
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
 

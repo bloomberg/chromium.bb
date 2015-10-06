@@ -37,7 +37,7 @@ views::View* GetAnchor(NewCreditCardBubbleController* controller) {
   if (!browser)
     return NULL;
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  return browser_view->GetToolbarView()->app_menu();
+  return browser_view->GetToolbarView()->app_menu_button();
 }
 
 views::BubbleBorder::Arrow GetArrow(NewCreditCardBubbleController* controller) {
