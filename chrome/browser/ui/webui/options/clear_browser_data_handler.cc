@@ -18,6 +18,7 @@
 #include "chrome/browser/browsing_data/browsing_data_counter.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/history_counter.h"
 #include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -77,9 +78,11 @@ void ClearBrowserDataHandler::InitializeHandler() {
                  base::Unretained(this)));
 
   if (AreCountersEnabled()) {
-    AddCounter(
-        make_scoped_ptr(new PasswordsCounter()), IDS_DEL_PASSWORDS_COUNTER);
-    // TODO(msramek): Add counters for browsing history and cache.
+    AddCounter(make_scoped_ptr(new PasswordsCounter()),
+               IDS_DEL_PASSWORDS_COUNTER);
+    AddCounter(make_scoped_ptr(new HistoryCounter()),
+               IDS_DEL_BROWSING_HISTORY_COUNTER);
+    // TODO(msramek): Add a counter for cache.
   }
 
   if (IsSupportStringSimplified()) {
