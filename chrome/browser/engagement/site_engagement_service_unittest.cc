@@ -741,6 +741,45 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
   }
 }
 
+// Expect that history can be cleared for given origins.
+TEST_F(SiteEngagementServiceTest, ClearHistoryForURLs) {
+  SiteEngagementService* service =
+      SiteEngagementServiceFactory::GetForProfile(profile());
+
+  GURL url1("https://www.google.com/");
+  GURL url2("http://www.google.com/");
+  GURL url3("http://www.example.com/");
+
+  EXPECT_EQ(0u, service->GetScoreMap().size());
+
+  service->AddPoints(url1, 5.0);
+  EXPECT_EQ(5.0, service->GetScore(url1));
+  service->AddPoints(url2, 5.0);
+  EXPECT_EQ(5.0, service->GetScore(url2));
+  service->AddPoints(url3, 5.0);
+  EXPECT_EQ(5.0, service->GetScore(url3));
+  EXPECT_EQ(3u, service->GetScoreMap().size());
+
+  // Delete 2 of the origins, leaving one left.
+  std::set<GURL> origins_to_clear;
+  origins_to_clear.insert(url1);
+  origins_to_clear.insert(url3);
+
+  SiteEngagementService::ClearHistoryForURLs(profile(), origins_to_clear);
+
+  std::map<GURL, double> score_map = service->GetScoreMap();
+  EXPECT_EQ(1u, score_map.size());
+  EXPECT_DOUBLE_EQ(5.0, score_map[url2]);
+
+  // Ensure nothing bad happens when URLs in the clear list are not in the site
+  // engagement service.
+  SiteEngagementService::ClearHistoryForURLs(profile(), origins_to_clear);
+
+  score_map = service->GetScoreMap();
+  EXPECT_EQ(1u, score_map.size());
+  EXPECT_DOUBLE_EQ(5.0, score_map[url2]);
+}
+
 TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
   AddTab(browser(), GURL("about:blank"));
   GURL url("https://www.google.com/");

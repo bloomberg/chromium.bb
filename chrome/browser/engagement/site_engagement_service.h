@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_SERVICE_H_
 
 #include <map>
+#include <set>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -122,6 +123,10 @@ class SiteEngagementService : public KeyedService,
   // Returns whether or not the SiteEngagementService is enabled.
   static bool IsEnabled();
 
+  // Clears engagement scores for the given origins.
+  static void ClearHistoryForURLs(Profile* profile,
+                                  const std::set<GURL>& origins);
+
   explicit SiteEngagementService(Profile* profile);
   ~SiteEngagementService() override;
 
@@ -143,6 +148,7 @@ class SiteEngagementService : public KeyedService,
  private:
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CleanupEngagementScores);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ClearHistoryForURLs);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetMedianEngagement);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalNavigationPoints);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalUserInputPoints);

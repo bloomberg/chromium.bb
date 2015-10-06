@@ -206,6 +206,25 @@ bool SiteEngagementService::IsEnabled() {
       switches::kEnableSiteEngagementService);
 }
 
+// static
+void SiteEngagementService::ClearHistoryForURLs(Profile* profile,
+                                                const std::set<GURL>& origins) {
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+
+  for (const GURL& origin_url : origins) {
+    ContentSettingsPattern pattern(
+        ContentSettingsPattern::FromURLNoWildcard(origin_url));
+    if (!pattern.IsValid())
+      continue;
+
+    settings_map->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
+                                    CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+                                    std::string(), nullptr);
+  }
+  settings_map->FlushLossyWebsiteSettings();
+}
+
 SiteEngagementService::SiteEngagementService(Profile* profile)
     : SiteEngagementService(profile, make_scoped_ptr(new base::DefaultClock)) {
   content::BrowserThread::PostAfterStartupTask(

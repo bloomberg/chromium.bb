@@ -23,6 +23,7 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -683,8 +684,10 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
   }
 #endif
 
-  for (const history::ExpireHistoryArgs& expire_entry : expire_list)
+  for (const history::ExpireHistoryArgs& expire_entry : expire_list) {
     AppBannerSettingsHelper::ClearHistoryForURLs(profile, expire_entry.urls);
+    SiteEngagementService::ClearHistoryForURLs(profile, expire_entry.urls);
+  }
 }
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(
