@@ -43,6 +43,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -176,6 +177,7 @@ int main(int argc, char *argv[]) {
           << " initial_mtu: " << FLAGS_initial_mtu;
 
   base::AtExitManager exit_manager;
+  base::MessageLoopForIO message_loop;
 
   // Determine IP address to connect to from supplied hostname.
   net::IPAddressNumber ip_addr;

@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "net/base/net_util.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_connection.h"
@@ -339,6 +340,7 @@ bool QuicClient::WaitForEvents() {
   DCHECK(connected());
 
   epoll_server_->WaitForEventsAndExecuteCallbacks();
+  base::RunLoop().RunUntilIdle();
 
   DCHECK(session() != nullptr);
   if (!connected() &&
