@@ -40,10 +40,10 @@ namespace blink {
 class Document;
 class DocumentParser;
 
-class DocumentWriter : public RefCountedWillBeGarbageCollectedFinalized<DocumentWriter> {
+class DocumentWriter final : public RefCountedWillBeGarbageCollectedFinalized<DocumentWriter> {
     WTF_MAKE_NONCOPYABLE(DocumentWriter);
 public:
-    static PassRefPtrWillBeRawPtr<DocumentWriter> create(Document*, ParserSynchronizationPolicy, const AtomicString& mimeType = emptyAtom, const AtomicString& encoding = emptyAtom);
+    static PassRefPtrWillBeRawPtr<DocumentWriter> create(Document*, ParserSynchronizationPolicy, const AtomicString& mimeType, const AtomicString& encoding);
 
     ~DocumentWriter();
     DECLARE_TRACE();
