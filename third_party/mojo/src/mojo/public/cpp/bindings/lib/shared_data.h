@@ -5,6 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_SHARED_DATA_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_SHARED_DATA_H_
 
+#include <assert.h>
+
+#include "mojo/public/cpp/bindings/lib/thread_checker.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -53,8 +56,12 @@ class SharedData {
     Holder() : value(), ref_count_(1) {}
     Holder(const T& value) : value(value), ref_count_(1) {}
 
-    void Retain() { ++ref_count_; }
+    void Retain() {
+      assert(thread_checker_.CalledOnValidThread());
+      ++ref_count_;
+    }
     void Release() {
+      assert(thread_checker_.CalledOnValidThread());
       if (--ref_count_ == 0)
         delete this;
     }
@@ -63,6 +70,7 @@ class SharedData {
 
    private:
     int ref_count_;
+    ThreadChecker thread_checker_;
     MOJO_DISALLOW_COPY_AND_ASSIGN(Holder);
   };
 

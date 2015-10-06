@@ -81,6 +81,9 @@ mojo_sdk_source_set("callback") {
     "lib/shared_data.h",
     "lib/shared_ptr.h",
     "lib/template_util.h",
+    "lib/thread_checker.h",
+    "lib/thread_checker_posix.cc",
+    "lib/thread_checker_posix.h",
   ]
 
   mojo_sdk_deps = [ "mojo/public/cpp/system" ]

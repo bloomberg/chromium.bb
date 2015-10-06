@@ -93,11 +93,13 @@ Router::~Router() {
 }
 
 bool Router::Accept(Message* message) {
+  MOJO_DCHECK(thread_checker_.CalledOnValidThread());
   MOJO_DCHECK(!message->has_flag(kMessageExpectsResponse));
   return connector_.Accept(message);
 }
 
 bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
+  MOJO_DCHECK(thread_checker_.CalledOnValidThread());
   MOJO_DCHECK(message->has_flag(kMessageExpectsResponse));
 
   // Reserve 0 in case we want it to convey special meaning in the future.
@@ -115,11 +117,13 @@ bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
 }
 
 void Router::EnableTestingMode() {
+  MOJO_DCHECK(thread_checker_.CalledOnValidThread());
   testing_mode_ = true;
   connector_.set_enforce_errors_from_incoming_receiver(false);
 }
 
 bool Router::HandleIncomingMessage(Message* message) {
+  MOJO_DCHECK(thread_checker_.CalledOnValidThread());
   if (message->has_flag(kMessageExpectsResponse)) {
     if (incoming_receiver_) {
       MessageReceiverWithStatus* responder = new ResponderThunk(weak_self_);
