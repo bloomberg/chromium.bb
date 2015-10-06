@@ -125,6 +125,9 @@ class PasswordStore : protected PasswordStoreSync,
   // platforms that support prompting the user for access (such as Mac OS).
   // NOTE: This means that this method can return different results depending
   // on the value of |prompt_policy|.
+  // TODO(engedy): Currently, this will not return federated logins saved from
+  // Android applications that are affiliated with the realm of |form|. Need to
+  // decide if this is the desired behavior. See: https://crbug.com/539844.
   virtual void GetLogins(const autofill::PasswordForm& form,
                          AuthorizationPromptPolicy prompt_policy,
                          PasswordStoreConsumer* consumer);

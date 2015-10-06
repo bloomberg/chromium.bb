@@ -508,6 +508,13 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
        "", "", L"", L"", L"",
        L"username_value_4",
        L"", true, true, 1},
+      // Federated credential for this second Android application; this should
+      // not be returned.
+      {PasswordForm::SCHEME_HTML,
+       kTestAndroidRealm2,
+       "", "", L"", L"", L"",
+       L"username_value_4b",
+       kTestingFederatedLoginMarker, true, true, 1},
       // Credential for an unrelated Android application.
       {PasswordForm::SCHEME_HTML,
        kTestUnrelatedAndroidRealm,
