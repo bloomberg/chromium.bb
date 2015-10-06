@@ -776,9 +776,8 @@ Status WritePrefsFile(
     const base::FilePath& path) {
   int code;
   std::string error_msg;
-  scoped_ptr<base::Value> template_value(
-      base::JSONReader::DeprecatedReadAndReturnError(template_string, 0, &code,
-                                                     &error_msg));
+  scoped_ptr<base::Value> template_value = base::JSONReader::ReadAndReturnError(
+      template_string, 0, &code, &error_msg);
   base::DictionaryValue* prefs;
   if (!template_value || !template_value->GetAsDictionary(&prefs)) {
     return Status(kUnknownError,

@@ -191,8 +191,8 @@ TEST(PrepareUserDataDir, CustomPrefs) {
       temp_dir.path().Append(chrome::kLocalStateFilename);
   std::string local_state_str;
   ASSERT_TRUE(base::ReadFileToString(local_state_file, &local_state_str));
-  scoped_ptr<base::Value> local_state_value(
-      base::JSONReader::DeprecatedRead(local_state_str));
+  scoped_ptr<base::Value> local_state_value =
+      base::JSONReader::Read(local_state_str);
   const base::DictionaryValue* local_state_dict = NULL;
   ASSERT_TRUE(local_state_value->GetAsDictionary(&local_state_dict));
   AssertEQ(*local_state_dict, "myLocalKey", "ok");

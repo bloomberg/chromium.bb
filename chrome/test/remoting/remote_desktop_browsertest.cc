@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -850,16 +851,16 @@ void RemoteDesktopBrowserTest::DismissHostVersionWarningIfVisible() {
 }
 
 void RemoteDesktopBrowserTest::SetUserNameAndPassword(
-    const base::FilePath &accounts_file_path, const std::string& account_type) {
-
+    const base::FilePath& accounts_file_path,
+    const std::string& account_type) {
   // Read contents of accounts file, using its absolute path.
   base::FilePath absolute_path = base::MakeAbsoluteFilePath(accounts_file_path);
   std::string accounts_info;
   ASSERT_TRUE(base::ReadFileToString(absolute_path, &accounts_info));
 
   // Get the root dictionary from the input json file contents.
-  scoped_ptr<base::Value> root(base::JSONReader::DeprecatedRead(
-      accounts_info, base::JSON_ALLOW_TRAILING_COMMAS));
+  scoped_ptr<base::Value> root =
+      base::JSONReader::Read(accounts_info, base::JSON_ALLOW_TRAILING_COMMAS);
 
   const base::DictionaryValue* root_dict = NULL;
   ASSERT_TRUE(root.get() && root->GetAsDictionary(&root_dict));
