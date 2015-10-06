@@ -46169,6 +46169,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Tab.Discarding" enum="TabDiscardingEvents">
+  <obsolete>
+    Deprecated 10/2015, not needed anymore.
+  </obsolete>
   <owner>georgesak@chromium.org</owner>
   <summary>
     Metric to track counts of actions related to tab discarding. Namely, we get
@@ -46179,6 +46182,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Tab.Discarding.DiscardCount" units="Discards">
+  <obsolete>
+    Deprecated 10/2015, and replaced by TabManager.Discarding.DiscardCount.
+  </obsolete>
   <owner>georgesak@chromium.org</owner>
   <summary>
     Metric to track the number of discards tabs have gone through. Each time a
@@ -46397,6 +46403,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TabManager.Discarding.DiscardCount" units="Discards">
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Cumulative number of tabs discarded due to low memory conditions, recorded
+    once per tab discard event.  For example, a user who had 3 tabs discarded
+    records a count in the 1 bin, 2 bin and 3 bin.  Thus each bin N is the
+    number of sessions where users experienced N or more tab discard events.
+  </summary>
+</histogram>
+
+<histogram name="TabManager.Discarding.ReloadCount" units="Reloads">
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Cumulative number of discarded tabs that have been reloaded by the user,
+    recorded once per tab discard event. For example, a user who had 3 tabs
+    reloaded records a count in the 1 bin, 2 bin and 3 bin. Thus each bin N is
+    the number of sessions where users experienced N or more tab reload events.
+  </summary>
+</histogram>
+
 <histogram name="Tabs.CountAtResume" units="tabs">
   <owner>lliabraa@chromium.org</owner>
   <summary>
@@ -46411,6 +46437,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Tabs.Discard.DiscardCount">
+  <obsolete>
+    Deprecated 10/2015, and replaced by TabManager.Discarding.DiscardCount.
+  </obsolete>
   <owner>jamescook@chromium.org</owner>
   <summary>
     Cumulative number of tabs discarded due to low memory conditions, recorded
@@ -46520,6 +46549,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Tabs.Discard.ReloadCount">
+  <obsolete>
+    Deprecated 10/2015, and replaced by TabManager.Discarding.ReloadCount.
+  </obsolete>
   <owner>jamescook@chromium.org</owner>
   <summary>
     Cumulative number of times a tab was reloaded because it was discarded and
