@@ -2233,17 +2233,7 @@ int LayoutBlock::baselinePosition(FontBaseline baselineType, bool firstLine, Lin
         if (style()->hasAppearance() && !LayoutTheme::theme().isControlContainer(style()->appearance()))
             return LayoutTheme::theme().baselinePosition(this);
 
-        // CSS2.1 states that the baseline of an inline block is the baseline of the last line box in
-        // the normal flow.
-        // We give up on finding a baseline if we have a vertical scrollbar, or if we are scrolled
-        // vertically (e.g., an overflow:hidden block that has had scrollTop moved).
-        bool ignoreBaseline = (layer() && layer()->scrollableArea()
-            && (direction == HorizontalLine
-                ? (layer()->scrollableArea()->verticalScrollbar() || layer()->scrollableArea()->scrollYOffset())
-                : (layer()->scrollableArea()->horizontalScrollbar() || layer()->scrollableArea()->scrollXOffset())))
-            || (isWritingModeRoot() && !isRubyRun());
-
-        int baselinePos = ignoreBaseline ? -1 : inlineBlockBaseline(direction);
+        int baselinePos = (isWritingModeRoot() && !isRubyRun()) ? -1 : inlineBlockBaseline(direction);
 
         if (isDeprecatedFlexibleBox()) {
             // Historically, we did this check for all baselines. But we can't
@@ -2299,6 +2289,15 @@ int LayoutBlock::firstLineBoxBaseline() const
 
 int LayoutBlock::inlineBlockBaseline(LineDirectionMode direction) const
 {
+    // CSS2.1 states that the baseline of an 'inline-block' is:
+    // the baseline of the last line box in the normal flow, unless it has
+    // either no in-flow line boxes or if its 'overflow' property has a computed
+    // value other than 'visible', in which case the baseline is the bottom
+    // margin edge.
+
+    // TODO(jchaffraix): A lot of sub-classes overriding this funtion want to
+    // ignore overflow for baseline computation. Expose a function to do so and
+    // merge this function with lastLineBoxBaseline.
     if (!style()->isOverflowVisible()) {
         // We are not calling LayoutBox::baselinePosition here because the caller should add the margin-top/margin-right, not us.
         return direction == HorizontalLine ? size().height() + marginBottom() : size().width() + marginLeft();
