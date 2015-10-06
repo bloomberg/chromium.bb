@@ -15,13 +15,14 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
 namespace content {
 
+class ServiceWorkerCacheWriter;
 class ServiceWorkerContextCore;
-class ServiceWorkerResponseWriter;
 class ServiceWorkerVersions;
 
 // A URLRequestJob derivative used to cache the main script
@@ -58,10 +59,6 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
                            UpdateAfter24Hours);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateForceBypassCache);
-  class NetDataConsumer;
-  class PassThroughConsumer;
-  class Comparer;
-  class Copier;
 
   ~ServiceWorkerWriteToCacheJob() override;
 
@@ -86,14 +83,12 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
                                     int buf_size,
                                     int* bytes_read);
 
-  void CommitHeadersAndNotifyHeadersComplete();
-  void WriteHeaders(const base::Closure& callback);
-  void OnWriteHeadersComplete(const base::Closure& callback, int result);
-  void WriteData(net::IOBuffer* buf,
-                 int amount_to_write,
-                 const base::Callback<void(int result)>& callback);
-  void OnWriteDataComplete(const base::Callback<void(int result)>& callback,
-                           int result);
+  // Callbacks for writing headers and data via |cache_writer_|. Note that since
+  // the MaybeWriteHeaders and MaybeWriteData methods on |cache_writer_| are
+  // guaranteed not to do short writes, these functions only receive a
+  // net::Error indicating success or failure, not a count of bytes written.
+  void OnWriteHeadersComplete(net::Error error);
+  void OnWriteDataComplete(net::Error error);
 
   // net::URLRequest::Delegate overrides that observe the net request.
   void OnReceivedRedirect(net::URLRequest* request,
@@ -113,19 +108,22 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
 
   bool CheckPathRestriction(net::URLRequest* request);
 
-  void SetPendingIO();
-  void ClearPendingIO();
-  void OnPassThroughComplete();
-  void OnCompareComplete(int bytes_matched, bool is_equal);
-  void CopyIncumbent(int bytes_to_copy);
-  void OnCopyComplete(ServiceWorkerStatusCode status);
+  // Writes network data back to the script cache if needed, and notifies the
+  // script cache of fetch completion at EOF. This function might need to do
+  // asynchronous IO; if so, it signals this through setting the URLRequestJob's
+  // status to IO_PENDING. After this function returns, if the URLRequestJob
+  // isn't IO_PENDING, all of the data in |io_buffer_| has been written back to
+  // the script cache if necessary.
   void HandleNetData(int bytes_read);
 
-  void AsyncNotifyDoneHelper(const net::URLRequestStatus& status,
-                             const std::string& status_message);
+  void NotifyDoneHelper(const net::URLRequestStatus& status,
+                        const std::string& status_message);
 
   void NotifyFinishedCaching(net::URLRequestStatus status,
                              const std::string& status_message);
+
+  scoped_ptr<ServiceWorkerResponseReader> CreateCacheResponseReader();
+  scoped_ptr<ServiceWorkerResponseWriter> CreateCacheResponseWriter();
 
   ResourceType resource_type_;  // Differentiate main script and imports
   scoped_refptr<net::IOBuffer> io_buffer_;
@@ -138,7 +136,7 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   scoped_ptr<net::HttpResponseInfo> http_info_;
   scoped_ptr<ServiceWorkerResponseWriter> writer_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  scoped_ptr<NetDataConsumer> consumer_;
+  scoped_ptr<ServiceWorkerCacheWriter> cache_writer_;
   bool has_been_killed_;
   bool did_notify_started_;
   bool did_notify_finished_;
