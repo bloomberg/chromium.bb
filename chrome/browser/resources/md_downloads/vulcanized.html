@@ -3259,7 +3259,7 @@ paper-icon-button {
     </div>
     <div id="search">
       <cr-search-field id="search-input" i18n-values="label:search;clear-label:clearSearch"></cr-search-field>
-      <paper-menu-button id="more" horizontal-align="right">
+      <paper-menu-button id="more" horizontal-align="[[overflowAlign_]]">
         <paper-icon-button icon="more-vert" i18n-values="title:moreActions" class="dropdown-trigger"></paper-icon-button>
         <paper-menu class="dropdown-content">
           <paper-item class="clear-all" i18n-content="clearAll" on-click="onClearAllClick_"></paper-item>

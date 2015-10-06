@@ -7,6 +7,9 @@ cr.define('downloads', function() {
     is: 'downloads-toolbar',
 
     attached: function() {
+      // isRTL() only works after i18n_template.js runs to set <html dir>.
+      this.overflowAlign_ = isRTL() ? 'left' : 'right';
+
       /** @private {!SearchFieldDelegate} */
       this.searchFieldDelegate_ = new ToolbarSearchFieldDelegate(this);
       this.$['search-input'].setDelegate(this.searchFieldDelegate_);
@@ -18,6 +21,11 @@ cr.define('downloads', function() {
         type: Boolean,
         value: false,
         observer: 'onDownloadsShowingChange_',
+      },
+
+      overflowAlign_: {
+        type: String,
+        value: 'right',
       },
     },
 
