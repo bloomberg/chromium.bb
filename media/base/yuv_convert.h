@@ -142,13 +142,6 @@ MEDIA_EXPORT void ConvertRGB24ToYUV(const uint8* rgbframe,
                                     int ystride,
                                     int uvstride);
 
-MEDIA_EXPORT void ConvertYUY2ToYUV(const uint8* src,
-                                   uint8* yplane,
-                                   uint8* uplane,
-                                   uint8* vplane,
-                                   int width,
-                                   int height);
-
 // Empty SIMD register state after calling optimized scaler functions.
 MEDIA_EXPORT void EmptyRegisterState();
 

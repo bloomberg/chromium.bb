@@ -30,7 +30,6 @@ static const int kBpp = 4;
 // Surface sizes for various test files.
 static const int kYUV12Size = kSourceYSize * 12 / 8;
 static const int kYUV16Size = kSourceYSize * 16 / 8;
-static const int kYUY2Size =  kSourceYSize * 16 / 8;
 static const int kRGBSize = kSourceYSize * kBpp;
 static const int kRGBSizeScaled = kScaledWidth * kScaledHeight * kBpp;
 static const int kRGB24Size = kSourceYSize * 3;
@@ -82,10 +81,6 @@ static void ReadYV12AData(scoped_ptr<uint8[]>* data) {
 
 static void ReadRGB24Data(scoped_ptr<uint8[]>* data) {
   ReadData(FILE_PATH_LITERAL("bali_640x360_RGB24.rgb"), kRGB24Size, data);
-}
-
-static void ReadYUY2Data(scoped_ptr<uint8[]>* data) {
-  ReadData(FILE_PATH_LITERAL("bali_640x360_YUY2.yuv"), kYUY2Size, data);
 }
 
 #if defined(OS_ANDROID)
@@ -434,26 +429,6 @@ TEST(YUVConvertTest, RGB32ToYUV) {
   // Make sure error is within bound.
   DVLOG(1) << "Average error per channel: " << error / kRGBSize;
   EXPECT_GT(5, error / kRGBSize);
-}
-
-TEST(YUVConvertTest, YUY2ToYUV) {
-  // Allocate all surfaces.
-  scoped_ptr<uint8[]> yuy_bytes;
-  scoped_ptr<uint8[]> yuv_converted_bytes(new uint8[kYUV12Size]);
-
-  // Read YUY reference data from file.
-  ReadYUY2Data(&yuy_bytes);
-
-  // Convert to I420.
-  media::ConvertYUY2ToYUV(yuy_bytes.get(),
-                          yuv_converted_bytes.get(),
-                          yuv_converted_bytes.get() + kSourceUOffset,
-                          yuv_converted_bytes.get() + kSourceVOffset,
-                          kSourceWidth, kSourceHeight);
-
-  uint32 yuy_hash = DJB2Hash(yuv_converted_bytes.get(), kYUV12Size,
-                             kDJB2HashSeed);
-  EXPECT_EQ(666823187u, yuy_hash);
 }
 
 TEST(YUVConvertTest, DownScaleYUVToRGB32WithRect) {
