@@ -1956,8 +1956,9 @@ namespace gfx {
         file.write('  else if (%s) {\n  ' % (cond))
 
       WriteFuncBinding(file, known_as, version['name'])
-      if not 'is_optional' in func or not func['is_optional']:
-        file.write('DCHECK(fn.%sFn);\n' % known_as)
+      if options.validate_bindings:
+        if not 'is_optional' in func or not func['is_optional']:
+          file.write('DCHECK(fn.%sFn);\n' % known_as)
       file.write('}\n')
       i += 1
       first_version = False
@@ -2589,6 +2590,9 @@ def main(argv):
   parser.add_option('--generate-dchecks', action='store_true',
                     help='Generates DCHECKs into the logging functions '
                         'asserting no GL errors (useful for debugging)')
+  parser.add_option('--validate-bindings', action='store_true',
+                    help='Generate DCHECKs to validate function bindings '
+                         ' were correctly supplied (useful for debugging)')
 
   options, args = parser.parse_args(argv)
 

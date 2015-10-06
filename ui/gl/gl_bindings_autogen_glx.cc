@@ -140,14 +140,12 @@ void DriverGLX::InitializeExtensionBindings() {
   if (ext.b_GLX_EXT_texture_from_pixmap) {
     fn.glXBindTexImageEXTFn = reinterpret_cast<glXBindTexImageEXTProc>(
         GetGLProcAddress("glXBindTexImageEXT"));
-    DCHECK(fn.glXBindTexImageEXTFn);
   }
 
   debug_fn.glXCopySubBufferMESAFn = 0;
   if (ext.b_GLX_MESA_copy_sub_buffer) {
     fn.glXCopySubBufferMESAFn = reinterpret_cast<glXCopySubBufferMESAProc>(
         GetGLProcAddress("glXCopySubBufferMESA"));
-    DCHECK(fn.glXCopySubBufferMESAFn);
   }
 
   debug_fn.glXCreateContextAttribsARBFn = 0;
@@ -155,7 +153,6 @@ void DriverGLX::InitializeExtensionBindings() {
     fn.glXCreateContextAttribsARBFn =
         reinterpret_cast<glXCreateContextAttribsARBProc>(
             GetGLProcAddress("glXCreateContextAttribsARB"));
-    DCHECK(fn.glXCreateContextAttribsARBFn);
   }
 
   debug_fn.glXGetFBConfigFromVisualSGIXFn = 0;
@@ -163,49 +160,42 @@ void DriverGLX::InitializeExtensionBindings() {
     fn.glXGetFBConfigFromVisualSGIXFn =
         reinterpret_cast<glXGetFBConfigFromVisualSGIXProc>(
             GetGLProcAddress("glXGetFBConfigFromVisualSGIX"));
-    DCHECK(fn.glXGetFBConfigFromVisualSGIXFn);
   }
 
   debug_fn.glXGetMscRateOMLFn = 0;
   if (ext.b_GLX_OML_sync_control) {
     fn.glXGetMscRateOMLFn = reinterpret_cast<glXGetMscRateOMLProc>(
         GetGLProcAddress("glXGetMscRateOML"));
-    DCHECK(fn.glXGetMscRateOMLFn);
   }
 
   debug_fn.glXGetSyncValuesOMLFn = 0;
   if (ext.b_GLX_OML_sync_control) {
     fn.glXGetSyncValuesOMLFn = reinterpret_cast<glXGetSyncValuesOMLProc>(
         GetGLProcAddress("glXGetSyncValuesOML"));
-    DCHECK(fn.glXGetSyncValuesOMLFn);
   }
 
   debug_fn.glXReleaseTexImageEXTFn = 0;
   if (ext.b_GLX_EXT_texture_from_pixmap) {
     fn.glXReleaseTexImageEXTFn = reinterpret_cast<glXReleaseTexImageEXTProc>(
         GetGLProcAddress("glXReleaseTexImageEXT"));
-    DCHECK(fn.glXReleaseTexImageEXTFn);
   }
 
   debug_fn.glXSwapIntervalEXTFn = 0;
   if (ext.b_GLX_EXT_swap_control) {
     fn.glXSwapIntervalEXTFn = reinterpret_cast<glXSwapIntervalEXTProc>(
         GetGLProcAddress("glXSwapIntervalEXT"));
-    DCHECK(fn.glXSwapIntervalEXTFn);
   }
 
   debug_fn.glXSwapIntervalMESAFn = 0;
   if (ext.b_GLX_MESA_swap_control) {
     fn.glXSwapIntervalMESAFn = reinterpret_cast<glXSwapIntervalMESAProc>(
         GetGLProcAddress("glXSwapIntervalMESA"));
-    DCHECK(fn.glXSwapIntervalMESAFn);
   }
 
   debug_fn.glXWaitVideoSyncSGIFn = 0;
   if (ext.b_GLX_SGI_video_sync) {
     fn.glXWaitVideoSyncSGIFn = reinterpret_cast<glXWaitVideoSyncSGIProc>(
         GetGLProcAddress("glXWaitVideoSyncSGI"));
-    DCHECK(fn.glXWaitVideoSyncSGIFn);
   }
 
   if (g_debugBindingsInitialized)

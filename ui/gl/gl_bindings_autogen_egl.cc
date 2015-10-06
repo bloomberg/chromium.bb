@@ -123,7 +123,6 @@ void DriverEGL::InitializeExtensionBindings() {
     fn.eglGetPlatformDisplayEXTFn =
         reinterpret_cast<eglGetPlatformDisplayEXTProc>(
             GetGLProcAddress("eglGetPlatformDisplayEXT"));
-    DCHECK(fn.eglGetPlatformDisplayEXTFn);
   }
   std::string extensions(GetPlatformExtensions());
   extensions += " ";
@@ -161,14 +160,12 @@ void DriverEGL::InitializeExtensionBindings() {
       ext.b_EGL_KHR_gl_texture_2D_image) {
     fn.eglCreateImageKHRFn = reinterpret_cast<eglCreateImageKHRProc>(
         GetGLProcAddress("eglCreateImageKHR"));
-    DCHECK(fn.eglCreateImageKHRFn);
   }
 
   debug_fn.eglDestroyImageKHRFn = 0;
   if (ext.b_EGL_KHR_image || ext.b_EGL_KHR_image_base) {
     fn.eglDestroyImageKHRFn = reinterpret_cast<eglDestroyImageKHRProc>(
         GetGLProcAddress("eglDestroyImageKHR"));
-    DCHECK(fn.eglDestroyImageKHRFn);
   }
 
   debug_fn.eglGetSyncValuesCHROMIUMFn = 0;
@@ -176,14 +173,12 @@ void DriverEGL::InitializeExtensionBindings() {
     fn.eglGetSyncValuesCHROMIUMFn =
         reinterpret_cast<eglGetSyncValuesCHROMIUMProc>(
             GetGLProcAddress("eglGetSyncValuesCHROMIUM"));
-    DCHECK(fn.eglGetSyncValuesCHROMIUMFn);
   }
 
   debug_fn.eglPostSubBufferNVFn = 0;
   if (ext.b_EGL_NV_post_sub_buffer) {
     fn.eglPostSubBufferNVFn = reinterpret_cast<eglPostSubBufferNVProc>(
         GetGLProcAddress("eglPostSubBufferNV"));
-    DCHECK(fn.eglPostSubBufferNVFn);
   }
 
   debug_fn.eglQuerySurfacePointerANGLEFn = 0;
@@ -191,14 +186,12 @@ void DriverEGL::InitializeExtensionBindings() {
     fn.eglQuerySurfacePointerANGLEFn =
         reinterpret_cast<eglQuerySurfacePointerANGLEProc>(
             GetGLProcAddress("eglQuerySurfacePointerANGLE"));
-    DCHECK(fn.eglQuerySurfacePointerANGLEFn);
   }
 
   debug_fn.eglWaitSyncKHRFn = 0;
   if (ext.b_EGL_KHR_wait_sync) {
     fn.eglWaitSyncKHRFn = reinterpret_cast<eglWaitSyncKHRProc>(
         GetGLProcAddress("eglWaitSyncKHR"));
-    DCHECK(fn.eglWaitSyncKHRFn);
   }
 
   if (g_debugBindingsInitialized)
