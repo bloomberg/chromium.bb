@@ -21,10 +21,12 @@ ChannelManager::ChannelManager(
     ConnectionManager* connection_manager)
     : platform_support_(platform_support),
       io_thread_task_runner_(io_thread_task_runner),
-      connection_manager_(connection_manager) {
+      connection_manager_(connection_manager),
+      weak_factory_(this) {
   DCHECK(platform_support_);
   DCHECK(io_thread_task_runner_);
   // (|connection_manager_| may be null.)
+  weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
 ChannelManager::~ChannelManager() {
@@ -33,6 +35,7 @@ ChannelManager::~ChannelManager() {
   // (e.g., we may never have had any channels, or we may have manually shut all
   // the channels down).
   DCHECK(channels_.empty());
+  DCHECK(!weak_factory_.HasWeakPtrs());
 }
 
 void ChannelManager::ShutdownOnIOThread() {
@@ -46,6 +49,8 @@ void ChannelManager::ShutdownOnIOThread() {
 
   for (auto& channel : channels)
     channel.second->Shutdown();
+
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void ChannelManager::Shutdown(
@@ -129,7 +134,7 @@ void ChannelManager::ShutdownChannel(
   WillShutdownChannel(channel_id);
   bool ok = io_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(
-          &ChannelManager::ShutdownChannelHelper, base::Unretained(this),
+          &ChannelManager::ShutdownChannelHelper, weak_ptr_,
           channel_id, callback, callback_thread_task_runner));
   DCHECK(ok);
 }

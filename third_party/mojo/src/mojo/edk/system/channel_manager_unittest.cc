@@ -29,7 +29,9 @@ class ChannelManagerTest : public testing::Test {
         channel_manager_(&platform_support_,
                          message_loop_.task_runner(),
                          nullptr) {}
-  ~ChannelManagerTest() override {}
+  ~ChannelManagerTest() override {
+    channel_manager_.ShutdownOnIOThread();
+  }
 
  protected:
   ChannelManager& channel_manager() { return channel_manager_; }
