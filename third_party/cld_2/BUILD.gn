@@ -4,6 +4,14 @@
 
 import("//build/config/features.gni")
 
+declare_args() {
+  if (is_android || is_ios) {
+    cld2_table_size = 0  # Small, accurate tables
+  } else {
+    cld2_table_size = 2  # Larger, more accurate tables
+  }
+}
+
 gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ rebase_path("cld_2.gyp") ],
                           "scope",
@@ -30,8 +38,6 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
 #   components/translate/content/browser/browser_cld_utils.cc
 #   components/translate/content/renderer/renderer_cld_utils.cc
 cld2_platform_support = "static"
-
-cld2_table_size = 2
 
 config("cld2_data_warnings") {
   visibility = [ ":*" ]

@@ -125,12 +125,6 @@ declare_args() {
 #   2: Use only CLD2.
 cld_version = 2
 
-if (is_android || is_ios) {
-  cld2_table_size = 0  # Small, accurate tables
-} else {
-  cld2_table_size = 2  # Larger, more accurate tables
-}
-
 # libudev usage. This currently only affects the content layer.
 use_udev = is_linux && !is_chromecast
 
