@@ -35,6 +35,7 @@ class SESSIONS_EXPORT ContentLiveTab
   static ContentLiveTab* GetForWebContents(content::WebContents* web_contents);
 
   // LiveTab:
+  bool IsInitialNavigation() override;
   int GetCurrentEntryIndex() override;
   int GetPendingEntryIndex() override;
   sessions::SerializedNavigationEntry GetEntryAtIndex(int index) override;

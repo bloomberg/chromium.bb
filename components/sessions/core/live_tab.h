@@ -21,6 +21,7 @@ class SESSIONS_EXPORT LiveTab {
   virtual ~LiveTab();
 
   // Methods that return information about the navigation state of the tab.
+  virtual bool IsInitialNavigation() = 0;
   virtual int GetCurrentEntryIndex() = 0;
   virtual int GetPendingEntryIndex() = 0;
   virtual SerializedNavigationEntry GetEntryAtIndex(int index) = 0;

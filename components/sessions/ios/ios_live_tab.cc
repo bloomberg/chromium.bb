@@ -28,6 +28,10 @@ IOSLiveTab::IOSLiveTab(web::WebState* web_state) : web_state_(web_state) {}
 
 IOSLiveTab::~IOSLiveTab() {}
 
+bool IOSLiveTab::IsInitialNavigation() {
+  return navigation_manager()->GetEntryCount() == 0;
+}
+
 int IOSLiveTab::GetCurrentEntryIndex() {
   return navigation_manager()->GetCurrentEntryIndex();
 }
