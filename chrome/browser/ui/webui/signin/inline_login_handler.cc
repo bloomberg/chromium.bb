@@ -49,14 +49,6 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
 
   const GURL& current_url = web_ui()->GetWebContents()->GetURL();
   signin_metrics::Source source = signin::GetSourceForPromoURL(current_url);
-  if (source == signin_metrics::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ||
-      source == signin_metrics::SOURCE_AVATAR_BUBBLE_SIGN_IN ||
-      source == signin_metrics::SOURCE_REAUTH) {
-    // Drop the leading slash in the path.
-    params.SetString(
-        "gaiaPath",
-        GaiaUrls::GetInstance()->embedded_signin_url().path().substr(1));
-  }
 
   params.SetString(
       "continueUrl",
@@ -96,8 +88,7 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
   // TODO(rogerta): this needs to be passed on to gaia somehow.
   std::string read_only_email;
   net::GetValueForKeyInQuery(current_url, "readOnlyEmail", &read_only_email);
-  if (!read_only_email.empty())
-    params.SetString("readOnlyEmail", read_only_email);
+  params.SetBoolean("readOnlyEmail", !read_only_email.empty());
 
   SetExtraInitParams(params);
 

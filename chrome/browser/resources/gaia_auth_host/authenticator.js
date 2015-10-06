@@ -202,7 +202,7 @@ cr.define('cr.login', function() {
         this.continueUrl_.substring(0, this.continueUrl_.indexOf('?')) ||
         this.continueUrl_;
     this.isConstrainedWindow_ = data.constrained == '1';
-    this.isNewGaiaFlowChromeOS = data.isNewGaiaFlowChromeOS;
+    this.isNewGaiaFlow = data.isNewGaiaFlow;
     this.useEafe_ = data.useEafe || false;
     this.clientId_ = data.clientId;
     this.gapsCookie_ = data.gapsCookie;
@@ -218,7 +218,7 @@ cr.define('cr.login', function() {
         this.idpOrigin_.indexOf('https://') == 0;
     this.needPassword = !('needPassword' in data) || data.needPassword;
 
-    if (this.isNewGaiaFlowChromeOS) {
+    if (this.isNewGaiaFlow) {
       this.webview_.contextMenus.onShow.addListener(function(e) {
         e.preventDefault();
       });
@@ -247,13 +247,13 @@ cr.define('cr.login', function() {
 
   Authenticator.prototype.constructInitialFrameUrl_ = function(data) {
     var path = data.gaiaPath;
-    if (!path && this.isNewGaiaFlowChromeOS)
+    if (!path && this.isNewGaiaFlow)
       path = EMBEDDED_SETUP_CHROMEOS_ENDPOINT;
     if (!path)
       path = IDP_PATH;
     var url = this.idpOrigin_ + path;
 
-    if (this.isNewGaiaFlowChromeOS) {
+    if (this.isNewGaiaFlow) {
       if (data.chromeType)
         url = appendParam(url, 'chrometype', data.chromeType);
       if (data.clientId)
@@ -276,8 +276,27 @@ cr.define('cr.login', function() {
       url = appendParam(url, 'hl', data.hl);
     if (data.gaiaId)
       url = appendParam(url, 'user_id', data.gaiaId);
-    if (data.email)
-      url = appendParam(url, 'Email', data.email);
+    if (data.email) {
+      // The email fields allow for the following possibilities:
+      //
+      // 1/ If neither Email nor email_hint is supplied, then the email text
+      // field is blank and the user must type an email to proceed.
+      //
+      // 2/ If Email is supplied, then the email is hardcoded and the user
+      // cannot change it.  The user is asked for password.  This is useful for
+      // re-auth scenarios, where chrome needs the user to authenticate for a
+      // specific account and only that  account.
+      //
+      // 3/ If email_hint is supplied, gaia will prefill the email text field
+      // using the given email address, but the user can still change it and
+      // then proceed.  This is used on desktop when the user disconnects their
+      // profile then reconnects, to encourage them to use the same account.
+      if (data.readOnlyEmail) {
+        url = appendParam(url, 'Email', data.email);
+      } else {
+        url = appendParam(url, 'email_hint', data.email);
+      }
+    }
     if (this.isConstrainedWindow_)
       url = appendParam(url, 'source', CONSTRAINED_FLOW_SOURCE);
     if (data.flow)
@@ -397,7 +416,7 @@ cr.define('cr.login', function() {
         var location = decodeURIComponent(header.value);
         this.chooseWhatToSync_ = !!location.match(/(\?|&)source=3($|&)/);
       } else if (
-          this.isNewGaiaFlowChromeOS && headerName == SET_COOKIE_HEADER) {
+          this.isNewGaiaFlow && headerName == SET_COOKIE_HEADER) {
         var headerValue = header.value;
         if (headerValue.indexOf(OAUTH_CODE_COOKIE + '=', 0) == 0) {
           this.oauthCode_ =
@@ -444,7 +463,7 @@ cr.define('cr.login', function() {
   Authenticator.prototype.onBeforeSendHeaders_ = function(details) {
     // We should re-send cookie if first request was unsuccessful (i.e. no new
     // GAPS cookie was received).
-    if (this.isNewGaiaFlowChromeOS && this.gapsCookie_ &&
+    if (this.isNewGaiaFlow && this.gapsCookie_ &&
         (!this.gapsCookieSent_ || !this.newGapsCookie_)) {
       var headers = details.requestHeaders;
       var found = false;
@@ -742,10 +761,8 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onLoadCommit_ = function(e) {
-    if (this.oauthCode_) {
-      this.skipForNow_ = true;
+    if (this.oauthCode_)
       this.maybeCompleteAuth_();
-    }
   };
 
   /**

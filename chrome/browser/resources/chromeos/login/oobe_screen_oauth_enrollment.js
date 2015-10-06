@@ -184,7 +184,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       gaiaParams.gaiaUrl = data.gaiaUrl;
       gaiaParams.clientId = data.clientId;
       gaiaParams.gaiaPath = 'embedded/setup/chromeos';
-      gaiaParams.isNewGaiaFlowChromeOS = true;
+      gaiaParams.isNewGaiaFlow = true;
       gaiaParams.needPassword = false;
       if (data.management_domain) {
         gaiaParams.enterpriseDomain = data.management_domain;

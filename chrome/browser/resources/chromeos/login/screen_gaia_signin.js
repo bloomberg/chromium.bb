@@ -504,7 +504,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (this.isNewGaiaFlow) {
         $('inner-container').classList.add('new-gaia-flow');
         params.chromeType = data.chromeType;
-        params.isNewGaiaFlowChromeOS = true;
+        params.isNewGaiaFlow = true;
       }
 
       if (data.gaiaEndpoint)

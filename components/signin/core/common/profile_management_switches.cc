@@ -138,6 +138,11 @@ bool IsNewProfileManagementPreviewEnabled() {
   return false;
 }
 
+bool UsePasswordSeparatedSigninFlow() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePasswordSeparatedSigninFlow);
+}
+
 void EnableNewProfileManagementForTesting(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnableNewProfileManagement);
   DCHECK(!command_line->HasSwitch(switches::kDisableNewProfileManagement));

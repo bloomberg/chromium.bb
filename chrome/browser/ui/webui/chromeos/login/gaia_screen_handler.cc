@@ -209,6 +209,7 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
   params.SetBoolean("isShowUsers", context.show_users);
   params.SetBoolean("useOffline", context.use_offline);
   params.SetString("gaiaId", context.gaia_id);
+  params.SetBoolean("readOnlyEmail", true);
   params.SetString("email", context.email);
   params.SetBoolean("isEnrollingConsumerManagement",
                     is_enrolling_consumer_management);

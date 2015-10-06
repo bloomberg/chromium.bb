@@ -34,6 +34,7 @@ class GaiaUrls {
   const GURL& oauth_user_info_url() const;
   const GURL& oauth_revoke_token_url() const;
   const GURL& oauth1_login_url() const;
+  const GURL& password_combined_embedded_signin_url() const;
   const GURL& embedded_signin_url() const;
   const GURL& add_account_url() const;
 
@@ -85,6 +86,7 @@ class GaiaUrls {
   GURL oauth_revoke_token_url_;
   GURL oauth1_login_url_;
   GURL list_accounts_url_;
+  GURL password_combined_embedded_signin_url_;
   GURL embedded_signin_url_;
   GURL add_account_url_;
   GURL get_check_connection_info_url_;

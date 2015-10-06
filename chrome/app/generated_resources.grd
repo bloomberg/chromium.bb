@@ -13871,6 +13871,12 @@ After you create a new supervised user, you can manage their settings at any tim
       <message name="IDS_FLAGS_ENABLE_ACCOUNT_CONSISTENCY_DESCRIPTION" desc="Description for the flag to enable the account consistency between browser and cookie jar.">
         When enabled, the browser manages signing in and out of Google accounts.
       </message>
+      <message name="IDS_FLAGS_ENABLE_PASSWORD_SEPARATED_SIGNIN_FLOW_NAME" desc="Title for the flag to enable the new gaia password-separated sign in flow.">
+        Enable new gaia password-separated sign in flow
+      </message>
+      <message name="IDS_FLAGS_ENABLE_PASSWORD_SEPARATED_SIGNIN_FLOW_DESCRIPTION" desc="Description for the flag to enable the new gaia password-separated sign in flow.">
+        When enabled, signing in to the browser will use a new gaia password-separated sign in flow.
+      </message>
 
       <message name="IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_NAME" desc="Title for the flag to enable the google profile information">
         Enable Google profile name and icon
