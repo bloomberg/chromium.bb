@@ -18,3 +18,7 @@
 .more-a11y-link {
   margin-bottom: 10px;
 }
+
+.button-strip {
+  text-align: end;
+}

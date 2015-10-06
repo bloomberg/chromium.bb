@@ -65,6 +65,7 @@ h2 {
   padding: 8px;
 }
 
-.button-strip {
-  text-align: end;
+.button-row {
+  display: flex;
+  margin-top: 25px;
 }
