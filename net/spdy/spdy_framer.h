@@ -552,11 +552,11 @@ class NET_EXPORT_PRIVATE SpdyFramer {
       const char* data,
       size_t len);
 
-  // Updates the maximum size of header compression table.
-  void UpdateHeaderTableSizeSetting(uint32 value);
+  // Updates the maximum size of the header encoder compression table.
+  void UpdateHeaderEncoderTableSize(uint32 value);
 
-  // Returns bound of header compression table size.
-  size_t header_table_size_bound() const;
+  // Returns the maximum size of the header encoder compression table.
+  size_t header_encoder_table_size() const;
 
  protected:
   friend class HttpNetworkLayer;  // This is temporary for the server.
@@ -783,9 +783,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // If true, then ProcessInput returns after processing a full frame,
   // rather than reading all available input.
   bool process_single_input_frame_ = false;
-
-  // Last acknowledged value for SETTINGS_HEADER_TABLE_SIZE.
-  size_t header_table_size_bound_;
 };
 
 }  // namespace net

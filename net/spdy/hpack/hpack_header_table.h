@@ -51,7 +51,7 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   ~HpackHeaderTable();
 
   // Last-acknowledged value of SETTINGS_HEADER_TABLE_SIZE.
-  size_t settings_size_bound() { return settings_size_bound_; }
+  size_t settings_size_bound() const { return settings_size_bound_; }
 
   // Current and maximum estimated byte size of the table, as described in
   // 4.1. Notably, this is /not/ the number of entries in the table.

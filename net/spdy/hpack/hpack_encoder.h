@@ -60,6 +60,10 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   void SetCharCountsStorage(std::vector<size_t>* char_counts,
                             size_t* total_char_counts);
 
+  size_t CurrentHeaderTableSizeSetting() const {
+    return header_table_.settings_size_bound();
+  }
+
  private:
   typedef std::pair<base::StringPiece, base::StringPiece> Representation;
   typedef std::vector<Representation> Representations;

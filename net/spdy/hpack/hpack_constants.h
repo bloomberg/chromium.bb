@@ -41,6 +41,7 @@ struct HpackStaticEntry {
 class HpackHuffmanTable;
 class HpackStaticTable;
 
+// Defined in RFC 7540 section 6.5.2.
 const uint32 kDefaultHeaderTableSizeSetting = 4096;
 
 // Largest string literal an HpackDecoder/HpackEncoder will attempt to process
