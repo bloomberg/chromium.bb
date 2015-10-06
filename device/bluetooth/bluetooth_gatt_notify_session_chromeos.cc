@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
 namespace chromeos {
 
@@ -32,13 +32,12 @@ BluetoothGattNotifySessionChromeOS::BluetoothGattNotifySessionChromeOS(
   DCHECK(!characteristic_id_.empty());
   DCHECK(object_path_.IsValid());
 
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothGattCharacteristicClient()
-      ->AddObserver(this);
+  DBusThreadManager::Get()->GetBluetoothGattCharacteristicClient()->AddObserver(
+      this);
 }
 
 BluetoothGattNotifySessionChromeOS::~BluetoothGattNotifySessionChromeOS() {
-  bluez::BluezDBusManager::Get()
+  DBusThreadManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->RemoveObserver(this);
   Stop(base::Bind(&base::DoNothing));
@@ -59,12 +58,11 @@ bool BluetoothGattNotifySessionChromeOS::IsActive() {
   // actually active, since the characteristic might have stopped sending
   // notifications yet this method was called before we processed the
   // observer event (e.g. because somebody else called this method in their
-  // bluez::BluetoothGattCharacteristicClient::Observer implementation, which
-  // was
+  // BluetoothGattCharacteristicClient::Observer implementation, which was
   // called before ours). Check the client to see if notifications are still
   // being sent.
-  bluez::BluetoothGattCharacteristicClient::Properties* properties =
-      bluez::BluezDBusManager::Get()
+  BluetoothGattCharacteristicClient::Properties* properties =
+      DBusThreadManager::Get()
           ->GetBluetoothGattCharacteristicClient()
           ->GetProperties(object_path_);
   if (!properties || !properties->notifying.value())
@@ -117,8 +115,8 @@ void BluetoothGattNotifySessionChromeOS::GattCharacteristicPropertyChanged(
   if (!active_)
     return;
 
-  bluez::BluetoothGattCharacteristicClient::Properties* properties =
-      bluez::BluezDBusManager::Get()
+  BluetoothGattCharacteristicClient::Properties* properties =
+      DBusThreadManager::Get()
           ->GetBluetoothGattCharacteristicClient()
           ->GetProperties(object_path_);
   if (!properties) {

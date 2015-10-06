@@ -11,6 +11,11 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "chromeos/dbus/bluetooth_adapter_client.h"
+#include "chromeos/dbus/bluetooth_device_client.h"
+#include "chromeos/dbus/bluetooth_gatt_service_client.h"
+#include "chromeos/dbus/bluetooth_input_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_gatt_connection_chromeos.h"
@@ -20,11 +25,6 @@
 #include "device/bluetooth/bluetooth_socket_chromeos.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "device/bluetooth/dbus/bluetooth_adapter_client.h"
-#include "device/bluetooth/dbus/bluetooth_device_client.h"
-#include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
-#include "device/bluetooth/dbus/bluetooth_input_client.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using device::BluetoothDevice;
@@ -54,9 +54,10 @@ void ParseModalias(const dbus::ObjectPath& object_path,
                    uint16* vendor_id,
                    uint16* product_id,
                    uint16* device_id) {
-  bluez::BluetoothDeviceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
-          object_path);
+  chromeos::BluetoothDeviceClient::Properties* properties =
+      chromeos::DBusThreadManager::Get()
+          ->GetBluetoothDeviceClient()
+          ->GetProperties(object_path);
   DCHECK(properties);
 
   std::string modalias = properties->modalias.value();
@@ -151,14 +152,11 @@ BluetoothDeviceChromeOS::BluetoothDeviceChromeOS(
       ui_task_runner_(ui_task_runner),
       socket_thread_(socket_thread),
       weak_ptr_factory_(this) {
-  bluez::BluezDBusManager::Get()->GetBluetoothGattServiceClient()->AddObserver(
-      this);
+  DBusThreadManager::Get()->GetBluetoothGattServiceClient()->AddObserver(this);
 
   // Add all known GATT services.
   const std::vector<dbus::ObjectPath> gatt_services =
-      bluez::BluezDBusManager::Get()
-          ->GetBluetoothGattServiceClient()
-          ->GetServices();
+      DBusThreadManager::Get()->GetBluetoothGattServiceClient()->GetServices();
   for (std::vector<dbus::ObjectPath>::const_iterator it = gatt_services.begin();
        it != gatt_services.end(); ++it) {
     GattServiceAdded(*it);
@@ -166,9 +164,8 @@ BluetoothDeviceChromeOS::BluetoothDeviceChromeOS(
 }
 
 BluetoothDeviceChromeOS::~BluetoothDeviceChromeOS() {
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothGattServiceClient()
-      ->RemoveObserver(this);
+  DBusThreadManager::Get()->GetBluetoothGattServiceClient()->RemoveObserver(
+      this);
 
   // Copy the GATT services list here and clear the original so that when we
   // send GattServiceRemoved(), GetGattServices() returns no services.
@@ -184,8 +181,8 @@ BluetoothDeviceChromeOS::~BluetoothDeviceChromeOS() {
 }
 
 uint32 BluetoothDeviceChromeOS::GetBluetoothClass() const {
-  bluez::BluetoothDeviceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+  BluetoothDeviceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
   DCHECK(properties);
 
@@ -193,8 +190,8 @@ uint32 BluetoothDeviceChromeOS::GetBluetoothClass() const {
 }
 
 std::string BluetoothDeviceChromeOS::GetDeviceName() const {
-  bluez::BluetoothDeviceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+  BluetoothDeviceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
   DCHECK(properties);
 
@@ -214,8 +211,8 @@ void BluetoothDeviceChromeOS::DisconnectGatt() {
 }
 
 std::string BluetoothDeviceChromeOS::GetAddress() const {
-  bluez::BluetoothDeviceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+  BluetoothDeviceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
   DCHECK(properties);
 
@@ -248,8 +245,8 @@ uint16 BluetoothDeviceChromeOS::GetDeviceID() const {
 }
 
 bool BluetoothDeviceChromeOS::IsPaired() const {
-  bluez::BluetoothDeviceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+  BluetoothDeviceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
   DCHECK(properties);
 
@@ -260,8 +257,8 @@ bool BluetoothDeviceChromeOS::IsPaired() const {
 }
 
 bool BluetoothDeviceChromeOS::IsConnected() const {
-  bluez::BluetoothDeviceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+  BluetoothDeviceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
   DCHECK(properties);
 
@@ -274,8 +271,8 @@ bool BluetoothDeviceChromeOS::IsGattConnected() const {
 }
 
 bool BluetoothDeviceChromeOS::IsConnectable() const {
-  bluez::BluetoothInputClient::Properties* input_properties =
-      bluez::BluezDBusManager::Get()->GetBluetoothInputClient()->GetProperties(
+  BluetoothInputClient::Properties* input_properties =
+      DBusThreadManager::Get()->GetBluetoothInputClient()->GetProperties(
           object_path_);
   // GetProperties returns NULL when the device does not implement the given
   // interface. Non HID devices are normally connectable.
@@ -290,8 +287,8 @@ bool BluetoothDeviceChromeOS::IsConnecting() const {
 }
 
 BluetoothDeviceChromeOS::UUIDList BluetoothDeviceChromeOS::GetUUIDs() const {
-  bluez::BluetoothDeviceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+  BluetoothDeviceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
   DCHECK(properties);
 
@@ -307,8 +304,8 @@ BluetoothDeviceChromeOS::UUIDList BluetoothDeviceChromeOS::GetUUIDs() const {
 }
 
 int16 BluetoothDeviceChromeOS::GetInquiryRSSI() const {
-  bluez::BluetoothDeviceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+  BluetoothDeviceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
   DCHECK(properties);
 
@@ -319,8 +316,8 @@ int16 BluetoothDeviceChromeOS::GetInquiryRSSI() const {
 }
 
 int16 BluetoothDeviceChromeOS::GetInquiryTxPower() const {
-  bluez::BluetoothDeviceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+  BluetoothDeviceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
   DCHECK(properties);
 
@@ -346,7 +343,7 @@ void BluetoothDeviceChromeOS::GetConnectionInfo(
     const ConnectionInfoCallback& callback) {
   // DBus method call should gracefully return an error if the device is not
   // currently connected.
-  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetConnInfo(
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->GetConnInfo(
       object_path_, base::Bind(&BluetoothDeviceChromeOS::OnGetConnInfo,
                                weak_ptr_factory_.GetWeakPtr(), callback),
       base::Bind(&BluetoothDeviceChromeOS::OnGetConnInfoError,
@@ -370,7 +367,7 @@ void BluetoothDeviceChromeOS::Connect(
     // Initiate high-security connection with pairing.
     BeginPairing(pairing_delegate);
 
-    bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->Pair(
+    DBusThreadManager::Get()->GetBluetoothDeviceClient()->Pair(
         object_path_,
         base::Bind(&BluetoothDeviceChromeOS::OnPairDuringConnect,
                    weak_ptr_factory_.GetWeakPtr(), callback, error_callback),
@@ -386,7 +383,7 @@ void BluetoothDeviceChromeOS::Pair(
   DCHECK(pairing_delegate);
   BeginPairing(pairing_delegate);
 
-  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->Pair(
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->Pair(
       object_path_, base::Bind(&BluetoothDeviceChromeOS::OnPair,
                                weak_ptr_factory_.GetWeakPtr(), callback),
       base::Bind(&BluetoothDeviceChromeOS::OnPairError,
@@ -433,7 +430,7 @@ void BluetoothDeviceChromeOS::CancelPairing() {
   if (!canceled) {
     VLOG(1) << object_path_.value() << ": No pairing context or callback. "
             << "Sending explicit cancel";
-    bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->CancelPairing(
+    DBusThreadManager::Get()->GetBluetoothDeviceClient()->CancelPairing(
         object_path_, base::Bind(&base::DoNothing),
         base::Bind(&BluetoothDeviceChromeOS::OnCancelPairingError,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -449,7 +446,7 @@ void BluetoothDeviceChromeOS::CancelPairing() {
 void BluetoothDeviceChromeOS::Disconnect(const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
   VLOG(1) << object_path_.value() << ": Disconnecting";
-  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->Disconnect(
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->Disconnect(
       object_path_, base::Bind(&BluetoothDeviceChromeOS::OnDisconnect,
                                weak_ptr_factory_.GetWeakPtr(), callback),
       base::Bind(&BluetoothDeviceChromeOS::OnDisconnectError,
@@ -458,7 +455,7 @@ void BluetoothDeviceChromeOS::Disconnect(const base::Closure& callback,
 
 void BluetoothDeviceChromeOS::Forget(const ErrorCallback& error_callback) {
   VLOG(1) << object_path_.value() << ": Removing device";
-  bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->RemoveDevice(
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->RemoveDevice(
       adapter()->object_path(), object_path_, base::Bind(&base::DoNothing),
       base::Bind(&BluetoothDeviceChromeOS::OnForgetError,
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
@@ -537,10 +534,9 @@ void BluetoothDeviceChromeOS::GattServiceAdded(
     return;
   }
 
-  bluez::BluetoothGattServiceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()
-          ->GetBluetoothGattServiceClient()
-          ->GetProperties(object_path);
+  BluetoothGattServiceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothGattServiceClient()->GetProperties(
+          object_path);
   DCHECK(properties);
   if (properties->device.value() != object_path_) {
     VLOG(2) << "Remote GATT service does not belong to this device.";
@@ -607,7 +603,7 @@ void BluetoothDeviceChromeOS::ConnectInternal(
     const base::Closure& callback,
     const ConnectErrorCallback& error_callback) {
   VLOG(1) << object_path_.value() << ": Connecting";
-  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->Connect(
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->Connect(
       object_path_,
       base::Bind(&BluetoothDeviceChromeOS::OnConnect,
                  weak_ptr_factory_.GetWeakPtr(), after_pairing, callback),
@@ -735,7 +731,7 @@ void BluetoothDeviceChromeOS::SetTrusted() {
   // first; there's no harm in doing this and it solves any race conditions
   // with the property becoming true or false and this call happening before
   // we get the D-Bus signal about the earlier change.
-  bluez::BluezDBusManager::Get()
+  DBusThreadManager::Get()
       ->GetBluetoothDeviceClient()
       ->GetProperties(object_path_)
       ->trusted.Set(true, base::Bind(&BluetoothDeviceChromeOS::OnSetTrusted,

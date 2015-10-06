@@ -6,12 +6,12 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "chromeos/dbus/bluetooth_gatt_service_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_chromeos.h"
-#include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
 namespace chromeos {
 
@@ -41,15 +41,13 @@ BluetoothRemoteGattServiceChromeOS::BluetoothRemoteGattServiceChromeOS(
           << object_path.value() << ", UUID: " << GetUUID().canonical_value();
   DCHECK(adapter_);
 
-  bluez::BluezDBusManager::Get()->GetBluetoothGattServiceClient()->AddObserver(
+  DBusThreadManager::Get()->GetBluetoothGattServiceClient()->AddObserver(this);
+  DBusThreadManager::Get()->GetBluetoothGattCharacteristicClient()->AddObserver(
       this);
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothGattCharacteristicClient()
-      ->AddObserver(this);
 
   // Add all known GATT characteristics.
   const std::vector<dbus::ObjectPath>& gatt_chars =
-      bluez::BluezDBusManager::Get()
+      DBusThreadManager::Get()
           ->GetBluetoothGattCharacteristicClient()
           ->GetCharacteristics();
   for (std::vector<dbus::ObjectPath>::const_iterator iter = gatt_chars.begin();
@@ -58,10 +56,9 @@ BluetoothRemoteGattServiceChromeOS::BluetoothRemoteGattServiceChromeOS(
 }
 
 BluetoothRemoteGattServiceChromeOS::~BluetoothRemoteGattServiceChromeOS() {
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothGattServiceClient()
-      ->RemoveObserver(this);
-  bluez::BluezDBusManager::Get()
+  DBusThreadManager::Get()->GetBluetoothGattServiceClient()->RemoveObserver(
+      this);
+  DBusThreadManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->RemoveObserver(this);
 
@@ -84,10 +81,9 @@ std::string BluetoothRemoteGattServiceChromeOS::GetIdentifier() const {
 }
 
 device::BluetoothUUID BluetoothRemoteGattServiceChromeOS::GetUUID() const {
-  bluez::BluetoothGattServiceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()
-          ->GetBluetoothGattServiceClient()
-          ->GetProperties(object_path_);
+  BluetoothGattServiceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothGattServiceClient()->GetProperties(
+          object_path_);
   DCHECK(properties);
   return device::BluetoothUUID(properties->uuid.value());
 }
@@ -97,10 +93,9 @@ bool BluetoothRemoteGattServiceChromeOS::IsLocal() const {
 }
 
 bool BluetoothRemoteGattServiceChromeOS::IsPrimary() const {
-  bluez::BluetoothGattServiceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()
-          ->GetBluetoothGattServiceClient()
-          ->GetProperties(object_path_);
+  BluetoothGattServiceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothGattServiceClient()->GetProperties(
+          object_path_);
   DCHECK(properties);
   return properties->primary.value();
 }
@@ -234,10 +229,9 @@ void BluetoothRemoteGattServiceChromeOS::GattServicePropertyChanged(
 
   VLOG(1) << "Service property changed: \"" << property_name << "\", "
           << object_path.value();
-  bluez::BluetoothGattServiceClient::Properties* properties =
-      bluez::BluezDBusManager::Get()
-          ->GetBluetoothGattServiceClient()
-          ->GetProperties(object_path);
+  BluetoothGattServiceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothGattServiceClient()->GetProperties(
+          object_path);
   DCHECK(properties);
 
   if (property_name != properties->characteristics.name()) {
@@ -263,8 +257,8 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicAdded(
     return;
   }
 
-  bluez::BluetoothGattCharacteristicClient::Properties* properties =
-      bluez::BluezDBusManager::Get()
+  BluetoothGattCharacteristicClient::Properties* properties =
+      DBusThreadManager::Get()
           ->GetBluetoothGattCharacteristicClient()
           ->GetProperties(object_path);
   DCHECK(properties);
@@ -321,8 +315,8 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicPropertyChanged(
   // "Characteristic Extended Properties" descriptor. In this case, kick off
   // a service changed observer event to let observers refresh the
   // characteristics.
-  bluez::BluetoothGattCharacteristicClient::Properties* properties =
-      bluez::BluezDBusManager::Get()
+  BluetoothGattCharacteristicClient::Properties* properties =
+      DBusThreadManager::Get()
           ->GetBluetoothGattCharacteristicClient()
           ->GetProperties(object_path);
 

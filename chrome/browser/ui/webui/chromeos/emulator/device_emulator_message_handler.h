@@ -17,12 +17,9 @@ namespace dbus {
 class ObjectPath;
 }  // namespace dbus
 
-namespace bluez {
-class FakeBluetoothDeviceClient;
-}
-
 namespace chromeos {
 
+class FakeBluetoothDeviceClient;
 class FakeCrasAudioClient;
 class FakePowerManagerClient;
 
@@ -102,7 +99,7 @@ class DeviceEmulatorMessageHandler
   scoped_ptr<base::DictionaryValue> GetDeviceInfo(
       const dbus::ObjectPath& object_path);
 
-  bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
+  FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
   scoped_ptr<BluetoothObserver> bluetooth_observer_;
 
   FakeCrasAudioClient* fake_cras_audio_client_;
