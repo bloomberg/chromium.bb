@@ -18,7 +18,7 @@ class LayoutSVGModelObject;
 class LayoutView;
 
 class PaintInvalidationState {
-    STACK_ALLOCATED();
+    ALLOW_ONLY_INLINE_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
 public:
     PaintInvalidationState(PaintInvalidationState& next, LayoutBoxModelObject& layoutObject, const LayoutBoxModelObject& paintInvalidationContainer);

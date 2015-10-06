@@ -76,6 +76,7 @@
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/paint/ObjectPainter.h"
+#include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/style/ContentData.h"
 #include "core/style/ShadowList.h"
@@ -1432,6 +1433,29 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
     fullyInvalidatePaint(paintInvalidationContainer, invalidationReason, oldBounds, newBounds);
 
     return invalidationReason;
+}
+
+void LayoutObject::invalidatePaintIfNeededForSynchronizedPainting(const PaintInfo& paintInfo)
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+    ASSERT(document().lifecycle().state() == DocumentLifecycle::InPaint);
+    ASSERT(paintInfo.paintInvalidationState);
+    ASSERT(paintInfo.paintContainer());
+
+    DisplayItemList* displayItemList = paintInfo.context->displayItemList();
+    if (displayItemList->clientHasCheckedPaintInvalidation(displayItemClient())) {
+        ASSERT(displayItemList->clientCacheIsValid(displayItemClient())
+            == (invalidatePaintIfNeeded(*paintInfo.paintInvalidationState, *paintInfo.paintContainer()) == PaintInvalidationNone));
+        return;
+    }
+
+    PaintInvalidationReason reason = invalidatePaintIfNeeded(*paintInfo.paintInvalidationState, *paintInfo.paintContainer());
+    clearPaintInvalidationState(*paintInfo.paintInvalidationState);
+
+    if (reason == PaintInvalidationDelayedFull)
+        paintInfo.paintInvalidationState->pushDelayedPaintInvalidationTarget(*this);
+
+    displayItemList->setClientHasCheckedPaintInvalidation(displayItemClient());
 }
 
 PaintInvalidationReason LayoutObject::paintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,

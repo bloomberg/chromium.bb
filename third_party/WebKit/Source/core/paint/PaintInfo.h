@@ -55,6 +55,7 @@ struct PaintInfo {
         , rect(newRect)
         , phase(newPhase)
         , paintingRoot(newPaintingRoot)
+        , paintInvalidationState(nullptr)
         , m_paintContainer(newPaintContainer)
         , m_paintFlags(paintFlags)
         , m_globalPaintFlags(globalPaintFlags)
@@ -109,6 +110,8 @@ struct PaintInfo {
     IntRect rect; // dirty rect used for culling non-intersecting layoutObjects
     PaintPhase phase;
     LayoutObject* paintingRoot; // used to draw just one element and its visual kids
+    // TODO(wangxianzhu): Populate it.
+    PaintInvalidationState* paintInvalidationState;
 
 private:
     const LayoutBoxModelObject* m_paintContainer; // the box model object that originates the current painting

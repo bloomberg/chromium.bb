@@ -72,7 +72,7 @@ private:
         else
             ASSERT(!displayItemList->paintOffsetWasInvalidated(layoutObject.displayItemClient()) || !displayItemList->clientCacheIsValid(layoutObject.displayItemClient()));
 
-        layoutObject.setPreviousPaintOffset(paintOffset);
+        layoutObject.mutableForPainting().setPreviousPaintOffset(paintOffset);
     }
 
     Optional<DisplayItemCacheSkipper> m_cacheSkipper;

@@ -151,7 +151,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         // Set previousPaintOffset here in case that m_layoutBlock paints nothing and no
         // LayoutObjectDrawingRecorder updates its previousPaintOffset.
         // TODO(wangxianzhu): Integrate paint offset checking into new paint invalidation.
-        m_layoutBlock.setPreviousPaintOffset(paintOffset);
+        m_layoutBlock.mutableForPainting().setPreviousPaintOffset(paintOffset);
     }
 
     const PaintPhase paintPhase = paintInfo.phase;

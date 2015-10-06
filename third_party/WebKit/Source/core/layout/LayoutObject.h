@@ -1172,7 +1172,7 @@ public:
         ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
         return m_previousPositionFromPaintInvalidationBacking != uninitializedPaintOffset() && m_previousPositionFromPaintInvalidationBacking != newPaintOffset;
     }
-    void setPreviousPaintOffset(const LayoutPoint& paintOffset) const
+    void setPreviousPaintOffset(const LayoutPoint& paintOffset)
     {
         ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
         m_previousPositionFromPaintInvalidationBacking = paintOffset;
@@ -1226,6 +1226,20 @@ public:
 
     // Called before anonymousChild.setStyle(). Override to set custom styles for the child.
     virtual void updateAnonymousChildStyle(const LayoutObject& anonymousChild, ComputedStyle& style) const { }
+
+    // Painters can use const methods only, except for these explicitly declared methods.
+    class MutableForPainting {
+    public:
+        void setPreviousPaintOffset(const LayoutPoint& paintOffset) { m_layoutObject.setPreviousPaintOffset(paintOffset); }
+        void invalidatePaintIfNeeded(const PaintInfo& paintInfo) { m_layoutObject.invalidatePaintIfNeededForSynchronizedPainting(paintInfo); }
+
+    private:
+        friend class LayoutObject;
+        MutableForPainting(const LayoutObject& layoutObject) : m_layoutObject(const_cast<LayoutObject&>(layoutObject)) { }
+
+        LayoutObject& m_layoutObject;
+    };
+    MutableForPainting mutableForPainting() const { return MutableForPainting(*this); }
 
 protected:
     enum LayoutObjectType {
@@ -1358,6 +1372,7 @@ protected:
 
     virtual void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState);
     virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer);
+    void invalidatePaintIfNeededForSynchronizedPainting(const PaintInfo&);
 
     // When this object is invalidated for paint, this method is called to invalidate any DisplayItemClients
     // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, etc.,
@@ -1722,8 +1737,7 @@ private:
     // This point does *not* account for composited scrolling. See adjustInvalidationRectForCompositedScrolling().
     // For slimmingPaintOffsetCaching, this stores the previous paint offset.
     // TODO(wangxianzhu): Rename this to m_previousPaintOffset when we enable slimmingPaintOffsetCaching.
-    // TODO(wangxianzhu): Better mutation control for painting.
-    mutable LayoutPoint m_previousPositionFromPaintInvalidationBacking;
+    LayoutPoint m_previousPositionFromPaintInvalidationBacking;
 };
 
 // FIXME: remove this once the layout object lifecycle ASSERTS are no longer hit.

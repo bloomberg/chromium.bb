@@ -29,7 +29,7 @@ void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOf
         // Set previousPaintOffset here in case that m_layoutInline paints nothing and no
         // LayoutObjectDrawingRecorder updates its previousPaintOffset.
         // TODO(wangxianzhu): Integrate paint offset checking into new paint invalidation.
-        m_layoutInline.setPreviousPaintOffset(paintOffset);
+        m_layoutInline.mutableForPainting().setPreviousPaintOffset(paintOffset);
     }
 
     // FIXME: When Skia supports annotation rect covering (https://code.google.com/p/skia/issues/detail?id=3872),

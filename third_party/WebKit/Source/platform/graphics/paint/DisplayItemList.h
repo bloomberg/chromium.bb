@@ -179,6 +179,17 @@ public:
         return m_trackedPaintInvalidationObjects ? *m_trackedPaintInvalidationObjects : Vector<String>();
     }
 
+    bool clientHasCheckedPaintInvalidation(DisplayItemClient client) const
+    {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+        return m_clientsCheckedPaintInvalidation.contains(client);
+    }
+    void setClientHasCheckedPaintInvalidation(DisplayItemClient client)
+    {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+        m_clientsCheckedPaintInvalidation.add(client);
+    }
+
 protected:
     DisplayItemList()
         : m_currentDisplayItems(0)
@@ -194,6 +205,8 @@ private:
     void processNewItem(DisplayItem&);
 
     void updateValidlyCachedClientsIfNeeded() const;
+
+    void invalidateClient(const DisplayItemClientWrapper&);
 
 #ifndef NDEBUG
     WTF::String displayItemsAsDebugString(const DisplayItems&) const;
@@ -232,10 +245,15 @@ private:
 
     // Contains all clients having valid cached paintings if updated.
     // It's lazily updated in updateValidlyCachedClientsIfNeeded().
-    // FIXME: In the future we can replace this with client-side repaint flags
+    // TODO(wangxianzhu): In the future we can replace this with client-side repaint flags
     // to avoid the cost of building and querying the hash table.
     mutable HashSet<DisplayItemClient> m_validlyCachedClients;
     mutable bool m_validlyCachedClientsDirty;
+
+    // Used during painting. Contains clients that have checked paint invalidation and
+    // are known to be valid.
+    // TODO(wangxianzhu): Use client side flag to avoid const of hash table.
+    HashSet<DisplayItemClient> m_clientsCheckedPaintInvalidation;
 
 #if ENABLE(ASSERT)
     // Set of clients which had paint offset changes since the last commit. This is used for
