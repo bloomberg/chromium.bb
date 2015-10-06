@@ -28,12 +28,19 @@ class CC_SURFACES_EXPORT SurfaceHittest {
   explicit SurfaceHittest(SurfaceManager* manager);
   ~SurfaceHittest();
 
-  // Hittests against Surface with SurfaceId |surface_id|, return the contained
-  // surface that the point is hitting and the |transformed_point| in the
-  // surface space.
-  SurfaceId GetTargetSurfaceAtPoint(SurfaceId surface_id,
+  // Returns the target surface that falls underneath the provided |point|.
+  // Also returns the |transform| to convert the |point| to the target surface's
+  // space.
+  SurfaceId GetTargetSurfaceAtPoint(SurfaceId root_surface_id,
                                     const gfx::Point& point,
                                     gfx::Transform* transform);
+
+  // Returns whether the target surface falls inside the provide root surface.
+  // Returns the |transform| to convert points from the root surface coordinate
+  // space to the target surface coordinate space.
+  bool GetTransformToTargetSurface(SurfaceId root_surface_id,
+                                   SurfaceId target_surface_id,
+                                   gfx::Transform* transform);
 
  private:
   bool GetTargetSurfaceAtPointInternal(
@@ -42,6 +49,13 @@ class CC_SURFACES_EXPORT SurfaceHittest {
       const gfx::Point& point_in_root_target,
       std::set<const RenderPass*>* referenced_passes,
       SurfaceId* out_surface_id,
+      gfx::Transform* out_transform);
+
+  bool GetTransformToTargetSurfaceInternal(
+      SurfaceId root_surface_id,
+      SurfaceId target_surface_id,
+      const RenderPassId& render_pass_id,
+      std::set<const RenderPass*>* referenced_passes,
       gfx::Transform* out_transform);
 
   const RenderPass* GetRenderPassForSurfaceById(

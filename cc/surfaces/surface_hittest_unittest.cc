@@ -23,6 +23,35 @@ namespace cc {
 
 namespace {
 
+struct TestCase {
+  SurfaceId input_surface_id;
+  gfx::Point input_point;
+  SurfaceId expected_output_surface_id;
+  gfx::Point expected_output_point;
+};
+
+void RunTests(SurfaceManager* manager, TestCase* tests, size_t test_count) {
+  SurfaceHittest hittest(manager);
+  for (size_t i = 0; i < test_count; ++i) {
+    const TestCase& test = tests[i];
+    gfx::Point point(test.input_point);
+    gfx::Transform transform;
+    EXPECT_EQ(test.expected_output_surface_id,
+              hittest.GetTargetSurfaceAtPoint(test.input_surface_id, point,
+                                              &transform));
+    transform.TransformPoint(&point);
+    EXPECT_EQ(test.expected_output_point, point);
+
+    // Verify that GetTransformToTargetSurface returns true and returns the same
+    // transform as returned by GetTargetSurfaceAtPoint.
+    gfx::Transform target_transform;
+    EXPECT_TRUE(hittest.GetTransformToTargetSurface(
+        test.input_surface_id, test.expected_output_surface_id,
+        &target_transform));
+    EXPECT_EQ(transform, target_transform);
+  }
+}
+
 class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
  public:
   void ReturnResources(const ReturnedResourceArray& resources) override {}
@@ -178,16 +207,16 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface) {
   factory.Create(root_surface_id);
   factory.SubmitCompositorFrame(root_surface_id, root_frame.Pass(),
                                 SurfaceFactory::DrawCallback());
+  TestCase tests[] = {
+    {
+      root_surface_id,
+      gfx::Point(100, 100),
+      root_surface_id,
+      gfx::Point(100, 100)
+    },
+  };
 
-  {
-    SurfaceHittest hittest(&manager);
-    gfx::Point point(100, 100);
-    gfx::Transform transform;
-    EXPECT_EQ(root_surface_id, hittest.GetTargetSurfaceAtPoint(
-                                   root_surface_id, point, &transform));
-    transform.TransformPoint(&point);
-    EXPECT_EQ(gfx::Point(100, 100), point);
-  }
+  RunTests(&manager, tests, sizeof(tests) / sizeof(*tests));
 
   factory.Destroy(root_surface_id);
 }
@@ -209,9 +238,9 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
   gfx::Rect child_rect(200, 200);
   CreateSurfaceDrawQuad(root_pass,
                         gfx::Transform(1.0f, 0.0f, 0.0f, 50.0f,
-                                       0.0f, 1.0f, 0.0f, 50.0f,
-                                       0.0f, 0.0f, 1.0f, 0.0f,
-                                       0.0f, 0.0f, 0.0f, 1.0f),
+                                        0.0f, 1.0f, 0.0f, 50.0f,
+                                        0.0f, 0.0f, 1.0f, 0.0f,
+                                        0.0f, 0.0f, 0.0f, 1.0f),
                         root_rect,
                         child_rect,
                         child_surface_id);
@@ -232,8 +261,10 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
   gfx::Rect child_solid_quad_rect(100, 100);
   CreateSolidColorDrawQuad(
       child_pass,
-      gfx::Transform(1.0f, 0.0f, 0.0f, 50.0f, 0.0f, 1.0f, 0.0f, 50.0f, 0.0f,
-                     0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f),
+      gfx::Transform(1.0f, 0.0f, 0.0f, 50.0f,
+                     0.0f, 1.0f, 0.0f, 50.0f,
+                     0.0f, 0.0f, 1.0f, 0.0f,
+                     0.0f, 0.0f, 0.0f, 1.0f),
       root_rect, child_solid_quad_rect);
 
   // Submit the frame.
@@ -241,33 +272,80 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
   factory.SubmitCompositorFrame(child_surface_id, child_frame.Pass(),
                                 SurfaceFactory::DrawCallback());
 
-  struct Test {
-    SurfaceId input_surface_id;
-    gfx::Point input_point;
-    SurfaceId expected_output_surface_id;
-    gfx::Point expected_output_point;
-  } tests[] = {{root_surface_id, gfx::Point(10, 10), root_surface_id,
-                gfx::Point(10, 10)},
-               {root_surface_id, gfx::Point(99, 99), root_surface_id,
-                gfx::Point(99, 99)},
-               {root_surface_id, gfx::Point(100, 100), child_surface_id,
-                gfx::Point(50, 50)},
-               {root_surface_id, gfx::Point(199, 199), child_surface_id,
-                gfx::Point(149, 149)},
-               {root_surface_id, gfx::Point(200, 200), root_surface_id,
-                gfx::Point(200, 200)},
-               {root_surface_id, gfx::Point(290, 290), root_surface_id,
-                gfx::Point(290, 290)}};
+  TestCase tests[] = {
+    {
+      root_surface_id,
+      gfx::Point(10, 10),
+      root_surface_id,
+      gfx::Point(10, 10)
+    },
+    {
+      root_surface_id,
+      gfx::Point(99, 99),
+      root_surface_id,
+      gfx::Point(99, 99)
+    },
+    {
+      root_surface_id,
+      gfx::Point(100, 100),
+      child_surface_id,
+      gfx::Point(50, 50)
+    },
+    {
+      root_surface_id,
+      gfx::Point(199, 199),
+      child_surface_id,
+      gfx::Point(149, 149)
+    },
+    {
+      root_surface_id,
+      gfx::Point(200, 200),
+      root_surface_id,
+      gfx::Point(200, 200)
+    },
+    {
+      root_surface_id,
+      gfx::Point(290, 290),
+      root_surface_id,
+      gfx::Point(290, 290)
+    }
+  };
 
-  SurfaceHittest hittest(&manager);
-  for (const auto& test : tests) {
-    gfx::Point point(test.input_point);
+  RunTests(&manager, tests, sizeof(tests) / sizeof(*tests));
+
+  // Submit another root frame, with a slightly perturbed child Surface.
+  root_frame = CreateCompositorFrame(root_rect, &root_pass);
+  CreateSurfaceDrawQuad(root_pass,
+                        gfx::Transform(1.0f, 0.0f, 0.0f, 75.0f,
+                                        0.0f, 1.0f, 0.0f, 75.0f,
+                                        0.0f, 0.0f, 1.0f, 0.0f,
+                                        0.0f, 0.0f, 0.0f, 1.0f),
+                        root_rect,
+                        child_rect,
+                        child_surface_id);
+  factory.SubmitCompositorFrame(root_surface_id, root_frame.Pass(),
+                                SurfaceFactory::DrawCallback());
+
+  // Verify that point (100, 100) no longer falls on the child surface.
+  // Verify that the transform to the child surface's space has also shifted.
+  {
+    SurfaceHittest hittest(&manager);
+
+    gfx::Point point(100, 100);
     gfx::Transform transform;
-    EXPECT_EQ(test.expected_output_surface_id,
-              hittest.GetTargetSurfaceAtPoint(test.input_surface_id, point,
+    EXPECT_EQ(root_surface_id,
+              hittest.GetTargetSurfaceAtPoint(root_surface_id, point,
                                               &transform));
     transform.TransformPoint(&point);
-    EXPECT_EQ(test.expected_output_point, point);
+    EXPECT_EQ(gfx::Point(100, 100), point);
+
+    gfx::Point point_in_target_space(100, 100);
+    gfx::Transform target_transform;
+    EXPECT_TRUE(hittest.GetTransformToTargetSurface(
+        root_surface_id, child_surface_id, &target_transform));
+    target_transform.TransformPoint(&point_in_target_space);
+    EXPECT_NE(transform, target_transform);
+    EXPECT_EQ(gfx::Point(25, 25), point_in_target_space);
   }
 
   factory.Destroy(root_surface_id);
@@ -334,34 +412,46 @@ TEST(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
   factory.SubmitCompositorFrame(child_surface_id, child_frame.Pass(),
                                 SurfaceFactory::DrawCallback());
 
-  struct Test {
-    SurfaceId input_surface_id;
-    gfx::Point input_point;
-    SurfaceId expected_output_surface_id;
-    gfx::Point expected_output_point;
-  } tests[] = {{root_surface_id, gfx::Point(10, 10), root_surface_id,
-                gfx::Point(10, 10)},
-               {root_surface_id, gfx::Point(99, 99), root_surface_id,
-                gfx::Point(99, 99)},
-               {root_surface_id, gfx::Point(100, 100), child_surface_id,
-                gfx::Point(50, 50)},
-               {root_surface_id, gfx::Point(199, 199), child_surface_id,
-                gfx::Point(149, 149)},
-               {root_surface_id, gfx::Point(200, 200), root_surface_id,
-                gfx::Point(200, 200)},
-               {root_surface_id, gfx::Point(290, 290), root_surface_id,
-                gfx::Point(290, 290)}};
+  TestCase tests[] = {
+    {
+      root_surface_id,
+      gfx::Point(10, 10),
+      root_surface_id,
+      gfx::Point(10, 10)
+    },
+    {
+      root_surface_id,
+      gfx::Point(99, 99),
+      root_surface_id,
+      gfx::Point(99, 99)
+    },
+    {
+      root_surface_id,
+      gfx::Point(100, 100),
+      child_surface_id,
+      gfx::Point(50, 50)
+    },
+    {
+      root_surface_id,
+      gfx::Point(199, 199),
+      child_surface_id,
+      gfx::Point(149, 149)
+    },
+    {
+      root_surface_id,
+      gfx::Point(200, 200),
+      root_surface_id,
+      gfx::Point(200, 200)
+    },
+    {
+      root_surface_id,
+      gfx::Point(290, 290),
+      root_surface_id,
+      gfx::Point(290, 290)
+    }
+  };
 
-  SurfaceHittest hittest(&manager);
-  for (const auto& test : tests) {
-    gfx::Point point(test.input_point);
-    gfx::Transform transform;
-    EXPECT_EQ(test.expected_output_surface_id,
-              hittest.GetTargetSurfaceAtPoint(test.input_surface_id, point,
-                                              &transform));
-    transform.TransformPoint(&point);
-    EXPECT_EQ(test.expected_output_point, point);
-  }
+  RunTests(&manager, tests, sizeof(tests) / sizeof(*tests));
 
   factory.Destroy(root_surface_id);
   factory.Destroy(child_surface_id);
@@ -421,12 +511,7 @@ TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
   factory.SubmitCompositorFrame(root_surface_id, root_frame.Pass(),
                                 SurfaceFactory::DrawCallback());
 
-  struct Test {
-    SurfaceId input_surface_id;
-    gfx::Point input_point;
-    SurfaceId expected_output_surface_id;
-    gfx::Point expected_output_point;
-  } tests[] = {
+  TestCase tests[] = {
     // These tests just miss the RenderPassDrawQuad.
     {
       root_surface_id,
@@ -470,16 +555,7 @@ TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
     }
   };
 
-  SurfaceHittest hittest(&manager);
-  for (const auto& test : tests) {
-    gfx::Point point(test.input_point);
-    gfx::Transform transform;
-    EXPECT_EQ(test.expected_output_surface_id,
-              hittest.GetTargetSurfaceAtPoint(test.input_surface_id, point,
-                                              &transform));
-    transform.TransformPoint(&point);
-    EXPECT_EQ(test.expected_output_point, point);
-  }
+  RunTests(&manager, tests, sizeof(tests) / sizeof(*tests));
 
   factory.Destroy(root_surface_id);
 }
