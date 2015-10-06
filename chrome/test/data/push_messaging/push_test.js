@@ -106,12 +106,12 @@ function subscribePush() {
   }).catch(sendErrorToTest);
 }
 
-function getCurve25519dh() {
+function GetP256dh() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
     return swRegistration.pushManager.getSubscription()
         .then(function(subscription) {
           sendResultToTest(btoa(String.fromCharCode.apply(null,
-              new Uint8Array(subscription.getKey('curve25519dh')))));
+              new Uint8Array(subscription.getKey('p256dh')))));
         });
   }).catch(sendErrorToTest);
 }

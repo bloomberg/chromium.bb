@@ -32,7 +32,7 @@ void PushSubscription::dispose(WebPushSubscription* pushSubscription)
 
 PushSubscription::PushSubscription(const WebPushSubscription& subscription, ServiceWorkerRegistration* serviceWorkerRegistration)
     : m_endpoint(subscription.endpoint)
-    , m_curve25519dh(DOMArrayBuffer::create(subscription.curve25519dh.data(), subscription.curve25519dh.size()))
+    , m_p256dh(DOMArrayBuffer::create(subscription.p256dh.data(), subscription.p256dh.size()))
     , m_serviceWorkerRegistration(serviceWorkerRegistration)
 {
 }
@@ -48,8 +48,8 @@ KURL PushSubscription::endpoint() const
 
 PassRefPtr<DOMArrayBuffer> PushSubscription::getKey(const AtomicString& name) const
 {
-    if (name == "curve25519dh")
-        return m_curve25519dh;
+    if (name == "p256dh")
+        return m_p256dh;
 
     return nullptr;
 }
@@ -71,7 +71,7 @@ ScriptValue PushSubscription::toJSONForBinding(ScriptState* scriptState)
     V8ObjectBuilder result(scriptState);
     result.addString("endpoint", endpoint());
 
-    // TODO(peter): Include |curve25519dh| in the serialized JSON blob if the intended
+    // TODO(peter): Include |p256dh| in the serialized JSON blob if the intended
     // serialization behavior gets defined in the spec.
 
     return result.scriptValue();
