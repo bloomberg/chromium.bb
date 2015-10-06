@@ -137,6 +137,9 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
     // getUserMedia, and the getUserMedia-based tests will play back a file
     // through the fake device using using --use-file-for-fake-audio-capture.
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
+
+    // Add loopback interface such that there is always connectivity.
+    command_line->AppendSwitch(switches::kAllowLoopbackInPeerConnection);
   }
 
   void ConfigureFakeDeviceToPlayFile(const base::FilePath& wav_file_path) {
