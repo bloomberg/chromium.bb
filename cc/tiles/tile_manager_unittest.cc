@@ -37,7 +37,10 @@ namespace {
 
 class LowResTilingsSettings : public LayerTreeSettings {
  public:
-  LowResTilingsSettings() { create_low_res_tiling = true; }
+  LowResTilingsSettings() {
+    create_low_res_tiling = true;
+    verify_property_trees = true;
+  }
 };
 
 class TileManagerTilePriorityQueueTest : public testing::Test {
@@ -143,6 +146,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
 
     // Add tilings/tiles for the layer.
     bool update_lcd_text = false;
+    host_impl_.pending_tree()->BuildPropertyTreesForTesting();
     host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
   }
 
@@ -615,6 +619,8 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
   host_impl_.SetViewportSize(gfx::Size(200, 200));
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   bool update_lcd_text = false;
+  host_impl_.pending_tree()->property_trees()->needs_rebuild = true;
+  host_impl_.pending_tree()->BuildPropertyTreesForTesting();
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   host_impl_.SetRequiresHighResToDraw();
@@ -836,6 +842,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   bool update_lcd_text = false;
+  host_impl_.pending_tree()->property_trees()->needs_rebuild = true;
+  host_impl_.pending_tree()->BuildPropertyTreesForTesting();
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   ActivateTree();
@@ -951,6 +959,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   bool update_lcd_text = false;
+  host_impl_.pending_tree()->property_trees()->needs_rebuild = true;
+  host_impl_.pending_tree()->BuildPropertyTreesForTesting();
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   pending_child_layer->SetOpacity(0.0);
