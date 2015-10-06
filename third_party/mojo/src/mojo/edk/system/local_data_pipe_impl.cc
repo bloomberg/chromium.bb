@@ -106,8 +106,7 @@ MojoResult LocalDataPipeImpl::ProducerWriteData(
 
 MojoResult LocalDataPipeImpl::ProducerBeginWriteData(
     UserPointer<void*> buffer,
-    UserPointer<uint32_t> buffer_num_bytes,
-    uint32_t min_num_bytes_to_write) {
+    UserPointer<uint32_t> buffer_num_bytes) {
   DCHECK(consumer_open());
 
   // The index we need to start writing at.
@@ -115,12 +114,6 @@ MojoResult LocalDataPipeImpl::ProducerBeginWriteData(
       (start_index_ + current_num_bytes_) % capacity_num_bytes();
 
   size_t max_num_bytes_to_write = GetMaxNumBytesToWrite();
-  if (min_num_bytes_to_write > max_num_bytes_to_write) {
-    // Don't return "should wait" since you can't wait for a specified amount
-    // of data.
-    return MOJO_RESULT_OUT_OF_RANGE;
-  }
-
   // Don't go into a two-phase write if there's no room.
   if (max_num_bytes_to_write == 0)
     return MOJO_RESULT_SHOULD_WAIT;
@@ -287,16 +280,8 @@ MojoResult LocalDataPipeImpl::ConsumerQueryData(
 
 MojoResult LocalDataPipeImpl::ConsumerBeginReadData(
     UserPointer<const void*> buffer,
-    UserPointer<uint32_t> buffer_num_bytes,
-    uint32_t min_num_bytes_to_read) {
+    UserPointer<uint32_t> buffer_num_bytes) {
   size_t max_num_bytes_to_read = GetMaxNumBytesToRead();
-  if (min_num_bytes_to_read > max_num_bytes_to_read) {
-    // Don't return "should wait" since you can't wait for a specified amount of
-    // data.
-    return producer_open() ? MOJO_RESULT_OUT_OF_RANGE
-                           : MOJO_RESULT_FAILED_PRECONDITION;
-  }
-
   // Don't go into a two-phase read if there's no data.
   if (max_num_bytes_to_read == 0) {
     return producer_open() ? MOJO_RESULT_SHOULD_WAIT
@@ -357,11 +342,10 @@ bool LocalDataPipeImpl::ConsumerEndSerialize(
   MessageInTransitQueue message_queue;
   ConvertDataToMessages(buffer_.get(), &start_index_, &current_num_bytes_,
                         &message_queue);
-  start_index_ = 0;
-  current_num_bytes_ = 0;
 
   if (!producer_open()) {
     // Case 1: The producer is closed.
+    DestroyBuffer();
     channel->SerializeEndpointWithClosedPeer(destination_for_endpoint,
                                              &message_queue);
     *actual_size = sizeof(SerializedDataPipeConsumerDispatcher) +
@@ -379,7 +363,8 @@ bool LocalDataPipeImpl::ConsumerEndSerialize(
   // Note: Keep |*this| alive until the end of this method, to make things
   // slightly easier on ourselves.
   scoped_ptr<DataPipeImpl> self(owner()->ReplaceImplNoLock(make_scoped_ptr(
-      new RemoteConsumerDataPipeImpl(channel_endpoint.get(), old_num_bytes))));
+      new RemoteConsumerDataPipeImpl(channel_endpoint.get(), old_num_bytes,
+                                     buffer_.Pass(), start_index_))));
 
   *actual_size = sizeof(SerializedDataPipeConsumerDispatcher) +
                  channel->GetSerializedEndpointSize();
@@ -413,6 +398,8 @@ void LocalDataPipeImpl::DestroyBuffer() {
     memset(buffer_.get(), 0xcd, capacity_num_bytes());
 #endif
   buffer_.reset();
+  start_index_ = 0;
+  current_num_bytes_ = 0;
 }
 
 size_t LocalDataPipeImpl::GetMaxNumBytesToWrite() {

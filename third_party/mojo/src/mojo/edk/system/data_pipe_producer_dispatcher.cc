@@ -84,8 +84,7 @@ MojoResult DataPipeProducerDispatcher::BeginWriteDataImplNoLock(
     MojoWriteDataFlags flags) {
   mutex().AssertHeld();
 
-  return data_pipe_->ProducerBeginWriteData(
-      buffer, buffer_num_bytes, (flags & MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+  return data_pipe_->ProducerBeginWriteData(buffer, buffer_num_bytes);
 }
 
 MojoResult DataPipeProducerDispatcher::EndWriteDataImplNoLock(

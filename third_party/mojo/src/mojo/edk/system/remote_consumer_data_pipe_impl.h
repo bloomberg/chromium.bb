@@ -22,8 +22,13 @@ namespace system {
 class MOJO_SYSTEM_IMPL_EXPORT RemoteConsumerDataPipeImpl final
     : public DataPipeImpl {
  public:
+  // |buffer| is only required if |producer_two_phase_max_num_bytes_written()|
+  // is nonzero (i.e., if we're in the middle of a two-phase write when the
+  // consumer handle is transferred); |start_index| is ignored if it is zero.
   RemoteConsumerDataPipeImpl(ChannelEndpoint* channel_endpoint,
-                             size_t consumer_num_bytes);
+                             size_t consumer_num_bytes,
+                             scoped_ptr<char, base::AlignedFreeDeleter> buffer,
+                             size_t start_index);
   ~RemoteConsumerDataPipeImpl() override;
 
   // Processes messages that were received and queued by an |IncomingEndpoint|.
@@ -45,9 +50,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RemoteConsumerDataPipeImpl final
                                UserPointer<uint32_t> num_bytes,
                                uint32_t max_num_bytes_to_write,
                                uint32_t min_num_bytes_to_write) override;
-  MojoResult ProducerBeginWriteData(UserPointer<void*> buffer,
-                                    UserPointer<uint32_t> buffer_num_bytes,
-                                    uint32_t min_num_bytes_to_write) override;
+  MojoResult ProducerBeginWriteData(
+      UserPointer<void*> buffer,
+      UserPointer<uint32_t> buffer_num_bytes) override;
   MojoResult ProducerEndWriteData(uint32_t num_bytes_written) override;
   HandleSignalsState ProducerGetHandleSignalsState() const override;
   void ProducerStartSerialize(Channel* channel,
@@ -68,9 +73,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RemoteConsumerDataPipeImpl final
                                  uint32_t max_num_bytes_to_discard,
                                  uint32_t min_num_bytes_to_discard) override;
   MojoResult ConsumerQueryData(UserPointer<uint32_t> num_bytes) override;
-  MojoResult ConsumerBeginReadData(UserPointer<const void*> buffer,
-                                   UserPointer<uint32_t> buffer_num_bytes,
-                                   uint32_t min_num_bytes_to_read) override;
+  MojoResult ConsumerBeginReadData(
+      UserPointer<const void*> buffer,
+      UserPointer<uint32_t> buffer_num_bytes) override;
   MojoResult ConsumerEndReadData(uint32_t num_bytes_read) override;
   HandleSignalsState ConsumerGetHandleSignalsState() const override;
   void ConsumerStartSerialize(Channel* channel,
@@ -98,6 +103,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RemoteConsumerDataPipeImpl final
 
   // Used for two-phase writes.
   scoped_ptr<char, base::AlignedFreeDeleter> buffer_;
+  // This is nearly always zero, except when the two-phase write started on a
+  // |LocalDataPipeImpl|.
+  size_t start_index_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(RemoteConsumerDataPipeImpl);
 };
