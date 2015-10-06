@@ -273,6 +273,7 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
 void BluetoothDispatcherHost::set_adapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  connections_.clear();
   if (adapter_.get())
     adapter_->RemoveObserver(this);
   adapter_ = adapter;
@@ -841,8 +842,7 @@ void BluetoothDispatcherHost::OnGATTConnectionCreated(
     base::TimeTicks start_time,
     scoped_ptr<device::BluetoothGattConnection> connection) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(ortuno): Save the BluetoothGattConnection so we can disconnect
-  // from it.
+  connections_.push_back(connection.Pass());
   RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
   RecordConnectGATTOutcome(UMAConnectGATTOutcome::SUCCESS);
   Send(new BluetoothMsg_ConnectGATTSuccess(thread_id, request_id,

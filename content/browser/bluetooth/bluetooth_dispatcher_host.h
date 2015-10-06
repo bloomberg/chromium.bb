@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -186,6 +187,10 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // and because there's no harm in extending the length of a few discovery
   // sessions when other sessions are active.
   base::Timer discovery_session_timer_;
+
+  // Retain BluetoothGattConnection objects to keep connections open.
+  // TODO(scheib): Destroy as connections are closed. http://crbug.com/539643
+  ScopedVector<device::BluetoothGattConnection> connections_;
 
   // |weak_ptr_on_ui_thread_| provides weak pointers, e.g. for callbacks, and
   // because it exists and has been bound to the UI thread enforces that all
