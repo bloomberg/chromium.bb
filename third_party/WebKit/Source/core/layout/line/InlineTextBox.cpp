@@ -197,11 +197,10 @@ bool InlineTextBox::hasWrappedSelectionNewline() const
 
     SelectionState state = selectionState();
     return RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled()
-        // TODO(wkorman): Remove horizontal and RTL restrictions once operational.
-        && isHorizontal()
-        && isLeftToRightDirection()
-        && (root().lastSelectedBox() == this)
-        && (state == SelectionStart || state == SelectionInside);
+        && (state == SelectionStart || state == SelectionInside)
+        // Checking last leaf child can be slow, so we make sure to do this only
+        // after the other simple conditionals.
+        && (root().lastLeafChild() == this);
 }
 
 float InlineTextBox::newlineSpaceWidth() const
@@ -252,12 +251,17 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos) const
         topPoint = LayoutPoint(r.x(), selTop);
         width = logicalWidth;
         height = selHeight;
-        if (hasWrappedSelectionNewline())
+        if (hasWrappedSelectionNewline()) {
+            if (!isLeftToRightDirection())
+                topPoint.setX(topPoint.x() - newlineSpaceWidth());
             width += newlineSpaceWidth();
+        }
     } else {
         topPoint = LayoutPoint(selTop, r.x());
         width = selHeight;
         height = logicalWidth;
+        // TODO(wkorman): RTL text embedded in top-to-bottom text can create
+        // bottom-to-top situations. Add tests and ensure we handle correctly.
         if (hasWrappedSelectionNewline())
             height += newlineSpaceWidth();
     }

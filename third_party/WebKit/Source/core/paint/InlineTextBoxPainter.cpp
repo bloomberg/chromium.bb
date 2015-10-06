@@ -257,10 +257,7 @@ bool InlineTextBoxPainter::shouldPaintTextBox(const PaintInfo& paintInfo)
     // This code path is only called in PaintPhaseForeground whereas we would
     // expect PaintPhaseSelection. The existing haveSelection logic in paint()
     // tests for != PaintPhaseTextClip.
-    bool paintLineBreaks = RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled()
-        // TODO(wkorman): Remove horizontal and RTL restrictions once operational.
-        && m_inlineTextBox.isHorizontal()
-        && m_inlineTextBox.isLeftToRightDirection();
+    bool paintLineBreaks = RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled();
     if ((!paintLineBreaks && m_inlineTextBox.isLineBreak())
         || !paintInfo.shouldPaintWithinRoot(LineLayoutPaintShim::layoutObjectFrom(m_inlineTextBox.lineLayoutItem()))
         || m_inlineTextBox.lineLayoutItem().style()->visibility() != VISIBLE
@@ -499,8 +496,13 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext* context, const Layout
 
 void InlineTextBoxPainter::expandToIncludeNewlineForSelection(LayoutRect& rect)
 {
-    // TODO(wkorman): Make this work with RTL and vertical text.
-    rect.expand(FloatRectOutsets(0, m_inlineTextBox.newlineSpaceWidth(), 0, 0));
+    FloatRectOutsets outsets = FloatRectOutsets();
+    float spaceWidth = m_inlineTextBox.newlineSpaceWidth();
+    if (m_inlineTextBox.isLeftToRightDirection())
+        outsets.setRight(spaceWidth);
+    else
+        outsets.setLeft(spaceWidth);
+    rect.expand(outsets);
 }
 
 static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition, const FontMetrics& fontMetrics, const InlineTextBox* inlineTextBox, const float textDecorationThickness)
