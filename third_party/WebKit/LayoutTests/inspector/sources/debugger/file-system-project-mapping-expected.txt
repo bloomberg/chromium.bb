@@ -105,7 +105,11 @@ Running: testProjectBasedMapping
 Adding file system.
 Workspace event: UISourceCodeAdded: filesystem:/var/www/html/foo.js.
 Workspace event: UISourceCodeAdded: filesystem:/var/www/html2/bar.js.
+(suspend state changed: true)
+(suspend state changed: false)
 UISourceCode uri to url mappings:
     filesystem:/var/www/html/foo.js -> http://localhost/h1/foo.js
     filesystem:/var/www/html2/bar.js -> http://localhost/h2/bar.js
+(suspend state changed: true)
+(suspend state changed: false)
 

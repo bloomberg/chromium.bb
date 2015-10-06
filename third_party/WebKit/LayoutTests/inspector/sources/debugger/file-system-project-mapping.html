@@ -12,6 +12,7 @@ function test()
     var resourceScriptMapping;
     var defaultScriptMapping;
     var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId("/var/www");
+    WebInspector.networkMapping.dispose();
 
     function createWorkspaceWithTarget()
     {
@@ -19,6 +20,11 @@ function test()
         var entry = InspectorTest.testDebuggerWorkspaceBinding._targetToData.get(target);
         resourceScriptMapping = entry._resourceMapping;
         defaultScriptMapping = entry._defaultMapping;
+    }
+
+    function suspendStateChanged()
+    {
+        InspectorTest.addResult("(suspend state changed: " + InspectorTest.testTargetManager.allTargetsSuspended() + ")");
     }
 
     function dumpFileSystemUISourceCodesMappings()
@@ -52,7 +58,6 @@ function test()
 
                 var uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
                 networkUISourceCode = InspectorTest.testWorkspace.uiSourceCode(WebInspector.NetworkProject.projectId(target, "http://localhost"), "html/foo.js");
-                InspectorTest.override(WebInspector.SourcesPanel.prototype, "_suggestReload", function() { });
                 InspectorTest.addResult("Adding mapping between network and file system resources.");
                 InspectorTest.testNetworkMapping.addMapping(networkUISourceCode, uiSourceCode);
                 var setting = JSON.stringify(WebInspector.fileSystemMapping._fileSystemMappingSetting.get());
@@ -309,6 +314,7 @@ function test()
         function testProjectBasedMapping(next)
         {
             createWorkspaceWithTarget();
+            InspectorTest.testTargetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, suspendStateChanged);
 
             InspectorTest.addResult("Adding file system.");
             var fs = new InspectorTest.TestFileSystem("/var/www");

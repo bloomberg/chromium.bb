@@ -4,12 +4,14 @@ InspectorTest.createWorkspace = function(ignoreEvents)
 {
     if (InspectorTest.testFileSystemWorkspaceBinding)
         InspectorTest.testFileSystemWorkspaceBinding.dispose();
+    if (InspectorTest.testNetworkMapping)
+        InspectorTest.testNetworkMapping.dispose();
     WebInspector.fileSystemMapping.resetForTesting();
 
     InspectorTest.testTargetManager = new WebInspector.TargetManager();
     InspectorTest.testWorkspace = new WebInspector.Workspace();
     InspectorTest.testFileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(WebInspector.isolatedFileSystemManager, InspectorTest.testWorkspace);
-    InspectorTest.testNetworkMapping = new WebInspector.NetworkMapping(InspectorTest.testWorkspace, InspectorTest.testFileSystemWorkspaceBinding, WebInspector.fileSystemMapping);
+    InspectorTest.testNetworkMapping = new WebInspector.NetworkMapping(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testFileSystemWorkspaceBinding, WebInspector.fileSystemMapping);
     InspectorTest.testNetworkProjectManager = new WebInspector.NetworkProjectManager(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
     InspectorTest.testDebuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
     InspectorTest.testCSSWorkspaceBinding = new WebInspector.CSSWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
@@ -37,9 +39,12 @@ InspectorTest.createMockTarget = function(id, debuggerModelConstructor)
 {
     var MockTarget = function(name, connection, callback)
     {
-        WebInspector.Target.call(this, name, WebInspector.Target.Type.Page, connection, null, callback);
+        WebInspector.Target.call(this, InspectorTest.testTargetManager, name, WebInspector.Target.Type.Page, connection, null, callback);
         this.debuggerModel = debuggerModelConstructor ? new debuggerModelConstructor(this) : new WebInspector.DebuggerModel(this);
-        this.resourceTreeModel = WebInspector.targetManager.mainTarget().resourceTreeModel;
+        this.networkManager = new WebInspector.NetworkManager(this);
+        this.consoleModel = new WebInspector.ConsoleModel(this);
+        this.resourceTreeModel = new WebInspector.ResourceTreeModel(this);
+        this.resourceTreeModel._inspectedPageURL = InspectorTest.resourceTreeModel._inspectedPageURL;
         this.domModel = new WebInspector.DOMModel(this);
         this.cssModel = new WebInspector.CSSStyleModel(this);
         this.runtimeModel = new WebInspector.RuntimeModel(this);

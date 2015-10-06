@@ -33,15 +33,15 @@ function test()
             InspectorTest.addResult("Adding file system.");
             var fs = new InspectorTest.TestFileSystem(fileSystemPath);
             fs.root.addFile("foo.css", "#inspected {\n    color: red;\n}\n");
+            InspectorTest.addResult("Adding file system mapping.");
+            fs.addFileMapping("http://localhost:8000/inspector/elements/styles/", "/");
             fs.reportCreated(fileSystemCreated);
 
             var uiSourceCode;
 
             function fileSystemCreated()
             {
-                InspectorTest.addResult("Adding file system mapping.");
                 var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-                WebInspector.fileSystemMapping.addFileMapping(fileSystemPath, "http://localhost:8000/inspector/elements/styles/", "/");
                 uiSourceCode = WebInspector.workspace.uiSourceCode(fileSystemProjectId, "foo.css");
                 InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
             }
@@ -54,8 +54,10 @@ function test()
                 InspectorTest.evaluateInPage("loadStylesheet()");
             }
   
-            function stylesheetLoaded()
+            function stylesheetLoaded(event)
             {
+                if (!event.data.sourceURL.includes("foo.css"))
+                    return;
                 InspectorTest.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetLoaded);
                 InspectorTest.addResult("Stylesheet loaded.");
                 InspectorTest.selectNodeAndWaitForStyles("inspected", nodeSelected);
