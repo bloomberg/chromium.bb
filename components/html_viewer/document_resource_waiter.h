@@ -80,6 +80,14 @@ class DocumentResourceWaiter : public web_view::mojom::FrameClient,
                       const OnWillNavigateCallback& callback) override;
   void OnFrameLoadingStateChanged(uint32_t frame_id, bool loading) override;
   void OnDispatchFrameLoadEvent(uint32_t frame_id) override;
+  void Find(int32_t request_id,
+            const mojo::String& search_text,
+            const FindCallback& callback) override;
+  void StopFinding(bool clear_selection) override;
+  void HighlightFindResults(int32_t request_id,
+                            const mojo::String& search_test,
+                            bool reset) override;
+  void StopHighlightingFindResults() override;
 
   // ViewObserver:
   void OnViewViewportMetricsChanged(

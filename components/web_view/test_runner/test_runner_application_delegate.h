@@ -55,6 +55,11 @@ class TestRunnerApplicationDelegate
   void BackForwardChanged(mojom::ButtonState back_button,
                           mojom::ButtonState forward_button) override;
   void TitleChanged(const mojo::String& title) override;
+  void FindInPageMatchCountUpdated(int32_t request_id,
+                                   int32_t count,
+                                   bool final_update) override {}
+  void FindInPageSelectionUpdated(int32_t request_id,
+                                  int32_t active_match_ordinal) override {}
 
   // LayoutTestRunner:
   void TestFinished() override;

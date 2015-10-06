@@ -54,6 +54,7 @@ enum class ViewOwnership {
 class Frame : public mus::ViewObserver, public mojom::Frame {
  public:
   using ClientPropertyMap = std::map<std::string, std::vector<uint8_t>>;
+  using FindCallback = mojo::Callback<void(bool)>;
 
   Frame(FrameTree* tree,
         mus::View* view,
@@ -111,6 +112,15 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
   // Returns the sum total of loading progress from this Frame and all of its
   // children, as well as the number of Frames accumulated.
   double GatherProgress(int* frame_count) const;
+
+  void Find(int32_t request_id,
+            const mojo::String& search_text,
+            const FindCallback& callback);
+  void StopFinding(bool clear_selection);
+  void HighlightFindResults(int32_t request_id,
+                            const mojo::String& search_text,
+                            bool reset);
+  void StopHighlightingFindResults();
 
  private:
   friend class FrameTest;
@@ -224,6 +234,11 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
                        mojo::URLRequestPtr request) override;
   void DidNavigateLocally(const mojo::String& url) override;
   void DispatchLoadEventToParent() override;
+  void OnFindInFrameCountUpdated(int32_t request_id,
+                                 int32_t count,
+                                 bool final_update) override;
+  void OnFindInPageSelectionUpdated(int32_t request_id,
+                                    int32_t active_match_ordinal) override;
 
   FrameTree* const tree_;
   // WARNING: this may be null. See class description for details.

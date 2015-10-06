@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_WEB_VIEW_WEB_VIEW_IMPL_H_
 #define COMPONENTS_WEB_VIEW_WEB_VIEW_IMPL_H_
 
+#include <deque>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/view_observer.h"
 #include "components/mus/public/cpp/view_tree_delegate.h"
+#include "components/web_view/find_controller.h"
+#include "components/web_view/find_controller_delegate.h"
 #include "components/web_view/frame_devtools_agent_delegate.h"
 #include "components/web_view/frame_tree_delegate.h"
 #include "components/web_view/navigation_controller.h"
@@ -39,7 +42,8 @@ class WebViewImpl : public mojom::WebView,
                     public mus::ViewObserver,
                     public FrameTreeDelegate,
                     public FrameDevToolsAgentDelegate,
-                    public NavigationControllerDelegate {
+                    public NavigationControllerDelegate,
+                    public FindControllerDelegate {
  public:
   WebViewImpl(mojo::ApplicationImpl* app,
               mojom::WebViewClientPtr client,
@@ -57,6 +61,8 @@ class WebViewImpl : public mojom::WebView,
   void GetViewTreeClient(
       mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client)
           override;
+  void Find(int32_t request_id, const mojo::String& search_text) override;
+  void StopFinding() override;
   void GoBack() override;
   void GoForward() override;
 
@@ -84,6 +90,14 @@ class WebViewImpl : public mojom::WebView,
                         const CanNavigateFrameCallback& callback) override;
   void DidStartNavigation(Frame* frame) override;
   void DidCommitProvisionalLoad(Frame* frame) override;
+  void DidDestroyFrame(Frame* frame) override;
+  void OnFindInFrameCountUpdated(int32_t request_id,
+                                 Frame* frame,
+                                 int32_t count,
+                                 bool final_update) override;
+  void OnFindInPageSelectionUpdated(int32_t request_id,
+                                    Frame* frame,
+                                    int32_t active_match_ordinal) override;
 
   // Overridden from FrameDevToolsAgent::Delegate:
   void HandlePageNavigateRequest(const GURL& url) override;
@@ -91,6 +105,10 @@ class WebViewImpl : public mojom::WebView,
   // Overridden from NavigationControllerDelegate:
   void OnNavigate(mojo::URLRequestPtr request) override;
   void OnDidNavigate() override;
+
+  // Overridden from FindControllerDelegate:
+  std::deque<Frame*> GetAllFrames() override;
+  mojom::WebViewClient* GetWebViewClient() override;
 
   mojo::ApplicationImpl* app_;
   mojom::WebViewClientPtr client_;
@@ -107,6 +125,8 @@ class WebViewImpl : public mojom::WebView,
   scoped_ptr<FrameDevToolsAgent> devtools_agent_;
 
   NavigationController navigation_controller_;
+
+  FindController find_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewImpl);
 };

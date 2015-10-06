@@ -11,6 +11,7 @@ enum class BrowserCommand : uint32_t {
   CLOSE,
   FOCUS_OMNIBOX,
   NEW_WINDOW,
+  SHOW_FIND,
   GO_BACK,
   GO_FORWARD,
 };

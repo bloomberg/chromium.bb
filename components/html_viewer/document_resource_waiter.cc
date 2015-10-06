@@ -186,6 +186,31 @@ void DocumentResourceWaiter::OnDispatchFrameLoadEvent(uint32_t frame_id) {
   NOTREACHED();
 }
 
+void DocumentResourceWaiter::Find(int32_t request_id,
+                                  const mojo::String& search_text,
+                                  const FindCallback& callback) {
+  // It is assumed we receive OnConnect() (which unbinds) before anything else.
+  NOTREACHED();
+}
+
+void DocumentResourceWaiter::StopFinding(bool clear_selection) {
+  // It is assumed we receive OnConnect() (which unbinds) before anything else.
+  NOTREACHED();
+}
+
+void DocumentResourceWaiter::HighlightFindResults(
+    int32_t request_id,
+    const mojo::String& search_test,
+    bool reset) {
+  // It is assumed we receive OnConnect() (which unbinds) before anything else.
+  NOTREACHED();
+}
+
+void DocumentResourceWaiter::StopHighlightingFindResults() {
+  // It is assumed we receive OnConnect() (which unbinds) before anything else.
+  NOTREACHED();
+}
+
 void DocumentResourceWaiter::OnViewViewportMetricsChanged(
     mus::View* view,
     const mojo::ViewportMetrics& old_metrics,

@@ -11,6 +11,7 @@
 #include "components/web_view/public/cpp/web_view.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"
 #include "mandoline/ui/aura/aura_init.h"
+#include "mandoline/ui/desktop_ui/find_bar_delegate.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/interface_factory.h"
@@ -27,6 +28,7 @@ class View;
 namespace mandoline {
 
 class BrowserManager;
+class FindBarView;
 class ProgressView;
 class ToolbarView;
 
@@ -35,7 +37,8 @@ class BrowserWindow : public mus::ViewTreeDelegate,
                       public web_view::mojom::WebViewClient,
                       public ViewEmbedder,
                       public mojo::InterfaceFactory<ViewEmbedder>,
-                      public views::LayoutManager {
+                      public views::LayoutManager,
+                      public FindBarDelegate {
  public:
   BrowserWindow(mojo::ApplicationImpl* app,
                 mojo::ViewTreeHostFactory* host_factory,
@@ -45,6 +48,7 @@ class BrowserWindow : public mus::ViewTreeDelegate,
   void Close();
 
   void ShowOmnibox();
+  void ShowFind();
   void GoBack();
   void GoForward();
 
@@ -67,6 +71,11 @@ class BrowserWindow : public mus::ViewTreeDelegate,
   void BackForwardChanged(web_view::mojom::ButtonState back_button,
                           web_view::mojom::ButtonState forward_button) override;
   void TitleChanged(const mojo::String& title) override;
+  void FindInPageMatchCountUpdated(int32_t request_id,
+                                   int32_t count,
+                                   bool final_update) override;
+  void FindInPageSelectionUpdated(int32_t request_id,
+                                  int32_t active_match_ordinal) override;
 
   // Overridden from ViewEmbedder:
   void Embed(mojo::URLRequestPtr request) override;
@@ -80,6 +89,10 @@ class BrowserWindow : public mus::ViewTreeDelegate,
   gfx::Size GetPreferredSize(const views::View* view) const override;
   void Layout(views::View* host) override;
 
+  // Overridden from FindBarDelegate:
+  void OnDoFind(const std::string& find) override;
+  void OnHideFindBar() override;
+
   void Init(mus::View* root);
   void EmbedOmnibox();
 
@@ -90,6 +103,7 @@ class BrowserWindow : public mus::ViewTreeDelegate,
   BrowserManager* manager_;
   ToolbarView* toolbar_view_;
   ProgressView* progress_bar_;
+  FindBarView* find_bar_view_;
   mus::View* root_;
   mus::View* content_;
   mus::View* omnibox_view_;
@@ -98,6 +112,12 @@ class BrowserWindow : public mus::ViewTreeDelegate,
 
   GURL default_url_;
   GURL current_url_;
+
+  // The active find match.
+  int32_t find_active_;
+
+  // The total number of find matches.
+  int32_t find_count_;
 
   web_view::WebView web_view_;
 

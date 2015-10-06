@@ -110,6 +110,14 @@ interface Frame {
 
   // Dispatches a load event to the parent of the frame.
   DispatchLoadEventToParent();
+
+  // Reports the number of matches for a given find. This is an asynchronous
+  // notification and can fire multiple times per HighlightFindResults() call.
+  OnFindInFrameCountUpdated(int32 request_id, int32 count,
+                            bool final_update);
+
+  // Reports which match is currently highlighted.
+  OnFindInPageSelectionUpdated(int32 request_id, int32 active_match_ordinal);
 };
 
 enum ViewConnectType {
@@ -166,4 +174,35 @@ interface FrameClient {
   // Called to dispatch a load event of |frame_id| in its parent. This is only
   // called on the FrameClient rendering the parent of |frame_id|.
   OnDispatchFrameLoadEvent(uint32 frame_id);
+
+  // TODO(erg): Several of these take a WebFindOptions struct; we probably need
+  // to build a Frame version of that struct.
+
+  // Searches for a given string. If a match is found, it will be
+  // selected. Find() will only return true if it found a match, and will return
+  // the result in the future through OnFindInPageSelectionUpdated(). That
+  // callback will return |request_id|, and the listener should verify the
+  // |request_id| on callback to guard against race conditions.
+  //
+  // |request_id| should be a monotonically increasing number which should only
+  // be reused between Find() and the HighlightFindResults() calls that are
+  // searching for the same string. |search_text| may be empty.
+  Find(int32 request_id, string search_text) => (bool found);
+
+  // Stop finding the single find result on the page. If |clear_selection| is
+  // set, it will also clear the selected find text.
+  StopFinding(bool clear_selection);
+
+  // Match every instance of a string in a document asynchronously, highlighting
+  // them and putting a tick mark in the scroll bar. This differs from Find() as
+  // Find() is about finding the one selected instance of the text.
+  // HighlightFindResults() is about highlighting all the instances of the text.
+  //
+  // HighlightFindResults() will asynchronously call
+  // OnFindInFrameCountUpdated() multiple times to report its progress.
+  HighlightFindResults(int32 request_id, string search_test, bool reset);
+
+  // Removes the tick marks and highlighting done by HighlightFindResults() in
+  // this frame.
+  StopHighlightingFindResults();
 };

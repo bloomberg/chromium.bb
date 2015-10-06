@@ -374,6 +374,8 @@ void TextFinder::scopeStringMatchesAlgorithm(int identifier, const WebString& se
 
         m_lastMatchCount += matchCount;
 
+        ownerFrame().client()->reportFindInFrameMatchCount(identifier, m_lastMatchCount, false);
+
         // Let the mainframe know how much we found during this pass.
         mainFrameImpl->increaseMatchCount(matchCount, identifier);
     }
@@ -419,6 +421,8 @@ void TextFinder::finishCurrentScopingEffort(int identifier)
 
     m_scopingInProgress = false;
     m_lastFindRequestCompletedWithNoMatches = !m_lastMatchCount;
+
+    ownerFrame().client()->reportFindInFrameMatchCount(identifier, m_lastMatchCount, true);
 
     // This frame is done, so show any scrollbar tickmarks we haven't drawn yet.
     ownerFrame().frameView()->invalidatePaintForTickmarks();

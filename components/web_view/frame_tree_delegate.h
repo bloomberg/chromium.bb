@@ -84,6 +84,15 @@ class FrameTreeDelegate {
   // action.
   virtual void OnViewEmbeddedInFrameDisconnected(Frame* frame);
 
+  // Reports the current find state back to our owner.
+  virtual void OnFindInFrameCountUpdated(int32_t request_id,
+                                         Frame* frame,
+                                         int32_t count,
+                                         bool final_update);
+  virtual void OnFindInPageSelectionUpdated(int32_t request_id,
+                                            Frame* frame,
+                                            int32_t active_match_ordinal);
+
  protected:
   virtual ~FrameTreeDelegate() {}
 };

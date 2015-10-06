@@ -13,6 +13,7 @@
 #include "mandoline/ui/aura/native_widget_view_manager.h"
 #include "mandoline/ui/desktop_ui/browser_commands.h"
 #include "mandoline/ui/desktop_ui/browser_manager.h"
+#include "mandoline/ui/desktop_ui/find_bar_view.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
 #include "mandoline/ui/desktop_ui/toolbar_view.h"
 #include "mojo/common/common_type_converters.h"
@@ -74,9 +75,12 @@ BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
       manager_(manager),
       toolbar_view_(nullptr),
       progress_bar_(nullptr),
+      find_bar_view_(nullptr),
       root_(nullptr),
       content_(nullptr),
       omnibox_view_(nullptr),
+      find_active_(0),
+      find_count_(0),
       web_view_(this) {
   mojo::ViewTreeHostClientPtr host_client;
   host_client_binding_.Bind(GetProxy(&host_client));
@@ -123,6 +127,11 @@ void BrowserWindow::ShowOmnibox() {
     });
   }
   omnibox_->ShowForURL(mojo::String::From(current_url_.spec()));
+}
+
+void BrowserWindow::ShowFind() {
+  toolbar_view_->SetVisible(false);
+  find_bar_view_->Show();
 }
 
 void BrowserWindow::GoBack() {
@@ -172,6 +181,8 @@ void BrowserWindow::OnEmbed(mus::View* root) {
                         mojo::KEYBOARD_CODE_L, mojo::EVENT_FLAGS_CONTROL_DOWN);
   host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::NEW_WINDOW),
                         mojo::KEYBOARD_CODE_N, mojo::EVENT_FLAGS_CONTROL_DOWN);
+  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::SHOW_FIND),
+                        mojo::KEYBOARD_CODE_F, mojo::EVENT_FLAGS_CONTROL_DOWN);
   host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::GO_BACK),
                         mojo::KEYBOARD_CODE_LEFT, mojo::EVENT_FLAGS_ALT_DOWN);
   host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::GO_FORWARD),
@@ -219,6 +230,9 @@ void BrowserWindow::OnAccelerator(uint32_t id, mojo::EventPtr event) {
     case BrowserCommand::FOCUS_OMNIBOX:
       ShowOmnibox();
       break;
+    case BrowserCommand::SHOW_FIND:
+      ShowFind();
+      break;
     case BrowserCommand::GO_BACK:
       GoBack();
       break;
@@ -235,6 +249,7 @@ void BrowserWindow::OnAccelerator(uint32_t id, mojo::EventPtr event) {
 // BrowserWindow, web_view::mojom::WebViewClient implementation:
 
 void BrowserWindow::TopLevelNavigateRequest(mojo::URLRequestPtr request) {
+  OnHideFindBar();
   Embed(request.Pass());
 }
 
@@ -265,6 +280,19 @@ void BrowserWindow::TitleChanged(const mojo::String& title) {
                       : title.To<base::string16>() +
           base::ASCIIToUTF16(" - Mandoline");
   host_->SetTitle(mojo::String::From(formatted));
+}
+
+void BrowserWindow::FindInPageMatchCountUpdated(int32_t request_id,
+                                                int32_t count,
+                                                bool final_update) {
+  find_count_ = count;
+  find_bar_view_->SetMatchLabel(find_active_, find_count_);
+}
+
+void BrowserWindow::FindInPageSelectionUpdated(int32_t request_id,
+                                               int32_t active_match_ordinal) {
+  find_active_ = active_match_ordinal;
+  find_bar_view_->SetMatchLabel(find_active_, find_count_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -305,6 +333,8 @@ void BrowserWindow::Layout(views::View* host) {
   toolbar_bounds.Inset(10, 10, 10, toolbar_bounds.height() - 40);
   toolbar_view_->SetBoundsRect(toolbar_bounds);
 
+  find_bar_view_->SetBoundsRect(toolbar_bounds);
+
   gfx::Rect progress_bar_bounds(toolbar_bounds.x(), toolbar_bounds.bottom() + 2,
                                 toolbar_bounds.width(), 5);
 
@@ -321,6 +351,20 @@ void BrowserWindow::Layout(views::View* host) {
   omnibox_view_->SetBounds(
       mojo::TypeConverter<mojo::Rect, gfx::Rect>::Convert(
           bounds_in_physical_pixels));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserWindow, FindBarDelegate implementation:
+
+void BrowserWindow::OnDoFind(const std::string& find) {
+  static int find_id = 0;
+  web_view_.web_view()->Find(++find_id, mojo::String::From(find));
+}
+
+void BrowserWindow::OnHideFindBar() {
+  toolbar_view_->SetVisible(true);
+  find_bar_view_->Hide();
+  web_view_.web_view()->StopFinding();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -343,6 +387,9 @@ void BrowserWindow::Init(mus::View* root) {
   widget_delegate->GetContentsView()->AddChildView(toolbar_view_);
   widget_delegate->GetContentsView()->AddChildView(progress_bar_);
   widget_delegate->GetContentsView()->SetLayoutManager(this);
+
+  find_bar_view_ = new FindBarView(this);
+  widget_delegate->GetContentsView()->AddChildView(find_bar_view_);
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(

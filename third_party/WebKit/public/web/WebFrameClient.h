@@ -474,9 +474,17 @@ public:
 
     // Notifies how many matches have been found so far, for a given
     // identifier.  |finalUpdate| specifies whether this is the last update
-    // (all frames have completed scoping).
+    // (all frames have completed scoping). This notification is only delivered
+    // to the main frame and aggregates all matches across all frames.
     virtual void reportFindInPageMatchCount(
         int identifier, int count, bool finalUpdate) { }
+
+    // Notifies how many matches have been found in a specific frame so far,
+    // for a given identifier. Unlike reprotFindInPageMatchCount(), this
+    // notification is sent to the client of each frame, and only reports
+    // results per-frame.
+    virtual void reportFindInFrameMatchCount(
+        int identifier, int count, bool finalUpdate) {}
 
     // Notifies what tick-mark rect is currently selected.   The given
     // identifier lets the client know which request this message belongs

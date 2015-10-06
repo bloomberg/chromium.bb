@@ -27,6 +27,9 @@ source_set("lib") {
     "browser_manager.h",
     "browser_window.cc",
     "browser_window.h",
+    "find_bar_delegate.h",
+    "find_bar_view.cc",
+    "find_bar_view.h",
     "toolbar_view.cc",
     "toolbar_view.h",
   ]

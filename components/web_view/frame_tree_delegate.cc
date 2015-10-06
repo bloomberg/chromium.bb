@@ -9,5 +9,13 @@ namespace web_view {
 void FrameTreeDelegate::DidCreateFrame(Frame* frame) {}
 void FrameTreeDelegate::DidDestroyFrame(Frame* frame) {}
 void FrameTreeDelegate::OnViewEmbeddedInFrameDisconnected(Frame* frame) {}
+void FrameTreeDelegate::OnFindInFrameCountUpdated(int32_t request_id,
+                                                  Frame* frame,
+                                                  int32_t count,
+                                                  bool final_update) {}
+void FrameTreeDelegate::OnFindInPageSelectionUpdated(
+    int32_t request_id,
+    Frame* frame,
+    int32_t active_match_ordinal) {}
 
 }  // namespace web_view

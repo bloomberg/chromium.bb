@@ -50,6 +50,7 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -503,6 +504,18 @@ void HTMLFrame::didReceiveTitle(blink::WebLocalFrame* frame,
   server_->TitleChanged(formatted);
 }
 
+void HTMLFrame::reportFindInFrameMatchCount(int identifier,
+                                            int count,
+                                            bool finalUpdate) {
+  server_->OnFindInFrameCountUpdated(identifier, count, finalUpdate);
+}
+
+void HTMLFrame::reportFindInPageSelection(int identifier,
+                                          int activeMatchOrdinal,
+                                          const blink::WebRect& selection) {
+  server_->OnFindInPageSelectionUpdated(identifier, activeMatchOrdinal);
+}
+
 void HTMLFrame::Bind(
     web_view::mojom::FramePtr frame,
     mojo::InterfaceRequest<web_view::mojom::FrameClient> frame_client_request) {
@@ -660,6 +673,26 @@ void HTMLFrame::SwapDelegate(HTMLFrameDelegate* delegate) {
   HTMLFrameDelegate* old_delegate = delegate_;
   delegate_ = delegate;
   delegate->OnSwap(this, old_delegate);
+}
+
+blink::WebElement HTMLFrame::GetFocusedElement() {
+  if (!web_view())
+    return blink::WebElement();
+
+  HTMLFrame* frame = this;
+  while (frame) {
+    if (frame->web_view()) {
+      if (frame->web_view()->focusedFrame() == web_frame_) {
+        blink::WebDocument doc = web_frame_->document();
+        if (!doc.isNull())
+          return doc.focusedElement();
+      }
+      return blink::WebElement();
+    }
+    frame = frame->parent();
+  }
+
+  return blink::WebElement();
 }
 
 HTMLFrame* HTMLFrame::FindFrameWithWebFrame(blink::WebFrame* web_frame) {
@@ -855,6 +888,53 @@ void HTMLFrame::OnDispatchFrameLoadEvent(uint32_t frame_id) {
   HTMLFrame* frame = frame_tree_manager_->root_->FindFrame(frame_id);
   if (frame && !frame->IsLocal())
     frame->web_frame_->toWebRemoteFrame()->DispatchLoadEventForFrameOwner();
+}
+
+void HTMLFrame::Find(int32 request_id,
+                     const mojo::String& search_text,
+                     const FindCallback& callback) {
+  // TODO(erg): We need to synchronize whether we're a singleton frame here
+  // with the parent; we can't trust our state.
+  bool wrap_within_frame = false;
+
+  blink::WebFindOptions options;
+  blink::WebRect selection_rect;
+  bool result = web_frame_->find(request_id, search_text.To<blink::WebString>(),
+                                 options, wrap_within_frame, &selection_rect);
+  if (!result) {
+    // don't leave text selected as you move to the next frame.
+    web_frame_->executeCommand(blink::WebString::fromUTF8("Unselect"),
+                               GetFocusedElement());
+  }
+
+  callback.Run(result);
+}
+
+void HTMLFrame::StopFinding(bool clear_selection) {
+  // TODO(erg): |clear_selection| isn't correct; this should be a state enum
+  // that lets us STOP_FIND_ACTION_ACTIVATE_SELECTION, too.
+  if (clear_selection) {
+    blink::WebElement focused_element = GetFocusedElement();
+    if (!focused_element.isNull()) {
+      web_frame_->executeCommand(blink::WebString::fromUTF8("Unselect"),
+                                 focused_element);
+    }
+  }
+
+  web_frame_->stopFinding(clear_selection);
+}
+
+void HTMLFrame::HighlightFindResults(int32_t request_id,
+                                     const mojo::String& search_text,
+                                     bool reset) {
+  blink::WebFindOptions options;
+  web_frame_->scopeStringMatches(request_id, search_text.To<blink::WebString>(),
+                                 options, reset);
+}
+
+void HTMLFrame::StopHighlightingFindResults() {
+  web_frame_->resetMatchCount();
+  web_frame_->cancelPendingScopingEffort();
 }
 
 void HTMLFrame::frameDetached(blink::WebRemoteFrameClient::DetachType type) {

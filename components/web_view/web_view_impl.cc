@@ -4,6 +4,9 @@
 
 #include "components/web_view/web_view_impl.h"
 
+#include <queue>
+
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "components/devtools_service/public/cpp/switches.h"
 #include "components/mus/public/cpp/scoped_view_ptr.h"
@@ -44,7 +47,8 @@ WebViewImpl::WebViewImpl(mojo::ApplicationImpl* app,
       binding_(this, request.Pass()),
       root_(nullptr),
       content_(nullptr),
-      navigation_controller_(this) {
+      navigation_controller_(this),
+      find_controller_(this) {
   if (EnableRemoteDebugging())
     devtools_agent_.reset(new FrameDevToolsAgent(app_, this));
   OnDidNavigate();
@@ -108,6 +112,14 @@ void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
 void WebViewImpl::GetViewTreeClient(
     mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client) {
   mus::ViewTreeConnection::Create(this, view_tree_client.Pass());
+}
+
+void WebViewImpl::Find(int32_t request_id, const mojo::String& search_text) {
+  find_controller_.Find(request_id, search_text);
+}
+
+void WebViewImpl::StopFinding() {
+  find_controller_.StopFinding();
 }
 
 void WebViewImpl::GoBack() {
@@ -203,6 +215,25 @@ void WebViewImpl::DidCommitProvisionalLoad(Frame* frame) {
   navigation_controller_.FrameDidCommitProvisionalLoad(frame);
 }
 
+void WebViewImpl::DidDestroyFrame(Frame* frame) {
+  find_controller_.DidDestroyFrame(frame);
+}
+
+void WebViewImpl::OnFindInFrameCountUpdated(int32_t request_id,
+                                            Frame* frame,
+                                            int32_t count,
+                                            bool final_update) {
+  find_controller_.OnFindInFrameCountUpdated(request_id, frame, count,
+                                             final_update);
+}
+
+void WebViewImpl::OnFindInPageSelectionUpdated(int32_t request_id,
+                                               Frame* frame,
+                                               int32_t active_match_ordinal) {
+  find_controller_.OnFindInPageSelectionUpdated(request_id, frame,
+                                                active_match_ordinal);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebViewImpl, FrameDevToolsAgentDelegate implementation:
 
@@ -227,6 +258,29 @@ void WebViewImpl::OnDidNavigate() {
                               navigation_controller_.CanGoForward()
                                   ? ButtonState::BUTTON_STATE_ENABLED
                                   : ButtonState::BUTTON_STATE_DISABLED);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WebViewImpl, FindControllerDelegate implementation:
+
+std::deque<Frame*> WebViewImpl::GetAllFrames() {
+  std::deque<Frame*> all_frames;
+  std::queue<Frame*> frames_to_search;
+  frames_to_search.push(frame_tree_->root());
+  while (!frames_to_search.empty()) {
+    // TODO(erg): This is not in depth first order. I'm not actually sure how
+    // blink does traversal though.
+    Frame* current = frames_to_search.front();
+    frames_to_search.pop();
+    for (Frame* child : current->children())
+      frames_to_search.push(child);
+    all_frames.push_back(current);
+  }
+  return all_frames;
+}
+
+mojom::WebViewClient* WebViewImpl::GetWebViewClient() {
+  return client_.get();
 }
 
 }  // namespace web_view

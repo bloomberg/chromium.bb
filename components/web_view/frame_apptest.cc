@@ -166,6 +166,14 @@ class TestFrameClient : public mojom::FrameClient {
     if (!on_dispatch_load_event_callback_.is_null())
       on_dispatch_load_event_callback_.Run();
   }
+  void Find(int32_t request_id,
+            const mojo::String& search_text,
+            const FindCallback& callback) override {}
+  void StopFinding(bool clear_selection) override {}
+  void HighlightFindResults(int32_t request_id,
+                            const mojo::String& search_test,
+                            bool reset) override {}
+  void StopHighlightingFindResults() override {}
 
  private:
   struct LoadingStateChangedNotification {

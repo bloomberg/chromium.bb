@@ -161,6 +161,26 @@ double Frame::GatherProgress(int* frame_count) const {
   return progress_;
 }
 
+void Frame::Find(int32 request_id,
+                 const mojo::String& search_text,
+                 const FindCallback& callback) {
+  frame_client_->Find(request_id, search_text, callback);
+}
+
+void Frame::StopFinding(bool clear_selection) {
+  frame_client_->StopFinding(clear_selection);
+}
+
+void Frame::HighlightFindResults(int32_t request_id,
+                                 const mojo::String& search_text,
+                                 bool reset) {
+  frame_client_->HighlightFindResults(request_id, search_text, reset);
+}
+
+void Frame::StopHighlightingFindResults() {
+  frame_client_->StopHighlightingFindResults();
+}
+
 void Frame::InitClient(ClientType client_type,
                        scoped_ptr<FrameUserDataAndBinding> data_and_binding,
                        mojo::ViewTreeClientPtr view_tree_client,
@@ -541,6 +561,19 @@ void Frame::DispatchLoadEventToParent() {
     // from our side.
     parent_->NotifyDispatchFrameLoadEvent(this);
   }
+}
+
+void Frame::OnFindInFrameCountUpdated(int32_t request_id,
+                                      int32_t count,
+                                      bool final_update) {
+  tree_->delegate_->OnFindInFrameCountUpdated(request_id, this, count,
+                                              final_update);
+}
+
+void Frame::OnFindInPageSelectionUpdated(int32_t request_id,
+                                         int32_t active_match_ordinal) {
+  tree_->delegate_->OnFindInPageSelectionUpdated(request_id, this,
+                                                 active_match_ordinal);
 }
 
 }  // namespace web_view

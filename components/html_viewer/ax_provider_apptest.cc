@@ -55,6 +55,11 @@ class TestFrame : public web_view::mojom::Frame {
                        mojo::URLRequestPtr request) override {}
   void DidNavigateLocally(const mojo::String& url) override {}
   void DispatchLoadEventToParent() override {}
+  void OnFindInFrameCountUpdated(int32_t request_id,
+                                 int32_t count,
+                                 bool final_update) override {}
+  void OnFindInPageSelectionUpdated(int32_t request_id,
+                                    int32_t active_match_ordinal) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFrame);

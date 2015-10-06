@@ -194,6 +194,12 @@ class HTMLFrame : public blink::WebFrameClient,
   virtual void didReceiveTitle(blink::WebLocalFrame* frame,
                                const blink::WebString& title,
                                blink::WebTextDirection direction);
+  virtual void reportFindInFrameMatchCount(int identifier,
+                                           int count,
+                                           bool finalUpdate);
+  virtual void reportFindInPageSelection(int identifier,
+                                         int activeMatchOrdinal,
+                                         const blink::WebRect& selection);
 
  private:
   friend class HTMLFrameTreeManager;
@@ -244,6 +250,10 @@ class HTMLFrame : public blink::WebFrameClient,
 
   GlobalState* global_state() { return frame_tree_manager_->global_state(); }
 
+  // Returns the focused element if the focused element is in this
+  // frame. Returns an empty one otherwise.
+  blink::WebElement GetFocusedElement();
+
   // Returns the Frame associated with the specified WebFrame.
   HTMLFrame* FindFrameWithWebFrame(blink::WebFrame* web_frame);
 
@@ -280,6 +290,14 @@ class HTMLFrame : public blink::WebFrameClient,
                       const OnWillNavigateCallback& callback) override;
   void OnFrameLoadingStateChanged(uint32_t frame_id, bool loading) override;
   void OnDispatchFrameLoadEvent(uint32_t frame_id) override;
+  void Find(int32 request_id,
+            const mojo::String& search_text,
+            const FindCallback& callback) override;
+  void StopFinding(bool clear_selection) override;
+  void HighlightFindResults(int32_t request_id,
+                            const mojo::String& search_test,
+                            bool reset) override;
+  void StopHighlightingFindResults() override;
 
   // blink::WebRemoteFrameClient:
   virtual void frameDetached(blink::WebRemoteFrameClient::DetachType type);

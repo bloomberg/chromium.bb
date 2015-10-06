@@ -27,6 +27,13 @@ interface WebViewClient {
 
   // TODO(beng): also forward text direction.
   TitleChanged(string? title);
+
+  // Reports the number of matches for a given Find() call.
+  FindInPageMatchCountUpdated(int32 request_id, int32 count, bool final_update);
+
+  // Reports which find match is selected. (If there are five highlighted
+  // matches on a page, and the 2nd is selected, |active_match_ordinal| is 2.)
+  FindInPageSelectionUpdated(int32 request_id, int32 active_match_ordinal);
 };
 
 interface WebView {
@@ -36,6 +43,10 @@ interface WebView {
   // Provide a ViewTreeClient for this specific WebView.
   GetViewTreeClient(mojo.ViewTreeClient& view_tree_client);
 
+  // Finds a string in page.
+  Find(int32 request_id, string search_text);
+  StopFinding();
+  
   // Moves forward and backward.
   GoBack();
   GoForward();
