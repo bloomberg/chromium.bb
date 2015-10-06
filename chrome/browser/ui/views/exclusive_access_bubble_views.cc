@@ -44,6 +44,11 @@ namespace {
 // Space between the site info label and the buttons / link.
 const int kMiddlePaddingPx = 30;
 
+// Gets the opacity of the bubble when not animating.
+int GetMaximumOpacity() {
+  return ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 180 : 255;
+}
+
 class ButtonView : public views::View {
  public:
   ButtonView(views::ButtonListener* listener, int between_button_spacing);
@@ -139,10 +144,21 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   // See http://crbug.com/462983.
   shadow_type = views::BubbleBorder::SMALL_SHADOW;
 #endif
+  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
+    shadow_type = views::BubbleBorder::NO_SHADOW;
+
   ui::NativeTheme* theme = ui::NativeTheme::instance();
+  SkColor background_color =
+      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
+          ? SK_ColorBLACK
+          : theme->GetSystemColor(ui::NativeTheme::kColorId_BubbleBackground);
+  SkColor foreground_color =
+      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
+          ? SK_ColorWHITE
+          : theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
+
   scoped_ptr<views::BubbleBorder> bubble_border(new views::BubbleBorder(
-      views::BubbleBorder::NONE, shadow_type,
-      theme->GetSystemColor(ui::NativeTheme::kColorId_BubbleBackground)));
+      views::BubbleBorder::NONE, shadow_type, background_color));
   set_background(new views::BubbleBackground(bubble_border.get()));
   SetBorder(bubble_border.Pass());
   SetFocusable(false);
@@ -150,11 +166,19 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::FontList& medium_font_list =
       rb.GetFontList(ui::ResourceBundle::MediumFont);
-  message_label_ = new views::Label(base::string16(), medium_font_list);
+
+  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    message_label_ = new views::Label(base::string16(), medium_font_list);
+    message_label_->SetEnabledColor(foreground_color);
+    message_label_->SetBackgroundColor(background_color);
+  }
 
   mouse_lock_exit_instruction_ =
       new views::Label(bubble_->GetInstructionText(), medium_font_list);
   mouse_lock_exit_instruction_->set_collapse_when_hidden(true);
+
+  mouse_lock_exit_instruction_->SetEnabledColor(foreground_color);
+  mouse_lock_exit_instruction_->SetBackgroundColor(background_color);
 
   link_ = new views::Link();
   link_->set_collapse_when_hidden(true);
@@ -165,21 +189,22 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
 #endif
   link_->set_listener(this);
   link_->SetFontList(medium_font_list);
-  link_->SetPressedColor(message_label_->enabled_color());
-  link_->SetEnabledColor(message_label_->enabled_color());
+  link_->SetPressedColor(foreground_color);
+  link_->SetEnabledColor(foreground_color);
+  link_->SetBackgroundColor(background_color);
   link_->SetVisible(false);
-
-  link_->SetBackgroundColor(background()->get_color());
-  message_label_->SetBackgroundColor(background()->get_color());
-  mouse_lock_exit_instruction_->SetBackgroundColor(background()->get_color());
 
   button_view_ = new ButtonView(this, kPaddingPx);
 
   views::GridLayout* layout = new views::GridLayout(this);
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(1, kMiddlePaddingPx);
+  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    // In the simplified UI, do not show the message label, only the exit
+    // instruction.
+    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
+                       views::GridLayout::USE_PREF, 0, 0);
+    columns->AddPaddingColumn(1, kMiddlePaddingPx);
+  }
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
                      views::GridLayout::USE_PREF, 0, 0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
@@ -188,7 +213,10 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
                      views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
-  layout->AddView(message_label_);
+  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    DCHECK(message_label_);
+    layout->AddView(message_label_);
+  }
   layout->AddView(button_view_);
   layout->AddView(mouse_lock_exit_instruction_);
   layout->AddView(link_);
@@ -224,7 +252,11 @@ void ExclusiveAccessBubbleViews::ExclusiveAccessView::UpdateContent(
     ExclusiveAccessBubbleType bubble_type) {
   DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type);
 
-  message_label_->SetText(bubble_->GetCurrentMessageText());
+  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    DCHECK(message_label_);
+    message_label_->SetText(bubble_->GetCurrentMessageText());
+  }
+
   if (exclusive_access_bubble::ShowButtonsForType(bubble_type)) {
     link_->SetVisible(false);
     mouse_lock_exit_instruction_->SetVisible(false);
@@ -235,7 +267,8 @@ void ExclusiveAccessBubbleViews::ExclusiveAccessView::UpdateContent(
         bubble_->GetCurrentAllowButtonText());
     button_view_->accept_button()->SetMinSize(gfx::Size());
   } else {
-    bool link_visible = true;
+    bool link_visible =
+        !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
     base::string16 accelerator;
     if (bubble_type ==
             EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
@@ -300,10 +333,15 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent =
       bubble_view_context_->GetBubbleAssociatedWidget()->GetNativeView();
+  // The simplified UI just shows a notice; clicks should go through to the
+  // underlying window.
+  params.accept_events =
+      !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
   popup_->Init(params);
   popup_->SetContentsView(view_);
   gfx::Size size = GetPopupRect(true).size();
   popup_->SetBounds(GetPopupRect(false));
+  popup_->SetOpacity(GetMaximumOpacity());
   // We set layout manager to nullptr to prevent the widget from sizing its
   // contents to the same size as itself. This prevents the widget contents from
   // shrinking while we animate the height of the popup to give the impression
@@ -391,7 +429,8 @@ void ExclusiveAccessBubbleViews::UpdateMouseWatcher() {
 
 void ExclusiveAccessBubbleViews::UpdateForImmersiveState() {
   AnimatedAttribute expected_animated_attribute =
-      bubble_view_context_->IsImmersiveModeEnabled()
+      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ||
+              bubble_view_context_->IsImmersiveModeEnabled()
           ? ANIMATED_ATTRIBUTE_OPACITY
           : ANIMATED_ATTRIBUTE_BOUNDS;
   if (animated_attribute_ != expected_animated_attribute) {
@@ -406,7 +445,7 @@ void ExclusiveAccessBubbleViews::UpdateForImmersiveState() {
     // assumes |popup_| has the opacity when it is fully shown and the opacity
     // animation assumes |popup_| has the bounds when |popup_| is fully shown.
     if (animated_attribute_ == ANIMATED_ATTRIBUTE_BOUNDS)
-      popup_->SetOpacity(255);
+      popup_->SetOpacity(GetMaximumOpacity());
     else
       UpdateBounds();
   }
@@ -429,7 +468,7 @@ views::View* ExclusiveAccessBubbleViews::GetBrowserRootView() const {
 void ExclusiveAccessBubbleViews::AnimationProgressed(
     const gfx::Animation* animation) {
   if (animated_attribute_ == ANIMATED_ATTRIBUTE_OPACITY) {
-    int opacity = animation_->CurrentValueBetween(0, 255);
+    int opacity = animation_->CurrentValueBetween(0, GetMaximumOpacity());
     if (opacity == 0) {
       popup_->Hide();
     } else {
