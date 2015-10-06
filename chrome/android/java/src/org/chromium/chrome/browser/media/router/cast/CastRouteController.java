@@ -28,8 +28,8 @@ import java.util.Set;
 /**
  * A wrapper around the established Cast application session.
  */
-public class SessionWrapper implements RouteController {
-    private static final String TAG = "cr.MediaRouter";
+public class CastRouteController implements RouteController {
+    private static final String TAG = "cr_MediaRouter";
 
     private static final String MEDIA_NAMESPACE = "urn:x-cast:com.google.cast.media";
     private static final String RECEIVER_NAMESPACE = "urn:x-cast:com.google.cast.receiver";
@@ -51,9 +51,9 @@ public class SessionWrapper implements RouteController {
     };
 
     private static class CastMessagingChannel implements Cast.MessageReceivedCallback {
-        private final SessionWrapper mSession;
+        private final CastRouteController mSession;
 
-        public CastMessagingChannel(SessionWrapper session) {
+        public CastMessagingChannel(CastRouteController session) {
             mSession = session;
         }
 
@@ -68,6 +68,8 @@ public class SessionWrapper implements RouteController {
     }
 
     private final String mMediaRouteId;
+    private final String mOrigin;
+    private final int mTabId;
     private final CastMessagingChannel mMessageChannel;
     private final RouteDelegate mRouteDelegate;
     private final CastDevice mCastDevice;
@@ -84,27 +86,35 @@ public class SessionWrapper implements RouteController {
     private boolean mStoppingApplication;
 
     /**
-     * Initializes a new {@link SessionWrapper} instance.
+     * Initializes a new {@link CastRouteController} instance.
      * @param apiClient The Google Play Services client used to create the session.
      * @param sessionId The session identifier to use with the Cast SDK.
      * @param mediaRouteId The media route identifier associated with this session.
+     * @param origin The origin of the frame requesting the route.
+     * @param tabId the id of the tab containing the frame requesting the route.
      * @param source The {@link MediaSource} corresponding to this session.
      * @param mediaRouter The {@link ChromeMediaRouter} instance managing this session.
      */
-    public SessionWrapper(
+    public CastRouteController(
             GoogleApiClient apiClient,
-            Cast.ApplicationConnectionResult result,
+            String sessionId,
+            ApplicationMetadata metadata,
+            String applicationStatus,
             CastDevice castDevice,
             String mediaRouteId,
+            String origin,
+            int tabId,
             MediaSource source,
             RouteDelegate delegate) {
         mApiClient = apiClient;
-        mSessionId = result.getSessionId();
+        mSessionId = sessionId;
         mMediaRouteId = mediaRouteId;
+        mOrigin = origin;
+        mTabId = tabId;
         mSource = source;
         mRouteDelegate = delegate;
-        mApplicationMetadata = result.getApplicationMetadata();
-        mApplicationStatus = result.getApplicationStatus();
+        mApplicationMetadata = metadata;
+        mApplicationStatus = applicationStatus;
         mCastDevice = castDevice;
 
         mMessageChannel = new CastMessagingChannel(this);
@@ -112,7 +122,19 @@ public class SessionWrapper implements RouteController {
         addNamespace(MEDIA_NAMESPACE);
     }
 
+    public CastRouteController createJoinedController(String mediaRouteId, String origin, int tabId,
+            MediaSource source) {
+        return new CastRouteController(mApiClient, mSessionId, mApplicationMetadata,
+                mApplicationStatus, mCastDevice, mediaRouteId, origin, tabId, source,
+                mRouteDelegate);
+    }
 
+    /**
+     * @return the id of the Cast session controlled by the route.
+     */
+    public String getSessionId() {
+        return mSessionId;
+    }
 
     @Override
     public void close() {
@@ -138,7 +160,7 @@ public class SessionWrapper implements RouteController {
                             mSessionId = null;
                             mApiClient = null;
 
-                            mRouteDelegate.onRouteClosed(SessionWrapper.this);
+                            mRouteDelegate.onRouteClosed(CastRouteController.this);
                             mStoppingApplication = false;
                         }
                     });
@@ -159,8 +181,23 @@ public class SessionWrapper implements RouteController {
     }
 
     @Override
-    public String getId() {
+    public String getRouteId() {
         return mMediaRouteId;
+    }
+
+    @Override
+    public String getSinkId() {
+        return mCastDevice.getDeviceId();
+    }
+
+    @Override
+    public String getOrigin() {
+        return mOrigin;
+    }
+
+    @Override
+    public int getTabId() {
+        return mTabId;
     }
 
     /**

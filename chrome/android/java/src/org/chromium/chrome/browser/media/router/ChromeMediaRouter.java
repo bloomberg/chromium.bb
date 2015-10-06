@@ -28,7 +28,15 @@ import javax.annotation.Nullable;
  */
 @JNINamespace("media_router")
 public class ChromeMediaRouter implements MediaRouteManager {
-    private static final String TAG = "cr.MediaRouter";
+
+    private static final String TAG = "cr_MediaRouter";
+
+    private static final String MEDIA_ROUTE_ID_PREFIX = "route:";
+    private static final String MEDIA_ROUTE_ID_SEPARATOR = "/";
+    private static final int MEDIA_ROUTE_ID_COMPONENTS_NUM = 3;
+    private static final int MEDIA_ROUTE_ID_PRESENTATION_ID_INDEX = 0;
+    private static final int MEDIA_ROUTE_ID_SINK_ID_INDEX = 1;
+    private static final int MEDIA_ROUTE_ID_SOURCE_ID_INDEX = 2;
 
     private final long mNativeMediaRouterAndroid;
     private final List<MediaRouteProvider> mRouteProviders = new ArrayList<MediaRouteProvider>();
@@ -40,7 +48,6 @@ public class ChromeMediaRouter implements MediaRouteManager {
             new HashMap<String, Map<MediaRouteProvider, List<MediaSink>>>();
     private final Map<String, List<MediaSink>> mSinksPerSource =
             new HashMap<String, List<MediaSink>>();
-
 
     /**
      * Obtains the {@link MediaRouter} instance given the application context.
@@ -61,15 +68,27 @@ public class ChromeMediaRouter implements MediaRouteManager {
         }
     }
 
-    /**
-     * @param presentationId the presentation id associated with the route
-     * @param sinkId the id of the {@link MediaSink} associated with the route
-     * @param sourceUrn the presentation URL associated with the route
-     * @return the media route id corresponding to the given parameters.
-     */
     public static String createMediaRouteId(
             String presentationId, String sinkId, String sourceUrn) {
-        return String.format("route:%s/%s/%s", presentationId, sinkId, sourceUrn);
+        StringBuilder builder = new StringBuilder();
+        builder.append(MEDIA_ROUTE_ID_PREFIX);
+        builder.append(presentationId);
+        builder.append(MEDIA_ROUTE_ID_SEPARATOR);
+        builder.append(sinkId);
+        builder.append(MEDIA_ROUTE_ID_SEPARATOR);
+        builder.append(sourceUrn);
+        return builder.toString();
+    }
+
+    public static String[] parseMediaRouteId(String routeId) {
+        if (!routeId.startsWith(MEDIA_ROUTE_ID_PREFIX)) return null;
+
+        String[] routeComponents = routeId.substring(MEDIA_ROUTE_ID_PREFIX.length())
+                .split(MEDIA_ROUTE_ID_SEPARATOR, MEDIA_ROUTE_ID_COMPONENTS_NUM);
+
+        if (routeComponents.length != MEDIA_ROUTE_ID_COMPONENTS_NUM) return null;
+
+        return routeComponents;
     }
 
     @Override
@@ -94,14 +113,16 @@ public class ChromeMediaRouter implements MediaRouteManager {
 
     @Override
     public void onRouteCreated(
-            String mediaRouteId, int requestId, MediaRouteProvider provider, boolean wasLaunched) {
+            String mediaRouteId, String mediaSinkId, int requestId, MediaRouteProvider provider,
+            boolean wasLaunched) {
         mRouteIdsToProviders.put(mediaRouteId, provider);
-        nativeOnRouteCreated(mNativeMediaRouterAndroid, mediaRouteId, requestId, wasLaunched);
+        nativeOnRouteCreated(mNativeMediaRouterAndroid, mediaRouteId, mediaSinkId, requestId,
+                wasLaunched);
     }
 
     @Override
-    public void onRouteCreationError(String errorText, int requestId) {
-        nativeOnRouteCreationError(mNativeMediaRouterAndroid, errorText, requestId);
+    public void onRouteRequestError(String errorText, int requestId) {
+        nativeOnRouteRequestError(mNativeMediaRouterAndroid, errorText, requestId);
     }
 
     @Override
@@ -194,6 +215,8 @@ public class ChromeMediaRouter implements MediaRouteManager {
      * @param sourceId the id of the {@link MediaSource} to route to the sink.
      * @param sinkId the id of the {@link MediaSink} to route the source to.
      * @param presentationId the id of the presentation to be used by the page.
+     * @param origin the origin of the frame requesting a new route.
+     * @param tabId the id of the tab the requesting frame belongs to.
      * @param requestId the id of the route creation request tracked by the native side.
      */
     @CalledByNative
@@ -201,12 +224,43 @@ public class ChromeMediaRouter implements MediaRouteManager {
             String sourceId,
             String sinkId,
             String presentationId,
+            String origin,
+            int tabId,
             int requestId) {
-        MediaRouteProvider provider = getProviderForSourceAndSink(sourceId, sinkId);
-        assert provider != null;
+        MediaRouteProvider provider = getProviderForSource(sourceId);
+        if (provider == null) {
+            onRouteRequestError("Presentation URL is not supported", requestId);
+            return;
+        }
 
         String routeId = createMediaRouteId(presentationId, sinkId, sourceId);
-        provider.createRoute(sourceId, sinkId, routeId, requestId);
+        provider.createRoute(sourceId, sinkId, routeId, origin, tabId, requestId);
+    }
+
+    /**
+     * Initiates route joining with the given parameters. Notifies the native client of success
+     * or failure.
+     * @param sourceId the id of the {@link MediaSource} to route to the sink.
+     * @param sinkId the id of the {@link MediaSink} to route the source to.
+     * @param presentationId the id of the presentation to be used by the page.
+     * @param origin the origin of the frame requesting a new route.
+     * @param tabId the id of the tab the requesting frame belongs to.
+     * @param requestId the id of the route creation request tracked by the native side.
+     */
+    @CalledByNative
+    public void joinRoute(
+            String sourceId,
+            String presentationId,
+            String origin,
+            int tabId,
+            int requestId) {
+        MediaRouteProvider provider = getProviderForSource(sourceId);
+        if (provider == null) {
+            onRouteRequestError("Route not found.", requestId);
+            return;
+        }
+
+        provider.joinRoute(sourceId, presentationId, origin, tabId, requestId);
     }
 
     /**
@@ -248,17 +302,10 @@ public class ChromeMediaRouter implements MediaRouteManager {
         return mSinksPerSource.get(sourceId).get(index);
     }
 
-    private MediaRouteProvider getProviderForSourceAndSink(String sourceId, String sinkId) {
-        assert mSinksPerSourcePerProvider.containsKey(sourceId);
-        Map<MediaRouteProvider, List<MediaSink>> sinksPerProvider =
-                mSinksPerSourcePerProvider.get(sourceId);
-        for (Map.Entry<MediaRouteProvider, List<MediaSink>> entry : sinksPerProvider.entrySet()) {
-            for (MediaSink sink : entry.getValue()) {
-                if (sink.getId().equals(sinkId)) return entry.getKey();
-            }
+    private MediaRouteProvider getProviderForSource(String sourceId) {
+        for (MediaRouteProvider provider : mRouteProviders) {
+            if (provider.supportsSource(sourceId)) return provider;
         }
-
-        assert false;
         return null;
     }
 
@@ -267,9 +314,10 @@ public class ChromeMediaRouter implements MediaRouteManager {
     native void nativeOnRouteCreated(
             long nativeMediaRouterAndroid,
             String mediaRouteId,
+            String mediaSinkId,
             int createRouteRequestId,
             boolean wasLaunched);
-    native void nativeOnRouteCreationError(
+    native void nativeOnRouteRequestError(
             long nativeMediaRouterAndroid, String errorText, int createRouteRequestId);
     native void nativeOnRouteClosed(long nativeMediaRouterAndroid, String mediaRouteId);
     native void nativeOnMessageSentResult(

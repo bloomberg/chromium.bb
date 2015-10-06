@@ -23,16 +23,16 @@ using base::android::AttachCurrentThread;
 
 namespace media_router {
 
-MediaRouterAndroid::CreateMediaRouteRequest::CreateMediaRouteRequest(
+MediaRouterAndroid::MediaRouteRequest::MediaRouteRequest(
     const MediaSource& source,
-    const MediaSink& sink,
     const std::string& presentation_id,
     const std::vector<MediaRouteResponseCallback>& callbacks)
     : media_source(source),
-      media_sink(sink),
       presentation_id(presentation_id),
       callbacks(callbacks) {}
-MediaRouterAndroid::CreateMediaRouteRequest::~CreateMediaRouteRequest() {}
+
+MediaRouterAndroid::MediaRouteRequest::~MediaRouteRequest() {}
+
 
 MediaRouterAndroid::MediaRouterAndroid(content::BrowserContext*) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -69,12 +69,11 @@ void MediaRouterAndroid::CreateRoute(
   std::string presentation_id("mr_");
   presentation_id += base::GenerateGUID();
 
-  CreateMediaRouteRequest* request = new CreateMediaRouteRequest(
+  MediaRouteRequest* request = new MediaRouteRequest(
       MediaSource(source_id),
-      MediaSink(sink_id, std::string(), MediaSink::GENERIC),
       presentation_id,
       callbacks);
-  int create_route_request_id = create_route_requests_.Add(request);
+  int route_request_id = route_requests_.Add(request);
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jsource_id =
@@ -83,6 +82,8 @@ void MediaRouterAndroid::CreateRoute(
           base::android::ConvertUTF8ToJavaString(env, sink_id);
   ScopedJavaLocalRef<jstring> jpresentation_id =
           base::android::ConvertUTF8ToJavaString(env, presentation_id);
+  ScopedJavaLocalRef<jstring> jorigin =
+          base::android::ConvertUTF8ToJavaString(env, origin.spec());
 
   Java_ChromeMediaRouter_createRoute(
       env,
@@ -90,55 +91,47 @@ void MediaRouterAndroid::CreateRoute(
       jsource_id.obj(),
       jsink_id.obj(),
       jpresentation_id.obj(),
-      create_route_request_id);
+      jorigin.obj(),
+      tab_id,
+      route_request_id);
 }
 
 void MediaRouterAndroid::JoinRoute(
-    const MediaSource::Id& source,
+    const MediaSource::Id& source_id,
     const std::string& presentation_id,
     const GURL& origin,
     int tab_id,
     const std::vector<MediaRouteResponseCallback>& callbacks) {
-  GURL source_url(source);
-  DCHECK(source_url.is_valid());
-
-  const MediaRoute* matching_route = nullptr;
-  for (const auto& route : active_routes_) {
-    GURL route_source_url(route.media_source().id());
-    DCHECK(route_source_url.is_valid());
-
-    if (route_source_url.scheme() != source_url.scheme() ||
-        route_source_url.username() != source_url.username() ||
-        route_source_url.password() != source_url.password() ||
-        route_source_url.host() != source_url.host() ||
-        route_source_url.port() != source_url.port() ||
-        route_source_url.path() != source_url.path() ||
-        route_source_url.query() != source_url.query()) {
-      // Allow the ref() to be different.
-      continue;
-    }
-
-    // Since ref() could be different, use the existing route's source id.
-    const MediaSink::Id& sink_id = route.media_sink_id();
-    const std::string& potential_route_id = base::StringPrintf(
-        "route:%s/%s/%s",
-        presentation_id.c_str(),
-        sink_id.c_str(),
-        route.media_source().id().c_str());
-    if (potential_route_id == route.media_route_id()) {
-      matching_route = &route;
-      break;
-    }
-  }
-
-  if (!matching_route) {
-    for (const auto& callback : callbacks)
-      callback.Run(nullptr, std::string(), "No routes found");
+  DVLOG(2) << "JoinRoute: " << source_id << ", " << presentation_id << ", "
+           << origin.spec() << ", " << tab_id;
+  if (!origin.is_valid()) {
+    for (const MediaRouteResponseCallback& callback : callbacks)
+      callback.Run(nullptr, "", "Invalid origin");
     return;
   }
 
-  for (const auto& callback : callbacks)
-    callback.Run(matching_route, presentation_id, std::string());
+  MediaRouteRequest* request = new MediaRouteRequest(
+      MediaSource(source_id),
+      presentation_id,
+      callbacks);
+  int request_id = route_requests_.Add(request);
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jsource_id =
+          base::android::ConvertUTF8ToJavaString(env, source_id);
+  ScopedJavaLocalRef<jstring> jpresentation_id =
+          base::android::ConvertUTF8ToJavaString(env, presentation_id);
+  ScopedJavaLocalRef<jstring> jorigin =
+          base::android::ConvertUTF8ToJavaString(env, origin.spec());
+
+  Java_ChromeMediaRouter_joinRoute(
+      env,
+      java_media_router_.obj(),
+      jsource_id.obj(),
+      jpresentation_id.obj(),
+      jorigin.obj(),
+      tab_id,
+      request_id);
 }
 
 void MediaRouterAndroid::CloseRoute(const MediaRoute::Id& route_id) {
@@ -185,7 +178,7 @@ void MediaRouterAndroid::ClearIssue(const Issue::Id& issue_id) {
 
 void MediaRouterAndroid::OnPresentationSessionDetached(
     const MediaRoute::Id& route_id) {
-  CloseRoute(route_id);
+  NOTIMPLEMENTED();
 }
 
 bool MediaRouterAndroid::HasLocalRoute() const {
@@ -323,35 +316,35 @@ void MediaRouterAndroid::OnRouteCreated(
     JNIEnv* env,
     jobject obj,
     jstring jmedia_route_id,
-    jint jcreate_route_request_id,
+    jstring jsink_id,
+    jint jroute_request_id,
     jboolean jis_local) {
-  CreateMediaRouteRequest* request =
-      create_route_requests_.Lookup(jcreate_route_request_id);
+  MediaRouteRequest* request = route_requests_.Lookup(jroute_request_id);
   if (!request)
     return;
 
   MediaRoute route(ConvertJavaStringToUTF8(env, jmedia_route_id),
-                   request->media_source, request->media_sink.id(),
-                   std::string(), jis_local, std::string(),
+                   request->media_source,
+                   ConvertJavaStringToUTF8(env, jsink_id), std::string(),
+                   jis_local, std::string(),
                    true);  // TODO(avayvod): Populate for_display.
 
   for (const MediaRouteResponseCallback& callback : request->callbacks)
     callback.Run(&route, request->presentation_id, std::string());
 
-  create_route_requests_.Remove(jcreate_route_request_id);
+  route_requests_.Remove(jroute_request_id);
 
   active_routes_.push_back(route);
   FOR_EACH_OBSERVER(MediaRoutesObserver, routes_observers_,
                     OnRoutesUpdated(active_routes_));
 }
 
-void MediaRouterAndroid::OnRouteCreationError(
+void MediaRouterAndroid::OnRouteRequestError(
     JNIEnv* env,
     jobject obj,
     jstring jerror_text,
-    jint jcreate_route_request_id) {
-  CreateMediaRouteRequest* request =
-      create_route_requests_.Lookup(jcreate_route_request_id);
+    jint jroute_request_id) {
+  MediaRouteRequest* request = route_requests_.Lookup(jroute_request_id);
   if (!request)
     return;
 
@@ -360,7 +353,7 @@ void MediaRouterAndroid::OnRouteCreationError(
   for (const MediaRouteResponseCallback& callback : request->callbacks)
     callback.Run(nullptr, std::string(), error_text);
 
-  create_route_requests_.Remove(jcreate_route_request_id);
+  route_requests_.Remove(jroute_request_id);
 }
 
 void MediaRouterAndroid::OnRouteClosed(JNIEnv* env,

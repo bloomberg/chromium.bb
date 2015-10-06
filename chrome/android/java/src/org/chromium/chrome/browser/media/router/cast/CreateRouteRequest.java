@@ -45,11 +45,11 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
             "GoogleApiClient connection failed: %d, %b";
 
     private class CastListener extends Cast.Listener {
-        private SessionWrapper mSession;
+        private CastRouteController mSession;
 
         CastListener() {}
 
-        void setSession(SessionWrapper session) {
+        void setSession(CastRouteController session) {
             mSession = session;
         }
 
@@ -78,6 +78,8 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private final MediaSource mSource;
     private final MediaSink mSink;
     private final String mRouteId;
+    private final String mOrigin;
+    private final int mTabId;
     private final int mRequestId;
     private final RouteDelegate mDelegate;
     private final CastListener mCastListener = new CastListener();
@@ -90,6 +92,8 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
      * @param source The {@link MediaSource} defining the application to launch on the Cast device
      * @param sink The {@link MediaSink} identifying the selected Cast device
      * @param routeId The id assigned to the route by {@link ChromeMediaRouter}
+     * @param origin The origin of the frame requesting the route.
+     * @param tabId the id of the tab containing the frame requesting the route.
      * @param requestId The id of the route creation request for tracking by
      * {@link ChromeMediaRouter}
      * @param delegate The instance of {@link RouteDelegate} handling the request
@@ -98,6 +102,8 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
             MediaSource source,
             MediaSink sink,
             String routeId,
+            String origin,
+            int tabId,
             int requestId,
             RouteDelegate delegate) {
         assert source != null;
@@ -106,6 +112,8 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         mSource = source;
         mSink = sink;
         mRouteId = routeId;
+        mOrigin = origin;
+        mTabId = tabId;
         mRequestId = requestId;
         mDelegate = delegate;
     }
@@ -208,11 +216,15 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private void reportSuccess(Cast.ApplicationConnectionResult result) {
         if (mState != STATE_LAUNCH_SUCCEEDED) throwInvalidState();
 
-        SessionWrapper session = new SessionWrapper(
+        CastRouteController session = new CastRouteController(
                 mApiClient,
-                result,
+                result.getSessionId(),
+                result.getApplicationMetadata(),
+                result.getApplicationStatus(),
                 mSink.getDevice(),
                 mRouteId,
+                mOrigin,
+                mTabId,
                 mSource,
                 mDelegate);
         mCastListener.setSession(session);
@@ -225,7 +237,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         if (mState == STATE_TERMINATED) throwInvalidState();
 
         assert mDelegate != null;
-        mDelegate.onRouteCreationError(message, mRequestId);
+        mDelegate.onRouteRequestError(message, mRequestId);
 
         terminate();
     }

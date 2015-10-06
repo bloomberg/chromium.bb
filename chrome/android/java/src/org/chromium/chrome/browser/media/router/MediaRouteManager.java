@@ -25,20 +25,22 @@ public interface MediaRouteManager {
     /**
      * Called when the route was created successfully.
      * @param mediaRouteId the id of the created route.
+     * @param mediaSinkId the id of the sink that the route was created for.
      * @param provider the provider that created and owns the route.
      * @param requestId the id of the route creation request.
      * @param wasLaunched whether the presentation on the other end of the route was launched or
      *                    just joined.
      */
     public void onRouteCreated(
-            String mediaRouteId, int requestId, MediaRouteProvider provider, boolean wasLaunched);
+            String mediaRouteId, String mediaSinkId, int requestId, MediaRouteProvider provider,
+            boolean wasLaunched);
 
     /**
-     * Called when the route was failed to create.
+     * Called when the router failed to create or join a route.
      * @param errorText the error message to return to the page.
      * @param requestId the id of the route creation request.
      */
-    public void onRouteCreationError(String errorText, int requestId);
+    public void onRouteRequestError(String errorText, int requestId);
 
     /**
      * Called when the route is closed either as a result of

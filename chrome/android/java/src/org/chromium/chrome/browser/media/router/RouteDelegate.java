@@ -21,7 +21,7 @@ public interface RouteDelegate {
      * @param message The error message.
      * @param requestId The id of the request to create the route.
      */
-    void onRouteCreationError(String message, int requestId);
+    void onRouteRequestError(String message, int requestId);
 
     /**
      *

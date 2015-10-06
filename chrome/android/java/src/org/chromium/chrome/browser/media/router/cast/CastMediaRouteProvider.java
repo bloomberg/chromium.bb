@@ -31,13 +31,18 @@ import javax.annotation.Nullable;
 public class CastMediaRouteProvider
         implements MediaRouteProvider, DiscoveryDelegate, RouteDelegate {
 
+    private static final String TAG = "cr_MediaRouter";
+
+    private static final String AUTO_JOIN_PRESENTATION_ID = "auto-join";
+    private static final String PRESENTATION_ID_SESSION_ID_PREFIX = "cast-session_";
+
     private final Context mApplicationContext;
     private final MediaRouter mAndroidMediaRouter;
     private final MediaRouteManager mManager;
     private final Map<String, DiscoveryCallback> mDiscoveryCallbacks =
             new HashMap<String, DiscoveryCallback>();
-    private final Map<String, RouteController> mRoutes =
-            new HashMap<String, RouteController>();
+    private final Map<String, CastRouteController> mRoutes =
+            new HashMap<String, CastRouteController>();
     private final Map<String, String> mClientIdsToRouteIds = new HashMap<String, String>();
 
     private CreateRouteRequest mPendingCreateRouteRequest;
@@ -72,17 +77,19 @@ public class CastMediaRouteProvider
 
     @Override
     public void onRouteCreated(int requestId, RouteController route, boolean wasLaunched) {
-        String routeId = route.getId();
+        assert route instanceof CastRouteController;
 
-        mRoutes.put(routeId, route);
+        String routeId = route.getRouteId();
+
+        mRoutes.put(routeId, (CastRouteController) route);
         mClientIdsToRouteIds.put(MediaSource.from(route.getSourceId()).getClientId(), routeId);
 
-        mManager.onRouteCreated(routeId, requestId, this, wasLaunched);
+        mManager.onRouteCreated(routeId, route.getSinkId(), requestId, this, wasLaunched);
     }
 
     @Override
-    public void onRouteCreationError(String message, int requestId) {
-        mManager.onRouteCreationError(message, requestId);
+    public void onRouteRequestError(String message, int requestId) {
+        mManager.onRouteRequestError(message, requestId);
     }
 
     @Override
@@ -95,7 +102,7 @@ public class CastMediaRouteProvider
         } else if (mAndroidMediaRouter != null) {
             mAndroidMediaRouter.selectRoute(mAndroidMediaRouter.getDefaultRoute());
         }
-        mManager.onRouteClosed(route.getId());
+        mManager.onRouteClosed(route.getRouteId());
     }
 
     @Override
@@ -121,6 +128,11 @@ public class CastMediaRouteProvider
         if (androidMediaRouter == null) return null;
 
         return new CastMediaRouteProvider(applicationContext, androidMediaRouter, manager);
+    }
+
+    @Override
+    public boolean supportsSource(String sourceId) {
+        return MediaSource.from(sourceId) != null;
     }
 
     @Override
@@ -173,27 +185,27 @@ public class CastMediaRouteProvider
     }
 
     @Override
-    public void createRoute(
-            String sourceId, String sinkId, final String routeId, int nativeRequestId) {
+    public void createRoute(String sourceId, String sinkId, String routeId, String origin,
+            int tabId, int nativeRequestId) {
         if (mAndroidMediaRouter == null) {
-            mManager.onRouteCreationError("Not supported", nativeRequestId);
+            mManager.onRouteRequestError("Not supported", nativeRequestId);
             return;
         }
 
         MediaSource source = MediaSource.from(sourceId);
         if (source == null || source.getClientId() == null) {
-            mManager.onRouteCreationError("Invalid source", nativeRequestId);
+            mManager.onRouteRequestError("Unsupported presentation URL", nativeRequestId);
             return;
         }
 
         MediaSink sink = MediaSink.fromSinkId(sinkId, mAndroidMediaRouter);
         if (sink == null) {
-            mManager.onRouteCreationError("No sink", nativeRequestId);
+            mManager.onRouteRequestError("No sink", nativeRequestId);
             return;
         }
 
         CreateRouteRequest createRouteRequest = new CreateRouteRequest(
-                source, sink, routeId, nativeRequestId, this);
+                source, sink, routeId, origin, tabId, nativeRequestId, this);
         String existingRouteId = mClientIdsToRouteIds.get(source.getClientId());
         if (existingRouteId == null) {
             createRouteRequest.start(mApplicationContext);
@@ -202,6 +214,54 @@ public class CastMediaRouteProvider
 
         mPendingCreateRouteRequest = createRouteRequest;
         closeRoute(existingRouteId);
+    }
+
+    @Override
+    public void joinRoute(String sourceId, String presentationId, String origin, int tabId,
+            int nativeRequestId) {
+        MediaSource source = MediaSource.from(sourceId);
+        if (source == null || source.getClientId() == null) {
+            mManager.onRouteRequestError("Unsupported presentation URL", nativeRequestId);
+            return;
+        }
+
+        CastRouteController routeToJoin = null;
+        if (AUTO_JOIN_PRESENTATION_ID.equals(presentationId)) {
+            routeToJoin = autoJoinRoute(source, origin, tabId);
+        } else if (presentationId.startsWith(PRESENTATION_ID_SESSION_ID_PREFIX)) {
+            String sessionId = presentationId.substring(PRESENTATION_ID_SESSION_ID_PREFIX.length());
+            for (CastRouteController route : mRoutes.values()) {
+                if (sessionId.equals(route.getSessionId())) {
+                    routeToJoin = route;
+                    break;
+                }
+            }
+        } else {
+            for (CastRouteController route : mRoutes.values()) {
+                String[] routeIdComponents = ChromeMediaRouter
+                        .parseMediaRouteId(route.getRouteId());
+                assert routeIdComponents != null;
+
+                if (presentationId.equals(routeIdComponents[0])) {
+                    routeToJoin = route;
+                    break;
+                }
+            }
+        }
+
+        if (routeToJoin == null) {
+            mManager.onRouteRequestError("No matching route", nativeRequestId);
+            return;
+        }
+
+        String mediaRouteId = ChromeMediaRouter.createMediaRouteId(
+                presentationId, routeToJoin.getSinkId(), sourceId);
+        CastRouteController joinedController = routeToJoin.createJoinedController(mediaRouteId,
+                origin, tabId, MediaSource.from(sourceId));
+        mRoutes.put(mediaRouteId, joinedController);
+
+        mManager.onRouteCreated(mediaRouteId, routeToJoin.getSinkId(), nativeRequestId, this,
+                false);
     }
 
     @Override
@@ -228,5 +288,31 @@ public class CastMediaRouteProvider
         mApplicationContext = applicationContext;
         mAndroidMediaRouter = androidMediaRouter;
         mManager = manager;
+    }
+    @Nullable
+    private CastRouteController autoJoinRoute(MediaSource source, String origin, int tabId) {
+        CastRouteController matchingRoute = null;
+        for (CastRouteController route : mRoutes.values()) {
+            MediaSource routeSource = MediaSource.from(route.getSourceId());
+            if (routeSource.getApplicationId().equals(source.getApplicationId())) {
+                matchingRoute = route;
+                break;
+            }
+        }
+
+        if (matchingRoute == null) return null;
+
+        String autoJoinPolicy = source.getAutoJoinPolicy();
+
+        if (MediaSource.AUTOJOIN_ORIGIN_SCOPED.equals(autoJoinPolicy)) {
+            if (!matchingRoute.getOrigin().equals(origin)) return null;
+        } else if (MediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED.equals(autoJoinPolicy)) {
+            if (!matchingRoute.getOrigin().equals(origin)
+                    || matchingRoute.getTabId() != tabId) {
+                return null;
+            }
+        }
+
+        return matchingRoute;
     }
 }

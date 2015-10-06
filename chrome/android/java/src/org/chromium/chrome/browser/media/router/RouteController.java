@@ -29,5 +29,20 @@ public interface RouteController {
     /**
      * @return the route id
      */
-    String getId();
+    String getRouteId();
+
+    /**
+     * @return the media sink id for the route.
+     */
+    String getSinkId();
+
+    /**
+     * @return the origin of the frame that requested the route.
+     */
+    String getOrigin();
+
+    /**
+     * @return the id of the tab hosting the frame that requested the route.
+     */
+    int getTabId();
 }

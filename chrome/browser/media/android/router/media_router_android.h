@@ -65,15 +65,16 @@ class MediaRouterAndroid : public MediaRouter {
       JNIEnv* env,
       jobject obj,
       jstring jmedia_route_id,
-      jint jcreate_route_request_id,
+      jstring jmedia_sink_id,
+      jint jroute_request_id,
       jboolean jis_local);
 
-  // Notifies the media router that route creation failed.
-  void OnRouteCreationError(
+  // Notifies the media router that route creation or joining failed.
+  void OnRouteRequestError(
       JNIEnv* env,
       jobject obj,
       jstring jerror_text,
-      jint jcreate_route_request_id);
+      jint jroute_request_id);
 
   // Notifies the media router when the route was closed.
   void OnRouteClosed(JNIEnv* env, jobject obj, jstring jmedia_route_id);
@@ -116,23 +117,21 @@ class MediaRouterAndroid : public MediaRouter {
 
   base::ObserverList<MediaRoutesObserver> routes_observers_;
 
-  struct CreateMediaRouteRequest {
-    CreateMediaRouteRequest(
+  struct MediaRouteRequest {
+    MediaRouteRequest(
         const MediaSource& source,
-        const MediaSink& sink,
         const std::string& presentation_id,
         const std::vector<MediaRouteResponseCallback>& callbacks);
-    ~CreateMediaRouteRequest();
+    ~MediaRouteRequest();
 
     MediaSource media_source;
-    MediaSink media_sink;
     std::string presentation_id;
     std::vector<MediaRouteResponseCallback> callbacks;
   };
 
-  using CreateMediaRouteRequests =
-      IDMap<CreateMediaRouteRequest, IDMapOwnPointer>;
-  CreateMediaRouteRequests create_route_requests_;
+  using MediaRouteRequests =
+      IDMap<MediaRouteRequest, IDMapOwnPointer>;
+  MediaRouteRequests route_requests_;
 
   using MediaRoutes = std::vector<MediaRoute>;
   MediaRoutes active_routes_;
