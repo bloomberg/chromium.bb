@@ -41,22 +41,11 @@ LayerFixedPositionRecorder::~LayerFixedPositionRecorder()
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
 
-    if (m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
-        return;
-
-    if (m_isFixedPositionContainer) {
-        if (m_graphicsContext.displayItemList()->lastDisplayItemIsNoopBegin())
-            m_graphicsContext.displayItemList()->removeLastDisplayItem();
-        else
-            m_graphicsContext.displayItemList()->createAndAppend<EndFixedPositionDisplayItem>(m_layoutObject);
-    }
-
-    if (m_isFixedPosition) {
-        if (m_graphicsContext.displayItemList()->lastDisplayItemIsNoopBegin())
-            m_graphicsContext.displayItemList()->removeLastDisplayItem();
-        else
-            m_graphicsContext.displayItemList()->createAndAppend<EndFixedPositionDisplayItem>(m_layoutObject);
-    }
+    ASSERT(m_graphicsContext.displayItemList());
+    if (m_isFixedPositionContainer)
+        m_graphicsContext.displayItemList()->endItem<EndFixedPositionDisplayItem>(m_layoutObject);
+    if (m_isFixedPosition)
+        m_graphicsContext.displayItemList()->endItem<EndFixedPositionDisplayItem>(m_layoutObject);
 }
 
 } // namespace blink

@@ -32,12 +32,7 @@ TransformRecorder::~TransformRecorder()
         return;
 
     ASSERT(m_context.displayItemList());
-    if (!m_context.displayItemList()->displayItemConstructionIsDisabled()) {
-        if (m_context.displayItemList()->lastDisplayItemIsNoopBegin())
-            m_context.displayItemList()->removeLastDisplayItem();
-        else
-            m_context.displayItemList()->createAndAppend<EndTransformDisplayItem>(m_client);
-    }
+    m_context.displayItemList()->endItem<EndTransformDisplayItem>(m_client);
 }
 
 } // namespace blink

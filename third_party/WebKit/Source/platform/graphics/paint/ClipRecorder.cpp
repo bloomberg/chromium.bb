@@ -25,12 +25,7 @@ ClipRecorder::ClipRecorder(GraphicsContext& context, const DisplayItemClientWrap
 ClipRecorder::~ClipRecorder()
 {
     ASSERT(m_context.displayItemList());
-    if (!m_context.displayItemList()->displayItemConstructionIsDisabled()) {
-        if (m_context.displayItemList()->lastDisplayItemIsNoopBegin())
-            m_context.displayItemList()->removeLastDisplayItem();
-        else
-            m_context.displayItemList()->createAndAppend<EndClipDisplayItem>(m_client, DisplayItem::clipTypeToEndClipType(m_type));
-    }
+    m_context.displayItemList()->endItem<EndClipDisplayItem>(m_client, DisplayItem::clipTypeToEndClipType(m_type));
 }
 
 } // namespace blink

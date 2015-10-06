@@ -80,12 +80,7 @@ FilterPainter::~FilterPainter()
         return;
 
     ASSERT(m_context->displayItemList());
-    if (!m_context->displayItemList()->displayItemConstructionIsDisabled()) {
-        if (m_context->displayItemList()->lastDisplayItemIsNoopBegin())
-            m_context->displayItemList()->removeLastDisplayItem();
-        else
-            m_context->displayItemList()->createAndAppend<EndFilterDisplayItem>(*m_layoutObject);
-    }
+    m_context->displayItemList()->endItem<EndFilterDisplayItem>(*m_layoutObject);
 }
 
 } // namespace blink

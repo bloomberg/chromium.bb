@@ -76,12 +76,7 @@ void LayerClipRecorder::collectRoundedRectClips(PaintLayer& paintLayer, const Pa
 LayerClipRecorder::~LayerClipRecorder()
 {
     ASSERT(m_graphicsContext.displayItemList());
-    if (!m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled()) {
-        if (m_graphicsContext.displayItemList()->lastDisplayItemIsNoopBegin())
-            m_graphicsContext.displayItemList()->removeLastDisplayItem();
-        else
-            m_graphicsContext.displayItemList()->createAndAppend<EndClipDisplayItem>(m_layoutObject, DisplayItem::clipTypeToEndClipType(m_clipType));
-    }
+    m_graphicsContext.displayItemList()->endItem<EndClipDisplayItem>(m_layoutObject, DisplayItem::clipTypeToEndClipType(m_clipType));
 }
 
 } // namespace blink

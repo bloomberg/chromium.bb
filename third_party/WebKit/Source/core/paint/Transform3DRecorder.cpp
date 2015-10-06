@@ -39,12 +39,7 @@ Transform3DRecorder::~Transform3DRecorder()
         return;
 
     ASSERT(m_context.displayItemList());
-    if (!m_context.displayItemList()->displayItemConstructionIsDisabled()) {
-        if (m_context.displayItemList()->lastDisplayItemIsNoopBegin())
-            m_context.displayItemList()->removeLastDisplayItem();
-        else
-            m_context.displayItemList()->createAndAppend<EndTransform3DDisplayItem>(m_client, DisplayItem::transform3DTypeToEndTransform3DType(m_type));
-    }
+    m_context.displayItemList()->endItem<EndTransform3DDisplayItem>(m_client, DisplayItem::transform3DTypeToEndTransform3DType(m_type));
 }
 
 } // namespace blink

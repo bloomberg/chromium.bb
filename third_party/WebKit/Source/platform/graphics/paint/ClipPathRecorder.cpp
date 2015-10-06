@@ -24,12 +24,7 @@ ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, const DisplayItemCl
 ClipPathRecorder::~ClipPathRecorder()
 {
     ASSERT(m_context.displayItemList());
-    if (!m_context.displayItemList()->displayItemConstructionIsDisabled()) {
-        if (m_context.displayItemList()->lastDisplayItemIsNoopBegin())
-            m_context.displayItemList()->removeLastDisplayItem();
-        else
-            m_context.displayItemList()->createAndAppend<EndClipPathDisplayItem>(m_client);
-    }
+    m_context.displayItemList()->endItem<EndClipPathDisplayItem>(m_client);
 }
 
 } // namespace blink

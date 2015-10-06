@@ -95,6 +95,22 @@ public:
         return displayItem;
     }
 
+    // Creates and appends an ending display item to pair with a preceding
+    // beginning item iff the display item actually draws content. For no-op
+    // items, rather than creating an ending item, the begin item will
+    // instead be removed, thereby maintaining brevity of the list. If display
+    // item construction is disabled, no list mutations will be performed.
+    template <typename DisplayItemClass, typename... Args>
+    void endItem(Args&&... args)
+    {
+        if (displayItemConstructionIsDisabled())
+            return;
+        if (lastDisplayItemIsNoopBegin())
+            removeLastDisplayItem();
+        else
+            createAndAppend<DisplayItemClass>(WTF::forward<Args>(args)...);
+    }
+
     // Scopes must be used to avoid duplicated display item ids when we paint some object
     // multiple times and generate multiple display items with the same type.
     // We don't cache display items added in scopes.

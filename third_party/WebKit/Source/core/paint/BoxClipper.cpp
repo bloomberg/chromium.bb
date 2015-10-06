@@ -67,12 +67,7 @@ BoxClipper::~BoxClipper()
 
     ASSERT(m_box.hasControlClip() || (m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer()));
     ASSERT(m_paintInfo.context->displayItemList());
-    if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled()) {
-        if (m_paintInfo.context->displayItemList()->lastDisplayItemIsNoopBegin())
-            m_paintInfo.context->displayItemList()->removeLastDisplayItem();
-        else
-            m_paintInfo.context->displayItemList()->createAndAppend<EndClipDisplayItem>(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
-    }
+    m_paintInfo.context->displayItemList()->endItem<EndClipDisplayItem>(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
 }
 
 } // namespace blink
