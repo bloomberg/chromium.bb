@@ -130,6 +130,18 @@ private:
         m_popup->m_widgetClient->scheduleAnimation();
     }
 
+    void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline* timeline, LocalFrame*) override
+    {
+        if (m_popup->m_layerTreeView)
+            m_popup->m_layerTreeView->attachCompositorAnimationTimeline(timeline);
+    }
+
+    void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline* timeline, LocalFrame*) override
+    {
+        if (m_popup->m_layerTreeView)
+            m_popup->m_layerTreeView->detachCompositorAnimationTimeline(timeline);
+    }
+
     WebScreenInfo screenInfo() const override
     {
         return m_popup->m_webView->client() ? m_popup->m_webView->client()->screenInfo() : WebScreenInfo();
