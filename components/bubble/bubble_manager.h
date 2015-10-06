@@ -69,14 +69,11 @@ class BubbleManager {
   void FinalizePendingRequests();
 
  private:
-  enum ManagerStates {
+  enum ManagerState {
     SHOW_BUBBLES,
-    QUEUE_BUBBLES,
     NO_MORE_BUBBLES,
+    ITERATING_BUBBLES,
   };
-
-  // Show any bubbles that were added to |show_queue_|.
-  void ShowPendingBubbles();
 
   // All bubbles will get a close event for the specified |reason| if |match| is
   // nullptr, otherwise only the bubble held by |match| will get a close event.
@@ -90,13 +87,10 @@ class BubbleManager {
   base::ThreadChecker thread_checker_;
 
   // Determines what happens to a bubble when |ShowBubble| is called.
-  ManagerStates manager_state_;
+  ManagerState manager_state_;
 
   // The bubbles that are being managed.
   ScopedVector<BubbleController> controllers_;
-
-  // The bubbles queued to be shown when possible.
-  ScopedVector<BubbleController> show_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleManager);
 };

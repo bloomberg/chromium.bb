@@ -17,6 +17,7 @@ BubbleManager::~BubbleManager() {
 
 BubbleReference BubbleManager::ShowBubble(scoped_ptr<BubbleDelegate> bubble) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(manager_state_, ITERATING_BUBBLES);
   DCHECK(bubble);
 
   scoped_ptr<BubbleController> controller(
@@ -29,12 +30,12 @@ BubbleReference BubbleManager::ShowBubble(scoped_ptr<BubbleDelegate> bubble) {
       controller->Show();
       controllers_.push_back(controller.Pass());
       break;
-    case QUEUE_BUBBLES:
-      show_queue_.push_back(controller.Pass());
-      break;
     case NO_MORE_BUBBLES:
       FOR_EACH_OBSERVER(BubbleManagerObserver, observers_,
                         OnBubbleNeverShown(controller->AsWeakPtr()));
+      break;
+    default:
+      NOTREACHED();
       break;
   }
 
@@ -44,6 +45,7 @@ BubbleReference BubbleManager::ShowBubble(scoped_ptr<BubbleDelegate> bubble) {
 bool BubbleManager::CloseBubble(BubbleReference bubble,
                                 BubbleCloseReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(manager_state_, ITERATING_BUBBLES);
   return CloseAllMatchingBubbles(bubble.get(), reason);
 }
 
@@ -52,13 +54,20 @@ void BubbleManager::CloseAllBubbles(BubbleCloseReason reason) {
   DCHECK_NE(reason, BUBBLE_CLOSE_ACCEPTED);
   DCHECK_NE(reason, BUBBLE_CLOSE_CANCELED);
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(manager_state_, ITERATING_BUBBLES);
   CloseAllMatchingBubbles(nullptr, reason);
 }
 
 void BubbleManager::UpdateAllBubbleAnchors() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(manager_state_, ITERATING_BUBBLES);
+
+  // Guard against bubbles being added or removed while iterating the bubbles.
+  ManagerState original_state = manager_state_;
+  manager_state_ = ITERATING_BUBBLES;
   for (auto controller : controllers_)
     controller->UpdateAnchorPosition();
+  manager_state_ = original_state;
 }
 
 void BubbleManager::AddBubbleManagerObserver(BubbleManagerObserver* observer) {
@@ -79,33 +88,13 @@ void BubbleManager::FinalizePendingRequests() {
   CloseAllBubbles(BUBBLE_CLOSE_FORCED);
 }
 
-void BubbleManager::ShowPendingBubbles() {
-  if (manager_state_ == QUEUE_BUBBLES)
-    manager_state_ = SHOW_BUBBLES;
-
-  if (manager_state_ == SHOW_BUBBLES) {
-    for (auto controller : show_queue_)
-      controller->Show();
-
-    controllers_.insert(controllers_.end(), show_queue_.begin(),
-                        show_queue_.end());
-
-    show_queue_.weak_clear();
-  } else {
-    for (auto controller : show_queue_) {
-      FOR_EACH_OBSERVER(BubbleManagerObserver, observers_,
-                        OnBubbleNeverShown(controller->AsWeakPtr()));
-    }
-
-    // Clear the queue if bubbles can't be shown.
-    show_queue_.clear();
-  }
-}
-
 bool BubbleManager::CloseAllMatchingBubbles(BubbleController* match,
                                             BubbleCloseReason reason) {
   ScopedVector<BubbleController> close_queue;
 
+  // Guard against bubbles being added or removed while iterating the bubbles.
+  ManagerState original_state = manager_state_;
+  manager_state_ = ITERATING_BUBBLES;
   for (auto iter = controllers_.begin(); iter != controllers_.end();) {
     if ((!match || match == *iter) && (*iter)->ShouldClose(reason)) {
       close_queue.push_back(*iter);
@@ -114,6 +103,7 @@ bool BubbleManager::CloseAllMatchingBubbles(BubbleController* match,
       ++iter;
     }
   }
+  manager_state_ = original_state;
 
   for (auto controller : close_queue) {
     controller->DoClose();
