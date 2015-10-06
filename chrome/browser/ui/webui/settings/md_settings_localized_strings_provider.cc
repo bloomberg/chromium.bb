@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -34,21 +35,6 @@ void AddCommonStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("basicPageTitle", IDS_SETTINGS_BASIC);
   html_source->AddLocalizedString("advancedPageTitle", IDS_SETTINGS_ADVANCED);
   html_source->AddLocalizedString("addLabel", IDS_ADD);
-#if defined(OS_CHROMEOS)
-  html_source->AddLocalizedString("controlledSettingShared",
-                                  IDS_OPTIONS_CONTROLLED_SETTING_SHARED);
-  html_source->AddLocalizedString("controlledSettingOwner",
-                                  IDS_OPTIONS_CONTROLLED_SETTING_OWNER);
-#endif
-  html_source->AddLocalizedString("controlledSettingPolicy",
-                                  IDS_OPTIONS_CONTROLLED_SETTING_POLICY);
-  html_source->AddLocalizedString("controlledSettingRecommendedMatches",
-                                  IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED);
-  html_source->AddLocalizedString(
-      "controlledSettingRecommendedDiffers",
-      IDS_OPTIONS_CONTROLLED_SETTING_HAS_RECOMMENDATION);
-  html_source->AddLocalizedString("controlledSettingExtension",
-                                  IDS_SETTINGS_CONTROLLED_SETTING_EXTENSION);
   html_source->AddLocalizedString("learnMore", IDS_LEARN_MORE);
 }
 
@@ -565,6 +551,8 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddSiteSettingsStrings(html_source);
   AddSyncStrings(html_source);
   AddUsersStrings(html_source);
+
+  policy_indicator::AddLocalizedStrings(html_source);
 
   html_source->SetJsonPath(kLocalizedStringsFile);
 }

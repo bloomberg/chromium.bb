@@ -10438,6 +10438,9 @@ I don't think this site should be blocked!
         <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION_WITH_NAME" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension. The name of the extension would be displayed on the following line, thus the ending with ':'.">
           This setting is controlled by:
         </message>
+        <message name="IDS_SETTINGS_CONTROLLED_SETTING_NAMED_EXTENSION" desc="Text displayed in the controlled settings indicator tooltip when a setting's value is enforced by an extension.">
+          This setting is controlled by extension <ph name="NAME">$1<ex>Adblocker plusplus</ex></ph>
+        </message>
         <message name="IDS_OPTIONS_CONTROLLED_SETTING_MANAGE_EXTENSION" desc="Text displayed for a link to manage extension from the controlled settings bubble.">
           Manage extension
         </message>

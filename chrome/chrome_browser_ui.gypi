@@ -1809,6 +1809,8 @@
       'browser/ui/webui/ntp/ntp_resource_cache_factory.cc',
       'browser/ui/webui/ntp/ntp_resource_cache_factory.h',
       'browser/ui/webui/ntp/ntp_stats.h',
+      'browser/ui/webui/policy_indicator_localized_strings_provider.cc',
+      'browser/ui/webui/policy_indicator_localized_strings_provider.h',
       'browser/ui/webui/options/advanced_options_utils.h',
       'browser/ui/webui/options/advanced_options_utils_linux.cc',
       'browser/ui/webui/options/advanced_options_utils_mac.mm',
