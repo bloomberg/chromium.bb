@@ -103,23 +103,13 @@ final class ClassLoaderPatcher {
      */
     void importNativeLibs(File libDir) throws ReflectiveOperationException, IOException {
         Log.i(TAG, "Importing native libraries from: " + libDir);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            libDir = prepareNativeLibsAndroidM(libDir);
-        }
-        addNativeLibrarySearchPath(libDir);
-    }
-
-    /**
-     * Primary process: Copies native libraries into the app's data directory
-     * Other processes: Waits for primary process to finish copying.
-     */
-    private File prepareNativeLibsAndroidM(File libDir) throws IOException {
+        // The library copying is not necessary on older devices, but we do it anyways to
+        // simplify things (it's fast compared to dexing).
+        // https://code.google.com/p/android/issues/detail?id=79480
         File localLibsDir = new File(mAppFilesSubDir, "lib");
         File copyLibsLockFile = new File(mAppFilesSubDir, "libcopy.lock");
-        // Due to a new SELinux policy, all libs must be copied into the app's
-        // data directory first.
-        // https://code.google.com/p/android/issues/detail?id=79480
         if (mIsPrimaryProcess) {
+            // Primary process: Copies native libraries into the app's data directory.
             ensureAppFilesSubDirExists();
             LockFile lockFile = LockFile.acquireRuntimeLock(copyLibsLockFile);
             if (lockFile == null) {
@@ -135,13 +125,17 @@ final class ClassLoaderPatcher {
                 }
             }
         } else {
-            // TODO: Work around this issue by using APK splits to install each dex / lib.
-            throw new RuntimeException("Incremental install does not work on Android M+ "
-                    + "with isolated processes. Use the gn arg:\n"
-                    + "    disable_incremental_isolated_processes=true\n"
-                    + "and try again.");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // TODO: Work around this issue by using APK splits to install each dex / lib.
+                throw new RuntimeException("Incremental install does not work on Android M+ "
+                        + "with isolated processes. Use the gn arg:\n"
+                        + "    disable_incremental_isolated_processes=true\n"
+                        + "and try again.");
+            }
+            // Other processes: Waits for primary process to finish copying.
+            LockFile.waitForRuntimeLock(copyLibsLockFile, 10 * 1000);
         }
-        return localLibsDir;
+        addNativeLibrarySearchPath(localLibsDir);
     }
 
     @SuppressWarnings("unchecked")
@@ -194,6 +188,8 @@ final class ClassLoaderPatcher {
             dest.setReadable(true, false);
             dest.setExecutable(true,  false);
             dest.setLastModified(lastModified);
+        } else {
+            Log.i(TAG, "Up-to-date: " + dest);
         }
     }
 

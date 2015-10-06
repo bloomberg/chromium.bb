@@ -99,6 +99,7 @@ final class LockFile {
             outputStream.close();
         } catch (IOException e) {
             // Do nothing. We didn't get the lock.
+            Log.w(TAG, "Exception trying to acquire lock " + file, e);
         }
         return null;
     }

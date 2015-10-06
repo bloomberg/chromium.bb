@@ -50,11 +50,11 @@ public final class BootstrapApplication extends Application {
             if (isFirstRun) {
                 if (mClassLoaderPatcher.mIsPrimaryProcess) {
                     // Wait for incremental_install.py to finish.
-                    LockFile.waitForInstallerLock(installLockFile, 20 * 1000);
+                    LockFile.waitForInstallerLock(installLockFile, 30 * 1000);
                 } else {
                     // Wait for the browser process to create the optimized dex files
-                    // (and for M+, copy the library files).
-                    LockFile.waitForInstallerLock(firstRunLockFile, 30 * 1000);
+                    // and copy the library files.
+                    LockFile.waitForInstallerLock(firstRunLockFile, 60 * 1000);
                 }
             }
 
