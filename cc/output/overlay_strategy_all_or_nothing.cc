@@ -11,13 +11,14 @@ namespace cc {
 
 OverlayStrategyAllOrNothing::OverlayStrategyAllOrNothing(
     OverlayCandidateValidator* capability_checker)
-    : capability_checker_(capability_checker) {}
+    : capability_checker_(capability_checker) {
+  DCHECK(capability_checker);
+}
 
 OverlayStrategyAllOrNothing::~OverlayStrategyAllOrNothing() {}
 
 bool OverlayStrategyAllOrNothing::Attempt(RenderPassList* render_passes,
-                                          OverlayCandidateList* candidates,
-                                          float device_scale_factor) {
+                                          OverlayCandidateList* candidates) {
   QuadList& quad_list = render_passes->back()->quad_list;
   OverlayCandidateList new_candidates;
   int next_z_order = -1;

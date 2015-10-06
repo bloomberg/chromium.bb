@@ -31,6 +31,10 @@ class CC_EXPORT OverlayCandidate {
   // Returns true and fills in |candidate| if |draw_quad| is of a known quad
   // type and contains an overlayable resource.
   static bool FromDrawQuad(const DrawQuad* quad, OverlayCandidate* candidate);
+  // Returns true if |quad| will not block quads underneath from becoming
+  // an overlay.
+  static bool IsInvisibleQuad(const DrawQuad* quad);
+
   OverlayCandidate();
   ~OverlayCandidate();
 

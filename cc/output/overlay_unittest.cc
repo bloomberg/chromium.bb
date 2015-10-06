@@ -61,10 +61,9 @@ void MailboxReleased(unsigned sync_point,
 class SingleOverlayValidator : public OverlayCandidateValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-    strategies->push_back(make_scoped_ptr(
-        new OverlayStrategyCommon(this, new OverlayStrategySingleOnTop)));
-    strategies->push_back(make_scoped_ptr(
-        new OverlayStrategyCommon(this, new OverlayStrategyUnderlay)));
+    strategies->push_back(
+        make_scoped_ptr(new OverlayStrategySingleOnTop(this)));
+    strategies->push_back(make_scoped_ptr(new OverlayStrategyUnderlay(this)));
   }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
     // We may have 1 or 2 surfaces depending on whether this ran through the
@@ -96,24 +95,22 @@ class SingleOverlayValidator : public OverlayCandidateValidator {
 class SingleOnTopOverlayValidator : public SingleOverlayValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-    strategies->push_back(make_scoped_ptr(
-        new OverlayStrategyCommon(this, new OverlayStrategySingleOnTop)));
+    strategies->push_back(
+        make_scoped_ptr(new OverlayStrategySingleOnTop(this)));
   }
 };
 
 class UnderlayOverlayValidator : public SingleOverlayValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-    strategies->push_back(make_scoped_ptr(
-        new OverlayStrategyCommon(this, new OverlayStrategyUnderlay)));
+    strategies->push_back(make_scoped_ptr(new OverlayStrategyUnderlay(this)));
   }
 };
 
 class SandwichOverlayValidator : public OverlayCandidateValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-    strategies->push_back(make_scoped_ptr(
-        new OverlayStrategyCommon(this, new OverlayStrategySandwich)));
+    strategies->push_back(make_scoped_ptr(new OverlayStrategySandwich(this)));
   }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
     for (OverlayCandidate& candidate : *surfaces)

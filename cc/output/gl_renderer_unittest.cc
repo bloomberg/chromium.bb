@@ -2007,10 +2007,9 @@ class TestOverlayProcessor : public OverlayProcessor {
    public:
     Strategy() {}
     ~Strategy() override {}
-    MOCK_METHOD3(Attempt,
-                 bool(RenderPassList* render_passes_in_draw_order,
-                      OverlayCandidateList* candidates,
-                      float device_scale_factor));
+    MOCK_METHOD2(Attempt,
+                 bool(RenderPassList* render_passes,
+                      OverlayCandidateList* candidates));
   };
 
   explicit TestOverlayProcessor(OutputSurface* surface)
@@ -2018,7 +2017,7 @@ class TestOverlayProcessor : public OverlayProcessor {
   ~TestOverlayProcessor() override {}
   void Initialize() override {
     strategy_ = new Strategy();
-    strategies_.push_back(scoped_ptr<OverlayProcessor::Strategy>(strategy_));
+    strategies_.push_back(make_scoped_ptr(strategy_));
   }
 
   Strategy* strategy_;
@@ -2090,7 +2089,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   // added a fake strategy, so checking for Attempt calls checks if there was
   // any attempt to overlay, which there shouldn't be. We can't use the quad
   // list because the render pass is cleaned up by DrawFrame.
-  EXPECT_CALL(*processor->strategy_, Attempt(_, _, _)).Times(0);
+  EXPECT_CALL(*processor->strategy_, Attempt(_, _)).Times(0);
   renderer.DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_rect,
                      viewport_rect, false);
   Mock::VerifyAndClearExpectations(processor->strategy_);
@@ -2107,7 +2106,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                        gfx::PointF(1, 1), SK_ColorTRANSPARENT, vertex_opacity,
                        flipped, nearest_neighbor);
 
-  EXPECT_CALL(*processor->strategy_, Attempt(_, _, _)).Times(1);
+  EXPECT_CALL(*processor->strategy_, Attempt(_, _)).Times(1);
   renderer.DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_rect,
                      viewport_rect, false);
 }
@@ -2117,10 +2116,9 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
   class SingleOverlayValidator : public OverlayCandidateValidator {
    public:
     void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-      strategies->push_back(scoped_ptr<OverlayProcessor::Strategy>(
-          new OverlayStrategyCommon(this, new OverlayStrategySingleOnTop)));
-      strategies->push_back(scoped_ptr<OverlayProcessor::Strategy>(
-          new OverlayStrategyCommon(this, new OverlayStrategyUnderlay)));
+      strategies->push_back(
+          make_scoped_ptr(new OverlayStrategySingleOnTop(this)));
+      strategies->push_back(make_scoped_ptr(new OverlayStrategyUnderlay(this)));
     }
 
     void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
@@ -2134,8 +2132,8 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
       : OverlayProcessor(surface) {}
 
   void Initialize() override {
-    strategies_.push_back(scoped_ptr<Strategy>(new OverlayStrategyCommon(
-        &validator_, new OverlayStrategySingleOnTop)));
+    strategies_.push_back(
+        make_scoped_ptr(new OverlayStrategySingleOnTop(&validator_)));
   }
 
   SingleOverlayValidator validator_;

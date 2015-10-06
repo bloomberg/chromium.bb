@@ -37,10 +37,9 @@ BrowserCompositorOverlayCandidateValidatorOzone::
 
 void BrowserCompositorOverlayCandidateValidatorOzone::GetStrategies(
     cc::OverlayProcessor::StrategyList* strategies) {
-  strategies->push_back(scoped_ptr<cc::OverlayProcessor::Strategy>(
-      new cc::OverlayStrategyCommon(this, new cc::OverlayStrategySingleOnTop)));
-  strategies->push_back(scoped_ptr<cc::OverlayProcessor::Strategy>(
-      new cc::OverlayStrategyCommon(this, new cc::OverlayStrategyUnderlay)));
+  strategies->push_back(
+      make_scoped_ptr(new cc::OverlayStrategySingleOnTop(this)));
+  strategies->push_back(make_scoped_ptr(new cc::OverlayStrategyUnderlay(this)));
 }
 
 void BrowserCompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(

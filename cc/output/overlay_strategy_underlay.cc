@@ -10,42 +10,45 @@
 
 namespace cc {
 
+OverlayStrategyUnderlay::OverlayStrategyUnderlay(
+    OverlayCandidateValidator* capability_checker)
+    : capability_checker_(capability_checker) {
+  DCHECK(capability_checker);
+}
+
 OverlayStrategyUnderlay::~OverlayStrategyUnderlay() {}
 
-OverlayResult OverlayStrategyUnderlay::TryOverlay(
-    OverlayCandidateValidator* capability_checker,
-    RenderPassList* render_passes_in_draw_order,
-    OverlayCandidateList* candidate_list,
-    const OverlayCandidate& candidate,
-    QuadList::Iterator* candidate_iterator,
-    float device_scale_factor) {
-  RenderPass* root_render_pass = render_passes_in_draw_order->back();
-  QuadList& quad_list = root_render_pass->quad_list;
+bool OverlayStrategyUnderlay::Attempt(RenderPassList* render_passes,
+                                      OverlayCandidateList* candidate_list) {
+  QuadList& quad_list = render_passes->back()->quad_list;
+  for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
+    OverlayCandidate candidate;
+    if (!OverlayCandidate::FromDrawQuad(*it, &candidate))
+      continue;
 
-  // Add the overlay.
-  OverlayCandidateList new_candidate_list = *candidate_list;
-  new_candidate_list.push_back(candidate);
-  new_candidate_list.back().plane_z_order = -1;
+    // Add the overlay.
+    OverlayCandidateList new_candidate_list = *candidate_list;
+    new_candidate_list.push_back(candidate);
+    new_candidate_list.back().plane_z_order = -1;
 
-  // Check for support.
-  capability_checker->CheckOverlaySupport(&new_candidate_list);
+    // Check for support.
+    capability_checker_->CheckOverlaySupport(&new_candidate_list);
 
-  // If the candidate can be handled by an overlay, create a pass for it. We
-  // need to switch out the video quad with a black transparent one.
-  if (new_candidate_list.back().overlay_handled) {
-    const SharedQuadState* shared_quad_state =
-        (*candidate_iterator)->shared_quad_state;
-    gfx::Rect rect = (*candidate_iterator)->visible_rect;
-    SolidColorDrawQuad* replacement =
-        quad_list.ReplaceExistingElement<SolidColorDrawQuad>(
-            *candidate_iterator);
-    replacement->SetAll(shared_quad_state, rect, rect, rect, false,
-                        SK_ColorTRANSPARENT, true);
-    candidate_list->swap(new_candidate_list);
-    return CREATED_OVERLAY_STOP_LOOKING;
+    // If the candidate can be handled by an overlay, create a pass for it. We
+    // need to switch out the video quad with a black transparent one.
+    if (new_candidate_list.back().overlay_handled) {
+      const SharedQuadState* shared_quad_state = it->shared_quad_state;
+      gfx::Rect rect = it->visible_rect;
+      SolidColorDrawQuad* replacement =
+          quad_list.ReplaceExistingElement<SolidColorDrawQuad>(it);
+      replacement->SetAll(shared_quad_state, rect, rect, rect, false,
+                          SK_ColorTRANSPARENT, true);
+      candidate_list->swap(new_candidate_list);
+      return true;
+    }
   }
 
-  return DID_NOT_CREATE_OVERLAY;
+  return false;
 }
 
 }  // namespace cc
