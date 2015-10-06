@@ -61,6 +61,10 @@ class MIDI_EXPORT MidiManagerClient {
   // This happens as a result of the client having previously called
   // MidiManager::DispatchSendMidiData().
   virtual void AccumulateMidiBytesSent(size_t n) = 0;
+
+  // Detach() is called when MidiManager is going to shutdown immediately.
+  // Client should not touch MidiManager instance after Detach() is called.
+  virtual void Detach() = 0;
 };
 
 // Manages access to all MIDI hardware.
@@ -74,6 +78,10 @@ class MIDI_EXPORT MidiManager {
   // The constructor and the destructor will be called on the CrBrowserMain
   // thread.
   static MidiManager* Create();
+
+  // Called on the CrBrowserMain thread to notify the Chrome_IOThread will stop
+  // and the instance will be destructed on the CrBrowserMain thread soon.
+  void Shutdown();
 
   // A client calls StartSession() to receive and send MIDI data.
   // If the session is ready to start, the MIDI system is lazily initialized
@@ -119,6 +127,12 @@ class MIDI_EXPORT MidiManager {
   // |result| should be Result::OK on success, otherwise a proper Result.
   virtual void StartInitialization();
 
+  // Finalizes the platform dependent MIDI system. Called on Chrome_IOThread
+  // thread and the thread will stop immediately after this call.
+  // Platform dependent resources that were allocated on the Chrome_IOThread
+  // should be disposed inside this method.
+  virtual void Finalize() {}
+
   // Called from a platform dependent implementation of StartInitialization().
   // It invokes CompleteInitializationInternal() on the thread that calls
   // StartSession() and distributes |result| to MIDIManagerClient objects in
@@ -157,6 +171,7 @@ class MIDI_EXPORT MidiManager {
  private:
   void CompleteInitializationInternal(Result result);
   void AddInitialPorts(MidiManagerClient* client);
+  void ShutdownOnSessionThread();
 
   // Keeps track of all clients who wish to receive MIDI data.
   typedef std::set<MidiManagerClient*> ClientSet;
@@ -172,6 +187,9 @@ class MIDI_EXPORT MidiManager {
   // Keeps true if platform dependent initialization is already completed.
   bool initialized_;
 
+  // Keeps false until Finalize() is called.
+  bool finalized_;
+
   // Keeps the platform dependent initialization result if initialization is
   // completed. Otherwise keeps Result::NOT_INITIALIZED.
   Result result_;
@@ -180,8 +198,9 @@ class MIDI_EXPORT MidiManager {
   MidiPortInfoList input_ports_;
   MidiPortInfoList output_ports_;
 
-  // Protects access to |clients_|, |pending_clients_|, |initialized_|,
-  // |result_|, |input_ports_| and |output_ports_|.
+  // Protects access to |clients_|, |pending_clients_|,
+  // |session_thread_runner_|, |initialized_|, |finalize_|, |result_|,
+  // |input_ports_| and |output_ports_|.
   base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManager);

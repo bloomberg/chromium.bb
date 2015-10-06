@@ -131,6 +131,8 @@ class FakeMidiManagerClient : public MidiManagerClient {
                                        static_cast<unsigned>(size)));
   }
 
+  void Detach() override {}
+
   bool complete_start_session_;
   Result result_;
   MidiPortInfoList input_ports_;
@@ -182,6 +184,10 @@ class MidiManagerUsbTest : public ::testing::Test {
     manager_.reset(new MidiManagerUsbForTesting(factory.Pass()));
   }
   ~MidiManagerUsbTest() override {
+    manager_->Shutdown();
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+
     std::string leftover_logs = logger_.TakeLog();
     if (!leftover_logs.empty()) {
       ADD_FAILURE() << "Log should be empty: " << leftover_logs;

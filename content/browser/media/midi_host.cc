@@ -56,12 +56,12 @@ MidiHost::MidiHost(int renderer_process_id,
       sent_bytes_in_flight_(0),
       bytes_sent_since_last_acknowledgement_(0),
       output_port_count_(0) {
-  CHECK(midi_manager_);
+  DCHECK(midi_manager_);
 }
 
 MidiHost::~MidiHost() {
   // Close an open session, or abort opening a session.
-  if (is_session_requested_)
+  if (is_session_requested_ && midi_manager_)
     midi_manager_->EndSession(this);
 }
 
@@ -84,7 +84,8 @@ bool MidiHost::OnMessageReceived(const IPC::Message& message) {
 
 void MidiHost::OnStartSession() {
   is_session_requested_ = true;
-  midi_manager_->StartSession(this);
+  if (midi_manager_)
+    midi_manager_->StartSession(this);
 }
 
 void MidiHost::OnSendData(uint32 port,
@@ -122,12 +123,14 @@ void MidiHost::OnSendData(uint32 port,
       return;
     sent_bytes_in_flight_ += data.size();
   }
-  midi_manager_->DispatchSendMidiData(this, port, data, timestamp);
+  if (midi_manager_)
+    midi_manager_->DispatchSendMidiData(this, port, data, timestamp);
 }
 
 void MidiHost::OnEndSession() {
   is_session_requested_ = false;
-  midi_manager_->EndSession(this);
+  if (midi_manager_)
+    midi_manager_->EndSession(this);
 }
 
 void MidiHost::CompleteStartSession(media::midi::Result result) {
@@ -214,6 +217,10 @@ void MidiHost::AccumulateMidiBytesSent(size_t n) {
         bytes_sent_since_last_acknowledgement_));
     bytes_sent_since_last_acknowledgement_ = 0;
   }
+}
+
+void MidiHost::Detach() {
+  midi_manager_ = nullptr;
 }
 
 // static

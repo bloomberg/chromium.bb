@@ -61,6 +61,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
   void ReceiveMidiData(uint32 port_index, const uint8* data, size_t size,
                        double timestamp) override {}
   void AccumulateMidiBytesSent(size_t size) override {}
+  void Detach() override {}
 
   bool GetWaitForResult() {
     base::AutoLock lock(lock_);
@@ -105,6 +106,11 @@ class MidiManagerMacTest : public ::testing::Test {
   MidiManagerMacTest()
       : manager_(new MidiManagerMac),
         message_loop_(new base::MessageLoop) {}
+  ~MidiManagerMacTest() override {
+    manager_->Shutdown();
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
 
  protected:
   void StartSession(MidiManagerClient* client) {

@@ -104,6 +104,10 @@ class MidiHostTest : public testing::Test {
         host_(new MidiHostForTesting(kRenderProcessId, &manager_)),
         data_(kNoteOn, kNoteOn + arraysize(kNoteOn)),
         port_id_(0) {}
+  ~MidiHostTest() override {
+    manager_.Shutdown();
+    RunLoopUntilIdle();
+  }
 
  protected:
   void AddOutputPort() {

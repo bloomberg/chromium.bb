@@ -34,6 +34,13 @@ enum class Usage {
   MAX = INITIALIZED,
 };
 
+// Used in StartSession.
+enum class Completion {
+  COMPLETE_SYNCHRONOUSLY,
+  INVOKE_INITIALIZATION,
+  COMPLETE_ASYNCHRONOUSLY,
+};
+
 void ReportUsage(Usage usage) {
   UMA_HISTOGRAM_ENUMERATION("Media.Midi.Usage",
                             static_cast<Sample>(usage),
@@ -43,14 +50,14 @@ void ReportUsage(Usage usage) {
 }  // namespace
 
 MidiManager::MidiManager()
-    : initialized_(false), result_(Result::NOT_INITIALIZED) {
+    : initialized_(false), finalized_(false), result_(Result::NOT_INITIALIZED) {
   ReportUsage(Usage::CREATED);
 }
 
 MidiManager::~MidiManager() {
-  UMA_HISTOGRAM_ENUMERATION("Media.Midi.ResultOnShutdown",
-                            static_cast<Sample>(result_),
-                            static_cast<Sample>(Result::MAX) + 1);
+  // Make sure that Finalize() is called to clean up resources allocated on
+  // the Chrome_IOThread.
+  DCHECK(finalized_);
 }
 
 #if !defined(OS_MACOSX) && !defined(OS_WIN) && \
@@ -61,66 +68,74 @@ MidiManager* MidiManager::Create() {
 }
 #endif
 
+void MidiManager::Shutdown() {
+  UMA_HISTOGRAM_ENUMERATION("Media.Midi.ResultOnShutdown",
+                            static_cast<int>(result_),
+                            static_cast<int>(Result::MAX) + 1);
+  base::AutoLock auto_lock(lock_);
+  if (session_thread_runner_) {
+    session_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&MidiManager::ShutdownOnSessionThread,
+                              base::Unretained(this)));
+    session_thread_runner_ = nullptr;
+  } else {
+    finalized_ = true;
+  }
+}
+
 void MidiManager::StartSession(MidiManagerClient* client) {
   ReportUsage(Usage::SESSION_STARTED);
 
-  bool session_is_ready;
-  bool session_needs_initialization = false;
-  bool too_many_pending_clients_exist = false;
+  Completion completion = Completion::COMPLETE_SYNCHRONOUSLY;
+  Result result = Result::NOT_INITIALIZED;
 
   {
     base::AutoLock auto_lock(lock_);
-    session_is_ready = initialized_;
     if (clients_.find(client) != clients_.end() ||
         pending_clients_.find(client) != pending_clients_.end()) {
       // Should not happen. But just in case the renderer is compromised.
       NOTREACHED();
       return;
     }
-    if (!session_is_ready) {
-      // Do not accept a new request if the pending client list contains too
-      // many clients.
-      too_many_pending_clients_exist =
-          pending_clients_.size() >= kMaxPendingClientCount;
 
-      if (!too_many_pending_clients_exist) {
+    if (initialized_) {
+      // Platform dependent initialization was already finished for previously
+      // initialized clients.
+      if (result_ == Result::OK) {
+        AddInitialPorts(client);
+        clients_.insert(client);
+      }
+      // Complete synchronously with |result_|;
+      result = result_;
+    } else {
+      bool too_many_pending_clients_exist =
+          pending_clients_.size() >= kMaxPendingClientCount;
+      // Do not accept a new request if the pending client list contains too
+      // many clients, or Shutdown() was already called.
+      if (too_many_pending_clients_exist || finalized_) {
+        result = Result::INITIALIZATION_ERROR;
+      } else {
         // Call StartInitialization() only for the first request.
-        session_needs_initialization = pending_clients_.empty();
+        if (pending_clients_.empty()) {
+          completion = Completion::INVOKE_INITIALIZATION;
+          session_thread_runner_ = base::MessageLoop::current()->task_runner();
+        } else {
+          completion = Completion::COMPLETE_ASYNCHRONOUSLY;
+        }
         pending_clients_.insert(client);
       }
     }
   }
 
-  // Lazily initialize the MIDI back-end.
-  if (!session_is_ready) {
-    if (session_needs_initialization) {
-      TRACE_EVENT0("midi", "MidiManager::StartInitialization");
-      session_thread_runner_ =
-          base::MessageLoop::current()->task_runner();
-      StartInitialization();
-    }
-    if (too_many_pending_clients_exist) {
-      // Return an error immediately if there are too many requests.
-      client->CompleteStartSession(Result::INITIALIZATION_ERROR);
-      return;
-    }
+  if (completion == Completion::COMPLETE_SYNCHRONOUSLY) {
+    client->CompleteStartSession(result);
+  } else if (completion == Completion::INVOKE_INITIALIZATION) {
+    // Lazily initialize the MIDI back-end.
+    TRACE_EVENT0("midi", "MidiManager::StartInitialization");
     // CompleteInitialization() will be called asynchronously when platform
     // dependent initialization is finished.
-    return;
+    StartInitialization();
   }
-
-  // Platform dependent initialization was already finished for previously
-  // initialized clients.
-  Result result;
-  {
-    base::AutoLock auto_lock(lock_);
-    if (result_ == Result::OK) {
-      AddInitialPorts(client);
-      clients_.insert(client);
-    }
-    result = result_;
-  }
-  client->CompleteStartSession(result);
 }
 
 void MidiManager::EndSession(MidiManagerClient* client) {
@@ -154,14 +169,12 @@ void MidiManager::StartInitialization() {
 }
 
 void MidiManager::CompleteInitialization(Result result) {
-  DCHECK(session_thread_runner_.get());
-  // It is safe to post a task to the IO thread from here because the IO thread
-  // should have stopped if the MidiManager is going to be destructed.
-  session_thread_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&MidiManager::CompleteInitializationInternal,
-                 base::Unretained(this),
-                 result));
+  base::AutoLock auto_lock(lock_);
+  if (session_thread_runner_) {
+    session_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&MidiManager::CompleteInitializationInternal,
+                              base::Unretained(this), result));
+  }
 }
 
 void MidiManager::AddInputPort(const MidiPortInfo& info) {
@@ -240,6 +253,16 @@ void MidiManager::AddInitialPorts(MidiManagerClient* client) {
     client->AddInputPort(info);
   for (const auto& info : output_ports_)
     client->AddOutputPort(info);
+}
+
+void MidiManager::ShutdownOnSessionThread() {
+  Finalize();
+  base::AutoLock auto_lock(lock_);
+  finalized_ = true;
+
+  // Detach all clients so that they do not call MidiManager methods any more.
+  for (auto client : clients_)
+    client->Detach();
 }
 
 }  // namespace midi

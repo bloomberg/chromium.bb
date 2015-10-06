@@ -22,13 +22,16 @@ namespace {
 
 class FakeMidiManager : public MidiManager {
  public:
-  FakeMidiManager() : start_initialization_is_called_(false) {}
+  FakeMidiManager()
+      : start_initialization_is_called_(false), finalize_is_called_(false) {}
   ~FakeMidiManager() override {}
 
   // MidiManager implementation.
   void StartInitialization() override {
     start_initialization_is_called_ = true;
   }
+
+  void Finalize() override { finalize_is_called_ = true; }
 
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32 port_index,
@@ -49,6 +52,7 @@ class FakeMidiManager : public MidiManager {
   }
 
   bool start_initialization_is_called_;
+  bool finalize_is_called_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeMidiManager);
@@ -77,6 +81,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
                        size_t size,
                        double timestamp) override {}
   void AccumulateMidiBytesSent(size_t size) override {}
+  void Detach() override {}
 
   Result result() const { return result_; }
 
@@ -100,7 +105,13 @@ class MidiManagerTest : public ::testing::Test {
   MidiManagerTest()
       : manager_(new FakeMidiManager),
         message_loop_(new base::MessageLoop) {}
-  ~MidiManagerTest() override {}
+  ~MidiManagerTest() override {
+    manager_->Shutdown();
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+    EXPECT_EQ(manager_->start_initialization_is_called_,
+              manager_->finalize_is_called_);
+  }
 
  protected:
   void StartTheFirstSession(FakeMidiManagerClient* client) {
@@ -204,6 +215,7 @@ TEST_F(MidiManagerTest, TooManyPendingSessions) {
     many_existing_clients[i] = new FakeMidiManagerClient;
     StartTheNthSession(many_existing_clients[i], i + 1);
   }
+  EXPECT_TRUE(manager_->start_initialization_is_called_);
 
   // Push the last client that should be rejected for too many pending requests.
   scoped_ptr<FakeMidiManagerClient> additional_client(
@@ -211,6 +223,7 @@ TEST_F(MidiManagerTest, TooManyPendingSessions) {
   manager_->start_initialization_is_called_ = false;
   manager_->StartSession(additional_client.get());
   EXPECT_FALSE(manager_->start_initialization_is_called_);
+  manager_->start_initialization_is_called_ = true;
   EXPECT_EQ(Result::INITIALIZATION_ERROR, additional_client->result());
 
   // Other clients still should not receive a result.
@@ -267,7 +280,14 @@ TEST_F(MidiManagerTest, CreateMidiManager) {
 #else
   EXPECT_EQ(Result::OK, result);
 #endif
+
+  manager->Shutdown();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 }
+
+// TODO(toyoshim): Add multi-threaded unit tests to check races around
+// StartInitialization(), CompleteInitialization(), and Finalize().
 
 }  // namespace
 

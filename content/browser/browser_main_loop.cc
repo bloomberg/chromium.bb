@@ -694,8 +694,8 @@ int BrowserMainLoop::PreCreateThreads() {
 #endif
 
 #if defined(ENABLE_PLUGINS)
-  // Prior to any processing happening on the io thread, we create the
-  // plugin service as it is predominantly used from the io thread,
+  // Prior to any processing happening on the IO thread, we create the
+  // plugin service as it is predominantly used from the IO thread,
   // but must be created on the main thread. The service ctor is
   // inexpensive and does not invoke the io_thread() accessor.
   {
@@ -966,7 +966,12 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   if (resource_dispatcher_host_) {
     TRACE_EVENT0("shutdown",
                  "BrowserMainLoop::Subsystem:ResourceDispatcherHost");
-    resource_dispatcher_host_.get()->Shutdown();
+    resource_dispatcher_host_->Shutdown();
+  }
+  // Request shutdown to clean up allocated resources on the IO thread.
+  if (midi_manager_) {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:MidiManager");
+    midi_manager_->Shutdown();
   }
 
   memory_pressure_monitor_.reset();
