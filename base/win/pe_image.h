@@ -69,8 +69,6 @@ class PEImage {
                                                 LPCSTR module,
                                                 PIMAGE_THUNK_DATA name_table,
                                                 PIMAGE_THUNK_DATA iat,
-                                                PIMAGE_THUNK_DATA bound_iat,
-                                                PIMAGE_THUNK_DATA unload_iat,
                                                 PVOID cookie);
 
   // Callback to enumerate relocations.
@@ -204,8 +202,6 @@ class PEImage {
                                LPCSTR module_name,
                                PIMAGE_THUNK_DATA name_table,
                                PIMAGE_THUNK_DATA iat,
-                               PIMAGE_THUNK_DATA bound_iat,
-                               PIMAGE_THUNK_DATA unload_iat,
                                PVOID cookie) const;
 
   // Enumerates PE relocation entries.

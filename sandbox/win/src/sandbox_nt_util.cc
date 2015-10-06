@@ -4,6 +4,8 @@
 
 #include "sandbox/win/src/sandbox_nt_util.h"
 
+#include <string>
+
 #include "base/win/pe_image.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/target_services.h"
@@ -55,7 +57,7 @@ void* AllocateNearTo(void* source, size_t size) {
 
     // Try 100 MB higher.
     base = reinterpret_cast<char*>(base) + 100 * 0x100000;
-  };
+  }
 
   if (attempts == 41)
     return NULL;
@@ -74,7 +76,6 @@ void* AllocateNearTo(void* source, size_t size) {
 #else  // defined(_WIN64).
 void* AllocateNearTo(void* source, size_t size) {
   using sandbox::g_nt;
-  UNREFERENCED_PARAMETER(source);
 
   // In 32-bit processes allocations below 512k are predictable, so mark
   // anything in that range as reserved and retry until we get a good address.
@@ -621,15 +622,13 @@ bool IsSupportedRenameCall(FILE_RENAME_INFORMATION* file_info, DWORD length,
 
 void* operator new(size_t size, sandbox::AllocationType type,
                    void* near_to) {
-  using namespace sandbox;
-
   void* result = NULL;
-  if (NT_ALLOC == type) {
-    if (InitHeap()) {
+  if (type == sandbox::NT_ALLOC) {
+    if (sandbox::InitHeap()) {
       // Use default flags for the allocation.
-      result = g_nt.RtlAllocateHeap(sandbox::g_heap, 0, size);
+      result = sandbox::g_nt.RtlAllocateHeap(sandbox::g_heap, 0, size);
     }
-  } else if (NT_PAGE == type) {
+  } else if (type == sandbox::NT_PAGE) {
     result = AllocateNearTo(near_to, size);
   } else {
     NOTREACHED_NT();
@@ -643,37 +642,31 @@ void* operator new(size_t size, sandbox::AllocationType type,
 }
 
 void operator delete(void* memory, sandbox::AllocationType type) {
-  using namespace sandbox;
-
-  if (NT_ALLOC == type) {
+  if (type == sandbox::NT_ALLOC) {
     // Use default flags.
-    VERIFY(g_nt.RtlFreeHeap(sandbox::g_heap, 0, memory));
-  } else if (NT_PAGE == type) {
+    VERIFY(sandbox::g_nt.RtlFreeHeap(sandbox::g_heap, 0, memory));
+  } else if (type == sandbox::NT_PAGE) {
     void* base = memory;
     SIZE_T size = 0;
-    VERIFY_SUCCESS(g_nt.FreeVirtualMemory(NtCurrentProcess, &base, &size,
-                                          MEM_RELEASE));
+    VERIFY_SUCCESS(sandbox::g_nt.FreeVirtualMemory(NtCurrentProcess, &base,
+                                                   &size, MEM_RELEASE));
   } else {
     NOTREACHED_NT();
   }
 }
 
-void operator delete(void* memory, sandbox::AllocationType type,
+void operator delete(void* memory,
+                     sandbox::AllocationType type,
                      void* near_to) {
-  UNREFERENCED_PARAMETER(near_to);
   operator delete(memory, type);
 }
 
-void* __cdecl operator new(size_t size, void* buffer,
+void* __cdecl operator new(size_t size,
+                           void* buffer,
                            sandbox::AllocationType type) {
-  UNREFERENCED_PARAMETER(size);
-  UNREFERENCED_PARAMETER(type);
   return buffer;
 }
 
-void __cdecl operator delete(void* memory, void* buffer,
-                             sandbox::AllocationType type) {
-  UNREFERENCED_PARAMETER(memory);
-  UNREFERENCED_PARAMETER(buffer);
-  UNREFERENCED_PARAMETER(type);
-}
+void __cdecl operator delete(void* memory,
+                             void* buffer,
+                             sandbox::AllocationType type) {}

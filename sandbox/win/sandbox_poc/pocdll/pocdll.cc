@@ -6,12 +6,7 @@
 #include "sandbox/win/sandbox_poc/pocdll/exports.h"
 #include "sandbox/win/sandbox_poc/pocdll/utils.h"
 
-BOOL APIENTRY DllMain(HMODULE module,
-                      DWORD reason_for_call,
-                      LPVOID reserved) {
-  UNREFERENCED_PARAMETER(module);
-  UNREFERENCED_PARAMETER(reason_for_call);
-  UNREFERENCED_PARAMETER(reserved);
+BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
   return TRUE;
 }
 

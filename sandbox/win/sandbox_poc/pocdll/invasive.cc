@@ -13,15 +13,14 @@
 // Sleeps forever. this function is used to be the
 // entry point for the threads created by the thread bombing function.
 // This function never returns.
-DWORD WINAPI MyThreadBombimgFunction(void *param) {
-  UNREFERENCED_PARAMETER(param);
+DWORD WINAPI MyThreadBombimgFunction(void* param) {
   Sleep(INFINITE);
   return 0;
 }
 
 void POCDLL_API TestThreadBombing(HANDLE log) {
   HandleToFile handle2file;
-  FILE *output = handle2file.Translate(log, "w");
+  FILE* output = handle2file.Translate(log, "w");
 
   // we stop after 5 errors in a row
   int number_errors = 0;
@@ -55,8 +54,7 @@ void POCDLL_API TestThreadBombing(HANDLE log) {
 // is used as entry point for the threads created by TestTakeAllCpu. It it
 // designed to take all CPU on the processor where the thread is running.
 // The return value is always 0.
-DWORD WINAPI TakeAllCpu(void *param) {
-  UNREFERENCED_PARAMETER(param);
+DWORD WINAPI TakeAllCpu(void* param) {
   int cpt = 0;
   for (;;) {
     cpt += 2;
@@ -69,7 +67,7 @@ DWORD WINAPI TakeAllCpu(void *param) {
 
 void POCDLL_API TestTakeAllCpu(HANDLE log) {
   HandleToFile handle2file;
-  FILE *output = handle2file.Translate(log, "w");
+  FILE* output = handle2file.Translate(log, "w");
 
   DWORD_PTR process_mask = 0;
   DWORD_PTR system_mask = 0;
@@ -110,14 +108,14 @@ void POCDLL_API TestTakeAllCpu(HANDLE log) {
 
 void POCDLL_API TestUseAllMemory(HANDLE log) {
   HandleToFile handle2file;
-  FILE *output = handle2file.Translate(log, "w");
+  FILE* output = handle2file.Translate(log, "w");
 
   int number_errors = 0;
   unsigned long memory_size = 0;
   for (;;) {
-    DWORD *ptr_to_leak = reinterpret_cast<DWORD *>(malloc(1024*256));
+    DWORD* ptr_to_leak = reinterpret_cast<DWORD*>(malloc(1024 * 256));
     if (ptr_to_leak) {
-      memory_size += (256);
+      memory_size += 256;
       number_errors = 0;
     } else {
       number_errors++;
@@ -135,7 +133,7 @@ void POCDLL_API TestUseAllMemory(HANDLE log) {
 
 void POCDLL_API TestCreateObjects(HANDLE log) {
   HandleToFile handle2file;
-  FILE *output = handle2file.Translate(log, "w");
+  FILE* output = handle2file.Translate(log, "w");
 
   int mutexes = 0;
   int jobs = 0;
@@ -187,7 +185,7 @@ BOOL CALLBACK EnumWindowCallback(HWND hwnd, LPARAM output) {
 // "output" is the stream used for logging.
 void POCDLL_API TestCloseHWND(HANDLE log) {
   HandleToFile handle2file;
-  FILE *output = handle2file.Translate(log, "w");
+  FILE* output = handle2file.Translate(log, "w");
 
   ::EnumWindows(EnumWindowCallback, PtrToLong(output));
   // TODO(nsylvain): find a way to know when the enum is finished

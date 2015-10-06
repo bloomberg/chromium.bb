@@ -67,8 +67,6 @@ bool DelayImportChunksCallback(const PEImage& image,
                                LPCSTR module,
                                PIMAGE_THUNK_DATA name_table,
                                PIMAGE_THUNK_DATA iat,
-                               PIMAGE_THUNK_DATA bound_iat,
-                               PIMAGE_THUNK_DATA unload_iat,
                                PVOID cookie) {
   int* count = reinterpret_cast<int*>(cookie);
   (*count)++;

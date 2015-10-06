@@ -36,7 +36,7 @@ void CopyPolicyToTarget(const void* source, size_t size, void* dest) {
   }
 }
 
-}
+}  // namespace
 
 namespace sandbox {
 
@@ -273,8 +273,6 @@ ResultCode TargetProcess::TransferVariable(const char* name, void* address,
   size_t offset = reinterpret_cast<char*>(child_var) -
                   reinterpret_cast<char*>(module);
   child_var = reinterpret_cast<char*>(MainModule()) + offset;
-#else
-  UNREFERENCED_PARAMETER(name);
 #endif
 
   SIZE_T written;

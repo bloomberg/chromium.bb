@@ -56,9 +56,6 @@ template <>
 EvalResult OpcodeEval<OP_ALWAYS_FALSE>(PolicyOpcode* opcode,
                                        const ParameterSet* param,
                                        MatchContext* context) {
-  UNREFERENCED_PARAMETER(opcode);
-  UNREFERENCED_PARAMETER(param);
-  UNREFERENCED_PARAMETER(context);
   return EVAL_FALSE;
 }
 
@@ -74,9 +71,6 @@ template <>
 EvalResult OpcodeEval<OP_ALWAYS_TRUE>(PolicyOpcode* opcode,
                                       const ParameterSet* param,
                                       MatchContext* context) {
-  UNREFERENCED_PARAMETER(opcode);
-  UNREFERENCED_PARAMETER(param);
-  UNREFERENCED_PARAMETER(context);
   return EVAL_TRUE;
 }
 
@@ -97,8 +91,6 @@ template <>
 EvalResult OpcodeEval<OP_ACTION>(PolicyOpcode* opcode,
                                  const ParameterSet* param,
                                  MatchContext* context) {
-  UNREFERENCED_PARAMETER(param);
-  UNREFERENCED_PARAMETER(context);
   int action = 0;
   opcode->GetArgument(0, &action);
   return static_cast<EvalResult>(action);
@@ -134,7 +126,6 @@ template <>
 EvalResult OpcodeEval<OP_NUMBER_MATCH>(PolicyOpcode* opcode,
                                        const ParameterSet* param,
                                        MatchContext* context) {
-  UNREFERENCED_PARAMETER(context);
   uint32 value_uint32 = 0;
   if (param->Get(&value_uint32)) {
     uint32 match_uint32 = 0;
@@ -176,7 +167,6 @@ template <>
 EvalResult OpcodeEval<OP_NUMBER_MATCH_RANGE>(PolicyOpcode* opcode,
                                              const ParameterSet* param,
                                              MatchContext* context) {
-  UNREFERENCED_PARAMETER(context);
   uint32 value = 0;
   if (!param->Get(&value)) return EVAL_ERROR;
 
@@ -206,7 +196,6 @@ template <>
 EvalResult OpcodeEval<OP_NUMBER_AND_MATCH>(PolicyOpcode* opcode,
                                            const ParameterSet* param,
                                            MatchContext* context) {
-  UNREFERENCED_PARAMETER(context);
   uint32 value = 0;
   if (!param->Get(&value)) return EVAL_ERROR;
 

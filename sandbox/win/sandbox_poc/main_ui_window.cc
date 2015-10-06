@@ -163,8 +163,6 @@ INT_PTR CALLBACK MainUIWindow::SpawnTargetWndProc(HWND dialog,
                                                   UINT message_id,
                                                   WPARAM wparam,
                                                   LPARAM lparam) {
-  UNREFERENCED_PARAMETER(lparam);
-
   // Grab a reference to the main UI window (from the window handle)
   MainUIWindow* host = FromWindow(GetParent(dialog));
   DCHECK(host);
@@ -259,7 +257,7 @@ BOOL MainUIWindow::OnCreate(HWND parent_window, LPCREATESTRUCT) {
     return FALSE;
 
   LVCOLUMN list_view_column = {0};
-  list_view_column.mask = LVCF_FMT | LVCF_WIDTH ;
+  list_view_column.mask = LVCF_FMT | LVCF_WIDTH;
   list_view_column.fmt = LVCFMT_LEFT;
   list_view_column.cx = 10000;  // Maximum size of an entry in the list view.
   ListView_InsertColumn(list_view_, 0, &list_view_column);
@@ -273,17 +271,12 @@ BOOL MainUIWindow::OnCreate(HWND parent_window, LPCREATESTRUCT) {
 }
 
 void MainUIWindow::OnDestroy(HWND window) {
-  UNREFERENCED_PARAMETER(window);
-
   // Post a quit message because our application is over when the
   // user closes this window.
   ::PostQuitMessage(0);
 }
 
 void MainUIWindow::OnSize(HWND window, UINT state, int cx, int cy) {
-  UNREFERENCED_PARAMETER(window);
-  UNREFERENCED_PARAMETER(state);
-
   // If we have a valid inner child, resize it to cover the entire
   // client area of the main UI window.
   if (list_view_) {
@@ -414,9 +407,8 @@ DWORD MainUIWindow::ListenPipe() {
   ATL::CStringA string_to_print;
 
   DWORD last_error = 0;
-  while(last_error == ERROR_SUCCESS || last_error == ERROR_PIPE_LISTENING ||
-        last_error == ERROR_NO_DATA)
-  {
+  while (last_error == ERROR_SUCCESS || last_error == ERROR_PIPE_LISTENING ||
+         last_error == ERROR_NO_DATA) {
     DWORD read_data_length;
     if (::ReadFile(pipe_handle_,
                   read_buffer,
@@ -533,7 +525,6 @@ bool MainUIWindow::SpawnTarget() {
         spawn_target_.c_str(), arguments, result);
     return_value = false;
   } else {
-
     DWORD thread_id;
     ::CreateThread(NULL,  // Default security attributes
                    NULL,  // Default stack size

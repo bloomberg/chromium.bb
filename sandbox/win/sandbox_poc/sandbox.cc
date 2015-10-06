@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/win/sandbox_poc/sandbox.h"
+
 #include <windows.h>
 #include <tchar.h>
 #include <shellapi.h>
-#include "sandbox/win/sandbox_poc/sandbox.h"
+
+#include <string>
+
 #include "base/logging.h"
 #include "sandbox/win/sandbox_poc/main_ui_window.h"
 #include "sandbox/win/src/sandbox.h"
@@ -24,7 +28,7 @@ bool ParseCommandLine(wchar_t * command_line,
   if (!dll_name || !entry_point || !log_file)
     return false;
 
-  LPWSTR *arg_list;
+  LPWSTR* arg_list;
   int arg_count;
 
   // We expect the command line to contain: EntryPointName "DLLPath" "LogPath"
@@ -49,8 +53,6 @@ bool ParseCommandLine(wchar_t * command_line,
 
 int APIENTRY _tWinMain(HINSTANCE instance, HINSTANCE, wchar_t* command_line,
                        int show_command) {
-  UNREFERENCED_PARAMETER(command_line);
-
   sandbox::BrokerServices* broker_service =
       sandbox::SandboxFactory::GetBrokerServices();
   sandbox::ResultCode result;
@@ -168,7 +170,7 @@ int APIENTRY _tWinMain(HINSTANCE instance, HINSTANCE, wchar_t* command_line,
       return -6;
     }
 
-   // Transfer control to the entry point in the DLL requested
+    // Transfer control to the entry point in the DLL requested
     init_function(pipe);
 
     CloseHandle(pipe);

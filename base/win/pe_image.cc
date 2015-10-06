@@ -20,55 +20,56 @@ struct EnumAllImportsStorage {
 
 namespace {
 
-  // PdbInfo Signature
-  const DWORD kPdbInfoSignature = 'SDSR';
+// PdbInfo Signature
+const DWORD kPdbInfoSignature = 'SDSR';
 
-  // Compare two strings byte by byte on an unsigned basis.
-  //   if s1 == s2, return 0
-  //   if s1 < s2, return negative
-  //   if s1 > s2, return positive
-  // Exception if inputs are invalid.
-  int StrCmpByByte(LPCSTR s1, LPCSTR s2) {
-    while (*s1 != '\0' && *s1 == *s2) {
-      ++s1;
-      ++s2;
-    }
-
-    return (*reinterpret_cast<const unsigned char*>(s1) -
-            *reinterpret_cast<const unsigned char*>(s2));
+// Compare two strings byte by byte on an unsigned basis.
+//   if s1 == s2, return 0
+//   if s1 < s2, return negative
+//   if s1 > s2, return positive
+// Exception if inputs are invalid.
+int StrCmpByByte(LPCSTR s1, LPCSTR s2) {
+  while (*s1 != '\0' && *s1 == *s2) {
+    ++s1;
+    ++s2;
   }
 
-  struct PdbInfo {
-    DWORD Signature;
-    GUID Guid;
-    DWORD Age;
-    char PdbFileName[1];
-  };
+  return (*reinterpret_cast<const unsigned char*>(s1) -
+          *reinterpret_cast<const unsigned char*>(s2));
+}
+
+struct PdbInfo {
+  DWORD Signature;
+  GUID Guid;
+  DWORD Age;
+  char PdbFileName[1];
+};
+
 }  // namespace
 
 // Callback used to enumerate imports. See EnumImportChunksFunction.
 bool ProcessImportChunk(const PEImage &image, LPCSTR module,
                         PIMAGE_THUNK_DATA name_table,
                         PIMAGE_THUNK_DATA iat, PVOID cookie) {
-  EnumAllImportsStorage &storage = *reinterpret_cast<EnumAllImportsStorage*>(
-                                       cookie);
+  EnumAllImportsStorage& storage =
+      *reinterpret_cast<EnumAllImportsStorage*>(cookie);
 
   return image.EnumOneImportChunk(storage.callback, module, name_table, iat,
                                   storage.cookie);
 }
 
 // Callback used to enumerate delay imports. See EnumDelayImportChunksFunction.
-bool ProcessDelayImportChunk(const PEImage &image,
+bool ProcessDelayImportChunk(const PEImage& image,
                              PImgDelayDescr delay_descriptor,
-                             LPCSTR module, PIMAGE_THUNK_DATA name_table,
-                             PIMAGE_THUNK_DATA iat, PIMAGE_THUNK_DATA bound_iat,
-                             PIMAGE_THUNK_DATA unload_iat, PVOID cookie) {
-  EnumAllImportsStorage &storage = *reinterpret_cast<EnumAllImportsStorage*>(
-                                       cookie);
+                             LPCSTR module,
+                             PIMAGE_THUNK_DATA name_table,
+                             PIMAGE_THUNK_DATA iat,
+                             PVOID cookie) {
+  EnumAllImportsStorage& storage =
+      *reinterpret_cast<EnumAllImportsStorage*>(cookie);
 
   return image.EnumOneDelayImportChunk(storage.callback, delay_descriptor,
-                                       module, name_table, iat, bound_iat,
-                                       unload_iat, storage.cookie);
+                                       module, name_table, iat, storage.cookie);
 }
 
 void PEImage::set_module(HMODULE module) {
@@ -439,8 +440,6 @@ bool PEImage::EnumDelayImportChunks(EnumDelayImportChunksFunction callback,
   for (; delay_descriptor->rvaHmod; delay_descriptor++) {
     PIMAGE_THUNK_DATA name_table;
     PIMAGE_THUNK_DATA iat;
-    PIMAGE_THUNK_DATA bound_iat;    // address of the optional bound IAT
-    PIMAGE_THUNK_DATA unload_iat;   // address of optional copy of original IAT
     LPCSTR module_name;
 
     // check if VC7-style imports, using RVAs instead of
@@ -448,33 +447,25 @@ bool PEImage::EnumDelayImportChunks(EnumDelayImportChunksFunction callback,
     bool rvas = (delay_descriptor->grAttrs & dlattrRva) != 0;
 
     if (rvas) {
-      module_name = reinterpret_cast<LPCSTR>(
-                        RVAToAddr(delay_descriptor->rvaDLLName));
+      module_name =
+          reinterpret_cast<LPCSTR>(RVAToAddr(delay_descriptor->rvaDLLName));
       name_table = reinterpret_cast<PIMAGE_THUNK_DATA>(
-                       RVAToAddr(delay_descriptor->rvaINT));
+          RVAToAddr(delay_descriptor->rvaINT));
       iat = reinterpret_cast<PIMAGE_THUNK_DATA>(
-                RVAToAddr(delay_descriptor->rvaIAT));
-      bound_iat = reinterpret_cast<PIMAGE_THUNK_DATA>(
-                      RVAToAddr(delay_descriptor->rvaBoundIAT));
-      unload_iat = reinterpret_cast<PIMAGE_THUNK_DATA>(
-                       RVAToAddr(delay_descriptor->rvaUnloadIAT));
+          RVAToAddr(delay_descriptor->rvaIAT));
     } else {
 #pragma warning(push)
 #pragma warning(disable: 4312)
       // These casts generate warnings because they are 32 bit specific.
       module_name = reinterpret_cast<LPCSTR>(delay_descriptor->rvaDLLName);
-      name_table = reinterpret_cast<PIMAGE_THUNK_DATA>(
-                       delay_descriptor->rvaINT);
+      name_table =
+          reinterpret_cast<PIMAGE_THUNK_DATA>(delay_descriptor->rvaINT);
       iat = reinterpret_cast<PIMAGE_THUNK_DATA>(delay_descriptor->rvaIAT);
-      bound_iat = reinterpret_cast<PIMAGE_THUNK_DATA>(
-                      delay_descriptor->rvaBoundIAT);
-      unload_iat = reinterpret_cast<PIMAGE_THUNK_DATA>(
-                       delay_descriptor->rvaUnloadIAT);
 #pragma warning(pop)
     }
 
     if (!callback(*this, delay_descriptor, module_name, name_table, iat,
-                  bound_iat, unload_iat, cookie))
+                  cookie))
       return false;
   }
 
@@ -486,12 +477,7 @@ bool PEImage::EnumOneDelayImportChunk(EnumImportsFunction callback,
                                       LPCSTR module_name,
                                       PIMAGE_THUNK_DATA name_table,
                                       PIMAGE_THUNK_DATA iat,
-                                      PIMAGE_THUNK_DATA bound_iat,
-                                      PIMAGE_THUNK_DATA unload_iat,
                                       PVOID cookie) const {
-  UNREFERENCED_PARAMETER(bound_iat);
-  UNREFERENCED_PARAMETER(unload_iat);
-
   for (; name_table->u1.Ordinal; name_table++, iat++) {
     LPCSTR name = NULL;
     WORD ordinal = 0;
@@ -553,13 +539,13 @@ bool PEImage::VerifyMagic() const {
   return true;
 }
 
-bool PEImage::ImageRVAToOnDiskOffset(DWORD rva, DWORD *on_disk_offset) const {
+bool PEImage::ImageRVAToOnDiskOffset(DWORD rva, DWORD* on_disk_offset) const {
   LPVOID address = RVAToAddr(rva);
   return ImageAddrToOnDiskOffset(address, on_disk_offset);
 }
 
 bool PEImage::ImageAddrToOnDiskOffset(LPVOID address,
-                                      DWORD *on_disk_offset) const {
+                                      DWORD* on_disk_offset) const {
   if (NULL == address)
     return false;
 
