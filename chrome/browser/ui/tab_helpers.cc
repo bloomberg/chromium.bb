@@ -163,8 +163,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   ManagePasswordsUIController::CreateForWebContents(web_contents);
   NavigationCorrectionTabObserver::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
+  // rappor_service will either be NULL or share a lifetime with the
+  // BrowserProcess g_browser_process. This ensures rappor_service() will
+  // survive as long as the web_contents will survive.
   page_load_metrics::MetricsWebContentsObserver::CreateForWebContents(
-      web_contents);
+      web_contents, g_browser_process->rappor_service());
   PopupBlockerTabHelper::CreateForWebContents(web_contents);
   PrefsTabHelper::CreateForWebContents(web_contents);
   prerender::PrerenderTabHelper::CreateForWebContents(web_contents);

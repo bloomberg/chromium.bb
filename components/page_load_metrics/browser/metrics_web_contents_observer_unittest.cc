@@ -9,6 +9,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
+#include "components/rappor/test_rappor_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/test_renderer_host.h"
@@ -47,7 +48,9 @@ class MetricsWebContentsObserverTest
 
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
-    observer_ = make_scoped_ptr(new MetricsWebContentsObserver(web_contents()));
+    observer_ = make_scoped_ptr(
+        new MetricsWebContentsObserver(web_contents(),
+                                       &rappor_tester_));
     observer_->WasShown();
   }
 
@@ -59,6 +62,7 @@ class MetricsWebContentsObserverTest
 
  protected:
   base::HistogramTester histogram_tester_;
+  rappor::TestRapporService rappor_tester_;
   scoped_ptr<MetricsWebContentsObserver> observer_;
 };
 

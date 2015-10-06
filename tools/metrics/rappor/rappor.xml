@@ -469,6 +469,42 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="PageLoad.CoarseTiming.NavigationToFirstLayout"
+    type="UMA_RAPPOR_TYPE">
+  <owner>csharrison@chromium.org</owner>
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    The eTLD+1 of the website visited, along with a bitfield representing
+    bucket membership in a coarse histogram. The bucket's name is its lower
+    bound.
+  </summary>
+  <string-field name="Domain">
+    <summary>
+      The domain+registry of the URL.
+    </summary>
+  </string-field>
+  <flags-field name="Bucket">
+    <flag>Bit 0: 0_2_SECONDS</flag>
+    <flag>Bit 1: 2_4_SECONDS</flag>
+    <flag>Bit 2: 4_8_SECONDS</flag>
+    <flag>Bit 3: 8_16_SECONDS</flag>
+    <flag>Bit 4: 16_32_SECONDS</flag>
+    <flag>Bit 5: 32_INF_SECONDS</flag>
+    <summary>
+      Bitfield representing the bucket when the time to first layout occurred
+    </summary>
+  </flags-field>
+  <flags-field name="IsSlow">
+    <flag>Bit 0</flag>
+    <summary>
+      Whether or not the navigation to first layout took over ten seconds.
+      We send this over to ease in analysis. The Bucket field has many
+      dimensions of noise (i.e. bits flipped), so it will be much harder
+      to de-noise than this one.
+    </summary>
+  </flags-field>
+</rappor-metric>
+
 <rappor-metric name="Permissions.Action.DurableStorage"
     type="SAFEBROWSING_RAPPOR_TYPE">
   <owner>kcarattini@chromium.org</owner>
