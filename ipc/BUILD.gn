@@ -11,10 +11,14 @@ component("ipc") {
     "attachment_broker_messages.h",
     "attachment_broker_privileged.cc",
     "attachment_broker_privileged.h",
+    "attachment_broker_privileged_mac.cc",
+    "attachment_broker_privileged_mac.h",
     "attachment_broker_privileged_win.cc",
     "attachment_broker_privileged_win.h",
     "attachment_broker_unprivileged.cc",
     "attachment_broker_unprivileged.h",
+    "attachment_broker_unprivileged_mac.cc",
+    "attachment_broker_unprivileged_mac.h",
     "attachment_broker_unprivileged_win.cc",
     "attachment_broker_unprivileged_win.h",
     "brokerable_attachment.cc",
@@ -138,6 +142,7 @@ if (!is_android) {
 
   test("ipc_tests") {
     sources = [
+      "attachment_broker_privileged_mac_unittest.cc",
       "attachment_broker_privileged_win_unittest.cc",
       "attachment_broker_unprivileged_win_unittest.cc",
       "ipc_channel_posix_unittest.cc",

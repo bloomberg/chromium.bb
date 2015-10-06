@@ -52,6 +52,7 @@
         '..'
       ],
       'sources': [
+        'attachment_broker_privileged_mac_unittest.cc',
         'attachment_broker_privileged_win_unittest.cc',
         'attachment_broker_unprivileged_win_unittest.cc',
         'ipc_channel_posix_unittest.cc',

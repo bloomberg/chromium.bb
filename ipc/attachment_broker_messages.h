@@ -14,6 +14,10 @@
 #include "ipc/handle_attachment_win.h"
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MACOSX)
+#include "ipc/mach_port_attachment_mac.h"
+#endif  // defined(OS_MACOSX)
+
 // ----------------------------------------------------------------------------
 // Serialization of structs.
 // ----------------------------------------------------------------------------
@@ -29,6 +33,14 @@ IPC_STRUCT_TRAITS_BEGIN(IPC::internal::HandleAttachmentWin::WireFormat)
   IPC_STRUCT_TRAITS_MEMBER(attachment_id)
 IPC_STRUCT_TRAITS_END()
 #endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+IPC_STRUCT_TRAITS_BEGIN(IPC::internal::MachPortAttachmentMac::WireFormat)
+  IPC_STRUCT_TRAITS_MEMBER(mach_port)
+  IPC_STRUCT_TRAITS_MEMBER(destination_process)
+  IPC_STRUCT_TRAITS_MEMBER(attachment_id)
+IPC_STRUCT_TRAITS_END()
+#endif  // defined(OS_MACOSX)
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT IPC_EXPORT
@@ -47,6 +59,16 @@ IPC_MESSAGE_CONTROL1(
     IPC::internal::HandleAttachmentWin::WireFormat /* wire_format */)
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MACOSX)
+// Sent from a broker process to a non-broker process to indicate that an OSX
+// Mach port has been duplicated. Contains all information necessary for the
+// non-broker process to translate a BrokerAttachment::AttachmentId to a
+// BrokerAttachment.
+IPC_MESSAGE_CONTROL1(
+    AttachmentBrokerMsg_MachPortHasBeenDuplicated,
+    IPC::internal::MachPortAttachmentMac::WireFormat /* wire_format */)
+#endif  // defined(OS_MACOSX)
+
 // ----------------------------------------------------------------------------
 // Messages sent from a non-broker process to a broker process.
 // ----------------------------------------------------------------------------
@@ -59,3 +81,12 @@ IPC_MESSAGE_CONTROL1(
     AttachmentBrokerMsg_DuplicateWinHandle,
     IPC::internal::HandleAttachmentWin::WireFormat /* wire_format */)
 #endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+// Sent from a non-broker process to a broker process to request the duplication
+// of a Mach port into a different process (possibly the broker process, or even
+// the original process).
+IPC_MESSAGE_CONTROL1(
+    AttachmentBrokerMsg_DuplicateMachPort,
+    IPC::internal::MachPortAttachmentMac::WireFormat /* wire_format */)
+#endif  // defined(OS_MACOSX)
