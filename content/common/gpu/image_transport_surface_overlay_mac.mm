@@ -88,26 +88,17 @@ namespace content {
 
 class ImageTransportSurfaceOverlayMac::OverlayPlane {
  public:
-  enum Type {
-    ROOT = 0,
-    ROOT_PARTIAL_DAMAGE = 1,
-    OVERLAY = 2,
-  };
-
-  OverlayPlane(Type type,
-               int z_order,
+  OverlayPlane(int z_order,
                base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
                const gfx::RectF& dip_frame_rect,
                const gfx::RectF& contents_rect)
-      : type(type),
-        z_order(z_order),
+      : z_order(z_order),
         io_surface(io_surface),
         dip_frame_rect(dip_frame_rect),
         contents_rect(contents_rect),
         layer_needs_update(true) {}
   ~OverlayPlane() { DCHECK(!ca_layer); }
 
-  const Type type;
   const int z_order;
   base::scoped_nsobject<CALayer> ca_layer;
 
@@ -120,28 +111,7 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
 
   static bool Compare(const linked_ptr<OverlayPlane>& a,
                       const linked_ptr<OverlayPlane>& b) {
-    // Sort by z_order first.
-    if (a->z_order < b->z_order)
-      return true;
-    if (a->z_order > b->z_order)
-      return false;
-    // Then ensure that the root partial damage is after the root.
-    if (a->type < b->type)
-      return true;
-    if (a->type > b->type)
-      return false;
-    // Then sort by x.
-    if (a->dip_frame_rect.x() < b->dip_frame_rect.x())
-      return true;
-    if (a->dip_frame_rect.x() > b->dip_frame_rect.x())
-      return false;
-    // Then sort by y.
-    if (a->dip_frame_rect.y() < b->dip_frame_rect.y())
-      return true;
-    if (a->dip_frame_rect.y() > b->dip_frame_rect.y())
-      return false;
-
-    return false;
+    return (a->z_order < b->z_order);
   }
 
   void TakeCALayerFrom(OverlayPlane* other_plane) {
@@ -154,7 +124,7 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
       [ca_layer setFrame:dip_frame_rect.ToCGRect()];
       [ca_layer setContentsRect:contents_rect.ToCGRect()];
       id new_contents = static_cast<id>(io_surface.get());
-      if ([ca_layer contents] == new_contents && type != OVERLAY) {
+      if ([ca_layer contents] == new_contents && z_order == 0) {
         [ca_layer setContentsChanged];
       } else {
         [ca_layer setContents:new_contents];
@@ -168,7 +138,7 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
       if (!layer_needs_update) {
         // Green represents contents that are unchanged across frames.
         color.reset(CGColorCreateGenericRGB(0, 1, 0, 1));
-      } else if (type == OverlayPlane::OVERLAY) {
+      } else if (z_order != 0) {
         // Pink represents overlay planes
         color.reset(CGColorCreateGenericRGB(1, 0, 1, 1));
       } else {
@@ -185,8 +155,7 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
     if (!ca_layer)
       return;
     [ca_layer setContents:nil];
-    if (type != ROOT)
-      [ca_layer removeFromSuperlayer];
+    [ca_layer removeFromSuperlayer];
     ca_layer.reset();
   }
 };
@@ -200,6 +169,7 @@ class ImageTransportSurfaceOverlayMac::PendingSwap {
   float scale_factor;
   gfx::Rect pixel_damage_rect;
 
+  linked_ptr<OverlayPlane> root_plane;
   std::vector<linked_ptr<OverlayPlane>> overlay_planes;
   std::vector<ui::LatencyInfo> latency_info;
 
@@ -299,6 +269,8 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
   new_swap->pixel_size = pixel_size_;
   new_swap->scale_factor = scale_factor_;
   new_swap->pixel_damage_rect = pixel_damage_rect;
+  new_swap->root_plane = pending_root_plane_;
+  pending_root_plane_ = linked_ptr<OverlayPlane>();
   new_swap->overlay_planes.swap(pending_overlay_planes_);
   new_swap->latency_info.swap(latency_info_);
 
@@ -380,19 +352,18 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
 
   // Update the plane lists.
   {
-    // Sort the input planes by z-index and type, and remove any overlays from
-    // the damage rect.
+    // Sort the input planes by z-index, and remove any overlays from the
+    // damage rect.
     gfx::RectF dip_damage_rect = ConvertRectToDIPF(
         swap->scale_factor, swap->pixel_damage_rect);
     std::sort(swap->overlay_planes.begin(), swap->overlay_planes.end(),
               OverlayPlane::Compare);
-    for (auto& plane : swap->overlay_planes) {
-      if (plane->type == OverlayPlane::OVERLAY)
-        dip_damage_rect.Subtract(plane->dip_frame_rect);
-    }
+    for (auto& plane : swap->overlay_planes)
+      dip_damage_rect.Subtract(plane->dip_frame_rect);
 
     ScopedCAActionDisabler disabler;
-    UpdateRootAndPartialDamagePlanes(swap->overlay_planes, dip_damage_rect);
+    if (swap->root_plane.get())
+      UpdateRootAndPartialDamagePlanes(swap->root_plane, dip_damage_rect);
     UpdateOverlayPlanes(swap->overlay_planes);
     UpdateCALayerTree();
     swap->overlay_planes.clear();
@@ -419,13 +390,11 @@ void ImageTransportSurfaceOverlayMac::UpdateOverlayPlanes(
   // Move the new overlay planes into the |current_overlay_planes_| list,
   // cannibalizing from the old |current_overlay_planes_| as much as possible.
   for (auto& new_plane : new_overlay_planes) {
-    if (new_plane->type == OverlayPlane::OVERLAY) {
-      if (!old_overlay_planes.empty()) {
-        new_plane->TakeCALayerFrom(old_overlay_planes.front().get());
-        old_overlay_planes.pop_front();
-      }
-      current_overlay_planes_.push_back(new_plane);
+    if (!old_overlay_planes.empty()) {
+      new_plane->TakeCALayerFrom(old_overlay_planes.front().get());
+      old_overlay_planes.pop_front();
     }
+    current_overlay_planes_.push_back(new_plane);
   }
 
   // Destroy any of the previous |current_overlay_planes_| that we couldn't
@@ -435,11 +404,10 @@ void ImageTransportSurfaceOverlayMac::UpdateOverlayPlanes(
 }
 
 void ImageTransportSurfaceOverlayMac::UpdateRootAndPartialDamagePlanes(
-    const std::vector<linked_ptr<OverlayPlane>>& new_overlay_planes,
+    const linked_ptr<OverlayPlane>& new_root_plane,
     const gfx::RectF& dip_damage_rect) {
   std::list<linked_ptr<OverlayPlane>> old_partial_damage_planes;
   old_partial_damage_planes.swap(current_partial_damage_planes_);
-  linked_ptr<OverlayPlane> new_root_plane = new_overlay_planes.front();
   linked_ptr<OverlayPlane> plane_for_swap;
 
   // If the frame's size changed, if we haven't updated the root layer, or if
@@ -481,8 +449,8 @@ void ImageTransportSurfaceOverlayMac::UpdateRootAndPartialDamagePlanes(
           1. / new_root_plane->dip_frame_rect.height());
 
       plane_for_swap = linked_ptr<OverlayPlane>(new OverlayPlane(
-          OverlayPlane::ROOT_PARTIAL_DAMAGE, 0, new_root_plane->io_surface,
-          plane_to_reuse_dip_enlarged_rect, enlarged_contents_rect));
+          0, new_root_plane->io_surface, plane_to_reuse_dip_enlarged_rect,
+          enlarged_contents_rect));
 
       plane_for_swap->TakeCALayerFrom(plane_to_reuse.get());
       if (plane_to_reuse != old_partial_damage_planes.back())
@@ -498,8 +466,7 @@ void ImageTransportSurfaceOverlayMac::UpdateRootAndPartialDamagePlanes(
     contents_rect.Scale(1. / new_root_plane->dip_frame_rect.width(),
                         1. / new_root_plane->dip_frame_rect.height());
     plane_for_swap = linked_ptr<OverlayPlane>(new OverlayPlane(
-        OverlayPlane::ROOT_PARTIAL_DAMAGE, 0, new_root_plane->io_surface,
-        dip_damage_rect, contents_rect));
+        0, new_root_plane->io_surface, dip_damage_rect, contents_rect));
   }
 
   // And if we still don't have a layer, use the root layer.
@@ -567,7 +534,8 @@ void ImageTransportSurfaceOverlayMac::UpdateCALayerTree() {
   }
 
   // Update CALayer contents, frames, and borders.
-  current_root_plane_->UpdateProperties();
+  if (current_root_plane_.get())
+    current_root_plane_->UpdateProperties();
   for (auto& plane : current_partial_damage_planes_)
     plane->UpdateProperties();
   for (auto& plane : current_overlay_planes_)
@@ -660,24 +628,20 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
     gfx::GLImage* image,
     const gfx::Rect& bounds_rect,
     const gfx::RectF& crop_rect) {
-  DCHECK_GE(z_order, 0);
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
-  if (z_order < 0 || transform != gfx::OVERLAY_TRANSFORM_NONE)
+  if (transform != gfx::OVERLAY_TRANSFORM_NONE)
     return false;
 
-  OverlayPlane::Type type = z_order == 0 ?
-      OverlayPlane::ROOT : OverlayPlane::OVERLAY;
-  gfx::RectF dip_frame_rect = ConvertRectToDIPF(
-      scale_factor_, bounds_rect);
-  gfx::RectF contents_rect = crop_rect;
+  linked_ptr<OverlayPlane> plane(
+      new OverlayPlane(z_order,
+                       static_cast<gfx::GLImageIOSurface*>(image)->io_surface(),
+                       ConvertRectToDIPF(scale_factor_, bounds_rect),
+                       crop_rect));
+  if (z_order == 0)
+    pending_root_plane_ = plane;
+  else
+    pending_overlay_planes_.push_back(plane);
 
-  gfx::GLImageIOSurface* image_io_surface =
-      static_cast<gfx::GLImageIOSurface*>(image);
-
-  pending_overlay_planes_.push_back(linked_ptr<OverlayPlane>(
-      new OverlayPlane(
-          type, z_order, image_io_surface->io_surface(), dip_frame_rect,
-          contents_rect)));
   return true;
 }
 

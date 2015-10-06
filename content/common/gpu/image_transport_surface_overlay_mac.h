@@ -65,7 +65,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect);
 
   void UpdateRootAndPartialDamagePlanes(
-      const std::vector<linked_ptr<OverlayPlane>>& new_overlay_planes,
+      const linked_ptr<OverlayPlane>& new_root_plane,
       const gfx::RectF& dip_damage_rect);
   void UpdateOverlayPlanes(
       const std::vector<linked_ptr<OverlayPlane>>& new_overlay_planes);
@@ -108,8 +108,9 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // targeting.
   GLint gl_renderer_id_;
 
-  // Overlay planes that have been scheduled, but have not had a subsequent
-  // SwapBuffers call made yet.
+  // Planes that have been scheduled, but have not had a subsequent SwapBuffers
+  // call made yet.
+  linked_ptr<OverlayPlane> pending_root_plane_;
   std::vector<linked_ptr<OverlayPlane>> pending_overlay_planes_;
 
   // A queue of all frames that have been created by SwapBuffersInternal but
