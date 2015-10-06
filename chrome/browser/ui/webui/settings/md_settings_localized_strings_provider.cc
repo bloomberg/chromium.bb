@@ -452,8 +452,9 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddSyncStrings(content::WebUIDataSource* html_source) {
-  html_source->AddLocalizedString("syncPageTitle",
-                                  IDS_SETTINGS_SYNC);
+  html_source->AddLocalizedString("syncPageTitle", IDS_SETTINGS_SYNC);
+  html_source->AddLocalizedString("syncLoading", IDS_SETTINGS_SYNC_LOADING);
+  html_source->AddLocalizedString("syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT);
   html_source->AddLocalizedString("syncEverythingMenuOption",
                                   IDS_SETTINGS_SYNC_EVERYTHING_MENU_OPTION);
   html_source->AddLocalizedString("chooseWhatToSyncMenuOption",
@@ -496,6 +497,20 @@ void AddSyncStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_CANCEL_BUTTON);
   html_source->AddLocalizedString("okButton",
                                   IDS_SETTINGS_OK_BUTTON);
+  html_source->AddLocalizedString("passphraseExplanationText",
+                                  IDS_SETTINGS_PASSPHRASE_EXPLANATION_TEXT);
+  html_source->AddLocalizedString("emptyPassphraseError",
+                                  IDS_SETTINGS_EMPTY_PASSPHRASE_ERROR);
+  html_source->AddLocalizedString("mismatchedPassphraseError",
+                                  IDS_SETTINGS_MISMATCHED_PASSPHRASE_ERROR);
+  html_source->AddLocalizedString("incorrectPassphraseError",
+                                  IDS_SETTINGS_INCORRECT_PASSPHRASE_ERROR);
+  html_source->AddLocalizedString("passphrasePlaceholder",
+                                  IDS_SETTINGS_PASSPHRASE_PLACEHOLDER);
+  html_source->AddLocalizedString(
+      "passphraseConfirmationPlaceholder",
+      IDS_SETTINGS_PASSPHRASE_CONFIRMATION_PLACEHOLDER);
+
 }
 
 void AddUsersStrings(content::WebUIDataSource* html_source) {
