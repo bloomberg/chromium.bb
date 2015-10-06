@@ -40,10 +40,12 @@ std::vector<int> CreateCadenceFromString(const std::string& cadence) {
   return result;
 }
 
-static void VerifyCadenceVector(VideoCadenceEstimator* estimator,
-                                double frame_hertz,
-                                double render_hertz,
-                                const std::string& expected_cadence) {
+static void VerifyCadenceVectorWithCustomDrift(
+    VideoCadenceEstimator* estimator,
+    double frame_hertz,
+    double render_hertz,
+    base::TimeDelta acceptable_drift,
+    const std::string& expected_cadence) {
   SCOPED_TRACE(base::StringPrintf("Checking %.03f fps into %0.03f", frame_hertz,
                                   render_hertz));
 
@@ -51,8 +53,6 @@ static void VerifyCadenceVector(VideoCadenceEstimator* estimator,
       CreateCadenceFromString(expected_cadence);
 
   estimator->Reset();
-  const base::TimeDelta acceptable_drift = std::max(Interval(frame_hertz) / 2,
-                                                    Interval(render_hertz));
   const bool cadence_changed = estimator->UpdateCadenceEstimate(
       Interval(render_hertz), Interval(frame_hertz), acceptable_drift);
   EXPECT_EQ(cadence_changed, estimator->has_cadence());
@@ -70,6 +70,16 @@ static void VerifyCadenceVector(VideoCadenceEstimator* estimator,
     ASSERT_EQ(expected_cadence_vector[i % expected_cadence_vector.size()],
               estimator->GetCadenceForFrame(i));
   }
+}
+
+static void VerifyCadenceVector(VideoCadenceEstimator* estimator,
+                                double frame_hertz,
+                                double render_hertz,
+                                const std::string& expected_cadence) {
+  const base::TimeDelta acceptable_drift =
+      std::max(Interval(frame_hertz) / 2, Interval(render_hertz));
+  VerifyCadenceVectorWithCustomDrift(estimator, frame_hertz, render_hertz,
+                                     acceptable_drift, expected_cadence);
 }
 
 // Spot check common display and frame rate pairs for correctness.
@@ -123,6 +133,31 @@ TEST(VideoCadenceEstimatorTest, CadenceCalculations) {
   VerifyCadenceVector(&estimator, NTSC(60), 50, kEmptyCadence);
   VerifyCadenceVector(&estimator, 60, 50, kEmptyCadence);
 
+}
+
+// Check the extreme case that max_acceptable_drift is larger than
+// minimum_time_until_max_drift.
+TEST(VideoCadenceEstimatorTest, CadenceCalculationWithLargeDrift) {
+  VideoCadenceEstimator estimator(
+      base::TimeDelta::FromSeconds(kMinimumAcceptableTimeBetweenGlitchesSecs));
+  estimator.set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
+
+  base::TimeDelta drift = base::TimeDelta::FromHours(1);
+  VerifyCadenceVectorWithCustomDrift(&estimator, 1, NTSC(60), drift, "[60]");
+
+  VerifyCadenceVectorWithCustomDrift(&estimator, 30, 60, drift, "[2]");
+  VerifyCadenceVectorWithCustomDrift(&estimator, NTSC(30), 60, drift, "[2]");
+  VerifyCadenceVectorWithCustomDrift(&estimator, 30, NTSC(60), drift, "[2]");
+
+  VerifyCadenceVectorWithCustomDrift(&estimator, 25, 60, drift, "[2]");
+  VerifyCadenceVectorWithCustomDrift(&estimator, NTSC(25), 60, drift, "[2]");
+  VerifyCadenceVectorWithCustomDrift(&estimator, 25, NTSC(60), drift, "[2]");
+
+  // Test cases for cadence below 1.
+  VerifyCadenceVectorWithCustomDrift(&estimator, 120, 24, drift, "[1]");
+  VerifyCadenceVectorWithCustomDrift(&estimator, 120, 48, drift, "[1]");
+  VerifyCadenceVectorWithCustomDrift(&estimator, 120, 72, drift, "[1]");
+  VerifyCadenceVectorWithCustomDrift(&estimator, 90, 60, drift, "[1]");
 }
 
 TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableDrift) {

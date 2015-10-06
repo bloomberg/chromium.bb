@@ -153,11 +153,22 @@ VideoCadenceEstimator::Cadence VideoCadenceEstimator::CalculateCadence(
     base::TimeDelta frame_duration,
     base::TimeDelta max_acceptable_drift,
     base::TimeDelta* time_until_max_drift) const {
-  DCHECK_LT(max_acceptable_drift, minimum_time_until_max_drift_);
-
   // The perfect cadence is the number of render intervals per frame.
   const double perfect_cadence =
       frame_duration.InSecondsF() / render_interval.InSecondsF();
+
+  // This case is very simple, just return a single frame cadence, because it
+  // is impossible for us to accumulate drift as large as max_acceptable_drift
+  // within minimum_time_until_max_drift.
+  if (max_acceptable_drift >= minimum_time_until_max_drift_) {
+    int cadence_value = round(perfect_cadence);
+    if (cadence_value == 0)
+      cadence_value = 1;
+    Cadence result = ConstructCadence(cadence_value, 1);
+    const double error = std::fabs(1.0 - perfect_cadence / cadence_value);
+    *time_until_max_drift = max_acceptable_drift / error;
+    return result;
+  }
 
   // We want to construct a cadence pattern to approximate the perfect cadence
   // while ensuring error doesn't accumulate too quickly.
