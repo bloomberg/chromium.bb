@@ -6148,6 +6148,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DefaultBrowser.AsyncSetAsDefault.Duration"
+    units="milliseconds">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    How long it took to set Chrome as the default browser asynchronously in
+    Windows 10+. The duration is recorded only on Success, Failure, Abandoned
+    and Retry result codes.
+  </summary>
+</histogram>
+
+<histogram name="DefaultBrowser.AsyncSetAsDefault.Result"
+    enum="DefaultBrowserAsyncAttemptResult">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    The count of how many times users were successfully able to set Chrome as
+    the default browser asynchronously in Windows 10+.
+  </summary>
+</histogram>
+
 <histogram name="DefaultBrowser.InteractionResult"
     enum="MakeChromeDefaultResult">
   <owner>gab@chromium.org</owner>
@@ -54867,6 +54886,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="kImageBMP"/>
 </enum>
 
+<enum name="DefaultBrowserAsyncAttemptResult" type="int">
+  <int value="0" label="Success">No errors encountered.</int>
+  <int value="1" label="Already default">
+    Chrome was already the default web client. This counts as a successful
+    attempt.
+  </int>
+  <int value="2" label="Failure">
+    Chrome was not set as the default web client.
+  </int>
+  <int value="3" label="Abandoned">
+    The attempt was abandoned because the observer was destroyed.
+  </int>
+  <int value="4" label="Launch failure">
+    Failed to launch the process to set Chrome as the default web client
+    asynchronously.
+  </int>
+  <int value="5" label="Other worker">
+    Another worker is already in progress to make Chrome the default web client.
+  </int>
+  <int value="6" label="Retry">
+    The user initiated another attempt while the asynchronous operation was
+    already in progress.
+  </int>
+</enum>
+
 <enum name="DefaultBrowserState" type="int">
   <int value="0" label="Not Default"/>
   <int value="1" label="Default"/>
@@ -74571,6 +74615,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="AsyncSlowStart_on" label="Async Slow Start on"/>
   <affected-histogram name="Net.Transaction_Connected_New"/>
   <affected-histogram name="Renderer4.StartToFinish"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AttemptResultCode">
+  <suffix name="Success"/>
+  <suffix name="Failure"/>
+  <suffix name="Abandoned"/>
+  <suffix name="Retry"/>
+  <affected-histogram name="DefaultBrowser.AsyncSetAsDefault.Duration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AutofillDataAvailability" separator=".">

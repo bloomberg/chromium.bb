@@ -226,15 +226,24 @@ class FakeProtocolClientWorker
  private:
   ~FakeProtocolClientWorker() override {}
 
-  ShellIntegration::DefaultWebClientState CheckIsDefault() override {
-    if (force_failure_) {
-      return ShellIntegration::NOT_DEFAULT;
-    } else {
-      return ShellIntegration::IS_DEFAULT;
-    }
+  void CheckIsDefault() override {
+    ShellIntegration::DefaultWebClientState state =
+        ShellIntegration::IS_DEFAULT;
+    if (force_failure_)
+      state = ShellIntegration::NOT_DEFAULT;
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&FakeProtocolClientWorker::OnCheckIsDefaultComplete, this,
+                   state));
   }
 
-  bool SetAsDefault(bool interactive_permitted) override { return true; }
+  void SetAsDefault(bool interactive_permitted) override {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&FakeProtocolClientWorker::OnSetAsDefaultAttemptComplete,
+                   this, AttemptResult::SUCCESS));
+  }
 
  private:
   bool force_failure_;

@@ -11,11 +11,13 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "ui/gfx/image/image_family.h"
 #include "url/gurl.h"
 
 namespace base {
 class CommandLine;
+class OneShotTimer;
 }
 
 class ShellIntegration {
@@ -32,6 +34,10 @@ class ShellIntegration {
   // shown and this method returns true.
   static bool SetAsDefaultBrowserInteractive();
 
+  // Returns true if setting the default browser is an asynchronous operation.
+  // In practice, this is only true on Windows 10+.
+  static bool IsSetAsDefaultAsynchronous();
+
   // Sets Chrome as the default client application for the given protocol
   // (only for the current user). Returns false if this operation fails.
   static bool SetAsDefaultProtocolClient(const std::string& protocol);
@@ -45,13 +51,19 @@ class ShellIntegration {
   static bool SetAsDefaultProtocolClientInteractive(
       const std::string& protocol);
 
-  // In Windows 8 a browser can be made default-in-metro only in an interactive
-  // flow. We will distinguish between two types of permissions here to avoid
-  // forcing the user into UI interaction when this should not be done.
+  // Windows 8 and Windows 10 introduced different ways to set the default
+  // browser.
   enum DefaultWebClientSetPermission {
+    // The browser distribution is not permitted to be made default.
     SET_DEFAULT_NOT_ALLOWED,
+    // No special permission or interaction is required to set the default
+    // browser. This is used in Linux, Mac and Windows 7 and under.
     SET_DEFAULT_UNATTENDED,
+    // On Windows 8, a browser can be made default only in an interactive flow.
     SET_DEFAULT_INTERACTIVE,
+    // On Windows 10+, the set default browser flow is both interactive and
+    // asynchronous.
+    SET_DEFAULT_ASYNCHRONOUS,
   };
 
   // Returns requirements for making the running browser the user's default.
@@ -224,52 +236,92 @@ class ShellIntegration {
    protected:
     friend class base::RefCountedThreadSafe<DefaultWebClientWorker>;
 
-    virtual ~DefaultWebClientWorker() {}
+    // Possible result codes for a set-as-default operation.
+    // Do not modify the ordering as it is important for UMA.
+    enum AttemptResult {
+      // No errors encountered.
+      SUCCESS,
+      // Chrome was already the default web client. This counts as a successful
+      // attempt.
+      ALREADY_DEFAULT,
+      // Chrome was not set as the default web client.
+      FAILURE,
+      // The attempt was abandoned because the observer was destroyed.
+      ABANDONED,
+      // Failed to launch the process to set Chrome as the default web client
+      // asynchronously.
+      LAUNCH_FAILURE,
+      // Another worker is already in progress to make Chrome the default web
+      // client.
+      OTHER_WORKER,
+      // The user initiated another attempt while the asynchronous operation was
+      // already in progress.
+      RETRY,
+      NUM_ATTEMPT_RESULT_TYPES
+    };
+
+    virtual ~DefaultWebClientWorker();
+
+    // Communicates the result to the observer. In contrast to
+    // OnSetAsDefaultAttemptComplete(), this should not be called multiple
+    // times.
+    void OnCheckIsDefaultComplete(DefaultWebClientState state);
+
+    // Called when the set as default operation is completed. This then invokes
+    // FinalizeSetAsDefault() and, if an observer is present, starts the check
+    // is default process.
+    // It is safe to call this multiple times. Only the first call is processed
+    // after StartSetAsDefault() is invoked.
+    void OnSetAsDefaultAttemptComplete(AttemptResult result);
+
+    // Returns true if FinalizeSetAsDefault() will be called.
+    bool set_as_default_initialized() const {
+      return set_as_default_initialized_;
+    }
+
+    // Flag that indicates if the set-as-default operation is in progess to
+    // prevent multiple notifications to the observer.
+    bool set_as_default_in_progress_ = false;
 
    private:
-    // Function that performs the check.
-    virtual DefaultWebClientState CheckIsDefault() = 0;
+    // Checks whether Chrome is the default web client. Always called on the
+    // FILE thread. Subclasses are responsible for calling
+    // OnCheckIsDefaultComplete() on the UI thread.
+    virtual void CheckIsDefault() = 0;
 
-    // Function that sets Chrome as the default web client. Returns false if
-    // the operation fails or has been cancelled by the user.
-    virtual bool SetAsDefault(bool interactive_permitted) = 0;
+    // Sets Chrome as the default web client. Always called on the FILE thread.
+    // |interactive_permitted| will make SetAsDefault() fail if it requires
+    // interaction with the user. Subclasses are responsible for calling
+    // OnSetAsDefaultAttemptComplete() on the UI thread.
+    virtual void SetAsDefault(bool interactive_permitted) = 0;
 
-    // Function that handles performing the check on the file thread. This
-    // function is posted as a task onto the file thread, where it performs
-    // the check. When the check has finished the CompleteCheckIsDefault
-    // function is posted to the UI thread, where the result is sent back to
-    // the observer.
-    void ExecuteCheckIsDefault();
+    // Invoked on the UI thread prior to starting a set-as-default operation.
+    // Returns true if the initialization succeeded and a subsequent call to
+    // FinalizeSetAsDefault() is required.
+    virtual bool InitializeSetAsDefault();
 
-    // Communicate results to the observer. This function is posted as a task
-    // onto the UI thread by the ExecuteCheckIsDefault function running in the
-    // file thread.
-    void CompleteCheckIsDefault(DefaultWebClientState state);
+    // Invoked on the UI thread following a set-as-default operation.
+    virtual void FinalizeSetAsDefault();
 
-    // Function that handles setting Chrome as the default web client on the
-    // file thread. This function is posted as a task onto the file thread.
-    // Once it is finished the CompleteSetAsDefault function is posted to the
-    // UI thread which will check the status of Chrome as the default, and
-    // send this to the observer.
-    // |interactive_permitted| indicates if the routine is allowed to carry on
-    // in context where user interaction is required (CanSetAsDefault*
-    // returns SET_DEFAULT_INTERACTIVE).
-    void ExecuteSetAsDefault(bool interactive_permitted);
+    // Returns true if the attempt results should be reported to UMA.
+    static bool ShouldReportAttemptResults();
 
-    // When the action to set Chrome as the default has completed this function
-    // is run. It is posted as a task back onto the UI thread by the
-    // ExecuteSetAsDefault function running in the file thread. This function
-    // will the start the check process, which, if an observer is present,
-    // reports to it the new status.
-    // |succeeded| is true if the actual call to a set-default function (from
-    // ExecuteSetAsDefault) was successful.
-    void CompleteSetAsDefault(bool succeeded);
+    // Reports the result and duration for one set-as-default attempt.
+    void ReportAttemptResult(AttemptResult result);
 
     // Updates the UI in our associated view with the current default web
     // client state.
     void UpdateUI(DefaultWebClientState state);
 
     DefaultWebClientObserver* observer_;
+
+    // Flag that indicates the return value of InitializeSetAsDefault(). If
+    // true, FinalizeSetAsDefault() will be called to clear what was
+    // initialized.
+    bool set_as_default_initialized_ = false;
+
+    // Records the time it takes to set the default browser.
+    base::TimeTicks start_time_;
 
     DISALLOW_COPY_AND_ASSIGN(DefaultWebClientWorker);
   };
@@ -280,13 +332,30 @@ class ShellIntegration {
     explicit DefaultBrowserWorker(DefaultWebClientObserver* observer);
 
    private:
-    ~DefaultBrowserWorker() override {}
+    ~DefaultBrowserWorker() override;
 
     // Check if Chrome is the default browser.
-    DefaultWebClientState CheckIsDefault() override;
+    void CheckIsDefault() override;
 
     // Set Chrome as the default browser.
-    bool SetAsDefault(bool interactive_permitted) override;
+    void SetAsDefault(bool interactive_permitted) override;
+
+#if defined(OS_WIN)
+    // On Windows 10+, adds the default browser callback and starts the timer
+    // that determines if the operation was successful or not.
+    bool InitializeSetAsDefault() override;
+
+    // On Windows 10+, removes the default browser callback and stops the timer.
+    void FinalizeSetAsDefault() override;
+
+    // Prompts the user to select the default browser by trying to open the help
+    // page that explains how to set Chrome as the default browser. Returns
+    // false if the process needed to set Chrome default failed to launch.
+    static bool SetAsDefaultBrowserAsynchronous();
+
+    // Used to determine if setting the default browser was unsuccesful.
+    scoped_ptr<base::OneShotTimer> async_timer_;
+#endif  // !defined(OS_WIN)
 
     DISALLOW_COPY_AND_ASSIGN(DefaultBrowserWorker);
   };
@@ -303,14 +372,14 @@ class ShellIntegration {
     const std::string& protocol() const { return protocol_; }
 
    protected:
-    ~DefaultProtocolClientWorker() override {}
+    ~DefaultProtocolClientWorker() override;
 
    private:
     // Check is Chrome is the default handler for this protocol.
-    DefaultWebClientState CheckIsDefault() override;
+    void CheckIsDefault() override;
 
     // Set Chrome as the default handler for this protocol.
-    bool SetAsDefault(bool interactive_permitted) override;
+    void SetAsDefault(bool interactive_permitted) override;
 
     std::string protocol_;
 

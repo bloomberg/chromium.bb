@@ -103,6 +103,25 @@ class StartupBrowserCreator {
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
+#if defined(OS_WIN)
+  // Setting Chrome as the default browser in Windows 10+ requires a specific
+  // url to be opened through openwith.exe. This url is intercepted in
+  // ProcessCmdLineImpl when the callback is set. See DefaultBrowserWorker in
+  // shell_integration.h for more details. Only call this on the UI
+  // thread.
+  //
+  // Returns false when the default browser callback was already set which
+  // results in a no-op.
+  static bool SetDefaultBrowserCallback(const base::Closure& callback);
+
+  // Clears the callback when it isn't needed anymore. Only call this on the UI
+  // thread.
+  static void ClearDefaultBrowserCallback();
+
+  // Returns the url used to set Chrome as the default browser asynchronously.
+  static const wchar_t* GetDefaultBrowserUrl();
+#endif  // defined(OS_WIN)
+
  private:
   friend class CloudPrintProxyPolicyTest;
   friend class CloudPrintProxyPolicyStartupTest;
