@@ -51,7 +51,7 @@ class CONTENT_EXPORT FrameTree {
             RenderFrameHostManager::Delegate* manager_delegate);
   ~FrameTree();
 
-  FrameTreeNode* root() const { return root_.get(); }
+  FrameTreeNode* root() const { return root_; }
 
   // Returns the FrameTreeNode with the given |frame_tree_node_id| if it is part
   // of this FrameTree.
@@ -180,7 +180,11 @@ class CONTENT_EXPORT FrameTree {
   // their state is already gone away).
   RenderViewHostMultiMap render_view_host_pending_shutdown_map_;
 
-  scoped_ptr<FrameTreeNode> root_;
+  // This is an owned ptr to the root FrameTreeNode, which never changes over
+  // the lifetime of the FrameTree. It is not a scoped_ptr because we need the
+  // pointer to remain valid even while the FrameTreeNode is being destroyed,
+  // since it's common for a node to test whether it's the root node.
+  FrameTreeNode* root_;
 
   int focused_frame_tree_node_id_;
 

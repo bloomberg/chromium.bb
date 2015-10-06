@@ -121,6 +121,8 @@ FrameTree::FrameTree(Navigator* navigator,
 }
 
 FrameTree::~FrameTree() {
+  delete root_;
+  root_ = nullptr;
 }
 
 FrameTreeNode* FrameTree::FindByID(int frame_tree_node_id) {
@@ -151,7 +153,7 @@ FrameTreeNode* FrameTree::FindByRoutingID(int process_id, int routing_id) {
 
 FrameTreeNode* FrameTree::FindByName(const std::string& name) {
   if (name.empty())
-    return root_.get();
+    return root_;
 
   FrameTreeNode* node = nullptr;
   ForEach(base::Bind(&FrameTreeNodeForName, name, &node));
@@ -167,7 +169,7 @@ void FrameTree::ForEach(
     const base::Callback<bool(FrameTreeNode*)>& on_node,
     FrameTreeNode* skip_this_subtree) const {
   std::queue<FrameTreeNode*> queue;
-  queue.push(root_.get());
+  queue.push(root_);
 
   while (!queue.empty()) {
     FrameTreeNode* node = queue.front();
@@ -373,7 +375,7 @@ void FrameTree::FrameRemoved(FrameTreeNode* frame) {
 
   // No notification for the root frame.
   if (!frame->parent()) {
-    CHECK_EQ(frame, root_.get());
+    CHECK_EQ(frame, root_);
     return;
   }
 
