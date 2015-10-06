@@ -580,6 +580,8 @@ strip ${STRIP_FLAGS} bin/clang
 popd
 
 # Build compiler-rt out-of-tree.
+# Do a clobbered build due to cmake changes.
+rm -rf "${COMPILER_RT_BUILD_DIR}"
 mkdir -p "${COMPILER_RT_BUILD_DIR}"
 pushd "${COMPILER_RT_BUILD_DIR}"
 
