@@ -41,7 +41,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
       MojoCreateMessagePipeOptions* out_options);
 
   // Must be called before any other methods. (This method is not thread-safe.)
-  void Init(ScopedPlatformHandle message_pipe);
+  void Init(
+      ScopedPlatformHandle message_pipe,
+      char* serialized_read_buffer, size_t serialized_read_buffer_size,
+      char* serialized_write_buffer, size_t serialized_write_buffer_size);
 
   // |Dispatcher| public methods:
   Type GetType() const override;
@@ -56,10 +59,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
  private:
   MessagePipeDispatcher();
   ~MessagePipeDispatcher() override;
-
-  void InitWithReadBuffer(ScopedPlatformHandle message_pipe,
-                          char* data,
-                          size_t size);
 
   void InitOnIO();
   void CloseOnIO();
@@ -126,7 +125,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   // limited to 10K.
   std::vector<char> serialized_message_queue_;
   std::vector<char> serialized_read_buffer_;
-  PlatformHandle serialized_platform_handle_;
+  std::vector<char> serialized_write_buffer_;
+  ScopedPlatformHandle serialized_platform_handle_;
   AwakableList awakable_list_;
 
   // If DispatcherTransport is created. Must be set before lock() is called to

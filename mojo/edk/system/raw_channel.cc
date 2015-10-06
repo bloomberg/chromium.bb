@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/edk/embedder/embedder_internal.h"
+#include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/transport_data.h"
 
@@ -96,13 +97,22 @@ void RawChannel::WriteBuffer::GetPlatformHandlesToSend(
   }
 }
 
-void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
+void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) {
   buffers->clear();
 
   if (message_queue_.IsEmpty())
     return;
 
   const MessageInTransit* message = message_queue_.PeekMessage();
+  if (message->type() == MessageInTransit::Type::RAW_MESSAGE) {
+    // These are already-serialized messages so we don't want to write another
+    // header as they include that.
+    if (data_offset_ == 0) {
+      size_t header_size = message->total_size() - message->num_bytes();
+      data_offset_ = header_size;
+    }
+  }
+
   DCHECK_LT(data_offset_, message->total_size());
   size_t bytes_to_write = message->total_size() - data_offset_;
 
@@ -197,8 +207,8 @@ void RawChannel::Init(Delegate* delegate) {
 
   OnInit();
 
-  if (read_buffer_->num_valid_bytes()) {
-    // We had serialized read buffer data through SetInitialReadBufferData call.
+  if (read_buffer_->num_valid_bytes_) {
+    // We had serialized read buffer data through SetSerializedData call.
     // Make sure we read messages out of it now, otherwise the delegate won't
     // get notified if no other data gets written to the pipe.
     // Although this means that we can call back synchronously into the caller,
@@ -247,7 +257,7 @@ void RawChannel::Shutdown() {
 
   base::AutoLock read_locker(read_lock_);
   base::AutoLock locker(write_lock_);
-  DCHECK(read_buffer_->num_valid_bytes() == 0) <<
+  DCHECK(read_buffer_->IsEmpty()) <<
       "RawChannel::Shutdown called but there is pending data to be read";
 
   // happens on shutdown if didn't call init when doing createduplicate
@@ -275,18 +285,13 @@ void RawChannel::Shutdown() {
 }
 
 ScopedPlatformHandle RawChannel::ReleaseHandle(
-    std::vector<char>* read_buffer) {
+    std::vector<char>* serialized_read_buffer,
+    std::vector<char>* serialized_write_buffer) {
   ScopedPlatformHandle rv;
   {
     base::AutoLock read_locker(read_lock_);
     base::AutoLock locker(write_lock_);
-    rv = ReleaseHandleNoLock(read_buffer);
-
-    // TODO(jam); if we use these, use nolock versions of these methods that are
-    // copied.
-    if (!write_buffer_->message_queue_.IsEmpty()) {
-      NOTREACHED() << "TODO(JAM)";
-    }
+    rv = ReleaseHandleNoLock(serialized_read_buffer, serialized_write_buffer);
 
     delegate_ = nullptr;
 
@@ -340,23 +345,35 @@ bool RawChannel::SendQueuedMessagesNoLock() {
   return result;
 }
 
-// Reminder: This must be thread-safe.
-bool RawChannel::IsWriteBufferEmpty() {
-  base::AutoLock locker(write_lock_);
-  return write_buffer_->message_queue_.IsEmpty();
-}
-
-bool RawChannel::IsReadBufferEmpty() {
+void RawChannel::SetSerializedData(
+    char* serialized_read_buffer, size_t serialized_read_buffer_size,
+    char* serialized_write_buffer, size_t serialized_write_buffer_size) {
   base::AutoLock locker(read_lock_);
-  return read_buffer_->num_valid_bytes_ != 0;
-}
 
-void RawChannel::SetInitialReadBufferData(char* data, size_t size) {
-  base::AutoLock locker(read_lock_);
-  // TODO(jam): copy power of 2 algorithm below? or share.
-  read_buffer_->buffer_.resize(size+kReadSize);
-  memcpy(&read_buffer_->buffer_[0], data, size);
-  read_buffer_->num_valid_bytes_ = size;
+  if (serialized_read_buffer_size) {
+    // TODO(jam): copy power of 2 algorithm below? or share.
+    read_buffer_->buffer_.resize(serialized_read_buffer_size + kReadSize);
+    memcpy(&read_buffer_->buffer_[0], serialized_read_buffer,
+           serialized_read_buffer_size);
+    read_buffer_->num_valid_bytes_ = serialized_read_buffer_size;
+  }
+
+  if (serialized_write_buffer_size) {
+    size_t max_message_num_bytes = GetConfiguration().max_message_num_bytes;
+
+    uint32_t offset = 0;
+    while (offset < serialized_write_buffer_size) {
+      uint32_t message_num_bytes =
+          std::min(static_cast<uint32_t>(max_message_num_bytes),
+                   static_cast<uint32_t>(serialized_write_buffer_size) -
+                       offset);
+      scoped_ptr<MessageInTransit> message(new MessageInTransit(
+          MessageInTransit::Type::RAW_MESSAGE, message_num_bytes,
+          static_cast<const char*>(serialized_write_buffer) + offset));
+      write_buffer_->message_queue_.AddMessage(message.Pass());
+      offset += message_num_bytes;
+    }
+  }
 }
 
 void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
@@ -439,6 +456,40 @@ void RawChannel::OnWriteCompleted(IOResult io_result,
   }
 }
 
+void RawChannel::SerializeReadBuffer(size_t additional_bytes_read,
+                                     std::vector<char>* buffer) {
+  read_buffer_->num_valid_bytes_ += additional_bytes_read;
+  read_buffer_->buffer_.resize(read_buffer_->num_valid_bytes_);
+  read_buffer_->buffer_.swap(*buffer);
+  read_buffer_->num_valid_bytes_ = 0;
+}
+
+void RawChannel::SerializeWriteBuffer(
+    std::vector<char>* buffer,
+    size_t additional_bytes_written,
+    size_t additional_platform_handles_written) {
+  if (write_buffer_->IsEmpty()) {
+    DCHECK_EQ(0u, additional_bytes_written);
+    DCHECK_EQ(0u, additional_platform_handles_written);
+    return;
+  }
+
+  UpdateWriteBuffer(
+      additional_platform_handles_written, additional_bytes_written);
+  while (!write_buffer_->message_queue_.IsEmpty()) {
+    SerializePlatformHandles();
+    std::vector<WriteBuffer::Buffer> buffers;
+    write_buffer_no_lock()->GetBuffers(&buffers);
+    for (size_t i = 0; i < buffers.size(); ++i) {
+      size_t orig_size = buffer->size();
+      buffer->resize(orig_size + buffers[i].size);
+      memcpy(&((*buffer)[orig_size]), buffers[i].addr,
+              buffers[i].size);
+    }
+    write_buffer_->message_queue_.DiscardMessage();
+  }
+}
+
 void RawChannel::EnqueueMessageNoLock(scoped_ptr<MessageInTransit> message) {
   write_lock_.AssertAcquired();
   DCHECK(HandleForDebuggingNoLock().is_valid());
@@ -506,20 +557,9 @@ bool RawChannel::OnWriteCompletedNoLock(IOResult io_result,
   DCHECK(!write_buffer_->message_queue_.IsEmpty());
 
   if (io_result == IO_SUCCEEDED) {
-    write_buffer_->platform_handles_offset_ += platform_handles_written;
-    write_buffer_->data_offset_ += bytes_written;
-
-    MessageInTransit* message = write_buffer_->message_queue_.PeekMessage();
-    if (write_buffer_->data_offset_ >= message->total_size()) {
-      // Complete write.
-      CHECK_EQ(write_buffer_->data_offset_, message->total_size());
-      write_buffer_->message_queue_.DiscardMessage();
-      write_buffer_->platform_handles_offset_ = 0;
-      write_buffer_->data_offset_ = 0;
-
-      if (write_buffer_->message_queue_.IsEmpty())
-        return true;
-    }
+    UpdateWriteBuffer(platform_handles_written, bytes_written);
+    if (write_buffer_->message_queue_.IsEmpty())
+      return true;
 
     // Schedule the next write.
     io_result = ScheduleWriteNoLock();
@@ -624,6 +664,21 @@ void RawChannel::DispatchMessages(bool* did_dispatch_message,
               &read_buffer_->buffer_[read_buffer_start], remaining_bytes);
     }
     read_buffer_start = 0;
+  }
+}
+
+void RawChannel::UpdateWriteBuffer(size_t platform_handles_written,
+                                   size_t bytes_written) {
+  write_buffer_->platform_handles_offset_ += platform_handles_written;
+  write_buffer_->data_offset_ += bytes_written;
+
+  MessageInTransit* message = write_buffer_->message_queue_.PeekMessage();
+  if (write_buffer_->data_offset_ >= message->total_size()) {
+    // Complete write.
+    CHECK_EQ(write_buffer_->data_offset_, message->total_size());
+    write_buffer_->message_queue_.DiscardMessage();
+    write_buffer_->platform_handles_offset_ = 0;
+    write_buffer_->data_offset_ = 0;
   }
 }
 

@@ -98,10 +98,16 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   void Shutdown();
 
   // Returns the platform handle for the pipe synchronously.
-  // |read_buffer| contains partially read data, if any.
+  // |serialized_read_buffer| contains partially read data, if any.
+  // |serialized_write_buffer| contains a serialized representation of messages
+  // that haven't been written yet.
+  // Both these arrays need to be passed to SetSerializedData below when
+  // recreating the channel.
   // NOTE: After calling this, consider the channel shutdown and don't call into
   // it anymore
-  ScopedPlatformHandle ReleaseHandle(std::vector<char>* read_buffer);
+  ScopedPlatformHandle ReleaseHandle(
+      std::vector<char>* serialized_read_buffer,
+      std::vector<char>* serialized_write_buffer);
 
   // Writes the given message (or schedules it to be written). |message| must
   // have no |Dispatcher|s still attached (i.e.,
@@ -109,15 +115,13 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // thread-safe and may be called from any thread. Returns true on success.
   bool WriteMessage(scoped_ptr<MessageInTransit> message);
 
-  // Returns true if the write buffer is empty (i.e., all messages written using
-  // |WriteMessage()| have actually been sent.
-  // TODO(vtl): We should really also notify our delegate when the write buffer
-  // becomes empty (or something like that).
-  bool IsWriteBufferEmpty();
-
-  bool IsReadBufferEmpty();
-
-  void SetInitialReadBufferData(char* data, size_t size);
+  // When a RawChannel is serialized (i.e. through ReleaseHandle), the delegate
+  // saves the data that is returned and passes it here.
+  // TODO(jam): perhaps this should be encapsulated inside RawChannel, and
+  // ReleaseHandle returns another handle that is shared memory?
+  void SetSerializedData(
+      char* serialized_read_buffer, size_t serialized_read_buffer_size,
+      char* serialized_write_buffer, size_t serialized_write_buffer_size);
 
   // Checks if this RawChannel is the other endpoint to |other|.
   bool IsOtherEndOf(RawChannel* other);
@@ -142,13 +146,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
     void GetBuffer(char** addr, size_t* size);
 
-    void Reset() {num_valid_bytes_ = 0; }
-
-    // temp for debugging
-    // TODO(jam): pass in a cleaner way to ReleaseHandle, just like shutdown
-    // case.
-    char* buffer() { return &buffer_[0]; }
-    size_t num_valid_bytes() {return num_valid_bytes_;}
+    bool IsEmpty() const { return num_valid_bytes_ == 0; }
 
    private:
     friend class RawChannel;
@@ -195,22 +193,11 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     // of |message_queue_|. Once they are completely written, the front
     // |MessageInTransit| should be popped (and destroyed); this is done in
     // |OnWriteCompletedNoLock()|.
-    void GetBuffers(std::vector<Buffer>* buffers) const;
+    void GetBuffers(std::vector<Buffer>* buffers);
 
+    bool IsEmpty() const { return message_queue_.IsEmpty(); }
 
-
-
-
-    // temp for testing
-    size_t queue_size() {return message_queue_.Size();}
-
-    // TODO(jam): better way of giving buffer on release handle
-    MessageInTransitQueue* message_queue() { return &message_queue_; }
-
-
-
-    // TODO JAM REMOVE AND ADD METHODS
-//   private:
+   private:
     friend class RawChannel;
 
     size_t serialized_platform_handle_size_;
@@ -244,6 +231,18 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
                         size_t platform_handles_written,
                         size_t bytes_written);
 
+  // Serialize the read buffer into the given array so that it can be sent to
+  // another process. Increments |num_valid_bytes_| by |additional_bytes_read|
+  // before serialization..
+  void SerializeReadBuffer(size_t additional_bytes_read,
+                           std::vector<char>* buffer);
+
+  // Serialize the pending messages to be written to the OS pipe to the given
+  // buffer so that it can be sent to another process.
+  void SerializeWriteBuffer(std::vector<char>* buffer,
+                            size_t additional_bytes_written,
+                            size_t additional_platform_handles_written);
+
   base::MessageLoopForIO* message_loop_for_io() { return message_loop_for_io_; }
   base::Lock& write_lock() { return write_lock_; }
   base::Lock& read_lock() { return read_lock_; }
@@ -276,7 +275,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // Implementation must write any pending messages synchronously.
   // TODO(jam): change to return shared memory with pending serialized msgs.
   virtual ScopedPlatformHandle ReleaseHandleNoLock(
-      std::vector<char>* read_buffer) = 0;
+      std::vector<char>* serialized_read_buffer,
+      std::vector<char>* serialized_write_buffer) = 0;
 
   // Reads into |read_buffer()|.
   // This class guarantees that:
@@ -303,6 +303,15 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   virtual ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t num_platform_handles,
       const void* platform_handle_table) = 0;
+
+  // Serialize all platform handles for the front mesasge in the queue from the
+  // transport data to the transport buffer.
+  // TODO(jam): once this uses the Master interface to exchange platform handles
+  // with tokens, it needs to be used when serializing a RawChannel even on
+  // POSIX. That is because there's no guarantee that we can write pending fds
+  // when calling ReleaseHandle (because the other side might not be writable
+  // indefinitely).
+  virtual size_t SerializePlatformHandles() = 0;
 
   // Writes contents in |write_buffer_no_lock()|.
   // This class guarantees that:
@@ -362,6 +371,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // dispatching, either because we hit an erorr or the delegate shutdown the
   // channel.
   void DispatchMessages(bool* did_dispatch_message, bool* stop_dispatching);
+
+  void UpdateWriteBuffer(size_t platform_handles_written, size_t bytes_written);
 
   // Set in |Init()| and never changed (hence usable on any thread without
   // locking):

@@ -8,15 +8,21 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/edk/embedder/embedder_internal.h"
+#include "mojo/edk/embedder/platform_shared_buffer.h"
+#include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/data_pipe.h"
 
 namespace mojo {
 namespace edk {
 
-void DataPipeProducerDispatcher::Init(ScopedPlatformHandle message_pipe) {
+void DataPipeProducerDispatcher::Init(
+    ScopedPlatformHandle message_pipe,
+    char* serialized_write_buffer, size_t serialized_write_buffer_size) {
   if (message_pipe.is_valid()) {
     channel_ = RawChannel::Create(message_pipe.Pass());
+    channel_->SetSerializedData(
+        nullptr, 0u, serialized_write_buffer, serialized_write_buffer_size);
     internal::g_io_thread_task_runner->PostTask(
         FROM_HERE, base::Bind(&DataPipeProducerDispatcher::InitOnIO, this));
   }
@@ -46,13 +52,30 @@ DataPipeProducerDispatcher::Deserialize(
     size_t size,
     PlatformHandleVector* platform_handles) {
   MojoCreateDataPipeOptions options;
+  ScopedPlatformHandle shared_memory_handle;
+  size_t shared_memory_size = 0;
   ScopedPlatformHandle platform_handle =
       DataPipe::Deserialize(source, size, platform_handles, &options,
-        nullptr, 0);
+                            &shared_memory_handle, &shared_memory_size);
 
   scoped_refptr<DataPipeProducerDispatcher> rv(Create(options));
-  if (platform_handle.is_valid())
-    rv->Init(platform_handle.Pass());
+
+  char* serialized_write_buffer = nullptr;
+  size_t serialized_write_buffer_size = 0;
+  scoped_refptr<PlatformSharedBuffer> shared_buffer;
+  scoped_ptr<PlatformSharedBufferMapping> mapping;
+  if (shared_memory_size) {
+    shared_buffer = internal::g_platform_support->CreateSharedBufferFromHandle(
+        shared_memory_size, shared_memory_handle.Pass());
+    mapping = shared_buffer->Map(0, shared_memory_size);
+    serialized_write_buffer = static_cast<char*>(mapping->GetBase());
+    serialized_write_buffer_size = shared_memory_size;
+  }
+
+  if (platform_handle.is_valid()) {
+    rv->Init(platform_handle.Pass(), serialized_write_buffer,
+             serialized_write_buffer_size);
+  }
   return rv;
 }
 
@@ -248,13 +271,15 @@ void DataPipeProducerDispatcher::StartSerializeImplNoLock(
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
 
   if (channel_) {
-    std::vector<char> temp;
-    serialized_platform_handle_ = channel_->ReleaseHandle(&temp);
+    std::vector<char> serialized_read_buffer;
+    serialized_platform_handle_ = channel_->ReleaseHandle(
+        &serialized_read_buffer, &serialized_write_buffer_);
     channel_ = nullptr;
-    DCHECK(temp.empty());
+    CHECK(serialized_read_buffer.empty());
   }
   DataPipe::StartSerialize(serialized_platform_handle_.is_valid(),
-                           false, max_size, max_platform_handles);
+                           !serialized_write_buffer_.empty(), max_size,
+                           max_platform_handles);
 }
 
 bool DataPipeProducerDispatcher::EndSerializeAndCloseImplNoLock(
@@ -263,10 +288,23 @@ bool DataPipeProducerDispatcher::EndSerializeAndCloseImplNoLock(
     PlatformHandleVector* platform_handles) {
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
 
+  ScopedPlatformHandle shared_memory_handle;
+  size_t shared_memory_size = serialized_write_buffer_.size();
+  if (shared_memory_size) {
+    scoped_refptr<PlatformSharedBuffer> shared_buffer(
+        internal::g_platform_support->CreateSharedBuffer(
+            shared_memory_size));
+    scoped_ptr<PlatformSharedBufferMapping> mapping(
+        shared_buffer->Map(0, shared_memory_size));
+    memcpy(mapping->GetBase(), &serialized_write_buffer_[0],
+           shared_memory_size);
+    shared_memory_handle.reset(shared_buffer->PassPlatformHandle().release());
+  }
+
   DataPipe::EndSerialize(
       options_,
       serialized_platform_handle_.Pass(),
-      ScopedPlatformHandle(), 0,
+      shared_memory_handle.Pass(), shared_memory_size,
       destination, actual_size, platform_handles);
   CloseImplNoLock();
   return true;
@@ -288,7 +326,7 @@ bool DataPipeProducerDispatcher::IsBusyNoLock() const {
 void DataPipeProducerDispatcher::OnReadMessage(
     const MessageInTransit::View& message_view,
     ScopedPlatformHandleVectorPtr platform_handles) {
-  NOTREACHED();
+  CHECK(false) << "DataPipeProducerDispatcher shouldn't get any messages.";
 }
 
 void DataPipeProducerDispatcher::OnError(Error error) {

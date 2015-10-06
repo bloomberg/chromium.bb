@@ -205,8 +205,8 @@ MojoResult Core::CreateMessagePipe(
   }
 
   PlatformChannelPair channel_pair;
-  dispatcher0->Init(channel_pair.PassServerHandle());
-  dispatcher1->Init(channel_pair.PassClientHandle());
+  dispatcher0->Init(channel_pair.PassServerHandle(), nullptr, 0u, nullptr, 0u);
+  dispatcher1->Init(channel_pair.PassClientHandle(), nullptr, 0u, nullptr, 0u);
 
   *message_pipe_handle0 = handle_pair.first;
   *message_pipe_handle1 = handle_pair.second;
@@ -363,8 +363,8 @@ MojoResult Core::CreateDataPipe(
   DCHECK_NE(handle_pair.second, MOJO_HANDLE_INVALID);
 
   PlatformChannelPair channel_pair;
-  producer_dispatcher->Init(channel_pair.PassServerHandle());
-  consumer_dispatcher->Init(channel_pair.PassClientHandle());
+  producer_dispatcher->Init(channel_pair.PassServerHandle(), nullptr, 0u);
+  consumer_dispatcher->Init(channel_pair.PassClientHandle(), nullptr, 0u);
 
   *data_pipe_producer_handle = handle_pair.first;
   *data_pipe_consumer_handle = handle_pair.second;

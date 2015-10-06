@@ -46,13 +46,15 @@ class RawChannelPosix final : public RawChannel,
       const MessageInTransit::View& message_view) override;
 
   ScopedPlatformHandle ReleaseHandleNoLock(
-      std::vector<char>* read_buffer_out) override;
+      std::vector<char>* serialized_read_buffer,
+      std::vector<char>* serialized_write_buffer) override;
   PlatformHandle HandleForDebuggingNoLock() override;
   IOResult Read(size_t* bytes_read) override;
   IOResult ScheduleRead() override;
   ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t num_platform_handles,
       const void* platform_handle_table) override;
+  size_t SerializePlatformHandles() override;
   IOResult WriteNoLock(size_t* platform_handles_written,
                        size_t* bytes_written) override;
   IOResult ScheduleWriteNoLock() override;
@@ -164,31 +166,9 @@ bool RawChannelPosix::OnReadMessageForRawChannel(
 
 
 ScopedPlatformHandle RawChannelPosix::ReleaseHandleNoLock(
-    std::vector<char>* read_buffer_out) {
-  std::vector<WriteBuffer::Buffer> buffers;
-  write_buffer_no_lock()->GetBuffers(&buffers);
-  if (!buffers.empty()) {
-    // TODO(jam): copy code in OnShutdownNoLock
-    NOTREACHED() << "releasing handle with pending write buffer";
-  }
-
-  NOTREACHED() << "TODO(jam) IMPLEMENT";/*
-  if (handle_.is_valid()) {
-    // SetInitialBuffer could have been called on main thread before OnInit
-    // is called on Io thread. and in meantime releasehandle called.
-    //DCHECK(read_buffer()->num_valid_bytes() == 0);
-    if (read_buffer()->num_valid_bytes()) {
-      read_buffer_out->resize(read_buffer()->num_valid_bytes());
-      memcpy(&(*read_buffer_out)[0], read_buffer()->buffer(),
-             read_buffer()->num_valid_bytes());
-      read_buffer()->Reset();
-    }
-    DCHECK(write_buffer_no_lock()->queue_size() == 0);
-    return ScopedPlatformHandle(PlatformHandle(handle_.release().handle));
-  }
-
-  return io_handler_->ReleaseHandle(read_buffer_out);
-  */
+      std::vector<char>* serialized_read_buffer,
+      std::vector<char>* serialized_write_buffer) {
+  NOTREACHED() << "TODO(jam) IMPLEMENT";
   return fd_.Pass();
 }
 
@@ -236,6 +216,11 @@ ScopedPlatformHandleVectorPtr RawChannelPosix::GetReadPlatformHandles(
       read_platform_handles_.begin(),
       read_platform_handles_.begin() + num_platform_handles);
   return rv.Pass();
+}
+
+size_t RawChannelPosix::SerializePlatformHandles() {
+  NOTREACHED() << "TODO(jam): implement";
+  return 0u;
 }
 
 RawChannel::IOResult RawChannelPosix::WriteNoLock(

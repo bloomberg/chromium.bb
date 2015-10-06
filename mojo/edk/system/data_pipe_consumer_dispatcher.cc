@@ -22,13 +22,13 @@ struct SharedMemoryHeader {
   uint32_t read_buffer_size;
 };
 
-void DataPipeConsumerDispatcher::Init(ScopedPlatformHandle message_pipe) {
+void DataPipeConsumerDispatcher::Init(
+    ScopedPlatformHandle message_pipe,
+    char* serialized_read_buffer, size_t serialized_read_buffer_size) {
   if (message_pipe.is_valid()) {
     channel_ = RawChannel::Create(message_pipe.Pass());
-    if (!serialized_read_buffer_.empty())
-      channel_->SetInitialReadBufferData(
-          &serialized_read_buffer_[0], serialized_read_buffer_.size());
-    serialized_read_buffer_.clear();
+    channel_->SetSerializedData(
+        serialized_read_buffer, serialized_read_buffer_size, nullptr, 0u);
     internal::g_io_thread_task_runner->PostTask(
         FROM_HERE, base::Bind(&DataPipeConsumerDispatcher::InitOnIO, this));
   }
@@ -69,12 +69,14 @@ DataPipeConsumerDispatcher::Deserialize(
 
   scoped_refptr<DataPipeConsumerDispatcher> rv(Create(options));
 
+  char* serialized_read_buffer = nullptr;
+  size_t serialized_read_buffer_size = 0;
+  scoped_refptr<PlatformSharedBuffer> shared_buffer;
+  scoped_ptr<PlatformSharedBufferMapping> mapping;
   if (shared_memory_size) {
-    scoped_refptr<PlatformSharedBuffer> shared_buffer(
-        internal::g_platform_support->CreateSharedBufferFromHandle(
-            shared_memory_size, shared_memory_handle.Pass()));;
-    scoped_ptr<PlatformSharedBufferMapping> mapping(
-        shared_buffer->Map(0, shared_memory_size));
+    shared_buffer = internal::g_platform_support->CreateSharedBufferFromHandle(
+        shared_memory_size, shared_memory_handle.Pass());
+    mapping = shared_buffer->Map(0, shared_memory_size);
     char* buffer = static_cast<char*>(mapping->GetBase());
     SharedMemoryHeader* header = reinterpret_cast<SharedMemoryHeader*>(buffer);
     buffer += sizeof(SharedMemoryHeader);
@@ -83,16 +85,18 @@ DataPipeConsumerDispatcher::Deserialize(
       memcpy(&rv->data_[0], buffer, header->data_size);
       buffer += header->data_size;
     }
+
     if (header->read_buffer_size) {
-      rv->serialized_read_buffer_.resize(header->read_buffer_size);
-      memcpy(&rv->serialized_read_buffer_[0], buffer, header->read_buffer_size);
+      serialized_read_buffer = buffer;
+      serialized_read_buffer_size = header->read_buffer_size;
       buffer += header->read_buffer_size;
     }
-
   }
 
-  if (platform_handle.is_valid())
-    rv->Init(platform_handle.Pass());
+  if (platform_handle.is_valid()) {
+    rv->Init(platform_handle.Pass(), serialized_read_buffer,
+             serialized_read_buffer_size);
+  }
   return rv;
 }
 
@@ -320,7 +324,7 @@ void DataPipeConsumerDispatcher::StartSerializeImplNoLock(
   }
 
   DataPipe::StartSerialize(serialized_platform_handle_.is_valid(),
-                           !data_.empty(),
+                           !data_.empty() || !serialized_read_buffer_.empty(),
                            max_size, max_platform_handles);
 }
 
@@ -364,9 +368,8 @@ bool DataPipeConsumerDispatcher::EndSerializeAndCloseImplNoLock(
   DataPipe::EndSerialize(
       options_,
       serialized_platform_handle_.Pass(),
-      shared_memory_handle.Pass(),
-      shared_memory_size, destination, actual_size,
-      platform_handles);
+      shared_memory_handle.Pass(), shared_memory_size,
+      destination, actual_size, platform_handles);
   CloseImplNoLock();
   return true;
 }
@@ -459,11 +462,14 @@ void DataPipeConsumerDispatcher::OnError(Error error) {
 }
 
 void DataPipeConsumerDispatcher::SerializeInternal() {
-  // need to stop watching handle immediately, even tho not on IO thread, so
-  // that other messages aren't read after this.
+  // We need to stop watching handle immediately, even though not on IO thread,
+  // so that other messages aren't read after this.
   if (channel_) {
+    std::vector<char> serialized_write_buffer;
     serialized_platform_handle_ =
-        channel_->ReleaseHandle(&serialized_read_buffer_);
+        channel_->ReleaseHandle(&serialized_read_buffer_,
+                                &serialized_write_buffer);
+    CHECK(serialized_write_buffer.empty());
 
     channel_ = nullptr;
     serialized_ = true;

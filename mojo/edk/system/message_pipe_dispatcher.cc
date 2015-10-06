@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/edk/embedder/embedder_internal.h"
+#include "mojo/edk/embedder/platform_shared_buffer.h"
+#include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/options_validation.h"
@@ -20,12 +22,49 @@ namespace edk {
 // i.e. with USE_CHROME_EDK and Windows). Also see ipc_channel_mojo.cc
 bool g_use_channel_on_io_thread_only = true;
 
+namespace {
+
 const size_t kInvalidMessagePipeHandleIndex = static_cast<size_t>(-1);
 
 struct MOJO_ALIGNAS(8) SerializedMessagePipeHandleDispatcher {
-  size_t platform_handle_index;  // (Or |kInvalidMessagePipeHandleIndex|.)
-  size_t read_buffer_size; // any bytes after this are serialized messages
+  // Could be |kInvalidMessagePipeHandleIndex| if the other endpoint of the MP
+  // was closed.
+  size_t platform_handle_index;
+
+  size_t shared_memory_handle_index;  // (Or |kInvalidMessagePipeHandleIndex|.)
+  uint32_t shared_memory_size;
+
+  size_t serialized_read_buffer_size;
+  size_t serialized_write_buffer_size;
+  size_t serialized_messagage_queue_size;
 };
+
+char* SerializeBuffer(char* start, std::vector<char>* buffer) {
+  if (buffer->size())
+    memcpy(start, &(*buffer)[0], buffer->size());
+  return start + buffer->size();
+}
+
+bool GetHandle(size_t index,
+               PlatformHandleVector* platform_handles,
+               ScopedPlatformHandle* handle) {
+  if (index == kInvalidMessagePipeHandleIndex)
+    return true;
+
+  if (!platform_handles || index >= platform_handles->size()) {
+    LOG(ERROR)
+        << "Invalid serialized message pipe dispatcher (missing handles)";
+    return false;
+  }
+
+  // We take ownership of the handle, so we have to invalidate the one in
+  // |platform_handles|.
+  handle->reset((*platform_handles)[index]);
+  (*platform_handles)[index] = PlatformHandle();
+  return true;
+}
+
+}  // namespace
 
 // MessagePipeDispatcher -------------------------------------------------------
 
@@ -61,20 +100,17 @@ MojoResult MessagePipeDispatcher::ValidateCreateOptions(
   return MOJO_RESULT_OK;
 }
 
-void MessagePipeDispatcher::Init(ScopedPlatformHandle message_pipe) {
-  InitWithReadBuffer(message_pipe.Pass(), nullptr, 0);
-}
-
-void MessagePipeDispatcher::InitWithReadBuffer(
+void MessagePipeDispatcher::Init(
     ScopedPlatformHandle message_pipe,
-    char* data,
-    size_t size) {
+    char* serialized_read_buffer, size_t serialized_read_buffer_size,
+    char* serialized_write_buffer, size_t serialized_write_buffer_size) {
   if (message_pipe.get().is_valid()) {
     channel_ = RawChannel::Create(message_pipe.Pass());
 
     // TODO(jam): It's probably cleaner to pass this in Init call.
-    if (size)
-      channel_->SetInitialReadBufferData(data, size);
+    channel_->SetSerializedData(
+        serialized_read_buffer, serialized_read_buffer_size,
+        serialized_write_buffer, serialized_write_buffer_size);
     if (g_use_channel_on_io_thread_only) {
       internal::g_io_thread_task_runner->PostTask(
           FROM_HERE, base::Bind(&MessagePipeDispatcher::InitOnIO, this));
@@ -158,56 +194,75 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
     const void* source,
     size_t size,
     PlatformHandleVector* platform_handles) {
-  const SerializedMessagePipeHandleDispatcher* serialization =
-      static_cast<const SerializedMessagePipeHandleDispatcher*>(source);
-  size_t platform_handle_index = serialization->platform_handle_index;
-
-
-  // Starts off invalid, which is what we want.
-  PlatformHandle platform_handle;
-
-  if (platform_handle_index != kInvalidMessagePipeHandleIndex) {
-    if (!platform_handles ||
-        platform_handle_index >= platform_handles->size()) {
-      LOG(ERROR)
-          << "Invalid serialized platform handle dispatcher (missing handles)";
-      return nullptr;
-    }
-
-    // We take ownership of the handle, so we have to invalidate the one in
-    // |platform_handles|.
-    std::swap(platform_handle, (*platform_handles)[platform_handle_index]);
+  if (size != sizeof(SerializedMessagePipeHandleDispatcher)) {
+    LOG(ERROR) << "Invalid serialized message pipe dispatcher (bad size)";
+    return nullptr;
   }
 
-  // TODO(jam): temporary until we send message_queue_ via shared memory.
-  size -= sizeof(SerializedMessagePipeHandleDispatcher);
-  const char* messages = static_cast<const char*>(source);
-  messages += sizeof(SerializedMessagePipeHandleDispatcher);
+  const SerializedMessagePipeHandleDispatcher* serialization =
+      static_cast<const SerializedMessagePipeHandleDispatcher*>(source);
+  if (serialization->shared_memory_size !=
+      (serialization->serialized_read_buffer_size +
+       serialization->serialized_write_buffer_size +
+       serialization->serialized_messagage_queue_size)) {
+    LOG(ERROR) << "Invalid serialized message pipe dispatcher (bad struct)";
+    return nullptr;
+  }
 
-  char* initial_read_data = nullptr;
-  size_t initial_read_size = 0;
+  ScopedPlatformHandle platform_handle, shared_memory_handle;
+  if (!GetHandle(serialization->platform_handle_index,
+                 platform_handles, &platform_handle) ||
+      !GetHandle(serialization->shared_memory_handle_index,
+                 platform_handles, &shared_memory_handle)) {
+    return nullptr;
+  }
 
-  if (serialization->read_buffer_size) {
-    initial_read_data = const_cast<char*>(messages);
-    initial_read_size = serialization->read_buffer_size;
-
-    messages += initial_read_size;
-    size -= initial_read_size;
+  char* serialized_read_buffer = nullptr;
+  size_t serialized_read_buffer_size = 0;
+  char* serialized_write_buffer = nullptr;
+  size_t serialized_write_buffer_size = 0;
+  char* message_queue_data = nullptr;
+  size_t message_queue_size = 0;
+  scoped_refptr<PlatformSharedBuffer> shared_buffer;
+  scoped_ptr<PlatformSharedBufferMapping> mapping;
+  if (shared_memory_handle.is_valid()) {
+    shared_buffer = internal::g_platform_support->CreateSharedBufferFromHandle(
+            serialization->shared_memory_size, shared_memory_handle.Pass());
+    mapping = shared_buffer->Map(0, serialization->shared_memory_size);
+    char* buffer = static_cast<char*>(mapping->GetBase());
+    if (serialization->serialized_read_buffer_size) {
+      serialized_read_buffer = buffer;
+      serialized_read_buffer_size = serialization->serialized_read_buffer_size;
+      buffer += serialized_read_buffer_size;
+    }
+    if (serialization->serialized_write_buffer_size) {
+      serialized_write_buffer = buffer;
+      serialized_write_buffer_size =
+          serialization->serialized_write_buffer_size;
+      buffer += serialized_write_buffer_size;
+    }
+    if (serialization->serialized_messagage_queue_size) {
+      message_queue_data = buffer;
+      message_queue_size = serialization->serialized_messagage_queue_size;
+      buffer += message_queue_size;
+    }
   }
 
   scoped_refptr<MessagePipeDispatcher> rv(
       Create(MessagePipeDispatcher::kDefaultCreateOptions));
-  rv->InitWithReadBuffer(
-      ScopedPlatformHandle(platform_handle),
-      initial_read_data, initial_read_size);
+  rv->Init(platform_handle.Pass(),
+           serialized_read_buffer,
+           serialized_read_buffer_size,
+           serialized_write_buffer,
+           serialized_write_buffer_size);
 
-  while (size) {
+  while (message_queue_size) {
     size_t message_size;
     CHECK(MessageInTransit::GetNextMessageSize(
-              messages, size, &message_size));
-    MessageInTransit::View message_view(message_size, messages);
-    size -= message_size;
-    messages += message_size;
+              message_queue_data, message_queue_size, &message_size));
+    MessageInTransit::View message_view(message_size, message_queue_data);
+    message_queue_size -= message_size;
+    message_queue_data += message_size;
 
     // TODO(jam): Copied below from RawChannelWin. See commment above
     // GetReadPlatformHandles.
@@ -243,6 +298,11 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
     rv->message_queue_.AddMessage(message.Pass());
   }
 
+  if (message_queue_size) {  // Should be empty by now.
+    LOG(ERROR) << "Invalid queued messages";
+    return nullptr;
+  }
+
   return rv;
 }
 
@@ -274,12 +334,12 @@ void MessagePipeDispatcher::CloseImplNoLock() {
 }
 
 void MessagePipeDispatcher::SerializeInternal() {
-  // We need to stop watching handle immediately, even tho not on IO thread, so
-  // that other messages aren't read after this.
+  // We need to stop watching handle immediately, even though not on IO thread,
+  // so that other messages aren't read after this.
   {
     if (channel_) {
-      serialized_platform_handle_ =
-          channel_->ReleaseHandle(&serialized_read_buffer_).release();
+      serialized_platform_handle_ = channel_->ReleaseHandle(
+          &serialized_read_buffer_, &serialized_write_buffer_);
       channel_ = nullptr;
     } else {
       // It's valid that the other side wrote some data and closed its end.
@@ -368,10 +428,10 @@ MessagePipeDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   // |kDefaultCreateOptions|. Eventually, we'll have to duplicate the options
   // too.
   scoped_refptr<MessagePipeDispatcher> rv = Create(kDefaultCreateOptions);
-  rv->serialized_platform_handle_ = serialized_platform_handle_;
-  serialized_platform_handle_ = PlatformHandle();
+  rv->serialized_platform_handle_ = serialized_platform_handle_.Pass();
   serialized_message_queue_.swap(rv->serialized_message_queue_);
   serialized_read_buffer_.swap(rv->serialized_read_buffer_);
+  serialized_write_buffer_.swap(rv->serialized_write_buffer_);
   rv->serialized_ = true;
   return scoped_refptr<Dispatcher>(rv.get());
 }
@@ -532,15 +592,14 @@ void MessagePipeDispatcher::StartSerializeImplNoLock(
   if (!serialized_)
     SerializeInternal();
 
-  *max_platform_handles = serialized_platform_handle_.is_valid() ? 1 : 0;
-
-  DCHECK_EQ(serialized_message_queue_.size() %
-            MessageInTransit::kMessageAlignment, 0U);
-  *max_size = sizeof(SerializedMessagePipeHandleDispatcher) +
-              serialized_message_queue_.size() +
-              serialized_read_buffer_.size();
-
-  DCHECK_LE(*max_size, TransportData::kMaxSerializedDispatcherSize);
+  *max_platform_handles = 0;
+  if (serialized_platform_handle_.is_valid())
+    (*max_platform_handles)++;
+  if (!serialized_read_buffer_.empty() ||
+      !serialized_write_buffer_.empty() ||
+      !serialized_message_queue_.empty())
+    (*max_platform_handles)++;
+  *max_size = sizeof(SerializedMessagePipeHandleDispatcher);
 }
 
 bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
@@ -552,33 +611,36 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
       static_cast<SerializedMessagePipeHandleDispatcher*>(destination);
   if (serialized_platform_handle_.is_valid()) {
     serialization->platform_handle_index = platform_handles->size();
-    platform_handles->push_back(serialized_platform_handle_);
+    platform_handles->push_back(serialized_platform_handle_.release());
   } else {
     serialization->platform_handle_index = kInvalidMessagePipeHandleIndex;
   }
-  serialization->read_buffer_size = serialized_read_buffer_.size();
 
-  char* destination_char = static_cast<char*>(destination);
-  destination_char += sizeof(SerializedMessagePipeHandleDispatcher);
+  serialization->serialized_read_buffer_size = serialized_read_buffer_.size();
+  serialization->serialized_write_buffer_size = serialized_write_buffer_.size();
+  serialization->serialized_messagage_queue_size =
+      serialized_message_queue_.size();
 
-  if (!serialized_read_buffer_.empty()) {
-    memcpy(destination_char, &serialized_read_buffer_[0],
-           serialized_read_buffer_.size());
-    destination_char += serialized_read_buffer_.size();
+  serialization->shared_memory_size = static_cast<uint32_t>(
+      serialization->serialized_read_buffer_size +
+      serialization->serialized_write_buffer_size +
+      serialization->serialized_messagage_queue_size);
+  if (serialization->shared_memory_size) {
+    scoped_refptr<PlatformSharedBuffer> shared_buffer(
+        internal::g_platform_support->CreateSharedBuffer(
+            serialization->shared_memory_size));
+    scoped_ptr<PlatformSharedBufferMapping> mapping(
+        shared_buffer->Map(0, serialization->shared_memory_size));
+    char* start = static_cast<char*>(mapping->GetBase());
+    start = SerializeBuffer(start, &serialized_read_buffer_);
+    start = SerializeBuffer(start, &serialized_write_buffer_);
+    start = SerializeBuffer(start, &serialized_message_queue_);
+
+    serialization->shared_memory_handle_index = platform_handles->size();
+    platform_handles->push_back(shared_buffer->PassPlatformHandle().release());
   }
 
-
-  if (!serialized_message_queue_.empty()) {
-    memcpy(destination_char,
-           &serialized_message_queue_[0],
-           serialized_message_queue_.size());
-  }
-
-  *actual_size =
-      sizeof(SerializedMessagePipeHandleDispatcher) +
-      serialized_message_queue_.size() +
-      serialized_read_buffer_.size();
-
+  *actual_size = sizeof(SerializedMessagePipeHandleDispatcher);
   return true;
 }
 

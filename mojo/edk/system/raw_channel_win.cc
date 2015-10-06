@@ -17,6 +17,7 @@
 #include "base/win/object_watcher.h"
 #include "base/win/windows_version.h"
 #include "mojo/edk/embedder/platform_handle.h"
+#include "mojo/edk/system/transport_data.h"
 #include "mojo/public/cpp/system/macros.h"
 
 #define STATUS_CANCELLED 0xC0000120
@@ -261,16 +262,17 @@ class RawChannelWin final : public RawChannel {
         delete this;
     }
 
-    ScopedPlatformHandle ReleaseHandle(std::vector<char>* read_buffer) {
+    ScopedPlatformHandle ReleaseHandle(
+        std::vector<char>* serialized_read_buffer,
+        std::vector<char>* serialized_write_buffer) {
+      // Cancel pending IO calls.
       if (g_vista_or_higher_functions.Get().is_vista_or_higher()) {
         g_vista_or_higher_functions.Get().CancelIoEx(handle(), nullptr);
       } else {
         CHECK(false) << "TODO(jam): handle XP";
       }
 
-      // NOTE: The above call will cancel pending IO calls.
-      size_t read_buffer_byte_size = owner_->read_buffer()->num_valid_bytes();
-
+      size_t additional_bytes_read = 0;
       if (pending_read_) {
         DWORD bytes_read_dword = 0;
 
@@ -284,16 +286,17 @@ class RawChannelWin final : public RawChannel {
         BOOL rv = GetOverlappedResult(
             handle(), &read_context_.overlapped, &bytes_read_dword, FALSE);
         DCHECK_EQ(old_bytes, bytes_read_dword);
-        if (rv) {
-          if (read_context_.overlapped.Internal != STATUS_CANCELLED) {
-            read_buffer_byte_size += read_context_.overlapped.InternalHigh;
-          }
+        if (rv && read_context_.overlapped.Internal != STATUS_CANCELLED) {
+          additional_bytes_read =
+              static_cast<size_t>(read_context_.overlapped.InternalHigh);
         }
         pending_read_ = false;
       }
 
       RawChannel::WriteBuffer* write_buffer = owner_->write_buffer_no_lock();
 
+      size_t additional_bytes_written = 0;
+      size_t additional_platform_handles_written = 0;
       if (pending_write_) {
         DWORD bytes_written_dword = 0;
         DWORD old_bytes = write_context_.overlapped.InternalHigh;
@@ -302,44 +305,22 @@ class RawChannelWin final : public RawChannel {
         BOOL rv = GetOverlappedResult(
             handle(), &write_context_.overlapped, &bytes_written_dword, FALSE);
 
-        if (old_bytes != bytes_written_dword) {
-          NOTREACHED() << "TODO(jam): this shouldn't be reached";
-        }
+        DCHECK_EQ(old_bytes, bytes_written_dword);
+        if (rv && write_context_.overlapped.Internal != STATUS_CANCELLED) {
+          CHECK(!write_buffer->IsEmpty());
 
-        if (rv) {
-          if (write_context_.overlapped.Internal != STATUS_CANCELLED) {
-            CHECK(write_buffer->queue_size() != 0);
-
-            // TODO(jam)
-            DCHECK(!write_buffer->HavePlatformHandlesToSend());
-
-            write_buffer->data_offset_ += bytes_written_dword;
-
-            // TODO(jam): copied from OnWriteCompletedNoLock
-            MessageInTransit* message =
-                write_buffer->message_queue()->PeekMessage();
-            if (write_buffer->data_offset_ >= message->total_size()) {
-              // Complete write.
-              CHECK_EQ(write_buffer->data_offset_, message->total_size());
-              write_buffer->message_queue_.DiscardMessage();
-              write_buffer->platform_handles_offset_ = 0;
-              write_buffer->data_offset_ = 0;
-            }
-
-
-            //TODO(jam): handle more write msgs
-            DCHECK(write_buffer->message_queue_.IsEmpty());
-          }
+          additional_bytes_written = static_cast<size_t>(bytes_written_dword);
+          additional_platform_handles_written = platform_handles_written_;
+          platform_handles_written_ = 0;
         }
         pending_write_ = false;
       }
 
-      if (read_buffer_byte_size) {
-        read_buffer->resize(read_buffer_byte_size);
-        memcpy(&(*read_buffer)[0], owner_->read_buffer()->buffer(),
-               read_buffer_byte_size);
-        owner_->read_buffer()->Reset();
-      }
+      owner_->SerializeReadBuffer(
+          additional_bytes_read, serialized_read_buffer);
+      owner_->SerializeWriteBuffer(
+          serialized_write_buffer, additional_bytes_written,
+          additional_platform_handles_written);
 
       return ScopedPlatformHandle(handle_.release());
     }
@@ -403,15 +384,14 @@ class RawChannelWin final : public RawChannel {
         return;
 
       // Note: |OnReadCompleted()| may detach us from |owner_|.
-      if (error == ERROR_SUCCESS) {
+      if (error == ERROR_SUCCESS ||
+          (g_use_autoreset_event && error == ERROR_NO_MORE_ITEMS)) {
         DCHECK_GT(bytes_read, 0u);
         owner_->OnReadCompleted(IO_SUCCEEDED, bytes_read);
       } else if (error == ERROR_BROKEN_PIPE  ||
                  (g_use_autoreset_event && error == STATUS_PIPE_BROKEN)) {
         DCHECK_EQ(bytes_read, 0u);
         owner_->OnReadCompleted(IO_FAILED_SHUTDOWN, 0);
-      } else if (error == ERROR_NO_MORE_ITEMS && g_use_autoreset_event) {
-        return owner_->OnReadCompleted(IO_SUCCEEDED, bytes_read);
       } else {
         DCHECK_EQ(bytes_read, 0u);
         LOG(WARNING) << "ReadFile: " << logging::SystemErrorCodeToString(error);
@@ -443,21 +423,17 @@ class RawChannelWin final : public RawChannel {
       }
 
       // Note: |OnWriteCompleted()| may detach us from |owner_|.
-      if (error == ERROR_SUCCESS) {
+      if (error == ERROR_SUCCESS ||
+         (g_use_autoreset_event && error == ERROR_NO_MORE_ITEMS)) {
         // Reset |platform_handles_written_| before calling |OnWriteCompleted()|
         // since that function may call back to this class and set it again.
-        size_t local_platform_handles_written_ = platform_handles_written_;
+        size_t local_platform_handles_written = platform_handles_written_;
         platform_handles_written_ = 0;
-        owner_->OnWriteCompleted(IO_SUCCEEDED, local_platform_handles_written_,
+        owner_->OnWriteCompleted(IO_SUCCEEDED, local_platform_handles_written,
                                  bytes_written);
       } else if (error == ERROR_BROKEN_PIPE  ||
                  (g_use_autoreset_event && error == STATUS_PIPE_BROKEN)) {
         owner_->OnWriteCompleted(IO_FAILED_SHUTDOWN, 0, 0);
-      } else if (error == ERROR_NO_MORE_ITEMS && g_use_autoreset_event) {
-         size_t local_platform_handles_written_ = platform_handles_written_;
-        platform_handles_written_ = 0;
-        owner_->OnWriteCompleted(IO_SUCCEEDED, local_platform_handles_written_,
-                                 bytes_written);
       } else {
         LOG(WARNING) << "WriteFile: "
                      << logging::SystemErrorCodeToString(error);
@@ -491,30 +467,21 @@ class RawChannelWin final : public RawChannel {
   };
 
   ScopedPlatformHandle ReleaseHandleNoLock(
-      std::vector<char>* read_buffer_out) override {
-    std::vector<WriteBuffer::Buffer> buffers;
-    write_buffer_no_lock()->GetBuffers(&buffers);
-    if (!buffers.empty()) {
-      // TODO(jam): copy code in OnShutdownNoLock
-      NOTREACHED() << "releasing handle with pending write buffer";
-    }
-
-
+      std::vector<char>* serialized_read_buffer,
+      std::vector<char>* serialized_write_buffer) override {
     if (handle_.is_valid()) {
       // SetInitialBuffer could have been called on main thread before OnInit
       // is called on Io thread. and in meantime releasehandle called.
-      //DCHECK(read_buffer()->num_valid_bytes() == 0);
-      if (read_buffer()->num_valid_bytes()) {
-        read_buffer_out->resize(read_buffer()->num_valid_bytes());
-        memcpy(&(*read_buffer_out)[0], read_buffer()->buffer(),
-               read_buffer()->num_valid_bytes());
-        read_buffer()->Reset();
-      }
-      DCHECK(write_buffer_no_lock()->queue_size() == 0);
+      SerializeReadBuffer(0u, serialized_read_buffer);
+
+      // We could have been given messages to write before OnInit.
+      SerializeWriteBuffer(serialized_write_buffer, 0u, 0u);
+
       return ScopedPlatformHandle(PlatformHandle(handle_.release().handle));
     }
 
-    return io_handler_->ReleaseHandle(read_buffer_out);
+    return io_handler_->ReleaseHandle(serialized_read_buffer,
+                                      serialized_write_buffer);
   }
   PlatformHandle HandleForDebuggingNoLock() override {
     if (handle_.is_valid())
@@ -640,35 +607,41 @@ class RawChannelWin final : public RawChannel {
     return rv.Pass();
   }
 
+  size_t SerializePlatformHandles() override {
+    if (!write_buffer_no_lock()->HavePlatformHandlesToSend())
+      return 0u;
+
+    // Since we're not sure which process might ultimately deserialize this
+    // message, we can't duplicate the handle now. Instead, write the process
+    // ID and handle now and let the receiver duplicate it.
+    PlatformHandle* platform_handles;
+    void* serialization_data_temp;
+    size_t num_platform_handles;
+    write_buffer_no_lock()->GetPlatformHandlesToSend(
+        &num_platform_handles, &platform_handles, &serialization_data_temp);
+    SerializedHandle* serialization_data =
+        static_cast<SerializedHandle*>(serialization_data_temp);
+    DCHECK_GT(num_platform_handles, 0u);
+    DCHECK(platform_handles);
+
+    DWORD current_process_id = base::GetCurrentProcId();
+    for (size_t i = 0; i < num_platform_handles; i++) {
+      serialization_data->handle_pid = current_process_id;
+      serialization_data->handle = platform_handles[i].handle;
+      serialization_data++;
+      platform_handles[i] = PlatformHandle();
+    }
+    return num_platform_handles;
+  }
+
   IOResult WriteNoLock(size_t* platform_handles_written,
-                       size_t* bytes_written) override  {
+                       size_t* bytes_written) override {
     write_lock().AssertAcquired();
 
     DCHECK(io_handler_);
     DCHECK(!io_handler_->pending_write_no_lock());
 
-    size_t num_platform_handles = 0;
-    if (write_buffer_no_lock()->HavePlatformHandlesToSend()) {
-      // Since we're not sure which process might ultimately deserialize this
-      // message, we can't duplicate the handle now. Instead, write the process
-      // ID and handle now and let the receiver duplicate it.
-      PlatformHandle* platform_handles;
-      void* serialization_data_temp;
-      write_buffer_no_lock()->GetPlatformHandlesToSend(
-          &num_platform_handles, &platform_handles, &serialization_data_temp);
-      SerializedHandle* serialization_data =
-          static_cast<SerializedHandle*>(serialization_data_temp);
-      DCHECK_GT(num_platform_handles, 0u);
-      DCHECK(platform_handles);
-
-      DWORD current_process_id = base::GetCurrentProcId();
-      for (size_t i = 0; i < num_platform_handles; i++) {
-        serialization_data->handle_pid = current_process_id;
-        serialization_data->handle = platform_handles[i].handle;
-        serialization_data++;
-        platform_handles[i] = PlatformHandle();
-      }
-    }
+    size_t num_platform_handles = SerializePlatformHandles();
 
     std::vector<WriteBuffer::Buffer> buffers;
     write_buffer_no_lock()->GetBuffers(&buffers);
@@ -676,48 +649,6 @@ class RawChannelWin final : public RawChannel {
 
     // TODO(yzshen): Handle multi-segment writes more efficiently.
     DWORD bytes_written_dword = 0;
-
-
-    /* jam: comment below is commented out because with the latest code I don't
-    see this. Note that this code is incorrect for two reasons:
-    1) the buffer would need to be saved until the write is finished
-    2) this still doesn't fix the problem of there being more data or messages
-       to be sent. the proper fix is to serialize pending messages to shared
-       memory.
-
-    // TODO(jam): right now we get in bad situation where we might first write
-    // the main buffer and then the MP gets sent before we write the transport
-    // buffer. We can fix this by sending information about partially written
-    // messages, or by teaching transport buffer how to grow the main buffer and
-    // write its data there.
-    // Until that's done, for now make another copy.
-
-    size_t total_size = buffers[0].size;
-    if (buffers.size() > 1)
-      total_size+=buffers[1].size;
-    char* buf = new char[total_size];
-    memcpy(buf, buffers[0].addr, buffers[0].size);
-    if (buffers.size() > 1)
-      memcpy(buf + buffers[0].size, buffers[1].addr, buffers[1].size);
-
-    BOOL result = WriteFile(
-        io_handler_->handle(), buf,
-        static_cast<DWORD>(total_size),
-        &bytes_written_dword,
-        &io_handler_->write_context_no_lock()->overlapped);
-    delete [] buf;
-
-    if (!result) {
-      DWORD error = GetLastError();
-      if (error == ERROR_BROKEN_PIPE)
-        return IO_FAILED_SHUTDOWN;
-      if (error != ERROR_IO_PENDING) {
-        LOG(WARNING) << "WriteFile: "
-                     << logging::SystemErrorCodeToString(error);
-        return IO_FAILED_UNKNOWN;
-      }
-    }
-    */
 
     BOOL result =
         WriteFile(io_handler_->handle(), buffers[0].addr,
@@ -820,8 +751,8 @@ class RawChannelWin final : public RawChannel {
     if (!io_handler_) {
       // This is hit when creating a duplicate dispatcher since we don't call
       // Init on it.
-      DCHECK_EQ(read_buffer->num_valid_bytes(), 0U);
-      DCHECK_EQ(write_buffer->queue_size(), 0U);
+      DCHECK(read_buffer->IsEmpty());
+      DCHECK(write_buffer->IsEmpty());
       return;
     }
 

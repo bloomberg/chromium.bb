@@ -161,7 +161,7 @@ ScopedMessagePipeHandle CreateMessagePipe(
   ScopedMessagePipeHandle rv(
       MessagePipeHandle(internal::g_core->AddDispatcher(dispatcher)));
   CHECK(rv.is_valid());
-  dispatcher->Init(platform_handle.Pass());
+  dispatcher->Init(platform_handle.Pass(), nullptr, 0, nullptr, 0);
   // TODO(vtl): The |.Pass()| below is only needed due to an MSVS bug; remove it
   // once that's fixed.
   return rv.Pass();

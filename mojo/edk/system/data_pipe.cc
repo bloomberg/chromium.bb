@@ -105,7 +105,6 @@ void DataPipe::StartSerialize(bool have_channel_handle,
     (*max_platform_handles)++;
   if (have_shared_memory)
     (*max_platform_handles)++;
-  DCHECK_LE(*max_size, TransportData::kMaxSerializedDispatcherSize);
 }
 
 void DataPipe::EndSerialize(const MojoCreateDataPipeOptions& options,

@@ -27,7 +27,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
   }
 
   // Must be called before any other methods.
-  void Init(ScopedPlatformHandle message_pipe);
+  void Init(ScopedPlatformHandle message_pipe,
+            char* serialized_read_buffer, size_t serialized_read_buffer_size);
 
   // |Dispatcher| public methods:
   Type GetType() const override;

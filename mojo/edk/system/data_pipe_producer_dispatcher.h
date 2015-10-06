@@ -27,7 +27,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
   }
 
   // Must be called before any other methods.
-  void Init(ScopedPlatformHandle message_pipe);
+  void Init(ScopedPlatformHandle message_pipe,
+            char* serialized_write_buffer, size_t serialized_write_buffer_size);
 
   // |Dispatcher| public methods:
   Type GetType() const override;
@@ -98,7 +99,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
   bool error_;
 
   ScopedPlatformHandle serialized_platform_handle_;
-
+  std::vector<char> serialized_write_buffer_;
   std::vector<char> two_phase_data_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(DataPipeProducerDispatcher);
