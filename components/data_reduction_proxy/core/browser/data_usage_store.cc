@@ -17,6 +17,7 @@
 #include <string>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
@@ -73,7 +74,10 @@ DataUsageStore::~DataUsageStore() {
 }
 
 void DataUsageStore::LoadDataUsage(std::vector<DataUsageBucket>* data_usage) {
+  SCOPED_UMA_HISTOGRAM_TIMER("DataReductionProxy.HistoricalDataUsageLoadTime");
+
   DCHECK(data_usage);
+
   DataUsageBucket empty_bucket;
   data_usage->clear();
   data_usage->resize(kNumDataUsageBuckets, empty_bucket);

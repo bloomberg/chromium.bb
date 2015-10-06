@@ -83,9 +83,7 @@ DataStore::Status DataStoreImpl::Put(
 
   leveldb::WriteBatch batch;
   for (const auto& iter : map) {
-    leveldb::Slice key_slice(iter.first);
-    leveldb::Slice value_slice(iter.second);
-    batch.Put(key_slice, value_slice);
+    batch.Put(iter.first, iter.second);
   }
 
   leveldb::WriteOptions write_options;
@@ -129,6 +127,18 @@ DataStore::Status DataStoreImpl::OpenDB() {
     LOG(ERROR) << "Failed to open Data Reduction Proxy DB: " << status;
 
   db_.reset(dbptr);
+
+  if (db_) {
+    leveldb::Range range;
+    uint64_t size;
+    // We try to capture the size of the entire DB by using the highest and
+    // lowest keys.
+    range.start = "";
+    range.limit = "z";  // Keys starting with 'z' will not be included.
+    dbptr->GetApproximateSizes(&range, 1, &size);
+    UMA_HISTOGRAM_MEMORY_KB("DataReductionProxy.LevelDBSize", size / 1024);
+  }
+
   return status;
 }
 

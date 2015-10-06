@@ -5838,10 +5838,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.HistoricalDataUsageLoadTime"
+    units="milliseconds">
+  <owner>kundaji@chromium.org</owner>
+  <summary>
+    Time taken to load historical data usage from Level DB into memory. This UMA
+    is reported each time the method to load historical data usage is called,
+    which happens when user views data usage history.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.LevelDBOpenStatus"
     enum="DataReductionProxyStoreStatus">
   <owner>kundaji@chromium.org</owner>
   <summary>Status of calling Open() on Data Reduction Proxy LevelDB.</summary>
+</histogram>
+
+<histogram name="DataReductionProxy.LevelDBSize" units="KB">
+  <owner>kundaji@chromium.org</owner>
+  <summary>Size of Data Reduction Proxy LevelDB measured at startup.</summary>
 </histogram>
 
 <histogram name="DataReductionProxy.LoFi.ImplicitOptOutAction"
