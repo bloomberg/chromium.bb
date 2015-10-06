@@ -1871,10 +1871,7 @@ bool CompositedLayerMapping::isDirectlyCompositedImage() const
         if (!image->isBitmapImage())
             return false;
 
-        // FIXME: We should be able to handle bitmap images using direct compositing
-        // no matter what image-orientation value. See crbug.com/502267
-        if (imageLayoutObject->style()->respectImageOrientation() != RespectImageOrientation)
-            return true;
+        return true;
     }
 
     return false;
@@ -1907,7 +1904,7 @@ void CompositedLayerMapping::updateImageContents()
         return;
 
     // This is a no-op if the layer doesn't have an inner layer for the image.
-    m_graphicsLayer->setContentsToImage(image);
+    m_graphicsLayer->setContentsToImage(image, imageLayoutObject->shouldRespectImageOrientation());
 
     m_graphicsLayer->setFilterQuality(layoutObject()->style()->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality);
 

@@ -36,6 +36,7 @@
 #include "platform/graphics/ContentLayerDelegate.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
+#include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
@@ -207,7 +208,7 @@ public:
     void removeAnimation(int animationId);
 
     // Layer contents
-    void setContentsToImage(Image*);
+    void setContentsToImage(Image*, RespectImageOrientationEnum = DoNotRespectImageOrientation);
     void setContentsToPlatformLayer(WebLayer* layer) { setContentsTo(layer); }
     bool hasContentsLayer() const { return m_contentsLayer; }
 

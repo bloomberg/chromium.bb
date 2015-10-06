@@ -71,6 +71,7 @@
 #include "core/layout/LayoutImage.h"
 #include "platform/DragImage.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/network/ResourceRequest.h"
@@ -799,11 +800,16 @@ static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, c
     IntPoint origin;
 
     InterpolationQuality interpolationQuality = element->ensureComputedStyle()->imageRendering() == ImageRenderingPixelated ? InterpolationNone : InterpolationHigh;
+    RespectImageOrientationEnum shouldRespectImageOrientation = element->layoutObject() ? element->layoutObject()->shouldRespectImageOrientation() : DoNotRespectImageOrientation;
+    ImageOrientation orientation;
+
+    if (shouldRespectImageOrientation == RespectImageOrientation && image->isBitmapImage())
+        orientation = toBitmapImage(image)->currentFrameOrientation();
+
     if (image->size().height() * image->size().width() <= MaxOriginalImageArea
-        && (dragImage = DragImage::create(image,
-            element->layoutObject() ? element->layoutObject()->shouldRespectImageOrientation() : DoNotRespectImageOrientation,
+        && (dragImage = DragImage::create(image, shouldRespectImageOrientation,
             1 /* deviceScaleFactor */, interpolationQuality, DragImageAlpha,
-            DragImage::clampedImageScale(*image, imageRect.size(), maxDragImageSize())))) {
+            DragImage::clampedImageScale(orientation.usesWidthAsHeight() ? image->size().transposedSize() : image->size(), imageRect.size(), maxDragImageSize())))) {
         IntSize originalSize = imageRect.size();
         origin = imageRect.location();
 

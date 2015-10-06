@@ -34,6 +34,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Forward.h"
 
+class SkImage;
+
 namespace blink {
 
 class FontDescription;
@@ -45,18 +47,20 @@ public:
     static PassOwnPtr<DragImage> create(Image*,
         RespectImageOrientationEnum = DoNotRespectImageOrientation, float deviceScaleFactor = 1,
         InterpolationQuality = InterpolationHigh, float opacity = 1,
-        const FloatSize& imageScale = FloatSize(1, 1));
+        FloatSize imageScale = FloatSize(1, 1));
 
     static PassOwnPtr<DragImage> create(const KURL&, const String& label, const FontDescription& systemFont, float deviceScaleFactor);
     ~DragImage();
 
-    static FloatSize clampedImageScale(const Image&, const IntSize&, const IntSize& maxSize);
+    static FloatSize clampedImageScale(const IntSize&, const IntSize&, const IntSize& maxSize);
 
     const SkBitmap& bitmap() { return m_bitmap; }
     float resolutionScale() const { return m_resolutionScale; }
     IntSize size() const { return IntSize(m_bitmap.width(), m_bitmap.height()); }
 
     void scale(float scaleX, float scaleY);
+
+    static PassRefPtr<SkImage> resizeAndOrientImage(PassRefPtr<SkImage>, ImageOrientation, FloatSize imageScale = FloatSize(1, 1), float opacity = 1.0, InterpolationQuality = InterpolationNone);
 
 private:
     DragImage(const SkBitmap&, float resolutionScale, InterpolationQuality);
