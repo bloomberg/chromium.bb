@@ -577,8 +577,10 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   skia::RefPtr<SkShader> background_filter_shader =
       GetBackgroundFilterShader(frame, quad, content_tile_mode);
   if (background_filter_shader) {
-    current_paint_.setShader(background_filter_shader.get());
-    current_canvas_->drawRect(dest_visible_rect, current_paint_);
+    SkPaint paint;
+    paint.setShader(background_filter_shader.get());
+    paint.setRasterizer(current_paint_.getRasterizer());
+    current_canvas_->drawRect(dest_visible_rect, paint);
   }
   current_paint_.setShader(shader.get());
   current_canvas_->drawRect(dest_visible_rect, current_paint_);

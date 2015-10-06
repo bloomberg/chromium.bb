@@ -369,7 +369,8 @@ class ImageBackgroundFilter : public LayerTreeHostFiltersPixelTest {
 
     // Add a slightly transparent blue layer.
     scoped_refptr<SolidColorLayer> filter =
-        CreateSolidColorLayer(gfx::Rect(100, 0, 100, 200), 0x220000FF);
+        CreateSolidColorLayer(gfx::Rect(100, 0, 100, 200), SK_ColorBLUE);
+    filter->SetOpacity(0.137f);
 
     // Add some rotation so that we can see that it blurs only under the layer.
     gfx::Transform transform_filter;
@@ -385,7 +386,7 @@ class ImageBackgroundFilter : public LayerTreeHostFiltersPixelTest {
 
 #if defined(OS_WIN)
     // Windows has 994 pixels off by at most 2: crbug.com/225027
-    float percentage_pixels_large_error = 2.4825f;  // 994px / (200*200)
+    float percentage_pixels_large_error = 2.5f;  // 994px / (200*200)
     float percentage_pixels_small_error = 0.0f;
     float average_error_allowed_in_bad_pixels = 1.f;
     int large_error_allowed = 2;
