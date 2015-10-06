@@ -422,6 +422,7 @@ class MockBrowserContext : public BrowserContext {
   MOCK_METHOD0(GetPushMessagingService, PushMessagingService*());
   MOCK_METHOD0(GetSSLHostStateDelegate, SSLHostStateDelegate*());
   MOCK_METHOD0(GetPermissionManager, PermissionManager*());
+  MOCK_METHOD0(GetBackgroundSyncController, BackgroundSyncController*());
 
   scoped_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& path) override {

@@ -84,6 +84,10 @@ content::PermissionManager* FakeProfile::GetPermissionManager() {
   return nullptr;
 }
 
+content::BackgroundSyncController* FakeProfile::GetBackgroundSyncController() {
+  return nullptr;
+}
+
 scoped_refptr<base::SequencedTaskRunner>
 FakeProfile::GetIOTaskRunner() {
   return scoped_refptr<base::SequencedTaskRunner>();

@@ -134,4 +134,8 @@ PermissionManager* TestBrowserContext::GetPermissionManager() {
   return NULL;
 }
 
+BackgroundSyncController* TestBrowserContext::GetBackgroundSyncController() {
+  return nullptr;
+}
+
 }  // namespace content

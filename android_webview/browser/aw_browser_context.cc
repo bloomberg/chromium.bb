@@ -410,6 +410,11 @@ content::PermissionManager* AwBrowserContext::GetPermissionManager() {
   return permission_manager_.get();
 }
 
+content::BackgroundSyncController*
+AwBrowserContext::GetBackgroundSyncController() {
+  return nullptr;
+}
+
 policy::URLBlacklistManager* AwBrowserContext::GetURLBlacklistManager() {
   // Should not be called until the end of PreMainMessageLoopRun, where
   // blacklist_manager_ is initialized.

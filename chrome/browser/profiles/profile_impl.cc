@@ -29,6 +29,8 @@
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
+#include "chrome/browser/background_sync/background_sync_controller_factory.h"
+#include "chrome/browser/background_sync/background_sync_controller_impl.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -1022,6 +1024,10 @@ content::SSLHostStateDelegate* ProfileImpl::GetSSLHostStateDelegate() {
 // instead of repeating them inside all Profile implementations.
 content::PermissionManager* ProfileImpl::GetPermissionManager() {
   return PermissionManagerFactory::GetForProfile(this);
+}
+
+content::BackgroundSyncController* ProfileImpl::GetBackgroundSyncController() {
+  return BackgroundSyncControllerFactory::GetForProfile(this);
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {

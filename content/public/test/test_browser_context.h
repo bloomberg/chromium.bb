@@ -48,6 +48,7 @@ class TestBrowserContext : public BrowserContext {
   PushMessagingService* GetPushMessagingService() override;
   SSLHostStateDelegate* GetSSLHostStateDelegate() override;
   PermissionManager* GetPermissionManager() override;
+  BackgroundSyncController* GetBackgroundSyncController() override;
 
  private:
   scoped_refptr<net::URLRequestContextGetter> request_context_;

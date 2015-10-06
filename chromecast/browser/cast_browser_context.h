@@ -46,6 +46,7 @@ class CastBrowserContext : public content::BrowserContext {
   content::PushMessagingService* GetPushMessagingService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
   content::PermissionManager* GetPermissionManager() override;
+  content::BackgroundSyncController* GetBackgroundSyncController() override;
 
   net::URLRequestContextGetter* GetSystemRequestContext();
 

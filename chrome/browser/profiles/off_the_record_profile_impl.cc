@@ -14,6 +14,8 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
+#include "chrome/browser/background_sync/background_sync_controller_factory.h"
+#include "chrome/browser/background_sync/background_sync_controller_impl.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
@@ -406,6 +408,11 @@ OffTheRecordProfileImpl::GetSSLHostStateDelegate() {
 // instead of repeating them inside all Profile implementations.
 content::PermissionManager* OffTheRecordProfileImpl::GetPermissionManager() {
   return PermissionManagerFactory::GetForProfile(this);
+}
+
+content::BackgroundSyncController*
+OffTheRecordProfileImpl::GetBackgroundSyncController() {
+  return BackgroundSyncControllerFactory::GetForProfile(this);
 }
 
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {

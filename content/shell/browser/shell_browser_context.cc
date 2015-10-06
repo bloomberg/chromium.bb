@@ -206,4 +206,8 @@ PermissionManager* ShellBrowserContext::GetPermissionManager() {
   return permission_manager_.get();
 }
 
+BackgroundSyncController* ShellBrowserContext::GetBackgroundSyncController() {
+  return nullptr;
+}
+
 }  // namespace content

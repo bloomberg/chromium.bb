@@ -135,6 +135,13 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="BackgroundSync.Register.Origin" type="UMA_RAPPOR_TYPE">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL which registered a Background Sync event.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="ContentSettings.MixedScript.DisplayedShield"
     type="ETLD_PLUS_ONE">
   <owner>lgarron@chromium.org</owner>

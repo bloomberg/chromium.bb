@@ -75,6 +75,11 @@ PermissionManager* LayoutTestBrowserContext::GetPermissionManager() {
   return permission_manager_.get();
 }
 
+BackgroundSyncController*
+LayoutTestBrowserContext::GetBackgroundSyncController() {
+  return nullptr;
+}
+
 LayoutTestPermissionManager*
 LayoutTestBrowserContext::GetLayoutTestPermissionManager() {
   return static_cast<LayoutTestPermissionManager*>(GetPermissionManager());

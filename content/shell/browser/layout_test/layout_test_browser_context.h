@@ -14,6 +14,7 @@ class NetLog;
 
 namespace content {
 
+class BackgroundSyncController;
 class DownloadManagerDelegate;
 class LayoutTestPermissionManager;
 class LayoutTestPushMessagingService;
@@ -29,6 +30,7 @@ class LayoutTestBrowserContext : public ShellBrowserContext {
   DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   PushMessagingService* GetPushMessagingService() override;
   PermissionManager* GetPermissionManager() override;
+  BackgroundSyncController* GetBackgroundSyncController() override;
 
   LayoutTestPermissionManager* GetLayoutTestPermissionManager();
 

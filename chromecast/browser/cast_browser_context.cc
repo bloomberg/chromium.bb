@@ -152,5 +152,10 @@ content::PermissionManager* CastBrowserContext::GetPermissionManager() {
   return permission_manager_.get();
 }
 
+content::BackgroundSyncController*
+CastBrowserContext::GetBackgroundSyncController() {
+  return nullptr;
+}
+
 }  // namespace shell
 }  // namespace chromecast

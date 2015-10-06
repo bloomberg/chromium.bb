@@ -17,6 +17,9 @@
 #include "content/browser/background_sync/background_sync_registration_options.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/background_sync_controller.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_ANDROID)
@@ -57,6 +60,25 @@ bool ShouldDisableForFieldTrial() {
   std::string experiment = base::FieldTrialList::FindFullName("BackgroundSync");
   return base::StartsWith(experiment, "ExperimentDisable",
                           base::CompareCase::INSENSITIVE_ASCII);
+}
+
+void NotifyBackgroundSyncRegisteredOnUIThread(
+    const scoped_refptr<ServiceWorkerContextWrapper>& sw_context_wrapper,
+    const GURL& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  StoragePartitionImpl* storage_partition_impl =
+      sw_context_wrapper->storage_partition();
+  if (!storage_partition_impl)  // happens in tests
+    return;
+
+  BackgroundSyncController* background_sync_controller =
+      storage_partition_impl->browser_context()->GetBackgroundSyncController();
+
+  if (!background_sync_controller)
+    return;
+
+  background_sync_controller->NotifyBackgroundSyncRegistered(origin);
 }
 
 }  // namespace
@@ -385,6 +407,11 @@ void BackgroundSyncManager::RegisterImpl(
     PostErrorResponse(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback);
     return;
   }
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&NotifyBackgroundSyncRegisteredOnUIThread,
+                                     service_worker_context_,
+                                     sw_registration->pattern().GetOrigin()));
 
   RefCountedRegistration* existing_registration_ref =
       LookupActiveRegistration(sw_registration_id, RegistrationKey(options));

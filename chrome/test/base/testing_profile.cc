@@ -953,6 +953,11 @@ content::PermissionManager* TestingProfile::GetPermissionManager() {
   return NULL;
 }
 
+content::BackgroundSyncController*
+TestingProfile::GetBackgroundSyncController() {
+  return nullptr;
+}
+
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
   return true;
 }
