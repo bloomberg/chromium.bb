@@ -14,13 +14,13 @@ struct WebCursorInfo;
 namespace content {
 
 // Adapts our cursor info to blink::WebCursorInfo.
-bool GetWebKitCursorInfo(const WebCursor& cursor,
-                         blink::WebCursorInfo* webkit_cursor_info);
+bool GetWebCursorInfo(const WebCursor& cursor,
+                      blink::WebCursorInfo* web_cursor_info);
 
-// Adapts blink::CursorInfo to our cursor.
-void InitializeCursorFromWebKitCursorInfo(
+// Adapts blink::WebCursorInfo to our cursor.
+void InitializeCursorFromWebCursorInfo(
     WebCursor* cursor,
-    const blink::WebCursorInfo& webkit_cursor_info);
+    const blink::WebCursorInfo& web_cursor_info);
 
 }  // namespace content
 

@@ -529,7 +529,7 @@ bool BrowserPlugin::handleInputEvent(const blink::WebInputEvent& event,
       new BrowserPluginHostMsg_HandleInputEvent(browser_plugin_instance_id_,
                                                 view_rect_,
                                                 &event));
-  GetWebKitCursorInfo(cursor_, &cursor_info);
+  GetWebCursorInfo(cursor_, &cursor_info);
 
   // Although we forward this event to the guest, we don't report it as consumed
   // since other targets of this event in Blink never get that chance either.

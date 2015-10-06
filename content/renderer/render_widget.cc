@@ -1489,7 +1489,7 @@ void RenderWidget::QueueMessage(IPC::Message* msg,
 void RenderWidget::didChangeCursor(const WebCursorInfo& cursor_info) {
   // TODO(darin): Eliminate this temporary.
   WebCursor cursor;
-  InitializeCursorFromWebKitCursorInfo(&cursor, cursor_info);
+  InitializeCursorFromWebCursorInfo(&cursor, cursor_info);
   // Only send a SetCursor message if we need to make a change.
   if (!current_cursor_.IsEqual(cursor)) {
     current_cursor_ = cursor;
