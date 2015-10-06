@@ -146,6 +146,9 @@ class SQL_EXPORT Connection {
   // other platforms.
   void set_restrict_to_user() { restrict_to_user_ = true; }
 
+  // Call to opt out of memory-mapped file I/O.
+  void set_mmap_disabled() { mmap_disabled_ = true; }
+
   // Set an error-handling callback.  On errors, the error number (and
   // statement, if available) will be passed to the callback.
   //
@@ -638,6 +641,12 @@ class SQL_EXPORT Connection {
     return clock_->Now();
   }
 
+  // Release page-cache memory if memory-mapped I/O is enabled and the database
+  // was changed.  Passing true for |implicit_change_performed| allows
+  // overriding the change detection for cases like DDL (CREATE, DROP, etc),
+  // which do not participate in the total-rows-changed tracking.
+  void ReleaseCacheMemoryIfNeeded(bool implicit_change_performed);
+
   // The actual sqlite database. Will be NULL before Init has been called or if
   // Init resulted in an error.
   sqlite3* db_;
@@ -678,6 +687,17 @@ class SQL_EXPORT Connection {
   // databases (incorrect use of the API) from calls to once-valid
   // databases.
   bool poisoned_;
+
+  // |true| if SQLite memory-mapped I/O is not desired for this connection.
+  bool mmap_disabled_;
+
+  // |true| if SQLite memory-mapped I/O was enabled for this connection.
+  // Used by ReleaseCacheMemoryIfNeeded().
+  bool mmap_enabled_;
+
+  // Used by ReleaseCacheMemoryIfNeeded() to track if new changes have happened
+  // since memory was last released.
+  int total_changes_at_last_release_;
 
   ErrorCallback error_callback_;
 

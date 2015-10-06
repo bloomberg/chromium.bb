@@ -28,6 +28,12 @@
       # appropriately.  Chromium doesn't configure SQLite for that, and would
       # prefer to control distribution to worker threads.
       'SQLITE_MAX_WORKER_THREADS=0',
+      # Allow 256MB mmap footprint per connection.  Should not be too open-ended
+      # as that could cause memory fragmentation.  50MB encompasses the 99th
+      # percentile of Chrome databases in the wild.
+      # TODO(shess): A 64-bit-specific value could be 1G or more.
+      # TODO(shess): Figure out if exceeding this is costly.
+      'SQLITE_MAX_MMAP_SIZE=268435456',
       # Use a read-only memory map when mmap'ed I/O is enabled to prevent memory
       # stompers from directly corrupting the database.
       # TODO(shess): Upstream the ability to use this define.
