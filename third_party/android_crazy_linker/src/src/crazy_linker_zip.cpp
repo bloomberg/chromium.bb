@@ -22,6 +22,12 @@ namespace {
 // This marker appears at the start of the end of central directory record
 const uint32_t kEndOfCentralDirectoryMarker = 0x06054b50;
 
+// Length of the end of central directory record, the point back from the
+// end of file at which we start to scan backwards for the end of central
+// directory marker
+const uint32_t kEndOfCentralDirectoryRecordSize =
+    4 + 2 + 2 + 2 + 2 + 4 + 4 + 2;
+
 // Offsets of fields in End of Central Directory.
 const int kOffsetNumOfEntriesInEndOfCentralDirectory = 4 + 2 + 2;
 const int kOffsetOfCentralDirLengthInEndOfCentralDirectory =
@@ -130,11 +136,12 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
   ScopedMMap scoped_mmap(mem, stat_buf.st_size);
 
   // Scan backwards from the end of the file searching for the end of
-  // central directory marker.
+  // central directory marker. The earliest occurrence we accept is
+  // size of end of central directory bytes back from from the end of the
+  // file.
   uint8_t* mem_bytes = static_cast<uint8_t*>(mem);
-  int off;
-  for (off = stat_buf.st_size - sizeof(kEndOfCentralDirectoryMarker);
-       off >= 0; --off) {
+  int off = stat_buf.st_size - kEndOfCentralDirectoryRecordSize;
+  for (; off >= 0; --off) {
     if (ReadUInt32(mem_bytes, off) == kEndOfCentralDirectoryMarker) {
       break;
     }
