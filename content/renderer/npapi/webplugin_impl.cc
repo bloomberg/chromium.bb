@@ -101,9 +101,9 @@ class MultiPartResponseClient : public WebURLLoaderClient {
   explicit MultiPartResponseClient(WebPluginResourceClient* resource_client)
       : byte_range_lower_bound_(0), resource_client_(resource_client) {}
 
-  void willSendRequest(WebURLLoader*,
-                       WebURLRequest&,
-                       const WebURLResponse&) override {}
+  void willFollowRedirect(WebURLLoader*,
+                          WebURLRequest&,
+                          const WebURLResponse&) override {}
   void didSendData(WebURLLoader*,
                    unsigned long long,
                    unsigned long long) override {}
@@ -491,10 +491,10 @@ bool WebPluginImpl::isPlaceholder() {
 WebPluginImpl::LoaderClient::LoaderClient(WebPluginImpl* parent)
     : parent_(parent) {}
 
-void WebPluginImpl::LoaderClient::willSendRequest(
-    blink::WebURLLoader* loader, blink::WebURLRequest& newRequest,
-    const blink::WebURLResponse& redirectResponse) {
-  parent_->willSendRequest(loader, newRequest, redirectResponse);
+void WebPluginImpl::LoaderClient::willFollowRedirect(
+    blink::WebURLLoader* loader, blink::WebURLRequest& new_request,
+    const blink::WebURLResponse& redirect_response) {
+  parent_->willFollowRedirect(loader, new_request, redirect_response);
 }
 
 void WebPluginImpl::LoaderClient::didSendData(
@@ -921,9 +921,9 @@ WebPluginImpl::ClientInfo* WebPluginImpl::GetClientInfoFromLoader(
   return 0;
 }
 
-void WebPluginImpl::willSendRequest(WebURLLoader* loader,
-                                    WebURLRequest& request,
-                                    const WebURLResponse& response) {
+void WebPluginImpl::willFollowRedirect(WebURLLoader* loader,
+                                       WebURLRequest& new_request,
+                                       const WebURLResponse& response) {
   // TODO(jam): THIS LOGIC IS COPIED IN PluginURLFetcher::OnReceivedRedirect
   // until kDirectNPAPIRequests is the default and we can remove this old path.
   WebPluginImpl::ClientInfo* client_info = GetClientInfoFromLoader(loader);
@@ -934,7 +934,7 @@ void WebPluginImpl::willSendRequest(WebURLLoader* loader,
     // initiated by plugins.
     if (client_info->is_plugin_src_load &&
         webframe_ &&
-        !webframe_->checkIfRunInsecureContent(request.url())) {
+        !webframe_->checkIfRunInsecureContent(new_request.url())) {
       loader->cancel();
       client_info->client->DidFail(client_info->id);
       return;
@@ -945,9 +945,10 @@ void WebPluginImpl::willSendRequest(WebURLLoader* loader,
       // just block cross origin 307 POST redirects.
       if (!client_info->notify_redirects) {
         if (response.httpStatusCode() == 307 &&
-            base::LowerCaseEqualsASCII(request.httpMethod().utf8(), "post")) {
+            base::LowerCaseEqualsASCII(
+                new_request.httpMethod().utf8(), "post")) {
           GURL original_request_url(response.url());
-          GURL response_url(request.url());
+          GURL response_url(new_request.url());
           if (original_request_url.GetOrigin() != response_url.GetOrigin()) {
             loader->setDefersLoading(true);
             loader->cancel();
@@ -959,7 +960,7 @@ void WebPluginImpl::willSendRequest(WebURLLoader* loader,
         loader->setDefersLoading(true);
       }
     }
-    client_info->client->WillSendRequest(request.url(),
+    client_info->client->WillSendRequest(new_request.url(),
                                          response.httpStatusCode());
   }
 }

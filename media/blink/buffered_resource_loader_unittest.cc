@@ -194,7 +194,7 @@ class BufferedResourceLoaderTest : public testing::Test {
     blink::WebURLRequest newRequest(redirectUrl);
     blink::WebURLResponse redirectResponse(gurl_);
 
-    loader_->willSendRequest(url_loader_, newRequest, redirectResponse);
+    loader_->willFollowRedirect(url_loader_, newRequest, redirectResponse);
 
     base::MessageLoop::current()->RunUntilIdle();
   }

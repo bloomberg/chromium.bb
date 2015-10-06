@@ -42,7 +42,7 @@ private:
     RefPtr<SecurityOrigin> m_beaconOrigin;
 
     // WebURLLoaderClient
-    void willSendRequest(WebURLLoader*, WebURLRequest&, const WebURLResponse&) override;
+    void willFollowRedirect(WebURLLoader*, WebURLRequest&, const WebURLResponse&) override;
 };
 
 } // namespace blink

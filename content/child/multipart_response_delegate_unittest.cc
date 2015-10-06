@@ -51,9 +51,9 @@ class MockWebURLLoaderClient : public WebURLLoaderClient {
  public:
   MockWebURLLoaderClient() { Reset(); }
 
-  void willSendRequest(WebURLLoader*,
-                       WebURLRequest&,
-                       const WebURLResponse&) override {}
+  void willFollowRedirect(WebURLLoader*,
+                          WebURLRequest&,
+                          const WebURLResponse&) override {}
   void didSendData(WebURLLoader*,
                    unsigned long long,
                    unsigned long long) override {}

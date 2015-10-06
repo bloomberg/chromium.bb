@@ -118,7 +118,7 @@ int32_t PepperURLLoaderHost::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
-void PepperURLLoaderHost::willSendRequest(
+void PepperURLLoaderHost::willFollowRedirect(
     WebURLLoader* loader,
     WebURLRequest& new_request,
     const WebURLResponse& redirect_response) {

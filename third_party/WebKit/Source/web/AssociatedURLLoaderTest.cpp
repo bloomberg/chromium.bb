@@ -58,7 +58,7 @@ class AssociatedURLLoaderTest : public ::testing::Test,
                                 public WebURLLoaderClient {
 public:
     AssociatedURLLoaderTest()
-        :  m_willSendRequest(false)
+        :  m_willFollowRedirect(false)
         ,  m_didSendData(false)
         ,  m_didReceiveResponse(false)
         ,  m_didReceiveData(false)
@@ -121,9 +121,9 @@ public:
     }
 
     // WebURLLoaderClient implementation.
-    void willSendRequest(WebURLLoader* loader, WebURLRequest& newRequest, const WebURLResponse& redirectResponse) override
+    void willFollowRedirect(WebURLLoader* loader, WebURLRequest& newRequest, const WebURLResponse& redirectResponse) override
     {
-        m_willSendRequest = true;
+        m_willFollowRedirect = true;
         EXPECT_EQ(m_expectedLoader, loader);
         EXPECT_EQ(m_expectedNewRequest.url(), newRequest.url());
         // Check that CORS simple headers are transferred to the new request.
@@ -273,7 +273,7 @@ protected:
     WebURLResponse m_expectedResponse;
     WebURLRequest m_expectedNewRequest;
     WebURLResponse m_expectedRedirectResponse;
-    bool m_willSendRequest;
+    bool m_willFollowRedirect;
     bool m_didSendData;
     bool m_didReceiveResponse;
     bool m_didDownloadData;
@@ -465,7 +465,7 @@ TEST_F(AssociatedURLLoaderTest, RedirectSuccess)
     EXPECT_TRUE(m_expectedLoader);
     m_expectedLoader->loadAsynchronously(request, this);
     serveRequests();
-    EXPECT_TRUE(m_willSendRequest);
+    EXPECT_TRUE(m_willFollowRedirect);
     EXPECT_TRUE(m_didReceiveResponse);
     EXPECT_TRUE(m_didReceiveData);
     EXPECT_TRUE(m_didFinishLoading);
@@ -504,7 +504,7 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginFailure)
     m_expectedLoader->loadAsynchronously(request, this);
 
     serveRequests();
-    EXPECT_FALSE(m_willSendRequest);
+    EXPECT_FALSE(m_willFollowRedirect);
     EXPECT_FALSE(m_didReceiveResponse);
     EXPECT_FALSE(m_didReceiveData);
     EXPECT_FALSE(m_didFinishLoading);
@@ -546,7 +546,7 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlFailure)
 
     serveRequests();
     // We should get a notification about access control check failure.
-    EXPECT_FALSE(m_willSendRequest);
+    EXPECT_FALSE(m_willFollowRedirect);
     EXPECT_FALSE(m_didReceiveResponse);
     EXPECT_FALSE(m_didReceiveData);
     EXPECT_TRUE(m_didFail);
@@ -593,7 +593,7 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlSuccess)
     m_expectedLoader->loadAsynchronously(request, this);
     serveRequests();
     // We should not receive a notification for the redirect.
-    EXPECT_FALSE(m_willSendRequest);
+    EXPECT_FALSE(m_willFollowRedirect);
     EXPECT_TRUE(m_didReceiveResponse);
     EXPECT_TRUE(m_didReceiveData);
     EXPECT_TRUE(m_didFinishLoading);

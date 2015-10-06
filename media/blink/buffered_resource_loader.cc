@@ -326,7 +326,7 @@ bool BufferedResourceLoader::range_supported() {
 
 /////////////////////////////////////////////////////////////////////////////
 // blink::WebURLLoaderClient implementation.
-void BufferedResourceLoader::willSendRequest(
+void BufferedResourceLoader::willFollowRedirect(
     WebURLLoader* loader,
     WebURLRequest& newRequest,
     const WebURLResponse& redirectResponse) {

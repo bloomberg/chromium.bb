@@ -84,9 +84,9 @@ blink::WebURLRequest WebURLLoaderMock::ServeRedirect(
 
   base::WeakPtr<WebURLLoaderMock> self(weak_factory_.GetWeakPtr());
 
-  client_->willSendRequest(this, newRequest, redirectResponse);
+  client_->willFollowRedirect(this, newRequest, redirectResponse);
 
-  // |this| might be deleted in willSendRequest().
+  // |this| might be deleted in willFollowRedirect().
   if (!self)
     return newRequest;
 

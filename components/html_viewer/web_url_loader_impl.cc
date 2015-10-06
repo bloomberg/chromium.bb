@@ -252,10 +252,11 @@ void WebURLLoaderImpl::OnReceivedRedirect(const blink::WebURLRequest& request,
     new_request.setHTTPBody(request.httpBody());
 
   base::WeakPtr<WebURLLoaderImpl> self(weak_factory_.GetWeakPtr());
-  client_->willSendRequest(this, new_request, ToWebURLResponse(url_response));
+  client_->willFollowRedirect(
+      this, new_request, ToWebURLResponse(url_response));
   // TODO(darin): Check if new_request was rejected.
 
-  // We may have been deleted during willSendRequest.
+  // We may have been deleted during willFollowRedirect.
   if (!self)
     return;
 

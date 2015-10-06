@@ -518,10 +518,10 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
                                 !info.was_fetched_via_service_worker,
                                 &new_request);
 
-  // Protect from deletion during call to willSendRequest.
+  // Protect from deletion during call to willFollowRedirect.
   scoped_refptr<Context> protect(this);
 
-  client_->willSendRequest(loader_, new_request, response);
+  client_->willFollowRedirect(loader_, new_request, response);
   request_ = new_request;
 
   // Only follow the redirect if WebKit left the URL unmodified.

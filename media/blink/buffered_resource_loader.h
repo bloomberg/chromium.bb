@@ -132,7 +132,7 @@ class MEDIA_EXPORT BufferedResourceLoader
   bool range_supported();
 
   // blink::WebURLLoaderClient implementation.
-  void willSendRequest(
+  void willFollowRedirect(
       blink::WebURLLoader* loader,
       blink::WebURLRequest& newRequest,
       const blink::WebURLResponse& redirectResponse) override;

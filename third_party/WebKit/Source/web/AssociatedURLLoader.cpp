@@ -183,7 +183,7 @@ void AssociatedURLLoader::ClientAdapter::willFollowRedirect(ResourceRequest& new
 
     WrappedResourceRequest wrappedNewRequest(newRequest);
     WrappedResourceResponse wrappedRedirectResponse(redirectResponse);
-    m_client->willSendRequest(m_loader, wrappedNewRequest, wrappedRedirectResponse);
+    m_client->willFollowRedirect(m_loader, wrappedNewRequest, wrappedRedirectResponse);
 }
 
 void AssociatedURLLoader::ClientAdapter::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)

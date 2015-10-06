@@ -207,9 +207,9 @@ class WebPluginImpl : public WebPlugin,
   // WebURLLoaderClient implementation.  We implement this interface in the
   // renderer process, and then use the simple WebPluginResourceClient interface
   // to relay the callbacks to the plugin.
-  void willSendRequest(blink::WebURLLoader* loader,
-                       blink::WebURLRequest& request,
-                       const blink::WebURLResponse& response);
+  void willFollowRedirect(blink::WebURLLoader* loader,
+                          blink::WebURLRequest& new_request,
+                          const blink::WebURLResponse& response);
   void didSendData(blink::WebURLLoader* loader,
                    unsigned long long bytes_sent,
                    unsigned long long total_bytes_to_be_sent);
@@ -329,9 +329,9 @@ class WebPluginImpl : public WebPlugin,
    public:
     LoaderClient(WebPluginImpl*);
 
-    void willSendRequest(blink::WebURLLoader*,
-                         blink::WebURLRequest&,
-                         const blink::WebURLResponse&) override;
+    void willFollowRedirect(blink::WebURLLoader*,
+                            blink::WebURLRequest&,
+                            const blink::WebURLResponse&) override;
     void didSendData(blink::WebURLLoader*,
                      unsigned long long bytesSent,
                      unsigned long long totalBytesToBeSent) override;

@@ -135,7 +135,7 @@ BeaconLoader::BeaconLoader(LocalFrame* frame, ResourceRequest& request, const Fe
 {
 }
 
-void BeaconLoader::willSendRequest(WebURLLoader*, WebURLRequest& passedNewRequest, const WebURLResponse& passedRedirectResponse)
+void BeaconLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewRequest, const WebURLResponse& passedRedirectResponse)
 {
     passedNewRequest.setAllowStoredCredentials(true);
     ResourceRequest& newRequest(passedNewRequest.toMutableResourceRequest());
