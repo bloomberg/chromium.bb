@@ -204,34 +204,17 @@ void decommitSystemPages(void* addr, size_t len)
     int ret = madvise(addr, len, MADV_FREE);
     RELEASE_ASSERT(!ret);
 #else
-    setSystemPagesInaccessible(addr, len);
-#endif
-}
-
-void recommitSystemPages(void* addr, size_t len)
-{
-    ASSERT(!(len & kSystemPageOffsetMask));
-#if OS(POSIX)
-    (void) addr;
-#else
-    RELEASE_ASSERT(setSystemPagesAccessible(addr, len));
-#endif
-}
-
-void discardSystemPages(void* addr, size_t len)
-{
-    ASSERT(!(len & kSystemPageOffsetMask));
-#if OS(POSIX)
-    // On POSIX, the implementation detail is that discard and decommit are the
-    // same, and lead to pages that are returned to the system immediately and
-    // get replaced with zeroed pages when touched. So we just call
-    // decommitSystemPages() here to avoid code duplication.
-    decommitSystemPages(addr, len);
-#else
-    (void) addr;
-    (void) len;
-    // TODO(cevans): implement this using MEM_RESET for Windows, once we've
-    // decided that the semantics are a match.
+    using DiscardVirtualMemoryFunction = DWORD (WINAPI*)(PVOID virtualAddress, SIZE_T size);
+    static DiscardVirtualMemoryFunction discardVirtualMemory = reinterpret_cast<DiscardVirtualMemoryFunction>(-1);
+    if (discardVirtualMemory == reinterpret_cast<DiscardVirtualMemoryFunction>(-1))
+        discardVirtualMemory = reinterpret_cast<DiscardVirtualMemoryFunction>(GetProcAddress(GetModuleHandle(L"Kernel32.dll"), "DiscardVirtualMemory"));
+    if (discardVirtualMemory) { // Use DiscardVirtualMemory when available
+        LONG ret = discardVirtualMemory(addr, len);
+        RELEASE_ASSERT(!ret);
+    } else { // MEM_RESET delays freeing, but the system will grab the memory if needed.
+        void* ret = VirtualAlloc(addr, len, MEM_RESET, PAGE_READWRITE);
+        RELEASE_ASSERT(ret);
+    }
 #endif
 }
 
