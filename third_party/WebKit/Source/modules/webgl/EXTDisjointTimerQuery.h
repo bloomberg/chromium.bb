@@ -40,8 +40,6 @@ private:
     friend class WebGLTimerQueryEXT;
     explicit EXTDisjointTimerQuery(WebGLRenderingContextBase*);
 
-    void OnQueryDeleted(GLuint);
-
     Member<WebGLTimerQueryEXT> m_currentElapsedQuery;
 };
 

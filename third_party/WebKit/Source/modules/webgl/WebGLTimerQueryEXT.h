@@ -7,9 +7,11 @@
 
 #include "modules/webgl/WebGLContextObject.h"
 
+#include "public/platform/WebThread.h"
+
 namespace blink {
 
-class WebGLTimerQueryEXT : public WebGLContextObject {
+class WebGLTimerQueryEXT : public WebGLContextObject, public WebThread::TaskObserver {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
@@ -22,6 +24,12 @@ public:
     bool hasTarget() const { return m_target != 0; }
     GLenum target() const { return m_target; }
 
+    void resetCachedResult();
+    void updateCachedResult(WebGraphicsContext3D*);
+
+    bool isQueryResultAvailable();
+    GLuint64 getQueryResult();
+
 protected:
     WebGLTimerQueryEXT(WebGLRenderingContextBase*);
 
@@ -29,8 +37,20 @@ private:
     bool hasObject() const override { return m_queryId != 0; }
     void deleteObjectImpl(WebGraphicsContext3D*) override;
 
+    void registerTaskObserver();
+    void unregisterTaskObserver();
+
+    // TaskObserver implementation.
+    void didProcessTask() override;
+    void willProcessTask() override { }
+
     GLenum m_target;
     GLuint m_queryId;
+
+    bool m_taskObserverRegistered;
+    bool m_canUpdateAvailability;
+    bool m_queryResultAvailable;
+    GLuint64 m_queryResult;
 };
 
 } // namespace blink

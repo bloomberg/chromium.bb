@@ -117,6 +117,7 @@ void EXTDisjointTimerQuery::endQueryEXT(GLenum target)
     }
 
     scoped.context()->webContext()->endQueryEXT(target);
+    m_currentElapsedQuery->resetCachedResult();
     m_currentElapsedQuery.clear();
 }
 
@@ -143,6 +144,7 @@ void EXTDisjointTimerQuery::queryCounterEXT(WebGLTimerQueryEXT* query, GLenum ta
 
     scoped.context()->webContext()->queryCounterEXT(query->object(), target);
     query->setTarget(target);
+    query->resetCachedResult();
 }
 
 ScriptValue EXTDisjointTimerQuery::getQueryEXT(ScriptState* scriptState, GLenum target, GLenum pname)
@@ -177,23 +179,19 @@ ScriptValue EXTDisjointTimerQuery::getQueryObjectEXT(ScriptState* scriptState, W
     if (scoped.isLost())
         return ScriptValue::createNull(scriptState);
 
-    if (!query || query->isDeleted() || !query->validate(0, scoped.context())) {
+    if (!query || query->isDeleted() || !query->validate(0, scoped.context()) || m_currentElapsedQuery == query) {
         scoped.context()->webContext()->synthesizeGLError(GL_INVALID_OPERATION);
         return ScriptValue::createNull(scriptState);
     }
 
-    // TODO(kbr): Per the spec, figure out a way to only update this value once
-    // the current frame has completed rendering.
     switch (pname) {
     case GL_QUERY_RESULT_EXT: {
-        GLuint64 result = 0;
-        scoped.context()->webContext()->getQueryObjectui64vEXT(query->object(), pname, &result);
-        return WebGLAny(scriptState, result);
+        query->updateCachedResult(scoped.context()->webContext());
+        return WebGLAny(scriptState, query->getQueryResult());
     }
     case GL_QUERY_RESULT_AVAILABLE_EXT: {
-        GLuint available = 0;
-        scoped.context()->webContext()->getQueryObjectuivEXT(query->object(), pname, &available);
-        return WebGLAny(scriptState, !!available);
+        query->updateCachedResult(scoped.context()->webContext());
+        return WebGLAny(scriptState, query->isQueryResultAvailable());
     }
     default:
         scoped.context()->webContext()->synthesizeGLError(GL_INVALID_ENUM);
