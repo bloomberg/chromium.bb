@@ -746,7 +746,7 @@ SkBitmap SkBitmapOperations::CreateDropShadow(
     // The blur is halved to produce a shadow that correctly fits within the
     // |shadow_margin|.
     SkScalar sigma = SkDoubleToScalar(shadow.blur() / 2);
-    skia::RefPtr<SkBlurImageFilter> filter =
+    skia::RefPtr<SkImageFilter> filter =
         skia::AdoptRef(SkBlurImageFilter::Create(sigma, sigma));
     paint.setImageFilter(filter.get());
 
