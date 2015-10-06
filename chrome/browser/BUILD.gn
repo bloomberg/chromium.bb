@@ -683,7 +683,7 @@ source_set("browser") {
     ]
   }
 
-  if (!is_official_build) {
+  if (!is_chrome_branded) {
     sources += [
       "search/local_files_ntp_source.cc",
       "search/local_files_ntp_source.h",

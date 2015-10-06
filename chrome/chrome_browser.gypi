@@ -3414,7 +3414,7 @@
             'browser/media/router/media_router.gyp:media_router',
           ],
         }],
-        ['buildtype!="Official"', {
+        ['branding!="Chrome"', {
           'sources': [
             'browser/search/local_files_ntp_source.cc',
             'browser/search/local_files_ntp_source.h',
