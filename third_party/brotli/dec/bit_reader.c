@@ -15,43 +15,42 @@
 
 /* Bit reading helpers */
 
-#include <assert.h>
 #include <stdlib.h>
 
 #include "./bit_reader.h"
+#include "./port.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
-void BrotliInitBitReader(BrotliBitReader* const br,
-                         BrotliInput input, int finish) {
-  assert(br != NULL);
+void BrotliInitBitReader(BrotliBitReader* const br, BrotliInput input) {
+  BROTLI_DCHECK(br != NULL);
 
-  br->finish_ = finish;
-  br->tmp_bytes_read_ = 0;
-
-  br->buf_ptr_ = br->buf_;
   br->input_ = input;
   br->val_ = 0;
-  br->pos_ = 0;
-  br->bit_pos_ = 0;
-  br->bit_end_pos_ = 0;
+  br->bit_pos_ = sizeof(br->val_) << 3;
+  br->avail_in = 0;
   br->eos_ = 0;
+  br->next_in = br->buf_;
 }
 
-
 int BrotliWarmupBitReader(BrotliBitReader* const br) {
-  size_t i;
-
-  if (!BrotliReadMoreInput(br)) {
-    return 0;
+  size_t aligned_read_mask = (sizeof(br->val_) >> 1) - 1;
+  /* Fixing alignment after unaligned BrotliFillWindow would result accumulator
+     overflow. If unalignment is caused by BrotliSafeReadBits, then there is
+     enough space in accumulator to fix aligment. */
+  if (!BROTLI_ALIGNED_READ) {
+    aligned_read_mask = 0;
   }
-  for (i = 0; i < sizeof(br->val_); ++i) {
-    br->val_ |= ((uint64_t)br->buf_[br->pos_]) << (8 * i);
-    ++br->pos_;
+  while (br->bit_pos_ == (sizeof(br->val_) << 3) ||
+      (((size_t)br->next_in) & aligned_read_mask) != 0) {
+    if (!br->avail_in) {
+      return 0;
+    }
+    BrotliPullByte(br);
   }
-  return (br->bit_end_pos_ > 0);
+  return 1;
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)

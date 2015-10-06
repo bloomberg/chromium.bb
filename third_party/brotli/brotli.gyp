@@ -16,12 +16,12 @@
         'dec/context.h',
         'dec/decode.c',
         'dec/decode.h',
+        'dec/dictionary.c',
         'dec/dictionary.h',
         'dec/huffman.c',
         'dec/huffman.h',
+        'dec/port.h',
         'dec/prefix.h',
-        'dec/safe_malloc.c',
-        'dec/safe_malloc.h',
         'dec/state.c',
         'dec/state.h',
         'dec/streams.c',
@@ -29,14 +29,6 @@
         'dec/transform.h',
         'dec/types.h',
       ],
-      'variables': {
-        'clang_warning_flags': [
-          # IncrementalCopyFastPath in decode.c can be unused.
-          # (The file looks very different upstream, this is probably no longer
-          # needed after rolling brotli the next time.)
-          '-Wno-unused-function',
-        ],
-      },
       'conditions': [
         ['os_posix==1 and (target_arch=="arm" or target_arch=="armv7" or target_arch=="arm64")', {
           'cflags!': ['-Os'],

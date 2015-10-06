@@ -2,15 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-config("brotli_warnings") {
-  if (is_clang) {
-    # IncrementalCopyFastPath in decode.c can be unused.
-    # (The file looks very different upstream, this is probably no longer
-    # needed after rolling brotli the next time.)
-    cflags = [ "-Wno-unused-function" ]
-  }
-}
-
 source_set("brotli") {
   sources = [
     "dec/bit_reader.c",
@@ -18,12 +9,12 @@ source_set("brotli") {
     "dec/context.h",
     "dec/decode.c",
     "dec/decode.h",
+    "dec/dictionary.c",
     "dec/dictionary.h",
     "dec/huffman.c",
     "dec/huffman.h",
+    "dec/port.h",
     "dec/prefix.h",
-    "dec/safe_malloc.c",
-    "dec/safe_malloc.h",
     "dec/state.c",
     "dec/state.h",
     "dec/streams.c",
@@ -33,12 +24,7 @@ source_set("brotli") {
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-
-    # Must be after no_chromium_code for warning flags to be ordered correctly.
-    ":brotli_warnings",
-  ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   # Since we are never debug brotli, freeze the optimizations to -O2.
   configs -= [ "//build/config/compiler:default_optimization" ]
