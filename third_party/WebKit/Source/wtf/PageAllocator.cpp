@@ -58,8 +58,8 @@
 
 namespace WTF {
 
-// This simple internal function wraps the OS-specific page allocation call so
-// that it behaves consistently: the address is a hint and if it cannot be used,
+// This internal function wraps the OS-specific page allocation call so that
+// it behaves consistently: the address is a hint and if it cannot be used,
 // the allocation will be placed elsewhere.
 static void* systemAllocPages(void* addr, size_t len, PageAccessibilityConfiguration pageAccessibility)
 {
@@ -67,7 +67,7 @@ static void* systemAllocPages(void* addr, size_t len, PageAccessibilityConfigura
     ASSERT(!(reinterpret_cast<uintptr_t>(addr) & kPageAllocationGranularityOffsetMask));
     void* ret;
 #if OS(WIN)
-    int accessFlag = pageAccessibility == PageAccessible ? PAGE_READWRITE : PAGE_NOACCESS;
+    DWORD accessFlag = pageAccessibility == PageAccessible ? PAGE_READWRITE : PAGE_NOACCESS;
     ret = VirtualAlloc(addr, len, MEM_RESERVE | MEM_COMMIT, accessFlag);
     if (!ret)
         ret = VirtualAlloc(0, len, MEM_RESERVE | MEM_COMMIT, accessFlag);
@@ -80,29 +80,6 @@ static void* systemAllocPages(void* addr, size_t len, PageAccessibilityConfigura
     return ret;
 }
 
-static bool trimMapping(void* baseAddr, size_t baseLen, void* trimAddr, size_t trimLen)
-{
-#if OS(WIN)
-    return false;
-#else
-    char* basePtr = static_cast<char*>(baseAddr);
-    char* trimPtr = static_cast<char*>(trimAddr);
-    ASSERT(trimPtr >= basePtr);
-    ASSERT(trimPtr + trimLen <= basePtr + baseLen);
-    size_t preLen = trimPtr - basePtr;
-    if (preLen) {
-        int ret = munmap(basePtr, preLen);
-        RELEASE_ASSERT(!ret);
-    }
-    size_t postLen = (basePtr + baseLen) - (trimPtr + trimLen);
-    if (postLen) {
-        int ret = munmap(trimPtr + trimLen, postLen);
-        RELEASE_ASSERT(!ret);
-    }
-    return true;
-#endif
-}
-
 void* allocPages(void* addr, size_t len, size_t align, PageAccessibilityConfiguration pageAccessibility)
 {
     ASSERT(len >= kPageAllocationGranularity);
@@ -110,8 +87,8 @@ void* allocPages(void* addr, size_t len, size_t align, PageAccessibilityConfigur
     ASSERT(align >= kPageAllocationGranularity);
     ASSERT(!(align & kPageAllocationGranularityOffsetMask));
     ASSERT(!(reinterpret_cast<uintptr_t>(addr) & kPageAllocationGranularityOffsetMask));
-    size_t alignOffsetMask = align - 1;
-    size_t alignBaseMask = ~alignOffsetMask;
+    uintptr_t alignOffsetMask = align - 1;
+    uintptr_t alignBaseMask = ~alignOffsetMask;
     ASSERT(!(reinterpret_cast<uintptr_t>(addr) & alignOffsetMask));
     // If the client passed null as the address, choose a good one.
     if (!addr) {
@@ -119,50 +96,70 @@ void* allocPages(void* addr, size_t len, size_t align, PageAccessibilityConfigur
         addr = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(addr) & alignBaseMask);
     }
 
-    // The common case, which is also the least work we can do, is that the
-    // address and length are suitable. Just try it.
-    void* ret = systemAllocPages(addr, len, pageAccessibility);
-    // If the alignment is to our liking, we're done.
-    if (!ret || !(reinterpret_cast<uintptr_t>(ret) & alignOffsetMask))
-        return ret;
-
-    // Annoying. Unmap and map a larger range to be sure to succeed on the
-    // second, slower attempt.
-    freePages(ret, len);
-
-    size_t tryLen = len + (align - kPageAllocationGranularity);
-    RELEASE_ASSERT(tryLen > len);
-
-    // We loop to cater for the unlikely case where another thread maps on top
-    // of the aligned location we choose.
-    int count = 0;
-    while (count++ < 100) {
-        ret = systemAllocPages(addr, tryLen, pageAccessibility);
-        if (!ret)
-            return 0;
-        // We can now try and trim out a subset of the mapping.
-        addr = reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(ret) + alignOffsetMask) & alignBaseMask);
-
-        // On POSIX systems, we can trim the oversized mapping to fit exactly.
-        // This will always work on POSIX systems.
-        if (trimMapping(ret, tryLen, addr, len))
-            return addr;
-
-        // On Windows, you can't trim an existing mapping so we unmap and remap
-        // a subset. We used to do for all platforms, but OSX 10.8 has a
-        // broken mmap() that ignores address hints for valid, unused addresses.
-        freePages(ret, tryLen);
-        ret = systemAllocPages(addr, len, pageAccessibility);
-        if (ret == addr || !ret)
+    // First try to force an exact-size, aligned allocation from our random base.
+    for (int count = 0; count < 3; ++count) {
+        void* ret = systemAllocPages(addr, len, pageAccessibility);
+        // If the alignment is to our liking, we're done.
+        if (!(reinterpret_cast<uintptr_t>(ret) & alignOffsetMask))
             return ret;
-
-        // Unlikely race / collision. Do the simple thing and just start again.
+        // We failed, so we retry another range depending on the size of our address space.
         freePages(ret, len);
+#if CPU(32BIT)
+        // Use a linear probe on 32-bit systems, where the address space tends to be cramped.
+        // This may wrap, but we'll just fall back to the guaranteed method in that case.
+        addr = reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(ret) + align) & alignBaseMask);
+#else
+        // Keep trying random addresses on systems that have a large address space.
         addr = getRandomPageBase();
         addr = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(addr) & alignBaseMask);
+#endif
     }
-    IMMEDIATE_CRASH();
-    return 0;
+
+    // Map a larger allocation so we can force alignment, but continuing randomizing only on
+    // 64-bit POSIX.
+    size_t tryLen = len + (align - kPageAllocationGranularity);
+    RELEASE_ASSERT(tryLen > len);
+    while (true) {
+        addr = nullptr;
+#if OS(POSIX) && CPU(32BIT)
+        addr = getRandomPageBase();
+#endif
+        void* ret = systemAllocPages(addr, tryLen, pageAccessibility);
+        if (!ret)
+            return nullptr;
+        size_t preSlack = reinterpret_cast<uintptr_t>(ret) & alignOffsetMask;
+        preSlack = preSlack ? align - preSlack : 0;
+        size_t postSlack = tryLen - preSlack - len;
+        ASSERT(preSlack || postSlack);
+        ASSERT(preSlack < tryLen);
+        ASSERT(postSlack < tryLen);
+#if OS(POSIX) // On POSIX we can resize the allocation run.
+        if (preSlack) {
+            int res = munmap(ret, preSlack);
+            RELEASE_ASSERT(!res);
+            ret = addr = reinterpret_cast<char*>(ret) + preSlack;
+        }
+        if (postSlack) {
+            int res = munmap(reinterpret_cast<char*>(ret) + len, postSlack);
+            RELEASE_ASSERT(!res);
+        }
+#else // On Windows we can't resize the allocation run.
+        if (preSlack || postSlack) {
+            addr = reinterpret_cast<char*>(ret) + preSlack;
+            freePages(ret, len);
+            ret = systemAllocPages(addr, len, pageAccessibility);
+            if (!ret)
+                return nullptr;
+        }
+#endif
+        if (ret == addr) {
+            ASSERT(!(reinterpret_cast<uintptr_t>(ret) & alignOffsetMask));
+            return ret;
+        }
+        freePages(ret, len);
+    }
+
+    return nullptr;
 }
 
 void freePages(void* addr, size_t len)
