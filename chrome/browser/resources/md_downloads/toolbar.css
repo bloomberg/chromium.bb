@@ -26,6 +26,10 @@
   width: var(--downloads-item-width);
 }
 
+:host-context(.loading) #actions {
+  visibility: hidden;
+}
+
 :host(:not([downloads-showing])) #actions {
   justify-content: center;
 }
