@@ -139,12 +139,15 @@ static void Start(Options *options) {
   parameters["debug_file"] = module_parts[4];
   parameters["code_file"] = module_parts[4];
   parameters["debug_identifier"] = compacted_id;
+
+  std::map<string, string> files;
+  files["symbol_file"] = options->symbolsPath;
+
   string response, error;
   long response_code;
   bool success = HTTPUpload::SendRequest(options->uploadURLStr,
                                          parameters,
-                                         options->symbolsPath,
-                                         "symbol_file",
+                                         files,
                                          options->proxy,
                                          options->proxy_user_pwd,
                                          "",
