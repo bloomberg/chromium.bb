@@ -109,6 +109,10 @@ struct event_base *current_base = NULL;
 extern struct event_base *evsignal_base;
 static int use_monotonic = 1;
 
+/* Handle signals - This is a deprecated interface */
+int (*event_sigcb)(void);		/* Signal callback when gotsig is set */
+volatile sig_atomic_t event_gotsig;	/* Set in signal handler */
+
 /* Prototypes */
 static void	event_queue_insert(struct event_base *, struct event *, int);
 static void	event_queue_remove(struct event_base *, struct event *, int);
@@ -163,6 +167,9 @@ event_base_new(void)
 
 	if ((base = calloc(1, sizeof(struct event_base))) == NULL)
 		event_err(1, "%s: calloc", __func__);
+
+	event_sigcb = NULL;
+	event_gotsig = 0;
 
 	gettime(base, &base->event_tv);
 	
@@ -260,9 +267,14 @@ event_reinit(struct event_base *base)
 	int res = 0;
 	struct event *ev;
 
+#if 0
+	/* Right now, reinit always takes effect, since even if the
+	   backend doesn't require it, the signal socketpair code does.
+	 */
 	/* check if this event mechanism requires reinit */
 	if (!evsel->need_reinit)
 		return (0);
+#endif
 
 	/* prevent internal delete */
 	if (base->sig.ev_signal_added) {
@@ -275,7 +287,7 @@ event_reinit(struct event_base *base)
 			    EVLIST_ACTIVE);
 		base->sig.ev_signal_added = 0;
 	}
-	
+
 	if (base->evsel->dealloc != NULL)
 		base->evsel->dealloc(base, base->evbase);
 	evbase = base->evbase = evsel->init(base);
@@ -305,7 +317,10 @@ event_base_priority_init(struct event_base *base, int npriorities)
 	if (base->event_count_active)
 		return (-1);
 
-	if (base->nactivequeues && npriorities != base->nactivequeues) {
+	if (npriorities == base->nactivequeues)
+		return (0);
+
+	if (base->nactivequeues) {
 		for (i = 0; i < base->nactivequeues; ++i) {
 			free(base->activequeues[i]);
 		}
@@ -371,7 +386,7 @@ event_process_active(struct event_base *base)
 			ncalls--;
 			ev->ev_ncalls = ncalls;
 			(*ev->ev_callback)((int)ev->ev_fd, ev->ev_res, ev->ev_arg);
-			if (base->event_break)
+			if (event_gotsig || base->event_break)
 				return;
 		}
 	}
@@ -474,6 +489,18 @@ event_base_loop(struct event_base *base, int flags)
 		if (base->event_break) {
 			base->event_break = 0;
 			break;
+		}
+
+		/* You cannot use this interface for multi-threaded apps */
+		while (event_gotsig) {
+			event_gotsig = 0;
+			if (event_sigcb) {
+				res = (*event_sigcb)();
+				if (res == -1) {
+					errno = EINTR;
+					return (-1);
+				}
+			}
 		}
 
 		timeout_correct(base, &tv);

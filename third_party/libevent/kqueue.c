@@ -63,6 +63,7 @@
 #include "event.h"
 #include "event-internal.h"
 #include "log.h"
+#include "evsignal.h"
 
 #define EVLIST_X_KQINKERNEL	0x1000
 
@@ -140,6 +141,7 @@ kq_init(struct event_base *base)
 	}
 
 	/* Check for Mac OS X kqueue bug. */
+	memset(&kqueueop->changes[0], 0, sizeof kqueueop->changes[0]);
 	kqueueop->changes[0].ident = -1;
 	kqueueop->changes[0].filter = EVFILT_READ;
 	kqueueop->changes[0].flags = EV_ADD;
@@ -439,12 +441,15 @@ kq_dealloc(struct event_base *base, void *arg)
 {
 	struct kqop *kqop = arg;
 
+	evsignal_dealloc(base);
+
 	if (kqop->changes)
 		free(kqop->changes);
 	if (kqop->events)
 		free(kqop->events);
 	if (kqop->kq >= 0 && kqop->pid == getpid())
 		close(kqop->kq);
+
 	memset(kqop, 0, sizeof(struct kqop));
 	free(kqop);
 }
