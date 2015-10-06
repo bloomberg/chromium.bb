@@ -238,6 +238,11 @@
       }
     ]
   },
+  "Linux Builder": {
+    "additional_compile_targets": [
+      "mandoline:all"
+    ]
+  },
   "Linux GN": {
     "additional_compile_targets": [
       "mandoline:all"
