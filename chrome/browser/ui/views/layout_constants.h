@@ -8,6 +8,9 @@
 #include "ui/gfx/geometry/insets.h"
 
 enum LayoutConstant {
+  // Horizontal padding applied between items of icon-label views.
+  ICON_LABEL_VIEW_INTERNAL_PADDING,
+
   // Additional horizontal padding applied on the trailing edge of icon-label
   // views.
   ICON_LABEL_VIEW_TRAILING_PADDING,

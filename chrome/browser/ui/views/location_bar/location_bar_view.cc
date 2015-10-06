@@ -215,17 +215,20 @@ void LocationBarView::Init() {
   // Determine the font for use inside the bubbles.  The bubble background
   // images have 1 px thick edges, which we don't want to overlap.
   const int kBubbleInteriorVerticalPadding = 1;
-  const int bubble_vertical_padding =
-      (GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING) +
-          kBubbleInteriorVerticalPadding) * 2;
-  const gfx::FontList bubble_font_list(font_list.DeriveWithHeightUpperBound(
-      location_height - bubble_vertical_padding));
+  const int bubble_padding =
+      GetVerticalEdgeThickness() +
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING) +
+      kBubbleInteriorVerticalPadding;
+  const int bubble_height = GetPreferredSize().height() - (bubble_padding * 2);
+  gfx::FontList bubble_font_list =
+      font_list.DeriveWithHeightUpperBound(bubble_height);
 
   const SkColor background_color =
       GetColor(SecurityStateModel::NONE, LocationBarView::BACKGROUND);
-  ev_bubble_view_ = new EVBubbleView(
-      bubble_font_list, GetColor(SecurityStateModel::EV_SECURE, SECURITY_TEXT),
-      background_color, this);
+  const SkColor ev_text_color =
+      GetColor(SecurityStateModel::EV_SECURE, SECURITY_TEXT);
+  ev_bubble_view_ =
+      new EVBubbleView(bubble_font_list, ev_text_color, background_color, this);
   ev_bubble_view_->set_drag_controller(this);
   AddChildView(ev_bubble_view_);
 
@@ -250,9 +253,12 @@ void LocationBarView::Init() {
   ime_inline_autocomplete_view_->SetVisible(false);
   AddChildView(ime_inline_autocomplete_view_);
 
-  const SkColor text_color = GetColor(SecurityStateModel::NONE, TEXT);
+  const SkColor selected_text_color = GetColor(
+      SecurityStateModel::NONE, ui::MaterialDesignController::IsModeMaterial()
+                                    ? KEYWORD_SEARCH_TEXT
+                                    : TEXT);
   selected_keyword_view_ = new SelectedKeywordView(
-      bubble_font_list, text_color, background_color, profile());
+      bubble_font_list, selected_text_color, background_color, profile());
   AddChildView(selected_keyword_view_);
 
   suggested_text_view_ = new views::Label(base::string16(), font_list);
@@ -283,6 +289,7 @@ void LocationBarView::Init() {
   mic_search_view_->SetVisible(false);
   AddChildView(mic_search_view_);
 
+  const SkColor text_color = GetColor(SecurityStateModel::NONE, TEXT);
   for (ContentSettingsType type :
        ContentSettingBubbleModel::GetSupportedBubbleTypes()) {
     ContentSettingImageView* content_blocked_view = new ContentSettingImageView(
@@ -348,7 +355,10 @@ SkColor LocationBarView::GetColor(
       switch (security_level) {
         case SecurityStateModel::EV_SECURE:
         case SecurityStateModel::SECURE:
-          color = SkColorSetRGB(7, 149, 0);
+          if (ui::MaterialDesignController::IsModeMaterial())
+            color = SkColorSetRGB(11, 128, 67);
+          else
+            color = SkColorSetRGB(7, 149, 0);
           break;
 
         case SecurityStateModel::SECURITY_POLICY_WARNING:
@@ -370,6 +380,9 @@ SkColor LocationBarView::GetColor(
       return color_utils::GetReadableColor(
           color, GetColor(security_level, BACKGROUND));
     }
+
+    case KEYWORD_SEARCH_TEXT:
+      return SkColorSetRGB(51, 103, 214);
 
     default:
       NOTREACHED();
@@ -860,6 +873,9 @@ int LocationBarView::GetHorizontalEdgeThickness() const {
 }
 
 int LocationBarView::GetVerticalEdgeThickness() const {
+  // In Material Design vertical layout disregards the border.
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return 0;
   return is_popup_mode_ ? kPopupEdgeThickness : kNormalEdgeThickness;
 }
 

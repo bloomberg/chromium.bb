@@ -8,9 +8,10 @@
 #include "ui/base/resource/material_design/material_design_controller.h"
 
 int GetLayoutConstant(LayoutConstant constant) {
+  const int kIconLabelViewInternalPadding[] = {3, 2, 2};
   const int kIconLabelViewTrailingPadding[] = {2, 8, 8};
   const int kLocationBarBubbleHorizontalPadding[] = {1, 5, 5};
-  const int kLocationBarBubbleVerticalPadding[] = {1, 3, 3};
+  const int kLocationBarBubbleVerticalPadding[] = {1, 5, 5};
   const int kLocationBarHeight[] = {0, 28, 32};
   const int kLocationBarHorizontalPadding[] = {3, 6, 6};
   const int kLocationBarVerticalPadding[] = {2, 2, 2};
@@ -35,6 +36,8 @@ int GetLayoutConstant(LayoutConstant constant) {
 
   const int mode = ui::MaterialDesignController::GetMode();
   switch (constant) {
+    case ICON_LABEL_VIEW_INTERNAL_PADDING:
+      return kIconLabelViewInternalPadding[mode];
     case ICON_LABEL_VIEW_TRAILING_PADDING:
       return kIconLabelViewTrailingPadding[mode];
     case LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING:

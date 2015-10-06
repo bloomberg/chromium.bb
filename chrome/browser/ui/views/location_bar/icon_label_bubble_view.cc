@@ -105,7 +105,7 @@ void IconLabelBubbleView::Layout() {
                              GetBubbleOuterPadding(!is_extension_icon_)),
                     0, image_->GetPreferredSize().width(), height());
 
-  const int padding = GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
+  const int padding = GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_PADDING);
   int pre_label_width =
       GetBubbleOuterPadding(true) + (image_width ? (image_width + padding) : 0);
   label_->SetBounds(pre_label_width, 0,
@@ -117,7 +117,7 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
   gfx::Size size(image_->GetPreferredSize());
   if (ShouldShowBackground()) {
     const int image_width = image_->GetPreferredSize().width();
-    const int padding = GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
+    const int padding = GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_PADDING);
     const int non_label_width =
         GetBubbleOuterPadding(true) +
         (image_width ? (image_width + padding) : 0) +
