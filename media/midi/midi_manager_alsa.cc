@@ -155,30 +155,9 @@ MidiManagerAlsa::MidiManagerAlsa()
   snd_midi_event_no_status(decoder_.get(), 1);
 }
 
-MidiManagerAlsa::~MidiManagerAlsa() {
-  // Tell the event thread it will soon be time to shut down. This gives
-  // us assurance the thread will stop in case the SND_SEQ_EVENT_CLIENT_EXIT
-  // message is lost.
-  {
-    base::AutoLock lock(shutdown_lock_);
-    event_thread_shutdown_ = true;
-  }
-
-  // Stop the send thread.
-  send_thread_.Stop();
-
-  // Close the out client. This will trigger the event thread to stop,
-  // because of SND_SEQ_EVENT_CLIENT_EXIT.
-  if (out_client_.get())
-    snd_seq_close(out_client_.release());
-
-  // Wait for the event thread to stop.
-  event_thread_.Stop();
-}
+MidiManagerAlsa::~MidiManagerAlsa() = default;
 
 void MidiManagerAlsa::StartInitialization() {
-  // TODO(agoode): Move off I/O thread. See http://crbug.com/374341.
-
   // Create client handles.
   snd_seq_t* in_client;
   int err =
@@ -275,11 +254,31 @@ void MidiManagerAlsa::StartInitialization() {
   CompleteInitialization(Result::OK);
 }
 
+void MidiManagerAlsa::Finalize() {
+  // Tell the event thread it will soon be time to shut down. This gives
+  // us assurance the thread will stop in case the SND_SEQ_EVENT_CLIENT_EXIT
+  // message is lost.
+  {
+    base::AutoLock lock(shutdown_lock_);
+    event_thread_shutdown_ = true;
+  }
+
+  // Stop the send thread.
+  send_thread_.Stop();
+
+  // Close the out client. This will trigger the event thread to stop,
+  // because of SND_SEQ_EVENT_CLIENT_EXIT.
+  if (out_client_.get())
+    snd_seq_close(out_client_.release());
+
+  // Wait for the event thread to stop.
+  event_thread_.Stop();
+}
+
 void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
                                            uint32 port_index,
                                            const std::vector<uint8>& data,
                                            double timestamp) {
-  // Not correct right now. http://crbug.com/374341.
   if (!send_thread_.IsRunning())
     send_thread_.Start();
 
