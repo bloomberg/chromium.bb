@@ -1969,7 +1969,10 @@ def BuildStandaloneArchive(archive_dir, image_dir, artifact_info):
     A KeyError is a required field is missing from artifact_info.
   """
   if 'archive' not in artifact_info:
-    # Nothing to do, just return the list as-is.
+    # Copy the file in 'paths' as is to the archive directory.
+    if len(artifact_info['paths']) > 1:
+      raise ValueError('default archive type does not support multiple inputs')
+    shutil.copy(os.path.join(image_dir, artifact_info['paths'][0]), archive_dir)
     return artifact_info['paths']
 
   inputs = artifact_info['paths']
