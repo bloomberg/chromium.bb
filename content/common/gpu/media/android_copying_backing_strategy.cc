@@ -29,7 +29,8 @@ const static GLfloat kIdentityMatrix[16] = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
                                             0.0f, 0.0f, 0.0f, 1.0f};
 
 AndroidCopyingBackingStrategy::AndroidCopyingBackingStrategy()
-    : state_provider_(nullptr) {}
+    : state_provider_(nullptr)
+    , surface_texture_id_(0) {}
 
 AndroidCopyingBackingStrategy::~AndroidCopyingBackingStrategy() {}
 
@@ -42,6 +43,9 @@ void AndroidCopyingBackingStrategy::Cleanup() {
   DCHECK(state_provider_->ThreadChecker().CalledOnValidThread());
   if (copier_)
     copier_->Destroy();
+
+  if (surface_texture_id_)
+    glDeleteTextures(1, &surface_texture_id_);
 }
 
 uint32 AndroidCopyingBackingStrategy::GetNumPictureBuffers() const {
@@ -52,7 +56,25 @@ uint32 AndroidCopyingBackingStrategy::GetTextureTarget() const {
   return GL_TEXTURE_2D;
 }
 
-void AndroidCopyingBackingStrategy::AssignCurrentSurfaceToPictureBuffer(
+scoped_refptr<gfx::SurfaceTexture>
+AndroidCopyingBackingStrategy::CreateSurfaceTexture() {
+  glGenTextures(1, &surface_texture_id_);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_EXTERNAL_OES, surface_texture_id_);
+
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  state_provider_->GetGlDecoder()->RestoreTextureUnitBindings(0);
+  state_provider_->GetGlDecoder()->RestoreActiveTexture();
+
+  surface_texture_ = gfx::SurfaceTexture::Create(surface_texture_id_);
+
+  return surface_texture_;
+}
+
+void AndroidCopyingBackingStrategy::UseCodecBufferForPictureBuffer(
     int32 codec_buf_index,
     const media::PictureBuffer& picture_buffer) {
   // Make sure that the decoder is available.
@@ -83,14 +105,13 @@ void AndroidCopyingBackingStrategy::AssignCurrentSurfaceToPictureBuffer(
                                                           true);
   }
 
-  gfx::SurfaceTexture* surface_texture = state_provider_->GetSurfaceTexture();
   {
     TRACE_EVENT0("media", "AVDA::UpdateTexImage");
-    surface_texture->UpdateTexImage();
+    surface_texture_->UpdateTexImage();
   }
 
   float transfrom_matrix[16];
-  surface_texture->GetTransformMatrix(transfrom_matrix);
+  surface_texture_->GetTransformMatrix(transfrom_matrix);
 
   uint32 picture_buffer_texture_id = picture_buffer.texture_id();
 
@@ -112,7 +133,7 @@ void AndroidCopyingBackingStrategy::AssignCurrentSurfaceToPictureBuffer(
   // instead of using default matrix crbug.com/226218.
   copier_->DoCopyTextureWithTransform(
       state_provider_->GetGlDecoder(), GL_TEXTURE_EXTERNAL_OES,
-      state_provider_->GetSurfaceTextureId(), picture_buffer_texture_id,
+      surface_texture_id_, picture_buffer_texture_id,
       state_provider_->GetSize().width(), state_provider_->GetSize().height(),
       false, false, false, kIdentityMatrix);
 }

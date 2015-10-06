@@ -35,8 +35,6 @@ class AndroidVideoDecodeAcceleratorStateProvider {
   // Various handy getters.
   virtual const gfx::Size& GetSize() const = 0;
   virtual const base::ThreadChecker& ThreadChecker() const = 0;
-  virtual gfx::SurfaceTexture* GetSurfaceTexture() const = 0;
-  virtual uint32 GetSurfaceTextureId() const = 0;
   virtual gpu::gles2::GLES2Decoder* GetGlDecoder() const = 0;
   virtual media::VideoCodecBridge* GetMediaCodec() = 0;
 

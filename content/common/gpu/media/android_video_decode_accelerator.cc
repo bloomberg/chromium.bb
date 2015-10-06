@@ -77,7 +77,6 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       make_context_current_(make_context_current),
       codec_(media::kCodecH264),
       state_(NO_ERROR),
-      surface_texture_id_(0),
       picturebuffers_requested_(false),
       gl_decoder_(decoder),
       strategy_(strategy.Pass()),
@@ -128,20 +127,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
     LOG(ERROR) << "Failed to get gles2 decoder instance.";
     return false;
   }
-  glGenTextures(1, &surface_texture_id_);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, surface_texture_id_);
-
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES,
-                  GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES,
-                  GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  gl_decoder_->RestoreTextureUnitBindings(0);
-  gl_decoder_->RestoreActiveTexture();
-
-  surface_texture_ = gfx::SurfaceTexture::Create(surface_texture_id_);
+  surface_texture_ = strategy_->CreateSurfaceTexture();
 
   if (!ConfigureMediaCodec()) {
     LOG(ERROR) << "Failed to create MediaCodec instance.";
@@ -358,7 +344,7 @@ void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
 
   // Connect the PictureBuffer to the decoded frame, via whatever
   // mechanism the strategy likes.
-  strategy_->AssignCurrentSurfaceToPictureBuffer(codec_buffer_index, i->second);
+  strategy_->UseCodecBufferForPictureBuffer(codec_buffer_index, i->second);
 
   // TODO(henryhsu): Pass (0, 0) as visible size will cause several test
   // cases failed. We should make sure |size_| is coded size or visible size.
@@ -513,15 +499,12 @@ void AndroidVideoDecodeAccelerator::Reset() {
 void AndroidVideoDecodeAccelerator::Destroy() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  strategy_->Cleanup();
-
   weak_this_factory_.InvalidateWeakPtrs();
   if (media_codec_) {
     io_timer_.Stop();
     media_codec_->Stop();
   }
-  if (surface_texture_id_)
-    glDeleteTextures(1, &surface_texture_id_);
+  strategy_->Cleanup();
   delete this;
 }
 
@@ -536,14 +519,6 @@ const gfx::Size& AndroidVideoDecodeAccelerator::GetSize() const {
 const base::ThreadChecker& AndroidVideoDecodeAccelerator::ThreadChecker()
     const {
   return thread_checker_;
-}
-
-gfx::SurfaceTexture* AndroidVideoDecodeAccelerator::GetSurfaceTexture() const {
-  return surface_texture_.get();
-}
-
-uint32 AndroidVideoDecodeAccelerator::GetSurfaceTextureId() const {
-  return surface_texture_id_;
 }
 
 gpu::gles2::GLES2Decoder* AndroidVideoDecodeAccelerator::GetGlDecoder() const {

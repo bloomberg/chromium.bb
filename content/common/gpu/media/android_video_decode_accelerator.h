@@ -55,8 +55,12 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     // Return the GL texture target that the PictureBuffer textures use.
     virtual uint32 GetTextureTarget() const = 0;
 
-    // Use the provided PictureBuffer to hold the current surface.
-    virtual void AssignCurrentSurfaceToPictureBuffer(
+    // Create and return a surface texture for the MediaCodec to use.
+    virtual scoped_refptr<gfx::SurfaceTexture> CreateSurfaceTexture() = 0;
+
+    // Make the provided PictureBuffer draw the image that is represented by
+    // the decoded output buffer at codec_buffer_index.
+    virtual void UseCodecBufferForPictureBuffer(
         int32 codec_buffer_index,
         const media::PictureBuffer&) = 0;
   };
@@ -82,8 +86,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // AndroidVideoDecodeStateProvider
   const gfx::Size& GetSize() const override;
   const base::ThreadChecker& ThreadChecker() const override;
-  gfx::SurfaceTexture* GetSurfaceTexture() const override;
-  uint32 GetSurfaceTextureId() const override;
   gpu::gles2::GLES2Decoder* GetGlDecoder() const override;
   media::VideoCodecBridge* GetMediaCodec() override;
   void PostError(const ::tracked_objects::Location& from_here,
@@ -173,9 +175,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // A container of texture. Used to set a texture to |media_codec_|.
   scoped_refptr<gfx::SurfaceTexture> surface_texture_;
-
-  // The texture id which is set to |surface_texture_|.
-  uint32 surface_texture_id_;
 
   // Set to true after requesting picture buffers to the client.
   bool picturebuffers_requested_;
