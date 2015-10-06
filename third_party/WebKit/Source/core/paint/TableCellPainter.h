@@ -6,6 +6,7 @@
 #define TableCellPainter_h
 
 #include "core/style/CollapsedBorderValue.h"
+#include "platform/graphics/paint/DisplayItem.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -26,7 +27,7 @@ public:
     void paint(const PaintInfo&, const LayoutPoint&);
 
     void paintCollapsedBorders(const PaintInfo&, const LayoutPoint&, const CollapsedBorderValue&);
-    void paintBackgroundsBehindCell(const PaintInfo&, const LayoutPoint&, const LayoutObject* backgroundObject);
+    void paintBackgroundsBehindCell(const PaintInfo&, const LayoutPoint&, const LayoutObject* backgroundObject, DisplayItem::Type);
     void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintMask(const PaintInfo&, const LayoutPoint& paintOffset);
 

@@ -22,13 +22,8 @@ void TableRowPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     for (LayoutTableCell* cell = m_layoutTableRow.firstCell(); cell; cell = cell->nextCell()) {
         // Paint the row background behind the cell.
         if (paintInfo.phase == PaintPhaseBlockBackground || paintInfo.phase == PaintPhaseChildBlockBackground) {
-            if (m_layoutTableRow.hasBackground()) {
-                TableCellPainter tableCellPainter(*cell);
-                if (!LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, *cell, DisplayItem::TableCellBackgroundFromSelfPaintingRow, paintOffset)) {
-                    LayoutObjectDrawingRecorder recorder(*paintInfo.context, *cell, DisplayItem::TableCellBackgroundFromSelfPaintingRow, tableCellPainter.paintBounds(paintOffset, TableCellPainter::AddOffsetFromParent), paintOffset);
-                    tableCellPainter.paintBackgroundsBehindCell(paintInfo, paintOffset, &m_layoutTableRow);
-                }
-            }
+            if (m_layoutTableRow.hasBackground())
+                TableCellPainter(*cell).paintBackgroundsBehindCell(paintInfo, paintOffset, &m_layoutTableRow, DisplayItem::TableCellBackgroundFromRow);
         }
 
         if (!cell->hasSelfPaintingLayer())

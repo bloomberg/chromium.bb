@@ -38,7 +38,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromContainers));
+        TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromRow));
 
     PaintLayerPaintingInfo paintingInfo1(&rootLayer, LayoutRect(0, 300, 200, 200), GlobalPaintNormalPhase, LayoutSize());
     PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo1, PaintLayerPaintingCompositingAllPhases);
@@ -46,7 +46,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromContainers));
+        TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromRow));
 }
 
 } // namespace blink
