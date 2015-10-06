@@ -30,6 +30,22 @@ source_set("message_loop") {
   ]
 }
 
+source_set("key_systems") {
+  sources = [
+    "key_systems_common.cc",
+    "key_systems_common.h",
+  ]
+
+  configs += [ "//chromecast:config" ]
+
+  deps = [
+    "//base",
+    "//chromecast/public/media",
+    "//media",
+    "//third_party/widevine/cdm:version_h",
+  ]
+}
+
 # TODO(slan): See if the dependency on //media can be broken.
 source_set("base") {
   sources = [
@@ -37,8 +53,6 @@ source_set("base") {
     "decrypt_context_impl.h",
     "decrypt_context_impl_clearkey.cc",
     "decrypt_context_impl_clearkey.h",
-    "key_systems_common.cc",
-    "key_systems_common.h",
     "media_caps.cc",
     "media_caps.h",
     "media_codec_support.cc",
@@ -48,8 +62,9 @@ source_set("base") {
   ]
 
   public_deps = [
-    "//chromecast/public/media",
+    ":key_systems",
     ":message_loop",
+    "//chromecast/public/media",
   ]
 
   configs += [ "//chromecast:config" ]
@@ -57,16 +72,16 @@ source_set("base") {
   deps = [
     ":libcast_media_1.0",
     "//base",
-    "//chromecast/public",
     "//crypto",
     "//crypto:platform",
     "//media",
     "//net",
-    "//third_party/widevine/cdm:version_h",
   ]
 
   if (chromecast_branding == "public") {
     sources += [ "key_systems_common_simple.cc" ]
+  } else {
+    deps += [ "//chromecast/internal/media/base" ]
   }
 }
 
