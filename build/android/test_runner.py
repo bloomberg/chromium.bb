@@ -202,7 +202,8 @@ def AddGTestOptions(parser):
   group.add_argument('-a', '--test-arguments', dest='test_arguments',
                      default='',
                      help='Additional arguments to pass to the test.')
-  group.add_argument('-t', dest='timeout', type=int, default=60,
+  group.add_argument('-t', '--shard-timeout',
+                     dest='shard_timeout', type=int, default=60,
                      help='Timeout to wait for each test '
                           '(default: %(default)s).')
   group.add_argument('--isolate_file_path',

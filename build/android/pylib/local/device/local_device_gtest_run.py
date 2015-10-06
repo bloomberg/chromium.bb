@@ -87,8 +87,12 @@ class _ApkDelegate(object):
           device.WriteFile(test_list_file.name, '\n'.join(test))
           extras[_EXTRA_TEST_LIST] = test_list_file.name
 
-        return device.StartInstrumentation(
-            self._component, extras=extras, raw=False, **kwargs)
+        try:
+          return device.StartInstrumentation(
+              self._component, extras=extras, raw=False, **kwargs)
+        except Exception:
+          device.ForceStop(self._package)
+          raise
 
   def PullAppFiles(self, device, files, directory):
     PullAppFilesImpl(device, self._package, files, directory)
@@ -232,7 +236,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
   #override
   def _RunTest(self, device, test):
     # Run the test.
-    timeout = _TEST_TIMEOUT_SECONDS * self.GetTool(device).GetTimeoutScale()
+    timeout = (self._test_instance.shard_timeout
+               * self.GetTool(device).GetTimeoutScale())
     output = self._delegate.Run(
         test, device, timeout=timeout, retries=0)
     for s in self._servers[str(device)]:

@@ -51,7 +51,8 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
     with tempfile.NamedTemporaryFile(suffix='.flags.txt') as flag_file:
       env_vars = dict(self._test_instance.extras)
       if gtest_test_instance.EXTRA_SHARD_NANO_TIMEOUT not in env_vars:
-        env_vars[gtest_test_instance.EXTRA_SHARD_NANO_TIMEOUT] = int(900e9)
+        env_vars[gtest_test_instance.EXTRA_SHARD_NANO_TIMEOUT] = int(
+            self._test_instance.shard_timeout * 1e9)
       filter_string = self._test_instance._GenerateDisabledFilterString(None)
       if filter_string:
         flag_file.write('_ --gtest_filter=%s' % filter_string)

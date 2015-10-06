@@ -136,6 +136,8 @@ class GtestTestInstance(test_instance.TestInstance):
       raise ValueError('Platform mode currently supports only 1 gtest suite')
     self._suite = args.suite_name[0]
 
+    self._shard_timeout = args.shard_timeout
+
     self._apk_path = os.path.join(
         constants.GetOutDirectory(), '%s_apk' % self._suite,
         '%s-debug.apk' % self._suite)
@@ -159,7 +161,8 @@ class GtestTestInstance(test_instance.TestInstance):
         self._extras[_EXTRA_RUN_IN_SUB_THREAD] = 1
       if self._suite in BROWSER_TEST_SUITES:
         self._extras[_EXTRA_SHARD_SIZE_LIMIT] = 1
-        self._extras[EXTRA_SHARD_NANO_TIMEOUT] = int(60e9)
+        self._extras[EXTRA_SHARD_NANO_TIMEOUT] = int(1e9 * self._shard_timeout)
+        self._shard_timeout = 900
 
     if not os.path.exists(self._exe_path):
       self._exe_path = None
@@ -348,6 +351,10 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def runner(self):
     return self._runner
+
+  @property
+  def shard_timeout(self):
+    return self._shard_timeout
 
   @property
   def suite(self):
