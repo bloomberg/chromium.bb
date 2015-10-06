@@ -23,7 +23,9 @@
             'build_irt': 0,
             'build_pnacl_newlib': 0,
             'build_nonsfi_helper': 1,
-
+            'compile_flags': [
+              '-fgnu-inline-asm',
+            ],
             'sources': [
               # This is the subset of linux build target, needed for
               # nacl_helper_nonsfi's sandbox implementation.
