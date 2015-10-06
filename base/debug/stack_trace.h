@@ -52,7 +52,7 @@ class BASE_EXPORT StackTrace {
   // Note: this function will throw an import not found (StackWalk64) exception
   // on system without dbghelp 5.1.
   StackTrace(_EXCEPTION_POINTERS* exception_pointers);
-  StackTrace(_CONTEXT* context);
+  StackTrace(const _CONTEXT* context);
 #endif
 
   // Copying and assignment are allowed with the default functions.
@@ -76,7 +76,7 @@ class BASE_EXPORT StackTrace {
 
  private:
 #if defined(OS_WIN)
-  void InitTrace(_CONTEXT* context_record);
+  void InitTrace(const _CONTEXT* context_record);
 #endif
 
   // From http://msdn.microsoft.com/en-us/library/bb204633.aspx,

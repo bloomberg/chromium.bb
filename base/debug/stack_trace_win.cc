@@ -222,11 +222,19 @@ StackTrace::StackTrace(EXCEPTION_POINTERS* exception_pointers) {
   InitTrace(exception_pointers->ContextRecord);
 }
 
-StackTrace::StackTrace(CONTEXT* context) {
+StackTrace::StackTrace(const CONTEXT* context) {
   InitTrace(context);
 }
 
-void StackTrace::InitTrace(CONTEXT* context_record) {
+void StackTrace::InitTrace(const CONTEXT* context_record) {
+  // StackWalk64 modifies the register context in place, so we have to copy it
+  // so that downstream exception handlers get the right context.  The incoming
+  // context may have had more register state (YMM, etc) than we need to unwind
+  // the stack. Typically StackWalk64 only needs integer and control registers.
+  CONTEXT context_copy;
+  memcpy(&context_copy, context_record, sizeof(context_copy));
+  context_copy.ContextFlags = CONTEXT_INTEGER | CONTEXT_CONTROL;
+
   // When walking an exception stack, we need to use StackWalk64().
   count_ = 0;
   // Initialize stack walking.
@@ -250,7 +258,7 @@ void StackTrace::InitTrace(CONTEXT* context_record) {
                      GetCurrentProcess(),
                      GetCurrentThread(),
                      &stack_frame,
-                     context_record,
+                     &context_copy,
                      NULL,
                      &SymFunctionTableAccess64,
                      &SymGetModuleBase64,
