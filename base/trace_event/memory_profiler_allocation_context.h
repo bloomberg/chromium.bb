@@ -25,14 +25,15 @@ using StackFrame = const char*;
 // the stack and guards for underflow.
 class BASE_EXPORT AllocationStack {
  public:
-  // Incrementing the iterator iterates down the stack.
-  using ConstIterator = std::vector<StackFrame>::const_reverse_iterator;
+  // Incrementing the iterator iterates up the stack, from bottom (least recent
+  // call) to top (most recent call).
+  using ConstIterator = std::vector<StackFrame>::const_iterator;
 
   AllocationStack();
   ~AllocationStack();
 
-  inline ConstIterator top() const { return stack_.rbegin(); }
-  inline ConstIterator bottom() const { return stack_.rend(); }
+  inline ConstIterator bottom() const { return stack_.begin(); }
+  inline ConstIterator top() const { return stack_.end(); }
 
   inline void push(StackFrame frame) {
     // Impose a limit on the height to verify that every push is popped, because
@@ -52,8 +53,39 @@ class BASE_EXPORT AllocationStack {
   DISALLOW_COPY_AND_ASSIGN(AllocationStack);
 };
 
-class BASE_EXPORT AllocationContext {
-  // TODO(ruuda): Fill this in a follow-up CL.
+// The backtrace in the allocation context is a snapshot of the stack. For now,
+// this is the pseudo stack where frames are created by trace event macros. In
+// the future, we might add the option to use the native call stack. In that
+// case, |Backtrace| and |AllocationContextTracker::GetContextSnapshot| might
+// have different implementations that can be selected by a compile time flag.
+
+// The number of stack frames stored in the backtrace is a trade off between
+// memory used for tracing and accuracy. Measurements done on a prototype
+// revealed that:
+//
+// - In 60 percent of the cases, stack depth <= 7.
+// - In 87 percent of the cases, stack depth <= 9.
+// - In 95 percent of the cases, stack depth <= 11.
+//
+// See the design doc (https://goo.gl/4s7v7b) for more details.
+
+// The allocation context is context metadata that is kept for every allocation
+// when heap profiling is enabled. To simplify memory management for
+// bookkeeping, this struct has a fixed size. All |const char*|s here
+// must have static lifetime.
+struct BASE_EXPORT AllocationContext {
+  struct Backtrace {
+    // Unused backtrace frames are filled with nullptr frames. If the stack is
+    // higher than what can be stored here, the bottom frames are stored. Based
+    // on the data above, a depth of 12 captures the full stack in the vast
+    // majority of the cases.
+    StackFrame frames[12];
+  } backtrace;
+
+  // There is room for two arbitrary context fields, which can be set by the
+  // |TRACE_ALLOCATION_CONTEXT| macro. A nullptr key indicates that the field is
+  // unused.
+  std::pair<const char*, const char*> fields[2];
 };
 
 // The allocation context tracker keeps track of thread-local context for heap
@@ -97,10 +129,7 @@ class BASE_EXPORT AllocationContextTracker {
   static void UnsetContextField(const char* key);
 
   // Returns a snapshot of the current thread-local context.
-  static AllocationContext GetContext();
-
-  // TODO(ruuda): Remove in a follow-up CL, this is only used for testing now.
-  static AllocationStack* GetPseudoStackForTesting();
+  static AllocationContext GetContextSnapshot();
 
   ~AllocationContextTracker();
 

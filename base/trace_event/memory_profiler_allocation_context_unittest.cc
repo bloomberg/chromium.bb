@@ -16,19 +16,24 @@ const char kDonut[] = "Donut";
 const char kEclair[] = "Eclair";
 const char kFroyo[] = "Froyo";
 const char kGingerbread[] = "Gingerbread";
-const char kHoneycomb[] = "Honeycomb";
 
-// Asserts that the fixed-size array |expected_stack| matches the pseudo
-// stack. Syntax note: |const StackFrame (&expected_stack)[N]| is the syntax
-// for "expected_stack is a reference to a const fixed-size array of StackFrame
-// of length N".
+// Returns a pointer past the end of the fixed-size array |array| of |T| of
+// length |N|, identical to C++11 |std::end|.
+template <typename T, int N>
+const T* End(const T(&array)[N]) {
+  return array + N;
+}
+
+// Asserts that the fixed-size array |expected_backtrace| matches the backtrace
+// in |AllocationContextTracker::GetContextSnapshot|.
 template <size_t N>
-void AssertPseudoStackEquals(const StackFrame(&expected_stack)[N]) {
-  auto pseudo_stack = AllocationContextTracker::GetPseudoStackForTesting();
-  auto actual = pseudo_stack->top();
-  auto actual_bottom = pseudo_stack->bottom();
-  auto expected = expected_stack;
-  auto expected_bottom = expected_stack + N;
+void AssertBacktraceEquals(const StackFrame(&expected_backtrace)[N]) {
+  AllocationContext ctx = AllocationContextTracker::GetContextSnapshot();
+
+  auto actual = ctx.backtrace.frames;
+  auto actual_bottom = End(ctx.backtrace.frames);
+  auto expected = expected_backtrace;
+  auto expected_bottom = End(expected_backtrace);
 
   // Note that this requires the pointers to be equal, this is not doing a deep
   // string comparison.
@@ -41,106 +46,109 @@ void AssertPseudoStackEquals(const StackFrame(&expected_stack)[N]) {
   ASSERT_EQ(expected, expected_bottom);
 }
 
-void AssertPseudoStackEmpty() {
-  auto pseudo_stack = AllocationContextTracker::GetPseudoStackForTesting();
-  ASSERT_EQ(pseudo_stack->top(), pseudo_stack->bottom());
+void AssertBacktraceEmpty() {
+  AllocationContext ctx = AllocationContextTracker::GetContextSnapshot();
+
+  for (StackFrame frame : ctx.backtrace.frames)
+    ASSERT_EQ(nullptr, frame);
 }
 
 class AllocationContextTest : public testing::Test {
  public:
-  void EnableTracing() {
+  void SetUp() override {
     TraceConfig config("");
     TraceLog::GetInstance()->SetEnabled(config, TraceLog::RECORDING_MODE);
     AllocationContextTracker::SetCaptureEnabled(true);
   }
 
-  void DisableTracing() {
+  void TearDown() override {
     AllocationContextTracker::SetCaptureEnabled(false);
     TraceLog::GetInstance()->SetDisabled();
   }
 };
 
+// Check that |TRACE_EVENT| macros push and pop to the pseudo stack correctly.
+// Also check that |GetContextSnapshot| fills the backtrace with null pointers
+// when the pseudo stack height is less than the capacity.
 TEST_F(AllocationContextTest, PseudoStackScopedTrace) {
   StackFrame c = kCupcake;
   StackFrame d = kDonut;
   StackFrame e = kEclair;
   StackFrame f = kFroyo;
 
-  EnableTracing();
-  AssertPseudoStackEmpty();
+  AssertBacktraceEmpty();
 
   {
     TRACE_EVENT0("Testing", kCupcake);
-    StackFrame frame_c[] = {c};
-    AssertPseudoStackEquals(frame_c);
+    StackFrame frame_c[] = {c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    AssertBacktraceEquals(frame_c);
 
     {
       TRACE_EVENT0("Testing", kDonut);
-      StackFrame frame_dc[] = {d, c};
-      AssertPseudoStackEquals(frame_dc);
+      StackFrame frame_cd[] = {c, d, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      AssertBacktraceEquals(frame_cd);
     }
 
-    AssertPseudoStackEquals(frame_c);
+    AssertBacktraceEquals(frame_c);
 
     {
       TRACE_EVENT0("Testing", kEclair);
-      StackFrame frame_ec[] = {e, c};
-      AssertPseudoStackEquals(frame_ec);
+      StackFrame frame_ce[] = {c, e, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      AssertBacktraceEquals(frame_ce);
     }
 
-    AssertPseudoStackEquals(frame_c);
+    AssertBacktraceEquals(frame_c);
   }
 
-  AssertPseudoStackEmpty();
+  AssertBacktraceEmpty();
 
   {
     TRACE_EVENT0("Testing", kFroyo);
-    StackFrame frame_f[] = {f};
-    AssertPseudoStackEquals(frame_f);
+    StackFrame frame_f[] = {f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    AssertBacktraceEquals(frame_f);
   }
 
-  AssertPseudoStackEmpty();
-  DisableTracing();
+  AssertBacktraceEmpty();
 }
 
+// Same as |PseudoStackScopedTrace|, but now test the |TRACE_EVENT_BEGIN| and
+// |TRACE_EVENT_END| macros.
 TEST_F(AllocationContextTest, PseudoStackBeginEndTrace) {
   StackFrame c = kCupcake;
   StackFrame d = kDonut;
   StackFrame e = kEclair;
   StackFrame f = kFroyo;
 
-  StackFrame frame_c[] = {c};
-  StackFrame frame_dc[] = {d, c};
-  StackFrame frame_ec[] = {e, c};
-  StackFrame frame_f[] = {f};
+  StackFrame frame_c[] = {c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  StackFrame frame_cd[] = {c, d, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  StackFrame frame_ce[] = {c, e, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  StackFrame frame_f[] = {f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-  EnableTracing();
-  AssertPseudoStackEmpty();
+  AssertBacktraceEmpty();
 
   TRACE_EVENT_BEGIN0("Testing", kCupcake);
-  AssertPseudoStackEquals(frame_c);
+  AssertBacktraceEquals(frame_c);
 
   TRACE_EVENT_BEGIN0("Testing", kDonut);
-  AssertPseudoStackEquals(frame_dc);
+  AssertBacktraceEquals(frame_cd);
   TRACE_EVENT_END0("Testing", kDonut);
 
-  AssertPseudoStackEquals(frame_c);
+  AssertBacktraceEquals(frame_c);
 
   TRACE_EVENT_BEGIN0("Testing", kEclair);
-  AssertPseudoStackEquals(frame_ec);
+  AssertBacktraceEquals(frame_ce);
   TRACE_EVENT_END0("Testing", kEclair);
 
-  AssertPseudoStackEquals(frame_c);
+  AssertBacktraceEquals(frame_c);
   TRACE_EVENT_END0("Testing", kCupcake);
 
-  AssertPseudoStackEmpty();
+  AssertBacktraceEmpty();
 
   TRACE_EVENT_BEGIN0("Testing", kFroyo);
-  AssertPseudoStackEquals(frame_f);
+  AssertBacktraceEquals(frame_f);
   TRACE_EVENT_END0("Testing", kFroyo);
 
-  AssertPseudoStackEmpty();
-  DisableTracing();
+  AssertBacktraceEmpty();
 }
 
 TEST_F(AllocationContextTest, PseudoStackMixedTrace) {
@@ -149,61 +157,69 @@ TEST_F(AllocationContextTest, PseudoStackMixedTrace) {
   StackFrame e = kEclair;
   StackFrame f = kFroyo;
 
-  StackFrame frame_c[] = {c};
-  StackFrame frame_dc[] = {d, c};
-  StackFrame frame_e[] = {e};
-  StackFrame frame_fe[] = {f, e};
+  StackFrame frame_c[] = {c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  StackFrame frame_cd[] = {c, d, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  StackFrame frame_e[] = {e, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  StackFrame frame_ef[] = {e, f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-  EnableTracing();
-  AssertPseudoStackEmpty();
+  AssertBacktraceEmpty();
 
   TRACE_EVENT_BEGIN0("Testing", kCupcake);
-  AssertPseudoStackEquals(frame_c);
+  AssertBacktraceEquals(frame_c);
 
   {
     TRACE_EVENT0("Testing", kDonut);
-    AssertPseudoStackEquals(frame_dc);
+    AssertBacktraceEquals(frame_cd);
   }
 
-  AssertPseudoStackEquals(frame_c);
+  AssertBacktraceEquals(frame_c);
   TRACE_EVENT_END0("Testing", kCupcake);
-  AssertPseudoStackEmpty();
+  AssertBacktraceEmpty();
 
   {
     TRACE_EVENT0("Testing", kEclair);
-    AssertPseudoStackEquals(frame_e);
+    AssertBacktraceEquals(frame_e);
 
     TRACE_EVENT_BEGIN0("Testing", kFroyo);
-    AssertPseudoStackEquals(frame_fe);
+    AssertBacktraceEquals(frame_ef);
     TRACE_EVENT_END0("Testing", kFroyo);
-    AssertPseudoStackEquals(frame_e);
+    AssertBacktraceEquals(frame_e);
   }
 
-  AssertPseudoStackEmpty();
-  DisableTracing();
+  AssertBacktraceEmpty();
 }
 
-TEST_F(AllocationContextTest, PseudoStackEnableWithEventInScope) {
-  StackFrame h = kHoneycomb;
+TEST_F(AllocationContextTest, BacktraceTakesTop) {
+  // Push 12 events onto the pseudo stack.
+  TRACE_EVENT0("Testing", kCupcake);
+  TRACE_EVENT0("Testing", kCupcake);
+  TRACE_EVENT0("Testing", kCupcake);
+  TRACE_EVENT0("Testing", kCupcake);
+
+  TRACE_EVENT0("Testing", kCupcake);
+  TRACE_EVENT0("Testing", kCupcake);
+  TRACE_EVENT0("Testing", kCupcake);
+  TRACE_EVENT0("Testing", kCupcake);
+
+  TRACE_EVENT0("Testing", kCupcake);
+  TRACE_EVENT0("Testing", kDonut);
+  TRACE_EVENT0("Testing", kEclair);
+  TRACE_EVENT0("Testing", kFroyo);
 
   {
     TRACE_EVENT0("Testing", kGingerbread);
-    EnableTracing();
-    AssertPseudoStackEmpty();
+    AllocationContext ctx = AllocationContextTracker::GetContextSnapshot();
 
-    {
-      TRACE_EVENT0("Testing", kHoneycomb);
-      StackFrame frame_h[] = {h};
-      AssertPseudoStackEquals(frame_h);
-    }
-
-    AssertPseudoStackEmpty();
-
-    // The pop at the end of this scope for the 'Gingerbread' frame must not
-    // cause a stack underflow.
+    // The pseudo stack relies on pointer equality, not deep string comparisons.
+    ASSERT_EQ(kCupcake, ctx.backtrace.frames[0]);
+    ASSERT_EQ(kFroyo, ctx.backtrace.frames[11]);
   }
-  AssertPseudoStackEmpty();
-  DisableTracing();
+
+  {
+    AllocationContext ctx = AllocationContextTracker::GetContextSnapshot();
+    ASSERT_EQ(kCupcake, ctx.backtrace.frames[0]);
+    ASSERT_EQ(kFroyo, ctx.backtrace.frames[11]);
+  }
 }
 
 }  // namespace trace_event

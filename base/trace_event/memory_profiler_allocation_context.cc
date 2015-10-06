@@ -4,6 +4,8 @@
 
 #include "base/trace_event/memory_profiler_allocation_context.h"
 
+#include <algorithm>
+
 #include "base/threading/thread_local_storage.h"
 
 namespace base {
@@ -60,7 +62,9 @@ void AllocationContextTracker::PushPseudoStackFrame(StackFrame frame) {
 // static
 void AllocationContextTracker::PopPseudoStackFrame(StackFrame frame) {
   auto tracker = AllocationContextTracker::GetThreadLocalTracker();
-  DCHECK_EQ(frame, *tracker->pseudo_stack_.top());
+  // Assert that pushes and pops are nested correctly. |top()| points past the
+  // top of the stack, so |top() - 1| dereferences to the topmost frame.
+  DCHECK_EQ(frame, *(tracker->pseudo_stack_.top() - 1));
   tracker->pseudo_stack_.pop();
 }
 
@@ -77,16 +81,51 @@ void AllocationContextTracker::UnsetContextField(const char* key) {
   tracker->context_.erase(key);
 }
 
-// static
-AllocationStack* AllocationContextTracker::GetPseudoStackForTesting() {
-  auto tracker = AllocationContextTracker::GetThreadLocalTracker();
-  return &tracker->pseudo_stack_;
+// Returns a pointer past the end of the fixed-size array |array| of |T| of
+// length |N|, identical to C++11 |std::end|.
+template <typename T, int N>
+T* End(T(&array)[N]) {
+  return array + N;
 }
 
 // static
-AllocationContext AllocationContextTracker::GetContext() {
-  // TODO(ruuda): Implement this in a follow-up CL.
-  return AllocationContext();
+AllocationContext AllocationContextTracker::GetContextSnapshot() {
+  AllocationContextTracker* tracker = GetThreadLocalTracker();
+  AllocationContext ctx;
+
+  // Fill the backtrace.
+  {
+    auto src = tracker->pseudo_stack_.bottom();
+    auto dst = ctx.backtrace.frames;
+    auto src_end = tracker->pseudo_stack_.top();
+    auto dst_end = End(ctx.backtrace.frames);
+
+    // Copy as much of the bottom of the pseudo stack into the backtrace as
+    // possible.
+    for (; src != src_end && dst != dst_end; src++, dst++)
+      *dst = *src;
+
+    // If there is room for more, fill the remaining slots with empty frames.
+    std::fill(dst, dst_end, nullptr);
+  }
+
+  // Fill the context fields.
+  {
+    auto src = tracker->context_.begin();
+    auto dst = ctx.fields;
+    auto src_end = tracker->context_.end();
+    auto dst_end = End(ctx.fields);
+
+    // Copy as much (key, value) pairs as possible.
+    for (; src != src_end && dst != dst_end; src++, dst++)
+      *dst = *src;
+
+    // If there is room for more, fill the remaining slots with nullptr keys.
+    for (; dst != dst_end; dst++)
+      dst->first = nullptr;
+  }
+
+  return ctx;
 }
 
 }  // namespace trace_event
