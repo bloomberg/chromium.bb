@@ -56,12 +56,12 @@ bool FEBlend::setBlendMode(WebBlendMode mode)
     return true;
 }
 
-PassRefPtr<SkImageFilter> FEBlend::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEBlend::createImageFilter(SkiaImageFilterBuilder& builder)
 {
-    RefPtr<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
-    RefPtr<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
+    RefPtr<SkImageFilter> foreground(builder.build(inputEffect(0), operatingColorSpace()));
+    RefPtr<SkImageFilter> background(builder.build(inputEffect(1), operatingColorSpace()));
     RefPtr<SkXfermode> mode(adoptRef(SkXfermode::Create(WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_mode))));
-    SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
+    SkImageFilter::CropRect cropRect = getCropRect(builder.cropOffset());
     return adoptRef(SkXfermodeImageFilter::Create(mode.get(), background.get(), foreground.get(), &cropRect));
 }
 

@@ -155,7 +155,7 @@ TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const
     return ts;
 }
 
-PassRefPtr<SkImageFilter> FEImage::createImageFilterForLayoutObject(LayoutObject& layoutObject, SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEImage::createImageFilterForLayoutObject(const LayoutObject& layoutObject)
 {
     FloatRect dstRect = filterPrimitiveSubregion();
 
@@ -185,10 +185,10 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForLayoutObject(LayoutObject
     return result.release();
 }
 
-PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     if (auto* layoutObject = referencedLayoutObject())
-        return createImageFilterForLayoutObject(*layoutObject, builder);
+        return createImageFilterForLayoutObject(*layoutObject);
 
     RefPtr<SkImage> image = m_image ? m_image->imageForCurrentFrame() : nullptr;
     if (!image) {

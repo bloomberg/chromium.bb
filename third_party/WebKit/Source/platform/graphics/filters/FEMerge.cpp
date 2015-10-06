@@ -40,17 +40,17 @@ PassRefPtrWillBeRawPtr<FEMerge> FEMerge::create(Filter* filter)
     return adoptRefWillBeNoop(new FEMerge(filter));
 }
 
-PassRefPtr<SkImageFilter> FEMerge::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEMerge::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     unsigned size = numberOfEffectInputs();
 
     OwnPtr<RefPtr<SkImageFilter>[]> inputRefs = adoptArrayPtr(new RefPtr<SkImageFilter>[size]);
     OwnPtr<SkImageFilter*[]> inputs = adoptArrayPtr(new SkImageFilter*[size]);
     for (unsigned i = 0; i < size; ++i) {
-        inputRefs[i] = builder->build(inputEffect(i), operatingColorSpace());
+        inputRefs[i] = builder.build(inputEffect(i), operatingColorSpace());
         inputs[i] = inputRefs[i].get();
     }
-    SkImageFilter::CropRect rect = getCropRect(builder->cropOffset());
+    SkImageFilter::CropRect rect = getCropRect(builder.cropOffset());
     return adoptRef(SkMergeImageFilter::Create(inputs.get(), size, 0, &rect));
 }
 

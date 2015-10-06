@@ -31,8 +31,6 @@ class PLATFORM_EXPORT FETile : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FETile> create(Filter*);
 
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
-
     FloatRect mapPaintRect(const FloatRect&, bool forward = true) final;
 
     FilterEffectType filterEffectType() const override { return FilterEffectTypeTile; }
@@ -41,6 +39,8 @@ public:
 
 private:
     FETile(Filter*);
+
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 };
 
 } // namespace blink

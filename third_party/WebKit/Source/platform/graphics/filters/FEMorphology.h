@@ -45,14 +45,14 @@ public:
     float radiusY() const;
     bool setRadiusY(float);
 
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
-
     FloatRect mapRect(const FloatRect&, bool forward = true) final;
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
     FEMorphology(Filter*, MorphologyOperatorType, float radiusX, float radiusY);
+
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 
     MorphologyOperatorType m_type;
     float m_radiusX;

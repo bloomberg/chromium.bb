@@ -183,20 +183,20 @@ FloatRect FilterEffect::determineFilterPrimitiveSubregion(DetermineSubregionFlag
     return subregion;
 }
 
-PassRefPtr<SkImageFilter> FilterEffect::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FilterEffect::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     return nullptr;
 }
 
-PassRefPtr<SkImageFilter> FilterEffect::createImageFilterWithoutValidation(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FilterEffect::createImageFilterWithoutValidation(SkiaImageFilterBuilder& builder)
 {
     return createImageFilter(builder);
 }
 
-PassRefPtr<SkImageFilter> FilterEffect::createTransparentBlack(SkiaImageFilterBuilder* builder) const
+PassRefPtr<SkImageFilter> FilterEffect::createTransparentBlack(SkiaImageFilterBuilder& builder) const
 {
     SkAutoTUnref<SkColorFilter> filter(SkColorFilter::CreateModeFilter(0, SkXfermode::kClear_Mode));
-    SkImageFilter::CropRect rect = getCropRect(builder->cropOffset());
+    SkImageFilter::CropRect rect = getCropRect(builder.cropOffset());
     return adoptRef(SkColorFilterImageFilter::Create(filter, nullptr, &rect));
 }
 

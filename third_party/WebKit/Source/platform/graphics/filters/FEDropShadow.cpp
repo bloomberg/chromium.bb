@@ -66,15 +66,15 @@ FloatRect FEDropShadow::mapRect(const FloatRect& rect, bool forward)
     return result;
 }
 
-PassRefPtr<SkImageFilter> FEDropShadow::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEDropShadow::createImageFilter(SkiaImageFilterBuilder& builder)
 {
-    RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
+    RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
     float dx = filter()->applyHorizontalScale(m_dx);
     float dy = filter()->applyVerticalScale(m_dy);
     float stdX = filter()->applyHorizontalScale(m_stdX);
     float stdY = filter()->applyVerticalScale(m_stdY);
     Color color = adaptColorToOperatingColorSpace(m_shadowColor.combineWithAlpha(m_shadowOpacity));
-    SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
+    SkImageFilter::CropRect cropRect = getCropRect(builder.cropOffset());
     return adoptRef(SkDropShadowImageFilter::Create(SkFloatToScalar(dx), SkFloatToScalar(dy), SkFloatToScalar(stdX), SkFloatToScalar(stdY), color.rgb(), SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode, input.get(), &cropRect));
 }
 

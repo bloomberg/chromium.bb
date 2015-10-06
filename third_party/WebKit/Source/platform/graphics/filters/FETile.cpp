@@ -60,9 +60,9 @@ static FloatRect getRect(FilterEffect* effect)
     return result;
 }
 
-PassRefPtr<SkImageFilter> FETile::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FETile::createImageFilter(SkiaImageFilterBuilder& builder)
 {
-    RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
+    RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
     FloatRect srcRect = inputEffect(0) ? getRect(inputEffect(0)) : filter()->filterRegion();
     FloatRect dstRect = getRect(this);
     return adoptRef(SkTileImageFilter::Create(srcRect, dstRect, input.get()));

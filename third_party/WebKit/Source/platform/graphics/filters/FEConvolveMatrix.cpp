@@ -136,12 +136,12 @@ bool FEConvolveMatrix::parametersValid() const
     return true;
 }
 
-PassRefPtr<SkImageFilter> FEConvolveMatrix::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEConvolveMatrix::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     if (!parametersValid())
         return createTransparentBlack(builder);
 
-    RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
+    RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
     SkISize kernelSize(SkISize::Make(m_kernelSize.width(), m_kernelSize.height()));
     // parametersValid() above checks that the kernel area fits in int.
     int numElements = safeCast<int>(m_kernelSize.area());
@@ -153,7 +153,7 @@ PassRefPtr<SkImageFilter> FEConvolveMatrix::createImageFilter(SkiaImageFilterBui
     OwnPtr<SkScalar[]> kernel = adoptArrayPtr(new SkScalar[numElements]);
     for (int i = 0; i < numElements; ++i)
         kernel[i] = SkFloatToScalar(m_kernelMatrix[numElements - 1 - i]);
-    SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
+    SkImageFilter::CropRect cropRect = getCropRect(builder.cropOffset());
     return adoptRef(SkMatrixConvolutionImageFilter::Create(kernelSize, kernel.get(), gain, bias, target, tileMode, convolveAlpha, input.get(), &cropRect));
 }
 

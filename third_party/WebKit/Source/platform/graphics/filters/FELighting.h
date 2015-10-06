@@ -38,14 +38,13 @@ namespace blink {
 class LightSource;
 
 class PLATFORM_EXPORT FELighting : public FilterEffect {
-public:
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
-
 protected:
     enum LightingType {
         DiffuseLighting,
         SpecularLighting
     };
+
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 
     FloatRect mapPaintRect(const FloatRect&, bool forward = true) final;
     bool affectsTransparentPixels() override { return true; }

@@ -62,16 +62,15 @@ public:
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
-    PassRefPtr<SkImageFilter> createImageFilterWithoutValidation(SkiaImageFilterBuilder*) override;
-
 protected:
     bool mayProduceInvalidPreMultipliedPixels() override { return m_type == FECOMPOSITE_OPERATOR_ARITHMETIC; }
 
 private:
     FEComposite(Filter*, const CompositeOperationType&, float, float, float, float);
 
-    PassRefPtr<SkImageFilter> createImageFilterInternal(SkiaImageFilterBuilder*, bool requiresPMColorValidation);
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
+    PassRefPtr<SkImageFilter> createImageFilterWithoutValidation(SkiaImageFilterBuilder&) override;
+    PassRefPtr<SkImageFilter> createImageFilterInternal(SkiaImageFilterBuilder&, bool requiresPMColorValidation);
 
     CompositeOperationType m_type;
     float m_k1;

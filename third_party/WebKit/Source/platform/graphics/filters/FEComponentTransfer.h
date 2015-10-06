@@ -64,13 +64,13 @@ public:
     static PassRefPtrWillBeRawPtr<FEComponentTransfer> create(Filter*, const ComponentTransferFunction& redFunc, const ComponentTransferFunction& greenFunc,
         const ComponentTransferFunction& blueFunc, const ComponentTransferFunction& alphaFunc);
 
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
-
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
     FEComponentTransfer(Filter*, const ComponentTransferFunction& redFunc, const ComponentTransferFunction& greenFunc,
         const ComponentTransferFunction& blueFunc, const ComponentTransferFunction& alphaFunc);
+
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 
     bool affectsTransparentPixels() override;
 

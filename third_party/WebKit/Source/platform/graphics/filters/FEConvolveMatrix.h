@@ -50,8 +50,6 @@ public:
     bool setEdgeMode(EdgeModeType);
     bool setPreserveAlpha(bool);
 
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
-
     FloatRect mapPaintRect(const FloatRect&, bool forward = true) final;
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
@@ -59,6 +57,8 @@ public:
 private:
     FEConvolveMatrix(Filter*, const IntSize&, float, float,
         const IntPoint&, EdgeModeType, bool, const Vector<float>&);
+
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 
     bool parametersValid() const;
 

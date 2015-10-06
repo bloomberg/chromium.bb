@@ -47,7 +47,7 @@ public:
     void setOperatingColorSpace(ColorSpace) override { }
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
-    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -57,7 +57,7 @@ private:
     FEImage(Filter*, TreeScope&, const String&, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio>);
     LayoutObject* referencedLayoutObject() const;
 
-    PassRefPtr<SkImageFilter> createImageFilterForLayoutObject(LayoutObject&, SkiaImageFilterBuilder*);
+    PassRefPtr<SkImageFilter> createImageFilterForLayoutObject(const LayoutObject&);
 
     RefPtr<Image> m_image;
 
