@@ -4,7 +4,7 @@ crbug.com/524134 paint/invalidation/spv2 [ Skip ]
 # TODO(wangxianzhu): Triage the failures
 crbug.com/524134 virtual/spv2/paint/invalidation/invalidate-after-composited-scroll.html [ Failure ]
 crbug.com/524134 crbug.com/539546 virtual/spv2/paint/selection/text-selection-drag.html [ ImageOnlyFailure Pass Failure ]
-crbug.com/524134 virtual/spv2/paint/deprecatedpaintlayer/non-self-painting-layer-overrides-visibility.html [ Crash ImageOnlyFailure Timeout ]
+crbug.com/524134 virtual/spv2/paint/paintlayer/non-self-painting-layer-overrides-visibility.html [ Crash ImageOnlyFailure Timeout ]
 crbug.com/524134 virtual/spv2/paint/invalidation/spv2/focus-ring-on-continuation-move.html [ ImageOnlyFailure ]
 
 crbug.com/524236 virtual/spv2/paint/invalidation/spv2/clipping-should-not-repaint-composited-descendants-as-text.html [ Failure ]
