@@ -89,7 +89,10 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       entry.ConstructCommonNavigationParams(dest_url, dest_referrer,
                                             frame_entry, navigation_type),
       BeginNavigationParams(method, headers.ToString(),
-                            LoadFlagFromNavigationType(navigation_type), false),
+                            LoadFlagFromNavigationType(navigation_type),
+                            false,  // has_user_gestures
+                            false,  // skip_service_worker
+                            REQUEST_CONTEXT_TYPE_LOCATION),
       entry.ConstructRequestNavigationParams(
           frame_entry, navigation_start, is_same_document_history_load,
           frame_tree_node->has_committed_real_load(),
@@ -116,9 +119,21 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // renderer and sent to the browser instead of being measured here.
   // TODO(clamy): The pending history list offset should be properly set.
   // TODO(clamy): Set has_committed_real_load.
-  RequestNavigationParams request_params;
-  request_params.current_history_list_offset = current_history_list_offset;
-  request_params.current_history_list_length = current_history_list_length;
+  RequestNavigationParams request_params(
+      false,                   // is_overriding_user_agent
+      base::TimeTicks::Now(),  // browser_navigation_start
+      std::vector<GURL>(),     // redirects
+      false,                   // can_load_local_resources
+      base::Time::Now(),       // request_time
+      PageState(),             // page_state
+      -1,                      // page_id
+      0,                       // nav_entry_id
+      false,                   // is_same_document_history_load
+      false,                   // has_committed_real_load
+      false,                   // intended_as_new_entry
+      -1,                      // pending_history_list_offset
+      current_history_list_offset, current_history_list_length,
+      false);                  // should_clear_history_list
   scoped_ptr<NavigationRequest> navigation_request(
       new NavigationRequest(frame_tree_node, common_params, begin_params,
                             request_params, body, false, nullptr, nullptr));

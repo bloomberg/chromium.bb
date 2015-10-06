@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {
@@ -58,18 +59,24 @@ CommonNavigationParams::~CommonNavigationParams() {
 }
 
 BeginNavigationParams::BeginNavigationParams()
-    : load_flags(0), has_user_gesture(false) {
-}
+    : load_flags(0),
+      has_user_gesture(false),
+      skip_service_worker(false),
+      request_context_type(REQUEST_CONTEXT_TYPE_LOCATION) {}
 
-BeginNavigationParams::BeginNavigationParams(std::string method,
-                                             std::string headers,
-                                             int load_flags,
-                                             bool has_user_gesture)
+BeginNavigationParams::BeginNavigationParams(
+    std::string method,
+    std::string headers,
+    int load_flags,
+    bool has_user_gesture,
+    bool skip_service_worker,
+    RequestContextType request_context_type)
     : method(method),
       headers(headers),
       load_flags(load_flags),
-      has_user_gesture(has_user_gesture) {
-}
+      has_user_gesture(has_user_gesture),
+      skip_service_worker(skip_service_worker),
+      request_context_type(request_context_type) {}
 
 StartNavigationParams::StartNavigationParams()
     : is_post(false),
@@ -115,8 +122,8 @@ RequestNavigationParams::RequestNavigationParams()
       pending_history_list_offset(-1),
       current_history_list_offset(-1),
       current_history_list_length(0),
-      should_clear_history_list(false) {
-}
+      should_clear_history_list(false),
+      service_worker_provider_id(kInvalidServiceWorkerProviderId) {}
 
 RequestNavigationParams::RequestNavigationParams(
     bool is_overriding_user_agent,
@@ -148,8 +155,8 @@ RequestNavigationParams::RequestNavigationParams(
       pending_history_list_offset(pending_history_list_offset),
       current_history_list_offset(current_history_list_offset),
       current_history_list_length(current_history_list_length),
-      should_clear_history_list(should_clear_history_list) {
-}
+      should_clear_history_list(should_clear_history_list),
+      service_worker_provider_id(kInvalidServiceWorkerProviderId) {}
 
 RequestNavigationParams::~RequestNavigationParams() {
 }

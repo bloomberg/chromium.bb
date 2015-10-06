@@ -4926,12 +4926,30 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request) {
   if (data_source && render_view_->history_list_length_ > 0) {
     should_replace_current_entry = data_source->replacesCurrentHistoryItem();
   }
+
+  // These values are assumed on the browser side for navigations. These checks
+  // ensure the renderer has the correct values.
+  DCHECK_EQ(FETCH_REQUEST_MODE_SAME_ORIGIN,
+            GetFetchRequestModeForWebURLRequest(*request));
+  DCHECK_EQ(FETCH_CREDENTIALS_MODE_INCLUDE,
+            GetFetchCredentialsModeForWebURLRequest(*request));
+  DCHECK(GetFetchRedirectModeForWebURLRequest(*request) ==
+         FetchRedirectMode::MANUAL_MODE);
+  DCHECK_IMPLIES(!frame_->parent(),
+                 GetRequestContextFrameTypeForWebURLRequest(*request) ==
+                 REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL);
+  DCHECK_IMPLIES(frame_->parent(),
+                 GetRequestContextFrameTypeForWebURLRequest(*request) ==
+                 REQUEST_CONTEXT_FRAME_TYPE_NESTED);
+
   Send(new FrameHostMsg_BeginNavigation(
       routing_id_,
       MakeCommonNavigationParams(request, should_replace_current_entry),
       BeginNavigationParams(
           request->httpMethod().latin1(), GetWebURLRequestHeaders(*request),
-          GetLoadFlagsForWebURLRequest(*request), request->hasUserGesture()),
+          GetLoadFlagsForWebURLRequest(*request), request->hasUserGesture(),
+          request->skipServiceWorker(),
+          GetRequestContextTypeForWebURLRequest(*request)),
       GetRequestBodyForWebURLRequest(*request)));
 }
 

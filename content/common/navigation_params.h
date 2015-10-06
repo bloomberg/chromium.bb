@@ -13,6 +13,7 @@
 #include "content/common/frame_message_enums.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/request_context_type.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -107,7 +108,9 @@ struct CONTENT_EXPORT BeginNavigationParams {
   BeginNavigationParams(std::string method,
                         std::string headers,
                         int load_flags,
-                        bool has_user_gesture);
+                        bool has_user_gesture,
+                        bool skip_service_worker,
+                        RequestContextType request_context_type);
 
   // The request method: GET, POST, etc.
   std::string method;
@@ -120,6 +123,12 @@ struct CONTENT_EXPORT BeginNavigationParams {
 
   // True if the request was user initiated.
   bool has_user_gesture;
+
+  // True if the ServiceWorker should be skipped.
+  bool skip_service_worker;
+
+  // Indicates the request context type.
+  RequestContextType request_context_type;
 };
 
 // Provided by the browser -----------------------------------------------------
@@ -257,6 +266,13 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // needs to notify the browser that the clearing was succesful when the
   // navigation commits.
   bool should_clear_history_list;
+
+  // PlzNavigate
+  // The ServiceWorkerProviderHost ID used for navigations.
+  // Set to kInvalidServiceWorkerProviderId for sandboxed frames and sync loads.
+  // This parameter is not used in the current navigation architecture, where it
+  // will always be equal to kInvalidServiceWorkerProviderId.
+  int service_worker_provider_id;
 };
 
 // Helper struct keeping track in one place of all the parameters the browser

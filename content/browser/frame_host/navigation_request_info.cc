@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/frame_host/navigation_request_info.h"
+#include "content/common/service_worker/service_worker_types.h"
 
 namespace content {
 
@@ -20,8 +21,8 @@ NavigationRequestInfo::NavigationRequestInfo(
       is_main_frame(is_main_frame),
       parent_is_main_frame(parent_is_main_frame),
       frame_tree_node_id(frame_tree_node_id),
-      request_body(request_body) {
-}
+      service_worker_provider_id(kInvalidServiceWorkerProviderId),
+      request_body(request_body) {}
 
 NavigationRequestInfo::~NavigationRequestInfo() {}
 
