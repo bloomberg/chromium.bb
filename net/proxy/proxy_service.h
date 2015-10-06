@@ -286,8 +286,6 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
     quick_check_enabled_ = value;
   }
 
-  bool quick_check_enabled() const { return quick_check_enabled_; }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ProxyServiceTest, UpdateConfigAfterFailedAutodetect);
   FRIEND_TEST_ALL_PREFIXES(ProxyServiceTest, UpdateConfigFromPACToDirect);
