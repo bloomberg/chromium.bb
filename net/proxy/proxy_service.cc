@@ -1391,13 +1391,17 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
     if (network_delegate)
       network_delegate->NotifyResolveProxy(url, load_flags, *this, result);
 
-    // When logging all events is enabled, dump the proxy list.
-    if (net_log.IsCapturing()) {
+    net_log.AddEvent(NetLog::TYPE_PROXY_SERVICE_RESOLVED_PROXY_LIST,
+                     base::Bind(&NetLogFinishedResolvingProxyCallback, result));
+
+    // This check is done to only log the NetLog event when necessary, it's
+    // not a performance optimization.
+    if (!proxy_retry_info_.empty()) {
+      result->DeprioritizeBadProxies(proxy_retry_info_);
       net_log.AddEvent(
-          NetLog::TYPE_PROXY_SERVICE_RESOLVED_PROXY_LIST,
+          NetLog::TYPE_PROXY_SERVICE_DEPRIORITIZED_BAD_PROXIES,
           base::Bind(&NetLogFinishedResolvingProxyCallback, result));
     }
-    result->DeprioritizeBadProxies(proxy_retry_info_);
   } else {
     net_log.AddEventWithNetErrorCode(
         NetLog::TYPE_PROXY_SERVICE_RESOLVED_PROXY_LIST, result_code);

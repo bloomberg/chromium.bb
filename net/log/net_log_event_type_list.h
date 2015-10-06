@@ -253,6 +253,14 @@ EVENT_TYPE(PROXY_SERVICE_WAITING_FOR_INIT_PAC)
 //   }
 EVENT_TYPE(PROXY_SERVICE_RESOLVED_PROXY_LIST)
 
+// This event is emitted after proxies marked as bad have been deprioritized.
+//
+// It contains these parameters:
+//   {
+//      "pac_string": <List of valid proxy servers, in PAC format>,
+//   }
+EVENT_TYPE(PROXY_SERVICE_DEPRIORITIZED_BAD_PROXIES)
+
 // This event is emitted whenever the proxy settings used by ProxyService
 // change.
 //
