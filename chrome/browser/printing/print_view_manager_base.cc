@@ -504,8 +504,9 @@ bool PrintViewManagerBase::OpportunisticallyCreatePrintJob(int cookie) {
 }
 
 bool PrintViewManagerBase::PrintNowInternal(IPC::Message* message) {
-  // Don't print / print preview interstitials.
-  if (web_contents()->ShowingInterstitialPage()) {
+  // Don't print / print preview interstitials or crashed tabs.
+  if (web_contents()->ShowingInterstitialPage() ||
+      web_contents()->IsCrashed()) {
     delete message;
     return false;
   }

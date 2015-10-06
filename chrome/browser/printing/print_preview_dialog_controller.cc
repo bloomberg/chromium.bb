@@ -156,7 +156,7 @@ PrintPreviewDialogController* PrintPreviewDialogController::GetInstance() {
 
 // static
 void PrintPreviewDialogController::PrintPreview(WebContents* initiator) {
-  if (initiator->ShowingInterstitialPage())
+  if (initiator->ShowingInterstitialPage() || initiator->IsCrashed())
     return;
 
   PrintPreviewDialogController* dialog_controller = GetInstance();
