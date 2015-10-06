@@ -848,6 +848,9 @@ bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
     // TODO(bnc): Check ssl_config_.disabled_cipher_suites.
     if (!IsTLSVersionAdequateForHTTP2(ssl_config_))
       DisableHTTP2(&next_protos);
+    // |ssl_config_| has fallback protocol at the end of the list, but NSS
+    // expects fallback at the first place, thus protocols need to be reordered.
+    ReorderNextProtos(&next_protos);
     std::vector<uint8_t> wire_protos = SerializeNextProtos(next_protos);
     rv = SSL_SetNextProtoNego(
         nss_fd_, wire_protos.empty() ? NULL : &wire_protos[0],
@@ -3162,6 +3165,19 @@ void SSLClientSocketNSS::AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const {
         SignedCertificateTimestampAndStatus(*iter,
                                             ct::SCT_STATUS_LOG_UNKNOWN));
   }
+}
+
+// static
+void SSLClientSocketNSS::ReorderNextProtos(NextProtoVector* next_protos) {
+  if (next_protos->size() < 2) {
+    return;
+  }
+
+  NextProto fallback_proto = next_protos->back();
+  for (size_t i = next_protos->size() - 1; i > 0; --i) {
+    (*next_protos)[i] = (*next_protos)[i - 1];
+  }
+  (*next_protos)[0] = fallback_proto;
 }
 
 ChannelIDService* SSLClientSocketNSS::GetChannelIDService() const {

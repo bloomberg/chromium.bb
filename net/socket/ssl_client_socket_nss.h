@@ -144,6 +144,12 @@ class SSLClientSocketNSS : public SSLClientSocket {
   // the |ssl_info|.signed_certificate_timestamps list.
   void AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const;
 
+  // Move last protocol to first place: SSLConfig::next_protos has protocols in
+  // decreasing order of preference with NPN fallback protocol at the end, but
+  // NSS moves the first one to the last place before sending them in ALPN, and
+  // uses the first one as a fallback for NPN.
+  static void ReorderNextProtos(NextProtoVector* next_protos);
+
   scoped_ptr<ClientSocketHandle> transport_;
   HostPortPair host_and_port_;
   SSLConfig ssl_config_;

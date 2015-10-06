@@ -154,12 +154,12 @@ struct NET_EXPORT SSLConfig {
   // NOTE: Only used by NSS.
   bool cert_io_enabled;
 
-  // The list of application level protocols supported. If set, this will
-  // enable Next Protocol Negotiation (if supported). The order of the
-  // protocols doesn't matter expect for one case: if the server supports Next
-  // Protocol Negotiation, but there is no overlap between the server's and
-  // client's protocol sets, then the first protocol in this list will be
-  // requested by the client.
+  // The list of supported application level protocols supported in decreasing
+  // order of preference.  For ALPN (Application Layer Protocol Negotation),
+  // protocols will be advertised in this order.  For NPN (Next Protocol
+  // Negotiation), the last item on the list is selected if there is no overlap
+  // between |next_protos| and the protocols supported by the server, otherwise
+  // server preference is observed and the order of |next_protos| is irrelevant.
   NextProtoVector next_protos;
 
   // True if renegotiation should be allowed for the default application-level

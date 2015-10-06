@@ -1936,10 +1936,10 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
       break;
   }
 
-  // If we didn't find a protocol, we select the first one from our list.
+  // If we didn't find a protocol, we select the last one from our list.
   if (npn_status_ == kNextProtoNoOverlap) {
     // NextProtoToString returns a pointer to a static string.
-    const char* proto = NextProtoToString(ssl_config_.next_protos[0]);
+    const char* proto = NextProtoToString(ssl_config_.next_protos.back());
     *out = reinterpret_cast<unsigned char*>(const_cast<char*>(proto));
     *outlen = strlen(proto);
   }

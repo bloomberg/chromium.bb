@@ -3438,15 +3438,15 @@ TEST_F(SSLClientSocketTest, NPN) {
 }
 
 // In case of no overlap between client and server list, SSLClientSocket should
-// fall back to first one on the client list.
+// fall back to last one on the client list.
 TEST_F(SSLClientSocketTest, NPNNoOverlap) {
   SpawnedTestServer::SSLOptions server_options;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
   ASSERT_TRUE(ConnectToTestServer(server_options));
 
   SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoHTTP2);
   client_config.next_protos.push_back(kProtoSPDY31);
+  client_config.next_protos.push_back(kProtoHTTP2);
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));

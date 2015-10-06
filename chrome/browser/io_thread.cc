@@ -879,7 +879,7 @@ void IOThread::ConfigureSpdyGlobals(
   }
 
   globals->next_protos.clear();
-  globals->next_protos.push_back(net::kProtoHTTP11);
+
   bool enable_quic = false;
   globals->enable_quic.CopyToIfSet(&enable_quic);
   if (enable_quic) {
@@ -889,38 +889,36 @@ void IOThread::ConfigureSpdyGlobals(
   // No SPDY command-line flags have been specified. Examine trial groups.
   if (spdy_trial_group.starts_with(kSpdyFieldTrialHoldbackGroupNamePrefix)) {
     net::HttpStreamFactory::set_spdy_enabled(false);
-    return;
-  }
-  if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy31GroupNamePrefix)) {
+  } else if (spdy_trial_group.starts_with(
+                 kSpdyFieldTrialSpdy31GroupNamePrefix)) {
     globals->next_protos.push_back(net::kProtoSPDY31);
-    return;
-  }
-  if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy4GroupNamePrefix)) {
-    globals->next_protos.push_back(net::kProtoSPDY31);
+  } else if (spdy_trial_group.starts_with(
+                 kSpdyFieldTrialSpdy4GroupNamePrefix)) {
     globals->next_protos.push_back(net::kProtoHTTP2);
-    return;
-  }
-  if (spdy_trial_group.starts_with(kSpdyFieldTrialParametrizedPrefix)) {
+    globals->next_protos.push_back(net::kProtoSPDY31);
+  } else if (spdy_trial_group.starts_with(kSpdyFieldTrialParametrizedPrefix)) {
     bool spdy_enabled = false;
-    if (base::LowerCaseEqualsASCII(
-            GetVariationParam(spdy_trial_params, "enable_spdy31"), "true")) {
-      globals->next_protos.push_back(net::kProtoSPDY31);
-      spdy_enabled = true;
-    }
     if (base::LowerCaseEqualsASCII(
             GetVariationParam(spdy_trial_params, "enable_http2"), "true")) {
       globals->next_protos.push_back(net::kProtoHTTP2);
       spdy_enabled = true;
     }
+    if (base::LowerCaseEqualsASCII(
+            GetVariationParam(spdy_trial_params, "enable_spdy31"), "true")) {
+      globals->next_protos.push_back(net::kProtoSPDY31);
+      spdy_enabled = true;
+    }
     // TODO(bnc): HttpStreamFactory::spdy_enabled_ is redundant with
     // globals->next_protos, can it be eliminated?
     net::HttpStreamFactory::set_spdy_enabled(spdy_enabled);
-    return;
+  } else {
+    // By default, enable HTTP/2.
+    globals->next_protos.push_back(net::kProtoHTTP2);
+    globals->next_protos.push_back(net::kProtoSPDY31);
   }
 
-  // By default, enable HTTP/2.
-  globals->next_protos.push_back(net::kProtoSPDY31);
-  globals->next_protos.push_back(net::kProtoHTTP2);
+  // Enable HTTP/1.1 in all cases as the last protocol.
+  globals->next_protos.push_back(net::kProtoHTTP11);
 }
 
 void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {

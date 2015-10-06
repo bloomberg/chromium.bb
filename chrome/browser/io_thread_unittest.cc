@@ -100,8 +100,7 @@ TEST_F(IOThreadTest, SpdyFieldTrialSpdy31Enabled) {
   field_trial_group_ = "Spdy31Enabled";
   ConfigureSpdyGlobals();
   EXPECT_THAT(globals_.next_protos,
-              ElementsAre(net::kProtoHTTP11,
-                          net::kProtoSPDY31));
+              ElementsAre(net::kProtoSPDY31, net::kProtoHTTP11));
 }
 
 TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Enabled) {
@@ -109,7 +108,7 @@ TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Enabled) {
   ConfigureSpdyGlobals();
   EXPECT_THAT(
       globals_.next_protos,
-      ElementsAre(net::kProtoHTTP11, net::kProtoSPDY31, net::kProtoHTTP2));
+      ElementsAre(net::kProtoHTTP2, net::kProtoSPDY31, net::kProtoHTTP11));
 }
 
 TEST_F(IOThreadTest, SpdyFieldTrialDefault) {
@@ -117,7 +116,7 @@ TEST_F(IOThreadTest, SpdyFieldTrialDefault) {
   ConfigureSpdyGlobals();
   EXPECT_THAT(
       globals_.next_protos,
-      ElementsAre(net::kProtoHTTP11, net::kProtoSPDY31, net::kProtoHTTP2));
+      ElementsAre(net::kProtoHTTP2, net::kProtoSPDY31, net::kProtoHTTP11));
 }
 
 TEST_F(IOThreadTest, SpdyFieldTrialParametrized) {
@@ -127,7 +126,7 @@ TEST_F(IOThreadTest, SpdyFieldTrialParametrized) {
   field_trial_group_ = "ParametrizedHTTP2Only";
   ConfigureSpdyGlobals();
   EXPECT_THAT(globals_.next_protos,
-              ElementsAre(net::kProtoHTTP11, net::kProtoHTTP2));
+              ElementsAre(net::kProtoHTTP2, net::kProtoHTTP11));
 }
 
 TEST_F(IOThreadTest, SpdyCommandLineUseSpdyOff) {
