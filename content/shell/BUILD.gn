@@ -28,11 +28,6 @@ static_library("content_shell_lib") {
     "android/shell_jni_registrar.h",
     "android/shell_manager.cc",
     "android/shell_manager.h",
-    "app/blink_test_platform_support.h",
-    "app/blink_test_platform_support_android.cc",
-    "app/blink_test_platform_support_linux.cc",
-    "app/blink_test_platform_support_mac.mm",
-    "app/blink_test_platform_support_win.cc",
     "app/paths_mac.h",
     "app/paths_mac.mm",
     "app/shell_crash_reporter_client.cc",
@@ -261,7 +256,9 @@ static_library("content_shell_lib") {
   if (use_x11) {
     # Some tests rely on this tool at runtime. Note: it might be better if
     # the tests that needed it had this as a dep instead of adding it here.
-    data_deps = [ "//tools/xdisplaycheck" ]
+    data_deps = [
+      "//tools/xdisplaycheck",
+    ]
 
     deps += [ "//ui/events/devices" ]
   }
@@ -436,7 +433,9 @@ if (!is_android && !is_mac) {
     if (is_android) {
       # Some tests rely on this tool. It might be nicer if these tests relied on
       # image diff rather than having content shell depend on it.
-      data_deps = [ "//tools/imagediff($host_toolchain)" ]
+      data_deps = [
+        "//tools/imagediff($host_toolchain)",
+      ]
     }
   }
 } else {

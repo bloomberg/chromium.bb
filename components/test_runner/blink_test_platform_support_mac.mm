@@ -6,13 +6,12 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/path_service.h"
-#include "content/public/common/content_switches.h"
-#include "content/shell/app/blink_test_platform_support.h"
+#include "components/test_runner/blink_test_platform_support.h"
 
 #include <AppKit/AppKit.h>
 #include <Foundation/Foundation.h>
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -85,14 +84,15 @@ bool BlinkTestPlatformInitialize() {
   }
 
   // Add <app bundle's parent dir>/plugins to the plugin path so we can load
-  // test plugins.
+  // test npapi plugins (soon to be removed).
+  const char kExtraPluginDir[] = "extra-plugin-dir";
   base::FilePath plugins_dir;
   PathService::Get(base::DIR_EXE, &plugins_dir);
   plugins_dir = plugins_dir.AppendASCII("../../../plugins");
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  command_line.AppendSwitchPath(switches::kExtraPluginDir, plugins_dir);
+  command_line.AppendSwitchPath(kExtraPluginDir, plugins_dir);
 
   return true;
 }
 
-}  // namespace
+}  // namespace test_runner

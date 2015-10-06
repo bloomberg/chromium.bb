@@ -19,6 +19,7 @@
 #include "components/mus/public/cpp/view.h"
 #include "components/mus/public/cpp/view_tree_connection.h"
 #include "components/mus/public/cpp/view_tree_host_factory.h"
+#include "components/test_runner/blink_test_platform_support.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -61,6 +62,9 @@ void TestRunnerApplicationDelegate::Terminate() {
 // mojo::ApplicationDelegate implementation:
 
 void TestRunnerApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
+  if (!test_runner::BlinkTestPlatformInitialize()) {
+    NOTREACHED() << "Test environment could not be properly set up for blink.";
+  }
   app_ = app;
   mus::CreateSingleViewTreeHost(app_, this, &host_);
 }

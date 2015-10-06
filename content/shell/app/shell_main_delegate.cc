@@ -14,12 +14,12 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/test_runner/blink_test_platform_support.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/layouttest_support.h"
-#include "content/shell/app/blink_test_platform_support.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
 #include "content/shell/browser/layout_test/layout_test_browser_main.h"
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
@@ -63,8 +63,8 @@
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)
-#include <initguid.h>
 #include <windows.h>
+#include <initguid.h>
 #include "base/logging_win.h"
 #include "components/crash/content/app/breakpad_win.h"
 #include "content/shell/common/v8_breakpad_support_win.h"
@@ -140,7 +140,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     // If CheckLayoutSystemDeps succeeds, we don't exit early. Instead we
     // continue and try to load the fonts in BlinkTestPlatformInitialize
     // below, and then try to bring up the rest of the content module.
-    if (!CheckLayoutSystemDeps()) {
+    if (!test_runner::CheckLayoutSystemDeps()) {
       if (exit_code)
         *exit_code = 1;
       return true;
@@ -199,7 +199,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     media::RemoveProprietaryMediaTypesAndCodecsForTests();
 #endif
 
-    if (!BlinkTestPlatformInitialize()) {
+    if (!test_runner::BlinkTestPlatformInitialize()) {
       if (exit_code)
         *exit_code = 1;
       return true;

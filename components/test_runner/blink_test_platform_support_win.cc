@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/app/blink_test_platform_support.h"
+#include "components/test_runner/blink_test_platform_support.h"
 
 #include <windows.h>
 #include <iostream>
@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/shell/common/shell_switches.h"
 #include "ui/gfx/win/direct_write.h"
 
 #define SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(struct_name, member) \
@@ -24,7 +23,7 @@
 #define NONCLIENTMETRICS_SIZE_PRE_VISTA \
     SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(NONCLIENTMETRICS, lfMessageFont)
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -42,9 +41,10 @@ bool SetupFonts() {
   // 2. For DirectWrite rendering by appending a command line flag that tells
   //    the sandbox policy/warmup to grant access to the given path.
   if (gfx::win::ShouldUseDirectWrite()) {
+    const char kRegisterFontFiles[] = "register-font-files";
     // DirectWrite sandbox registration.
     base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-    command_line.AppendSwitchASCII(switches::kRegisterFontFiles,
+    command_line.AppendSwitchASCII(kRegisterFontFiles,
                                    base::WideToUTF8(font_path.value()));
   } else {
     // GDI registration.
@@ -116,4 +116,4 @@ bool BlinkTestPlatformInitialize() {
   return SetupFonts();
 }
 
-}  // namespace content
+}  // namespace test_runner
