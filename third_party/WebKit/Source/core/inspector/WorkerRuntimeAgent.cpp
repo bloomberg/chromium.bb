@@ -54,12 +54,12 @@ DEFINE_TRACE(WorkerRuntimeAgent)
     InspectorRuntimeAgent::trace(visitor);
 }
 
-void WorkerRuntimeAgent::enable(ErrorString* errorString)
+void WorkerRuntimeAgent::didEnableRuntimeAgent()
 {
     if (m_enabled)
         return;
 
-    InspectorRuntimeAgent::enable(errorString);
+    InspectorRuntimeAgent::didEnableRuntimeAgent();
     ScriptState* scriptState = m_workerGlobalScope->script()->scriptState();
     int executionContextId = injectedScriptManager()->injectedScriptIdFor(scriptState);
     addExecutionContextToFrontend(executionContextId, "", m_workerGlobalScope->url(), "", "");

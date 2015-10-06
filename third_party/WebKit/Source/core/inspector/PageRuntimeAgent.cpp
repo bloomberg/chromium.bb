@@ -68,15 +68,16 @@ DEFINE_TRACE(PageRuntimeAgent)
 
 void PageRuntimeAgent::init()
 {
+    InspectorRuntimeAgent::init();
     m_instrumentingAgents->setPageRuntimeAgent(this);
 }
 
-void PageRuntimeAgent::enable(ErrorString* errorString)
+void PageRuntimeAgent::didEnableRuntimeAgent()
 {
     if (m_enabled)
         return;
 
-    InspectorRuntimeAgent::enable(errorString);
+    InspectorRuntimeAgent::didEnableRuntimeAgent();
 
     // Only report existing contexts if the page did commit load, otherwise we may
     // unintentionally initialize contexts in the frames which may trigger some listeners
@@ -85,12 +86,12 @@ void PageRuntimeAgent::enable(ErrorString* errorString)
         reportExecutionContextCreation();
 }
 
-void PageRuntimeAgent::disable(ErrorString* errorString)
+void PageRuntimeAgent::didDisableRuntimeAgent()
 {
     if (!m_enabled)
         return;
     m_scriptStateToId.clear();
-    InspectorRuntimeAgent::disable(errorString);
+    InspectorRuntimeAgent::didDisableRuntimeAgent();
 }
 
 void PageRuntimeAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
