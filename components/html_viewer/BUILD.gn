@@ -359,7 +359,6 @@ mojo_native_application("apptests") {
 
   data_deps = [
     ":html_viewer",
-    "//components/mus/vm:lib",
   ]
 
   if (is_linux && !is_android) {

@@ -127,6 +127,5 @@ mojo_native_application("apptests") {
 
   data_deps = [
     ":web_view",
-    "//components/mus/vm:lib",
   ]
 }

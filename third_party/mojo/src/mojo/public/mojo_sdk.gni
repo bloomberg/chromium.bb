@@ -135,5 +135,10 @@ template("mojo_sdk_source_set") {
         deps += [ rebase_path(sdk_dep, ".", mojo_root) ]
       }
     }
+
+    data_deps = []
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
+    }
   }
 }

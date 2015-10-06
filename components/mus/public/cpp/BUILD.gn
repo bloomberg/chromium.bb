@@ -61,6 +61,10 @@ mojo_sdk_source_set("cpp") {
     "mojo/public/cpp/bindings:bindings",
     "mojo/public/cpp/system",
   ]
+
+  data_deps = [
+    "//components/mus",
+  ]
 }
 
 source_set("common") {
