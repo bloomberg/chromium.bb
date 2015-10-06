@@ -15,12 +15,12 @@
 #include "ios/chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "ios/chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 AutocompleteProviderClientImpl::AutocompleteProviderClientImpl(
@@ -109,7 +109,7 @@ std::string AutocompleteProviderClientImpl::GetAcceptLanguages() const {
 
 std::string
 AutocompleteProviderClientImpl::GetEmbedderRepresentationOfAboutScheme() {
-  return ios::GetChromeBrowserProvider()->GetChromeUIScheme();
+  return kChromeUIScheme;
 }
 
 std::vector<base::string16> AutocompleteProviderClientImpl::GetBuiltinURLs() {

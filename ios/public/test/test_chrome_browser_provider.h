@@ -24,7 +24,6 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   // ChromeBrowserProvider:
   ChromeIdentityService* GetChromeIdentityService() override;
   StringProvider* GetStringProvider() override;
-  const char* GetChromeUIScheme() override;
 
   // Returns the string provider as a |FakeStringProvider|.
   FakeStringProvider* GetStringProviderAsFake();

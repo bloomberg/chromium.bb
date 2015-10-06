@@ -8,10 +8,6 @@
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/test/fake_string_provider.h"
 
-namespace {
-const char kUIScheme[] = "chrome";
-}
-
 namespace ios {
 
 TestChromeBrowserProvider::TestChromeBrowserProvider()
@@ -34,10 +30,6 @@ ChromeIdentityService* TestChromeBrowserProvider::GetChromeIdentityService() {
 
 StringProvider* TestChromeBrowserProvider::GetStringProvider() {
   return string_provider_.get();
-}
-
-const char* TestChromeBrowserProvider::GetChromeUIScheme() {
-  return kUIScheme;
 }
 
 FakeStringProvider*

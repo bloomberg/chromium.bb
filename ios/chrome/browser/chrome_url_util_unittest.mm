@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/chrome_url_util.h"
 
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "net/base/mac/url_conversions.h"
 #import "testing/gtest_mac.h"
 #include "url/gurl.h"
@@ -56,8 +56,7 @@ TEST(ChromeURLUtilTest, NSURLHasChromeScheme) {
     const char* url = kSchemeTestData[i];
     bool nsurl_result = UrlHasChromeScheme(
         [NSURL URLWithString:[NSString stringWithUTF8String:url]]);
-    bool gurl_result = GURL(url).SchemeIs(
-        ios::GetChromeBrowserProvider()->GetChromeUIScheme());
+    bool gurl_result = GURL(url).SchemeIs(kChromeUIScheme);
     EXPECT_EQ(gurl_result, nsurl_result) << "Scheme check failed for " << url;
   }
 }

@@ -6,20 +6,37 @@
 
 #include "base/macros.h"
 
-const char kChromeUINewTabURL[] = "chrome://newtab/";
+const char kChromeUIScheme[] = "chrome";
 
+const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
+const char kChromeUIChromeURLsURL[] = "chrome://chrome-urls/";
+const char kChromeUICreditsURL[] = "chrome://credits/";
+const char kChromeUIFlagsURL[] = "chrome://flags/";
+const char kChromeUIHistoryURL[] = "chrome://history/";
+const char kChromeUINewTabURL[] = "chrome://newtab/";
+const char kChromeUISettingsURL[] = "chrome://settings/";
+const char kChromeUITermsURL[] = "chrome://terms/";
+const char kChromeUIVersionURL[] = "chrome://version/";
+
+const char kChromeUIAppleFlagsHost[] = "ui-alternatives";
 const char kChromeUIBookmarksHost[] = "bookmarks";
+const char kChromeUIBrowserCrashHost[] = "inducebrowsercrashforrealz";
 const char kChromeUIChromeURLsHost[] = "chrome-urls";
+const char kChromeUICrashesHost[] = "crashes";
 const char kChromeUICreditsHost[] = "credits";
 const char kChromeUIExternalFileHost[] = "external-file";
 const char kChromeUIFlagsHost[] = "flags";
+const char kChromeUIGCMInternalsHost[] = "gcm-internals";
 const char kChromeUIHistogramHost[] = "histograms";
+const char kChromeUIHistoryFrameHost[] = "history-frame";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUINetExportHost[] = "net-export";
 const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUIOmahaHost[] = "omaha";
-const char kChromeUITermsHost[] = "terms";
+const char kChromeUIPolicyHost[] = "policy";
+const char kChromeUISignInInternalsHost[] = "signin-internals";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
+const char kChromeUITermsHost[] = "terms";
 const char kChromeUIVersionHost[] = "version";
 
 // Add hosts here to be included in chrome://chrome-urls (about:about).
@@ -32,3 +49,23 @@ const char* const kChromeHostURLs[] = {
     kChromeUITermsHost,     kChromeUIVersionHost,
 };
 const size_t kNumberOfChromeHostURLs = arraysize(kChromeHostURLs);
+
+const char kSyncGoogleDashboardURL[] =
+    "https://www.google.com/settings/chrome/sync/";
+
+const char kPasswordManagerAccountDashboardURL[] =
+    "https://passwords.google.com/settings/passwords";
+
+const char kPageInfoHelpCenterURL[] =
+    "https://support.google.com/chrome/?p=ui_security_indicator";
+
+const char kCrashReasonURL[] = "https://support.google.com/chrome/?p=e_awsnap";
+
+const char kPrivacyLearnMoreURL[] =
+    "https://support.google.com/chrome/answer/114836?p=settings_privacy";
+
+const char kDoNotTrackLearnMoreURL[] =
+    "https://support.google.com/chrome/answer/2942429?p=mobile_do_not_track";
+
+const char kSyncEncryptionHelpURL[] =
+    "https://support.google.com/chrome/answer/1181035?p=settings_encryption";

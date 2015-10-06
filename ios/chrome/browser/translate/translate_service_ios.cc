@@ -8,7 +8,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "ios/chrome/browser/application_context.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #include "url/gurl.h"
 
 namespace {
@@ -66,6 +66,5 @@ bool TranslateServiceIOS::IsTranslatableURL(const GURL& url) {
   // A URL is translatable unless it is one of the following:
   // - empty (can happen for popups created with window.open(""))
   // - an internal URL
-  return !url.is_empty() &&
-         !url.SchemeIs(ios::GetChromeBrowserProvider()->GetChromeUIScheme());
+  return !url.is_empty() && !url.SchemeIs(kChromeUIScheme);
 }

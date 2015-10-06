@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/history/history_utils.h"
 
 #include "components/dom_distiller/core/url_constants.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -22,7 +22,7 @@ bool CanAddURLToHistory(const GURL& url) {
   // by a shortcut or menu action.
   if (url.SchemeIs(url::kJavaScriptScheme) ||
       url.SchemeIs(dom_distiller::kDomDistillerScheme) ||
-      url.SchemeIs(ios::GetChromeBrowserProvider()->GetChromeUIScheme()))
+      url.SchemeIs(kChromeUIScheme))
     return false;
 
   // Allow all about: and chrome: URLs except about:blank, since the user may

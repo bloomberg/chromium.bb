@@ -106,10 +106,6 @@ class ChromeBrowserProvider {
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
   // Returns the distribution brand code.
   virtual std::string GetDistributionBrandCode();
-  // Returns the chrome UI scheme.
-  // TODO(droger): Remove this method once chrome no longer needs to match
-  // content.
-  virtual const char* GetChromeUIScheme();
   // Sets the alpha property of an UIView with an animation.
   virtual void SetUIViewAlphaWithAnimation(UIView* view, float alpha);
   // Returns the metrics service.

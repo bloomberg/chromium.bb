@@ -6,8 +6,8 @@
 
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 #include "ios/chrome/browser/chrome_paths.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/test/testing_application_context.h"
-#include "ios/public/test/test_chrome_browser_provider.h"
 #include "ios/public/test/test_chrome_provider_initializer.h"
 #include "ios/web/public/web_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,11 +73,7 @@ void IOSChromeUnitTestSuite::Initialize() {
   ios::RegisterPathProvider();
   ui::RegisterPathProvider();
 
-  {
-    ios::TestChromeBrowserProvider provider;
-    url::AddStandardScheme(provider.GetChromeUIScheme(),
-                           url::SCHEME_WITHOUT_PORT);
-  }
+  url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITHOUT_PORT);
 
   base::TestSuite::Initialize();
 }

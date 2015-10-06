@@ -89,10 +89,6 @@ std::string ChromeBrowserProvider::GetDistributionBrandCode() {
   return std::string();
 }
 
-const char* ChromeBrowserProvider::GetChromeUIScheme() {
-  return nullptr;
-}
-
 void ChromeBrowserProvider::SetUIViewAlphaWithAnimation(UIView* view,
                                                         float alpha) {
 }
