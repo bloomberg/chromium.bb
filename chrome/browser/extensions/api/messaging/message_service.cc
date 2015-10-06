@@ -130,6 +130,7 @@ struct MessageService::OpenChannelParams {
   int source_process_id;
   scoped_ptr<base::DictionaryValue> source_tab;
   int source_frame_id;
+  int target_tab_id;
   int target_frame_id;
   scoped_ptr<MessagePort> receiver;
   int receiver_port_id;
@@ -145,6 +146,7 @@ struct MessageService::OpenChannelParams {
   OpenChannelParams(int source_process_id,
                     scoped_ptr<base::DictionaryValue> source_tab,
                     int source_frame_id,
+                    int target_tab_id,
                     int target_frame_id,
                     MessagePort* receiver,
                     int receiver_port_id,
@@ -156,6 +158,7 @@ struct MessageService::OpenChannelParams {
                     bool include_guest_process_info)
       : source_process_id(source_process_id),
         source_frame_id(source_frame_id),
+        target_tab_id(target_tab_id),
         target_frame_id(target_frame_id),
         receiver(receiver),
         receiver_port_id(receiver_port_id),
@@ -353,8 +356,8 @@ void MessageService::OpenChannelToExtension(
   }
 
   scoped_ptr<OpenChannelParams> params(new OpenChannelParams(
-      source_process_id, source_tab.Pass(), source_frame_id,
-      -1,  // no target_frame_id for a channel to an extension/background page.
+      source_process_id, source_tab.Pass(), source_frame_id, -1,
+      -1,  // no target_tab_id/target_frame_id for connections to extensions
       nullptr, receiver_port_id, source_extension_id, target_extension_id,
       source_url, channel_name, include_tls_channel_id,
       include_guest_process_info));
@@ -550,11 +553,11 @@ void MessageService::OpenChannelToTab(int source_process_id,
       scoped_ptr<base::DictionaryValue>(),  // Source tab doesn't make sense
                                             // for opening to tabs.
       -1,  // If there is no tab, then there is no frame either.
-      frame_id,
-      receiver.release(), receiver_port_id, extension_id, extension_id,
+      tab_id, frame_id, receiver.release(), receiver_port_id, extension_id,
+      extension_id,
       GURL(),  // Source URL doesn't make sense for opening to tabs.
       channel_name,
-      false,  // Connections to tabs don't get TLS channel IDs.
+      false,    // Connections to tabs don't get TLS channel IDs.
       false));  // Connections to tabs aren't webview guests.
   OpenChannelImpl(contents->GetBrowserContext(), params.Pass(), extension,
                   false /* did_enqueue */);
@@ -603,9 +606,10 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
   // opener has the opposite port ID).
   channel->receiver->DispatchOnConnect(
       params->receiver_port_id, params->channel_name, params->source_tab.Pass(),
-      params->source_frame_id, params->target_frame_id, guest_process_id,
-      guest_render_frame_routing_id, params->source_extension_id,
-      params->target_extension_id, params->source_url, params->tls_channel_id);
+      params->source_frame_id, params->target_tab_id, params->target_frame_id,
+      guest_process_id, guest_render_frame_routing_id,
+      params->source_extension_id, params->target_extension_id,
+      params->source_url, params->tls_channel_id);
 
   // Report the event to the event router, if the target is an extension.
   //

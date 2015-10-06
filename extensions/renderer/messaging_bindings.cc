@@ -25,6 +25,7 @@
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/event_bindings.h"
+#include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/gc_callback.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/script_context.h"
@@ -291,6 +292,15 @@ void DispatchOnConnectToScriptContext(
   if (info.target_frame_id > 0 &&
       renderframe->GetRoutingID() != info.target_frame_id)
     return;
+
+  // Bandaid fix for crbug.com/520303.
+  // TODO(rdevlin.cronin): Fix this properly by routing messages to the correct
+  // RenderFrame from the browser (same with |target_frame_id| in fact).
+  if (info.target_tab_id != -1 &&
+      info.target_tab_id != ExtensionFrameHelper::Get(renderframe)->tab_id()) {
+    return;
+  }
+
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
 
