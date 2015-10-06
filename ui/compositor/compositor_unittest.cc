@@ -9,7 +9,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/test/draw_waiter_for_test.h"
 
 using testing::Mock;
 using testing::_;
@@ -123,6 +125,32 @@ TEST_F(CompositorTest, AddAndRemoveBeginFrameObserver) {
   Mock::VerifyAndClearExpectations(&test_observer2);
 
   compositor()->RemoveBeginFrameObserver(&test_observer2);
+}
+
+TEST_F(CompositorTest, ReleaseWidgetWithOutputSurfaceNeverCreated) {
+  compositor()->SetVisible(false);
+  EXPECT_EQ(gfx::kNullAcceleratedWidget,
+            compositor()->ReleaseAcceleratedWidget());
+  compositor()->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
+  compositor()->SetVisible(true);
+}
+
+TEST_F(CompositorTest, CreateAndReleaseOutputSurface) {
+  scoped_ptr<Layer> root_layer(new Layer(ui::LAYER_SOLID_COLOR));
+  root_layer->SetBounds(gfx::Rect(10, 10));
+  compositor()->SetRootLayer(root_layer.get());
+  compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10));
+  DCHECK(compositor()->IsVisible());
+  compositor()->ScheduleDraw();
+  DrawWaiterForTest::WaitForCompositingEnded(compositor());
+  compositor()->SetVisible(false);
+  EXPECT_EQ(gfx::kNullAcceleratedWidget,
+            compositor()->ReleaseAcceleratedWidget());
+  compositor()->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
+  compositor()->SetVisible(true);
+  compositor()->ScheduleDraw();
+  DrawWaiterForTest::WaitForCompositingEnded(compositor());
+  compositor()->SetRootLayer(nullptr);
 }
 
 }  // namespace ui

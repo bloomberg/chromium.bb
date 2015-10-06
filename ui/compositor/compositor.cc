@@ -307,6 +307,17 @@ void Compositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
     context_factory_->CreateOutputSurface(weak_ptr_factory_.GetWeakPtr());
 }
 
+gfx::AcceleratedWidget Compositor::ReleaseAcceleratedWidget() {
+  DCHECK(!IsVisible());
+  if (!host_->output_surface_lost())
+    host_->ReleaseOutputSurface();
+  context_factory_->RemoveCompositor(this);
+  widget_valid_ = false;
+  gfx::AcceleratedWidget widget = widget_;
+  widget_ = gfx::kNullAcceleratedWidget;
+  return widget;
+}
+
 gfx::AcceleratedWidget Compositor::widget() const {
   DCHECK(widget_valid_);
   return widget_;

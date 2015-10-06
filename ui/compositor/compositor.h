@@ -231,6 +231,10 @@ class COMPOSITOR_EXPORT Compositor
 
   // Sets the widget for the compositor to render into.
   void SetAcceleratedWidget(gfx::AcceleratedWidget widget);
+  // Releases the widget previously set through SetAcceleratedWidget().
+  // After returning it will not be used for rendering anymore.
+  // The compositor must be set to invisible when taking away a widget.
+  gfx::AcceleratedWidget ReleaseAcceleratedWidget();
   gfx::AcceleratedWidget widget() const;
 
   // Returns the vsync manager for this compositor.
