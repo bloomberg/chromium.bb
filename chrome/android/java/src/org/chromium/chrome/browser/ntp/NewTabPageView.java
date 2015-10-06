@@ -59,7 +59,6 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 public class NewTabPageView extends FrameLayout
         implements MostVisitedURLsObserver, OnLayoutChangeListener {
 
-    static final int MAX_MOST_VISITED_SITES = 12;
     private static final int SHADOW_COLOR = 0x11000000;
     private static final long SNAP_SCROLL_DELAY_MS = 30;
 
