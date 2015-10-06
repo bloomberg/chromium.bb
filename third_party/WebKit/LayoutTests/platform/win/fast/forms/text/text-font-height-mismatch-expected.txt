@@ -1,0 +1,22 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x102
+  LayoutBlockFlow {HTML} at (0,0) size 800x102
+    LayoutBlockFlow {BODY} at (8,16) size 784x70
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 274x17
+          text run at (0,0) width 274: "Editable text should be centered vertically."
+      LayoutBlockFlow {P} at (0,34) size 784x36
+        LayoutTextControl {INPUT} at (0,5) size 294x20 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+        LayoutText {#text} at (294,9) size 4x17
+          text run at (294,9) width 4: " "
+        LayoutTextControl {INPUT} at (298,0) size 197x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+        LayoutText {#text} at (0,0) size 0x0
+layer at (9,57) size 292x16 scrollHeight 21
+  LayoutBlockFlow {DIV} at (1,2) size 292x16
+    LayoutText {#text} at (0,-6) size 81x27
+      text run at (0,-6) width 81: "ABCgjy"
+layer at (307,59) size 195x18
+  LayoutBlockFlow {DIV} at (1,9) size 195x18
+    LayoutText {#text} at (0,0) size 54x17
+      text run at (0,0) width 54: "ABCgjy"
