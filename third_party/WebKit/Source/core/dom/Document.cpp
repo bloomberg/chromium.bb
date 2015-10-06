@@ -1721,8 +1721,10 @@ void Document::updateLayoutTree(StyleRecalcChange change)
     if (!view() || !isActive())
         return;
 
-    if (change != Force && !needsLayoutTreeUpdate())
+    if (change != Force && !needsLayoutTreeUpdate()) {
+        ASSERT(lifecycle().state() != DocumentLifecycle::VisualUpdatePending);
         return;
+    }
 
     if (inStyleRecalc())
         return;

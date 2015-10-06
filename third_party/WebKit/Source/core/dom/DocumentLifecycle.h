@@ -157,6 +157,10 @@ public:
         m_detachCount--;
     }
 
+#if ENABLE(ASSERT)
+    static const char* stateAsDebugString(const State);
+#endif
+
 private:
 #if ENABLE(ASSERT)
     bool canAdvanceTo(State) const;

@@ -276,7 +276,8 @@ bool DocumentLifecycle::canRewindTo(State nextState) const
 
 void DocumentLifecycle::advanceTo(State nextState)
 {
-    ASSERT(canAdvanceTo(nextState));
+    ASSERT_WITH_MESSAGE(canAdvanceTo(nextState),
+        "Cannot advance document lifecycle from %s to %s.", stateAsDebugString(m_state), stateAsDebugString(nextState));
     m_state = nextState;
 }
 
@@ -285,8 +286,47 @@ void DocumentLifecycle::ensureStateAtMost(State state)
     ASSERT(state == VisualUpdatePending || state == StyleClean || state == LayoutClean);
     if (m_state <= state)
         return;
-    ASSERT(canRewindTo(state));
+    ASSERT_WITH_MESSAGE(canRewindTo(state),
+        "Cannot rewind document lifecycle from %s to %s.", stateAsDebugString(m_state), stateAsDebugString(state));
     m_state = state;
 }
+
+#if ENABLE(ASSERT)
+#define DEBUG_STRING_CASE(StateName) \
+    case StateName: return #StateName
+
+const char* DocumentLifecycle::stateAsDebugString(const State state)
+{
+    switch (state) {
+        DEBUG_STRING_CASE(Uninitialized);
+        DEBUG_STRING_CASE(Inactive);
+        DEBUG_STRING_CASE(VisualUpdatePending);
+        DEBUG_STRING_CASE(InStyleRecalc);
+        DEBUG_STRING_CASE(StyleClean);
+        DEBUG_STRING_CASE(InLayoutSubtreeChange);
+        DEBUG_STRING_CASE(LayoutSubtreeChangeClean);
+        DEBUG_STRING_CASE(InPreLayout);
+        DEBUG_STRING_CASE(InPerformLayout);
+        DEBUG_STRING_CASE(AfterPerformLayout);
+        DEBUG_STRING_CASE(LayoutClean);
+        DEBUG_STRING_CASE(InCompositingUpdate);
+        DEBUG_STRING_CASE(CompositingClean);
+        DEBUG_STRING_CASE(InPaintInvalidation);
+        DEBUG_STRING_CASE(PaintInvalidationClean);
+        DEBUG_STRING_CASE(InUpdatePaintProperties);
+        DEBUG_STRING_CASE(UpdatePaintPropertiesClean);
+        DEBUG_STRING_CASE(InPaint);
+        DEBUG_STRING_CASE(PaintClean);
+        DEBUG_STRING_CASE(InCompositingForSlimmingPaintV2);
+        DEBUG_STRING_CASE(CompositingForSlimmingPaintV2Clean);
+        DEBUG_STRING_CASE(Stopping);
+        DEBUG_STRING_CASE(Stopped);
+        DEBUG_STRING_CASE(Disposed);
+    }
+
+    ASSERT_NOT_REACHED();
+    return "Unknown";
+}
+#endif
 
 }
