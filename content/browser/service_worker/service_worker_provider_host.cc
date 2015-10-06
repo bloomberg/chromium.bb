@@ -587,8 +587,8 @@ void ServiceWorkerProviderHost::SendSetVersionAttributesMessage(
     attrs.active = GetOrCreateServiceWorkerHandle(active_version);
 
   Send(new ServiceWorkerMsg_SetVersionAttributes(
-      render_thread_id_, provider_id_, registration_handle_id,
-      changed_mask.changed(), attrs));
+      render_thread_id_, registration_handle_id, changed_mask.changed(),
+      attrs));
 }
 
 void ServiceWorkerProviderHost::SendServiceWorkerStateChangedMessage(

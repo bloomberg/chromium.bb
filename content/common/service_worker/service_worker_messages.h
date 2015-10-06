@@ -402,10 +402,9 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
                      int /* handle_id */,
                      blink::WebServiceWorkerState)
 
-// Tells the child process to set service workers for the given provider.
-IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_SetVersionAttributes,
+// Tells the child process to set service workers for the given registration.
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetVersionAttributes,
                      int /* thread_id */,
-                     int /* provider_id */,
                      int /* registration_handle_id */,
                      int /* changed_mask */,
                      content::ServiceWorkerVersionAttributes)

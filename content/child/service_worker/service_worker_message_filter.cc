@@ -90,7 +90,6 @@ void ServiceWorkerMessageFilter::OnStaleRegistered(
 
 void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
     int thread_id,
-    int provider_id,
     int registration_handle_id,
     int changed_mask,
     const ServiceWorkerVersionAttributes& attrs) {
