@@ -344,7 +344,7 @@ void GraphicsContext::compositePicture(SkPicture* picture, const FloatRect& dest
     SkMatrix pictureTransform;
     pictureTransform.setRectToRect(sourceBounds, skBounds, SkMatrix::kFill_ScaleToFit);
     m_canvas->concat(pictureTransform);
-    RefPtr<SkPictureImageFilter> pictureFilter = adoptRef(SkPictureImageFilter::CreateForLocalSpace(picture, sourceBounds, static_cast<SkFilterQuality>(imageInterpolationQuality())));
+    RefPtr<SkImageFilter> pictureFilter = adoptRef(SkPictureImageFilter::CreateForLocalSpace(picture, sourceBounds, static_cast<SkFilterQuality>(imageInterpolationQuality())));
     picturePaint.setImageFilter(pictureFilter.get());
     m_canvas->saveLayer(&sourceBounds, &picturePaint);
     m_canvas->restore();
