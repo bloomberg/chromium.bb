@@ -87,6 +87,12 @@ public class LogcatExtractionCallableTest {
     }
 
     @Test
+    public void testDontElideFileSuffixes() {
+        String original = "chromium_android_linker.so";
+        assertEquals(original, LogcatExtractionCallable.elideUrl(original));
+    }
+
+    @Test
     public void testElideIp() {
         String original = "traceroute 127.0.0.1";
         String expected = "traceroute 1.2.3.4";

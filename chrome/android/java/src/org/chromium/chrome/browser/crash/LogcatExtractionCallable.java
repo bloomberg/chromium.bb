@@ -76,7 +76,7 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
             Pattern.compile("(" + HOST_NAME + "|" + IP_ADDRESS + ")");
 
     private static final Pattern WEB_URL = Pattern.compile(
-            "((?:(http|https|Http|Https|rtsp|Rtsp):"
+            "(?:\\b|^)((?:(http|https|Http|Https|rtsp|Rtsp):"
             + "\\/\\/(?:(?:[a-zA-Z0-9\\$\\-\\_\\.\\+\\!\\*\\'\\(\\)"
             + "\\,\\;\\?\\&\\=]|(?:\\%[a-fA-F0-9]{2})){1,64}(?:\\:(?:[a-zA-Z0-9\\$\\-\\_"
             + "\\.\\+\\!\\*\\'\\(\\)\\,\\;\\?\\&\\=]|(?:\\%[a-fA-F0-9]{2})){1,25})?\\@)?)?"
