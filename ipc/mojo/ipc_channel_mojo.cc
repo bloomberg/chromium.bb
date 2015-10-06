@@ -95,7 +95,7 @@ class ClientChannelMojo : public ChannelMojo, public ClientChannel {
 
  private:
   void BindPipe(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(handle.Pass());
+    binding_.Bind(handle.Pass(), 1);
   }
   void OnConnectionError() {
     listener()->OnChannelError();

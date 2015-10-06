@@ -27,7 +27,7 @@ BackgroundSyncClientImpl::BackgroundSyncClientImpl(
     int64 service_worker_registration_id,
     mojo::InterfaceRequest<BackgroundSyncServiceClient> request)
     : service_worker_registration_id_(service_worker_registration_id),
-      binding_(this, request.Pass()),
+      binding_(this, request.Pass(), 13),
       callback_seq_num_(0) {}
 
 void BackgroundSyncClientImpl::Sync(int64_t handle_id,

@@ -1178,7 +1178,7 @@ void RenderFrameImpl::NavigateToSwappedOutURL() {
 void RenderFrameImpl::BindServiceRegistry(
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::ServiceProviderPtr exposed_services) {
-  service_registry_.Bind(services.Pass());
+  service_registry_.Bind(services.Pass(), 20);
   service_registry_.BindRemoteServiceProvider(exposed_services.Pass());
 }
 
@@ -5193,7 +5193,7 @@ void RenderFrameImpl::RegisterMojoServices() {
 mojo::ServiceProviderPtr RenderFrameImpl::ConnectToApplication(
     const GURL& url) {
   DCHECK(mojo_shell_);
-  mojo::ServiceProviderPtr service_provider;
+  mojo::ServiceProviderPtr service_provider(21);
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url);
   mojo_shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),

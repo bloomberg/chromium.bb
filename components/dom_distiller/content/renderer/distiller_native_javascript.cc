@@ -23,7 +23,7 @@ namespace dom_distiller {
 
 DistillerNativeJavaScript::DistillerNativeJavaScript(
     content::RenderFrame* render_frame)
-    : render_frame_(render_frame) {}
+    : render_frame_(render_frame), distiller_js_service_(2) {}
 
 DistillerNativeJavaScript::~DistillerNativeJavaScript() {}
 

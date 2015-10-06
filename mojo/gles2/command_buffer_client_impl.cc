@@ -159,7 +159,7 @@ bool CommandBufferClientImpl::Initialize() {
       new SyncPointClientImpl(&sync_point_client, async_waiter_));
 
   mojo::CommandBufferLostContextObserverPtr observer_ptr;
-  observer_binding_.Bind(GetProxy(&observer_ptr), async_waiter_);
+  observer_binding_.Bind(GetProxy(&observer_ptr), 0, async_waiter_);
   command_buffer_->Initialize(sync_client.Pass(),
                               sync_point_client.Pass(),
                               observer_ptr.Pass(),

@@ -28,6 +28,7 @@ class Connector : public MessageReceiver {
   // The Connector takes ownership of |message_pipe|.
   explicit Connector(
       ScopedMessagePipeHandle message_pipe,
+      int id = 0,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter());
   ~Connector() override;
 
@@ -96,6 +97,10 @@ class Connector : public MessageReceiver {
 
   // Cancels any calls made to |waiter_|.
   void CancelWait();
+
+  // TODO(rockot): Remove this once we've resolved http://crbug.com/534719.
+  // This is used to help identify binding and proxy creation sites.
+  int id_;
 
   Closure connection_error_handler_;
   const MojoAsyncWaiter* waiter_;

@@ -72,10 +72,11 @@ bool Router::HandleIncomingMessageThunk::Accept(Message* message) {
 
 Router::Router(ScopedMessagePipeHandle message_pipe,
                FilterChain filters,
+               int id,
                const MojoAsyncWaiter* waiter)
     : thunk_(this),
       filters_(filters.Pass()),
-      connector_(message_pipe.Pass(), waiter),
+      connector_(message_pipe.Pass(), id, waiter),
       weak_self_(this),
       incoming_receiver_(nullptr),
       next_request_id_(0),

@@ -23,8 +23,9 @@ ServiceRegistryImpl::~ServiceRegistryImpl() {
 }
 
 void ServiceRegistryImpl::Bind(
-    mojo::InterfaceRequest<mojo::ServiceProvider> request) {
-  binding_.Bind(request.Pass());
+    mojo::InterfaceRequest<mojo::ServiceProvider> request,
+    int id) {
+  binding_.Bind(request.Pass(), id);
 }
 
 void ServiceRegistryImpl::BindRemoteServiceProvider(

@@ -28,7 +28,8 @@ class CONTENT_EXPORT ServiceRegistryImpl
   ~ServiceRegistryImpl() override;
 
   // Binds this ServiceProvider implementation to a message pipe endpoint.
-  void Bind(mojo::InterfaceRequest<mojo::ServiceProvider> request);
+  // TODO(rockot): Remove the id argument once http://crbug.com/534719 is fixed.
+  void Bind(mojo::InterfaceRequest<mojo::ServiceProvider> request, int id = 0);
 
   // Binds to a remote ServiceProvider. This will expose added services to the
   // remote ServiceProvider with the corresponding handle and enable

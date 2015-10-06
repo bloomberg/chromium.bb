@@ -69,9 +69,10 @@ class Binding {
   // See class comment for definition of |waiter|.
   Binding(Interface* impl,
           ScopedMessagePipeHandle handle,
+          int id = 0,
           const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : Binding(impl) {
-    Bind(handle.Pass(), waiter);
+    Bind(handle.Pass(), id, waiter);
   }
 
   // Constructs a completed binding of |impl| to a new message pipe, passing the
@@ -84,7 +85,7 @@ class Binding {
           InterfacePtr<Interface>* ptr,
           const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : Binding(impl) {
-    Bind(ptr, waiter);
+    Bind(ptr, 0, waiter);
   }
 
   // Constructs a completed binding of |impl| to the message pipe endpoint in
@@ -93,9 +94,10 @@ class Binding {
   // |waiter|.
   Binding(Interface* impl,
           InterfaceRequest<Interface> request,
+          int id = 0,
           const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : Binding(impl) {
-    Bind(request.PassMessagePipe(), waiter);
+    Bind(request.PassMessagePipe(), id, waiter);
   }
 
   // Tears down the binding, closing the message pipe and leaving the interface
@@ -110,6 +112,7 @@ class Binding {
   // specified implementation. See class comment for definition of |waiter|.
   void Bind(
       ScopedMessagePipeHandle handle,
+      int id = 0,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     MOJO_DCHECK(!internal_router_);
     internal::FilterChain filters;
@@ -117,7 +120,7 @@ class Binding {
     filters.Append<typename Interface::RequestValidator_>();
 
     internal_router_ =
-        new internal::Router(handle.Pass(), filters.Pass(), waiter);
+        new internal::Router(handle.Pass(), filters.Pass(), id, waiter);
     internal_router_->set_incoming_receiver(&stub_);
     internal_router_->set_connection_error_handler(
         [this]() { connection_error_handler_.Run(); });
@@ -131,12 +134,13 @@ class Binding {
   // class comment for definition of |waiter|.
   void Bind(
       InterfacePtr<Interface>* ptr,
+      int id = 0,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     MessagePipe pipe;
     ptr->Bind(
         InterfacePtrInfo<Interface>(pipe.handle0.Pass(), Interface::Version_),
         waiter);
-    Bind(pipe.handle1.Pass(), waiter);
+    Bind(pipe.handle1.Pass(), id, waiter);
   }
 
   // Completes a binding that was constructed with only an interface
@@ -145,8 +149,9 @@ class Binding {
   // for definition of |waiter|.
   void Bind(
       InterfaceRequest<Interface> request,
+      int id = 0,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
-    Bind(request.PassMessagePipe(), waiter);
+    Bind(request.PassMessagePipe(), id, waiter);
   }
 
   // Stops processing incoming messages until

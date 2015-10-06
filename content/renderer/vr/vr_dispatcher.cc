@@ -10,8 +10,7 @@
 namespace content {
 
 VRDispatcher::VRDispatcher(ServiceRegistry* service_registry)
-    : service_registry_(service_registry) {
-}
+    : service_registry_(service_registry), vr_service_(17) {}
 
 VRDispatcher::~VRDispatcher() {
 }

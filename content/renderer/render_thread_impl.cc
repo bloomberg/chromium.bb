@@ -344,7 +344,7 @@ class RenderFrameSetupImpl : public RenderFrameSetup {
  public:
   explicit RenderFrameSetupImpl(
       mojo::InterfaceRequest<RenderFrameSetup> request)
-      : routing_id_highmark_(-1), binding_(this, request.Pass()) {}
+      : routing_id_highmark_(-1), binding_(this, request.Pass(), 24) {}
 
   void ExchangeServiceProviders(
       int32_t frame_routing_id,
@@ -361,12 +361,17 @@ class RenderFrameSetupImpl : public RenderFrameSetup {
     // created due to a race between the message and a ViewMsg_New IPC that
     // triggers creation of the RenderFrame we want.
     if (!frame) {
+      mojo::ServiceProviderPtr exposed_services_with_id(22);
+      exposed_services_with_id.Bind(exposed_services.PassInterface());
       RenderThreadImpl::current()->RegisterPendingRenderFrameConnect(
-          frame_routing_id, services.Pass(), exposed_services.Pass());
+          frame_routing_id, services.Pass(), exposed_services_with_id.Pass());
       return;
     }
 
-    frame->BindServiceRegistry(services.Pass(), exposed_services.Pass());
+    mojo::ServiceProviderPtr exposed_services_with_id(23);
+    exposed_services_with_id.Bind(exposed_services.PassInterface());
+    frame->BindServiceRegistry(services.Pass(),
+                               exposed_services_with_id.Pass());
   }
 
  private:
@@ -405,16 +410,18 @@ class EmbeddedWorkerSetupImpl : public EmbeddedWorkerSetup {
  public:
   explicit EmbeddedWorkerSetupImpl(
       mojo::InterfaceRequest<EmbeddedWorkerSetup> request)
-      : binding_(this, request.Pass()) {}
+      : binding_(this, request.Pass(), 33) {}
 
   void ExchangeServiceProviders(
       int32_t thread_id,
       mojo::InterfaceRequest<mojo::ServiceProvider> services,
       mojo::ServiceProviderPtr exposed_services) override {
+    mojo::ServiceProviderPtr exposed_services_with_id(28);
+    exposed_services_with_id.Bind(exposed_services.PassInterface());
     WorkerTaskRunner::Instance()->GetTaskRunnerFor(thread_id)->PostTask(
         FROM_HERE,
         base::Bind(&SetupEmbeddedWorkerOnWorkerThread, base::Passed(&services),
-                   base::Passed(&exposed_services)));
+                   base::Passed(&exposed_services_with_id)));
   }
 
  private:

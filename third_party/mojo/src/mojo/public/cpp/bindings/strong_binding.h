@@ -55,48 +55,54 @@ class StrongBinding {
   StrongBinding(
       Interface* impl,
       ScopedMessagePipeHandle handle,
+      int id = 0,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : StrongBinding(impl) {
-    binding_.Bind(handle.Pass(), waiter);
+    binding_.Bind(handle.Pass(), id, waiter);
   }
 
   StrongBinding(
       Interface* impl,
       InterfacePtr<Interface>* ptr,
+      int id = 0,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : StrongBinding(impl) {
-    binding_.Bind(ptr, waiter);
+    binding_.Bind(ptr, id, waiter);
   }
 
   StrongBinding(
       Interface* impl,
       InterfaceRequest<Interface> request,
+      int id = 0,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : StrongBinding(impl) {
-    binding_.Bind(request.Pass(), waiter);
+    binding_.Bind(request.Pass(), id, waiter);
   }
 
   ~StrongBinding() {}
 
   void Bind(
       ScopedMessagePipeHandle handle,
+      int id = 0,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     assert(!binding_.is_bound());
-    binding_.Bind(handle.Pass(), waiter);
+    binding_.Bind(handle.Pass(), id, waiter);
   }
 
   void Bind(
       InterfacePtr<Interface>* ptr,
+      int id = 0,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     assert(!binding_.is_bound());
-    binding_.Bind(ptr, waiter);
+    binding_.Bind(ptr, id, waiter);
   }
 
   void Bind(
       InterfaceRequest<Interface> request,
+      int id = 0,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     assert(!binding_.is_bound());
-    binding_.Bind(request.Pass(), waiter);
+    binding_.Bind(request.Pass(), id, waiter);
   }
 
   bool WaitForIncomingMethodCall() {

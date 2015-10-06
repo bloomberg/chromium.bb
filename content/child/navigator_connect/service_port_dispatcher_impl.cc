@@ -52,7 +52,7 @@ ServicePortDispatcherImpl::~ServicePortDispatcherImpl() {
 ServicePortDispatcherImpl::ServicePortDispatcherImpl(
     base::WeakPtr<blink::WebServiceWorkerContextProxy> proxy,
     mojo::InterfaceRequest<ServicePortDispatcher> request)
-    : binding_(this, request.Pass()), proxy_(proxy) {
+    : binding_(this, request.Pass(), 32), proxy_(proxy) {
   WorkerThread::AddObserver(this);
 }
 

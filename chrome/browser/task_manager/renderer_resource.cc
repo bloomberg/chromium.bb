@@ -22,7 +22,7 @@ RendererResource::RendererResource(base::ProcessHandle process,
   // We cache the process and pid as when a Tab/BackgroundContents is closed the
   // process reference becomes NULL and the TaskManager still needs it.
   unique_process_id_ = render_view_host_->GetProcess()->GetID();
-  ResourceUsageReporterPtr service;
+  ResourceUsageReporterPtr service(5);
   content::ServiceRegistry* service_registry =
       render_view_host_->GetProcess()->GetServiceRegistry();
   if (service_registry)

@@ -31,11 +31,12 @@ class InterfacePtr {
   MOJO_MOVE_ONLY_TYPE(InterfacePtr)
  public:
   // Constructs an unbound InterfacePtr.
-  InterfacePtr() {}
-  InterfacePtr(decltype(nullptr)) {}
+  InterfacePtr(int id = 0) : internal_state_(id) {}
+  InterfacePtr(decltype(nullptr), int id = 0) : internal_state_(id) {}
 
   // Takes over the binding of another InterfacePtr.
-  InterfacePtr(InterfacePtr&& other) {
+  InterfacePtr(InterfacePtr&& other)
+      : internal_state_(other.internal_state_.id()) {
     internal_state_.Swap(&other.internal_state_);
   }
 
@@ -43,6 +44,7 @@ class InterfacePtr {
   // already bound to this pointer.
   InterfacePtr& operator=(InterfacePtr&& other) {
     reset();
+    internal_state_.set_id(other.internal_state_.id());
     internal_state_.Swap(&other.internal_state_);
     return *this;
   }
@@ -108,7 +110,7 @@ class InterfacePtr {
   // Closes the bound message pipe (if any) and returns the pointer to the
   // unbound state.
   void reset() {
-    State doomed;
+    State doomed(-1);
     internal_state_.Swap(&doomed);
   }
 
@@ -145,7 +147,7 @@ class InterfacePtr {
   // pending response.
   InterfacePtrInfo<Interface> PassInterface() {
     MOJO_DCHECK(!internal_state_.has_pending_callbacks());
-    State state;
+    State state(-1);
     internal_state_.Swap(&state);
 
     return state.PassInterface();

@@ -58,8 +58,8 @@ namespace content {
 PresentationDispatcher::PresentationDispatcher(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       controller_(nullptr),
-      binding_(this) {
-}
+      presentation_service_(15),
+      binding_(this) {}
 
 PresentationDispatcher::~PresentationDispatcher() {
   // Controller should be destroyed before the dispatcher when frame is
@@ -421,7 +421,7 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
   render_frame()->GetServiceRegistry()->ConnectToRemoteService(
       mojo::GetProxy(&presentation_service_));
   presentation::PresentationServiceClientPtr client_ptr;
-  binding_.Bind(GetProxy(&client_ptr));
+  binding_.Bind(GetProxy(&client_ptr), 16);
   presentation_service_->SetClient(client_ptr.Pass());
 
   presentation_service_->ListenForDefaultSessionStart(base::Bind(

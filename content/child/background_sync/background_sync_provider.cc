@@ -30,7 +30,7 @@ int64 GetServiceWorkerRegistrationId(
 
 BackgroundSyncProvider::BackgroundSyncProvider(
     ServiceRegistry* service_registry)
-    : service_registry_(service_registry) {
+    : service_registry_(service_registry), background_sync_service_(14) {
   DCHECK(service_registry);
 }
 

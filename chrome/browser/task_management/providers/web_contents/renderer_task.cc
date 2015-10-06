@@ -30,7 +30,7 @@ namespace {
 // |render_process_host|.
 ProcessResourceUsage* CreateRendererResourcesSampler(
     content::RenderProcessHost* render_process_host) {
-  ResourceUsageReporterPtr service;
+  ResourceUsageReporterPtr service(3);
   content::ServiceRegistry* service_registry =
       render_process_host->GetServiceRegistry();
   if (service_registry)

@@ -237,7 +237,8 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
       default_task_runner_(renderer_scheduler->DefaultTaskRunner()),
-      web_scrollbar_behavior_(new WebScrollbarBehaviorImpl) {
+      web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
+      vibration_manager_(6) {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport);

@@ -12,8 +12,7 @@ namespace dom_distiller {
 DistillerPageNotifierServiceImpl::DistillerPageNotifierServiceImpl(
     DistillerJsRenderFrameObserver* observer,
     mojo::InterfaceRequest<DistillerPageNotifierService> request)
-    : binding_(this, request.Pass()),
-      distiller_js_observer_(observer) {}
+    : binding_(this, request.Pass(), 34), distiller_js_observer_(observer) {}
 
 void DistillerPageNotifierServiceImpl::NotifyIsDistillerPage() {
   // TODO(mdjones): Send some form of unique ID so this call knows

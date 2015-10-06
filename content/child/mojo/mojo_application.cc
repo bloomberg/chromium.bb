@@ -43,13 +43,13 @@ void MojoApplication::OnActivate(
       channel_init_.Init(handle, io_task_runner_);
   DCHECK(message_pipe.is_valid());
 
-  ApplicationSetupPtr application_setup;
+  ApplicationSetupPtr application_setup(25);
   application_setup.Bind(
       mojo::InterfacePtrInfo<ApplicationSetup>(message_pipe.Pass(), 0u));
 
-  mojo::ServiceProviderPtr services;
+  mojo::ServiceProviderPtr services(26);
   mojo::ServiceProviderPtr exposed_services;
-  service_registry_.Bind(GetProxy(&exposed_services));
+  service_registry_.Bind(GetProxy(&exposed_services), 27);
   application_setup->ExchangeServiceProviders(GetProxy(&services),
                                               exposed_services.Pass());
   service_registry_.BindRemoteServiceProvider(services.Pass());

@@ -56,7 +56,7 @@ void OnGetDevicesComplete(
   blink::WebVector<blink::WebUSBDevice*>* devices =
       new blink::WebVector<blink::WebUSBDevice*>(results.size());
   for (size_t i = 0; i < results.size(); ++i) {
-    device::usb::DevicePtr device;
+    device::usb::DevicePtr device(8);
     device_manager->GetDevice(results[i]->guid, mojo::GetProxy(&device));
     (*devices)[i] = new WebUSBDeviceImpl(
         device.Pass(), mojo::ConvertTo<blink::WebUSBDeviceInfo>(results[i]));
@@ -66,7 +66,8 @@ void OnGetDevicesComplete(
 
 }  // namespace
 
-WebUSBClientImpl::WebUSBClientImpl(content::ServiceRegistry* service_registry) {
+WebUSBClientImpl::WebUSBClientImpl(content::ServiceRegistry* service_registry)
+    : device_manager_(7) {
   service_registry->ConnectToRemoteService(mojo::GetProxy(&device_manager_));
 }
 
@@ -111,7 +112,7 @@ void WebUSBClientImpl::OnDeviceChangeNotification(
   for (size_t i = 0; i < notification->devices_added.size(); ++i) {
     const device::usb::DeviceInfoPtr& device_info =
         notification->devices_added[i];
-    device::usb::DevicePtr device;
+    device::usb::DevicePtr device(9);
     device_manager_->GetDevice(device_info->guid, mojo::GetProxy(&device));
     observer_->onDeviceConnected(blink::adoptWebPtr(new WebUSBDeviceImpl(
         device.Pass(), mojo::ConvertTo<blink::WebUSBDeviceInfo>(device_info))));
@@ -119,7 +120,7 @@ void WebUSBClientImpl::OnDeviceChangeNotification(
   for (size_t i = 0; i < notification->devices_removed.size(); ++i) {
     const device::usb::DeviceInfoPtr& device_info =
         notification->devices_removed[i];
-    device::usb::DevicePtr device;
+    device::usb::DevicePtr device(10);
     device_manager_->GetDevice(device_info->guid, mojo::GetProxy(&device));
     observer_->onDeviceDisconnected(blink::adoptWebPtr(new WebUSBDeviceImpl(
         device.Pass(), mojo::ConvertTo<blink::WebUSBDeviceInfo>(device_info))));
