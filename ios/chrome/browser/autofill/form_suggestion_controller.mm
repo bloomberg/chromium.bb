@@ -81,13 +81,6 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 // Clears state in between page loads.
 - (void)resetSuggestionState;
 
-// Finds a FormSuggestionProvider that can supply suggestions for the specified
-// form, requests them, and updates the view accordingly.
-- (void)retrieveSuggestionsForFormNamed:(const std::string&)formName
-                              fieldName:(const std::string&)fieldName
-                                   type:(const std::string&)type
-                               webState:(web::WebState*)webState;
-
 @end
 
 @implementation FormSuggestionController {
@@ -124,6 +117,9 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   return [self initWithWebState:webState
                       providers:providers
             JsSuggestionManager:jsSuggestionManager];
+}
+
+- (void)onNoSuggestionsAvailable {
 }
 
 - (void)detachFromWebState {
@@ -211,8 +207,10 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 
   // Once a provider is found, use it to retrieve suggestions.
   passwords::PipelineCompletionBlock completion = ^(NSUInteger providerIndex) {
-    if (providerIndex == NSNotFound)
+    if (providerIndex == NSNotFound) {
+      [weakSelf onNoSuggestionsAvailable];
       return;
+    }
     base::scoped_nsobject<FormSuggestionController> strongSelf(
         [weakSelf retain]);
     if (!strongSelf)
@@ -229,7 +227,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 
   // Run all the blocks in |findProviderBlocks| until one invokes its
   // completion with YES. The first one to do so will be passed to
-  // |onProviderFound|.
+  // |completion|.
   passwords::RunSearchPipeline(findProviderBlocks, completion);
 }
 

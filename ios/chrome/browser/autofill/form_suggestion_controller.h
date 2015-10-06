@@ -35,6 +35,13 @@ class WebState;
 - (instancetype)initWithWebState:(web::WebState*)webState
                        providers:(NSArray*)providers;
 
+// Finds a FormSuggestionProvider that can supply suggestions for the specified
+// form, requests them, and updates the view accordingly.
+- (void)retrieveSuggestionsForFormNamed:(const std::string&)formName
+                              fieldName:(const std::string&)fieldName
+                                   type:(const std::string&)type
+                               webState:(web::WebState*)webState;
+
 // Instructs the controller to detach itself from the WebState.
 - (void)detachFromWebState;
 
@@ -54,6 +61,9 @@ class WebState;
 
 // Overrides the web view proxy.
 - (void)setWebViewProxy:(id<CRWWebViewProxy>)webViewProxy;
+
+// Invoked when an attempt to retrieve suggestions yields no results.
+- (void)onNoSuggestionsAvailable;
 
 @end
 
