@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -14,6 +15,12 @@
 
 // static
 bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
+  // TODO(blundell): Fix the unittests that don't set up the UI thread and
+  // change this to just be DCHECK_CURRENTLY_ON().
+  DCHECK(
+      !content::BrowserThread::IsMessageLoopValid(content::BrowserThread::UI) ||
+      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   return IsMetricsReportingEnabled(g_browser_process->local_state());
 #else

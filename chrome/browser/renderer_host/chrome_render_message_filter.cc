@@ -97,6 +97,9 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void ChromeRenderMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
+#if defined(ENABLE_PLUGINS)
+    case ChromeViewHostMsg_IsCrashReportingEnabled::ID:
+#endif
     case ChromeViewHostMsg_UpdatedCacheStats::ID:
     case ChromeViewHostMsg_RecordRappor::ID:
     case ChromeViewHostMsg_RecordRapporURL::ID:
