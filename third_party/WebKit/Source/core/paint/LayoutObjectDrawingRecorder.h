@@ -64,7 +64,7 @@ public:
 private:
     static void updatePaintOffsetIfNeeded(DisplayItemList* displayItemList, const LayoutObject& layoutObject, const LayoutPoint& paintOffset)
     {
-        if (!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
+        if (!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() || displayItemList->skippingCache())
             return;
 
         if (layoutObject.paintOffsetChanged(paintOffset))

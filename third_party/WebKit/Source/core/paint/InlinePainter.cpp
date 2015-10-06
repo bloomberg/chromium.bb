@@ -21,7 +21,7 @@ namespace blink {
 
 void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled()) {
+    if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && !paintInfo.context->displayItemList()->skippingCache()) {
         if (m_layoutInline.paintOffsetChanged(paintOffset)) {
             paintInfo.context->displayItemList()->invalidatePaintOffset(m_layoutInline);
             LineBoxListPainter(*m_layoutInline.lineBoxes()).invalidateLineBoxPaintOffsets(paintInfo);
