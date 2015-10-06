@@ -104,6 +104,8 @@
           '-Wno-incompatible-pointer-types',
           # Generated code contains unused variables.
           '-Wno-unused-variable',
+          # PROXYFILE_LIST_START is an extern with initializer.
+          '-Wno-extern-initializer',
         ],
       },
     },  # end of target 'remoting_lib_ps'
