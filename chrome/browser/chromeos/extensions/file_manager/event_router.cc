@@ -363,6 +363,7 @@ EventRouter::~EventRouter() {
 
 void EventRouter::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  chromeos::system::TimezoneSettings::GetInstance()->RemoveObserver(this);
 
   DLOG_IF(WARNING, !file_watchers_.empty())
       << "Not all file watchers are "
