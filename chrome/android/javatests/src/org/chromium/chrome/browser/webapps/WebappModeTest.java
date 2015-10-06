@@ -16,6 +16,7 @@ import android.view.View;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -173,14 +174,17 @@ public class WebappModeTest extends MultiActivityTestBase {
      */
     @MediumTest
     public void testActivateContents() throws Exception {
-        runForegroundingTest(false);
+        runForegroundingTest(true);
     }
 
     /**
      * Tests that a WebappActivity can be brought forward by firing an Intent with
      * TabOpenType.BRING_TAB_TO_FRONT.
+     *
+     * Flaky: https://crbug.com/539755
+     * @MediumTest
      */
-    @MediumTest
+    @DisabledTest
     public void testBringTabToFront() throws Exception {
         runForegroundingTest(false);
     }
