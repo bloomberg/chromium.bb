@@ -74,6 +74,8 @@ show_input_panel_surface(struct input_panel_surface *ipsurf)
 		if (!keyboard || !keyboard->focus)
 			continue;
 		focus = weston_surface_get_main_surface(keyboard->focus);
+		if (!focus)
+			continue;
 		ipsurf->output = focus->output;
 		x = ipsurf->output->x + (ipsurf->output->width - ipsurf->surface->width) / 2;
 		y = ipsurf->output->y + ipsurf->output->height - ipsurf->surface->height;
