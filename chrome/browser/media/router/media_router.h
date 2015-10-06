@@ -20,6 +20,7 @@
 namespace media_router {
 
 class IssuesObserver;
+class LocalMediaRoutesObserver;
 class MediaRoutesObserver;
 class MediaSinksObserver;
 class PresentationSessionMessagesObserver;
@@ -115,8 +116,12 @@ class MediaRouter : public KeyedService {
   virtual void OnPresentationSessionDetached(
       const MediaRoute::Id& route_id) = 0;
 
+  // Returns whether or not there is currently an active local route.
+  virtual bool HasLocalRoute() const = 0;
+
  private:
   friend class IssuesObserver;
+  friend class LocalMediaRoutesObserver;
   friend class MediaSinksObserver;
   friend class MediaRoutesObserver;
   friend class PresentationSessionMessagesObserver;
@@ -174,6 +179,15 @@ class MediaRouter : public KeyedService {
   // |observer| will stop receiving further updates.
   virtual void UnregisterPresentationSessionMessagesObserver(
       PresentationSessionMessagesObserver* observer) = 0;
+
+  // Adds the LocalMediaRoutesObserver |observer| to listen for newly created
+  // MediaRoutes.
+  virtual void RegisterLocalMediaRoutesObserver(
+      LocalMediaRoutesObserver* observer) = 0;
+
+  // Removes the LocalMediaRoutesObserver |observer|.
+  virtual void UnregisterLocalMediaRoutesObserver(
+      LocalMediaRoutesObserver* observer) = 0;
 };
 
 }  // namespace media_router

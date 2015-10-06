@@ -24,6 +24,7 @@
 #include "chrome/browser/media/router/issue_manager.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router.mojom.h"
+#include "chrome/browser/media/router/media_routes_observer.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -83,6 +84,7 @@ class MediaRouterMojoImpl : public MediaRouter,
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
   void OnPresentationSessionDetached(const MediaRoute::Id& route_id) override;
+  bool HasLocalRoute() const override;
 
   const std::string& media_route_provider_extension_id() const {
     return media_route_provider_extension_id_;
@@ -104,6 +106,22 @@ class MediaRouterMojoImpl : public MediaRouter,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, HandleIssue);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
                            DeferredBindingAndSuspension);
+
+  class MediaRouterMediaRoutesObserver :
+      public media_router::MediaRoutesObserver {
+   public:
+    explicit MediaRouterMediaRoutesObserver(MediaRouterMojoImpl* router);
+    ~MediaRouterMediaRoutesObserver() override;
+
+    // media_router::MediaRoutesObserver:
+    void OnRoutesUpdated(const std::vector<media_router::MediaRoute>& routes)
+        override;
+
+   private:
+    MediaRouterMojoImpl* const router_;
+
+    DISALLOW_COPY_AND_ASSIGN(MediaRouterMediaRoutesObserver);
+  };
 
   // Standard constructor, used by
   // MediaRouterMojoImplFactory::GetApiForBrowserContext.
@@ -138,6 +156,10 @@ class MediaRouterMojoImpl : public MediaRouter,
       PresentationSessionMessagesObserver* observer) override;
   void UnregisterPresentationSessionMessagesObserver(
       PresentationSessionMessagesObserver* observer) override;
+  void RegisterLocalMediaRoutesObserver(
+      LocalMediaRoutesObserver* observer) override;
+  void UnregisterLocalMediaRoutesObserver(
+      LocalMediaRoutesObserver* observer) override;
 
   // These calls invoke methods in the component extension via Mojo.
   void DoCreateRoute(const MediaSource::Id& source_id,
@@ -187,6 +209,16 @@ class MediaRouterMojoImpl : public MediaRouter,
                        mojo::Array<interfaces::MediaSinkPtr> sinks) override;
   void OnRoutesUpdated(mojo::Array<interfaces::MediaRoutePtr> routes) override;
 
+  // Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
+  // into a local callback.
+  void RouteResponseReceived(
+    const std::string& presentation_id,
+    const std::vector<MediaRouteResponseCallback>& callbacks,
+    interfaces::MediaRoutePtr media_route,
+    const mojo::String& error_text);
+
+  void UpdateHasLocalRoute(bool has_local_route);
+
   // Pending requests queued to be executed once component extension
   // becomes ready.
   std::vector<base::Closure> pending_requests_;
@@ -194,6 +226,8 @@ class MediaRouterMojoImpl : public MediaRouter,
   base::ScopedPtrHashMap<MediaSource::Id,
                          scoped_ptr<base::ObserverList<MediaSinksObserver>>>
       sinks_observers_;
+
+  base::ObserverList<LocalMediaRoutesObserver> local_routes_observers_;
 
   base::ObserverList<MediaRoutesObserver> routes_observers_;
 
@@ -209,6 +243,8 @@ class MediaRouterMojoImpl : public MediaRouter,
   std::set<MediaRoute::Id> route_ids_listening_for_messages_;
 
   IssueManager issue_manager_;
+
+  scoped_ptr<media_router::MediaRoutesObserver> routes_observer_;
 
   // Binds |this| to a Mojo connection stub for interfaces::MediaRouter.
   scoped_ptr<mojo::Binding<interfaces::MediaRouter>> binding_;
@@ -233,6 +269,8 @@ class MediaRouterMojoImpl : public MediaRouter,
   // when its persisted state was written by an older browser instance, and is
   // therefore stale.
   std::string instance_id_;
+
+  bool has_local_route_;
 
   base::ThreadChecker thread_checker_;
 

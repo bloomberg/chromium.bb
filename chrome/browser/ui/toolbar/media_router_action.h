@@ -7,7 +7,7 @@
 
 #include "base/scoped_observer.h"
 #include "chrome/browser/media/router/issues_observer.h"
-#include "chrome/browser/media/router/media_routes_observer.h"
+#include "chrome/browser/media/router/local_media_routes_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -24,7 +24,7 @@ class MediaRouterDialogControllerImpl;
 // the toolbar.
 class MediaRouterAction : public ToolbarActionViewController,
                           public media_router::IssuesObserver,
-                          public media_router::MediaRoutesObserver,
+                          public media_router::LocalMediaRoutesObserver,
                           public TabStripModelObserver {
  public:
   explicit MediaRouterAction(Browser* browser);
@@ -53,9 +53,8 @@ class MediaRouterAction : public ToolbarActionViewController,
   // media_router::IssuesObserver:
   void OnIssueUpdated(const media_router::Issue* issue) override;
 
-  // media_router::MediaRoutesObserver:
-  void OnRoutesUpdated(const std::vector<media_router::MediaRoute>& routes)
-      override;
+  // media_router::LocalMediaRoutesObserver:
+  void OnHasLocalRouteUpdated(bool has_local_route) override;
 
   // ToolbarStripModelObserver:
   void ActiveTabChanged(content::WebContents* old_contents,
@@ -77,7 +76,6 @@ class MediaRouterAction : public ToolbarActionViewController,
       GetMediaRouterDialogController();
 
   // Overridden by tests.
-  virtual media_router::MediaRouter* GetMediaRouter(Browser* browser);
   virtual MediaRouterActionPlatformDelegate* GetPlatformDelegate();
 
   // Checks if the current icon of MediaRouterAction has changed. If so,

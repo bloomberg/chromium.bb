@@ -25,9 +25,18 @@
 
 using media_router::MediaRouterDialogControllerImpl;
 
+namespace {
+
+media_router::MediaRouter* GetMediaRouter(Browser* browser) {
+  return media_router::MediaRouterFactory::GetApiForBrowserContext(
+      browser->profile());
+}
+
+}  // namespace
+
 MediaRouterAction::MediaRouterAction(Browser* browser)
     : media_router::IssuesObserver(GetMediaRouter(browser)),
-      media_router::MediaRoutesObserver(GetMediaRouter(browser)),
+      media_router::LocalMediaRoutesObserver(GetMediaRouter(browser)),
       media_router_active_icon_(
           ui::ResourceBundle::GetSharedInstance()
               .GetImageNamed(IDR_MEDIA_ROUTER_ACTIVE_ICON)),
@@ -48,6 +57,7 @@ MediaRouterAction::MediaRouterAction(Browser* browser)
       weak_ptr_factory_(this) {
   DCHECK(browser_);
   tab_strip_model_observer_.Add(browser_->tab_strip_model());
+  OnHasLocalRouteUpdated(GetMediaRouter(browser)->HasLocalRoute());
 }
 
 MediaRouterAction::~MediaRouterAction() {
@@ -138,13 +148,8 @@ void MediaRouterAction::OnIssueUpdated(const media_router::Issue* issue) {
   MaybeUpdateIcon();
 }
 
-void MediaRouterAction::OnRoutesUpdated(
-    const std::vector<media_router::MediaRoute>& routes) {
-  has_local_route_ =
-      std::find_if(routes.begin(), routes.end(),
-                   [](const media_router::MediaRoute& route) {
-                      return route.is_local(); }) !=
-      routes.end();
+void MediaRouterAction::OnHasLocalRouteUpdated(bool has_local_route) {
+  has_local_route_ = has_local_route;
   MaybeUpdateIcon();
 }
 
@@ -193,11 +198,6 @@ MediaRouterAction::GetMediaRouterDialogController() {
   DCHECK(web_contents);
   return MediaRouterDialogControllerImpl::GetOrCreateForWebContents(
       web_contents);
-}
-
-media_router::MediaRouter* MediaRouterAction::GetMediaRouter(Browser* browser) {
-  return media_router::MediaRouterFactory::GetApiForBrowserContext(
-      static_cast<content::BrowserContext*>(browser->profile()));
 }
 
 MediaRouterActionPlatformDelegate* MediaRouterAction::GetPlatformDelegate() {

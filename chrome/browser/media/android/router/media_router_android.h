@@ -51,6 +51,7 @@ class MediaRouterAndroid : public MediaRouter {
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
   void OnPresentationSessionDetached(const MediaRoute::Id& route_id) override;
+  bool HasLocalRoute() const override;
 
   // The methods called by the Java counterpart.
 
@@ -101,6 +102,10 @@ class MediaRouterAndroid : public MediaRouter {
       PresentationSessionMessagesObserver* observer) override;
   void UnregisterPresentationSessionMessagesObserver(
       PresentationSessionMessagesObserver* observer) override;
+  void RegisterLocalMediaRoutesObserver(
+      LocalMediaRoutesObserver* observer) override;
+  void UnregisterLocalMediaRoutesObserver(
+      LocalMediaRoutesObserver* observer) override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_media_router_;
 

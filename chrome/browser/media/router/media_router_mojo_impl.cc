@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/issues_observer.h"
+#include "chrome/browser/media/router/local_media_routes_observer.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_type_converters.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
@@ -25,29 +26,6 @@
 
 namespace media_router {
 namespace {
-
-// Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
-// into a local callback.
-void RouteResponseReceived(
-    const std::string& presentation_id,
-    const std::vector<MediaRouteResponseCallback>& callbacks,
-    interfaces::MediaRoutePtr media_route,
-    const mojo::String& error_text) {
-  scoped_ptr<MediaRoute> route;
-  std::string actual_presentation_id;
-  std::string error;
-  if (media_route.is_null()) {
-    // An error occurred.
-    DCHECK(!error_text.is_null());
-    error = !error_text.get().empty() ? error_text.get() : "Unknown error.";
-  } else {
-    route = media_route.To<scoped_ptr<MediaRoute>>();
-    actual_presentation_id = presentation_id;
-  }
-
-  for (const MediaRouteResponseCallback& callback : callbacks)
-    callback.Run(route.get(), actual_presentation_id, error);
-}
 
 // TODO(imcheng): We should handle failure in this case. One way is to invoke
 // all pending requests with failure. (crbug.com/490787)
@@ -86,10 +64,36 @@ ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
 
 }  // namespace
 
+MediaRouterMojoImpl::MediaRouterMediaRoutesObserver::
+MediaRouterMediaRoutesObserver(MediaRouterMojoImpl* router)
+    : MediaRoutesObserver(router),
+      router_(router) {
+  DCHECK(router);
+}
+
+MediaRouterMojoImpl::MediaRouterMediaRoutesObserver::
+~MediaRouterMediaRoutesObserver() {
+}
+
+void MediaRouterMojoImpl::MediaRouterMediaRoutesObserver::OnRoutesUpdated(
+    const std::vector<media_router::MediaRoute>& routes) {
+  bool has_local_route =
+      std::find_if(routes.begin(), routes.end(),
+                   [](const media_router::MediaRoute& route) {
+                      return route.is_local(); }) !=
+      routes.end();
+
+  // |this| will be deleted in UpdateHasLocalRoute() if |has_local_route| is
+  // false. Note that ObserverList supports removing an observer while
+  // iterating through it.
+  router_->UpdateHasLocalRoute(has_local_route);
+}
+
 MediaRouterMojoImpl::MediaRouterMojoImpl(
     extensions::EventPageTracker* event_page_tracker)
     : event_page_tracker_(event_page_tracker),
-      instance_id_(base::GenerateGUID()) {
+      instance_id_(base::GenerateGUID()),
+      has_local_route_(false) {
   DCHECK(event_page_tracker_);
 }
 
@@ -189,6 +193,45 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
 
   FOR_EACH_OBSERVER(MediaRoutesObserver, routes_observers_,
                     OnRoutesUpdated(routes_converted));
+}
+
+void MediaRouterMojoImpl::RouteResponseReceived(
+    const std::string& presentation_id,
+    const std::vector<MediaRouteResponseCallback>& callbacks,
+    interfaces::MediaRoutePtr media_route,
+    const mojo::String& error_text) {
+  scoped_ptr<MediaRoute> route;
+  std::string actual_presentation_id;
+  std::string error;
+  if (media_route.is_null()) {
+    // An error occurred.
+    DCHECK(!error_text.is_null());
+    error = !error_text.get().empty() ? error_text.get() : "Unknown error.";
+  } else {
+    route = media_route.To<scoped_ptr<MediaRoute>>();
+    actual_presentation_id = presentation_id;
+
+    UpdateHasLocalRoute(true);
+
+    if (!routes_observer_)
+      routes_observer_.reset(new MediaRouterMediaRoutesObserver(this));
+  }
+
+  for (const MediaRouteResponseCallback& callback : callbacks)
+    callback.Run(route.get(), actual_presentation_id, error);
+}
+
+void MediaRouterMojoImpl::UpdateHasLocalRoute(bool has_local_route) {
+  if (has_local_route_ == has_local_route)
+    return;
+
+  has_local_route_ = has_local_route;
+
+  if (!has_local_route_)
+    routes_observer_.reset();
+
+  FOR_EACH_OBSERVER(LocalMediaRoutesObserver, local_routes_observers_,
+                    OnHasLocalRouteUpdated(has_local_route_));
 }
 
 void MediaRouterMojoImpl::CreateRoute(
@@ -393,6 +436,25 @@ void MediaRouterMojoImpl::UnregisterPresentationSessionMessagesObserver(
   }
 }
 
+void MediaRouterMojoImpl::RegisterLocalMediaRoutesObserver(
+    LocalMediaRoutesObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(observer);
+
+  DCHECK(!local_routes_observers_.HasObserver(observer));
+  local_routes_observers_.AddObserver(observer);
+}
+
+void MediaRouterMojoImpl::UnregisterLocalMediaRoutesObserver(
+    LocalMediaRoutesObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(observer);
+
+  if (!local_routes_observers_.HasObserver(observer))
+    return;
+  local_routes_observers_.RemoveObserver(observer);
+}
+
 void MediaRouterMojoImpl::DoCreateRoute(
     const MediaSource::Id& source_id,
     const MediaSink::Id& sink_id,
@@ -405,7 +467,8 @@ void MediaRouterMojoImpl::DoCreateRoute(
                          << ", presentation ID: " << presentation_id;
   media_route_provider_->CreateRoute(
       source_id, sink_id, presentation_id, origin, tab_id,
-      base::Bind(&RouteResponseReceived, presentation_id, callbacks));
+      base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
+          base::Unretained(this), presentation_id, callbacks));
 }
 
 void MediaRouterMojoImpl::DoJoinRoute(
@@ -418,7 +481,8 @@ void MediaRouterMojoImpl::DoJoinRoute(
                          << ", presentation ID: " << presentation_id;
   media_route_provider_->JoinRoute(
       source_id, presentation_id, origin, tab_id,
-      base::Bind(&RouteResponseReceived, presentation_id, callbacks));
+      base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
+          base::Unretained(this), presentation_id, callbacks));
 }
 
 void MediaRouterMojoImpl::DoCloseRoute(const MediaRoute::Id& route_id) {
@@ -516,6 +580,10 @@ void MediaRouterMojoImpl::DoOnPresentationSessionDetached(
     const MediaRoute::Id& route_id) {
   DVLOG_WITH_INSTANCE(1) << "DoOnPresentationSessionDetached " << route_id;
   media_route_provider_->OnPresentationSessionDetached(route_id);
+}
+
+bool MediaRouterMojoImpl::HasLocalRoute() const {
+  return has_local_route_;
 }
 
 void MediaRouterMojoImpl::DoStartObservingMediaSinks(
