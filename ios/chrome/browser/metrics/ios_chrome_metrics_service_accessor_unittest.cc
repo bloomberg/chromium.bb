@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 
 #include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "components/metrics/metrics_pref_names.h"
