@@ -5,13 +5,15 @@
 #ifndef COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
 #define COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
 
+#include "base/memory/ref_counted_delete_on_message_loop.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 
 namespace syncer_v2 {
+struct ActivationContext;
 class ModelTypeProcessorImpl;
 }
 
@@ -52,17 +54,21 @@ namespace sync_driver_v2 {
 // This class is structured using some state machine patterns.  It's a bit
 // awkward at times, but this seems to be the clearest way to express the
 // behaviors this class must implement.
-class NonBlockingDataTypeController {
+class NonBlockingDataTypeController
+    : public base::RefCountedDeleteOnMessageLoop<
+          NonBlockingDataTypeController> {
  public:
-  NonBlockingDataTypeController(syncer::ModelType type, bool is_preferred);
-  ~NonBlockingDataTypeController();
+  NonBlockingDataTypeController(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      syncer::ModelType type,
+      bool is_preferred);
 
   // Connects the ModelTypeProcessor to this controller.
   //
   // There is no "undo" for this operation.  The NonBlockingDataTypeController
   // will only ever deal with a single type proxy.
   void InitializeType(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& type_processor);
 
   // Initialize the connection to the SyncContextProxy.
@@ -82,6 +88,12 @@ class NonBlockingDataTypeController {
   void SetIsPreferred(bool is_preferred);
 
  private:
+  friend class base::RefCountedDeleteOnMessageLoop<
+      NonBlockingDataTypeController>;
+  friend class base::DeleteHelper<NonBlockingDataTypeController>;
+
+  ~NonBlockingDataTypeController();
+
   enum TypeState { ENABLED, DISABLED, DISCONNECTED };
 
   // Figures out which signals need to be sent then send then sends them.
@@ -108,6 +120,20 @@ class NonBlockingDataTypeController {
   // Returns the state that the type sync proxy should be in.
   TypeState GetDesiredState() const;
 
+  // Called on the model thread to start the processor. The processor is
+  // expected to invoke OnProcessorStarted when it is ready to be activated
+  // with the sycn backend.
+  void StartProcessor();
+
+  // Callback passed to the processor to be invoked when the processor has
+  // started. This is called on the model thread.
+  void OnProcessorStarted(
+      /*syncer::SyncError error,*/
+      scoped_ptr<syncer_v2::ActivationContext> activation_context);
+
+  // Called on the model thread to stop the processor.
+  void StopProcessor();
+
   // The ModelType we're controlling.  Kept mainly for debugging.
   const syncer::ModelType type_;
 
@@ -124,7 +150,7 @@ class NonBlockingDataTypeController {
   bool is_preferred_;
 
   // The ModelTypeProcessorImpl and its associated thread.  May be NULL.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> model_task_runner_;
   base::WeakPtr<syncer_v2::ModelTypeProcessorImpl> type_processor_;
 
   // The SyncContextProxy that connects to the current sync backend.  May be

@@ -8,22 +8,27 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "sync/engine/model_type_processor_impl.h"
+#include "sync/internal_api/public/activation_context.h"
 
 namespace sync_driver_v2 {
 
 NonBlockingDataTypeController::NonBlockingDataTypeController(
-    syncer::ModelType type, bool is_preferred)
-    : type_(type),
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+    syncer::ModelType type,
+    bool is_preferred)
+    : base::RefCountedDeleteOnMessageLoop<NonBlockingDataTypeController>(
+          ui_thread),
+      type_(type),
       current_state_(DISCONNECTED),
       is_preferred_(is_preferred) {}
 
 NonBlockingDataTypeController::~NonBlockingDataTypeController() {}
 
 void NonBlockingDataTypeController::InitializeType(
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& type_processor) {
   DCHECK(!IsSyncProxyConnected());
-  task_runner_ = task_runner;
+  model_task_runner_ = task_runner;
   type_processor_ = type_processor;
   DCHECK(IsSyncProxyConnected());
 
@@ -84,19 +89,18 @@ void NonBlockingDataTypeController::SendEnableSignal() {
   DCHECK_EQ(ENABLED, GetDesiredState());
   DVLOG(1) << "Enabling non-blocking sync type " << ModelTypeToString(type_);
 
-  task_runner_->PostTask(
+  model_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&syncer_v2::ModelTypeProcessorImpl::Enable, type_processor_,
-                 base::Passed(sync_context_proxy_->Clone())));
+      base::Bind(&NonBlockingDataTypeController::StartProcessor, this));
   current_state_ = ENABLED;
 }
 
 void NonBlockingDataTypeController::SendDisableSignal() {
   DCHECK_EQ(DISABLED, GetDesiredState());
   DVLOG(1) << "Disabling non-blocking sync type " << ModelTypeToString(type_);
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&syncer_v2::ModelTypeProcessorImpl::Disable,
-                                    type_processor_));
+  model_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&syncer_v2::ModelTypeProcessorImpl::Disable, type_processor_));
   current_state_ = DISABLED;
 }
 
@@ -104,10 +108,28 @@ void NonBlockingDataTypeController::SendDisconnectSignal() {
   DCHECK_EQ(DISCONNECTED, GetDesiredState());
   DVLOG(1) << "Disconnecting non-blocking sync type "
            << ModelTypeToString(type_);
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&syncer_v2::ModelTypeProcessorImpl::Disconnect,
-                            type_processor_));
+  model_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&NonBlockingDataTypeController::StopProcessor, this));
   current_state_ = DISCONNECTED;
+}
+
+void NonBlockingDataTypeController::StartProcessor() {
+  DCHECK(model_task_runner_->BelongsToCurrentThread());
+  type_processor_->Start(
+      base::Bind(&NonBlockingDataTypeController::OnProcessorStarted, this));
+}
+
+void NonBlockingDataTypeController::OnProcessorStarted(
+    /*syncer::SyncError error,*/
+    scoped_ptr<syncer_v2::ActivationContext> activation_context) {
+  DCHECK(model_task_runner_->BelongsToCurrentThread());
+  sync_context_proxy_->ConnectTypeToSync(type_, activation_context.Pass());
+}
+
+void NonBlockingDataTypeController::StopProcessor() {
+  DCHECK(model_task_runner_->BelongsToCurrentThread());
+  type_processor_->Stop();
 }
 
 bool NonBlockingDataTypeController::IsPreferred() const {
@@ -115,7 +137,7 @@ bool NonBlockingDataTypeController::IsPreferred() const {
 }
 
 bool NonBlockingDataTypeController::IsSyncProxyConnected() const {
-  return task_runner_.get() != NULL;
+  return model_task_runner_.get() != NULL;
 }
 
 bool NonBlockingDataTypeController::IsSyncBackendConnected() const {

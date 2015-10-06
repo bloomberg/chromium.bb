@@ -16,10 +16,10 @@
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer_v2 {
+struct ActivationContext;
 class CommitQueue;
 class ModelTypeEntity;
 class ModelTypeStore;
-class SyncContextProxy;
 
 // A sync component embedded on the synced type's thread that helps to handle
 // communication between sync and model type threads.
@@ -30,37 +30,37 @@ class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : public ModelTypeProcessor,
                          base::WeakPtr<ModelTypeStore> store);
   ~ModelTypeProcessorImpl() override;
 
-  // Returns true if this object believes that sync is preferred for this type.
-  //
-  // By "preferred", we mean that a policy decision has been made that this
-  // type should be synced.  Most of the time this is controlled by a user
-  // clicking a checkbox on the settings page.
-  //
-  // The canonical preferred state is based on SyncPrefs on the UI thread.  At
-  // best, this value is stale and may lag behind the one set on the UI thread.
-  // Before this type has registered with the UI thread, it's mostly just an
-  // informed guess.
-  bool IsPreferred() const;
+  typedef base::Callback<void(
+      /*syncer::SyncError,*/ scoped_ptr<ActivationContext>)> StartCallback;
 
-  // Returns true if the handshake with sync thread is complete.
-  bool IsConnected() const;
+  // Called by DataTypeController to begins asynchronous operation of preparing
+  // the model to sync. Once the model is ready to be activated with Sync the
+  // callback will be invoked with the activation context. If the model is
+  // already ready it is safe to call the callback right away. Otherwise the
+  // callback needs to be stored and called when the model is ready.
+  void Start(StartCallback callback);
 
-  // Returns the model type handled by this type sync proxy.
-  syncer::ModelType GetModelType() const;
+  // Called by DataTypeController to inform the model that the sync is
+  // stopping for the model type.
+  void Stop();
 
-  // Starts the handshake with the sync thread.
-  void Enable(scoped_ptr<SyncContextProxy> context_proxy);
+  // Returns true if the datatype is enabled.
+  // TODO(stanisc): crbug.com/537027: There is no explicit call to indicate
+  // that the datatype is enabled. The flag is set to true when Start is called
+  // and reset to false when Disable is called.
+  bool IsEnabled() const;
 
+  // TODO(stanisc): crbug.com/537027: This needs to be called from
+  // DataTypeController when the type is disabled
   // Severs all ties to the sync thread and may delete local sync state.
   // Another call to Enable() can be used to re-establish this connection.
   void Disable();
 
-  // Severs all ties to the sync thread.
-  // Another call to Enable() can be used to re-establish this connection.
-  void Disconnect();
-
-  // Callback used to process the handshake response.
+  // Callback used to process the handshake response from the sync thread.
   void OnConnect(scoped_ptr<CommitQueue> worker) override;
+
+  // Returns true if the handshake with sync thread is complete.
+  bool IsConnected() const;
 
   // Requests that an item be stored in sync.
   void Put(const std::string& client_tag,
@@ -113,20 +113,12 @@ class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : public ModelTypeProcessor,
   syncer::ModelType type_;
   DataTypeState data_type_state_;
 
-  // Whether or not sync is preferred for this type.  This is a cached copy of
-  // the canonical copy information on the UI thread.
-  bool is_preferred_;
+  // Whether or not sync is enabled by this type's DataTypeController.
+  bool is_enabled_;
 
   // Whether or not this object has completed its initial handshake with the
   // SyncContextProxy.
   bool is_connected_;
-
-  // Our link to data type management on the sync thread.
-  // Used for enabling and disabling sync for this type.
-  //
-  // Beware of NULL pointers: This object is uninitialized when we are not
-  // connected to sync.
-  scoped_ptr<SyncContextProxy> sync_context_proxy_;
 
   // Reference to the CommitQueue.
   //

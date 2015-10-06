@@ -4,14 +4,14 @@
 
 #include "sync/engine/model_type_processor_impl.h"
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "sync/engine/commit_queue.h"
+#include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
-#include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_util.h"
-#include "sync/test/engine/injectable_sync_context_proxy.h"
 #include "sync/test/engine/mock_commit_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,22 +45,22 @@ class ModelTypeProcessorImplTest : public ::testing::Test {
   ModelTypeProcessorImplTest();
   ~ModelTypeProcessorImplTest() override;
 
-  // Initialize with no local state.  The type sync proxy will be unable to
-  // commit until it receives notification that initial sync has completed.
-  void FirstTimeInitialize();
-
   // Initialize to a "ready-to-commit" state.
   void InitializeToReadyState();
 
-  // Disconnect the CommitQueue from our ModelTypeProcessorImpl.
-  void Disconnect();
+  // Start our ModelTypeProcessorImpl, which will be unable to commit until it
+  // receives notification that initial sync has completed.
+  void Start();
+
+  // Stop and disconnect the CommitQueue from our ModelTypeProcessorImpl.
+  void Stop();
 
   // Disable sync for this ModelTypeProcessorImpl.  Should cause sync state to
   // be discarded.
   void Disable();
 
-  // Re-enable sync after Disconnect() or Disable().
-  void ReEnable();
+  // Restart sync after Stop() or Disable().
+  void Restart();
 
   // Local data modification.  Emulates signals from the model thread.
   void WriteItem(const std::string& tag, const std::string& value);
@@ -125,8 +125,12 @@ class ModelTypeProcessorImplTest : public ::testing::Test {
   int64 GetServerVersion(const std::string& tag);
   void SetServerVersion(const std::string& tag, int64 version);
 
+  void StartDone(/*syncer::SyncError,*/ scoped_ptr<ActivationContext> context);
+
+  // The current mock queue which might be owned by either |mock_queue_ptr_| or
+  // |type_processor_|.
   MockCommitQueue* mock_queue_;
-  scoped_ptr<InjectableSyncContextProxy> injectable_sync_context_proxy_;
+  scoped_ptr<MockCommitQueue> mock_queue_ptr_;
   scoped_ptr<ModelTypeProcessorImpl> type_processor_;
 
   DataTypeState data_type_state_;
@@ -136,8 +140,7 @@ class ModelTypeProcessorImplTest : public ::testing::Test {
 
 ModelTypeProcessorImplTest::ModelTypeProcessorImplTest()
     : mock_queue_(new MockCommitQueue()),
-      injectable_sync_context_proxy_(
-          new InjectableSyncContextProxy(mock_queue_)),
+      mock_queue_ptr_(mock_queue_),
       type_processor_(
           new ModelTypeProcessorImpl(kModelType,
                                      base::WeakPtr<ModelTypeStore>())) {}
@@ -145,42 +148,49 @@ ModelTypeProcessorImplTest::ModelTypeProcessorImplTest()
 ModelTypeProcessorImplTest::~ModelTypeProcessorImplTest() {
 }
 
-void ModelTypeProcessorImplTest::FirstTimeInitialize() {
-  type_processor_->Enable(injectable_sync_context_proxy_->Clone());
-}
-
 void ModelTypeProcessorImplTest::InitializeToReadyState() {
   // TODO(rlarocque): This should be updated to inject on-disk state.
   // At the time this code was written, there was no support for on-disk
   // state so this was the only way to inject a data_type_state into
   // the |type_processor_|.
-  FirstTimeInitialize();
+  Start();
   OnInitialSyncDone();
 }
 
-void ModelTypeProcessorImplTest::Disconnect() {
-  type_processor_->Disconnect();
-  injectable_sync_context_proxy_.reset();
+void ModelTypeProcessorImplTest::Start() {
+  type_processor_->Start(base::Bind(&ModelTypeProcessorImplTest::StartDone,
+                                    base::Unretained(this)));
+}
+
+void ModelTypeProcessorImplTest::Stop() {
+  type_processor_->Stop();
   mock_queue_ = NULL;
+  mock_queue_ptr_.reset();
 }
 
 void ModelTypeProcessorImplTest::Disable() {
   type_processor_->Disable();
-  injectable_sync_context_proxy_.reset();
   mock_queue_ = NULL;
+  mock_queue_ptr_.reset();
 }
 
-void ModelTypeProcessorImplTest::ReEnable() {
+void ModelTypeProcessorImplTest::Restart() {
   DCHECK(!type_processor_->IsConnected());
 
   // Prepare a new MockCommitQueue instance, just as we would
   // if this happened in the real world.
-  mock_queue_ = new MockCommitQueue();
-  injectable_sync_context_proxy_.reset(
-      new InjectableSyncContextProxy(mock_queue_));
+  mock_queue_ptr_.reset(new MockCommitQueue());
+  mock_queue_ = mock_queue_ptr_.get();
+  // Restart sync with the new CommitQueue.
+  Start();
+}
 
-  // Re-enable sync with the new CommitQueue.
-  type_processor_->Enable(injectable_sync_context_proxy_->Clone());
+void ModelTypeProcessorImplTest::StartDone(
+    /*syncer::SyncError,*/ scoped_ptr<ActivationContext> context) {
+  // Hand off ownership of |mock_queue_ptr_|, while keeping
+  // an unsafe pointer to it.  This is why we can only connect once.
+  DCHECK(mock_queue_ptr_);
+  context->type_processor->OnConnect(mock_queue_ptr_.Pass());
 }
 
 void ModelTypeProcessorImplTest::WriteItem(const std::string& tag,
@@ -482,7 +492,7 @@ TEST_F(ModelTypeProcessorImplTest, TwoIndependentItems) {
 // Verify that it waits until initial sync is complete before requesting
 // commits.
 TEST_F(ModelTypeProcessorImplTest, NoCommitsUntilInitialSyncDone) {
-  FirstTimeInitialize();
+  Start();
 
   WriteItem("tag1", "value1");
   EXPECT_EQ(0U, GetNumCommitRequestLists());
@@ -496,7 +506,7 @@ TEST_F(ModelTypeProcessorImplTest, NoCommitsUntilInitialSyncDone) {
 //
 // Creates items in various states of commit and verifies they re-attempt to
 // commit on reconnect.
-TEST_F(ModelTypeProcessorImplTest, Disconnect) {
+TEST_F(ModelTypeProcessorImplTest, Stop) {
   InitializeToReadyState();
 
   // The first item is fully committed.
@@ -508,12 +518,12 @@ TEST_F(ModelTypeProcessorImplTest, Disconnect) {
   WriteItem("tag2", "value2");
   EXPECT_TRUE(HasCommitRequestForTag("tag2"));
 
-  Disconnect();
+  Stop();
 
-  // The third item is added after disconnection.
+  // The third item is added after stopping.
   WriteItem("tag3", "value3");
 
-  ReEnable();
+  Restart();
 
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   EXPECT_EQ(2U, GetNthCommitRequestList(0).size());
@@ -550,7 +560,7 @@ TEST_F(ModelTypeProcessorImplTest, Disable) {
   WriteItem("tag3", "value3");
 
   // Now we re-enable.
-  ReEnable();
+  Restart();
 
   // There should be nothing to commit right away, since we need to
   // re-initialize the client state first.
@@ -606,22 +616,22 @@ TEST_F(ModelTypeProcessorImplTest, DisableWithPendingUpdates) {
   ASSERT_TRUE(HasPendingUpdate("tag1"));
 
   Disable();
-  ReEnable();
+  Restart();
 
   EXPECT_EQ(0U, GetNumPendingUpdates());
   EXPECT_FALSE(HasPendingUpdate("tag1"));
 }
 
-// Test that Disconnect does not clear pending update state.
-TEST_F(ModelTypeProcessorImplTest, DisconnectWithPendingUpdates) {
+// Test that Stop does not clear pending update state.
+TEST_F(ModelTypeProcessorImplTest, StopWithPendingUpdates) {
   InitializeToReadyState();
 
   PendingUpdateFromServer(5, "tag1", "value1", "key1");
   EXPECT_EQ(1U, GetNumPendingUpdates());
   ASSERT_TRUE(HasPendingUpdate("tag1"));
 
-  Disconnect();
-  ReEnable();
+  Stop();
+  Restart();
 
   EXPECT_EQ(1U, GetNumPendingUpdates());
   EXPECT_TRUE(HasPendingUpdate("tag1"));

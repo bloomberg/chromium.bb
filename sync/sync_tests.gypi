@@ -41,8 +41,6 @@
         'test/engine/fake_model_worker.h',
         'test/engine/fake_sync_scheduler.cc',
         'test/engine/fake_sync_scheduler.h',
-        'test/engine/injectable_sync_context_proxy.cc',
-        'test/engine/injectable_sync_context_proxy.h',
         'test/engine/mock_commit_queue.cc',
         'test/engine/mock_commit_queue.h',
         'test/engine/mock_connection_manager.cc',

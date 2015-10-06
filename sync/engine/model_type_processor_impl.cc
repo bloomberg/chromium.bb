@@ -10,7 +10,6 @@
 #include "sync/engine/commit_queue.h"
 #include "sync/engine/model_type_entity.h"
 #include "sync/internal_api/public/activation_context.h"
-#include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/syncable/syncable_util.h"
 
 namespace syncer_v2 {
@@ -19,7 +18,7 @@ ModelTypeProcessorImpl::ModelTypeProcessorImpl(
     syncer::ModelType type,
     base::WeakPtr<ModelTypeStore> store)
     : type_(type),
-      is_preferred_(false),
+      is_enabled_(false),
       is_connected_(false),
       store_(store),
       weak_ptr_factory_for_ui_(this),
@@ -28,29 +27,13 @@ ModelTypeProcessorImpl::ModelTypeProcessorImpl(
 ModelTypeProcessorImpl::~ModelTypeProcessorImpl() {
 }
 
-bool ModelTypeProcessorImpl::IsPreferred() const {
+void ModelTypeProcessorImpl::Start(StartCallback callback) {
   DCHECK(CalledOnValidThread());
-  return is_preferred_;
-}
+  DVLOG(1) << "Starting " << ModelTypeToString(type_);
 
-bool ModelTypeProcessorImpl::IsConnected() const {
-  DCHECK(CalledOnValidThread());
-  return is_connected_;
-}
+  is_enabled_ = true;
 
-syncer::ModelType ModelTypeProcessorImpl::GetModelType() const {
-  DCHECK(CalledOnValidThread());
-  return type_;
-}
-
-void ModelTypeProcessorImpl::Enable(
-    scoped_ptr<SyncContextProxy> sync_context_proxy) {
-  DCHECK(CalledOnValidThread());
-  DVLOG(1) << "Asked to enable " << ModelTypeToString(type_);
-
-  is_preferred_ = true;
-
-  // TODO(rlarocque): At some point, this should be loaded from storage.
+  // TODO: At some point, this should be loaded from storage.
   data_type_state_.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(type_));
 
@@ -61,29 +44,32 @@ void ModelTypeProcessorImpl::Enable(
   activation_context->type_task_runner = base::ThreadTaskRunnerHandle::Get();
   activation_context->type_processor = weak_ptr_factory_for_sync_.GetWeakPtr();
 
-  sync_context_proxy_ = sync_context_proxy.Pass();
-  sync_context_proxy_->ConnectTypeToSync(GetModelType(),
-                                         activation_context.Pass());
+  callback.Run(/*syncer::SyncError(), */ activation_context.Pass());
 }
 
+bool ModelTypeProcessorImpl::IsEnabled() const {
+  DCHECK(CalledOnValidThread());
+  return is_enabled_;
+}
+
+bool ModelTypeProcessorImpl::IsConnected() const {
+  DCHECK(CalledOnValidThread());
+  return is_connected_;
+}
+
+// TODO(stanisc): crbug.com/537027: This needs to be called from
+// DataTypeController when the type is disabled
 void ModelTypeProcessorImpl::Disable() {
   DCHECK(CalledOnValidThread());
-  is_preferred_ = false;
-  Disconnect();
-
+  is_enabled_ = false;
+  Stop();
   ClearSyncState();
 }
 
-void ModelTypeProcessorImpl::Disconnect() {
+void ModelTypeProcessorImpl::Stop() {
   DCHECK(CalledOnValidThread());
-  DVLOG(1) << "Asked to disconnect " << ModelTypeToString(type_);
+  DVLOG(1) << "Stopping " << ModelTypeToString(type_);
   is_connected_ = false;
-
-  if (sync_context_proxy_) {
-    sync_context_proxy_->Disconnect(GetModelType());
-    sync_context_proxy_.reset();
-  }
-
   weak_ptr_factory_for_sync_.InvalidateWeakPtrs();
   worker_.reset();
 

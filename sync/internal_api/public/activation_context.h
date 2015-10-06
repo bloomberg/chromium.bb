@@ -5,8 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ACTIVATION_CONTEXT_H_
 #define SYNC_INTERNAL_API_PUBLIC_ACTIVATION_CONTEXT_H_
 
-#include "base/memory/weak_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
