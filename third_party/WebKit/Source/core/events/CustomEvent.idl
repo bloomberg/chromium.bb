@@ -26,10 +26,12 @@
 // https://dom.spec.whatwg.org/#interface-customevent
 
 [
-    Constructor(DOMString type, optional CustomEventInit eventInitDict),
+    // TODO(bashi): Don't use CustomConstructor. Constructor should be:
+    // Constructor(DOMString type, optional CustomEventInit eventInitDict),
+    CustomConstructor,
     Exposed=(Window,Worker),
 ] interface CustomEvent : Event {
     [Custom=Getter] readonly attribute any detail;
 
-    [Measure] void initCustomEvent(DOMString type, boolean bubbles, boolean cancelable, any detail);
+    [Measure,Custom=(CallEpilogue)] void initCustomEvent(DOMString type, boolean bubbles, boolean cancelable, any detail);
 };

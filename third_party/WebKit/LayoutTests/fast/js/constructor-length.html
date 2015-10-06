@@ -12,6 +12,8 @@ shouldBe('AudioContext.length', '0');
 shouldBe('AutocompleteErrorEvent.length', '1');
 shouldBe('Blob.length', '0');
 shouldBe('CloseEvent.length', '1');
+// TODO(bashi): CustomEvent.length == 0 since it uses custom constructor.
+// Fix this regression once http://crbug.com/529941 is fixed.
 shouldBe('CustomEvent.length', '1');
 shouldBe('DOMFormData.length', '0');
 shouldBe('DOMParser.length', '0');
