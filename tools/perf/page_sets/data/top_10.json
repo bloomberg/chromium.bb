@@ -1,6 +1,9 @@
 {
-    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
+        "top_10_001.wpr": [
+            "Facebook"
+        ], 
         "top_10_000.wpr": [
             "https://www.google.com/#hl=en&q=barack+obama", 
             "https://mail.google.com/mail/", 

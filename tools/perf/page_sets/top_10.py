@@ -76,9 +76,9 @@ class Youtube(SimplePage):
 class Facebook(SimplePage):
   def __init__(self, page_set):
     super(Facebook, self).__init__(
-      url='http://www.facebook.com/barackobama',
+      url='https://www.facebook.com/barackobama',
       page_set=page_set,
-      credentials='facebook',
+      credentials='facebook2',
       name='Facebook')
 
   def RunNavigateSteps(self, action_runner):
