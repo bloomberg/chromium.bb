@@ -16,12 +16,13 @@ _EXCLUDED_PATHS = (
     r"^native_client_sdk[\\\/]src[\\\/]tools[\\\/].*.mk",
     r"^net[\\\/]tools[\\\/]spdyshark[\\\/].*",
     r"^skia[\\\/].*",
+    r"^third_party[\\\/]WebKit[\\\/].*",
     r"^v8[\\\/].*",
     r".*MakeFile$",
     r".+_autogen\.h$",
     r".+[\\\/]pnacl_shim\.c$",
     r"^gpu[\\\/]config[\\\/].*_list_json\.cc$",
-    r"^chrome[\\\/]browser[\\\/]resources[\\\/]pdf[\\\/]index.js"
+    r"^chrome[\\\/]browser[\\\/]resources[\\\/]pdf[\\\/]index.js",
 )
 
 # The NetscapePlugIn library is excluded from pan-project as it will soon
