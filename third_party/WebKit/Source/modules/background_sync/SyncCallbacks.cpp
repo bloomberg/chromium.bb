@@ -137,14 +137,14 @@ void SyncGetRegistrationsCallbacks::onSuccess(const WebVector<WebSyncRegistratio
     }
 
     if (webSyncRegistrations.size() && webSyncRegistrations[0]->periodicity == WebSyncRegistration::PeriodicityOneShot) {
-        Vector<SyncRegistration*> syncRegistrations;
+        HeapVector<Member<SyncRegistration>> syncRegistrations;
         for (auto& r : registrations) {
             SyncRegistration* reg = SyncRegistration::take(m_resolver.get(), r.release(), m_serviceWorkerRegistration);
             syncRegistrations.append(reg);
         }
         m_resolver->resolve(syncRegistrations);
     } else {
-        Vector<PeriodicSyncRegistration*> syncRegistrations;
+        HeapVector<Member<PeriodicSyncRegistration>> syncRegistrations;
         for (auto& r : registrations) {
             PeriodicSyncRegistration* reg = PeriodicSyncRegistration::take(m_resolver.get(), r.release(), m_serviceWorkerRegistration);
             syncRegistrations.append(reg);
