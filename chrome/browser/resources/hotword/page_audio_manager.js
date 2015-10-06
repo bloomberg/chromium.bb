@@ -87,8 +87,9 @@ cr.define('hotword', function() {
         return false;
 
       var baseGoogleUrls = [
-        'https://www.google.',
-        'https://encrypted.google.'
+        'https://encrypted.google.',
+        'https://images.google.',
+        'https://www.google.'
       ];
       // TODO(amistry): Get this list from a file in the shared module instead.
       var tlds = [
