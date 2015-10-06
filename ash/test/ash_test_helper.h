@@ -29,6 +29,7 @@ class ShellContentState;
 namespace test {
 
 class TestScreenshotDelegate;
+class TestShellContentState;
 class TestShellDelegate;
 class TestSessionStateDelegate;
 
@@ -64,6 +65,9 @@ class AshTestHelper {
   TestScreenshotDelegate* test_screenshot_delegate() {
     return test_screenshot_delegate_;
   }
+  TestShellContentState* test_shell_content_state() {
+    return test_shell_content_state_;
+  }
   void set_content_state(ShellContentState* content_state) {
     content_state_ = content_state;
   }
@@ -86,7 +90,13 @@ class AshTestHelper {
 
   scoped_ptr<views::ViewsDelegate> views_delegate_;
 
+  // An implementation of ShellContentState supplied by the user prior to
+  // SetUp().
   ShellContentState* content_state_;
+  // If |content_state_| is not set prior to SetUp(), this value will be
+  // set to an instance of TestShellContentState created by this class. If
+  // |content_state_| is non-null, this will be nullptr.
+  TestShellContentState* test_shell_content_state_;
 
 #if defined(OS_CHROMEOS)
   // Check if DBus Thread Manager was initialized here.

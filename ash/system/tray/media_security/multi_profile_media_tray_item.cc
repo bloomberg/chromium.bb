@@ -5,7 +5,6 @@
 #include "ash/system/tray/media_security/multi_profile_media_tray_item.h"
 
 #include "ash/ash_view_ids.h"
-#include "ash/content/shell_content_state.h"
 #include "ash/media_delegate.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"

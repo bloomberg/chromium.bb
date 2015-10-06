@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/content/display/display_color_manager_chromeos.h"
+#include "ash/display/display_color_manager_chromeos.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -11,13 +11,14 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/qcms/src/qcms.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
@@ -90,8 +91,7 @@ base::FilePath PathForDisplaySnapshot(const ui::DisplaySnapshot* snapshot) {
 DisplayColorManager::DisplayColorManager(
     ui::DisplayConfigurator* configurator,
     base::SequencedWorkerPool* blocking_pool)
-    : configurator_(configurator),
-      blocking_pool_(blocking_pool) {
+    : configurator_(configurator), blocking_pool_(blocking_pool) {
   configurator_->AddObserver(this);
 }
 
@@ -148,7 +148,7 @@ void DisplayColorManager::UpdateCalibrationData(
     int64_t product_id,
     scoped_ptr<ColorCalibrationData> data,
     bool success) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
   if (success) {
     // The map takes over ownership of the underlying memory.
     calibration_map_[product_id] = data.release();
@@ -156,10 +156,8 @@ void DisplayColorManager::UpdateCalibrationData(
   }
 }
 
-DisplayColorManager::ColorCalibrationData::ColorCalibrationData() {
-}
+DisplayColorManager::ColorCalibrationData::ColorCalibrationData() {}
 
-DisplayColorManager::ColorCalibrationData::~ColorCalibrationData() {
-}
+DisplayColorManager::ColorCalibrationData::~ColorCalibrationData() {}
 
 }  // namespace ash

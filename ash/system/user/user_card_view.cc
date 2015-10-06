@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/content/shell_content_state.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"

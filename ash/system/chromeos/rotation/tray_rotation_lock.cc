@@ -4,7 +4,7 @@
 
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 
-#include "ash/content/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_item_more.h"

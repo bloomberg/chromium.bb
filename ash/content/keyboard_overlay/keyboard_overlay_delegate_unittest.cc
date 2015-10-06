@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard_overlay/keyboard_overlay_delegate.h"
+#include "ash/content/keyboard_overlay/keyboard_overlay_delegate.h"
 
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"

@@ -263,7 +263,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
 void MultiUserWindowManagerChromeOSTest::SetUp() {
   ash_test_helper()->set_test_shell_delegate(new TestShellDelegateChromeOS);
-  ash_test_helper()->set_content_state(new TestShellContentState);
+  ash_test_helper()->set_content_state(new ::TestShellContentState);
   AshTestBase::SetUp();
   session_state_delegate_ = static_cast<TestSessionStateDelegate*>(
       ash::Shell::GetInstance()->session_state_delegate());

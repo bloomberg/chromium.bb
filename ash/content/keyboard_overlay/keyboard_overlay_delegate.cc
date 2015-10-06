@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard_overlay/keyboard_overlay_delegate.h"
+#include "ash/content/keyboard_overlay/keyboard_overlay_delegate.h"
 
 #include <algorithm>
 
@@ -28,9 +28,8 @@ const int kBaseHeight = 516;
 const int kHorizontalMargin = 28;
 
 // A message handler for detecting the timing when the web contents is painted.
-class PaintMessageHandler
-    : public WebUIMessageHandler,
-      public base::SupportsWeakPtr<PaintMessageHandler> {
+class PaintMessageHandler : public WebUIMessageHandler,
+                            public base::SupportsWeakPtr<PaintMessageHandler> {
  public:
   explicit PaintMessageHandler(views::Widget* widget) : widget_(widget) {}
   ~PaintMessageHandler() override {}
@@ -48,8 +47,7 @@ class PaintMessageHandler
 
 void PaintMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "didPaint",
-      base::Bind(&PaintMessageHandler::DidPaint, AsWeakPtr()));
+      "didPaint", base::Bind(&PaintMessageHandler::DidPaint, AsWeakPtr()));
 }
 
 void PaintMessageHandler::DidPaint(const base::ListValue* args) {
@@ -63,13 +61,9 @@ namespace ash {
 
 KeyboardOverlayDelegate::KeyboardOverlayDelegate(const base::string16& title,
                                                  const GURL& url)
-    : title_(title),
-      url_(url),
-      widget_(NULL) {
-}
+    : title_(title), url_(url), widget_(NULL) {}
 
-KeyboardOverlayDelegate::~KeyboardOverlayDelegate() {
-}
+KeyboardOverlayDelegate::~KeyboardOverlayDelegate() {}
 
 views::Widget* KeyboardOverlayDelegate::Show(views::WebDialogView* view) {
   widget_ = new views::Widget;
@@ -82,12 +76,12 @@ views::Widget* KeyboardOverlayDelegate::Show(views::WebDialogView* view) {
   // Show the widget at the bottom of the work area.
   gfx::Size size;
   GetDialogSize(&size);
-  const gfx::Rect& rect = Shell::GetScreen()->GetDisplayNearestWindow(
-      widget_->GetNativeView()).work_area();
+  const gfx::Rect& rect =
+      Shell::GetScreen()
+          ->GetDisplayNearestWindow(widget_->GetNativeView())
+          .work_area();
   gfx::Rect bounds(rect.x() + (rect.width() - size.width()) / 2,
-                   rect.bottom() - size.height(),
-                   size.width(),
-                   size.height());
+                   rect.bottom() - size.height(), size.width(), size.height());
   widget_->SetBounds(bounds);
 
   // The widget will be shown when the web contents gets ready to display.
@@ -111,12 +105,12 @@ void KeyboardOverlayDelegate::GetWebUIMessageHandlers(
   handlers->push_back(new PaintMessageHandler(widget_));
 }
 
-void KeyboardOverlayDelegate::GetDialogSize(
-    gfx::Size* size) const {
+void KeyboardOverlayDelegate::GetDialogSize(gfx::Size* size) const {
   using std::min;
   DCHECK(widget_);
-  gfx::Rect rect = ash::Shell::GetScreen()->GetDisplayNearestWindow(
-      widget_->GetNativeView()).work_area();
+  gfx::Rect rect = ash::Shell::GetScreen()
+                       ->GetDisplayNearestWindow(widget_->GetNativeView())
+                       .work_area();
   const int width = min(kBaseWidth, rect.width() - kHorizontalMargin);
   const int height = width * kBaseHeight / kBaseWidth;
   size->SetSize(width, height);
@@ -126,15 +120,13 @@ std::string KeyboardOverlayDelegate::GetDialogArgs() const {
   return "[]";
 }
 
-void KeyboardOverlayDelegate::OnDialogClosed(
-    const std::string& json_retval) {
+void KeyboardOverlayDelegate::OnDialogClosed(const std::string& json_retval) {
   delete this;
   return;
 }
 
 void KeyboardOverlayDelegate::OnCloseContents(WebContents* source,
-                                              bool* out_close_dialog) {
-}
+                                              bool* out_close_dialog) {}
 
 bool KeyboardOverlayDelegate::ShouldShowDialogTitle() const {
   return false;

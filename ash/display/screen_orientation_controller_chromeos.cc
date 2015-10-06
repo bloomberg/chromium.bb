@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/content/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_info.h"
@@ -14,8 +14,6 @@
 #include "base/command_line.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
-#include "content/public/browser/screen_orientation_provider.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/chromeos/accelerometer/accelerometer_util.h"
@@ -71,12 +69,10 @@ ScreenOrientationController::ScreenOrientationController()
       rotation_locked_orientation_(blink::WebScreenOrientationLockAny),
       user_rotation_(gfx::Display::ROTATE_0),
       current_rotation_(gfx::Display::ROTATE_0) {
-  content::ScreenOrientationProvider::SetDelegate(this);
   Shell::GetInstance()->AddShellObserver(this);
 }
 
 ScreenOrientationController::~ScreenOrientationController() {
-  content::ScreenOrientationProvider::SetDelegate(NULL);
   Shell::GetInstance()->RemoveShellObserver(this);
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
@@ -91,6 +87,36 @@ void ScreenOrientationController::AddObserver(Observer* observer) {
 
 void ScreenOrientationController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void ScreenOrientationController::LockOrientationForWindow(
+    aura::Window* requesting_window,
+    blink::WebScreenOrientationLockType lock_orientation) {
+  if (locking_windows_.empty())
+    Shell::GetInstance()->activation_client()->AddObserver(this);
+
+  if (!requesting_window->HasObserver(this))
+    requesting_window->AddObserver(this);
+  locking_windows_[requesting_window] = lock_orientation;
+
+  ApplyLockForActiveWindow();
+}
+
+void ScreenOrientationController::UnlockOrientationForWindow(
+    aura::Window* window) {
+  locking_windows_.erase(window);
+  if (locking_windows_.empty())
+    Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  window->RemoveObserver(this);
+  ApplyLockForActiveWindow();
+}
+
+bool ScreenOrientationController::ScreenOrientationProviderSupported() const {
+  return Shell::GetInstance()
+             ->maximize_mode_controller()
+             ->IsMaximizeModeWindowManagerEnabled() &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kAshDisableScreenOrientationLock);
 }
 
 void ScreenOrientationController::SetRotationLocked(bool rotation_locked) {
@@ -151,7 +177,7 @@ void ScreenOrientationController::OnWindowVisibilityChanged(
 }
 
 void ScreenOrientationController::OnWindowDestroying(aura::Window* window) {
-  RemoveLockingWindow(window);
+  UnlockOrientationForWindow(window);
 }
 
 void ScreenOrientationController::OnAccelerometerUpdated(
@@ -166,38 +192,6 @@ void ScreenOrientationController::OnAccelerometerUpdated(
                                        chromeos::ACCELEROMETER_SOURCE_SCREEN)) {
     HandleScreenRotation(update->get(chromeos::ACCELEROMETER_SOURCE_SCREEN));
   }
-}
-
-bool ScreenOrientationController::FullScreenRequired(
-    content::WebContents* web_contents) {
-  return true;
-}
-
-void ScreenOrientationController::Lock(
-    content::WebContents* web_contents,
-    blink::WebScreenOrientationLockType lock_orientation) {
-  if (locking_windows_.empty())
-    Shell::GetInstance()->activation_client()->AddObserver(this);
-
-  aura::Window* requesting_window = web_contents->GetNativeView();
-  if (!requesting_window->HasObserver(this))
-    requesting_window->AddObserver(this);
-  locking_windows_[requesting_window] = lock_orientation;
-
-  ApplyLockForActiveWindow();
-}
-
-bool ScreenOrientationController::ScreenOrientationProviderSupported() {
-  return Shell::GetInstance()
-             ->maximize_mode_controller()
-             ->IsMaximizeModeWindowManagerEnabled() &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kAshDisableScreenOrientationLock);
-}
-
-void ScreenOrientationController::Unlock(content::WebContents* web_contents) {
-  aura::Window* requesting_window = web_contents->GetNativeView();
-  RemoveLockingWindow(requesting_window);
 }
 
 void ScreenOrientationController::OnDisplayConfigurationChanged() {
@@ -404,14 +398,6 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
     }
   }
   SetRotationLocked(false);
-}
-
-void ScreenOrientationController::RemoveLockingWindow(aura::Window* window) {
-  locking_windows_.erase(window);
-  if (locking_windows_.empty())
-    Shell::GetInstance()->activation_client()->RemoveObserver(this);
-  window->RemoveObserver(this);
-  ApplyLockForActiveWindow();
 }
 
 bool ScreenOrientationController::IsRotationAllowedInLockedState(

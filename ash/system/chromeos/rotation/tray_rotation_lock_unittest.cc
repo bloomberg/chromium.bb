@@ -5,8 +5,8 @@
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 
 #include "ash/ash_switches.h"
-#include "ash/content/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"

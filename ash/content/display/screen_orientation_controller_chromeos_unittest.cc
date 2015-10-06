@@ -5,13 +5,14 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "ash/content/display/screen_orientation_controller_chromeos.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/test/content/test_shell_content_state.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
@@ -103,8 +104,10 @@ class ScreenOrientationControllerTest : public test::AshTestBase {
   ScreenOrientationControllerTest();
   ~ScreenOrientationControllerTest() override;
 
-  ScreenOrientationController* delegate() {
-    return screen_orientation_controller_;
+  content::ScreenOrientationDelegate* delegate() {
+    return ash_test_helper()
+        ->test_shell_content_state()
+        ->screen_orientation_delegate();
   }
 
   // Creates and initializes and empty content::WebContents that is backed by a
@@ -119,8 +122,6 @@ class ScreenOrientationControllerTest : public test::AshTestBase {
   void SetUp() override;
 
  private:
-  ScreenOrientationController* screen_orientation_controller_;
-
   // Optional content::BrowserContext used for two window tests.
   scoped_ptr<content::BrowserContext> secondary_browser_context_;
 
@@ -156,8 +157,6 @@ void ScreenOrientationControllerTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAshEnableTouchViewTesting);
   test::AshTestBase::SetUp();
-  screen_orientation_controller_ =
-      Shell::GetInstance()->screen_orientation_controller();
 }
 
 // Tests that a content::WebContents can lock rotation.
@@ -647,8 +646,8 @@ TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
   ASSERT_NE(kNewRotation, display_manager->GetDisplayInfo(kInternalDisplayId)
                               .GetActiveRotation());
 
-  delegate()->SetDisplayRotation(kNewRotation,
-                                 gfx::Display::ROTATION_SOURCE_ACTIVE);
+  Shell::GetInstance()->screen_orientation_controller()->SetDisplayRotation(
+      kNewRotation, gfx::Display::ROTATION_SOURCE_ACTIVE);
 
   EXPECT_EQ(kNewRotation, display_manager->GetDisplayInfo(kInternalDisplayId)
                               .GetActiveRotation());

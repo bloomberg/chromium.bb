@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/chrome_new_window_delegate_chromeos.h"
 
-#include "ash/keyboard_overlay/keyboard_overlay_view.h"
+#include "ash/content/keyboard_overlay/keyboard_overlay_view.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_service.h"

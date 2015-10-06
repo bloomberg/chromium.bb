@@ -13,10 +13,17 @@ class BrowserContext;
 }
 
 namespace ash {
+namespace test {
 
 class TestShellContentState : public ShellContentState {
  public:
   TestShellContentState();
+
+#if defined(OS_CHROMEOS)
+  content::ScreenOrientationDelegate* screen_orientation_delegate() {
+    return &orientation_delegate_;
+  }
+#endif
 
  private:
   ~TestShellContentState() override;
@@ -34,6 +41,7 @@ class TestShellContentState : public ShellContentState {
   DISALLOW_COPY_AND_ASSIGN(TestShellContentState);
 };
 
+}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_CONTENT_TEST_SHELL_CONTENT_STATE_H_

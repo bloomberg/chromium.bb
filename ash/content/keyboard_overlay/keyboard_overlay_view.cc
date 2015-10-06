@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard_overlay/keyboard_overlay_view.h"
+#include "ash/content/keyboard_overlay/keyboard_overlay_view.h"
 
-#include "ash/keyboard_overlay/keyboard_overlay_delegate.h"
+#include "ash/content/keyboard_overlay/keyboard_overlay_delegate.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
@@ -20,26 +20,22 @@ namespace {
 
 // Keys to invoke Cancel (Escape, Ctrl+Alt+/, or Shift+Ctrl+Alt+/, Help, F14).
 const ash::KeyboardOverlayView::KeyEventData kCancelKeys[] = {
-  { ui::VKEY_ESCAPE, ui::EF_NONE},
-  { ui::VKEY_OEM_2, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN },
-  { ui::VKEY_OEM_2, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN },
-  { ui::VKEY_HELP, ui::EF_NONE },
-  { ui::VKEY_F14, ui::EF_NONE },
+    {ui::VKEY_ESCAPE, ui::EF_NONE},
+    {ui::VKEY_OEM_2, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN},
+    {ui::VKEY_OEM_2, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN},
+    {ui::VKEY_HELP, ui::EF_NONE},
+    {ui::VKEY_F14, ui::EF_NONE},
 };
-
 }
 
 namespace ash {
 
-KeyboardOverlayView::KeyboardOverlayView(
-    content::BrowserContext* context,
-    WebDialogDelegate* delegate,
-    WebContentsHandler* handler)
-    : views::WebDialogView(context, delegate, handler) {
-}
+KeyboardOverlayView::KeyboardOverlayView(content::BrowserContext* context,
+                                         WebDialogDelegate* delegate,
+                                         WebContentsHandler* handler)
+    : views::WebDialogView(context, delegate, handler) {}
 
-KeyboardOverlayView::~KeyboardOverlayView() {
-}
+KeyboardOverlayView::~KeyboardOverlayView() {}
 
 void KeyboardOverlayView::Cancel() {
   Shell::GetInstance()->overlay_filter()->Deactivate(this);
@@ -66,10 +62,9 @@ aura::Window* KeyboardOverlayView::GetWindow() {
 }
 
 // static
-void KeyboardOverlayView::ShowDialog(
-    content::BrowserContext* context,
-    WebContentsHandler* handler,
-    const GURL& url) {
+void KeyboardOverlayView::ShowDialog(content::BrowserContext* context,
+                                     WebContentsHandler* handler,
+                                     const GURL& url) {
   if (Shell::GetInstance()->overlay_filter()->IsActive())
     return;
 

@@ -5,8 +5,8 @@
 #include "extensions/browser/api/system_display/display_info_provider.h"
 
 #include "ash/ash_switches.h"
-#include "ash/content/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"

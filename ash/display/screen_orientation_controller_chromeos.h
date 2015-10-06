@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_CONTENT_DISPLAY_SCREEN_ORIENTATION_CONTROLLER_CHROMEOS_H_
-#define ASH_CONTENT_DISPLAY_SCREEN_ORIENTATION_CONTROLLER_CHROMEOS_H_
+#ifndef ASH_DISPLAY_SCREEN_ORIENTATION_CONTROLLER_CHROMEOS_H_
+#define ASH_DISPLAY_SCREEN_ORIENTATION_CONTROLLER_CHROMEOS_H_
 
 #include <map>
 
@@ -14,7 +14,6 @@
 #include "base/observer_list.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
-#include "content/public/browser/screen_orientation_delegate.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/display.h"
@@ -24,10 +23,6 @@ namespace aura {
 class Window;
 }
 
-namespace content {
-class WebContents;
-}
-
 namespace ash {
 
 // Implements ChromeOS specific functionality for ScreenOrientationProvider.
@@ -35,7 +30,6 @@ class ASH_EXPORT ScreenOrientationController
     : public aura::client::ActivationChangeObserver,
       public aura::WindowObserver,
       public chromeos::AccelerometerReader::Observer,
-      public content::ScreenOrientationDelegate,
       public WindowTreeHostManager::Observer,
       public ShellObserver {
  public:
@@ -56,6 +50,14 @@ class ASH_EXPORT ScreenOrientationController
   // Add/Remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Allows/unallows a window to lock the screen orientation.
+  void LockOrientationForWindow(
+      aura::Window* requesting_windowwindow,
+      blink::WebScreenOrientationLockType lock_orientation);
+  void UnlockOrientationForWindow(aura::Window* window);
+
+  bool ScreenOrientationProviderSupported() const;
 
   bool ignore_display_configuration_updates() const {
     return ignore_display_configuration_updates_;
@@ -88,13 +90,6 @@ class ASH_EXPORT ScreenOrientationController
   // chromeos::AccelerometerReader::Observer:
   void OnAccelerometerUpdated(
       scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
-
-  // content::ScreenOrientationDelegate:
-  bool FullScreenRequired(content::WebContents* web_contents) override;
-  void Lock(content::WebContents* web_contents,
-            blink::WebScreenOrientationLockType lock_orientation) override;
-  bool ScreenOrientationProviderSupported() override;
-  void Unlock(content::WebContents* web_contents) override;
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
@@ -144,9 +139,6 @@ class ASH_EXPORT ScreenOrientationController
   // window, and applies it. If there is none, rotation lock will be removed.
   void ApplyLockForActiveWindow();
 
-  // Removes a window and its locking preference.
-  void RemoveLockingWindow(aura::Window* window);
-
   // Both |blink::WebScreenOrientationLockLandscape| and
   // |blink::WebScreenOrientationLockPortrait| allow for rotation between the
   // two angles of the same screen orientation
@@ -192,4 +184,4 @@ class ASH_EXPORT ScreenOrientationController
 
 }  // namespace ash
 
-#endif  // ASH_CONTENT_DISPLAY_SCREEN_ORIENTATION_CONTROLLER_CHROMEOS_H_
+#endif  // ASH_DISPLAY_SCREEN_ORIENTATION_CONTROLLER_CHROMEOS_H_

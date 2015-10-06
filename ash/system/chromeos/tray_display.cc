@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "ash/content/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/devicetype_utils.h"
