@@ -4,13 +4,13 @@
 
 #include "chrome/browser/chromeos/first_run/goodies_displayer.h"
 
-#include "base/files/file_util.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,29 +20,19 @@ namespace first_run {
 
 namespace {
 
-// ChromeOS Goodies page for device's first New Window.
-const char kGoodiesURL[] = "https://www.google.com/chrome/devices/goodies.html";
+GoodiesDisplayer* g_goodies_displayer = nullptr;
+GoodiesDisplayerTestInfo* g_test_info = nullptr;
 
-// Max days after initial login that we're willing to show Goodies.
-static const int kMaxDaysAfterOobeForGoodies = 14;
-
-// Checks timestamp on OOBE Complete flag file.  kCanShowOobeGoodiesPage
-// defaults to |true|; we set it to |false| (return |false|) for any device over
-// kMaxDaysAfterOobeForGoodies days old, to avoid showing it after update on
-// older devices.
+// Checks timestamp on OOBE Complete flag file, or use fake device age for test.
+// kCanShowOobeGoodiesPage defaults to |true|; set to |false| (return |false|)
+// for any device over kMaxDaysAfterOobeForGoodies days old, to avoid showing
+// Goodies after update on older devices.
 bool CheckGoodiesPrefAgainstOobeTimestamp() {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  const base::FilePath oobe_timestamp_file =
-      StartupUtils::GetOobeCompleteFlagPath();
-  base::File::Info fileInfo;
-  if (base::GetFileInfo(oobe_timestamp_file, &fileInfo)) {
-    const base::TimeDelta time_since_oobe =
-        base::Time::Now() - fileInfo.creation_time;
-    if (time_since_oobe >
-        base::TimeDelta::FromDays(kMaxDaysAfterOobeForGoodies))
-      return false;
-  }
-  return true;
+  const int days_since_oobe =
+      g_test_info ? g_test_info->days_since_oobe
+                  : StartupUtils::GetTimeSinceOobeFlagFileCreation().InDays();
+  return days_since_oobe <= GoodiesDisplayer::kMaxDaysAfterOobeForGoodies;
 }
 
 // Callback into main thread to set pref to |false| if too long since oobe, or
@@ -50,42 +40,84 @@ bool CheckGoodiesPrefAgainstOobeTimestamp() {
 void UpdateGoodiesPrefCantShow(bool can_show_goodies) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (can_show_goodies) {
-    UserSessionManager::GetInstance()->CreateGoodiesDisplayer();
+    if (!g_goodies_displayer)
+      g_goodies_displayer = new GoodiesDisplayer();
   } else {
     g_browser_process->local_state()->SetBoolean(prefs::kCanShowOobeGoodiesPage,
                                                  false);
+  }
+
+  if (g_test_info) {
+    g_test_info->setup_complete = true;
+    if (!g_test_info->on_setup_complete_callback.is_null())
+      g_test_info->on_setup_complete_callback.Run();
   }
 }
 
 }  // namespace
 
+GoodiesDisplayerTestInfo::GoodiesDisplayerTestInfo()
+    : days_since_oobe(0), setup_complete(false) {}
+
+GoodiesDisplayerTestInfo::~GoodiesDisplayerTestInfo() {}
+
+const char GoodiesDisplayer::kGoodiesURL[] =
+    "https://www.google.com/chrome/devices/goodies.html";
+
 GoodiesDisplayer::GoodiesDisplayer() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   BrowserList::AddObserver(this);
 }
 
+GoodiesDisplayer::~GoodiesDisplayer() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  BrowserList::RemoveObserver(this);
+}
+
 // If Goodies page hasn't been shown yet, and Chromebook isn't too old, create
-// GoodiesDisplayer to observe BrowserList.
-void GoodiesDisplayer::Init() {
-  if (g_browser_process->local_state()->GetBoolean(
-          prefs::kCanShowOobeGoodiesPage))
+// GoodiesDisplayer to observe BrowserList.  Return |true| if checking age.
+// static
+bool GoodiesDisplayer::Init() {
+  const bool can_show = g_browser_process->local_state()->GetBoolean(
+      prefs::kCanShowOobeGoodiesPage);
+  if (can_show) {
     base::PostTaskAndReplyWithResult(
         content::BrowserThread::GetBlockingPool(), FROM_HERE,
         base::Bind(&CheckGoodiesPrefAgainstOobeTimestamp),
         base::Bind(&UpdateGoodiesPrefCantShow));
+  }
+  return can_show;
+}
+
+// static
+void GoodiesDisplayer::InitForTesting(GoodiesDisplayerTestInfo* test_info) {
+  CHECK(!g_test_info) << "GoodiesDisplayer::InitForTesting called twice";
+  g_test_info = test_info;
+  test_info->setup_complete = !Init();
+}
+
+// static
+void GoodiesDisplayer::Delete() {
+  delete g_goodies_displayer;
+  g_goodies_displayer = nullptr;
 }
 
 // If conditions enumerated below are met, this loads the Oobe Goodies page for
 // new Chromebooks; when appropriate, it uses pref to mark page as shown,
 // removes itself from BrowserListObservers, and deletes itself.
 void GoodiesDisplayer::OnBrowserSetLastActive(Browser* browser) {
-  // 1. Not guest or incognito session (keep observing).
+  // 1. Must be an actual tabbed brower window.
+  if (browser->type() != Browser::TYPE_TABBED)
+    return;
+
+  // 2. Not guest or incognito session (keep observing).
   if (browser->profile()->IsOffTheRecord())
     return;
 
   PrefService* local_state = g_browser_process->local_state();
-  // 2. Not previously shown, or otherwise marked as unavailable.
+  // 3. Not previously shown, or otherwise marked as unavailable.
   if (local_state->GetBoolean(prefs::kCanShowOobeGoodiesPage)) {
-    // 3. Device not enterprise enrolled.
+    // 4. Device not enterprise enrolled.
     if (!g_browser_process->platform_part()
              ->browser_policy_connector_chromeos()
              ->IsEnterpriseManaged())
@@ -96,8 +128,7 @@ void GoodiesDisplayer::OnBrowserSetLastActive(Browser* browser) {
   }
 
   // Regardless of how we got here, we don't henceforth need to show Goodies.
-  BrowserList::RemoveObserver(this);
-  UserSessionManager::GetInstance()->DestroyGoodiesDisplayer();
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&Delete));
 }
 
 }  // namespace first_run

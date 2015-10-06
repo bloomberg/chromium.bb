@@ -1139,7 +1139,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   // launch browser.
   bool browser_launched = InitializeUserSession(profile);
 
-  // Check whether to, then set up for, display OOBE Goodies page on first run.
+  // If needed, create browser observer to display first run OOBE Goodies page.
   first_run::GoodiesDisplayer::Init();
 
   // TODO(nkostylev): This pointer should probably never be NULL, but it looks
@@ -1523,15 +1523,6 @@ UserSessionManager::GetAuthRequestContext() const {
   return auth_request_context;
 }
 
-void UserSessionManager::CreateGoodiesDisplayer() {
-  if (goodies_displayer_ == nullptr)
-    goodies_displayer_.reset(new first_run::GoodiesDisplayer);
-}
-
-void UserSessionManager::DestroyGoodiesDisplayer() {
-  goodies_displayer_.reset();
-}
-
 void UserSessionManager::AttemptRestart(Profile* profile) {
   // Restart unconditionally in case if we are stuck somewhere in a session
   // restore process. http://crbug.com/520346.
@@ -1768,7 +1759,7 @@ bool UserSessionManager::TokenHandlesEnabled() {
 void UserSessionManager::Shutdown() {
   token_handle_fetcher_.reset();
   token_handle_util_.reset();
-  goodies_displayer_.reset();
+  first_run::GoodiesDisplayer::Delete();
 }
 
 void UserSessionManager::CreateTokenUtilIfMissing() {
