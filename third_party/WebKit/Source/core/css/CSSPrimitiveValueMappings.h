@@ -2255,13 +2255,13 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EUnicodeBidi e)
         m_value.valueID = CSSValueBidiOverride;
         break;
     case Isolate:
-        m_value.valueID = CSSValueWebkitIsolate;
+        m_value.valueID = CSSValueIsolate;
         break;
     case IsolateOverride:
-        m_value.valueID = CSSValueWebkitIsolateOverride;
+        m_value.valueID = CSSValueIsolateOverride;
         break;
     case Plaintext:
-        m_value.valueID = CSSValueWebkitPlaintext;
+        m_value.valueID = CSSValuePlaintext;
         break;
     }
 }
@@ -2276,10 +2276,13 @@ template<> inline CSSPrimitiveValue::operator EUnicodeBidi() const
         return Embed;
     case CSSValueBidiOverride:
         return Override;
+    case CSSValueIsolate:
     case CSSValueWebkitIsolate:
         return Isolate;
+    case CSSValueIsolateOverride:
     case CSSValueWebkitIsolateOverride:
         return IsolateOverride;
+    case CSSValuePlaintext:
     case CSSValueWebkitPlaintext:
         return Plaintext;
     default:
@@ -2699,8 +2702,8 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TextCombine e)
     case TextCombineNone:
         m_value.valueID = CSSValueNone;
         break;
-    case TextCombineHorizontal:
-        m_value.valueID = CSSValueHorizontal;
+    case TextCombineAll:
+        m_value.valueID = CSSValueAll;
         break;
     }
 }
@@ -2711,8 +2714,9 @@ template<> inline CSSPrimitiveValue::operator TextCombine() const
     switch (m_value.valueID) {
     case CSSValueNone:
         return TextCombineNone;
-    case CSSValueHorizontal:
-        return TextCombineHorizontal;
+    case CSSValueAll:
+    case CSSValueHorizontal: // -webkit-text-combine
+        return TextCombineAll;
     default:
         break;
     }
@@ -2902,11 +2906,8 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TextOrientation e)
     case TextOrientationSideways:
         m_value.valueID = CSSValueSideways;
         break;
-    case TextOrientationSidewaysRight:
-        m_value.valueID = CSSValueSidewaysRight;
-        break;
-    case TextOrientationVerticalRight:
-        m_value.valueID = CSSValueVerticalRight;
+    case TextOrientationMixed:
+        m_value.valueID = CSSValueMixed;
         break;
     case TextOrientationUpright:
         m_value.valueID = CSSValueUpright;
@@ -2919,11 +2920,11 @@ template<> inline CSSPrimitiveValue::operator TextOrientation() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueSideways:
-        return TextOrientationSideways;
     case CSSValueSidewaysRight:
-        return TextOrientationSidewaysRight;
-    case CSSValueVerticalRight:
-        return TextOrientationVerticalRight;
+        return TextOrientationSideways;
+    case CSSValueMixed:
+    case CSSValueVerticalRight: // -webkit-text-orientation
+        return TextOrientationMixed;
     case CSSValueUpright:
         return TextOrientationUpright;
     default:
@@ -2931,7 +2932,7 @@ template<> inline CSSPrimitiveValue::operator TextOrientation() const
     }
 
     ASSERT_NOT_REACHED();
-    return TextOrientationVerticalRight;
+    return TextOrientationMixed;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EPointerEvents e)

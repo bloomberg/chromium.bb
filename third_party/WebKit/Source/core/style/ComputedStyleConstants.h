@@ -124,7 +124,7 @@ enum ETableLayout {
 };
 
 enum TextCombine {
-    TextCombineNone, TextCombineHorizontal
+    TextCombineNone, TextCombineAll
 };
 
 enum EFillAttachment {
@@ -423,7 +423,7 @@ enum TextEmphasisMark { TextEmphasisMarkNone, TextEmphasisMarkAuto, TextEmphasis
 
 enum TextEmphasisPosition { TextEmphasisPositionOver, TextEmphasisPositionUnder };
 
-enum TextOrientation { TextOrientationVerticalRight, TextOrientationUpright, TextOrientationSideways, TextOrientationSidewaysRight };
+enum TextOrientation { TextOrientationMixed, TextOrientationUpright, TextOrientationSideways };
 
 enum TextOverflow { TextOverflowClip = 0, TextOverflowEllipsis };
 

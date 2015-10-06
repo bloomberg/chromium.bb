@@ -2329,8 +2329,14 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyWebkitWritingMode:
         return cssValuePool().createValue(style.writingMode());
     case CSSPropertyWebkitTextCombine:
+        if (style.textCombine() == TextCombineAll)
+            return CSSPrimitiveValue::createIdentifier(CSSValueHorizontal);
+    case CSSPropertyTextCombineUpright:
         return cssValuePool().createValue(style.textCombine());
     case CSSPropertyWebkitTextOrientation:
+        if (style.textOrientation() == TextOrientationMixed)
+            return CSSPrimitiveValue::createIdentifier(CSSValueVerticalRight);
+    case CSSPropertyTextOrientation:
         return CSSPrimitiveValue::create(style.textOrientation());
     case CSSPropertyContent:
         return valueForContentData(style);

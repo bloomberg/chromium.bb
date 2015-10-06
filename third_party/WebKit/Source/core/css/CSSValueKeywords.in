@@ -413,6 +413,9 @@ fixed
 hand
 hide
 invert
+isolate
+isolate-override
+plaintext
 -webkit-isolate
 -webkit-isolate-override
 -webkit-plaintext
@@ -812,7 +815,8 @@ farthest-corner
 // contain
 // cover
 
-// -webkit-text-orientation
+// text-orientation/-webkit-text-orientation
+mixed
 sideways
 sideways-right
 upright

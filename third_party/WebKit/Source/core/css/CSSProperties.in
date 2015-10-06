@@ -95,6 +95,7 @@ font-weight interpolable, inherited, font, type_name=FontWeight, name_for_method
 -webkit-font-feature-settings inherited, font, name_for_methods=FeatureSettings, converter=convertFontFeatureSettings
 -webkit-font-smoothing inherited, font, type_name=FontSmoothingMode
 -webkit-locale inherited, custom_value
+text-orientation inherited, custom_value
 -webkit-text-orientation inherited, custom_value
 -webkit-writing-mode inherited, custom_value
 text-rendering inherited, font, type_name=TextRenderingMode
@@ -283,6 +284,7 @@ tab-size inherited, converter=convertLengthOrTabSpaces
 text-align inherited, custom_value
 text-align-last inherited, type_name=TextAlignLast
 text-anchor inherited, svg
+text-combine-upright inherited, type_name=TextCombine, name_for_methods=TextCombine
 // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
 text-decoration use_handlers_for=CSSPropertyTextDecorationLine, longhands=text-decoration-line;text-decoration-style;text-decoration-color
 text-decoration-color runtime_flag=CSS3TextDecorations, interpolable, custom_all
@@ -370,7 +372,7 @@ y interpolable, svg, converter=convertLength
 -webkit-rtl-ordering inherited, type_name=Order, setter=setRTLOrdering, initial=initialRTLOrdering
 -webkit-ruby-position inherited, type_name=RubyPosition
 -webkit-tap-highlight-color inherited, converter=convertColor
--webkit-text-combine inherited, type_name=TextCombine
+-webkit-text-combine inherited, type_name=TextCombine, name_for_methods=TextCombine
 -webkit-text-emphasis-color inherited, custom_all
 -webkit-text-emphasis-position inherited, type_name=TextEmphasisPosition
 -webkit-text-emphasis-style inherited, custom_all

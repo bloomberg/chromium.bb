@@ -239,17 +239,11 @@ static FontOrientation fontOrientation(const ComputedStyle& style)
         return FontOrientation::Horizontal;
 
     switch (style.textOrientation()) {
-    case TextOrientationVerticalRight:
+    case TextOrientationMixed:
         return FontOrientation::VerticalMixed;
     case TextOrientationUpright:
         return FontOrientation::VerticalUpright;
     case TextOrientationSideways:
-        if (style.writingMode() == LeftToRightWritingMode) {
-            // FIXME: This should map to sideways-left, which is not supported yet.
-            return FontOrientation::VerticalRotated;
-        }
-        return FontOrientation::VerticalRotated;
-    case TextOrientationSidewaysRight:
         return FontOrientation::VerticalRotated;
     default:
         ASSERT_NOT_REACHED();

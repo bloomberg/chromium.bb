@@ -211,8 +211,10 @@ tableLayout
 textAlign
 textAlignLast
 textAnchor
+textCombineUpright
 textDecoration
 textIndent
+textOrientation
 textOverflow
 textRendering
 textShadow

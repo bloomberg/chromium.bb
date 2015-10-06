@@ -241,12 +241,14 @@ tableLayout
 textAlign
 textAlignLast
 textAnchor
+textCombineUpright
 textDecoration
 textDecorationColor
 textDecorationLine
 textDecorationStyle
 textIndent
 textJustify
+textOrientation
 textOverflow
 textRendering
 textShadow

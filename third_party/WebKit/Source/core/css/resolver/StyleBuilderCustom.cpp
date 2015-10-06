@@ -812,6 +812,11 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitWritingMode(StyleResolver
     state.setWritingMode(*toCSSPrimitiveValue(value));
 }
 
+void StyleBuilderFunctions::applyValueCSSPropertyTextOrientation(StyleResolverState& state, CSSValue* value)
+{
+    state.setTextOrientation(*toCSSPrimitiveValue(value));
+}
+
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextOrientation(StyleResolverState& state, CSSValue* value)
 {
     state.setTextOrientation(*toCSSPrimitiveValue(value));
