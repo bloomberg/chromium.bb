@@ -153,7 +153,7 @@ class SmoothnessKeySilkCases(_Smoothness):
     return stories
 
 
-@benchmark.Enabled('android')
+@benchmark.Enabled('android', "mac")
 class SmoothnessGpuRasterizationTop25(_Smoothness):
   """Measures rendering statistics for the top 25 with GPU rasterization.
   """
@@ -260,7 +260,7 @@ class SmoothnessFlingSimpleMobilePages(_Smoothness):
 
 @benchmark.Enabled('android', 'chromeos', 'mac')
 class SmoothnessToughPinchZoomCases(_Smoothness):
-  """Measures rendering statistics for pinch-zooming into the tough pinch zoom
+  """Measures rendering statistics for pinch-zooming in the tough pinch zoom
   cases.
   """
   page_set = page_sets.ToughPinchZoomCasesPageSet
@@ -268,6 +268,23 @@ class SmoothnessToughPinchZoomCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.tough_pinch_zoom_cases'
+
+
+@benchmark.Enabled('android', 'chromeos', 'mac')
+class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
+  """Measures rendering statistics for pinch-zooming in the tough pinch zoom
+  cases with GPU rasterization.
+  """
+  tag = 'gpu_rasterization'
+  test = smoothness.Smoothness
+  page_set = page_sets.ToughPinchZoomCasesPageSet
+
+  def SetExtraBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.gpu_rasterization.tough_pinch_zoom_cases'
 
 
 @benchmark.Enabled('android', 'chromeos')
@@ -312,6 +329,20 @@ class SmoothnessToughScrollingCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.tough_scrolling_cases'
+
+
+@benchmark.Enabled('android', "mac")
+class SmoothnessGpuRasterizationToughScrollingCases(_Smoothness):
+  tag = 'gpu_rasterization'
+  test = smoothness.Smoothness
+  page_set = page_sets.ToughScrollingCasesPageSet
+
+  def SetExtraBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.gpu_rasterization.tough_scrolling_cases'
 
 @benchmark.Disabled('android')  # http://crbug.com/531593
 class SmoothnessToughImageDecodeCases(_Smoothness):
