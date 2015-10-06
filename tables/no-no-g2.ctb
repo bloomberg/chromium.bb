@@ -210,7 +210,8 @@ endword erne 156-2346
 endword erde 156-1456
 endword erte 156-1256
 
-# et															# defined in level 1
+# et
+word ett 346-2345															
 endword ets 346-234								# level 2 contractions
 endword ett 346-2345
 endword etne 346-2346

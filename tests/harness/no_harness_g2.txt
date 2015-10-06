@@ -8,7 +8,7 @@
   
 
 
-{ "data": [ {  "comment": "contraction example2",  "input": "Det tyngste regnet", "output": "⠠⠙⠬ ⠞⠽⠝⠛⠎⠱ ⠗⠑⠛⠝⠬"   } ] },
+{ "data": [ {  "comment": "contraction example2",  "input": "Det tyngste regnet", "output": "⠠⠙⠬ ⠞⠽⠝⠛⠎⠳ ⠗⠑⠛⠝⠬"   } ] },
 { "data": [ {  "comment": "contraction example3",  "input": "faller på huset", "output": "⠋⠁⠇⠇⠱ ⠏ ⠓⠥⠎⠬"   } ] },
 { "data": [ {  "comment": "contraction example4",  "input": "der taket", "output": "⠾ ⠞⠁⠅⠬"   } ] },
 { "data": [ {  "comment": "contraction example5",  "input": "lekker mest.", "output": "⠇⠑⠅⠅⠱ ⠍⠑⠎⠞⠄"   } ] },
@@ -38,7 +38,11 @@
 { "data": [ {  "comment": "contraction example29",  "input": "Det er ikke", "output": "⠠⠙⠬ ⠱ ⠊⠅"   } ] },
 { "data": [ {  "comment": "contraction example30",  "input": "plass til", "output": "⠏⠇⠁⠎⠎ ⠞"   } ] },
 { "data": [ {  "comment": "contraction example31",  "input": "to føtter", "output": "⠞⠕ ⠋⠪⠞⠞⠱"   } ] },
-{ "data": [ {  "comment": "contraction example32",  "input": "i én sko.", "output": "⠊ ⠿⠝ ⠎⠅⠕⠄"   } ] }
+{ "data": [ {  "comment": "contraction example32",  "input": "i én sko.", "output": "⠊ ⠿⠝ ⠎⠅⠕⠄"   } ] },
+{ "data": [ {  "comment": "contraction example32",  "input": "ett", "output": "⠬⠞"   } ] },
+{ "data": [ {  "comment": "contraction example32",  "input": "sett", "output": "⠎⠬⠞"   } ] }
+
+
 
    
     
