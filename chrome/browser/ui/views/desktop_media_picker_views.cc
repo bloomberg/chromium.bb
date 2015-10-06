@@ -206,6 +206,7 @@ DesktopMediaListView::DesktopMediaListView(
       media_list_(media_list.Pass()),
       weak_factory_(this) {
   media_list_->SetThumbnailSize(gfx::Size(kThumbnailWidth, kThumbnailHeight));
+  SetFocusable(true);
 }
 
 DesktopMediaListView::~DesktopMediaListView() {}
@@ -495,6 +496,10 @@ bool DesktopMediaPickerDialogView::IsDialogButtonEnabled(
   return true;
 }
 
+views::View* DesktopMediaPickerDialogView::GetInitiallyFocusedView() {
+  return list_view_;
+}
+
 base::string16 DesktopMediaPickerDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK ?
@@ -541,6 +546,11 @@ void DesktopMediaPickerDialogView::OnMediaListRowsChanged() {
       scroll_view_->GetPreferredSize().height();
 
   GetWidget()->CenterWindow(gfx::Size(widget_bound.width(), new_height));
+}
+
+DesktopMediaListView* DesktopMediaPickerDialogView::GetMediaListViewForTesting()
+    const {
+  return list_view_;
 }
 
 DesktopMediaSourceView*

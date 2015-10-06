@@ -133,12 +133,14 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  views::View* GetInitiallyFocusedView() override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Accept() override;
   void DeleteDelegate() override;
 
   void OnMediaListRowsChanged();
 
+  DesktopMediaListView* GetMediaListViewForTesting() const;
   DesktopMediaSourceView* GetMediaSourceViewForTesting(int index) const;
 
  private:

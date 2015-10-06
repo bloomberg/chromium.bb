@@ -87,6 +87,38 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnOkButtonPressed) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Verifies that a MediaSourceView is selected with mouse left click and
+// original selected MediaSourceView gets unselected.
+TEST_F(DesktopMediaPickerViewsTest, SelectMediaSourceViewOnSingleClick) {
+  media_list_->AddSource(0);
+  media_list_->AddSource(1);
+
+  DesktopMediaSourceView* source_view_0 =
+      GetPickerDialogView()->GetMediaSourceViewForTesting(0);
+
+  DesktopMediaSourceView* source_view_1 =
+      GetPickerDialogView()->GetMediaSourceViewForTesting(1);
+
+  // Both media source views are not selected initially.
+  EXPECT_FALSE(source_view_0->is_selected());
+  EXPECT_FALSE(source_view_1->is_selected());
+
+  // Source view 0 is selected with mouse click.
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+
+  GetPickerDialogView()->GetMediaSourceViewForTesting(0)->OnMousePressed(press);
+
+  EXPECT_TRUE(source_view_0->is_selected());
+  EXPECT_FALSE(source_view_1->is_selected());
+
+  // Source view 1 is selected and source view 0 is unselected with mouse click.
+  GetPickerDialogView()->GetMediaSourceViewForTesting(1)->OnMousePressed(press);
+
+  EXPECT_FALSE(source_view_0->is_selected());
+  EXPECT_TRUE(source_view_1->is_selected());
+}
+
 TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleClick) {
   const int kFakeId = 222;
   EXPECT_CALL(*this,
@@ -183,6 +215,11 @@ TEST_F(DesktopMediaPickerViewsTest, OkButtonDisabledWhenNoSelection) {
   media_list_->RemoveSource(0);
   EXPECT_FALSE(
       GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+}
+
+// Verifies that the MediaListView get the initial focus.
+TEST_F(DesktopMediaPickerViewsTest, ListViewHasInitialFocus) {
+  EXPECT_TRUE(GetPickerDialogView()->GetMediaListViewForTesting()->HasFocus());
 }
 
 }  // namespace views
