@@ -276,6 +276,18 @@ public class ChromeMediaRouter implements MediaRouteManager {
     }
 
     /**
+     * Notifies the specified route that it's not attached to the web page anymore.
+     * @param routeId the id of the route that was detached.
+     */
+    @CalledByNative
+    public void detachRoute(String routeId) {
+        MediaRouteProvider provider = mRouteIdsToProviders.get(routeId);
+        assert provider != null;
+
+        provider.detachRoute(routeId);
+    }
+
+    /**
      * Sends a string message to the specified route.
      * @param routeId The id of the route to send the message to.
      * @param message The message to send.

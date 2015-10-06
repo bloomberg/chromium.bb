@@ -178,7 +178,11 @@ void MediaRouterAndroid::ClearIssue(const Issue::Id& issue_id) {
 
 void MediaRouterAndroid::OnPresentationSessionDetached(
     const MediaRoute::Id& route_id) {
-  NOTIMPLEMENTED();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jroute_id =
+          base::android::ConvertUTF8ToJavaString(env, route_id);
+  Java_ChromeMediaRouter_detachRoute(
+      env, java_media_router_.obj(), jroute_id.obj());
 }
 
 bool MediaRouterAndroid::HasLocalRoute() const {

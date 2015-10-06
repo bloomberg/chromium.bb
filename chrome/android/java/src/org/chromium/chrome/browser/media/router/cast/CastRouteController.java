@@ -84,6 +84,7 @@ public class CastRouteController implements RouteController {
     private ApplicationMetadata mApplicationMetadata;
     private int mSequenceNumber;
     private boolean mStoppingApplication;
+    private boolean mDetached;
 
     /**
      * Initializes a new {@link CastRouteController} instance.
@@ -198,6 +199,16 @@ public class CastRouteController implements RouteController {
     @Override
     public int getTabId() {
         return mTabId;
+    }
+
+    @Override
+    public void markDetached() {
+        mDetached = true;
+    }
+
+    @Override
+    public boolean isDetached() {
+        return mDetached;
     }
 
     /**

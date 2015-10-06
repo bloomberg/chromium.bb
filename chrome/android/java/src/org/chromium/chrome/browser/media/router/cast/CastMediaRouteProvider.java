@@ -260,8 +260,9 @@ public class CastMediaRouteProvider
                 origin, tabId, MediaSource.from(sourceId));
         mRoutes.put(mediaRouteId, joinedController);
 
-        mManager.onRouteCreated(mediaRouteId, routeToJoin.getSinkId(), nativeRequestId, this,
-                false);
+        this.onRouteCreated(nativeRequestId, joinedController, false);
+
+        if (routeToJoin.isDetached()) mManager.onRouteClosed(routeToJoin.getRouteId());
     }
 
     @Override
@@ -270,6 +271,14 @@ public class CastMediaRouteProvider
         if (route == null) return;
 
         route.close();
+    }
+
+    @Override
+    public void detachRoute(String routeId) {
+        RouteController route = mRoutes.get(routeId);
+        if (route == null) return;
+
+        route.markDetached();
     }
 
     @Override

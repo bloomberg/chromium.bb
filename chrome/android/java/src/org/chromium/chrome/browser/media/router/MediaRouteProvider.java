@@ -58,6 +58,13 @@ public interface MediaRouteProvider {
     void closeRoute(String routeId);
 
     /**
+     * Notifies the route that the page is not attached to it any longer. The route must be created
+     * by this provider.
+     * @param routeId The id of the route.
+     */
+    void detachRoute(String routeId);
+
+    /**
      * Sends a message to the route with the given id. The route must be created by this provider.
      * @param routeId The id of the route to send the message to.
      * @param message The message to send.

@@ -45,4 +45,14 @@ public interface RouteController {
      * @return the id of the tab hosting the frame that requested the route.
      */
     int getTabId();
+
+    /**
+     * Marks the route as detached from the web page.
+     */
+    void markDetached();
+
+    /**
+     * @return if the route has been detached.
+     */
+    boolean isDetached();
 }
