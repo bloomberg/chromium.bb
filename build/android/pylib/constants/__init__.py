@@ -75,7 +75,7 @@ PACKAGE_INFO = {
         'com.google.android.apps.chrome.Main',
         '/data/local/chrome-command-line',
         'chrome_devtools_remote',
-        None),
+        'org.chromium.chrome.tests'),
     'legacy_browser': PackageInfo(
         'com.google.android.browser',
         'com.android.browser.BrowserActivity',

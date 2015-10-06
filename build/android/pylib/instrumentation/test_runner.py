@@ -56,13 +56,17 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self.coverage_dir = test_options.coverage_dir
     self.coverage_host_file = None
     self.options = test_options
+    package_info_candidates = [a for a in constants.PACKAGE_INFO.itervalues()
+                               if a.test_package == test_pkg.GetPackageName()]
+    assert len(package_info_candidates) < 2, (
+        'Multiple packages have the same test package')
+    self.package_info = (package_info_candidates[0] if package_info_candidates
+                         else None)
     self.test_pkg = test_pkg
     # Use the correct command line file for the package under test.
-    cmdline_file = [a.cmdline_file for a in constants.PACKAGE_INFO.itervalues()
-                    if a.test_package == self.test_pkg.GetPackageName()]
-    assert len(cmdline_file) < 2, 'Multiple packages have the same test package'
-    if len(cmdline_file) and cmdline_file[0]:
-      self.flags = flag_changer.FlagChanger(self.device, cmdline_file[0])
+    if self.package_info and self.package_info.cmdline_file:
+      self.flags = flag_changer.FlagChanger(
+          self.device, self.package_info.cmdline_file)
       if additional_flags:
         self.flags.AddFlags(additional_flags)
     else:
@@ -366,6 +370,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
       results.AddResult(test_result.InstrumentationTestResult(
           test, base_test_result.ResultType.TIMEOUT, start_ms, duration_ms,
           log=str(e) or 'No information'))
+      if self.package_info:
+        self.device.ForceStop(self.package_info.package)
+        self.device.ForceStop(self.package_info.test_package)
     except device_errors.DeviceUnreachableError as e:
       results.AddResult(test_result.InstrumentationTestResult(
           test, base_test_result.ResultType.CRASH, start_ms, duration_ms,
