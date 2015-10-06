@@ -33,7 +33,8 @@
   {
     "prefix": "threaded",
     "base": "animations",
-    "args": ["--enable-threaded-compositing"]
+    "args": ["--enable-threaded-compositing",
+             "--disable-composited-antialiasing"]
   },
   {
     "prefix": "threaded",
