@@ -67,6 +67,13 @@ class IPC_EXPORT ChannelPosix : public Channel,
  private:
   bool CreatePipe(const IPC::ChannelHandle& channel_handle);
 
+  // Returns false on recoverable error.
+  // There are two reasons why this method might leave messages in the
+  // output_queue_.
+  //   1. |waiting_connect_| is |true|.
+  //   2. |is_blocked_on_write_| is |true|.
+  // If any of these conditionals change, this method should be called, as
+  // previously blocked messages may no longer be blocked.
   bool ProcessOutgoingMessages();
 
   bool AcceptConnection();
@@ -99,6 +106,18 @@ class IPC_EXPORT ChannelPosix : public Channel,
   // MessageLoopForIO::Watcher implementation.
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
+
+  // Returns |false| on channel error.
+  // If |message| has brokerable attachments, those attachments are passed to
+  // the AttachmentBroker (which in turn invokes Send()), so this method must
+  // be re-entrant.
+  // Adds |message| to |output_queue_| and calls ProcessOutgoingMessages().
+  bool ProcessMessageForDelivery(Message* message);
+
+  // Moves all messages from |prelim_queue_| to |output_queue_| by calling
+  // ProcessMessageForDelivery().
+  // Returns |false| on channel error.
+  bool FlushPrelimQueue();
 
   Mode mode_;
 
@@ -135,8 +154,18 @@ class IPC_EXPORT ChannelPosix : public Channel,
   // the pipe.  On POSIX it's used as a key in a local map of file descriptors.
   std::string pipe_name_;
 
+  // Messages not yet ready to be sent are queued here. Messages removed from
+  // this queue are placed in the output_queue_. The double queue is
+  // unfortunate, but is necessary because messages with brokerable attachments
+  // can generate multiple messages to be sent (possibly from other channels).
+  // Some of these generated messages cannot be sent until |peer_pid_| has been
+  // configured.
+  // As soon as |peer_pid| has been configured, there is no longer any need for
+  // |prelim_queue_|. All messages are flushed, and no new messages are added.
+  std::queue<Message*> prelim_queue_;
+
   // Messages to be sent are queued here.
-  std::queue<Message*> output_queue_;
+  std::queue<OutputElement*> output_queue_;
 
   // We assume a worst case: kReadBufferSize bytes of messages, where each
   // message has no payload and a full complement of descriptors.

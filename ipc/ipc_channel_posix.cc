@@ -21,6 +21,7 @@
 #include <sys/un.h>
 #endif
 
+#include <algorithm>
 #include <map>
 #include <string>
 
@@ -383,22 +384,23 @@ void ChannelPosix::CloseFileDescriptors(Message* msg) {
 }
 
 bool ChannelPosix::ProcessOutgoingMessages() {
-  DCHECK(!waiting_connect_);  // Why are we trying to send messages if there's
-                              // no connection?
+  if (waiting_connect_)
+    return true;
+  if (is_blocked_on_write_)
+    return true;
   if (output_queue_.empty())
     return true;
-
   if (!pipe_.is_valid())
     return false;
 
   // Write out all the messages we can till the write blocks or there are no
   // more outgoing messages.
   while (!output_queue_.empty()) {
-    Message* msg = output_queue_.front();
+    OutputElement* element = output_queue_.front();
 
-    size_t amt_to_write = msg->size() - message_send_bytes_written_;
+    size_t amt_to_write = element->size() - message_send_bytes_written_;
     DCHECK_NE(0U, amt_to_write);
-    const char* out_bytes = reinterpret_cast<const char*>(msg->data()) +
+    const char* out_bytes = reinterpret_cast<const char*>(element->data()) +
         message_send_bytes_written_;
 
     struct msghdr msgh = {0};
@@ -411,7 +413,9 @@ bool ChannelPosix::ProcessOutgoingMessages() {
     ssize_t bytes_written = 1;
     int fd_written = -1;
 
-    if (message_send_bytes_written_ == 0 && !msg->attachment_set()->empty()) {
+    Message* msg = element->get_message();
+    if (message_send_bytes_written_ == 0 && msg &&
+        !msg->attachment_set()->empty()) {
       // This is the first chunk of a message which has descriptors to send
       struct cmsghdr *cmsg;
       const unsigned num_fds = msg->attachment_set()->size();
@@ -446,7 +450,7 @@ bool ChannelPosix::ProcessOutgoingMessages() {
       fd_written = pipe_.get();
       bytes_written = HANDLE_EINTR(sendmsg(pipe_.get(), &msgh, MSG_DONTWAIT));
     }
-    if (bytes_written > 0)
+    if (bytes_written > 0 && msg)
       CloseFileDescriptors(msg);
 
     if (bytes_written < 0 && !SocketWriteErrorIsRecoverable()) {
@@ -468,7 +472,7 @@ bool ChannelPosix::ProcessOutgoingMessages() {
       PLOG(ERROR) << "pipe error on "
                   << fd_written
                   << " Currently writing message of size: "
-                  << msg->size();
+                  << element->size();
       return false;
     }
 
@@ -491,8 +495,13 @@ bool ChannelPosix::ProcessOutgoingMessages() {
       message_send_bytes_written_ = 0;
 
       // Message sent OK!
-      DVLOG(2) << "sent message @" << msg << " on channel @" << this
-               << " with type " << msg->type() << " on fd " << pipe_.get();
+      if (msg) {
+        DVLOG(2) << "sent message @" << msg << " on channel @" << this
+                 << " with type " << msg->type() << " on fd " << pipe_.get();
+      } else {
+        DVLOG(2) << "sent buffer @" << element->data() << " on channel @"
+                 << this << " on fd " << pipe_.get();
+      }
       delete output_queue_.front();
       output_queue_.pop();
     }
@@ -506,20 +515,18 @@ bool ChannelPosix::Send(Message* message) {
            << " with type " << message->type()
            << " (" << output_queue_.size() << " in queue)";
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
-  Logging::GetInstance()->OnSendMessage(message, "");
-#endif  // IPC_MESSAGE_LOG_ENABLED
-
-  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
-                         "ChannelPosix::Send",
-                         message->flags(),
-                         TRACE_EVENT_FLAG_FLOW_OUT);
-  output_queue_.push(message);
-  if (!is_blocked_on_write_ && !waiting_connect_) {
-    return ProcessOutgoingMessages();
+  if (!prelim_queue_.empty()) {
+    prelim_queue_.push(message);
+    return true;
   }
 
-  return true;
+  if (message->HasBrokerableAttachments() &&
+      peer_pid_ == base::kNullProcessId) {
+    prelim_queue_.push(message);
+    return true;
+  }
+
+  return ProcessMessageForDelivery(message);
 }
 
 AttachmentBroker* ChannelPosix::GetAttachmentBroker() {
@@ -570,10 +577,11 @@ void ChannelPosix::ResetToAcceptingConnectionState() {
   ResetSafely(&pipe_);
 
   while (!output_queue_.empty()) {
-    Message* m = output_queue_.front();
+    OutputElement* element = output_queue_.front();
     output_queue_.pop();
-    CloseFileDescriptors(m);
-    delete m;
+    if (element->get_message())
+      CloseFileDescriptors(element->get_message());
+    delete element;
   }
 
   // Close any outstanding, received file descriptors.
@@ -668,10 +676,8 @@ void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
   // only send our handshake message after we've processed the client's.
   // This gives us a chance to kill the client if the incoming handshake
   // is invalid. This also flushes any closefd messages.
-  if (!is_blocked_on_write_) {
-    if (!ProcessOutgoingMessages()) {
-      ClosePipeOnError();
-    }
+  if (!ProcessOutgoingMessages()) {
+    ClosePipeOnError();
   }
 }
 
@@ -682,6 +688,73 @@ void ChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
   if (!ProcessOutgoingMessages()) {
     ClosePipeOnError();
   }
+}
+
+bool ChannelPosix::ProcessMessageForDelivery(Message* message) {
+  // Sending a brokerable attachment requires a call to Channel::Send(), so
+  // Send() may be re-entrant. Brokered attachments must be sent before the
+  // Message itself.
+  if (message->HasBrokerableAttachments()) {
+    DCHECK(GetAttachmentBroker());
+    DCHECK(peer_pid_ != base::kNullProcessId);
+    for (const BrokerableAttachment* attachment :
+         message->attachment_set()->PeekBrokerableAttachments()) {
+      if (!GetAttachmentBroker()->SendAttachmentToProcess(attachment,
+                                                          peer_pid_)) {
+        delete message;
+        return false;
+      }
+    }
+  }
+
+#ifdef IPC_MESSAGE_LOG_ENABLED
+  Logging::GetInstance()->OnSendMessage(message, "");
+#endif  // IPC_MESSAGE_LOG_ENABLED
+
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+                         "ChannelPosix::Send",
+                         message->flags(),
+                         TRACE_EVENT_FLAG_FLOW_OUT);
+
+  // |output_queue_| takes ownership of |message|.
+  OutputElement* element = new OutputElement(message);
+  output_queue_.push(element);
+
+  if (message->HasBrokerableAttachments()) {
+    // |output_queue_| takes ownership of |ids.buffer|.
+    Message::SerializedAttachmentIds ids =
+        message->SerializedIdsOfBrokerableAttachments();
+    output_queue_.push(new OutputElement(ids.buffer, ids.size));
+  }
+
+  return ProcessOutgoingMessages();
+}
+
+bool ChannelPosix::FlushPrelimQueue() {
+  DCHECK_NE(peer_pid_, base::kNullProcessId);
+
+  // Due to the possibly re-entrant nature of ProcessMessageForDelivery(),
+  // |prelim_queue_| should appear empty.
+  std::queue<Message*> prelim_queue;
+  std::swap(prelim_queue_, prelim_queue);
+
+  bool processing_error = false;
+  while (!prelim_queue.empty()) {
+    Message* m = prelim_queue.front();
+    processing_error = !ProcessMessageForDelivery(m);
+    prelim_queue.pop();
+    if (processing_error)
+      break;
+  }
+
+  // Delete any unprocessed messages.
+  while (!prelim_queue.empty()) {
+    Message* m = prelim_queue.front();
+    delete m;
+    prelim_queue.pop();
+  }
+
+  return !processing_error;
 }
 
 bool ChannelPosix::AcceptConnection() {
@@ -747,7 +820,8 @@ void ChannelPosix::QueueHelloMessage() {
   if (!msg->WriteInt(GetHelloMessageProcId())) {
     NOTREACHED() << "Unable to pickle hello message proc id";
   }
-  output_queue_.push(msg.release());
+  OutputElement* element = new OutputElement(msg.release());
+  output_queue_.push(element);
 }
 
 ChannelPosix::ReadState ChannelPosix::ReadData(
@@ -902,8 +976,9 @@ void ChannelPosix::QueueCloseFDMessage(int fd, int hops) {
       if (!msg->WriteInt(hops - 1) || !msg->WriteInt(fd)) {
         NOTREACHED() << "Unable to pickle close fd.";
       }
-      // Send(msg.release());
-      output_queue_.push(msg.release());
+
+      OutputElement* element = new OutputElement(msg.release());
+      output_queue_.push(element);
       break;
     }
 
@@ -929,6 +1004,9 @@ void ChannelPosix::HandleInternalMessage(const Message& msg) {
 
       peer_pid_ = pid;
       listener()->OnChannelConnected(pid);
+
+      if (!FlushPrelimQueue())
+        ClosePipeOnError();
       break;
 
 #if defined(OS_MACOSX)

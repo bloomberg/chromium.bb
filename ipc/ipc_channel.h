@@ -239,10 +239,10 @@ class IPC_EXPORT Channel : public Endpoint {
     ~OutputElement();
     size_t size() const { return message_ ? message_->size() : length_; }
     const void* data() const { return message_ ? message_->data() : buffer_; }
-    const Message* get_message() const { return message_.get(); }
+    Message* get_message() const { return message_.get(); }
 
    private:
-    scoped_ptr<const Message> message_;
+    scoped_ptr<Message> message_;
     void* buffer_;
     size_t length_;
   };

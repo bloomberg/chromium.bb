@@ -161,7 +161,17 @@ void ChannelWin::FlushPrelimQueue() {
 
   while (!prelim_queue.empty()) {
     Message* m = prelim_queue.front();
-    ProcessMessageForDelivery(m);
+    bool success = ProcessMessageForDelivery(m);
+    prelim_queue.pop();
+
+    if (!success)
+      break;
+  }
+
+  // Delete any unprocessed messages.
+  while (!prelim_queue.empty()) {
+    Message* m = prelim_queue.front();
+    delete m;
     prelim_queue.pop();
   }
 }
@@ -254,9 +264,9 @@ void ChannelWin::HandleInternalMessage(const Message& msg) {
   // Validation completed.
   validate_client_ = false;
 
-  FlushPrelimQueue();
-
   listener()->OnChannelConnected(claimed_pid);
+
+  FlushPrelimQueue();
 }
 
 base::ProcessId ChannelWin::GetSenderPID() {
