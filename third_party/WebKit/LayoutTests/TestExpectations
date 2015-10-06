@@ -1131,8 +1131,6 @@ crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failur
 # Unclear semantics of ToString (actually ToPrimitive) across iframes.
 crbug.com/532469 http/tests/security/cross-frame-access-custom.html [ NeedsManualRebaseline ]
 
-crbug.com/538180 [ Win7 XP Linux Mac Android ] inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.html [ NeedsRebaseline ]
-
 # Win10 specific failures that still need triaging.
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-properties-after-frame-navigated.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/dom/Window/property-access-on-cached-properties-after-frame-removed-and-gced.html [ Failure ]
