@@ -1194,6 +1194,11 @@ template("java_library_impl") {
   _requires_android =
       defined(invoker.requires_android) && invoker.requires_android
   assert(_requires_android || true)  # Mark as used.
+  _android_manifest = "//build/android/AndroidManifest.xml"
+  if (defined(invoker.android_manifest)) {
+    _android_manifest = invoker.android_manifest
+  }
+  assert(_android_manifest != "")  # Mark as used.
   _run_findbugs = defined(invoker.run_findbugs) && invoker.run_findbugs
   assert(_run_findbugs || true)  # Mark as used.
 
@@ -1318,11 +1323,6 @@ template("java_library_impl") {
 
   if (_supports_android) {
     if (defined(invoker.chromium_code) && invoker.chromium_code) {
-      _android_manifest = "//build/android/AndroidManifest.xml"
-      if (defined(invoker.android_manifest)) {
-        _android_manifest = invoker.android_manifest
-      }
-
       _final_datadeps += [ ":${_template_name}__lint" ]
       android_lint("${_template_name}__lint") {
         android_manifest = _android_manifest

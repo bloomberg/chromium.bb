@@ -357,6 +357,7 @@
             '../chrome/chrome.gyp:chrome_public_apk',
             '../chrome/chrome.gyp:chrome_public_test_apk',
             '../chrome/chrome.gyp:chromedriver_webview_shell_apk',
+            '../third_party/custom_tabs_client/custom_tabs_client.gyp:custom_tabs_client_example_apk',
           ],
         }],
         ['OS=="android" or OS=="linux"', {

@@ -1108,6 +1108,7 @@ template("android_java_prebuilt") {
 # Variables
 #   android_manifest: Path to AndroidManifest.xml.
 #   android_manifest_dep: Target that generates AndroidManifest (if applicable)
+#   chromium_code: If true, extra analysis warning/errors will be enabled.
 #   data_deps: List of dependencies needed at runtime. These will be built but
 #     won't change the generated .apk in any way (in fact they may be built
 #     after the .apk is).
@@ -1386,6 +1387,10 @@ template("android_apk") {
 
     android_manifest = _android_manifest
     chromium_code = true
+    if (defined(invoker.chromium_code)) {
+      chromium_code = invoker.chromium_code
+    }
+
     if (defined(invoker.java_files)) {
       java_files = invoker.java_files
     } else if (defined(invoker.DEPRECATED_java_in_dir)) {

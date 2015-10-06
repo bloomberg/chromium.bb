@@ -49,6 +49,10 @@ android_java_prebuilt("android_support_design_java") {
   jar_path = "$android_sdk_root/extras/android/support/design/libs/android-support-design.jar"
 }
 
+android_java_prebuilt("android_support_annotations_javalib") {
+  jar_path = "$android_sdk_root/extras/android/support/annotations/android-support-annotations.jar"
+}
+
 java_prebuilt("android_support_multidex_java") {
   supports_android = true
   jar_path = "$android_sdk_root/extras/android/support/multidex/library/libs/android-support-multidex.jar"
@@ -126,7 +130,9 @@ android_java_prebuilt("google_play_services_default_java") {
 
   # TODO(dgn) deps should not complain about having a custom action here
   # Currently, there is no guarantee that the data_deps actions will complete before the current one runs
-  data_deps = [ ":check_sdk_extras_version" ]
+  data_deps = [
+    ":check_sdk_extras_version",
+  ]
   jar_path = "$android_sdk_root/extras/google/google_play_services/libproject/google-play-services_lib/libs/google-play-services.jar"
 }
 

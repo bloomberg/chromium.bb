@@ -38,3 +38,10 @@ group("ps_ext") {
     "//tools/android/ps_ext",
   ]
 }
+
+# GYP: //tools/android/android_tools.gyp:customtabs_benchmark
+group("customtabs_benchmark") {
+  deps = [
+    "//tools/android/customtabs_benchmark:customtabs_benchmark_apk",
+  ]
+}

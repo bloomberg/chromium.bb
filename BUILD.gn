@@ -317,6 +317,7 @@ group("both_gn_and_gyp") {
         "//chrome/android:chrome_public_apk",
         "//chrome/android:chrome_public_test_apk",
         "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
+        "//third_party/custom_tabs_client:custom_tabs_client_example_apk",
       ]
     }
 
