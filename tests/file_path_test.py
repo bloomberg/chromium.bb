@@ -8,7 +8,6 @@ import logging
 import os
 import tempfile
 import unittest
-import shutil
 import StringIO
 import subprocess
 import sys
@@ -22,6 +21,7 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 FILE_PATH = unicode(os.path.abspath(__file__))
 
 from depot_tools import auto_stub
+from depot_tools import fix_encoding
 import test_utils
 from utils import file_path
 
@@ -37,14 +37,17 @@ class FilePathTest(auto_stub.TestCase):
     self._tempdir = None
 
   def tearDown(self):
-    if self._tempdir:
-      for dirpath, dirnames, filenames in os.walk(self._tempdir, topdown=True):
-        for filename in filenames:
-          file_path.set_read_only(os.path.join(dirpath, filename), False)
-        for dirname in dirnames:
-          file_path.set_read_only(os.path.join(dirpath, dirname), False)
-      shutil.rmtree(self._tempdir)
-    super(FilePathTest, self).tearDown()
+    try:
+      if self._tempdir:
+        for dirpath, dirnames, filenames in os.walk(
+            self._tempdir, topdown=True):
+          for filename in filenames:
+            file_path.set_read_only(os.path.join(dirpath, filename), False)
+          for dirname in dirnames:
+            file_path.set_read_only(os.path.join(dirpath, dirname), False)
+        file_path.rmtree(self._tempdir)
+    finally:
+      super(FilePathTest, self).tearDown()
 
   @property
   def tempdir(self):
@@ -250,7 +253,7 @@ class FilePathTest(auto_stub.TestCase):
         # you?
         self.assertEqual([basename], os.listdir(tempdir))
       finally:
-        shutil.rmtree(tempdir)
+        file_path.rmtree(tempdir)
 
     def test_rmtree_win(self):
       # Mock our sleep for faster test case execution.
@@ -355,6 +358,7 @@ class FilePathTest(auto_stub.TestCase):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
   if '-v' in sys.argv:

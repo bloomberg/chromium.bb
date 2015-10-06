@@ -7,7 +7,6 @@ import hashlib
 import json
 import logging
 import os
-import shutil
 import sys
 import tempfile
 import unittest
@@ -17,6 +16,8 @@ import net_utils
 
 import isolated_format
 from depot_tools import auto_stub
+from depot_tools import fix_encoding
+from utils import file_path
 from utils import tools
 
 import isolateserver_mock
@@ -44,7 +45,7 @@ class SymlinkTest(unittest.TestCase):
   def tearDown(self):
     try:
       os.chdir(self.old_cwd)
-      shutil.rmtree(self.cwd)
+      file_path.rmtree(self.cwd)
     finally:
       super(SymlinkTest, self).tearDown()
 
@@ -240,6 +241,7 @@ class TestIsolated(auto_stub.TestCase):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   if '-v' in sys.argv:
     unittest.TestCase.maxDiff = None
   logging.basicConfig(

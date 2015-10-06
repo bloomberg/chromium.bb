@@ -10,7 +10,6 @@ import functools
 import json
 import logging
 import os
-import shutil
 import sys
 import tempfile
 import unittest
@@ -23,6 +22,7 @@ import isolated_format
 import isolateserver
 import run_isolated
 from depot_tools import auto_stub
+from depot_tools import fix_encoding
 from utils import file_path
 from utils import logging_utils
 from utils import on_error
@@ -82,7 +82,7 @@ class RunIsolatedTestBase(auto_stub.TestCase):
         file_path.set_read_only(os.path.join(dirpath, filename), False)
       for dirname in dirnames:
         file_path.set_read_only(os.path.join(dirpath, dirname), False)
-    shutil.rmtree(self.tempdir)
+    file_path.rmtree(self.tempdir)
     super(RunIsolatedTestBase, self).tearDown()
 
   @property
@@ -477,6 +477,7 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
   unittest.main()

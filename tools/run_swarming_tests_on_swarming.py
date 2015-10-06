@@ -18,7 +18,6 @@ __version__ = '0.1'
 import glob
 import logging
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -31,6 +30,7 @@ import parallel_execution
 
 from third_party import colorama
 from third_party.depot_tools import fix_encoding
+from utils import file_path
 from utils import tools
 
 
@@ -93,7 +93,7 @@ def archive_isolated_triggers(isolate_server, tree_isolated, tests):
         for i in xrange(len(tests)))
     return zip(tests, [i[0] for i in items])
   finally:
-    shutil.rmtree(tempdir)
+    file_path.rmtree(tempdir)
 
 
 

@@ -26,6 +26,7 @@ import parallel_execution
 
 from third_party import colorama
 from third_party.depot_tools import fix_encoding
+from utils import file_path
 from utils import tools
 
 
@@ -67,7 +68,7 @@ def archive(isolate_server, script):
     ]
     return subprocess.check_output(cmd, cwd=ROOT_DIR).split()[0]
   finally:
-    shutil.rmtree(tempdir)
+    file_path.rmtree(tempdir)
 
 
 def run_serial(

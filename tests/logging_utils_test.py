@@ -8,13 +8,14 @@ import os
 import subprocess
 import sys
 import tempfile
-import shutil
 import unittest
 import re
 
 THIS_FILE = os.path.abspath(__file__)
 sys.path.insert(0, os.path.dirname(os.path.dirname(THIS_FILE)))
 
+from third_party.depot_tools import fix_encoding
+from utils import file_path
 from utils import logging_utils
 
 
@@ -40,7 +41,7 @@ class Test(unittest.TestCase):
 
   def tearDown(self):
     try:
-      shutil.rmtree(self.tmp)
+      file_path.rmtree(self.tmp)
     finally:
       super(Test, self).tearDown()
 
@@ -114,4 +115,5 @@ def main():
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   sys.exit(main())

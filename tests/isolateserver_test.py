@@ -25,6 +25,7 @@ import isolated_format
 import isolateserver
 import test_utils
 from depot_tools import auto_stub
+from depot_tools import fix_encoding
 from utils import file_path
 from utils import threading_utils
 
@@ -992,6 +993,7 @@ def clear_env_vars():
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   if '-v' in sys.argv:
     unittest.TestCase.maxDiff = None
   logging.basicConfig(

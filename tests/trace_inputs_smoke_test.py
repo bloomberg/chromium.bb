@@ -19,6 +19,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 import trace_inputs
+from third_party.depot_tools import fix_encoding
 from utils import file_path
 from utils import threading_utils
 
@@ -101,7 +102,7 @@ class TraceInputsBase(unittest.TestCase):
       if VERBOSE:
         print 'Leaking: %s' % self.tempdir
       else:
-        shutil.rmtree(self.tempdir)
+        file_path.rmtree(self.tempdir)
 
   @staticmethod
   def get_child_command(from_data):
@@ -722,6 +723,7 @@ class TraceInputsImport(TraceInputsBase):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   VERBOSE = '-v' in sys.argv
   logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
   if VERBOSE:

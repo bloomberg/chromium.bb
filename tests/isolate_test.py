@@ -19,6 +19,7 @@ sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 from depot_tools import auto_stub
+from depot_tools import fix_encoding
 import auth
 import isolate
 import isolate_format
@@ -1619,5 +1620,6 @@ def clear_env_vars():
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   clear_env_vars()
   test_utils.main()

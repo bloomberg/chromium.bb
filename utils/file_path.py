@@ -873,6 +873,7 @@ def rmtree(root):
   """
   # Do not assert here yet because this would break too much code.
   root = unicode(root)
+  assert sys.getdefaultencoding() == 'utf-8', sys.getdefaultencoding()
   make_tree_deleteable(root)
   logging.info('rmtree(%s)', root)
 

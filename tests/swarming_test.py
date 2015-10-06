@@ -26,6 +26,7 @@ import isolateserver
 import swarming
 import test_utils
 
+from depot_tools import fix_encoding
 from utils import file_path
 from utils import logging_utils
 from utils import tools
@@ -1212,6 +1213,7 @@ class TestCommandBot(NetTestCase):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.CRITICAL)
   if '-v' in sys.argv:

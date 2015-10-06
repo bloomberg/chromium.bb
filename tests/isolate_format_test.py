@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 import isolate_format
 from depot_tools import auto_stub
+from depot_tools import fix_encoding
 from utils import file_path
 
 
@@ -994,6 +995,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.ERROR,
       format='%(levelname)5s %(filename)15s(%(lineno)3d): %(message)s')

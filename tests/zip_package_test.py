@@ -6,7 +6,6 @@
 import cStringIO as StringIO
 import logging
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -16,6 +15,8 @@ import zipfile
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
+from third_party.depot_tools import fix_encoding
+from utils import file_path
 from utils import zip_package
 
 
@@ -29,8 +30,10 @@ class ZipPackageTest(unittest.TestCase):
     self.temp_dir = tempfile.mkdtemp(prefix=u'zip_package_test')
 
   def tearDown(self):
-    shutil.rmtree(self.temp_dir)
-    super(ZipPackageTest, self).tearDown()
+    try:
+      file_path.rmtree(self.temp_dir)
+    finally:
+      super(ZipPackageTest, self).tearDown()
 
   def stage_files(self, files):
     """Populates temp directory with given files specified as a list or dict."""
@@ -282,6 +285,7 @@ class ZipPackageTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   VERBOSE = '-v' in sys.argv
   logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
   unittest.main()

@@ -11,7 +11,6 @@ isolated file.
 import bz2
 import optparse
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -21,6 +20,8 @@ import zlib
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
+from third_party.depot_tools import fix_encoding
+from utils import file_path
 from utils import tools
 
 
@@ -116,8 +117,9 @@ def main():
       profile_compress('bz2', bz2.BZ2Compressor, range(1, 10), zip_directory,
                        temp_dir)
   finally:
-    shutil.rmtree(temp_dir)
+    file_path.rmtree(temp_dir)
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   sys.exit(main())

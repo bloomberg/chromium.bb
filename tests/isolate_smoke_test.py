@@ -20,6 +20,7 @@ sys.path.insert(0, ROOT_DIR)
 
 import isolate
 import isolated_format
+from depot_tools import fix_encoding
 from utils import file_path
 
 import test_utils
@@ -1066,4 +1067,5 @@ class IsolateOther(IsolateTempdirBase):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   test_utils.main()

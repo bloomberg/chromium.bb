@@ -15,6 +15,7 @@ sys.path.insert(0, ROOT_DIR)
 
 import isolated_format
 import run_isolated
+from depot_tools import fix_encoding
 from utils import file_path
 
 import isolateserver_mock
@@ -346,4 +347,5 @@ class RunIsolatedTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
   test_utils.main()
