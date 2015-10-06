@@ -677,6 +677,9 @@ const char kInstallSupervisedUserWhitelists[] =
 // Marks a renderer as an Instant process.
 const char kInstantProcess[]                = "instant-process";
 
+// The URL for the interests API.
+const char kInterestsURL[]                  = "interests-url";
+
 // Invalidation service should use GCM network channel even if experiment is not
 // enabled.
 const char kInvalidationUseGCMChannel[]     = "invalidation-use-gcm-channel";

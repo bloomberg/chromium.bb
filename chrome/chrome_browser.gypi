@@ -542,6 +542,8 @@
       'browser/install_verification/win/module_list.h',
       'browser/install_verification/win/module_verification_common.cc',
       'browser/install_verification/win/module_verification_common.h',
+      'browser/interests/interests_fetcher.cc',
+      'browser/interests/interests_fetcher.h',
       'browser/internal_auth.cc',
       'browser/internal_auth.h',
       'browser/interstitials/chrome_metrics_helper.cc',
