@@ -66,15 +66,13 @@ void OobeBaseTest::SetUp() {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&FakeGaia::HandleRequest, base::Unretained(fake_gaia_.get())));
 
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  // Don't spin up the IO thread yet since no threads are allowed while
+  // spawning sandbox host process. See crbug.com/322732.
+  ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
   // Start https wrapper here so that the URLs can be pointed at it in
   // SetUpCommandLine().
   InitHttpsForwarders();
-
-  // Stop IO thread here because no threads are allowed while
-  // spawning sandbox host process. See crbug.com/322732.
-  embedded_test_server()->StopThread();
 
   ExtensionApiTest::SetUp();
 }
@@ -95,8 +93,9 @@ void OobeBaseTest::SetUpOnMainThread() {
                                           kFakeLSIDCookie);
   }
 
-  // Restart the thread as the sandbox host process has already been spawned.
-  embedded_test_server()->RestartThreadAndListen();
+  // Start the accept thread as the sandbox host process has already been
+  // spawned.
+  embedded_test_server()->StartAcceptingConnections();
 
   login_screen_load_observer_.reset(new content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,

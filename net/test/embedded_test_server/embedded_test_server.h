@@ -13,11 +13,11 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/address_list.h"
-#include "net/test/embedded_test_server/tcp_listen_socket.h"
+#include "net/base/ip_endpoint.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -25,34 +25,16 @@ class FilePath;
 }
 
 namespace net {
+
+class StreamSocket;
+class TCPServerSocket;
+
 namespace test_server {
 
 class EmbeddedTestServerConnectionListener;
 class HttpConnection;
 class HttpResponse;
 struct HttpRequest;
-
-// This class is required to be able to have composition instead of inheritance,
-class HttpListenSocket : public TCPListenSocket {
- public:
-  HttpListenSocket(const SocketDescriptor socket_descriptor,
-                   StreamListenSocket::Delegate* delegate);
-  ~HttpListenSocket() override;
-  virtual void Listen();
-
-  // Listen on the current IO thread. If the IO thread has changed since this
-  // object is constructed, call |ListenOnIOThread| to make sure it listens on
-  // the right thread. Otherwise must call |Listen| instead.
-  void ListenOnIOThread();
-
- private:
-  friend class EmbeddedTestServer;
-
-  // Detaches the current from |thread_checker_|.
-  void DetachFromThread();
-
-  base::ThreadChecker thread_checker_;
-};
 
 // Class providing an HTTP server for testing purpose. This is a basic server
 // providing only an essential subset of HTTP/1.1 protocol. Especially,
@@ -83,24 +65,22 @@ class HttpListenSocket : public TCPListenSocket {
 // For a test that spawns another process such as browser_tests, it is
 // suggested to call InitializeAndWaitUntilReady in SetUpOnMainThread after
 // the process is spawned. If you have to do it before the process spawns,
-// you need to stop the server's thread so that there is no no other
+// you need to first setup the listen socket so that there is no no other
 // threads running while spawning the process. To do so, please follow
 // the following example:
 //
 // void SetUp() {
-//   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-//   // EmbeddedTestServer spawns a thread to initialize socket.
-//   // Stop the thread in preparation for fork and exec.
-//   embedded_test_server()->StopThread();
+//   ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 //   ...
 //   InProcessBrowserTest::SetUp();
 // }
 //
 // void SetUpOnMainThread() {
-//   embedded_test_server()->RestartThreadAndListen();
+//   // Starts the accept IO thread.
+//   embedded_test_server()->StartAcceptingConnections();
 // }
 //
-class EmbeddedTestServer : public StreamListenSocket::Delegate {
+class EmbeddedTestServer {
  public:
   typedef base::Callback<scoped_ptr<HttpResponse>(
       const HttpRequest& request)> HandleRequestCallback;
@@ -108,7 +88,7 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   // Creates a http test server. InitializeAndWaitUntilReady() must be called
   // to start the server.
   EmbeddedTestServer();
-  ~EmbeddedTestServer() override;
+  ~EmbeddedTestServer();
 
   // Sets a connection listener, that would be notified when various connection
   // events happen. May only be called before the server is started. Caller
@@ -116,12 +96,22 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   void SetConnectionListener(EmbeddedTestServerConnectionListener* listener);
 
   // Initializes and waits until the server is ready to accept requests.
+  // This is the equivalent of calling InitializeAndListen() followed by
+  // StartAcceptingConnections().
+  // Returns whether a listening socket has been succesfully created.
   bool InitializeAndWaitUntilReady() WARN_UNUSED_RESULT;
+
+  // Starts listening for incoming connections but will not yet accept them.
+  // Returns whether a listening socket has been succesfully created.
+  bool InitializeAndListen() WARN_UNUSED_RESULT;
+
+  // Starts the Accept IO Thread and begins accepting connections.
+  void StartAcceptingConnections();
 
   // Shuts down the http server and waits until the shutdown is complete.
   bool ShutdownAndWaitUntilComplete() WARN_UNUSED_RESULT;
 
-  // Checks if the server is started.
+  // Checks if the server has started listening for incoming connections.
   bool Started() const {
     return listen_socket_.get() != NULL;
   }
@@ -159,37 +149,36 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   // on UI thread.
   void RegisterRequestHandler(const HandleRequestCallback& callback);
 
-  // Stops IO thread that handles http requests.
-  void StopThread();
-
-  // Restarts IO thread and listen on the socket.
-  void RestartThreadAndListen();
-
  private:
-  void StartThread();
-
-  // Initializes and starts the server. If initialization succeeds, Starts()
-  // will return true.
-  void InitializeOnIOThread();
-  void ListenOnIOThread();
-
   // Shuts down the server.
   void ShutdownOnIOThread();
 
-  // Handles a request when it is parsed. It passes the request to registed
+  // Begins accepting new client connections.
+  void DoAcceptLoop();
+  // Handles async callback when there is a new client socket. |rv| is the
+  // return value of the socket Accept.
+  void OnAcceptCompleted(int rv);
+  // Adds the new |socket| to the list of clients and begins the reading
+  // data.
+  void HandleAcceptResult(scoped_ptr<StreamSocket> socket);
+
+  // Attempts to read data from the |connection|'s socket.
+  void ReadData(HttpConnection* connection);
+  // Handles async callback when new data has been read from the |connection|.
+  void OnReadCompleted(HttpConnection* connection, int rv);
+  // Parses the data read from the |connection| and returns true if the entire
+  // request has been received.
+  bool HandleReadResult(HttpConnection* connection, int rv);
+
+  // Closes and removes the connection upon error or completion.
+  void DidClose(HttpConnection* connection);
+
+  // Handles a request when it is parsed. It passes the request to registered
   // request handlers and sends a http response.
   void HandleRequest(HttpConnection* connection,
                      scoped_ptr<HttpRequest> request);
 
-  // StreamListenSocket::Delegate overrides:
-  void DidAccept(StreamListenSocket* server,
-                 scoped_ptr<StreamListenSocket> connection) override;
-  void DidRead(StreamListenSocket* connection,
-               const char* data,
-               int length) override;
-  void DidClose(StreamListenSocket* connection) override;
-
-  HttpConnection* FindConnection(StreamListenSocket* socket);
+  HttpConnection* FindConnection(StreamSocket* socket);
 
   // Posts a task to the |io_thread_| and waits for a reply.
   bool PostTaskToIOThreadAndWait(
@@ -197,22 +186,21 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
 
   scoped_ptr<base::Thread> io_thread_;
 
-  scoped_ptr<HttpListenSocket> listen_socket_;
+  scoped_ptr<TCPServerSocket> listen_socket_;
+  scoped_ptr<StreamSocket> accepted_socket_;
+
   EmbeddedTestServerConnectionListener* connection_listener_;
   uint16 port_;
   GURL base_url_;
+  IPEndPoint local_endpoint_;
 
   // Owns the HttpConnection objects.
-  std::map<StreamListenSocket*, HttpConnection*> connections_;
+  std::map<StreamSocket*, HttpConnection*> connections_;
 
   // Vector of registered request handlers.
   std::vector<HandleRequestCallback> request_handlers_;
 
   base::ThreadChecker thread_checker_;
-
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<EmbeddedTestServer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServer);
 };

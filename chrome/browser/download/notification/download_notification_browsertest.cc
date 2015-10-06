@@ -256,18 +256,8 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
                                     "enabled");
   }
 
-  void SetUp() override {
-    base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
-
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-    embedded_test_server()->StopThread();
-    InProcessBrowserTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
-    embedded_test_server()->RestartThreadAndListen();
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,

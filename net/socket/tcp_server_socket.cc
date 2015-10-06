@@ -79,6 +79,10 @@ int TCPServerSocket::Accept(scoped_ptr<StreamSocket>* socket,
   return result;
 }
 
+void TCPServerSocket::DetachFromThread() {
+  socket_.DetachFromThread();
+}
+
 int TCPServerSocket::ConvertAcceptedSocket(
     int result,
     scoped_ptr<StreamSocket>* output_accepted_socket) {

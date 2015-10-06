@@ -1689,8 +1689,6 @@
       'test/embedded_test_server/embedded_test_server_unittest.cc',
       'test/embedded_test_server/http_request_unittest.cc',
       'test/embedded_test_server/http_response_unittest.cc',
-      'test/embedded_test_server/tcp_listen_socket_unittest.cc',
-      'test/embedded_test_server/tcp_listen_socket_unittest.h',
       'test/gtest_util.h',
       'test/python_utils_unittest.cc',
       'test/run_all_unittests.cc',

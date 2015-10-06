@@ -338,11 +338,9 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
 
  private:
   void SetUp() override {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-    // EmbeddedTestServer spawns a thread to initialize socket.
-    // Stop IO thread in preparation for fork and exec.
-    embedded_test_server()->StopThread();
+    // Don't spin up the IO thread yet since no threads are allowed while
+    // spawning sandbox host process. See crbug.com/322732.
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
     InProcessBrowserTest::SetUp();
   }
@@ -356,7 +354,7 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    embedded_test_server()->RestartThreadAndListen();
+    embedded_test_server()->StartAcceptingConnections();
 
     content::WebUIControllerFactory::UnregisterFactoryForTesting(
         ChromeWebUIControllerFactory::GetInstance());

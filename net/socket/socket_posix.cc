@@ -341,6 +341,10 @@ void SocketPosix::Close() {
   }
 }
 
+void SocketPosix::DetachFromThread() {
+  thread_checker_.DetachFromThread();
+}
+
 void SocketPosix::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK(!accept_callback_.is_null() || !read_callback_.is_null());
   if (!accept_callback_.is_null()) {

@@ -64,8 +64,7 @@ class TestConnectionListener
 
   // Get called from the EmbeddedTestServer thread to be notified that
   // a connection was accepted.
-  void AcceptedSocket(
-      const net::test_server::StreamListenSocket& connection) override {
+  void AcceptedSocket(const net::StreamSocket& connection) override {
     base::AutoLock lock(lock_);
     ++socket_accepted_count_;
     task_runner_->PostTask(FROM_HERE, accept_loop_.QuitClosure());
@@ -73,8 +72,7 @@ class TestConnectionListener
 
   // Get called from the EmbeddedTestServer thread to be notified that
   // a connection was read from.
-  void ReadFromSocket(
-      const net::test_server::StreamListenSocket& connection) override {
+  void ReadFromSocket(const net::StreamSocket& connection) override {
     base::AutoLock lock(lock_);
     did_read_from_socket_ = true;
   }

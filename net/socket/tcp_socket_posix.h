@@ -77,6 +77,11 @@ class NET_EXPORT TCPSocketPosix {
 
   bool IsValid() const;
 
+  // Detachs from the current thread, to allow the socket to be transferred to
+  // a new thread. Should only be called when the object is no longer used by
+  // the old thread.
+  void DetachFromThread();
+
   // Marks the start/end of a series of connect attempts for logging purpose.
   //
   // TCPClientSocket may attempt to connect to multiple addresses until it

@@ -79,16 +79,14 @@ void LoginManagerTest::SetUp() {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
 
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  // Don't spin up the IO thread yet since no threads are allowed while
+  // spawning sandbox host process. See crbug.com/322732.
+  ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
   // Start https wrapper here so that the URLs can be pointed at it in
   // SetUpCommandLine().
   ASSERT_TRUE(gaia_https_forwarder_.Initialize(
       kGAIAHost, embedded_test_server()->base_url()));
-
-  // Stop IO thread here because no threads are allowed while
-  // spawning sandbox host process. See crbug.com/322732.
-  embedded_test_server()->StopThread();
 
   MixinBasedBrowserTest::SetUp();
 }
@@ -122,8 +120,9 @@ void LoginManagerTest::SetUpInProcessBrowserTestFixture() {
 }
 
 void LoginManagerTest::SetUpOnMainThread() {
-  // Restart the thread as the sandbox host process has already been spawned.
-  embedded_test_server()->RestartThreadAndListen();
+  // Start the accept thread as the sandbox host process has already been
+  // spawned.
+  embedded_test_server()->StartAcceptingConnections();
 
   FakeGaia::AccessTokenInfo token_info;
   token_info.scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);

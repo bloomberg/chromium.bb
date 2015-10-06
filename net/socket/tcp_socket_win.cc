@@ -698,6 +698,10 @@ void TCPSocketWin::Close() {
   connect_os_error_ = 0;
 }
 
+void TCPSocketWin::DetachFromThread() {
+  base::NonThreadSafe::DetachFromThread();
+}
+
 void TCPSocketWin::StartLoggingMultipleConnectAttempts(
     const AddressList& addresses) {
   if (!logging_multiple_connect_attempts_) {

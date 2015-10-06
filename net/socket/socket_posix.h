@@ -76,6 +76,11 @@ class NET_EXPORT_PRIVATE SocketPosix : public base::MessageLoopForIO::Watcher {
 
   void Close();
 
+  // Detachs from the current thread, to allow the socket to be transferred to
+  // a new thread. Should only be called when the object is no longer used by
+  // the old thread.
+  void DetachFromThread();
+
   SocketDescriptor socket_fd() const { return socket_fd_; }
 
  private:

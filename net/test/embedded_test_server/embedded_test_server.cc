@@ -19,6 +19,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/socket/stream_socket.h"
+#include "net/socket/tcp_server_socket.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_connection.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -94,39 +96,8 @@ scoped_ptr<HttpResponse> HandleFileRequest(
 
 }  // namespace
 
-HttpListenSocket::HttpListenSocket(const SocketDescriptor socket_descriptor,
-                                   StreamListenSocket::Delegate* delegate)
-    : TCPListenSocket(socket_descriptor, delegate) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-void HttpListenSocket::Listen() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  TCPListenSocket::Listen();
-}
-
-void HttpListenSocket::ListenOnIOThread() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-#if !defined(OS_POSIX)
-  // This method may be called after the IO thread is changed, thus we need to
-  // call |WatchSocket| again to make sure it listens on the current IO thread.
-  // Only needed for non POSIX platforms, since on POSIX platforms
-  // StreamListenSocket::Listen already calls WatchSocket inside the function.
-  WatchSocket(WAITING_ACCEPT);
-#endif
-  Listen();
-}
-
-HttpListenSocket::~HttpListenSocket() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-void HttpListenSocket::DetachFromThread() {
-  thread_checker_.DetachFromThread();
-}
-
 EmbeddedTestServer::EmbeddedTestServer()
-    : connection_listener_(nullptr), port_(0), weak_factory_(this) {
+    : connection_listener_(nullptr), port_(0) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -145,45 +116,50 @@ void EmbeddedTestServer::SetConnectionListener(
 }
 
 bool EmbeddedTestServer::InitializeAndWaitUntilReady() {
-  StartThread();
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!PostTaskToIOThreadAndWait(base::Bind(
-          &EmbeddedTestServer::InitializeOnIOThread, base::Unretained(this)))) {
+  bool success = InitializeAndListen();
+  if (!success)
+    return false;
+  StartAcceptingConnections();
+  return true;
+}
+
+bool EmbeddedTestServer::InitializeAndListen() {
+  DCHECK(!Started());
+
+  listen_socket_.reset(new TCPServerSocket(nullptr, NetLog::Source()));
+
+  int result = listen_socket_->ListenWithAddressAndPort("127.0.0.1", 0, 10);
+  if (result) {
+    LOG(ERROR) << "Listen failed: " << ErrorToString(result);
+    listen_socket_.reset();
     return false;
   }
-  return Started() && base_url_.is_valid();
-}
 
-void EmbeddedTestServer::StopThread() {
-  DCHECK(io_thread_ && io_thread_->IsRunning());
-
-#if defined(OS_LINUX)
-  const int thread_count =
-      base::GetNumberOfThreads(base::GetCurrentProcessHandle());
-#endif
-
-  io_thread_->Stop();
-  io_thread_.reset();
-  thread_checker_.DetachFromThread();
-  listen_socket_->DetachFromThread();
-
-#if defined(OS_LINUX)
-  // Busy loop to wait for thread count to decrease. This is needed because
-  // pthread_join does not guarantee that kernel stat is updated when it
-  // returns. Thus, GetNumberOfThreads does not immediately reflect the stopped
-  // thread and hits the thread number DCHECK in render_sandbox_host_linux.cc
-  // in browser_tests.
-  while (thread_count ==
-         base::GetNumberOfThreads(base::GetCurrentProcessHandle())) {
-    base::PlatformThread::YieldCurrentThread();
+  result = listen_socket_->GetLocalAddress(&local_endpoint_);
+  if (result != OK) {
+    LOG(ERROR) << "GetLocalAddress failed: " << ErrorToString(result);
+    listen_socket_.reset();
+    return false;
   }
-#endif
+
+  base_url_ = GURL(std::string("http://") + local_endpoint_.ToString());
+  port_ = local_endpoint_.port();
+
+  listen_socket_->DetachFromThread();
+  return true;
 }
 
-void EmbeddedTestServer::RestartThreadAndListen() {
-  StartThread();
-  CHECK(PostTaskToIOThreadAndWait(base::Bind(
-      &EmbeddedTestServer::ListenOnIOThread, base::Unretained(this))));
+void EmbeddedTestServer::StartAcceptingConnections() {
+  DCHECK(!io_thread_.get());
+  base::Thread::Options thread_options;
+  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  io_thread_.reset(new base::Thread("EmbeddedTestServer IO Thread"));
+  CHECK(io_thread_->StartWithOptions(thread_options));
+  CHECK(io_thread_->WaitUntilThreadStarted());
+
+  io_thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&EmbeddedTestServer::DoAcceptLoop, base::Unretained(this)));
 }
 
 bool EmbeddedTestServer::ShutdownAndWaitUntilComplete() {
@@ -193,45 +169,8 @@ bool EmbeddedTestServer::ShutdownAndWaitUntilComplete() {
       &EmbeddedTestServer::ShutdownOnIOThread, base::Unretained(this)));
 }
 
-void EmbeddedTestServer::StartThread() {
-  DCHECK(!io_thread_.get());
-  base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-  io_thread_.reset(new base::Thread("EmbeddedTestServer io thread"));
-  CHECK(io_thread_->StartWithOptions(thread_options));
-  CHECK(io_thread_->WaitUntilThreadStarted());
-}
-
-void EmbeddedTestServer::InitializeOnIOThread() {
-  DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
-  DCHECK(!Started());
-
-  SocketDescriptor socket_descriptor =
-      TCPListenSocket::CreateAndBindAnyPort("127.0.0.1", &port_);
-  if (socket_descriptor == kInvalidSocket)
-    return;
-
-  listen_socket_.reset(new HttpListenSocket(socket_descriptor, this));
-  listen_socket_->Listen();
-
-  IPEndPoint address;
-  int result = listen_socket_->GetLocalAddress(&address);
-  if (result == OK) {
-    base_url_ = GURL(std::string("http://") + address.ToString());
-  } else {
-    LOG(ERROR) << "GetLocalAddress failed: " << ErrorToString(result);
-  }
-}
-
-void EmbeddedTestServer::ListenOnIOThread() {
-  DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
-  DCHECK(Started());
-  listen_socket_->ListenOnIOThread();
-}
-
 void EmbeddedTestServer::ShutdownOnIOThread() {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
-
   listen_socket_.reset();
   STLDeleteContainerPairSecondPointers(connections_.begin(),
                                        connections_.end());
@@ -239,33 +178,28 @@ void EmbeddedTestServer::ShutdownOnIOThread() {
 }
 
 void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
-                               scoped_ptr<HttpRequest> request) {
+                                       scoped_ptr<HttpRequest> request) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
 
-  bool request_handled = false;
+  scoped_ptr<HttpResponse> response;
 
   for (size_t i = 0; i < request_handlers_.size(); ++i) {
-    scoped_ptr<HttpResponse> response =
-        request_handlers_[i].Run(*request.get());
-    if (response.get()) {
-      connection->SendResponse(response.Pass());
-      request_handled = true;
+    response = request_handlers_[i].Run(*request);
+    if (response)
       break;
-    }
   }
 
-  if (!request_handled) {
+  if (!response) {
     LOG(WARNING) << "Request not handled. Returning 404: "
                  << request->relative_url;
     scoped_ptr<BasicHttpResponse> not_found_response(new BasicHttpResponse);
     not_found_response->set_code(HTTP_NOT_FOUND);
-    connection->SendResponse(not_found_response.Pass());
+    response = not_found_response.Pass();
   }
 
-  // Drop the connection, since we do not support multiple requests per
-  // connection.
-  connections_.erase(connection->socket_.get());
-  delete connection;
+  connection->SendResponse(response.Pass(),
+                           base::Bind(&EmbeddedTestServer::DidClose,
+                                      base::Unretained(this), connection));
 }
 
 GURL EmbeddedTestServer::GetURL(const std::string& relative_url) const {
@@ -284,15 +218,8 @@ GURL EmbeddedTestServer::GetURL(
   return local_url.ReplaceComponents(replace_host);
 }
 
-bool EmbeddedTestServer::GetAddressList(net::AddressList* address_list) const {
-  if (!listen_socket_)
-    return false;
-  IPEndPoint endpoint;
-  int result = listen_socket_->GetLocalAddress(&endpoint);
-  if (result != OK)
-    return false;
-
-  *address_list = net::AddressList(endpoint);
+bool EmbeddedTestServer::GetAddressList(AddressList* address_list) const {
+  *address_list = AddressList(local_endpoint_);
   return true;
 }
 
@@ -306,51 +233,85 @@ void EmbeddedTestServer::RegisterRequestHandler(
   request_handlers_.push_back(callback);
 }
 
-void EmbeddedTestServer::DidAccept(StreamListenSocket* server,
-                                   scoped_ptr<StreamListenSocket> connection) {
+void EmbeddedTestServer::DoAcceptLoop() {
+  int rv = OK;
+  while (rv == OK) {
+    rv = listen_socket_->Accept(
+        &accepted_socket_, base::Bind(&EmbeddedTestServer::OnAcceptCompleted,
+                                      base::Unretained(this)));
+    if (rv == ERR_IO_PENDING)
+      return;
+    HandleAcceptResult(accepted_socket_.Pass());
+  }
+}
+
+void EmbeddedTestServer::OnAcceptCompleted(int rv) {
+  DCHECK_NE(ERR_IO_PENDING, rv);
+  HandleAcceptResult(accepted_socket_.Pass());
+  DoAcceptLoop();
+}
+
+void EmbeddedTestServer::HandleAcceptResult(scoped_ptr<StreamSocket> socket) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
   if (connection_listener_)
-    connection_listener_->AcceptedSocket(*connection);
+    connection_listener_->AcceptedSocket(*socket);
 
   HttpConnection* http_connection = new HttpConnection(
-      connection.Pass(), base::Bind(&EmbeddedTestServer::HandleRequest,
-                                    weak_factory_.GetWeakPtr()));
-  // TODO(szym): Make HttpConnection the StreamListenSocket delegate.
+      socket.Pass(),
+      base::Bind(&EmbeddedTestServer::HandleRequest, base::Unretained(this)));
   connections_[http_connection->socket_.get()] = http_connection;
+
+  ReadData(http_connection);
 }
 
-void EmbeddedTestServer::DidRead(StreamListenSocket* connection,
-                                 const char* data,
-                                 int length) {
+void EmbeddedTestServer::ReadData(HttpConnection* connection) {
+  while (true) {
+    int rv =
+        connection->ReadData(base::Bind(&EmbeddedTestServer::OnReadCompleted,
+                                        base::Unretained(this), connection));
+    if (rv == ERR_IO_PENDING)
+      return;
+    if (!HandleReadResult(connection, rv))
+      return;
+  }
+}
+
+void EmbeddedTestServer::OnReadCompleted(HttpConnection* connection, int rv) {
+  DCHECK_NE(ERR_IO_PENDING, rv);
+  if (HandleReadResult(connection, rv))
+    ReadData(connection);
+}
+
+bool EmbeddedTestServer::HandleReadResult(HttpConnection* connection, int rv) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
   if (connection_listener_)
-    connection_listener_->ReadFromSocket(*connection);
-
-  HttpConnection* http_connection = FindConnection(connection);
-  if (http_connection == NULL) {
-    LOG(WARNING) << "Unknown connection.";
-    return;
+    connection_listener_->ReadFromSocket(*connection->socket_);
+  if (rv <= 0) {
+    DidClose(connection);
+    return false;
   }
-  http_connection->ReceiveData(std::string(data, length));
+
+  // Once a single complete request has been received, there is no further need
+  // for the connection and it may be destroyed once the response has been sent.
+  if (connection->ConsumeData(rv))
+    return false;
+
+  return true;
 }
 
-void EmbeddedTestServer::DidClose(StreamListenSocket* connection) {
+void EmbeddedTestServer::DidClose(HttpConnection* connection) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(connection);
+  DCHECK_EQ(1u, connections_.count(connection->socket_.get()));
 
-  HttpConnection* http_connection = FindConnection(connection);
-  if (http_connection == NULL) {
-    LOG(WARNING) << "Unknown connection.";
-    return;
-  }
-  delete http_connection;
-  connections_.erase(connection);
+  connections_.erase(connection->socket_.get());
+  delete connection;
 }
 
-HttpConnection* EmbeddedTestServer::FindConnection(
-    StreamListenSocket* socket) {
+HttpConnection* EmbeddedTestServer::FindConnection(StreamSocket* socket) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
 
-  std::map<StreamListenSocket*, HttpConnection*>::iterator it =
+  std::map<StreamSocket*, HttpConnection*>::iterator it =
       connections_.find(socket);
   if (it == connections_.end()) {
     return NULL;

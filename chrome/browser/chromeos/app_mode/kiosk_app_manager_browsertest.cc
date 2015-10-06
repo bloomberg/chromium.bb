@@ -175,10 +175,10 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-    // Stop IO thread here because no threads are allowed while
+
+    // Don't spin up the IO thread yet since no threads are allowed while
     // spawning sandbox host process. See crbug.com/322732.
-    embedded_test_server()->StopThread();
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -195,8 +195,9 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
 
-    // Restart the thread as the sandbox host process has already been spawned.
-    embedded_test_server()->RestartThreadAndListen();
+    // Start the accept thread as the sandbox host process has already been
+    // spawned.
+    embedded_test_server()->StartAcceptingConnections();
 
     settings_helper_.ReplaceProvider(kAccountsPrefDeviceLocalAccounts);
     owner_settings_service_ =

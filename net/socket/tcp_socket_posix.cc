@@ -465,6 +465,10 @@ bool TCPSocketPosix::IsValid() const {
   return socket_ != NULL && socket_->socket_fd() != kInvalidSocket;
 }
 
+void TCPSocketPosix::DetachFromThread() {
+  socket_->DetachFromThread();
+}
+
 void TCPSocketPosix::StartLoggingMultipleConnectAttempts(
     const AddressList& addresses) {
   if (!logging_multiple_connect_attempts_) {
