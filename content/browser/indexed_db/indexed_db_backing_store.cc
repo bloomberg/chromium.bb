@@ -325,6 +325,8 @@ WARN_UNUSED_RESULT static bool IsSchemaKnown(LevelDBDatabase* db, bool* known) {
     *known = true;
     return true;
   }
+  if (db_schema_version < 0)
+    return false;  // Only corruption should cause this.
   if (db_schema_version > kLatestKnownSchemaVersion) {
     *known = false;
     return true;
@@ -340,7 +342,8 @@ WARN_UNUSED_RESULT static bool IsSchemaKnown(LevelDBDatabase* db, bool* known) {
     *known = true;
     return true;
   }
-
+  if (db_data_version < 0)
+    return false;  // Only corruption should cause this.
   if (db_data_version > latest_known_data_version) {
     *known = false;
     return true;
