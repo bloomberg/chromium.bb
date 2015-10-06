@@ -366,7 +366,7 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
         initMaxMarginValues();
         setHasMarginBeforeQuirk(style()->hasMarginBeforeQuirk());
         setHasMarginAfterQuirk(style()->hasMarginAfterQuirk());
-        setPaginationStrut(0);
+        setPaginationStrutPropagatedFromChild(LayoutUnit());
     }
 
     LayoutUnit beforeEdge = borderBefore() + paddingBefore();
@@ -698,8 +698,8 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
     if (unsplittableAdjustmentDelta) {
         setPageBreak(newLogicalTop, childLogicalHeight - unsplittableAdjustmentDelta);
         paginationStrut = unsplittableAdjustmentDelta;
-    } else if (childBlockFlow && childBlockFlow->paginationStrut()) {
-        paginationStrut = childBlockFlow->paginationStrut();
+    } else if (childBlockFlow && childBlockFlow->paginationStrutPropagatedFromChild()) {
+        paginationStrut = childBlockFlow->paginationStrutPropagatedFromChild();
     }
 
     if (paginationStrut) {
@@ -712,9 +712,9 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
             paginationStrut += logicalTop;
             if (isFloating())
                 paginationStrut += marginBefore(); // Floats' margins do not collapse with page or column boundaries.
-            setPaginationStrut(paginationStrut);
+            setPaginationStrutPropagatedFromChild(paginationStrut);
             if (childBlockFlow)
-                childBlockFlow->setPaginationStrut(0);
+                childBlockFlow->setPaginationStrutPropagatedFromChild(LayoutUnit());
         } else {
             newLogicalTop += paginationStrut;
         }
@@ -832,7 +832,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
             LayoutUnit paginationStrut = remainingLogicalHeight + std::max<LayoutUnit>(0, logicalOffset);
             if (isFloating())
                 paginationStrut += marginBefore(); // Floats' margins do not collapse with page or column boundaries.
-            setPaginationStrut(paginationStrut);
+            setPaginationStrutPropagatedFromChild(paginationStrut);
         } else {
             delta += remainingLogicalHeight;
             lineBox.setPaginationStrut(remainingLogicalHeight);
@@ -1524,9 +1524,6 @@ LayoutUnit LayoutBlockFlow::estimateLogicalTopPosition(LayoutBox& child, const M
 
         // For replaced elements and scrolled elements, we want to shift them to the next page if they don't fit on the current one.
         logicalTopEstimate = adjustForUnsplittableChild(child, logicalTopEstimate);
-
-        if (!child.selfNeedsLayout() && child.isLayoutBlockFlow())
-            logicalTopEstimate += toLayoutBlockFlow(&child)->paginationStrut();
     }
 
     return logicalTopEstimate;
@@ -2415,11 +2412,10 @@ bool LayoutBlockFlow::positionNewFloats(LineWidth* width)
             LayoutUnit newLogicalTop = floatLogicalLocation.y();
 
             LayoutBlockFlow* childBlockFlow = childBox->isLayoutBlockFlow() ? toLayoutBlockFlow(childBox) : 0;
-            if (childBlockFlow && childBlockFlow->paginationStrut()) {
+            if (childBlockFlow && childBlockFlow->paginationStrutPropagatedFromChild()) {
                 // Some content inside this float has determined that we need to move to the next
                 // page or column.
-                newLogicalTop += childBlockFlow->paginationStrut();
-                childBlockFlow->setPaginationStrut(LayoutUnit());
+                newLogicalTop += childBlockFlow->paginationStrutPropagatedFromChild();
             } else {
                 // Now that we know the final height, check if we are unsplittable, and if we don't
                 // fit at the current position, but would fit at the top of the next page or
@@ -2915,14 +2911,14 @@ bool LayoutBlockFlow::allowsPaginationStrut() const
     return containingBlock && containingBlock->isLayoutBlockFlow();
 }
 
-void LayoutBlockFlow::setPaginationStrut(LayoutUnit strut)
+void LayoutBlockFlow::setPaginationStrutPropagatedFromChild(LayoutUnit strut)
 {
     if (!m_rareData) {
         if (!strut)
             return;
         m_rareData = adoptPtr(new LayoutBlockFlowRareData(this));
     }
-    m_rareData->m_paginationStrut = strut;
+    m_rareData->m_paginationStrutPropagatedFromChild = strut;
 }
 
 void LayoutBlockFlow::positionSpannerDescendant(LayoutMultiColumnSpannerPlaceholder& child)

@@ -218,8 +218,20 @@ public:
         LayoutUnit lastLogicalTop, LayoutUnit lastLogicalLeft, LayoutUnit lastLogicalRight, LayoutUnit logicalBottom, const PaintInfo*) const;
 
     bool allowsPaginationStrut() const;
-    LayoutUnit paginationStrut() const { return m_rareData ? m_rareData->m_paginationStrut : LayoutUnit(); }
-    void setPaginationStrut(LayoutUnit);
+    // Pagination strut caused by the first line or child block inside this block-level object.
+    //
+    // When the first piece of content (first child block or line) inside an object wants to insert
+    // a soft page or column break, rather than setting a pagination strut on itself it normally
+    // propagates the strut to its containing block (|this|), as long as our implementation can
+    // handle it. The idea is that we want to push the entire object to the next page or column
+    // along with the child content that caused the break, instead of leaving unusable space at the
+    // beginning of the object at the end of one column or page and just push the first line or
+    // block to the next column or page. That would waste space in the container for no good
+    // reason, and it would also be a spec violation, since there is no break opportunity defined
+    // between the content logical top of an object and its first child or line (only *between*
+    // blocks or lines).
+    LayoutUnit paginationStrutPropagatedFromChild() const { return m_rareData ? m_rareData->m_paginationStrutPropagatedFromChild : LayoutUnit(); }
+    void setPaginationStrutPropagatedFromChild(LayoutUnit);
 
     void positionSpannerDescendant(LayoutMultiColumnSpannerPlaceholder& child);
 
@@ -422,7 +434,6 @@ public:
     public:
         LayoutBlockFlowRareData(const LayoutBlockFlow* block)
             : m_margins(positiveMarginBeforeDefault(block), negativeMarginBeforeDefault(block), positiveMarginAfterDefault(block), negativeMarginAfterDefault(block))
-            , m_paginationStrut(0)
             , m_multiColumnFlowThread(nullptr)
             , m_lineBreakToAvoidWidow(-1)
             , m_didBreakAtLineToAvoidWidow(false)
@@ -449,7 +460,7 @@ public:
         }
 
         MarginValues m_margins;
-        LayoutUnit m_paginationStrut;
+        LayoutUnit m_paginationStrutPropagatedFromChild;
 
         LayoutMultiColumnFlowThread* m_multiColumnFlowThread;
 
