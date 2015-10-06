@@ -1020,7 +1020,19 @@ bool PaintLayerScrollableArea::needsScrollbarReconstruction() const
     bool shouldUseCustom = actualLayoutObject.isBox() && actualLayoutObject.styleRef().hasPseudoStyle(SCROLLBAR);
     bool hasAnyScrollbar = hasScrollbar();
     bool hasCustom = (hasHorizontalScrollbar() && horizontalScrollbar()->isCustomScrollbar()) || (hasVerticalScrollbar() && verticalScrollbar()->isCustomScrollbar());
-    return hasAnyScrollbar && (shouldUseCustom != hasCustom);
+    bool didCustomScrollbarOwnerChanged = false;
+
+    if (hasHorizontalScrollbar() && horizontalScrollbar()->isCustomScrollbar()) {
+        if (actualLayoutObject != toLayoutScrollbar(horizontalScrollbar())->owningLayoutObject())
+            didCustomScrollbarOwnerChanged = true;
+    }
+
+    if (hasVerticalScrollbar() && verticalScrollbar()->isCustomScrollbar()) {
+        if (actualLayoutObject != toLayoutScrollbar(verticalScrollbar())->owningLayoutObject())
+            didCustomScrollbarOwnerChanged = true;
+    }
+
+    return hasAnyScrollbar && ((shouldUseCustom != hasCustom) || (shouldUseCustom && didCustomScrollbarOwnerChanged));
 }
 
 void PaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar)
