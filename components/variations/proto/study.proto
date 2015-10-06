@@ -44,7 +44,7 @@ message Study {
 
   // An experiment within the study.
   //
-  // Next tag: 12
+  // Next tag: 13
   message Experiment {
     // A named parameter value for this experiment.
     //
@@ -109,7 +109,7 @@ message Study {
       // a non-zero |probability_weight|.
       optional string forcing_feature_off = 4;
     }
-    optional FeatureAssociation feature_association = 11;
+    optional FeatureAssociation feature_association = 12;
 
     // Optional name of a Chrome flag that, when present, causes this experiment
     // to be forced. If the forcing_flag field is set, users will not be
@@ -248,6 +248,7 @@ message Study {
     // omitted, the study applies to all hardware classes unless
     // |exclude_hardware_class| is specified. Mutually exclusive with
     // |exclude_hardware_class|.
+    // An example might be "lumpy", "daisy", etc.
     repeated string hardware_class = 8;
 
     // List of ChromeOS hardware classes that will be excluded in this
@@ -256,6 +257,7 @@ message Study {
     // "Device FOOBAR". If omitted, the study applies to all hardware classes
     // unless |hardware_class| is specified. Mutually exclusive with
     // |hardware_class|.
+    // An example might be "lumpy", "daisy", etc.
     repeated string exclude_hardware_class = 9;
 
     // List of lowercase ISO 3166-1 alpha-2 country codes that will receive this
