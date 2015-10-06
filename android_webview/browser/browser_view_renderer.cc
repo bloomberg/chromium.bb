@@ -378,6 +378,8 @@ void BrowserViewRenderer::SetViewVisibility(bool view_visible) {
                        "view_visible",
                        view_visible);
   view_visible_ = view_visible;
+  if (!disable_page_visibility_)
+    UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::SetWindowVisibility(bool window_visible) {
