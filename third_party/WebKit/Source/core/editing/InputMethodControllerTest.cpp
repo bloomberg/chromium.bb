@@ -7,6 +7,7 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
+#include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLInputElement.h"
@@ -104,6 +105,20 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingText)
     PlainTextRange plainTextRange(PlainTextRange::create(*div, *range.get()));
     EXPECT_EQ(0u, plainTextRange.start());
     EXPECT_EQ(5u, plainTextRange.end());
+}
+
+TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText)
+{
+    insertHTMLElement(
+        "<div id='sample' contenteditable='true'>hello world</div>", "sample");
+
+    Vector<CompositionUnderline> underlines;
+    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+    controller().setCompositionFromExistingText(underlines, 0, 5);
+
+    controller().confirmComposition();
+    EXPECT_EQ(0, frame().selection().start().computeOffsetInContainerNode());
+    EXPECT_EQ(0, frame().selection().end().computeOffsetInContainerNode());
 }
 
 TEST_F(InputMethodControllerTest, SetCompositionFromExistingTextWithCollapsedWhiteSpace)

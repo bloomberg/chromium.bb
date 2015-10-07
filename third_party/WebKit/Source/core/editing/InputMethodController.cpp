@@ -182,10 +182,13 @@ bool InputMethodController::finishComposition(const String& text, FinishComposit
 
     Editor::RevealSelectionScope revealSelectionScope(&editor());
 
-    if (mode == CancelComposition)
+    bool dirty = m_isDirty || plainText(compositionEphemeralRange()) != text;
+
+    if (mode == CancelComposition) {
         ASSERT(text == emptyString());
-    else
+    } else if (dirty) {
         selectComposition();
+    }
 
     if (frame().selection().isNone())
         return false;
@@ -197,8 +200,6 @@ bool InputMethodController::finishComposition(const String& text, FinishComposit
         RefPtrWillBeRawPtr<CompositionEvent> event = CompositionEvent::create(EventTypeNames::compositionend, frame().domWindow(), text);
         target->dispatchEvent(event);
     }
-
-    bool dirty = m_isDirty || plainText(compositionEphemeralRange()) != text;
 
     // If text is empty, then delete the old composition here. If text is non-empty, InsertTextCommand::input
     // will delete the old composition with an optimized replace operation.
