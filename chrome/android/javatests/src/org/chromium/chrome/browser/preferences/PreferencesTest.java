@@ -16,6 +16,7 @@ import android.preference.PreferenceScreen;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
@@ -81,6 +82,7 @@ public class PreferencesTest extends NativeLibraryTestBase {
     /**
      * Change search engine and make sure it works correctly.
      */
+    @DisabledTest // Fails on android-one: crbug.com/540720
     @SmallTest
     @Feature({"Preferences"})
     public void testSearchEnginePreference() throws Exception {
@@ -143,6 +145,7 @@ public class PreferencesTest extends NativeLibraryTestBase {
      * Make sure that when a user switches to a search engine that uses HTTP, the location
      * permission is not added.
      */
+    @DisabledTest // Fails on android-one: crbug.com/540706
     @SmallTest
     @Feature({"Preferences"})
     public void testSearchEnginePreferenceHttp() throws Exception {

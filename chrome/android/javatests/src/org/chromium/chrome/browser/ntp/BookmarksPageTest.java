@@ -184,6 +184,7 @@ public class BookmarksPageTest extends ChromeTabbedActivityTestBase {
                 mBookmarksList, TEST_PAGE_TITLE));
     }
 
+    @DisabledTest // Fails on android-one: crbug.com/540728
     @LargeTest
     public void testNavigateFoldersInFolderHierarchy() throws InterruptedException {
         addFolderAndAddBookmark();

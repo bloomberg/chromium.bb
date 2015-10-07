@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
@@ -140,6 +141,7 @@ public class ManageBookmarkActivityTest extends ChromeTabbedActivityTestBase {
         assertFolderText(addNewFolderFragment, mobileBookmarksName);
     }
 
+    @DisabledTest // Fails on android-one: crbug.com/540703
     @SmallTest
     @Feature({"Bookmarks"})
     public void testAddFolder() throws InterruptedException {

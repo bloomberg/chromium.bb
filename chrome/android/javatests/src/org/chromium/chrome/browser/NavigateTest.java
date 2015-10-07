@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
@@ -355,6 +356,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         }
     }
 
+    @DisabledTest // Fails on android-one: crbug.com/540723
     @MediumTest
     @Feature({"Navigation"})
     public void testWindowOpenUrlSpoof() throws Exception {
