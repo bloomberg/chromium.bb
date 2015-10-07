@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import junit.framework.ComparisonFailure;
 
 import org.chromium.base.Log;
+import org.chromium.base.test.util.DisabledTest;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -81,6 +82,7 @@ public class WebViewLayoutTest
                            "webexposed/global-interface-listing-expected.txt", true);
     }
 
+    @DisabledTest // Failing on bot "Android Webview L (dbg)"; see crbug.com/540648
     @MediumTest
     public void testNoUnexpectedInterfaces() throws Exception {
         ensureJsTestCopied();
@@ -105,6 +107,7 @@ public class WebViewLayoutTest
         assertEquals("Unexpected new webview interfaces found", "", newInterfaces.toString());
     }
 
+    @DisabledTest // Failing on bot "Android Webview L (dbg)"; see crbug.com/540648
     @MediumTest
     public void testWebViewExcludedInterfaces() throws Exception {
         ensureJsTestCopied();
@@ -135,6 +138,7 @@ public class WebViewLayoutTest
         assertEquals("Unexpected webview interfaces found", "", unexpected.toString());
     }
 
+    @DisabledTest // Failing on bot "Android Webview L (dbg)"; see crbug.com/540648
     @MediumTest
     public void testWebViewIncludedStableInterfaces() throws Exception {
         ensureJsTestCopied();
