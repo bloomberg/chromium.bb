@@ -18,6 +18,9 @@ import org.chromium.net.TestUrlRequestListener.ResponseStep;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.LinkedList;
+import java.util.NoSuchElementException;
+import java.util.concurrent.Executor;
 
 /**
  * Test CronetUrlRequestContext.
@@ -76,6 +79,46 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 UrlRequestException error) {
             super.onFailed(request, info, error);
             mActivity.mUrlRequestContext.shutdown();
+        }
+    }
+
+    static class TestExecutor implements Executor {
+        private final LinkedList<Runnable> mTaskQueue = new LinkedList<Runnable>();
+
+        @Override
+        public void execute(Runnable task) {
+            mTaskQueue.add(task);
+        }
+
+        public void runAllTasks() {
+            try {
+                while (mTaskQueue.size() > 0) {
+                    mTaskQueue.remove().run();
+                }
+            } catch (NoSuchElementException e) {
+            }
+        }
+    }
+
+    static class TestNetworkQualityListener
+            implements NetworkQualityRttListener, NetworkQualityThroughputListener {
+        int mRttObservationCount;
+        int mThroughputObservationCount;
+
+        public void onRttObservation(int rttMs, long when, int source) {
+            mRttObservationCount++;
+        }
+
+        public void onThroughputObservation(int throughputKbps, long when, int source) {
+            mThroughputObservationCount++;
+        }
+
+        public int rttObservationCount() {
+            return mRttObservationCount;
+        }
+
+        public int throughputObservationCount() {
+            return mThroughputObservationCount;
         }
     }
 
@@ -150,6 +193,75 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         assertEquals(
                 "http://DomainThatDoesnt.Resolve/datareductionproxysuccess.txt",
                 listener.mResponseInfo.getUrl());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testRealTimeNetworkQualityObservationsNotEnabled() throws Exception {
+        mActivity = launchCronetTestApp();
+        TestNetworkQualityListener networkQualityListener = new TestNetworkQualityListener();
+        try {
+            mActivity.mUrlRequestContext.addRttListener(networkQualityListener);
+            fail("Should throw an exception.");
+        } catch (IllegalStateException e) {
+        }
+        try {
+            mActivity.mUrlRequestContext.addThroughputListener(networkQualityListener);
+            fail("Should throw an exception.");
+        } catch (IllegalStateException e) {
+        }
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                TEST_URL, listener, listener.getExecutor());
+        urlRequest.start();
+        listener.blockForDone();
+        assertEquals(0, networkQualityListener.rttObservationCount());
+        assertEquals(0, networkQualityListener.throughputObservationCount());
+        mActivity.mUrlRequestContext.shutdown();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testRealTimeNetworkQualityObservationsListenerRemoved() throws Exception {
+        mActivity = launchCronetTestApp();
+        TestExecutor testExecutor = new TestExecutor();
+        TestNetworkQualityListener networkQualityListener = new TestNetworkQualityListener();
+        mActivity.mUrlRequestContext.enableNetworkQualityEstimatorForTesting(
+                true, true, testExecutor);
+        mActivity.mUrlRequestContext.addRttListener(networkQualityListener);
+        mActivity.mUrlRequestContext.addThroughputListener(networkQualityListener);
+        mActivity.mUrlRequestContext.removeRttListener(networkQualityListener);
+        mActivity.mUrlRequestContext.removeThroughputListener(networkQualityListener);
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                TEST_URL, listener, listener.getExecutor());
+        urlRequest.start();
+        listener.blockForDone();
+        testExecutor.runAllTasks();
+        assertEquals(0, networkQualityListener.rttObservationCount());
+        assertEquals(0, networkQualityListener.throughputObservationCount());
+        mActivity.mUrlRequestContext.shutdown();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testRealTimeNetworkQualityObservations() throws Exception {
+        mActivity = launchCronetTestApp();
+        TestExecutor testExecutor = new TestExecutor();
+        TestNetworkQualityListener networkQualityListener = new TestNetworkQualityListener();
+        mActivity.mUrlRequestContext.enableNetworkQualityEstimatorForTesting(
+                true, true, testExecutor);
+        mActivity.mUrlRequestContext.addRttListener(networkQualityListener);
+        mActivity.mUrlRequestContext.addThroughputListener(networkQualityListener);
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                TEST_URL, listener, listener.getExecutor());
+        urlRequest.start();
+        listener.blockForDone();
+        testExecutor.runAllTasks();
+        assertTrue(networkQualityListener.rttObservationCount() > 0);
+        assertTrue(networkQualityListener.throughputObservationCount() > 0);
+        mActivity.mUrlRequestContext.shutdown();
     }
 
     @SmallTest

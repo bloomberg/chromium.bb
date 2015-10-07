@@ -16,6 +16,7 @@
           <exclude name="**/Chromium*.java"/>
           <exclude name="**/ChunkedWritableByteChannel*.java"/>
           <exclude name="**/HttpUrl*.java"/>
+          <exclude name="**/NetworkQuality*.java"/>
         </fileset>
       </javadoc>
   </target>

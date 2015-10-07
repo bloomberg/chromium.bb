@@ -4,6 +4,8 @@
 
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
 
+#include <map>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -21,6 +23,7 @@
 #include "base/values.h"
 #include "components/cronet/url_request_context_config.h"
 #include "jni/CronetUrlRequestContext_jni.h"
+#include "net/base/external_estimate_provider.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
@@ -140,6 +143,10 @@ CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
     http_server_properties_manager_->ShutdownOnPrefThread();
   if (pref_service_)
     pref_service_->CommitPendingWrite();
+  if (network_quality_estimator_) {
+    network_quality_estimator_->RemoveRTTObserver(this);
+    network_quality_estimator_->RemoveThroughputObserver(this);
+  }
   StopNetLogOnNetworkThread();
 }
 
@@ -162,6 +169,73 @@ void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
       base::Bind(&CronetURLRequestContextAdapter::InitializeOnNetworkThread,
                  base::Unretained(this), Passed(&context_config_),
                  jcaller_ref));
+}
+
+void CronetURLRequestContextAdapter::
+    EnableNetworkQualityEstimatorOnNetworkThread(bool use_local_host_requests,
+                                                 bool use_smaller_responses) {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  DCHECK(!network_quality_estimator_);
+  network_quality_estimator_.reset(new net::NetworkQualityEstimator(
+      scoped_ptr<net::ExternalEstimateProvider>(),
+      std::map<std::string, std::string>(), use_local_host_requests,
+      use_smaller_responses));
+  context_->set_network_quality_estimator(network_quality_estimator_.get());
+}
+
+void CronetURLRequestContextAdapter::EnableNetworkQualityEstimator(
+    JNIEnv* env,
+    jobject jcaller,
+    jboolean use_local_host_requests,
+    jboolean use_smaller_responses) {
+  PostTaskToNetworkThread(
+      FROM_HERE, base::Bind(&CronetURLRequestContextAdapter::
+                                EnableNetworkQualityEstimatorOnNetworkThread,
+                            base::Unretained(this), use_local_host_requests,
+                            use_smaller_responses));
+}
+
+void CronetURLRequestContextAdapter::ProvideRTTObservationsOnNetworkThread(
+    bool should) {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  if (!network_quality_estimator_)
+    return;
+  if (should) {
+    network_quality_estimator_->AddRTTObserver(this);
+  } else {
+    network_quality_estimator_->RemoveRTTObserver(this);
+  }
+}
+
+void CronetURLRequestContextAdapter::ProvideRTTObservations(JNIEnv* env,
+                                                            jobject jcaller,
+                                                            bool should) {
+  PostTaskToNetworkThread(FROM_HERE,
+                          base::Bind(&CronetURLRequestContextAdapter::
+                                         ProvideRTTObservationsOnNetworkThread,
+                                     base::Unretained(this), should));
+}
+
+void CronetURLRequestContextAdapter::
+    ProvideThroughputObservationsOnNetworkThread(bool should) {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  if (!network_quality_estimator_)
+    return;
+  if (should) {
+    network_quality_estimator_->AddThroughputObserver(this);
+  } else {
+    network_quality_estimator_->RemoveThroughputObserver(this);
+  }
+}
+
+void CronetURLRequestContextAdapter::ProvideThroughputObservations(
+    JNIEnv* env,
+    jobject jcaller,
+    bool should) {
+  PostTaskToNetworkThread(
+      FROM_HERE, base::Bind(&CronetURLRequestContextAdapter::
+                                ProvideThroughputObservationsOnNetworkThread,
+                            base::Unretained(this), should));
 }
 
 void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
@@ -291,6 +365,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
+  jcronet_url_request_context_.Reset(env, jcronet_url_request_context.obj());
   Java_CronetUrlRequestContext_initNetworkThread(
       env, jcronet_url_request_context.obj());
 
@@ -407,6 +482,26 @@ base::Thread* CronetURLRequestContextAdapter::GetFileThread() {
     file_thread_->Start();
   }
   return file_thread_.get();
+}
+
+void CronetURLRequestContextAdapter::OnRTTObservation(
+    int32_t rtt_ms,
+    const base::TimeTicks& timestamp,
+    net::NetworkQualityEstimator::ObservationSource source) {
+  Java_CronetUrlRequestContext_onRttObservation(
+      base::android::AttachCurrentThread(), jcronet_url_request_context_.obj(),
+      rtt_ms, (timestamp - base::TimeTicks::UnixEpoch()).InMilliseconds(),
+      source);
+}
+
+void CronetURLRequestContextAdapter::OnThroughputObservation(
+    int32_t throughput_kbps,
+    const base::TimeTicks& timestamp,
+    net::NetworkQualityEstimator::ObservationSource source) {
+  Java_CronetUrlRequestContext_onThroughputObservation(
+      base::android::AttachCurrentThread(), jcronet_url_request_context_.obj(),
+      throughput_kbps,
+      (timestamp - base::TimeTicks::UnixEpoch()).InMilliseconds(), source);
 }
 
 // Creates RequestContextAdater if config is valid URLRequestContextConfig,

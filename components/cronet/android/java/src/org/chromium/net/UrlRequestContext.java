@@ -94,6 +94,82 @@ public abstract class UrlRequestContext {
     public abstract void stopNetLog();
 
     /**
+     * Enables the network quality estimator, which collects and reports
+     * measurements of round trip time (RTT) and downstream throughput at
+     * various layers of the network stack. After enabling the estimator,
+     * listeners of RTT and throughput can be added with
+     * {@link #addRttListener} and {@link #addThroughputListener} and
+     * removed with {@link #removeRttListener} and
+     * {@link #removeThroughputListener}. The estimator uses memory and CPU
+     * only when enabled.
+     * @param executor an executor that will be used to notified all
+     *            added RTT and throughput listeners.
+     * @deprecated not really deprecated but hidden for now as it's a prototype.
+     */
+    @Deprecated public abstract void enableNetworkQualityEstimator(Executor executor);
+
+    /**
+     * Enables the network quality estimator for testing. This must be called
+     * before round trip time and throughput listeners are added. Set both
+     * boolean parameters to false for default behavior.
+     * @param useLocalHostRequests include requests to localhost in estimates.
+     * @param useSmallerResponses include small responses in throughput estimates.
+     * @param executor an {@link java.util.concurrent.Executor} on which all
+     *            listeners will be called.
+     * @deprecated not really deprecated but hidden for now as it's a prototype.
+     */
+    @Deprecated
+    abstract void enableNetworkQualityEstimatorForTesting(
+            boolean useLocalHostRequests, boolean useSmallerResponses, Executor executor);
+
+    /**
+     * Registers a listener that gets called whenever the network quality
+     * estimator witnesses a sample round trip time. This must be called
+     * after {@link #enableNetworkQualityEstimator}, and with throw an
+     * exception otherwise. Round trip times may be recorded at various layers
+     * of the network stack, including TCP, QUIC, and at the URL request layer.
+     * The listener is called on the {@link java.util.concurrent.Executor} that
+     * is passed to {@link #enableNetworkQualityEstimator}.
+     * @param listener the listener of round trip times.
+     * @deprecated not really deprecated but hidden for now as it's a prototype.
+     */
+    @Deprecated public abstract void addRttListener(NetworkQualityRttListener listener);
+
+    /**
+     * Removes a listener of round trip times if previously registered with
+     * {@link #addRttListener}. This should be called after a
+     * {@link NetworkQualityRttListener} is added in order to stop receiving
+     * observations.
+     * @param listener the listener of round trip times.
+     * @deprecated not really deprecated but hidden for now as it's a prototype.
+     */
+    @Deprecated public abstract void removeRttListener(NetworkQualityRttListener listener);
+
+    /**
+     * Registers a listener that gets called whenever the network quality
+     * estimator witnesses a sample throughput measurement. This must be called
+     * after {@link #enableNetworkQualityEstimator}. Throughput observations
+     * are computed by measuring bytes read over the active network interface
+     * at times when at least one URL response is being received. The listener
+     * is called on the {@link java.util.concurrent.Executor} that is passed to
+     * {@link #enableNetworkQualityEstimator}.
+     * @param listener the listener of throughput.
+     * @deprecated not really deprecated but hidden for now as it's a prototype.
+     */
+    @Deprecated
+    public abstract void addThroughputListener(NetworkQualityThroughputListener listener);
+
+    /**
+     * Removes a listener of throughput. This should be called after a
+     * {@link NetworkQualityThroughputListener} is added with
+     * {@link #addThroughputListener} in order to stop receiving observations.
+     * @param listener the listener of throughput.
+     * @deprecated not really deprecated but hidden for now as it's a prototype.
+     */
+    @Deprecated
+    public abstract void removeThroughputListener(NetworkQualityThroughputListener listener);
+
+    /**
      * Creates a {@link UrlRequestContext} with the given
      * {@link UrlRequestContextConfig}.
      * @param context Android {@link Context}.

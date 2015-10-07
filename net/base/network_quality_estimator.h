@@ -13,7 +13,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/base/external_estimate_provider.h"
@@ -39,6 +41,64 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
       public ExternalEstimateProvider::UpdatedEstimateDelegate,
       public SocketPerformanceWatcherFactory {
  public:
+  // On Android, a Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: NetworkQualityObservationSource
+  // GENERATED_JAVA_PREFIX_TO_STRIP:
+  enum ObservationSource {
+    // The observation was taken at the request layer, e.g., a round trip time
+    // is recorded as the time between the request being sent and the first byte
+    // being received.
+    URL_REQUEST,
+    // The observation is taken from TCP statistics maintained by the kernel.
+    TCP,
+    // The observation is taken at the QUIC layer.
+    QUIC,
+    // The observation is a previously cached estimate of the metric.
+    CACHED_ESTIMATE,
+    // The observation is derived from network connection information provided
+    // by the platform. For example, typical RTT and throughput values are used
+    // for a given type of network connection.
+    DEFAULT_FROM_PLATFORM,
+    // The observation came from a Chromium-external source.
+    EXTERNAL_ESTIMATE
+  };
+
+  // Observes measurements of round trip time.
+  class NET_EXPORT_PRIVATE RTTObserver {
+   public:
+    // Will be called when a new RTT observation is available. The round trip
+    // time is specified in milliseconds. The time when the observation was
+    // taken and the source of the observation are provided.
+    virtual void OnRTTObservation(int32_t rtt_ms,
+                                  const base::TimeTicks& timestamp,
+                                  ObservationSource source) = 0;
+
+   protected:
+    RTTObserver() {}
+    virtual ~RTTObserver() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(RTTObserver);
+  };
+
+  // Observes measurements of throughput.
+  class NET_EXPORT_PRIVATE ThroughputObserver {
+   public:
+    // Will be called when a new throughput observation is available.
+    // Throughput is specified in kilobits per second.
+    virtual void OnThroughputObservation(int32_t throughput_kbps,
+                                         const base::TimeTicks& timestamp,
+                                         ObservationSource source) = 0;
+
+   protected:
+    ThroughputObserver() {}
+    virtual ~ThroughputObserver() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ThroughputObserver);
+  };
+
   // Creates a new NetworkQualityEstimator.
   // |variation_params| is the map containing all field trial parameters
   // related to NetworkQualityEstimator field trial.
@@ -46,6 +106,25 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   NetworkQualityEstimator(
       scoped_ptr<ExternalEstimateProvider> external_estimates_provider,
       const std::map<std::string, std::string>& variation_params);
+
+  // Construct a NetworkQualityEstimator instance allowing for test
+  // configuration. Registers for network type change notifications so estimates
+  // can be kept network specific.
+  // |external_estimates_provider| may be NULL.
+  // |variation_params| is the map containing all field trial parameters for the
+  // network quality estimator field trial.
+  // |allow_local_host_requests_for_tests| should only be true when testing
+  // against local HTTP server and allows the requests to local host to be
+  // used for network quality estimation.
+  // |allow_smaller_responses_for_tests| should only be true when testing.
+  // Allows the responses smaller than |kMinTransferSizeInBytes| or shorter than
+  // |kMinRequestDurationMicroseconds| to be used for network quality
+  // estimation.
+  NetworkQualityEstimator(
+      scoped_ptr<ExternalEstimateProvider> external_estimates_provider,
+      const std::map<std::string, std::string>& variation_params,
+      bool allow_local_host_requests_for_tests,
+      bool allow_smaller_responses_for_tests);
 
   ~NetworkQualityEstimator() override;
 
@@ -85,6 +164,22 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   scoped_ptr<SocketPerformanceWatcher> CreateUDPSocketPerformanceWatcher()
       const override;
 
+  // Adds |rtt_observer| to the list of round trip time observers. Must be
+  // called on the IO thread.
+  void AddRTTObserver(RTTObserver* rtt_observer);
+
+  // Removes |rtt_observer| from the list of round trip time observers if it
+  // is on the list of observers. Must be called on the IO thread.
+  void RemoveRTTObserver(RTTObserver* rtt_observer);
+
+  // Adds |throughput_observer| to the list of throughput observers. Must be
+  // called on the IO thread.
+  void AddThroughputObserver(ThroughputObserver* throughput_observer);
+
+  // Removes |throughput_observer| from the list of throughput observers if it
+  // is on the list of observers. Must be called on the IO thread.
+  void RemoveThroughputObserver(ThroughputObserver* throughput_observer);
+
  protected:
   // NetworkID is used to uniquely identify a network.
   // For the purpose of network quality estimation and caching, a network is
@@ -123,25 +218,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     std::string id;
   };
 
-  // Construct a NetworkQualityEstimator instance allowing for test
-  // configuration. Registers for network type change notifications so estimates
-  // can be kept network specific.
-  // |external_estimates_provider| may be NULL.
-  // |variation_params| is the map containing all field trial parameters for the
-  // network quality estimator field trial.
-  // |allow_local_host_requests_for_tests| should only be true when testing
-  // against local HTTP server and allows the requests to local host to be
-  // used for network quality estimation.
-  // |allow_smaller_responses_for_tests| should only be true when testing.
-  // Allows the responses smaller than |kMinTransferSizeInBytes| or shorter than
-  // |kMinRequestDurationMicroseconds| to be used for network quality
-  // estimation.
-  NetworkQualityEstimator(
-      scoped_ptr<ExternalEstimateProvider> external_estimates_provider,
-      const std::map<std::string, std::string>& variation_params,
-      bool allow_local_host_requests_for_tests,
-      bool allow_smaller_responses_for_tests);
-
   // Returns true if the cached network quality estimate was successfully read.
   bool ReadCachedNetworkQualityEstimate();
 
@@ -172,6 +248,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
                            TestExternalEstimateProvider);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            TestExternalEstimateProviderMergeEstimates);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestObservers);
 
   // NetworkQuality is used to cache the quality of a network connection.
   class NET_EXPORT_PRIVATE NetworkQuality {
@@ -229,9 +306,15 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   };
 
   // Records the round trip time or throughput observation, along with the time
-  // the observation was made.
+  // the observation was made. The units of value are type specific. For round
+  // trip time observations, the value is in milliseconds. For throughput,
+  // the value is in kilobits per second. Observations can be made at several
+  // places in the network stack, thus the observation source is provided as
+  // well.
   struct NET_EXPORT_PRIVATE Observation {
-    Observation(int32_t value, base::TimeTicks timestamp);
+    Observation(int32_t value,
+                base::TimeTicks timestamp,
+                ObservationSource source);
     ~Observation();
 
     // Value of the observation.
@@ -239,6 +322,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
     // Time when the observation was taken.
     const base::TimeTicks timestamp;
+
+    // The source of the observation.
+    const ObservationSource source;
   };
 
   // Holds an observation and its weight.
@@ -400,6 +486,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Writes the estimated quality of the current network to the cache.
   void CacheNetworkQualityEstimate();
 
+  void NotifyObserversOfRTT(const Observation& observation);
+
+  void NotifyObserversOfThroughput(const Observation& observation);
+
   // Records the UMA related to RTT.
   void RecordRTTUMA(int32_t estimated_value_msec,
                     int32_t actual_value_msec) const;
@@ -469,6 +559,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // ExternalEstimateProvider that provides network quality using operating
   // system APIs. May be NULL.
   const scoped_ptr<ExternalEstimateProvider> external_estimate_provider_;
+
+  // Observer lists for round trip times and throughput measurements.
+  base::ObserverList<RTTObserver> rtt_observer_list_;
+  base::ObserverList<ThroughputObserver> throughput_observer_list_;
 
   base::ThreadChecker thread_checker_;
 

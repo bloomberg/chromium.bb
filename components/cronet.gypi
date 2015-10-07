@@ -41,6 +41,14 @@
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
+          'target_name': 'network_quality_observations_java',
+          'type': 'none',
+          'variables': {
+            'source_file': '../net/base/network_quality_estimator.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
           'target_name': 'cronet_url_request_context_config_list',
           'type': 'none',
           'sources': [
@@ -209,6 +217,7 @@
             'cronet_url_request_context_config_list',
             'cronet_version',
             'load_states_list',
+            'network_quality_observations_java',
           ],
           'variables': {
             'java_in_dir': 'cronet/android/java',
@@ -219,6 +228,8 @@
               '**/HttpUrlConnection*.java',
               '**/HttpUrlRequest*.java',
               '**/LoadState.java',
+              '**/NetworkQualityRttListener.java',
+              '**/NetworkQualityThroughputListener.java',
               '**/ResponseInfo.java',
               '**/ResponseTooLargeException.java',
               '**/UploadDataProvider.java',
@@ -245,6 +256,7 @@
             'cronet_url_request_java',
             'libcronet',
             'net_request_priority_java',
+            'network_quality_observations_java',
           ],
           'variables': {
             'java_in_dir': 'cronet/android/java',
