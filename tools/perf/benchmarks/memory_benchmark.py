@@ -82,8 +82,8 @@ class RendererMemoryBlinkMemoryMobile(_MemoryBenchmark):
     return bool(cls._RE_RENDERER_VALUES.match(value.name))
 
 
-# Disable on reference due to crbug.com/540022
-@benchmark.Disabled('reference')
+# Disabled on all non android bots see http://crbug.com/540022
+@benchmark.Enabled('android')
 class MemoryBenchmarkTop10Mobile(_MemoryBenchmark):
   """Timeline based benchmark for measuring memory on top 10 mobile sites."""
 
