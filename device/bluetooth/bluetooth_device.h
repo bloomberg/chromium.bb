@@ -5,12 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_H_
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
@@ -507,7 +507,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 
   // Mapping from the platform-specific GATT service identifiers to
   // BluetoothGattService objects.
-  typedef std::map<std::string, BluetoothGattService*> GattServiceMap;
+  typedef base::ScopedPtrHashMap<std::string, scoped_ptr<BluetoothGattService>>
+      GattServiceMap;
   GattServiceMap gatt_services_;
 
   // Mapping from service UUID represented as a std::string of a bluetooth

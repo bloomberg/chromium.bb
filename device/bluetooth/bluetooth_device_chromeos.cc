@@ -28,6 +28,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using device::BluetoothDevice;
+using device::BluetoothGattService;
 using device::BluetoothSocket;
 using device::BluetoothUUID;
 
@@ -169,14 +170,12 @@ BluetoothDeviceChromeOS::~BluetoothDeviceChromeOS() {
 
   // Copy the GATT services list here and clear the original so that when we
   // send GattServiceRemoved(), GetGattServices() returns no services.
-  GattServiceMap gatt_services = gatt_services_;
-  gatt_services_.clear();
-  for (GattServiceMap::iterator iter = gatt_services.begin();
-       iter != gatt_services.end(); ++iter) {
+  GattServiceMap gatt_services_swapped;
+  gatt_services_swapped.swap(gatt_services_);
+  for (const auto& iter : gatt_services_swapped) {
     DCHECK(adapter_);
     adapter()->NotifyGattServiceRemoved(
-        static_cast<BluetoothRemoteGattServiceChromeOS*>(iter->second));
-    delete iter->second;
+        static_cast<BluetoothRemoteGattServiceChromeOS*>(iter.second));
   }
 }
 
@@ -548,7 +547,8 @@ void BluetoothDeviceChromeOS::GattServiceAdded(
   BluetoothRemoteGattServiceChromeOS* service =
       new BluetoothRemoteGattServiceChromeOS(adapter(), this, object_path);
 
-  gatt_services_[service->GetIdentifier()] = service;
+  gatt_services_.set(service->GetIdentifier(),
+                     scoped_ptr<BluetoothGattService>(service));
   DCHECK(service->object_path() == object_path);
   DCHECK(service->GetUUID().IsValid());
 
@@ -558,7 +558,8 @@ void BluetoothDeviceChromeOS::GattServiceAdded(
 
 void BluetoothDeviceChromeOS::GattServiceRemoved(
     const dbus::ObjectPath& object_path) {
-  GattServiceMap::iterator iter = gatt_services_.find(object_path.value());
+  GattServiceMap::const_iterator iter =
+      gatt_services_.find(object_path.value());
   if (iter == gatt_services_.end()) {
     VLOG(3) << "Unknown GATT service removed: " << object_path.value();
     return;
@@ -572,12 +573,11 @@ void BluetoothDeviceChromeOS::GattServiceRemoved(
           << "' from device: " << GetAddress();
 
   DCHECK(service->object_path() == object_path);
-  gatt_services_.erase(iter);
+  scoped_ptr<BluetoothGattService> scoped_service =
+      gatt_services_.take_and_erase(iter->first);
 
   DCHECK(adapter_);
   adapter()->NotifyGattServiceRemoved(service);
-
-  delete service;
 }
 
 void BluetoothDeviceChromeOS::OnGetConnInfo(

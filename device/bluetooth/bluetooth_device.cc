@@ -22,7 +22,6 @@ BluetoothDevice::BluetoothDevice(BluetoothAdapter* adapter)
     : adapter_(adapter), services_data_(new base::DictionaryValue()) {}
 
 BluetoothDevice::~BluetoothDevice() {
-  STLDeleteValues(&gatt_services_);
   DidDisconnectGatt();
 }
 
@@ -218,18 +217,14 @@ void BluetoothDevice::CreateGattConnection(
 std::vector<BluetoothGattService*>
     BluetoothDevice::GetGattServices() const {
   std::vector<BluetoothGattService*> services;
-  for (GattServiceMap::const_iterator iter = gatt_services_.begin();
-       iter != gatt_services_.end(); ++iter)
-    services.push_back(iter->second);
+  for (const auto& iter : gatt_services_)
+    services.push_back(iter.second);
   return services;
 }
 
 BluetoothGattService* BluetoothDevice::GetGattService(
     const std::string& identifier) const {
-  GattServiceMap::const_iterator iter = gatt_services_.find(identifier);
-  if (iter != gatt_services_.end())
-    return iter->second;
-  return NULL;
+  return gatt_services_.get(identifier);
 }
 
 // static
