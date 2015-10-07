@@ -1,0 +1,13 @@
+Test onended event listener
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS AudioBufferSource.onended called when ended set directly.
+PASS AudioBufferSource.onended called when using addEventListener.
+PASS Oscillator.onended called when ended set directly.
+PASS Oscillator.onended called when using addEventListener.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

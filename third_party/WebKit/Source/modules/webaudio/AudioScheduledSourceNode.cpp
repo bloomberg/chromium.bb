@@ -43,7 +43,6 @@ AudioScheduledSourceHandler::AudioScheduledSourceHandler(NodeType nodeType, Audi
     : AudioHandler(nodeType, node, sampleRate)
     , m_startTime(0)
     , m_endTime(UnknownTime)
-    , m_hasEndedListener(false)
     , m_playbackState(UNSCHEDULED_STATE)
 {
 }
@@ -208,11 +207,12 @@ void AudioScheduledSourceHandler::finishWithoutOnEnded()
         setPlaybackState(FINISHED_STATE);
     }
 }
+
 void AudioScheduledSourceHandler::finish()
 {
     finishWithoutOnEnded();
 
-    if (m_hasEndedListener && context()->executionContext()) {
+    if (context()->executionContext()) {
         context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&AudioScheduledSourceHandler::notifyEnded, PassRefPtr<AudioScheduledSourceHandler>(this)));
     }
 }
@@ -263,7 +263,6 @@ EventListener* AudioScheduledSourceNode::onended()
 
 void AudioScheduledSourceNode::setOnended(PassRefPtrWillBeRawPtr<EventListener> listener)
 {
-    audioScheduledSourceHandler().setHasEndedListener();
     setAttributeEventListener(EventTypeNames::ended, listener);
 }
 

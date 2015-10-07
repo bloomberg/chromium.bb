@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Onended Event Listener</title>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test onended event listener");
+      window.jsTestIsAsync = true;
+
+      var sampleRate = 44100;
+      var renderLengthSeconds = 1;
+      var renderLengthFrames = renderLengthSeconds * sampleRate;
+
+      // Length of the source buffer.  Anything less than the render length is fine.
+      var sourceBufferLengthFrames = renderLengthFrames / 8;
+      // When to stop the oscillator.  Anything less than the render time is fine.
+      var stopTime = renderLengthSeconds / 8;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("absn-set-onended", function (done) {
+        // Test that the onended event for an AudioBufferSourceNode is fired when it is set
+        // directly.
+        var context = new OfflineAudioContext(1, renderLengthFrames, sampleRate);
+        var buffer = context.createBuffer(1, sourceBufferLengthFrames, context.sampleRate);
+        var source = context.createBufferSource();
+        source.buffer = buffer;
+        source.connect(context.destination);
+        source.onended = function (e) {
+          testPassed("AudioBufferSource.onended called when ended set directly.");
+        };
+        source.start();
+        context.startRendering().then(done);
+      });
+
+      audit.defineTask("absn-add-listener", function (done) {
+        // Test that the onended event for an AudioBufferSourceNode is fired when
+        // addEventListener is used to set the handler.
+        var context = new OfflineAudioContext(1, renderLengthFrames, sampleRate);
+        var buffer = context.createBuffer(1, sourceBufferLengthFrames, context.sampleRate);
+        var source = context.createBufferSource();
+        source.buffer = buffer;
+        source.connect(context.destination);
+        source.addEventListener("ended", function (e) {
+          testPassed("AudioBufferSource.onended called when using addEventListener.");
+        });
+        source.start();
+        context.startRendering().then(done);
+      });
+
+      audit.defineTask("osc-set-onended", function (done) {
+        // Test that the onended event for an OscillatorNode is fired when it is set
+        // directly.
+        var context = new OfflineAudioContext(1, renderLengthFrames, sampleRate);
+        var source = context.createOscillator();
+        source.connect(context.destination);
+        source.onended = function (e) {
+          testPassed("Oscillator.onended called when ended set directly.");
+        };
+        source.start();
+        source.stop(stopTime);
+        context.startRendering().then(done);
+      });
+
+      audit.defineTask("osc-add-listener", function (done) {
+        // Test that the onended event for an OscillatorNode is fired when
+        // addEventListener is used to set the handler.
+        var context = new OfflineAudioContext(1, renderLengthFrames, sampleRate);
+        var source = context.createOscillator();
+        source.connect(context.destination);
+        source.addEventListener("ended", function (e) {
+          testPassed("Oscillator.onended called when using addEventListener.");
+        });
+        source.start();
+        source.stop(stopTime);
+        context.startRendering().then(done);
+      });
+
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+      succesfullyParsed = true;
+    </script>
+  </body>
+</html>

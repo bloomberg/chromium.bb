@@ -82,8 +82,6 @@ public:
         return playbackState() == FINISHED_STATE;
     }
 
-    void setHasEndedListener() { m_hasEndedListener = true; }
-
 protected:
     // Get frame information for the current time quantum.
     // We handle the transition into PLAYING_STATE and FINISHED_STATE here,
@@ -114,8 +112,6 @@ protected:
     // If it hasn't been set explicitly, then the sound will not stop playing (if looping) or will stop when the end of the AudioBuffer
     // has been reached.
     double m_endTime; // in seconds
-
-    bool m_hasEndedListener;
 
     static const double UnknownTime;
 private:
