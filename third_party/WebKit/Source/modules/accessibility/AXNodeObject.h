@@ -70,7 +70,7 @@ protected:
     AccessibilityRole determineAriaRoleAttribute() const;
     void tokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;
     void elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName&) const;
-    void accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector&) const;
+    void accessibilityChildrenFromAttribute(QualifiedName attr, AXObject::AccessibilityChildrenVector&) const;
 
     bool hasContentEditableAttributeSet() const;
     bool isTextControl() const override;
@@ -171,7 +171,7 @@ protected:
     String computedName() const override;
 
     // New AX name calculation.
-    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXObjectVector* nameObjects, NameSources*) const override;
+    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
 
     // Location and click point in frame-relative coordinates.
     LayoutRect elementRect() const override;
@@ -220,9 +220,9 @@ private:
     void deprecatedAriaLabelledbyText(HeapVector<Member<AccessibilityText>>&) const;
 
     String textFromDescendants(AXObjectSet& visited) const;
-    String textFromElements(bool inAriaLabelledByTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXObjectVector* nameObjects) const;
-    String textFromAriaLabelledby(AXObjectSet& visited, AXObjectVector* nameObjects) const;
-    String nativeTextAlternative(AXObjectSet& visited, AXNameFrom&, AXObjectVector* nameObjects, NameSources*, bool* foundTextAlternative) const;
+    String textFromElements(bool inAriaLabelledByTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXRelatedObjectVector* relatedObjects) const;
+    String textFromAriaLabelledby(AXObjectSet& visited, AXRelatedObjectVector* relatedObjects) const;
+    String nativeTextAlternative(AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*, bool* foundTextAlternative) const;
     float stepValueForRange() const;
     AXObject* findChildWithTagName(const HTMLQualifiedName&) const;
     bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;

@@ -18,6 +18,7 @@ using TypeBuilder::Accessibility::AXProperty;
 using TypeBuilder::Accessibility::AXValueType;
 using TypeBuilder::Accessibility::AXRelationshipAttributes;
 using TypeBuilder::Accessibility::AXValue;
+using TypeBuilder::Accessibility::AXValueSource;
 using TypeBuilder::Accessibility::AXWidgetAttributes;
 using TypeBuilder::Accessibility::AXWidgetStates;
 
@@ -33,8 +34,11 @@ PassRefPtr<AXValue> createValue(String value, AXValueType::Enum = AXValueType::S
 PassRefPtr<AXValue> createValue(int value, AXValueType::Enum = AXValueType::Integer);
 PassRefPtr<AXValue> createValue(float value, AXValueType::Enum = AXValueType::Number);
 PassRefPtr<AXValue> createBooleanValue(bool value, AXValueType::Enum = AXValueType::Boolean);
-PassRefPtr<AXValue> createRelatedNodeValue(const AXObject*);
-PassRefPtr<AXValue> createRelatedNodeListValue(AXObject::AccessibilityChildrenVector);
+PassRefPtr<AXValue> createRelatedNodeValue(const AXObject*, String* name = nullptr, AXValueType::Enum = AXValueType::Idref);
+PassRefPtr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector&, AXValueType::Enum);
+PassRefPtr<AXValue> createRelatedNodeListValue(AXObject::AccessibilityChildrenVector& axObjects, AXValueType::Enum = AXValueType::IdrefList);
+
+PassRefPtr<AXValueSource> createValueSource(NameSource&);
 
 } // namespace blink
 

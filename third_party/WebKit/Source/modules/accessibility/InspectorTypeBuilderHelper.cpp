@@ -12,7 +12,9 @@
 
 namespace blink {
 
+using TypeBuilder::Accessibility::AXValueNativeSourceType;
 using TypeBuilder::Accessibility::AXRelatedNode;
+using TypeBuilder::Accessibility::AXValueSourceType;
 
 PassRefPtr<AXProperty> createProperty(String name, PassRefPtr<AXValue> value)
 {
@@ -90,7 +92,7 @@ String ignoredReasonName(AXIgnoredReason reason)
 PassRefPtr<AXProperty> createProperty(IgnoredReason reason)
 {
     if (reason.relatedObject)
-        return createProperty(ignoredReasonName(reason.reason), createRelatedNodeValue(reason.relatedObject));
+        return createProperty(ignoredReasonName(reason.reason), createRelatedNodeValue(reason.relatedObject, nullptr, AXValueType::Idref));
     return createProperty(ignoredReasonName(reason.reason), createBooleanValue(true));
 }
 
@@ -122,7 +124,7 @@ PassRefPtr<AXValue> createBooleanValue(bool value, AXValueType::Enum type)
     return axValue;
 }
 
-PassRefPtr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject)
+PassRefPtr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject, String* name = nullptr)
 {
     Node* node = axObject->node();
     if (!node)
@@ -138,27 +140,107 @@ PassRefPtr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject)
     const AtomicString& idref = element->getIdAttribute();
     if (!idref.isEmpty())
         relatedNode->setIdref(idref);
+
+    if (name)
+        relatedNode->setText(*name);
     return relatedNode;
 }
 
-PassRefPtr<AXValue> createRelatedNodeValue(const AXObject* axObject)
+PassRefPtr<AXValue> createRelatedNodeValue(const AXObject* axObject, String* name, AXValueType::Enum valueType)
 {
-    RefPtr<AXValue> axValue = AXValue::create().setType(AXValueType::Idref);
-    RefPtr<AXRelatedNode> relatedNode = relatedNodeForAXObject(axObject);
+    RefPtr<AXValue> axValue = AXValue::create().setType(valueType);
+    RefPtr<AXRelatedNode> relatedNode = relatedNodeForAXObject(axObject, name);
     axValue->setRelatedNodeValue(relatedNode);
     return axValue;
 }
 
-PassRefPtr<AXValue> createRelatedNodeListValue(AXObject::AccessibilityChildrenVector axObjects)
+PassRefPtr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector& relatedObjects, AXValueType::Enum valueType)
+{
+    RefPtr<TypeBuilder::Array<AXRelatedNode>> frontendRelatedNodes = TypeBuilder::Array<AXRelatedNode>::create();
+    for (unsigned i = 0; i < relatedObjects.size(); i++) {
+        RefPtr<AXRelatedNode> frontendRelatedNode = relatedNodeForAXObject(relatedObjects[i]->object, &(relatedObjects[i]->text));
+        if (frontendRelatedNode)
+            frontendRelatedNodes->addItem(frontendRelatedNode);
+    }
+    RefPtr<AXValue> axValue = AXValue::create().setType(valueType);
+    axValue->setRelatedNodeArrayValue(frontendRelatedNodes);
+    return axValue;
+}
+
+PassRefPtr<AXValue> createRelatedNodeListValue(AXObject::AccessibilityChildrenVector& axObjects, AXValueType::Enum valueType)
 {
     RefPtr<TypeBuilder::Array<AXRelatedNode>> relatedNodes = TypeBuilder::Array<AXRelatedNode>::create();
     for (unsigned i = 0; i < axObjects.size(); i++) {
-        if (RefPtr<AXRelatedNode> relatedNode = relatedNodeForAXObject(axObjects[i].get()))
+        RefPtr<AXRelatedNode> relatedNode = relatedNodeForAXObject(axObjects[i].get());
+        if (relatedNode)
             relatedNodes->addItem(relatedNode);
     }
-    RefPtr<AXValue> axValue = AXValue::create().setType(AXValueType::IdrefList);
+    RefPtr<AXValue> axValue = AXValue::create().setType(valueType);
     axValue->setRelatedNodeArrayValue(relatedNodes);
     return axValue;
+}
+
+AXValueSourceType::Enum valueSourceType(AXNameFrom nameFrom)
+{
+    switch (nameFrom) {
+    case AXNameFromAttribute:
+        return AXValueSourceType::Attribute;
+    case AXNameFromContents:
+        return AXValueSourceType::Contents;
+    case AXNameFromPlaceholder:
+        return AXValueSourceType::Placeholder;
+    case AXNameFromRelatedElement:
+        return AXValueSourceType::RelatedElement;
+    default:
+        return AXValueSourceType::Implicit; // TODO(aboxhall): what to do here?
+    }
+}
+
+AXValueNativeSourceType::Enum nativeSourceType(AXTextFromNativeHTML nativeSource)
+{
+    switch (nativeSource) {
+    case AXTextFromNativeHTMLFigcaption:
+        return AXValueNativeSourceType::Figcaption;
+    case AXTextFromNativeHTMLLabel:
+        return AXValueNativeSourceType::Label;
+    case AXTextFromNativeHTMLLabelFor:
+        return AXValueNativeSourceType::Labelfor;
+    case AXTextFromNativeHTMLLabelWrapped:
+        return AXValueNativeSourceType::Labelwrapped;
+    case AXTextFromNativeHTMLTableCaption:
+        return AXValueNativeSourceType::Tablecaption;
+    default:
+        return AXValueNativeSourceType::Other;
+    }
+}
+
+
+PassRefPtr<AXValueSource> createValueSource(NameSource& nameSource)
+{
+    String attribute = nameSource.attribute.toString();
+    AXValueSourceType::Enum type = valueSourceType(nameSource.type);
+    RefPtr<AXValueSource> valueSource = AXValueSource::create().setType(type);
+    RefPtr<AXValue> value;
+    if (!nameSource.relatedObjects.isEmpty()) {
+        AXValueType::Enum valueType = nameSource.attributeValue.isNull() ? AXValueType::NodeList : AXValueType::IdrefList;
+        value = createRelatedNodeListValue(nameSource.relatedObjects, valueType);
+        if (!nameSource.attributeValue.isNull())
+            value->setValue(JSONString::create(nameSource.attributeValue.string()));
+        valueSource->setValue(value);
+    } else if (!nameSource.text.isNull()) {
+        valueSource->setValue(createValue(nameSource.text));
+    } else if (!nameSource.attributeValue.isNull()) {
+        valueSource->setValue(createValue(nameSource.attributeValue));
+    }
+    if (nameSource.attribute != QualifiedName::null())
+        valueSource->setAttribute(nameSource.attribute.localName().string());
+    if (nameSource.superseded)
+        valueSource->setSuperseded(true);
+    if (nameSource.invalid)
+        valueSource->setInvalid(true);
+    if (nameSource.nativeSource != AXTextFromNativeHTMLUninitialized)
+        valueSource->setNativeSource(nativeSourceType(nameSource.nativeSource));
+    return valueSource;
 }
 
 } // namespace blink

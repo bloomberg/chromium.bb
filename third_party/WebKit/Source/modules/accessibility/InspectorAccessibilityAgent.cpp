@@ -6,6 +6,7 @@
 
 #include "modules/accessibility/InspectorAccessibilityAgent.h"
 
+#include "core/HTMLNames.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Element.h"
@@ -25,12 +26,15 @@ using TypeBuilder::Accessibility::AXLiveRegionAttributes;
 using TypeBuilder::Accessibility::AXNode;
 using TypeBuilder::Accessibility::AXNodeId;
 using TypeBuilder::Accessibility::AXProperty;
+using TypeBuilder::Accessibility::AXValueSource;
 using TypeBuilder::Accessibility::AXValueType;
 using TypeBuilder::Accessibility::AXRelatedNode;
 using TypeBuilder::Accessibility::AXRelationshipAttributes;
 using TypeBuilder::Accessibility::AXValue;
 using TypeBuilder::Accessibility::AXWidgetAttributes;
 using TypeBuilder::Accessibility::AXWidgetStates;
+
+using namespace HTMLNames;
 
 namespace {
 
@@ -39,7 +43,7 @@ void fillCoreProperties(AXObject* axObject, PassRefPtr<AXNode> nodeObject)
     // core properties
     String description = axObject->deprecatedAccessibilityDescription();
     if (!description.isEmpty())
-        nodeObject->setDescription(createValue(description));
+        nodeObject->setDescription(createValue(description, AXValueType::ComputedString));
 
     if (axObject->supportsRangeValue()) {
         nodeObject->setValue(createValue(axObject->valueForRange()));
@@ -51,7 +55,7 @@ void fillCoreProperties(AXObject* axObject, PassRefPtr<AXNode> nodeObject)
 
     String help = axObject->deprecatedHelpText();
     if (!help.isEmpty())
-        nodeObject->setHelp(createValue(help));
+        nodeObject->setHelp(createValue(help, AXValueType::ComputedString));
 }
 
 void fillLiveRegionProperties(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
@@ -243,6 +247,14 @@ void fillWidgetStates(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProper
     }
 }
 
+PassRefPtr<AXProperty> createRelatedNodeListProperty(AXRelationshipAttributes::Enum key, AXObject::AccessibilityChildrenVector& nodes, const QualifiedName& attr, AXObject* axObject)
+{
+    RefPtr<AXValue> nodeListValue = createRelatedNodeListValue(nodes);
+    const AtomicString& attrValue = axObject->getAttribute(attr);
+    nodeListValue->setValue(JSONString::create(attrValue));
+    return createProperty(key, nodeListValue);
+}
+
 void fillRelationships(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
 {
     if (AXObject* activeDescendant = axObject->activeDescendant()) {
@@ -252,27 +264,27 @@ void fillRelationships(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXPrope
     AXObject::AccessibilityChildrenVector results;
     axObject->ariaFlowToElements(results);
     if (!results.isEmpty())
-        properties->addItem(createProperty(AXRelationshipAttributes::Flowto, createRelatedNodeListValue(results)));
+        properties->addItem(createRelatedNodeListProperty(AXRelationshipAttributes::Flowto, results, aria_flowtoAttr, axObject));
     results.clear();
 
     axObject->ariaControlsElements(results);
     if (!results.isEmpty())
-        properties->addItem(createProperty(AXRelationshipAttributes::Controls, createRelatedNodeListValue(results)));
+        properties->addItem(createRelatedNodeListProperty(AXRelationshipAttributes::Controls, results, aria_controlsAttr, axObject));
     results.clear();
 
     axObject->deprecatedAriaDescribedbyElements(results);
     if (!results.isEmpty())
-        properties->addItem(createProperty(AXRelationshipAttributes::Describedby, createRelatedNodeListValue(results)));
+        properties->addItem(createRelatedNodeListProperty(AXRelationshipAttributes::Describedby, results, aria_describedbyAttr, axObject));
     results.clear();
 
     axObject->deprecatedAriaLabelledbyElements(results);
     if (!results.isEmpty())
-        properties->addItem(createProperty(AXRelationshipAttributes::Labelledby, createRelatedNodeListValue(results)));
+        properties->addItem(createRelatedNodeListProperty(AXRelationshipAttributes::Labelledby, results, aria_labelledbyAttr, axObject));
     results.clear();
 
     axObject->ariaOwnsElements(results);
     if (!results.isEmpty())
-        properties->addItem(createProperty(AXRelationshipAttributes::Owns, createRelatedNodeListValue(results)));
+        properties->addItem(createRelatedNodeListProperty(AXRelationshipAttributes::Owns, results, aria_ownsAttr, axObject));
     results.clear();
 }
 
@@ -317,9 +329,19 @@ PassRefPtr<AXNode> buildObjectForNode(Node* node, AXObject* axObject, AXObjectCa
     RefPtr<AXNode> nodeObject = AXNode::create().setNodeId(String::number(axObject->axObjectID())).setIgnored(false);
     nodeObject->setRole(createRoleNameValue(role));
     nodeObject->setProperties(properties);
-    String computedName = cacheImpl->computedNameForNode(node);
-    if (!computedName.isEmpty())
-        nodeObject->setName(createValue(computedName));
+
+    AXObject::NameSources nameSources;
+    String computedName = axObject->name(&nameSources);
+    if (!nameSources.isEmpty()) {
+        RefPtr<AXValue> name = createValue(computedName, AXValueType::ComputedString);
+        if (!nameSources.isEmpty()) {
+            RefPtr<TypeBuilder::Array<AXValueSource>> nameSourceProperties = TypeBuilder::Array<AXValueSource>::create();
+            for (size_t i = 0; i < nameSources.size(); ++i)
+                nameSourceProperties->addItem(createValueSource(nameSources[i]));
+            name->setSources(nameSourceProperties);
+        }
+        nodeObject->setName(name);
+    }
 
     fillCoreProperties(axObject, nodeObject);
     return nodeObject;
