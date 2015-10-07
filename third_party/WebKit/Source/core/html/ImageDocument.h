@@ -26,14 +26,14 @@
 #define ImageDocument_h
 
 #include "core/html/HTMLDocument.h"
+#include "core/html/HTMLImageElement.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class ImageResource;
-class HTMLImageElement;
 
-class ImageDocument final : public HTMLDocument {
+class CORE_EXPORT ImageDocument final : public HTMLDocument {
 public:
     static PassRefPtrWillBeRawPtr<ImageDocument> create(const DocumentInit& initializer = DocumentInit())
     {

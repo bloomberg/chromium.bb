@@ -61,6 +61,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/ImageDocument.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutFullScreen.h"
@@ -205,6 +206,11 @@ protected:
         response.addHTTPHeaderField(reportOnly ? WebString("Content-Security-Policy-Report-Only") : WebString("Content-Security-Policy"), WebString::fromUTF8(csp));
         std::string fullString = m_baseURL + fileName;
         URLTestHelpers::registerMockedURLLoadWithCustomResponse(toKURL(fullString.c_str()), WebString::fromUTF8(fileName.c_str()), WebString::fromUTF8(""), response);
+    }
+
+    void registerMockedHttpURLLoadWithMimeType(const std::string& fileName, const std::string& mimeType)
+    {
+        URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(fileName.c_str()), WebString::fromUTF8(mimeType));
     }
 
     void applyViewportStyleOverride(FrameTestHelpers::WebViewHelper* webViewHelper)
@@ -8220,6 +8226,34 @@ TEST_F(WebFrameTest, MaxFramesDetach)
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "max-frames-detach.html", true);
     webViewImpl->mainFrameImpl()->collectGarbage();
+}
+
+TEST_F(WebFrameTest, ImageDocumentLoadFinishTime)
+{
+    // Loading an image resource directly generates an ImageDocument with
+    // the document loader feeding image data into the resource of a generated
+    // img tag. We expect the load finish time to be the same for the document
+    // and the image resource.
+
+    registerMockedHttpURLLoadWithMimeType("white-1x1.png", "image/png");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "white-1x1.png");
+    WebView* webView = webViewHelper.webView();
+    Document* document = toWebLocalFrameImpl(webView->mainFrame())->frame()->document();
+
+    EXPECT_TRUE(document);
+    EXPECT_TRUE(document->isImageDocument());
+
+    ImageDocument* imgDocument = toImageDocument(document);
+    ImageResource* resource = imgDocument->cachedImage();
+
+    EXPECT_TRUE(resource);
+    EXPECT_NE(0, resource->loadFinishTime());
+
+    DocumentLoader* loader = document->loader();
+
+    EXPECT_TRUE(loader);
+    EXPECT_EQ(loader->timing().responseEnd(), resource->loadFinishTime());
 }
 
 } // namespace blink

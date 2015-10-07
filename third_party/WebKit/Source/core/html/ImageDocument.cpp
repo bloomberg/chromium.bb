@@ -156,8 +156,10 @@ void ImageDocumentParser::finish()
 {
     if (!isStopped() && document()->imageElement() && document()->cachedImage()) {
         ImageResource* cachedImage = document()->cachedImage();
+        DocumentLoader* loader = document()->loader();
+        cachedImage->setResponse(loader->response());
+        cachedImage->setLoadFinishTime(loader->timing().responseEnd());
         cachedImage->finish();
-        cachedImage->setResponse(document()->frame()->loader().documentLoader()->response());
 
         // Report the natural image size in the page title, regardless of zoom level.
         // At a zoom level of 1 the image is guaranteed to have an integer size.
