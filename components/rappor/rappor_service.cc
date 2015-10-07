@@ -47,6 +47,36 @@ GURL GetServerUrl() {
     return GURL(kDefaultServerUrl);
 }
 
+const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
+    // UMA_RAPPOR_TYPE
+    {128 /* Num cohorts */,
+     4 /* Bloom filter size bytes */,
+     2 /* Bloom filter hash count */,
+     rappor::PROBABILITY_50 /* Fake data probability */,
+     rappor::PROBABILITY_50 /* Fake one probability */,
+     rappor::PROBABILITY_75 /* One coin probability */,
+     rappor::PROBABILITY_25 /* Zero coin probability */,
+     UMA_RAPPOR_GROUP /* Recording group */},
+    // SAFEBROWSING_RAPPOR_TYPE
+    {128 /* Num cohorts */,
+     1 /* Bloom filter size bytes */,
+     2 /* Bloom filter hash count */,
+     rappor::PROBABILITY_50 /* Fake data probability */,
+     rappor::PROBABILITY_50 /* Fake one probability */,
+     rappor::PROBABILITY_75 /* One coin probability */,
+     rappor::PROBABILITY_25 /* Zero coin probability */,
+     SAFEBROWSING_RAPPOR_GROUP /* Recording group */},
+    // ETLD_PLUS_ONE_RAPPOR_TYPE
+    {128 /* Num cohorts */,
+     16 /* Bloom filter size bytes */,
+     2 /* Bloom filter hash count */,
+     rappor::PROBABILITY_50 /* Fake data probability */,
+     rappor::PROBABILITY_50 /* Fake one probability */,
+     rappor::PROBABILITY_75 /* One coin probability */,
+     rappor::PROBABILITY_25 /* Zero coin probability */,
+     UMA_RAPPOR_GROUP /* Recording group */},
+};
+
 }  // namespace
 
 RapporService::RapporService(
@@ -212,8 +242,7 @@ void RapporService::RecordSample(const std::string& metric_name,
   if (!IsInitialized())
     return;
   DCHECK_LT(type, NUM_RAPPOR_TYPES);
-  const RapporParameters& parameters =
-      internal::kRapporParametersForType[type];
+  const RapporParameters& parameters = kRapporParametersForType[type];
   DVLOG(2) << "Recording sample \"" << sample
            << "\" for metric \"" << metric_name
            << "\" of type: " << type;
@@ -252,7 +281,7 @@ scoped_ptr<Sample> RapporService::CreateSample(RapporType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsInitialized());
   return scoped_ptr<Sample>(
-      new Sample(cohort_, internal::kRapporParametersForType[type]));
+      new Sample(cohort_, kRapporParametersForType[type]));
 }
 
 void RapporService::RecordSampleObj(const std::string& metric_name,

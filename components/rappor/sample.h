@@ -24,21 +24,20 @@ class TestSamplerFactory;
 // same Rappor report, enabling analysis of correlations between those fields.
 class Sample {
  public:
-  virtual ~Sample();
+  ~Sample();
 
   // Sets a string value field in this sample.
-  virtual void SetStringField(
-      const std::string& field_name, const std::string& value);
+  void SetStringField(const std::string& field_name, const std::string& value);
 
   // Sets a group of boolean flags as a field in this sample.
   // |flags| should be a set of boolean flags stored in the lowest |num_flags|
   // bits of |flags|.
-  virtual void SetFlagsField(const std::string& field_name,
+  void SetFlagsField(const std::string& field_name,
                      uint64_t flags,
                      size_t num_flags);
 
   // Generate randomized reports and store them in |reports|.
-  virtual void ExportMetrics(const std::string& secret,
+  void ExportMetrics(const std::string& secret,
                      const std::string& metric_name,
                      RapporReports* reports) const;
 
@@ -47,7 +46,6 @@ class Sample {
  private:
   friend class TestSamplerFactory;
   friend class RapporService;
-  friend class TestSample;
 
   // Constructs a sample.  Instead of calling this directly, call
   // RapporService::MakeSampleObj to create a sample.
