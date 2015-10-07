@@ -260,13 +260,19 @@ private:
         MockWebTaskRunner() : m_task(0) { }
         ~MockWebTaskRunner() override { }
 
-        virtual void postTask(const WebTraceLocation&, Task* task)
+        void postTask(const WebTraceLocation&, Task* task) override
         {
             EXPECT_EQ((Task*)0, m_task);
             m_task = task;
         }
 
         void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) override { ASSERT_NOT_REACHED(); };
+
+        WebTaskRunner* clone() override
+        {
+            ASSERT_NOT_REACHED();
+            return nullptr;
+        }
 
         Task* m_task;
     };

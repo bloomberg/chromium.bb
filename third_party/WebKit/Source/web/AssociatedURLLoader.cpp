@@ -383,4 +383,9 @@ void AssociatedURLLoader::setDefersLoading(bool defersLoading)
         m_loader->setDefersLoading(defersLoading);
 }
 
+void AssociatedURLLoader::setLoadingTaskRunner(blink::WebTaskRunner*)
+{
+    // TODO(alexclarke): Maybe support this one day if it proves worthwhile.
+}
+
 } // namespace blink

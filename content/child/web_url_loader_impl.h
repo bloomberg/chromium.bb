@@ -36,9 +36,10 @@ struct StreamOverrideParameters {
 class CONTENT_EXPORT WebURLLoaderImpl
     : public NON_EXPORTED_BASE(blink::WebURLLoader) {
  public:
-  explicit WebURLLoaderImpl(
-      ResourceDispatcher* resource_dispatcher,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Takes ownership of |web_task_runner|.
+  WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher,
+                   scoped_ptr<blink::WebTaskRunner> web_task_runner);
   ~WebURLLoaderImpl() override;
 
   static void PopulateURLResponse(const GURL& url,
@@ -67,6 +68,7 @@ class CONTENT_EXPORT WebURLLoaderImpl
                          int intra_priority_value) override;
   bool attachThreadedDataReceiver(
       blink::WebThreadedDataReceiver* threaded_data_receiver) override;
+  void setLoadingTaskRunner(blink::WebTaskRunner* loading_task_runner) override;
 
  private:
   class Context;

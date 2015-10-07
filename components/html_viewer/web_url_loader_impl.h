@@ -47,6 +47,7 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
                                   blink::WebURLLoaderClient* client);
   virtual void cancel();
   virtual void setDefersLoading(bool defers_loading);
+  virtual void setLoadingTaskRunner(blink::WebTaskRunner* web_task_runner);
 
   void OnReceivedResponse(const blink::WebURLRequest& request,
                           mojo::URLResponsePtr response);
