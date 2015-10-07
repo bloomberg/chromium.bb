@@ -2,11 +2,18 @@
 <html i18n-values="dir:textdirection;lang:language">
 <head>
 <meta charset="utf-8">
-<if expr="is_android">
+<if expr="is_android or is_ios">
 <meta name="viewport" content="width=device-width, user-scalable=no">
 </if>
 <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
 <link rel="stylesheet" href="flags.css">
+
+<if expr="is_ios">
+<!-- TODO(jyquinn): Remove this once CRWWebUIPageBuilder can inject it.
+     See http://crbug.com/487000 -->
+<script src="chrome://resources/js/ios/web_ui.js"></script>
+</if>
+
 <script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="chrome://flags/flags.js"></script>
@@ -113,6 +120,8 @@
       </div>
     </div>
 
+<!-- Unsupported experiments are not shown on iOS -->
+<if expr="not is_ios">
     <div id="container" class="vbox-container">
     <div id="top" class="wbox">
       <div class="section-header">
@@ -164,6 +173,7 @@
       </div>
       </div>
     </div>
+</if>
 
     <div class="needs-restart" jsdisplay="needsRestart">
       <div i18n-content="flagsRestartNotice">NEEDS_RESTART</div>
