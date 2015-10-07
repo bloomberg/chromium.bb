@@ -1511,11 +1511,22 @@ TEST_P(LoginDatabaseMigrationTestV9, V9WithoutUseAdditionalAuthField) {
   MigrationToVCurrent("login_db_v9_without_use_additional_auth_field.sql");
 }
 
+class LoginDatabaseMigrationTestBroken : public LoginDatabaseMigrationTest {};
+
+// Test migrating certain databases with incorrect version.
+// http://crbug.com/295851
+TEST_P(LoginDatabaseMigrationTestBroken, Broken) {
+  MigrationToVCurrent(base::StringPrintf("login_db_v%d_broken.sql", version()));
+}
+
 INSTANTIATE_TEST_CASE_P(MigrationToVCurrent,
                         LoginDatabaseMigrationTest,
                         testing::Range(1, kCurrentVersionNumber));
 INSTANTIATE_TEST_CASE_P(MigrationToVCurrent,
                         LoginDatabaseMigrationTestV9,
                         testing::Values(9));
+INSTANTIATE_TEST_CASE_P(MigrationToVCurrent,
+                        LoginDatabaseMigrationTestBroken,
+                        testing::Range(1, 4));
 
 }  // namespace password_manager

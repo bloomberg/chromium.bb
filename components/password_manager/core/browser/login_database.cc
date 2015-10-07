@@ -455,21 +455,27 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
   const int original_version = meta_table_.GetVersionNumber();
   switch (original_version) {
     case 1:
-      if (!db_.Execute("ALTER TABLE logins "
-                       "ADD COLUMN password_type INTEGER") ||
+      // Column could exist because of https://crbug.com/295851
+      if (!db_.DoesColumnExist("logins", "password_type") &&
+          !db_.Execute("ALTER TABLE logins "
+                       "ADD COLUMN password_type INTEGER")) {
+        return false;
+      }
+      if (!db_.DoesColumnExist("logins", "possible_usernames") &&
           !db_.Execute("ALTER TABLE logins "
                        "ADD COLUMN possible_usernames BLOB")) {
         return false;
       }
     // Fall through.
     case 2:
-      if (!db_.Execute("ALTER TABLE logins ADD COLUMN times_used INTEGER")) {
+      // Column could exist because of https://crbug.com/295851
+      if (!db_.DoesColumnExist("logins", "times_used") &&
+          !db_.Execute("ALTER TABLE logins ADD COLUMN times_used INTEGER")) {
         return false;
       }
     // Fall through.
     case 3:
-      // We need to check if the column exists because of
-      // https://crbug.com/295851
+      // Column could exist because of https://crbug.com/295851
       if (!db_.DoesColumnExist("logins", "form_data") &&
           !db_.Execute("ALTER TABLE logins ADD COLUMN form_data BLOB")) {
         return false;
