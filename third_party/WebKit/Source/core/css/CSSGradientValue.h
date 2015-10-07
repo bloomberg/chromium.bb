@@ -119,19 +119,6 @@ protected:
     {
     }
 
-    CSSGradientValue(const CSSGradientValue& other, ClassType classType, CSSGradientType gradientType)
-        : CSSImageGeneratorValue(classType)
-        , m_firstX(other.m_firstX)
-        , m_firstY(other.m_firstY)
-        , m_secondX(other.m_secondX)
-        , m_secondY(other.m_secondY)
-        , m_stops(other.m_stops)
-        , m_stopsSorted(other.m_stopsSorted)
-        , m_gradientType(gradientType)
-        , m_repeating(other.isRepeating() ? Repeating : NonRepeating)
-    {
-    }
-
     void addStops(Gradient*, const CSSToLengthConversionData&, const LayoutObject&);
     void addDeprecatedStops(Gradient*, const LayoutObject&);
 
@@ -171,11 +158,6 @@ public:
     // Create the gradient for a given size.
     PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&, const IntSize&, const LayoutObject&);
 
-    PassRefPtrWillBeRawPtr<CSSLinearGradientValue> clone() const
-    {
-        return adoptRefWillBeNoop(new CSSLinearGradientValue(*this));
-    }
-
     bool equals(const CSSLinearGradientValue&) const;
 
     DECLARE_TRACE_AFTER_DISPATCH();
@@ -183,12 +165,6 @@ public:
 private:
     CSSLinearGradientValue(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSLinearGradient)
         : CSSGradientValue(LinearGradientClass, repeat, gradientType)
-    {
-    }
-
-    explicit CSSLinearGradientValue(const CSSLinearGradientValue& other)
-        : CSSGradientValue(other, LinearGradientClass, other.gradientType())
-        , m_angle(other.m_angle)
     {
     }
 
@@ -202,11 +178,6 @@ public:
     static PassRefPtrWillBeRawPtr<CSSRadialGradientValue> create(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSRadialGradient)
     {
         return adoptRefWillBeNoop(new CSSRadialGradientValue(repeat, gradientType));
-    }
-
-    PassRefPtrWillBeRawPtr<CSSRadialGradientValue> clone() const
-    {
-        return adoptRefWillBeNoop(new CSSRadialGradientValue(*this));
     }
 
     String customCSSText() const;
@@ -232,18 +203,6 @@ private:
         : CSSGradientValue(RadialGradientClass, repeat, gradientType)
     {
     }
-
-    explicit CSSRadialGradientValue(const CSSRadialGradientValue& other)
-        : CSSGradientValue(other, RadialGradientClass, other.gradientType())
-        , m_firstRadius(other.m_firstRadius)
-        , m_secondRadius(other.m_secondRadius)
-        , m_shape(other.m_shape)
-        , m_sizingBehavior(other.m_sizingBehavior)
-        , m_endHorizontalSize(other.m_endHorizontalSize)
-        , m_endVerticalSize(other.m_endVerticalSize)
-    {
-    }
-
 
     // Resolve points/radii to front end values.
     float resolveRadius(CSSPrimitiveValue*, const CSSToLengthConversionData&, float* widthOrHeight = 0);
