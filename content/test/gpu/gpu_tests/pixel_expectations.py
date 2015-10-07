@@ -14,3 +14,15 @@ class PixelExpectations(GpuTestExpectations):
 
     self.Fail('Pixel.ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
+
+    self.Fail('Pixel.ScissorTestWithPreserveDrawingBufferES3',
+              ['mac'], bug=540039)
+
+    # TODO(kbr): remove these failure expectations once reference
+    # images are generated.
+    self.Fail('Pixel.Canvas2DRedBoxES3',
+              ['mac'], bug=534114)
+    self.Fail('Pixel.CSS3DBlueBoxES3',
+              ['mac'], bug=534114)
+    self.Fail('Pixel.WebGLGreenTriangleES3',
+              ['mac'], bug=534114)
