@@ -40,7 +40,9 @@ def _LogToFlakinessDashboard(results, test_type, test_package,
                test_type, test_package, flakiness_server)
 
   try:
-    if test_type == 'Instrumentation':
+    # TODO(jbudorick): remove Instrumentation once instrumentation tests
+    # switch to platform mode.
+    if test_type in ('instrumentation', 'Instrumentation'):
       if flakiness_server == constants.UPSTREAM_FLAKINESS_SERVER:
         assert test_package in ['ContentShellTest',
                                 'ChromePublicTest',
@@ -52,7 +54,7 @@ def _LogToFlakinessDashboard(results, test_type, test_package,
       else:
         dashboard_test_type = 'Chromium_Android_Instrumentation'
 
-    elif test_type == 'Unit test':
+    elif test_type == 'gtest':
       dashboard_test_type = test_package
 
     else:
