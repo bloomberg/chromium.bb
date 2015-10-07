@@ -46,7 +46,7 @@ public:
     ~CSSImageSetValue();
 
     bool isCachePending(float deviceScaleFactor) const;
-    StyleFetchedImageSet* cachedImageSet(float deviceScaleFactor);
+    StyleFetchedImageSet* cachedImageSet(float deviceScaleFactor) const;
     StyleFetchedImageSet* cacheImageSet(Document*, float deviceScaleFactor, const ResourceLoaderOptions&);
     StyleFetchedImageSet* cacheImageSet(Document*, float deviceScaleFactor);
 

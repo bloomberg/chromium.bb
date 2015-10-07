@@ -22,7 +22,7 @@ public:
     PassRefPtrWillBeRawPtr<StyleImage> generatedImage()
     {
         RefPtrWillBeRawPtr<CSSLinearGradientValue> gradient = CSSLinearGradientValue::create(Repeating);
-        return StyleGeneratedImage::create(gradient.get());
+        return StyleGeneratedImage::create(*gradient);
     }
 
 private:

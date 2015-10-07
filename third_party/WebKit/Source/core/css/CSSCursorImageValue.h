@@ -47,7 +47,7 @@ public:
 
     bool updateIfSVGCursorIsUsed(Element*);
     bool isCachePending(float deviceScaleFactor) const;
-    StyleImage* cachedImage(float deviceScaleFactor);
+    StyleImage* cachedImage(float deviceScaleFactor) const;
     StyleImage* cacheImage(Document*, float deviceScaleFactor);
 
 #if !ENABLE(OILPAN)

@@ -260,7 +260,7 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
 {{declare_value_function(property_id)}}
 {
     {% set property = properties[property_id] %}
-    {{set_value(property)}}(state.styleImage({{property_id}}, value));
+    {{set_value(property)}}(state.styleImage({{property_id}}, *value));
 }
 {% endmacro %}
 {{apply_value_border_image_source('CSSPropertyBorderImageSource')}}

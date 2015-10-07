@@ -84,7 +84,7 @@ static PassRefPtrWillBeRawPtr<StyleImage> doLoadPendingImage(Document* document,
 
     if (CSSImageGeneratorValue* imageGeneratorValue = pendingImage->cssImageGeneratorValue()) {
         imageGeneratorValue->loadSubimages(document);
-        return StyleGeneratedImage::create(imageGeneratorValue);
+        return StyleGeneratedImage::create(*imageGeneratorValue);
     }
 
     if (CSSCursorImageValue* cursorImageValue = pendingImage->cssCursorImageValue())

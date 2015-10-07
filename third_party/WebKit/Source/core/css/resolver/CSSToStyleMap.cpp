@@ -134,7 +134,7 @@ void CSSToStyleMap::mapFillImage(StyleResolverState& state, FillLayer* layer, CS
     }
 
     CSSPropertyID property = layer->type() == BackgroundFillLayer ? CSSPropertyBackgroundImage : CSSPropertyWebkitMaskImage;
-    layer->setImage(state.styleImage(property, value));
+    layer->setImage(state.styleImage(property, *value));
 }
 
 void CSSToStyleMap::mapFillRepeatX(StyleResolverState&, FillLayer* layer, CSSValue* value)
@@ -445,7 +445,7 @@ void CSSToStyleMap::mapNinePieceImage(StyleResolverState& state, CSSPropertyID p
         CSSValue* current = borderImage->item(i);
 
         if (current->isImageValue() || current->isImageGeneratorValue() || current->isImageSetValue())
-            image.setImage(state.styleImage(imageProperty, current));
+            image.setImage(state.styleImage(imageProperty, *current));
         else if (current->isBorderImageSliceValue())
             mapNinePieceImageSlice(state, current, image);
         else if (current->isValueList()) {

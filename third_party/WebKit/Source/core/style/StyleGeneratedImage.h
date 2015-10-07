@@ -34,7 +34,7 @@ class CSSImageGeneratorValue;
 
 class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
 public:
-    static PassRefPtrWillBeRawPtr<StyleGeneratedImage> create(CSSImageGeneratorValue* value)
+    static PassRefPtrWillBeRawPtr<StyleGeneratedImage> create(const CSSImageGeneratorValue& value)
     {
         return adoptRefWillBeNoop(new StyleGeneratedImage(value));
     }
@@ -58,8 +58,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    StyleGeneratedImage(PassRefPtrWillBeRawPtr<CSSImageGeneratorValue>);
+    StyleGeneratedImage(const CSSImageGeneratorValue&);
 
+    // TODO(sashab): Replace this with <const CSSImageGeneratorValue> once RefPtrWillBeMember<>
+    // supports const types.
     RefPtrWillBeMember<CSSImageGeneratorValue> m_imageGeneratorValue;
     IntSize m_containerSize;
     bool m_fixedSize;

@@ -52,12 +52,12 @@ class ElementStyleResources {
 public:
     ElementStyleResources();
 
-    PassRefPtrWillBeRawPtr<StyleImage> styleImage(Document&, CSSPropertyID, CSSValue*);
+    PassRefPtrWillBeRawPtr<StyleImage> styleImage(Document&, CSSPropertyID, const CSSValue&);
 
-    PassRefPtrWillBeRawPtr<StyleImage> generatedOrPendingFromValue(CSSPropertyID, CSSImageGeneratorValue*);
-    PassRefPtrWillBeRawPtr<StyleImage> cachedOrPendingFromValue(Document&, CSSPropertyID, CSSImageValue*);
-    PassRefPtrWillBeRawPtr<StyleImage> setOrPendingFromValue(CSSPropertyID, CSSImageSetValue*);
-    PassRefPtrWillBeRawPtr<StyleImage> cursorOrPendingFromValue(CSSPropertyID, CSSCursorImageValue*);
+    PassRefPtrWillBeRawPtr<StyleImage> generatedOrPendingFromValue(CSSPropertyID, const CSSImageGeneratorValue&);
+    PassRefPtrWillBeRawPtr<StyleImage> cachedOrPendingFromValue(Document&, CSSPropertyID, const CSSImageValue&);
+    PassRefPtrWillBeRawPtr<StyleImage> setOrPendingFromValue(CSSPropertyID, const CSSImageSetValue&);
+    PassRefPtrWillBeRawPtr<StyleImage> cursorOrPendingFromValue(CSSPropertyID, const CSSCursorImageValue&);
 
     const PendingImagePropertySet& pendingImageProperties() const { return m_pendingImageProperties; }
     const PendingSVGDocumentMap& pendingSVGDocuments() const { return m_pendingSVGDocuments; }

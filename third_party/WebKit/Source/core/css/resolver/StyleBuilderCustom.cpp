@@ -191,7 +191,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyCursor(StyleResolverState& stat
                 CSSCursorImageValue* image = toCSSCursorImageValue(item);
                 if (image->updateIfSVGCursorIsUsed(state.element())) // Elements with SVG cursors are not allowed to share style.
                     state.style()->setUnique();
-                state.style()->addCursor(state.styleImage(CSSPropertyCursor, image), image->hotSpotSpecified(), image->hotSpot());
+                state.style()->addCursor(state.styleImage(CSSPropertyCursor, *image), image->hotSpotSpecified(), image->hotSpot());
             } else {
                 state.style()->setCursor(*toCSSPrimitiveValue(item));
             }
@@ -255,7 +255,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyGridTemplateAreas(StyleResolver
 
 void StyleBuilderFunctions::applyValueCSSPropertyListStyleImage(StyleResolverState& state, CSSValue* value)
 {
-    state.style()->setListStyleImage(state.styleImage(CSSPropertyListStyleImage, value));
+    state.style()->setListStyleImage(state.styleImage(CSSPropertyListStyleImage, *value));
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyOutlineStyle(StyleResolverState& state)
@@ -706,15 +706,15 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
     bool didSet = false;
     for (auto& item : toCSSValueList(*value)) {
         if (item->isImageGeneratorValue()) {
-            state.style()->setContent(StyleGeneratedImage::create(toCSSImageGeneratorValue(item.get())), didSet);
+            state.style()->setContent(StyleGeneratedImage::create(toCSSImageGeneratorValue(*item)), didSet);
             didSet = true;
         } else if (item->isImageSetValue()) {
-            state.style()->setContent(state.elementStyleResources().setOrPendingFromValue(CSSPropertyContent, toCSSImageSetValue(item.get())), didSet);
+            state.style()->setContent(state.elementStyleResources().setOrPendingFromValue(CSSPropertyContent, toCSSImageSetValue(*item)), didSet);
             didSet = true;
         }
 
         if (item->isImageValue()) {
-            state.style()->setContent(state.elementStyleResources().cachedOrPendingFromValue(state.document(), CSSPropertyContent, toCSSImageValue(item.get())), didSet);
+            state.style()->setContent(state.elementStyleResources().cachedOrPendingFromValue(state.document(), CSSPropertyContent, toCSSImageValue(*item)), didSet);
             didSet = true;
             continue;
         }

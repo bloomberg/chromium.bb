@@ -66,7 +66,7 @@ StyleFetchedImage* CSSImageValue::cacheImage(Document* document, const ResourceL
     return m_cachedImage.get();
 }
 
-void CSSImageValue::restoreCachedResourceIfNeeded(Document& document)
+void CSSImageValue::restoreCachedResourceIfNeeded(Document& document) const
 {
     if (m_isCachePending || !m_cachedImage || !document.fetcher())
         return;

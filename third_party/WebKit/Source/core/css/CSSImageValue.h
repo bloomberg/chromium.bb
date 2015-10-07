@@ -51,7 +51,7 @@ public:
     ~CSSImageValue();
 
     bool isCachePending() const { return m_isCachePending; }
-    StyleFetchedImage* cachedImage() { ASSERT(!isCachePending()); return m_cachedImage.get(); }
+    StyleFetchedImage* cachedImage() const { ASSERT(!isCachePending()); return m_cachedImage.get(); }
     StyleFetchedImage* cacheImage(Document*, const ResourceLoaderOptions&);
     StyleFetchedImage* cacheImage(Document* document) { return cacheImage(document, ResourceFetcher::defaultResourceOptions()); }
 
@@ -78,7 +78,7 @@ public:
     void setInitiator(const AtomicString& name) { m_initiatorName = name; }
 
     DECLARE_TRACE_AFTER_DISPATCH();
-    void restoreCachedResourceIfNeeded(Document&);
+    void restoreCachedResourceIfNeeded(Document&) const;
 
 private:
     CSSImageValue(const AtomicString& rawValue, const KURL&, StyleFetchedImage*);

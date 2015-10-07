@@ -808,7 +808,7 @@ PassRefPtrWillBeRawPtr<ShapeValue> StyleBuilderConverter::convertShapeValue(Styl
     }
 
     if (value->isImageValue() || value->isImageGeneratorValue() || value->isImageSetValue())
-        return ShapeValue::createImageValue(state.styleImage(CSSPropertyShapeOutside, value));
+        return ShapeValue::createImageValue(state.styleImage(CSSPropertyShapeOutside, *value));
 
     RefPtr<BasicShape> shape;
     CSSBoxType cssBox = BoxMissing;

@@ -41,7 +41,7 @@ namespace blink {
 
 class StylePendingImage final : public StyleImage {
 public:
-    static PassRefPtrWillBeRawPtr<StylePendingImage> create(CSSValue* value)
+    static PassRefPtrWillBeRawPtr<StylePendingImage> create(const CSSValue& value)
     {
         return adoptRefWillBeNoop(new StylePendingImage(value));
     }
@@ -83,12 +83,14 @@ public:
     }
 
 private:
-    explicit StylePendingImage(CSSValue* value)
-        : m_value(value)
+    explicit StylePendingImage(const CSSValue& value)
+        : m_value(const_cast<CSSValue*>(&value))
     {
         m_isPendingImage = true;
     }
 
+    // TODO(sashab): Replace this with <const CSSValue> once RefPtrWillBeMember<>
+    // supports const types.
     RefPtrWillBeMember<CSSValue> m_value;
 };
 

@@ -124,7 +124,7 @@ bool CSSCursorImageValue::isCachePending(float deviceScaleFactor) const
     return m_isCachePending;
 }
 
-StyleImage* CSSCursorImageValue::cachedImage(float deviceScaleFactor)
+StyleImage* CSSCursorImageValue::cachedImage(float deviceScaleFactor) const
 {
     ASSERT(!isCachePending(deviceScaleFactor));
 
