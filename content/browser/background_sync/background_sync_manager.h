@@ -36,17 +36,8 @@ class ServiceWorkerContextWrapper;
 // registrations across all registered service workers for a profile.
 // Registrations are stored along with their associated Service Worker
 // registration in ServiceWorkerStorage. If the ServiceWorker is unregistered,
-// the sync registrations are removed. This class expects to be run on the IO
+// the sync registrations are removed. This class must be run on the IO
 // thread. The asynchronous methods are executed sequentially.
-
-// TODO(jkarlin): Check permissions when registering, scheduling, and firing
-// background sync. In the meantime, --enable-service-worker-sync is required to
-// fire a sync event.
-// TODO(jkarlin): Unregister syncs when permission is revoked.
-// TODO(jkarlin): Create a background sync scheduler to actually run the
-// registered events.
-// TODO(jkarlin): Keep the browser alive if "Let Google Chrome Run in the
-// Background" is true and a sync is registered.
 class CONTENT_EXPORT BackgroundSyncManager
     : NON_EXPORTED_BASE(public ServiceWorkerContextObserver) {
  public:
