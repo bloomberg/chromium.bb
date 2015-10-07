@@ -50,17 +50,11 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
 
   ScrollResult result;
 
-  // TODO(bokan): This shouldn't be needed but removing it causes subtle
-  // viewport movement during top controls manipulation.
-  if (gfx::ToRoundedVector2d(pending_content_delta).IsZero()) {
-    result.consumed_delta = delta;
-  } else {
-    pending_content_delta -= host_impl_->ScrollLayer(OuterScrollLayer(),
-                                                     pending_content_delta,
-                                                     viewport_point,
-                                                     is_direct_manipulation);
-    result.consumed_delta = delta - AdjustOverscroll(pending_content_delta);
-  }
+  pending_content_delta -= host_impl_->ScrollLayer(OuterScrollLayer(),
+                                                   pending_content_delta,
+                                                   viewport_point,
+                                                   is_direct_manipulation);
+  result.consumed_delta = delta - AdjustOverscroll(pending_content_delta);
 
   result.content_scrolled_delta = content_delta - pending_content_delta;
   return result;

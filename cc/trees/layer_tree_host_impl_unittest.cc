@@ -1311,6 +1311,54 @@ TEST_F(LayerTreeHostImplTest, ViewportScrollOrder) {
       outer_scroll_layer->CurrentScrollOffset());
 }
 
+// Make sure scrolls smaller than a unit applied to the viewport don't get
+// dropped. crbug.com/539334.
+TEST_F(LayerTreeHostImplTest, ScrollViewportWithFractionalAmounts) {
+  LayerTreeSettings settings = DefaultSettings();
+  CreateHostImpl(settings, CreateOutputSurface());
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 2.f);
+
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(500, 500);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  LayerImpl* outer_scroll_layer = host_impl_->OuterViewportScrollLayer();
+  LayerImpl* inner_scroll_layer = host_impl_->InnerViewportScrollLayer();
+
+  // Sanity checks.
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(500, 500),
+      outer_scroll_layer->MaxScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), outer_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), inner_scroll_layer->CurrentScrollOffset());
+
+  RebuildPropertyTrees();
+
+  // Scroll only the layout viewport.
+  host_impl_->ScrollBegin(gfx::Point(250, 250), InputHandler::GESTURE);
+  host_impl_->ScrollBy(gfx::Point(250, 250), gfx::Vector2dF(0.125f, 0.125f));
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(0.125f, 0.125f),
+      outer_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(0, 0),
+      inner_scroll_layer->CurrentScrollOffset());
+  host_impl_->ScrollEnd();
+
+  host_impl_->active_tree()->PushPageScaleFromMainThread(2.f, 1.f, 2.f);
+
+  // Now that we zoomed in, the scroll should be applied to the inner viewport.
+  host_impl_->ScrollBegin(gfx::Point(250, 250), InputHandler::GESTURE);
+  host_impl_->ScrollBy(gfx::Point(250, 250), gfx::Vector2dF(0.5f, 0.5f));
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(0.125f, 0.125f),
+      outer_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(0.25f, 0.25f),
+      inner_scroll_layer->CurrentScrollOffset());
+  host_impl_->ScrollEnd();
+}
+
 // Tests that scrolls during a pinch gesture (i.e. "two-finger" scrolls) work
 // as expected. That is, scrolling during a pinch should bubble from the inner
 // to the outer viewport.
