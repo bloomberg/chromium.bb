@@ -2040,9 +2040,12 @@ LayoutUnit LayoutBox::fillAvailableMeasure(LayoutUnit availableLogicalWidth) con
 
 LayoutUnit LayoutBox::fillAvailableMeasure(LayoutUnit availableLogicalWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd) const
 {
+    ASSERT(availableLogicalWidth >= 0);
     marginStart = minimumValueForLength(style()->marginStart(), availableLogicalWidth);
     marginEnd = minimumValueForLength(style()->marginEnd(), availableLogicalWidth);
-    return availableLogicalWidth - marginStart - marginEnd;
+    LayoutUnit available = availableLogicalWidth - marginStart - marginEnd;
+    available = std::max(available, LayoutUnit());
+    return available;
 }
 
 LayoutUnit LayoutBox::computeIntrinsicLogicalWidthUsing(const Length& logicalWidthLength, LayoutUnit availableLogicalWidth, LayoutUnit borderAndPadding) const

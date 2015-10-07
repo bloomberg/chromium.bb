@@ -869,6 +869,7 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child
     LayoutUnit maxExtent = -1;
     if (max.isSpecifiedOrIntrinsic()) {
         maxExtent = computeMainAxisExtentForChild(child, MaxSize, max);
+        ASSERT(maxExtent >= -1);
         if (maxExtent != -1 && childSize > maxExtent)
             childSize = maxExtent;
     }
