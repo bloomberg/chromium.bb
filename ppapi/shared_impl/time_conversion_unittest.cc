@@ -34,22 +34,6 @@ TEST(TimeConversion, Time) {
   EXPECT_GE(kTimeSecondsSlop, fabs(converted_one_second_from_now - 1));
 }
 
-TEST(TimeConversion, EventTime) {
-  // Should be able to round-trip.
-  base::Time now = base::Time::Now();
-  double event_now = now.ToDoubleT();
-  double converted =
-      ppapi::EventTimeToPPTimeTicks(ppapi::PPTimeTicksToEventTime(event_now));
-  EXPECT_GE(kTimeSecondsSlop, fabs(converted - event_now));
-
-  // Units should be in seconds.
-  base::Time one_second_from_now = now + base::TimeDelta::FromSeconds(1);
-  double event_one_second_from_now = one_second_from_now.ToDoubleT();
-  EXPECT_GE(kTimeSecondsSlop,
-            1.0 - ppapi::EventTimeToPPTimeTicks(event_one_second_from_now) -
-                ppapi::EventTimeToPPTimeTicks(event_now));
-}
-
 TEST(TimeConversion, EpochTime) {
   // Should be able to round-trip from epoch time.
   base::Time epoch = base::Time::UnixEpoch();
