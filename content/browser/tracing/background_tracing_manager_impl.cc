@@ -396,6 +396,7 @@ BackgroundTracingManagerImpl::GenerateMetadataDict() const {
   metadata_dict->Set("config", config_dict.Pass());
   metadata_dict->SetString("network-type", network_type);
   metadata_dict->SetString("product-version", product_version);
+  metadata_dict->SetString("user-agent", GetContentClient()->GetUserAgent());
 
   // OS
   metadata_dict->SetString("os-name", base::SysInfo::OperatingSystemName());

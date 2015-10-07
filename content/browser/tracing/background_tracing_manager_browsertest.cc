@@ -270,6 +270,47 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   EXPECT_TRUE(!upload_config_wrapper.TraceHasMatchingString("this_not_found"));
 }
 
+// This tests that browser metadata gets included in the trace.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       TraceMetadataInTrace) {
+  SetupBackgroundTracingManager();
+
+  base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
+      base::Bind(&IsTraceEventArgsWhitelisted));
+
+  base::RunLoop wait_for_upload;
+  BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+      wait_for_upload.QuitClosure());
+
+  scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
+
+  content::BackgroundTracingManager::TriggerHandle handle =
+      content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
+          "preemptive_test");
+
+  base::RunLoop wait_for_activated;
+  BackgroundTracingManager::GetInstance()->SetTracingEnabledCallbackForTesting(
+      wait_for_activated.QuitClosure());
+  EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
+      config.Pass(), upload_config_wrapper.get_receive_callback(),
+      BackgroundTracingManager::ANONYMIZE_DATA));
+
+  wait_for_activated.Run();
+
+  BackgroundTracingManager::GetInstance()->WhenIdle(
+      base::Bind(&DisableScenarioWhenIdle));
+
+  BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+      handle, base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+
+  wait_for_upload.Run();
+
+  EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
+  EXPECT_TRUE(upload_config_wrapper.TraceHasMatchingString("cpu-brand"));
+  EXPECT_TRUE(upload_config_wrapper.TraceHasMatchingString("network-type"));
+  EXPECT_TRUE(upload_config_wrapper.TraceHasMatchingString("user-agent"));
+}
+
 // This tests subprocesses (like a navigating renderer) which gets told to
 // provide a argument-filtered trace and has no predicate in place to do the
 // filtering (in this case, only the browser process gets it set), will crash
