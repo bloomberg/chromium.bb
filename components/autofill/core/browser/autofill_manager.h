@@ -497,6 +497,18 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            FormSubmittedAutocompleteEnabled);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           AutocompleteSuggestions_SomeWhenAutofillDisabled);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           AutocompleteSuggestions_SomeWhenAutofillEmpty);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           AutocompleteSuggestions_NoneWhenAutofillPresent);
+  FRIEND_TEST_ALL_PREFIXES(
+      AutofillManagerTest,
+      AutocompleteSuggestions_AutofillDisabledAndFieldShouldNotAutocomplete);
+  FRIEND_TEST_ALL_PREFIXES(
+      AutofillManagerTest,
+      AutocompleteSuggestions_NoneWhenAutofillEmptyFieldShouldNotAutocomplete);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            AutocompleteOffRespectedForAutocomplete);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DontSaveCvcInAutocompleteHistory);

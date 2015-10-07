@@ -266,8 +266,7 @@ TEST_F(AutocompleteHistoryManagerTest, NoAutocompleteSuggestionsForTextarea) {
       0,
       field.name,
       field.value,
-      field.form_control_type,
-      std::vector<Suggestion>());
+      field.form_control_type);
 }
 
 }  // namespace autofill

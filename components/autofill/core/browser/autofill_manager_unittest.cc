@@ -378,12 +378,11 @@ class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
   MockAutocompleteHistoryManager(AutofillDriver* driver, AutofillClient* client)
       : AutocompleteHistoryManager(driver, client) {}
 
-  MOCK_METHOD5(OnGetAutocompleteSuggestions, void(
+  MOCK_METHOD4(OnGetAutocompleteSuggestions, void(
       int query_id,
       const base::string16& name,
       const base::string16& prefix,
-      const std::string& form_control_type,
-      const std::vector<Suggestion>& suggestions));
+      const std::string& form_control_type));
   MOCK_METHOD1(OnWillSubmitForm, void(const FormData& form));
 
  private:
@@ -909,10 +908,6 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsEmptyValue) {
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
-
   // Test that we sent the right values to the external delegate. Inferred
   // labels include full first relevant field, which in this case is the
   // address line 1.
@@ -934,10 +929,6 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMatchCharacter) {
   FormFieldData field;
   test::CreateTestFormField("First Name", "firstname", "E", "text", &field);
   GetAutofillSuggestions(form, field);
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
@@ -989,10 +980,6 @@ TEST_F(AutofillManagerTest,
   test::CreateTestFormField("Last Name", "lastname", "G", "text", &field);
   GetAutofillSuggestions(form, field);
 
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
-
   // Test that we sent the right values to the external delegate. No labels,
   // with duplicate values "Grimes" merged.
   external_delegate_->CheckSuggestions(
@@ -1017,10 +1004,6 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_AlreadyAutofilledNoLabels) {
   FormFieldData field;
   test::CreateTestFormField("First Name", "firstname", "E", "text", &field);
   GetAutofillSuggestions(form, field);
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right values to the external delegate. No labels.
   external_delegate_->CheckSuggestions(
@@ -1071,10 +1054,6 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsWithDuplicates) {
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
-
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
@@ -1110,10 +1089,6 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   FormFieldData field = form.fields[1];
   GetAutofillSuggestions(form, field);
 
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
-
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
@@ -1140,10 +1115,6 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   test::CreateTestFormField("Card Number", "cardnumber", "78", "text", &field);
   GetAutofillSuggestions(form, field);
 
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
-
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
@@ -1164,10 +1135,6 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
 
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
 #if defined(OS_ANDROID)
   static const char* kVisaSuggestion =
@@ -1202,34 +1169,12 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
-
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
       Suggestion(
           l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
           "", "", -1));
-
-  // Now add some Autocomplete suggestions. We should show the autocomplete
-  // suggestions and the warning.
-  const int kPageID2 = 2;
-  GetAutofillSuggestions(kPageID2, form, field);
-
-  std::vector<base::string16> suggestions;
-  suggestions.push_back(ASCIIToUTF16("Jay"));
-  suggestions.push_back(ASCIIToUTF16("Jason"));
-  AutocompleteSuggestionsReturned(suggestions);
-
-  external_delegate_->CheckSuggestions(
-      kPageID2,
-      Suggestion(
-          l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
-          "", "", -1),
-      Suggestion("Jay", "", "", 0),
-      Suggestion("Jason", "", "", 0));
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   personal_data_.ClearCreditCards();
@@ -1257,10 +1202,6 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
 
   FormFieldData field = form.fields[1];
   GetAutofillSuggestions(form, field);
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
@@ -1291,10 +1232,6 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   FormFieldData field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
-
   // Test that we sent the right address suggestions to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
@@ -1304,10 +1241,6 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   const int kPageID2 = 2;
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   GetAutofillSuggestions(kPageID2, form, field);
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the credit card suggestions to the external delegate.
   external_delegate_->CheckSuggestions(
@@ -1337,10 +1270,6 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   FormFieldData field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
-
   // Test that we sent the right suggestions to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
@@ -1350,10 +1279,6 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   const int kPageID2 = 2;
   GetAutofillSuggestions(kPageID2, form, field);
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
@@ -1366,37 +1291,6 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   personal_data_.ClearCreditCards();
   GetAutofillSuggestions(form, field);
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
-}
-
-// Test that we correctly combine autofill and autocomplete suggestions.
-TEST_F(AutofillManagerTest, GetCombinedAutofillAndAutocompleteSuggestions) {
-  // Set up our form data.
-  FormData form;
-  test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);
-
-  // Add some Autocomplete suggestions.
-  // This triggers the combined message send.
-  std::vector<base::string16> suggestions;
-  suggestions.push_back(ASCIIToUTF16("Jay"));
-  // This suggestion is a duplicate, and should be trimmed.
-  suggestions.push_back(ASCIIToUTF16("Elvis"));
-  suggestions.push_back(ASCIIToUTF16("Jason"));
-  AutocompleteSuggestionsReturned(suggestions);
-
-  // Test that we sent the right values to the external delegate.
-  Suggestion expected[] = {
-    Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1),
-    Suggestion("Charles", "123 Apple St.", "", 2),
-    Suggestion("Jay", "", "", 0),
-    Suggestion("Jason", "", "", 0),
-  };
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, arraysize(expected), expected);
 }
 
 // Test that we return autocomplete-like suggestions when trying to autofill
@@ -1412,10 +1306,6 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutofilled) {
   form.fields[2].is_autofilled = true;
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
@@ -1473,10 +1363,6 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   field.value = ASCIIToUTF16("Elvis");
   GetAutofillSuggestions(form, field);
 
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
-
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
@@ -1500,10 +1386,6 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsFancyPhone) {
 
   const FormFieldData& field = form.fields[9];
   GetAutofillSuggestions(form, field);
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right values to the external delegate. Inferred
   // labels include the most private field of those that would be filled.
@@ -1554,14 +1436,14 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsForPhonePrefixOrSuffix) {
   // TODO(estade): fix the bug and fix this test.
   const FormFieldData& phone_prefix = form.fields[2];
   GetAutofillSuggestions(form, phone_prefix);
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
+
   // Test that we sent the right prefix values to the external delegate.
   external_delegate_->CheckSuggestions(kDefaultPageID,
                                        Suggestion("356", "18003569377", "", 1));
 
   const FormFieldData& phone_suffix = form.fields[3];
   GetAutofillSuggestions(form, phone_suffix);
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
+
   // Test that we sent the right suffix values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID, Suggestion("9377", "18003569377", "", 1));
@@ -2382,8 +2264,8 @@ TEST_F(AutofillManagerTest, FormWillSubmitDoesNotSaveData) {
   EXPECT_EQ(0, personal_data_.num_times_save_imported_profile_called());
 }
 
-// Test that when Autocomplete is enabled and Autofill is disabled,
-// form submissions are still received by AutocompleteHistoryManager.
+// Test that when Autocomplete is enabled and Autofill is disabled, form
+// submissions are still received by AutocompleteHistoryManager.
 TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   TestAutofillClient client;
   autofill_manager_.reset(
@@ -2402,9 +2284,9 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   FormSubmitted(form);
 }
 
-// Test that when Autocomplete is enabled and Autofill is disabled,
-// Autocomplete suggestions are still received.
-TEST_F(AutofillManagerTest, AutocompleteSuggestionsWhenAutofillDisabled) {
+// Test that when Autofill is disabled, Autocomplete suggestions are still
+// queried.
+TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
   TestAutofillClient client;
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, NULL));
@@ -2417,19 +2299,134 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestionsWhenAutofillDisabled) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
   const FormFieldData& field = form.fields[0];
+
+  // Expect Autocomplete manager to be called for suggestions.
+  autofill_manager_->autocomplete_history_manager_.reset(
+      new MockAutocompleteHistoryManager(autofill_driver_.get(), &client));
+  MockAutocompleteHistoryManager* m = static_cast<
+      MockAutocompleteHistoryManager*>(
+          autofill_manager_->autocomplete_history_manager_.get());
+  EXPECT_CALL(*m,
+      OnGetAutocompleteSuggestions(_, _, _, _)).Times(1);
+
+  GetAutofillSuggestions(form, field);
+}
+
+// Test that when Autofill is disabled and the field should not autocomplete,
+// autocomplete is not queried for suggestions.
+TEST_F(AutofillManagerTest,
+       AutocompleteSuggestions_AutofillDisabledAndFieldShouldNotAutocomplete) {
+  TestAutofillClient client;
+  autofill_manager_.reset(
+      new TestAutofillManager(autofill_driver_.get(), &client, NULL));
+  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetExternalDelegate(external_delegate_.get());
+
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  FormFieldData field = form.fields[0];
+  field.should_autocomplete = false;
+
+  // Autocomplete manager is not called for suggestions.
+  autofill_manager_->autocomplete_history_manager_.reset(
+      new MockAutocompleteHistoryManager(autofill_driver_.get(), &client));
+  MockAutocompleteHistoryManager* m = static_cast<
+      MockAutocompleteHistoryManager*>(
+          autofill_manager_->autocomplete_history_manager_.get());
+  EXPECT_CALL(*m,
+      OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
+
+  GetAutofillSuggestions(form, field);
+}
+
+// Test that we do not query for Autocomplete suggestions when there are
+// Autofill suggestions available.
+TEST_F(AutofillManagerTest, AutocompleteSuggestions_NoneWhenAutofillPresent) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const FormFieldData& field = form.fields[0];
+
+  // Autocomplete manager is not called for suggestions.
+  autofill_manager_->autocomplete_history_manager_.reset(
+      new MockAutocompleteHistoryManager(autofill_driver_.get(),
+          autofill_manager_->client()));
+  MockAutocompleteHistoryManager* m = static_cast<
+      MockAutocompleteHistoryManager*>(
+          autofill_manager_->autocomplete_history_manager_.get());
+  EXPECT_CALL(*m,
+      OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
+
   GetAutofillSuggestions(form, field);
 
-  // Add some Autocomplete suggestions. We should return the autocomplete
-  // suggestions, these will be culled by the renderer.
-  std::vector<base::string16> suggestions;
-  suggestions.push_back(ASCIIToUTF16("Jay"));
-  suggestions.push_back(ASCIIToUTF16("Jason"));
-  AutocompleteSuggestionsReturned(suggestions);
-
+  // Test that we sent the right values to the external delegate. Inferred
+  // labels include full first relevant field, which in this case is the
+  // address line 1.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("Jay", "", "", 0),
-      Suggestion("Jason", "", "", 0));
+      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1),
+      Suggestion("Charles", "123 Apple St.", "", 2));
+}
+
+// Test that we query for Autocomplete suggestions when there are no Autofill
+// suggestions available.
+TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillEmpty) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // No suggestions matching "donkey".
+  FormFieldData field;
+  test::CreateTestFormField("Email", "email", "donkey", "email", &field);
+
+  // Autocomplete manager is called for suggestions because Autofill is empty.
+  autofill_manager_->autocomplete_history_manager_.reset(
+      new MockAutocompleteHistoryManager(autofill_driver_.get(),
+          autofill_manager_->client()));
+  MockAutocompleteHistoryManager* m = static_cast<
+      MockAutocompleteHistoryManager*>(
+          autofill_manager_->autocomplete_history_manager_.get());
+  EXPECT_CALL(*m,
+      OnGetAutocompleteSuggestions(_, _, _, _)).Times(1);
+
+  GetAutofillSuggestions(form, field);
+}
+
+// Test that we do not query for Autocomplete suggestions when there are no
+// Autofill suggestions available, and that the field should not autocomplete.
+TEST_F(
+    AutofillManagerTest,
+    AutocompleteSuggestions_NoneWhenAutofillEmptyFieldShouldNotAutocomplete) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // No suggestions matching "donkey".
+  FormFieldData field;
+  field.should_autocomplete = false;
+  test::CreateTestFormField("Email", "email", "donkey", "email", &field);
+
+  // Autocomplete manager is not called for suggestions.
+  autofill_manager_->autocomplete_history_manager_.reset(
+      new MockAutocompleteHistoryManager(autofill_driver_.get(),
+          autofill_manager_->client()));
+  MockAutocompleteHistoryManager* m = static_cast<
+      MockAutocompleteHistoryManager*>(
+          autofill_manager_->autocomplete_history_manager_.get());
+  EXPECT_CALL(*m,
+      OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
+
+  GetAutofillSuggestions(form, field);
 }
 
 TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
@@ -2445,7 +2442,7 @@ TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
       MockAutocompleteHistoryManager*>(
           autofill_manager_->autocomplete_history_manager_.get());
   EXPECT_CALL(*m,
-      OnGetAutocompleteSuggestions(_, _, _, _, _)).Times(0);
+      OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
 
   // Set up our form data.
   FormData form;
@@ -3019,10 +3016,6 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsForNumberSpitAcrossFields) {
   // Get the suggestions for already filled credit card |number_field|.
   GetAutofillSuggestions(form, number_field);
 
-  // No autocomplete suggestions provided, so send an empty vector as the
-  // results. This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
-
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
       Suggestion(
@@ -3175,7 +3168,6 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
   FormFieldData field;
   test::CreateTestFormField("Email", "email", "gmail", "email", &field);
   GetAutofillSuggestions(form, field);
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
@@ -3199,7 +3191,6 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens_CaseIgnored) {
   FormFieldData field;
   test::CreateTestFormField("Address Line 2", "addr2", "apple", "text", &field);
   GetAutofillSuggestions(form, field);
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
@@ -3242,10 +3233,6 @@ TEST_F(AutofillManagerTest, DisplayCreditCardSuggestionsWithMatchingTokens) {
   test::CreateTestFormField("Name on Card", "nameoncard", "pres", "text",
                             &field);
   GetAutofillSuggestions(form, field);
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
 #if defined(OS_ANDROID)
   static const char* kVisaSuggestion =
@@ -3318,10 +3305,6 @@ TEST_F(AutofillManagerTest,
   FormFieldData field;
   test::CreateTestFormField("Middle Name", "middlename", "S", "text", &field);
   GetAutofillSuggestions(form, field);
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   external_delegate_->CheckSuggestions(
       kDefaultPageID,

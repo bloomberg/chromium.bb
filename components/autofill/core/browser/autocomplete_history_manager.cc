@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
+#include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
@@ -52,49 +53,14 @@ AutocompleteHistoryManager::~AutocompleteHistoryManager() {
   CancelPendingQuery();
 }
 
-void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
-    WebDataServiceBase::Handle h,
-    const WDTypedResult* result) {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AutocompleteHistoryManager::OnWebDataServiceRequestDone"));
-
-  DCHECK(pending_query_handle_);
-  pending_query_handle_ = 0;
-
-  if (!autofill_client_->IsAutocompleteEnabled()) {
-    SendSuggestions(NULL);
-    return;
-  }
-
-  DCHECK(result);
-  // Returning early here if |result| is NULL.  We've seen this happen on
-  // Linux due to NFS dismounting and causing sql failures.
-  // See http://crbug.com/68783.
-  if (!result) {
-    SendSuggestions(NULL);
-    return;
-  }
-
-  DCHECK_EQ(AUTOFILL_VALUE_RESULT, result->GetType());
-  const WDResult<std::vector<base::string16> >* autofill_result =
-      static_cast<const WDResult<std::vector<base::string16> >*>(result);
-  std::vector<base::string16> suggestions = autofill_result->GetValue();
-  SendSuggestions(&suggestions);
-}
-
 void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
     int query_id,
     const base::string16& name,
     const base::string16& prefix,
-    const std::string& form_control_type,
-    const std::vector<Suggestion>& suggestions) {
+    const std::string& form_control_type) {
   CancelPendingQuery();
 
   query_id_ = query_id;
-  autofill_suggestions_ = suggestions;
   if (!autofill_client_->IsAutocompleteEnabled() ||
       form_control_type == "textarea" ||
       IsInAutofillSuggestionsDisabledExperiment()) {
@@ -161,27 +127,43 @@ void AutocompleteHistoryManager::CancelPendingQuery() {
 
 void AutocompleteHistoryManager::SendSuggestions(
     const std::vector<base::string16>* autocomplete_results) {
+  std::vector<Suggestion> suggestions;
   if (autocomplete_results) {
-    // Combine Autofill and Autocomplete values into values and labels.
-    for (const auto& new_result : *autocomplete_results) {
-      bool unique = true;
-      for (const auto& autofill_suggestion : autofill_suggestions_) {
-        // Don't add duplicate values.
-        if (new_result == autofill_suggestion.value) {
-          unique = false;
-          break;
-        }
-      }
-
-      if (unique)
-        autofill_suggestions_.push_back(Suggestion(new_result));
+    for (const auto& result : *autocomplete_results) {
+      suggestions.push_back(Suggestion(result));
     }
   }
 
-  external_delegate_->OnSuggestionsReturned(query_id_, autofill_suggestions_);
-
+  external_delegate_->OnSuggestionsReturned(query_id_, suggestions);
   query_id_ = 0;
-  autofill_suggestions_.clear();
+}
+
+void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
+    WebDataServiceBase::Handle h,
+    const WDTypedResult* result) {
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AutocompleteHistoryManager::OnWebDataServiceRequestDone"));
+
+  DCHECK(pending_query_handle_);
+  pending_query_handle_ = 0;
+
+  DCHECK(result);
+  // Returning early here if |result| is NULL.  We've seen this happen on
+  // Linux due to NFS dismounting and causing sql failures.
+  // See http://crbug.com/68783.
+  if (!result) {
+    SendSuggestions(NULL);
+    return;
+  }
+
+  DCHECK_EQ(AUTOFILL_VALUE_RESULT, result->GetType());
+  const WDResult<std::vector<base::string16> >* autofill_result =
+      static_cast<const WDResult<std::vector<base::string16> >*>(result);
+  std::vector<base::string16> suggestions = autofill_result->GetValue();
+  SendSuggestions(&suggestions);
 }
 
 }  // namespace autofill

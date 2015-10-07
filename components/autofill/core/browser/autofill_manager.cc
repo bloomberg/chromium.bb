@@ -453,20 +453,18 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
     }
   }
 
-  if (field.should_autocomplete) {
-    // Add the results from AutoComplete.  They come back asynchronously, so we
-    // hand off what we generated and they will send the results back to the
+  if (suggestions.empty() && field.should_autocomplete) {
+    // Show autocomplete. Suggestions come back asynchronously, so the
+    // autocomplete manager will handle sending the results back to the
     // renderer.
     autocomplete_history_manager_->OnGetAutocompleteSuggestions(
-        query_id, field.name, field.value, field.form_control_type,
-        suggestions);
-  } else {
-    // Autocomplete is disabled for this field; only pass back Autofill
-    // suggestions.
-    autocomplete_history_manager_->CancelPendingQuery();
-    external_delegate_->OnSuggestionsReturned(
-        query_id, suggestions);
+        query_id, field.name, field.value, field.form_control_type);
+    return;
   }
+
+  // Send Autofill suggestions (could be an empty list).
+  autocomplete_history_manager_->CancelPendingQuery();
+  external_delegate_->OnSuggestionsReturned(query_id, suggestions);
 }
 
 bool AutofillManager::WillFillCreditCardNumber(const FormData& form,

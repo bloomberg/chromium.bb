@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/prefs/pref_member.h"
-#include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
@@ -28,18 +27,13 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
                              AutofillClient* autofill_client);
   ~AutocompleteHistoryManager() override;
 
-  // WebDataServiceConsumer implementation.
-  void OnWebDataServiceRequestDone(WebDataServiceBase::Handle h,
-                                   const WDTypedResult* result) override;
-
   // Pass-through functions that are called by AutofillManager, after it has
   // dispatched a message.
   virtual void OnGetAutocompleteSuggestions(
       int query_id,
       const base::string16& name,
       const base::string16& prefix,
-      const std::string& form_control_type,
-      const std::vector<Suggestion>& suggestions);
+      const std::string& form_control_type);
   virtual void OnWillSubmitForm(const FormData& form);
 
   // Cancels the currently pending WebDataService query, if there is one.
@@ -61,16 +55,19 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
   void SendSuggestions(const std::vector<base::string16>* new_results);
 
  private:
+  // WebDataServiceConsumer implementation.
+  void OnWebDataServiceRequestDone(WebDataServiceBase::Handle h,
+                                   const WDTypedResult* result) override;
+
   // Provides driver-level context. Must outlive this object.
   AutofillDriver* driver_;
   scoped_refptr<AutofillWebDataService> database_;
 
   // When the manager makes a request from WebDataServiceBase, the database is
   // queried on another thread, we record the query handle until we get called
-  // back.  We also store the autofill results so we can send them together.
+  // back.
   WebDataServiceBase::Handle pending_query_handle_;
   int query_id_;
-  std::vector<Suggestion> autofill_suggestions_;
 
   // Delegate to perform external processing (display, selection) on
   // our behalf.  Weak.
