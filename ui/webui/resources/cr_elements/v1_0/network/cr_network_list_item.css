@@ -58,8 +58,17 @@ span {
   font-size: 14px;
 }
 
-#divButtons paper-icon-button {
+.buttons {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.buttons paper-icon-button {
   text-align: center;
+}
+
+.known paper-icon-button {
   width: 60px;
 }
 

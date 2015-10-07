@@ -158,6 +158,16 @@ Polymer({
   },
 
   /**
+   * Fires a 'show-details' event with |this.networkState| as the details.
+   * @param {Event} event
+   * @private
+   */
+  fireShowDetails_: function(event) {
+    this.fire('show-detail', this.networkState);
+    event.stopPropagation();
+  },
+
+  /**
    * Fires the 'toggle-preferred' event with |this.networkState| as the details.
    * @param {Event} event
    * @private

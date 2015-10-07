@@ -19,7 +19,12 @@
         <span id="networkStateText" hidden$="[[isListItem_(listItemType)]]">
         </span>
       </div>
-      <div id="divButtons" class="layout horizontal center"
+      <div class="buttons"
+          hidden$="[[!isListItemType_(listItemType, 'visible')]]">
+        <paper-icon-button icon="settings" on-tap="fireShowDetails_">
+        </paper-icon-button>
+      </div>
+      <div class="known buttons"
           hidden$="[[!isListItemType_(listItemType, 'known')]]">
         <paper-icon-button icon="[[sharedIcon_(networkState)]]" disabled>
         </paper-icon-button>
