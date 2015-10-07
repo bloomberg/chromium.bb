@@ -3878,6 +3878,7 @@
             'layout/LayoutThemeTest.cpp',
             'layout/MultiColumnFragmentainerGroupTest.cpp',
             'layout/OverflowModelTest.cpp',
+            'layout/PaginationTest.cpp',
             'layout/shapes/BoxShapeTest.cpp',
             'loader/FrameFetchContextTest.cpp',
             'loader/LinkHeaderTest.cpp',

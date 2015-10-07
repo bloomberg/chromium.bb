@@ -1772,6 +1772,13 @@ void LayoutBox::clearSpannerPlaceholder()
     m_rareData->m_spannerPlaceholder = nullptr;
 }
 
+void LayoutBox::setPaginationStrut(LayoutUnit strut)
+{
+    if (!strut && !m_rareData)
+        return;
+    ensureRareData().m_paginationStrut = strut;
+}
+
 LayoutRect LayoutBox::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     if (style()->visibility() != VISIBLE) {

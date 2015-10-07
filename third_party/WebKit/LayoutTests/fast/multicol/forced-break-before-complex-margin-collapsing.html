@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../../resources/check-layout.js"></script>
+<p>Given a parent block with a forced break before, and with an empty collapse-through child
+    followed by a child with a top margin, check that the parent block still ends up at the exact
+    top of the next column. The collapse-through child prevents us from correctly estimating the
+    logical top of the parent initially.</p>
+<p>Below there should be a yellow box. Inside it there should be a bottom-left aligned blue box and
+    a top-center aligned green box.</p>
+<div id="test" style="position:relative; -webkit-columns:3; -webkit-column-gap:10px; column-fill:auto; width:620px; height:90px; line-height:20px; background:yellow;">
+    <br>
+    <br>
+    <br>
+    <div style="padding-top:4px; background:blue;" data-offset-x="0" data-offset-y="60" data-expected-height="110">
+        <div style="-webkit-column-break-before:always; background:red;" data-offset-x="210" data-offset-y="0" data-expected-height="80">
+            <div data-offset-x="210" data-offset-y="0" data-expected-height="0"></div>
+            <div style="margin-top:50px; background:green;" data-offset-x="210" data-offset-y="0" data-expected-height="80">
+                <br><br><br><br>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    checkLayout("#test");
+</script>

@@ -76,6 +76,8 @@ public:
     LayoutRect m_previousLayoutOverflowRect;
 
     LayoutUnit m_pageLogicalOffset;
+
+    LayoutUnit m_paginationStrut;
 };
 
 class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
@@ -482,6 +484,23 @@ public:
     void setSpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder&);
     void clearSpannerPlaceholder();
     LayoutMultiColumnSpannerPlaceholder* spannerPlaceholder() const final { return m_rareData ? m_rareData->m_spannerPlaceholder : 0; }
+
+    // A pagination strut is the amount of space needed to push an in-flow block-level object (or
+    // float) to the logical top of the next page or column. It will be set both for forced breaks
+    // (e.g. page-break-before:always) and soft breaks (when there's not enough space in the current
+    // page / column for the object). The strut is baked into the logicalTop() of the object, so
+    // that logicalTop() - paginationStrut() == the original position in the previous column before
+    // deciding to break.
+    //
+    // Pagination struts are either set in front of a block-level box (here) or before a line
+    // (RootInlineBox::paginationStrut()).
+    LayoutUnit paginationStrut() const { return m_rareData ? m_rareData->m_paginationStrut : LayoutUnit(); }
+    void setPaginationStrut(LayoutUnit);
+    void resetPaginationStrut()
+    {
+        if (m_rareData)
+            m_rareData->m_paginationStrut = LayoutUnit();
+    }
 
     LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
     void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
