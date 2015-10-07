@@ -339,7 +339,7 @@ public:
 
     // Returns the main frame associated with this view. This may be null when
     // the page is shutting down, but will be valid at all other times.
-    WebLocalFrameImpl* mainFrameImpl();
+    WebLocalFrameImpl* mainFrameImpl() const;
 
     // FIXME: Temporary method to accommodate out-of-process frame ancestors;
     // will be removed when there can be multiple WebWidgets for a single page.
