@@ -535,6 +535,8 @@ source_set("test_support") {
       "exclusive_access/fullscreen_controller_state_tests.h",
       "exclusive_access/fullscreen_controller_test.cc",
       "exclusive_access/fullscreen_controller_test.h",
+      "test/test_confirm_bubble_model.cc",
+      "test/test_confirm_bubble_model.h",
     ]
   }
 

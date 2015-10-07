@@ -215,4 +215,11 @@ source_set("test_support") {
       "media/mock_webrtc_logging_message_filter.h",
     ]
   }
+
+  if (is_android) {
+    sources -= [
+      "safe_browsing/mock_feature_extractor_clock.cc",
+      "safe_browsing/mock_feature_extractor_clock.h",
+    ]
+  }
 }

@@ -194,8 +194,6 @@
       'browser/profiles/profile_shortcut_manager_unittest_win.cc',
       'browser/push_messaging/push_messaging_app_identifier_unittest.cc',
       'browser/push_messaging/push_messaging_permission_context_unittest.cc',
-      'browser/renderer_context_menu/render_view_context_menu_test_util.cc',
-      'browser/renderer_context_menu/render_view_context_menu_test_util.h',
       'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_unit_test.mm',
       'browser/resources_util_unittest.cc',
       'browser/search/contextual_search_policy_handler_android_unittest.cc',
@@ -554,6 +552,8 @@
       'browser/permissions/permission_queue_controller_unittest.cc',
     ],
     'chrome_unit_tests_non_mobile_sources': [
+      'browser/renderer_context_menu/render_view_context_menu_test_util.cc',
+      'browser/renderer_context_menu/render_view_context_menu_test_util.h',
       'browser/ui/website_settings/mock_permission_bubble_view.cc',
       'browser/ui/website_settings/mock_permission_bubble_view.h',
     ],
@@ -1898,7 +1898,16 @@
           ]
         }],
         ['OS=="android"', {
+          'dependencies!': [
+            '../ui/message_center/message_center.gyp:message_center_test_support',
+          ],
           'sources!': [
+            'browser/download/test_download_shelf.cc',
+            'browser/download/test_download_shelf.h',
+            'browser/profile_resetter/profile_resetter_test_base.cc',
+            'browser/profile_resetter/profile_resetter_test_base.h',
+            'browser/sessions/session_restore_test_helper.cc',
+            'browser/sessions/session_restore_test_helper.h',
             'browser/sessions/session_service_test_helper.cc',
             'browser/sessions/session_service_test_helper.h',
             'browser/ui/exclusive_access/fullscreen_controller_state_test.cc',
@@ -1906,6 +1915,10 @@
             'browser/ui/exclusive_access/fullscreen_controller_state_tests.h',
             'browser/ui/exclusive_access/fullscreen_controller_test.cc',
             'browser/ui/exclusive_access/fullscreen_controller_test.h',
+            'browser/ui/test/test_confirm_bubble_model.cc',
+            'browser/ui/test/test_confirm_bubble_model.h',
+            'renderer/safe_browsing/mock_feature_extractor_clock.cc',
+            'renderer/safe_browsing/mock_feature_extractor_clock.h',
             'test/base/dialog_test_browser_window.cc',
             'test/base/dialog_test_browser_window.h',
             'test/base/test_browser_window.cc',

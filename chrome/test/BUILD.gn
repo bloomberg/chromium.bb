@@ -161,6 +161,7 @@ source_set("test_support") {
   }
 
   if (is_android) {
+    deps -= [ "//ui/message_center:test_support" ]
     sources -= [
       "base/dialog_test_browser_window.cc",
       "base/dialog_test_browser_window.h",

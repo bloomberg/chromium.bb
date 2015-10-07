@@ -1080,6 +1080,12 @@ source_set("test_support") {
 
   if (is_android) {
     sources -= [
+      "download/test_download_shelf.cc",
+      "download/test_download_shelf.h",
+      "profile_resetter/profile_resetter_test_base.cc",
+      "profile_resetter/profile_resetter_test_base.h",
+      "sessions/session_restore_test_helper.cc",
+      "sessions/session_restore_test_helper.h",
       "sessions/session_service_test_helper.cc",
       "sessions/session_service_test_helper.h",
     ]
