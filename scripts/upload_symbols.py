@@ -91,8 +91,8 @@ DEDUPE_NOTIFY_TIMEOUT = 20
 
 # The unique namespace in the dedupe server that only we use.  Helps avoid
 # collisions with all the hashed values and unrelated content.
-OFFICIAL_DEDUPE_NAMESPACE = 'chromium-os-upload-symbols'
-STAGING_DEDUPE_NAMESPACE = '%s-staging' % OFFICIAL_DEDUPE_NAMESPACE
+OFFICIAL_DEDUPE_NAMESPACE_TMPL = '%s-upload-symbols'
+STAGING_DEDUPE_NAMESPACE_TMPL = '%s-staging' % OFFICIAL_DEDUPE_NAMESPACE_TMPL
 
 
 # The minimum average rate (in bytes per second) that we expect to maintain
@@ -809,7 +809,7 @@ def main(argv):
   parser.add_argument('sym_paths', type='path_or_uri', nargs='*', default=None,
                       help='symbol file or directory or URL or tarball')
   parser.add_argument('--board', default=None,
-                      help='board to build packages for')
+                      help='Used to find default breakpad_root.')
   parser.add_argument('--breakpad_root', type='path', default=None,
                       help='full path to the breakpad symbol directory')
   parser.add_argument('--root', type='path', default=None,
@@ -833,19 +833,19 @@ def main(argv):
                       help='run in testing mode')
   parser.add_argument('--yes', action='store_true', default=False,
                       help='answer yes to all prompts')
+  parser.add_argument('--product_name', type=str, default='ChromeOS',
+                      help='Produce Name for breakpad stats.')
 
   opts = parser.parse_args(argv)
   opts.Freeze()
 
-  if opts.sym_paths:
+  if opts.sym_paths or opts.breakpad_root:
     if opts.regenerate:
-      cros_build_lib.Die('--regenerate may not be used with specific files')
+      cros_build_lib.Die('--regenerate may not be used with specific files, '
+                         'or breakpad_root')
   else:
     if opts.board is None:
       cros_build_lib.Die('--board is required')
-
-  if opts.breakpad_root and opts.regenerate:
-    cros_build_lib.Die('--regenerate may not be used with --breakpad_root')
 
   if opts.testing:
     # TODO(build): Kill off --testing mode once unittests are up-to-snuff.
@@ -858,9 +858,9 @@ def main(argv):
   dedupe_namespace = None
   if opts.dedupe:
     if opts.official_build and not opts.testing:
-      dedupe_namespace = OFFICIAL_DEDUPE_NAMESPACE
+      dedupe_namespace = OFFICIAL_DEDUPE_NAMESPACE_TMPL % opts.product_name
     else:
-      dedupe_namespace = STAGING_DEDUPE_NAMESPACE
+      dedupe_namespace = STAGING_DEDUPE_NAMESPACE_TMPL % opts.product_name
 
   if not opts.yes:
     prolog = '\n'.join(textwrap.wrap(textwrap.dedent("""
@@ -885,7 +885,8 @@ def main(argv):
                        file_limit=opts.strip_cfi, sleep=DEFAULT_SLEEP_DELAY,
                        upload_limit=opts.upload_limit, sym_paths=opts.sym_paths,
                        failed_list=opts.failed_list, root=opts.root,
-                       dedupe_namespace=dedupe_namespace)
+                       dedupe_namespace=dedupe_namespace,
+                       product_name=opts.product_name)
   if ret:
     logging.error('encountered %i problem(s)', ret)
     # Since exit(status) gets masked, clamp it to 1 so we don't inadvertently
