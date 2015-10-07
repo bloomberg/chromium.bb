@@ -496,7 +496,7 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
 
   CreditCard* credit_card = GetCreditCardByGUID(data_model.guid());
   if (credit_card) {
-    credit_card->RecordUse();
+    credit_card->RecordAndLogUse();
 
     if (credit_card->record_type() == CreditCard::LOCAL_CARD)
       database_->UpdateCreditCard(*credit_card);
@@ -509,7 +509,7 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
 
   AutofillProfile* profile = GetProfileByGUID(data_model.guid());
   if (profile) {
-    profile->RecordUse();
+    profile->RecordAndLogUse();
 
     if (profile->record_type() == AutofillProfile::LOCAL_PROFILE)
       database_->UpdateAutofillProfile(*profile);

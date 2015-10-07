@@ -2099,6 +2099,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.DaysSinceLastUse.CreditCard" units="days">
+  <owner>sebsg@chromium.org</owner>
+  <summary>
+    Logs the number of days that have passed since the credit card was last
+    used.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.DaysSinceLastUse.Profile" units="days">
+  <owner>sebsg@chromium.org</owner>
+  <summary>
+    Logs the number of days that have passed since the profile was last used.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.DeveloperEngagement"
     enum="AutofillDeveloperEngagement">
   <owner>isherman@chromium.org</owner>

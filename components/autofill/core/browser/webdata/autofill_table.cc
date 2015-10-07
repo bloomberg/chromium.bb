@@ -1296,7 +1296,7 @@ bool AutofillTable::UnmaskServerCreditCard(const CreditCard& masked,
   CreditCard unmasked = masked;
   unmasked.set_record_type(CreditCard::FULL_SERVER_CARD);
   unmasked.SetNumber(full_number);
-  unmasked.RecordUse();
+  unmasked.RecordAndLogUse();
   UpdateServerCardUsageStats(unmasked);
 
   return db_->GetLastChangeCount() > 0;

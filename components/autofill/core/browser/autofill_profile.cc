@@ -15,6 +15,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -699,6 +700,12 @@ void AutofillProfile::GenerateServerProfileIdentifier() {
   std::string contents_utf8 = UTF16ToUTF8(contents);
   contents_utf8.append(language_code());
   server_id_ = base::SHA1HashString(contents_utf8);
+}
+
+void AutofillProfile::RecordAndLogUse() {
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.Profile",
+                            (base::Time::Now() - use_date()).InDays());
+  RecordUse();
 }
 
 // static

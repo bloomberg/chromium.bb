@@ -119,11 +119,11 @@ class TestPersonalDataManager : public PersonalDataManager {
   void RecordUseOf(const AutofillDataModel& data_model) override {
     CreditCard* credit_card = GetCreditCardWithGUID(data_model.guid().c_str());
     if (credit_card)
-      credit_card->RecordUse();
+      credit_card->RecordAndLogUse();
 
     AutofillProfile* profile = GetProfileWithGUID(data_model.guid().c_str());
     if (profile)
-      profile->RecordUse();
+      profile->RecordAndLogUse();
   }
 
   void RemoveByGUID(const std::string& guid) override {

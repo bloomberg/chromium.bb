@@ -169,6 +169,10 @@ class AutofillProfile : public AutofillDataModel {
   // creates its own. The ID is a hash of the data contained in the profile.
   void GenerateServerProfileIdentifier();
 
+  // Logs the number of days since the profile was last used and records its
+  // use.
+  void RecordAndLogUse();
+
   // Returns a standardized representation of the given string for comparison
   // purposes. The resulting string will be lower-cased with all punctuation
   // substituted by spaces. Whitespace will be converted to ASCII space, and

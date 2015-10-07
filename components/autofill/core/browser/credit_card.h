@@ -172,6 +172,10 @@ class CreditCard : public AutofillDataModel {
   // Sets |number_| to |number| and computes the appropriate card |type_|.
   void SetNumber(const base::string16& number);
 
+  // Logs the number of days since the credit card was last used and records its
+  // use.
+  void RecordAndLogUse();
+
   // Converts a string representation of a month (such as "February" or "feb."
   // or "2") into a numeric value in [1, 12]. Returns true on successful
   // conversion or false if a month was not recognized.

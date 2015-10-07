@@ -27,10 +27,6 @@ class AutofillDataModel : public FormGroup {
   // rather than automatically aggregated.
   bool IsVerified() const;
 
-  // Called to update |use_count_| and |use_date_| when this data model is
-  // the subject of user interaction (usually, when it's used to fill a form).
-  void RecordUse();
-
   std::string guid() const { return guid_; }
   void set_guid(const std::string& guid) { guid_ = guid; }
 
@@ -55,6 +51,11 @@ class AutofillDataModel : public FormGroup {
   // comparisons.
   bool CompareFrecency(const AutofillDataModel* other,
                        base::Time comparison_time) const;
+
+ protected:
+  // Called to update |use_count_| and |use_date_| when this data model is
+  // the subject of user interaction (usually, when it's used to fill a form).
+  void RecordUse();
 
  private:
   // A globally unique ID for this object.

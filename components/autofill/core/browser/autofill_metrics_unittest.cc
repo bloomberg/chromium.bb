@@ -2655,6 +2655,26 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtPageLoad) {
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.PageLoad", false, 1);
 }
 
+// Test that we log the days since last use of a credit card when it is used.
+TEST_F(AutofillMetricsTest, DaysSinceLastUse_CreditCard) {
+  base::HistogramTester histogram_tester;
+  CreditCard credit_card;
+  credit_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(21));
+  credit_card.RecordAndLogUse();
+  histogram_tester.ExpectBucketCount("Autofill.DaysSinceLastUse.CreditCard", 21,
+                                     1);
+}
+
+// Test that we log the days since last use of a profile when it is used.
+TEST_F(AutofillMetricsTest, DaysSinceLastUse_Profile) {
+  base::HistogramTester histogram_tester;
+  AutofillProfile profile;
+  profile.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(13));
+  profile.RecordAndLogUse();
+  histogram_tester.ExpectBucketCount("Autofill.DaysSinceLastUse.Profile", 13,
+                                     1);
+}
+
 // Verify that we correctly log user happiness metrics dealing with form loading
 // and form submission.
 TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {

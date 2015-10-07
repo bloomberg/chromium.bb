@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -702,6 +703,12 @@ void CreditCard::SetNumber(const base::string16& number) {
   // when we have masked cards from the server (last 4 digits).
   if (record_type_ != MASKED_SERVER_CARD)
     type_ = GetCreditCardType(StripSeparators(number_));
+}
+
+void CreditCard::RecordAndLogUse() {
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.CreditCard",
+                            (base::Time::Now() - use_date()).InDays());
+  RecordUse();
 }
 
 // static
