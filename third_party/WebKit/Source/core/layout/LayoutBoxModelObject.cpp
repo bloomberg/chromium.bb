@@ -72,12 +72,8 @@ bool FloatStateForStyleChange::s_wasFloating = false;
 LayoutBoxModelObject* FloatStateForStyleChange::s_boxModelObject = nullptr;
 
 // The HashMap for storing continuation pointers.
-// An inline can be split with blocks occuring in between the inline content.
-// When this occurs we need a pointer to the next object. We can basically be
-// split into a sequence of inlines and blocks. The continuation will either be
-// an anonymous block (that houses other blocks) or it will be an inline flow.
-// <b><i><p>Hello</p></i></b>. In this example the <i> will have a block as
-// its continuation but the <b> will just have an inline as its continuation.
+// The continuation chain is a singly linked list. As such, the HashMap's value
+// is the next pointer associated with the key.
 typedef HashMap<const LayoutBoxModelObject*, LayoutBoxModelObject*> ContinuationMap;
 static ContinuationMap* continuationMap = nullptr;
 

@@ -285,7 +285,19 @@ protected:
 
     bool calculateHasBoxDecorations() const;
 
+    // Returns the continuation associated with |this|.
+    // Returns nullptr if no continuation is associated with |this|.
+    //
+    // See the section about CONTINUATIONS AND ANONYMOUS LAYOUTBLOCKFLOWS in
+    // LayoutInline for more details about them.
+    //
+    // Our implementation uses a HashMap to store them to avoid paying the cost
+    // for each LayoutBoxModelObject (|continuationMap| in the cpp file).
     LayoutBoxModelObject* continuation() const;
+
+    // Set the next link in the continuation chain.
+    //
+    // See continuation above for more details.
     void setContinuation(LayoutBoxModelObject*);
 
     LayoutRect localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset);
