@@ -1037,7 +1037,7 @@ scoped_refptr<gfx::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
     case gfx::SHARED_MEMORY_BUFFER: {
       scoped_refptr<gfx::GLImageSharedMemory> image(
           new gfx::GLImageSharedMemory(size, internalformat));
-      if (!image->Initialize(handle.handle, handle.id, format))
+      if (!image->Initialize(handle, format))
         return scoped_refptr<gfx::GLImage>();
 
       return image;

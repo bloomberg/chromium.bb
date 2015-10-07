@@ -230,6 +230,11 @@ void CommandBufferDriver::CreateImage(int32_t id,
     return;
   }
 
+  gfx::GpuMemoryBufferHandle gfx_handle;
+  // TODO(jam): create mojo enum for this and converter
+  gfx_handle.type = static_cast<gfx::GpuMemoryBufferType>(type);
+  gfx_handle.id = gfx::GpuMemoryBufferId(id);
+
   MojoPlatformHandle platform_handle;
   MojoResult extract_result = MojoExtractPlatformHandle(
       memory_handle.release().value(), &platform_handle);
@@ -238,17 +243,17 @@ void CommandBufferDriver::CreateImage(int32_t id,
     return;
   }
 
-  base::SharedMemoryHandle handle;
 #if defined(OS_WIN)
-  handle = base::SharedMemoryHandle(platform_handle, base::GetCurrentProcId());
+  gfx_handle.handle =
+      base::SharedMemoryHandle(platform_handle, base::GetCurrentProcId());
 #else
-  handle = base::FileDescriptor(platform_handle, false);
+  gfx_handle.handle = base::FileDescriptor(platform_handle, false);
 #endif
 
   scoped_refptr<gfx::GLImageSharedMemory> image =
       new gfx::GLImageSharedMemory(gfx_size, internal_format);
   // TODO(jam): also need a mojo enum for this enum
-  if (!image->Initialize(handle, gfx::GpuMemoryBufferId(id), gpu_format)) {
+  if (!image->Initialize(gfx_handle, gpu_format)) {
     NOTREACHED();
     return;
   }
