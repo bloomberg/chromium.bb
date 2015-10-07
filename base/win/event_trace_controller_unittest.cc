@@ -180,7 +180,8 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
   base::DeleteFile(temp, false);
 }
 
-TEST_F(EtwTraceControllerTest, EnableDisable) {
+// This test is flaky for unclear reasons. See bugs 525297 and 534184
+TEST_F(EtwTraceControllerTest, DISABLED_EnableDisable) {
   TestingProvider provider(test_provider_);
 
   EXPECT_EQ(ERROR_SUCCESS, provider.Register());
