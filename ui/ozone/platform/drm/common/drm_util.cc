@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/drm/common/drm_util.h"
 
+#include <drm_fourcc.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -262,6 +263,18 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
   }
 
   return params;
+}
+
+int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::BGRA_8888:
+      return DRM_FORMAT_ARGB8888;
+    case gfx::BufferFormat::BGRX_8888:
+      return DRM_FORMAT_XRGB8888;
+    default:
+      NOTREACHED();
+      return 0;
+  }
 }
 
 }  // namespace ui

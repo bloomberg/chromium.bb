@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -32,20 +33,6 @@ namespace {
 #endif
 
 void EmptyFlipCallback(gfx::SwapResult) {
-}
-
-// TODO(kalyank): We now have this switch statement in GBMBuffer and here.
-// It would be nice to have it in one place.
-uint32_t GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::BGRA_8888:
-      return DRM_FORMAT_ARGB8888;
-    case gfx::BufferFormat::BGRX_8888:
-      return DRM_FORMAT_XRGB8888;
-    default:
-      NOTREACHED();
-      return 0;
-  }
 }
 
 void UpdateCursorImage(DrmBuffer* cursor, const SkBitmap& image) {

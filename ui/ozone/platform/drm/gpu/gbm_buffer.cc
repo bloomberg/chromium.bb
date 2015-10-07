@@ -14,28 +14,13 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_pixmap_handle_ozone.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
 
 namespace ui {
-
-namespace {
-
-int GetGbmFormatFromBufferFormat(gfx::BufferFormat fmt) {
-  switch (fmt) {
-    case gfx::BufferFormat::BGRA_8888:
-      return GBM_FORMAT_ARGB8888;
-    case gfx::BufferFormat::BGRX_8888:
-      return GBM_FORMAT_XRGB8888;
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
-}  // namespace
 
 GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      gbm_bo* bo,
@@ -62,7 +47,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   if (use_scanout)
     flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
   gbm_bo* bo = gbm_bo_create(gbm->device(), size.width(), size.height(),
-                             GetGbmFormatFromBufferFormat(format), flags);
+                             GetFourCCFormatFromBufferFormat(format), flags);
   if (!bo)
     return nullptr;
 
