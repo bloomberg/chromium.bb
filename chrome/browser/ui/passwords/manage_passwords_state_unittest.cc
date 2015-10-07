@@ -4,9 +4,13 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,6 +27,8 @@ namespace {
 
 class ManagePasswordsStateTest : public testing::Test {
  public:
+  ManagePasswordsStateTest() : password_manager_(&client_) {}
+
   void SetUp() override {
     test_local_form_.origin = GURL("http://example.com");
     test_local_form_.username_value = base::ASCIIToUTF16("username");
@@ -61,6 +67,8 @@ class ManagePasswordsStateTest : public testing::Test {
 
  private:
   password_manager::StubPasswordManagerClient client_;
+  password_manager::StubPasswordManagerDriver driver_;
+  password_manager::PasswordManager password_manager_;
 
   ManagePasswordsState passwords_data_;
   autofill::PasswordForm test_local_form_;
@@ -71,10 +79,9 @@ class ManagePasswordsStateTest : public testing::Test {
 scoped_ptr<password_manager::PasswordFormManager>
 ManagePasswordsStateTest::CreateFormManager() {
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
-      new password_manager::PasswordFormManager(
-          nullptr, &client_,
-          base::WeakPtr<password_manager::PasswordManagerDriver>(),
-          test_local_form(), false));
+      new password_manager::PasswordFormManager(&password_manager_, &client_,
+                                                driver_.AsWeakPtr(),
+                                                test_local_form(), false));
   test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<autofill::PasswordForm> stored_forms;
   stored_forms.push_back(new autofill::PasswordForm(test_local_form()));

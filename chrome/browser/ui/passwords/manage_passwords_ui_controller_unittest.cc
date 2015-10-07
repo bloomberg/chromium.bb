@@ -12,6 +12,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
@@ -107,7 +108,7 @@ void TestManagePasswordsUIController::NeverSavePasswordInternal() {
 
 class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
  public:
-  ManagePasswordsUIControllerTest() {}
+  ManagePasswordsUIControllerTest() : password_manager_(&client_) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -158,14 +159,18 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
   void CredentialCallback(const password_manager::CredentialInfo& info) {
     credential_info_.reset(new password_manager::CredentialInfo(info));
   }
-  password_manager::StubPasswordManagerClient* client() {
-    return &client_;
-  }
+
+  scoped_ptr<password_manager::PasswordFormManager>
+  CreateFormManagerWithBestMatches(
+      const autofill::PasswordForm& observed_form,
+      ScopedVector<autofill::PasswordForm> best_matches);
 
   scoped_ptr<password_manager::PasswordFormManager> CreateFormManager();
 
  private:
   password_manager::StubPasswordManagerClient client_;
+  password_manager::StubPasswordManagerDriver driver_;
+  password_manager::PasswordManager password_manager_;
 
   autofill::PasswordForm test_local_form_;
   autofill::PasswordForm test_federated_form_;
@@ -173,11 +178,24 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
 };
 
 scoped_ptr<password_manager::PasswordFormManager>
+ManagePasswordsUIControllerTest::CreateFormManagerWithBestMatches(
+    const autofill::PasswordForm& observed_form,
+    ScopedVector<autofill::PasswordForm> best_matches) {
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      new password_manager::PasswordFormManager(&password_manager_, &client_,
+                                                driver_.AsWeakPtr(),
+                                                observed_form, true));
+  test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
+  test_form_manager->OnGetPasswordStoreResults(best_matches.Pass());
+  return test_form_manager.Pass();
+}
+
+scoped_ptr<password_manager::PasswordFormManager>
 ManagePasswordsUIControllerTest::CreateFormManager() {
   ScopedVector<autofill::PasswordForm> stored_forms;
   stored_forms.push_back(new autofill::PasswordForm(test_local_form()));
-  return ManagePasswordsUIControllerMock::CreateFormManager(
-      &client_, test_local_form(), stored_forms.Pass());
+  return CreateFormManagerWithBestMatches(test_local_form(),
+                                          stored_forms.Pass());
 }
 
 TEST_F(ManagePasswordsUIControllerTest, DefaultState) {
@@ -234,8 +252,7 @@ TEST_F(ManagePasswordsUIControllerTest, BlacklistedFormPasswordSubmitted) {
   ScopedVector<autofill::PasswordForm> stored_forms;
   stored_forms.push_back(new autofill::PasswordForm(blacklisted));
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager =
-      ManagePasswordsUIControllerMock::CreateFormManager(
-          client(), test_local_form(), stored_forms.Pass());
+      CreateFormManagerWithBestMatches(test_local_form(), stored_forms.Pass());
 
   controller()->OnPasswordSubmitted(test_form_manager.Pass());
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,

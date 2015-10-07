@@ -454,8 +454,8 @@ TEST_F(PasswordFormManagerTest, TestBlacklistMatching) {
   observed_form()->origin = GURL("http://accounts.google.com/a/LoginAuth");
   observed_form()->action = GURL("http://accounts.google.com/a/Login");
   observed_form()->signon_realm = "http://accounts.google.com";
-  PasswordFormManager form_manager(nullptr, client(), kNoDriver,
-                                   *observed_form(), false);
+  PasswordFormManager form_manager(password_manager(), client(),
+                                   client()->driver(), *observed_form(), false);
   form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
 
   // Doesn't match because of PSL.
@@ -579,8 +579,8 @@ TEST_F(PasswordFormManagerTest, TestNewLoginFromNewPasswordElement) {
   observed_form()->new_password_element = ASCIIToUTF16("NewPasswd");
   observed_form()->username_marked_by_site = true;
 
-  PasswordFormManager form_manager(password_manager(), client(), kNoDriver,
-                                   *observed_form(), false);
+  PasswordFormManager form_manager(password_manager(), client(),
+                                   client()->driver(), *observed_form(), false);
   SimulateMatchingPhase(&form_manager, RESULT_NO_MATCH);
 
   // User enters current and new credentials to the observed form.
@@ -1179,8 +1179,9 @@ TEST_F(PasswordFormManagerTest, InvalidActionURLsDoNotMatch) {
                    PasswordFormManager::RESULT_ACTION_MATCH);
   // Then when the observed form has an invalid URL:
   PasswordForm valid_action_form(*observed_form());
-  PasswordFormManager invalid_manager(password_manager(), client(), kNoDriver,
-                                      invalid_action_form, false);
+  PasswordFormManager invalid_manager(password_manager(), client(),
+                                      client()->driver(), invalid_action_form,
+                                      false);
   EXPECT_EQ(0,
             invalid_manager.DoesManage(valid_action_form) &
                 PasswordFormManager::RESULT_ACTION_MATCH);
@@ -1197,7 +1198,8 @@ TEST_F(PasswordFormManagerTest, EmptyActionURLsDoNotMatchNonEmpty) {
   // Then when the observed form has an empty URL:
   PasswordForm valid_action_form(*observed_form());
   PasswordFormManager empty_action_manager(password_manager(), client(),
-                                           kNoDriver, empty_action_form, false);
+                                           client()->driver(),
+                                           empty_action_form, false);
   EXPECT_EQ(0,
             empty_action_manager.DoesManage(valid_action_form) &
                 PasswordFormManager::RESULT_ACTION_MATCH);
@@ -1248,8 +1250,9 @@ TEST_F(PasswordFormManagerTest,
 
   PasswordForm secure_observed_form(*observed_form());
   secure_observed_form.origin = GURL("https://accounts.google.com/a/LoginAuth");
-  PasswordFormManager secure_manager(password_manager(), client(), kNoDriver,
-                                     secure_observed_form, true);
+  PasswordFormManager secure_manager(password_manager(), client(),
+                                     client()->driver(), secure_observed_form,
+                                     true);
   // Also for HTTPS in the observed form, and HTTP in the compared form, an
   // exact path match is expected.
   EXPECT_EQ(0, secure_manager.DoesManage(form_longer_path) &
@@ -1859,7 +1862,6 @@ TEST_F(PasswordFormManagerTest, NotRemovePSLNoUsernameAccounts) {
 }
 
 TEST_F(PasswordFormManagerTest, NotRemoveCredentialsWithUsername) {
-
   PasswordForm saved_form = *saved_match();
   ASSERT_FALSE(saved_form.username_value.empty());
   ScopedVector<PasswordForm> result;
@@ -1949,7 +1951,6 @@ TEST_F(PasswordFormManagerTest, NotRemoveOnUpdate) {
 }
 
 TEST_F(PasswordFormManagerTest, GenerationStatusChangedWithPassword) {
-
   const PasswordStore::AuthorizationPromptPolicy auth_policy =
       PasswordStore::DISALLOW_PROMPT;
   EXPECT_CALL(*mock_store(),
