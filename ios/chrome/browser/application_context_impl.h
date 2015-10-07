@@ -34,9 +34,11 @@ class ApplicationContextImpl : public ApplicationContext {
   policy::BrowserPolicyConnector* GetBrowserPolicyConnector() override;
   rappor::RapporService* GetRapporService() override;
   net_log::ChromeNetLog* GetNetLog() override;
+  network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
 
   base::ThreadChecker thread_checker_;
   scoped_ptr<net_log::ChromeNetLog> net_log_;
+  scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
   std::string application_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationContextImpl);

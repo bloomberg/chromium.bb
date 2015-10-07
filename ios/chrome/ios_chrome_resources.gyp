@@ -7,6 +7,28 @@
     'chromium_code': 1,
     'grit_base_dir': '<(SHARED_INTERMEDIATE_DIR)',
     'grit_out_dir': '<(grit_base_dir)/ios/chrome',
+    'ui_string_overrider_inputs': [
+      '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_strings.h',
+      '<(SHARED_INTERMEDIATE_DIR)/ios/chrome/grit/ios_strings.h',
+    ],
+    'ui_string_overrider_output_basename':
+      'ios/chrome/browser/variations/ios_ui_string_overrider_factory',
+    'ui_string_overrider_script_name':
+      '../../components/variations/service/generate_ui_string_overrider.py',
+    'conditions': [
+      ['branding=="Chromium"', {
+        'ui_string_overrider_inputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_chromium_strings.h',
+          '<(SHARED_INTERMEDIATE_DIR)/ios/chrome/grit/ios_chromium_strings.h',
+        ],
+      }],
+      ['branding=="Chrome"', {
+        'ui_string_overrider_inputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_google_chrome_strings.h',
+          '<(SHARED_INTERMEDIATE_DIR)/ios/chrome/grit/ios_google_chrome_strings.h',
+        ],
+      }],
+    ],
   },
   'targets': [
     {
@@ -183,6 +205,52 @@
         },
       ],
     },
+    {
+      'target_name': 'ios_chrome_ui_string_overrider_factory_gen',
+      'type': 'none',
+      'hard_dependency': 1,
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)',
+        ],
+      },
+      'dependencies': [
+        '../../components/components_strings.gyp:components_strings',
+        'ios_strings_gen',
+      ],
+      'actions': [
+        {
+          'action_name': 'generate_ios_ui_string_overrider',
+          'inputs': [
+            '<(ui_string_overrider_script_name)',
+            '<@(ui_string_overrider_inputs)',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/<(ui_string_overrider_output_basename).cc',
+            '<(SHARED_INTERMEDIATE_DIR)/<(ui_string_overrider_output_basename).h',
+          ],
+          'action': [
+            'python',
+            '<(ui_string_overrider_script_name)',
+            '-o', '<(SHARED_INTERMEDIATE_DIR)',
+            '-S', '<(ui_string_overrider_output_basename).cc',
+            '-H', '<(ui_string_overrider_output_basename).h',
+            '<@(ui_string_overrider_inputs)',
+          ],
+        },
+      ],
+    },
+    {
+      'target_name': 'ios_chrome_ui_string_overrider_factory',
+      'type': 'static_library',
+      'dependencies': [
+        '../../components/components.gyp:variations_service',
+        'ios_chrome_ui_string_overrider_factory_gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/<(ui_string_overrider_output_basename).cc',
+        '<(SHARED_INTERMEDIATE_DIR)/<(ui_string_overrider_output_basename).h',
+      ],
+    },
   ],
 }
-

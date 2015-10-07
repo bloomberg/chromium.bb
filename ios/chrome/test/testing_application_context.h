@@ -6,6 +6,7 @@
 #define IOS_CHROME_TEST_TESTING_APPLICATION_CONTEXT_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ios/chrome/browser/application_context.h"
 
@@ -33,12 +34,14 @@ class TestingApplicationContext : public ApplicationContext {
   policy::BrowserPolicyConnector* GetBrowserPolicyConnector() override;
   rappor::RapporService* GetRapporService() override;
   net_log::ChromeNetLog* GetNetLog() override;
+  network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
 
  private:
   base::ThreadChecker thread_checker_;
   std::string application_locale_;
   PrefService* local_state_;
   ios::ChromeBrowserStateManager* chrome_browser_state_manager_;
+  scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingApplicationContext);
 };

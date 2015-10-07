@@ -5,6 +5,8 @@
 #include "ios/chrome/test/testing_application_context.h"
 
 #include "base/logging.h"
+#include "base/time/default_tick_clock.h"
+#include "components/network_time/network_time_tracker.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 TestingApplicationContext::TestingApplicationContext()
@@ -54,22 +56,38 @@ const std::string& TestingApplicationContext::GetApplicationLocale() {
 
 ios::ChromeBrowserStateManager*
 TestingApplicationContext::GetChromeBrowserStateManager() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return chrome_browser_state_manager_;
 }
 
 metrics::MetricsService* TestingApplicationContext::GetMetricsService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }
 
 policy::BrowserPolicyConnector*
 TestingApplicationContext::GetBrowserPolicyConnector() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }
 
 rappor::RapporService* TestingApplicationContext::GetRapporService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }
 
 net_log::ChromeNetLog* TestingApplicationContext::GetNetLog() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
+}
+
+network_time::NetworkTimeTracker*
+TestingApplicationContext::GetNetworkTimeTracker() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!network_time_tracker_) {
+    DCHECK(local_state_);
+    network_time_tracker_.reset(new network_time::NetworkTimeTracker(
+        make_scoped_ptr(new base::DefaultTickClock), local_state_));
+  }
+  return network_time_tracker_.get();
 }

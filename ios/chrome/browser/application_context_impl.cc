@@ -7,7 +7,9 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/time/default_tick_clock.h"
 #include "components/net_log/chrome_net_log.h"
+#include "components/network_time/network_time_tracker.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -54,22 +56,37 @@ void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {
 
 ios::ChromeBrowserStateManager*
 ApplicationContextImpl::GetChromeBrowserStateManager() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return ios::GetChromeBrowserProvider()->GetChromeBrowserStateManager();
 }
 
 metrics::MetricsService* ApplicationContextImpl::GetMetricsService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return ios::GetChromeBrowserProvider()->GetMetricsService();
 }
 
 policy::BrowserPolicyConnector*
 ApplicationContextImpl::GetBrowserPolicyConnector() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return ios::GetChromeBrowserProvider()->GetBrowserPolicyConnector();
 }
 
 rappor::RapporService* ApplicationContextImpl::GetRapporService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return ios::GetChromeBrowserProvider()->GetRapporService();
 }
 
 net_log::ChromeNetLog* ApplicationContextImpl::GetNetLog() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return net_log_.get();
+}
+
+network_time::NetworkTimeTracker*
+ApplicationContextImpl::GetNetworkTimeTracker() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!network_time_tracker_) {
+    network_time_tracker_.reset(new network_time::NetworkTimeTracker(
+        make_scoped_ptr(new base::DefaultTickClock), GetLocalState()));
+  }
+  return network_time_tracker_.get();
 }

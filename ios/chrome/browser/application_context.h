@@ -25,6 +25,10 @@ namespace net_log {
 class ChromeNetLog;
 }
 
+namespace network_time {
+class NetworkTimeTracker;
+}
+
 namespace policy {
 class BrowserPolicyConnector;
 }
@@ -67,6 +71,9 @@ class ApplicationContext {
 
   // Gets the ChromeNetLog.
   virtual net_log::ChromeNetLog* GetNetLog() = 0;
+
+  // Gets the NetworkTimeTracker.
+  virtual network_time::NetworkTimeTracker* GetNetworkTimeTracker() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.
