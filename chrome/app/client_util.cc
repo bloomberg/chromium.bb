@@ -6,6 +6,7 @@
 #include <shlwapi.h>
 
 #include "base/base_paths.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"

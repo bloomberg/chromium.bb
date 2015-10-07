@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/field_trial.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
 #include "extensions/common/feature_switch.h"
 

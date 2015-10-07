@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 
 #include "cloud_print/service/win/service_utils.h"
-#include "google_apis/gaia/gaia_switches.h"
 
 #include <windows.h>
 #include <security.h>  // NOLINT
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "google_apis/gaia/gaia_switches.h"
 
 base::string16 GetLocalComputerName() {
   DWORD size = 0;

@@ -5,6 +5,7 @@
 #include "content/test/content_test_suite.h"
 
 #include "base/base_paths.h"
+#include "base/base_switches.h"
 #include "base/logging.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_browser_main_android.h"
 
 #include "base/android/build_info.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/android/seccomp_support_detector.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/enhanced_bookmarks/persistent_image_store.h"

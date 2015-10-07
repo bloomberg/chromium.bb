@@ -31,6 +31,7 @@
 #include <fstream>  // NOLINT
 #include <string>  // NOLINT
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/debugger.h"
