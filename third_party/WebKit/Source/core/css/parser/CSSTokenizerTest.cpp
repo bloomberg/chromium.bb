@@ -124,7 +124,7 @@ static CSSParserToken percentage(NumericValueType type, double value)
 #define DEFINE_TOKEN(name, argument)                                \
 static CSSParserToken& name()                                       \
 {                                                                   \
-    WTF::Partitions::initialize();                                  \
+    WTF::Partitions::initialize(nullptr);                           \
     DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, name, (argument)); \
     return name;                                                    \
 }

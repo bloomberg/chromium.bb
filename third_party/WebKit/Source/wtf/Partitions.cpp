@@ -49,7 +49,7 @@ SizeSpecificPartitionAllocator<3328> Partitions::m_nodeAllocator;
 SizeSpecificPartitionAllocator<1024> Partitions::m_layoutAllocator;
 HistogramEnumerationFunction Partitions::m_histogramEnumeration = nullptr;
 
-void Partitions::initialize()
+void Partitions::initialize(HistogramEnumerationFunction histogramEnumeration)
 {
     spinLockLock(&s_initializationLock);
 
@@ -59,16 +59,11 @@ void Partitions::initialize()
         m_bufferAllocator.init();
         m_nodeAllocator.init();
         m_layoutAllocator.init();
+        m_histogramEnumeration = histogramEnumeration;
         s_initialized = true;
     }
 
     spinLockUnlock(&s_initializationLock);
-}
-
-void Partitions::setHistogramEnumeration(HistogramEnumerationFunction histogramEnumeration)
-{
-    ASSERT(!m_histogramEnumeration);
-    m_histogramEnumeration = histogramEnumeration;
 }
 
 void Partitions::shutdown()
