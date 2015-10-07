@@ -25,16 +25,13 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
                            const ClipTree& clip_tree,
                            const TransformTree& transform_tree) {
   for (auto& layer : visible_layer_list) {
-    // TODO(ajuma): Compute content_scale rather than using it. Note that for
-    // PictureLayer and PictureImageLayers, content_bounds == bounds and
-    // content_scale_x == content_scale_y == 1.0, so once impl painting is on
-    // everywhere, this code will be unnecessary.
     gfx::Size layer_bounds = layer->bounds();
-    const bool has_clip = layer->clip_tree_index() > 0;
+    const ClipNode* clip_node = clip_tree.Node(layer->clip_tree_index());
+    const bool is_unclipped =
+        clip_node->data.resets_clip && !clip_node->data.applies_local_clip;
     const TransformNode* transform_node =
         transform_tree.Node(layer->transform_tree_index());
-    if (has_clip) {
-      const ClipNode* clip_node = clip_tree.Node(layer->clip_tree_index());
+    if (!is_unclipped) {
       const TransformNode* target_node =
           transform_tree.Node(transform_node->data.content_target_id);
 
@@ -407,19 +404,20 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     }
     const TransformNode* transform_node =
         transform_tree.Node(clip_node->data.transform_id);
+    ClipNode* parent_clip_node = clip_tree->parent(clip_node);
 
-    // Only descendants of a real clipping layer (i.e., not 0) may have their
-    // clip adjusted due to intersecting with an ancestor clip.
-    const bool is_clipped = clip_node->parent_id > 0;
-    if (!is_clipped) {
-      clip_node->data.clip_in_target_space = MathUtil::MapClippedRect(
-          transform_node->data.to_target, clip_node->data.clip);
-      clip_node->data.combined_clip_in_target_space =
-          clip_node->data.clip_in_target_space;
+    // Only nodes affected by ancestor clips will have their combined clip
+    // adjusted due to intersecting with an ancestor clip.
+    if (clip_node->data.resets_clip) {
+      if (clip_node->data.applies_local_clip) {
+        clip_node->data.clip_in_target_space = MathUtil::MapClippedRect(
+            transform_node->data.to_target, clip_node->data.clip);
+        clip_node->data.combined_clip_in_target_space =
+            clip_node->data.clip_in_target_space;
+      }
       continue;
     }
 
-    ClipNode* parent_clip_node = clip_tree->parent(clip_node);
     gfx::Transform parent_to_current;
     const TransformNode* parent_transform_node =
         transform_tree.Node(parent_clip_node->data.transform_id);
@@ -456,7 +454,8 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
           parent_clip_node->data.combined_clip_in_target_space);
     }
 
-    if (clip_node->data.use_only_parent_clip) {
+    bool use_only_parent_clip = !clip_node->data.applies_local_clip;
+    if (use_only_parent_clip) {
       clip_node->data.combined_clip_in_target_space =
           parent_combined_clip_in_target_space;
       if (!clip_node->data.render_surface_is_clipped) {

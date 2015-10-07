@@ -7714,7 +7714,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
 
   ClipTree clip_tree = root->layer_tree_impl()->property_trees()->clip_tree;
   ClipNode* clip_node = clip_tree.Node(render_surface->clip_tree_index());
-  EXPECT_TRUE(clip_node->data.use_only_parent_clip);
+  EXPECT_FALSE(clip_node->data.applies_local_clip);
   EXPECT_EQ(gfx::Rect(30, 21), test_layer->visible_rect_from_property_trees());
 }
 
@@ -7790,6 +7790,45 @@ TEST_F(LayerTreeHostCommonTest,
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(gfx::Rect(30, 30), test_layer->clip_rect());
+}
+
+TEST_F(LayerTreeHostCommonTest,
+       RenderSurfaceWithUnclippedDescendantsButDoesntApplyOwnClip) {
+  // Ensure that the visible layer rect of a descendant of a surface with
+  // unclipped descendants is computed correctly, when the surface doesn't apply
+  // a clip.
+  LayerImpl* root = root_layer();
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface);
+  LayerImpl* child = AddChild<LayerImpl>(render_surface);
+
+  const gfx::Transform identity_matrix;
+
+  clip_child->SetDrawsContent(true);
+  child->SetDrawsContent(true);
+  clip_child->SetClipParent(clip_parent);
+  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  clip_children->insert(clip_child);
+  clip_parent->SetClipChildren(clip_children.release());
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 10), true, false,
+                               true);
+  SetLayerPropertiesForTesting(clip_parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               false);
+  SetLayerPropertiesForTesting(render_surface, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 15), true, false,
+                               true);
+  SetLayerPropertiesForTesting(clip_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               false);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(40, 40), true, false,
+                               false);
+
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(40, 40), child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,

@@ -101,11 +101,12 @@ void TransformNodeData::update_post_local_transform(
 ClipNodeData::ClipNodeData()
     : transform_id(-1),
       target_id(-1),
-      use_only_parent_clip(false),
+      applies_local_clip(true),
       layer_clipping_uses_only_local_clip(false),
       layer_visibility_uses_only_local_clip(false),
       render_surface_is_clipped(false),
-      layers_are_clipped(false) {}
+      layers_are_clipped(false),
+      resets_clip(false) {}
 
 EffectNodeData::EffectNodeData()
     : opacity(1.f),

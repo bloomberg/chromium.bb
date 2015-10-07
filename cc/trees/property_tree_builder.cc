@@ -22,7 +22,6 @@ namespace {
 
 static const int kInvalidPropertyTreeNodeId = -1;
 static const int kRootPropertyTreeNodeId = 0;
-static const int kUnclippedRootClipTreeNodeId = 0;
 
 template <typename LayerType>
 struct DataForRecursion {
@@ -66,10 +65,9 @@ static ClipNode* GetClipParent(const DataForRecursion<LayerType>& data,
 }
 
 template <typename LayerType>
-static bool RequiresClipNode(LayerType* layer,
-                             const DataForRecursion<LayerType>& data,
-                             int parent_transform_id,
-                             bool is_clipped) {
+static bool AppliesClip(LayerType* layer,
+                        const DataForRecursion<LayerType>& data,
+                        bool is_clipped) {
   const bool render_surface_applies_clip =
       layer->has_render_surface() && is_clipped;
   const bool render_surface_may_grow_due_to_clip_children =
@@ -100,17 +98,31 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   int parent_id = parent->id;
 
   bool is_root = !layer->parent();
+
+  // Whether we have an ancestor clip that we might need to apply.
   bool ancestor_clips_subtree = is_root || parent->data.layers_are_clipped;
 
   bool layers_are_clipped = false;
   bool has_unclipped_surface = false;
 
   if (layer->has_render_surface()) {
-    if (ancestor_clips_subtree && layer->num_unclipped_descendants() > 0)
+    // Clips can usually be applied to a surface's descendants simply by
+    // clipping the surface (or applied implicitly by the surface's bounds).
+    // However, if the surface has unclipped descendants (layers that aren't
+    // affected by the ancestor clip), we cannot clip the surface itself, and
+    // must instead apply clips to the clipped descendants.
+    if (ancestor_clips_subtree && layer->num_unclipped_descendants() > 0) {
       layers_are_clipped = true;
-    else if (!ancestor_clips_subtree)
+    } else if (!ancestor_clips_subtree) {
+      // When there are no ancestor clips that need to be applied to a render
+      // surface, we reset clipping state. The surface might contribute a clip
+      // of its own, but clips from ancestor nodes don't need to be considered
+      // when computing clip rects or visibility.
       has_unclipped_surface = true;
+    }
   } else {
+    // Without a new render surface, layer clipping state from ancestors needs
+    // to continue to propagate.
     layers_are_clipped = ancestor_clips_subtree;
   }
 
@@ -118,17 +130,21 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   if (layer_clips_subtree)
     layers_are_clipped = true;
 
-  if (has_unclipped_surface) {
-    parent_id = kUnclippedRootClipTreeNodeId;
-    data_for_children->effect_tree->Node(data_for_children->render_target)
-        ->data.clip_id = kUnclippedRootClipTreeNodeId;
-  }
-  if (!RequiresClipNode(layer, data_from_ancestor, parent->data.transform_id,
-                        ancestor_clips_subtree)) {
-    // Unclipped surfaces reset the clip rect.
+  bool applies_clip =
+      AppliesClip(layer, data_from_ancestor, ancestor_clips_subtree);
+  bool parent_applies_clip =
+      !parent->data.resets_clip || parent->data.applies_local_clip;
+
+  // When we have an unclipped surface, all ancestor clips no longer apply.
+  // However, if our parent already clears ancestor clips and applies no clip of
+  // its own, there aren't any ancestor clips that need clearing.
+  bool needs_to_clear_ancestor_clips =
+      has_unclipped_surface && parent_applies_clip;
+  bool requires_node = applies_clip || needs_to_clear_ancestor_clips;
+
+  if (!requires_node) {
     data_for_children->clip_tree_parent = parent_id;
-    DCHECK_EQ(layers_are_clipped, data_for_children->clip_tree->Node(parent_id)
-                                      ->data.layers_are_clipped);
+    DCHECK_EQ(layers_are_clipped, parent->data.layers_are_clipped);
   } else {
     LayerType* transform_parent = data_for_children->transform_tree_parent;
     if (layer->position_constraint().is_fixed_position() &&
@@ -151,23 +167,33 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     }
     node.owner_id = layer->id();
 
-    if (ancestor_clips_subtree) {
-      node.data.use_only_parent_clip = !layer_clips_subtree;
-      // If the layer has render surface, the target has changed and so we use
-      // only the local clip for layer clipping.
+    if (ancestor_clips_subtree || layer_clips_subtree) {
+      node.data.applies_local_clip = layer_clips_subtree;
+
+      // Surfaces reset the rect used for layer clipping. At other nodes, layer
+      // clipping state from ancestors must continue to get propagated.
       node.data.layer_clipping_uses_only_local_clip =
-          layer->has_render_surface();
+          layer->has_render_surface() || !ancestor_clips_subtree;
+
+      // A surface with unclipped descendants won't be clipped by ancestor clips
+      // at draw time (since it may need to expand to include its unclipped
+      // descendants), so we don't consider these ancestor clips when computing
+      // visible rects.
+      node.data.layer_visibility_uses_only_local_clip =
+          layer->has_render_surface() && layer->num_unclipped_descendants();
     } else {
-      node.data.use_only_parent_clip = false;
-      node.data.layer_clipping_uses_only_local_clip = true;
+      // Otherwise, we're either unclipped, or exist only in order to apply our
+      // parent's clips in our space.
+      node.data.applies_local_clip = false;
+      node.data.layer_clipping_uses_only_local_clip = false;
+      node.data.layer_visibility_uses_only_local_clip = false;
     }
 
-    // If render surface clips subtree and has unclipped descendants, the
-    // surface isn't clipped and we don't want to use ancestor's clips while
-    // calculating visible rect.
-    node.data.layer_visibility_uses_only_local_clip =
-        layer->has_render_surface() && layer->num_unclipped_descendants() &&
-        layer_clips_subtree;
+    node.data.resets_clip = has_unclipped_surface || !parent_applies_clip;
+
+    // A surface with unclipped descendants cannot be clipped by its ancestor
+    // clip at draw time since the unclipped descendants aren't affected by the
+    // ancestor clip.
     node.data.render_surface_is_clipped = layer->has_render_surface() &&
                                           ancestor_clips_subtree &&
                                           !layer->num_unclipped_descendants();
@@ -441,7 +467,7 @@ bool AddEffectNodeIfNeeded(
     // factor) and clip node created from root layer (include viewports) applies
     // to root render surface's content, but not root render surface itself.
     node.data.transform_id = kRootPropertyTreeNodeId;
-    node.data.clip_id = kUnclippedRootClipTreeNodeId;
+    node.data.clip_id = kRootPropertyTreeNodeId;
   }
   data_for_children->effect_tree_parent =
       data_for_children->effect_tree->Insert(node, parent_id);
@@ -521,7 +547,7 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.transform_tree_parent = nullptr;
   data_for_recursion.transform_fixed_parent = nullptr;
   data_for_recursion.render_target = kRootPropertyTreeNodeId;
-  data_for_recursion.clip_tree_parent = kUnclippedRootClipTreeNodeId;
+  data_for_recursion.clip_tree_parent = kRootPropertyTreeNodeId;
   data_for_recursion.effect_tree_parent = kInvalidPropertyTreeNodeId;
   data_for_recursion.page_scale_layer = page_scale_layer;
   data_for_recursion.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
@@ -540,10 +566,12 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.sequence_number = property_trees->sequence_number;
 
   ClipNode root_clip;
+  root_clip.data.resets_clip = true;
+  root_clip.data.applies_local_clip = true;
   root_clip.data.clip = gfx::RectF(viewport);
   root_clip.data.transform_id = kRootPropertyTreeNodeId;
-  data_for_recursion.clip_tree_parent = data_for_recursion.clip_tree->Insert(
-      root_clip, kUnclippedRootClipTreeNodeId);
+  data_for_recursion.clip_tree_parent =
+      data_for_recursion.clip_tree->Insert(root_clip, kRootPropertyTreeNodeId);
   BuildPropertyTreesInternal(root_layer, data_for_recursion);
   property_trees->needs_rebuild = false;
 
