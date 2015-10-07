@@ -85,6 +85,14 @@ void PageDebuggerAgent::enable(ErrorString* errorString)
         return;
     }
     InspectorDebuggerAgent::enable(errorString);
+    m_instrumentingAgents->setPageDebuggerAgent(this);
+}
+
+void PageDebuggerAgent::disable(ErrorString* errorString)
+{
+    m_instrumentingAgents->setPageDebuggerAgent(nullptr);
+    m_compiledScriptURLs.clear();
+    InspectorDebuggerAgent::disable(errorString);
 }
 
 void PageDebuggerAgent::restore()
@@ -93,19 +101,6 @@ void PageDebuggerAgent::restore()
         InspectorDebuggerAgent::restore();
 }
 
-void PageDebuggerAgent::debuggerAgentEnabled()
-{
-    ASSERT(canExecuteScripts());
-    m_instrumentingAgents->setPageDebuggerAgent(this);
-    InspectorDebuggerAgent::debuggerAgentEnabled();
-}
-
-void PageDebuggerAgent::debuggerAgentDisabled()
-{
-    m_instrumentingAgents->setPageDebuggerAgent(nullptr);
-    m_compiledScriptURLs.clear();
-    InspectorDebuggerAgent::debuggerAgentDisabled();
-}
 
 void PageDebuggerAgent::muteConsole()
 {

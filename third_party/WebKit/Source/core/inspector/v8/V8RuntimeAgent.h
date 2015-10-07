@@ -26,13 +26,7 @@ public:
     class CORE_EXPORT Client {
     public:
         virtual ~Client() { }
-        virtual void didEnableRuntimeAgent() = 0;
-        virtual void didDisableRuntimeAgent() = 0;
-
         virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) = 0;
-
-        virtual void muteConsole() = 0;
-        virtual void unmuteConsole() = 0;
     };
 
     static PassOwnPtr<V8RuntimeAgent> create(InjectedScriptManager*, V8Debugger*, Client*);

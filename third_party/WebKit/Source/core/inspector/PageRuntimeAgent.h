@@ -50,8 +50,8 @@ public:
     ~PageRuntimeAgent() override;
     DECLARE_VIRTUAL_TRACE();
     void init() override;
-    void didEnableRuntimeAgent() override;
-    void didDisableRuntimeAgent() override;
+    void enable(ErrorString*) override;
+    void disable(ErrorString*) override;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
     void didCreateScriptContext(LocalFrame*, ScriptState*, SecurityOrigin*, int worldId);

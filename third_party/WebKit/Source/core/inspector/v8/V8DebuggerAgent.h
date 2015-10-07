@@ -27,10 +27,6 @@ public:
     class CORE_EXPORT Client {
     public:
         virtual ~Client() { }
-        virtual void debuggerAgentEnabled() = 0;
-        virtual void debuggerAgentDisabled() = 0;
-        virtual void muteConsole() = 0;
-        virtual void unmuteConsole() = 0;
         virtual InjectedScript defaultInjectedScript() = 0;
 
         virtual void asyncCallTrackingStateChanged(bool tracking) = 0;

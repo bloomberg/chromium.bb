@@ -44,14 +44,14 @@ class InjectedScript;
 class InjectedScriptManager;
 class JSONArray;
 class ScriptState;
-class V8Debugger;
+class V8DebuggerImpl;
 
 typedef String ErrorString;
 
 class CORE_EXPORT V8RuntimeAgentImpl : public V8RuntimeAgent, public InspectorBackendDispatcher::RuntimeCommandHandler {
     WTF_MAKE_NONCOPYABLE(V8RuntimeAgentImpl);
 public:
-    V8RuntimeAgentImpl(InjectedScriptManager*, V8Debugger*, Client*);
+    V8RuntimeAgentImpl(InjectedScriptManager*, V8DebuggerImpl*, Client*);
     ~V8RuntimeAgentImpl() override;
 
     // State management methods.
@@ -94,13 +94,10 @@ private:
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
     void addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
 
-    class InjectedScriptCallScope;
-
-    bool m_enabled;
     InspectorState* m_state;
     InspectorFrontend::Runtime* m_frontend;
     RawPtrWillBeWeakPersistent<InjectedScriptManager> m_injectedScriptManager;
-    V8Debugger* m_debugger;
+    V8DebuggerImpl* m_debugger;
     Client* m_client;
 };
 

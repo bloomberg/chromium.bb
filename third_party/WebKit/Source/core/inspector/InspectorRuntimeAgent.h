@@ -73,8 +73,8 @@ public:
     void restore() override;
 
     // Part of the protocol.
-    void enable(ErrorString*) final;
-    void disable(ErrorString*) final;
+    void enable(ErrorString*) override;
+    void disable(ErrorString*) override;
 
     void evaluate(ErrorString*,
         const String& expression,
@@ -103,17 +103,14 @@ public:
     void isRunRequired(ErrorString*, bool* out_result) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) final;
 
+    virtual void muteConsole() = 0;
+    virtual void unmuteConsole() = 0;
+
 protected:
     InspectorRuntimeAgent(InjectedScriptManager*, V8Debugger*, Client*);
 
     // V8RuntimeAgent::Client implementation.
-    void didEnableRuntimeAgent() override;
-    void didDisableRuntimeAgent() override;
-
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) = 0;
-
-    virtual void muteConsole() = 0;
-    virtual void unmuteConsole() = 0;
 
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
     void addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId);
@@ -121,11 +118,9 @@ protected:
     bool m_enabled;
 
 private:
-    class InjectedScriptCallScope;
 
     OwnPtr<V8RuntimeAgent> m_v8RuntimeAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
-    V8Debugger* m_debugger;
     Client* m_client;
 };
 

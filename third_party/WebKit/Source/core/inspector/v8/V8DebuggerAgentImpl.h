@@ -196,6 +196,7 @@ private:
     V8DebuggerImpl* m_debugger;
     V8DebuggerAgent::Client* m_client;
     int m_contextGroupId;
+    bool m_enabled;
     InspectorState* m_state;
     InspectorFrontend::Debugger* m_frontend;
     v8::Isolate* m_isolate;

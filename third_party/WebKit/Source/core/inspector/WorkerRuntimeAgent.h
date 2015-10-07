@@ -47,8 +47,7 @@ public:
     ~WorkerRuntimeAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
-    // V8RuntimeAgent::Client implementation.
-    void didEnableRuntimeAgent() override;
+    void enable(ErrorString*) final;
 
 private:
     WorkerRuntimeAgent(InjectedScriptManager*, V8Debugger*, WorkerGlobalScope*, InspectorRuntimeAgent::Client*);

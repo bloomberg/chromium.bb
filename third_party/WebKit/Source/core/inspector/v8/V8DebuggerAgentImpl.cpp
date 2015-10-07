@@ -23,11 +23,13 @@
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/inspector/v8/IgnoreExceptionsScope.h"
 #include "core/inspector/v8/JavaScriptCallFrame.h"
 #include "core/inspector/v8/V8AsyncCallTracker.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
 #include "platform/JSONValues.h"
+#include "wtf/Optional.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
@@ -48,7 +50,6 @@ using blink::TypeBuilder::Runtime::RemoteObject;
 namespace blink {
 
 namespace DebuggerAgentState {
-static const char debuggerEnabled[] = "debuggerEnabled";
 static const char javaScriptBreakpoints[] = "javaScriptBreakopints";
 static const char pauseOnExceptionsState[] = "pauseOnExceptionsState";
 static const char asyncCallStackDepth[] = "asyncCallStackDepth";
@@ -131,6 +132,7 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
     , m_debugger(debugger)
     , m_client(client)
     , m_contextGroupId(contextGroupId)
+    , m_enabled(false)
     , m_state(nullptr)
     , m_frontend(nullptr)
     , m_isolate(debugger->isolate())
@@ -179,16 +181,15 @@ void V8DebuggerAgentImpl::enable()
 {
     // debugger().addListener may result in reporting all parsed scripts to
     // the agent so it should already be in enabled state by then.
-    m_state->setBoolean(DebuggerAgentState::debuggerEnabled, true);
+    m_enabled = true;
     debugger().addListener(m_contextGroupId, this);
     // FIXME(WK44513): breakpoints activated flag should be synchronized between all front-ends
     debugger().setBreakpointsActivated(true);
-    m_client->debuggerAgentEnabled();
 }
 
 bool V8DebuggerAgentImpl::enabled()
 {
-    return m_state->getBoolean(DebuggerAgentState::debuggerEnabled);
+    return m_enabled;
 }
 
 void V8DebuggerAgentImpl::enable(ErrorString*)
@@ -215,7 +216,6 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_state->setBoolean(DebuggerAgentState::promiseTrackerCaptureStacks, false);
 
     debugger().removeListener(m_contextGroupId);
-    m_client->debuggerAgentDisabled();
     m_pausedScriptState = nullptr;
     m_currentCallStack.Reset();
     m_scripts.clear();
@@ -235,7 +235,7 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_compiledScripts.Clear();
     clearStepIntoAsync();
     m_skipAllPauses = false;
-    m_state->setBoolean(DebuggerAgentState::debuggerEnabled, false);
+    m_enabled = false;
 }
 
 static PassOwnPtr<ScriptRegexp> compileSkipCallFramePattern(String patternText)
@@ -277,19 +277,18 @@ void V8DebuggerAgentImpl::clearFrontend()
 
 void V8DebuggerAgentImpl::restore()
 {
-    if (enabled()) {
-        m_frontend->globalObjectCleared();
-        enable();
-        long pauseState = m_state->getLong(DebuggerAgentState::pauseOnExceptionsState, V8Debugger::DontPauseOnExceptions);
-        String error;
-        setPauseOnExceptionsImpl(&error, pauseState);
-        m_cachedSkipStackRegExp = compileSkipCallFramePattern(m_state->getString(DebuggerAgentState::skipStackPattern));
-        increaseCachedSkipStackGeneration();
-        m_skipContentScripts = m_state->getBoolean(DebuggerAgentState::skipContentScripts);
-        m_skipAllPauses = m_state->getBoolean(DebuggerAgentState::skipAllPauses);
-        internalSetAsyncCallStackDepth(m_state->getLong(DebuggerAgentState::asyncCallStackDepth));
-        m_promiseTracker->setEnabled(m_state->getBoolean(DebuggerAgentState::promiseTrackerEnabled), m_state->getBoolean(DebuggerAgentState::promiseTrackerCaptureStacks));
-    }
+    ASSERT(!m_enabled);
+    m_frontend->globalObjectCleared();
+    enable();
+    long pauseState = m_state->getLong(DebuggerAgentState::pauseOnExceptionsState, V8Debugger::DontPauseOnExceptions);
+    String error;
+    setPauseOnExceptionsImpl(&error, pauseState);
+    m_cachedSkipStackRegExp = compileSkipCallFramePattern(m_state->getString(DebuggerAgentState::skipStackPattern));
+    increaseCachedSkipStackGeneration();
+    m_skipContentScripts = m_state->getBoolean(DebuggerAgentState::skipContentScripts);
+    m_skipAllPauses = m_state->getBoolean(DebuggerAgentState::skipAllPauses);
+    internalSetAsyncCallStackDepth(m_state->getLong(DebuggerAgentState::asyncCallStackDepth));
+    m_promiseTracker->setEnabled(m_state->getBoolean(DebuggerAgentState::promiseTrackerEnabled), m_state->getBoolean(DebuggerAgentState::promiseTrackerCaptureStacks));
 }
 
 void V8DebuggerAgentImpl::setBreakpointsActive(ErrorString* errorString, bool active)
@@ -909,19 +908,11 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString, const St
         return;
     ASSERT(!callStack.IsEmpty());
 
-    V8Debugger::PauseOnExceptionsState previousPauseOnExceptionsState = debugger().pauseOnExceptionsState();
-    if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
-        if (previousPauseOnExceptionsState != V8Debugger::DontPauseOnExceptions)
-            debugger().setPauseOnExceptionsState(V8Debugger::DontPauseOnExceptions);
-        m_client->muteConsole();
-    }
+    Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
+    if (asBool(doNotPauseOnExceptionsAndMuteConsole))
+        ignoreExceptionsScope.emplace(m_debugger);
 
     injectedScript.evaluateOnCallFrame(errorString, callStack, isAsync, callFrameId, expression, objectGroup ? *objectGroup : "", asBool(includeCommandLineAPI), asBool(returnByValue), asBool(generatePreview), &result, wasThrown, &exceptionDetails);
-    if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
-        m_client->unmuteConsole();
-        if (debugger().pauseOnExceptionsState() != previousPauseOnExceptionsState)
-            debugger().setPauseOnExceptionsState(previousPauseOnExceptionsState);
-    }
 }
 
 InjectedScript V8DebuggerAgentImpl::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
@@ -973,12 +964,9 @@ void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& sc
         return;
     }
 
-    V8Debugger::PauseOnExceptionsState previousPauseOnExceptionsState = debugger().pauseOnExceptionsState();
-    if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
-        if (previousPauseOnExceptionsState != V8Debugger::DontPauseOnExceptions)
-            debugger().setPauseOnExceptionsState(V8Debugger::DontPauseOnExceptions);
-        m_client->muteConsole();
-    }
+    Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
+    if (asBool(doNotPauseOnExceptionsAndMuteConsole))
+        ignoreExceptionsScope.emplace(m_debugger);
 
     if (!m_compiledScripts.Contains(scriptId)) {
         *errorString = "Script execution failed";
@@ -1011,12 +999,6 @@ void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& sc
     }
 
     result = injectedScript.wrapObject(scriptValue, objectGroup ? *objectGroup : "");
-
-    if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
-        m_client->unmuteConsole();
-        if (debugger().pauseOnExceptionsState() != previousPauseOnExceptionsState)
-            debugger().setPauseOnExceptionsState(previousPauseOnExceptionsState);
-    }
 }
 
 void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString, int scopeNumber, const String& variableName, const RefPtr<JSONObject>& newValue, const String* callFrameId, const String* functionObjectId)

@@ -36,65 +36,27 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/RemoteObjectId.h"
+#include "core/inspector/v8/IgnoreExceptionsScope.h"
 #include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/V8DebuggerImpl.h"
 #include "platform/JSONValues.h"
+#include "wtf/Optional.h"
 
 using blink::TypeBuilder::Runtime::ExecutionContextDescription;
 
 namespace blink {
 
 namespace V8RuntimeAgentImplState {
-static const char runtimeEnabled[] = "runtimeEnabled";
 static const char customObjectFormatterEnabled[] = "customObjectFormatterEnabled";
-};
-
-class V8RuntimeAgentImpl::InjectedScriptCallScope {
-    STACK_ALLOCATED();
-public:
-    InjectedScriptCallScope(V8RuntimeAgentImpl* agent, bool doNotPauseOnExceptionsAndMuteConsole)
-        : m_agent(agent)
-        , m_doNotPauseOnExceptionsAndMuteConsole(doNotPauseOnExceptionsAndMuteConsole)
-        , m_previousPauseOnExceptionsState(V8Debugger::DontPauseOnExceptions)
-    {
-        if (!m_doNotPauseOnExceptionsAndMuteConsole)
-            return;
-        m_previousPauseOnExceptionsState = setPauseOnExceptionsState(V8Debugger::DontPauseOnExceptions);
-        m_agent->m_client->muteConsole();
-    }
-    ~InjectedScriptCallScope()
-    {
-        if (!m_doNotPauseOnExceptionsAndMuteConsole)
-            return;
-        m_agent->m_client->unmuteConsole();
-        setPauseOnExceptionsState(m_previousPauseOnExceptionsState);
-    }
-
-private:
-    V8Debugger::PauseOnExceptionsState setPauseOnExceptionsState(V8Debugger::PauseOnExceptionsState newState)
-    {
-        V8Debugger* debugger = m_agent->m_debugger;
-        ASSERT(debugger);
-        if (!debugger->enabled())
-            return newState;
-        V8Debugger::PauseOnExceptionsState presentState = debugger->pauseOnExceptionsState();
-        if (presentState != newState)
-            debugger->setPauseOnExceptionsState(newState);
-        return presentState;
-    }
-
-    V8RuntimeAgentImpl* m_agent;
-    bool m_doNotPauseOnExceptionsAndMuteConsole;
-    V8Debugger::PauseOnExceptionsState m_previousPauseOnExceptionsState;
 };
 
 PassOwnPtr<V8RuntimeAgent> V8RuntimeAgent::create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, Client* client)
 {
-    return adoptPtr(new V8RuntimeAgentImpl(injectedScriptManager, debugger, client));
+    return adoptPtr(new V8RuntimeAgentImpl(injectedScriptManager, static_cast<V8DebuggerImpl*>(debugger), client));
 }
 
-V8RuntimeAgentImpl::V8RuntimeAgentImpl(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, Client* client)
-    : m_enabled(false)
-    , m_state(nullptr)
+V8RuntimeAgentImpl::V8RuntimeAgentImpl(InjectedScriptManager* injectedScriptManager, V8DebuggerImpl* debugger, Client* client)
+    : m_state(nullptr)
     , m_frontend(nullptr)
     , m_injectedScriptManager(injectedScriptManager)
     , m_debugger(debugger)
@@ -112,7 +74,9 @@ void V8RuntimeAgentImpl::evaluate(ErrorString* errorString, const String& expres
     if (injectedScript.isEmpty())
         return;
 
-    InjectedScriptCallScope callScope(this, asBool(doNotPauseOnExceptionsAndMuteConsole));
+    Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
+    if (asBool(doNotPauseOnExceptionsAndMuteConsole))
+        ignoreExceptionsScope.emplace(m_debugger);
     injectedScript.evaluate(errorString, expression, objectGroup ? *objectGroup : "", asBool(includeCommandLineAPI), asBool(returnByValue), asBool(generatePreview), &result, wasThrown, &exceptionDetails);
 }
 
@@ -132,7 +96,9 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString, const String& 
     if (optionalArguments)
         arguments = (*optionalArguments)->toJSONString();
 
-    InjectedScriptCallScope callScope(this, asBool(doNotPauseOnExceptionsAndMuteConsole));
+    Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
+    if (asBool(doNotPauseOnExceptionsAndMuteConsole))
+        ignoreExceptionsScope.emplace(m_debugger);
     injectedScript.callFunctionOn(errorString, objectId, expression, arguments, asBool(returnByValue), asBool(generatePreview), &result, wasThrown);
 }
 
@@ -149,7 +115,7 @@ void V8RuntimeAgentImpl::getProperties(ErrorString* errorString, const String& o
         return;
     }
 
-    InjectedScriptCallScope callScope(this, true);
+    IgnoreExceptionsScope ignoreExceptionsScope(m_debugger);
 
     injectedScript.getProperties(errorString, objectId, asBool(ownProperties), asBool(accessorPropertiesOnly), asBool(generatePreview), &result, &exceptionDetails);
 
@@ -221,33 +187,19 @@ void V8RuntimeAgentImpl::clearFrontend()
 
 void V8RuntimeAgentImpl::restore()
 {
-    if (m_state->getBoolean(V8RuntimeAgentImplState::runtimeEnabled)) {
-        m_frontend->executionContextsCleared();
-        String error;
-        enable(&error);
-        if (m_state->getBoolean(V8RuntimeAgentImplState::customObjectFormatterEnabled))
-            injectedScriptManager()->setCustomObjectFormatterEnabled(true);
-    }
+    m_frontend->executionContextsCleared();
+    String error;
+    enable(&error);
+    if (m_state->getBoolean(V8RuntimeAgentImplState::customObjectFormatterEnabled))
+        injectedScriptManager()->setCustomObjectFormatterEnabled(true);
 }
 
 void V8RuntimeAgentImpl::enable(ErrorString* errorString)
 {
-    if (m_enabled)
-        return;
-
-    m_enabled = true;
-    m_state->setBoolean(V8RuntimeAgentImplState::runtimeEnabled, true);
-    m_client->didEnableRuntimeAgent();
 }
 
 void V8RuntimeAgentImpl::disable(ErrorString* errorString)
 {
-    if (!m_enabled)
-        return;
-
-    m_enabled = false;
-    m_state->setBoolean(V8RuntimeAgentImplState::runtimeEnabled, false);
-    m_client->didDisableRuntimeAgent();
 }
 
 void V8RuntimeAgentImpl::addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId)

@@ -35,20 +35,25 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorState.h"
+#include "core/inspector/MuteConsoleScope.h"
 #include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "platform/JSONValues.h"
+#include "wtf/Optional.h"
 
 using blink::TypeBuilder::Runtime::ExecutionContextDescription;
 
 namespace blink {
+
+namespace InspectorRuntimeAgentState {
+static const char runtimeEnabled[] = "runtimeEnabled";
+};
 
 InspectorRuntimeAgent::InspectorRuntimeAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, Client* client)
     : InspectorBaseAgent<InspectorRuntimeAgent, InspectorFrontend::Runtime>("Runtime")
     , m_enabled(false)
     , m_v8RuntimeAgent(V8RuntimeAgent::create(injectedScriptManager, debugger, this))
     , m_injectedScriptManager(injectedScriptManager)
-    , m_debugger(debugger)
     , m_client(client)
 {
 }
@@ -83,21 +88,32 @@ void InspectorRuntimeAgent::clearFrontend()
 
 void InspectorRuntimeAgent::restore()
 {
+    if (!m_state->getBoolean(InspectorRuntimeAgentState::runtimeEnabled))
+        return;
     m_v8RuntimeAgent->restore();
+    ErrorString errorString;
+    enable(&errorString);
 }
 
 void InspectorRuntimeAgent::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* executionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
 {
+    Optional<MuteConsoleScope<InspectorRuntimeAgent>> muteScope;
+    if (asBool(doNotPauseOnExceptionsAndMuteConsole))
+        muteScope.emplace(this);
     m_v8RuntimeAgent->evaluate(errorString, expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, executionContextId, returnByValue, generatePreview, result, wasThrown, exceptionDetails);
 }
 
 void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString, const String& objectId, const String& expression, const RefPtr<JSONArray>* const optionalArguments, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown)
 {
+    Optional<MuteConsoleScope<InspectorRuntimeAgent>> muteScope;
+    if (asBool(doNotPauseOnExceptionsAndMuteConsole))
+        muteScope.emplace(this);
     m_v8RuntimeAgent->callFunctionOn(errorString, objectId, expression, optionalArguments, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, result, wasThrown);
 }
 
 void InspectorRuntimeAgent::getProperties(ErrorString* errorString, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
 {
+    MuteConsoleScope<InspectorRuntimeAgent> muteScope(this);
     m_v8RuntimeAgent->getProperties(errorString, objectId, ownProperties, accessorPropertiesOnly, generatePreview, result, internalProperties, exceptionDetails);
 }
 
@@ -128,22 +144,22 @@ void InspectorRuntimeAgent::setCustomObjectFormatterEnabled(ErrorString* errorSt
 
 void InspectorRuntimeAgent::enable(ErrorString* errorString)
 {
+    if (m_enabled)
+        return;
+
+    m_enabled = true;
+    m_state->setBoolean(InspectorRuntimeAgentState::runtimeEnabled, true);
     m_v8RuntimeAgent->enable(errorString);
 }
 
 void InspectorRuntimeAgent::disable(ErrorString* errorString)
 {
-    m_v8RuntimeAgent->disable(errorString);
-}
+    if (!m_enabled)
+        return;
 
-void InspectorRuntimeAgent::didEnableRuntimeAgent()
-{
-    m_enabled = true;
-}
-
-void InspectorRuntimeAgent::didDisableRuntimeAgent()
-{
     m_enabled = false;
+    m_state->setBoolean(InspectorRuntimeAgentState::runtimeEnabled, false);
+    m_v8RuntimeAgent->disable(errorString);
 }
 
 void InspectorRuntimeAgent::addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId)

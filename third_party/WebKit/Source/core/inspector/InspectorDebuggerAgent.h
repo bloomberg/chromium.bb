@@ -84,8 +84,6 @@ public:
     void removeAsyncOperationBreakpoint(ErrorString*, int inOperationId) override;
 
     // V8DebuggerAgent::Client implementation.
-    void debuggerAgentEnabled() override;
-    void debuggerAgentDisabled() override;
     void asyncCallTrackingStateChanged(bool tracking) override;
     void resetAsyncOperations() override;
 
@@ -103,6 +101,9 @@ public:
     void restore() override;
 
     V8DebuggerAgent* v8DebuggerAgent() const { return m_v8DebuggerAgent.get(); }
+
+    virtual void muteConsole() = 0;
+    virtual void unmuteConsole() = 0;
 
 protected:
     InspectorDebuggerAgent(InjectedScriptManager*, V8Debugger*, int contextGroupId);
