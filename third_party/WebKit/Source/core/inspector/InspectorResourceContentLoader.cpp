@@ -83,7 +83,7 @@ InspectorResourceContentLoader::InspectorResourceContentLoader(LocalFrame* inspe
 void InspectorResourceContentLoader::start()
 {
     m_started = true;
-    Vector<Document*> documents;
+    WillBeHeapVector<RawPtrWillBeMember<Document>> documents;
     for (Frame* frame = m_inspectedFrame; frame; frame = frame->tree().traverseNext(m_inspectedFrame)) {
         if (!frame->isLocalFrame())
             continue;

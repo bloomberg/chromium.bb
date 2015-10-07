@@ -84,7 +84,7 @@ public:
     static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(LocalFrame* inspectedFrame, Client*, InspectorResourceContentLoader*);
     void setDebuggerAgent(InspectorDebuggerAgent*);
 
-    static Vector<Document*> importsForFrame(LocalFrame*);
+    static WillBeHeapVector<RawPtrWillBeMember<Document>> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
     static bool sharedBufferContent(PassRefPtr<SharedBuffer>, const String& textEncodingName, bool withBase64Encode, String* result);
 

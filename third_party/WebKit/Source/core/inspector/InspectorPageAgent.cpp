@@ -274,7 +274,7 @@ Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
         return nullptr;
     Resource* cachedResource = document->fetcher()->cachedResource(url);
     if (!cachedResource) {
-        Vector<Document*> allImports = InspectorPageAgent::importsForFrame(frame);
+        WillBeHeapVector<RawPtrWillBeMember<Document>> allImports = InspectorPageAgent::importsForFrame(frame);
         for (Document* import : allImports) {
             cachedResource = import->fetcher()->cachedResource(url);
             if (cachedResource)
@@ -435,7 +435,7 @@ void InspectorPageAgent::navigate(ErrorString*, const String& url, String* outFr
     *outFrameId = frameId(inspectedFrame());
 }
 
-static void cachedResourcesForDocument(Document* document, Vector<Resource*>& result, bool skipXHRs)
+static void cachedResourcesForDocument(Document* document, WillBeHeapVector<RawPtrWillBeMember<Resource>>& result, bool skipXHRs)
 {
     const ResourceFetcher::DocumentResourceMap& allResources = document->fetcher()->allResources();
     for (const auto& resource : allResources) {
@@ -466,9 +466,9 @@ static void cachedResourcesForDocument(Document* document, Vector<Resource*>& re
 }
 
 // static
-Vector<Document*> InspectorPageAgent::importsForFrame(LocalFrame* frame)
+WillBeHeapVector<RawPtrWillBeMember<Document>> InspectorPageAgent::importsForFrame(LocalFrame* frame)
 {
-    Vector<Document*> result;
+    WillBeHeapVector<RawPtrWillBeMember<Document>> result;
     Document* rootDocument = frame->document();
 
     if (HTMLImportsController* controller = rootDocument->importsController()) {
@@ -481,11 +481,11 @@ Vector<Document*> InspectorPageAgent::importsForFrame(LocalFrame* frame)
     return result;
 }
 
-static Vector<Resource*> cachedResourcesForFrame(LocalFrame* frame, bool skipXHRs)
+static WillBeHeapVector<RawPtrWillBeMember<Resource>> cachedResourcesForFrame(LocalFrame* frame, bool skipXHRs)
 {
-    Vector<Resource*> result;
+    WillBeHeapVector<RawPtrWillBeMember<Resource>> result;
     Document* rootDocument = frame->document();
-    Vector<Document*> loaders = InspectorPageAgent::importsForFrame(frame);
+    WillBeHeapVector<RawPtrWillBeMember<Document>> loaders = InspectorPageAgent::importsForFrame(frame);
 
     cachedResourcesForDocument(rootDocument, result, skipXHRs);
     for (size_t i = 0; i < loaders.size(); ++i)
@@ -750,7 +750,7 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
         .setFrame(frameObject)
         .setResources(subresources);
 
-    Vector<Resource*> allResources = cachedResourcesForFrame(frame, true);
+    WillBeHeapVector<RawPtrWillBeMember<Resource>> allResources = cachedResourcesForFrame(frame, true);
     for (Resource* cachedResource : allResources) {
         RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()
             .setUrl(urlWithoutFragment(cachedResource->url()).string())
@@ -763,7 +763,7 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
         subresources->addItem(resourceObject);
     }
 
-    Vector<Document*> allImports = InspectorPageAgent::importsForFrame(frame);
+    WillBeHeapVector<RawPtrWillBeMember<Document>> allImports = InspectorPageAgent::importsForFrame(frame);
     for (Document* import : allImports) {
         RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()
             .setUrl(urlWithoutFragment(import->url()).string())
