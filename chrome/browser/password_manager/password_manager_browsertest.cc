@@ -35,6 +35,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
+#include "components/password_manager/core/browser/login_model.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/version_info/version_info.h"
@@ -61,7 +62,18 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 
+using testing::_;
+
 namespace {
+
+class MockLoginModelObserver : public password_manager::LoginModelObserver {
+ public:
+  MOCK_METHOD2(OnAutofillDataAvailableInternal,
+               void(const base::string16&, const base::string16&));
+
+ private:
+  void OnLoginModelDestroying() override {}
+};
 
 GURL GetFileURL(const char* filename) {
   base::FilePath path;
@@ -2483,6 +2495,62 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       RenderViewHost(), get_retype_password, &retyped_password));
   EXPECT_EQ("", retyped_password);
+}
+
+// When there are multiple LoginModelObservers (e.g., multiple HTTP auth dialogs
+// as in http://crbug.com/537823), ensure that credentials from PasswordStore
+// distributed to them are filtered by the realm.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       BasicAuthSeparateRealms) {
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&HandleTestAuthRequest));
+
+  // Save credentials for "test realm" in the store.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm creds;
+  creds.scheme = autofill::PasswordForm::SCHEME_BASIC;
+  creds.signon_realm = embedded_test_server()->base_url().spec() + "test realm";
+  creds.password_value = base::ASCIIToUTF16("pw");
+  creds.username_value = base::ASCIIToUTF16("temp");
+  password_store->AddLogin(creds);
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  ASSERT_FALSE(password_store->IsEmpty());
+
+  // In addition to the LoginModelObserver created automatically for the HTTP
+  // auth dialog, also create a mock observer, for a different realm.
+  MockLoginModelObserver mock_login_model_observer;
+  PasswordManager* password_manager =
+      ChromePasswordManagerClient::FromWebContents(WebContents())
+          ->GetPasswordManager();
+  autofill::PasswordForm other_form(creds);
+  other_form.signon_realm = "https://example.com/other realm";
+  password_manager->AddObserverAndDeliverCredentials(&mock_login_model_observer,
+                                                     other_form);
+  // The mock observer should not receive the stored credentials.
+  EXPECT_CALL(mock_login_model_observer, OnAutofillDataAvailableInternal(_, _))
+      .Times(0);
+
+  // Now wait until the navigation to the test server causes a HTTP auth dialog
+  // to appear.
+  content::NavigationController* nav_controller =
+      &WebContents()->GetController();
+  WindowedAuthNeededObserver auth_needed_observer(nav_controller);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), embedded_test_server()->GetURL("/basic_auth"), CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  auth_needed_observer.Wait();
+
+  // The auth dialog caused a query to PasswordStore, make sure it was
+  // processed.
+  base::RunLoop run_loop2;
+  run_loop2.RunUntilIdle();
+
+  password_manager->RemoveObserver(&mock_login_model_observer);
 }
 
 }  // namespace password_manager

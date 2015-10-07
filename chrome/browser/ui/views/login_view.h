@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_LOGIN_VIEW_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/login/login_prompt.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/login_model.h"
 #include "ui/views/view.h"
 
@@ -19,10 +21,11 @@ class Textfield;
 class LoginView : public views::View,
                   public password_manager::LoginModelObserver {
  public:
-  // |model| is observed for the entire lifetime of the LoginView.
-  // Therefore |model| should not be destroyed before the LoginView object.
+  // |login_model_data->model| is observed for the entire lifetime of the
+  // LoginView. Therefore |login_model_data->model| should not be destroyed
+  // before the LoginView object. |login_model_data| may be null.
   LoginView(const base::string16& explanation,
-            password_manager::LoginModel* model);
+            LoginHandler::LoginModelData* login_model_data);
   ~LoginView() override;
 
   // Access the data in the username/password text fields.
@@ -30,8 +33,8 @@ class LoginView : public views::View,
   const base::string16& GetPassword() const;
 
   // password_manager::LoginModelObserver:
-  void OnAutofillDataAvailable(const base::string16& username,
-                               const base::string16& password) override;
+  void OnAutofillDataAvailableInternal(const base::string16& username,
+                                       const base::string16& password) override;
   void OnLoginModelDestroying() override;
 
   // Used by LoginHandlerWin to set the initial focus.

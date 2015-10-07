@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_manager.h"
 
+#include <map>
+
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -395,8 +397,16 @@ void PasswordManager::AddSubmissionCallback(
   submission_callbacks_.push_back(callback);
 }
 
-void PasswordManager::AddObserver(LoginModelObserver* observer) {
+void PasswordManager::AddObserverAndDeliverCredentials(
+    LoginModelObserver* observer,
+    const PasswordForm& observed_form) {
   observers_.AddObserver(observer);
+
+  observer->set_signon_realm(observed_form.signon_realm);
+
+  std::vector<PasswordForm> observed_forms;
+  observed_forms.push_back(observed_form);
+  OnPasswordFormsParsed(nullptr, observed_forms);
 }
 
 void PasswordManager::RemoveObserver(LoginModelObserver* observer) {
@@ -470,7 +480,8 @@ void PasswordManager::CreatePendingLoginManagers(
         continue;
       }
       old_manager_found = true;
-      old_manager->ProcessFrame(driver->AsWeakPtr());
+      if (driver)
+        old_manager->ProcessFrame(driver->AsWeakPtr());
       break;
     }
     if (old_manager_found)
@@ -492,7 +503,9 @@ void PasswordManager::CreatePendingLoginManagers(
       logger->LogFormSignatures(Logger::STRING_ADDING_SIGNATURE, *iter);
     bool ssl_valid = iter->origin.SchemeIsCryptographic();
     PasswordFormManager* manager = new PasswordFormManager(
-        this, client_, driver->AsWeakPtr(), *iter, ssl_valid);
+        this, client_,
+        (driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>()),
+        *iter, ssl_valid);
     pending_login_managers_.push_back(manager);
 
     PasswordStore::AuthorizationPromptPolicy prompt_policy =
@@ -703,44 +716,45 @@ void PasswordManager::Autofill(password_manager::PasswordManagerDriver* driver,
                                const PasswordFormMap& best_matches,
                                const PasswordForm& preferred_match,
                                bool wait_for_username) const {
+  DCHECK_EQ(PasswordForm::SCHEME_HTML, preferred_match.scheme);
+
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
   if (client_->IsLoggingActive()) {
     logger.reset(new BrowserSavePasswordProgressLogger(client_));
     logger->LogMessage(Logger::STRING_PASSWORDMANAGER_AUTOFILL);
   }
-  switch (form_for_autofill.scheme) {
-    case PasswordForm::SCHEME_HTML: {
-      // Note the check above is required because the observers_ for a non-HTML
-      // schemed password form may have been freed, so we need to distinguish.
-      autofill::PasswordFormFillData fill_data;
-      InitPasswordFormFillData(form_for_autofill,
-                               best_matches,
-                               &preferred_match,
-                               wait_for_username,
-                               OtherPossibleUsernamesEnabled(),
-                               &fill_data);
-      if (logger)
-        logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
-      UMA_HISTOGRAM_BOOLEAN(
-          "PasswordManager.FillSuggestionsIncludeAndroidAppCredentials",
-          ContainsAndroidCredentials(fill_data));
-      metrics_util::LogFilledCredentialIsFromAndroidApp(
-          PreferredRealmIsFromAndroid(fill_data));
-      driver->FillPasswordForm(fill_data);
-      break;
-    }
-    default:
-      if (logger) {
-        logger->LogBoolean(Logger::STRING_LOGINMODELOBSERVER_PRESENT,
-                           observers_.might_have_observers());
-      }
-      FOR_EACH_OBSERVER(
-          LoginModelObserver,
-          observers_,
-          OnAutofillDataAvailable(preferred_match.username_value,
-                                  preferred_match.password_value));
-      break;
+
+  autofill::PasswordFormFillData fill_data;
+  InitPasswordFormFillData(form_for_autofill, best_matches, &preferred_match,
+                           wait_for_username, OtherPossibleUsernamesEnabled(),
+                           &fill_data);
+  if (logger)
+    logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
+  UMA_HISTOGRAM_BOOLEAN(
+      "PasswordManager.FillSuggestionsIncludeAndroidAppCredentials",
+      ContainsAndroidCredentials(fill_data));
+  metrics_util::LogFilledCredentialIsFromAndroidApp(
+      PreferredRealmIsFromAndroid(fill_data));
+  driver->FillPasswordForm(fill_data);
+
+  client_->PasswordWasAutofilled(best_matches);
+}
+
+void PasswordManager::AutofillHttpAuth(
+    const PasswordFormMap& best_matches,
+    const PasswordForm& preferred_match) const {
+  DCHECK_NE(PasswordForm::SCHEME_HTML, preferred_match.scheme);
+
+  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (client_->IsLoggingActive()) {
+    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+    logger->LogMessage(Logger::STRING_PASSWORDMANAGER_AUTOFILLHTTPAUTH);
+    logger->LogBoolean(Logger::STRING_LOGINMODELOBSERVER_PRESENT,
+                       observers_.might_have_observers());
   }
+
+  FOR_EACH_OBSERVER(LoginModelObserver, observers_,
+                    OnAutofillDataAvailable(preferred_match));
 
   client_->PasswordWasAutofilled(best_matches);
 }

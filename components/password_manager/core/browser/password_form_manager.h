@@ -287,6 +287,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // (fill data, whether to allow password generation, etc.).
   void ProcessFrameInternal(const base::WeakPtr<PasswordManagerDriver>& driver);
 
+  // Trigger filling of HTTP auth dialog and update |manager_action_|.
+  void ProcessLoginPrompt();
+
   // Determines if we need to autofill given the results of the query.
   // Takes ownership of the elements in |result|.
   void OnRequestDone(ScopedVector<autofill::PasswordForm> result);

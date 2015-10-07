@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
-#include "chrome/browser/ui/login/login_prompt.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/auth.h"
@@ -28,8 +27,9 @@ class LoginHandlerAndroid : public LoginHandler {
 
   // LoginHandler methods:
 
-  void OnAutofillDataAvailable(const base::string16& username,
-                               const base::string16& password) override {
+  void OnAutofillDataAvailableInternal(
+      const base::string16& username,
+      const base::string16& password) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(chrome_http_auth_handler_.get() != NULL);
     chrome_http_auth_handler_->OnAutofillDataAvailable(
@@ -37,8 +37,8 @@ class LoginHandlerAndroid : public LoginHandler {
   }
   void OnLoginModelDestroying() override {}
 
-  void BuildViewForPasswordManager(password_manager::PasswordManager* manager,
-                                   const base::string16& explanation) override {
+  void BuildView(const base::string16& explanation,
+                 LoginModelData* login_model_data) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // Get pointer to TabAndroid
@@ -55,8 +55,11 @@ class LoginHandlerAndroid : public LoginHandler {
       chrome_http_auth_handler_->ShowDialog(
           window_helper->GetWindowAndroid()->GetJavaObject().obj());
 
-      // Register to receive a callback to OnAutofillDataAvailable().
-      SetModel(manager);
+      if (login_model_data)
+        SetModel(*login_model_data);
+      else
+        ResetModel();
+
       NotifyAuthNeeded();
     } else {
       CancelAuth();

@@ -21,7 +21,7 @@ using views::GridLayout;
 // LoginView, public:
 
 LoginView::LoginView(const base::string16& explanation,
-                     LoginModel* model)
+                     LoginHandler::LoginModelData* login_model_data)
     : username_field_(new views::Textfield()),
       password_field_(new views::Textfield()),
       username_label_(new views::Label(
@@ -29,7 +29,7 @@ LoginView::LoginView(const base::string16& explanation,
       password_label_(new views::Label(
           l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_PASSWORD_FIELD))),
       message_label_(new views::Label(explanation)),
-      login_model_(model) {
+      login_model_(login_model_data ? login_model_data->model : nullptr) {
   password_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -75,8 +75,10 @@ LoginView::LoginView(const base::string16& explanation,
 
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
-  if (login_model_)
-    login_model_->AddObserver(this);
+  if (login_model_data) {
+    login_model_->AddObserverAndDeliverCredentials(this,
+                                                   login_model_data->form);
+  }
 }
 
 LoginView::~LoginView() {
@@ -99,8 +101,9 @@ views::View* LoginView::GetInitiallyFocusedView() {
 ///////////////////////////////////////////////////////////////////////////////
 // LoginView, views::View, password_manager::LoginModelObserver overrides:
 
-void LoginView::OnAutofillDataAvailable(const base::string16& username,
-                                        const base::string16& password) {
+void LoginView::OnAutofillDataAvailableInternal(
+    const base::string16& username,
+    const base::string16& password) {
   if (username_field_->text().empty()) {
     username_field_->SetText(username);
     password_field_->SetText(password);

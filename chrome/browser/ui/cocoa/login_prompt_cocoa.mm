@@ -41,8 +41,9 @@ class LoginHandlerMac : public LoginHandler,
   }
 
   // LoginModelObserver implementation.
-  void OnAutofillDataAvailable(const base::string16& username,
-                               const base::string16& password) override {
+  void OnAutofillDataAvailableInternal(
+      const base::string16& username,
+      const base::string16& password) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     [sheet_controller_ autofillLogin:base::SysUTF16ToNSString(username)
@@ -51,14 +52,17 @@ class LoginHandlerMac : public LoginHandler,
   void OnLoginModelDestroying() override {}
 
   // LoginHandler:
-  void BuildViewForPasswordManager(password_manager::PasswordManager* manager,
-                                   const base::string16& explanation) override {
+  void BuildView(const base::string16& explanation,
+                 LoginModelData* login_model_data) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     sheet_controller_.reset(
         [[LoginHandlerSheet alloc] initWithLoginHandler:this]);
 
-    SetModel(manager);
+    if (login_model_data)
+      SetModel(*login_model_data);
+    else
+      ResetModel();
 
     [sheet_controller_ setExplanation:base::SysUTF16ToNSString(explanation)];
 
@@ -88,7 +92,7 @@ class LoginHandlerMac : public LoginHandler,
   // Overridden from ConstrainedWindowMacDelegate:
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    SetModel(NULL);
+    ResetModel();
     ReleaseSoon();
 
     constrained_window_.reset();

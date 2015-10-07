@@ -299,6 +299,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Show password prompt";
     case SavePasswordProgressLogger::STRING_PASSWORDMANAGER_AUTOFILL:
       return "PasswordManager::Autofill";
+    case SavePasswordProgressLogger::STRING_PASSWORDMANAGER_AUTOFILLHTTPAUTH:
+      return "PasswordManager::AutofillHttpAuth";
     case SavePasswordProgressLogger::STRING_WAIT_FOR_USERNAME:
       return "wait_for_username";
     case SavePasswordProgressLogger::STRING_LOGINMODELOBSERVER_PRESENT:

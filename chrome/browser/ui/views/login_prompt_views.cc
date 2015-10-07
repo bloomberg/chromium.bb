@@ -34,8 +34,9 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
   }
 
   // LoginModelObserver:
-  void OnAutofillDataAvailable(const base::string16& username,
-                               const base::string16& password) override {
+  void OnAutofillDataAvailableInternal(
+      const base::string16& username,
+      const base::string16& password) override {
     // Nothing to do here since LoginView takes care of autofill for win.
   }
   void OnLoginModelDestroying() override {}
@@ -67,7 +68,7 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
 
     // The widget is going to delete itself; clear our pointer.
     dialog_ = NULL;
-    SetModel(NULL);
+    ResetModel();
 
     ReleaseSoon();
   }
@@ -97,8 +98,8 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
   }
 
   // LoginHandler:
-  void BuildViewForPasswordManager(password_manager::PasswordManager* manager,
-                                   const base::string16& explanation) override {
+  void BuildView(const base::string16& explanation,
+                 LoginModelData* login_model_data) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     // Create a new LoginView and set the model for it.  The model (password
@@ -106,7 +107,7 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
     // browser window, so the view may be destroyed after the password
     // manager. The view listens for model destruction and unobserves
     // accordingly.
-    login_view_ = new LoginView(explanation, manager);
+    login_view_ = new LoginView(explanation, login_model_data);
 
     // Scary thread safety note: This can potentially be called *after* SetAuth
     // or CancelAuth (say, if the request was cancelled before the UI thread got

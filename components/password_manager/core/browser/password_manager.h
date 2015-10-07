@@ -67,8 +67,15 @@ class PasswordManager : public LoginModel {
                 const autofill::PasswordForm& preferred_match,
                 bool wait_for_username) const;
 
+  // Called by a PasswordFormManager when it decides a HTTP auth dialog can be
+  // autofilled.
+  void AutofillHttpAuth(const autofill::PasswordFormMap& best_matches,
+                        const autofill::PasswordForm& preferred_match) const;
+
   // LoginModel implementation.
-  void AddObserver(LoginModelObserver* observer) override;
+  void AddObserverAndDeliverCredentials(
+      LoginModelObserver* observer,
+      const autofill::PasswordForm& observed_form) override;
   void RemoveObserver(LoginModelObserver* observer) override;
 
   void GenerationAvailableForForm(const autofill::PasswordForm& form);

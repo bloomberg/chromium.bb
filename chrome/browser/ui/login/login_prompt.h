@@ -38,6 +38,21 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
                      public password_manager::LoginModelObserver,
                      public content::NotificationObserver {
  public:
+  // The purpose of this struct is to enforce that BuildView receives either
+  // both the login model and the observed form, or none. That is a bit spoiled
+  // by the fact that the model is a pointer to LoginModel, as opposed to a
+  // reference. Having it as a reference would go against the style guide, which
+  // forbids non-const references in arguments, presumably also inside passed
+  // structs, because the guide's rationale still applies. Therefore at least
+  // the constructor DCHECKs that |login_model| is not null.
+  struct LoginModelData {
+    LoginModelData(password_manager::LoginModel* login_model,
+                   const autofill::PasswordForm& observed_form);
+
+    password_manager::LoginModel* const model;
+    const autofill::PasswordForm& form;
+  };
+
   LoginHandler(net::AuthChallengeInfo* auth_info, net::URLRequest* request);
 
   // Builds the platform specific LoginHandler. Used from within
@@ -48,10 +63,11 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // ResourceDispatcherHostLoginDelegate implementation:
   void OnRequestCancelled() override;
 
-  // Initializes the underlying platform specific view.
-  virtual void BuildViewForPasswordManager(
-      password_manager::PasswordManager* manager,
-      const base::string16& explanation) = 0;
+  // Implement this to initialize the underlying platform specific view. If
+  // |login_model_data| is not null, the contained LoginModel and PasswordForm
+  // can be used to register the view.
+  virtual void BuildView(const base::string16& explanation,
+                         LoginModelData* login_model_data) = 0;
 
   // Sets information about the authentication type (|form|) and the
   // |password_manager| for this profile.
@@ -61,9 +77,8 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // Returns the WebContents that needs authentication.
   content::WebContents* GetWebContentsForLogin() const;
 
-  // Returns the PasswordManager for the render frame that needs login.
-  password_manager::ContentPasswordManagerDriver*
-  GetPasswordManagerDriverForLogin();
+  // Returns the PasswordManager for the web contents that needs login.
+  password_manager::PasswordManager* GetPasswordManagerForLogin();
 
   // Resend the request with authentication credentials.
   // This function can be called from either thread.
@@ -90,7 +105,12 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
  protected:
   ~LoginHandler() override;
 
-  void SetModel(password_manager::LoginModel* model);
+  // Sets |model_data.model| as |login_model_| and registers |this| as an
+  // observer for |model_data.form|-related events.
+  void SetModel(LoginModelData model_data);
+
+  // Clear |login_model_| and remove |this| as an observer.
+  void ResetModel();
 
   // Notify observers that authentication is needed.
   void NotifyAuthNeeded();
