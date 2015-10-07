@@ -241,30 +241,43 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
     PasswordManagerPreferencesInitialValues histogram_initial_value;
     PasswordManagerPreferencesInitialAndFinalValues histogram_initial_and_final;
   } kTestingTable[] = {
-      {EMPTY, EMPTY, EMPTY, EMPTY, true, N1L1, I11F11},
-      {EMPTY, EMPTY, EMPTY, OFF, false, N1L1, I11F00},
-      {EMPTY, EMPTY, EMPTY, ON, true, N1L1, I11F11},
-      {EMPTY, EMPTY, OFF, EMPTY, false, N1L1, I11F00},
-      {EMPTY, EMPTY, ON, EMPTY, true, N1L1, I11F11},
-      {OFF, OFF, EMPTY, EMPTY, false, N0L0, I00F00},
-      {OFF, OFF, OFF, OFF, false, N0L0, I00F00},
-      {OFF, OFF, OFF, ON, true, N0L0, I00F11},
-      {OFF, OFF, ON, OFF, true, N0L0, I00F11},
-      {OFF, ON, OFF, ON, false, N0L1, I01F00},
-      {OFF, ON, ON, OFF, false, N0L1, I01F00},
-      {OFF, ON, ON, ON, true, N0L1, I01F11},
-      {ON, OFF, EMPTY, EMPTY, false, N1L0, I10F00},
-      {ON, OFF, OFF, ON, false, N1L0, I10F00},
-      {ON, OFF, ON, OFF, false, N1L0, I10F00},
-      {ON, OFF, ON, ON, true, N1L0, I10F11},
-      {ON, ON, EMPTY, OFF, false, N1L1, I11F00},
-      {ON, ON, EMPTY, ON, true, N1L1, I11F11},
-      {ON, ON, OFF, EMPTY, false, N1L1, I11F00},
-      {ON, ON, OFF, OFF, false, N1L1, I11F00},
-      {ON, ON, OFF, ON, false, N1L1, I11F00},
-      {ON, ON, ON, EMPTY, true, N1L1, I11F11},
-      {ON, ON, ON, OFF, false, N1L1, I11F00},
-      {ON, ON, ON, ON, true, N1L1, I11F11},
+#if defined(OS_ANDROID)
+    {ON, OFF, ON, EMPTY, false, N1L0, I10F00},
+    {ON, OFF, OFF, EMPTY, false, N1L0, I10F00},
+    {ON, OFF, EMPTY, EMPTY, false, N1L0, I10F00},
+    {ON, ON, ON, EMPTY, true, N1L1, I11F11},
+    {ON, ON, OFF, EMPTY, false, N1L1, I11F00},
+    {OFF, OFF, ON, EMPTY, true, N0L0, I00F11},
+    {OFF, OFF, OFF, EMPTY, false, N0L0, I00F00},
+    {OFF, ON, ON, EMPTY, true, N0L1, I01F11},
+    {OFF, ON, OFF, EMPTY, false, N0L1, I01F00},
+    {OFF, ON, EMPTY, EMPTY, false, N0L1, I01F00},
+#else
+    {EMPTY, EMPTY, EMPTY, EMPTY, true, N1L1, I11F11},
+    {EMPTY, EMPTY, EMPTY, OFF, false, N1L1, I11F00},
+    {EMPTY, EMPTY, EMPTY, ON, true, N1L1, I11F11},
+    {EMPTY, EMPTY, OFF, EMPTY, false, N1L1, I11F00},
+    {EMPTY, EMPTY, ON, EMPTY, true, N1L1, I11F11},
+    {OFF, OFF, EMPTY, EMPTY, false, N0L0, I00F00},
+    {OFF, OFF, OFF, OFF, false, N0L0, I00F00},
+    {OFF, OFF, OFF, ON, true, N0L0, I00F11},
+    {OFF, OFF, ON, OFF, true, N0L0, I00F11},
+    {OFF, ON, OFF, ON, false, N0L1, I01F00},
+    {OFF, ON, ON, OFF, false, N0L1, I01F00},
+    {OFF, ON, ON, ON, true, N0L1, I01F11},
+    {ON, OFF, EMPTY, EMPTY, false, N1L0, I10F00},
+    {ON, OFF, OFF, ON, false, N1L0, I10F00},
+    {ON, OFF, ON, OFF, false, N1L0, I10F00},
+    {ON, OFF, ON, ON, true, N1L0, I10F11},
+    {ON, ON, EMPTY, OFF, false, N1L1, I11F00},
+    {ON, ON, EMPTY, ON, true, N1L1, I11F11},
+    {ON, ON, OFF, EMPTY, false, N1L1, I11F00},
+    {ON, ON, OFF, OFF, false, N1L1, I11F00},
+    {ON, ON, OFF, ON, false, N1L1, I11F00},
+    {ON, ON, ON, EMPTY, true, N1L1, I11F11},
+    {ON, ON, ON, OFF, false, N1L1, I11F00},
+    {ON, ON, ON, ON, true, N1L1, I11F11},
+#endif
   };
 
   for (const auto& test_case : kTestingTable) {
@@ -286,8 +299,10 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
         PrefServiceSyncableFromProfile(profile());
     StartSyncingPref(prefs, prefs::kCredentialsEnableService,
                      test_case.new_pref_sync_value);
+#if !defined(OS_ANDROID)
     StartSyncingPref(prefs, prefs::kPasswordManagerSavingEnabled,
                      test_case.old_pref_sync_value);
+#endif
     ExpectValuesForBothPrefValues(test_case.result_value,
                                   test_case.result_value);
     EXPECT_THAT(tester.GetAllSamples(kInitialValuesHistogramName),
@@ -310,28 +325,41 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
     bool result_old_pref_value;
     PasswordManagerPreferencesInitialValues histogram_initial_value;
   } kTestingTable[] = {
-      {OFF, OFF, OFF, ON, false, true, N0L0},
-      {OFF, OFF, ON, OFF, true, false, N0L0},
-      {OFF, OFF, ON, ON, true, true, N0L0},
-      {OFF, ON, EMPTY, OFF, false, false, N0L1},
-      {OFF, ON, EMPTY, ON, false, true, N0L1},
-      {OFF, ON, OFF, EMPTY, false, true, N0L1},
-      {OFF, ON, OFF, OFF, false, false, N0L1},
-      {OFF, ON, OFF, ON, false, true, N0L1},
-      {OFF, ON, ON, EMPTY, true, true, N0L1},
-      {OFF, ON, ON, OFF, true, false, N0L1},
-      {OFF, ON, ON, ON, true, true, N0L1},
-      {ON, OFF, OFF, ON, false, true, N1L0},
-      {ON, OFF, ON, OFF, true, false, N1L0},
-      {ON, OFF, ON, ON, true, true, N1L0},
-      {ON, ON, EMPTY, OFF, true, false, N1L1},
-      {ON, ON, EMPTY, ON, true, true, N1L1},
-      {ON, ON, OFF, EMPTY, false, true, N1L1},
-      {ON, ON, OFF, OFF, false, false, N1L1},
-      {ON, ON, OFF, ON, false, true, N1L1},
-      {ON, ON, ON, EMPTY, true, true, N1L1},
-      {ON, ON, ON, OFF, true, false, N1L1},
-      {ON, ON, ON, ON, true, true, N1L1},
+#if defined(OS_ANDROID)
+    {ON, OFF, ON, EMPTY, true, false, N1L0},
+    {ON, OFF, OFF, EMPTY, false, false, N1L0},
+    {ON, OFF, EMPTY, EMPTY, true, false, N1L0},
+    {ON, ON, ON, EMPTY, true, true, N1L1},
+    {ON, ON, OFF, EMPTY, false, true, N1L1},
+    {OFF, OFF, ON, EMPTY, true, false, N0L0},
+    {OFF, OFF, OFF, EMPTY, false, false, N0L0},
+    {OFF, ON, ON, EMPTY, true, true, N0L1},
+    {OFF, ON, OFF, EMPTY, false, true, N0L1},
+    {OFF, ON, EMPTY, EMPTY, false, true, N0L1},
+#else
+    {OFF, OFF, OFF, ON, false, true, N0L0},
+    {OFF, OFF, ON, OFF, true, false, N0L0},
+    {OFF, OFF, ON, ON, true, true, N0L0},
+    {OFF, ON, EMPTY, OFF, false, false, N0L1},
+    {OFF, ON, EMPTY, ON, false, true, N0L1},
+    {OFF, ON, OFF, EMPTY, false, true, N0L1},
+    {OFF, ON, OFF, OFF, false, false, N0L1},
+    {OFF, ON, OFF, ON, false, true, N0L1},
+    {OFF, ON, ON, EMPTY, true, true, N0L1},
+    {OFF, ON, ON, OFF, true, false, N0L1},
+    {OFF, ON, ON, ON, true, true, N0L1},
+    {ON, OFF, OFF, ON, false, true, N1L0},
+    {ON, OFF, ON, OFF, true, false, N1L0},
+    {ON, OFF, ON, ON, true, true, N1L0},
+    {ON, ON, EMPTY, OFF, true, false, N1L1},
+    {ON, ON, EMPTY, ON, true, true, N1L1},
+    {ON, ON, OFF, EMPTY, false, true, N1L1},
+    {ON, ON, OFF, OFF, false, false, N1L1},
+    {ON, ON, OFF, ON, false, true, N1L1},
+    {ON, ON, ON, EMPTY, true, true, N1L1},
+    {ON, ON, ON, OFF, true, false, N1L1},
+    {ON, ON, ON, ON, true, true, N1L1},
+#endif
   };
 
   for (const auto& test_case : kTestingTable) {
@@ -353,8 +381,10 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
         PrefServiceSyncableFromProfile(profile());
     StartSyncingPref(prefs, prefs::kCredentialsEnableService,
                      test_case.new_pref_sync_value);
+#if !defined(OS_ANDROID)
     StartSyncingPref(prefs, prefs::kPasswordManagerSavingEnabled,
                      test_case.old_pref_sync_value);
+#endif
     ExpectValuesForBothPrefValues(test_case.result_new_pref_value,
                                   test_case.result_old_pref_value);
     EXPECT_THAT(tester.GetAllSamples(kInitialValuesHistogramName),

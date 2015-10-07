@@ -60,9 +60,12 @@ class SyncService;
 //  NL*  0_  1_  _0  _1  00  01  10  11
 //
 //  00   00  11  00  11  00  11  11  11
-//  01   x   x   x   x   00  00  00  11
-//  10   x   x   x   x   00  00  00  11
+//  01   00* 11* x   x   00  00  00  11
+//  10   00* 00* x   x   00  00  00  11
 //  11   00  11  00  11  00  00  00  11
+//
+//  *these cases only possible on mobile platforms, where we sync only priority
+//  preference data type.
 //
 // The service observes changes to both preferences (e.g. changes from sync,
 // changes from UI) and propagates the change to the other preference if needed.
@@ -124,6 +127,12 @@ class PasswordManagerSettingMigratorService
   // accordingly.
   void OnPasswordManagerSavingEnabledPrefChanged(
       const std::string& changed_pref_name);
+
+  // Determines if model association step was performed. For desktop platforms,
+  // the condition is that for both priority preferences and regular preferences
+  // types association step was finished. For mobile platforms, the association
+  // only for priority prefs is required.
+  bool WasModelAssociationStepPerformed();
 
   // Turns off one pref if another pref is off.
   void MigrateOffState(PrefService* prefs);

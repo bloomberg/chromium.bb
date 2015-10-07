@@ -39,8 +39,6 @@ void ChangeOnePrefBecauseAnotherPrefHasChanged(
   bool other_pref = GetBooleanUserOrDefaultPrefValue(prefs, other_pref_name);
   if (changed_pref != other_pref)
     prefs->SetBoolean(other_pref_name, changed_pref);
-  // TODO(melandory): add histograms in order to track when we can stop
-  // migration.
 }
 
 // Change value of both kPasswordManagerSavingEnabled and
@@ -221,7 +219,7 @@ void PasswordManagerSettingMigratorService::
 void PasswordManagerSettingMigratorService::OnIsSyncingChanged() {
   syncable_prefs::PrefServiceSyncable* prefs =
       PrefServiceSyncableFromProfile(profile_);
-  if (prefs->IsSyncing() && prefs->IsPrioritySyncing()) {
+  if (WasModelAssociationStepPerformed()) {
     // Initial sync has finished.
     MigrateAfterModelAssociation(prefs);
   }
@@ -232,6 +230,16 @@ void PasswordManagerSettingMigratorService::OnIsSyncingChanged() {
                          &initial_legacy_pref_value_);
     sync_data_.clear();
   }
+}
+
+bool PasswordManagerSettingMigratorService::WasModelAssociationStepPerformed() {
+  syncable_prefs::PrefServiceSyncable* prefs =
+      PrefServiceSyncableFromProfile(profile_);
+#if defined(OS_ANDROID)
+  return prefs->IsPrioritySyncing();
+#else
+  return prefs->IsSyncing() && prefs->IsPrioritySyncing();
+#endif
 }
 
 void PasswordManagerSettingMigratorService::MigrateOffState(
@@ -248,9 +256,22 @@ void PasswordManagerSettingMigratorService::MigrateAfterModelAssociation(
   if (sync_data_.empty()) {
     MigrateOffState(prefs);
   } else if (sync_data_.size() == 1) {
+#if defined(OS_ANDROID)
+    if (initial_new_pref_value_ != initial_legacy_pref_value_) {
+      // Treat special case for mobile clients where only priority pref
+      // arrives on the client.
+      if (!initial_new_pref_value_ && initial_legacy_pref_value_)
+        UpdatePreferencesValues(prefs, true);
+      else
+        UpdatePreferencesValues(prefs, false);
+    } else {
+      UpdatePreferencesValues(prefs, sync_data_[0]);
+    }
+#else
     // Only one value came from sync. This value should be assigned to both
     // preferences.
     UpdatePreferencesValues(prefs, sync_data_[0]);
+#endif
   } else {
     bool sync_new_pref_value = sync_data_[0];
     bool sync_legacy_pref_value = sync_data_.back();
