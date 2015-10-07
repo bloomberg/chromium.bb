@@ -34,15 +34,11 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
     const HostPortPair& endpoint,
     const HostPortPair& proxy_server,
     const BoundNetLog& source_net_log,
-    HttpAuthCache* auth_cache,
-    HttpAuthHandlerFactory* auth_handler_factory)
+    HttpAuthController* auth_controller)
     : next_state_(STATE_DISCONNECTED),
       spdy_stream_(spdy_stream),
       endpoint_(endpoint),
-      auth_(new HttpAuthController(HttpAuth::AUTH_PROXY,
-                                   GURL("https://" + proxy_server.ToString()),
-                                   auth_cache,
-                                   auth_handler_factory)),
+      auth_(auth_controller),
       user_agent_(user_agent),
       user_buffer_len_(0),
       write_buffer_len_(0),

@@ -845,6 +845,8 @@
       'http/http_proxy_client_socket.h',
       'http/http_proxy_client_socket_pool.cc',
       'http/http_proxy_client_socket_pool.h',
+      'http/http_proxy_client_socket_wrapper.cc',
+      'http/http_proxy_client_socket_wrapper.h',
       'http/http_request_info.cc',
       'http/http_request_info.h',
       'http/http_response_body_drainer.cc',

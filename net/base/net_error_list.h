@@ -357,6 +357,12 @@ NET_ERROR(CT_STH_PARSING_FAILED, -168)
 // OK but was missing some of the fields.
 NET_ERROR(CT_STH_INCOMPLETE, -169)
 
+// The attempt to reuse a connection to send proxy auth credentials failed
+// before the AuthController was used to generate credentials. The caller should
+// reuse the controller with a new connection. This error is only used
+// internally by the network stack.
+NET_ERROR(UNABLE_TO_REUSE_CONNECTION_FOR_PROXY_AUTH, -170)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.

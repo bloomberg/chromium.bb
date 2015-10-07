@@ -13,7 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/proxy_delegate.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_proxy_client_socket.h"
+#include "net/http/http_proxy_client_socket_wrapper.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_base.h"
@@ -86,303 +86,64 @@ HttpProxyConnectJob::HttpProxyConnectJob(
     SSLClientSocketPool* ssl_pool,
     Delegate* delegate,
     NetLog* net_log)
-    : ConnectJob(group_name, timeout_duration, priority, delegate,
+    : ConnectJob(group_name,
+                 base::TimeDelta() /* The socket takes care of timeouts */,
+                 priority,
+                 delegate,
                  BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
-      params_(params),
-      transport_pool_(transport_pool),
-      ssl_pool_(ssl_pool),
-      using_spdy_(false),
-      protocol_negotiated_(kProtoUnknown),
-      weak_ptr_factory_(this) {
-    callback_= base::Bind(&HttpProxyConnectJob::OnIOComplete,
-                           weak_ptr_factory_.GetWeakPtr());
-}
+      client_socket_(new HttpProxyClientSocketWrapper(
+          group_name,
+          priority,
+          timeout_duration,
+          base::TimeDelta::FromSeconds(kHttpProxyConnectJobTimeoutInSeconds),
+          transport_pool,
+          ssl_pool,
+          params->transport_params(),
+          params->ssl_params(),
+          params->user_agent(),
+          params->endpoint(),
+          params->http_auth_cache(),
+          params->http_auth_handler_factory(),
+          params->spdy_session_pool(),
+          params->tunnel(),
+          params->proxy_delegate(),
+          this->net_log())) {}
 
 HttpProxyConnectJob::~HttpProxyConnectJob() {}
 
 LoadState HttpProxyConnectJob::GetLoadState() const {
-  switch (next_state_) {
-    case STATE_TCP_CONNECT:
-    case STATE_TCP_CONNECT_COMPLETE:
-    case STATE_SSL_CONNECT:
-    case STATE_SSL_CONNECT_COMPLETE:
-      return transport_socket_handle_->GetLoadState();
-    case STATE_HTTP_PROXY_CONNECT:
-    case STATE_HTTP_PROXY_CONNECT_COMPLETE:
-    case STATE_SPDY_PROXY_CREATE_STREAM:
-    case STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE:
-      return LOAD_STATE_ESTABLISHING_PROXY_TUNNEL;
-    default:
-      NOTREACHED();
-      return LOAD_STATE_IDLE;
-  }
+  return client_socket_->GetConnectLoadState();
 }
 
 void HttpProxyConnectJob::GetAdditionalErrorState(ClientSocketHandle * handle) {
-  if (error_response_info_.cert_request_info.get()) {
-    handle->set_ssl_error_response_info(error_response_info_);
+  if (error_response_info_) {
+    handle->set_ssl_error_response_info(*error_response_info_);
     handle->set_is_ssl_error(true);
   }
 }
 
-void HttpProxyConnectJob::OnIOComplete(int result) {
-  int rv = DoLoop(result);
-  if (rv != ERR_IO_PENDING) {
-    NotifyProxyDelegateOfCompletion(rv);
-    NotifyDelegateOfCompletion(rv);  // Deletes |this|
-  }
+int HttpProxyConnectJob::ConnectInternal() {
+  int result = client_socket_->Connect(base::Bind(
+      &HttpProxyConnectJob::OnConnectComplete, base::Unretained(this)));
+  return HandleConnectResult(result);
 }
 
-int HttpProxyConnectJob::DoLoop(int result) {
-  DCHECK_NE(next_state_, STATE_NONE);
-
-  int rv = result;
-  do {
-    State state = next_state_;
-    next_state_ = STATE_NONE;
-    switch (state) {
-      case STATE_TCP_CONNECT:
-        DCHECK_EQ(OK, rv);
-        rv = DoTransportConnect();
-        break;
-      case STATE_TCP_CONNECT_COMPLETE:
-        rv = DoTransportConnectComplete(rv);
-        break;
-      case STATE_SSL_CONNECT:
-        DCHECK_EQ(OK, rv);
-        rv = DoSSLConnect();
-        break;
-      case STATE_SSL_CONNECT_COMPLETE:
-        rv = DoSSLConnectComplete(rv);
-        break;
-      case STATE_HTTP_PROXY_CONNECT:
-        DCHECK_EQ(OK, rv);
-        rv = DoHttpProxyConnect();
-        break;
-      case STATE_HTTP_PROXY_CONNECT_COMPLETE:
-        rv = DoHttpProxyConnectComplete(rv);
-        break;
-      case STATE_SPDY_PROXY_CREATE_STREAM:
-        DCHECK_EQ(OK, rv);
-        rv = DoSpdyProxyCreateStream();
-        break;
-      case STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE:
-        rv = DoSpdyProxyCreateStreamComplete(rv);
-        break;
-      default:
-        NOTREACHED() << "bad state";
-        rv = ERR_FAILED;
-        break;
-    }
-  } while (rv != ERR_IO_PENDING && next_state_ != STATE_NONE);
-
-  return rv;
+void HttpProxyConnectJob::OnConnectComplete(int result) {
+  DCHECK_NE(ERR_IO_PENDING, result);
+  result = HandleConnectResult(result);
+  NotifyDelegateOfCompletion(result);
+  // |this| will have been deleted at this point.
 }
 
-int HttpProxyConnectJob::DoTransportConnect() {
-  next_state_ = STATE_TCP_CONNECT_COMPLETE;
-  transport_socket_handle_.reset(new ClientSocketHandle());
-  return transport_socket_handle_->Init(group_name(),
-                                        params_->transport_params(),
-                                        priority(),
-                                        callback_,
-                                        transport_pool_,
-                                        net_log());
-}
+int HttpProxyConnectJob::HandleConnectResult(int result) {
+  if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED)
+    error_response_info_ = client_socket_->GetAdditionalErrorState();
 
-int HttpProxyConnectJob::DoTransportConnectComplete(int result) {
-  if (result != OK)
-    return ERR_PROXY_CONNECTION_FAILED;
-
-  // Reset the timer to just the length of time allowed for HttpProxy handshake
-  // so that a fast TCP connection plus a slow HttpProxy failure doesn't take
-  // longer to timeout than it should.
-  ResetTimer(base::TimeDelta::FromSeconds(
-      kHttpProxyConnectJobTimeoutInSeconds));
-
-  next_state_ = STATE_HTTP_PROXY_CONNECT;
-  return result;
-}
-
-int HttpProxyConnectJob::DoSSLConnect() {
-  if (params_->tunnel()) {
-    SpdySessionKey key(params_->destination().host_port_pair(),
-                       ProxyServer::Direct(),
-                       PRIVACY_MODE_DISABLED);
-    if (params_->spdy_session_pool()->FindAvailableSession(key, net_log())) {
-      using_spdy_ = true;
-      next_state_ = STATE_SPDY_PROXY_CREATE_STREAM;
-      return OK;
-    }
-  }
-  next_state_ = STATE_SSL_CONNECT_COMPLETE;
-  transport_socket_handle_.reset(new ClientSocketHandle());
-  return transport_socket_handle_->Init(
-      group_name(), params_->ssl_params(), priority(), callback_,
-      ssl_pool_, net_log());
-}
-
-int HttpProxyConnectJob::DoSSLConnectComplete(int result) {
-  if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
-    error_response_info_ = transport_socket_handle_->ssl_error_response_info();
-    DCHECK(error_response_info_.cert_request_info.get());
-    error_response_info_.cert_request_info->is_proxy = true;
-    return result;
-  }
-  if (IsCertificateError(result)) {
-    if (params_->ssl_params()->load_flags() & LOAD_IGNORE_ALL_CERT_ERRORS) {
-      result = OK;
-    } else {
-      // TODO(rch): allow the user to deal with proxy cert errors in the
-      // same way as server cert errors.
-      transport_socket_handle_->socket()->Disconnect();
-      return ERR_PROXY_CERTIFICATE_INVALID;
-    }
-  }
-  // A SPDY session to the proxy completed prior to resolving the proxy
-  // hostname. Surface this error, and allow the delegate to retry.
-  // See crbug.com/334413.
-  if (result == ERR_SPDY_SESSION_ALREADY_EXISTS) {
-    DCHECK(!transport_socket_handle_->socket());
-    return ERR_SPDY_SESSION_ALREADY_EXISTS;
-  }
-  if (result < 0) {
-    if (transport_socket_handle_->socket())
-      transport_socket_handle_->socket()->Disconnect();
-    return ERR_PROXY_CONNECTION_FAILED;
-  }
-
-  SSLClientSocket* ssl =
-      static_cast<SSLClientSocket*>(transport_socket_handle_->socket());
-  protocol_negotiated_ = ssl->GetNegotiatedProtocol();
-  using_spdy_ = NextProtoIsSPDY(protocol_negotiated_);
-
-  // Reset the timer to just the length of time allowed for HttpProxy handshake
-  // so that a fast SSL connection plus a slow HttpProxy failure doesn't take
-  // longer to timeout than it should.
-  ResetTimer(base::TimeDelta::FromSeconds(
-      kHttpProxyConnectJobTimeoutInSeconds));
-  // TODO(rch): If we ever decide to implement a "trusted" SPDY proxy
-  // (one that we speak SPDY over SSL to, but to which we send HTTPS
-  // request directly instead of through CONNECT tunnels, then we
-  // need to add a predicate to this if statement so we fall through
-  // to the else case. (HttpProxyClientSocket currently acts as
-  // a "trusted" SPDY proxy).
-  if (using_spdy_ && params_->tunnel()) {
-    next_state_ = STATE_SPDY_PROXY_CREATE_STREAM;
-  } else {
-    next_state_ = STATE_HTTP_PROXY_CONNECT;
-  }
-  return result;
-}
-
-int HttpProxyConnectJob::DoHttpProxyConnect() {
-  next_state_ = STATE_HTTP_PROXY_CONNECT_COMPLETE;
-  const HostResolver::RequestInfo& tcp_destination = params_->destination();
-  const HostPortPair& proxy_server = tcp_destination.host_port_pair();
-
-  // Add a HttpProxy connection on top of the tcp socket.
-  transport_socket_.reset(
-      new HttpProxyClientSocket(transport_socket_handle_.release(),
-                                params_->user_agent(),
-                                params_->endpoint(),
-                                proxy_server,
-                                params_->http_auth_cache(),
-                                params_->http_auth_handler_factory(),
-                                params_->tunnel(),
-                                using_spdy_,
-                                protocol_negotiated_,
-                                params_->proxy_delegate(),
-                                params_->ssl_params().get() != NULL));
-  return transport_socket_->Connect(callback_);
-}
-
-int HttpProxyConnectJob::DoHttpProxyConnectComplete(int result) {
   if (result == OK || result == ERR_PROXY_AUTH_REQUESTED ||
       result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE) {
-    SetSocket(transport_socket_.Pass());
+    SetSocket(client_socket_.Pass());
   }
-
-  if (result == ERR_HTTP_1_1_REQUIRED)
-    return ERR_PROXY_HTTP_1_1_REQUIRED;
-
   return result;
-}
-
-int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
-  DCHECK(using_spdy_);
-  DCHECK(params_->tunnel());
-  SpdySessionKey key(params_->destination().host_port_pair(),
-                     ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
-  SpdySessionPool* spdy_pool = params_->spdy_session_pool();
-  base::WeakPtr<SpdySession> spdy_session =
-      spdy_pool->FindAvailableSession(key, net_log());
-  // It's possible that a session to the proxy has recently been created
-  if (spdy_session) {
-    if (transport_socket_handle_.get()) {
-      if (transport_socket_handle_->socket())
-        transport_socket_handle_->socket()->Disconnect();
-      transport_socket_handle_->Reset();
-    }
-  } else {
-    // Create a session direct to the proxy itself
-    spdy_session =
-        spdy_pool->CreateAvailableSessionFromSocket(
-            key, transport_socket_handle_.Pass(),
-            net_log(), OK, /*using_ssl_*/ true);
-    DCHECK(spdy_session);
-  }
-
-  next_state_ = STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE;
-  return spdy_stream_request_.StartRequest(
-      SPDY_BIDIRECTIONAL_STREAM, spdy_session,
-      GURL("https://" + params_->endpoint().ToString()), priority(),
-      spdy_session->net_log(), callback_);
-}
-
-int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
-  if (result < 0)
-    return result;
-
-  next_state_ = STATE_HTTP_PROXY_CONNECT_COMPLETE;
-  base::WeakPtr<SpdyStream> stream = spdy_stream_request_.ReleaseStream();
-  DCHECK(stream.get());
-  // |transport_socket_| will set itself as |stream|'s delegate.
-  transport_socket_.reset(
-      new SpdyProxyClientSocket(stream,
-                                params_->user_agent(),
-                                params_->endpoint(),
-                                params_->destination().host_port_pair(),
-                                net_log(),
-                                params_->http_auth_cache(),
-                                params_->http_auth_handler_factory()));
-  return transport_socket_->Connect(callback_);
-}
-
-void HttpProxyConnectJob::NotifyProxyDelegateOfCompletion(int result) {
-  if (!params_->proxy_delegate())
-    return;
-
-  const HostPortPair& proxy_server = params_->destination().host_port_pair();
-  params_->proxy_delegate()->OnTunnelConnectCompleted(params_->endpoint(),
-                                                      proxy_server,
-                                                      result);
-}
-
-int HttpProxyConnectJob::ConnectInternal() {
-  if (params_->transport_params().get()) {
-    next_state_ = STATE_TCP_CONNECT;
-  } else {
-    next_state_ = STATE_SSL_CONNECT;
-  }
-
-  int rv = DoLoop(OK);
-  if (rv != ERR_IO_PENDING) {
-    NotifyProxyDelegateOfCompletion(rv);
-  }
-
-  return rv;
 }
 
 HttpProxyClientSocketPool::

@@ -32,8 +32,7 @@ HttpProxyClientSocket::HttpProxyClientSocket(
     const std::string& user_agent,
     const HostPortPair& endpoint,
     const HostPortPair& proxy_server,
-    HttpAuthCache* http_auth_cache,
-    HttpAuthHandlerFactory* http_auth_handler_factory,
+    HttpAuthController* http_auth_controller,
     bool tunnel,
     bool using_spdy,
     NextProto protocol_negotiated,
@@ -44,13 +43,7 @@ HttpProxyClientSocket::HttpProxyClientSocket(
       next_state_(STATE_NONE),
       transport_(transport_socket),
       endpoint_(endpoint),
-      auth_(tunnel ?
-          new HttpAuthController(HttpAuth::AUTH_PROXY,
-                                 GURL((is_https_proxy ? "https://" : "http://")
-                                      + proxy_server.ToString()),
-                                 http_auth_cache,
-                                 http_auth_handler_factory)
-          : NULL),
+      auth_(http_auth_controller),
       tunnel_(tunnel),
       using_spdy_(using_spdy),
       protocol_negotiated_(protocol_negotiated),
@@ -273,7 +266,7 @@ int HttpProxyClientSocket::PrepareForAuthRestart() {
       !http_stream_parser_->CanFindEndOfResponse() ||
       !transport_->socket()->IsConnectedAndIdle()) {
     transport_->socket()->Disconnect();
-    return ERR_CONNECTION_CLOSED;
+    return ERR_UNABLE_TO_REUSE_CONNECTION_FOR_PROXY_AUTH;
   }
 
   // If the auth request had a body, need to drain it before reusing the socket.
@@ -527,7 +520,7 @@ int HttpProxyClientSocket::DoDrainBody() {
 
 int HttpProxyClientSocket::DoDrainBodyComplete(int result) {
   if (result < 0)
-    return result;
+    return ERR_UNABLE_TO_REUSE_CONNECTION_FOR_PROXY_AUTH;
 
   if (!http_stream_parser_->IsResponseBodyComplete()) {
     // Keep draining.
@@ -537,5 +530,7 @@ int HttpProxyClientSocket::DoDrainBodyComplete(int result) {
 
   return DidDrainBodyForAuthRestart();
 }
+
+//----------------------------------------------------------------
 
 }  // namespace net

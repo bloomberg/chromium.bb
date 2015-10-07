@@ -26,6 +26,7 @@ namespace net {
 
 class HttpAuthCache;
 class HttpAuthHandlerFactory;
+class HttpProxyClientSocketWrapper;
 class ProxyDelegate;
 class SSLClientSocketPool;
 class SSLSocketParams;
@@ -113,39 +114,6 @@ class HttpProxyConnectJob : public ConnectJob {
   void GetAdditionalErrorState(ClientSocketHandle* handle) override;
 
  private:
-  enum State {
-    STATE_TCP_CONNECT,
-    STATE_TCP_CONNECT_COMPLETE,
-    STATE_SSL_CONNECT,
-    STATE_SSL_CONNECT_COMPLETE,
-    STATE_HTTP_PROXY_CONNECT,
-    STATE_HTTP_PROXY_CONNECT_COMPLETE,
-    STATE_SPDY_PROXY_CREATE_STREAM,
-    STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE,
-    STATE_SPDY_PROXY_CONNECT_COMPLETE,
-    STATE_NONE,
-  };
-
-  void OnIOComplete(int result);
-
-  // Runs the state transition loop.
-  int DoLoop(int result);
-
-  // Connecting to HTTP Proxy
-  int DoTransportConnect();
-  int DoTransportConnectComplete(int result);
-  // Connecting to HTTPS Proxy
-  int DoSSLConnect();
-  int DoSSLConnectComplete(int result);
-
-  int DoHttpProxyConnect();
-  int DoHttpProxyConnectComplete(int result);
-
-  int DoSpdyProxyCreateStream();
-  int DoSpdyProxyCreateStreamComplete(int result);
-
-  void NotifyProxyDelegateOfCompletion(int result);
-
   // Begins the tcp connection and the optional Http proxy tunnel.  If the
   // request is not immediately servicable (likely), the request will return
   // ERR_IO_PENDING. An OK return from this function or the callback means
@@ -155,23 +123,13 @@ class HttpProxyConnectJob : public ConnectJob {
   // a standard net error code will be returned.
   int ConnectInternal() override;
 
-  scoped_refptr<HttpProxySocketParams> params_;
-  TransportClientSocketPool* const transport_pool_;
-  SSLClientSocketPool* const ssl_pool_;
+  void OnConnectComplete(int result);
 
-  State next_state_;
-  CompletionCallback callback_;
-  scoped_ptr<ClientSocketHandle> transport_socket_handle_;
-  scoped_ptr<ProxyClientSocket> transport_socket_;
-  bool using_spdy_;
-  // Protocol negotiated with the server.
-  NextProto protocol_negotiated_;
+  int HandleConnectResult(int result);
 
-  HttpResponseInfo error_response_info_;
+  scoped_ptr<HttpProxyClientSocketWrapper> client_socket_;
 
-  SpdyStreamRequest spdy_stream_request_;
-
-  base::WeakPtrFactory<HttpProxyConnectJob> weak_ptr_factory_;
+  scoped_ptr<HttpResponseInfo> error_response_info_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxyConnectJob);
 };
