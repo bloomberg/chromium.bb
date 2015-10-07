@@ -7,39 +7,34 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/task_runner.h"
 #include "components/metrics/metrics_provider.h"
 
 namespace browser_watcher {
 
 // Provides stability data captured by the Chrome Watcher, namely the browser
-// process exit codes, as well as exit funnel metrics.
-// The exit funnel records a trace of named, timed events in registry per
-// process. For reporting, the trace is recorded as a sequence of events
-// named Stability.ExitFunnel.<eventname>, associated to the time
-// (in milliseconds) from first event in a trace. For a normal process exit,
-// the sequence might look like this:
-// - Stability.ExitFunnel.Logoff: 0
-// - Stability.ExitFunnel.NotifyShutdown: 10
-// - Stability.ExitFunnel.EndSession: 20
-// - Stability.ExitFunnel.KillProcess: 30
+// process exit codes.
 class WatcherMetricsProviderWin : public metrics::MetricsProvider {
  public:
   static const char kBrowserExitCodeHistogramName[];
-  static const char kExitFunnelHistogramPrefix[];
 
-  // Initializes the reporter. If |report_exit_funnels| is false, the provider
-  // will clear the registry data, but not report it.
+  // Initializes the reporter. |cleanup_io_task_runner| is used to clear
+  // leftover data in registry if metrics reporting is disabled.
   WatcherMetricsProviderWin(const base::char16* registry_path,
-                            bool report_exit_funnels);
+                            base::TaskRunner* cleanup_io_task_runner);
   ~WatcherMetricsProviderWin() override;
 
   // metrics::MetricsProvider implementation.
+  void OnRecordingEnabled() override;
+  void OnRecordingDisabled() override;
   void ProvideStabilityMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
 
  private:
+  bool recording_enabled_;
+  bool cleanup_scheduled_;
   base::string16 registry_path_;
-  bool report_exit_funnels_;
+  scoped_refptr<base::TaskRunner> cleanup_io_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WatcherMetricsProviderWin);
 };

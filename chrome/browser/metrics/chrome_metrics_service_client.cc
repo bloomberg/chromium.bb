@@ -348,25 +348,11 @@ void ChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(google_update_metrics_provider_));
 
-  // Report exit funnels for canary and dev only.
-  bool report_exit_funnels = false;
-  switch (chrome::GetChannel()) {
-    case version_info::Channel::CANARY:
-    case version_info::Channel::DEV:
-      report_exit_funnels = true;
-      break;
-    case version_info::Channel::UNKNOWN:
-    case version_info::Channel::BETA:
-    case version_info::Channel::STABLE:
-      // report_exit_funnels was initialized to the right value above.
-      DCHECK(!report_exit_funnels);
-      break;
-  }
-
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(
           new browser_watcher::WatcherMetricsProviderWin(
-              chrome::kBrowserExitCodesRegistryPath, report_exit_funnels)));
+              chrome::kBrowserExitCodesRegistryPath,
+              content::BrowserThread::GetBlockingPool())));
 #endif  // defined(OS_WIN)
 
 #if defined(ENABLE_PLUGINS)

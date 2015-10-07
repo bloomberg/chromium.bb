@@ -7,6 +7,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
@@ -98,82 +99,26 @@ void RecordExitCodes(const base::string16& registry_path) {
     regkey.DeleteValue(to_delete[i].c_str());
 }
 
-void ReadSingleExitFunnel(
-    base::win::RegKey* parent_key, const base::char16* name,
-    std::vector<std::pair<base::string16, int64>>* events_out) {
-  DCHECK(parent_key);
-  DCHECK(name);
-  DCHECK(events_out);
+void DeleteAllValues(base::win::RegKey* key) {
+  DCHECK(key);
 
-  base::win::RegKey regkey(parent_key->Handle(), name, KEY_READ | KEY_WRITE);
-  if (!regkey.Valid())
-    return;
-
-  // Exit early if no work to do.
-  size_t num = regkey.GetValueCount();
-  if (num == 0)
-    return;
-
-  // Enumerate the recorded events for this process for processing.
-  std::vector<std::pair<base::string16, int64>> events;
-  for (size_t i = 0; i < num; ++i) {
-    base::string16 event_name;
-    LONG res = regkey.GetValueNameAt(static_cast<int>(i), &event_name);
-    if (res == ERROR_SUCCESS) {
-      int64 event_time = 0;
-      res = regkey.ReadInt64(event_name.c_str(), &event_time);
-      if (res == ERROR_SUCCESS)
-        events.push_back(std::make_pair(event_name, event_time));
-    }
-  }
-
-  // Attempt to delete the values before reporting anything.
-  // Exit if this fails to make sure there is no double-reporting on e.g.
-  // permission problems or other corruption.
-  for (size_t i = 0; i < events.size(); ++i) {
-    const base::string16& event_name = events[i].first;
-    LONG res = regkey.DeleteValue(event_name.c_str());
+  while (key->GetValueCount() != 0) {
+    base::string16 value_name;
+    LONG res = key->GetValueNameAt(0, &value_name);
     if (res != ERROR_SUCCESS) {
-      LOG(ERROR) << "Failed to delete value " << event_name;
+      DVLOG(1) << "Failed to get value name " << res;
+      return;
+    }
+
+    res = key->DeleteValue(value_name.c_str());
+    if (res != ERROR_SUCCESS) {
+      DVLOG(1) << "Failed to delete value " << value_name;
       return;
     }
   }
-
-  events_out->swap(events);
 }
 
-void MaybeRecordSingleExitFunnel(base::win::RegKey* parent_key,
-                                 const base::char16* name,
-                                 bool report) {
-  std::vector<std::pair<base::string16, int64>> events;
-  ReadSingleExitFunnel(parent_key, name, &events);
-  if (!report)
-    return;
-
-  // Find the earliest event time.
-  int64 min_time = std::numeric_limits<int64>::max();
-  for (size_t i = 0; i < events.size(); ++i)
-    min_time = std::min(min_time, events[i].second);
-
-  // Record the exit funnel event times in a sparse stability histogram.
-  for (size_t i = 0; i < events.size(); ++i) {
-    std::string histogram_name(
-        WatcherMetricsProviderWin::kExitFunnelHistogramPrefix);
-    histogram_name.append(base::WideToUTF8(events[i].first));
-    base::TimeDelta event_time =
-        base::Time::FromInternalValue(events[i].second) -
-            base::Time::FromInternalValue(min_time);
-    base::HistogramBase* histogram =
-        base::SparseHistogram::FactoryGet(
-            histogram_name.c_str(),
-            base::HistogramBase::kUmaStabilityHistogramFlag);
-
-    // Record the time rounded up to the nearest millisecond.
-    histogram->Add(event_time.InMillisecondsRoundedUp());
-  }
-}
-
-void MaybeRecordExitFunnels(const base::string16& registry_path, bool report) {
+void DeleteExitFunnels(const base::string16& registry_path) {
   base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, registry_path.c_str());
   if (!it.Valid())
     return;
@@ -188,40 +133,88 @@ void MaybeRecordExitFunnels(const base::string16& registry_path, bool report) {
                         registry_path.c_str(),
                         KEY_QUERY_VALUE);
   if (!key.Valid()) {
-    LOG(ERROR) << "Failed to open " << registry_path << " for writing.";
+    DVLOG(1) << "Failed to open " << registry_path << " for writing.";
     return;
   }
 
-  std::vector<base::string16> to_delete;
-  for (; it.Valid(); ++it) {
-    // Defer reporting on still-live processes.
-    if (IsDeadProcess(it.Name())) {
-      MaybeRecordSingleExitFunnel(&key, it.Name(), report);
-      to_delete.push_back(it.Name());
+  // Key names to delete.
+  std::vector<base::string16> keys_to_delete;
+  // Constrain the cleanup to 100 exit funnels at a time, as otherwise this may
+  // take a long time to finish where a lot of data has accrued. This will be
+  // the case in particular for non-UMA users, as the exit funnel data will
+  // accrue without bounds for those users.
+  const size_t kMaxCleanup = 100;
+  for (; it.Valid() && keys_to_delete.size() < kMaxCleanup; ++it) {
+    base::win::RegKey sub_key;
+    LONG res =
+        sub_key.Open(key.Handle(), it.Name(), KEY_QUERY_VALUE | KEY_SET_VALUE);
+    if (res != ERROR_SUCCESS) {
+      DVLOG(1) << "Failed to open subkey " << it.Name();
+      return;
     }
+    DeleteAllValues(&sub_key);
+
+    // Schedule the subkey for deletion.
+    keys_to_delete.push_back(it.Name());
   }
 
-  for (size_t i = 0; i < to_delete.size(); ++i) {
-    LONG res = key.DeleteEmptyKey(to_delete[i].c_str());
+  for (const base::string16& key_name : keys_to_delete) {
+    LONG res = key.DeleteEmptyKey(key_name.c_str());
     if (res != ERROR_SUCCESS)
-      LOG(ERROR) << "Failed to delete key " << to_delete[i];
+      DVLOG(1) << "Failed to delete key " << key_name;
   }
+}
+
+// Called from the blocking pool when metrics reporting is disabled, as there
+// may be a sizable stash of data to delete.
+void DeleteExitCodeRegistryKey(const base::string16& registry_path) {
+  CHECK_NE(L"", registry_path);
+
+  DeleteExitFunnels(registry_path);
+
+  base::win::RegKey key;
+  LONG res = key.Open(HKEY_CURRENT_USER, registry_path.c_str(),
+                      KEY_QUERY_VALUE | KEY_SET_VALUE);
+  if (res == ERROR_SUCCESS) {
+    DeleteAllValues(&key);
+    res = key.DeleteEmptyKey(L"");
+  }
+  if (res != ERROR_FILE_NOT_FOUND && res != ERROR_SUCCESS)
+    DVLOG(1) << "Failed to delete exit code key " << registry_path;
 }
 
 }  // namespace
 
 const char WatcherMetricsProviderWin::kBrowserExitCodeHistogramName[] =
     "Stability.BrowserExitCodes";
-const char WatcherMetricsProviderWin::kExitFunnelHistogramPrefix[] =
-    "Stability.ExitFunnel.";
 
 WatcherMetricsProviderWin::WatcherMetricsProviderWin(
-    const base::char16* registry_path, bool report_exit_funnels) :
-        registry_path_(registry_path),
-        report_exit_funnels_(report_exit_funnels) {
+    const base::char16* registry_path,
+    base::TaskRunner* cleanup_io_task_runner)
+    : recording_enabled_(false),
+      cleanup_scheduled_(false),
+      registry_path_(registry_path),
+      cleanup_io_task_runner_(cleanup_io_task_runner) {
+  DCHECK(cleanup_io_task_runner_);
 }
 
 WatcherMetricsProviderWin::~WatcherMetricsProviderWin() {
+}
+
+void WatcherMetricsProviderWin::OnRecordingEnabled() {
+  recording_enabled_ = true;
+}
+
+void WatcherMetricsProviderWin::OnRecordingDisabled() {
+  if (!recording_enabled_ && !cleanup_scheduled_) {
+    // When metrics reporting is disabled, the providers get an
+    // OnRecordingDisabled notification at startup. Use that first notification
+    // to issue the cleanup task.
+    cleanup_io_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DeleteExitCodeRegistryKey, registry_path_));
+
+    cleanup_scheduled_ = true;
+  }
 }
 
 void WatcherMetricsProviderWin::ProvideStabilityMetrics(
@@ -233,7 +226,7 @@ void WatcherMetricsProviderWin::ProvideStabilityMetrics(
   // necessary to implement some form of global locking, which is not worth it
   // here.
   RecordExitCodes(registry_path_);
-  MaybeRecordExitFunnels(registry_path_, report_exit_funnels_);
+  DeleteExitFunnels(registry_path_);
 }
 
 }  // namespace browser_watcher

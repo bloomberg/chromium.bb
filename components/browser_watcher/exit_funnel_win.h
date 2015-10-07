@@ -19,6 +19,9 @@ namespace browser_watcher {
 // The event trace is stored in registry under a new key named
 // <pid>-<uniquifier>, where each event is a value named after the event, with
 // an associated QWORD value noting the event time.
+// Note: this is deprecated, and is only kept around for testing the cleanup
+// in the WatcherMetricsProvider.
+// TODO(siggi): Kill this class - see http://crbug.com/442526.
 class ExitFunnel {
  public:
   ExitFunnel();

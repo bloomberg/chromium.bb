@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_reg_util_win.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/win/registry.h"
 #include "components/browser_watcher/exit_funnel_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,6 +30,7 @@ class WatcherMetricsProviderWinTest : public testing::Test {
     Super::SetUp();
 
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+    test_task_runner_ = new base::TestSimpleTaskRunner();
   }
 
   void AddProcessExitCode(bool use_own_pid, int exit_code) {
@@ -69,6 +71,7 @@ class WatcherMetricsProviderWinTest : public testing::Test {
  protected:
   registry_util::RegistryOverrideManager override_manager_;
   base::HistogramTester histogram_tester_;
+  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 };
 
 }  // namespace
@@ -81,7 +84,7 @@ TEST_F(WatcherMetricsProviderWinTest, RecordsStabilityHistogram) {
   // Record a single failure.
   AddProcessExitCode(false, 100);
 
-  WatcherMetricsProviderWin provider(kRegistryPath, true);
+  WatcherMetricsProviderWin provider(kRegistryPath, test_task_runner_.get());
 
   provider.ProvideStabilityMetrics(NULL);
   histogram_tester_.ExpectBucketCount(
@@ -103,7 +106,7 @@ TEST_F(WatcherMetricsProviderWinTest, DoesNotReportOwnProcessId) {
   // Record own process as STILL_ACTIVE.
   AddProcessExitCode(true, STILL_ACTIVE);
 
-  WatcherMetricsProviderWin provider(kRegistryPath, true);
+  WatcherMetricsProviderWin provider(kRegistryPath, test_task_runner_.get());
 
   provider.ProvideStabilityMetrics(NULL);
   histogram_tester_.ExpectUniqueSample(
@@ -113,89 +116,89 @@ TEST_F(WatcherMetricsProviderWinTest, DoesNotReportOwnProcessId) {
   EXPECT_EQ(ExitCodeRegistryPathValueCount(), 1);
 }
 
-TEST_F(WatcherMetricsProviderWinTest, RecordsOrderedExitFunnelEvents) {
-  // Record an exit funnel with a given set of timings and check that the
-  // ordering is correct on the reported histograms.
-  // Note the recorded times are in microseconds, but the reporting is in
-  // milliseconds, hence the times 1000.
+TEST_F(WatcherMetricsProviderWinTest, DeletesRecordedExitFunnelEvents) {
+  // Record an exit funnel and make sure the registry is cleaned up on
+  // reporting, without recording any events.
   AddExitFunnelEvent(100, L"One", 1000 * 1000);
-  AddExitFunnelEvent(100, L"Two", 1010 * 1000);
-  AddExitFunnelEvent(100, L"Three", 990 * 1000);
+  AddExitFunnelEvent(101, L"Two", 1010 * 1000);
+  AddExitFunnelEvent(102, L"Three", 990 * 1000);
 
-  WatcherMetricsProviderWin provider(kRegistryPath, true);
+  base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, kRegistryPath);
+  EXPECT_EQ(it.SubkeyCount(), 3);
+
+  WatcherMetricsProviderWin provider(kRegistryPath, test_task_runner_.get());
 
   provider.ProvideStabilityMetrics(NULL);
-  histogram_tester_.ExpectUniqueSample("Stability.ExitFunnel.Three", 0, 1);
-  histogram_tester_.ExpectUniqueSample("Stability.ExitFunnel.One", 10, 1);
-  histogram_tester_.ExpectUniqueSample("Stability.ExitFunnel.Two", 20, 1);
+  // Make sure the exit funnel events are no longer recorded in histograms.
+  EXPECT_TRUE(
+      histogram_tester_.GetAllSamples("Stability.ExitFunnel.One").empty());
+  EXPECT_TRUE(
+      histogram_tester_.GetAllSamples("Stability.ExitFunnel.Two").empty());
+  EXPECT_TRUE(
+      histogram_tester_.GetAllSamples("Stability.ExitFunnel.Three").empty());
 
-  // Make sure the subkey is deleted on reporting.
-  base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, kRegistryPath);
+  // Make sure the subkeys are deleted on reporting.
   ASSERT_EQ(it.SubkeyCount(), 0);
 }
 
-TEST_F(WatcherMetricsProviderWinTest, ReadsExitFunnelWrites) {
-  // Test that the metrics provider picks up the writes from the funnel.
+TEST_F(WatcherMetricsProviderWinTest, DeletesExitcodeKeyWhenNotReporting) {
+  // Test that the registry at kRegistryPath is deleted when reporting is
+  // disabled.
   ExitFunnel funnel;
 
-  // Events against our own process should not get reported.
-  ASSERT_TRUE(funnel.Init(kRegistryPath, base::GetCurrentProcessHandle()));
-  ASSERT_TRUE(funnel.RecordEvent(L"Forgetaboutit"));
+  // Record multiple success exits.
+  for (size_t i = 0; i < 11; ++i)
+    AddProcessExitCode(false, 0);
+  // Record a single failure.
+  AddProcessExitCode(false, 100);
 
-  // Reset the funnel to a pseudo process. The PID 4 is the system process,
-  // which tests can hopefully never open.
+  // Record an exit funnel.
   ASSERT_TRUE(funnel.InitImpl(kRegistryPath, 4, base::Time::Now()));
 
-  // Each named event can only exist in a single copy.
-  ASSERT_TRUE(funnel.RecordEvent(L"One"));
-  ASSERT_TRUE(funnel.RecordEvent(L"One"));
-  ASSERT_TRUE(funnel.RecordEvent(L"One"));
-  ASSERT_TRUE(funnel.RecordEvent(L"Two"));
-  ASSERT_TRUE(funnel.RecordEvent(L"Three"));
+  AddExitFunnelEvent(100, L"One", 1000 * 1000);
+  AddExitFunnelEvent(101, L"Two", 1010 * 1000);
+  AddExitFunnelEvent(102, L"Three", 990 * 1000);
 
-  WatcherMetricsProviderWin provider(kRegistryPath, true);
+  // Make like the user is opted out of reporting.
+  WatcherMetricsProviderWin provider(kRegistryPath, test_task_runner_.get());
+  provider.OnRecordingDisabled();
 
-  provider.ProvideStabilityMetrics(NULL);
-  histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.One", 1);
-  histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.Two", 1);
-  histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.Three", 1);
+  base::win::RegKey key;
+  {
+    // The deletion should be scheduled to the test_task_runner, and not happen
+    // immediately.
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.Open(HKEY_CURRENT_USER, kRegistryPath, KEY_READ));
+  }
+
+  // Flush the task(s).
+  test_task_runner_->RunPendingTasks();
 
   // Make sure the subkey for the pseudo process has been deleted on reporting.
-  base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, kRegistryPath);
-  ASSERT_EQ(it.SubkeyCount(), 1);
+  ASSERT_EQ(ERROR_FILE_NOT_FOUND,
+            key.Open(HKEY_CURRENT_USER, kRegistryPath, KEY_READ));
 }
 
-TEST_F(WatcherMetricsProviderWinTest, ClearsExitFunnelWriteWhenNotReporting) {
-  // Tests that the metrics provider cleans up, but doesn't report exit funnels
-  // when funnel reporting is quenched.
-  ExitFunnel funnel;
+TEST_F(WatcherMetricsProviderWinTest, DeletesOnly100FunnelsAtATime) {
+  // Record 200 distinct exit funnels.
+  for (size_t i = 0; i < 200; ++i) {
+    AddExitFunnelEvent(i, L"One", 10);
+    AddExitFunnelEvent(i, L"Two", 10);
+  }
 
-  // Events against our own process should not get reported.
-  ASSERT_TRUE(funnel.Init(kRegistryPath, base::GetCurrentProcessHandle()));
-  ASSERT_TRUE(funnel.RecordEvent(L"Forgetaboutit"));
-
-  // Reset the funnel to a pseudo process. The PID 4 is the system process,
-  // which tests can hopefully never open.
-  ASSERT_TRUE(funnel.InitImpl(kRegistryPath, 4, base::Time::Now()));
-
-  // Each named event can only exist in a single copy.
-  ASSERT_TRUE(funnel.RecordEvent(L"One"));
-  ASSERT_TRUE(funnel.RecordEvent(L"One"));
-  ASSERT_TRUE(funnel.RecordEvent(L"One"));
-  ASSERT_TRUE(funnel.RecordEvent(L"Two"));
-  ASSERT_TRUE(funnel.RecordEvent(L"Three"));
-
-  // Turn off exit funnel reporting.
-  WatcherMetricsProviderWin provider(kRegistryPath, false);
-
-  provider.ProvideStabilityMetrics(NULL);
-  histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.One", 0);
-  histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.Two", 0);
-  histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.Three", 0);
-
-  // Make sure the subkey for the pseudo process has been deleted on reporting.
   base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, kRegistryPath);
-  ASSERT_EQ(it.SubkeyCount(), 1);
+  EXPECT_EQ(it.SubkeyCount(), 200);
+
+  {
+    // Make like the user is opted out of reporting.
+    WatcherMetricsProviderWin provider(kRegistryPath, test_task_runner_.get());
+    provider.OnRecordingDisabled();
+    // Flush the task(s).
+    test_task_runner_->RunPendingTasks();
+  }
+
+  // We expect only 100 of the funnels have been scrubbed.
+  EXPECT_EQ(it.SubkeyCount(), 100);
 }
 
 }  // namespace browser_watcher

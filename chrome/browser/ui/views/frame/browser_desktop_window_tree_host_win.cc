@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "chrome/common/chrome_constants.h"
-#include "components/browser_watcher/exit_funnel_win.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/views/controls/menu/native_menu_win.h"
@@ -73,31 +72,6 @@ class DesktopThemeProvider : public ui::ThemeProvider {
 
   DISALLOW_COPY_AND_ASSIGN(DesktopThemeProvider);
 };
-
-// See http://crbug.com/412384.
-void TraceSessionEnding(LPARAM lparam) {
-  browser_watcher::ExitFunnel funnel;
-  if (!funnel.Init(chrome::kBrowserExitCodesRegistryPath,
-                   base::GetCurrentProcessHandle())) {
-    return;
-  }
-
-  // This exit path is the prime suspect for most our unclean shutdowns.
-  // Trace all the possible options to WM_ENDSESSION. This may result in
-  // multiple events for a single shutdown, but that's fine.
-  funnel.RecordEvent(L"WM_ENDSESSION");
-
-  if (lparam & ENDSESSION_CLOSEAPP)
-    funnel.RecordEvent(L"ES_CloseApp");
-  if (lparam & ENDSESSION_CRITICAL)
-    funnel.RecordEvent(L"ES_Critical");
-  if (lparam & ENDSESSION_LOGOFF)
-    funnel.RecordEvent(L"ES_Logoff");
-  const LPARAM kKnownBits =
-      ENDSESSION_CLOSEAPP | ENDSESSION_CRITICAL | ENDSESSION_LOGOFF;
-  if (lparam & ~kKnownBits)
-    funnel.RecordEvent(L"ES_Other");
-}
 
 }  // namespace
 
@@ -211,7 +185,6 @@ bool BrowserDesktopWindowTreeHostWin::PreHandleMSG(UINT message,
         minimize_button_metrics_.OnHWNDActivated();
       return false;
     case WM_ENDSESSION:
-      TraceSessionEnding(l_param);
       chrome::SessionEnding();
       return true;
     case WM_INITMENUPOPUP:

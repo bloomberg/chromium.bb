@@ -48,7 +48,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
-#include "components/browser_watcher/exit_funnel_win.h"
 #endif
 
 #if defined(USE_ASH)
@@ -257,12 +256,6 @@ void ExitCleanly() {
 #endif
 
 void SessionEnding() {
-#if defined(OS_WIN)
-  browser_watcher::ExitFunnel funnel;
-
-  funnel.Init(kBrowserExitCodesRegistryPath, base::GetCurrentProcessHandle());
-  funnel.RecordEvent(L"SessionEnding");
-#endif
   // This is a time-limited shutdown where we need to write as much to
   // disk as we can as soon as we can, and where we must kill the
   // process within a hang timeout to avoid user prompts.
@@ -288,22 +281,12 @@ void SessionEnding() {
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 
-#if defined(OS_WIN)
-  funnel.RecordEvent(L"EndSession");
-#endif
   // Write important data first.
   g_browser_process->EndSession();
 
 #if defined(OS_WIN)
   base::win::SetShouldCrashOnProcessDetach(false);
 #endif
-
-#if defined(OS_WIN)
-  // KillProcess ought to terminate the process without further ado, so if
-  // execution gets to this point, presumably this is normal exit.
-  funnel.RecordEvent(L"KillProcess");
-#endif
-
   // On Windows 7 and later, the system will consider the process ripe for
   // termination as soon as it hides or destroys its windows. Since any
   // execution past that point will be non-deterministically cut short, we
