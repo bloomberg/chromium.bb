@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/notification-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
@@ -12,13 +13,13 @@
   <template>
     <div id="outerDiv" class="layout vertical">
       <div class="layout horizontal center"
-          hidden$="[[state.Cellular.SIMPresent]]">
+          hidden$="[[networkProperties.Cellular.SIMPresent]]">
         <!-- SIM missing UI -->
-        <iron-icon icon="sim-card-alert"></iron-icon>
+        <iron-icon icon="notification:sim-card-alert"></iron-icon>
         <span>Missing SIM card</span>
       </div>
       <div class="layout vertical"
-          hidden$="[[!state.Cellular.SIMPresent]]">
+          hidden$="[[!networkProperties.Cellular.SIMPresent]]">
         <div id="lockedDiv" class="layout horizontal center"
             hidden$="[[!isSimLocked_(networkProperties)]]">
           <!-- SIM locked -->
