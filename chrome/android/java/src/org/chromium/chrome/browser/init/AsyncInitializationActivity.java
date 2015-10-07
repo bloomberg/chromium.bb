@@ -89,7 +89,28 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     @Override
-    public void postInflationStartup() { }
+    public void postInflationStartup() {
+        final View firstDrawView = getViewToBeDrawnBeforeInitializingNative();
+        assert firstDrawView != null;
+        ViewTreeObserver.OnPreDrawListener firstDrawListener =
+                new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                firstDrawView.getViewTreeObserver().removeOnPreDrawListener(this);
+                onFirstDrawComplete();
+                return true;
+            }
+        };
+        firstDrawView.getViewTreeObserver().addOnPreDrawListener(firstDrawListener);
+    }
+
+    /**
+     * @return The primary view that must have completed at least one draw before initializing
+     *         native.  This must be non-null.
+     */
+    protected View getViewToBeDrawnBeforeInitializingNative() {
+        return findViewById(android.R.id.content);
+    }
 
     @Override
     public void maybePreconnect() {
@@ -268,11 +289,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
                 mNativeInitializationController.firstDrawComplete();
             }
         });
-    }
-
-    @Override
-    public boolean hasDoneFirstDraw() {
-        return true;
     }
 
     @Override

@@ -37,6 +37,7 @@ class NativeInitializationController {
     private List<Intent> mPendingNewIntents;
     private List<ActivityResult> mPendingActivityResults;
     private boolean mWaitingForFirstDraw;
+    private boolean mHasDoneFirstDraw;
     private boolean mInitializationComplete;
 
     /**
@@ -109,7 +110,7 @@ class NativeInitializationController {
     }
 
     private void onLibraryLoaded() {
-        if (mActivityDelegate.hasDoneFirstDraw()) {
+        if (mHasDoneFirstDraw) {
             // First draw is done
             onNativeLibraryLoaded();
         } else {
@@ -122,6 +123,8 @@ class NativeInitializationController {
      * load has to be completed to start the chromium browser process.
      */
     public void firstDrawComplete() {
+        mHasDoneFirstDraw = true;
+
         if (mWaitingForFirstDraw) {
             mWaitingForFirstDraw = false;
             // Allow the UI thread to continue its initialization

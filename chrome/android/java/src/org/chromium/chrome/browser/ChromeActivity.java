@@ -35,8 +35,6 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.view.ViewTreeObserver;
-import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
@@ -217,8 +215,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     // Time in ms that it took took us to inflate the initial layout
     private long mInflateInitialLayoutDurationMs;
 
-    private OnPreDrawListener mFirstDrawListener;
-
     private final Locale mCurrentLocale = Locale.getDefault();
 
     private AssistStatusHandler mAssistStatusHandler;
@@ -299,21 +295,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         // Inform the WindowAndroid of the keyboard accessory view.
         mWindowAndroid.setKeyboardAccessoryView((ViewGroup) findViewById(R.id.keyboard_accessory));
-        final View controlContainer = findViewById(R.id.control_container);
-        if (controlContainer != null) {
-            mFirstDrawListener = new ViewTreeObserver.OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    controlContainer.getViewTreeObserver()
-                            .removeOnPreDrawListener(mFirstDrawListener);
-                    mFirstDrawListener = null;
-                    onFirstDrawComplete();
-                    return true;
-                }
-            };
-            controlContainer.getViewTreeObserver().addOnPreDrawListener(mFirstDrawListener);
-        }
         initializeToolbar();
+    }
+
+    @Override
+    protected View getViewToBeDrawnBeforeInitializingNative() {
+        View controlContainer = findViewById(R.id.control_container);
+        return controlContainer != null ? controlContainer
+                : super.getViewToBeDrawnBeforeInitializingNative();
     }
 
     /**
@@ -637,12 +626,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mIntentHandler.shouldIgnoreIntent(this, intent)) return;
 
         mIntentHandler.onNewIntent(this, intent);
-    }
-
-    @Override
-    public boolean hasDoneFirstDraw() {
-        return mToolbarManager != null
-                ? mToolbarManager.hasDoneFirstDraw() : super.hasDoneFirstDraw();
     }
 
     /**

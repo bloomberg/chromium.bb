@@ -861,13 +861,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
-     * @return Whether {@link Toolbar} has drawn at least once.
-     */
-    public boolean hasDoneFirstDraw() {
-        return mToolbar.getFirstDrawTime() != 0;
-    }
-
-    /**
      * Handle all necessary tasks that can be delayed until initialization completes.
      * @param activityCreationTimeMs The time of creation for the activity this toolbar belongs to.
      * @param activityName Simple class name for the activity this toolbar belongs to.
