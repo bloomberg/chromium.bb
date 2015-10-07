@@ -152,9 +152,6 @@ private:
 // #container and #fixed are siblings in the paint tree but #container does
 // clip #fixed. This is the reason why we compute the painting clip rects during
 // a layout tree walk and cache them for painting.
-//
-// This class is NOT DEPRECATED, PaintLayer is and we match its
-// naming.
 class PaintLayerClipper {
     DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(PaintLayerClipper);

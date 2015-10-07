@@ -207,7 +207,7 @@ void InspectorLayerTreeAgent::didPaint(LayoutObject*, const GraphicsLayer* graph
 
 PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTreeAgent::buildLayerTree()
 {
-    PaintLayerCompositor* compositor = deprecatedPaintLayerCompositor();
+    PaintLayerCompositor* compositor = paintLayerCompositor();
     if (!compositor || !compositor->inCompositingMode())
         return nullptr;
 
@@ -254,7 +254,7 @@ int InspectorLayerTreeAgent::idForNode(Node* node)
     return DOMNodeIds::idForNode(node);
 }
 
-PaintLayerCompositor* InspectorLayerTreeAgent::deprecatedPaintLayerCompositor()
+PaintLayerCompositor* InspectorLayerTreeAgent::paintLayerCompositor()
 {
     LayoutView* layoutView = m_pageAgent->inspectedFrame()->contentLayoutObject();
     PaintLayerCompositor* compositor = layoutView ? layoutView->compositor() : nullptr;
@@ -289,7 +289,7 @@ GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString, cons
         *errorString = "Invalid layer id";
         return nullptr;
     }
-    PaintLayerCompositor* compositor = deprecatedPaintLayerCompositor();
+    PaintLayerCompositor* compositor = paintLayerCompositor();
     if (!compositor) {
         *errorString = "Not in compositing mode";
         return nullptr;

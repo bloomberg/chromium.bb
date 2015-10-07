@@ -94,7 +94,7 @@ private:
 
     GraphicsLayer* rootGraphicsLayer();
 
-    PaintLayerCompositor* deprecatedPaintLayerCompositor();
+    PaintLayerCompositor* paintLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);
     const PictureSnapshot* snapshotById(ErrorString*, const String& snapshotId);
 

@@ -89,28 +89,21 @@ private:
 };
 
 // PaintLayer is an old object that handles lots of unrelated operations.
-// We want it to die at some point and be replaced by more focused objects. Removing
-// a lot of unneeded complexity.
-// Complex painting operations (opacity, clipping, filters, reflections, ...),
-// hardware acceleration (through PaintLayerCompositor),
-// scrolling (through PaintLayerScrollableArea)
-// along with some optimizations are all handled by PaintLayer.
+// We want it to die at some point and be replaced by more focused objects.
+// Removing a lot of unneeded complexity. Complex painting operations (opacity,
+// clipping, filters, reflections, ...), hardware acceleration (through
+// PaintLayerCompositor), scrolling (through PaintLayerScrollableArea) along
+// with some optimizations are all handled by PaintLayer.
 //
 // The class is central to painting and hit-testing: it implements the painting
-// order through PaintLayerStackingNode and handle lots of complex
-// graphics operations LayoutObjects don't handle (e.g. 'filter' and 'opacity').
+// order through PaintLayerStackingNode and handle lots of complex graphics
+// operations LayoutObjects don't handle (e.g. 'filter' and 'opacity').
 //
-// The compositing code is also based on PaintLayer. The entry to it
-// is the PaintLayerCompositor, which fills
-// |m_compositedLayerMapping| for hardware accelerated layers.
+// The compositing code is also based on PaintLayer. The entry to it is the
+// PaintLayerCompositor, which fills |m_compositedLayerMapping| for hardware
+// accelerated layers.
 //
 // TODO(jchaffraix): Expand the documentation about hardware acceleration.
-//
-// The class is DEPRECATED, which means that we would like to remove it. The
-// reason for removal is that it has been a dumping ground for features for too
-// long and is the wrong level of abstraction, bearing no correspondence to any
-// CSS concept. Its associated objects and some of its feature need to be
-// migrated to LayoutObject (or the appropriate sub-class).
 class CORE_EXPORT PaintLayer {
     WTF_MAKE_NONCOPYABLE(PaintLayer);
 public:
