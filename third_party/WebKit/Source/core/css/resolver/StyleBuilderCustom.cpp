@@ -560,7 +560,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyZoom(StyleResolverState& state,
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitBorderImage(StyleResolverState& state, CSSValue* value)
 {
     NinePieceImage image;
-    CSSToStyleMap::mapNinePieceImage(state, CSSPropertyWebkitBorderImage, value, image);
+    CSSToStyleMap::mapNinePieceImage(state, CSSPropertyWebkitBorderImage, *value, image);
     state.style()->setBorderImage(image);
 }
 

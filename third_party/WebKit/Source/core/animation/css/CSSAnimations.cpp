@@ -94,7 +94,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
                 if (value->isInheritedValue() && parentStyle->animations()) {
                     timingFunction = parentStyle->animations()->timingFunctionList()[0];
                 } else if (value->isValueList()) {
-                    timingFunction = CSSToStyleMap::mapAnimationTimingFunction(toCSSValueList(value)->item(0));
+                    timingFunction = CSSToStyleMap::mapAnimationTimingFunction(*toCSSValueList(value)->item(0));
                 } else {
                     ASSERT(value->isCSSWideKeyword());
                     timingFunction = CSSTimingData::initialTimingFunction();

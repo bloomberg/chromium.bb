@@ -77,10 +77,12 @@ PassRefPtr<StyleReflection> StyleBuilderConverter::convertBoxReflect(StyleResolv
     reflection->setDirection(*reflectValue->direction());
     if (reflectValue->offset())
         reflection->setOffset(reflectValue->offset()->convertToLength(state.cssToLengthConversionData()));
-    NinePieceImage mask;
-    mask.setMaskDefaults();
-    CSSToStyleMap::mapNinePieceImage(state, CSSPropertyWebkitBoxReflect, reflectValue->mask(), mask);
-    reflection->setMask(mask);
+    if (reflectValue->mask()) {
+        NinePieceImage mask;
+        mask.setMaskDefaults();
+        CSSToStyleMap::mapNinePieceImage(state, CSSPropertyWebkitBoxReflect, *reflectValue->mask(), mask);
+        reflection->setMask(mask);
+    }
 
     return reflection.release();
 }

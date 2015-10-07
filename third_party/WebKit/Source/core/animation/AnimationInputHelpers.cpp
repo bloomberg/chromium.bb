@@ -41,7 +41,7 @@ PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const Stri
     CSSValueList* valueList = toCSSValueList(value.get());
     if (valueList->length() > 1)
         return nullptr;
-    return CSSToStyleMap::mapAnimationTimingFunction(valueList->item(0), true);
+    return CSSToStyleMap::mapAnimationTimingFunction(*valueList->item(0), true);
 }
 
 } // namespace blink

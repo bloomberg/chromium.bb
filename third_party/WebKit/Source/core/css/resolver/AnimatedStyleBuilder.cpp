@@ -150,7 +150,7 @@ void setFillSize(FillLayer* fillLayer, const AnimatableValue* value, StyleResolv
     if (value->isLengthSize())
         fillLayer->setSize(FillSize(SizeLength, animatableValueToLengthSize(value, state, ValueRangeNonNegative)));
     else
-        CSSToStyleMap::mapFillSize(state, fillLayer, toAnimatableUnknown(value)->toCSSValue().get());
+        CSSToStyleMap::mapFillSize(state, fillLayer, *toAnimatableUnknown(value)->toCSSValue());
 }
 
 template <CSSPropertyID property>
