@@ -101,7 +101,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params)
       top_controls_shown_ratio_(0.f),
       hide_pinch_scrollbars_near_min_scale_(false),
       device_scale_factor_(1.f),
-      visible_(true),
+      visible_(false),
       page_scale_factor_(1.f),
       min_page_scale_factor_(1.f),
       max_page_scale_factor_(1.f),
@@ -201,10 +201,6 @@ LayerTreeHost::~LayerTreeHost() {
     // will outlive them, and we must make good.
     root_layer_ = NULL;
   }
-}
-
-void LayerTreeHost::SetLayerTreeHostClientReady() {
-  proxy_->SetLayerTreeHostClientReady();
 }
 
 void LayerTreeHost::WillBeginMainFrame() {
@@ -682,7 +678,6 @@ void LayerTreeHost::LayoutAndUpdateLayers() {
   DCHECK(!settings_.single_thread_proxy_scheduler);
   SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
 
-  SetLayerTreeHostClientReady();
   proxy->LayoutAndUpdateLayers();
 }
 
@@ -692,7 +687,6 @@ void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
   DCHECK(!settings_.single_thread_proxy_scheduler);
   SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
 
-  SetLayerTreeHostClientReady();
   proxy->CompositeImmediately(frame_begin_time);
 }
 

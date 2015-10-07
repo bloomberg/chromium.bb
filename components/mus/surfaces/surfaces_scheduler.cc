@@ -20,7 +20,6 @@ SurfacesScheduler::SurfacesScheduler()
   scheduler_ = cc::Scheduler::Create(
       this, settings, 0, base::MessageLoop::current()->task_runner().get(),
       nullptr, compositor_timing_history.Pass());
-  scheduler_->SetCanStart();
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
   scheduler_->SetNeedsBeginMainFrame();

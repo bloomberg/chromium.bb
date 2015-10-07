@@ -158,16 +158,6 @@ bool ThreadProxy::CommitToActiveTree() const {
   return false;
 }
 
-void ThreadProxy::SetLayerTreeHostClientReady() {
-  TRACE_EVENT0("cc", "ThreadProxy::SetLayerTreeHostClientReady");
-  main().channel_main->SetLayerTreeHostClientReadyOnImpl();
-}
-
-void ThreadProxy::SetLayerTreeHostClientReadyOnImpl() {
-  TRACE_EVENT0("cc", "ThreadProxy::SetLayerTreeHostClientReadyOnImplThread");
-  impl().scheduler->SetCanStart();
-}
-
 void ThreadProxy::SetVisible(bool visible) {
   TRACE_EVENT1("cc", "ThreadProxy::SetVisible", "visible", visible);
   DebugScopedSetMainThreadBlocked main_thread_blocked(this);
@@ -1037,7 +1027,8 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
       ImplThreadTaskRunner(), impl().external_begin_frame_source.get(),
       compositor_timing_history.Pass());
 
-  impl().scheduler->SetVisible(impl().layer_tree_host_impl->visible());
+  DCHECK_EQ(impl().scheduler->visible(),
+            impl().layer_tree_host_impl->visible());
   impl_thread_weak_ptr_ = impl().weak_factory.GetWeakPtr();
   completion->Signal();
 }

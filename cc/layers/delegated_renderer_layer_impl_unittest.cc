@@ -39,6 +39,7 @@ class DelegatedRendererLayerImplTest : public testing::Test {
 
     host_impl_.reset(new FakeLayerTreeHostImpl(
         settings, &proxy_, &shared_bitmap_manager_, &task_graph_runner_));
+    host_impl_->SetVisible(true);
     host_impl_->InitializeRenderer(output_surface_.get());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
   }

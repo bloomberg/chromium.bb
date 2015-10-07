@@ -120,6 +120,7 @@ LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
       render_pass_(RenderPass::Create()),
       layer_impl_id_(2) {
   root_layer_impl_->SetHasRenderSurface(true);
+  host_->host_impl()->SetVisible(true);
   host_->host_impl()->InitializeRenderer(output_surface_.get());
 }
 

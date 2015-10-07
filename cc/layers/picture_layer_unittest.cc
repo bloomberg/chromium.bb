@@ -139,11 +139,13 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   scoped_ptr<LayerTreeHost> host1 =
       LayerTreeHost::CreateSingleThreaded(&host_client1, &params);
+  host1->SetVisible(true);
   host_client1.SetLayerTreeHost(host1.get());
 
   params.client = &host_client2;
   scoped_ptr<LayerTreeHost> host2 =
       LayerTreeHost::CreateSingleThreaded(&host_client2, &params);
+  host2->SetVisible(true);
   host_client2.SetLayerTreeHost(host2.get());
 
   // The PictureLayer is put in one LayerTreeHost.

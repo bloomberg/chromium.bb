@@ -131,11 +131,6 @@ void Scheduler::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
   estimated_parent_draw_time_ = draw_time;
 }
 
-void Scheduler::SetCanStart() {
-  state_machine_.SetCanStart();
-  ProcessScheduledActions();
-}
-
 void Scheduler::SetVisible(bool visible) {
   state_machine_.SetVisible(visible);
   UpdateCompositorTimingHistoryRecordingEnabled();

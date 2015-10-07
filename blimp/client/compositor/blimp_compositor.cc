@@ -68,7 +68,6 @@ void BlimpCompositor::SetVisible(bool visible) {
         cc::LayerTreeHost::CreateThreaded(GetCompositorTaskRunner(), &params);
 
     host_->SetVisible(true);
-    host_->SetLayerTreeHostClientReady();
     host_->SetViewportSize(viewport_size_);
     host_->SetDeviceScaleFactor(device_scale_factor_);
 

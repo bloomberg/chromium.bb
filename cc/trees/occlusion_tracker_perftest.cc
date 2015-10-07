@@ -42,6 +42,7 @@ class OcclusionTrackerPerfTest : public testing::Test {
     host_impl_ = LayerTreeHostImpl::Create(settings, &client_, &proxy_, &stats_,
                                            &shared_bitmap_manager_, nullptr,
                                            &task_graph_runner_, 1);
+    host_impl_->SetVisible(true);
     host_impl_->InitializeRenderer(output_surface_.get());
 
     scoped_ptr<LayerImpl> root_layer = LayerImpl::Create(active_tree(), 1);

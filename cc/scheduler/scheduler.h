@@ -75,9 +75,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
                              base::TimeDelta interval);
   void SetEstimatedParentDrawTime(base::TimeDelta draw_time);
 
-  void SetCanStart();
-
   void SetVisible(bool visible);
+  bool visible() { return state_machine_.visible(); }
   void SetCanDraw(bool can_draw);
   void NotifyReadyToActivate();
   void NotifyReadyToDraw();

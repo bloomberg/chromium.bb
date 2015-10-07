@@ -4886,7 +4886,7 @@ class LayerTreeHostTestActivateOnInvisible : public LayerTreeHostTest {
     // Once invisible, we can go visible again.
     if (!visible) {
       PostSetVisibleToMainThread(true);
-    } else {
+    } else if (activation_count_) {
       EXPECT_TRUE(host_impl->RequiresHighResToDraw());
       EndTest();
     }

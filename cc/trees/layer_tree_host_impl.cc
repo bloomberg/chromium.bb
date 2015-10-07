@@ -176,7 +176,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       scroll_layer_id_when_mouse_over_scrollbar_(0),
       tile_priorities_dirty_(false),
       settings_(settings),
-      visible_(true),
+      visible_(false),
       cached_managed_memory_policy_(settings.memory_policy_),
       is_synchronous_single_threaded_(!proxy->HasImplThread() &&
                                       !settings.single_thread_proxy_scheduler),

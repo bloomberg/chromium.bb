@@ -755,7 +755,7 @@ void LayerTreeTest::PostCompositeImmediatelyToMainThread() {
 }
 
 void LayerTreeTest::WillBeginTest() {
-  layer_tree_host_->SetLayerTreeHostClientReady();
+  layer_tree_host_->SetVisible(true);
 }
 
 void LayerTreeTest::DoBeginTest() {

@@ -644,7 +644,7 @@ class CONTENT_EXPORT RenderWidget
   bool is_hidden_;
 
   // Indicates that we are never visible, so never produce graphical output.
-  bool never_visible_;
+  const bool compositor_never_visible_;
 
   // Indicates whether tab-initiated fullscreen was granted.
   bool is_fullscreen_granted_;

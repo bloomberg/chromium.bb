@@ -70,7 +70,7 @@ void WebLayerTreeViewImpl::Initialize(mojo::GpuPtr gpu_service,
     output_surface_.reset(
         new mus::OutputSurface(context_provider, view_->RequestSurface()));
   }
-  layer_tree_host_->SetLayerTreeHostClientReady();
+  layer_tree_host_->SetVisible(view_->visible());
 }
 
 WebLayerTreeViewImpl::~WebLayerTreeViewImpl() {

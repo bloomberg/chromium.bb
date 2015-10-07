@@ -124,6 +124,7 @@ class PictureLayerImplTest : public testing::Test {
   void SetUp() override { InitializeRenderer(); }
 
   virtual void InitializeRenderer() {
+    host_impl_.SetVisible(true);
     host_impl_.InitializeRenderer(output_surface_.get());
   }
 
@@ -1570,6 +1571,7 @@ TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
   host_impl_.DidLoseOutputSurface();
   scoped_ptr<OutputSurface> new_output_surface =
       FakeOutputSurface::Create3d(context.Pass());
+  host_impl_.SetVisible(true);
   host_impl_.InitializeRenderer(new_output_surface.get());
   output_surface_ = new_output_surface.Pass();
 
@@ -1609,6 +1611,7 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   host_impl_.DidLoseOutputSurface();
   scoped_ptr<OutputSurface> new_output_surface =
       FakeOutputSurface::Create3d(context.Pass());
+  host_impl_.SetVisible(true);
   host_impl_.InitializeRenderer(new_output_surface.get());
   output_surface_ = new_output_surface.Pass();
 
@@ -3816,6 +3819,7 @@ class PictureLayerImplTestWithDelegatingRenderer : public PictureLayerImplTest {
   }
 
   void InitializeRenderer() override {
+    host_impl_.SetVisible(true);
     host_impl_.InitializeRenderer(output_surface_.get());
   }
 };

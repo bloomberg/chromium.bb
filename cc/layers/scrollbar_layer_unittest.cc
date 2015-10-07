@@ -129,6 +129,7 @@ class ScrollbarLayerTest : public testing::Test {
 
     layer_tree_host_.reset(
         new FakeResourceTrackingLayerTreeHost(&fake_client_, &params));
+    layer_tree_host_->SetVisible(true);
     fake_client_.SetLayerTreeHost(layer_tree_host_.get());
     // Force output surface creation for renderer capabilities.
     layer_tree_host_->Composite(base::TimeTicks());

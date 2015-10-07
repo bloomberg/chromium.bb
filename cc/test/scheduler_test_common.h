@@ -215,8 +215,6 @@ class TestScheduler : public Scheduler {
 
   bool SwapThrottled() const { return state_machine_.SwapThrottled(); }
 
-  bool CanStart() const { return state_machine_.CanStartForTesting(); }
-
   bool NeedsBeginMainFrame() const {
     return state_machine_.needs_begin_main_frame();
   }

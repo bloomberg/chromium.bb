@@ -38,6 +38,7 @@ TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.CreatePendingTree();
+  host_impl.SetVisible(true);
   host_impl.InitializeRenderer(output_surface.get());
   scoped_ptr<HeadsUpDisplayLayerImpl> layer =
     HeadsUpDisplayLayerImpl::Create(host_impl.pending_tree(), 1);

@@ -49,6 +49,7 @@ class PictureImageLayerImplTest : public testing::Test {
                    &shared_bitmap_manager_,
                    &task_graph_runner_) {
     host_impl_.CreatePendingTree();
+    host_impl_.SetVisible(true);
     host_impl_.InitializeRenderer(output_surface_.get());
   }
 

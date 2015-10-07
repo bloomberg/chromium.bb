@@ -28,6 +28,7 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
     settings.verify_property_trees = true;
     host_impl_.reset(new FakeLayerTreeHostImpl(
         settings, &proxy_, &shared_bitmap_manager_, &task_graph_runner_));
+    host_impl_->SetVisible(true);
     EXPECT_TRUE(host_impl_->InitializeRenderer(output_surface_.get()));
   }
 
@@ -103,6 +104,7 @@ TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
   scoped_ptr<FakeLayerTreeHostImpl> host_impl;
   host_impl.reset(new FakeLayerTreeHostImpl(
       settings, &proxy, &shared_bitmap_manager, &task_graph_runner));
+  host_impl->SetVisible(true);
   EXPECT_TRUE(host_impl->InitializeRenderer(output_surface.get()));
   scoped_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl->active_tree(), 12345);

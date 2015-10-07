@@ -124,6 +124,7 @@ class TileManagerPerfTest : public testing::Test {
   }
 
   virtual void InitializeRenderer() {
+    host_impl_.SetVisible(true);
     host_impl_.InitializeRenderer(output_surface_.get());
     tile_manager()->SetTileTaskRunnerForTesting(
         g_fake_tile_task_runner.Pointer());

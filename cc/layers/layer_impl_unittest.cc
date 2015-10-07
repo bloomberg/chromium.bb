@@ -92,6 +92,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
                                   &task_graph_runner);
+  host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
   scoped_ptr<LayerImpl> root_clip =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -251,6 +252,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
                                   &task_graph_runner);
+  host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
   host_impl.active_tree()->SetRootLayer(
       LayerImpl::Create(host_impl.active_tree(), 1));
@@ -366,6 +368,7 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
   scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
                                   &task_graph_runner);
+  host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
   scoped_ptr<LayerImpl> layer = LayerImpl::Create(host_impl.active_tree(), 1);
 

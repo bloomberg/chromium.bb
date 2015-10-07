@@ -835,6 +835,7 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
     TextureLayerTest::SetUp();
     layer_tree_host_ =
         MockLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
+    host_impl_.SetVisible(true);
     EXPECT_TRUE(host_impl_.InitializeRenderer(output_surface_.get()));
   }
 

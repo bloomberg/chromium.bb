@@ -51,6 +51,7 @@ class PictureLayerImplPerfTest : public testing::Test {
                kTimeCheckInterval) {}
 
   void SetUp() override {
+    host_impl_.SetVisible(true);
     host_impl_.InitializeRenderer(output_surface_.get());
   }
 

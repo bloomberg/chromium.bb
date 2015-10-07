@@ -108,18 +108,6 @@ bool SingleThreadProxy::CommitToActiveTree() const {
   return true;
 }
 
-void SingleThreadProxy::SetLayerTreeHostClientReady() {
-  TRACE_EVENT0("cc", "SingleThreadProxy::SetLayerTreeHostClientReady");
-  // Scheduling is controlled by the embedder in the single thread case, so
-  // nothing to do.
-  DCHECK(Proxy::IsMainThread());
-  DebugScopedSetImplThread impl(this);
-  if (scheduler_on_impl_thread_) {
-    scheduler_on_impl_thread_->SetCanStart();
-    scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
-  }
-}
-
 void SingleThreadProxy::SetVisible(bool visible) {
   TRACE_EVENT1("cc", "SingleThreadProxy::SetVisible", "visible", visible);
   DebugScopedSetImplThread impl(this);

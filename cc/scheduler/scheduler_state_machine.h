@@ -42,8 +42,8 @@ class CC_EXPORT SchedulerStateMachine {
   explicit SchedulerStateMachine(const SchedulerSettings& settings);
 
   enum OutputSurfaceState {
+    OUTPUT_SURFACE_NONE,
     OUTPUT_SURFACE_ACTIVE,
-    OUTPUT_SURFACE_LOST,
     OUTPUT_SURFACE_CREATING,
     OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT,
     OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION,
@@ -216,11 +216,6 @@ class CC_EXPORT SchedulerStateMachine {
   // from NextAction if the client rejects the BeginMainFrame message.
   void BeginMainFrameAborted(CommitEarlyOutReason reason);
 
-  // Set that we can create the first OutputSurface and start the scheduler.
-  void SetCanStart() { can_start_ = true; }
-  // Allow access of the can_start_ state in tests.
-  bool CanStartForTesting() const { return can_start_; }
-
   // Indicates production should be skipped to recover latency.
   void SetSkipNextBeginMainFrameToReduceLatency();
 
@@ -324,7 +319,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool needs_prepare_tiles_;
   bool needs_begin_main_frame_;
   bool visible_;
-  bool can_start_;
   bool can_draw_;
   bool has_pending_tree_;
   bool pending_tree_is_ready_for_activation_;

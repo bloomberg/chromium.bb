@@ -49,6 +49,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
 
   ~RenderWidgetCompositor() override;
 
+  void SetNeverVisible();
   const base::WeakPtr<cc::InputHandler>& GetInputHandler();
   bool BeginMainFrameRequested() const;
   void SetNeedsDisplayOnAllLayers();
@@ -77,7 +78,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
       scoped_ptr<base::Value> value,
       const base::Callback<void(scoped_ptr<base::Value>)>& callback);
   bool SendMessageToMicroBenchmark(int id, scoped_ptr<base::Value> value);
-  void StartCompositor();
   void SetSurfaceIdNamespace(uint32_t surface_id_namespace);
   cc::ManagedMemoryPolicy GetGpuMemoryPolicy(
       const cc::ManagedMemoryPolicy& policy);
@@ -189,6 +189,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   RenderWidget* widget_;
   CompositorDependencies* compositor_deps_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
+  bool never_visible_;
 
   blink::WebLayoutAndPaintAsyncCallback* layout_and_paint_async_callback_;
   scoped_ptr<cc::CopyOutputRequest> temporary_copy_output_request_;

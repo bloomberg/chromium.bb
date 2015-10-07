@@ -473,9 +473,8 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.settings = &settings;
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
-  host_->SetVisible(false);
+  DCHECK(!host_->visible());
   host_->SetRootLayer(root_layer_);
-  host_->SetLayerTreeHostClientReady();
   host_->SetViewportSize(size_);
   host_->set_has_transparent_background(has_transparent_background_);
   host_->SetDeviceScaleFactor(device_scale_factor_);

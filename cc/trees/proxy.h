@@ -64,10 +64,6 @@ class CC_EXPORT Proxy {
 
   virtual void ReleaseOutputSurface() = 0;
 
-  // Indicates that the compositing surface associated with our context is
-  // ready to use.
-  virtual void SetLayerTreeHostClientReady() = 0;
-
   virtual void SetVisible(bool visible) = 0;
 
   virtual void SetThrottleFrameProduction(bool throttle) = 0;

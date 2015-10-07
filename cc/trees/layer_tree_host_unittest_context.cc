@@ -354,14 +354,15 @@ class LayerTreeHostContextTestLostContextSucceeds
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLostContextSucceeds);
 
-class LayerTreeHostClientNotReadyDoesNotCreateOutputSurface
+class LayerTreeHostClientNotVisibleDoesNotCreateOutputSurface
     : public LayerTreeHostContextTest {
  public:
-  LayerTreeHostClientNotReadyDoesNotCreateOutputSurface()
+  LayerTreeHostClientNotVisibleDoesNotCreateOutputSurface()
       : LayerTreeHostContextTest() {}
 
   void WillBeginTest() override {
-    // Override and do not signal SetLayerTreeHostClientReady.
+    // Override to not become visible.
+    DCHECK(!layer_tree_host()->visible());
   }
 
   void BeginTest() override {
@@ -380,7 +381,7 @@ class LayerTreeHostClientNotReadyDoesNotCreateOutputSurface
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostClientNotReadyDoesNotCreateOutputSurface);
+    LayerTreeHostClientNotVisibleDoesNotCreateOutputSurface);
 
 // This tests the OutputSurface release logic in the following sequence.
 // SetUp LTH and create and init OutputSurface
@@ -1525,8 +1526,8 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
   }
 
   void DidSetVisibleOnImplTree(LayerTreeHostImpl* impl, bool visible) override {
-    TestWebGraphicsContext3D* context = TestContext();
     if (!visible) {
+      TestWebGraphicsContext3D* context = TestContext();
       // All resources should have been evicted.
       ASSERT_EQ(0u, context->NumTextures());
       EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));

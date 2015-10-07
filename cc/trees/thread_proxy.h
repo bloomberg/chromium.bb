@@ -171,7 +171,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   bool IsStarted() const override;
   bool CommitToActiveTree() const override;
   void SetOutputSurface(OutputSurface* output_surface) override;
-  void SetLayerTreeHostClientReady() override;
   void SetVisible(bool visible) override;
   void SetThrottleFrameProduction(bool throttle) override;
   const RendererCapabilities& GetRendererCapabilities() const override;
@@ -254,7 +253,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   // ProxyImpl implementation
   base::WeakPtr<ProxyImpl> GetImplWeakPtr() override;
   void SetThrottleFrameProductionOnImpl(bool throttle) override;
-  void SetLayerTreeHostClientReadyOnImpl() override;
 
  protected:
   ThreadProxy(

@@ -23,7 +23,6 @@ class CC_EXPORT ChannelMain {
  public:
   // Interface for commands sent to the ProxyImpl
   virtual void SetThrottleFrameProductionOnImpl(bool throttle) = 0;
-  virtual void SetLayerTreeHostClientReadyOnImpl() = 0;
 
   virtual ~ChannelMain() {}
 };

@@ -289,8 +289,6 @@ class SchedulerTest : public testing::Test {
     EXPECT_FALSE(client_->needs_begin_frames());
 
     // Start the initial output surface creation.
-    EXPECT_FALSE(scheduler_->CanStart());
-    scheduler_->SetCanStart();
     scheduler_->SetVisible(true);
     scheduler_->SetCanDraw(true);
     EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_);
@@ -411,7 +409,6 @@ class SchedulerTest : public testing::Test {
 TEST_F(SchedulerTest, InitializeOutputSurfaceDoesNotBeginImplFrame) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(false);
-  scheduler_->SetCanStart();
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
 
@@ -2599,7 +2596,6 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterOutputSurfaceIsInitialized) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(false);
 
-  scheduler_->SetCanStart();
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
 

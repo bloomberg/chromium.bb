@@ -96,8 +96,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       InitParams* params);
   virtual ~LayerTreeHost();
 
-  void SetLayerTreeHostClientReady();
-
   // LayerTreeHost interface to Proxy.
   void WillBeginMainFrame();
   void DidBeginMainFrame();

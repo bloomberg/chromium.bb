@@ -33,12 +33,6 @@ void ThreadedChannel::SetThrottleFrameProductionOnImpl(bool throttle) {
                             proxy_impl_->GetImplWeakPtr(), throttle));
 }
 
-void ThreadedChannel::SetLayerTreeHostClientReadyOnImpl() {
-  ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyImpl::SetLayerTreeHostClientReadyOnImpl,
-                            proxy_impl_->GetImplWeakPtr()));
-}
-
 void ThreadedChannel::DidCompleteSwapBuffers() {
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyMain::DidCompleteSwapBuffers,

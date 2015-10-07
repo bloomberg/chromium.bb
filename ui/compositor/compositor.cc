@@ -175,7 +175,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
                       base::TimeTicks::Now() - before_create);
   host_->SetRootLayer(root_web_layer_);
   host_->set_surface_id_namespace(surface_id_allocator_->id_namespace());
-  host_->SetLayerTreeHostClientReady();
+  host_->SetVisible(true);
 }
 
 Compositor::~Compositor() {

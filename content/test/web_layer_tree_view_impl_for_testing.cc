@@ -127,10 +127,11 @@ void WebLayerTreeViewImplForTesting::ApplyViewportDeltas(
 }
 
 void WebLayerTreeViewImplForTesting::RequestNewOutputSurface() {
-  bool flipped_output_surface = false;
-  layer_tree_host_->SetOutputSurface(
-      make_scoped_ptr(new cc::PixelTestOutputSurface(
-          cc::TestContextProvider::Create(), flipped_output_surface)));
+  // TODO(crbug.com/540026): Fix crashes with real OutputSurface
+  // bool flipped_output_surface = false;
+  // layer_tree_host_->SetOutputSurface(
+  //     make_scoped_ptr(new cc::PixelTestOutputSurface(
+  //         cc::TestContextProvider::Create(), flipped_output_surface)));
 }
 
 void WebLayerTreeViewImplForTesting::DidFailToInitializeOutputSurface() {

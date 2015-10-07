@@ -214,6 +214,7 @@ RenderWidgetCompositor::RenderWidgetCompositor(
     : num_failed_recreate_attempts_(0),
       widget_(widget),
       compositor_deps_(compositor_deps),
+      never_visible_(false),
       layout_and_paint_async_callback_(nullptr),
       weak_factory_(this) {
 }
@@ -499,6 +500,11 @@ void RenderWidgetCompositor::Initialize() {
 
 RenderWidgetCompositor::~RenderWidgetCompositor() {}
 
+void RenderWidgetCompositor::SetNeverVisible() {
+  DCHECK(!layer_tree_host_->visible());
+  never_visible_ = true;
+}
+
 const base::WeakPtr<cc::InputHandler>&
 RenderWidgetCompositor::GetInputHandler() {
   return layer_tree_host_->GetInputHandler();
@@ -573,10 +579,6 @@ bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
   return layer_tree_host_->SendMessageToMicroBenchmark(id, value.Pass());
 }
 
-void RenderWidgetCompositor::StartCompositor() {
-  layer_tree_host_->SetLayerTreeHostClientReady();
-}
-
 void RenderWidgetCompositor::setRootLayer(const blink::WebLayer& layer) {
   layer_tree_host_->SetRootLayer(
       static_cast<const cc_blink::WebLayerImpl*>(&layer)->layer());
@@ -633,6 +635,9 @@ void RenderWidgetCompositor::setHasTransparentBackground(bool transparent) {
 }
 
 void RenderWidgetCompositor::setVisible(bool visible) {
+  if (never_visible_)
+    return;
+
   layer_tree_host_->SetVisible(visible);
 }
 

@@ -76,7 +76,6 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
 
   // ChannelMain Implementation
   void SetThrottleFrameProductionOnImpl(bool throttle) override;
-  void SetLayerTreeHostClientReadyOnImpl() override;
 
   // ChannelImpl Implementation
   void DidCompleteSwapBuffers() override;

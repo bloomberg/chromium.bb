@@ -170,6 +170,7 @@ class LayerTreeHostImplTest : public testing::Test,
         &shared_bitmap_manager_, &gpu_memory_buffer_manager_,
         &task_graph_runner_, 0);
     output_surface_ = output_surface.Pass();
+    host_impl_->SetVisible(true);
     bool init = host_impl_->InitializeRenderer(output_surface_.get());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
@@ -2145,6 +2146,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
             &task_graph_runner_, &stats_instrumentation_);
     host_impl_ = make_scoped_ptr(host_impl_override_time);
     output_surface_ = CreateOutputSurface();
+    host_impl_->SetVisible(true);
     host_impl_->InitializeRenderer(output_surface_.get());
 
     SetupScrollAndContentsLayers(content_size);
@@ -5694,6 +5696,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
       LayerTreeHostImpl::Create(
           settings, this, &proxy_, &stats_instrumentation_,
           &shared_bitmap_manager_, NULL, &task_graph_runner_, 0);
+  layer_tree_host_impl->SetVisible(true);
   layer_tree_host_impl->InitializeRenderer(output_surface.get());
   layer_tree_host_impl->WillBeginImplFrame(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
@@ -5977,6 +5980,7 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   scoped_ptr<LayerTreeHostImpl> my_host_impl =
       LayerTreeHostImpl::Create(settings, client, proxy, stats_instrumentation,
                                 manager, nullptr, task_graph_runner, 0);
+  my_host_impl->SetVisible(true);
   my_host_impl->InitializeRenderer(output_surface);
   my_host_impl->WillBeginImplFrame(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
@@ -6497,6 +6501,7 @@ TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
 
   output_surface_ =
       FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create());
+  host_impl_->SetVisible(true);
   host_impl_->InitializeRenderer(output_surface_.get());
   EXPECT_LT(0ul, host_impl_->memory_allocation_limit_bytes());
 }
@@ -6559,6 +6564,7 @@ class LayerTreeHostImplTestPrepareTiles : public LayerTreeHostImplTest {
                                   &shared_bitmap_manager_, &task_graph_runner_);
     host_impl_.reset(fake_host_impl_);
     output_surface_ = CreateOutputSurface();
+    host_impl_->SetVisible(true);
     host_impl_->InitializeRenderer(output_surface_.get());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
   }
@@ -6567,10 +6573,11 @@ class LayerTreeHostImplTestPrepareTiles : public LayerTreeHostImplTest {
 };
 
 TEST_F(LayerTreeHostImplTestPrepareTiles, PrepareTilesWhenInvisible) {
-  fake_host_impl_->DidModifyTilePriorities();
   EXPECT_TRUE(fake_host_impl_->prepare_tiles_needed());
-  fake_host_impl_->SetVisible(false);
+  host_impl_->SetVisible(false);
   EXPECT_FALSE(fake_host_impl_->prepare_tiles_needed());
+  host_impl_->SetVisible(true);
+  EXPECT_TRUE(fake_host_impl_->prepare_tiles_needed());
 }
 
 TEST_F(LayerTreeHostImplTest, UIResourceManagement) {

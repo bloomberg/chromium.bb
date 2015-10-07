@@ -15,7 +15,7 @@ namespace cc {
 
 SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
     : settings_(settings),
-      output_surface_state_(OUTPUT_SURFACE_LOST),
+      output_surface_state_(OUTPUT_SURFACE_NONE),
       begin_impl_frame_state_(BEGIN_IMPL_FRAME_STATE_IDLE),
       begin_main_frame_state_(BEGIN_MAIN_FRAME_STATE_IDLE),
       forced_redraw_state_(FORCED_REDRAW_STATE_IDLE),
@@ -40,7 +40,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       needs_prepare_tiles_(false),
       needs_begin_main_frame_(false),
       visible_(false),
-      can_start_(false),
       can_draw_(false),
       has_pending_tree_(false),
       pending_tree_is_ready_for_activation_(false),
@@ -60,10 +59,10 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
 const char* SchedulerStateMachine::OutputSurfaceStateToString(
     OutputSurfaceState state) {
   switch (state) {
+    case OUTPUT_SURFACE_NONE:
+      return "OUTPUT_SURFACE_NONE";
     case OUTPUT_SURFACE_ACTIVE:
       return "OUTPUT_SURFACE_ACTIVE";
-    case OUTPUT_SURFACE_LOST:
-      return "OUTPUT_SURFACE_LOST";
     case OUTPUT_SURFACE_CREATING:
       return "OUTPUT_SURFACE_CREATING";
     case OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT:
@@ -225,7 +224,6 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("needs_prepare_tiles", needs_prepare_tiles_);
   state->SetBoolean("needs_begin_main_frame", needs_begin_main_frame_);
   state->SetBoolean("visible", visible_);
-  state->SetBoolean("can_start", can_start_);
   state->SetBoolean("can_draw", can_draw_);
   state->SetBoolean("has_pending_tree", has_pending_tree_);
   state->SetBoolean("pending_tree_is_ready_for_activation",
@@ -257,7 +255,7 @@ bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
   // draws will be aborted. However, when the embedder is Android WebView,
   // software draws could be scheduled by the Android OS at any time and draws
   // should not be aborted in this case.
-  bool is_output_surface_lost = (output_surface_state_ == OUTPUT_SURFACE_LOST);
+  bool is_output_surface_lost = (output_surface_state_ == OUTPUT_SURFACE_NONE);
   if (settings_.using_synchronous_renderer_compositor)
     return is_output_surface_lost || !can_draw_;
 
@@ -274,7 +272,7 @@ bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
   // There is no output surface to trigger our activations.
   // If we do not force activations to make forward progress, we might deadlock
   // with the main thread.
-  if (output_surface_state_ == OUTPUT_SURFACE_LOST)
+  if (output_surface_state_ == OUTPUT_SURFACE_NONE)
     return true;
 
   // If we're not visible, we should force activation.
@@ -292,10 +290,6 @@ bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
 
 bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
   if (!visible_)
-    return false;
-
-  // Don't try to initialize too early.
-  if (!can_start_)
     return false;
 
   // We only want to start output surface initialization after the
@@ -317,7 +311,7 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
 
   // We need to create the output surface if we don't have one and we haven't
   // started creating one yet.
-  return output_surface_state_ == OUTPUT_SURFACE_LOST;
+  return output_surface_state_ == OUTPUT_SURFACE_NONE;
 }
 
 bool SchedulerStateMachine::ShouldDraw() const {
@@ -676,7 +670,7 @@ void SchedulerStateMachine::WillPrepareTiles() {
 }
 
 void SchedulerStateMachine::WillBeginOutputSurfaceCreation() {
-  DCHECK_EQ(output_surface_state_, OUTPUT_SURFACE_LOST);
+  DCHECK_EQ(output_surface_state_, OUTPUT_SURFACE_NONE);
   output_surface_state_ = OUTPUT_SURFACE_CREATING;
 
   // The following DCHECKs make sure we are in the proper quiescent state.
@@ -1063,10 +1057,10 @@ void SchedulerStateMachine::DidPrepareTiles() {
 }
 
 void SchedulerStateMachine::DidLoseOutputSurface() {
-  if (output_surface_state_ == OUTPUT_SURFACE_LOST ||
+  if (output_surface_state_ == OUTPUT_SURFACE_NONE ||
       output_surface_state_ == OUTPUT_SURFACE_CREATING)
     return;
-  output_surface_state_ = OUTPUT_SURFACE_LOST;
+  output_surface_state_ = OUTPUT_SURFACE_NONE;
   needs_redraw_ = false;
   wait_for_ready_to_draw_ = false;
 }
@@ -1102,7 +1096,7 @@ void SchedulerStateMachine::NotifyBeginMainFrameStarted() {
 
 bool SchedulerStateMachine::HasInitializedOutputSurface() const {
   switch (output_surface_state_) {
-    case OUTPUT_SURFACE_LOST:
+    case OUTPUT_SURFACE_NONE:
     case OUTPUT_SURFACE_CREATING:
       return false;
 

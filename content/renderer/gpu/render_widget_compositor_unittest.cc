@@ -251,7 +251,7 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
     render_widget_compositor_->SetUp(
         use_null_output_surface, num_failures_before_success,
         expected_successes, expected_fallback_succeses);
-    render_widget_compositor_->StartCompositor();
+    render_widget_compositor_->setVisible(true);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&RenderWidgetCompositorOutputSurface::SynchronousComposite,
