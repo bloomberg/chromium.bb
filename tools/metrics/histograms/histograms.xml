@@ -3451,6 +3451,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cast.Sender.UrlResolveResult"
+    enum="RemotePlaybackUrlResolveResult">
+  <owner>aberent@google.com</owner>
+  <summary>
+    Records the result of resolving the video URL for cast, including checking
+    its CORS header.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Sender.VideoEncodeAcceleratorInitializeSuccess"
     enum="BooleanSuccess">
   <owner>posciak@chromium.org</owner>
@@ -69863,6 +69872,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Cast Generic Media Player"/>
   <int value="1" label="Cast YouTube Player"/>
   <int value="2" label="Non-Cast YouTube Player"/>
+</enum>
+
+<enum name="RemotePlaybackUrlResolveResult" type="int">
+  <int value="0" label="Successfully Resolved"/>
+  <int value="1" label="Malformed or empty Url"/>
+  <int value="2" label="No CORS header when required"/>
+  <int value="3" label="CORS header incompatible with Chromecast"/>
 </enum>
 
 <enum name="RendererType" type="int">

@@ -10,6 +10,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeSwitches;
 
 import java.io.IOException;
@@ -18,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLStreamHandler;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +29,16 @@ import java.util.Map;
  * HEAD request to determine if the URL is redirected.
  */
 public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Result> {
+
+    // Cast.Sender.UrlResolveResult UMA histogram values; must match values of
+    // RemotePlaybackUrlResolveResult in histograms.xml. Do not change these values, as they are
+    // being used in UMA.
+    private static final int RESOLVE_SUCCESSFUL = 0;
+    private static final int MALFORMED_URL = 1;
+    private static final int NO_CORS = 2;
+    private static final int INCOMPATIBLE_CORS = 3;
+    // Range of histogram.
+    private static final int HISTOGRAM_RESULT_COUNT = 4;
 
     /**
      * The interface to get the initial URI with cookies from and pass the final
@@ -73,8 +86,11 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
 
     private static final String COOKIES_HEADER_NAME = "Cookies";
     private static final String USER_AGENT_HEADER_NAME = "User-Agent";
+    private static final String ORIGIN_HEADER_NAME = "Origin";
     private static final String RANGE_HEADER_NAME = "Range";
     private static final String CORS_HEADER_NAME = "Access-Control-Allow-Origin";
+
+    private static final String CHROMECAST_ORIGIN = "https://www.gstatic.com";
 
     // Media types supported for cast, see
     // media/base/container_names.h for the actual enum where these are defined
@@ -89,9 +105,10 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
     private static final String RANGE_HEADER_VALUE = "bytes: 0-65536";
 
     private final Delegate mDelegate;
-    private boolean mDebug;
+    private final boolean mDebug;
 
     private final String mUserAgent;
+    private final URLStreamHandler mStreamHandler;
 
     /**
      * The constructor
@@ -99,9 +116,15 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
      * @param userAgent The browser user agent
      */
     public MediaUrlResolver(Delegate delegate, String userAgent) {
+        this(delegate, userAgent, null);
+    }
+
+    @VisibleForTesting
+    MediaUrlResolver(Delegate delegate, String userAgent, URLStreamHandler streamHandler) {
         mDebug = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_CAST_DEBUG_LOGS);
         mDelegate = delegate;
         mUserAgent = userAgent;
+        mStreamHandler = streamHandler;
     }
 
     @Override
@@ -124,11 +147,13 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
         if (!sanitizedUrl.equals("")) {
             HttpURLConnection urlConnection = null;
             try {
-                URL requestUrl = new URL(sanitizedUrl);
+                URL requestUrl = new URL(null, sanitizedUrl, mStreamHandler);
                 urlConnection = (HttpURLConnection) requestUrl.openConnection();
                 if (!TextUtils.isEmpty(cookies)) {
                     urlConnection.setRequestProperty(COOKIES_HEADER_NAME, cookies);
                 }
+                // Pretend that this is coming from the Chromecast.
+                urlConnection.setRequestProperty(ORIGIN_HEADER_NAME, CHROMECAST_ORIGIN);
                 urlConnection.setRequestProperty(USER_AGENT_HEADER_NAME, mUserAgent);
                 urlConnection.setRequestProperty(RANGE_HEADER_NAME, RANGE_HEADER_VALUE);
 
@@ -169,21 +194,40 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
     }
 
     private boolean canPlayMedia(String url, Map<String, List<String>> headers) {
-        if (url.isEmpty()) return false;
+        if (url.isEmpty()) {
+            recordResultHistogram(MALFORMED_URL);
+            return false;
+        }
 
-        // HLS media requires Cors headers.
-        if (isEnhancedMedia(url) && (headers == null || !headers.containsKey(CORS_HEADER_NAME))) {
-            if (mDebug) Log.d(TAG, "HLS stream without CORs header: " + url);
+        if (headers != null && headers.containsKey(CORS_HEADER_NAME)) {
+            // Check that the CORS data is valid for Chromecast
+            List<String> corsData = headers.get(CORS_HEADER_NAME);
+            if (corsData.isEmpty() || (!corsData.get(0).equals("*")
+                    && !corsData.get(0).equals(CHROMECAST_ORIGIN))) {
+                recordResultHistogram(INCOMPATIBLE_CORS);
+                return false;
+            }
+        } else if (isEnhancedMedia(url)) {
+            // HLS media requires Cors headers.
+            if (mDebug) Log.d(TAG, "HLS stream without CORS header: " + url);
+            recordResultHistogram(NO_CORS);
             return false;
         }
         // TODO(aberent) Return false for media types that are not playable on Chromecast
         // (getMediaType would need to know about more types to implement this).
+        recordResultHistogram(RESOLVE_SUCCESSFUL);
         return true;
     }
 
     private boolean isEnhancedMedia(String url) {
         int mediaType = getMediaType(url);
         return mediaType == HLS_MEDIA || mediaType == DASH_MEDIA || mediaType == SMOOTHSTREAM_MEDIA;
+    }
+
+    @VisibleForTesting
+    void recordResultHistogram(int result) {
+        RecordHistogram.recordEnumeratedHistogram("Cast.Sender.UrlResolveResult", result,
+                HISTOGRAM_RESULT_COUNT);
     }
 
     static int getMediaType(String url) {
