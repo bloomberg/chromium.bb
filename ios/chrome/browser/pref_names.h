@@ -28,6 +28,7 @@ namespace prefs {
 extern const char kContextualSearchEnabled[];
 extern const char kIosBookmarkFolderDefault[];
 extern const char kIosBookmarkPromoAlreadySeen[];
+extern const char kBrowsingDataMigrationHasBeenPossible[];
 extern const char kOTRStashStatePathSystemBackupExcluded[];
 extern const char kIosHandoffToOtherDevices[];
 extern const char kLastSessionExitedCleanly[];

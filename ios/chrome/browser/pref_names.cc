@@ -43,6 +43,11 @@ const char kIosBookmarkFolderDefault[] = "ios.bookmark.default_folder";
 // the bookmark promo dialog.
 const char kIosBookmarkPromoAlreadySeen[] = "ios.bookmark.promo_already_seen";
 
+// Boolean which indicates whether browsing data migration is/was possible in
+// this or a previous cold start.
+const char kBrowsingDataMigrationHasBeenPossible[] =
+    "ios.browsing_data_migration_controller.migration_has_been_possible";
+
 // Boolean which indicates if the user has already set a "do not backup" bit to
 // the OTR Profiles's state stash path to ensure that the folder is not
 // automatically synced to iCloud/iTunes.
