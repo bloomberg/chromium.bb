@@ -470,6 +470,12 @@ int SimpleBackendImpl::DoomEntriesSince(
   return DoomEntriesBetween(initial_time, Time(), callback);
 }
 
+int SimpleBackendImpl::CalculateSizeOfAllEntries(
+    const CompletionCallback& callback) {
+  // TODO(msramek): Implement.
+  return net::ERR_NOT_IMPLEMENTED;
+}
+
 class SimpleBackendImpl::SimpleIterator final : public Iterator {
  public:
   explicit SimpleIterator(base::WeakPtr<SimpleBackendImpl> backend)

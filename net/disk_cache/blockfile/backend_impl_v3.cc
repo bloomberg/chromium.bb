@@ -1508,6 +1508,10 @@ int BackendImplV3::DoomEntriesSince(base::Time initial_time,
   return net::ERR_FAILED;
 }
 
+int BackendImplV3::CalculateSizeOfAllEntries(
+    const CompletionCallback& callback) {
+  return net::ERR_FAILED;
+}
 
 class BackendImplV3::NotImplementedIterator : public Backend::Iterator {
  public:

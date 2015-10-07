@@ -110,6 +110,7 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
   void BackendFixEnumerators();
   void BackendDoomRecent();
   void BackendDoomBetween();
+  void BackendCalculateSizeOfAllEntries();
   void BackendTransaction(const std::string& name, int num_entries, bool load);
   void BackendRecoverInsert();
   void BackendRecoverRemove();
@@ -1672,6 +1673,107 @@ TEST_F(DiskCacheBackendTest, DoomEntriesBetweenSparse) {
   end = base::Time::Now();
   DoomEntriesBetween(start, end);
   EXPECT_EQ(3, cache_->GetEntryCount());
+}
+
+void DiskCacheBackendTest::BackendCalculateSizeOfAllEntries() {
+  InitCache();
+
+  // The cache is initially empty.
+  if (memory_only_ || simple_cache_mode_) {
+    // TODO(msramek): Implement.
+    EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, CalculateSizeOfAllEntries());
+  } else {
+    EXPECT_EQ(0, CalculateSizeOfAllEntries());
+  }
+
+  // Generate random entries and populate them with data of respective
+  // sizes 0, 1, ..., count - 1 bytes.
+  std::set<std::string> key_pool;
+  CreateSetOfRandomEntries(&key_pool);
+
+  int count = 0;
+  for (std::string key : key_pool) {
+    std::string data(count, ' ');
+    scoped_refptr<net::StringIOBuffer> buffer = new net::StringIOBuffer(data);
+
+    // Alternate between writing to the first and second stream to test that
+    // we are not taking just the first stream into account.
+    disk_cache::Entry* entry;
+    ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+    ASSERT_EQ(count, WriteData(entry, count % 2, 0, buffer.get(), count, true));
+    entry->Close();
+
+    ++count;
+  }
+
+  // The resulting size should be (0 + 1 + ... + count - 1) plus keys.
+  int result = CalculateSizeOfAllEntries();
+  if (memory_only_ || simple_cache_mode_) {
+    // TODO(msramek): Implement.
+    EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, result);
+  } else {
+    int total_key_size = 0;
+    for (std::string key : key_pool)
+      total_key_size += key.size();
+
+    EXPECT_EQ((count - 1) * count / 2 + total_key_size, result);
+  }
+
+  // Add another entry and test if the size is updated. Then remove it and test
+  // if the size is back to original value.
+  {
+    const int last_entry_size = 47;
+    std::string data(last_entry_size, ' ');
+    scoped_refptr<net::StringIOBuffer> buffer = new net::StringIOBuffer(data);
+
+    disk_cache::Entry* entry;
+    std::string key = GenerateKey(true);
+    ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+    ASSERT_EQ(last_entry_size,
+              WriteData(entry, 0, 0, buffer.get(), last_entry_size, true));
+    entry->Close();
+
+    int new_result = CalculateSizeOfAllEntries();
+    if (memory_only_ || simple_cache_mode_) {
+      // TODO(msramek): Implement.
+      EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, new_result);
+    } else {
+      EXPECT_EQ(result + last_entry_size + static_cast<int>(key.size()),
+                new_result);
+    }
+
+    DoomEntry(key);
+    new_result = CalculateSizeOfAllEntries();
+    if (memory_only_ || simple_cache_mode_) {
+      // TODO(msramek): Implement.
+      EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, new_result);
+    } else {
+      EXPECT_EQ(result, new_result);
+    }
+  }
+
+  // After dooming the entries, the size should be back to zero.
+  ASSERT_EQ(net::OK, DoomAllEntries());
+  if (memory_only_ || simple_cache_mode_) {
+    // TODO(msramek): Implement.
+    EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, CalculateSizeOfAllEntries());
+  } else {
+    EXPECT_EQ(0, CalculateSizeOfAllEntries());
+  }
+}
+
+TEST_F(DiskCacheBackendTest, CalculateSizeOfAllEntries) {
+  BackendCalculateSizeOfAllEntries();
+}
+
+TEST_F(DiskCacheBackendTest, MemoryOnlyCalculateSizeOfAllEntries) {
+  SetMemoryOnlyMode();
+  BackendCalculateSizeOfAllEntries();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleCacheCalculateSizeOfAllEntries) {
+  SetSimpleCacheMode();
+  BackendCalculateSizeOfAllEntries();
 }
 
 void DiskCacheBackendTest::BackendTransaction(const std::string& name,

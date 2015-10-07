@@ -73,6 +73,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   int SyncDoomAllEntries();
   int SyncDoomEntriesBetween(base::Time initial_time,
                              base::Time end_time);
+  int SyncCalculateSizeOfAllEntries();
   int SyncDoomEntriesSince(base::Time initial_time);
   int SyncOpenNextEntry(Rankings::Iterator* iterator, Entry** next_entry);
   void SyncEndEnumeration(scoped_ptr<Rankings::Iterator> iterator);
@@ -275,6 +276,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
                          const CompletionCallback& callback) override;
   int DoomEntriesSince(base::Time initial_time,
                        const CompletionCallback& callback) override;
+  int CalculateSizeOfAllEntries(const CompletionCallback& callback) override;
   // NOTE: The blockfile Backend::Iterator::OpenNextEntry method does not modify
   // the last_used field of the entry, and therefore it does not impact the
   // eviction ranking of the entry. However, an enumeration will go through all

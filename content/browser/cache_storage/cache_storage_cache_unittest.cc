@@ -91,6 +91,10 @@ class DelayableBackend : public disk_cache::Backend {
                        const CompletionCallback& callback) override {
     return backend_->DoomEntriesSince(initial_time, callback);
   }
+  int CalculateSizeOfAllEntries(
+      const CompletionCallback& callback) override {
+    return backend_->CalculateSizeOfAllEntries(callback);
+  }
   scoped_ptr<Iterator> CreateIterator() override {
     return backend_->CreateIterator();
   }

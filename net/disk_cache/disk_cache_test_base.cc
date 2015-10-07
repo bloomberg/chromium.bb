@@ -167,6 +167,12 @@ int DiskCacheTestWithCache::DoomEntriesSince(const base::Time initial_time) {
   return cb.GetResult(rv);
 }
 
+int DiskCacheTestWithCache::CalculateSizeOfAllEntries() {
+  net::TestCompletionCallback cb;
+  int rv = cache_->CalculateSizeOfAllEntries(cb.callback());
+  return cb.GetResult(rv);
+}
+
 scoped_ptr<DiskCacheTestWithCache::TestIterator>
     DiskCacheTestWithCache::CreateIterator() {
   return scoped_ptr<TestIterator>(new TestIterator(cache_->CreateIterator()));

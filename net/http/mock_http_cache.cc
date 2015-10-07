@@ -477,6 +477,11 @@ int MockDiskCache::DoomEntriesSince(const base::Time initial_time,
   return ERR_NOT_IMPLEMENTED;
 }
 
+int MockDiskCache::CalculateSizeOfAllEntries(
+    const CompletionCallback& callback) {
+  return ERR_NOT_IMPLEMENTED;
+}
+
 class MockDiskCache::NotImplementedIterator : public Iterator {
  public:
   int OpenNextEntry(disk_cache::Entry** next_entry,

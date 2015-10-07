@@ -410,6 +410,14 @@ int BackendImpl::SyncDoomEntriesBetween(const base::Time initial_time,
   return net::OK;
 }
 
+int BackendImpl::SyncCalculateSizeOfAllEntries() {
+  DCHECK_NE(net::APP_CACHE, cache_type_);
+  if (disabled_)
+    return net::ERR_FAILED;
+
+  return data_->header.num_bytes;
+}
+
 // We use OpenNextEntryImpl to retrieve elements from the cache, until we get
 // entries that are too old.
 int BackendImpl::SyncDoomEntriesSince(const base::Time initial_time) {
@@ -1251,6 +1259,12 @@ int BackendImpl::DoomEntriesSince(const base::Time initial_time,
                                   const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   background_queue_.DoomEntriesSince(initial_time, callback);
+  return net::ERR_IO_PENDING;
+}
+
+int BackendImpl::CalculateSizeOfAllEntries(const CompletionCallback& callback) {
+  DCHECK(!callback.is_null());
+  background_queue_.CalculateSizeOfAllEntries(callback);
   return net::ERR_IO_PENDING;
 }
 

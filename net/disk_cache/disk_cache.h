@@ -145,6 +145,12 @@ class NET_EXPORT Backend {
   virtual int DoomEntriesSince(base::Time initial_time,
                                const CompletionCallback& callback) = 0;
 
+  // Calculate the total size of the cache. The return value is the size in
+  // bytes or a net error code. If this method returns ERR_IO_PENDING,
+  // the |callback| will be invoked when the operation completes.
+  virtual int CalculateSizeOfAllEntries(
+      const CompletionCallback& callback) = 0;
+
   // Returns an iterator which will enumerate all entries of the cache in an
   // undefined order.
   virtual scoped_ptr<Iterator> CreateIterator() = 0;

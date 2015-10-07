@@ -128,6 +128,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   int DoomAllEntries();
   int DoomEntriesBetween(const base::Time initial_time,
                          const base::Time end_time);
+  int CalculateSizeOfAllEntries();
   int DoomEntriesSince(const base::Time initial_time);
   scoped_ptr<TestIterator> CreateIterator();
   void FlushQueueForTest();

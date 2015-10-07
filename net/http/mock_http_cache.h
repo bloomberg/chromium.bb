@@ -127,6 +127,7 @@ class MockDiskCache : public disk_cache::Backend {
                          const CompletionCallback& callback) override;
   int DoomEntriesSince(base::Time initial_time,
                        const CompletionCallback& callback) override;
+  int CalculateSizeOfAllEntries(const CompletionCallback& callback) override;
   scoped_ptr<Iterator> CreateIterator() override;
   void GetStats(base::StringPairs* stats) override;
   void OnExternalCacheHit(const std::string& key) override;

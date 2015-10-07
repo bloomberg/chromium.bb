@@ -115,6 +115,10 @@ void BackendIO::DoomEntriesSince(const base::Time initial_time) {
   initial_time_ = initial_time;
 }
 
+void BackendIO::CalculateSizeOfAllEntries() {
+  operation_ = OP_SIZE_ALL;
+}
+
 void BackendIO::OpenNextEntry(Rankings::Iterator* iterator,
                               Entry** next_entry) {
   operation_ = OP_OPEN_NEXT;
@@ -244,6 +248,9 @@ void BackendIO::ExecuteBackendOperation() {
     case OP_DOOM_SINCE:
       result_ = backend_->SyncDoomEntriesSince(initial_time_);
       break;
+    case OP_SIZE_ALL:
+      result_ = backend_->SyncCalculateSizeOfAllEntries();
+      break;
     case OP_OPEN_NEXT:
       result_ = backend_->SyncOpenNextEntry(iterator_, entry_ptr_);
       break;
@@ -372,6 +379,13 @@ void InFlightBackendIO::DoomEntriesBetween(const base::Time initial_time,
                         const net::CompletionCallback& callback) {
   scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
   operation->DoomEntriesBetween(initial_time, end_time);
+  PostOperation(operation.get());
+}
+
+void InFlightBackendIO::CalculateSizeOfAllEntries(
+    const net::CompletionCallback& callback) {
+  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  operation->CalculateSizeOfAllEntries();
   PostOperation(operation.get());
 }
 
