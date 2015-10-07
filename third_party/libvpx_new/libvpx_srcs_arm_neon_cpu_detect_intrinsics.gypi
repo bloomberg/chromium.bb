@@ -25,7 +25,6 @@
         '<(libvpx_source)/vp8/common/arm/neon/loopfiltersimplehorizontaledge_neon.c',
         '<(libvpx_source)/vp8/common/arm/neon/loopfiltersimpleverticaledge_neon.c',
         '<(libvpx_source)/vp8/common/arm/neon/mbloopfilter_neon.c',
-        '<(libvpx_source)/vp8/common/arm/neon/reconintra_neon.c',
         '<(libvpx_source)/vp8/common/arm/neon/shortidct4x4llm_neon.c',
         '<(libvpx_source)/vp8/common/arm/neon/sixtappredict_neon.c',
         '<(libvpx_source)/vp8/common/arm/neon/vp8_loopfilter_neon.c',

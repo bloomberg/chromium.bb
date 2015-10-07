@@ -50,6 +50,7 @@
     '<(libvpx_source)/vp8/common/reconinter.c',
     '<(libvpx_source)/vp8/common/reconinter.h',
     '<(libvpx_source)/vp8/common/reconintra.c',
+    '<(libvpx_source)/vp8/common/reconintra.h',
     '<(libvpx_source)/vp8/common/reconintra4x4.c',
     '<(libvpx_source)/vp8/common/reconintra4x4.h',
     '<(libvpx_source)/vp8/common/rtcd.c',

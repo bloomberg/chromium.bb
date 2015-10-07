@@ -29,7 +29,6 @@
       ],
       'sources': [
         '<(libvpx_source)/vp8/common/x86/idct_blk_sse2.c',
-        '<(libvpx_source)/vp8/common/x86/recon_wrapper_sse2.c',
         '<(libvpx_source)/vp8/encoder/x86/denoising_sse2.c',
         '<(libvpx_source)/vp8/encoder/x86/vp8_enc_stubs_sse2.c',
         '<(libvpx_source)/vp8/encoder/x86/vp8_quantize_sse2.c',

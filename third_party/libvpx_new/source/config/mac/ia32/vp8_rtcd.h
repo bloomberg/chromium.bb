@@ -60,16 +60,6 @@ int vp8_block_error_mmx(short *coeff, short *dqcoeff);
 int vp8_block_error_xmm(short *coeff, short *dqcoeff);
 RTCD_EXTERN int (*vp8_block_error)(short *coeff, short *dqcoeff);
 
-void vp8_build_intra_predictors_mbuv_s_c(struct macroblockd *x, unsigned char * uabove_row, unsigned char * vabove_row,  unsigned char *uleft, unsigned char *vleft, int left_stride, unsigned char * upred_ptr, unsigned char * vpred_ptr, int pred_stride);
-void vp8_build_intra_predictors_mbuv_s_sse2(struct macroblockd *x, unsigned char * uabove_row, unsigned char * vabove_row,  unsigned char *uleft, unsigned char *vleft, int left_stride, unsigned char * upred_ptr, unsigned char * vpred_ptr, int pred_stride);
-void vp8_build_intra_predictors_mbuv_s_ssse3(struct macroblockd *x, unsigned char * uabove_row, unsigned char * vabove_row,  unsigned char *uleft, unsigned char *vleft, int left_stride, unsigned char * upred_ptr, unsigned char * vpred_ptr, int pred_stride);
-RTCD_EXTERN void (*vp8_build_intra_predictors_mbuv_s)(struct macroblockd *x, unsigned char * uabove_row, unsigned char * vabove_row,  unsigned char *uleft, unsigned char *vleft, int left_stride, unsigned char * upred_ptr, unsigned char * vpred_ptr, int pred_stride);
-
-void vp8_build_intra_predictors_mby_s_c(struct macroblockd *x, unsigned char * yabove_row, unsigned char * yleft, int left_stride, unsigned char * ypred_ptr, int y_stride);
-void vp8_build_intra_predictors_mby_s_sse2(struct macroblockd *x, unsigned char * yabove_row, unsigned char * yleft, int left_stride, unsigned char * ypred_ptr, int y_stride);
-void vp8_build_intra_predictors_mby_s_ssse3(struct macroblockd *x, unsigned char * yabove_row, unsigned char * yleft, int left_stride, unsigned char * ypred_ptr, int y_stride);
-RTCD_EXTERN void (*vp8_build_intra_predictors_mby_s)(struct macroblockd *x, unsigned char * yabove_row, unsigned char * yleft, int left_stride, unsigned char * ypred_ptr, int y_stride);
-
 void vp8_clear_system_state_c();
 void vpx_reset_mmx_state();
 RTCD_EXTERN void (*vp8_clear_system_state)();
@@ -146,9 +136,6 @@ int vp8_full_search_sad_c(struct macroblock *x, struct block *b, struct blockd *
 int vp8_full_search_sadx3(struct macroblock *x, struct block *b, struct blockd *d, union int_mv *ref_mv, int sad_per_bit, int distance, struct variance_vtable *fn_ptr, int *mvcost[2], union int_mv *center_mv);
 int vp8_full_search_sadx8(struct macroblock *x, struct block *b, struct blockd *d, union int_mv *ref_mv, int sad_per_bit, int distance, struct variance_vtable *fn_ptr, int *mvcost[2], union int_mv *center_mv);
 RTCD_EXTERN int (*vp8_full_search_sad)(struct macroblock *x, struct block *b, struct blockd *d, union int_mv *ref_mv, int sad_per_bit, int distance, struct variance_vtable *fn_ptr, int *mvcost[2], union int_mv *center_mv);
-
-void vp8_intra4x4_predict_c(unsigned char *Above, unsigned char *yleft, int left_stride, int b_mode, unsigned char *dst, int dst_stride, unsigned char top_left);
-#define vp8_intra4x4_predict vp8_intra4x4_predict_c
 
 void vp8_loop_filter_bh_c(unsigned char *y, unsigned char *u, unsigned char *v, int ystride, int uv_stride, struct loop_filter_info *lfi);
 void vp8_loop_filter_bh_mmx(unsigned char *y, unsigned char *u, unsigned char *v, int ystride, int uv_stride, struct loop_filter_info *lfi);
@@ -301,12 +288,6 @@ static void setup_rtcd_internal(void)
     vp8_block_error = vp8_block_error_c;
     if (flags & HAS_MMX) vp8_block_error = vp8_block_error_mmx;
     if (flags & HAS_SSE2) vp8_block_error = vp8_block_error_xmm;
-    vp8_build_intra_predictors_mbuv_s = vp8_build_intra_predictors_mbuv_s_c;
-    if (flags & HAS_SSE2) vp8_build_intra_predictors_mbuv_s = vp8_build_intra_predictors_mbuv_s_sse2;
-    if (flags & HAS_SSSE3) vp8_build_intra_predictors_mbuv_s = vp8_build_intra_predictors_mbuv_s_ssse3;
-    vp8_build_intra_predictors_mby_s = vp8_build_intra_predictors_mby_s_c;
-    if (flags & HAS_SSE2) vp8_build_intra_predictors_mby_s = vp8_build_intra_predictors_mby_s_sse2;
-    if (flags & HAS_SSSE3) vp8_build_intra_predictors_mby_s = vp8_build_intra_predictors_mby_s_ssse3;
     vp8_clear_system_state = vp8_clear_system_state_c;
     if (flags & HAS_MMX) vp8_clear_system_state = vpx_reset_mmx_state;
     vp8_copy32xn = vp8_copy32xn_c;
