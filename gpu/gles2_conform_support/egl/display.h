@@ -100,6 +100,9 @@ class Display : private gpu::GpuControl {
   bool IsGpuChannelLost() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
   uint64_t GetCommandBufferID() const override;
+  uint64_t GenerateFenceSyncRelease() override;
+  bool IsFenceSyncRelease(uint64_t release) override;
+  bool IsFenceSyncFlushed(uint64_t release) override;
 
  private:
   EGLNativeDisplayType display_id_;
@@ -116,6 +119,7 @@ class Display : private gpu::GpuControl {
   bool create_offscreen_;
   int create_offscreen_width_;
   int create_offscreen_height_;
+  uint64_t next_fence_sync_release_;
 
   scoped_refptr<gpu::TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;

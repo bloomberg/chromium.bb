@@ -3093,6 +3093,8 @@ TEST_F(GLES2ImplementationTest, WaitSyncPointCHROMIUM) {
   gl_->WaitSyncPointCHROMIUM(1);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+// TODO(zmo): Implement unit test for InsertFenceSyncCHROMIUM
+// TODO(zmo): Implement unit test for GenSyncTokenCHROMIUM
 
 TEST_F(GLES2ImplementationTest, DrawBuffersEXT) {
   GLenum data[1][1] = {{0}};

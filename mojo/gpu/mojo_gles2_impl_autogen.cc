@@ -1657,6 +1657,19 @@ void MojoGLES2Impl::WaitSyncPointCHROMIUM(GLuint sync_point) {
   MojoGLES2MakeCurrent(context_);
   glWaitSyncPointCHROMIUM(sync_point);
 }
+GLuint64 MojoGLES2Impl::InsertFenceSyncCHROMIUM() {
+  MojoGLES2MakeCurrent(context_);
+  return glInsertFenceSyncCHROMIUM();
+}
+void MojoGLES2Impl::GenSyncTokenCHROMIUM(GLuint64 fence_sync,
+                                         GLbyte* sync_token) {
+  MojoGLES2MakeCurrent(context_);
+  glGenSyncTokenCHROMIUM(fence_sync, sync_token);
+}
+void MojoGLES2Impl::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
+  MojoGLES2MakeCurrent(context_);
+  glWaitSyncTokenCHROMIUM(sync_token);
+}
 void MojoGLES2Impl::DrawBuffersEXT(GLsizei count, const GLenum* bufs) {
   MojoGLES2MakeCurrent(context_);
   glDrawBuffersEXT(count, bufs);

@@ -3741,6 +3741,84 @@ TEST_F(GLES2ImplementationTest, AllowNestedTracesCHROMIUM) {
   EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
 }
 
+TEST_F(GLES2ImplementationTest, InsertFenceSyncCHROMIUM) {
+  const GLuint64 kFenceSync = 123u;
+  EXPECT_CALL(*gpu_control_, GenerateFenceSyncRelease())
+      .WillOnce(testing::Return(kFenceSync));
+
+  struct Cmds {
+    cmds::InsertFenceSyncCHROMIUM insert_fence_sync;
+  };
+  Cmds expected;
+  expected.insert_fence_sync.Init(kFenceSync);
+
+  const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
+  EXPECT_EQ(kFenceSync, fence_sync);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, GenSyncTokenCHROMIUM) {
+  const CommandBufferNamespace kNamespaceId = CommandBufferNamespace::GPU_IO;
+  const GLuint64 kCommandBufferId = 234u;
+  const GLuint64 kFenceSync = 123u;
+  GLbyte sync_token[GL_SYNC_TOKEN_SIZE_CHROMIUM];
+
+  EXPECT_CALL(*gpu_control_, GetNamespaceID())
+      .WillRepeatedly(testing::Return(kNamespaceId));
+  EXPECT_CALL(*gpu_control_, GetCommandBufferID())
+      .WillRepeatedly(testing::Return(kCommandBufferId));
+
+  gl_->GenSyncTokenCHROMIUM(kFenceSync, nullptr);
+  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+
+  EXPECT_CALL(*gpu_control_, IsFenceSyncRelease(kFenceSync))
+      .WillOnce(testing::Return(false));
+  gl_->GenSyncTokenCHROMIUM(kFenceSync, sync_token);
+  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+
+  EXPECT_CALL(*gpu_control_, IsFenceSyncRelease(kFenceSync))
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(*gpu_control_, IsFenceSyncFlushed(kFenceSync))
+      .WillOnce(testing::Return(false));
+  gl_->GenSyncTokenCHROMIUM(kFenceSync, sync_token);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+
+  EXPECT_CALL(*gpu_control_, IsFenceSyncRelease(kFenceSync))
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(*gpu_control_, IsFenceSyncFlushed(kFenceSync))
+      .WillOnce(testing::Return(true));
+  ClearCommands();
+  gl_->GenSyncTokenCHROMIUM(kFenceSync, sync_token);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+}
+
+TEST_F(GLES2ImplementationTest, WaitSyncTokenCHROMIUM) {
+  const CommandBufferNamespace kNamespaceId = CommandBufferNamespace::GPU_IO;
+  const GLuint64 kCommandBufferId = 234u;
+  const GLuint64 kFenceSync = 456u;
+  GLbyte sync_token[GL_SYNC_TOKEN_SIZE_CHROMIUM];
+
+  EXPECT_CALL(*gpu_control_, IsFenceSyncRelease(kFenceSync))
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(*gpu_control_, IsFenceSyncFlushed(kFenceSync))
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(*gpu_control_, GetNamespaceID())
+      .WillOnce(testing::Return(kNamespaceId));
+  EXPECT_CALL(*gpu_control_, GetCommandBufferID())
+      .WillOnce(testing::Return(kCommandBufferId));
+  gl_->GenSyncTokenCHROMIUM(kFenceSync, sync_token);
+
+  struct Cmds {
+    cmds::WaitSyncTokenCHROMIUM wait_sync_token;
+  };
+  Cmds expected;
+  expected.wait_sync_token.Init(kNamespaceId, kCommandBufferId, kFenceSync);
+
+  gl_->WaitSyncTokenCHROMIUM(sync_token);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, IsEnabled) {
   // If we use a valid enum, its state is cached on client side, so no command
   // is actually generated, and this test will fail.

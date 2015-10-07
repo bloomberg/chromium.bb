@@ -1900,6 +1900,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8CD9, "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS",
     },
     {
+        24, "GL_SYNC_TOKEN_SIZE_CHROMIUM",
+    },
+    {
         0x84CC, "GL_TEXTURE12",
     },
     {

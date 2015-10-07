@@ -107,13 +107,14 @@ class GpuChannelHost : public IPC::Sender,
 
   // Set an ordering barrier.  AsyncFlushes any pending barriers on other
   // routes. Combines multiple OrderingBarriers into a single AsyncFlush.
-  void OrderingBarrier(int32 route_id,
-                       int32 stream_id,
-                       int32 put_offset,
-                       uint32 flush_count,
-                       const std::vector<ui::LatencyInfo>& latency_info,
-                       bool put_offset_changed,
-                       bool do_flush);
+  // Returns the flush ID for the stream or 0 if put offset was not changed.
+  uint32_t OrderingBarrier(int32 route_id,
+                           int32 stream_id,
+                           int32 put_offset,
+                           uint32 flush_count,
+                           const std::vector<ui::LatencyInfo>& latency_info,
+                           bool put_offset_changed,
+                           bool do_flush);
 
   // Create and connect to a command buffer in the GPU process.
   scoped_ptr<CommandBufferProxyImpl> CreateViewCommandBuffer(
@@ -181,6 +182,19 @@ class GpuChannelHost : public IPC::Sender,
   // Generate a stream ID guaranteed to be unique for this channel.
   int32 GenerateStreamID();
 
+  // Sends a synchronous nop to the server which validate that all previous IPC
+  // messages have been received. Once the synchronous nop has been sent to the
+  // server all previous flushes will all be marked as validated, including
+  // flushes for other streams on the same channel. Once a validation has been
+  // sent, it will return the highest validated flush id for the stream.
+  // If the validation fails (which can only happen upon context lost), the
+  // highest validated flush id will not change. If no flush ID were ever
+  // validated then it will return 0 (Note the lowest valid flush ID is 1).
+  uint32_t ValidateFlushIDReachedServer(int32 stream_id);
+
+  // Returns the highest validated flush ID for a given stream.
+  uint32_t GetHighestValidatedFlushID(int32 stream_id);
+
  private:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
 
@@ -234,10 +248,17 @@ class GpuChannelHost : public IPC::Sender,
     StreamFlushInfo();
     ~StreamFlushInfo();
 
+    // These are global per stream.
+    uint32_t next_stream_flush_id;
+    uint32_t flushed_stream_flush_id;
+    uint32_t verified_stream_flush_id;
+
+    // These are local per context.
     bool flush_pending;
     int32 route_id;
     int32 put_offset;
     uint32 flush_count;
+    uint32_t flush_id;
     std::vector<ui::LatencyInfo> latency_info;
   };
 
@@ -249,7 +270,7 @@ class GpuChannelHost : public IPC::Sender,
   void Connect(const IPC::ChannelHandle& channel_handle,
                base::WaitableEvent* shutdown_event);
   bool InternalSend(IPC::Message* msg);
-  void InternalFlush(int32 stream_id);
+  void InternalFlush(StreamFlushInfo* flush_info);
 
   // Threading notes: all fields are constant during the lifetime of |this|
   // except:

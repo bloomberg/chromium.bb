@@ -76,16 +76,16 @@ scoped_refptr<GpuChannelMessageQueue> GpuChannelMessageQueue::Create(
   return new GpuChannelMessageQueue(gpu_channel, task_runner);
 }
 
-scoped_refptr<gpu::SyncPointClientState>
-    GpuChannelMessageQueue::GetSyncPointClientState() {
-  return sync_point_client_state_;
+scoped_refptr<gpu::SyncPointOrderData>
+GpuChannelMessageQueue::GetSyncPointOrderData() {
+  return sync_point_order_data_;
 }
 
 GpuChannelMessageQueue::GpuChannelMessageQueue(
     const base::WeakPtr<GpuChannel>& gpu_channel,
     base::SingleThreadTaskRunner* task_runner)
     : enabled_(true),
-      sync_point_client_state_(gpu::SyncPointClientState::Create()),
+      sync_point_order_data_(gpu::SyncPointOrderData::Create()),
       gpu_channel_(gpu_channel),
       task_runner_(task_runner) {}
 
@@ -94,11 +94,11 @@ GpuChannelMessageQueue::~GpuChannelMessageQueue() {
 }
 
 uint32_t GpuChannelMessageQueue::GetUnprocessedOrderNum() const {
-  return sync_point_client_state_->unprocessed_order_num();
+  return sync_point_order_data_->unprocessed_order_num();
 }
 
 uint32_t GpuChannelMessageQueue::GetProcessedOrderNum() const {
-  return sync_point_client_state_->processed_order_num();
+  return sync_point_order_data_->processed_order_num();
 }
 
 void GpuChannelMessageQueue::PushBackMessage(
@@ -147,9 +147,9 @@ GpuChannelMessage* GpuChannelMessageQueue::GetNextMessage() const {
   base::AutoLock auto_lock(channel_messages_lock_);
   if (!channel_messages_.empty()) {
     DCHECK_GT(channel_messages_.front()->order_number,
-              sync_point_client_state_->processed_order_num());
+              sync_point_order_data_->processed_order_num());
     DCHECK_LE(channel_messages_.front()->order_number,
-              sync_point_client_state_->unprocessed_order_num());
+              sync_point_order_data_->unprocessed_order_num());
 
     return channel_messages_.front();
   }
@@ -158,7 +158,7 @@ GpuChannelMessage* GpuChannelMessageQueue::GetNextMessage() const {
 
 void GpuChannelMessageQueue::BeginMessageProcessing(
     const GpuChannelMessage* msg) {
-  sync_point_client_state_->BeginProcessingOrderNumber(msg->order_number);
+  sync_point_order_data_->BeginProcessingOrderNumber(msg->order_number);
 }
 
 bool GpuChannelMessageQueue::MessageProcessed() {
@@ -166,7 +166,7 @@ bool GpuChannelMessageQueue::MessageProcessed() {
   DCHECK(!channel_messages_.empty());
   scoped_ptr<GpuChannelMessage> msg(channel_messages_.front());
   channel_messages_.pop_front();
-  sync_point_client_state_->FinishProcessingOrderNumber(msg->order_number);
+  sync_point_order_data_->FinishProcessingOrderNumber(msg->order_number);
   return !channel_messages_.empty();
 }
 
@@ -193,6 +193,11 @@ void GpuChannelMessageQueue::DeleteAndDisableMessages(
           msg->sync_point);
     }
   }
+
+  if (sync_point_order_data_) {
+    sync_point_order_data_->Destroy();
+    sync_point_order_data_ = nullptr;
+  }
 }
 
 void GpuChannelMessageQueue::ScheduleHandleMessage() {
@@ -206,9 +211,8 @@ void GpuChannelMessageQueue::PushMessageHelper(
   channel_messages_lock_.AssertAcquired();
   DCHECK(enabled_);
 
-  msg->order_number =
-      sync_point_client_state_->GenerateUnprocessedOrderNumber(
-          sync_point_manager);
+  msg->order_number = sync_point_order_data_->GenerateUnprocessedOrderNumber(
+      sync_point_manager);
   msg->time_received = base::TimeTicks::Now();
 
   bool had_messages = !channel_messages_.empty();
@@ -298,6 +302,12 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
   if (message.should_unblock() || message.is_reply()) {
     DLOG(ERROR) << "Unexpected message type";
+    return true;
+  }
+
+  if (message.type() == GpuChannelMsg_Nop::ID) {
+    IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
+    Send(reply);
     return true;
   }
 
@@ -788,8 +798,8 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-scoped_refptr<gpu::SyncPointClientState> GpuChannel::GetSyncPointClientState() {
-  return message_queue_->GetSyncPointClientState();
+scoped_refptr<gpu::SyncPointOrderData> GpuChannel::GetSyncPointOrderData() {
+  return message_queue_->GetSyncPointOrderData();
 }
 
 void GpuChannel::HandleMessage() {

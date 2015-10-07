@@ -2857,6 +2857,9 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x00100000, "GL_STENCIL_BUFFER_BIT4_QCOM",
     },
     {
+        24, "GL_SYNC_TOKEN_SIZE_CHROMIUM",
+    },
+    {
         0x8E4E, "GL_LAST_VERTEX_CONVENTION_EXT",
     },
     {

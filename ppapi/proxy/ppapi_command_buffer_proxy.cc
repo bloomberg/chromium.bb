@@ -22,7 +22,10 @@ PpapiCommandBufferProxy::PpapiCommandBufferProxy(
     : command_buffer_id_(command_buffer_id),
       capabilities_(capabilities),
       resource_(resource),
-      dispatcher_(dispatcher) {
+      dispatcher_(dispatcher),
+      next_fence_sync_release_(1),
+      pending_fence_sync_release_(0),
+      flushed_fence_sync_release_(0) {
   shared_state_shm_.reset(
       new base::SharedMemory(shared_state.shmem(), false));
   shared_state_shm_->Map(shared_state.size());
@@ -62,12 +65,14 @@ void PpapiCommandBufferProxy::OrderingBarrier(int32 put_offset) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  if (flush_info_->flush_pending && flush_info_->resource != resource_)
+  if (flush_info_->flush_pending && flush_info_->resource != resource_) {
     FlushInternal();
+  }
 
   flush_info_->flush_pending = true;
   flush_info_->resource = resource_;
   flush_info_->put_offset = put_offset;
+  pending_fence_sync_release_ = next_fence_sync_release_ - 1;
 }
 
 void PpapiCommandBufferProxy::WaitForTokenInRange(int32 start, int32 end) {
@@ -187,6 +192,18 @@ uint64_t PpapiCommandBufferProxy::GetCommandBufferID() const {
   return command_buffer_id_;
 }
 
+uint64_t PpapiCommandBufferProxy::GenerateFenceSyncRelease() {
+  return next_fence_sync_release_++;
+}
+
+bool PpapiCommandBufferProxy::IsFenceSyncRelease(uint64_t release) {
+  return release != 0 && release < next_fence_sync_release_;
+}
+
+bool PpapiCommandBufferProxy::IsFenceSyncFlushed(uint64_t release) {
+  return release <= flushed_fence_sync_release_;
+}
+
 uint32 PpapiCommandBufferProxy::InsertSyncPoint() {
   uint32 sync_point = 0;
   if (last_state_.error == gpu::error::kNoError) {
@@ -294,6 +311,7 @@ void PpapiCommandBufferProxy::FlushInternal() {
   DCHECK(last_state_.error == gpu::error::kNoError);
 
   DCHECK(flush_info_->flush_pending);
+  DCHECK_GE(pending_fence_sync_release_, flushed_fence_sync_release_);
 
   IPC::Message* message = new PpapiHostMsg_PPBGraphics3D_AsyncFlush(
       ppapi::API_ID_PPB_GRAPHICS_3D, flush_info_->resource,
@@ -307,6 +325,7 @@ void PpapiCommandBufferProxy::FlushInternal() {
 
   flush_info_->flush_pending = false;
   flush_info_->resource.SetHostResource(0, 0);
+  flushed_fence_sync_release_ = pending_fence_sync_release_;
 }
 
 }  // namespace proxy

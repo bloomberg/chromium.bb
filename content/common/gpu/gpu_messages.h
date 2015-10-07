@@ -470,6 +470,10 @@ IPC_SYNC_MESSAGE_CONTROL3_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32 /* instance_id */)
 
+// Simple NOP message which can be used as fence to ensure all previous sent
+// messages have been received.
+IPC_SYNC_MESSAGE_CONTROL0_0(GpuChannelMsg_Nop)
+
 #if defined(OS_ANDROID)
 //------------------------------------------------------------------------------
 // Stream Texture Messages

@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,6 +41,8 @@
 
 namespace gpu {
 namespace {
+
+uint64_t g_next_command_buffer_id = 0;
 
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
@@ -103,6 +106,7 @@ scoped_refptr<gfx::GLContext>* GLManager::base_context_;
 
 GLManager::Options::Options()
     : size(4, 4),
+      sync_point_manager(NULL),
       share_group_manager(NULL),
       share_mailbox_manager(NULL),
       virtual_manager(NULL),
@@ -111,7 +115,11 @@ GLManager::Options::Options()
       context_lost_allowed(false),
       context_type(gles2::CONTEXT_TYPE_OPENGLES2) {}
 
-GLManager::GLManager() : context_lost_allowed_(false) {
+GLManager::GLManager()
+    : sync_point_manager_(nullptr),
+      context_lost_allowed_(false),
+      command_buffer_id_(g_next_command_buffer_id++),
+      next_fence_sync_release_(1) {
   SetupBaseContext();
 }
 
@@ -146,6 +154,7 @@ scoped_ptr<gfx::GpuMemoryBuffer> GLManager::CreateGpuMemoryBuffer(
 void GLManager::Initialize(const GLManager::Options& options) {
   InitializeWithCommandLine(options, nullptr);
 }
+
 void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
                                           base::CommandLine* command_line) {
   const int32 kCommandBufferSize = 1024 * 1024;
@@ -253,6 +262,22 @@ void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
     return;
   }
 
+  if (options.sync_point_manager) {
+    sync_point_manager_ = options.sync_point_manager;
+    sync_point_order_data_ = SyncPointOrderData::Create();
+    sync_point_client_ = sync_point_manager_->CreateSyncPointClient(
+        sync_point_order_data_, GetNamespaceID(), GetCommandBufferID());
+
+    decoder_->SetFenceSyncReleaseCallback(
+        base::Bind(&GLManager::OnFenceSyncRelease, base::Unretained(this)));
+    decoder_->SetWaitFenceSyncCallback(
+        base::Bind(&GLManager::OnWaitFenceSync, base::Unretained(this)));
+  } else {
+    sync_point_manager_ = nullptr;
+    sync_point_order_data_ = nullptr;
+    sync_point_client_ = nullptr;
+  }
+
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(&GLManager::PumpCommands, base::Unretained(this)));
   command_buffer_->SetGetBufferChangeCallback(
@@ -304,6 +329,28 @@ void GLManager::SetupBaseContext() {
   ++use_count_;
 }
 
+void GLManager::OnFenceSyncRelease(uint64_t release) {
+  DCHECK(sync_point_client_);
+  DCHECK(!sync_point_client_->client_state()->IsFenceSyncReleased(release));
+  sync_point_client_->ReleaseFenceSync(release);
+}
+
+bool GLManager::OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,
+                                uint64_t command_buffer_id,
+                                uint64_t release) {
+  DCHECK(sync_point_client_);
+  scoped_refptr<gpu::SyncPointClientState> release_state =
+      sync_point_manager_->GetSyncPointClientState(namespace_id,
+                                                   command_buffer_id);
+  if (!release_state)
+    return true;
+
+  // GLManager does not support being multithreaded at this point, so the fence
+  // sync must be released by the time wait is called.
+  DCHECK(release_state->IsFenceSyncReleased(release));
+  return true;
+}
+
 void GLManager::MakeCurrent() {
   ::gles2::SetGLContext(gles2_implementation_.get());
 }
@@ -322,6 +369,12 @@ void GLManager::Destroy() {
   transfer_buffer_.reset();
   gles2_helper_.reset();
   command_buffer_.reset();
+  sync_point_manager_ = nullptr;
+  sync_point_client_ = nullptr;
+  if (sync_point_order_data_) {
+    sync_point_order_data_->Destroy();
+    sync_point_order_data_ = nullptr;
+  }
   if (decoder_.get()) {
     bool have_context = decoder_->GetGLContext() &&
                         decoder_->GetGLContext()->MakeCurrent(surface_.get());
@@ -340,10 +393,23 @@ void GLManager::PumpCommands() {
     command_buffer_->SetParseError(::gpu::error::kLostContext);
     return;
   }
+  uint32_t order_num = 0;
+  if (sync_point_manager_) {
+    // If sync point manager is supported, assign order numbers to commands.
+    order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber(
+        sync_point_manager_);
+    sync_point_order_data_->BeginProcessingOrderNumber(order_num);
+  }
+
   gpu_scheduler_->PutChanged();
   ::gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   if (!context_lost_allowed_) {
     ASSERT_EQ(::gpu::error::kNoError, state.error);
+  }
+
+  if (sync_point_manager_) {
+    // Finish processing order number here.
+    sync_point_order_data_->FinishProcessingOrderNumber(order_num);
   }
 }
 
@@ -441,7 +507,19 @@ gpu::CommandBufferNamespace GLManager::GetNamespaceID() const {
 }
 
 uint64_t GLManager::GetCommandBufferID() const {
-  return 0;
+  return command_buffer_id_;
+}
+
+uint64_t GLManager::GenerateFenceSyncRelease() {
+  return next_fence_sync_release_++;
+}
+
+bool GLManager::IsFenceSyncRelease(uint64_t release) {
+  return release > 0 && release < next_fence_sync_release_;
+}
+
+bool GLManager::IsFenceSyncFlushed(uint64_t release) {
+  return IsFenceSyncRelease(release);
 }
 
 }  // namespace gpu

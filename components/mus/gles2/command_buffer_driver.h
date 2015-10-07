@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gpu {
@@ -73,6 +74,10 @@ class CommandBufferDriver {
                     mojo::Array<int32_t> attribs);
   void OnResize(gfx::Size size, float scale_factor);
   bool OnWaitSyncPoint(uint32_t sync_point);
+  void OnFenceSyncRelease(uint64_t release);
+  bool OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,
+                       uint64_t command_buffer_id,
+                       uint64_t release);
   void OnSyncPointRetired();
   void OnParseError();
   void OnContextLost(uint32_t reason);

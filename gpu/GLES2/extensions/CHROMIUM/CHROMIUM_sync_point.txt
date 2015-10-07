@@ -41,7 +41,7 @@ New Procedures and Functions
 
     The command
 
-        uint InsertFenceSyncCHROMIUM()
+        uint64 InsertFenceSyncCHROMIUM()
 
     inserts a fence sync in the current command stream. The fence sync is
     signaled when previous commands have been submitted to the server, or when
@@ -53,7 +53,7 @@ New Procedures and Functions
 
     The command
 
-        void GenSyncTokenCHROMIUM(uint fence_sync, GLbyte *sync_token)
+        void GenSyncTokenCHROMIUM(uint64 fence_sync, GLbyte *sync_token)
 
     converts <fence_sync> which is only visible to the current context to a
     sync token which may be waited upon by any contexts on the same server.
@@ -67,7 +67,7 @@ New Procedures and Functions
 
     The command
 
-        void WaitSyncTokenCHROMIUM(GLbyte *sync_token)
+        void WaitSyncTokenCHROMIUM(const GLbyte *sync_token)
 
     causes the current context to stop submitting commands until the specified
     fence sync becomes signaled. This is implemented as a server-side wait.
@@ -79,7 +79,7 @@ New Tokens
 
     The size of a sync token name in bytes.
 
-        GL_SYNC_TOKEN_SIZE_CHROMIUM                        12
+        GL_SYNC_TOKEN_SIZE_CHROMIUM                        24
 
 Errors
 

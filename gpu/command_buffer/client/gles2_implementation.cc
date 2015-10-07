@@ -5364,6 +5364,48 @@ uint64_t GLES2Implementation::ShareGroupTracingGUID() const {
   return share_group_->TracingGUID();
 }
 
+GLuint64 GLES2Implementation::InsertFenceSyncCHROMIUM() {
+  const uint64_t release = gpu_control_->GenerateFenceSyncRelease();
+  helper_->InsertFenceSyncCHROMIUM(release);
+  return release;
+}
+
+void GLES2Implementation::GenSyncTokenCHROMIUM(GLuint64 fence_sync,
+                                               GLbyte* sync_token) {
+  if (!sync_token) {
+    SetGLError(GL_INVALID_VALUE, "glGenSyncTokenCHROMIUM", "empty sync_token");
+    return;
+  } else if (!gpu_control_->IsFenceSyncRelease(fence_sync)) {
+    SetGLError(GL_INVALID_VALUE, "glGenSyncTokenCHROMIUM",
+               "invalid fence sync");
+    return;
+  } else if (!gpu_control_->IsFenceSyncFlushed(fence_sync)) {
+    SetGLError(GL_INVALID_OPERATION, "glGenSyncTokenCHROMIUM",
+               "fence sync must be flushed before generating sync token");
+    return;
+  }
+
+  SyncToken* sync_token_data = reinterpret_cast<SyncToken*>(sync_token);
+  memset(sync_token_data, 0, sizeof(SyncToken));
+
+  sync_token_data->namespace_id = gpu_control_->GetNamespaceID();
+  sync_token_data->command_buffer_id = gpu_control_->GetCommandBufferID();
+  sync_token_data->release_count = fence_sync;
+}
+
+void GLES2Implementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
+  if (!sync_token) {
+    SetGLError(GL_INVALID_VALUE, "glWaitSyncTokenCHROMIUM", "empty sync_token");
+    return;
+  };
+
+  const SyncToken* sync_token_data =
+      reinterpret_cast<const SyncToken*>(sync_token);
+  helper_->WaitSyncTokenCHROMIUM(sync_token_data->namespace_id,
+                                 sync_token_data->command_buffer_id,
+                                 sync_token_data->release_count);
+}
+
 namespace {
 
 bool ValidImageFormat(GLenum internalformat,

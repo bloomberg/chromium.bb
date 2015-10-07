@@ -96,6 +96,14 @@ class GPU_EXPORT GpuControl {
   virtual CommandBufferNamespace GetNamespaceID() const = 0;
   virtual uint64_t GetCommandBufferID() const = 0;
 
+  // Fence Syncs use release counters at a context level, these fence syncs
+  // need to be flushed before they can be shared with other contexts across
+  // channels. Subclasses should implement these functions and take care of
+  // figuring out when a fence sync has been flushed.
+  virtual uint64_t GenerateFenceSyncRelease() = 0;
+  virtual bool IsFenceSyncRelease(uint64_t release) = 0;
+  virtual bool IsFenceSyncFlushed(uint64_t release) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuControl);
 };

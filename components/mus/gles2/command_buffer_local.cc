@@ -32,6 +32,7 @@ CommandBufferLocal::CommandBufferLocal(CommandBufferLocalClient* client,
     : widget_(widget),
       gpu_state_(gpu_state),
       client_(client),
+      next_fence_sync_release_(1),
       weak_factory_(this) {}
 
 CommandBufferLocal::~CommandBufferLocal() {
@@ -92,6 +93,10 @@ bool CommandBufferLocal::Initialize() {
       base::Bind(&CommandBufferLocal::OnResize, base::Unretained(this)));
   decoder_->SetWaitSyncPointCallback(
       base::Bind(&CommandBufferLocal::OnWaitSyncPoint, base::Unretained(this)));
+  decoder_->SetFenceSyncReleaseCallback(base::Bind(
+      &CommandBufferLocal::OnFenceSyncRelease, base::Unretained(this)));
+  decoder_->SetWaitFenceSyncCallback(
+      base::Bind(&CommandBufferLocal::OnWaitFenceSync, base::Unretained(this)));
 
   gpu::gles2::DisallowedFeatures disallowed_features;
 
@@ -220,6 +225,18 @@ uint64_t CommandBufferLocal::GetCommandBufferID() const {
   return 0;
 }
 
+uint64_t CommandBufferLocal::GenerateFenceSyncRelease() {
+  return next_fence_sync_release_++;
+}
+
+bool CommandBufferLocal::IsFenceSyncRelease(uint64_t release) {
+  return release > 0 && release < next_fence_sync_release_;
+}
+
+bool CommandBufferLocal::IsFenceSyncFlushed(uint64_t release) {
+  return IsFenceSyncRelease(release);
+}
+
 void CommandBufferLocal::PumpCommands() {
   if (!decoder_->MakeCurrent()) {
     command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
@@ -250,6 +267,45 @@ bool CommandBufferLocal::OnWaitSyncPoint(uint32_t sync_point) {
   gpu_state_->sync_point_manager()->AddSyncPointCallback(
       sync_point, base::Bind(&CommandBufferLocal::OnSyncPointRetired,
                              weak_factory_.GetWeakPtr()));
+  return scheduler_->scheduled();
+}
+
+void CommandBufferLocal::OnFenceSyncRelease(uint64_t release) {
+  // TODO(dyen): Implement once CommandBufferID has been figured out and
+  // we have a SyncPointClient. It would probably look like what is commented
+  // out below:
+  // if (!sync_point_client_->client_state()->IsFenceSyncReleased(release))
+  //   sync_point_client_->ReleaseFenceSync(release);
+  NOTIMPLEMENTED();
+}
+
+bool CommandBufferLocal::OnWaitFenceSync(
+    gpu::CommandBufferNamespace namespace_id,
+    uint64_t command_buffer_id,
+    uint64_t release) {
+  gpu::SyncPointManager* sync_point_manager = gpu_state_->sync_point_manager();
+  DCHECK(sync_point_manager);
+
+  scoped_refptr<gpu::SyncPointClientState> release_state =
+      sync_point_manager->GetSyncPointClientState(namespace_id,
+                                                  command_buffer_id);
+
+  if (!release_state)
+    return true;
+
+  if (release_state->IsFenceSyncReleased(release))
+    return true;
+
+  // TODO(dyen): Implement once CommandBufferID has been figured out and
+  // we have a SyncPointClient. It would probably look like what is commented
+  // out below:
+  // scheduler_->SetScheduled(false);
+  // sync_point_client_->Wait(
+  //     release_state.get(),
+  //     release,
+  //     base::Bind(&CommandBufferLocal::OnSyncPointRetired,
+  //                weak_factory_.GetWeakPtr()));
+  NOTIMPLEMENTED();
   return scheduler_->scheduled();
 }
 

@@ -73,6 +73,9 @@ class CommandBufferLocal : public gpu::GpuControl {
   bool IsGpuChannelLost() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
   uint64_t GetCommandBufferID() const override;
+  uint64_t GenerateFenceSyncRelease() override;
+  bool IsFenceSyncRelease(uint64_t release) override;
+  bool IsFenceSyncFlushed(uint64_t release) override;
 
  private:
   void PumpCommands();
@@ -81,6 +84,10 @@ class CommandBufferLocal : public gpu::GpuControl {
   void OnUpdateVSyncParameters(const base::TimeTicks timebase,
                                const base::TimeDelta interval);
   bool OnWaitSyncPoint(uint32_t sync_point);
+  void OnFenceSyncRelease(uint64_t release);
+  bool OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,
+                       uint64_t command_buffer_id,
+                       uint64_t release);
   void OnParseError();
   void OnContextLost(uint32_t reason);
   void OnSyncPointRetired();
@@ -93,6 +100,8 @@ class CommandBufferLocal : public gpu::GpuControl {
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
   CommandBufferLocalClient* client_;
+
+  uint64_t next_fence_sync_release_;
 
   base::WeakPtrFactory<CommandBufferLocal> weak_factory_;
 

@@ -327,6 +327,15 @@ VISIT_GL_CALL(LoseContextCHROMIUM,
               (current, other))
 VISIT_GL_CALL(InsertSyncPointCHROMIUM, GLuint, (), ())
 VISIT_GL_CALL(WaitSyncPointCHROMIUM, void, (GLuint sync_point), (sync_point))
+VISIT_GL_CALL(InsertFenceSyncCHROMIUM, GLuint64, (), ())
+VISIT_GL_CALL(GenSyncTokenCHROMIUM,
+              void,
+              (GLuint64 fence_sync, GLbyte* sync_token),
+              (fence_sync, sync_token))
+VISIT_GL_CALL(WaitSyncTokenCHROMIUM,
+              void,
+              (const GLbyte* sync_token),
+              (sync_token))
 VISIT_GL_CALL(DrawBuffersEXT,
               void,
               (GLsizei count, const GLenum* bufs),

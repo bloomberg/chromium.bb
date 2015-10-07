@@ -327,6 +327,9 @@
 #define glLoseContextCHROMIUM GLES2_GET_FUN(LoseContextCHROMIUM)
 #define glInsertSyncPointCHROMIUM GLES2_GET_FUN(InsertSyncPointCHROMIUM)
 #define glWaitSyncPointCHROMIUM GLES2_GET_FUN(WaitSyncPointCHROMIUM)
+#define glInsertFenceSyncCHROMIUM GLES2_GET_FUN(InsertFenceSyncCHROMIUM)
+#define glGenSyncTokenCHROMIUM GLES2_GET_FUN(GenSyncTokenCHROMIUM)
+#define glWaitSyncTokenCHROMIUM GLES2_GET_FUN(WaitSyncTokenCHROMIUM)
 #define glDrawBuffersEXT GLES2_GET_FUN(DrawBuffersEXT)
 #define glDiscardBackbufferCHROMIUM GLES2_GET_FUN(DiscardBackbufferCHROMIUM)
 #define glScheduleOverlayPlaneCHROMIUM \

@@ -2757,6 +2757,34 @@ void WaitSyncPointCHROMIUM(GLuint sync_point) {
   }
 }
 
+void InsertFenceSyncCHROMIUM(GLuint64 release_count) {
+  gles2::cmds::InsertFenceSyncCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::InsertFenceSyncCHROMIUM>();
+  if (c) {
+    c->Init(release_count);
+  }
+}
+
+void GenSyncTokenCHROMIUMImmediate(GLuint64 fence_sync) {
+  const uint32_t s = 0;  // TODO(gman): compute correct size
+  gles2::cmds::GenSyncTokenCHROMIUMImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::GenSyncTokenCHROMIUMImmediate>(
+          s);
+  if (c) {
+    c->Init(fence_sync);
+  }
+}
+
+void WaitSyncTokenCHROMIUM(GLuint namespace_id,
+                           GLuint64 command_buffer_id,
+                           GLuint64 release_count) {
+  gles2::cmds::WaitSyncTokenCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::WaitSyncTokenCHROMIUM>();
+  if (c) {
+    c->Init(namespace_id, command_buffer_id, release_count);
+  }
+}
+
 void DrawBuffersEXTImmediate(GLsizei count, const GLenum* bufs) {
   const uint32_t size =
       gles2::cmds::DrawBuffersEXTImmediate::ComputeSize(count);

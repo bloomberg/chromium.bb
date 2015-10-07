@@ -688,6 +688,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   void SetShaderCacheCallback(const ShaderCacheCallback& callback) override;
   void SetWaitSyncPointCallback(const WaitSyncPointCallback& callback) override;
+  void SetFenceSyncReleaseCallback(
+      const FenceSyncReleaseCallback& callback) override;
+  void SetWaitFenceSyncCallback(const WaitFenceSyncCallback& callback) override;
 
   void SetIgnoreCachedStateForTest(bool ignore) override;
   void ProcessFinishedAsyncTransfers();
@@ -1989,6 +1992,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   base::Callback<void(gfx::Size, float)> resize_callback_;
 
   WaitSyncPointCallback wait_sync_point_callback_;
+  FenceSyncReleaseCallback fence_sync_release_callback_;
+  WaitFenceSyncCallback wait_fence_sync_callback_;
 
   ShaderCacheCallback shader_cache_callback_;
 
@@ -3946,6 +3951,16 @@ void GLES2DecoderImpl::SetShaderCacheCallback(
 void GLES2DecoderImpl::SetWaitSyncPointCallback(
     const WaitSyncPointCallback& callback) {
   wait_sync_point_callback_ = callback;
+}
+
+void GLES2DecoderImpl::SetFenceSyncReleaseCallback(
+    const FenceSyncReleaseCallback& callback) {
+  fence_sync_release_callback_ = callback;
+}
+
+void GLES2DecoderImpl::SetWaitFenceSyncCallback(
+    const WaitFenceSyncCallback& callback) {
+  wait_fence_sync_callback_ = callback;
 }
 
 bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
@@ -12240,6 +12255,42 @@ error::Error GLES2DecoderImpl::HandleWaitSyncPointCHROMIUM(
 
   return wait_sync_point_callback_.Run(sync_point) ?
       error::kNoError : error::kDeferCommandUntilLater;
+}
+
+error::Error GLES2DecoderImpl::HandleInsertFenceSyncCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::InsertFenceSyncCHROMIUM& c =
+      *static_cast<const gles2::cmds::InsertFenceSyncCHROMIUM*>(cmd_data);
+
+  const uint64_t release_count = c.release_count;
+  if (!fence_sync_release_callback_.is_null())
+    fence_sync_release_callback_.Run(release_count);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGenSyncTokenCHROMIUMImmediate(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  return error::kUnknownCommand;
+}
+
+error::Error GLES2DecoderImpl::HandleWaitSyncTokenCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::WaitSyncTokenCHROMIUM& c =
+      *static_cast<const gles2::cmds::WaitSyncTokenCHROMIUM*>(cmd_data);
+
+  const gpu::CommandBufferNamespace namespace_id =
+      static_cast<gpu::CommandBufferNamespace>(c.namespace_id);
+  const uint64_t command_buffer_id = c.command_buffer_id;
+  const uint64_t release = c.release_count;
+  if (wait_fence_sync_callback_.is_null())
+    return error::kNoError;
+
+  return wait_fence_sync_callback_.Run(namespace_id, command_buffer_id, release)
+             ? error::kNoError
+             : error::kDeferCommandUntilLater;
 }
 
 error::Error GLES2DecoderImpl::HandleDiscardBackbufferCHROMIUM(

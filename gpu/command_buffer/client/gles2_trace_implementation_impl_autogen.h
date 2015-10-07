@@ -2160,6 +2160,22 @@ void GLES2TraceImplementation::WaitSyncPointCHROMIUM(GLuint sync_point) {
   gl_->WaitSyncPointCHROMIUM(sync_point);
 }
 
+GLuint64 GLES2TraceImplementation::InsertFenceSyncCHROMIUM() {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::InsertFenceSyncCHROMIUM");
+  return gl_->InsertFenceSyncCHROMIUM();
+}
+
+void GLES2TraceImplementation::GenSyncTokenCHROMIUM(GLuint64 fence_sync,
+                                                    GLbyte* sync_token) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GenSyncTokenCHROMIUM");
+  gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token);
+}
+
+void GLES2TraceImplementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::WaitSyncTokenCHROMIUM");
+  gl_->WaitSyncTokenCHROMIUM(sync_token);
+}
+
 void GLES2TraceImplementation::DrawBuffersEXT(GLsizei count,
                                               const GLenum* bufs) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DrawBuffersEXT");

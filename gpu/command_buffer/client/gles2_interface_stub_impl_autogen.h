@@ -1011,6 +1011,13 @@ GLuint GLES2InterfaceStub::InsertSyncPointCHROMIUM() {
   return 0;
 }
 void GLES2InterfaceStub::WaitSyncPointCHROMIUM(GLuint /* sync_point */) {}
+GLuint64 GLES2InterfaceStub::InsertFenceSyncCHROMIUM() {
+  return 0;
+}
+void GLES2InterfaceStub::GenSyncTokenCHROMIUM(GLuint64 /* fence_sync */,
+                                              GLbyte* /* sync_token */) {}
+void GLES2InterfaceStub::WaitSyncTokenCHROMIUM(const GLbyte* /* sync_token */) {
+}
 void GLES2InterfaceStub::DrawBuffersEXT(GLsizei /* count */,
                                         const GLenum* /* bufs */) {}
 void GLES2InterfaceStub::DiscardBackbufferCHROMIUM() {}

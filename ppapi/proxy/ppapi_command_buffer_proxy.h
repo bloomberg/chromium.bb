@@ -70,6 +70,9 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   bool IsGpuChannelLost() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
   uint64_t GetCommandBufferID() const override;
+  uint64_t GenerateFenceSyncRelease() override;
+  bool IsFenceSyncRelease(uint64_t release) override;
+  bool IsFenceSyncFlushed(uint64_t release) override;
 
  private:
   bool Send(IPC::Message* msg);
@@ -95,6 +98,10 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   base::Closure channel_error_callback_;
 
   InstanceData::FlushInfo *flush_info_;
+
+  uint64_t next_fence_sync_release_;
+  uint64_t pending_fence_sync_release_;
+  uint64_t flushed_fence_sync_release_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiCommandBufferProxy);
 };

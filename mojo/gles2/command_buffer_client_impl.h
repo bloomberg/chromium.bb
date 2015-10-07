@@ -76,6 +76,9 @@ class CommandBufferClientImpl : public mojo::CommandBufferLostContextObserver,
   bool IsGpuChannelLost() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
   uint64_t GetCommandBufferID() const override;
+  uint64_t GenerateFenceSyncRelease() override;
+  bool IsFenceSyncRelease(uint64_t release) override;
+  bool IsFenceSyncFlushed(uint64_t release) override;
 
  private:
   class SyncClientImpl;
@@ -105,6 +108,9 @@ class CommandBufferClientImpl : public mojo::CommandBufferLostContextObserver,
 
   // Image IDs are allocated in sequence.
   int next_image_id_;
+
+  uint64_t next_fence_sync_release_;
+  uint64_t flushed_fence_sync_release_;
 
   const MojoAsyncWaiter* async_waiter_;
 };

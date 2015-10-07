@@ -35,7 +35,8 @@ Display::Display(EGLNativeDisplayType display_id)
 #endif
       create_offscreen_(false),
       create_offscreen_width_(0),
-      create_offscreen_height_(0) {
+      create_offscreen_height_(0),
+      next_fence_sync_release_(1) {
 }
 
 Display::~Display() {
@@ -350,6 +351,18 @@ gpu::CommandBufferNamespace Display::GetNamespaceID() const {
 
 uint64_t Display::GetCommandBufferID() const {
   return 0;
+}
+
+uint64_t Display::GenerateFenceSyncRelease() {
+  return next_fence_sync_release_++;
+}
+
+bool Display::IsFenceSyncRelease(uint64_t release) {
+  return release > 0 && release < next_fence_sync_release_;
+}
+
+bool Display::IsFenceSyncFlushed(uint64_t release) {
+  return IsFenceSyncRelease(release);
 }
 
 }  // namespace egl

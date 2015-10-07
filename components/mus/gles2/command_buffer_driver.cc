@@ -12,7 +12,6 @@
 #include "components/mus/gles2/gpu_memory_tracker.h"
 #include "components/mus/gles2/gpu_state.h"
 #include "components/mus/gles2/mojo_buffer_backing.h"
-#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -117,6 +116,10 @@ bool CommandBufferDriver::DoInitialize(
       base::Bind(&CommandBufferDriver::OnResize, base::Unretained(this)));
   decoder_->SetWaitSyncPointCallback(base::Bind(
       &CommandBufferDriver::OnWaitSyncPoint, base::Unretained(this)));
+  decoder_->SetFenceSyncReleaseCallback(base::Bind(
+      &CommandBufferDriver::OnFenceSyncRelease, base::Unretained(this)));
+  decoder_->SetWaitFenceSyncCallback(base::Bind(
+      &CommandBufferDriver::OnWaitFenceSync, base::Unretained(this)));
 
   gpu::gles2::DisallowedFeatures disallowed_features;
 
@@ -290,6 +293,45 @@ bool CommandBufferDriver::OnWaitSyncPoint(uint32_t sync_point) {
   gpu_state_->sync_point_manager()->AddSyncPointCallback(
       sync_point, base::Bind(&CommandBufferDriver::OnSyncPointRetired,
                              weak_factory_.GetWeakPtr()));
+  return scheduler_->scheduled();
+}
+
+void CommandBufferDriver::OnFenceSyncRelease(uint64_t release) {
+  // TODO(dyen): Implement once CommandBufferID has been figured out and
+  // we have a SyncPointClient. It would probably look like what is commented
+  // out below:
+  // if (!sync_point_client_->client_state()->IsFenceSyncReleased(release))
+  //   sync_point_client_->ReleaseFenceSync(release);
+  NOTIMPLEMENTED();
+}
+
+bool CommandBufferDriver::OnWaitFenceSync(
+    gpu::CommandBufferNamespace namespace_id,
+    uint64_t command_buffer_id,
+    uint64_t release) {
+  gpu::SyncPointManager* sync_point_manager = gpu_state_->sync_point_manager();
+  DCHECK(sync_point_manager);
+
+  scoped_refptr<gpu::SyncPointClientState> release_state =
+      sync_point_manager->GetSyncPointClientState(namespace_id,
+                                                  command_buffer_id);
+
+  if (!release_state)
+    return true;
+
+  if (release_state->IsFenceSyncReleased(release))
+    return true;
+
+  // TODO(dyen): Implement once CommandBufferID has been figured out and
+  // we have a SyncPointClient. It would probably look like what is commented
+  // out below:
+  // scheduler_->SetScheduled(false);
+  // sync_point_client_->Wait(
+  //     release_state.get(),
+  //     release,
+  //     base::Bind(&CommandBufferDriver::OnSyncPointRetired,
+  //                weak_factory_.GetWeakPtr()));
+  NOTIMPLEMENTED();
   return scheduler_->scheduled();
 }
 

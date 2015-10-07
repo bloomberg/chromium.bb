@@ -1481,6 +1481,16 @@ GLuint GL_APIENTRY GLES2InsertSyncPointCHROMIUM() {
 void GL_APIENTRY GLES2WaitSyncPointCHROMIUM(GLuint sync_point) {
   gles2::GetGLContext()->WaitSyncPointCHROMIUM(sync_point);
 }
+GLuint64 GL_APIENTRY GLES2InsertFenceSyncCHROMIUM() {
+  return gles2::GetGLContext()->InsertFenceSyncCHROMIUM();
+}
+void GL_APIENTRY GLES2GenSyncTokenCHROMIUM(GLuint64 fence_sync,
+                                           GLbyte* sync_token) {
+  gles2::GetGLContext()->GenSyncTokenCHROMIUM(fence_sync, sync_token);
+}
+void GL_APIENTRY GLES2WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
+  gles2::GetGLContext()->WaitSyncTokenCHROMIUM(sync_token);
+}
 void GL_APIENTRY GLES2DrawBuffersEXT(GLsizei count, const GLenum* bufs) {
   gles2::GetGLContext()->DrawBuffersEXT(count, bufs);
 }
@@ -2718,6 +2728,18 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glWaitSyncPointCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glWaitSyncPointCHROMIUM),
+    },
+    {
+        "glInsertFenceSyncCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glInsertFenceSyncCHROMIUM),
+    },
+    {
+        "glGenSyncTokenCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glGenSyncTokenCHROMIUM),
+    },
+    {
+        "glWaitSyncTokenCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glWaitSyncTokenCHROMIUM),
     },
     {
         "glDrawBuffersEXT",

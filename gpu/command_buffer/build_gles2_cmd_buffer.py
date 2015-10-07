@@ -4090,6 +4090,30 @@ _FUNCTION_INFO = {
     'chromium': True,
     'trace_level': 1,
   },
+  'InsertFenceSyncCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': False,
+    'cmd_args': 'GLuint64 release_count',
+    'extension': "CHROMIUM_sync_point",
+    'chromium': True,
+    'trace_level': 1,
+  },
+  'GenSyncTokenCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': False,
+    'extension': "CHROMIUM_sync_point",
+    'chromium': True,
+  },
+  'WaitSyncTokenCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': False,
+    'cmd_args': 'GLuint namespace_id, '
+                'GLuint64 command_buffer_id, '
+                'GLuint64 release_count',
+    'client_test': False,
+    'extension': "CHROMIUM_sync_point",
+    'chromium': True,
+  },
   'DiscardBackbufferCHROMIUM': {
     'type': 'Custom',
     'impl_func': True,

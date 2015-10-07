@@ -36,7 +36,7 @@ class WaitableEvent;
 
 namespace gpu {
 class PreemptionFlag;
-class SyncPointClientState;
+class SyncPointOrderData;
 class SyncPointManager;
 union ValueState;
 class ValueStateMap;
@@ -172,8 +172,8 @@ class CONTENT_EXPORT GpuChannel
   // Returns the global order number for the last unprocessed IPC message.
   uint32_t GetUnprocessedOrderNum() const;
 
-  // Returns the shared sync point client state.
-  scoped_refptr<gpu::SyncPointClientState> GetSyncPointClientState();
+  // Returns the shared sync point global order data.
+  scoped_refptr<gpu::SyncPointOrderData> GetSyncPointOrderData();
 
   void HandleMessage();
 
@@ -410,7 +410,7 @@ class GpuChannelMessageQueue
       const base::WeakPtr<GpuChannel>& gpu_channel,
       base::SingleThreadTaskRunner* task_runner);
 
-  scoped_refptr<gpu::SyncPointClientState> GetSyncPointClientState();
+  scoped_refptr<gpu::SyncPointOrderData> GetSyncPointOrderData();
 
   // Returns the global order number for the last unprocessed IPC message.
   uint32_t GetUnprocessedOrderNum() const;
@@ -461,7 +461,7 @@ class GpuChannelMessageQueue
   mutable base::Lock channel_messages_lock_;
 
   // Keeps track of sync point related state such as message order numbers.
-  scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
+  scoped_refptr<gpu::SyncPointOrderData> sync_point_order_data_;
 
   base::WeakPtr<GpuChannel> gpu_channel_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

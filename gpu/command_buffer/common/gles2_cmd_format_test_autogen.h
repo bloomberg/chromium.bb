@@ -4768,6 +4768,32 @@ TEST_F(GLES2FormatTest, WaitSyncPointCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, InsertFenceSyncCHROMIUM) {
+  cmds::InsertFenceSyncCHROMIUM& cmd =
+      *GetBufferAs<cmds::InsertFenceSyncCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint64>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::InsertFenceSyncCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint64>(11), cmd.release_count);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, WaitSyncTokenCHROMIUM) {
+  cmds::WaitSyncTokenCHROMIUM& cmd =
+      *GetBufferAs<cmds::WaitSyncTokenCHROMIUM>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint64>(12),
+              static_cast<GLuint64>(13));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::WaitSyncTokenCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.namespace_id);
+  EXPECT_EQ(static_cast<GLuint64>(12), cmd.command_buffer_id);
+  EXPECT_EQ(static_cast<GLuint64>(13), cmd.release_count);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, DrawBuffersEXTImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLenum data[] = {

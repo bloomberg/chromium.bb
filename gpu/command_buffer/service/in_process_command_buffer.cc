@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -182,8 +183,11 @@ InProcessCommandBuffer::InProcessCommandBuffer(
       image_factory_(nullptr),
       last_put_offset_(-1),
       gpu_memory_buffer_manager_(nullptr),
+      next_fence_sync_release_(1),
+      flushed_fence_sync_release_(0),
       flush_event_(false, false),
       service_(GetInitialService(service)),
+      fence_sync_wait_event_(false, false),
       gpu_thread_weak_ptr_factory_(this) {
   DCHECK(service_.get());
   next_image_id_.GetNext();
@@ -344,10 +348,9 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     return false;
   }
 
-  sync_point_client_state_ = SyncPointClientState::Create();
+  sync_point_order_data_ = SyncPointOrderData::Create();
   sync_point_client_ = service_->sync_point_manager()->CreateSyncPointClient(
-      sync_point_client_state_,
-      GetNamespaceID(), GetCommandBufferID());
+      sync_point_order_data_, GetNamespaceID(), GetCommandBufferID());
 
   if (service_->UseVirtualizedGLContexts() ||
       decoder_->GetContextGroup()
@@ -414,6 +417,12 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   decoder_->SetWaitSyncPointCallback(
       base::Bind(&InProcessCommandBuffer::WaitSyncPointOnGpuThread,
                  base::Unretained(this)));
+  decoder_->SetFenceSyncReleaseCallback(
+      base::Bind(&InProcessCommandBuffer::FenceSyncReleaseOnGpuThread,
+                 base::Unretained(this)));
+  decoder_->SetWaitFenceSyncCallback(
+      base::Bind(&InProcessCommandBuffer::WaitFenceSyncOnGpuThread,
+                 base::Unretained(this)));
 
   image_factory_ = params.image_factory;
 
@@ -445,7 +454,10 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   context_ = NULL;
   surface_ = NULL;
   sync_point_client_ = NULL;
-  sync_point_client_state_ = NULL;
+  if (sync_point_order_data_) {
+    sync_point_order_data_->Destroy();
+    sync_point_order_data_ = nullptr;
+  }
   gl_share_group_ = NULL;
 #if defined(OS_ANDROID)
   stream_texture_manager_.reset();
@@ -494,7 +506,7 @@ void InProcessCommandBuffer::FlushOnGpuThread(int32 put_offset,
   ScopedEvent handle_flush(&flush_event_);
   base::AutoLock lock(command_buffer_lock_);
 
-  sync_point_client_state_->BeginProcessingOrderNumber(order_num);
+  sync_point_order_data_->BeginProcessingOrderNumber(order_num);
   command_buffer_->Flush(put_offset);
   {
     // Update state before signaling the flush event.
@@ -509,7 +521,7 @@ void InProcessCommandBuffer::FlushOnGpuThread(int32 put_offset,
   // order number function until the message is rescheduled and finished
   // processing. This DCHECK is to enforce this.
   DCHECK(context_lost_ || put_offset == state_after_last_flush_.get_offset);
-  sync_point_client_state_->FinishProcessingOrderNumber(order_num);
+  sync_point_order_data_->FinishProcessingOrderNumber(order_num);
 
   // If we've processed all pending commands but still have pending queries,
   // pump idle work until the query is passed.
@@ -553,13 +565,15 @@ void InProcessCommandBuffer::Flush(int32 put_offset) {
 
   SyncPointManager* sync_manager = service_->sync_point_manager();
   const uint32_t order_num =
-      sync_point_client_state_->GenerateUnprocessedOrderNumber(sync_manager);
+      sync_point_order_data_->GenerateUnprocessedOrderNumber(sync_manager);
   last_put_offset_ = put_offset;
   base::Closure task = base::Bind(&InProcessCommandBuffer::FlushOnGpuThread,
                                   gpu_thread_weak_ptr_,
                                   put_offset,
                                   order_num);
   QueueTask(task);
+
+  flushed_fence_sync_release_ = next_fence_sync_release_ - 1;
 }
 
 void InProcessCommandBuffer::OrderingBarrier(int32 put_offset) {
@@ -798,8 +812,15 @@ void InProcessCommandBuffer::RetireSyncPointOnGpuThread(uint32 sync_point) {
       base::AutoLock lock(command_buffer_lock_);
       make_current_success = MakeCurrent();
     }
-    if (make_current_success)
-      mailbox_manager->PushTextureUpdates(sync_point);
+    if (make_current_success) {
+      // Old sync points are global and do not have a command buffer ID,
+      // We can simply use the GPUIO namespace with 0 for the command buffer ID
+      // (under normal circumstances 0 is  invalid so  will not be used) until
+      // the old sync points are replaced.
+      gles2::SyncToken sync_token = {gpu::CommandBufferNamespace::GPU_IO, 0,
+                                     sync_point};
+      mailbox_manager->PushTextureUpdates(sync_token);
+    }
   }
   service_->sync_point_manager()->RetireSyncPoint(sync_point);
 }
@@ -817,7 +838,63 @@ bool InProcessCommandBuffer::WaitSyncPointOnGpuThread(unsigned sync_point) {
   service_->sync_point_manager()->WaitSyncPoint(sync_point);
   gles2::MailboxManager* mailbox_manager =
       decoder_->GetContextGroup()->mailbox_manager();
-  mailbox_manager->PullTextureUpdates(sync_point);
+  // Old sync points are global and do not have a command buffer ID,
+  // We can simply use the GPUIO namespace with 0 for the command buffer ID
+  // (under normal circumstances 0 is  invalid so  will not be used) until
+  // the old sync points are replaced.
+  gles2::SyncToken sync_token = {gpu::CommandBufferNamespace::GPU_IO, 0,
+                                 sync_point};
+  mailbox_manager->PullTextureUpdates(sync_token);
+  return true;
+}
+
+void InProcessCommandBuffer::FenceSyncReleaseOnGpuThread(uint64_t release) {
+  DCHECK(!sync_point_client_->client_state()->IsFenceSyncReleased(release));
+  gles2::MailboxManager* mailbox_manager =
+      decoder_->GetContextGroup()->mailbox_manager();
+  if (mailbox_manager->UsesSync()) {
+    bool make_current_success = false;
+    {
+      base::AutoLock lock(command_buffer_lock_);
+      make_current_success = MakeCurrent();
+    }
+    if (make_current_success) {
+      gles2::SyncToken sync_token = {GetNamespaceID(), GetCommandBufferID(),
+                                     release};
+      mailbox_manager->PushTextureUpdates(sync_token);
+    }
+  }
+
+  sync_point_client_->ReleaseFenceSync(release);
+}
+
+bool InProcessCommandBuffer::WaitFenceSyncOnGpuThread(
+    gpu::CommandBufferNamespace namespace_id,
+    uint64_t command_buffer_id,
+    uint64_t release) {
+  gpu::SyncPointManager* sync_point_manager = service_->sync_point_manager();
+  DCHECK(sync_point_manager);
+
+  scoped_refptr<gpu::SyncPointClientState> release_state =
+      sync_point_manager->GetSyncPointClientState(namespace_id,
+                                                  command_buffer_id);
+
+  if (!release_state)
+    return true;
+
+  if (!release_state->IsFenceSyncReleased(release)) {
+    // Use waitable event which is signalled when the release fence is released.
+    sync_point_client_->Wait(
+        release_state.get(), release,
+        base::Bind(&base::WaitableEvent::Signal,
+                   base::Unretained(&fence_sync_wait_event_)));
+    fence_sync_wait_event_.Wait();
+  }
+
+  gles2::MailboxManager* mailbox_manager =
+      decoder_->GetContextGroup()->mailbox_manager();
+  gles2::SyncToken sync_token = {namespace_id, command_buffer_id, release};
+  mailbox_manager->PullTextureUpdates(sync_token);
   return true;
 }
 
@@ -879,6 +956,18 @@ CommandBufferNamespace InProcessCommandBuffer::GetNamespaceID() const {
 
 uint64_t InProcessCommandBuffer::GetCommandBufferID() const {
   return command_buffer_id_;
+}
+
+uint64_t InProcessCommandBuffer::GenerateFenceSyncRelease() {
+  return next_fence_sync_release_++;
+}
+
+bool InProcessCommandBuffer::IsFenceSyncRelease(uint64_t release) {
+  return release != 0 && release < next_fence_sync_release_;
+}
+
+bool InProcessCommandBuffer::IsFenceSyncFlushed(uint64_t release) {
+  return release <= flushed_fence_sync_release_;
 }
 
 uint32 InProcessCommandBuffer::CreateStreamTextureOnGpuThread(

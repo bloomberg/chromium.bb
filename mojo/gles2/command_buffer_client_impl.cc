@@ -128,6 +128,8 @@ CommandBufferClientImpl::CommandBufferClientImpl(
       last_put_offset_(-1),
       next_transfer_buffer_id_(0),
       next_image_id_(0),
+      next_fence_sync_release_(1),
+      flushed_fence_sync_release_(0),
       async_waiter_(async_waiter) {
   command_buffer_.Bind(mojo::InterfacePtrInfo<mojo::CommandBuffer>(
                            command_buffer_handle.Pass(), 0u),
@@ -190,6 +192,7 @@ void CommandBufferClientImpl::Flush(int32 put_offset) {
 
   last_put_offset_ = put_offset;
   command_buffer_->Flush(put_offset);
+  flushed_fence_sync_release_ = next_fence_sync_release_ - 1;
 }
 
 void CommandBufferClientImpl::OrderingBarrier(int32_t put_offset) {
@@ -406,6 +409,18 @@ uint64_t CommandBufferClientImpl::GetCommandBufferID() const {
   // the connect id.
   NOTIMPLEMENTED();
   return 0;
+}
+
+uint64_t CommandBufferClientImpl::GenerateFenceSyncRelease() {
+  return next_fence_sync_release_++;
+}
+
+bool CommandBufferClientImpl::IsFenceSyncRelease(uint64_t release) {
+  return release != 0 && release < next_fence_sync_release_;
+}
+
+bool CommandBufferClientImpl::IsFenceSyncFlushed(uint64_t release) {
+  return release != 0 && release <= flushed_fence_sync_release_;
 }
 
 }  // namespace gles2

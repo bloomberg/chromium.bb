@@ -65,6 +65,10 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
  public:
   typedef error::Error Error;
   typedef base::Callback<bool(uint32 id)> WaitSyncPointCallback;
+  typedef base::Callback<void(uint64_t release)> FenceSyncReleaseCallback;
+  typedef base::Callback<bool(gpu::CommandBufferNamespace namespace_id,
+                              uint64_t command_buffer_id,
+                              uint64_t release)> WaitFenceSyncCallback;
 
   // The default stencil mask, which has all bits set.  This really should be a
   // GLuint, but we can't #include gl_bindings.h in this file without causing
@@ -233,6 +237,13 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // scheduling status (i.e. true if the channel is still scheduled).
   virtual void SetWaitSyncPointCallback(
       const WaitSyncPointCallback& callback) = 0;
+
+  // Sets the callback for fence sync release and wait calls. The wait call
+  // returns true if the channel is still scheduled.
+  virtual void SetFenceSyncReleaseCallback(
+      const FenceSyncReleaseCallback& callback) = 0;
+  virtual void SetWaitFenceSyncCallback(
+      const WaitFenceSyncCallback& callback) = 0;
 
   virtual void WaitForReadPixels(base::Closure callback) = 0;
   virtual uint32 GetTextureUploadCount() = 0;
