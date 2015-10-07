@@ -152,14 +152,14 @@ void AudioScheduledSourceHandler::start(double when, ExceptionState& exceptionSt
         return;
     }
 
-    // This synchronizes with process(). updateSchedulingInfo will read some of the variables being
-    // set here.
-    MutexLocker processLocker(m_processLock);
-
     // The node is started. Add a reference to keep us alive so that audio will eventually get
     // played even if Javascript should drop all references to this node. The reference will get
     // dropped when the source has finished playing.
     context()->notifySourceNodeStartedProcessing(node());
+
+    // This synchronizes with process(). updateSchedulingInfo will read some of the variables being
+    // set here.
+    MutexLocker processLocker(m_processLock);
 
     // If |when| < currentTime, the source must start now according to the spec.
     // So just set startTime to currentTime in this case to start the source now.
