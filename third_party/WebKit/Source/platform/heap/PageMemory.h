@@ -47,6 +47,7 @@ public:
 
     WARN_UNUSED_RETURN bool commit()
     {
+        WTF::recommitSystemPages(m_base, m_size);
         return WTF::setSystemPagesAccessible(m_base, m_size);
     }
 

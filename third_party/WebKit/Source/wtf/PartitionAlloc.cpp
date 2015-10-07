@@ -392,6 +392,7 @@ static ALWAYS_INLINE void partitionDecommitSystemPages(PartitionRootBase* root, 
 
 static ALWAYS_INLINE void partitionRecommitSystemPages(PartitionRootBase* root, void* addr, size_t len)
 {
+    recommitSystemPages(addr, len);
     partitionIncreaseCommittedPages(root, len);
 }
 
@@ -1105,7 +1106,7 @@ static size_t partitionPurgePage(PartitionPage* page, bool discard)
         if (discardableBytes && discard) {
             char* ptr = reinterpret_cast<char*>(partitionPageToPointer(page));
             ptr += usedBytes;
-            decommitSystemPages(ptr, discardableBytes);
+            discardSystemPages(ptr, discardableBytes);
         }
         return discardableBytes;
     }
@@ -1181,7 +1182,7 @@ static size_t partitionPurgePage(PartitionPage* page, bool discard)
         page->freelistHead = partitionFreelistMask(page->freelistHead);
         ASSERT(numNewEntries == numSlots - page->numAllocatedSlots);
         // Discard the memory.
-        decommitSystemPages(beginPtr, unprovisionedBytes);
+        discardSystemPages(beginPtr, unprovisionedBytes);
     }
 
     // Next, walk the slots and for any not in use, consider where the system
@@ -1204,7 +1205,7 @@ static size_t partitionPurgePage(PartitionPage* page, bool discard)
             size_t partialSlotBytes = endPtr - beginPtr;
             discardableBytes += partialSlotBytes;
             if (discard)
-                decommitSystemPages(beginPtr, partialSlotBytes);
+                discardSystemPages(beginPtr, partialSlotBytes);
         }
     }
     return discardableBytes;
