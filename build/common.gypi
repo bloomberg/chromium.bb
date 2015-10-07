@@ -667,8 +667,8 @@
           }],
         ],
         'defines': [
-          '_WIN32_WINNT=0x0A00',
-          'WINVER=0x0A00',
+          '_WIN32_WINNT=0x0603',
+          'WINVER=0x0603',
           # WIN32 is used by ppapi
           'WIN32',
           'NOMINMAX',
