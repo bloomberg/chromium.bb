@@ -685,12 +685,14 @@ class BASE_EXPORT TimeTicks : public time_internal::TimeBase<TimeTicks> {
   static TimeTicks FromQPCValue(LONGLONG qpc_value);
 #endif
 
-  // Get the TimeTick value at the time of the UnixEpoch. This is useful when
-  // you need to relate the value of TimeTicks to a real time and date.
-  // Note: Upon first invocation, this function takes a snapshot of the realtime
-  // clock to establish a reference point.  This function will return the same
-  // value for the duration of the application, but will be different in future
-  // application runs.
+  // Get an estimate of the TimeTick value at the time of the UnixEpoch. Because
+  // Time and TimeTicks respond differently to user-set time and NTP
+  // adjustments, this number is only an estimate. Nevertheless, this can be
+  // useful when you need to relate the value of TimeTicks to a real time and
+  // date. Note: Upon first invocation, this function takes a snapshot of the
+  // realtime clock to establish a reference point.  This function will return
+  // the same value for the duration of the application, but will be different
+  // in future application runs.
   static TimeTicks UnixEpoch();
 
   // Returns |this| snapped to the next tick, given a |tick_phase| and
