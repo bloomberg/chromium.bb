@@ -12,6 +12,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/google_chrome_strings.h"
 #include "chrome/grit/locale_settings.h"
+#include "chrome/grit/settings_chromium_strings.h"
+#include "chrome/grit/settings_google_chrome_strings.h"
 #include "chrome/grit/settings_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/components_strings.h"

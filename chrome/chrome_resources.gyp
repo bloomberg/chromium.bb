@@ -278,6 +278,22 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+        {
+          # GN version: //chrome/app:settings_chromium_strings
+          'action_name': 'generate_settings_chromium_strings',
+          'variables': {
+            'grit_grd_file': 'app/settings_chromium_strings.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          # GN version: //chrome/app:settings_google_chrome_strings
+          'action_name': 'generate_settings_google_chrome_strings',
+          'variables': {
+            'grit_grd_file': 'app/settings_google_chrome_strings.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
       ],
     },
     {
