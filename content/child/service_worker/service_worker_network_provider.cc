@@ -50,7 +50,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     : provider_id_(GenerateProviderIdForType(provider_type)) {
   if (provider_id_ == kInvalidServiceWorkerProviderId)
     return;
-  context_ = new ServiceWorkerProviderContext(provider_id_);
+  context_ = new ServiceWorkerProviderContext(provider_id_, provider_type);
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
   ChildThreadImpl::current()->Send(new ServiceWorkerHostMsg_ProviderCreated(

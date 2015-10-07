@@ -170,7 +170,9 @@ class ServiceWorkerContextClient
 
   void Send(IPC::Message* message);
   void SendWorkerStarted();
-  void SetRegistrationInServiceWorkerGlobalScope();
+  void SetRegistrationInServiceWorkerGlobalScope(
+      const ServiceWorkerRegistrationObjectInfo& info,
+      const ServiceWorkerVersionAttributes& attrs);
 
   void OnActivateEvent(int request_id);
   void OnInstallEvent(int request_id);

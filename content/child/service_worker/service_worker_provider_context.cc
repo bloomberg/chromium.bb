@@ -14,16 +14,145 @@
 
 namespace content {
 
-ServiceWorkerProviderContext::ServiceWorkerProviderContext(int provider_id)
+class ServiceWorkerProviderContext::Delegate {
+ public:
+  virtual ~Delegate(){};
+  virtual void AssociateRegistration(
+      scoped_ptr<ServiceWorkerRegistrationHandleReference> registration,
+      scoped_ptr<ServiceWorkerHandleReference> installing,
+      scoped_ptr<ServiceWorkerHandleReference> waiting,
+      scoped_ptr<ServiceWorkerHandleReference> active) = 0;
+  virtual void DisassociateRegistration() = 0;
+  virtual void GetAssociatedRegistration(
+      ServiceWorkerRegistrationObjectInfo* info,
+      ServiceWorkerVersionAttributes* attrs) = 0;
+  virtual void SetController(
+      scoped_ptr<ServiceWorkerHandleReference> controller) = 0;
+  virtual ServiceWorkerHandleReference* controller() = 0;
+};
+
+// Delegate class for ServiceWorker client (Document, SharedWorker, etc) to
+// keep the associated registration and the controller until
+// ServiceWorkerContainer is initialized.
+class ServiceWorkerProviderContext::ControlleeDelegate
+    : public ServiceWorkerProviderContext::Delegate {
+ public:
+  ControlleeDelegate() {}
+  ~ControlleeDelegate() override {}
+
+  void AssociateRegistration(
+      scoped_ptr<ServiceWorkerRegistrationHandleReference> registration,
+      scoped_ptr<ServiceWorkerHandleReference> installing,
+      scoped_ptr<ServiceWorkerHandleReference> waiting,
+      scoped_ptr<ServiceWorkerHandleReference> active) override {
+    DCHECK(!registration_);
+    registration_ = registration.Pass();
+  }
+
+  void DisassociateRegistration() override {
+    controller_.reset();
+    registration_.reset();
+  }
+
+  void SetController(
+      scoped_ptr<ServiceWorkerHandleReference> controller) override {
+    DCHECK(registration_);
+    controller_ = controller.Pass();
+  }
+
+  void GetAssociatedRegistration(
+      ServiceWorkerRegistrationObjectInfo* info,
+      ServiceWorkerVersionAttributes* attrs) override {
+    NOTREACHED();
+  }
+
+  ServiceWorkerHandleReference* controller() override {
+    return controller_.get();
+  }
+
+ private:
+  scoped_ptr<ServiceWorkerRegistrationHandleReference> registration_;
+  scoped_ptr<ServiceWorkerHandleReference> controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(ControlleeDelegate);
+};
+
+// Delegate class for ServiceWorkerGlobalScope to keep the associated
+// registration and its versions until the execution context is initialized.
+class ServiceWorkerProviderContext::ControllerDelegate
+    : public ServiceWorkerProviderContext::Delegate {
+ public:
+  ControllerDelegate() {}
+  ~ControllerDelegate() override {}
+
+  void AssociateRegistration(
+      scoped_ptr<ServiceWorkerRegistrationHandleReference> registration,
+      scoped_ptr<ServiceWorkerHandleReference> installing,
+      scoped_ptr<ServiceWorkerHandleReference> waiting,
+      scoped_ptr<ServiceWorkerHandleReference> active) override {
+    DCHECK(!registration_);
+    registration_ = registration.Pass();
+    installing_ = active.Pass();
+    waiting_ = waiting.Pass();
+    active_ = active.Pass();
+  }
+
+  void DisassociateRegistration() override {
+    // ServiceWorkerGlobalScope is never disassociated.
+    NOTREACHED();
+  }
+
+  void SetController(
+      scoped_ptr<ServiceWorkerHandleReference> controller) override {
+    NOTREACHED();
+  }
+
+  void GetAssociatedRegistration(
+      ServiceWorkerRegistrationObjectInfo* info,
+      ServiceWorkerVersionAttributes* attrs) override {
+    DCHECK(registration_);
+    *info = registration_->info();
+    if (installing_)
+      attrs->installing = installing_->info();
+    if (waiting_)
+      attrs->waiting = waiting_->info();
+    if (active_)
+      attrs->active = active_->info();
+  }
+
+  ServiceWorkerHandleReference* controller() override {
+    NOTREACHED();
+    return nullptr;
+  }
+
+ private:
+  scoped_ptr<ServiceWorkerRegistrationHandleReference> registration_;
+  scoped_ptr<ServiceWorkerHandleReference> installing_;
+  scoped_ptr<ServiceWorkerHandleReference> waiting_;
+  scoped_ptr<ServiceWorkerHandleReference> active_;
+
+  ServiceWorkerProviderContext* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ControllerDelegate);
+};
+
+ServiceWorkerProviderContext::ServiceWorkerProviderContext(
+    int provider_id,
+    ServiceWorkerProviderType provider_type)
     : provider_id_(provider_id),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+  if (provider_type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER)
+    delegate_.reset(new ControllerDelegate);
+  else
+    delegate_.reset(new ControlleeDelegate);
+
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
   thread_safe_sender_ = ChildThreadImpl::current()->thread_safe_sender();
+
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
           thread_safe_sender_.get(), main_thread_task_runner_.get());
-  DCHECK(dispatcher);
   dispatcher->AddProviderContext(this);
 }
 
@@ -35,74 +164,47 @@ ServiceWorkerProviderContext::~ServiceWorkerProviderContext() {
   }
 }
 
-ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-  return controller_.get();
-}
-
-bool ServiceWorkerProviderContext::GetRegistrationInfoAndVersionAttributes(
-    ServiceWorkerRegistrationObjectInfo* info,
-    ServiceWorkerVersionAttributes* attrs) {
-  DCHECK(!main_thread_task_runner_->RunsTasksOnCurrentThread());
-  base::AutoLock lock(lock_);
-  if (!registration_)
-    return false;
-
-  *info = registration_->info();
-  if (installing_)
-    attrs->installing = installing_->info();
-  if (waiting_)
-    attrs->waiting = waiting_->info();
-  if (active_)
-    attrs->active = active_->info();
-  return true;
-}
-
 void ServiceWorkerProviderContext::OnAssociateRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
-  base::AutoLock lock(lock_);
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!registration_);
-  DCHECK_NE(kInvalidServiceWorkerRegistrationId, info.registration_id);
-  DCHECK_NE(kInvalidServiceWorkerRegistrationHandleId, info.handle_id);
-
-  registration_ = ServiceWorkerRegistrationHandleReference::Adopt(
-      info, thread_safe_sender_.get());
-  installing_ = ServiceWorkerHandleReference::Adopt(
-      attrs.installing, thread_safe_sender_.get());
-  waiting_ = ServiceWorkerHandleReference::Adopt(
-      attrs.waiting, thread_safe_sender_.get());
-  active_ = ServiceWorkerHandleReference::Adopt(
-      attrs.active, thread_safe_sender_.get());
+  delegate_->AssociateRegistration(
+      ServiceWorkerRegistrationHandleReference::Adopt(
+          info, thread_safe_sender_.get()),
+      ServiceWorkerHandleReference::Adopt(attrs.installing,
+                                          thread_safe_sender_.get()),
+      ServiceWorkerHandleReference::Adopt(attrs.waiting,
+                                          thread_safe_sender_.get()),
+      ServiceWorkerHandleReference::Adopt(attrs.active,
+                                          thread_safe_sender_.get()));
 }
 
 void ServiceWorkerProviderContext::OnDisassociateRegistration() {
-  base::AutoLock lock(lock_);
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-
-  controller_.reset();
-  active_.reset();
-  waiting_.reset();
-  installing_.reset();
-  registration_.reset();
+  delegate_->DisassociateRegistration();
 }
 
 void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
     const ServiceWorkerObjectInfo& info) {
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(registration_);
-
   if (info.version_id == kInvalidServiceWorkerVersionId) {
-    controller_.reset();
-  } else {
-    // This context is is the primary owner of this handle, keeps the
-    // initial reference until it goes away.
-    controller_ =
-        ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
+    delegate_->SetController(scoped_ptr<ServiceWorkerHandleReference>());
+    return;
   }
-  // TODO(kinuko): We can forward the message to other threads here
-  // when we support navigator.serviceWorker in dedicated workers.
+  delegate_->SetController(
+      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get()));
+}
+
+void ServiceWorkerProviderContext::GetAssociatedRegistration(
+    ServiceWorkerRegistrationObjectInfo* info,
+    ServiceWorkerVersionAttributes* attrs) {
+  DCHECK(!main_thread_task_runner_->RunsTasksOnCurrentThread());
+  delegate_->GetAssociatedRegistration(info, attrs);
+}
+
+ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
+  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  return delegate_->controller();
 }
 
 void ServiceWorkerProviderContext::DestructOnMainThread() const {

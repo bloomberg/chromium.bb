@@ -348,9 +348,6 @@ ServiceWorkerDispatcher::GetOrAdoptRegistration(
 
 // We can assume that this message handler is called before the worker context
 // starts because script loading happens after this association.
-// TODO(nhiroki): This association information could be pushed into
-// EmbeddedWorkerMsg_StartWorker message and handed over to the worker thread
-// without a lock in ServiceWorkerProviderContext.
 void ServiceWorkerDispatcher::OnAssociateRegistrationWithServiceWorker(
     int thread_id,
     int provider_id,
@@ -362,9 +359,6 @@ void ServiceWorkerDispatcher::OnAssociateRegistrationWithServiceWorker(
   if (context == provider_contexts_.end())
     return;
   context->second->OnAssociateRegistration(info, attrs);
-
-  // We don't have to add entries into |worker_to_provider_| because state
-  // change events for the workers will be notified on the worker thread.
 }
 
 void ServiceWorkerDispatcher::OnAssociateRegistration(

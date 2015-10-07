@@ -360,8 +360,8 @@ void ServiceWorkerContextClient::workerContextStarted(
 
   ServiceWorkerRegistrationObjectInfo registration_info;
   ServiceWorkerVersionAttributes version_attrs;
-  provider_context_->GetRegistrationInfoAndVersionAttributes(&registration_info,
-                                                             &version_attrs);
+  provider_context_->GetAssociatedRegistration(&registration_info,
+                                               &version_attrs);
   DCHECK_NE(registration_info.registration_id,
             kInvalidServiceWorkerRegistrationId);
 
@@ -372,7 +372,7 @@ void ServiceWorkerContextClient::workerContextStarted(
   context_->service_registry.ServiceRegistry::AddService(base::Bind(
       &BackgroundSyncClientImpl::Create, registration_info.registration_id));
 
-  SetRegistrationInServiceWorkerGlobalScope();
+  SetRegistrationInServiceWorkerGlobalScope(registration_info, version_attrs);
 
   Send(new EmbeddedWorkerHostMsg_WorkerThreadStarted(
       embedded_worker_id_, WorkerThread::GetCurrentId(),
@@ -671,17 +671,10 @@ void ServiceWorkerContextClient::SendWorkerStarted() {
   Send(new EmbeddedWorkerHostMsg_WorkerStarted(embedded_worker_id_));
 }
 
-void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope() {
+void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope(
+    const ServiceWorkerRegistrationObjectInfo& info,
+    const ServiceWorkerVersionAttributes& attrs) {
   DCHECK(worker_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(provider_context_);
-
-  ServiceWorkerRegistrationObjectInfo info;
-  ServiceWorkerVersionAttributes attrs;
-  bool found =
-      provider_context_->GetRegistrationInfoAndVersionAttributes(&info, &attrs);
-  if (!found)
-    return;  // Cannot be associated with a registration in some tests.
-
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
           sender_.get(), main_thread_task_runner_.get());
