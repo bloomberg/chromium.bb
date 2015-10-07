@@ -144,7 +144,7 @@ AtomicString FrameTree::uniqueChildName(const AtomicString& requestedName) const
     const int framePathSuffixLength = 3;
 
     // Find the nearest parent that has a frame with a path in it.
-    Vector<Frame*, 16> chain;
+    WillBeHeapVector<RawPtrWillBeMember<Frame>, 16> chain;
     Frame* frame;
     for (frame = m_thisFrame; frame; frame = frame->tree().parent()) {
         if (frame->tree().uniqueName().startsWith(framePathPrefix))
