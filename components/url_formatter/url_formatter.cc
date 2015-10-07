@@ -804,4 +804,15 @@ base::string16 IDNToUnicode(const std::string& host,
   return IDNToUnicodeWithAdjustments(host, languages, NULL);
 }
 
-}  // url_formatter
+base::string16 StripWWW(const base::string16& text) {
+  const base::string16 www(base::ASCIIToUTF16("www."));
+  return base::StartsWith(text, www, base::CompareCase::SENSITIVE)
+      ? text.substr(www.length()) : text;
+}
+
+base::string16 StripWWWFromHost(const GURL& url) {
+  DCHECK(url.is_valid());
+  return StripWWW(base::ASCIIToUTF16(url.host_piece()));
+}
+
+}  // namespace url_formatter

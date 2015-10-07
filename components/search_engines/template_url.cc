@@ -1217,8 +1217,8 @@ base::string16 TemplateURL::GenerateKeyword(
   // |url|'s hostname may be IDN-encoded. Before generating |keyword| from it,
   // convert to Unicode using the user's accept-languages, so it won't look like
   // a confusing punycode string.
-  base::string16 keyword =
-      net::StripWWW(url_formatter::IDNToUnicode(url.host(), accept_languages));
+  base::string16 keyword = url_formatter::StripWWW(
+      url_formatter::IDNToUnicode(url.host(), accept_languages));
   // Special case: if the host was exactly "www." (not sure this can happen but
   // perhaps with some weird intranet and custom DNS server?), ensure we at
   // least don't return the empty string.

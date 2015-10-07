@@ -28,7 +28,7 @@ class GURL;
 
 namespace url {
 struct Parsed;
-}  // url
+}
 
 namespace url_formatter {
 
@@ -150,6 +150,13 @@ void AppendFormattedHost(const GURL& url,
 base::string16 IDNToUnicode(const std::string& host,
                             const std::string& languages);
 
-}  // url_formatter
+// If text starts with "www." it is removed, otherwise text is returned
+// unmodified.
+base::string16 StripWWW(const base::string16& text);
+
+// Runs |url|'s host through StripWWW().  |url| must be valid.
+base::string16 StripWWWFromHost(const GURL& url);
+
+}  // namespace url_formatter
 
 #endif  // COMPONENTS_URL_FORMATTER_URL_FORMATTER_H_

@@ -33,7 +33,7 @@
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/search_engines/util.h"
 #include "components/url_formatter/url_fixer.h"
-#include "net/base/net_util.h"
+#include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
@@ -311,7 +311,7 @@ base::string16 TemplateURLService::CleanUserInputKeyword(
   }
 
   // Remove leading "www.".
-  result = net::StripWWW(result);
+  result = url_formatter::StripWWW(result);
 
   // Remove trailing "/".
   return (result.length() > 0 && result[result.length() - 1] == '/') ?

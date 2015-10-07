@@ -160,17 +160,6 @@ bool IsCanonicalizedHostCompliant(const std::string& host) {
   return most_recent_component_started_alphanumeric;
 }
 
-base::string16 StripWWW(const base::string16& text) {
-  const base::string16 www(base::ASCIIToUTF16("www."));
-  return base::StartsWith(text, www, base::CompareCase::SENSITIVE)
-      ? text.substr(www.length()) : text;
-}
-
-base::string16 StripWWWFromHost(const GURL& url) {
-  DCHECK(url.is_valid());
-  return StripWWW(base::ASCIIToUTF16(url.host_piece()));
-}
-
 int SetNonBlocking(int fd) {
 #if defined(OS_WIN)
   unsigned long no_block = 1;

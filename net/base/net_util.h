@@ -163,13 +163,6 @@ NET_EXPORT std::string GetDirectoryListingEntry(const base::string16& name,
                                                 int64_t size,
                                                 base::Time modified);
 
-// If text starts with "www." it is removed, otherwise text is returned
-// unmodified.
-NET_EXPORT base::string16 StripWWW(const base::string16& text);
-
-// Runs |url|'s host through StripWWW().  |url| must be valid.
-NET_EXPORT base::string16 StripWWWFromHost(const GURL& url);
-
 // Set socket to non-blocking mode
 NET_EXPORT int SetNonBlocking(int fd);
 

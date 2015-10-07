@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/ssl_errors/error_info.h"
+#include "components/url_formatter/url_formatter.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/x509_cert_types.h"
@@ -275,13 +276,13 @@ bool SSLErrorClassification::GetWWWSubDomainMatch(
           !IsHostNameKnownTLD(dns_names[i])) {
         continue;
       } else if (dns_names[i].length() > host_name.length()) {
-        if (net::StripWWW(base::ASCIIToUTF16(dns_names[i])) ==
+        if (url_formatter::StripWWW(base::ASCIIToUTF16(dns_names[i])) ==
             base::ASCIIToUTF16(host_name)) {
           *www_match_host_name = dns_names[i];
           return true;
         }
       } else {
-        if (net::StripWWW(base::ASCIIToUTF16(host_name)) ==
+        if (url_formatter::StripWWW(base::ASCIIToUTF16(host_name)) ==
             base::ASCIIToUTF16(dns_names[i])) {
           *www_match_host_name = dns_names[i];
           return true;
