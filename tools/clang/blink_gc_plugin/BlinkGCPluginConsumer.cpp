@@ -967,20 +967,24 @@ bool BlinkGCPluginConsumer::GetFilename(SourceLocation loc,
   return true;
 }
 
+DiagnosticBuilder BlinkGCPluginConsumer::ReportDiagnostic(
+    SourceLocation location,
+    unsigned diag_id) {
+  SourceManager& manager = instance_.getSourceManager();
+  FullSourceLoc full_loc(location, manager);
+  return diagnostic_.Report(full_loc, diag_id);
+}
+
 void BlinkGCPluginConsumer::ReportClassMustLeftMostlyDeriveGC(
     RecordInfo* info) {
-  SourceLocation loc = info->record()->getInnerLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_class_must_left_mostly_derive_gc_)
+  ReportDiagnostic(info->record()->getInnerLocStart(),
+                   diag_class_must_left_mostly_derive_gc_)
       << info->record();
 }
 
 void BlinkGCPluginConsumer::ReportClassRequiresTraceMethod(RecordInfo* info) {
-  SourceLocation loc = info->record()->getInnerLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_class_requires_trace_method_)
+  ReportDiagnostic(info->record()->getInnerLocStart(),
+                   diag_class_requires_trace_method_)
       << info->record();
 
   for (RecordInfo::Bases::iterator it = info->GetBases().begin();
@@ -1002,20 +1006,14 @@ void BlinkGCPluginConsumer::ReportBaseRequiresTracing(
     RecordInfo* derived,
     CXXMethodDecl* trace,
     CXXRecordDecl* base) {
-  SourceLocation loc = trace->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_base_requires_tracing_)
+  ReportDiagnostic(trace->getLocStart(), diag_base_requires_tracing_)
       << base << derived->record();
 }
 
 void BlinkGCPluginConsumer::ReportFieldsRequireTracing(
     RecordInfo* info,
     CXXMethodDecl* trace) {
-  SourceLocation loc = trace->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_fields_require_tracing_)
+  ReportDiagnostic(trace->getLocStart(), diag_fields_require_tracing_)
       << info->record();
   for (RecordInfo::Fields::iterator it = info->GetFields().begin();
        it != info->GetFields().end();
@@ -1028,9 +1026,6 @@ void BlinkGCPluginConsumer::ReportFieldsRequireTracing(
 void BlinkGCPluginConsumer::ReportClassContainsInvalidFields(
     RecordInfo* info,
     CheckFieldsVisitor::Errors* errors) {
-  SourceLocation loc = info->record()->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
   bool only_warnings = options_.warn_raw_ptr;
   for (CheckFieldsVisitor::Errors::iterator it = errors->begin();
        only_warnings && it != errors->end();
@@ -1038,11 +1033,12 @@ void BlinkGCPluginConsumer::ReportClassContainsInvalidFields(
     if (!CheckFieldsVisitor::IsWarning(it->second))
       only_warnings = false;
   }
-  diagnostic_.Report(full_loc,
-                     only_warnings ?
-                     diag_class_contains_invalid_fields_warning_ :
-                     diag_class_contains_invalid_fields_)
+  ReportDiagnostic(info->record()->getLocStart(),
+                   only_warnings ?
+                   diag_class_contains_invalid_fields_warning_ :
+                   diag_class_contains_invalid_fields_)
       << info->record();
+
   for (CheckFieldsVisitor::Errors::iterator it = errors->begin();
        it != errors->end();
        ++it) {
@@ -1073,15 +1069,13 @@ void BlinkGCPluginConsumer::ReportClassContainsInvalidFields(
 void BlinkGCPluginConsumer::ReportClassContainsGCRoots(
     RecordInfo* info,
     CheckGCRootsVisitor::Errors* errors) {
-  SourceLocation loc = info->record()->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
   for (CheckGCRootsVisitor::Errors::iterator it = errors->begin();
        it != errors->end();
        ++it) {
     CheckGCRootsVisitor::RootPath::iterator path = it->begin();
     FieldPoint* point = *path;
-    diagnostic_.Report(full_loc, diag_class_contains_gc_root_)
+    ReportDiagnostic(info->record()->getLocStart(),
+                     diag_class_contains_gc_root_)
         << info->record() << point->field();
     while (++path != it->end()) {
       NotePartObjectContainsGCRoot(point);
@@ -1097,8 +1091,6 @@ void BlinkGCPluginConsumer::ReportFinalizerAccessesFinalizedFields(
   for (CheckFinalizerVisitor::Errors::iterator it = fields->begin();
        it != fields->end();
        ++it) {
-    SourceLocation loc = it->member->getLocStart();
-    SourceManager& manager = instance_.getSourceManager();
     bool as_eagerly_finalized = it->as_eagerly_finalized;
     unsigned diag_error = as_eagerly_finalized ?
                           diag_finalizer_eagerly_finalized_field_ :
@@ -1106,36 +1098,29 @@ void BlinkGCPluginConsumer::ReportFinalizerAccessesFinalizedFields(
     unsigned diag_note = as_eagerly_finalized ?
                          diag_eagerly_finalized_field_note_ :
                          diag_finalized_field_note_;
-    FullSourceLoc full_loc(loc, manager);
-    diagnostic_.Report(full_loc, diag_error)
+    ReportDiagnostic(it->member->getLocStart(), diag_error)
         << dtor << it->field->field();
     NoteField(it->field, diag_note);
   }
 }
 
 void BlinkGCPluginConsumer::ReportClassRequiresFinalization(RecordInfo* info) {
-  SourceLocation loc = info->record()->getInnerLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_class_requires_finalization_)
+  ReportDiagnostic(info->record()->getInnerLocStart(),
+                   diag_class_requires_finalization_)
       << info->record();
 }
 
 void BlinkGCPluginConsumer::ReportClassDoesNotRequireFinalization(
     RecordInfo* info) {
-  SourceLocation loc = info->record()->getInnerLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_class_does_not_require_finalization_)
+  ReportDiagnostic(info->record()->getInnerLocStart(),
+                   diag_class_does_not_require_finalization_)
       << info->record();
 }
 
 void BlinkGCPluginConsumer::ReportClassMustDeclareGCMixinTraceMethod(
     RecordInfo* info) {
-  SourceLocation loc = info->record()->getInnerLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_class_must_declare_gc_mixin_trace_method_)
+  ReportDiagnostic(info->record()->getInnerLocStart(),
+                   diag_class_must_declare_gc_mixin_trace_method_)
       << info->record();
 }
 
@@ -1143,10 +1128,7 @@ void BlinkGCPluginConsumer::ReportOverriddenNonVirtualTrace(
     RecordInfo* info,
     CXXMethodDecl* trace,
     CXXMethodDecl* overridden) {
-  SourceLocation loc = trace->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_overridden_non_virtual_trace_)
+  ReportDiagnostic(trace->getLocStart(), diag_overridden_non_virtual_trace_)
       << info->record() << overridden->getParent();
   NoteOverriddenNonVirtualTrace(overridden);
 }
@@ -1163,19 +1145,15 @@ void BlinkGCPluginConsumer::ReportMissingFinalizeDispatchMethod(
 void BlinkGCPluginConsumer::ReportMissingDispatchMethod(
     RecordInfo* info,
     unsigned error) {
-  SourceLocation loc = info->record()->getInnerLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, error) << info->record();
+  ReportDiagnostic(info->record()->getInnerLocStart(), error)
+      << info->record();
 }
 
 void BlinkGCPluginConsumer::ReportVirtualAndManualDispatch(
     RecordInfo* info,
     CXXMethodDecl* dispatch) {
-  SourceLocation loc = info->record()->getInnerLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_virtual_and_manual_dispatch_)
+  ReportDiagnostic(info->record()->getInnerLocStart(),
+                   diag_virtual_and_manual_dispatch_)
       << info->record();
   NoteManualDispatchMethod(dispatch);
 }
@@ -1196,73 +1174,57 @@ void BlinkGCPluginConsumer::ReportMissingDispatch(
     const FunctionDecl* dispatch,
     RecordInfo* receiver,
     unsigned error) {
-  SourceLocation loc = dispatch->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, error) << receiver->record();
+  ReportDiagnostic(dispatch->getLocStart(), error) << receiver->record();
 }
 
 void BlinkGCPluginConsumer::ReportDerivesNonStackAllocated(
     RecordInfo* info,
     BasePoint* base) {
-  SourceLocation loc = base->spec().getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_derives_non_stack_allocated_)
+  ReportDiagnostic(base->spec().getLocStart(),
+                   diag_derives_non_stack_allocated_)
       << info->record() << base->info()->record();
 }
 
 void BlinkGCPluginConsumer::ReportClassOverridesNew(
     RecordInfo* info,
     CXXMethodDecl* newop) {
-  SourceLocation loc = newop->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_class_overrides_new_) << info->record();
+  ReportDiagnostic(newop->getLocStart(), diag_class_overrides_new_)
+      << info->record();
 }
 
 void BlinkGCPluginConsumer::ReportClassDeclaresPureVirtualTrace(
     RecordInfo* info,
     CXXMethodDecl* trace) {
-  SourceLocation loc = trace->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_class_declares_pure_virtual_trace_)
+  ReportDiagnostic(trace->getLocStart(),
+                   diag_class_declares_pure_virtual_trace_)
       << info->record();
 }
 
 void BlinkGCPluginConsumer::ReportLeftMostBaseMustBePolymorphic(
     RecordInfo* derived,
     CXXRecordDecl* base) {
-  SourceLocation loc = base->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_left_most_base_must_be_polymorphic_)
+  ReportDiagnostic(base->getLocStart(),
+                   diag_left_most_base_must_be_polymorphic_)
       << base << derived->record();
 }
 
 void BlinkGCPluginConsumer::ReportBaseClassMustDeclareVirtualTrace(
     RecordInfo* derived,
     CXXRecordDecl* base) {
-  SourceLocation loc = base->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_base_class_must_declare_virtual_trace_)
+  ReportDiagnostic(base->getLocStart(),
+                   diag_base_class_must_declare_virtual_trace_)
       << base << derived->record();
 }
 
 void BlinkGCPluginConsumer::NoteManualDispatchMethod(CXXMethodDecl* dispatch) {
-  SourceLocation loc = dispatch->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_manual_dispatch_method_note_) << dispatch;
+  ReportDiagnostic(dispatch->getLocStart(),
+                   diag_manual_dispatch_method_note_)
+      << dispatch;
 }
 
 void BlinkGCPluginConsumer::NoteBaseRequiresTracing(BasePoint* base) {
-  SourceLocation loc = base->spec().getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_base_requires_tracing_note_)
+  ReportDiagnostic(base->spec().getLocStart(),
+                   diag_base_requires_tracing_note_)
       << base->info()->record();
 }
 
@@ -1274,10 +1236,8 @@ void BlinkGCPluginConsumer::NoteFieldRequiresTracing(
 
 void BlinkGCPluginConsumer::NotePartObjectContainsGCRoot(FieldPoint* point) {
   FieldDecl* field = point->field();
-  SourceLocation loc = field->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_part_object_contains_gc_root_note_)
+  ReportDiagnostic(field->getLocStart(),
+                   diag_part_object_contains_gc_root_note_)
       << field << field->getParent();
 }
 
@@ -1286,24 +1246,16 @@ void BlinkGCPluginConsumer::NoteFieldContainsGCRoot(FieldPoint* point) {
 }
 
 void BlinkGCPluginConsumer::NoteUserDeclaredDestructor(CXXMethodDecl* dtor) {
-  SourceLocation loc = dtor->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_user_declared_destructor_note_);
+  ReportDiagnostic(dtor->getLocStart(), diag_user_declared_destructor_note_);
 }
 
 void BlinkGCPluginConsumer::NoteUserDeclaredFinalizer(CXXMethodDecl* dtor) {
-  SourceLocation loc = dtor->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_user_declared_finalizer_note_);
+  ReportDiagnostic(dtor->getLocStart(), diag_user_declared_finalizer_note_);
 }
 
 void BlinkGCPluginConsumer::NoteBaseRequiresFinalization(BasePoint* base) {
-  SourceLocation loc = base->spec().getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_base_requires_finalization_note_)
+  ReportDiagnostic(base->spec().getLocStart(),
+                   diag_base_requires_finalization_note_)
       << base->info()->record();
 }
 
@@ -1312,17 +1264,12 @@ void BlinkGCPluginConsumer::NoteField(FieldPoint* point, unsigned note) {
 }
 
 void BlinkGCPluginConsumer::NoteField(FieldDecl* field, unsigned note) {
-  SourceLocation loc = field->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, note) << field;
+  ReportDiagnostic(field->getLocStart(), note) << field;
 }
 
 void BlinkGCPluginConsumer::NoteOverriddenNonVirtualTrace(
     CXXMethodDecl* overridden) {
-  SourceLocation loc = overridden->getLocStart();
-  SourceManager& manager = instance_.getSourceManager();
-  FullSourceLoc full_loc(loc, manager);
-  diagnostic_.Report(full_loc, diag_overridden_non_virtual_trace_note_)
+  ReportDiagnostic(overridden->getLocStart(),
+                   diag_overridden_non_virtual_trace_note_)
       << overridden;
 }

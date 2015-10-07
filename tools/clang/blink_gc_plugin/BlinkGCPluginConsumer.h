@@ -29,6 +29,7 @@ class BlinkGCPluginConsumer : public clang::ASTConsumer {
 
   void HandleTranslationUnit(clang::ASTContext& context) override;
 
+ private:
   void ParseFunctionTemplates(clang::TranslationUnitDecl* decl);
 
   // Main entry for checking a record declaration.
@@ -83,6 +84,10 @@ class BlinkGCPluginConsumer : public clang::ASTConsumer {
   bool InCheckedNamespace(RecordInfo* info);
 
   bool GetFilename(clang::SourceLocation loc, std::string* filename);
+
+  clang::DiagnosticBuilder ReportDiagnostic(
+      clang::SourceLocation location,
+      unsigned diag_id);
 
   void ReportClassMustLeftMostlyDeriveGC(RecordInfo* info);
   void ReportClassRequiresTraceMethod(RecordInfo* info);
