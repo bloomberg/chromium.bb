@@ -368,7 +368,7 @@ def RestoreChange(host, change, msg=''):
 
 
 def DeleteDraft(host, change):
-  """Delete a gerrit draft patch set."""
+  """Delete a gerrit draft change."""
   path = _GetChangePath(change)
   try:
     FetchUrl(host, path, reqtype='DELETE', ignore_204=True, ignore_404=False)

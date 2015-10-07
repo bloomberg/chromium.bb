@@ -417,7 +417,7 @@ def UserActTopic(opts, topic, *args):
 
 
 def UserActDeletedraft(opts, *args):
-  """Delete draft patch set <n> [n ...]"""
+  """Delete draft CL <n> [n ...]"""
   for arg in args:
     helper, cl = GetGerrit(opts, arg)
     helper.DeleteDraft(cl, dryrun=opts.dryrun)
