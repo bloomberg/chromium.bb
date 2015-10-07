@@ -1335,8 +1335,8 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
         return DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | direction;
     }
 
-    Vector<const Node*, 16> chain1;
-    Vector<const Node*, 16> chain2;
+    WillBeHeapVector<RawPtrWillBeMember<const Node>, 16> chain1;
+    WillBeHeapVector<RawPtrWillBeMember<const Node>, 16> chain2;
     if (attr1)
         chain1.append(attr1);
     if (attr2)
