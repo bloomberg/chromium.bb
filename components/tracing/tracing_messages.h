@@ -87,10 +87,11 @@ IPC_MESSAGE_CONTROL2(TracingMsg_GlobalMemoryDumpResponse,
                      uint64 /* dump_guid */,
                      bool /* success */)
 
-IPC_MESSAGE_CONTROL3(TracingMsg_SetUMACallback,
+IPC_MESSAGE_CONTROL4(TracingMsg_SetUMACallback,
                      std::string /* histogram_name */,
                      base::HistogramBase::Sample /* histogram_lower_value */,
-                     base::HistogramBase::Sample /* histogram_uppwer_value */)
+                     base::HistogramBase::Sample /* histogram_uppwer_value */,
+                     bool /* repeat */)
 
 IPC_MESSAGE_CONTROL1(TracingMsg_ClearUMACallback,
                      std::string /* histogram_name */)
@@ -133,3 +134,5 @@ IPC_MESSAGE_CONTROL2(TracingHostMsg_ProcessMemoryDumpResponse,
 
 IPC_MESSAGE_CONTROL1(TracingHostMsg_TriggerBackgroundTrace,
                      std::string /* name */)
+
+IPC_MESSAGE_CONTROL0(TracingHostMsg_AbortBackgroundTrace)

@@ -239,10 +239,18 @@ void ChildTraceMessageFilter::OnHistogramChanged(
     const std::string& histogram_name,
     base::Histogram::Sample reference_lower_value,
     base::Histogram::Sample reference_upper_value,
+    bool repeat,
     base::Histogram::Sample actual_value) {
   if (actual_value < reference_lower_value ||
-      actual_value > reference_upper_value)
-    return;
+      actual_value > reference_upper_value) {
+    if (!repeat) {
+      ipc_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &ChildTraceMessageFilter::SendAbortBackgroundTracingMessage,
+              this));
+    }
+  }
 
   ipc_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ChildTraceMessageFilter::SendTriggerMessage, this,
@@ -264,15 +272,21 @@ void ChildTraceMessageFilter::SendTriggerMessage(
     sender_->Send(new TracingHostMsg_TriggerBackgroundTrace(histogram_name));
 }
 
+void ChildTraceMessageFilter::SendAbortBackgroundTracingMessage() {
+  if (sender_)
+    sender_->Send(new TracingHostMsg_AbortBackgroundTrace());
+}
+
 void ChildTraceMessageFilter::OnSetUMACallback(
     const std::string& histogram_name,
     int histogram_lower_value,
-    int histogram_upper_value) {
+    int histogram_upper_value,
+    bool repeat) {
   histogram_last_changed_ = base::Time();
   base::StatisticsRecorder::SetCallback(
-      histogram_name,
-      base::Bind(&ChildTraceMessageFilter::OnHistogramChanged, this,
-                 histogram_name, histogram_lower_value, histogram_upper_value));
+      histogram_name, base::Bind(&ChildTraceMessageFilter::OnHistogramChanged,
+                                 this, histogram_name, histogram_lower_value,
+                                 histogram_upper_value, repeat));
 
   base::HistogramBase* existing_histogram =
       base::StatisticsRecorder::FindHistogram(histogram_name);
@@ -293,15 +307,23 @@ void ChildTraceMessageFilter::OnSetUMACallback(
     base::HistogramBase::Sample max;
     base::HistogramBase::Count count;
     sample_iterator->Get(&min, &max, &count);
-    if (min >= histogram_lower_value && max <= histogram_upper_value &&
-        count > 0) {
+    if (count == 0) {
+      sample_iterator->Next();
+      continue;
+    }
+
+    if (min >= histogram_lower_value && max <= histogram_upper_value) {
       ipc_task_runner_->PostTask(
           FROM_HERE, base::Bind(&ChildTraceMessageFilter::SendTriggerMessage,
                                 this, histogram_name));
       break;
+    } else if (!repeat) {
+      ipc_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &ChildTraceMessageFilter::SendAbortBackgroundTracingMessage,
+              this));
     }
-
-    sample_iterator->Next();
   }
 }
 

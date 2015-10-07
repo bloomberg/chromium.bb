@@ -135,9 +135,17 @@ void BackgroundTracingManagerImpl::TriggerPreemptiveFinalization() {
 
 void BackgroundTracingManagerImpl::OnHistogramTrigger(
     const std::string& histogram_name) {
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&BackgroundTracingManagerImpl::OnHistogramTrigger,
+                   base::Unretained(this), histogram_name));
+    return;
+  }
+
   for (auto& rule : config_->rules()) {
-    static_cast<BackgroundTracingRule*>(rule)
-        ->OnHistogramTrigger(histogram_name);
+    if (rule->ShouldTriggerNamedEvent(histogram_name))
+      TriggerPreemptiveFinalization();
   }
 }
 

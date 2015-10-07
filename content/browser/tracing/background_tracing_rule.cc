@@ -26,6 +26,7 @@ const char kConfigRuleHistogramNameKey[] = "histogram_name";
 const char kConfigRuleHistogramValueOldKey[] = "histogram_value";
 const char kConfigRuleHistogramValue1Key[] = "histogram_lower_value";
 const char kConfigRuleHistogramValue2Key[] = "histogram_upper_value";
+const char kConfigRuleHistogramRepeatKey[] = "histogram_repeat";
 
 const char kConfigRuleRandomIntervalTimeoutMin[] = "timeout_min";
 const char kConfigRuleRandomIntervalTimeoutMax[] = "timeout_max";
@@ -93,10 +94,12 @@ class HistogramRule : public BackgroundTracingRule,
  public:
   HistogramRule(const std::string& histogram_name,
                 int histogram_lower_value,
-                int histogram_upper_value)
+                int histogram_upper_value,
+                bool repeat)
       : histogram_name_(histogram_name),
         histogram_lower_value_(histogram_lower_value),
-        histogram_upper_value_(histogram_upper_value) {}
+        histogram_upper_value_(histogram_upper_value),
+        repeat_(repeat) {}
 
   ~HistogramRule() override {
     base::StatisticsRecorder::ClearCallback(histogram_name_);
@@ -110,7 +113,7 @@ class HistogramRule : public BackgroundTracingRule,
         histogram_name_,
         base::Bind(&HistogramRule::OnHistogramChangedCallback,
                    base::Unretained(this), histogram_name_,
-                   histogram_lower_value_, histogram_upper_value_));
+                   histogram_lower_value_, histogram_upper_value_, repeat_));
 
     TracingControllerImpl::GetInstance()->AddTraceMessageFilterObserver(this);
   }
@@ -121,6 +124,7 @@ class HistogramRule : public BackgroundTracingRule,
     dict->SetString(kConfigRuleHistogramNameKey, histogram_name_.c_str());
     dict->SetInteger(kConfigRuleHistogramValue1Key, histogram_lower_value_);
     dict->SetInteger(kConfigRuleHistogramValue2Key, histogram_upper_value_);
+    dict->SetBoolean(kConfigRuleHistogramRepeatKey, repeat_);
   }
 
   void OnHistogramTrigger(const std::string& histogram_name) const override {
@@ -134,10 +138,19 @@ class HistogramRule : public BackgroundTracingRule,
             base::Unretained(BackgroundTracingManagerImpl::GetInstance())));
   }
 
+  void AbortTracing() {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &BackgroundTracingManagerImpl::AbortScenario,
+            base::Unretained(BackgroundTracingManagerImpl::GetInstance())));
+  }
+
   // TracingControllerImpl::TraceMessageFilterObserver implementation
   void OnTraceMessageFilterAdded(TraceMessageFilter* filter) override {
-    filter->Send(new TracingMsg_SetUMACallback(
-        histogram_name_, histogram_lower_value_, histogram_upper_value_));
+    filter->Send(
+        new TracingMsg_SetUMACallback(histogram_name_, histogram_lower_value_,
+                                      histogram_upper_value_, repeat_));
   }
 
   void OnTraceMessageFilterRemoved(TraceMessageFilter* filter) override {
@@ -147,18 +160,27 @@ class HistogramRule : public BackgroundTracingRule,
   void OnHistogramChangedCallback(const std::string& histogram_name,
                                   base::Histogram::Sample reference_lower_value,
                                   base::Histogram::Sample reference_upper_value,
+                                  bool repeat,
                                   base::Histogram::Sample actual_value) {
     if (reference_lower_value > actual_value ||
-        reference_upper_value < actual_value)
+        reference_upper_value < actual_value) {
+      if (!repeat)
+        AbortTracing();
       return;
+    }
 
     OnHistogramTrigger(histogram_name);
+  }
+
+  bool ShouldTriggerNamedEvent(const std::string& named_event) const override {
+    return named_event == histogram_name_;
   }
 
  private:
   std::string histogram_name_;
   int histogram_lower_value_;
   int histogram_upper_value_;
+  bool repeat_;
 };
 
 class ReactiveTraceForNSOrTriggerOrFullRule : public BackgroundTracingRule {
@@ -309,11 +331,17 @@ scoped_ptr<BackgroundTracingRule> BackgroundTracingRule::PreemptiveRuleFromDict(
     if (!dict->GetString(kConfigRuleHistogramNameKey, &histogram_name))
       return nullptr;
 
+    // Optional parameter, so we don't need to check if the key exists.
+    bool repeat = true;
+    dict->GetBoolean(kConfigRuleHistogramRepeatKey, &repeat);
+
     // Check for the old naming.
     int histogram_value;
-    if (dict->GetInteger(kConfigRuleHistogramValueOldKey, &histogram_value))
-      return scoped_ptr<BackgroundTracingRule>(new HistogramRule(
-          histogram_name, histogram_value, std::numeric_limits<int>::max()));
+    if (dict->GetInteger(kConfigRuleHistogramValueOldKey, &histogram_value)) {
+      return scoped_ptr<BackgroundTracingRule>(
+          new HistogramRule(histogram_name, histogram_value,
+                            std::numeric_limits<int>::max(), repeat));
+    }
 
     int histogram_lower_value;
     if (!dict->GetInteger(kConfigRuleHistogramValue1Key,
@@ -329,7 +357,7 @@ scoped_ptr<BackgroundTracingRule> BackgroundTracingRule::PreemptiveRuleFromDict(
       return nullptr;
 
     return scoped_ptr<BackgroundTracingRule>(new HistogramRule(
-        histogram_name, histogram_lower_value, histogram_upper_value));
+        histogram_name, histogram_lower_value, histogram_upper_value, repeat));
   }
 
   return nullptr;

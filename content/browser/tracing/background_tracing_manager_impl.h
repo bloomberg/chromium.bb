@@ -40,6 +40,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   void OnHistogramTrigger(const std::string& histogram_name);
 
   void TriggerPreemptiveFinalization();
+  void AbortScenario();
 
  private:
   BackgroundTracingManagerImpl();
@@ -51,7 +52,6 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   void OnFinalizeComplete();
   void BeginFinalizing(StartedFinalizingCallback);
   void ValidateStartupScenario();
-  void AbortScenario();
 
   scoped_ptr<base::DictionaryValue> GenerateMetadataDict() const;
 

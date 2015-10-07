@@ -62,6 +62,8 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnProcessMemoryDumpResponse)
     IPC_MESSAGE_HANDLER(TracingHostMsg_TriggerBackgroundTrace,
                         OnTriggerBackgroundTrace)
+    IPC_MESSAGE_HANDLER(TracingHostMsg_AbortBackgroundTrace,
+                        OnAbortBackgroundTrace)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -208,6 +210,10 @@ void TraceMessageFilter::OnProcessMemoryDumpResponse(uint64 dump_guid,
 
 void TraceMessageFilter::OnTriggerBackgroundTrace(const std::string& name) {
   BackgroundTracingManagerImpl::GetInstance()->OnHistogramTrigger(name);
+}
+
+void TraceMessageFilter::OnAbortBackgroundTrace() {
+  BackgroundTracingManagerImpl::GetInstance()->AbortScenario();
 }
 
 }  // namespace content

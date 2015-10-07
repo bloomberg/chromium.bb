@@ -62,13 +62,16 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
   void OnGlobalMemoryDumpResponse(uint64 dump_guid, bool success);
   void OnSetUMACallback(const std::string& histogram_name,
                         int histogram_lower_value,
-                        int histogram_upper_value);
+                        int histogram_upper_value,
+                        bool repeat);
   void OnClearUMACallback(const std::string& histogram_name);
   void OnHistogramChanged(const std::string& histogram_name,
                           base::Histogram::Sample reference_lower_value,
                           base::Histogram::Sample reference_upper_value,
+                          bool repeat,
                           base::Histogram::Sample actual_value);
   void SendTriggerMessage(const std::string& histogram_name);
+  void SendAbortBackgroundTracingMessage();
 
   // Callback from trace subsystem.
   void OnTraceDataCollected(
