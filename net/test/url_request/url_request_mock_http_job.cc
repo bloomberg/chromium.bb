@@ -127,13 +127,6 @@ GURL URLRequestMockHTTPJob::GetMockUrl(const base::FilePath& path) {
 }
 
 // static
-GURL URLRequestMockHTTPJob::GetMockHttpsUrl(const base::FilePath& path) {
-  std::string path_str = path.MaybeAsASCII();
-  DCHECK(!path_str.empty());  // We only expect ASCII paths in tests.
-  return GetMockUrlForScheme(path_str, "https");
-}
-
-// static
 scoped_ptr<URLRequestInterceptor> URLRequestMockHTTPJob::CreateInterceptor(
     const base::FilePath& base_path,
     const scoped_refptr<base::SequencedWorkerPool>& worker_pool) {

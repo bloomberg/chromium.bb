@@ -54,7 +54,6 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
   // Like above, but takes a FilePath. These methods are deprecated. Prefer the
   // std::string versions. See http://crbug.com/496936.
   static GURL GetMockUrl(const base::FilePath& path);
-  static GURL GetMockHttpsUrl(const base::FilePath& path);
 
   // Returns a URLRequestJobFactory::ProtocolHandler that serves
   // URLRequestMockHTTPJob's responding like an HTTP server. |base_path| is the
