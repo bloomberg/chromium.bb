@@ -118,7 +118,16 @@ bool EasyUnlockAuthAttempt::Start() {
 
   state_ = STATE_RUNNING;
 
-  if (!app_manager_->SendAuthAttemptEvent()) {
+  // We need this workaround for ProximityAuthSystem, since we don't load the
+  // full background app anymore. The call to
+  // |app_manager_->SendAuthAttemptEvent()| returns false, as there is no
+  // observer registered for the |screenlock::OnAuthAttempted| event. As a
+  // result, the auth attempt will always fail.
+  // TODO(sacomoto): Clean this up when the background app is not needed
+  // anymore.
+  if (!app_manager_->SendAuthAttemptEvent() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
     Cancel(user_id_);
     return false;
   }
