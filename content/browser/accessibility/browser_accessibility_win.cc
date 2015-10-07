@@ -3685,6 +3685,26 @@ int32 BrowserAccessibilityWin::GetHypertextOffsetFromHyperlinkIndex(
 
 int32 BrowserAccessibilityWin::GetHypertextOffsetFromChild(
     const BrowserAccessibilityWin& child) const {
+  DCHECK(child.GetParent() == this);
+
+  // Handle the case when we are dealing with a direct text-only child.
+  if (child.IsTextOnlyObject()) {
+    int32 hypertextOffset = 0;
+    int32 index_in_parent = child.GetIndexInParent();
+    DCHECK_GE(index_in_parent, 0);
+    DCHECK_LT(index_in_parent, static_cast<int32>(PlatformChildCount()));
+    for (uint32 i = 0; i < static_cast<uint32>(index_in_parent); ++i) {
+      const BrowserAccessibilityWin* sibling =
+          PlatformGetChild(i)->ToBrowserAccessibilityWin();
+      DCHECK(sibling);
+      if (sibling->IsTextOnlyObject())
+        hypertextOffset += sibling->TextForIAccessibleText().length();
+      else
+        ++hypertextOffset;
+    }
+    return hypertextOffset;
+  }
+
   int32 hyperlink_index = GetHyperlinkIndexFromChild(child);
   if (hyperlink_index < 0)
     return -1;
@@ -3713,8 +3733,8 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
   // 1. Either the selection endpoint is inside this object or is an ancestor of
   // of this object. endpoint_offset should be returned.
   // 2. The selection endpoint is a pure descendant of this object. The offset
-  // of the embedded object character corresponding to the subtree in which
-  // the endpoint is located should be returned.
+  // of the character corresponding to the subtree in which the endpoint is
+  // located should be returned.
   // 3. The selection endpoint is in a completely different part of the tree.
   // Either 0 or text_length should be returned depending on the direction that
   // one needs to travel to find the endpoint.
@@ -3722,62 +3742,54 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
   // Case 1.
   //
   // IsDescendantOf includes the case when endpoint_object == this.
-  if (IsDescendantOf(&endpoint_object) ||
-      // Handle the case when the endpoint is a direct text-only child.
-      // The selection offset should still be valid on the parent.
-      (endpoint_object.IsTextOnlyObject() &&
-       endpoint_object.GetParent() == this)) {
+  if (IsDescendantOf(&endpoint_object))
     return endpoint_offset;
-  }
 
   const BrowserAccessibility* common_parent = this;
+  int32 index_in_common_parent = GetIndexInParent();
   while (common_parent && !endpoint_object.IsDescendantOf(common_parent)) {
+    index_in_common_parent = common_parent->GetIndexInParent();
     common_parent = common_parent->GetParent();
   }
   if (!common_parent)
     return -1;
 
-  auto common_parent_win = common_parent->ToBrowserAccessibilityWin();
-  // Text only objects must have a parent.
-  DCHECK(!IsTextOnlyObject() || GetParent());
-  DCHECK(!endpoint_object.IsTextOnlyObject() || endpoint_object.GetParent());
-  // Text only objects that are direct descendants should behave as if they
-  // are part of their parent when computing hyperlink offsets.
-  const BrowserAccessibilityWin* nearest_non_text_ancestor =
-      IsTextOnlyObject() ? GetParent()->ToBrowserAccessibilityWin() : this;
-  const BrowserAccessibilityWin& nearest_non_text_endpoint =
-      endpoint_object.IsTextOnlyObject()
-          ? *(endpoint_object.GetParent()->ToBrowserAccessibilityWin())
-          : endpoint_object;
+  DCHECK_GE(index_in_common_parent, 0);
+  DCHECK(!(common_parent->IsTextOnlyObject()));
 
   // Case 2.
   //
   // We already checked in case 1 if our endpoint is inside this object.
   // We can safely assume that it is a descendant or in a completely different
   // part of the tree.
-  if (common_parent_win == nearest_non_text_ancestor) {
-    return nearest_non_text_ancestor->GetHypertextOffsetFromDescendant(
-        nearest_non_text_endpoint);
+  if (common_parent == this) {
+    int32 hypertext_offset = GetHypertextOffsetFromDescendant(endpoint_object);
+    if (endpoint_object.GetParent() == this &&
+        endpoint_object.IsTextOnlyObject()) {
+      hypertext_offset += endpoint_offset;
+    }
+
+    return hypertext_offset;
   }
 
   // Case 3.
   //
   // We can safely assume that the endpoint is in another part of the tree or
   // at common parent, and that this object is a descendant of common parent.
-  int current_offset =
-      static_cast<int>(common_parent_win->GetHypertextOffsetFromDescendant(
-          *nearest_non_text_ancestor));
-  DCHECK_GE(current_offset, 0);
-  if (common_parent_win != &nearest_non_text_endpoint) {
-    endpoint_offset =
-        static_cast<int>(common_parent_win->GetHypertextOffsetFromDescendant(
-            nearest_non_text_endpoint));
-    DCHECK_GE(endpoint_offset, 0);
+  int32 endpoint_index_in_common_parent = -1;
+  for (uint32 i = 0; i < common_parent->PlatformChildCount(); ++i) {
+    const BrowserAccessibility* child = common_parent->PlatformGetChild(i);
+    DCHECK(child);
+    if (endpoint_object.IsDescendantOf(child)) {
+      endpoint_index_in_common_parent = child->GetIndexInParent();
+      break;
+    }
   }
+  DCHECK_GE(endpoint_index_in_common_parent, 0);
 
-  if (endpoint_offset < current_offset)
+  if (endpoint_index_in_common_parent < index_in_common_parent)
     return 0;
-  if (endpoint_offset > current_offset)
+  if (endpoint_index_in_common_parent > index_in_common_parent)
     return TextForIAccessibleText().length();
 
   NOTREACHED();

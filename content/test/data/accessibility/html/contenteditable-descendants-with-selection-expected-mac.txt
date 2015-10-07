@@ -1,0 +1,23 @@
+AXWebArea
+++AXGroup AXValue='A contenteditable with a link and an   and a  .
+Always expose editable tables as tables.
+Editable list item.'
+++++AXGroup
+++++++AXStaticText AXValue='A contenteditable with a '
+++++++AXLink AXTitle='link'
+++++++++AXStaticText AXValue='link'
+++++++AXStaticText AXValue=' and an '
+++++++AXImage
+++++++AXStaticText AXValue=' and a '
+++++++AXButton AXTitle='Button'
+++++++AXStaticText AXValue='.'
+++++AXTable
+++++++AXRow
+++++++++AXCell
+++++++++++AXStaticText AXValue='Always expose editable tables as tables.'
+++++++AXColumn
+++++++AXGroup
+++++AXList
+++++++AXGroup AXTitle='Editable list item.'
+++++++++AXListMarker AXValue='1'
+++++++++AXStaticText AXValue='Editable list item.'

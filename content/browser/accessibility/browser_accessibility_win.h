@@ -766,10 +766,11 @@ BrowserAccessibilityWin
   void IntAttributeToIA2(ui::AXIntAttribute attribute,
                          const char* ia2_attr);
 
-  // Functions that help when retrieving hyperlinks. Return -1 in case of
-  // failure.
-  // (Hyperlink is an IA2 misnomer. It refers to objects embedded within other
-  // objects, such as a numbered list within a contenteditable div.)
+  // Functions that help when retrieving hyperlinks and hypertext offsets.
+  // Return -1 in case of failure.
+  // Hyperlink is an IA2 misnomer. It refers to objects embedded within other
+  // objects, such as a numbered list within a contenteditable div.
+  // Also, text that includes embedded objects is called hypertext.
   int32 GetHyperlinkIndexFromChild(const BrowserAccessibilityWin& child) const;
   int32 GetHypertextOffsetFromHyperlinkIndex(int32 hyperlink_index) const;
   int32 GetHypertextOffsetFromChild(const BrowserAccessibilityWin& child) const;
@@ -779,8 +780,8 @@ BrowserAccessibilityWin
   // If the selection endpoint is either equal to or an ancestor of this object,
   // returns endpoint_offset.
   // If the selection endpoint is a descendant of this object, returns its
-  // embedded character offset. Otherwise, returns either 0 or the length of the
-  // hypertext, depending on the direction of the selection.
+  // offset. Otherwise, returns either 0 or the length of the hypertext
+  // depending on the direction of the selection.
   // Returns -1 in case of unexpected failure, e.g. the selection endpoint
   // cannot be located in the accessibility tree.
   int GetHypertextOffsetFromEndpoint(
