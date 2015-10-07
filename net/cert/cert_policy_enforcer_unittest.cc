@@ -7,7 +7,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "base/version.h"
+#include "crypto/sha2.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/ct_ev_whitelist.h"
 #include "net/cert/ct_verify_result.h"
@@ -44,6 +46,12 @@ class DummyEVCertsWhitelist : public ct::EVCertsWhitelist {
   bool canned_contains_response_;
 };
 
+const char kGoogleAviatorLogID[] =
+    "\x68\xf6\x98\xf8\x1f\x64\x82\xbe\x3a\x8c\xee\xb9\x28\x1d\x4c\xfc\x71\x51"
+    "\x5d\x67\x93\xd4\x44\xd1\x0a\x67\xac\xbb\x4f\x4f\xfb\xc4";
+COMPILE_ASSERT(arraysize(kGoogleAviatorLogID) - 1 == crypto::kSHA256Length,
+               "Incorrect log ID length.");
+
 class CertPolicyEnforcerTest : public ::testing::Test {
  public:
   void SetUp() override {
@@ -53,18 +61,55 @@ class CertPolicyEnforcerTest : public ::testing::Test {
     chain_ = X509Certificate::CreateFromBytes(der_test_cert.data(),
                                               der_test_cert.size());
     ASSERT_TRUE(chain_.get());
+    google_log_id_ = std::string(kGoogleAviatorLogID, crypto::kSHA256Length);
+    non_google_log_id_.assign(crypto::kSHA256Length, 'A');
   }
 
   void FillResultWithSCTsOfOrigin(
       ct::SignedCertificateTimestamp::Origin desired_origin,
-      int num_scts,
+      size_t num_scts,
+      const std::vector<std::string>& desired_log_keys,
+      bool timestamp_past_enforcement_date,
       ct::CTVerifyResult* result) {
-    for (int i = 0; i < num_scts; ++i) {
+    for (size_t i = 0; i < num_scts; ++i) {
       scoped_refptr<ct::SignedCertificateTimestamp> sct(
           new ct::SignedCertificateTimestamp());
       sct->origin = desired_origin;
+      if (i < desired_log_keys.size())
+        sct->log_id = desired_log_keys[i];
+      else
+        sct->log_id = non_google_log_id_;
+
+      if (timestamp_past_enforcement_date)
+        sct->timestamp =
+            base::Time::FromUTCExploded({2015, 8, 0, 15, 0, 0, 0, 0});
+      else
+        sct->timestamp =
+            base::Time::FromUTCExploded({2015, 6, 0, 15, 0, 0, 0, 0});
+
       result->verified_scts.push_back(sct);
     }
+  }
+
+  void FillResultWithSCTsOfOrigin(
+      ct::SignedCertificateTimestamp::Origin desired_origin,
+      size_t num_scts,
+      ct::CTVerifyResult* result) {
+    std::vector<std::string> desired_log_ids;
+    desired_log_ids.push_back(google_log_id_);
+    FillResultWithSCTsOfOrigin(desired_origin, num_scts, desired_log_ids, true,
+                               result);
+  }
+
+  void FillResultWithRepeatedLogID(const std::string& desired_id,
+                                   size_t num_scts,
+                                   bool timestamp_past_enforcement_date,
+                                   ct::CTVerifyResult* result) {
+    std::vector<std::string> desired_log_ids(num_scts, desired_id);
+
+    FillResultWithSCTsOfOrigin(
+        ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, num_scts,
+        desired_log_ids, timestamp_past_enforcement_date, result);
   }
 
   void CheckCertificateCompliesWithExactNumberOfEmbeddedSCTs(
@@ -74,16 +119,17 @@ class CertPolicyEnforcerTest : public ::testing::Test {
     scoped_refptr<X509Certificate> cert(
         new X509Certificate("subject", "issuer", start, end));
     ct::CTVerifyResult result;
+
     for (size_t i = 0; i < required_scts - 1; ++i) {
       FillResultWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED,
-                                 1, &result);
+                                 1, std::vector<std::string>(), false, &result);
       EXPECT_FALSE(policy_enforcer_->DoesConformToCTEVPolicy(
           cert.get(), nullptr, result, BoundNetLog()))
           << " for: " << (end - start).InDays() << " and " << required_scts
           << " scts=" << result.verified_scts.size() << " i=" << i;
     }
     FillResultWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 1,
-                               &result);
+                               std::vector<std::string>(), false, &result);
     EXPECT_TRUE(policy_enforcer_->DoesConformToCTEVPolicy(
         cert.get(), nullptr, result, BoundNetLog()))
         << " for: " << (end - start).InDays() << " and " << required_scts
@@ -93,7 +139,35 @@ class CertPolicyEnforcerTest : public ::testing::Test {
  protected:
   scoped_ptr<CertPolicyEnforcer> policy_enforcer_;
   scoped_refptr<X509Certificate> chain_;
+  std::string google_log_id_;
+  std::string non_google_log_id_;
 };
+
+TEST_F(CertPolicyEnforcerTest,
+       DoesNotConformToCTEVPolicyNotEnoughDiverseSCTsAllGoogle) {
+  ct::CTVerifyResult result;
+  FillResultWithRepeatedLogID(google_log_id_, 2, true, &result);
+
+  EXPECT_FALSE(policy_enforcer_->DoesConformToCTEVPolicy(
+      chain_.get(), nullptr, result, BoundNetLog()));
+}
+
+TEST_F(CertPolicyEnforcerTest,
+       DoesNotConformToCTEVPolicyNotEnoughDiverseSCTsAllNonGoogle) {
+  ct::CTVerifyResult result;
+  FillResultWithRepeatedLogID(non_google_log_id_, 2, true, &result);
+
+  EXPECT_FALSE(policy_enforcer_->DoesConformToCTEVPolicy(
+      chain_.get(), nullptr, result, BoundNetLog()));
+}
+
+TEST_F(CertPolicyEnforcerTest, ConformsToCTEVPolicyIfSCTBeforeEnforcementDate) {
+  ct::CTVerifyResult result;
+  FillResultWithRepeatedLogID(non_google_log_id_, 2, false, &result);
+
+  EXPECT_TRUE(policy_enforcer_->DoesConformToCTEVPolicy(chain_.get(), nullptr,
+                                                        result, BoundNetLog()));
+}
 
 TEST_F(CertPolicyEnforcerTest, ConformsToCTEVPolicyWithNonEmbeddedSCTs) {
   ct::CTVerifyResult result;
