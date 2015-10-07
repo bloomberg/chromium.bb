@@ -114,6 +114,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "components_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_unittests"
       },
       {
@@ -121,6 +127,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "compositor_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_browsertests"
       },
       {
         "swarming": {
@@ -243,6 +255,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "mojo_public_bindings_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "mojo_public_environment_unittests"
       },
       {
@@ -319,6 +337,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "ui_touch_selection_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "unit_tests"
       },
       {
         "swarming": {
