@@ -138,9 +138,11 @@ GLenum DataType(BufferFormat format) {
 
 }  // namespace
 
-GLImageIOSurface::GLImageIOSurface(const gfx::Size& size,
+GLImageIOSurface::GLImageIOSurface(gfx::GenericSharedMemoryId io_surface_id,
+                                   const gfx::Size& size,
                                    unsigned internalformat)
-    : size_(size),
+    : io_surface_id_(io_surface_id),
+      size_(size),
       internalformat_(internalformat),
       format_(BufferFormat::RGBA_8888) {}
 
@@ -150,7 +152,6 @@ GLImageIOSurface::~GLImageIOSurface() {
 }
 
 bool GLImageIOSurface::Initialize(IOSurfaceRef io_surface,
-                                  gfx::GenericSharedMemoryId io_surface_id,
                                   BufferFormat format) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!io_surface_);
@@ -167,7 +168,6 @@ bool GLImageIOSurface::Initialize(IOSurfaceRef io_surface,
 
   format_ = format;
   io_surface_.reset(io_surface, base::scoped_policy::RETAIN);
-  io_surface_id_ = io_surface_id;
   return true;
 }
 
