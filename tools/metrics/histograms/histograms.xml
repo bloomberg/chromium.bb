@@ -75242,7 +75242,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="ImageLink"
       label="The context menu was shown for an image which is also a link"/>
   <suffix name="Video" label="The context menu was shown for a video"/>
-  <suffix name="TextSelection"
+  <suffix name="SelectedText"
       label="The context menu was shown for a text selection"/>
   <affected-histogram name="ContextMenu.SelectedOption"/>
 </histogram_suffixes>
