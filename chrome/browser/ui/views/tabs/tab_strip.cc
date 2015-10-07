@@ -1331,8 +1331,8 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
     // transparent enough already, and drawing in this region can overlap the
     // avatar button, leading to visual artifacts.  Also exclude the toolbar
     // overlap region at the bottom.
-    bounds.Inset(0, GetLayoutConstant(TABSTRIP_TOP_SHADOW_HEIGHT) + 1, 0,
-                 GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP));
+    gfx::Insets tab_insets(GetLayoutInsets(TAB));
+    bounds.Inset(0, tab_insets.top(), 0, tab_insets.bottom());
     recorder.canvas()->DrawRect(bounds, paint);
   }
 
