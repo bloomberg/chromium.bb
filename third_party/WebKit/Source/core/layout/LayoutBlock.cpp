@@ -159,7 +159,7 @@ static void removeBlockFromDescendantAndContainerMaps(LayoutBlock* block, Tracke
     }
 }
 
-static void appendImageIfNotNull(Vector<ImageResource*>& imageResources, const StyleImage* styleImage)
+static void appendImageIfNotNull(WillBeHeapVector<RawPtrWillBeMember<ImageResource>>& imageResources, const StyleImage* styleImage)
 {
     if (styleImage && styleImage->cachedImage()) {
         ImageResource* imageResource = styleImage->cachedImage();
@@ -168,13 +168,13 @@ static void appendImageIfNotNull(Vector<ImageResource*>& imageResources, const S
     }
 }
 
-static void appendLayers(Vector<ImageResource*>& images, const FillLayer& styleLayer)
+static void appendLayers(WillBeHeapVector<RawPtrWillBeMember<ImageResource>>& images, const FillLayer& styleLayer)
 {
     for (const FillLayer* layer = &styleLayer; layer; layer = layer->next())
         appendImageIfNotNull(images, layer->image());
 }
 
-static void appendImagesFromStyle(Vector<ImageResource*>& images, const ComputedStyle& blockStyle)
+static void appendImagesFromStyle(WillBeHeapVector<RawPtrWillBeMember<ImageResource>>& images, const ComputedStyle& blockStyle)
 {
     appendLayers(images, blockStyle.backgroundLayers());
     appendLayers(images, blockStyle.maskLayers());
@@ -333,7 +333,7 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
 
     // If the style has unloaded images, want to notify the ResourceLoadPriorityOptimizer so that
     // network priorities can be set.
-    Vector<ImageResource*> images;
+    WillBeHeapVector<RawPtrWillBeMember<ImageResource>> images;
     appendImagesFromStyle(images, newStyle);
     if (images.isEmpty())
         ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeLayoutObject(this);
@@ -949,7 +949,7 @@ void LayoutBlock::layout()
 
 bool LayoutBlock::updateImageLoadingPriorities()
 {
-    Vector<ImageResource*> images;
+    WillBeHeapVector<RawPtrWillBeMember<ImageResource>> images;
     appendImagesFromStyle(images, styleRef());
 
     if (images.isEmpty())
@@ -974,7 +974,7 @@ bool LayoutBlock::updateImageLoadingPriorities()
         screenArea.intersect(objectBounds);
     }
 
-    for (auto* imageResource : images)
+    for (auto imageResource : images)
         ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->notifyImageResourceVisibility(imageResource, status, screenArea);
 
     return true;
