@@ -104,6 +104,8 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"radprlib.dll",                // Radiant Naomi Internet Filter.
   L"rapportnikko.dll",            // Trustware Rapport.
   L"rlhook.dll",                  // Trustware Bufferzone.
+  L"rooksbas.dll",                // IBM Trusteer Rapport.
+  L"rooksbas_x64.dll"             // IBM Trusteer Rapport.
   L"rooksdol.dll",                // Trustware Rapport.
   L"rndlpepperbrowserrecordhelper.dll", // RealPlayer.
   L"rpchromebrowserrecordhelper.dll",   // RealPlayer.
