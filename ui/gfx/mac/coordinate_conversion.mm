@@ -16,7 +16,7 @@ namespace {
 // The height of the primary display, which OSX defines as the monitor with the
 // menubar. This is always at index 0.
 CGFloat PrimaryDisplayHeight() {
-  return NSMaxY([[[NSScreen screens] objectAtIndex:0] frame]);
+  return NSMaxY([[[NSScreen screens] firstObject] frame]);
 }
 
 }  // namespace

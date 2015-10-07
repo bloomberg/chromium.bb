@@ -15,7 +15,7 @@ void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds) {
   NSRect new_bounds = NSRectFromCGRect(bounds.ToCGRect());
   if ([[NSScreen screens] count] > 0) {
     new_bounds.origin.y =
-        [[[NSScreen screens] objectAtIndex:0] frame].size.height -
+        [[[NSScreen screens] firstObject] frame].size.height -
         new_bounds.origin.y - new_bounds.size.height;
   }
 

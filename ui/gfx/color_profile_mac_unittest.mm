@@ -51,7 +51,7 @@ class ColorProfileTest : public ui::CocoaTest {
   }
 
   NSRect PrimaryScreenFrame() {
-    return [[[NSScreen screens] objectAtIndex:0] frame];
+    return [[[NSScreen screens] firstObject] frame];
   }
 };
 

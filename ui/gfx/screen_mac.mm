@@ -24,7 +24,7 @@ const int64 kConfigureDelayMs = 500;
 gfx::Rect ConvertCoordinateSystem(NSRect ns_rect) {
   // Primary monitor is defined as the monitor with the menubar,
   // which is always at index 0.
-  NSScreen* primary_screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* primary_screen = [[NSScreen screens] firstObject];
   float primary_screen_height = [primary_screen frame].size.height;
   gfx::Rect rect(NSRectToCGRect(ns_rect));
   rect.set_y(primary_screen_height - rect.y() - rect.height());
@@ -58,7 +58,7 @@ gfx::Display GetDisplayForScreen(NSScreen* screen) {
 
   gfx::Display display(display_id, gfx::Rect(NSRectToCGRect(frame)));
   NSRect visible_frame = [screen visibleFrame];
-  NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* primary = [[NSScreen screens] firstObject];
 
   // Convert work area's coordinate systems.
   if ([screen isEqual:primary]) {
@@ -103,7 +103,7 @@ class ScreenMac : public gfx::Screen {
   gfx::Point GetCursorScreenPoint() override {
     NSPoint mouseLocation  = [NSEvent mouseLocation];
     // Flip coordinates to gfx (0,0 in top-left corner) using primary screen.
-    NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+    NSScreen* screen = [[NSScreen screens] firstObject];
     mouseLocation.y = NSMaxY([screen frame]) - mouseLocation.y;
     return gfx::Point(mouseLocation.x, mouseLocation.y);
   }
@@ -161,7 +161,7 @@ class ScreenMac : public gfx::Screen {
   gfx::Display GetPrimaryDisplay() const override {
     // Primary display is defined as the display with the menubar,
     // which is always at index 0.
-    NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
+    NSScreen* primary = [[NSScreen screens] firstObject];
     gfx::Display display = GetDisplayForScreen(primary);
     return display;
   }

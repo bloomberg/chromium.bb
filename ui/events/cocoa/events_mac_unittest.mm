@@ -109,7 +109,7 @@ class EventsMacTest : public CocoaTest {
         NSPointFromCGPoint(Flip(window_location).ToCGPoint());
     NSPoint screen_point = [test_window() convertBaseToScreen:window_point];
     CGFloat primary_screen_height =
-        NSHeight([[[NSScreen screens] objectAtIndex:0] frame]);
+        NSHeight([[[NSScreen screens] firstObject] frame]);
     screen_point.y = primary_screen_height - screen_point.y;
     CGEventSetLocation(scroll, NSPointToCGPoint(screen_point));
     return [NSEvent eventWithCGEvent:scroll];

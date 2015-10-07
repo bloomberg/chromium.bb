@@ -122,7 +122,7 @@ void RecordFullscreenStyle(FullscreenStyle style) {
       [self isInAnyFullscreenMode] ? savedRegularWindow_ : [self window];
 
   // Window positions are stored relative to the origin of the primary monitor.
-  NSRect monitorFrame = [[[NSScreen screens] objectAtIndex:0] frame];
+  NSRect monitorFrame = [[[NSScreen screens] firstObject] frame];
   NSScreen* windowScreen = [window screen];
 
   // Start with the window's frame, which is in virtual coordinates.
@@ -682,7 +682,7 @@ willPositionSheet:(NSWindow*)sheet
 
   enteringAppKitFullscreen_ = YES;
   enteringAppKitFullscreenOnPrimaryScreen_ =
-      [[[self window] screen] isEqual:[[NSScreen screens] objectAtIndex:0]];
+      [[[self window] screen] isEqual:[[NSScreen screens] firstObject]];
 
   fullscreen_mac::SlidingStyle style;
   if (browser_->exclusive_access_manager()
@@ -1098,7 +1098,7 @@ willPositionSheet:(NSWindow*)sheet
   // transition from working well. See http://crbug.com/396980 for more
   // details.
   if ([[self class] systemSettingsRequireMavericksAppKitFullscreenHack] &&
-      ![[[self window] screen] isEqual:[[NSScreen screens] objectAtIndex:0]]) {
+      ![[[self window] screen] isEqual:[[NSScreen screens] firstObject]]) {
     return NO;
   }
 

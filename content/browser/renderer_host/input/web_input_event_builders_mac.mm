@@ -502,7 +502,7 @@ void SetWebEventLocationFromEventInView(blink::WebMouseEvent* result,
   result->globalX = screen_local.x;
   // Flip y.
   NSScreen* primary_screen = ([[NSScreen screens] count] > 0)
-                                 ? [[NSScreen screens] objectAtIndex:0]
+                                 ? [[NSScreen screens] firstObject]
                                  : nil;
   if (primary_screen)
     result->globalY = [primary_screen frame].size.height - screen_local.y;

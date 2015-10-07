@@ -250,7 +250,7 @@ void GetAppListWindowOrigins(
   const NSSize ns_window_size = [window frame].size;
   gfx::Size window_size(ns_window_size.width, ns_window_size.height);
   int primary_display_height =
-      NSMaxY([[[NSScreen screens] objectAtIndex:0] frame]);
+      NSMaxY([[[NSScreen screens] firstObject] frame]);
   AppListServiceMac::FindAnchorPoint(window_size,
                                      display,
                                      primary_display_height,

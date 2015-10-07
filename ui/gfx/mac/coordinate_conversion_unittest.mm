@@ -48,7 +48,7 @@ class MacCoordinateConversionTest : public PlatformTest {
 void MacCoordinateConversionTest::SetUp() {
   // Before swizzling, do a sanity check that the primary screen's origin is
   // (0, 0). This should always be true.
-  NSRect primary_screen_frame = [[[NSScreen screens] objectAtIndex:0] frame];
+  NSRect primary_screen_frame = [[[NSScreen screens] firstObject] frame];
   EXPECT_EQ(0, primary_screen_frame.origin.x);
   EXPECT_EQ(0, primary_screen_frame.origin.y);
 
@@ -57,7 +57,7 @@ void MacCoordinateConversionTest::SetUp() {
       [MacCoordinateConversionTestScreenDonor class],
       @selector(frame)));
 
-  primary_screen_frame = [[[NSScreen screens] objectAtIndex:0] frame];
+  primary_screen_frame = [[[NSScreen screens] firstObject] frame];
   EXPECT_EQ(kTestWidth, primary_screen_frame.size.width);
   EXPECT_EQ(kTestHeight, primary_screen_frame.size.height);
 }

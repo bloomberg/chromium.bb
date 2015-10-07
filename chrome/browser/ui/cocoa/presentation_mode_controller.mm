@@ -535,7 +535,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 - (BOOL)isWindowOnPrimaryScreen {
   NSScreen* screen = [[browserController_ window] screen];
-  NSScreen* primaryScreen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* primaryScreen = [[NSScreen screens] firstObject];
   return (screen == primaryScreen);
 }
 

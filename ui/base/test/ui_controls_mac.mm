@@ -235,7 +235,7 @@ bool SendMouseMove(long x, long y) {
 bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
   CHECK(g_ui_controls_enabled);
   CGFloat screenHeight =
-    [[[NSScreen screens] objectAtIndex:0] frame].size.height;
+    [[[NSScreen screens] firstObject] frame].size.height;
   g_mouse_location = NSMakePoint(x, screenHeight - y);  // flip!
 
   NSWindow* window = WindowAtCurrentMouseLocation();

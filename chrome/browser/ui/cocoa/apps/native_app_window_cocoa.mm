@@ -57,7 +57,7 @@ const int kActivateThrottlePeriodSeconds = 2;
 NSRect GfxToCocoaBounds(gfx::Rect bounds) {
   typedef AppWindow::BoundsSpecification BoundsSpecification;
 
-  NSRect main_screen_rect = [[[NSScreen screens] objectAtIndex:0] frame];
+  NSRect main_screen_rect = [[[NSScreen screens] firstObject] frame];
 
   // If coordinates are unspecified, center window on primary screen.
   if (bounds.x() == BoundsSpecification::kUnspecifiedPosition)
@@ -452,7 +452,7 @@ gfx::NativeWindow NativeAppWindowCocoa::GetNativeWindow() const {
 
 gfx::Rect NativeAppWindowCocoa::GetRestoredBounds() const {
   // Flip coordinates based on the primary screen.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* screen = [[NSScreen screens] firstObject];
   NSRect frame = restored_bounds_;
   gfx::Rect bounds(frame.origin.x, 0, NSWidth(frame), NSHeight(frame));
   bounds.set_y(NSHeight([screen frame]) - NSMaxY(frame));
@@ -469,7 +469,7 @@ ui::WindowShowState NativeAppWindowCocoa::GetRestoredState() const {
 
 gfx::Rect NativeAppWindowCocoa::GetBounds() const {
   // Flip coordinates based on the primary screen.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* screen = [[NSScreen screens] firstObject];
   NSRect frame = [window() frame];
   gfx::Rect bounds(frame.origin.x, 0, NSWidth(frame), NSHeight(frame));
   bounds.set_y(NSHeight([screen frame]) - NSMaxY(frame));
@@ -687,7 +687,7 @@ gfx::Insets NativeAppWindowCocoa::GetFrameInsets() const {
 
   // Flip the coordinates based on the main screen.
   NSInteger screen_height =
-      NSHeight([[[NSScreen screens] objectAtIndex:0] frame]);
+      NSHeight([[[NSScreen screens] firstObject] frame]);
 
   NSRect frame_nsrect = [window() frame];
   gfx::Rect frame_rect(NSRectToCGRect(frame_nsrect));

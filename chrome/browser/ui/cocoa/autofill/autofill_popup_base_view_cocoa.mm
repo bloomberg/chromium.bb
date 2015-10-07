@@ -139,7 +139,7 @@
   // coordinate space places the origin at the top-left of the first screen,
   // whereas Cocoa's coordinate space expects the origin to be at the
   // bottom-left of this same screen.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* screen = [[NSScreen screens] firstObject];
   frame.origin.y = NSMaxY([screen frame]) - NSMaxY(frame);
 
   // TODO(isherman): The view should support scrolling if the popup gets too

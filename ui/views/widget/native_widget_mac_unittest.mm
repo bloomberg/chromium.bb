@@ -1081,7 +1081,7 @@ TEST_F(NativeWidgetMacTest, GetWorkAreaBoundsInScreen) {
   params.bounds = gfx::Rect(100, 100, 300, 200);
   widget.Init(params);
   widget.Show();
-  NSRect expected = [[[NSScreen screens] objectAtIndex:0] visibleFrame];
+  NSRect expected = [[[NSScreen screens] firstObject] visibleFrame];
   NSRect actual = gfx::ScreenRectToNSRect(widget.GetWorkAreaBoundsInScreen());
   EXPECT_FALSE(NSIsEmptyRect(actual));
   EXPECT_NSEQ(expected, actual);

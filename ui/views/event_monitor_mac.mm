@@ -30,7 +30,7 @@ scoped_ptr<EventMonitor> EventMonitor::CreateWindowMonitor(
 gfx::Point EventMonitor::GetLastMouseLocation() {
   NSPoint mouseLocation = [NSEvent mouseLocation];
   // Flip coordinates to gfx (0,0 in top-left corner) using primary screen.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* screen = [[NSScreen screens] firstObject];
   mouseLocation.y = NSMaxY([screen frame]) - mouseLocation.y;
   return gfx::Point(mouseLocation.x, mouseLocation.y);
 }

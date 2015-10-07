@@ -354,7 +354,7 @@ float FlipYFromRectToScreen(float y, float rect_height) {
   if (!g_screen_info_up_to_date) {
     if ([[NSScreen screens] count] > 0) {
       screen_zero_height =
-          [[[NSScreen screens] objectAtIndex:0] frame].size.height;
+          [[[NSScreen screens] firstObject] frame].size.height;
       g_screen_info_up_to_date = true;
     } else {
       return y;

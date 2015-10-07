@@ -8,7 +8,7 @@ namespace cocoa_utils {
 
 NSRect ConvertRectToCocoaCoordinates(const gfx::Rect& bounds) {
   // Flip coordinates based on the primary screen.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* screen = [[NSScreen screens] firstObject];
 
   return NSMakeRect(
       bounds.x(), NSHeight([screen frame]) - bounds.height() - bounds.y(),
@@ -17,7 +17,7 @@ NSRect ConvertRectToCocoaCoordinates(const gfx::Rect& bounds) {
 
 gfx::Rect ConvertRectFromCocoaCoordinates(NSRect bounds) {
   // Flip coordinates based on the primary screen.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* screen = [[NSScreen screens] firstObject];
 
   return gfx::Rect(
       NSMinX(bounds), NSHeight([screen frame]) - NSMaxY(bounds),
@@ -26,14 +26,14 @@ gfx::Rect ConvertRectFromCocoaCoordinates(NSRect bounds) {
 
 NSPoint ConvertPointToCocoaCoordinates(const gfx::Point& point) {
   // Flip coordinates based on the primary screen.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* screen = [[NSScreen screens] firstObject];
 
   return NSMakePoint(point.x(), NSHeight([screen frame]) - point.y());
 }
 
 gfx::Point ConvertPointFromCocoaCoordinates(NSPoint point) {
   // Flip coordinates based on the primary screen.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* screen = [[NSScreen screens] firstObject];
 
   return gfx::Point(point.x, NSHeight([screen frame]) - point.y);
 }

@@ -114,7 +114,7 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
 
 gfx::Rect OmniboxPopupViewMac::GetTargetBounds() {
   // Flip the coordinate system before returning.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* screen = [[NSScreen screens] firstObject];
   NSRect monitor_frame = [screen frame];
   gfx::Rect bounds(NSRectToCGRect(target_popup_frame_));
   bounds.set_y(monitor_frame.size.height - bounds.y() - bounds.height());

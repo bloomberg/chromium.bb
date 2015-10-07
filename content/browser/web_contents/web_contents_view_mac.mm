@@ -122,7 +122,7 @@ void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
   bounds.origin = [window convertBaseToScreen:bounds.origin];
 
   // Flip y to account for screen flip.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* screen = [[NSScreen screens] firstObject];
   bounds.origin.y = [screen frame].size.height - bounds.origin.y
       - bounds.size.height;
   *out = gfx::Rect(NSRectToCGRect(bounds));

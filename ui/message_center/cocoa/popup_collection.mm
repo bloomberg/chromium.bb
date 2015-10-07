@@ -150,7 +150,7 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
 - (NSRect)screenFrame {
   if (!NSIsEmptyRect(testingScreenFrame_))
     return testingScreenFrame_;
-  return [[[NSScreen screens] objectAtIndex:0] visibleFrame];
+  return [[[NSScreen screens] firstObject] visibleFrame];
 }
 
 - (BOOL)addNotification:(const message_center::Notification*)notification {

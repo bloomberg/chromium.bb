@@ -406,7 +406,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
       [[field window] convertBaseToScreen:textFrameInScreen.origin];
 
   // And adjust for gfx::Rect being flipped compared to OSX coordinates.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* screen = [[NSScreen screens] firstObject];
   textFrameInScreen.origin.y =
       NSMaxY([screen frame]) - NSMaxY(textFrameInScreen);
   gfx::Rect textFrameRect(NSRectToCGRect(textFrameInScreen));

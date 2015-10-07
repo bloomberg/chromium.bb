@@ -20,7 +20,7 @@ bool GrabViewSnapshot(gfx::NativeView view,
                       std::vector<unsigned char>* png_representation,
                       const gfx::Rect& snapshot_bounds) {
   NSWindow* window = [view window];
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSScreen* screen = [[NSScreen screens] firstObject];
   gfx::Rect screen_bounds = gfx::Rect(NSRectToCGRect([screen frame]));
 
 
