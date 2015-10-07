@@ -3508,7 +3508,6 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
   if (!frame->overlay_list.size())
     return;
 
-  ResourceProvider::ResourceIdArray resources;
   OverlayCandidateList& overlays = frame->overlay_list;
   for (const OverlayCandidate& overlay : overlays) {
     unsigned texture_id = 0;
