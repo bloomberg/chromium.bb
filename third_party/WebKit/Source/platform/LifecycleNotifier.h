@@ -106,7 +106,7 @@ inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed()
         return;
 
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
-    Vector<Observer*> snapshotOfObservers;
+    WillBeHeapVector<RawPtrWillBeMember<Observer>> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (Observer* observer : snapshotOfObservers) {
         // FIXME: Oilpan: At the moment, it's possible that the Observer is
