@@ -489,7 +489,6 @@
         },
       ],  # 'targets'
       'includes': [
-        'app_shim/app_shim_win.gypi',
         'chrome_watcher/chrome_watcher.gypi',
         'chrome_process_finder.gypi',
         'metro_utils.gypi',

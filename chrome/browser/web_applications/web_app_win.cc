@@ -39,6 +39,8 @@ namespace {
 const base::FilePath::CharType kIconChecksumFileExt[] =
     FILE_PATH_LITERAL(".ico.md5");
 
+// TODO(brettw) bug 540043: This binary no longer exists and any code that uses
+// it is dead code. This should be deleted.
 const base::FilePath::CharType kAppShimExe[] =
     FILE_PATH_LITERAL("app_shim.exe");
 

@@ -657,7 +657,6 @@
         ['OS=="win"', {
           'dependencies': [
             # TODO(GYP): All of these targets still need to be converted.
-            '../chrome/chrome.gyp:app_shim',
             '../chrome/chrome.gyp:gcapi_dll',
             '../chrome/chrome.gyp:gcapi_test',
             '../chrome/chrome.gyp:pack_policy_templates',
