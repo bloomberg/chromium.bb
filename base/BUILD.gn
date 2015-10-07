@@ -1529,6 +1529,10 @@ test("base_unittests") {
     set_sources_assignment_filter(sources_assignment_filter)
   }
 
+  if (is_win) {
+    sources += [ "profiler/win32_stack_frame_unwinder_unittest.cc" ]
+  }
+
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 

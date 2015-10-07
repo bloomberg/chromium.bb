@@ -443,18 +443,20 @@ TEST(StackSamplingProfilerTest, MAYBE_ConcurrentProfiling) {
     profiler[0]->Start();
     profiler[1]->Start();
 
-    // Wait for the first profiler to finish.
-    sampling_completed[0]->Wait();
-    EXPECT_EQ(1u, profiles[0].size());
+    // Wait for one profiler to finish.
+    size_t completed_profiler =
+        WaitableEvent::WaitMany(&sampling_completed[0], 2);
+    EXPECT_EQ(1u, profiles[completed_profiler].size());
 
-    // Give the second profiler a chance to run and observe that it hasn't.
-    EXPECT_FALSE(
-        sampling_completed[1]->TimedWait(TimeDelta::FromMilliseconds(25)));
+    size_t other_profiler = 1 - completed_profiler;
+    // Give the other profiler a chance to run and observe that it hasn't.
+    EXPECT_FALSE(sampling_completed[other_profiler]->TimedWait(
+        TimeDelta::FromMilliseconds(25)));
 
-    // Start the second profiler again and it should run.
-    profiler[1]->Start();
-    sampling_completed[1]->Wait();
-    EXPECT_EQ(1u, profiles[1].size());
+    // Start the other profiler again and it should run.
+    profiler[other_profiler]->Start();
+    sampling_completed[other_profiler]->Wait();
+    EXPECT_EQ(1u, profiles[other_profiler].size());
   });
 }
 
