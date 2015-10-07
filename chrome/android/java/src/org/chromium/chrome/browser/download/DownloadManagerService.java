@@ -466,7 +466,9 @@ public class DownloadManagerService extends BroadcastReceiver implements
                             boolean canResolve = canResolveDownloadItem(mContext, downloadId);
                             completionMap.put(
                                     progress.mDownloadInfo, Pair.create(downloadId, canResolve));
-                            mDownloadNotifier.notifyDownloadSuccessful(progress.mDownloadInfo);
+                            mDownloadNotifier.notifyDownloadSuccessful(
+                                    progress.mDownloadInfo,
+                                    getLaunchIntentFromDownloadId(mContext, downloadId));
                             broadcastDownloadSuccessful(progress.mDownloadInfo);
                         }
                         break;
@@ -505,7 +507,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
         try {
             downloadId = manager.addCompletedDownload(
                     downloadInfo.getFileName(), description, true, mimeType,
-                    downloadInfo.getFilePath(), downloadInfo.getContentLength(), true);
+                    downloadInfo.getFilePath(), downloadInfo.getContentLength(), false);
             if (shouldOpenAfterDownload(downloadInfo)) {
                 handleAutoOpenAfterDownload(downloadInfo, downloadId);
             }
@@ -579,7 +581,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      *
      * @param downloadId Download Identifier.
      */
-    private void removeProgressNotificationForDownload(int downloadId) {
+    void removeProgressNotificationForDownload(int downloadId) {
         mDownloadProgressMap.remove(downloadId);
         mDownloadNotifier.cancelNotification(downloadId);
         removeDownloadIdFromSharedPrefs(downloadId);

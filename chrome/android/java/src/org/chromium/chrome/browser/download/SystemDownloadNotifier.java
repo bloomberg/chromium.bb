@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.download;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 
 import org.chromium.chrome.R;
@@ -53,14 +55,23 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     }
 
     @Override
-    public void notifyDownloadSuccessful(DownloadInfo downloadInfo) {
-        // TODO(qinmin): figure out what needs to be done here.
+    public void notifyDownloadSuccessful(DownloadInfo downloadInfo, Intent intent) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mApplicationContext)
+                .setContentTitle(downloadInfo.getFileName())
+                .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                .setOngoing(false)
+                .setLocalOnly(true)
+                .setAutoCancel(true)
+                .setContentText(mApplicationContext.getResources().getString(
+                        R.string.download_notification_completed))
+                .setContentIntent(PendingIntent.getActivity(
+                        mApplicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
+        updateNotification(downloadInfo.getDownloadId(), builder.build());
     }
 
     @Override
     public void notifyDownloadFailed(DownloadInfo downloadInfo) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                mApplicationContext)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mApplicationContext)
                 .setContentTitle(downloadInfo.getFileName())
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setOngoing(false)

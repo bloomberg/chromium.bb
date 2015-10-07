@@ -1433,6 +1433,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_DOWNLOAD_NOTIFICATION_FAILED" desc="Download notification to be displayed when a download fails.">
         Download failed.
       </message>
+      <message name="IDS_DOWNLOAD_NOTIFICATION_COMPLETED" desc="Download notification to be displayed when a download completes.">
+        Download complete.
+      </message>
       <message name="IDS_DOWNLOAD_FAILED_MESSAGE" desc="Transient message shown when a file download has failed." meaning="Android">
         <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> download failed
       </message>

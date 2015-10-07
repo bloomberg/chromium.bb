@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download;
 
 import android.app.DownloadManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.test.InstrumentationTestCase;
@@ -101,7 +102,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void notifyDownloadSuccessful(DownloadInfo downloadInfo) {
+        public void notifyDownloadSuccessful(DownloadInfo downloadInfo, Intent intent) {
             assertCorrectExpectedCall(MethodID.DOWNLOAD_SUCCESSFUL, downloadInfo);
         }
 

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Pair;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
@@ -25,10 +26,12 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onAction(Object actionData) {
-        Long downloadId = (Long) actionData;
-        DownloadManagerService.getDownloadManagerService(mContext).openDownloadedContent(
-                downloadId);
+        Pair<DownloadInfo, Long> download = (Pair<DownloadInfo, Long>) actionData;
+        DownloadManagerService manager = DownloadManagerService.getDownloadManagerService(mContext);
+        manager.openDownloadedContent(download.second);
+        manager.removeProgressNotificationForDownload(download.first.getDownloadId());
     }
 
     @Override
@@ -56,7 +59,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         if (canBeResolved) {
             snackbar.setAction(
                     mContext.getString(R.string.open_downloaded_label),
-                    downloadId);
+                    Pair.create(downloadInfo, downloadId));
         }
         getSnackbarManager().showSnackbar(snackbar);
     }

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.download;
 
+import android.content.Intent;
+
 import org.chromium.content.browser.DownloadInfo;
 
 /**
@@ -13,8 +15,9 @@ public interface DownloadNotifier {
     /**
      * Add a download successful notification.
      * @param downloadInfo info about the successful download.
+     * @param intent Intent to launch when clicking the download notification.
      */
-    void notifyDownloadSuccessful(DownloadInfo downloadInfo);
+    void notifyDownloadSuccessful(DownloadInfo downloadInfo, Intent intent);
 
     /**
      * Add a download failed notification.
