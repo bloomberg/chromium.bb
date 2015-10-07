@@ -252,12 +252,9 @@ void BluetoothAdapterWin::DevicesPolled(
   for (DeviceAddressSet::const_iterator iter = removed_devices.begin();
        iter != removed_devices.end();
        ++iter) {
-    BluetoothDevice* device_win = devices_[(*iter)];
-    devices_.erase(*iter);
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
-                      observers_,
-                      DeviceRemoved(this, device_win));
-    delete device_win;
+    scoped_ptr<BluetoothDevice> device_win = devices_.take_and_erase(*iter);
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      DeviceRemoved(this, device_win.get()));
   }
 
   // Process added and (maybe) changed devices in one pass
@@ -274,14 +271,17 @@ void BluetoothAdapterWin::DevicesPolled(
       BluetoothDeviceWin* device_win =
           new BluetoothDeviceWin(this, *device_state, ui_task_runner_,
                                  socket_thread_, NULL, net::NetLog::Source());
-      devices_[device_state->address] = device_win;
+      devices_.set(device_state->address,
+                   scoped_ptr<BluetoothDevice>(device_win));
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
                         observers_,
                         DeviceAdded(this, device_win));
     } else if (changed_devices.find(device_state->address) !=
                changed_devices.end()) {
+      DevicesMap::const_iterator iter = devices_.find(device_state->address);
+      DCHECK(iter != devices_.end());
       BluetoothDeviceWin* device_win =
-          static_cast<BluetoothDeviceWin*>(devices_[device_state->address]);
+          static_cast<BluetoothDeviceWin*>(iter->second);
       if (!device_win->IsEqual(*device_state)) {
         device_win->Update(*device_state);
         FOR_EACH_OBSERVER(BluetoothAdapter::Observer,

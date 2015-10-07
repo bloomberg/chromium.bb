@@ -445,10 +445,10 @@ void BluetoothAdapterMac::ClassicDeviceAdded(IOBluetoothDevice* device) {
   if (devices_.count(device_address))
     return;
 
-  devices_[device_address] = new BluetoothClassicDeviceMac(this, device);
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
-                    observers_,
-                    DeviceAdded(this, devices_[device_address]));
+  BluetoothDevice* device_classic = new BluetoothClassicDeviceMac(this, device);
+  devices_.set(device_address, make_scoped_ptr(device_classic));
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    DeviceAdded(this, device_classic));
 }
 
 void BluetoothAdapterMac::LowEnergyDeviceUpdated(
@@ -457,21 +457,24 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
     int rssi) {
   std::string device_address =
       BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral);
-  // Get a reference to the actual device pointer held by |devices_| (if
-  // |device_address| has no entry in the map a NULL pointer is created by the
-  // std::map [] operator).
-  BluetoothDevice*& device_reference = devices_[device_address];
-  if (!device_reference) {
+  // Try to find device from |devices_| with key |device_address|,
+  // if has no entry in the map, create new device and insert into |devices_|,
+  // otherwise update the existing device.
+  DevicesMap::const_iterator iter = devices_.find(device_address);
+  if (iter == devices_.end()) {
     VLOG(1) << "LowEnergyDeviceUpdated new device";
     // A new device has been found.
-    device_reference = new BluetoothLowEnergyDeviceMac(
+    BluetoothLowEnergyDeviceMac* device_mac = new BluetoothLowEnergyDeviceMac(
         this, peripheral, advertisement_data, rssi);
+    devices_.add(device_address, scoped_ptr<BluetoothDevice>(device_mac));
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceAdded(this, device_reference));
+                      DeviceAdded(this, device_mac));
     return;
   }
 
-  std::string stored_device_id = device_reference->GetIdentifier();
+  BluetoothLowEnergyDeviceMac* device_mac =
+      static_cast<BluetoothLowEnergyDeviceMac*>(iter->second);
+  std::string stored_device_id = device_mac->GetIdentifier();
   std::string updated_device_id =
       BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(peripheral);
   if (stored_device_id != updated_device_id) {
@@ -489,10 +492,9 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
 
   // A device has an update.
   VLOG(2) << "LowEnergyDeviceUpdated";
-  static_cast<BluetoothLowEnergyDeviceMac*>(device_reference)
-      ->Update(peripheral, advertisement_data, rssi);
+  device_mac->Update(peripheral, advertisement_data, rssi);
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    DeviceChanged(this, device_reference));
+                    DeviceChanged(this, device_mac));
 }
 
 // TODO(krstnmnlsn): Implement. crbug.com/511025
@@ -503,7 +505,8 @@ void BluetoothAdapterMac::RemoveTimedOutDevices() {
   // i.e. if they are no longer paired, connected, nor recently discovered via
   // an inquiry.
   std::set<std::string> removed_devices;
-  for (DevicesMap::iterator it = devices_.begin(); it != devices_.end(); ++it) {
+  for (DevicesMap::const_iterator it = devices_.begin(); it != devices_.end();
+       ++it) {
     BluetoothDevice* device = it->second;
     if (device->IsPaired() || device->IsConnected())
       continue;
@@ -516,7 +519,6 @@ void BluetoothAdapterMac::RemoveTimedOutDevices() {
 
     FOR_EACH_OBSERVER(
         BluetoothAdapter::Observer, observers_, DeviceRemoved(this, device));
-    delete device;
     removed_devices.insert(it->first);
     // The device will be erased from the map in the loop immediately below.
   }

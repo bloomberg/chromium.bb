@@ -225,11 +225,29 @@ TEST_F(ChromeOSMetricsProviderTest, BluetoothPairedDevices) {
 
   typedef metrics::SystemProfileProto::Hardware::Bluetooth::PairedDevice
       PairedDevice;
+  // As BluetoothAdapter keeps the device list without ordering,
+  // it's not appropriate to use fixed positional indices to index into the
+  // system_profile.hardware().bluetooth().paired_device list.
+  // Instead, directly find the two devices we're interested in.
+  PairedDevice device1;
+  PairedDevice device2;
+  for (int i = 0;
+       i < system_profile.hardware().bluetooth().paired_device_size(); ++i) {
+    const PairedDevice& device =
+        system_profile.hardware().bluetooth().paired_device(i);
+    if (device.bluetooth_class() ==
+            FakeBluetoothDeviceClient::kPairedDeviceClass &&
+        device.vendor_prefix() == 0x001122U) {
+      // Found the Paired Device object.
+      device1 = device;
+    } else if (device.bluetooth_class() ==
+               FakeBluetoothDeviceClient::kConfirmPasskeyClass) {
+      // Found the Confirm Passkey object.
+      device2 = device;
+    }
+  }
 
-  // First device should match the Paired Device object, complete with
-  // parsed Device ID information.
-  PairedDevice device1 = system_profile.hardware().bluetooth().paired_device(0);
-
+  // The Paired Device object, complete with parsed Device ID information.
   EXPECT_EQ(FakeBluetoothDeviceClient::kPairedDeviceClass,
             device1.bluetooth_class());
   EXPECT_EQ(PairedDevice::DEVICE_COMPUTER, device1.type());
@@ -239,10 +257,7 @@ TEST_F(ChromeOSMetricsProviderTest, BluetoothPairedDevices) {
   EXPECT_EQ(0x030DU, device1.product_id());
   EXPECT_EQ(0x0306U, device1.device_id());
 
-  // Third device should match the Confirm Passkey object, this has
-  // no Device ID information.
-  PairedDevice device2 = system_profile.hardware().bluetooth().paired_device(1);
-
+  // The Confirm Passkey object, this has no Device ID information.
   EXPECT_EQ(FakeBluetoothDeviceClient::kConfirmPasskeyClass,
             device2.bluetooth_class());
   EXPECT_EQ(PairedDevice::DEVICE_PHONE, device2.type());

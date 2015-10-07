@@ -156,7 +156,6 @@ BluetoothAdapter::BluetoothAdapter() : weak_ptr_factory_(this) {
 }
 
 BluetoothAdapter::~BluetoothAdapter() {
-  STLDeleteValues(&devices_);
 }
 
 void BluetoothAdapter::OnStartDiscoverySession(
@@ -201,11 +200,7 @@ void BluetoothAdapter::DiscoverySessionBecameInactive(
 }
 
 void BluetoothAdapter::DeleteDeviceForTesting(const std::string& address) {
-  std::map<const std::string, BluetoothDevice*>::iterator device_iterator =
-      devices_.find(address);
-  BluetoothDevice* device = device_iterator->second;
-  devices_.erase(device_iterator);
-  delete device;
+  devices_.erase(address);
 }
 
 scoped_ptr<BluetoothDiscoveryFilter>

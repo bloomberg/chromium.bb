@@ -95,7 +95,8 @@ class BluetoothAdapterMacTest : public testing::Test {
   }
 
   void AddLowEnergyDevice(BluetoothLowEnergyDeviceMac* device) {
-    adapter_mac_->devices_[device->GetAddress()] = device;
+    adapter_mac_->devices_.set(device->GetAddress(),
+                               scoped_ptr<BluetoothDevice>(device));
   }
 
   int NumDevices() { return adapter_mac_->devices_.size(); }

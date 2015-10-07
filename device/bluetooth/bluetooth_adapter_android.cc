@@ -139,18 +139,24 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     const jstring& address,
     jobject bluetooth_device_wrapper,  // Java Type: bluetoothDeviceWrapper
     jobject advertised_uuids) {        // Java Type: List<ParcelUuid>
-  BluetoothDevice*& device = devices_[ConvertJavaStringToUTF8(env, address)];
-  if (!device) {
-    device = BluetoothDeviceAndroid::Create(this, bluetooth_device_wrapper);
-    static_cast<BluetoothDeviceAndroid*>(device)
-        ->UpdateAdvertisedUUIDs(advertised_uuids);
+  std::string device_address = ConvertJavaStringToUTF8(env, address);
+  DevicesMap::const_iterator iter = devices_.find(device_address);
+
+  if (iter == devices_.end()) {
+    // New device.
+    BluetoothDeviceAndroid* device_android =
+        BluetoothDeviceAndroid::Create(this, bluetooth_device_wrapper);
+    device_android->UpdateAdvertisedUUIDs(advertised_uuids);
+    devices_.add(device_address, scoped_ptr<BluetoothDevice>(device_android));
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceAdded(this, device));
+                      DeviceAdded(this, device_android));
   } else {
-    if (static_cast<BluetoothDeviceAndroid*>(device)
-            ->UpdateAdvertisedUUIDs(advertised_uuids)) {
+    // Existing device.
+    BluetoothDeviceAndroid* device_android =
+        static_cast<BluetoothDeviceAndroid*>(iter->second);
+    if (device_android->UpdateAdvertisedUUIDs(advertised_uuids)) {
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DeviceChanged(this, device));
+                        DeviceChanged(this, device_android));
     }
   }
 }

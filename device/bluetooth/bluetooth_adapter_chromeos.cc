@@ -346,7 +346,7 @@ void BluetoothAdapterChromeOS::RemovePairingDelegateInternal(
     BluetoothDevice::PairingDelegate* pairing_delegate) {
   // Check if any device is using the pairing delegate.
   // If so, clear the pairing context which will make any responses no-ops.
-  for (DevicesMap::iterator iter = devices_.begin();
+  for (DevicesMap::const_iterator iter = devices_.begin();
        iter != devices_.end(); ++iter) {
     BluetoothDeviceChromeOS* device_chromeos =
         static_cast<BluetoothDeviceChromeOS*>(iter->second);
@@ -407,7 +407,8 @@ void BluetoothAdapterChromeOS::DeviceAdded(
                                   socket_thread_);
   DCHECK(devices_.find(device_chromeos->GetAddress()) == devices_.end());
 
-  devices_[device_chromeos->GetAddress()] = device_chromeos;
+  devices_.set(device_chromeos->GetAddress(),
+               scoped_ptr<BluetoothDevice>(device_chromeos));
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     DeviceAdded(this, device_chromeos));
@@ -415,16 +416,16 @@ void BluetoothAdapterChromeOS::DeviceAdded(
 
 void BluetoothAdapterChromeOS::DeviceRemoved(
     const dbus::ObjectPath& object_path) {
-  for (DevicesMap::iterator iter = devices_.begin();
+  for (DevicesMap::const_iterator iter = devices_.begin();
        iter != devices_.end(); ++iter) {
     BluetoothDeviceChromeOS* device_chromeos =
         static_cast<BluetoothDeviceChromeOS*>(iter->second);
     if (device_chromeos->object_path() == object_path) {
-      devices_.erase(iter);
+      scoped_ptr<BluetoothDevice> scoped_device =
+          devices_.take_and_erase(iter->first);
 
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                         DeviceRemoved(this, device_chromeos));
-      delete device_chromeos;
       return;
     }
   }
@@ -442,15 +443,19 @@ void BluetoothAdapterChromeOS::DevicePropertyChanged(
           object_path);
 
   if (property_name == properties->address.name()) {
-    for (auto iter = devices_.begin(); iter != devices_.end(); ++iter) {
+    for (DevicesMap::iterator iter = devices_.begin(); iter != devices_.end();
+         ++iter) {
       if (iter->second->GetAddress() == device_chromeos->GetAddress()) {
         std::string old_address = iter->first;
         VLOG(1) << "Device changed address, old: " << old_address
                 << " new: " << device_chromeos->GetAddress();
-        devices_.erase(iter);
+        scoped_ptr<BluetoothDevice> scoped_device =
+            devices_.take_and_erase(iter);
+        ignore_result(scoped_device.release());
 
         DCHECK(devices_.find(device_chromeos->GetAddress()) == devices_.end());
-        devices_[device_chromeos->GetAddress()] = device_chromeos;
+        devices_.set(device_chromeos->GetAddress(),
+                     scoped_ptr<BluetoothDevice>(device_chromeos));
         NotifyDeviceAddressChanged(device_chromeos, old_address);
         break;
       }
@@ -487,7 +492,7 @@ void BluetoothAdapterChromeOS::DevicePropertyChanged(
 
     int count = 0;
 
-    for (DevicesMap::iterator iter = devices_.begin();
+    for (DevicesMap::const_iterator iter = devices_.begin();
          iter != devices_.end(); ++iter) {
       if (iter->second->IsPaired() && iter->second->IsConnected())
         ++count;
@@ -714,8 +719,8 @@ BluetoothAdapterChromeOS::GetDeviceWithPath(
   if (!IsPresent())
     return nullptr;
 
-  for (DevicesMap::iterator iter = devices_.begin(); iter != devices_.end();
-       ++iter) {
+  for (DevicesMap::const_iterator iter = devices_.begin();
+       iter != devices_.end(); ++iter) {
     BluetoothDeviceChromeOS* device_chromeos =
         static_cast<BluetoothDeviceChromeOS*>(iter->second);
     if (device_chromeos->object_path() == object_path)
@@ -832,16 +837,15 @@ void BluetoothAdapterChromeOS::RemoveAdapter() {
   if (properties->discovering.value())
     DiscoveringChanged(false);
 
-  // Copy the devices list here and clear the original so that when we
-  // send DeviceRemoved(), GetDevices() returns no devices.
-  DevicesMap devices = devices_;
-  devices_.clear();
+  // Move all elements of the original devices list to a new list here,
+  // leaving the original list empty so that when we send DeviceRemoved(),
+  // GetDevices() returns no devices.
+  DevicesMap devices_swapped;
+  devices_swapped.swap(devices_);
 
-  for (DevicesMap::iterator iter = devices.begin();
-       iter != devices.end(); ++iter) {
+  for (auto& iter : devices_swapped) {
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceRemoved(this, iter->second));
-    delete iter->second;
+                      DeviceRemoved(this, iter.second));
   }
 
   PresentChanged(false);

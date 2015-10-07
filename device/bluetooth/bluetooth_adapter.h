@@ -6,12 +6,12 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_H_
 
 #include <list>
-#include <map>
 #include <set>
 #include <string>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -394,7 +394,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   friend class BluetoothDiscoverySession;
   friend class BluetoothTestBase;
 
-  typedef std::map<const std::string, BluetoothDevice*> DevicesMap;
+  typedef base::ScopedPtrHashMap<std::string, scoped_ptr<BluetoothDevice>>
+      DevicesMap;
   typedef std::pair<BluetoothDevice::PairingDelegate*, PairingDelegatePriority>
       PairingDelegatePair;
   typedef base::Callback<void(UMABluetoothDiscoverySessionOutcome)>

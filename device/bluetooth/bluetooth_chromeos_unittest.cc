@@ -44,6 +44,18 @@ void SaveConnectionInfo(BluetoothDevice::ConnectionInfo* out,
   *out = conn_info;
 };
 
+// Find |address| in |devices|, if found returns the index otherwise returns -1.
+int GetDeviceIndexByAddress(BluetoothAdapter::DeviceList& devices,
+                            const char* address) {
+  int idx = -1;
+  for (auto& device : devices) {
+    ++idx;
+    if (device->GetAddress().compare(address) == 0)
+      return idx;
+  }
+  return -1;
+}
+
 class FakeBluetoothProfileServiceProviderDelegate
     : public chromeos::BluetoothProfileServiceProvider::Delegate {
  public:
@@ -358,13 +370,17 @@ TEST_F(BluetoothChromeOSTest, AlreadyPresent) {
             adapter_->GetAddress());
   EXPECT_FALSE(adapter_->IsDiscovering());
 
-  // There should be a device
+  // There should be 2 devices
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   EXPECT_EQ(2U, devices.size());
-  EXPECT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
-            devices[0]->GetAddress());
-  EXPECT_EQ(FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress,
-            devices[1]->GetAddress());
+
+  // |devices| are not ordered, verify it contains the 2 device addresses.
+  EXPECT_NE(-1, GetDeviceIndexByAddress(
+                    devices, FakeBluetoothDeviceClient::kPairedDeviceAddress));
+  EXPECT_NE(-1,
+            GetDeviceIndexByAddress(
+                devices,
+                FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress));
 }
 
 TEST_F(BluetoothChromeOSTest, BecomePresent) {
@@ -410,10 +426,14 @@ TEST_F(BluetoothChromeOSTest, BecomeNotPresent) {
 
   EXPECT_FALSE(adapter_->IsPresent());
 
-  // We should have had a device removed.
+  // We should have had 2 devices removed.
   EXPECT_EQ(2, observer.device_removed_count());
-  EXPECT_EQ(FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress,
-            observer.last_device_address());
+  // 2 possibilities for the last device here.
+  std::string address = observer.last_device_address();
+  EXPECT_TRUE(
+      address.compare(
+          FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress) == 0 ||
+      address.compare(FakeBluetoothDeviceClient::kPairedDeviceAddress) == 0);
 
   // Other callbacks shouldn't be called since the values are false.
   EXPECT_EQ(0, observer.powered_changed_count());
@@ -447,10 +467,15 @@ TEST_F(BluetoothChromeOSTest, SecondAdapter) {
 
   EXPECT_FALSE(adapter_->IsPresent());
 
-  // We should have had a device removed.
+  // We should have had 2 devices removed.
   EXPECT_EQ(2, observer.device_removed_count());
-  EXPECT_EQ(FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress,
-            observer.last_device_address());
+  // As BluetoothAdapter devices removal does not keep the order of adding them,
+  // 2 possibilities for the last device here.
+  std::string address = observer.last_device_address();
+  EXPECT_TRUE(
+      address.compare(
+          FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress) == 0 ||
+      address.compare(FakeBluetoothDeviceClient::kPairedDeviceAddress) == 0);
 
   // Other callbacks shouldn't be called since the values are false.
   EXPECT_EQ(0, observer.powered_changed_count());
@@ -2092,29 +2117,33 @@ TEST_F(BluetoothChromeOSTest, DeviceProperties) {
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   ASSERT_EQ(2U, devices.size());
+
+  int idx = GetDeviceIndexByAddress(
+      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  ASSERT_NE(-1, idx);
   ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
-            devices[0]->GetAddress());
+            devices[idx]->GetAddress());
 
   // Verify the other device properties.
   EXPECT_EQ(base::UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceName),
-            devices[0]->GetName());
-  EXPECT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[0]->GetDeviceType());
-  EXPECT_TRUE(devices[0]->IsPaired());
-  EXPECT_FALSE(devices[0]->IsConnected());
-  EXPECT_FALSE(devices[0]->IsConnecting());
+            devices[idx]->GetName());
+  EXPECT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[idx]->GetDeviceType());
+  EXPECT_TRUE(devices[idx]->IsPaired());
+  EXPECT_FALSE(devices[idx]->IsConnected());
+  EXPECT_FALSE(devices[idx]->IsConnecting());
 
   // Non HID devices are always connectable.
-  EXPECT_TRUE(devices[0]->IsConnectable());
+  EXPECT_TRUE(devices[idx]->IsConnectable());
 
-  BluetoothDevice::UUIDList uuids = devices[0]->GetUUIDs();
+  BluetoothDevice::UUIDList uuids = devices[idx]->GetUUIDs();
   ASSERT_EQ(2U, uuids.size());
   EXPECT_EQ(uuids[0], BluetoothUUID("1800"));
   EXPECT_EQ(uuids[1], BluetoothUUID("1801"));
 
-  EXPECT_EQ(BluetoothDevice::VENDOR_ID_USB, devices[0]->GetVendorIDSource());
-  EXPECT_EQ(0x05ac, devices[0]->GetVendorID());
-  EXPECT_EQ(0x030d, devices[0]->GetProductID());
-  EXPECT_EQ(0x0306, devices[0]->GetDeviceID());
+  EXPECT_EQ(BluetoothDevice::VENDOR_ID_USB, devices[idx]->GetVendorIDSource());
+  EXPECT_EQ(0x05ac, devices[idx]->GetVendorID());
+  EXPECT_EQ(0x030d, devices[idx]->GetProductID());
+  EXPECT_EQ(0x0306, devices[idx]->GetDeviceID());
 }
 
 TEST_F(BluetoothChromeOSTest, DeviceClassChanged) {
@@ -2124,9 +2153,11 @@ TEST_F(BluetoothChromeOSTest, DeviceClassChanged) {
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   ASSERT_EQ(2U, devices.size());
-  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
-            devices[0]->GetAddress());
-  ASSERT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[0]->GetDeviceType());
+
+  int idx = GetDeviceIndexByAddress(
+      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  ASSERT_NE(-1, idx);
+  ASSERT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[idx]->GetDeviceType());
 
   // Install an observer; expect the DeviceChanged method to be called when
   // we change the class of the device.
@@ -2139,9 +2170,9 @@ TEST_F(BluetoothChromeOSTest, DeviceClassChanged) {
   properties->bluetooth_class.ReplaceValue(0x002580);
 
   EXPECT_EQ(1, observer.device_changed_count());
-  EXPECT_EQ(devices[0], observer.last_device());
+  EXPECT_EQ(devices[idx], observer.last_device());
 
-  EXPECT_EQ(BluetoothDevice::DEVICE_MOUSE, devices[0]->GetDeviceType());
+  EXPECT_EQ(BluetoothDevice::DEVICE_MOUSE, devices[idx]->GetDeviceType());
 }
 
 TEST_F(BluetoothChromeOSTest, DeviceNameChanged) {
@@ -2150,10 +2181,14 @@ TEST_F(BluetoothChromeOSTest, DeviceNameChanged) {
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   ASSERT_EQ(2U, devices.size());
+
+  int idx = GetDeviceIndexByAddress(
+      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  ASSERT_NE(-1, idx);
   ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
-            devices[0]->GetAddress());
+            devices[idx]->GetAddress());
   ASSERT_EQ(base::UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceName),
-            devices[0]->GetName());
+            devices[idx]->GetName());
 
   // Install an observer; expect the DeviceChanged method to be called when
   // we change the alias of the device.
@@ -2167,9 +2202,9 @@ TEST_F(BluetoothChromeOSTest, DeviceNameChanged) {
   properties->alias.ReplaceValue(new_name);
 
   EXPECT_EQ(1, observer.device_changed_count());
-  EXPECT_EQ(devices[0], observer.last_device());
+  EXPECT_EQ(devices[idx], observer.last_device());
 
-  EXPECT_EQ(base::UTF8ToUTF16(new_name), devices[0]->GetName());
+  EXPECT_EQ(base::UTF8ToUTF16(new_name), devices[idx]->GetName());
 }
 
 TEST_F(BluetoothChromeOSTest, DeviceAddressChanged) {
@@ -2178,10 +2213,14 @@ TEST_F(BluetoothChromeOSTest, DeviceAddressChanged) {
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   ASSERT_EQ(2U, devices.size());
+
+  int idx = GetDeviceIndexByAddress(
+      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  ASSERT_NE(-1, idx);
   ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
-            devices[0]->GetAddress());
+            devices[idx]->GetAddress());
   ASSERT_EQ(base::UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceName),
-            devices[0]->GetName());
+            devices[idx]->GetName());
 
   // Install an observer; expect the DeviceAddressChanged method to be called
   // when we change the alias of the device.
@@ -2196,9 +2235,9 @@ TEST_F(BluetoothChromeOSTest, DeviceAddressChanged) {
 
   EXPECT_EQ(1, observer.device_address_changed_count());
   EXPECT_EQ(1, observer.device_changed_count());
-  EXPECT_EQ(devices[0], observer.last_device());
+  EXPECT_EQ(devices[idx], observer.last_device());
 
-  EXPECT_EQ(std::string(kNewAddress), devices[0]->GetAddress());
+  EXPECT_EQ(std::string(kNewAddress), devices[idx]->GetAddress());
 }
 
 TEST_F(BluetoothChromeOSTest, DeviceUuidsChanged) {
@@ -2207,10 +2246,14 @@ TEST_F(BluetoothChromeOSTest, DeviceUuidsChanged) {
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   ASSERT_EQ(2U, devices.size());
-  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
-            devices[0]->GetAddress());
 
-  BluetoothDevice::UUIDList uuids = devices[0]->GetUUIDs();
+  int idx = GetDeviceIndexByAddress(
+      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  ASSERT_NE(-1, idx);
+  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+            devices[idx]->GetAddress());
+
+  BluetoothDevice::UUIDList uuids = devices[idx]->GetUUIDs();
   ASSERT_EQ(2U, uuids.size());
   ASSERT_EQ(uuids[0], BluetoothUUID("1800"));
   ASSERT_EQ(uuids[1], BluetoothUUID("1801"));
@@ -2233,10 +2276,10 @@ TEST_F(BluetoothChromeOSTest, DeviceUuidsChanged) {
   properties->uuids.ReplaceValue(new_uuids);
 
   EXPECT_EQ(1, observer.device_changed_count());
-  EXPECT_EQ(devices[0], observer.last_device());
+  EXPECT_EQ(devices[idx], observer.last_device());
 
   // Fetching the value should give the new one.
-  uuids = devices[0]->GetUUIDs();
+  uuids = devices[idx]->GetUUIDs();
   ASSERT_EQ(5U, uuids.size());
   EXPECT_EQ(uuids[0], BluetoothUUID("1800"));
   EXPECT_EQ(uuids[1], BluetoothUUID("1801"));
@@ -2252,8 +2295,10 @@ TEST_F(BluetoothChromeOSTest, DeviceInquiryRSSIInvalidated) {
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   ASSERT_EQ(2U, devices.size());
-  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
-            devices[0]->GetAddress());
+
+  int idx = GetDeviceIndexByAddress(
+      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  ASSERT_NE(-1, idx);
 
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
@@ -2263,7 +2308,7 @@ TEST_F(BluetoothChromeOSTest, DeviceInquiryRSSIInvalidated) {
   properties->rssi.ReplaceValue(-75);
   properties->rssi.set_valid(true);
 
-  ASSERT_EQ(-75, devices[0]->GetInquiryRSSI());
+  ASSERT_EQ(-75, devices[idx]->GetInquiryRSSI());
 
   // Install an observer; expect the DeviceChanged method to be called when
   // we invalidate the RSSI of the device.
@@ -2274,10 +2319,10 @@ TEST_F(BluetoothChromeOSTest, DeviceInquiryRSSIInvalidated) {
   properties->NotifyPropertyChanged(properties->rssi.name());
 
   EXPECT_EQ(1, observer.device_changed_count());
-  EXPECT_EQ(devices[0], observer.last_device());
+  EXPECT_EQ(devices[idx], observer.last_device());
 
   int unknown_power = BluetoothDevice::kUnknownPower;
-  EXPECT_EQ(unknown_power, devices[0]->GetInquiryRSSI());
+  EXPECT_EQ(unknown_power, devices[idx]->GetInquiryRSSI());
 }
 
 TEST_F(BluetoothChromeOSTest, DeviceInquiryTxPowerInvalidated) {
@@ -2287,8 +2332,10 @@ TEST_F(BluetoothChromeOSTest, DeviceInquiryTxPowerInvalidated) {
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   ASSERT_EQ(2U, devices.size());
-  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
-            devices[0]->GetAddress());
+
+  int idx = GetDeviceIndexByAddress(
+      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  ASSERT_NE(-1, idx);
 
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
@@ -2298,7 +2345,7 @@ TEST_F(BluetoothChromeOSTest, DeviceInquiryTxPowerInvalidated) {
   properties->tx_power.ReplaceValue(0);
   properties->tx_power.set_valid(true);
 
-  ASSERT_EQ(0, devices[0]->GetInquiryTxPower());
+  ASSERT_EQ(0, devices[idx]->GetInquiryTxPower());
 
   // Install an observer; expect the DeviceChanged method to be called when
   // we invalidate the tx_power of the device.
@@ -2309,10 +2356,10 @@ TEST_F(BluetoothChromeOSTest, DeviceInquiryTxPowerInvalidated) {
   properties->NotifyPropertyChanged(properties->tx_power.name());
 
   EXPECT_EQ(1, observer.device_changed_count());
-  EXPECT_EQ(devices[0], observer.last_device());
+  EXPECT_EQ(devices[idx], observer.last_device());
 
   int unknown_power = BluetoothDevice::kUnknownPower;
-  EXPECT_EQ(unknown_power, devices[0]->GetInquiryTxPower());
+  EXPECT_EQ(unknown_power, devices[idx]->GetInquiryTxPower());
 }
 
 TEST_F(BluetoothChromeOSTest, ForgetDevice) {
@@ -2320,16 +2367,20 @@ TEST_F(BluetoothChromeOSTest, ForgetDevice) {
 
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   ASSERT_EQ(2U, devices.size());
-  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
-            devices[0]->GetAddress());
 
-  std::string address = devices[0]->GetAddress();
+  int idx = GetDeviceIndexByAddress(
+      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  ASSERT_NE(-1, idx);
+  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+            devices[idx]->GetAddress());
+
+  std::string address = devices[idx]->GetAddress();
 
   // Install an observer; expect the DeviceRemoved method to be called
   // with the device we remove.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  devices[0]->Forget(GetErrorCallback());
+  devices[idx]->Forget(GetErrorCallback());
   EXPECT_EQ(0, error_callback_count_);
 
   EXPECT_EQ(1, observer.device_removed_count());
