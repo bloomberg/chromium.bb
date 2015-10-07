@@ -19,7 +19,7 @@ AttachmentBrokerPrivilegedWin::AttachmentBrokerPrivilegedWin() {}
 AttachmentBrokerPrivilegedWin::~AttachmentBrokerPrivilegedWin() {}
 
 bool AttachmentBrokerPrivilegedWin::SendAttachmentToProcess(
-    const BrokerableAttachment* attachment,
+    BrokerableAttachment* attachment,
     base::ProcessId destination_process) {
   switch (attachment->GetBrokerableType()) {
     case BrokerableAttachment::WIN_HANDLE: {

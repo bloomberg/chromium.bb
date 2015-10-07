@@ -131,9 +131,9 @@ void MessageAttachmentSet::CommitAll() {
   consumed_descriptor_highwater_ = 0;
 }
 
-std::vector<const BrokerableAttachment*>
-MessageAttachmentSet::PeekBrokerableAttachments() const {
-  std::vector<const BrokerableAttachment*> output;
+std::vector<BrokerableAttachment*>
+MessageAttachmentSet::GetBrokerableAttachments() const {
+  std::vector<BrokerableAttachment*> output;
   for (const scoped_refptr<MessageAttachment>& attachment : attachments_) {
     if (attachment->GetType() ==
         MessageAttachment::TYPE_BROKERABLE_ATTACHMENT) {

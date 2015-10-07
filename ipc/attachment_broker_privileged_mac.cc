@@ -64,7 +64,7 @@ void AttachmentBrokerPrivilegedMac::SetPortProvider(
 }
 
 bool AttachmentBrokerPrivilegedMac::SendAttachmentToProcess(
-    const BrokerableAttachment* attachment,
+    BrokerableAttachment* attachment,
     base::ProcessId destination_process) {
   switch (attachment->GetBrokerableType()) {
     case BrokerableAttachment::MACH_PORT: {

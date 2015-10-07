@@ -50,16 +50,19 @@ AttachmentBrokerUnprivilegedMac::AttachmentBrokerUnprivilegedMac() {}
 AttachmentBrokerUnprivilegedMac::~AttachmentBrokerUnprivilegedMac() {}
 
 bool AttachmentBrokerUnprivilegedMac::SendAttachmentToProcess(
-    const BrokerableAttachment* attachment,
+    BrokerableAttachment* attachment,
     base::ProcessId destination_process) {
   switch (attachment->GetBrokerableType()) {
     case BrokerableAttachment::MACH_PORT: {
-      const internal::MachPortAttachmentMac* mach_port_attachment =
-          static_cast<const internal::MachPortAttachmentMac*>(attachment);
+      internal::MachPortAttachmentMac* mach_port_attachment =
+          static_cast<internal::MachPortAttachmentMac*>(attachment);
       internal::MachPortAttachmentMac::WireFormat format =
           mach_port_attachment->GetWireFormat(destination_process);
-      return get_sender()->Send(
-          new AttachmentBrokerMsg_DuplicateMachPort(format));
+      bool success =
+          get_sender()->Send(new AttachmentBrokerMsg_DuplicateMachPort(format));
+      if (success)
+        mach_port_attachment->reset_mach_port_ownership();
+      return success;
     }
     default:
       NOTREACHED();

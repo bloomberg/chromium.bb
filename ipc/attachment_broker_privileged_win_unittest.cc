@@ -277,7 +277,7 @@ class MockBroker : public IPC::AttachmentBrokerUnprivilegedWin {
  public:
   MockBroker() {}
   ~MockBroker() override {}
-  bool SendAttachmentToProcess(const IPC::BrokerableAttachment* attachment,
+  bool SendAttachmentToProcess(IPC::BrokerableAttachment* attachment,
                                base::ProcessId destination_process) override {
     return IPC::AttachmentBrokerUnprivilegedWin::SendAttachmentToProcess(
         attachment, base::Process::Current().Pid());

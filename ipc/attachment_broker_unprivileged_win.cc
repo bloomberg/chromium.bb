@@ -17,7 +17,7 @@ AttachmentBrokerUnprivilegedWin::AttachmentBrokerUnprivilegedWin() {}
 AttachmentBrokerUnprivilegedWin::~AttachmentBrokerUnprivilegedWin() {}
 
 bool AttachmentBrokerUnprivilegedWin::SendAttachmentToProcess(
-    const BrokerableAttachment* attachment,
+    BrokerableAttachment* attachment,
     base::ProcessId destination_process) {
   switch (attachment->GetBrokerableType()) {
     case BrokerableAttachment::WIN_HANDLE: {

@@ -4,21 +4,40 @@
 
 #include "ipc/mach_port_attachment_mac.h"
 
+#include "base/mac/mach_logging.h"
+
 namespace IPC {
 namespace internal {
 
 MachPortAttachmentMac::MachPortAttachmentMac(mach_port_t mach_port)
-    : mach_port_(mach_port) {}
+    : mach_port_(mach_port), owns_mach_port_(true) {
+  if (mach_port != MACH_PORT_NULL) {
+    kern_return_t kr = mach_port_mod_refs(mach_task_self(), mach_port,
+                                          MACH_PORT_RIGHT_SEND, 1);
+    MACH_LOG_IF(ERROR, kr != KERN_SUCCESS, kr)
+        << "MachPortAttachmentMac mach_port_mod_refs";
+  }
+}
 
 MachPortAttachmentMac::MachPortAttachmentMac(const WireFormat& wire_format)
     : BrokerableAttachment(wire_format.attachment_id),
-      mach_port_(static_cast<mach_port_t>(wire_format.mach_port)) {}
+      mach_port_(static_cast<mach_port_t>(wire_format.mach_port)),
+      owns_mach_port_(false) {}
 
 MachPortAttachmentMac::MachPortAttachmentMac(
     const BrokerableAttachment::AttachmentId& id)
-    : BrokerableAttachment(id), mach_port_(MACH_PORT_NULL) {}
+    : BrokerableAttachment(id),
+      mach_port_(MACH_PORT_NULL),
+      owns_mach_port_(false) {}
 
-MachPortAttachmentMac::~MachPortAttachmentMac() {}
+MachPortAttachmentMac::~MachPortAttachmentMac() {
+  if (mach_port_ != MACH_PORT_NULL && owns_mach_port_) {
+    kern_return_t kr = mach_port_mod_refs(mach_task_self(), mach_port_,
+                                          MACH_PORT_RIGHT_SEND, -1);
+    MACH_LOG_IF(ERROR, kr != KERN_SUCCESS, kr)
+        << "~MachPortAttachmentMac mach_port_mod_refs";
+  }
+}
 
 MachPortAttachmentMac::BrokerableType MachPortAttachmentMac::GetBrokerableType()
     const {

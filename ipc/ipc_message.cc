@@ -144,8 +144,8 @@ Message::NextMessageInfo::~NextMessageInfo() {}
 Message::SerializedAttachmentIds
 Message::SerializedIdsOfBrokerableAttachments() {
   DCHECK(HasBrokerableAttachments());
-  std::vector<const BrokerableAttachment*> attachments =
-      attachment_set_->PeekBrokerableAttachments();
+  std::vector<BrokerableAttachment*> attachments =
+      attachment_set_->GetBrokerableAttachments();
   CHECK_LE(attachments.size(), std::numeric_limits<size_t>::max() /
                                    BrokerableAttachment::kNonceSize);
   size_t size = attachments.size() * BrokerableAttachment::kNonceSize;

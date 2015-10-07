@@ -22,7 +22,7 @@ class IPC_EXPORT AttachmentBrokerUnprivilegedWin
   ~AttachmentBrokerUnprivilegedWin() override;
 
   // IPC::AttachmentBroker overrides.
-  bool SendAttachmentToProcess(const BrokerableAttachment* attachment,
+  bool SendAttachmentToProcess(BrokerableAttachment* attachment,
                                base::ProcessId destination_process) override;
 
   // IPC::Listener overrides.
