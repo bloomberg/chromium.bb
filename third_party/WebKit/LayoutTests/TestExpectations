@@ -549,8 +549,6 @@ crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vr
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vrl-220.xht [ ImageOnlyFailure ]
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vrl-224.xht [ ImageOnlyFailure ]
 
-crbug.com/535897 [ Mac Linux ] fast/text/international/complex-joining-using-gpos.html [ NeedsRebaseline ]
-
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-007.xht [ ImageOnlyFailure ]
