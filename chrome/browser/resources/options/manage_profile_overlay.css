@@ -152,6 +152,7 @@ html[dir='rtl'] #delete-profile-icon {
 }
 
 #import-existing-supervised-user-link {
+  bottom: 25px;
   left: 17px;
   position: absolute;
 }
