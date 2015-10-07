@@ -4,14 +4,14 @@
 
 /**
  * @fileoverview
- * 'cr-settings-internet-known-networks' is the settings subpage listing the
+ * 'settings-internet-known-networks' is the settings subpage listing the
  * known networks for a type (currently always WiFi).
  *
  * @group Chrome Settings Elements
- * @element cr-settings-internet-known-networks
+ * @element settings-internet-known-networks
  */
 Polymer({
-  is: 'cr-settings-internet-known-networks-page',
+  is: 'settings-internet-known-networks-page',
 
   properties: {
     /**

@@ -4,21 +4,21 @@
 
 /**
  * @fileoverview
- * `cr-settings-pref-tracker` is a utility element used to track the
+ * `settings-pref-tracker` is a utility element used to track the
  * initialization of a specified preference and throw an error if the pref
  * is not defined after prefs have all been fetched.
  *
  * Example:
  *
- *    <cr-settings-pref-tracker pref="{{prefs.settings.foo.bar}}">
- *    </cr-settings-pref-tracker>
+ *    <settings-pref-tracker pref="{{prefs.settings.foo.bar}}">
+ *    </settings-pref-tracker>
  *
- * @element cr-settings-pref-tracker
+ * @element settings-pref-tracker
  */
 (function() {
 
   Polymer({
-    is: 'cr-settings-pref-tracker',
+    is: 'settings-pref-tracker',
 
     properties: {
       /**

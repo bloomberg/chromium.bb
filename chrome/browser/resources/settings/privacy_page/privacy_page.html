@@ -10,7 +10,7 @@
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 <link rel="import" href="chrome://md-settings/site_settings_page/site_settings_page.html">
 
-<dom-module id="cr-settings-privacy-page">
+<dom-module id="settings-privacy-page">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="privacy_page.css">
@@ -84,19 +84,19 @@
       <neon-animatable id="manage-certificates">
         <settings-subheader i18n-values="page-title:manageCertificates">
         </settings-subheader>
-        <cr-settings-certificate-manager-page>
-        </cr-settings-certificate-manager-page>
+        <settings-certificate-manager-page>
+        </settings-certificate-manager-page>
       </neon-animatable>
       <neon-animatable id="site-settings">
         <settings-subheader i18n-values="page-title:siteSettings">
         </settings-subheader>
-        <cr-settings-site-settings-page></cr-settings-site-settings-page>
+        <settings-site-settings-page></settings-site-settings-page>
       </neon-animatable>
       <neon-animatable id="clear-browsing-data">
         <settings-subheader i18n-values="page-title:clearBrowsingData">
         </settings-subheader>
-        <cr-settings-clear-browsing-data-page prefs="{{prefs}}">
-        </cr-settings-clear-browsing-data-page>
+        <settings-clear-browsing-data-page prefs="{{prefs}}">
+        </settings-clear-browsing-data-page>
       </neon-animatable>
     </settings-animated-pages>
   </template>

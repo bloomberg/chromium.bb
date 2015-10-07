@@ -4,22 +4,22 @@
 
 /**
  * @fileoverview
- * 'cr-settings-advanced-page' is the settings page containing the advanced
+ * 'settings-advanced-page' is the settings page containing the advanced
  * settings.
  *
  * Example:
  *
  *    <iron-animated-pages>
- *      <cr-settings-advanced-page prefs="{{prefs}}">
- *      </cr-settings-advanced-page>
+ *      <settings-advanced-page prefs="{{prefs}}">
+ *      </settings-advanced-page>
  *      ... other pages ...
  *    </iron-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-advanced-page
+ * @element settings-advanced-page
  */
 Polymer({
-  is: 'cr-settings-advanced-page',
+  is: 'settings-advanced-page',
 
   properties: {
     /**

@@ -4,6 +4,6 @@
 
 // Wire up the prefs to the date/time page.
 window.addEventListener('polymer-ready', function() {
-  var page = document.querySelector('cr-settings-date-time-page');
-  page.prefs = document.querySelector('cr-settings-prefs');
+  var page = document.querySelector('settings-date-time-page');
+  page.prefs = document.querySelector('settings-prefs');
 });

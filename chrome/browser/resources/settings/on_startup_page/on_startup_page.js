@@ -4,21 +4,21 @@
 
 /**
  * @fileoverview
- * 'cr-settings-on-startup-page' is a settings page.
+ * 'settings-on-startup-page' is a settings page.
  *
  * Example:
  *
  *    <neon-animated-pages>
- *      <cr-settings-on-startup-page prefs="{{prefs}}">
- *      </cr-settings-on-startup-page>
+ *      <settings-on-startup-page prefs="{{prefs}}">
+ *      </settings-on-startup-page>
  *      ... other pages ...
  *    </neon-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-on-startup-page
+ * @element settings-on-startup-page
  */
 Polymer({
-  is: 'cr-settings-on-startup-page',
+  is: 'settings-on-startup-page',
 
   properties: {
     /**

@@ -4,18 +4,18 @@
 
 /**
  * @fileoverview
- * 'cr-settings-sync-page' is the settings page containing sync settings.
+ * 'settings-sync-page' is the settings page containing sync settings.
  *
  * Example:
  *
  *    <iron-animated-pages>
- *      <cr-settings-sync-page></cr-settings-sync-page>
+ *      <settings-sync-page></settings-sync-page>
  *      ... other pages ...
  *    </iron-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-sync-page
+ * @element settings-sync-page
  */
 Polymer({
-  is: 'cr-settings-sync-page',
+  is: 'settings-sync-page',
 });

@@ -4,22 +4,22 @@
 
 /**
  * @fileoverview
- * 'cr-settings-internet-page' is the settings page containing internet
+ * 'settings-internet-page' is the settings page containing internet
  * settings.
  *
  * Example:
  *
  *    <core-animated-pages>
- *      <cr-settings-internet-page prefs='{{prefs}}'>
- *      </cr-settings-internet-page>
+ *      <settings-internet-page prefs='{{prefs}}'>
+ *      </settings-internet-page>
  *      ... other pages ...
  *    </core-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-internet-page
+ * @element settings-internet-page
  */
 Polymer({
-  is: 'cr-settings-internet-page',
+  is: 'settings-internet-page',
 
   properties: {
     /**

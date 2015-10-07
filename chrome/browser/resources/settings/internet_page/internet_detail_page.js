@@ -4,11 +4,11 @@
 
 /**
  * @fileoverview
- * 'cr-settings-internet-detail' is the settings subpage containing details
+ * 'settings-internet-detail' is the settings subpage containing details
  * for a network.
  *
  * @group Chrome Settings Elements
- * @element cr-settings-internet-detail
+ * @element settings-internet-detail
  */
 (function() {
 'use strict';
@@ -16,7 +16,7 @@
 /** @const */ var CARRIER_VERIZON = 'Verizon Wireless';
 
 Polymer({
-  is: 'cr-settings-internet-detail-page',
+  is: 'settings-internet-detail-page',
 
   properties: {
     /**

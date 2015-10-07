@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Suite of tests for cr-settings-prefs. */
-cr.define('cr_settings_prefs', function() {
+/** @fileoverview Suite of tests for settings-prefs. */
+cr.define('settings_prefs', function() {
   /**
    * Creates a deep copy of the object.
    * @param {!Object} obj
@@ -144,7 +144,7 @@ cr.define('cr_settings_prefs', function() {
       var mockApi = null;
 
       /**
-       * @param {!Object} prefStore Pref store from <cr-settings-prefs>.
+       * @param {!Object} prefStore Pref store from <settings-prefs>.
        * @param {string} key Pref key of the pref to return.
        * @return {chrome.settingsPrivate.PrefObject|undefined}
        */
@@ -174,7 +174,7 @@ cr.define('cr_settings_prefs', function() {
       }
 
       /**
-       * Checks that the <cr-settings-prefs> contains the expected values.
+       * Checks that the <settings-prefs> contains the expected values.
        * @param {number} testCaseValueIndex The index of possible values from
        *     the test case to check.
        */
@@ -194,17 +194,17 @@ cr.define('cr_settings_prefs', function() {
        */
       var createdElements = [];
 
-      // Initialize <cr-settings-prefs> elements before each test.
+      // Initialize <settings-prefs> elements before each test.
       setup(function() {
         mockApi = new MockSettingsApi();
         // TODO(michaelpg): don't use global variables to inject the API.
         window.mockApi = mockApi;
 
-        // Create and attach the <cr-settings-prefs> elements. Make several of
+        // Create and attach the <settings-prefs> elements. Make several of
         // them to test that the shared state model scales correctly.
         createdElements = [];
         for (var i = 0; i < 100; i++) {
-          var prefsInstance = document.createElement('cr-settings-prefs');
+          var prefsInstance = document.createElement('settings-prefs');
           document.body.appendChild(prefsInstance);
           createdElements.push(prefsInstance);
         }
@@ -219,7 +219,7 @@ cr.define('cr_settings_prefs', function() {
       teardown(function() {
         CrSettingsPrefs.resetForTesting();
 
-        // Reset each <cr-settings-prefs>.
+        // Reset each <settings-prefs>.
         for (var i = 0; i < createdElements.length; i++)
           createdElements[i].resetForTesting();
 
@@ -244,7 +244,7 @@ cr.define('cr_settings_prefs', function() {
       });
 
       test('forwards pref changes to API', function() {
-        // Test that cr-settings-prefs uses the setPref API.
+        // Test that settings-prefs uses the setPref API.
         for (var testCase of prefsTestCases) {
           prefs.set('prefs.' + testCase.key + '.value',
                     deepCopy(testCase.values[1]));

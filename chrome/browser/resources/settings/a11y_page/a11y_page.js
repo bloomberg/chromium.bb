@@ -4,21 +4,21 @@
 
 /**
  * @fileoverview
- * 'cr-settings-a11y-page' is the settings page containing accessibility
+ * 'settings-a11y-page' is the settings page containing accessibility
  * settings.
  *
  * Example:
  *
  *    <iron-animated-pages>
- *      <cr-settings-a11y-page prefs="{{prefs}}"></cr-settings-a11y-page>
+ *      <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
  *      ... other pages ...
  *    </iron-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-a11y-page
+ * @element settings-a11y-page
  */
 Polymer({
-  is: 'cr-settings-a11y-page',
+  is: 'settings-a11y-page',
 
   properties: {
     /**

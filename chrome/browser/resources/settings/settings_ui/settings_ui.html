@@ -10,7 +10,7 @@
 <link rel="import" href="chrome://md-settings/settings_page/settings_router.html">
 <link rel="import" href="chrome://md-settings/settings_ui/breadcrumb.html">
 
-<dom-module id="cr-settings-ui">
+<dom-module id="settings-ui">
   <link rel="import" type="css" href="settings_ui.css">
   <template>
     <settings-router current-route="{{currentRoute}}"
@@ -23,11 +23,11 @@
       </settings-breadcrumb>
     </paper-toolbar>
     <paper-drawer-panel drawer-width="256px">
-      <cr-settings-menu drawer class="flex" current-route="{{currentRoute}}">
-      </cr-settings-menu>
-      <cr-settings-main main prefs="{{prefs}}" current-route="{{currentRoute}}">
+      <settings-menu drawer class="flex" current-route="{{currentRoute}}">
+      </settings-menu>
+      <settings-main main prefs="{{prefs}}" current-route="{{currentRoute}}">
         <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
-      </cr-settings-main>
+      </settings-main>
     </paper-drawer-panel>
   </template>
   <script src="settings_ui.js"></script>

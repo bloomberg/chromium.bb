@@ -7,7 +7,7 @@
  * engine.
  *
  * @group Chrome Settings Elements
- * @element cr-settings-search-engine-adder
+ * @element settings-search-engine-adder
  */
 Polymer({
   is: 'cr-search-engine-adder',

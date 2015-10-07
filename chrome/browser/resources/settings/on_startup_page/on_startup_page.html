@@ -7,7 +7,7 @@
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 
-<dom-module id="cr-settings-on-startup-page">
+<dom-module id="settings-on-startup-page">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="on_startup_shared.css">
@@ -36,8 +36,8 @@
       <neon-animatable id="startup-urls">
         <settings-subheader i18n-values="page-title:onStartupSetPages">
         </settings-subheader>
-        <cr-settings-startup-urls-page prefs="{{prefs}}">
-        </cr-settings-startup-urls-page>
+        <settings-startup-urls-page prefs="{{prefs}}">
+        </settings-startup-urls-page>
       </neon-animatable>
     </settings-animated-pages>
   </template>

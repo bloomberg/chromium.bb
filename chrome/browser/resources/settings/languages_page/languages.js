@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'cr-settings-languages' provides convenient access to
+ * @fileoverview 'settings-languages' provides convenient access to
  * Chrome's language and input method settings.
  *
  * Instances of this element have a 'languages' property, which reflects the
@@ -15,13 +15,13 @@
  * changes made internally to 'languages' propagate to your host element:
  *
  *     <template>
- *       <cr-settings-languages languages="{{languages}}">
- *       </cr-settings-languages>
+ *       <settings-languages languages="{{languages}}">
+ *       </settings-languages>
  *       <div>[[languages.someProperty]]</div>
  *     </template>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-languages
+ * @element settings-languages
  */
 
 /** @typedef {{spellCheckEnabled: boolean, translateEnabled: boolean}} */
@@ -71,7 +71,7 @@ var kTranslateLanguageSynonyms = {
  * language model to the host of this element as the 'languages' property.
  */
 Polymer({
-  is: 'cr-settings-languages',
+  is: 'settings-languages',
 
   properties: {
     /**
@@ -80,7 +80,7 @@ Polymer({
      */
     singleton_: {
       type: Object,
-      value: document.createElement('cr-settings-languages-singleton'),
+      value: document.createElement('settings-languages-singleton'),
     },
 
     /**
@@ -183,14 +183,14 @@ var preferredLanguagesPrefName = cr.isChromeOS ?
     'settings.language.preferred_languages' : 'intl.accept_languages';
 
 /**
- * Singleton element created when cr-settings-languages is registered.
+ * Singleton element created when settings-languages is registered.
  * Generates the languages model on start-up, and updates it whenever Chrome's
  * pref store and other settings change. These updates propagate to each
- * <cr-settings-language> instance so that their 'languages' property updates
+ * <settings-language> instance so that their 'languages' property updates
  * like any other Polymer property.
  */
 Polymer({
-  is: 'cr-settings-languages-singleton',
+  is: 'settings-languages-singleton',
 
   properties: {
     /**

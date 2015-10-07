@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview
- * 'cr-settings-prefs' exposes a singleton model of Chrome settings and
+ * 'settings-prefs' exposes a singleton model of Chrome settings and
  * preferences, which listens to changes to Chrome prefs whitelisted in
  * chrome.settingsPrivate. When changing prefs in this element's 'prefs'
  * property via the UI, the singleton model tries to set those preferences in
@@ -13,12 +13,12 @@
  *
  * Example:
  *
- *    <cr-settings-prefs prefs="{{prefs}}"></cr-settings-prefs>
+ *    <settings-prefs prefs="{{prefs}}"></settings-prefs>
  *    <settings-checkbox pref="{{prefs.homepage_is_newtabpage}}">
  *    </settings-checkbox>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-prefs
+ * @element settings-prefs
  */
 
 (function() {
@@ -125,7 +125,7 @@
   }
 
   Polymer({
-    is: 'cr-settings-prefs',
+    is: 'settings-prefs',
 
     properties: {
       /**
@@ -142,7 +142,7 @@
        */
       singleton_: {
         type: Object,
-        value: document.createElement('cr-settings-prefs-singleton'),
+        value: document.createElement('settings-prefs-singleton'),
       },
     },
 
@@ -157,7 +157,7 @@
     },
 
     /**
-     * Binds this.prefs to the cr-settings-prefs-singleton's shared prefs once
+     * Binds this.prefs to the settings-prefs-singleton's shared prefs once
      * preferences are initialized.
      * @private
      */
@@ -174,7 +174,7 @@
     },
 
     /**
-     * Stops listening for changes to cr-settings-prefs-singleton's shared
+     * Stops listening for changes to settings-prefs-singleton's shared
      * prefs.
      * @private
      */
@@ -196,7 +196,7 @@
     },
 
     /**
-     * Forwards changes to this.prefs to cr-settings-prefs-singleton.
+     * Forwards changes to this.prefs to settings-prefs-singleton.
      * @private
      */
     prefsChanged_: function(info) {
@@ -224,7 +224,7 @@
 
     /**
      * Uninitializes this element to remove it from tests. Also resets
-     * cr-settings-prefs-singleton, allowing newly created elements to
+     * settings-prefs-singleton, allowing newly created elements to
      * re-initialize it.
      */
     resetForTesting: function() {
@@ -238,7 +238,7 @@
    * prefs state.
    */
   Polymer({
-    is: 'cr-settings-prefs-singleton',
+    is: 'settings-prefs-singleton',
 
     properties: {
       /**

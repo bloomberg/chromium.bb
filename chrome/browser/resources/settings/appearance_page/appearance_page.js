@@ -3,22 +3,22 @@
 // found in the LICENSE file.
 
 /**
- * 'cr-settings-appearance-page' is the settings page containing appearance
+ * 'settings-appearance-page' is the settings page containing appearance
  * settings.
  *
  * Example:
  *
  *    <iron-animated-pages>
- *      <cr-settings-appearance-page prefs="{{prefs}}">
- *      </cr-settings-appearance-page>
+ *      <settings-appearance-page prefs="{{prefs}}">
+ *      </settings-appearance-page>
  *      ... other pages ...
  *    </iron-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-appearance-page
+ * @element settings-appearance-page
  */
 Polymer({
-  is: 'cr-settings-appearance-page',
+  is: 'settings-appearance-page',
 
   properties: {
     /**

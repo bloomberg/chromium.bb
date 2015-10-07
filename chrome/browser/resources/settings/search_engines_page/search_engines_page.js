@@ -3,22 +3,22 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'cr-settings-search-engines-page' is the settings page
+ * @fileoverview 'settings-search-engines-page' is the settings page
  * containing search engines settings.
  *
  * Example:
  *
  *    <core-animated-pages>
- *      <cr-settings-search-engines-page prefs="{{prefs}}">
- *      </cr-settings-search-engines-page>
+ *      <settings-search-engines-page prefs="{{prefs}}">
+ *      </settings-search-engines-page>
  *      ... other pages ...
  *    </core-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-search-engines-page
+ * @element settings-search-engines-page
  */
 Polymer({
-  is: 'cr-settings-search-engines-page',
+  is: 'settings-search-engines-page',
 
   properties: {
     /** @type {!Array<!SearchEngine>} */

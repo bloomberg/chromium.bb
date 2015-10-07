@@ -4,20 +4,20 @@
 
 /**
  * @fileoverview
- * 'cr-settings-basic-page' is the settings page containing the basic settings.
+ * 'settings-basic-page' is the settings page containing the basic settings.
  *
  * Example:
  *
  *    <iron-animated-pages>
- *      <cr-settings-basic-page prefs="{{prefs}}"></cr-settings-basic-page>
+ *      <settings-basic-page prefs="{{prefs}}"></settings-basic-page>
  *      ... other pages ...
  *    </iron-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-basic-page
+ * @element settings-basic-page
  */
 Polymer({
-  is: 'cr-settings-basic-page',
+  is: 'settings-basic-page',
 
   properties: {
     /**

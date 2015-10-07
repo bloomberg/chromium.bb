@@ -4,19 +4,19 @@
 
 /**
  * @fileoverview
- * 'cr-settings-location-page' is the settings page for location access.
+ * 'settings-location-page' is the settings page for location access.
  *
  * Example:
  *
- *      <cr-settings-location-page prefs="{{prefs}}">
- *      </cr-settings-location-page>
+ *      <settings-location-page prefs="{{prefs}}">
+ *      </settings-location-page>
  *      ... other pages ...
  *
  * @group Chrome Settings Elements
- * @element cr-settings-location-page
+ * @element settings-location-page
  */
 Polymer({
-  is: 'cr-settings-location-page',
+  is: 'settings-location-page',
 
   properties: {
     /**

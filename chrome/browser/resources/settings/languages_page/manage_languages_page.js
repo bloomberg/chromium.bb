@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'cr-settings-manage-languages-page' is a sub-page for enabling
+ * @fileoverview 'settings-manage-languages-page' is a sub-page for enabling
  * and disabling languages.
  *
  * @group Chrome Settings Elements
- * @element cr-settings-manage-languages-page
+ * @element settings-manage-languages-page
  */
 Polymer({
-  is: 'cr-settings-manage-languages-page',
+  is: 'settings-manage-languages-page',
 
   properties: {
     /**

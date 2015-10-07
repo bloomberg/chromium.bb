@@ -7,7 +7,7 @@
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
 <link rel="import" href="user_list.html">
 
-<dom-module id="cr-settings-users-page">
+<dom-module id="settings-users-page">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="users_page.css">
@@ -44,9 +44,9 @@
       </div>
       <div class="users">
         <div>
-          <cr-settings-user-list prefs="[[prefs]]"
+          <settings-user-list prefs="[[prefs]]"
               disabled="[[editingUsersDisabled]]">
-          </cr-settings-user-list>
+          </settings-user-list>
         </div>
         <div>
           <paper-input id="addUserInput" i18n-values="label:addUsersLabel"

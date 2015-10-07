@@ -4,18 +4,18 @@
 
 /**
  * @fileoverview
- * 'cr-settings-menu' shows a menu with a hardcoded set of pages and subpages.
+ * 'settings-menu' shows a menu with a hardcoded set of pages and subpages.
  *
  * Example:
  *
- *     <cr-settings-menu selected-page-id="{{selectedPageId}}">
- *     </cr-settings-menu>
+ *     <settings-menu selected-page-id="{{selectedPageId}}">
+ *     </settings-menu>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-menu
+ * @element settings-menu
  */
 Polymer({
-  is: 'cr-settings-menu',
+  is: 'settings-menu',
 
   properties: {
     /**

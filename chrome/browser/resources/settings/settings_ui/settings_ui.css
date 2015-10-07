@@ -27,6 +27,6 @@ paper-drawer-panel {
   position: relative;
 }
 
-cr-settings-main paper-icon-button {
+settings-main paper-icon-button {
   z-index: 10;
 }

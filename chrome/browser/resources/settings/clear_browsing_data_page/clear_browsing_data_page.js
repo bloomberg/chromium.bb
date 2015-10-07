@@ -4,22 +4,22 @@
 
 /**
  * @fileoverview
- * 'cr-settings-clear-browsing-data-page' provides options to delete browsing
+ * 'settings-clear-browsing-data-page' provides options to delete browsing
  * data that has been cached by chromium.
  *
  * Example:
  *
  *    <iron-animated-pages>
- *      <cr-settings-clear-browsing-data-page prefs="{{prefs}}">
- *      </cr-settings-clear-browsing-data-page>
+ *      <settings-clear-browsing-data-page prefs="{{prefs}}">
+ *      </settings-clear-browsing-data-page>
  *      ... other pages ...
  *    </iron-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-privacy-page
+ * @element settings-privacy-page
  */
 Polymer({
-  is: 'cr-settings-clear-browsing-data-page',
+  is: 'settings-clear-browsing-data-page',
 
   properties: {
     /**

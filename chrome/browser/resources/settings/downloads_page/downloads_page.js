@@ -4,22 +4,22 @@
 
 /**
  * @fileoverview
- * 'cr-settings-downloads-page' is the settings page containing downloads
+ * 'settings-downloads-page' is the settings page containing downloads
  * settings.
  *
  * Example:
  *
  *    <iron-animated-pages>
- *      <cr-settings-downloads-page prefs="{{prefs}}">
- *      </cr-settings-downloads-page>
+ *      <settings-downloads-page prefs="{{prefs}}">
+ *      </settings-downloads-page>
  *      ... other pages ...
  *    </iron-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-downloads-page
+ * @element settings-downloads-page
  */
 Polymer({
-  is: 'cr-settings-downloads-page',
+  is: 'settings-downloads-page',
 
   properties: {
     /**

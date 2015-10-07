@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'cr-settings-languages-page' is the settings page
+ * @fileoverview 'settings-languages-page' is the settings page
  * for language and input method settings.
  *
  * @group Chrome Settings Elements
- * @element cr-settings-languages-page
+ * @element settings-languages-page
  */
 (function() {
 'use strict';
 
 Polymer({
-  is: 'cr-settings-languages-page',
+  is: 'settings-languages-page',
 
   properties: {
     /**
@@ -34,7 +34,7 @@ Polymer({
 
     /**
      * Read-only reference to the languages model provided by the
-     * 'cr-settings-languages' instance.
+     * 'settings-languages' instance.
      * @type {LanguagesModel|undefined}
      */
     languages: {

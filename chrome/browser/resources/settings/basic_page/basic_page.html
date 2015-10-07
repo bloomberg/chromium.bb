@@ -13,7 +13,7 @@
 <link rel="import" href="chrome://md-settings/signin_page/signin_page.html">
 </if>
 
-<dom-module id="cr-settings-basic-page">
+<dom-module id="settings-basic-page">
   <link rel="import" type="css" href="basic_page.css">
   <template>
 <if expr="not chromeos">
@@ -26,33 +26,33 @@
 <if expr="chromeos">
     <settings-section i18n-values="page-title:internetPageTitle"
         current-route="[[currentRoute]]" section="internet">
-      <cr-settings-internet-page current-route="{{currentRoute}}">
-      </cr-settings-internet-page>
+      <settings-internet-page current-route="{{currentRoute}}">
+      </settings-internet-page>
     </settings-section>
 </if>
     <settings-section i18n-values="page-title:appearancePageTitle"
         current-route="[[currentRoute]]" section="appearance">
-      <cr-settings-appearance-page prefs="{{prefs}}">
-      </cr-settings-appearance-page>
+      <settings-appearance-page prefs="{{prefs}}">
+      </settings-appearance-page>
     </settings-section>
 
     <settings-section i18n-values="page-title:onStartup"
         current-route="[[currentRoute]]" section="on-startup">
-      <cr-settings-on-startup-page
+      <settings-on-startup-page
           prefs="{{prefs}}" current-route="{{currentRoute}}">
-      </cr-settings-on-startup-page>
+      </settings-on-startup-page>
     </settings-section>
 
     <settings-section i18n-values="page-title:searchPageTitle"
         current-route="[[currentRoute]]" section="search">
-      <cr-settings-search-page current-route="{{currentRoute}}">
-      </cr-settings-search-page>
+      <settings-search-page current-route="{{currentRoute}}">
+      </settings-search-page>
     </settings-section>
 
 <if expr="chromeos">
     <settings-section i18n-values="page-title:usersPageTitle"
         current-route="[[currentRoute]]" section="users">
-      <cr-settings-users-page prefs="{{prefs}}"></cr-settings-users-page>
+      <settings-users-page prefs="{{prefs}}"></settings-users-page>
     </settings-section>
 </if>
   </template>

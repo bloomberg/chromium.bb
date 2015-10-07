@@ -4,19 +4,19 @@
 
 /**
  * @fileoverview
- * 'cr-settings-user-list' shows a list of users whitelisted on this Chrome OS
+ * 'settings-user-list' shows a list of users whitelisted on this Chrome OS
  * device.
  *
  * Example:
  *
- *    <cr-settings-user-list prefs="{{prefs}}">
- *    </cr-settings-user-list>
+ *    <settings-user-list prefs="{{prefs}}">
+ *    </settings-user-list>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-user-list
+ * @element settings-user-list
  */
 Polymer({
-  is: 'cr-settings-user-list',
+  is: 'settings-user-list',
 
   properties: {
     /**

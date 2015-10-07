@@ -7,7 +7,7 @@
 <link rel="import" href="internet_known_networks_page.html">
 <link rel="import" href="network_summary.html">
 
-<dom-module id="cr-settings-internet-page">
+<dom-module id="settings-internet-page">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <template>
@@ -21,18 +21,18 @@
       <neon-animatable id="network-detail">
         <settings-subheader i18n-values="page-title:internetDetailPageTitle">
         </settings-subheader>
-        <cr-settings-internet-detail-page guid="[[detailGuid]]"
+        <settings-internet-detail-page guid="[[detailGuid]]"
             on-close="onBackTap_">
-        </cr-settings-internet-detail-page>
+        </settings-internet-detail-page>
       </neon-animatable>
       <neon-animatable id="known-networks">
         <settings-subheader
             i18n-values="page-title:internetKnownNetworksPageTitle">
         </settings-subheader>
-        <cr-settings-internet-known-networks-page
+        <settings-internet-known-networks-page
             network-type="[[knownNetworksType]]"
             on-show-detail="onShowDetail_">
-        </cr-settings-internet-known-networks-page>
+        </settings-internet-known-networks-page>
       </neon-animatable>
     </settings-animated-pages>
   </template>

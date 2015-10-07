@@ -4,20 +4,20 @@
 
 /**
  * @fileoverview
- * 'cr-settings-main' displays the selected settings page.
+ * 'settings-main' displays the selected settings page.
  *
  * Example:
  *
- *     <cr-settings-main pages="[[pages]]" selected-page-id="{{selectedId}}">
- *     </cr-settings-main>
+ *     <settings-main pages="[[pages]]" selected-page-id="{{selectedId}}">
+ *     </settings-main>
  *
- * See cr-settings-drawer for example of use in 'paper-drawer-panel'.
+ * See settings-drawer for example of use in 'paper-drawer-panel'.
  *
  * @group Chrome Settings Elements
- * @element cr-settings-main
+ * @element settings-main
  */
 Polymer({
-  is: 'cr-settings-main',
+  is: 'settings-main',
 
   properties: {
     /**

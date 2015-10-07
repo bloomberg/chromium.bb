@@ -3,22 +3,22 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'cr-settings-startup-urls-page' is the settings page
+ * @fileoverview 'settings-startup-urls-page' is the settings page
  * containing the urls that will be opened when chrome is started.
  *
  * Example:
  *
  *    <neon-animated-pages>
- *      <cr-settings-startup-urls-page prefs="{{prefs}}">
- *      </cr-settings-startup-urls-page>
+ *      <settings-startup-urls-page prefs="{{prefs}}">
+ *      </settings-startup-urls-page>
  *      ... other pages ...
  *    </neon-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-startup-urls-page
+ * @element settings-startup-urls-page
  */
 Polymer({
-  is: 'cr-settings-startup-urls-page',
+  is: 'settings-startup-urls-page',
 
   properties: {
     /**

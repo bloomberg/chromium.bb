@@ -14,13 +14,13 @@
 <link rel="import" href="languages.html">
 <link rel="import" href="manage_languages_page.html">
 
-<dom-module id="cr-settings-languages-page">
+<dom-module id="settings-languages-page">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="languages_page.css">
   <template>
-    <cr-settings-languages id="languages" languages="{{languages}}">
-    </cr-settings-languages>
+    <settings-languages id="languages" languages="{{languages}}">
+    </settings-languages>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="languages">
       <neon-animatable id="main">
@@ -80,8 +80,8 @@
       <neon-animatable id="manage-languages">
         <settings-subheader i18n-values="page-title:manageLanguagesPageTitle">
         </settings-subheader>
-        <cr-settings-manage-languages-page id="manageLanguagesPage"
-            prefs="{{prefs}}"></cr-settings-manage-languages-page>
+        <settings-manage-languages-page id="manageLanguagesPage"
+            prefs="{{prefs}}"></settings-manage-languages-page>
       </neon-animatable>
       <neon-animatable id="language-detail">
         <settings-subheader id="language-detail-subheader"

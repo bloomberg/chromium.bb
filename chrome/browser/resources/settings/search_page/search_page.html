@@ -6,7 +6,7 @@
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 
-<dom-module id="cr-settings-search-page">
+<dom-module id="settings-search-page">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="search_page.css">
@@ -32,7 +32,7 @@
       <neon-animatable id="search-engines">
         <settings-subheader i18n-values="page-title:searchEnginesLabel">
         </settings-subheader>
-        <cr-settings-search-engines-page></cr-settings-search-engines-page>
+        <settings-search-engines-page></settings-search-engines-page>
         <paper-button class="search-engines-advanced"
             i18n-content="advancedPageTitle"
             on-tap="onSearchEnginesAdvancedTap_" raised>

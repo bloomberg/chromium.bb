@@ -4,22 +4,22 @@
 
 /**
  * @fileoverview
- * 'cr-settings-users-page' is the settings page for managing user accounts on
+ * 'settings-users-page' is the settings page for managing user accounts on
  * the device.
  *
  * Example:
  *
  *    <neon-animated-pages>
- *      <cr-settings-users-page prefs="{{prefs}}">
- *      </cr-settings-users-page>
+ *      <settings-users-page prefs="{{prefs}}">
+ *      </settings-users-page>
  *      ... other pages ...
  *    </neon-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-users-page
+ * @element settings-users-page
  */
 Polymer({
-  is: 'cr-settings-users-page',
+  is: 'settings-users-page',
 
   behaviors: [
     Polymer.IronA11yKeysBehavior

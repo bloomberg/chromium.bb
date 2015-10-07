@@ -4,22 +4,22 @@
 
 /**
  * @fileoverview
- * 'cr-settings-certificate-manager-page' is the settings page containing SSL
+ * 'settings-certificate-manager-page' is the settings page containing SSL
  * certificate settings.
  *
  * Example:
  *
  *    <iron-animated-pages>
- *      <cr-settings-certificate-manager-page prefs="{{prefs}}">
- *      </cr-settings-certificate-manager-page>
+ *      <settings-certificate-manager-page prefs="{{prefs}}">
+ *      </settings-certificate-manager-page>
  *      ... other pages ...
  *    </iron-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-certificate-manager-page
+ * @element settings-certificate-manager-page
  */
 Polymer({
-  is: 'cr-settings-certificate-manager-page',
+  is: 'settings-certificate-manager-page',
 
   properties: {
     /**

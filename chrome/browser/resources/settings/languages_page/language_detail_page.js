@@ -23,7 +23,7 @@ Polymer({
 
     /**
      * Read-only reference to the languages model provided by the
-     * 'cr-settings-languages' instance.
+     * 'settings-languages' instance.
      * @type {LanguagesModel|undefined}
      */
     languages: Object,
