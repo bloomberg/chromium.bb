@@ -12,5 +12,6 @@ executable("clear_system_cache") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//build/config/sanitizers:deps",
   ]
 }
