@@ -151,6 +151,14 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL (v3 or later)',
         'MPL (v1.1) LGPL (unversioned/unknown version)',
     ],
+
+    # The project is BSD-licensed but the individual files do not have
+    # consistent license headers. Also, this is just used in a utility
+    # and not shipped. https://github.com/waylan/Python-Markdown/issues/435
+    'third_party/Python-Markdown': [
+        'UNKNOWN',
+    ],
+
     'third_party/WebKit': [
         'UNKNOWN',
     ],
