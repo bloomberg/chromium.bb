@@ -49,7 +49,7 @@ public:
     bool hasDocumentSecurityOrigin;
 };
 
-using InvalidationSetVector = WillBeHeapVector<RefPtr<InvalidationSet>, 8>;
+using InvalidationSetVector = Vector<RefPtr<InvalidationSet>, 8>;
 
 class CORE_EXPORT RuleFeatureSet {
     DISALLOW_ALLOCATION();
