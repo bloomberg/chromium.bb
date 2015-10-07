@@ -88,11 +88,6 @@ if [[ -e "${BUILT_PRODUCTS_DIR}/PDF.plugin" ]]; then
   SRC_NAMES[${#SRC_NAMES[@]}]="PDF.plugin"
 fi
 
-# libpeerconnection.so is optional. Only include it if present.
-if [[ -e "${BUILT_PRODUCTS_DIR}/libpeerconnection.so" ]]; then
-  SRC_NAMES[${#SRC_NAMES[@]}]="libpeerconnection.so"
-fi
-
 for SRC_NAME in "${SRC_NAMES[@]}"; do
   # SRC_STEM is the name of the file within the DWARF directory of the .dSYM
   # bundle, which comes from the on-disk name of an executable or dylib within
