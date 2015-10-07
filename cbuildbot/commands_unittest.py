@@ -615,27 +615,44 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
     commands.GenerateBreakpadSymbols(self.tempdir, self._board, False)
     self.assertCommandContains(['--board=%s' % self._board])
 
-  def testUploadSymbols(self, official=False, cnt=None):
-    """Test UploadSymbols Command."""
-    commands.UploadSymbols(self.tempdir, self._board, official, cnt, None)
-    self.assertCommandContains(['--board', self._board])
-    self.assertCommandContains(['--official_build'], expected=official)
-    self.assertCommandContains(['--upload-limit'], expected=cnt is not None)
-    self.assertCommandContains(['--failed-list'], expected=False)
-
-  def testOfficialUploadSymbols(self):
+  def testUploadSymbolsMinimal(self):
     """Test uploading symbols for official builds"""
-    self.testUploadSymbols(official=True)
+    commands.UploadSymbols('/buildroot', 'MyBoard')
+    self.assertCommandContains(
+        ['/buildroot/chromite/bin/upload_symbols', '--yes',
+         '--root', '/buildroot/chroot',
+         '--board', 'MyBoard'])
 
-  def testLimitUploadSymbols(self):
-    """Test uploading a limited number of symbols"""
-    self.testUploadSymbols(cnt=10)
+  def testUploadSymbolsMinimalNoneChromeOS(self):
+    """Test uploading symbols for official builds"""
+    commands.UploadSymbols(
+        '/buildroot', breakpad_root='/breakpad', product_name='CoolProduct')
+    self.assertCommandContains(
+        ['/buildroot/chromite/bin/upload_symbols', '--yes',
+         '--breakpad_root', '/breakpad',
+         '--product_name', 'CoolProduct'])
+
+  def testUploadSymbolsMaximal(self):
+    """Test uploading symbols for official builds"""
+    commands.UploadSymbols(
+        '/buildroot', 'MyBoard', official=True, cnt=55,
+        failed_list='/failed_list.txt', breakpad_root='/breakpad',
+        product_name='CoolProduct')
+    self.assertCommandContains(
+        ['/buildroot/chromite/bin/upload_symbols', '--yes',
+         '--root', '/buildroot/chroot',
+         '--board', 'MyBoard',
+         '--official_build',
+         '--upload-limit', '55',
+         '--failed-list', '/failed_list.txt',
+         '--breakpad_root', '/breakpad',
+         '--product_name', 'CoolProduct'])
 
   def testFailedUploadSymbols(self):
     """Test when uploading fails"""
     self.rc.SetDefaultCmdResult(returncode=1, error='i am sad')
     # This should not throw an exception.
-    commands.UploadSymbols(self.tempdir, self._board, None, None, None)
+    commands.UploadSymbols(self.tempdir)
 
   def testPushImages(self):
     """Test PushImages Command."""

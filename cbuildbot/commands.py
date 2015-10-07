@@ -1575,21 +1575,33 @@ def UploadArchivedFile(archive_dir, upload_urls, filename, debug,
     _UploadPathToGS(uploaded_file_path, upload_urls, debug, timeout)
 
 
-def UploadSymbols(buildroot, board, official, cnt, failed_list):
+def UploadSymbols(buildroot, board=None, official=False, cnt=None,
+                  failed_list=None, breakpad_root=None, product_name=None,
+                  error_code_ok=True):
   """Upload debug symbols for this build."""
-  cmd = ['upload_symbols', '--yes', '--board', board,
-         '--root', os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)]
-  if failed_list is not None:
-    cmd += ['--failed-list', str(failed_list)]
+  cmd = ['upload_symbols', '--yes']
+
+  if board is not None:
+    # Board requires both root and board to be set to be useful.
+    cmd += [
+        '--root', os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR),
+        '--board', board]
   if official:
     cmd.append('--official_build')
   if cnt is not None:
     cmd += ['--upload-limit', str(cnt)]
+  if failed_list is not None:
+    cmd += ['--failed-list', str(failed_list)]
+  if breakpad_root is not None:
+    cmd += ['--breakpad_root', breakpad_root]
+  if product_name is not None:
+    cmd += ['--product_name', product_name]
 
   # We don't want to import upload_symbols directly because it uses the
   # swarming module which itself imports a _lot_ of stuff.  It has also
   # been known to hang.  We want to keep cbuildbot isolated & robust.
-  ret = RunBuildScript(buildroot, cmd, chromite_cmd=True, error_code_ok=True)
+  ret = RunBuildScript(buildroot, cmd, chromite_cmd=True,
+                       error_code_ok=error_code_ok)
   if ret.returncode:
     # TODO(davidjames): Convert this to a fatal error.
     # See http://crbug.com/212437
