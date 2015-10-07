@@ -245,9 +245,9 @@ def RecoverDevices(devices, blacklist):
       logging.debug('%s is blacklisted, skipping recovery.', str(device))
       return
 
-    if device in should_reboot_device:
+    if str(device) in should_reboot_device:
       try:
-        device.WaitUntilFullyBooted()
+        device.WaitUntilFullyBooted(retries=0)
         return
       except (device_errors.CommandTimeoutError,
               device_errors.CommandFailedError):
@@ -255,14 +255,33 @@ def RecoverDevices(devices, blacklist):
                           'Attempting to recover.', str(device))
 
       try:
-        device.Reboot()
-        device.WaitUntilFullyBooted()
+        try:
+          device.Reboot(block=False, timeout=5, retries=0)
+        except device_errors.CommandTimeoutError:
+          logging.warning('Timed out while attempting to reboot %s normally.'
+                          'Attempting alternative reboot.', str(device))
+          # The device drops offline before we can grab the exit code, so
+          # we don't check for status.
+          device.adb.Root()
+          device.adb.Shell('echo b > /proc/sysrq-trigger', expect_status=None,
+                           timeout=5, retries=0)
+      except device_errors.CommandFailedError:
+        logging.exception('Failed to reboot %s.', str(device))
+        if blacklist:
+          blacklist.Extend([device.adb.GetDeviceSerial()])
+      except device_errors.CommandTimeoutError:
+        logging.exception('Timed out while rebooting %s.', str(device))
+        if blacklist:
+          blacklist.Extend([device.adb.GetDeviceSerial()])
+
+      try:
+        device.WaitUntilFullyBooted(retries=0)
       except device_errors.CommandFailedError:
         logging.exception('Failure while waiting for %s.', str(device))
         if blacklist:
           blacklist.Extend([device.adb.GetDeviceSerial()])
       except device_errors.CommandTimeoutError:
-        logging.exception('Timed out while waiting for %s. ', str(device))
+        logging.exception('Timed out while waiting for %s.', str(device))
         if blacklist:
           blacklist.Extend([device.adb.GetDeviceSerial()])
 
