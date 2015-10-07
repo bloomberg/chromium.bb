@@ -467,26 +467,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         }
         break;
 
-    case CSSPropertyBorderSpacing: {
-        ShorthandScope scope(this, CSSPropertyBorderSpacing);
-        if (!parseValue(CSSPropertyWebkitBorderHorizontalSpacing, important))
-            return false;
-        if (!m_valueList->current()) {
-            CSSValue* value = m_parsedProperties.last().value();
-            addProperty(CSSPropertyWebkitBorderVerticalSpacing, value, important);
-            return true;
-        }
-        if (!parseValue(CSSPropertyWebkitBorderVerticalSpacing, important))
-            return false;
-        return !m_valueList->current();
-    }
-    case CSSPropertyWebkitBorderHorizontalSpacing:
-    case CSSPropertyWebkitBorderVerticalSpacing:
-        unitless = FLength | FNonNeg;
-        if (inShorthand() && m_currentShorthand == CSSPropertyBorderSpacing)
-            unitless = unitless | FUnitlessQuirk;
-        validPrimitive = validUnit(value, unitless);
-        break;
     case CSSPropertyOutlineColor:        // <color> | invert | inherit
         // Outline color has "invert" as additional keyword.
         // Also, we want to allow the special focus color even in HTML Standard parsing mode.
@@ -1393,6 +1373,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyLineHeight:
     case CSSPropertyRotate:
     case CSSPropertyFont:
+    case CSSPropertyWebkitBorderHorizontalSpacing:
+    case CSSPropertyWebkitBorderVerticalSpacing:
+    case CSSPropertyBorderSpacing:
         validPrimitive = false;
         break;
 

@@ -661,6 +661,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeLineHeight(m_range, m_context.mode());
     case CSSPropertyRotate:
         return consumeRotation(m_range);
+    case CSSPropertyWebkitBorderHorizontalSpacing:
+    case CSSPropertyWebkitBorderVerticalSpacing:
+        return consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);
     default:
         return nullptr;
     }
@@ -890,6 +893,21 @@ bool CSSPropertyParser::consumeFont(bool important)
     return m_range.atEnd();
 }
 
+bool CSSPropertyParser::consumeBorderSpacing(bool important)
+{
+    RefPtrWillBeRawPtr<CSSValue> horizontalSpacing = consumeLength(m_range, m_context.mode(), ValueRangeNonNegative, UnitlessQuirk::Allow);
+    if (!horizontalSpacing)
+        return false;
+    RefPtrWillBeRawPtr<CSSValue> verticalSpacing = horizontalSpacing;
+    if (!m_range.atEnd())
+        verticalSpacing = consumeLength(m_range, m_context.mode(), ValueRangeNonNegative, UnitlessQuirk::Allow);
+    if (!verticalSpacing || !m_range.atEnd())
+        return false;
+    addProperty(CSSPropertyWebkitBorderHorizontalSpacing, horizontalSpacing.release(), important);
+    addProperty(CSSPropertyWebkitBorderVerticalSpacing, verticalSpacing.release(), important);
+    return true;
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, bool important)
 {
     m_range.consumeWhitespace();
@@ -941,6 +959,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, bool important)
             return consumeSystemFont(important);
         return consumeFont(important);
     }
+    case CSSPropertyBorderSpacing:
+        return consumeBorderSpacing(important);
     default:
         m_currentShorthand = oldShorthand;
         return false;

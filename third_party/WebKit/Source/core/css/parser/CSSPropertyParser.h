@@ -199,6 +199,8 @@ private:
     bool consumeFont(bool important);
     bool consumeSystemFont(bool important);
 
+    bool consumeBorderSpacing(bool important);
+
     PassRefPtrWillBeRawPtr<CSSValue> parseCounter(int defaultValue);
     PassRefPtrWillBeRawPtr<CSSValue> parseCounterContent(CSSParserValueList* args, bool counters);
 
