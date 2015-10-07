@@ -4912,8 +4912,18 @@
                       '-target i686-linux-androideabi',
                     ],
                   }],
+                  # Place holder for arm64 support, not tested.
+                  # TODO: Enable clang support for Android Arm64. http://crbug.com/539781
+                  ['target_arch=="arm64"', {
+                    'cflags': [
+                      '-target aarch64-linux-androideabi',
+                    ],
+                    'ldflags': [
+                      '-target aarch64-linux-androideabi',
+                    ],
+                  }],
                   # Place holder for x64 support, not tested.
-                  # TODO: Enable clang support for Android x64. http://crbug.com/346626
+                  # TODO: Enable clang support for Android x64. http://crbug.com/539781
                   ['target_arch=="x64"', {
                     'cflags': [
                       '-target x86_64-linux-androideabi',
