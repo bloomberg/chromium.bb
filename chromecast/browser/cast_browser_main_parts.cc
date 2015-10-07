@@ -213,13 +213,11 @@ void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
 
 CastBrowserMainParts::CastBrowserMainParts(
     const content::MainFunctionParams& parameters,
-    URLRequestContextFactory* url_request_context_factory,
-    scoped_ptr<::media::AudioManagerFactory> audio_manager_factory)
+    URLRequestContextFactory* url_request_context_factory)
     : BrowserMainParts(),
       cast_browser_process_(new CastBrowserProcess()),
       parameters_(parameters),
       url_request_context_factory_(url_request_context_factory),
-      audio_manager_factory_(audio_manager_factory.Pass()),
       net_log_(new CastNetLog()) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   AddDefaultCommandLineSwitches(command_line);
@@ -235,10 +233,6 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
   // This call must also be before NetworkChangeNotifier, as it generates
   // Net/DNS metrics.
   metrics::PreregisterAllGroupedHistograms();
-
-  // Set the platform's implementation of AudioManagerFactory.
-  if (audio_manager_factory_)
-    ::media::AudioManager::SetFactory(audio_manager_factory_.release());
 
 #if defined(OS_ANDROID)
   net::NetworkChangeNotifier::SetFactory(
@@ -273,6 +267,12 @@ int CastBrowserMainParts::PreCreateThreads() {
   CHECK(PathService::Get(DIR_CAST_HOME, &home_dir));
   if (!base::CreateDirectory(home_dir))
     return 1;
+
+  // AudioManager is created immediately after threads are created, requiring
+  // AudioManagerFactory to be set beforehand.
+  scoped_ptr< ::media::AudioManagerFactory> audio_manager_factory =
+      cast_browser_process_->browser_client()->CreateAudioManagerFactory();
+  ::media::AudioManager::SetFactory(audio_manager_factory.release());
 #endif
 
 #if defined(USE_AURA)

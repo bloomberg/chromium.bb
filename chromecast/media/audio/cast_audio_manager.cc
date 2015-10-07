@@ -4,12 +4,10 @@
 
 #include "chromecast/media/audio/cast_audio_manager.h"
 
-#include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
-#include "chromecast/public/media/media_pipeline_device_params.h"
 
 namespace {
 // TODO(alokp): Query the preferred value from media backend.
@@ -60,17 +58,12 @@ void CastAudioManager::GetAudioInputDeviceNames(
       ::media::CHANNEL_LAYOUT_STEREO, 48000, 16, 1024);
 }
 
-scoped_ptr<MediaPipelineBackend>
-CastAudioManager::CreateMediaPipelineBackend() {
+scoped_ptr<MediaPipelineBackend> CastAudioManager::CreateMediaPipelineBackend(
+    const MediaPipelineDeviceParams& params) {
   DCHECK(media::MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
 
-  if (!backend_task_runner_)
-    backend_task_runner_.reset(new TaskRunnerImpl());
-
-  MediaPipelineDeviceParams device_params(
-      MediaPipelineDeviceParams::kModeIgnorePts, backend_task_runner_.get());
   return scoped_ptr<MediaPipelineBackend>(
-      CastMediaShlib::CreateMediaPipelineBackend(device_params));
+      CastMediaShlib::CreateMediaPipelineBackend(params));
 }
 
 ::media::AudioOutputStream* CastAudioManager::MakeLinearOutputStream(

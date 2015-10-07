@@ -8,6 +8,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
+#include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/media/cma/base/cast_decoder_buffer_impl.h"
@@ -18,6 +19,7 @@
 #include "chromecast/public/media/decrypt_context.h"
 #include "chromecast/public/media/media_clock_device.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
+#include "chromecast/public/media/media_pipeline_device_params.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 
@@ -85,8 +87,12 @@ class CastAudioOutputStream::Backend {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(backend_ == nullptr);
 
+    backend_task_runner_.reset(new TaskRunnerImpl());
+    MediaPipelineDeviceParams device_params(
+        MediaPipelineDeviceParams::kModeIgnorePts, backend_task_runner_.get());
+
     scoped_ptr<MediaPipelineBackend> pipeline_backend =
-        audio_manager->CreateMediaPipelineBackend();
+        audio_manager->CreateMediaPipelineBackend(device_params);
     if (pipeline_backend && InitClockDevice(pipeline_backend->GetClock()) &&
         InitAudioDevice(audio_params_, pipeline_backend->GetAudio())) {
       backend_ = pipeline_backend.Pass();
@@ -103,6 +109,7 @@ class CastAudioOutputStream::Backend {
       backend_->GetAudio()->SetState(AudioPipelineDevice::kStateIdle);
     }
     backend_.reset();
+    backend_task_runner_.reset();
   }
 
   void Start() {
@@ -157,6 +164,7 @@ class CastAudioOutputStream::Backend {
 
   const ::media::AudioParameters audio_params_;
   scoped_ptr<MediaPipelineBackend> backend_;
+  scoped_ptr<TaskRunnerImpl> backend_task_runner_;
   base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };

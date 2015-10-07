@@ -182,7 +182,8 @@ class FakeAudioManager : public CastAudioManager {
   ~FakeAudioManager() override {}
 
   // CastAudioManager overrides.
-  scoped_ptr<MediaPipelineBackend> CreateMediaPipelineBackend() override {
+  scoped_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
+      const MediaPipelineDeviceParams& params) override {
     DCHECK(media::MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
     DCHECK(!media_pipeline_backend_);
 

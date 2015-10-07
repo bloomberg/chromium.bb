@@ -61,10 +61,9 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       PrefService* pref_service,
       net::URLRequestContextGetter* request_context_getter);
 
-  // Provide an AudioManagerFactory instance for WebAudio playback.
+#if !defined(OS_ANDROID)
   virtual scoped_ptr<::media::AudioManagerFactory> CreateAudioManagerFactory();
 
-#if !defined(OS_ANDROID)
   // Creates a CmaMediaPipelineClient which is responsible to create (CMA
   // backend)
   // for media playback and watch media pipeline status, called once per media
