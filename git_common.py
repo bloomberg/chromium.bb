@@ -821,10 +821,12 @@ def get_branches_info(include_tracking_status):
 
 
 def make_workdir_common(repository, new_workdir, files_to_symlink,
-                        files_to_copy):
+                        files_to_copy, symlink=None):
+  if not symlink:
+    symlink = os.symlink
   os.makedirs(new_workdir)
   for entry in files_to_symlink:
-    clone_file(repository, new_workdir, entry, os.symlink)
+    clone_file(repository, new_workdir, entry, symlink)
   for entry in files_to_copy:
     clone_file(repository, new_workdir, entry, shutil.copy)
 

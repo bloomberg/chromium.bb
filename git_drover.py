@@ -20,6 +20,27 @@ class Error(Exception):
   pass
 
 
+if os.name == 'nt':
+  # This is a just-good-enough emulation of os.symlink for drover to work on
+  # Windows. It uses junctioning of directories (most of the contents of
+  # the .git directory), but copies files. Note that we can't use
+  # CreateSymbolicLink or CreateHardLink here, as they both require elevation.
+  # Creating reparse points is what we want for the directories, but doing so
+  # is a relatively messy set of DeviceIoControl work at the API level, so we
+  # simply shell to `mklink /j` instead.
+  def emulate_symlink_windows(source, link_name):
+    if os.path.isdir(source):
+      subprocess.check_call(['mklink', '/j',
+                             link_name.replace('/', '\\'),
+                             source.replace('/', '\\')],
+                            shell=True)
+    else:
+      shutil.copy(source, link_name)
+  mk_symlink = emulate_symlink_windows
+else:
+  mk_symlink = os.symlink
+
+
 class _Drover(object):
 
   def __init__(self, branch, revision, parent_repo, dry_run):
@@ -72,7 +93,11 @@ class _Drover(object):
       self._run_git_command(['branch', '-D', self._branch_name])
     if self._workdir:
       logging.debug('Deleting %s', self._workdir)
-      shutil.rmtree(self._workdir)
+      if os.name == 'nt':
+        # Use rmdir to properly handle the junctions we created.
+        subprocess.check_call(['rmdir', '/s', '/q', self._workdir], shell=True)
+      else:
+        shutil.rmtree(self._workdir)
     self._dev_null_file.close()
 
   @staticmethod
@@ -95,8 +120,6 @@ class _Drover(object):
 
     if not os.path.isdir(self._parent_repo):
       raise Error('Invalid parent repo path %r' % self._parent_repo)
-    if not hasattr(os, 'symlink'):
-      raise Error('Symlink support is required')
 
     self._run_git_command(['--help'], error_message='Unable to run git')
     self._run_git_command(['status'],
@@ -140,7 +163,7 @@ class _Drover(object):
     logging.debug('Creating checkout in %s', self._workdir)
     git_dir = os.path.join(self._workdir, '.git')
     git_common.make_workdir_common(parent_git_dir, git_dir, self.FILES_TO_LINK,
-                                   self.FILES_TO_COPY)
+                                   self.FILES_TO_COPY, mk_symlink)
     self._run_git_command(['config', 'core.sparsecheckout', 'true'])
     with open(os.path.join(git_dir, 'info', 'sparse-checkout'), 'w') as f:
       f.write('codereview.settings')
