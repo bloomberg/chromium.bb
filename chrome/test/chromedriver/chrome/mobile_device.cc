@@ -23,66 +23,49 @@ Status FindMobileDevice(std::string device_name,
                   "could not parse mobile device list because " +
                   json_reader.GetErrorMessage());
 
-  base::ListValue* mobile_devices;
-  if (!devices_value->GetAsList(&mobile_devices))
-    return Status(kUnknownError, "malformed device metrics list");
+  base::DictionaryValue* mobile_devices;
+  if (!devices_value->GetAsDictionary(&mobile_devices))
+    return Status(kUnknownError, "malformed device metrics dictionary");
 
-  for (base::ListValue::iterator it = mobile_devices->begin();
-       it != mobile_devices->end();
-       ++it) {
-    base::DictionaryValue* device = NULL;
-    if (!(*it)->GetAsDictionary(&device)) {
-      return Status(kUnknownError,
-                    "malformed device in list: should be a dictionary");
-    }
+  base::DictionaryValue* device = NULL;
+  if (!mobile_devices->GetDictionary(device_name, &device))
+    return Status(kUnknownError, "must be a valid device");
 
-    if (device != NULL) {
-      std::string name;
-      if (!device->GetString("title", &name)) {
-        return Status(kUnknownError,
-                      "malformed device name: should be a string");
-      }
-      if (name != device_name)
-        continue;
-
-      scoped_ptr<MobileDevice> tmp_mobile_device(new MobileDevice());
-      std::string device_metrics_string;
-      if (!device->GetString("userAgent", &tmp_mobile_device->user_agent)) {
-        return Status(kUnknownError,
-                      "malformed device user agent: should be a string");
-      }
-      int width = 0;
-      int height = 0;
-      double device_scale_factor = 0.0;
-      bool touch = true;
-      bool mobile = true;
-      if (!device->GetInteger("width",  &width)) {
-        return Status(kUnknownError,
-                      "malformed device width: should be an integer");
-      }
-      if (!device->GetInteger("height", &height)) {
-        return Status(kUnknownError,
-                      "malformed device height: should be an integer");
-      }
-      if (!device->GetDouble("deviceScaleFactor", &device_scale_factor)) {
-        return Status(kUnknownError,
-                      "malformed device scale factor: should be a double");
-      }
-      if (!device->GetBoolean("touch", &touch)) {
-        return Status(kUnknownError,
-                      "malformed touch: should be a bool");
-      }
-      if (!device->GetBoolean("mobile", &mobile)) {
-        return Status(kUnknownError,
-                      "malformed mobile: should be a bool");
-      }
-      tmp_mobile_device->device_metrics.reset(
-          new DeviceMetrics(width, height, device_scale_factor, touch, mobile));
-
-      *mobile_device = tmp_mobile_device.Pass();
-      return Status(kOk);
-    }
+  scoped_ptr<MobileDevice> tmp_mobile_device(new MobileDevice());
+  std::string device_metrics_string;
+  if (!device->GetString("userAgent", &tmp_mobile_device->user_agent)) {
+    return Status(kUnknownError,
+                  "malformed device user agent: should be a string");
   }
+  int width = 0;
+  int height = 0;
+  double device_scale_factor = 0.0;
+  bool touch = true;
+  bool mobile = true;
+  if (!device->GetInteger("width",  &width)) {
+    return Status(kUnknownError,
+                  "malformed device width: should be an integer");
+  }
+  if (!device->GetInteger("height", &height)) {
+    return Status(kUnknownError,
+                  "malformed device height: should be an integer");
+  }
+  if (!device->GetDouble("deviceScaleFactor", &device_scale_factor)) {
+    return Status(kUnknownError,
+                  "malformed device scale factor: should be a double");
+  }
+  if (!device->GetBoolean("touch", &touch)) {
+    return Status(kUnknownError,
+                  "malformed touch: should be a bool");
+  }
+  if (!device->GetBoolean("mobile", &mobile)) {
+    return Status(kUnknownError,
+                  "malformed mobile: should be a bool");
+  }
+  tmp_mobile_device->device_metrics.reset(
+      new DeviceMetrics(width, height, device_scale_factor, touch, mobile));
 
-  return Status(kUnknownError, "must be a valid device");
+  *mobile_device = tmp_mobile_device.Pass();
+  return Status(kOk);
+
 }

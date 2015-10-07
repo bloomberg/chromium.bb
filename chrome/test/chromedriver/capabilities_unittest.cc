@@ -510,9 +510,9 @@ TEST(ParseCapabilities, MobileEmulationDeviceName) {
   ASSERT_EQ(1u, capabilities.switches.GetSize());
   ASSERT_TRUE(capabilities.switches.HasSwitch("user-agent"));
   ASSERT_EQ(
-      "Mozilla/5.0 (Linux; Android 4.4.4; en-us; Nexus 5 Build/JOP40D) "
-      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2307.2 "
-      "Mobile Safari/537.36",
+      "Mozilla/5.0 (Linux; Android 4.4.4; Nexus 5 Build/KTU84P) "
+      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.114 Mobile "
+      "Safari/537.36",
       capabilities.switches.GetSwitchValue("user-agent"));
 
   ASSERT_EQ(360, capabilities.device_metrics->width);
