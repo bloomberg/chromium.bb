@@ -816,7 +816,7 @@ static Position findWordBoundary(const HTMLElement* innerEditor, const Position&
 {
     StringBuilder concatTexts;
     Vector<unsigned> lengthList;
-    Vector<Text*> textList;
+    WillBeHeapVector<RawPtrWillBeMember<Text>> textList;
 
     if (startPosition.anchorNode()->isTextNode())
         ASSERT(startPosition.isOffsetInAnchor());
