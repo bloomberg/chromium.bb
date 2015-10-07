@@ -302,12 +302,9 @@ void PermissionManager::UnsubscribePermissionStatusChange(int subscription_id) {
 
 bool PermissionManager::IsPermissionBubbleManagerMissing(
     content::WebContents* web_contents) {
-#if defined(OS_ANDROID)
-  // Can't be missing if it isn't needed to begin with.
+  // TODO(felt): Remove this method entirely. Leaving it to make a minimal
+  // last-minute merge to 46. See crbug.com/457091 and crbug.com/534631.
   return false;
-#else
-  return PermissionBubbleManager::FromWebContents(web_contents) == nullptr;
-#endif
 }
 
 void PermissionManager::OnContentSettingChanged(
