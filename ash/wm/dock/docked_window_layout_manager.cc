@@ -1063,9 +1063,13 @@ DockedAlignment DockedWindowLayoutManager::GetEdgeNearestWindow(
     const aura::Window* window) const {
   const gfx::Rect& bounds(window->GetBoundsInScreen());
   const gfx::Rect container_bounds = dock_container_->GetBoundsInScreen();
-  return (abs(bounds.x() - container_bounds.x()) <
-          abs(bounds.right() - container_bounds.right())) ?
-              DOCKED_ALIGNMENT_LEFT : DOCKED_ALIGNMENT_RIGHT;
+  // Give one pixel preference for docking on the right side to a window that
+  // has odd width and is centered in a screen that has even width (or vice
+  // versa). This only matters to the tests but could be a source of flakiness.
+  return (abs(bounds.x() - container_bounds.x()) + 1 <
+          abs(bounds.right() - container_bounds.right()))
+             ? DOCKED_ALIGNMENT_LEFT
+             : DOCKED_ALIGNMENT_RIGHT;
 }
 
 void DockedWindowLayoutManager::Relayout() {
