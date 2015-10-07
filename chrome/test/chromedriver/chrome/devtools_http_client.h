@@ -71,7 +71,7 @@ class DevToolsHttpClient {
       scoped_refptr<URLRequestContextGetter> context_getter,
       const SyncWebSocketFactory& socket_factory,
       scoped_ptr<DeviceMetrics> device_metrics,
-      const std::set<WebViewInfo::Type>& window_types);
+      scoped_ptr<std::set<WebViewInfo::Type>> window_types);
   ~DevToolsHttpClient();
 
   Status Init(const base::TimeDelta& timeout);
@@ -100,7 +100,7 @@ class DevToolsHttpClient {
   std::string web_socket_url_prefix_;
   BrowserInfo browser_info_;
   scoped_ptr<DeviceMetrics> device_metrics_;
-  std::set<WebViewInfo::Type> window_types_;
+  scoped_ptr<std::set<WebViewInfo::Type>> window_types_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpClient);
 };

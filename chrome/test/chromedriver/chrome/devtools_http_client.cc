@@ -59,16 +59,16 @@ DevToolsHttpClient::DevToolsHttpClient(
     scoped_refptr<URLRequestContextGetter> context_getter,
     const SyncWebSocketFactory& socket_factory,
     scoped_ptr<DeviceMetrics> device_metrics,
-    const std::set<WebViewInfo::Type>& window_types)
+    scoped_ptr<std::set<WebViewInfo::Type>> window_types)
     : context_getter_(context_getter),
       socket_factory_(socket_factory),
       server_url_("http://" + address.ToString()),
       web_socket_url_prefix_(base::StringPrintf(
           "ws://%s/devtools/page/", address.ToString().c_str())),
       device_metrics_(device_metrics.Pass()),
-      window_types_(window_types) {
-  window_types_.insert(WebViewInfo::kPage);
-  window_types_.insert(WebViewInfo::kApp);
+      window_types_(window_types.Pass()) {
+  window_types_->insert(WebViewInfo::kPage);
+  window_types_->insert(WebViewInfo::kApp);
 }
 
 DevToolsHttpClient::~DevToolsHttpClient() {}
@@ -147,7 +147,7 @@ const DeviceMetrics* DevToolsHttpClient::device_metrics() {
 }
 
 bool DevToolsHttpClient::IsBrowserWindow(WebViewInfo::Type window_type) const {
-  return window_types_.find(window_type) != window_types_.end();
+  return window_types_->find(window_type) != window_types_->end();
 }
 
 Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
