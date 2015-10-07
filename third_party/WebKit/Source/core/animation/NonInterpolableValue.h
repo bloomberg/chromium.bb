@@ -10,21 +10,19 @@
 namespace blink {
 
 // Holds components of a keyframe value that do not change when interpolating with another keyframe.
-class NonInterpolableValue : public RefCountedWillBeGarbageCollectedFinalized<NonInterpolableValue> {
+class NonInterpolableValue : public RefCounted<NonInterpolableValue> {
 public:
     virtual ~NonInterpolableValue() { }
 
     typedef const void* Type;
     virtual Type type() const = 0;
-
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 // These macros provide safe downcasts of NonInterpolableValue subclasses with debug assertions.
 // See CSSValueInterpolationType.cpp for example usage.
 #define DECLARE_NON_INTERPOLABLE_VALUE_TYPE() \
     static Type staticType; \
-    virtual Type type() const { return staticType; }
+    Type type() const final { return staticType; }
 
 #define DEFINE_NON_INTERPOLABLE_VALUE_TYPE(T) \
     NonInterpolableValue::Type T::staticType = &T::staticType;

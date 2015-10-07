@@ -17,14 +17,14 @@ namespace blink {
 // while nullptr represents the absence of any percentages.
 class LengthNonInterpolableValue : public NonInterpolableValue {
 public:
-    ~LengthNonInterpolableValue() override { ASSERT_NOT_REACHED(); }
-    static PassRefPtrWillBeRawPtr<LengthNonInterpolableValue> create(bool hasPercentage)
+    ~LengthNonInterpolableValue() final { ASSERT_NOT_REACHED(); }
+    static PassRefPtr<LengthNonInterpolableValue> create(bool hasPercentage)
     {
-        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(LengthNonInterpolableValue, singleton, adoptRefWillBeNoop(new LengthNonInterpolableValue()));
+        DEFINE_STATIC_REF(LengthNonInterpolableValue, singleton, adoptRef(new LengthNonInterpolableValue()));
         ASSERT(singleton);
         return hasPercentage ? singleton : nullptr;
     }
-    static PassRefPtrWillBeRawPtr<LengthNonInterpolableValue> merge(const NonInterpolableValue* a, const NonInterpolableValue* b)
+    static PassRefPtr<LengthNonInterpolableValue> merge(const NonInterpolableValue* a, const NonInterpolableValue* b)
     {
         return create(hasPercentage(a) || hasPercentage(b));
     }
@@ -33,7 +33,7 @@ public:
         ASSERT(!nonInterpolableValue || nonInterpolableValue->type() == LengthNonInterpolableValue::staticType);
         return static_cast<bool>(nonInterpolableValue);
     }
-    DEFINE_INLINE_VIRTUAL_TRACE() { NonInterpolableValue::trace(visitor); }
+
     DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
 private:

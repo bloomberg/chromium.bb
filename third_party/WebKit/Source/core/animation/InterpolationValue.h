@@ -16,18 +16,18 @@ class InterpolationType;
 struct InterpolationComponentValue {
     ALLOW_ONLY_INLINE_ALLOCATION();
 
-    InterpolationComponentValue(PassOwnPtr<InterpolableValue> interpolableValue = nullptr, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+    InterpolationComponentValue(PassOwnPtr<InterpolableValue> interpolableValue = nullptr, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
         : interpolableValue(interpolableValue)
         , nonInterpolableValue(nonInterpolableValue)
     { }
 
     OwnPtr<InterpolableValue> interpolableValue;
-    RefPtrWillBePersistent<NonInterpolableValue> nonInterpolableValue;
+    RefPtr<NonInterpolableValue> nonInterpolableValue;
 };
 
 class InterpolationValue {
 public:
-    static PassOwnPtr<InterpolationValue> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+    static PassOwnPtr<InterpolationValue> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
     {
         return adoptPtr(new InterpolationValue(type, interpolableValue, nonInterpolableValue));
     }
@@ -45,7 +45,7 @@ public:
 
 
 private:
-    InterpolationValue(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue)
+    InterpolationValue(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue)
         : m_type(type)
         , m_component(interpolableValue, nonInterpolableValue)
     {

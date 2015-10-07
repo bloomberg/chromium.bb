@@ -11,19 +11,14 @@ namespace blink {
 
 class CSSValueNonInterpolableValue : public NonInterpolableValue {
 public:
-    ~CSSValueNonInterpolableValue() override { }
-    static PassRefPtrWillBeRawPtr<CSSValueNonInterpolableValue> create(PassRefPtrWillBeRawPtr<CSSValue> cssValue)
+    ~CSSValueNonInterpolableValue() final { }
+
+    static PassRefPtr<CSSValueNonInterpolableValue> create(PassRefPtrWillBeRawPtr<CSSValue> cssValue)
     {
-        return adoptRefWillBeNoop(new CSSValueNonInterpolableValue(cssValue));
+        return adoptRef(new CSSValueNonInterpolableValue(cssValue));
     }
 
     CSSValue* cssValue() const { return m_cssValue.get(); }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        NonInterpolableValue::trace(visitor);
-        visitor->trace(m_cssValue);
-    }
 
     DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
@@ -32,7 +27,7 @@ private:
         : m_cssValue(cssValue)
     { }
 
-    RefPtrWillBeMember<CSSValue> m_cssValue;
+    RefPtrWillBePersistent<CSSValue> m_cssValue;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSValueNonInterpolableValue);

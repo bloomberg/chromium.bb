@@ -36,7 +36,7 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
 public:
     ~PairwisePrimitiveInterpolation() override { }
 
-    static PassOwnPtr<PairwisePrimitiveInterpolation> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue)
+    static PassOwnPtr<PairwisePrimitiveInterpolation> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, PassRefPtr<NonInterpolableValue> nonInterpolableValue)
     {
         return adoptPtr(new PairwisePrimitiveInterpolation(type, start, end, nonInterpolableValue));
     }
@@ -47,7 +47,7 @@ public:
     }
 
 private:
-    PairwisePrimitiveInterpolation(const InterpolationType& type, PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue)
+    PairwisePrimitiveInterpolation(const InterpolationType& type, PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, PassRefPtr<NonInterpolableValue> nonInterpolableValue)
         : m_type(type)
         , m_start(start)
         , m_end(end)
@@ -67,7 +67,7 @@ private:
     const InterpolationType& m_type;
     OwnPtr<InterpolableValue> m_start;
     OwnPtr<InterpolableValue> m_end;
-    RefPtrWillBePersistent<NonInterpolableValue> m_nonInterpolableValue;
+    RefPtr<NonInterpolableValue> m_nonInterpolableValue;
 };
 
 // Represents a pair of incompatible keyframes that fall back to 50% flip behaviour eg. "auto" and "0px".
