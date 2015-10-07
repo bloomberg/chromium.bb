@@ -17,12 +17,12 @@ namespace blink {
 
 class BlobDataHandle;
 class WebBlobInfo;
+struct WebIDBValue;
 
 class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
 public:
     static PassRefPtr<IDBValue> create();
-    static PassRefPtr<IDBValue> create(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&);
-    static PassRefPtr<IDBValue> create(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&, IDBKey*, const IDBKeyPath&);
+    static PassRefPtr<IDBValue> create(const WebIDBValue&);
     static PassRefPtr<IDBValue> create(const IDBValue*, IDBKey*, const IDBKeyPath&);
 
     bool isNull() const;
@@ -34,7 +34,7 @@ public:
 
 private:
     IDBValue();
-    IDBValue(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&);
+    IDBValue(const WebIDBValue&);
     IDBValue(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&, IDBKey*, const IDBKeyPath&);
     IDBValue(const IDBValue*, IDBKey*, const IDBKeyPath&);
 
