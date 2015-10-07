@@ -35,8 +35,7 @@ class MdSettingsUI : public content::WebUIController {
   ~MdSettingsUI() override;
 
  private:
-  // Adds SettingsPageUiHandler to the handlers list if handler is enabled.
-  void AddSettingsPageUIHandler(SettingsPageUIHandler* handler);
+  void AddSettingsPageUIHandler(content::WebUIMessageHandler* handler);
 
   DISALLOW_COPY_AND_ASSIGN(MdSettingsUI);
 };
