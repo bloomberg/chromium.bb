@@ -2610,8 +2610,9 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
   if (!ds)
     return;
 
-  TRACE_EVENT2("navigation", "RenderFrameImpl::didStartProvisionalLoad",
-               "id", routing_id_, "url", ds->request().url().string().utf8());
+  TRACE_EVENT2("navigation,benchmark",
+               "RenderFrameImpl::didStartProvisionalLoad", "id", routing_id_,
+               "url", ds->request().url().string().utf8());
   DocumentState* document_state = DocumentState::FromDataSource(ds);
 
   // We should only navigate to swappedout:// when is_swapped_out_ is true.
@@ -2658,8 +2659,8 @@ void RenderFrameImpl::didFailProvisionalLoad(
     blink::WebLocalFrame* frame,
     const blink::WebURLError& error,
     blink::WebHistoryCommitType commit_type) {
-  TRACE_EVENT1("navigation", "RenderFrameImpl::didFailProvisionalLoad",
-               "id", routing_id_);
+  TRACE_EVENT1("navigation,benchmark",
+               "RenderFrameImpl::didFailProvisionalLoad", "id", routing_id_);
   DCHECK(!frame_ || frame_ == frame);
   WebDataSource* ds = frame->provisionalDataSource();
   DCHECK(ds);
@@ -2930,7 +2931,7 @@ void RenderFrameImpl::didChangeIcon(blink::WebLocalFrame* frame,
 
 void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame,
                                             bool document_is_empty) {
-  TRACE_EVENT1("navigation", "RenderFrameImpl::didFinishDocumentLoad",
+  TRACE_EVENT1("navigation,benchmark", "RenderFrameImpl::didFinishDocumentLoad",
                "id", routing_id_);
   DCHECK(!frame_ || frame_ == frame);
   WebDataSource* ds = frame->dataSource();
@@ -3022,14 +3023,14 @@ void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
 }
 
 void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
-  TRACE_EVENT1("navigation", "RenderFrameImpl::didFinishLoad",
-               "id", routing_id_);
+  TRACE_EVENT1("navigation,benchmark", "RenderFrameImpl::didFinishLoad", "id",
+               routing_id_);
   DCHECK(!frame_ || frame_ == frame);
   WebDataSource* ds = frame->dataSource();
   DocumentState* document_state = DocumentState::FromDataSource(ds);
   if (document_state->finish_load_time().is_null()) {
     if (!frame->parent()) {
-      TRACE_EVENT_INSTANT0("WebCore", "LoadFinished",
+      TRACE_EVENT_INSTANT0("WebCore,benchmark", "LoadFinished",
                            TRACE_EVENT_SCOPE_PROCESS);
     }
     document_state->set_finish_load_time(Time::Now());

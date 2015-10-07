@@ -536,13 +536,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
           blink::WebSize()));
       disallow_horizontal_fling_scroll_ = !vx;
       disallow_vertical_fling_scroll_ = !vy;
-      TRACE_EVENT_ASYNC_BEGIN2("input",
+      TRACE_EVENT_ASYNC_BEGIN2("input,benchmark",
                                "InputHandlerProxy::HandleGestureFling::started",
-                               this,
-                               "vx",
-                               vx,
-                               "vy",
-                               vy);
+                               this, "vx", vx, "vy", vy);
       // Note that the timestamp will only be used to kickstart the animation if
       // its sufficiently close to the timestamp of the first call |Animate()|.
       has_fling_animation_started_ = false;
