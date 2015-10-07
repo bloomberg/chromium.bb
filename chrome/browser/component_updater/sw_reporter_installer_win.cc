@@ -59,11 +59,9 @@ const uint8_t kSha256Hash[] = {0x6a, 0xc6, 0x0e, 0xe8, 0xf3, 0x97, 0xc0, 0xd6,
 const base::FilePath::CharType kSwReporterExeName[] =
     FILE_PATH_LITERAL("software_reporter_tool.exe");
 
-// Where to fetch the reporter's list of found uws in the registry.
+// SRT registry keys and value names.
 const wchar_t kCleanerSuffixRegistryKey[] = L"Cleaner";
-const wchar_t kEndTimeValueName[] = L"EndTime";
 const wchar_t kExitCodeValueName[] = L"ExitCode";
-const wchar_t kStartTimeValueName[] = L"StartTime";
 const wchar_t kUploadResultsValueName[] = L"UploadResults";
 const wchar_t kVersionValueName[] = L"Version";
 
@@ -201,7 +199,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
       HKEY_CURRENT_USER, cleaner_key_name.c_str(), KEY_ALL_ACCESS);
   // Cleaner is assumed to have run if we have a start time.
   if (cleaner_key.Valid()) {
-    if (cleaner_key.HasValue(kStartTimeValueName)) {
+    if (cleaner_key.HasValue(safe_browsing::kStartTimeValueName)) {
       // Get version number.
       if (cleaner_key.HasValue(kVersionValueName)) {
         DWORD version;
@@ -213,14 +211,16 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
       // Get start & end time. If we don't have an end time, we can assume the
       // cleaner has not completed.
       int64 start_time_value;
-      cleaner_key.ReadInt64(kStartTimeValueName, &start_time_value);
+      cleaner_key.ReadInt64(safe_browsing::kStartTimeValueName,
+                            &start_time_value);
 
-      bool completed = cleaner_key.HasValue(kEndTimeValueName);
+      bool completed = cleaner_key.HasValue(safe_browsing::kEndTimeValueName);
       SRTHasCompleted(completed ? SRT_COMPLETED_YES : SRT_COMPLETED_NOT_YET);
       if (completed) {
         int64 end_time_value;
-        cleaner_key.ReadInt64(kEndTimeValueName, &end_time_value);
-        cleaner_key.DeleteValue(kEndTimeValueName);
+        cleaner_key.ReadInt64(safe_browsing::kEndTimeValueName,
+                              &end_time_value);
+        cleaner_key.DeleteValue(safe_browsing::kEndTimeValueName);
         base::TimeDelta run_time(
             base::Time::FromInternalValue(end_time_value) -
             base::Time::FromInternalValue(start_time_value));
@@ -235,7 +235,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
                                     exit_code);
         cleaner_key.DeleteValue(kExitCodeValueName);
       }
-      cleaner_key.DeleteValue(kStartTimeValueName);
+      cleaner_key.DeleteValue(safe_browsing::kStartTimeValueName);
 
       if (exit_code == safe_browsing::kSwReporterPostRebootCleanupNeeded ||
           exit_code ==
@@ -256,9 +256,9 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
         ReportUploadsWithUma(upload_results);
       }
     } else {
-      if (cleaner_key.HasValue(kEndTimeValueName)) {
+      if (cleaner_key.HasValue(safe_browsing::kEndTimeValueName)) {
         SRTHasCompleted(SRT_COMPLETED_LATER);
-        cleaner_key.DeleteValue(kEndTimeValueName);
+        cleaner_key.DeleteValue(safe_browsing::kEndTimeValueName);
       }
     }
   }

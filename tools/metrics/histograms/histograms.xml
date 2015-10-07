@@ -43262,6 +43262,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Usage of the Software Removal Tool (SRT) Prompt.</summary>
 </histogram>
 
+<histogram name="SoftwareReporter.RunningTime" units="ms">
+  <owner>alito@chromium.org</owner>
+  <summary>
+    The amount of time it took to run the software reporter tool as reported by
+    the tool itself via the registry. Logged just after the software reporter
+    tool has finished.
+  </summary>
+</histogram>
+
+<histogram name="SoftwareReporter.RunningTimeAccordingToChrome" units="ms">
+  <owner>alito@chromium.org</owner>
+  <summary>
+    The amount of time it took for the software reporter to run as measured by
+    chrome. Logged just after the software reporter tool has finished.
+  </summary>
+</histogram>
+
+<histogram name="SoftwareReporter.RunningTimeRegistryError"
+    enum="SwReporterRunningTimeRegistryError">
+  <owner>alito@chromium.org</owner>
+  <summary>
+    Error encountered when reading the software reporter tool's start and end
+    times from the registry.
+  </summary>
+</histogram>
+
 <histogram name="SoftwareReporter.Step" enum="SwReporterStep">
   <owner>mad@chromium.org</owner>
   <summary>
@@ -72786,6 +72812,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Failure"/>
   <int value="2" label="Cancelled"/>
   <int value="3" label="Attempted"/>
+</enum>
+
+<enum name="SwReporterRunningTimeRegistryError" type="int">
+  <int value="0" label="No error"/>
+  <int value="1" label="Registry key invalid"/>
+  <int value="2" label="Missing start time"/>
+  <int value="3" label="Missing end time"/>
+  <int value="4" label="Missing start and end times"/>
 </enum>
 
 <enum name="SwReporterStep" type="int">
