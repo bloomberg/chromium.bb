@@ -146,6 +146,7 @@ public:
 
     // GraphicsLayerClient interface
     void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) override;
+    void notifyTextPainted() override;
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) const override;
     bool isTrackingPaintInvalidations() const override;
 

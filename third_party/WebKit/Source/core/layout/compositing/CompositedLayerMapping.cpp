@@ -2250,6 +2250,11 @@ void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double
     layoutObject()->node()->document().compositorPendingAnimations().notifyCompositorAnimationStarted(monotonicTime, group);
 }
 
+void CompositedLayerMapping::notifyTextPainted()
+{
+    layoutObject()->node()->document().markFirstTextPaint();
+}
+
 IntRect CompositedLayerMapping::pixelSnappedCompositedBounds() const
 {
     LayoutRect bounds = m_compositedBounds;

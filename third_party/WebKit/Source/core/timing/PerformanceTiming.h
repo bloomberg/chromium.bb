@@ -76,7 +76,13 @@ public:
     unsigned long long domComplete() const;
     unsigned long long loadEventStart() const;
     unsigned long long loadEventEnd() const;
+
+    // The below are non-spec timings, for Page Load UMA metrics.
+
+    // The time the first document layout is performed.
     unsigned long long firstLayout() const;
+    // The time the first paint operation for visible text was performed.
+    unsigned long long firstTextPaint() const;
 
     ScriptValue toJSONForBinding(ScriptState*) const;
 

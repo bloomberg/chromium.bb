@@ -18,6 +18,7 @@ IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::PageLoadTiming)
   IPC_STRUCT_TRAITS_MEMBER(dom_content_loaded_event_start)
   IPC_STRUCT_TRAITS_MEMBER(load_event_start)
   IPC_STRUCT_TRAITS_MEMBER(first_layout)
+  IPC_STRUCT_TRAITS_MEMBER(first_text_paint)
 IPC_STRUCT_TRAITS_END()
 
 // Sent from renderer to browser process when the PageLoadTiming for the

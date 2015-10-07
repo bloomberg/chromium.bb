@@ -1931,6 +1931,12 @@ void Document::layoutUpdated()
     }
 }
 
+void Document::markFirstTextPaint()
+{
+    if (m_documentTiming.firstTextPaint() == 0)
+        m_documentTiming.markFirstTextPaint();
+}
+
 void Document::setNeedsFocusedElementCheck()
 {
     setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));

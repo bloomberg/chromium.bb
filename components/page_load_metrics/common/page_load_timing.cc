@@ -16,13 +16,15 @@ bool PageLoadTiming::operator==(const PageLoadTiming& other) const {
          dom_content_loaded_event_start ==
              other.dom_content_loaded_event_start &&
          load_event_start == other.load_event_start &&
-         first_layout == other.first_layout;
+         first_layout == other.first_layout &&
+         first_text_paint == other.first_text_paint;
 }
 
 bool PageLoadTiming::IsEmpty() const {
   return navigation_start.is_null() && response_start.is_zero() &&
          dom_content_loaded_event_start.is_zero() &&
-         load_event_start.is_zero() && first_layout.is_zero();
+         load_event_start.is_zero() && first_layout.is_zero() &&
+         first_text_paint.is_zero();
 }
 
 }  // namespace page_load_metrics

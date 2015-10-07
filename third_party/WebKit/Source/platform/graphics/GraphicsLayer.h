@@ -340,6 +340,8 @@ private:
 
     bool m_needsDisplay : 1;
 
+    bool m_textPainted : 1;
+
     GraphicsLayerPaintingPhase m_paintingPhase;
 
     Vector<GraphicsLayer*> m_children;

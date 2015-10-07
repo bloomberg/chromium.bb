@@ -43,13 +43,16 @@ public:
     void markDomContentLoadedEventEnd();
     void markDomComplete();
     void markFirstLayout();
+    void markFirstTextPaint();
 
+    // These return monotonically-increasing seconds.
     double domLoading() const { return m_domLoading; }
     double domInteractive() const { return m_domInteractive; }
     double domContentLoadedEventStart() const { return m_domContentLoadedEventStart; }
     double domContentLoadedEventEnd() const { return m_domContentLoadedEventEnd; }
     double domComplete() const { return m_domComplete; }
     double firstLayout() const { return m_firstLayout; }
+    double firstTextPaint() const { return m_firstTextPaint; }
 
     DECLARE_TRACE();
 
@@ -62,6 +65,7 @@ private:
     double m_domContentLoadedEventEnd;
     double m_domComplete;
     double m_firstLayout;
+    double m_firstTextPaint;
 
     RawPtrWillBeMember<Document> m_document;
 };

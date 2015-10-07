@@ -146,7 +146,15 @@ void PageLoadTracker::RecordTimingHistograms() {
       RecordEvent(PAGE_LOAD_SUCCESSFUL_FIRST_LAYOUT_BACKGROUND);
     }
   }
-
+  if (!timing_.first_text_paint.is_zero()) {
+    if (timing_.first_text_paint < background_delta) {
+      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstTextPaint",
+                          timing_.first_text_paint);
+    } else {
+      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstTextPaint.BG",
+                          timing_.first_text_paint);
+    }
+  }
 }
 
 void PageLoadTracker::RecordEvent(PageLoadEvent event) {

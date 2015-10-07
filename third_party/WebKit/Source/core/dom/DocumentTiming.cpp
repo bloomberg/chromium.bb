@@ -19,6 +19,7 @@ DocumentTiming::DocumentTiming(Document& document)
     , m_domContentLoadedEventEnd(0.0)
     , m_domComplete(0.0)
     , m_firstLayout(0.0)
+    , m_firstTextPaint(0.0)
     , m_document(document)
 {
 }
@@ -73,6 +74,13 @@ void DocumentTiming::markFirstLayout()
 {
     m_firstLayout = monotonicallyIncreasingTime();
     TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "firstLayout", m_firstLayout);
+    notifyDocumentTimingChanged();
+}
+
+void DocumentTiming::markFirstTextPaint()
+{
+    m_firstTextPaint = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "firstTextPaint", m_firstTextPaint);
     notifyDocumentTimingChanged();
 }
 

@@ -136,32 +136,33 @@ float Font::buildGlyphBuffer(const TextRunPaintInfo& runInfo, GlyphBuffer& glyph
     return width;
 }
 
-void Font::drawText(SkCanvas* canvas, const TextRunPaintInfo& runInfo,
+bool Font::drawText(SkCanvas* canvas, const TextRunPaintInfo& runInfo,
     const FloatPoint& point, float deviceScaleFactor, const SkPaint& paint) const
 {
     // Don't draw anything while we are using custom fonts that are in the process of loading.
     if (shouldSkipDrawing())
-        return;
+        return false;
 
     if (runInfo.cachedTextBlob && runInfo.cachedTextBlob->get()) {
         // we have a pre-cached blob -- happy joy!
         drawTextBlob(canvas, paint, runInfo.cachedTextBlob->get(), point.data());
-        return;
+        return true;
     }
 
     GlyphBuffer glyphBuffer;
     buildGlyphBuffer(runInfo, glyphBuffer);
 
     drawGlyphBuffer(canvas, paint, runInfo, glyphBuffer, point, deviceScaleFactor);
+    return true;
 }
 
-void Font::drawBidiText(SkCanvas* canvas, const TextRunPaintInfo& runInfo, const FloatPoint& point, CustomFontNotReadyAction customFontNotReadyAction, float deviceScaleFactor, const SkPaint& paint) const
+bool Font::drawBidiText(SkCanvas* canvas, const TextRunPaintInfo& runInfo, const FloatPoint& point, CustomFontNotReadyAction customFontNotReadyAction, float deviceScaleFactor, const SkPaint& paint) const
 {
     // Don't draw anything while we are using custom fonts that are in the process of loading,
     // except if the 'force' argument is set to true (in which case it will use a fallback
     // font).
     if (shouldSkipDrawing() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
-        return;
+        return false;
 
     // sub-run painting is not supported for Bidi text.
     const TextRun& run = runInfo.run;
@@ -175,7 +176,7 @@ void Font::drawBidiText(SkCanvas* canvas, const TextRunPaintInfo& runInfo, const
     BidiRunList<BidiCharacterRun>& bidiRuns = bidiResolver.runs();
     bidiResolver.createBidiRunsForLine(TextRunIterator(&run, run.length()));
     if (!bidiRuns.runCount())
-        return;
+        return true;
 
     FloatPoint currPoint = point;
     BidiCharacterRun* bidiRun = bidiRuns.firstRun();
@@ -199,6 +200,7 @@ void Font::drawBidiText(SkCanvas* canvas, const TextRunPaintInfo& runInfo, const
     }
 
     bidiRuns.deleteRuns();
+    return true;
 }
 
 void Font::drawEmphasisMarks(SkCanvas* canvas, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point, float deviceScaleFactor, const SkPaint& paint) const
