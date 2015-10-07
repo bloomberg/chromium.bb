@@ -42,7 +42,6 @@ CommandBufferImpl::CommandBufferImpl(
     : gpu_state_(gpu_state),
       driver_task_runner_(base::MessageLoop::current()->task_runner()),
       driver_(driver.Pass()),
-      binding_(this),
       observer_(nullptr),
       weak_ptr_factory_(this) {
   driver_->set_client(make_scoped_ptr(new CommandBufferDriverClientImpl(this)));
@@ -152,8 +151,8 @@ CommandBufferImpl::~CommandBufferImpl() {
 
 void CommandBufferImpl::BindToRequest(
     mojo::InterfaceRequest<mojo::CommandBuffer> request) {
-  binding_.Bind(request.Pass());
-  binding_.set_connection_error_handler([this]() { OnConnectionError(); });
+  binding_.reset(new mojo::Binding<mojo::CommandBuffer>(this, request.Pass()));
+  binding_->set_connection_error_handler([this]() { OnConnectionError(); });
 }
 
 void CommandBufferImpl::OnConnectionError() {
@@ -162,6 +161,10 @@ void CommandBufferImpl::OnConnectionError() {
   // should also be destroyed on the control because InterfacePtrs are thread-
   // hostile.
   sync_point_client_.reset();
+
+  // Before deleting, we need to delete |binding_| because it is bound to the
+  // current thread (|control_task_runner|).
+  binding_.reset();
 
   // Objects we own (such as CommandBufferDriver) need to be destroyed on the
   // thread we were created on.

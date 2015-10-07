@@ -72,7 +72,7 @@ class CommandBufferImpl : public mojo::CommandBuffer {
   scoped_refptr<base::SingleThreadTaskRunner> driver_task_runner_;
   scoped_ptr<CommandBufferDriver> driver_;
   mojo::CommandBufferSyncPointClientPtr sync_point_client_;
-  mojo::Binding<CommandBuffer> binding_;
+  scoped_ptr<mojo::Binding<CommandBuffer>> binding_;
   CommandBufferImplObserver* observer_;
   base::WeakPtrFactory<CommandBufferImpl> weak_ptr_factory_;
 
