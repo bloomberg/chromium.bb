@@ -16,6 +16,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/page/Page.h"
@@ -84,12 +85,9 @@ void InspectorResourceContentLoader::start()
 {
     m_started = true;
     WillBeHeapVector<RawPtrWillBeMember<Document>> documents;
-    for (Frame* frame = m_inspectedFrame; frame; frame = frame->tree().traverseNext(m_inspectedFrame)) {
-        if (!frame->isLocalFrame())
-            continue;
-        LocalFrame* localFrame = toLocalFrame(frame);
-        documents.append(localFrame->document());
-        documents.appendVector(InspectorPageAgent::importsForFrame(localFrame));
+    for (LocalFrame* frame : InspectedFrames(m_inspectedFrame)) {
+        documents.append(frame->document());
+        documents.appendVector(InspectorPageAgent::importsForFrame(frame));
     }
     for (Document* document : documents) {
         HashSet<String> urlsToFetch;

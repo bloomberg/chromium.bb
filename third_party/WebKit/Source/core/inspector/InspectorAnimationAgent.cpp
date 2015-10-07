@@ -20,6 +20,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
@@ -188,10 +189,8 @@ void InspectorAnimationAgent::getPlaybackRate(ErrorString*, double* playbackRate
 
 void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
 {
-    for (Frame* frame = m_pageAgent->inspectedFrame(); frame; frame = frame->tree().traverseNext(m_pageAgent->inspectedFrame())) {
-        if (frame->isLocalFrame())
-            toLocalFrame(frame)->document()->timeline().setPlaybackRate(playbackRate);
-    }
+    for (LocalFrame* frame : InspectedFrames(m_pageAgent->inspectedFrame()))
+        frame->document()->timeline().setPlaybackRate(playbackRate);
 }
 
 void InspectorAnimationAgent::getCurrentTime(ErrorString* errorString, const String& id, double* currentTime)

@@ -53,6 +53,7 @@
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/DOMPatchSupport.h"
 #include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -652,12 +653,9 @@ FrameHost* InspectorPageAgent::frameHost()
 
 LocalFrame* InspectorPageAgent::findFrameWithSecurityOrigin(const String& originRawString)
 {
-    for (Frame* frame = inspectedFrame(); frame; frame = frame->tree().traverseNext(inspectedFrame())) {
-        if (!frame->isLocalFrame())
-            continue;
-        RefPtr<SecurityOrigin> documentOrigin = toLocalFrame(frame)->document()->securityOrigin();
-        if (documentOrigin->toRawString() == originRawString)
-            return toLocalFrame(frame);
+    for (LocalFrame* frame : InspectedFrames(inspectedFrame())) {
+        if (frame->document()->securityOrigin()->toRawString() == originRawString)
+            return frame;
     }
     return nullptr;
 }

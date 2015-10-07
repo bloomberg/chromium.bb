@@ -50,6 +50,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -1024,10 +1025,8 @@ void InspectorResourceAgent::setCacheDisabled(ErrorString*, bool cacheDisabled)
     m_state->setBoolean(ResourceAgentState::cacheDisabled, cacheDisabled);
     if (cacheDisabled)
         memoryCache()->evictResources();
-    for (Frame* frame = m_pageAgent->inspectedFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (frame->isLocalFrame())
-            toLocalFrame(frame)->document()->fetcher()->garbageCollectDocumentResources();
-    }
+    for (LocalFrame* frame : InspectedFrames(m_pageAgent->inspectedFrame()))
+        frame->document()->fetcher()->garbageCollectDocumentResources();
 }
 
 void InspectorResourceAgent::emulateNetworkConditions(ErrorString*, bool, double, double, double)

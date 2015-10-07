@@ -28,6 +28,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -94,20 +95,17 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, RefPtr
 {
     result = TypeBuilder::Array<TypeBuilder::ApplicationCache::FrameWithManifest>::create();
 
-    LocalFrame* inspectedFrame = m_pageAgent->inspectedFrame();
-    for (Frame* frame = inspectedFrame; frame; frame = frame->tree().traverseNext(inspectedFrame)) {
-        if (!frame->isLocalFrame())
-            continue;
-        DocumentLoader* documentLoader = toLocalFrame(frame)->loader().documentLoader();
+    for (LocalFrame* frame : InspectedFrames(m_pageAgent->inspectedFrame())) {
+        DocumentLoader* documentLoader = frame->loader().documentLoader();
         if (!documentLoader)
-            continue;
+            return;
 
         ApplicationCacheHost* host = documentLoader->applicationCacheHost();
         ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
         String manifestURL = info.m_manifest.string();
         if (!manifestURL.isEmpty()) {
             RefPtr<TypeBuilder::ApplicationCache::FrameWithManifest> value = TypeBuilder::ApplicationCache::FrameWithManifest::create()
-                .setFrameId(IdentifiersFactory::frameId(toLocalFrame(frame)))
+                .setFrameId(IdentifiersFactory::frameId(frame))
                 .setManifestURL(manifestURL)
                 .setStatus(static_cast<int>(host->status()));
             result->addItem(value);

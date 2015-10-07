@@ -39,6 +39,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/page/Page.h"
@@ -154,20 +155,17 @@ void PageRuntimeAgent::unmuteConsole()
 
 void PageRuntimeAgent::reportExecutionContextCreation()
 {
-    Vector<std::pair<ScriptState*, SecurityOrigin*> > isolatedContexts;
-    for (Frame* frame = m_pageAgent->inspectedFrame(); frame; frame = frame->tree().traverseNext(m_pageAgent->inspectedFrame())) {
-        if (!frame->isLocalFrame())
+    Vector<std::pair<ScriptState*, SecurityOrigin*>> isolatedContexts;
+    for (LocalFrame* frame : InspectedFrames(m_pageAgent->inspectedFrame())) {
+        if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
             continue;
-        LocalFrame* localFrame = toLocalFrame(frame);
-        if (!localFrame->script().canExecuteScripts(NotAboutToExecuteScript))
-            continue;
-        String frameId = IdentifiersFactory::frameId(localFrame);
+        String frameId = IdentifiersFactory::frameId(frame);
 
         // Ensure execution context is created.
         // If initializeMainWorld returns true, then is registered by didCreateScriptContext
-        if (!localFrame->script().initializeMainWorld())
-            reportExecutionContext(ScriptState::forMainWorld(localFrame), true, "", frameId);
-        localFrame->script().collectIsolatedContexts(isolatedContexts);
+        if (!frame->script().initializeMainWorld())
+            reportExecutionContext(ScriptState::forMainWorld(frame), true, "", frameId);
+        frame->script().collectIsolatedContexts(isolatedContexts);
         if (isolatedContexts.isEmpty())
             continue;
         for (const auto& pair : isolatedContexts) {

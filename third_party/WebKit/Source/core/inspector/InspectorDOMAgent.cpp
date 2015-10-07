@@ -68,6 +68,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/InspectorPageAgent.h"
@@ -303,13 +304,11 @@ void InspectorDOMAgent::restore()
 WillBeHeapVector<RawPtrWillBeMember<Document> > InspectorDOMAgent::documents()
 {
     WillBeHeapVector<RawPtrWillBeMember<Document> > result;
-    for (Frame* frame = m_document->frame(); frame; frame = frame->tree().traverseNext()) {
-        if (!frame->isLocalFrame())
-            continue;
-        Document* document = toLocalFrame(frame)->document();
-        if (!document)
-            continue;
-        result.append(document);
+    if (m_document) {
+        for (LocalFrame* frame : InspectedFrames(m_pageAgent->inspectedFrame())) {
+            if (Document* document = frame->document())
+                result.append(document);
+        }
     }
     return result;
 }

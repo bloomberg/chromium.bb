@@ -1656,6 +1656,8 @@
             'inspector/InjectedScriptHost.h',
             'inspector/InjectedScriptManager.cpp',
             'inspector/InjectedScriptManager.h',
+            'inspector/InspectedFrames.cpp',
+            'inspector/InspectedFrames.h',
             'inspector/InspectorAnimationAgent.cpp',
             'inspector/InspectorAnimationAgent.h',
             'inspector/InspectorApplicationCacheAgent.cpp',
