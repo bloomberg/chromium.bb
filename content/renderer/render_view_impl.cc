@@ -757,9 +757,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   if (switches::IsTouchDragDropEnabled())
     webview()->settings()->setTouchDragDropEnabled(true);
 
-  if (switches::IsTouchEditingEnabled())
-    webview()->settings()->setTouchEditingEnabled(true);
-
   WebSettings::SelectionStrategyType selection_strategy =
       WebSettings::SelectionStrategyType::Character;
   const std::string selection_strategy_str =

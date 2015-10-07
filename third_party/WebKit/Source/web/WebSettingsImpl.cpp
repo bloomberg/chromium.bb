@@ -474,11 +474,6 @@ void WebSettingsImpl::setTouchDragDropEnabled(bool enabled)
     m_settings->setTouchDragDropEnabled(enabled);
 }
 
-void WebSettingsImpl::setTouchEditingEnabled(bool enabled)
-{
-    m_settings->setTouchEditingEnabled(enabled);
-}
-
 void WebSettingsImpl::setOfflineWebApplicationCacheEnabled(bool enabled)
 {
     m_settings->setOfflineWebApplicationCacheEnabled(enabled);

@@ -15,9 +15,7 @@ ViewsTouchEditingControllerFactory::ViewsTouchEditingControllerFactory() {
 ui::TouchEditingControllerDeprecated*
 ViewsTouchEditingControllerFactory::Create(
     ui::TouchEditable* client_view) {
-  if (switches::IsTouchEditingEnabled())
-    return new views::TouchSelectionControllerImpl(client_view);
-  return NULL;
+  return new views::TouchSelectionControllerImpl(client_view);
 }
 
 }  // namespace views

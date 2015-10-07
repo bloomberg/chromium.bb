@@ -2429,14 +2429,6 @@ TEST_F(TextfieldTest, DestroyingTextfieldFromOnKeyEvent) {
 }
 
 class TextfieldTouchSelectionTest : public TextfieldTest {
- public:
-  // TextfieldTest:
-  void SetUp() override {
-    TextfieldTest::SetUp();
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableTouchEditing);
-  }
-
  protected:
   // Simulates a complete tap.
   void Tap(const gfx::Point& point) {

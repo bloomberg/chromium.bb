@@ -570,14 +570,6 @@ bool SelectionController::handleGestureLongPressAlgorithm(const PlatformGestureE
     if (hitTestResult.isLiveLink())
         return false;
 
-#if OS(ANDROID)
-    bool shouldLongPressSelectWord = true;
-#else
-    bool shouldLongPressSelectWord = m_frame->settings() && m_frame->settings()->touchEditingEnabled();
-#endif
-    if (!shouldLongPressSelectWord)
-        return false;
-
     Node* innerNode = hitTestResult.innerNode();
 #if OS(ANDROID)
     bool innerNodeIsSelectable = innerNode && (innerNode->isContentEditable() || innerNode->isTextNode() || innerNode->canStartSelection());

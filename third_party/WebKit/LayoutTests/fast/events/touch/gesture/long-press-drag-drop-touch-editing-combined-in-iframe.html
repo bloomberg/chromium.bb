@@ -24,10 +24,8 @@ function runTest()
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    if (window.internals) {
+    if (window.internals)
         internals.settings.setTouchDragDropEnabled(true);
-        internals.settings.setTouchEditingEnabled(true);
-    }
 
     if (!window.eventSender)
         return;

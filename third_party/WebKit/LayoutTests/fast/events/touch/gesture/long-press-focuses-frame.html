@@ -25,10 +25,6 @@ function runTest()
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    if (window.internals) {
-        internals.settings.setTouchEditingEnabled(true);
-    }
-
     if (!window.eventSender)
         return;
 

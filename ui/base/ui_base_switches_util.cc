@@ -31,16 +31,6 @@ bool IsTouchDragDropEnabled() {
 #endif
 }
 
-bool IsTouchEditingEnabled() {
-#if defined(USE_AURA)
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTouchEditing);
-#else
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTouchEditing);
-#endif
-}
-
 bool IsTouchFeedbackEnabled() {
   static bool touch_feedback_enabled =
       !base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -63,8 +63,6 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
         widget_(nullptr),
         textfield_(nullptr),
         views_tsc_factory_(new ViewsTouchEditingControllerFactory) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableTouchEditing);
     ui::TouchEditingControllerFactory::SetInstance(views_tsc_factory_.get());
   }
 

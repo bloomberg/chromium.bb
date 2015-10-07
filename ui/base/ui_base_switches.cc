@@ -31,9 +31,6 @@ const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
 // Disables touch event based drag and drop.
 const char kDisableTouchDragDrop[] = "disable-touch-drag-drop";
 
-// Disables controls that support touch base text editing.
-const char kDisableTouchEditing[] = "disable-touch-editing";
-
 // Disables additional visual feedback to touch input.
 const char kDisableTouchFeedback[] = "disable-touch-feedback";
 
@@ -46,9 +43,6 @@ const char kEnableLinkDisambiguationPopup[] =
 
 // Enables touch event based drag and drop.
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
-
-// Enables controls that support touch base text editing.
-const char kEnableTouchEditing[] = "enable-touch-editing";
 
 // The language file that we want to try to open. Of the form
 // language[-country] where language is the 2 letter code from ISO-639.

@@ -20,10 +20,8 @@ function test()
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    if (window.internals) {
+    if (window.internals)
         internals.settings.setTouchDragDropEnabled(true);
-        internals.settings.setTouchEditingEnabled(true);
-    }
 
     var draggableDiv = document.getElementById("draggableDiv");
     draggableDiv.ondragstart = function() { document.getElementById("draggableDivResult").innerHTML = "PASS"; }

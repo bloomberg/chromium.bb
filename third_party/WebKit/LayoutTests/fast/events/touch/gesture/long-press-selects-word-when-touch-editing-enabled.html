@@ -14,9 +14,6 @@ function test()
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    if (window.internals)
-        internals.settings.setTouchEditingEnabled(true);
-
     var textDiv = document.getElementById("textDiv");
 
     var x = textDiv.offsetParent.offsetLeft + textDiv.offsetLeft + 4;

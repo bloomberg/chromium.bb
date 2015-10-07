@@ -171,7 +171,6 @@ public:
     void setTextTrackTextSize(const WebString&) override;
     void setThreadedScrollingEnabled(bool) override;
     void setTouchDragDropEnabled(bool) override;
-    void setTouchEditingEnabled(bool) override;
     void setUnifiedTextCheckerEnabled(bool) override;
     void setUnsafePluginPastingEnabled(bool) override;
     void setUsesEncodingDetector(bool) override;
