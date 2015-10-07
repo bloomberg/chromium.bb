@@ -78,7 +78,7 @@ public:
 
     Element* elementFromPoint(int x, int y) const;
     Element* hitTestPoint(int x, int y, const HitTestRequest&) const;
-    Vector<Element*> elementsFromPoint(int x, int y) const;
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elementsFromPoint(int x, int y) const;
 
     // For accessibility.
     bool shouldCacheLabelsByForAttribute() const { return m_labelsByForAttribute; }

@@ -293,9 +293,9 @@ Element* TreeScope::hitTestPoint(int x, int y, const HitTestRequest& request) co
     return toElement(node);
 }
 
-Vector<Element*> TreeScope::elementsFromPoint(int x, int y) const
+WillBeHeapVector<RawPtrWillBeMember<Element>> TreeScope::elementsFromPoint(int x, int y) const
 {
-    Vector<Element*> elements;
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
 
     Document& document = rootNode().document();
     IntPoint hitPoint(x, y);

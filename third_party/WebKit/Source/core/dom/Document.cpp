@@ -1188,10 +1188,10 @@ Element* Document::elementFromPoint(int x, int y) const
     return TreeScope::elementFromPoint(x, y);
 }
 
-Vector<Element*> Document::elementsFromPoint(int x, int y) const
+WillBeHeapVector<RawPtrWillBeMember<Element>> Document::elementsFromPoint(int x, int y) const
 {
     if (!layoutView())
-        return Vector<Element*>();
+        return WillBeHeapVector<RawPtrWillBeMember<Element>>();
     return TreeScope::elementsFromPoint(x, y);
 }
 
