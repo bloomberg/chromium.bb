@@ -107,7 +107,6 @@ public class WebViewLayoutTest
         assertEquals("Unexpected new webview interfaces found", "", newInterfaces.toString());
     }
 
-    @DisabledTest // Failing on bot "Android Webview L (dbg)"; see crbug.com/540648
     @MediumTest
     public void testWebViewExcludedInterfaces() throws Exception {
         ensureJsTestCopied();
@@ -138,7 +137,6 @@ public class WebViewLayoutTest
         assertEquals("Unexpected webview interfaces found", "", unexpected.toString());
     }
 
-    @DisabledTest // Failing on bot "Android Webview L (dbg)"; see crbug.com/540648
     @MediumTest
     public void testWebViewIncludedStableInterfaces() throws Exception {
         ensureJsTestCopied();
