@@ -93,10 +93,9 @@ const char kNoMatchResult[] =
 
 };  // namespace
 
-// TODO(jrummell): Rename these tests and this file. http://crbug.com/367158.
-class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
+class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
  protected:
-  EncryptedMediaIsTypeSupportedTest() : is_pepper_cdm_registered_(false) {
+  EncryptedMediaSupportedTypesTest() : is_pepper_cdm_registered_(false) {
     audio_webm_codecs_.push_back("opus");
     audio_webm_codecs_.push_back("vorbis");
 
@@ -257,17 +256,17 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
 };
 
 // For ClearKey, nothing additional is required.
-class EncryptedMediaIsTypeSupportedClearKeyTest
-    : public EncryptedMediaIsTypeSupportedTest {
+class EncryptedMediaSupportedTypesClearKeyTest
+    : public EncryptedMediaSupportedTypesTest {
 };
 
 // For ExternalClearKey tests, ensure that the ClearKey adapter is loaded.
-class EncryptedMediaIsTypeSupportedExternalClearKeyTest
-    : public EncryptedMediaIsTypeSupportedTest {
+class EncryptedMediaSupportedTypesExternalClearKeyTest
+    : public EncryptedMediaSupportedTypesTest {
 #if defined(ENABLE_PEPPER_CDMS)
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    EncryptedMediaIsTypeSupportedTest::SetUpCommandLine(command_line);
+    EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
 
     // Platform-specific filename relative to the chrome executable.
     const char adapter_file_name[] =
@@ -288,17 +287,17 @@ class EncryptedMediaIsTypeSupportedExternalClearKeyTest
 // TODO(sandersd): Register the Widevine CDM if it is a component. A component
 // CDM registered using RegisterPepperCdm() declares support for audio codecs,
 // but not the other codecs we expect. http://crbug.com/356833.
-class EncryptedMediaIsTypeSupportedWidevineTest
-    : public EncryptedMediaIsTypeSupportedTest {
+class EncryptedMediaSupportedTypesWidevineTest
+    : public EncryptedMediaSupportedTypesTest {
 };
 
 #if defined(ENABLE_PEPPER_CDMS)
 // Registers ClearKey CDM with the wrong path (filename).
-class EncryptedMediaIsTypeSupportedClearKeyCDMRegisteredWithWrongPathTest
-    : public EncryptedMediaIsTypeSupportedTest {
+class EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest
+    : public EncryptedMediaSupportedTypesTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    EncryptedMediaIsTypeSupportedTest::SetUpCommandLine(command_line);
+    EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
     RegisterPepperCdm(command_line,
                       "clearkeycdmadapterwrongname.dll",
                       "application/x-ppapi-clearkey-cdm",
@@ -307,11 +306,11 @@ class EncryptedMediaIsTypeSupportedClearKeyCDMRegisteredWithWrongPathTest
 };
 
 // Registers Widevine CDM with the wrong path (filename).
-class EncryptedMediaIsTypeSupportedWidevineCDMRegisteredWithWrongPathTest
-    : public EncryptedMediaIsTypeSupportedTest {
+class EncryptedMediaSupportedTypesWidevineCDMRegisteredWithWrongPathTest
+    : public EncryptedMediaSupportedTypesTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    EncryptedMediaIsTypeSupportedTest::SetUpCommandLine(command_line);
+    EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
     RegisterPepperCdm(command_line,
                       "widevinecdmadapterwrongname.dll",
                       "application/x-ppapi-widevine-cdm",
@@ -320,7 +319,7 @@ class EncryptedMediaIsTypeSupportedWidevineCDMRegisteredWithWrongPathTest
 };
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedClearKeyTest, Basic) {
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Basic) {
   EXPECT_SUCCESS(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebMMimeType, no_codecs(), kClearKey));
   EXPECT_SUCCESS(IsSupportedKeySystemWithMediaMimeType(
@@ -331,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedClearKeyTest, Basic) {
       kAudioMP4MimeType, no_codecs(), kClearKey));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedClearKeyTest,
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest,
                        InvalidKeySystems) {
   // Case sensitive.
   EXPECT_UNKNOWN_KEYSYSTEM(IsSupportedKeySystemWithMediaMimeType(
@@ -364,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedClearKeyTest,
       kVideoWebMMimeType, no_codecs(), "org.w3.clearkey.foo"));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedClearKeyTest, Video_WebM) {
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Video_WebM) {
   // Valid video types.
   EXPECT_SUCCESS(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebMMimeType, video_webm_codecs(), kClearKey));
@@ -382,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedClearKeyTest, Video_WebM) {
       kVideoWebMMimeType, video_mp4_codecs(), kClearKey));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedClearKeyTest, Audio_WebM) {
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Audio_WebM) {
   // Valid audio types.
   EXPECT_SUCCESS(IsSupportedKeySystemWithMediaMimeType(
       kAudioWebMMimeType, audio_webm_codecs(), kClearKey));
@@ -400,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedClearKeyTest, Audio_WebM) {
       kAudioWebMMimeType, video_mp4_codecs(), kClearKey));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedClearKeyTest, Video_MP4) {
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Video_MP4) {
   // Valid video types.
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       kVideoMP4MimeType, video_mp4_codecs(), kClearKey));
@@ -418,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedClearKeyTest, Video_MP4) {
       kVideoMP4MimeType, video_webm_codecs(), kClearKey));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedClearKeyTest, Audio_MP4) {
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Audio_MP4) {
   // Valid audio types.
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       kAudioMP4MimeType, audio_mp4_codecs(), kClearKey));
@@ -441,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedClearKeyTest, Audio_MP4) {
 //
 
 // When defined(ENABLE_PEPPER_CDMS), this also tests the Pepper CDM check.
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
                        Basic) {
   EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebMMimeType, no_codecs(), kExternalClearKey));
@@ -453,7 +452,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
       kAudioMP4MimeType, no_codecs(), kExternalClearKey));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
                        InvalidKeySystems) {
   // Case sensitive.
   EXPECT_UNKNOWN_KEYSYSTEM(IsSupportedKeySystemWithMediaMimeType(
@@ -482,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
       kVideoWebMMimeType, no_codecs(), "org.chromium.externalclearkey.foo"));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
                        Video_WebM) {
   // Valid video types.
   EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
@@ -501,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
       kVideoWebMMimeType, video_mp4_codecs(), kExternalClearKey));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
                        Audio_WebM) {
   // Valid audio types.
   EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
@@ -520,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
       kAudioWebMMimeType, video_mp4_codecs(), kExternalClearKey));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
                        Video_MP4) {
   // Valid video types.
   EXPECT_ECK_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
@@ -539,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
       kVideoMP4MimeType, video_webm_codecs(), kExternalClearKey));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
                        Audio_MP4) {
   // Valid audio types.
   EXPECT_ECK_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
@@ -562,8 +561,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedExternalClearKeyTest,
 // Widevine
 //
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
-                       Basic) {
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Basic) {
   EXPECT_WV_SUCCESS(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebMMimeType, no_codecs(), kWidevine));
   EXPECT_WV_SUCCESS(IsSupportedKeySystemWithMediaMimeType(
@@ -574,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
       kAudioMP4MimeType, no_codecs(), kWidevine));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest, Video_WebM) {
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Video_WebM) {
   // Valid video types.
   EXPECT_WV_SUCCESS(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebMMimeType, video_webm_codecs(), kWidevine));
@@ -592,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest, Video_WebM) {
       kVideoWebMMimeType, video_mp4_codecs(), kWidevine));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest, Audio_WebM) {
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Audio_WebM) {
   // Valid audio types.
   EXPECT_WV_SUCCESS(IsSupportedKeySystemWithMediaMimeType(
       kAudioWebMMimeType, audio_webm_codecs(), kWidevine));
@@ -610,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest, Audio_WebM) {
       kAudioWebMMimeType, video_mp4_codecs(), kWidevine));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest, Video_MP4) {
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Video_MP4) {
   // Valid video types.
   EXPECT_WV_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       kVideoMP4MimeType, video_mp4_codecs(), kWidevine));
@@ -628,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest, Video_MP4) {
       kVideoMP4MimeType, video_webm_codecs(), kWidevine));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest, Audio_MP4) {
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Audio_MP4) {
   // Valid audio types.
   EXPECT_WV_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       kAudioMP4MimeType, audio_mp4_codecs(), kWidevine));
@@ -650,7 +648,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest, Audio_MP4) {
 // Since this test fixture does not register the CDMs on the command line, the
 // check for the CDMs in chrome_key_systems.cc should fail, and they should not
 // be registered with KeySystems.
-IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesTest,
                        PepperCDMsNotRegistered) {
   EXPECT_UNKNOWN_KEYSYSTEM(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebMMimeType, no_codecs(), kExternalClearKey));
@@ -671,7 +669,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
 // check for the CDMs in chrome_key_systems.cc should fail, and they should not
 // be registered with KeySystems.
 IN_PROC_BROWSER_TEST_F(
-    EncryptedMediaIsTypeSupportedClearKeyCDMRegisteredWithWrongPathTest,
+    EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest,
     PepperCDMsRegisteredButAdapterNotPresent) {
   EXPECT_UNKNOWN_KEYSYSTEM(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebMMimeType, no_codecs(), kExternalClearKey));
@@ -685,7 +683,7 @@ IN_PROC_BROWSER_TEST_F(
 // component, in which case it is registered internally.
 #if !defined(WIDEVINE_CDM_AVAILABLE) || defined(WIDEVINE_CDM_IS_COMPONENT)
 IN_PROC_BROWSER_TEST_F(
-    EncryptedMediaIsTypeSupportedWidevineCDMRegisteredWithWrongPathTest,
+    EncryptedMediaSupportedTypesWidevineCDMRegisteredWithWrongPathTest,
     PepperCDMsRegisteredButAdapterNotPresent) {
   EXPECT_UNKNOWN_KEYSYSTEM(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebMMimeType, no_codecs(), kWidevine));
@@ -694,7 +692,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_SUCCESS(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebMMimeType, no_codecs(), kClearKey));
 }
-#endif  // !defined(WIDEVINE_CDM_AVAILABLE) || defined(WIDEVINE_CDM_IS_COMPONENT)
+#endif  // !defined(WIDEVINE_CDM_AVAILABLE) ||
+        // defined(WIDEVINE_CDM_IS_COMPONENT)
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 }  // namespace chrome

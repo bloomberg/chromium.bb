@@ -328,7 +328,7 @@
       'browser/media/chrome_webrtc_webcam_browsertest.cc',
       'browser/media/defer_background_media_browsertest.cc',
       'browser/media/encrypted_media_browsertest.cc',
-      'browser/media/encrypted_media_istypesupported_browsertest.cc',
+      'browser/media/encrypted_media_supported_types_browsertest.cc',
       'browser/media/media_browsertest.cc',
       'browser/media/media_browsertest.h',
       'browser/media/media_stream_devices_controller_browsertest.cc',
