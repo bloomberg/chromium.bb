@@ -4279,8 +4279,9 @@ xdg_get_xdg_popup(struct wl_client *client,
 	 * top level or not. */
 
 	parent_shsurf = get_shell_surface(parent);
-	if (!shell_surface_is_xdg_popup(parent_shsurf) &&
-	    !shell_surface_is_xdg_surface(parent_shsurf)) {
+	if (!parent_shsurf ||
+	    (!shell_surface_is_xdg_popup(parent_shsurf) &&
+	     !shell_surface_is_xdg_surface(parent_shsurf))) {
 		wl_resource_post_error(resource,
 				       XDG_SHELL_ERROR_INVALID_POPUP_PARENT,
 				       "xdg_popup parent was invalid");
