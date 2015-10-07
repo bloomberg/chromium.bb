@@ -78,9 +78,10 @@ public:
 
     // These methods are called during painting.
 
-    // Provide a new set of paint properties to apply to recorded display items,
-    // for Slimming Paint v2.
-    void updateCurrentPaintProperties(const PaintProperties&);
+    // Provide a new set of paint chunk properties to apply to recorded display
+    // items, for Slimming Paint v2.
+    // TODO(pdr): This should be moved to PaintArtifact.
+    void updateCurrentPaintChunkProperties(const PaintChunkProperties&);
 
     template <typename DisplayItemClass, typename... Args>
     void createAndAppend(Args&&... args)

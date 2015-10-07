@@ -5,7 +5,7 @@
 #ifndef PaintChunk_h
 #define PaintChunk_h
 
-#include "platform/graphics/paint/PaintProperties.h"
+#include "platform/graphics/paint/PaintChunkProperties.h"
 #include <iosfwd>
 
 namespace blink {
@@ -18,7 +18,7 @@ namespace blink {
 // This is a Slimming Paint v2 class.
 struct PaintChunk {
     PaintChunk() : beginIndex(0), endIndex(0) { }
-    PaintChunk(unsigned begin, unsigned end, const PaintProperties& props)
+    PaintChunk(unsigned begin, unsigned end, const PaintChunkProperties& props)
         : beginIndex(begin), endIndex(end), properties(props) { }
 
     // Index of the first drawing in this chunk.
@@ -29,7 +29,7 @@ struct PaintChunk {
     unsigned endIndex;
 
     // The paint properties which apply to this chunk.
-    PaintProperties properties;
+    PaintChunkProperties properties;
 };
 
 inline bool operator==(const PaintChunk& a, const PaintChunk& b)

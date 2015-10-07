@@ -1968,6 +1968,7 @@
             'paint/NinePieceImageGrid.h',
             'paint/NinePieceImagePainter.cpp',
             'paint/NinePieceImagePainter.h',
+            'paint/ObjectPaintProperties.h',
             'paint/ObjectPainter.cpp',
             'paint/ObjectPainter.h',
             'paint/PaintInfo.h',

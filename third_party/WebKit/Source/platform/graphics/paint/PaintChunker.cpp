@@ -17,7 +17,7 @@ PaintChunker::~PaintChunker()
 {
 }
 
-void PaintChunker::updateCurrentPaintProperties(const PaintProperties& properties)
+void PaintChunker::updateCurrentPaintChunkProperties(const PaintChunkProperties& properties)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
@@ -60,7 +60,7 @@ Vector<PaintChunk> PaintChunker::releasePaintChunks()
 {
     Vector<PaintChunk> chunks;
     chunks.swap(m_chunks);
-    m_currentProperties = PaintProperties();
+    m_currentProperties = PaintChunkProperties();
     return chunks;
 }
 

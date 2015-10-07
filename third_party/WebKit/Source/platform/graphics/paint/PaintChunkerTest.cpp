@@ -14,7 +14,7 @@ using testing::ElementsAre;
 namespace blink {
 namespace {
 
-static PaintProperties samplePaintProperties() { return PaintProperties(); }
+static PaintChunkProperties rootPaintChunkProperties() { return PaintChunkProperties(); }
 
 class PaintChunkerTest : public testing::Test {
 protected:
@@ -41,33 +41,33 @@ TEST_F(PaintChunkerTest, Empty)
 TEST_F(PaintChunkerTest, SingleNonEmptyRange)
 {
     PaintChunker chunker;
-    chunker.updateCurrentPaintProperties(samplePaintProperties());
+    chunker.updateCurrentPaintChunkProperties(rootPaintChunkProperties());
     chunker.incrementDisplayItemIndex();
     chunker.incrementDisplayItemIndex();
     Vector<PaintChunk> chunks = chunker.releasePaintChunks();
 
     EXPECT_THAT(chunks, ElementsAre(
-        PaintChunk(0, 2, samplePaintProperties())));
+        PaintChunk(0, 2, rootPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, SamePropertiesTwiceCombineIntoOneChunk)
 {
     PaintChunker chunker;
-    chunker.updateCurrentPaintProperties(samplePaintProperties());
+    chunker.updateCurrentPaintChunkProperties(rootPaintChunkProperties());
     chunker.incrementDisplayItemIndex();
     chunker.incrementDisplayItemIndex();
-    chunker.updateCurrentPaintProperties(samplePaintProperties());
+    chunker.updateCurrentPaintChunkProperties(rootPaintChunkProperties());
     chunker.incrementDisplayItemIndex();
     Vector<PaintChunk> chunks = chunker.releasePaintChunks();
 
     EXPECT_THAT(chunks, ElementsAre(
-        PaintChunk(0, 3, samplePaintProperties())));
+        PaintChunk(0, 3, rootPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, CanRewindDisplayItemIndex)
 {
     PaintChunker chunker;
-    chunker.updateCurrentPaintProperties(samplePaintProperties());
+    chunker.updateCurrentPaintChunkProperties(rootPaintChunkProperties());
     chunker.incrementDisplayItemIndex();
     chunker.incrementDisplayItemIndex();
     chunker.decrementDisplayItemIndex();
@@ -75,11 +75,85 @@ TEST_F(PaintChunkerTest, CanRewindDisplayItemIndex)
     Vector<PaintChunk> chunks = chunker.releasePaintChunks();
 
     EXPECT_THAT(chunks, ElementsAre(
-        PaintChunk(0, 2, samplePaintProperties())));
+        PaintChunk(0, 2, rootPaintChunkProperties())));
 }
 
-// TODO(jbroman): Add more tests one it is possible for there to be two distinct
-// PaintProperties.
+TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging)
+{
+    PaintChunker chunker;
+    chunker.updateCurrentPaintChunkProperties(rootPaintChunkProperties());
+    chunker.incrementDisplayItemIndex();
+    chunker.incrementDisplayItemIndex();
+
+    PaintChunkProperties simpleTransform;
+    simpleTransform.transform = adoptRef(new TransformPaintPropertyNode(TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7)));
+
+    chunker.updateCurrentPaintChunkProperties(simpleTransform);
+    chunker.incrementDisplayItemIndex();
+
+    PaintChunkProperties anotherTransform;
+    anotherTransform.transform = adoptRef(new TransformPaintPropertyNode(TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7)));
+    chunker.updateCurrentPaintChunkProperties(anotherTransform);
+    chunker.incrementDisplayItemIndex();
+
+    Vector<PaintChunk> chunks = chunker.releasePaintChunks();
+
+    EXPECT_THAT(chunks, ElementsAre(
+        PaintChunk(0, 2, rootPaintChunkProperties()),
+        PaintChunk(2, 3, simpleTransform),
+        PaintChunk(3, 4, anotherTransform)));
+}
+
+TEST_F(PaintChunkerTest, BuildLinearChunksFromNestedTransforms)
+{
+    // Test that "nested" transforms linearize using the following
+    // sequence of transforms and display items:
+    // <root xform>, <paint>, <a xform>, <paint>, <paint>, </a xform>, <paint>, </root xform>
+    PaintChunker chunker;
+    chunker.updateCurrentPaintChunkProperties(rootPaintChunkProperties());
+    chunker.incrementDisplayItemIndex();
+
+    PaintChunkProperties simpleTransform;
+    simpleTransform.transform = adoptRef(new TransformPaintPropertyNode(TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7)));
+    chunker.updateCurrentPaintChunkProperties(simpleTransform);
+    chunker.incrementDisplayItemIndex();
+    chunker.incrementDisplayItemIndex();
+
+    chunker.updateCurrentPaintChunkProperties(rootPaintChunkProperties());
+    chunker.incrementDisplayItemIndex();
+
+    Vector<PaintChunk> chunks = chunker.releasePaintChunks();
+
+    EXPECT_THAT(chunks, ElementsAre(
+        PaintChunk(0, 1, rootPaintChunkProperties()),
+        PaintChunk(1, 3, simpleTransform),
+        PaintChunk(3, 4, rootPaintChunkProperties())));
+}
+
+TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems)
+{
+    // Test that properties can change without display items being generated.
+    PaintChunker chunker;
+    chunker.updateCurrentPaintChunkProperties(rootPaintChunkProperties());
+    chunker.incrementDisplayItemIndex();
+
+    PaintChunkProperties firstTransform;
+    firstTransform.transform = adoptRef(new TransformPaintPropertyNode(TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7)));
+    chunker.updateCurrentPaintChunkProperties(firstTransform);
+
+    PaintChunkProperties secondTransform;
+    secondTransform.transform = adoptRef(new TransformPaintPropertyNode(TransformationMatrix(9, 8, 7, 6, 5, 4), FloatPoint3D(3, 2, 1)));
+    chunker.updateCurrentPaintChunkProperties(secondTransform);
+
+    chunker.incrementDisplayItemIndex();
+    Vector<PaintChunk> chunks = chunker.releasePaintChunks();
+
+    EXPECT_THAT(chunks, ElementsAre(
+        PaintChunk(0, 1, rootPaintChunkProperties()),
+        PaintChunk(1, 2, secondTransform)));
+}
+
+// TODO(pdr): Add more tests once we have more paint properties.
 
 } // namespace
 } // namespace blink

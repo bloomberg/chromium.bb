@@ -7,22 +7,22 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/paint/PaintChunk.h"
-#include "platform/graphics/paint/PaintProperties.h"
+#include "platform/graphics/paint/PaintChunkProperties.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-// Accepts information about changes to |PaintProperties| as drawings are
+// Accepts information about changes to |PaintChunkProperties| as drawings are
 // accumulated, and produces a series of paint chunks: contiguous ranges of the
-// display list with identical |PaintProperties|.
+// display list with identical |PaintChunkProperties|.
 class PLATFORM_EXPORT PaintChunker {
 public:
     PaintChunker();
     ~PaintChunker();
 
-    bool isInInitialState() const { return m_chunks.isEmpty() && m_currentProperties == PaintProperties(); }
+    bool isInInitialState() const { return m_chunks.isEmpty() && m_currentProperties == PaintChunkProperties(); }
 
-    void updateCurrentPaintProperties(const PaintProperties&);
+    void updateCurrentPaintChunkProperties(const PaintChunkProperties&);
 
     void incrementDisplayItemIndex();
     void decrementDisplayItemIndex();
@@ -33,7 +33,7 @@ public:
 
 private:
     Vector<PaintChunk> m_chunks;
-    PaintProperties m_currentProperties;
+    PaintChunkProperties m_currentProperties;
 };
 
 } // namespace blink

@@ -99,9 +99,9 @@ void DisplayItemList::processNewItem(DisplayItem& displayItem)
         m_newPaintChunks.incrementDisplayItemIndex();
 }
 
-void DisplayItemList::updateCurrentPaintProperties(const PaintProperties& newPaintProperties)
+void DisplayItemList::updateCurrentPaintChunkProperties(const PaintChunkProperties& newProperties)
 {
-    m_newPaintChunks.updateCurrentPaintProperties(newPaintProperties);
+    m_newPaintChunks.updateCurrentPaintChunkProperties(newProperties);
 }
 
 void DisplayItemList::beginScope()

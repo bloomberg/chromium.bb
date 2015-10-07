@@ -11,6 +11,7 @@ namespace blink {
 
 struct PaintChunk;
 struct PaintProperties;
+class TransformPaintPropertyNode;
 
 // GTest print support for platform paint classes.
 //
@@ -25,6 +26,7 @@ struct PaintProperties;
 // your unit test binary.
 void PrintTo(const PaintChunk&, std::ostream*);
 void PrintTo(const PaintProperties&, std::ostream*);
+void PrintTo(const TransformPaintPropertyNode&, std::ostream*);
 
 } // namespace blink
 

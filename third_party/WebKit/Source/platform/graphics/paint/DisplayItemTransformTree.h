@@ -18,6 +18,8 @@ namespace blink {
 //
 // This class is also the private implementation of WebDisplayItemTransformTree.
 // For more detail, see WebDisplayItemTransformTree.h.
+//
+// TODO(pdr): Remove this in favor of TransformPaintPropertyNode.
 class PLATFORM_EXPORT DisplayItemTransformTree {
 public:
     using TransformNode = WebDisplayItemTransformTree::TransformNode;
