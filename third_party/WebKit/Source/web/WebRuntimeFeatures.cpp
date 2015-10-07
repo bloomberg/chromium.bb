@@ -51,13 +51,6 @@ void WebRuntimeFeatures::enableFeatureFromString(const std::string& name, bool e
     RuntimeEnabledFeatures::setFeatureEnabledFromString(name, enable);
 }
 
-void WebRuntimeFeatures::enableBleedingEdgeFastPaths(bool enable)
-{
-    ASSERT(enable);
-    RuntimeEnabledFeatures::setBleedingEdgeFastPathsEnabled(enable);
-    RuntimeEnabledFeatures::setWebAnimationsAPIEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableCompositorAnimationTimelines(bool enable)
 {
     RuntimeEnabledFeatures::setCompositorAnimationTimelinesEnabled(enable);

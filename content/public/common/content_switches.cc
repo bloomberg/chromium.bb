@@ -289,12 +289,6 @@ const char kEnable2dCanvasClipAntialiasing[] = "enable-2d-canvas-clip-aa";
 const char kDisableAcceleratedJpegDecoding[] =
     "disable-accelerated-jpeg-decoding";
 
-// Enable bleeding-edge code to make Chrome draw content faster. The changes
-// behind this path are very likely to break lots of content.
-// ** DO NOT use this flag unless you know what you are doing. **
-const char kEnableBleedingEdgeRenderingFastPaths[] =
-    "enable-bleeding-edge-rendering-fast-paths";
-
 // Enables new cc/animation system (Project Heaviside). crbug.com/394772
 const char kEnableCompositorAnimationTimelines[] =
     "enable-compositor-animation-timelines";
