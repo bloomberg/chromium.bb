@@ -34,7 +34,7 @@ BRANDINGS = [
 
 USAGE = """Usage: %prog TARGET_OS TARGET_ARCH [options] -- [configure_args]
 
-Valid combinations are android     [ia32|x64|mipsel|arm|arm64]
+Valid combinations are android     [ia32|x64|mipsel|mips64el|arm|arm64]
                        linux       [ia32|x64|mipsel|arm|arm-neon|arm64]
                        linux-noasm [x64]
                        mac         [x64]
@@ -178,6 +178,10 @@ def SetupAndroidToolchain(target_arch):
   elif target_arch == 'mipsel':
     sysroot_arch = 'mips'
     toolchain_bin_prefix = toolchain_dir_prefix = 'mipsel-linux-android'
+  elif target_arch == 'mips64el':
+    toolchain_level = api64_level
+    sysroot_arch = 'mips64'
+    toolchain_bin_prefix = toolchain_dir_prefix = 'mips64el-linux-android'
 
   sysroot = (NDK_ROOT_DIR + '/platforms/android-' + toolchain_level +
              '/arch-' + sysroot_arch)
@@ -437,6 +441,14 @@ def main(argv):
           '--disable-mipsfpu',
           '--disable-mipsdspr1',
           '--disable-mipsdspr2',
+      ])
+    elif target_arch == 'mips64el' and target_os == "android":
+      configure_flags['Common'].extend([
+          '--arch=mips',
+          '--cpu=i6400',
+          '--extra-cflags=-mhard-float',
+          '--extra-cflags=-mips64r6',
+          '--disable-msa',
       ])
     else:
       print('Error: Unknown target arch %r for target OS %r!' % (
