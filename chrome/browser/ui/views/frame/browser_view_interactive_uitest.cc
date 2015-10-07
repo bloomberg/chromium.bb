@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_P(BrowserViewTestParam, BrowserRemembersDockedState) {
   Browser* browser = new Browser(params);
   ASSERT_TRUE(browser);
   gfx::NativeWindow window = browser->window()->GetNativeWindow();
-  gfx::Rect original_bounds(gfx::Rect(150, 250, 350, 100));
+  gfx::Rect original_bounds(gfx::Rect(150, 250, 400, 100));
   window->SetBounds(original_bounds);
   window->Show();
   // Dock the browser window using |kShowStateKey| property.
