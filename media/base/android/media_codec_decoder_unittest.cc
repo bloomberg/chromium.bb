@@ -302,8 +302,6 @@ void MediaCodecDecoderTest::CreateVideoDecoder() {
       base::Bind(&MediaCodecDecoderTest::OnUpdateCurrentTime,
                  base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnVideoSizeChanged,
-                 base::Unretained(this)),
-      base::Bind(&MediaCodecDecoderTest::OnVideoCodecCreated,
                  base::Unretained(this))));
 
   data_available_cb_ = base::Bind(&MediaCodecDecoder::OnDemuxerDataAvailable,

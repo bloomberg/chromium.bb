@@ -186,11 +186,12 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
 
   // Constructs a player with the given ID and demuxer. |manager| must outlive
   // the lifetime of this object.
-  MediaCodecPlayer(int player_id,
-                   base::WeakPtr<MediaPlayerManager> manager,
-                   const RequestMediaResourcesCB& request_media_resources_cb,
-                   scoped_ptr<DemuxerAndroid> demuxer,
-                   const GURL& frame_url);
+  MediaCodecPlayer(
+      int player_id,
+      base::WeakPtr<MediaPlayerManager> manager,
+      const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
+      scoped_ptr<DemuxerAndroid> demuxer,
+      const GURL& frame_url);
   ~MediaCodecPlayer() override;
 
   // A helper method that performs the media thread part of initialization.
@@ -297,7 +298,6 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
                             bool postpone);
 
   // Callbacks from video decoder
-  void OnVideoCodecCreated();
   void OnVideoResolutionChanged(const gfx::Size& size);
 
   // Callbacks from CDM
@@ -350,7 +350,6 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   PlayerState state_;
 
   // Notification callbacks, they call MediaPlayerManager.
-  base::Closure request_resources_cb_;
   TimeUpdateCallback time_update_cb_;
   base::Closure completion_cb_;
   base::Closure waiting_for_decryption_key_cb_;

@@ -195,6 +195,14 @@ bool WebContentsDelegate::CheckMediaAccessPermission(
   return false;
 }
 
+#if defined(OS_ANDROID)
+void WebContentsDelegate::RequestMediaDecodePermission(
+    WebContents* web_contents,
+    const base::Callback<void(bool)>& callback) {
+  callback.Run(false);
+}
+#endif
+
 bool WebContentsDelegate::RequestPpapiBrokerPermission(
     WebContents* web_contents,
     const GURL& url,

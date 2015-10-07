@@ -126,9 +126,16 @@ ThreeDAPIInfoBarDelegate* InfoBarDelegate::AsThreeDAPIInfoBarDelegate() {
 }
 
 translate::TranslateInfoBarDelegate*
-InfoBarDelegate::AsTranslateInfoBarDelegate() {
+    InfoBarDelegate::AsTranslateInfoBarDelegate() {
   return nullptr;
 }
+
+#if defined(OS_ANDROID)
+MediaThrottleInfoBarDelegate*
+    InfoBarDelegate::AsMediaThrottleInfoBarDelegate() {
+  return nullptr;
+}
+#endif
 
 InfoBarDelegate::InfoBarDelegate() : nav_entry_id_(0) {
 }

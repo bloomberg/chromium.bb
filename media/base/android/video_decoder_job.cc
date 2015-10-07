@@ -27,7 +27,6 @@ base::LazyInstance<VideoDecoderThread>::Leaky
 
 VideoDecoderJob::VideoDecoderJob(
     const base::Closure& request_data_cb,
-    const base::Closure& request_resources_cb,
     const base::Closure& on_demuxer_config_changed_cb,
     FrameStatistics* frame_statistics)
     : MediaDecoderJob(g_video_decoder_thread.Pointer()->task_runner(),
@@ -38,8 +37,7 @@ VideoDecoderJob::VideoDecoderJob(
       config_width_(0),
       config_height_(0),
       output_width_(0),
-      output_height_(0),
-      request_resources_cb_(request_resources_cb) {
+      output_height_(0) {
 }
 
 VideoDecoderJob::~VideoDecoderJob() {}
@@ -143,7 +141,6 @@ MediaDecoderJob::MediaDecoderJobStatus
   if (!media_codec_bridge_)
     return STATUS_FAILURE;
 
-  request_resources_cb_.Run();
   return STATUS_SUCCESS;
 }
 

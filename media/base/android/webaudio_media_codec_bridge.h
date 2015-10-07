@@ -7,6 +7,7 @@
 
 #include <jni.h>
 
+#include "base/callback.h"
 #include "base/file_descriptor_posix.h"
 #include "base/memory/shared_memory.h"
 #include "media/base/media_export.h"
@@ -36,7 +37,8 @@ class MEDIA_EXPORT WebAudioMediaCodecBridge {
   static void RunWebAudioMediaCodec(
       base::SharedMemoryHandle encoded_audio_handle,
       base::FileDescriptor pcm_output,
-      uint32_t data_size);
+      uint32_t data_size,
+      base::Closure on_decode_finished_cb);
 
   void OnChunkDecoded(JNIEnv* env,
                       jobject /*java object*/,

@@ -169,6 +169,8 @@
       'browser/android/logo_bridge.h',
       'browser/android/logo_service.cc',
       'browser/android/logo_service.h',
+      'browser/android/media/media_throttle_infobar_delegate.cc',
+      'browser/android/media/media_throttle_infobar_delegate.h',
       'browser/android/metrics/launch_metrics.cc',
       'browser/android/metrics/launch_metrics.h',
       'browser/android/metrics/uma_session_stats.cc',

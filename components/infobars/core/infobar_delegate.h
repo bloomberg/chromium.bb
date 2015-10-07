@@ -21,6 +21,10 @@ class ScreenCaptureInfoBarDelegate;
 class ThemeInstalledInfoBarDelegate;
 class ThreeDAPIInfoBarDelegate;
 
+#if defined(OS_ANDROID)
+class MediaThrottleInfoBarDelegate;
+#endif
+
 namespace translate {
 class TranslateInfoBarDelegate;
 }
@@ -130,6 +134,9 @@ class InfoBarDelegate {
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
   virtual ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate();
   virtual translate::TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
+#if defined(OS_ANDROID)
+  virtual MediaThrottleInfoBarDelegate* AsMediaThrottleInfoBarDelegate();
+#endif
 
   void set_infobar(InfoBar* infobar) { infobar_ = infobar; }
   void set_nav_entry_id(int nav_entry_id) { nav_entry_id_ = nav_entry_id; }

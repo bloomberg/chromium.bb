@@ -39,11 +39,12 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
  public:
   // Constructs a player with the given ID and demuxer. |manager| must outlive
   // the lifetime of this object.
-  MediaSourcePlayer(int player_id,
-                    MediaPlayerManager* manager,
-                    const RequestMediaResourcesCB& request_media_resources_cb,
-                    scoped_ptr<DemuxerAndroid> demuxer,
-                    const GURL& frame_url);
+  MediaSourcePlayer(
+      int player_id,
+      MediaPlayerManager* manager,
+      const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
+      scoped_ptr<DemuxerAndroid> demuxer,
+      const GURL& frame_url);
   ~MediaSourcePlayer() override;
 
   // MediaPlayerAndroid implementation.

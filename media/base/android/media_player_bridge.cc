@@ -28,12 +28,12 @@ MediaPlayerBridge::MediaPlayerBridge(
     const std::string& user_agent,
     bool hide_url_log,
     MediaPlayerManager* manager,
-    const RequestMediaResourcesCB& request_media_resources_cb,
+    const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
     const GURL& frame_url,
     bool allow_credentials)
     : MediaPlayerAndroid(player_id,
                          manager,
-                         request_media_resources_cb,
+                         on_decoder_resources_released_cb,
                          frame_url),
       prepared_(false),
       pending_play_(false),
@@ -110,13 +110,14 @@ void MediaPlayerBridge::SetDuration(base::TimeDelta duration) {
 
 void MediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   if (j_media_player_bridge_.is_null()) {
-    if (surface.IsEmpty())
-      return;
-    Prepare();
+    if (!surface.IsEmpty())
+      surface_ =  surface.Pass();
+    return;
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
+
   Java_MediaPlayerBridge_setSurface(
       env, j_media_player_bridge_.obj(), surface.j_surface().obj());
 }
@@ -181,7 +182,6 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
     }
   }
 
-  request_media_resources_cb_.Run(player_id());
   if (!Java_MediaPlayerBridge_prepareAsync(env, j_media_player_bridge_.obj()))
     OnMediaError(MEDIA_ERROR_FORMAT);
 }
@@ -212,7 +212,6 @@ void MediaPlayerBridge::OnDidSetDataUriDataSource(JNIEnv* env, jobject obj,
     return;
   }
 
-  request_media_resources_cb_.Run(player_id());
   if (!Java_MediaPlayerBridge_prepareAsync(env, j_media_player_bridge_.obj()))
     OnMediaError(MEDIA_ERROR_FORMAT);
 }
@@ -240,6 +239,7 @@ void MediaPlayerBridge::OnAuthCredentialsRetrieved(
 void MediaPlayerBridge::ExtractMediaMetadata(const std::string& url) {
   if (url.empty()) {
     OnMediaError(MEDIA_ERROR_FORMAT);
+    on_decoder_resources_released_cb_.Run(player_id());
     return;
   }
 
@@ -268,6 +268,7 @@ void MediaPlayerBridge::OnMediaMetadataExtracted(
   }
   manager()->OnMediaMetadataChanged(
       player_id(), duration_, width_, height_, success);
+  on_decoder_resources_released_cb_.Run(player_id());
 }
 
 void MediaPlayerBridge::Start() {
@@ -325,9 +326,7 @@ void MediaPlayerBridge::SeekTo(base::TimeDelta timestamp) {
   pending_seek_ = timestamp;
   should_seek_on_prepare_ = true;
 
-  if (j_media_player_bridge_.is_null())
-    Prepare();
-  else if (prepared_)
+  if (prepared_)
     SeekInternal(GetCurrentTime(), timestamp);
 }
 
@@ -351,6 +350,7 @@ base::TimeDelta MediaPlayerBridge::GetDuration() {
 }
 
 void MediaPlayerBridge::Release() {
+  on_decoder_resources_released_cb_.Run(player_id());
   if (j_media_player_bridge_.is_null())
     return;
 
@@ -412,6 +412,9 @@ void MediaPlayerBridge::OnMediaPrepared() {
     pending_seek_ = base::TimeDelta::FromMilliseconds(0);
     should_seek_on_prepare_ = false;
   }
+
+  if (!surface_.IsEmpty())
+    SetVideoSurface(surface_.Pass());
 
   if (pending_play_) {
     StartInternal();

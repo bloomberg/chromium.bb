@@ -45,7 +45,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   explicit MockMediaPlayerManager(base::MessageLoop* message_loop)
       : message_loop_(message_loop),
         playback_completed_(false),
-        num_resources_requested_(0),
         num_metadata_changes_(0),
         timestamp_updated_(false),
         allow_play_(true) {}
@@ -80,6 +79,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   void OnWaitingForDecryptionKey(int player_id) override {}
   MediaPlayerAndroid* GetFullscreenPlayer() override { return NULL; }
   MediaPlayerAndroid* GetPlayer(int player_id) override { return NULL; }
+  void OnDecorderResourcesReleased(int player_id) {}
 
   bool RequestPlay(int player_id, base::TimeDelta duration) override {
     return allow_play_;
@@ -89,16 +89,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
     return playback_completed_;
   }
 
-  int num_resources_requested() const {
-    return num_resources_requested_;
-  }
-
   int num_metadata_changes() const {
     return num_metadata_changes_;
-  }
-
-  void OnMediaResourcesRequested(int player_id) {
-    num_resources_requested_++;
   }
 
   bool timestamp_updated() const {
@@ -116,8 +108,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
  private:
   base::MessageLoop* message_loop_;
   bool playback_completed_;
-  // The number of resource requests this object has seen.
-  int num_resources_requested_;
   // The number of metadata changes reported by the player.
   int num_metadata_changes_;
   // Playback timestamp was updated.
@@ -175,7 +165,7 @@ class MediaSourcePlayerTest : public testing::Test {
       : manager_(&message_loop_),
         demuxer_(new MockDemuxerAndroid(&message_loop_)),
         player_(0, &manager_,
-                base::Bind(&MockMediaPlayerManager::OnMediaResourcesRequested,
+                base::Bind(&MockMediaPlayerManager::OnDecorderResourcesReleased,
                            base::Unretained(&manager_)),
                 scoped_ptr<DemuxerAndroid>(demuxer_),
                 GURL()),
@@ -1066,8 +1056,6 @@ TEST_F(MediaSourcePlayerTest, ReleaseVideoDecoderResourcesWhileDecoding) {
   // not be immediately released.
   CreateNextTextureAndSetVideoSurface();
   StartVideoDecoderJob();
-  // No resource is requested since there is no data to decode.
-  EXPECT_EQ(0, manager_.num_resources_requested());
   ReleasePlayer();
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo(false));
 
@@ -1077,7 +1065,6 @@ TEST_F(MediaSourcePlayerTest, ReleaseVideoDecoderResourcesWhileDecoding) {
   while (!GetMediaDecoderJob(false)->is_decoding())
     message_loop_.RunUntilIdle();
   EXPECT_EQ(0, demuxer_->num_browser_seek_requests());
-  EXPECT_EQ(1, manager_.num_resources_requested());
   ReleasePlayer();
   // Wait for the media codec bridge to finish decoding and be reset.
   while (GetMediaDecoderJob(false)->is_decoding())
@@ -1939,10 +1926,6 @@ TEST_F(MediaSourcePlayerTest, VideoDemuxerConfigChange) {
   EXPECT_TRUE(GetMediaCodecBridge(false));
   EXPECT_EQ(3, demuxer_->num_data_requests());
   EXPECT_EQ(0, demuxer_->num_seek_requests());
-
-  // 2 codecs should have been created, one before the config change, and one
-  // after it.
-  EXPECT_EQ(2, manager_.num_resources_requested());
   WaitForVideoDecodeDone();
 }
 
@@ -1958,9 +1941,6 @@ TEST_F(MediaSourcePlayerTest, VideoDemuxerConfigChangeWithAdaptivePlayback) {
   EXPECT_TRUE(GetMediaCodecBridge(false));
   EXPECT_EQ(3, demuxer_->num_data_requests());
   EXPECT_EQ(0, demuxer_->num_seek_requests());
-
-  // Only 1 codec should have been created so far.
-  EXPECT_EQ(1, manager_.num_resources_requested());
   WaitForVideoDecodeDone();
 }
 

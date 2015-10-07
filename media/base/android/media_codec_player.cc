@@ -36,12 +36,12 @@ namespace media {
 MediaCodecPlayer::MediaCodecPlayer(
     int player_id,
     base::WeakPtr<MediaPlayerManager> manager,
-    const RequestMediaResourcesCB& request_media_resources_cb,
+    const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
     scoped_ptr<DemuxerAndroid> demuxer,
     const GURL& frame_url)
     : MediaPlayerAndroid(player_id,
                          manager.get(),
-                         request_media_resources_cb,
+                         on_decoder_resources_released_cb,
                          frame_url),
       ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       demuxer_(demuxer.Pass()),
@@ -57,8 +57,6 @@ MediaCodecPlayer::MediaCodecPlayer(
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   DVLOG(1) << "MediaCodecPlayer::MediaCodecPlayer: player_id:" << player_id;
-
-  request_resources_cb_ = base::Bind(request_media_resources_cb_, player_id);
 
   completion_cb_ =
       base::Bind(&MediaPlayerManager::OnPlaybackComplete, manager, player_id);
@@ -317,6 +315,15 @@ void MediaCodecPlayer::SeekTo(base::TimeDelta timestamp) {
 }
 
 void MediaCodecPlayer::Release() {
+  // TODO(qinmin): the callback should be posted onto the UI thread when
+  // Release() finishes on media thread. However, the BrowserMediaPlayerManager
+  // could be gone in that case, which cause the MediaThrottler unable to
+  // track the active players. We should pass
+  // MediaThrottler::OnDecodeRequestFinished() to this class in the ctor, but
+  // also need a way for BrowserMediaPlayerManager to track active players.
+  if (ui_task_runner_->BelongsToCurrentThread())
+    on_decoder_resources_released_cb_.Run(player_id());
+
   RUN_ON_MEDIA_THREAD(Release);
 
   DVLOG(1) << __FUNCTION__;
@@ -900,13 +907,6 @@ void MediaCodecPlayer::OnTimeIntervalUpdate(DemuxerStream::Type type,
   }
 }
 
-void MediaCodecPlayer::OnVideoCodecCreated() {
-  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
-
-  // This callback requests resources by releasing other players.
-  ui_task_runner_->PostTask(FROM_HERE, request_resources_cb_);
-}
-
 void MediaCodecPlayer::OnVideoResolutionChanged(const gfx::Size& size) {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
 
@@ -1380,8 +1380,8 @@ void MediaCodecPlayer::CreateDecoders() {
       internal_error_cb_,
       base::Bind(&MediaCodecPlayer::OnTimeIntervalUpdate, media_weak_this_,
                  DemuxerStream::VIDEO),
-      base::Bind(&MediaCodecPlayer::OnVideoResolutionChanged, media_weak_this_),
-      base::Bind(&MediaCodecPlayer::OnVideoCodecCreated, media_weak_this_)));
+      base::Bind(&MediaCodecPlayer::OnVideoResolutionChanged,
+                 media_weak_this_)));
 }
 
 bool MediaCodecPlayer::AudioFinished() const {

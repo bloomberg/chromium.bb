@@ -73,6 +73,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "content/browser/media/android/media_throttler.h"
 #include "media/base/android/webaudio_media_codec_bridge.h"
 #endif
 
@@ -95,6 +96,13 @@ const uint32 kFilteredMessageClasses[] = {
 // object.
 base::LazyInstance<gfx::ColorProfile>::Leaky g_color_profile =
     LAZY_INSTANCE_INITIALIZER;
+#endif
+
+#if defined(OS_ANDROID)
+void CloseWebAudioFileDescriptor(int fd) {
+  if (close(fd))
+    VLOG(1) << "Couldn't close output webaudio fd: " << strerror(errno);
+}
 #endif
 
 }  // namespace
@@ -640,14 +648,24 @@ void RenderMessageFilter::OnWebAudioMediaCodec(
     base::SharedMemoryHandle encoded_data_handle,
     base::FileDescriptor pcm_output,
     uint32_t data_size) {
-  // Let a WorkerPool handle this request since the WebAudio
-  // MediaCodec bridge is slow and can block while sending the data to
-  // the renderer.
-  base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&media::WebAudioMediaCodecBridge::RunWebAudioMediaCodec,
-                 encoded_data_handle, pcm_output, data_size),
-      true);
+  if (!MediaThrottler::GetInstance()->RequestDecoderResources()) {
+    base::WorkerPool::PostTask(
+        FROM_HERE,
+        base::Bind(&CloseWebAudioFileDescriptor, pcm_output.fd),
+        true);
+    VLOG(1) << "Cannot decode audio data due to throttling";
+  } else {
+    // Let a WorkerPool handle this request since the WebAudio
+    // MediaCodec bridge is slow and can block while sending the data to
+    // the renderer.
+    base::WorkerPool::PostTask(
+        FROM_HERE,
+        base::Bind(&media::WebAudioMediaCodecBridge::RunWebAudioMediaCodec,
+                   encoded_data_handle, pcm_output, data_size,
+                   base::Bind(&MediaThrottler::OnDecodeRequestFinished,
+                              base::Unretained(MediaThrottler::GetInstance()))),
+        true);
+  }
 }
 #endif
 

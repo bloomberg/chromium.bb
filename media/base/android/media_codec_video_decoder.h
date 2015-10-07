@@ -36,8 +36,7 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
       const base::Closure& waiting_for_decryption_key_cb,
       const base::Closure& error_cb,
       const SetTimeCallback& update_current_time_cb,
-      const VideoSizeChangedCallback& video_size_changed_cb,
-      const base::Closure& codec_created_cb);
+      const VideoSizeChangedCallback& video_size_changed_cb);
   ~MediaCodecVideoDecoder() override;
 
   const char* class_name() const override;
@@ -106,9 +105,6 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
 
   // Informs the callee that video size is changed.
   VideoSizeChangedCallback video_size_changed_cb_;
-
-  // Informs the callee that the MediaCodec is created.
-  base::Closure codec_created_cb_;
 
   // Current video size to be sent with |video_size_changed_cb_|.
   gfx::Size video_size_;

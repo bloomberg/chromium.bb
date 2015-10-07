@@ -19,7 +19,7 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnSeekCompleteListener,
         MediaPlayer.OnVideoSizeChangedListener,
         MediaPlayer.OnErrorListener {
-    // These values are mirrored as enums in media/base/android/media_player_bridge.h.
+    // These values are mirrored as enums in media/base/android/media_player_android.h.
     // Please ensure they stay in sync.
     private static final int MEDIA_ERROR_FORMAT = 0;
     private static final int MEDIA_ERROR_DECODE = 1;
@@ -55,9 +55,6 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
                         errorType = MEDIA_ERROR_FORMAT;
                         break;
                 }
-                break;
-            case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
-                errorType = MEDIA_ERROR_DECODE;
                 break;
             case MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:
                 errorType = MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK;

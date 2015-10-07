@@ -37,8 +37,8 @@ class MEDIA_EXPORT MediaPlayerAndroid {
     MEDIA_ERROR_INVALID_CODE,
   };
 
-  // Callback when the player needs decoding resources.
-  typedef base::Callback<void(int player_id)> RequestMediaResourcesCB;
+  // Callback when the player releases decoding resources.
+  typedef base::Callback<void(int player_id)> OnDecoderResourcesReleasedCB;
 
   // Virtual destructor.
   // For most subclasses we can delete on the caller thread.
@@ -70,10 +70,10 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual base::TimeDelta GetDuration() = 0;
   virtual base::TimeDelta GetCurrentTime() = 0;
   virtual bool IsPlaying() = 0;
-  virtual bool IsPlayerReady() = 0;
   virtual bool CanPause() = 0;
   virtual bool CanSeekForward() = 0;
   virtual bool CanSeekBackward() = 0;
+  virtual bool IsPlayerReady() = 0;
   virtual GURL GetUrl();
   virtual GURL GetFirstPartyForCookies();
 
@@ -103,10 +103,11 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   void DetachListener();
 
  protected:
-  MediaPlayerAndroid(int player_id,
-                     MediaPlayerManager* manager,
-                     const RequestMediaResourcesCB& request_media_resources_cb,
-                     const GURL& frame_url);
+  MediaPlayerAndroid(
+      int player_id,
+      MediaPlayerManager* manager,
+      const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
+      const GURL& frame_url);
 
   // TODO(qinmin): Simplify the MediaPlayerListener class to only listen to
   // media interrupt events. And have a separate child class to listen to all
@@ -129,7 +130,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
 
   base::WeakPtr<MediaPlayerAndroid> WeakPtrForUIThread();
 
-  RequestMediaResourcesCB request_media_resources_cb_;
+  OnDecoderResourcesReleasedCB on_decoder_resources_released_cb_;
 
  private:
   friend class MediaPlayerListener;

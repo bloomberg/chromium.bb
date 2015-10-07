@@ -26,12 +26,12 @@ namespace media {
 MediaSourcePlayer::MediaSourcePlayer(
     int player_id,
     MediaPlayerManager* manager,
-    const RequestMediaResourcesCB& request_media_resources_cb,
+    const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
     scoped_ptr<DemuxerAndroid> demuxer,
     const GURL& frame_url)
     : MediaPlayerAndroid(player_id,
                          manager,
-                         request_media_resources_cb,
+                         on_decoder_resources_released_cb,
                          frame_url),
       demuxer_(demuxer.Pass()),
       pending_event_(NO_EVENT_PENDING),
@@ -60,7 +60,6 @@ MediaSourcePlayer::MediaSourcePlayer(
       base::Bind(&DemuxerAndroid::RequestDemuxerData,
                  base::Unretained(demuxer_.get()),
                  DemuxerStream::VIDEO),
-      base::Bind(request_media_resources_cb_, player_id),
       base::Bind(&MediaSourcePlayer::OnDemuxerConfigsChanged,
                  weak_factory_.GetWeakPtr()),
       &media_stat_->video_frame_stats()));
@@ -193,6 +192,7 @@ void MediaSourcePlayer::Release() {
   decoder_starvation_callback_.Cancel();
 
   DetachListener();
+  on_decoder_resources_released_cb_.Run(player_id());
 }
 
 void MediaSourcePlayer::SetVolume(double volume) {
@@ -212,7 +212,7 @@ bool MediaSourcePlayer::CanSeekBackward() {
 }
 
 bool MediaSourcePlayer::IsPlayerReady() {
-  return audio_decoder_job_ || video_decoder_job_;
+  return HasAudio() || HasVideo();
 }
 
 void MediaSourcePlayer::StartInternal() {

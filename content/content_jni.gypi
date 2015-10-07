@@ -32,6 +32,7 @@
     'public/android/java/src/org/chromium/content/browser/MediaDrmCredentialManager.java',
     'public/android/java/src/org/chromium/content/browser/MediaSession.java',
     'public/android/java/src/org/chromium/content/browser/MediaResourceGetter.java',
+    'public/android/java/src/org/chromium/content/browser/MediaThrottler.java',
     'public/android/java/src/org/chromium/content/browser/MotionEventSynthesizer.java',
     'public/android/java/src/org/chromium/content/browser/PowerSaveBlocker.java',
     'public/android/java/src/org/chromium/content/browser/ServiceRegistrar.java',

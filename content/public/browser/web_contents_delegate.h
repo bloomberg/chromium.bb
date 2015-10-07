@@ -453,6 +453,14 @@ class CONTENT_EXPORT WebContentsDelegate {
                                           const GURL& security_origin,
                                           MediaStreamType type);
 
+#if defined(OS_ANDROID)
+  // Asks permission to decode media stream. After permission is determined,
+  // |callback| will be called with the result.
+  virtual void RequestMediaDecodePermission(
+      WebContents* web_contents,
+      const base::Callback<void(bool)>& callback);
+#endif
+
   // Requests permission to access the PPAPI broker. The delegate should return
   // true and call the passed in |callback| with the result, or return false
   // to indicate that it does not support asking for permission.

@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_
 #define CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -148,6 +150,21 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       int player_id,
       media::MediaPlayerAndroid* player);
 
+  // Called to request decoder resources. Returns true if the request is
+  // permitted, or false otherwise. The manager object maintains a list
+  // of active MediaPlayerAndroid objects and releases the inactive resources
+  // when needed. If |temporary| is true, the request is short lived
+  // and it will not be cleaned up when handling other requests.
+  // On the contrary, requests with false |temporary| value are subject to
+  // clean up if their players are idle.
+  virtual bool RequestDecoderResources(int player_id, bool temporary);
+
+  // MediaPlayerAndroid must call this to inform the manager that it has
+  // released the decoder resources. This can be triggered by the
+  // ReleasePlayer() call below, or when meta data is extracted, or when player
+  // is stuck in an error.
+  virtual void OnDecoderResourcesReleased(int player_id);
+
   int RoutingID();
 
   // Helper function to send messages to RenderFrameObserver.
@@ -160,28 +177,32 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       bool hide_url_log,
       BrowserDemuxerAndroid* demuxer);
 
-  // MediaPlayerAndroid must call this before it is going to decode
-  // media streams. This helps the manager object maintain an array
-  // of active MediaPlayerAndroid objects and release the resources
-  // when needed. Currently we only count video resources as they are
-  // constrained by hardware and memory limits.
-  virtual void OnMediaResourcesRequested(int player_id);
-
-  // Called when a player releases all decoding resources.
-  void ReleaseMediaResources(int player_id);
-
-  // Releases the player. However, don't remove it from |players_|.
+  // Instructs |player| to release its java player. This will not remove the
+  // player from |players_|.
   void ReleasePlayer(media::MediaPlayerAndroid* player);
+
+  // Called when user approves media playback after being throttled.
+  void OnPlaybackPermissionGranted(int player_id, bool granted);
+
+  // Helper method to start playback.
+  void StartInternal(int player_id);
 
 #if defined(VIDEO_HOLE)
   void ReleasePlayerOfExternalVideoSurfaceIfNeeded(int future_player);
   void OnRequestExternalSurface(int player_id, const gfx::RectF& rect);
+  void ReleaseExternalSurface(int player_id);
 #endif  // defined(VIDEO_HOLE)
 
   RenderFrameHost* const render_frame_host_;
 
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;
+
+  typedef std::map<int, bool> ActivePlayerMap;
+  // Players that have requested decoding resources. Even though resource is
+  // requested, a player may be in a paused or error state and the manager
+  // will release its resources later.
+  ActivePlayerMap active_players_;
 
   // The fullscreen video view object or NULL if video is not played in
   // fullscreen.
