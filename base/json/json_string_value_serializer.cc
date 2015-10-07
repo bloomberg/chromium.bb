@@ -50,8 +50,10 @@ JSONStringValueDeserializer::~JSONStringValueDeserializer() {}
 
 Value* JSONStringValueDeserializer::Deserialize(int* error_code,
                                                 std::string* error_str) {
-  return base::JSONReader::DeprecatedReadAndReturnError(
-      json_string_, allow_trailing_comma_ ? base::JSON_ALLOW_TRAILING_COMMAS
-                                          : base::JSON_PARSE_RFC,
-      error_code, error_str);
+  return base::JSONReader::ReadAndReturnError(
+             json_string_,
+             allow_trailing_comma_ ? base::JSON_ALLOW_TRAILING_COMMAS
+                                   : base::JSON_PARSE_RFC,
+             error_code, error_str)
+      .release();
 }

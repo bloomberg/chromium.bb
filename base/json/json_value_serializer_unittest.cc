@@ -376,10 +376,8 @@ TEST(JSONValueSerializerTest, JSONReaderComments) {
   ValidateJsonList("[ 1 /* one */ ] /* end */");
   ValidateJsonList("[ 1 //// ,2\r\n ]");
 
-  scoped_ptr<Value> root;
-
   // It's ok to have a comment in a string.
-  root.reset(JSONReader::DeprecatedRead("[\"// ok\\n /* foo */ \"]"));
+  scoped_ptr<Value> root = JSONReader::Read("[\"// ok\\n /* foo */ \"]");
   ASSERT_TRUE(root.get() && root->IsType(Value::TYPE_LIST));
   ListValue* list = static_cast<ListValue*>(root.get());
   ASSERT_EQ(1U, list->GetSize());
@@ -390,11 +388,11 @@ TEST(JSONValueSerializerTest, JSONReaderComments) {
   ASSERT_EQ("// ok\n /* foo */ ", value);
 
   // You can't nest comments.
-  root.reset(JSONReader::DeprecatedRead("/* /* inner */ outer */ [ 1 ]"));
+  root = JSONReader::Read("/* /* inner */ outer */ [ 1 ]");
   ASSERT_FALSE(root.get());
 
   // Not a open comment token.
-  root.reset(JSONReader::DeprecatedRead("/ * * / [1]"));
+  root = JSONReader::Read("/ * * / [1]");
   ASSERT_FALSE(root.get());
 }
 

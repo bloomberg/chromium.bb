@@ -191,9 +191,8 @@ void TraceEventTestFixture::OnTraceDataCollected(
   trace_buffer_.AddFragment(events_str->data());
   trace_buffer_.Finish();
 
-  scoped_ptr<Value> root;
-  root.reset(base::JSONReader::DeprecatedRead(
-      json_output_.json_output, JSON_PARSE_RFC | JSON_DETACHABLE_CHILDREN));
+  scoped_ptr<Value> root = base::JSONReader::Read(
+      json_output_.json_output, JSON_PARSE_RFC | JSON_DETACHABLE_CHILDREN);
 
   if (!root.get()) {
     LOG(ERROR) << json_output_.json_output;
