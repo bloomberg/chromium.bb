@@ -53,7 +53,7 @@ class SerialConnectionFactory::ConnectTask
   mojo::InterfaceRequest<serial::Connection> connection_request_;
   mojo::InterfaceRequest<serial::DataSink> sink_;
   mojo::InterfaceRequest<serial::DataSource> source_;
-  mojo::InterfacePtr<serial::DataSourceClient> source_client_;
+  mojo::InterfacePtrInfo<serial::DataSourceClient> source_client_;
   scoped_refptr<SerialIoHandler> io_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTask);
@@ -96,7 +96,7 @@ SerialConnectionFactory::ConnectTask::ConnectTask(
       connection_request_(connection_request.Pass()),
       sink_(sink.Pass()),
       source_(source.Pass()),
-      source_client_(source_client.Pass()) {
+      source_client_(source_client.PassInterface()) {
   if (!options_) {
     options_ = serial::ConnectionOptions::New();
   }
@@ -126,7 +126,8 @@ void SerialConnectionFactory::ConnectTask::OnConnected(bool success) {
   }
 
   new SerialConnection(io_handler_, sink_.Pass(), source_.Pass(),
-                       source_client_.Pass(), connection_request_.Pass());
+                       mojo::MakeProxy(source_client_.Pass()),
+                       connection_request_.Pass());
 }
 
 }  // namespace device
