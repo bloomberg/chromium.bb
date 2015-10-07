@@ -5,7 +5,6 @@
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 
 #include "base/logging.h"
-#include "content/common/gpu/gpu_memory_buffer_factory_shared_memory.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/gpu/gpu_memory_buffer_factory_io_surface.h"
@@ -22,45 +21,32 @@
 namespace content {
 
 // static
-void GpuMemoryBufferFactory::GetSupportedTypes(
-    std::vector<gfx::GpuMemoryBufferType>* types) {
-  const gfx::GpuMemoryBufferType supported_types[] = {
+gfx::GpuMemoryBufferType GpuMemoryBufferFactory::GetNativeType() {
 #if defined(OS_MACOSX)
-    gfx::IO_SURFACE_BUFFER,
+  return gfx::IO_SURFACE_BUFFER;
 #endif
 #if defined(OS_ANDROID)
-    gfx::SURFACE_TEXTURE_BUFFER,
+  return gfx::SURFACE_TEXTURE_BUFFER;
 #endif
 #if defined(USE_OZONE)
-    gfx::OZONE_NATIVE_PIXMAP,
+  return gfx::OZONE_NATIVE_PIXMAP;
 #endif
-    gfx::SHARED_MEMORY_BUFFER
-  };
-  types->assign(supported_types, supported_types + arraysize(supported_types));
+  return gfx::EMPTY_BUFFER;
 }
 
 // static
-scoped_ptr<GpuMemoryBufferFactory> GpuMemoryBufferFactory::Create(
-    gfx::GpuMemoryBufferType type) {
-  switch (type) {
-    case gfx::SHARED_MEMORY_BUFFER:
-      return make_scoped_ptr(new GpuMemoryBufferFactorySharedMemory);
+scoped_ptr<GpuMemoryBufferFactory> GpuMemoryBufferFactory::CreateNativeType() {
 #if defined(OS_MACOSX)
-    case gfx::IO_SURFACE_BUFFER:
-      return make_scoped_ptr(new GpuMemoryBufferFactoryIOSurface);
+  return make_scoped_ptr(new GpuMemoryBufferFactoryIOSurface);
 #endif
 #if defined(OS_ANDROID)
-    case gfx::SURFACE_TEXTURE_BUFFER:
-      return make_scoped_ptr(new GpuMemoryBufferFactorySurfaceTexture);
+  return make_scoped_ptr(new GpuMemoryBufferFactorySurfaceTexture);
 #endif
 #if defined(USE_OZONE)
-    case gfx::OZONE_NATIVE_PIXMAP:
-      return make_scoped_ptr(new GpuMemoryBufferFactoryOzoneNativePixmap);
+  return make_scoped_ptr(new GpuMemoryBufferFactoryOzoneNativePixmap);
 #endif
-    default:
-      NOTREACHED();
-      return scoped_ptr<GpuMemoryBufferFactory>();
-  }
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace content

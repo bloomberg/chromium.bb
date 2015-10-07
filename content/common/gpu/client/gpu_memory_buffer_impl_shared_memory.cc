@@ -11,6 +11,11 @@
 #include "ui/gl/gl_bindings.h"
 
 namespace content {
+namespace {
+
+void Noop() {}
+
+}  // namespace
 
 GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
     gfx::GpuMemoryBufferId id,
@@ -28,11 +33,11 @@ GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() {
 }
 
 // static
-scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplSharedMemory::Create(
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    const DestructionCallback& callback) {
+scoped_ptr<GpuMemoryBufferImplSharedMemory>
+GpuMemoryBufferImplSharedMemory::Create(gfx::GpuMemoryBufferId id,
+                                        const gfx::Size& size,
+                                        gfx::BufferFormat format,
+                                        const DestructionCallback& callback) {
   size_t buffer_size = 0u;
   if (!gfx::BufferSizeForBufferFormatChecked(size, format, &buffer_size))
     return nullptr;
@@ -68,11 +73,12 @@ GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
 }
 
 // static
-scoped_ptr<GpuMemoryBufferImpl>
+scoped_ptr<GpuMemoryBufferImplSharedMemory>
 GpuMemoryBufferImplSharedMemory::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
+    gfx::BufferUsage usage,
     const DestructionCallback& callback) {
   if (!base::SharedMemory::IsHandleValid(handle.handle))
     return nullptr;
@@ -83,13 +89,8 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
   if (!shared_memory->Map(buffer_size))
     base::TerminateBecauseOutOfMemory(buffer_size);
 
-  return make_scoped_ptr<GpuMemoryBufferImpl>(
-      new GpuMemoryBufferImplSharedMemory(
-          handle.id,
-          size,
-          format,
-          callback,
-          shared_memory.Pass()));
+  return make_scoped_ptr(new GpuMemoryBufferImplSharedMemory(
+      handle.id, size, format, callback, shared_memory.Pass()));
 }
 
 // static
@@ -131,6 +132,13 @@ bool GpuMemoryBufferImplSharedMemory::IsUsageSupported(gfx::BufferUsage usage) {
 }
 
 // static
+bool GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
+  return IsFormatSupported(format) && IsUsageSupported(usage);
+}
+
+// static
 bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
     const gfx::Size& size,
     gfx::BufferFormat format) {
@@ -165,6 +173,21 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
 
   NOTREACHED();
   return false;
+}
+
+// static
+base::Closure GpuMemoryBufferImplSharedMemory::AllocateForTesting(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    gfx::GpuMemoryBufferHandle* handle) {
+  base::SharedMemory shared_memory;
+  bool rv = shared_memory.CreateAnonymous(
+      gfx::BufferSizeForBufferFormat(size, format));
+  DCHECK(rv);
+  handle->type = gfx::SHARED_MEMORY_BUFFER;
+  handle->handle = base::SharedMemory::DuplicateHandle(shared_memory.handle());
+  return base::Bind(&Noop);
 }
 
 bool GpuMemoryBufferImplSharedMemory::Map(void** data) {

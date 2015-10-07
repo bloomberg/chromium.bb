@@ -26,24 +26,14 @@ namespace content {
 
 class CONTENT_EXPORT GpuMemoryBufferFactory {
  public:
-  struct Configuration {
-    gfx::BufferFormat format;
-    gfx::BufferUsage usage;
-  };
-
   virtual ~GpuMemoryBufferFactory() {}
 
-  // Gets system supported GPU memory buffer factory types. Preferred type at
-  // the front of vector.
-  static void GetSupportedTypes(std::vector<gfx::GpuMemoryBufferType>* types);
+  // Returns the native GPU memory buffer factory type. Returns EMPTY_BUFFER
+  // type if native buffers are not supported.
+  static gfx::GpuMemoryBufferType GetNativeType();
 
-  // Creates a new factory instance for |type|.
-  static scoped_ptr<GpuMemoryBufferFactory> Create(
-      gfx::GpuMemoryBufferType type);
-
-  // Gets supported format/usage configurations.
-  virtual void GetSupportedGpuMemoryBufferConfigurations(
-      std::vector<Configuration>* configurations) = 0;
+  // Creates a new factory instance for native GPU memory buffers.
+  static scoped_ptr<GpuMemoryBufferFactory> CreateNativeType();
 
   // Creates a new GPU memory buffer instance. A valid handle is returned on
   // success. It can be called on any thread.

@@ -5,6 +5,7 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
 
 #include "base/logging.h"
+#include "content/common/gpu/gpu_memory_buffer_factory_io_surface.h"
 #include "content/common/mac/io_surface_manager.h"
 #include "ui/gfx/buffer_format_util.h"
 
@@ -24,6 +25,10 @@ uint32_t LockFlags(gfx::BufferUsage usage) {
   return 0;
 }
 
+void FreeIOSurfaceForTesting(gfx::GpuMemoryBufferId id) {
+  IOSurfaceManager::GetInstance()->UnregisterIOSurface(id, 0);
+}
+
 }  // namespace
 
 GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
@@ -41,7 +46,8 @@ GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {
 }
 
 // static
-scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplIOSurface::CreateFromHandle(
+scoped_ptr<GpuMemoryBufferImplIOSurface>
+GpuMemoryBufferImplIOSurface::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
@@ -52,9 +58,35 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplIOSurface::CreateFromHandle(
   if (!io_surface)
     return nullptr;
 
-  return make_scoped_ptr<GpuMemoryBufferImpl>(
+  return make_scoped_ptr(
       new GpuMemoryBufferImplIOSurface(handle.id, size, format, callback,
                                        io_surface.release(), LockFlags(usage)));
+}
+
+// static
+bool GpuMemoryBufferImplIOSurface::IsConfigurationSupported(
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
+  return GpuMemoryBufferFactoryIOSurface::
+      IsGpuMemoryBufferConfigurationSupported(format, usage);
+}
+
+// static
+base::Closure GpuMemoryBufferImplIOSurface::AllocateForTesting(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    gfx::GpuMemoryBufferHandle* handle) {
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
+      GpuMemoryBufferFactoryIOSurface::CreateIOSurface(size, format));
+  DCHECK(io_surface);
+  gfx::GpuMemoryBufferId kBufferId(1);
+  bool rv = IOSurfaceManager::GetInstance()->RegisterIOSurface(kBufferId, 0,
+                                                               io_surface);
+  DCHECK(rv);
+  handle->type = gfx::IO_SURFACE_BUFFER;
+  handle->id = kBufferId;
+  return base::Bind(&FreeIOSurfaceForTesting, kBufferId);
 }
 
 bool GpuMemoryBufferImplIOSurface::Map(void** data) {

@@ -9,12 +9,6 @@
 #include "ui/gl/gl_image_surface_texture.h"
 
 namespace content {
-namespace {
-
-const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
-    {gfx::BufferFormat::RGBA_8888, gfx::BufferUsage::MAP}};
-
-}  // namespace
 
 GpuMemoryBufferFactorySurfaceTexture::GpuMemoryBufferFactorySurfaceTexture() {
 }
@@ -26,20 +20,15 @@ GpuMemoryBufferFactorySurfaceTexture::~GpuMemoryBufferFactorySurfaceTexture() {
 bool GpuMemoryBufferFactorySurfaceTexture::
     IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
                                             gfx::BufferUsage usage) {
-  for (auto& configuration : kSupportedConfigurations) {
-    if (configuration.format == format && configuration.usage == usage)
-      return true;
+  switch (usage) {
+    case gfx::BufferUsage::SCANOUT:
+    case gfx::BufferUsage::PERSISTENT_MAP:
+      return false;
+    case gfx::BufferUsage::MAP:
+      return format == gfx::BufferFormat::RGBA_8888;
   }
-
+  NOTREACHED();
   return false;
-}
-
-void GpuMemoryBufferFactorySurfaceTexture::
-    GetSupportedGpuMemoryBufferConfigurations(
-        std::vector<Configuration>* configurations) {
-  configurations->assign(
-      kSupportedConfigurations,
-      kSupportedConfigurations + arraysize(kSupportedConfigurations));
 }
 
 gfx::GpuMemoryBufferHandle

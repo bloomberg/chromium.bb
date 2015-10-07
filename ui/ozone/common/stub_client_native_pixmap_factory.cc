@@ -15,8 +15,9 @@ class StubClientNativePixmapFactory : public ClientNativePixmapFactory {
 
   // ClientNativePixmapFactory:
   void Initialize(base::ScopedFD device_fd) override {}
-  std::vector<Configuration> GetSupportedConfigurations() const override {
-    return std::vector<Configuration>();
+  bool IsConfigurationSupported(gfx::BufferFormat format,
+                                gfx::BufferUsage usage) const override {
+    return false;
   }
   scoped_ptr<ClientNativePixmap> ImportFromHandle(
       const gfx::NativePixmapHandle& handle,

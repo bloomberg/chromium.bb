@@ -83,18 +83,6 @@ int32 PixelFormat(gfx::BufferFormat format) {
   return 0;
 }
 
-const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
-    {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT},
-    {gfx::BufferFormat::R_8, gfx::BufferUsage::PERSISTENT_MAP},
-    {gfx::BufferFormat::R_8, gfx::BufferUsage::MAP},
-    {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP},
-    {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP},
-    {gfx::BufferFormat::UYVY_422, gfx::BufferUsage::MAP},
-    {gfx::BufferFormat::UYVY_422, gfx::BufferUsage::PERSISTENT_MAP},
-    {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::MAP},
-    {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::PERSISTENT_MAP},
-};
-
 }  // namespace
 
 GpuMemoryBufferFactoryIOSurface::GpuMemoryBufferFactoryIOSurface() {
@@ -107,29 +95,24 @@ GpuMemoryBufferFactoryIOSurface::~GpuMemoryBufferFactoryIOSurface() {
 bool GpuMemoryBufferFactoryIOSurface::IsGpuMemoryBufferConfigurationSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  for (auto& configuration : kSupportedConfigurations) {
-    if (configuration.format == format && configuration.usage == usage)
-      return true;
+  switch (usage) {
+    case gfx::BufferUsage::SCANOUT:
+      return format == gfx::BufferFormat::BGRA_8888;
+    case gfx::BufferUsage::MAP:
+    case gfx::BufferUsage::PERSISTENT_MAP:
+      return format == gfx::BufferFormat::R_8 ||
+             format == gfx::BufferFormat::BGRA_8888 ||
+             format == gfx::BufferFormat::UYVY_422 ||
+             format == gfx::BufferFormat::YUV_420_BIPLANAR;
   }
-
+  NOTREACHED();
   return false;
 }
 
-void GpuMemoryBufferFactoryIOSurface::GetSupportedGpuMemoryBufferConfigurations(
-    std::vector<Configuration>* configurations) {
-  configurations->assign(
-      kSupportedConfigurations,
-      kSupportedConfigurations + arraysize(kSupportedConfigurations));
-}
-
-gfx::GpuMemoryBufferHandle
-GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
-    gfx::GpuMemoryBufferId id,
+// static
+IOSurfaceRef GpuMemoryBufferFactoryIOSurface::CreateIOSurface(
     const gfx::Size& size,
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage,
-    int client_id,
-    gfx::PluginWindowHandle surface_handle) {
+    gfx::BufferFormat format) {
   size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
   base::ScopedCFTypeRef<CFMutableArrayRef> planes(CFArrayCreateMutable(
       kCFAllocatorDefault, num_planes, &kCFTypeArrayCallBacks));
@@ -158,7 +141,18 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
   AddIntegerValue(properties, kIOSurfacePixelFormat, PixelFormat(format));
   CFDictionaryAddValue(properties, kIOSurfacePlaneInfo, planes);
 
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(IOSurfaceCreate(properties));
+  return IOSurfaceCreate(properties);
+}
+
+gfx::GpuMemoryBufferHandle
+GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
+    gfx::GpuMemoryBufferId id,
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    int client_id,
+    gfx::PluginWindowHandle surface_handle) {
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(CreateIOSurface(size, format));
   if (!io_surface)
     return gfx::GpuMemoryBufferHandle();
 

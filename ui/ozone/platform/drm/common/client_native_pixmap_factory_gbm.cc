@@ -44,21 +44,23 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
     vgem_fd_ = device_fd.Pass();
 #endif
   }
-  std::vector<Configuration> GetSupportedConfigurations() const override {
-    const Configuration kConfigurations[] = {
-        {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT},
-        {gfx::BufferFormat::BGRX_8888, gfx::BufferUsage::SCANOUT}};
-    std::vector<Configuration> configurations(
-        kConfigurations, kConfigurations + arraysize(kConfigurations));
+  bool IsConfigurationSupported(gfx::BufferFormat format,
+                                gfx::BufferUsage usage) const override {
+    switch (usage) {
+      case gfx::BufferUsage::SCANOUT:
+        return format == gfx::BufferFormat::BGRA_8888 ||
+               format == gfx::BufferFormat::BGRX_8888;
+      case gfx::BufferUsage::MAP:
+      case gfx::BufferUsage::PERSISTENT_MAP: {
 #if defined(USE_VGEM_MAP)
-    if (vgem_fd_.is_valid()) {
-      configurations.push_back(
-          {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP});
-      configurations.push_back(
-          {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP});
-    }
+        return vgem_fd_.is_valid() && format == gfx::BufferFormat::BGRA_8888;
+#else
+        return false;
 #endif
-    return configurations;
+      }
+    }
+    NOTREACHED();
+    return false;
   }
   scoped_ptr<ClientNativePixmap> ImportFromHandle(
       const gfx::NativePixmapHandle& handle,

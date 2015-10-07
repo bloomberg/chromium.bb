@@ -81,6 +81,8 @@ class GpuMemoryBufferMessageFilter : public IPC::MessageFilter {
       const GpuMsg_CreateGpuMemoryBuffer_Params& params) {
     TRACE_EVENT2("gpu", "GpuMemoryBufferMessageFilter::OnCreateGpuMemoryBuffer",
                  "id", params.id.id, "client_id", params.client_id);
+
+    DCHECK(gpu_memory_buffer_factory_);
     sender_->Send(new GpuHostMsg_GpuMemoryBufferCreated(
         gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
             params.id, params.size, params.format, params.usage,
@@ -164,15 +166,6 @@ GpuChildThread::~GpuChildThread() {
     delete deferred_messages_.front();
     deferred_messages_.pop();
   }
-}
-
-// static
-gfx::GpuMemoryBufferType GpuChildThread::GetGpuMemoryBufferFactoryType() {
-  std::vector<gfx::GpuMemoryBufferType> supported_types;
-  GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
-  DCHECK(!supported_types.empty());
-  // Note: We always use the preferred type.
-  return supported_types[0];
 }
 
 void GpuChildThread::Shutdown() {

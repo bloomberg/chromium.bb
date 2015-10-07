@@ -34,13 +34,9 @@ class OZONE_EXPORT ClientNativePixmapFactory {
   // Initialize with the given client native pixmap |device_fd|.
   virtual void Initialize(base::ScopedFD device_fd) = 0;
 
-  struct Configuration {
-    gfx::BufferFormat format;
-    gfx::BufferUsage usage;
-  };
-
-  // Gets supported format/usage configurations.
-  virtual std::vector<Configuration> GetSupportedConfigurations() const = 0;
+  // Returns true if format/usage configuration is supported.
+  virtual bool IsConfigurationSupported(gfx::BufferFormat format,
+                                        gfx::BufferUsage usage) const = 0;
 
   // TODO(dshwang): implement it. crbug.com/475633
   // Import the native pixmap from |handle| to be used in non-GPU processes.

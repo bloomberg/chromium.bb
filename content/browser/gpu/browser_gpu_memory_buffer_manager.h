@@ -5,13 +5,34 @@
 #ifndef CONTENT_BROWSER_GPU_BROWSER_GPU_MEMORY_BUFFER_MANAGER_H_
 #define CONTENT_BROWSER_GPU_BROWSER_GPU_MEMORY_BUFFER_MANAGER_H_
 
-#include <vector>
+#include <utility>
 
 #include "base/callback.h"
+#include "base/containers/hash_tables.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+
+namespace content {
+
+using GpuMemoryBufferConfigurationKey =
+    std::pair<gfx::BufferFormat, gfx::BufferUsage>;
+using GpuMemoryBufferConfigurationSet =
+    base::hash_set<GpuMemoryBufferConfigurationKey>;
+
+}  // content
+
+namespace BASE_HASH_NAMESPACE {
+
+template <>
+struct hash<content::GpuMemoryBufferConfigurationKey> {
+  size_t operator()(const content::GpuMemoryBufferConfigurationKey& key) const {
+    return base::HashPair(static_cast<int>(key.first),
+                          static_cast<int>(key.second));
+  }
+};
+
+}  // namespace BASE_HASH_NAMESPACE
 
 namespace content {
 
@@ -97,8 +118,8 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       int32 surface_id);
-  bool IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
-                                               gfx::BufferUsage usage) const;
+  bool IsNativeGpuMemoryBufferConfiguration(gfx::BufferFormat format,
+                                            gfx::BufferUsage usage) const;
   void AllocateGpuMemoryBufferForSurfaceOnIO(
       AllocateGpuMemoryBufferRequest* request);
   void GpuMemoryBufferAllocatedForSurfaceOnIO(
@@ -125,9 +146,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
 
   uint64_t ClientIdToTracingProcessId(int client_id) const;
 
-  const gfx::GpuMemoryBufferType factory_type_;
-  const std::vector<GpuMemoryBufferFactory::Configuration>
-      supported_configurations_;
+  const GpuMemoryBufferConfigurationSet native_configurations_;
   const int gpu_client_id_;
   const uint64_t gpu_client_tracing_id_;
 

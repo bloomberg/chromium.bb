@@ -55,8 +55,6 @@ class GpuChildThread : public ChildThreadImpl {
 
   ~GpuChildThread() override;
 
-  static gfx::GpuMemoryBufferType GetGpuMemoryBufferFactoryType();
-
   void Shutdown() override;
 
   void Init(const base::Time& process_start_time);

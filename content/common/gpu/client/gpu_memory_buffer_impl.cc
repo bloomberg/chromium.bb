@@ -5,10 +5,7 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 
 #include "base/logging.h"
-#include "base/numerics/safe_math.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
-#include "ui/gfx/buffer_format_util.h"
-#include "ui/gl/gl_bindings.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
@@ -50,7 +47,7 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER:
       return GpuMemoryBufferImplSharedMemory::CreateFromHandle(
-          handle, size, format, callback);
+          handle, size, format, usage, callback);
 #if defined(OS_MACOSX)
     case gfx::IO_SURFACE_BUFFER:
       return GpuMemoryBufferImplIOSurface::CreateFromHandle(
@@ -59,7 +56,7 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
 #if defined(OS_ANDROID)
     case gfx::SURFACE_TEXTURE_BUFFER:
       return GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
-          handle, size, format, callback);
+          handle, size, format, usage, callback);
 #endif
 #if defined(USE_OZONE)
     case gfx::OZONE_NATIVE_PIXMAP:

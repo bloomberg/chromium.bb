@@ -8,6 +8,27 @@
 #include "base/numerics/safe_math.h"
 
 namespace gfx {
+namespace {
+
+const BufferFormat kBufferFormats[] = {
+    BufferFormat::ATC,       BufferFormat::ATCIA,
+    BufferFormat::DXT1,      BufferFormat::DXT5,
+    BufferFormat::ETC1,      BufferFormat::R_8,
+    BufferFormat::RGBA_4444, BufferFormat::RGBA_8888,
+    BufferFormat::BGRX_8888, BufferFormat::BGRA_8888,
+    BufferFormat::UYVY_422,  BufferFormat::YUV_420_BIPLANAR,
+    BufferFormat::YUV_420};
+
+static_assert(arraysize(kBufferFormats) ==
+                  (static_cast<int>(BufferFormat::LAST) + 1),
+              "BufferFormat::LAST must be last value of kBufferFormats");
+
+}  // namespace
+
+std::vector<BufferFormat> GetBufferFormats() {
+  return std::vector<BufferFormat>(kBufferFormats,
+                                   kBufferFormats + arraysize(kBufferFormats));
+}
 
 size_t NumberOfPlanesForBufferFormat(BufferFormat format) {
   switch (format) {

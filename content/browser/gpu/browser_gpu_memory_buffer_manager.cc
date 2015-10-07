@@ -17,7 +17,7 @@
 #include "content/common/generic_shared_memory_id_generator.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
-#include "content/common/gpu/gpu_memory_buffer_factory_shared_memory.h"
+#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -47,31 +47,26 @@ void GpuMemoryBufferDeleted(
       FROM_HERE, base::Bind(destruction_callback, sync_point));
 }
 
-bool IsGpuMemoryBufferFactoryConfigurationSupported(
-    gfx::GpuMemoryBufferType type,
-    const GpuMemoryBufferFactory::Configuration& configuration) {
-  switch (type) {
+bool IsNativeGpuMemoryBufferFactoryConfigurationSupported(
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
+  switch (GpuMemoryBufferFactory::GetNativeType()) {
     case gfx::SHARED_MEMORY_BUFFER:
-      return GpuMemoryBufferFactorySharedMemory::
-          IsGpuMemoryBufferConfigurationSupported(configuration.format,
-                                                  configuration.usage);
+      return false;
 #if defined(OS_MACOSX)
     case gfx::IO_SURFACE_BUFFER:
       return GpuMemoryBufferFactoryIOSurface::
-          IsGpuMemoryBufferConfigurationSupported(configuration.format,
-                                                  configuration.usage);
+          IsGpuMemoryBufferConfigurationSupported(format, usage);
 #endif
 #if defined(OS_ANDROID)
     case gfx::SURFACE_TEXTURE_BUFFER:
       return GpuMemoryBufferFactorySurfaceTexture::
-          IsGpuMemoryBufferConfigurationSupported(configuration.format,
-                                                  configuration.usage);
+          IsGpuMemoryBufferConfigurationSupported(format, usage);
 #endif
 #if defined(USE_OZONE)
     case gfx::OZONE_NATIVE_PIXMAP:
       return GpuMemoryBufferFactoryOzoneNativePixmap::
-          IsGpuMemoryBufferConfigurationSupported(configuration.format,
-                                                  configuration.usage);
+          IsGpuMemoryBufferConfigurationSupported(format, usage);
 #endif
     default:
       NOTREACHED();
@@ -79,18 +74,8 @@ bool IsGpuMemoryBufferFactoryConfigurationSupported(
   }
 }
 
-gfx::GpuMemoryBufferType GetGpuMemoryBufferFactoryType() {
-  std::vector<gfx::GpuMemoryBufferType> supported_types;
-  GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
-  DCHECK(!supported_types.empty());
-
-  // The GPU service will always use the preferred type.
-  return supported_types[0];
-}
-
-std::vector<GpuMemoryBufferFactory::Configuration>
-GetSupportedGpuMemoryBufferConfigurations(gfx::GpuMemoryBufferType type) {
-  std::vector<GpuMemoryBufferFactory::Configuration> configurations;
+GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
+  GpuMemoryBufferConfigurationSet configurations;
 #if defined(OS_MACOSX)
   bool enable_native_gpu_memory_buffers =
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -101,45 +86,46 @@ GetSupportedGpuMemoryBufferConfigurations(gfx::GpuMemoryBufferType type) {
           switches::kEnableNativeGpuMemoryBuffers);
 #endif
 
+#if defined(USE_OZONE) || defined(OS_MACOSX)
+  bool force_native_scanout_formats = true;
+#else
+  bool force_native_scanout_formats = false;
+#endif
+
   // Disable native buffers when using Mesa.
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseGL) == gfx::kGLImplementationOSMesaName) {
     enable_native_gpu_memory_buffers = false;
+    force_native_scanout_formats = false;
   }
 
   if (enable_native_gpu_memory_buffers) {
-    const GpuMemoryBufferFactory::Configuration kNativeConfigurations[] = {
-        {gfx::BufferFormat::R_8, gfx::BufferUsage::MAP},
-        {gfx::BufferFormat::R_8, gfx::BufferUsage::PERSISTENT_MAP},
-        {gfx::BufferFormat::RGBA_4444, gfx::BufferUsage::MAP},
-        {gfx::BufferFormat::RGBA_4444, gfx::BufferUsage::PERSISTENT_MAP},
-        {gfx::BufferFormat::RGBA_8888, gfx::BufferUsage::MAP},
-        {gfx::BufferFormat::RGBA_8888, gfx::BufferUsage::PERSISTENT_MAP},
-        {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP},
-        {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP},
-        {gfx::BufferFormat::UYVY_422, gfx::BufferUsage::MAP},
-        {gfx::BufferFormat::UYVY_422, gfx::BufferUsage::PERSISTENT_MAP},
-        {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::MAP},
-        {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::PERSISTENT_MAP},
-    };
-    for (auto& configuration : kNativeConfigurations) {
-      if (IsGpuMemoryBufferFactoryConfigurationSupported(type, configuration))
-        configurations.push_back(configuration);
+    const gfx::BufferFormat kNativeFormats[] = {
+        gfx::BufferFormat::R_8,       gfx::BufferFormat::RGBA_4444,
+        gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::BGRA_8888,
+        gfx::BufferFormat::UYVY_422,  gfx::BufferFormat::YUV_420_BIPLANAR};
+    const gfx::BufferUsage kNativeUsages[] = {gfx::BufferUsage::MAP,
+                                              gfx::BufferUsage::PERSISTENT_MAP};
+    for (auto& format : kNativeFormats) {
+      for (auto& usage : kNativeUsages) {
+        if (IsNativeGpuMemoryBufferFactoryConfigurationSupported(format, usage))
+          configurations.insert(std::make_pair(format, usage));
+      }
     }
   }
 
-#if defined(USE_OZONE) || defined(OS_MACOSX)
-  const GpuMemoryBufferFactory::Configuration kScanoutConfigurations[] = {
-      {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT},
-      {gfx::BufferFormat::BGRX_8888, gfx::BufferUsage::SCANOUT},
-      {gfx::BufferFormat::UYVY_422, gfx::BufferUsage::SCANOUT},
-      {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::SCANOUT},
-  };
-  for (auto& configuration : kScanoutConfigurations) {
-    if (IsGpuMemoryBufferFactoryConfigurationSupported(type, configuration))
-      configurations.push_back(configuration);
+  if (force_native_scanout_formats) {
+    const gfx::BufferFormat kScanoutFormats[] = {
+        gfx::BufferFormat::BGRA_8888, gfx::BufferFormat::BGRX_8888,
+        gfx::BufferFormat::UYVY_422, gfx::BufferFormat::YUV_420_BIPLANAR};
+    for (auto& format : kScanoutFormats) {
+      if (IsNativeGpuMemoryBufferFactoryConfigurationSupported(
+              format, gfx::BufferUsage::SCANOUT)) {
+        configurations.insert(
+            std::make_pair(format, gfx::BufferUsage::SCANOUT));
+      }
+    }
   }
-#endif
 
   return configurations;
 }
@@ -173,9 +159,7 @@ struct BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferRequest {
 BrowserGpuMemoryBufferManager::BrowserGpuMemoryBufferManager(
     int gpu_client_id,
     uint64_t gpu_client_tracing_id)
-    : factory_type_(GetGpuMemoryBufferFactoryType()),
-      supported_configurations_(
-          GetSupportedGpuMemoryBufferConfigurations(factory_type_)),
+    : native_configurations_(GetNativeGpuMemoryBufferConfigurations()),
       gpu_client_id_(gpu_client_id),
       gpu_client_tracing_id_(gpu_client_tracing_id),
       gpu_host_id_(0) {
@@ -196,25 +180,30 @@ BrowserGpuMemoryBufferManager* BrowserGpuMemoryBufferManager::current() {
 uint32 BrowserGpuMemoryBufferManager::GetImageTextureTarget(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  gfx::GpuMemoryBufferType type = GetGpuMemoryBufferFactoryType();
-  for (auto& configuration : GetSupportedGpuMemoryBufferConfigurations(type)) {
-    if (configuration.format != format || configuration.usage != usage)
-      continue;
-
-    switch (type) {
-      case gfx::SURFACE_TEXTURE_BUFFER:
-      case gfx::OZONE_NATIVE_PIXMAP:
-        // GPU memory buffers that are shared with the GL using EGLImages
-        // require TEXTURE_EXTERNAL_OES.
-        return GL_TEXTURE_EXTERNAL_OES;
-      case gfx::IO_SURFACE_BUFFER:
-        // IOSurface backed images require GL_TEXTURE_RECTANGLE_ARB.
-        return GL_TEXTURE_RECTANGLE_ARB;
-      default:
-        return GL_TEXTURE_2D;
-    }
+  GpuMemoryBufferConfigurationSet native_configurations =
+      GetNativeGpuMemoryBufferConfigurations();
+  if (native_configurations.find(std::make_pair(format, usage)) ==
+      native_configurations.end()) {
+    return GL_TEXTURE_2D;
   }
 
+  switch (GpuMemoryBufferFactory::GetNativeType()) {
+    case gfx::SURFACE_TEXTURE_BUFFER:
+    case gfx::OZONE_NATIVE_PIXMAP:
+      // GPU memory buffers that are shared with the GL using EGLImages
+      // require TEXTURE_EXTERNAL_OES.
+      return GL_TEXTURE_EXTERNAL_OES;
+    case gfx::IO_SURFACE_BUFFER:
+      // IOSurface backed images require GL_TEXTURE_RECTANGLE_ARB.
+      return GL_TEXTURE_RECTANGLE_ARB;
+    case gfx::SHARED_MEMORY_BUFFER:
+      return GL_TEXTURE_2D;
+    case gfx::EMPTY_BUFFER:
+      NOTREACHED();
+      return GL_TEXTURE_2D;
+  }
+
+  NOTREACHED();
   return GL_TEXTURE_2D;
 }
 
@@ -245,8 +234,8 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
     const AllocationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // Use service side allocation if this is a supported configuration.
-  if (IsGpuMemoryBufferConfigurationSupported(format, usage)) {
+  // Use service side allocation for native configurations.
+  if (IsNativeGpuMemoryBufferConfiguration(format, usage)) {
     AllocateGpuMemoryBufferOnIO(id, size, format, usage, child_client_id, 0,
                                 false, callback);
     return;
@@ -391,14 +380,11 @@ BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurface(
   return request.result.Pass();
 }
 
-bool BrowserGpuMemoryBufferManager::IsGpuMemoryBufferConfigurationSupported(
+bool BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBufferConfiguration(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) const {
-  for (auto& configuration : supported_configurations_) {
-    if (configuration.format == format && configuration.usage == usage)
-      return true;
-  }
-  return false;
+  return native_configurations_.find(std::make_pair(format, usage)) !=
+         native_configurations_.end();
 }
 
 void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurfaceOnIO(
@@ -407,9 +393,8 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurfaceOnIO(
 
   gfx::GpuMemoryBufferId new_id = content::GetNextGenericSharedMemoryId();
 
-  // Use service side allocation if this is a supported configuration.
-  if (IsGpuMemoryBufferConfigurationSupported(request->format,
-                                              request->usage)) {
+  // Use service side allocation for native configurations.
+  if (IsNativeGpuMemoryBufferConfiguration(request->format, request->usage)) {
     // Note: Unretained is safe as this is only used for synchronous allocation
     // from a non-IO thread.
     AllocateGpuMemoryBufferOnIO(

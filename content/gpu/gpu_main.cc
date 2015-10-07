@@ -361,9 +361,10 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   logging::SetLogMessageHandler(NULL);
 
-  scoped_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory =
-      GpuMemoryBufferFactory::Create(
-          GpuChildThread::GetGpuMemoryBufferFactoryType());
+  scoped_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory;
+  if (GpuMemoryBufferFactory::GetNativeType() != gfx::EMPTY_BUFFER)
+    gpu_memory_buffer_factory = GpuMemoryBufferFactory::CreateNativeType();
+
   gpu::SyncPointManager sync_point_manager(false);
 
   GpuProcess gpu_process;

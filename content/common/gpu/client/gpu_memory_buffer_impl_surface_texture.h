@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_SURFACE_TEXTURE_H_
 #define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_SURFACE_TEXTURE_H_
 
+#include "content/common/content_export.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 
 struct ANativeWindow;
@@ -12,13 +13,25 @@ struct ANativeWindow;
 namespace content {
 
 // Implementation of GPU memory buffer based on SurfaceTextures.
-class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
+class CONTENT_EXPORT GpuMemoryBufferImplSurfaceTexture
+    : public GpuMemoryBufferImpl {
  public:
-  static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
+  ~GpuMemoryBufferImplSurfaceTexture() override;
+
+  static scoped_ptr<GpuMemoryBufferImplSurfaceTexture> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
+      gfx::BufferUsage usage,
       const DestructionCallback& callback);
+
+  static bool IsConfigurationSupported(gfx::BufferFormat format,
+                                       gfx::BufferUsage usage);
+
+  static base::Closure AllocateForTesting(const gfx::Size& size,
+                                          gfx::BufferFormat format,
+                                          gfx::BufferUsage usage,
+                                          gfx::GpuMemoryBufferHandle* handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map(void** data) override;
@@ -32,7 +45,6 @@ class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
                                     gfx::BufferFormat format,
                                     const DestructionCallback& callback,
                                     ANativeWindow* native_window);
-  ~GpuMemoryBufferImplSurfaceTexture() override;
 
   ANativeWindow* native_window_;
   size_t stride_;

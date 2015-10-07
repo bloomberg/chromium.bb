@@ -5,12 +5,17 @@
 #ifndef UI_GFX_BUFFER_FORMAT_UTIL_H_
 #define UI_GFX_BUFFER_FORMAT_UTIL_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
+
+// Returns a vector containing all buffer formats.
+GFX_EXPORT std::vector<BufferFormat> GetBufferFormats();
 
 // Returns the number of planes for |format|.
 GFX_EXPORT size_t NumberOfPlanesForBufferFormat(BufferFormat format);
@@ -22,17 +27,21 @@ GFX_EXPORT size_t SubsamplingFactorForBufferFormat(
 
 // Returns the number of bytes used to store a row of the given zero-indexed
 // |plane| of |format|.
-GFX_EXPORT size_t RowSizeForBufferFormat(
-    size_t width, gfx::BufferFormat format, int plane);
-GFX_EXPORT bool RowSizeForBufferFormatChecked(
-    size_t width, gfx::BufferFormat format, int plane, size_t* size_in_bytes)
+GFX_EXPORT size_t RowSizeForBufferFormat(size_t width,
+                                         BufferFormat format,
+                                         int plane);
+GFX_EXPORT bool RowSizeForBufferFormatChecked(size_t width,
+                                              BufferFormat format,
+                                              int plane,
+                                              size_t* size_in_bytes)
     WARN_UNUSED_RESULT;
 
 // Returns the number of bytes used to store all the planes of a given |format|.
-GFX_EXPORT size_t BufferSizeForBufferFormat(
-    const Size& size, gfx::BufferFormat format);
-GFX_EXPORT bool BufferSizeForBufferFormatChecked(
-    const Size& size, gfx::BufferFormat format, size_t* size_in_bytes)
+GFX_EXPORT size_t BufferSizeForBufferFormat(const Size& size,
+                                            BufferFormat format);
+GFX_EXPORT bool BufferSizeForBufferFormatChecked(const Size& size,
+                                                 BufferFormat format,
+                                                 size_t* size_in_bytes)
     WARN_UNUSED_RESULT;
 
 }  // namespace gfx

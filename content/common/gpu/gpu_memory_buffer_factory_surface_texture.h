@@ -5,9 +5,12 @@
 #ifndef CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_SURFACE_TEXTURE_H_
 #define CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_SURFACE_TEXTURE_H_
 
+#include <utility>
+
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "ui/gfx/geometry/size.h"
@@ -20,8 +23,9 @@ class SurfaceTexture;
 
 namespace content {
 
-class GpuMemoryBufferFactorySurfaceTexture : public GpuMemoryBufferFactory,
-                                             public gpu::ImageFactory {
+class CONTENT_EXPORT GpuMemoryBufferFactorySurfaceTexture
+    : public GpuMemoryBufferFactory,
+      public gpu::ImageFactory {
  public:
   GpuMemoryBufferFactorySurfaceTexture();
   ~GpuMemoryBufferFactorySurfaceTexture() override;
@@ -30,8 +34,6 @@ class GpuMemoryBufferFactorySurfaceTexture : public GpuMemoryBufferFactory,
                                                       gfx::BufferUsage usage);
 
   // Overridden from GpuMemoryBufferFactory:
-  void GetSupportedGpuMemoryBufferConfigurations(
-      std::vector<Configuration>* configurations) override;
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,

@@ -5,12 +5,15 @@
 #ifndef CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_IO_SURFACE_H_
 #define CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_IO_SURFACE_H_
 
+#include <utility>
+
 #include <IOSurface/IOSurface.h>
 
 #include "base/containers/hash_tables.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/mac/io_surface_manager.h"
 #include "gpu/command_buffer/service/image_factory.h"
@@ -23,8 +26,9 @@ class GLImage;
 
 namespace content {
 
-class GpuMemoryBufferFactoryIOSurface : public GpuMemoryBufferFactory,
-                                        public gpu::ImageFactory {
+class CONTENT_EXPORT GpuMemoryBufferFactoryIOSurface
+    : public GpuMemoryBufferFactory,
+      public gpu::ImageFactory {
  public:
   GpuMemoryBufferFactoryIOSurface();
   ~GpuMemoryBufferFactoryIOSurface() override;
@@ -32,9 +36,10 @@ class GpuMemoryBufferFactoryIOSurface : public GpuMemoryBufferFactory,
   static bool IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
                                                       gfx::BufferUsage usage);
 
+  static IOSurfaceRef CreateIOSurface(const gfx::Size& size,
+                                      gfx::BufferFormat format);
+
   // Overridden from GpuMemoryBufferFactory:
-  void GetSupportedGpuMemoryBufferConfigurations(
-      std::vector<Configuration>* configurations) override;
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,

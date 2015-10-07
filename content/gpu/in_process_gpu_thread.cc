@@ -18,8 +18,10 @@ InProcessGpuThread::InProcessGpuThread(
       params_(params),
       gpu_process_(NULL),
       sync_point_manager_override_(sync_point_manager_override),
-      gpu_memory_buffer_factory_(GpuMemoryBufferFactory::Create(
-          GpuChildThread::GetGpuMemoryBufferFactoryType())) {
+      gpu_memory_buffer_factory_(
+          GpuMemoryBufferFactory::GetNativeType() != gfx::EMPTY_BUFFER
+              ? GpuMemoryBufferFactory::CreateNativeType()
+              : nullptr) {
   if (!sync_point_manager_override_) {
     sync_point_manager_.reset(new gpu::SyncPointManager(false));
     sync_point_manager_override_ = sync_point_manager_.get();
