@@ -125,9 +125,12 @@ gridAutoFlow
 gridAutoRows
 gridColumn
 gridColumnEnd
+gridColumnGap
 gridColumnStart
+gridGap
 gridRow
 gridRowEnd
+gridRowGap
 gridRowStart
 gridTemplate
 gridTemplateAreas

@@ -72,6 +72,8 @@ public:
         return m_rowPositions;
     }
 
+    LayoutUnit guttersSize(GridTrackSizingDirection, size_t span) const;
+
     typedef Vector<LayoutBox*, 1> GridCell;
     const GridCell& gridCell(int row, int column) const
     {

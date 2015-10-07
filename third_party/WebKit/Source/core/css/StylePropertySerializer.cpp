@@ -428,6 +428,8 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
         return getShorthandValue(gridRowShorthand(), " / ");
     case CSSPropertyGridArea:
         return getShorthandValue(gridAreaShorthand(), " / ");
+    case CSSPropertyGridGap:
+        return getShorthandValue(gridGapShorthand());
     case CSSPropertyFont:
         return fontValue();
     case CSSPropertyMargin:

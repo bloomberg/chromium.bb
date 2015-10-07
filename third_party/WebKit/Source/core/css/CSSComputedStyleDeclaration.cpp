@@ -240,6 +240,8 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyGridTemplateRows,
     CSSPropertyGridRowEnd,
     CSSPropertyGridRowStart,
+    CSSPropertyGridColumnGap,
+    CSSPropertyGridRowGap,
     CSSPropertyWebkitHighlight,
     CSSPropertyWebkitHyphenateCharacter,
     CSSPropertyWebkitLineBreak,

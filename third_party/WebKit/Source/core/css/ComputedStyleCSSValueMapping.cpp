@@ -622,10 +622,15 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDir
         // so we'll have more trackPositions than trackSizes as the latter only contain the explicit grid.
         ASSERT(trackPositions.size() - 1 >= trackSizes.size());
 
-        for (size_t i = 0; i < trackPositions.size() - 1; ++i) {
+        size_t i;
+        LayoutUnit gutterSize = toLayoutGrid(layoutObject)->guttersSize(direction, 2);
+        for (i = 0; i < trackPositions.size() - 2; ++i) {
             addValuesForNamedGridLinesAtIndex(orderedNamedGridLines, i, *list);
-            list->append(zoomAdjustedPixelValue(trackPositions[i + 1] - trackPositions[i], style));
+            list->append(zoomAdjustedPixelValue(trackPositions[i + 1] - trackPositions[i] - gutterSize, style));
         }
+        // Last track line does not have any gutter.
+        addValuesForNamedGridLinesAtIndex(orderedNamedGridLines, i, *list);
+        list->append(zoomAdjustedPixelValue(trackPositions[i + 1] - trackPositions[i], style));
         insertionIndex = trackPositions.size() - 1;
     } else {
         for (size_t i = 0; i < trackSizes.size(); ++i) {
@@ -1721,6 +1726,12 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         }
 
         return CSSGridTemplateAreasValue::create(style.namedGridArea(), style.namedGridAreaRowCount(), style.namedGridAreaColumnCount());
+    case CSSPropertyGridColumnGap:
+        return zoomAdjustedPixelValueForLength(style.gridColumnGap(), style);
+    case CSSPropertyGridRowGap:
+        return zoomAdjustedPixelValueForLength(style.gridRowGap(), style);
+    case CSSPropertyGridGap:
+        return valuesForShorthandProperty(gridGapShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
 
     case CSSPropertyHeight:
         if (layoutObject) {

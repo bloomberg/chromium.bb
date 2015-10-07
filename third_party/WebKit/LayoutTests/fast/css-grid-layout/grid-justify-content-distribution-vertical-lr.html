@@ -2,6 +2,7 @@
 <html>
 <head>
 <link href="resources/grid.css" rel="stylesheet">
+<link href="resources/grid-alignment.css" rel="stylesheet">
 <script src="../../resources/check-layout.js"></script>
 <style>
 body {
@@ -20,45 +21,6 @@ body {
     grid-auto-columns: auto;
 }
 
-.justifyContentSpaceBetween {
-    justify-content: space-between;
-}
-
-.justifyContentSpaceAround {
-    justify-content: space-around;
-}
-
-.justifyContentSpaceEvenly {
-    justify-content: space-evenly;
-}
-
-.justifyContentStretch {
-    justify-content: stretch;
-}
-
-.firstRowThirdColumn {
-    background-color: magenta;
-    grid-column: 3;
-    grid-row: 1;
-}
-
-.secondRowThirdColumn {
-    background-color: navy;
-    grid-column: 3;
-    grid-row: 2;
-}
-
-.firstRowFourthColumn {
-    background-color: green;
-    grid-column: 4;
-    grid-row: 1;
-}
-
-.secondRowFourthColumn {
-    background-color: pink;
-    grid-column: 4;
-    grid-row: 2;
-}
 </style>
 </head>
 <body onload="checkLayout('.grid')">

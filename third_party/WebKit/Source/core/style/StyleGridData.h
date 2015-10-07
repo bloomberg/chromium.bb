@@ -46,7 +46,13 @@ public:
 
     bool operator==(const StyleGridData& o) const
     {
-        return m_gridTemplateColumns == o.m_gridTemplateColumns && m_gridTemplateRows == o.m_gridTemplateRows && m_gridAutoFlow == o.m_gridAutoFlow && m_gridAutoRows == o.m_gridAutoRows && m_gridAutoColumns == o.m_gridAutoColumns && m_namedGridColumnLines == o.m_namedGridColumnLines && m_namedGridRowLines == o.m_namedGridRowLines && m_orderedNamedGridColumnLines == o.m_orderedNamedGridColumnLines && m_orderedNamedGridRowLines == o.m_orderedNamedGridRowLines && m_namedGridArea == o.m_namedGridArea && m_namedGridArea == o.m_namedGridArea && m_namedGridAreaRowCount == o.m_namedGridAreaRowCount && m_namedGridAreaColumnCount == o.m_namedGridAreaColumnCount;
+        return m_gridTemplateColumns == o.m_gridTemplateColumns && m_gridTemplateRows == o.m_gridTemplateRows
+        && m_gridAutoFlow == o.m_gridAutoFlow && m_gridAutoRows == o.m_gridAutoRows && m_gridAutoColumns == o.m_gridAutoColumns
+        && m_namedGridColumnLines == o.m_namedGridColumnLines && m_namedGridRowLines == o.m_namedGridRowLines
+        && m_orderedNamedGridColumnLines == o.m_orderedNamedGridColumnLines && m_orderedNamedGridRowLines == o.m_orderedNamedGridRowLines
+        && m_namedGridArea == o.m_namedGridArea && m_namedGridArea == o.m_namedGridArea
+        && m_namedGridAreaRowCount == o.m_namedGridAreaRowCount && m_namedGridAreaColumnCount == o.m_namedGridAreaColumnCount
+        && m_gridColumnGap == o.m_gridColumnGap && m_gridRowGap == o.m_gridRowGap;
     }
 
     bool operator!=(const StyleGridData& o) const
@@ -75,6 +81,9 @@ public:
     // of the explicit grid size defined by both named and unnamed grid areas.
     size_t m_namedGridAreaRowCount;
     size_t m_namedGridAreaColumnCount;
+
+    Length m_gridColumnGap;
+    Length m_gridRowGap;
 
 private:
     StyleGridData();

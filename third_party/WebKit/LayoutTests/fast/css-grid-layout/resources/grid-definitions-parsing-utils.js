@@ -69,3 +69,9 @@ function testGridAutoDefinitionsValues(element, computedRowValue, computedColumn
     shouldBeEqualToString("window.getComputedStyle(" + elementID + ", '').getPropertyValue('grid-auto-rows')", computedRowValue);
     shouldBeEqualToString("window.getComputedStyle(" + elementID + ", '').getPropertyValue('grid-auto-columns')", computedColumnValue);
 }
+
+function testGridGapDefinitionsValues(element, computedRowGap, computedColumnGap)
+{
+    shouldBeEqualToString("window.getComputedStyle(" + element + ", '').getPropertyValue('grid-row-gap')", computedRowGap);
+    shouldBeEqualToString("window.getComputedStyle(" + element + ", '').getPropertyValue('grid-column-gap')", computedColumnGap);
+}
