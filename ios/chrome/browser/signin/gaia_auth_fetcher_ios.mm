@@ -116,15 +116,12 @@ void DoPostRequest(WKWebView* web_view,
                    const std::string& body,
                    const std::string& headers,
                    const GURL& url) {
-  GURL origin_url = url;
   NSMutableString* header_data = [NSMutableString string];
   net::HttpRequestHeaders request_headers;
   request_headers.AddHeadersFromString(headers);
   for (net::HttpRequestHeaders::Iterator it(request_headers); it.GetNext();) {
     if (it.name() == "Origin") {
-      // The Origin request header cannot be set on an XMLHttpRequest. Set it
-      // by loading the script as if it was at the origin URL.
-      origin_url = GURL(it.value());
+      // The Origin request header cannot be set on an XMLHttpRequest.
       continue;
     }
     // net::HttpRequestHeaders escapes the name and value for a header. Some
@@ -137,7 +134,8 @@ void DoPostRequest(WKWebView* web_view,
       [NSString stringWithFormat:kPostRequestTemplate,
                                  EscapeAndQuoteToNSString(url.spec()),
                                  header_data, EscapeAndQuoteToNSString(body)];
-  [web_view loadHTMLString:html_string baseURL:net::NSURLWithGURL(origin_url)];
+  // |url| is used as the baseURL to avoid CORS issues.
+  [web_view loadHTMLString:html_string baseURL:net::NSURLWithGURL(url)];
 }
 }  // namespace
 
