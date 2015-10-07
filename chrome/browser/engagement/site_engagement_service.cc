@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
@@ -18,10 +19,22 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 namespace {
+
+// Global bool to ensure we only update the parameters from variations once.
+bool g_updated_from_variations = false;
+
+// Keys used in the variations params.
+const char kEngagementParams[] = "SiteEngagement";
+const char kMaxPointsPerDayParam[] = "max_points_per_day";
+const char kNavigationPointsParam[] = "navigation_points";
+const char kUserInputPointsParam[] = "user_input_points";
+const char kDecayPeriodInDaysParam[] = "decay_period_in_days";
+const char kDecayPointsParam[] = "decay_points";
 
 // Length of time between metrics logging.
 const base::TimeDelta metrics_interval = base::TimeDelta::FromMinutes(60);
@@ -88,16 +101,55 @@ scoped_ptr<base::DictionaryValue> GetScoreDictForOrigin(
 
 }  // namespace
 
+const double SiteEngagementScore::kMaxPoints = 100;
+double SiteEngagementScore::g_max_points_per_day = 5;
+double SiteEngagementScore::g_navigation_points = 0.5;
+double SiteEngagementScore::g_user_input_points = 0.05;
+int SiteEngagementScore::g_decay_period_in_days = 7;
+double SiteEngagementScore::g_decay_points = 5;
+
 const char* SiteEngagementScore::kRawScoreKey = "rawScore";
 const char* SiteEngagementScore::kPointsAddedTodayKey = "pointsAddedToday";
 const char* SiteEngagementScore::kLastEngagementTimeKey = "lastEngagementTime";
 
-const double SiteEngagementScore::kMaxPoints = 100;
-const double SiteEngagementScore::kMaxPointsPerDay = 5;
-const double SiteEngagementScore::kNavigationPoints = 0.5;
-const double SiteEngagementScore::kUserInputPoints = 0.05;
-const int SiteEngagementScore::kDecayPeriodInDays = 7;
-const double SiteEngagementScore::kDecayPoints = 5;
+void SiteEngagementScore::UpdateFromVariations() {
+  std::string max_points_per_day_param = variations::GetVariationParamValue(
+      kEngagementParams, kMaxPointsPerDayParam);
+  std::string navigation_points_param = variations::GetVariationParamValue(
+      kEngagementParams, kNavigationPointsParam);
+  std::string user_input_points_param = variations::GetVariationParamValue(
+      kEngagementParams, kUserInputPointsParam);
+  std::string decay_period_in_days_param = variations::GetVariationParamValue(
+      kEngagementParams, kDecayPeriodInDaysParam);
+  std::string decay_points_param = variations::GetVariationParamValue(
+      kEngagementParams, kDecayPointsParam);
+
+  if (!max_points_per_day_param.empty() && !navigation_points_param.empty() &&
+      !user_input_points_param.empty() && !decay_period_in_days_param.empty() &&
+      !decay_points_param.empty()) {
+    double max_points_per_day = 0;
+    double navigation_points = 0;
+    double user_input_points = 0;
+    int decay_period_in_days = 0;
+    double decay_points = 0;
+
+    if (base::StringToDouble(max_points_per_day_param, &max_points_per_day) &&
+        base::StringToDouble(navigation_points_param, &navigation_points) &&
+        base::StringToDouble(user_input_points_param, &user_input_points) &&
+        base::StringToInt(decay_period_in_days_param, &decay_period_in_days) &&
+        base::StringToDouble(decay_points_param, &decay_points) &&
+        max_points_per_day >= navigation_points &&
+        max_points_per_day >= user_input_points && navigation_points >= 0 &&
+        user_input_points >= 0 && decay_period_in_days > 0 &&
+        decay_points >= 0) {
+      g_max_points_per_day = max_points_per_day;
+      g_navigation_points = navigation_points;
+      g_user_input_points = user_input_points;
+      g_decay_period_in_days = decay_period_in_days;
+      g_decay_points = decay_points;
+    }
+  }
+}
 
 SiteEngagementScore::SiteEngagementScore(
     base::Clock* clock,
@@ -128,8 +180,8 @@ void SiteEngagementScore::AddPoints(double points) {
     points_added_today_ = 0;
   }
 
-  double to_add =
-      std::min(kMaxPoints - raw_score_, kMaxPointsPerDay - points_added_today_);
+  double to_add = std::min(kMaxPoints - raw_score_,
+                           g_max_points_per_day - points_added_today_);
   to_add = std::min(to_add, points);
 
   points_added_today_ += to_add;
@@ -144,7 +196,7 @@ bool SiteEngagementScore::MaxPointsPerDayAdded() {
     return false;
   }
 
-  return points_added_today_ == kMaxPointsPerDay;
+  return points_added_today_ == g_max_points_per_day;
 }
 
 bool SiteEngagementScore::UpdateScoreDict(base::DictionaryValue* score_dict) {
@@ -190,8 +242,8 @@ double SiteEngagementScore::DecayedScore() const {
   if (days_since_engagement < 0)
     return raw_score_;
 
-  int periods = days_since_engagement / kDecayPeriodInDays;
-  double decayed_score = raw_score_ - periods * kDecayPoints;
+  int periods = days_since_engagement / g_decay_period_in_days;
+  double decayed_score = raw_score_ - periods * g_decay_points;
   return std::max(0.0, decayed_score);
 }
 
@@ -232,6 +284,11 @@ SiteEngagementService::SiteEngagementService(Profile* profile)
                      content::BrowserThread::UI),
       base::Bind(&SiteEngagementService::AfterStartupTask,
                  weak_factory_.GetWeakPtr()));
+
+  if (!g_updated_from_variations) {
+    SiteEngagementScore::UpdateFromVariations();
+    g_updated_from_variations = true;
+  }
 }
 
 SiteEngagementService::~SiteEngagementService() {
@@ -242,7 +299,7 @@ void SiteEngagementService::HandleNavigation(const GURL& url,
   if (IsEngagementNavigation(transition)) {
     SiteEngagementMetrics::RecordEngagement(
         SiteEngagementMetrics::ENGAGEMENT_NAVIGATION);
-    AddPoints(url, SiteEngagementScore::kNavigationPoints);
+    AddPoints(url, SiteEngagementScore::g_navigation_points);
     RecordMetrics();
   }
 }
@@ -251,7 +308,7 @@ void SiteEngagementService::HandleUserInput(
     const GURL& url,
     SiteEngagementMetrics::EngagementType type) {
   SiteEngagementMetrics::RecordEngagement(type);
-  AddPoints(url, SiteEngagementScore::kUserInputPoints);
+  AddPoints(url, SiteEngagementScore::g_user_input_points);
   RecordMetrics();
 }
 
