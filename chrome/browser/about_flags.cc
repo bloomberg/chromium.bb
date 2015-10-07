@@ -1700,6 +1700,11 @@ const Experiment kExperiments[] = {
      SINGLE_VALUE_TYPE(
          switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval)},
 #endif
+    {"enable-md-policy-page",
+     IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_NAME,
+     IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_DESCRIPTION,
+     kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignPolicyPage)},
 #if defined(OS_CHROMEOS)
     {"memory-pressure-thresholds",
      IDS_FLAGS_MEMORY_PRESSURE_THRESHOLD_NAME,

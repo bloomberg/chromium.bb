@@ -542,6 +542,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (url.host() == chrome::kChromeUIPolicyHost)
     return &NewWebUI<PolicyUI>;
+  if (url.host() == chrome::kChromeUIMdPolicyHost &&
+      switches::MdPolicyPageEnabled()) {
+    return &NewWebUI<PolicyMaterialDesignUI>;
+  }
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   if (url.host() == chrome::kChromeUIProfileSigninConfirmationHost)
     return &NewWebUI<ProfileSigninConfirmationUI>;

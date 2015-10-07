@@ -5015,6 +5015,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <!-- Material Design version of chrome://policy -->
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_NAME" desc="Name for the flag to enable the material design policy page.">
+          Enable Material Design policy page
+      </message>
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_DESCRIPTION" desc="Description for the flag to enable the material design policy page.">
+          If enabled, the chrome://md-policy URL loads the Material Design policy page.
+      </message>
+
       <!-- Material Design version of chrome://downloads -->
       <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_NAME" desc="Name for the flag to enable the material design downloads page.">
           Enable Material Design downloads

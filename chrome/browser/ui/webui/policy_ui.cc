@@ -101,11 +101,7 @@ void AddLocalizedPoilcySourceStrings(content::WebUIDataSource* source) {
   }
 }
 
-content::WebUIDataSource* CreatePolicyUIHTMLSource() {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIPolicyHost);
-
-  // Localized strings.
+void AddCommonLocalizedStringsToSource(content::WebUIDataSource* source) {
   source->AddLocalizedString("title", IDS_POLICY_TITLE);
   source->AddLocalizedString("filterPlaceholder",
                              IDS_POLICY_FILTER_PLACEHOLDER);
@@ -148,7 +144,22 @@ content::WebUIDataSource* CreatePolicyUIHTMLSource() {
   AddLocalizedPoilcySourceStrings(source);
 
   source->SetJsonPath("strings.js");
+}
 
+content::WebUIDataSource* CreatePolicyMaterialDesignUIHtmlSource() {
+  content::WebUIDataSource* source =
+      content::WebUIDataSource::Create(chrome::kChromeUIMdPolicyHost);
+  AddCommonLocalizedStringsToSource(source);
+  source->SetDefaultResource(IDR_MD_POLICY_HTML);
+
+  return source;
+}
+
+
+content::WebUIDataSource* CreatePolicyUIHtmlSource() {
+  content::WebUIDataSource* source =
+      content::WebUIDataSource::Create(chrome::kChromeUIPolicyHost);
+  AddCommonLocalizedStringsToSource(source);
   // Add required resources.
   source->AddResourcePath("policy.css", IDR_POLICY_CSS);
   source->AddResourcePath("policy.js", IDR_POLICY_JS);
@@ -866,8 +877,18 @@ policy::PolicyService* PolicyUIHandler::GetPolicyService() const {
 PolicyUI::PolicyUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new PolicyUIHandler);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
-                                CreatePolicyUIHTMLSource());
+                                CreatePolicyUIHtmlSource());
 }
 
 PolicyUI::~PolicyUI() {
+}
+
+PolicyMaterialDesignUI::PolicyMaterialDesignUI(content::WebUI* web_ui) :
+    WebUIController(web_ui) {
+  web_ui->AddMessageHandler(new PolicyUIHandler);
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
+                                CreatePolicyMaterialDesignUIHtmlSource());
+}
+
+PolicyMaterialDesignUI::~PolicyMaterialDesignUI() {
 }
