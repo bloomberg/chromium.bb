@@ -27,12 +27,6 @@ struct FormData;
 struct FormFieldData;
 struct PasswordForm;
 
-// Helper functions to assist in getting the canonical form of the action and
-// origin. The action will proplerly take into account <BASE>, and both will
-// strip unnecessary data (e.g. query params and HTTP credentials).
-GURL GetCanonicalActionForForm(const blink::WebFormElement& form);
-GURL GetCanonicalOriginForDocument(const blink::WebDocument& document);
-
 // Tests whether the given form is a GAIA reauthentication form. The form is
 // not passed directly as WebFormElement, but by specifying its |url| and
 // |control_elements|. This is for better performance and easier testing.

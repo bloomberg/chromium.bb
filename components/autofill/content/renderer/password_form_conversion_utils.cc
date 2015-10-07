@@ -491,7 +491,8 @@ bool GetPasswordForm(const SyntheticForm& form,
   if (!LocateSpecificPasswords(passwords, &password, &new_password))
     return false;
 
-  password_form->origin = GetCanonicalOriginForDocument(form.document);
+  password_form->origin =
+      form_util::GetCanonicalOriginForDocument(form.document);
   GURL::Replacements rep;
   rep.SetPathStr("");
   password_form->signon_realm =
@@ -539,31 +540,7 @@ bool GetPasswordForm(const SyntheticForm& form,
   return true;
 }
 
-GURL StripAuthAndParams(const GURL& gurl) {
-  // We want to keep the path but strip any authentication data, as well as
-  // query and ref portions of URL, for the form action and form origin.
-  GURL::Replacements rep;
-  rep.ClearUsername();
-  rep.ClearPassword();
-  rep.ClearQuery();
-  rep.ClearRef();
-  return gurl.ReplaceComponents(rep);
-}
-
 }  // namespace
-
-GURL GetCanonicalActionForForm(const WebFormElement& form) {
-  WebString action = form.action();
-  if (action.isNull())
-    action = WebString(""); // missing 'action' attribute implies current URL
-  GURL full_action(form.document().completeURL(action));
-  return StripAuthAndParams(full_action);
-}
-
-GURL GetCanonicalOriginForDocument(const WebDocument& document) {
-  GURL full_origin(document.url());
-  return StripAuthAndParams(full_origin);
-}
 
 bool IsGaiaReauthenticationForm(
     const GURL& origin,
@@ -605,7 +582,7 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromWebForm(
     return scoped_ptr<PasswordForm>();
 
   scoped_ptr<PasswordForm> password_form(new PasswordForm());
-  password_form->action = GetCanonicalActionForForm(web_form);
+  password_form->action = form_util::GetCanonicalActionForForm(web_form);
   if (!password_form->action.is_valid())
     return scoped_ptr<PasswordForm>();
 

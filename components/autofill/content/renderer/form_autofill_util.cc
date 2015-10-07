@@ -52,6 +52,9 @@ using blink::WebString;
 using blink::WebVector;
 
 namespace autofill {
+
+const size_t kMaxParseableFields = 200;
+
 namespace {
 
 // A bit field mask for FillForm functions to not fill some fields.
@@ -1075,9 +1078,99 @@ bool UnownedFormElementsAndFieldSetsToFormData(
                                    control_elements, extract_mask, form, field);
 }
 
+GURL StripAuthAndParams(const GURL& gurl) {
+  // We want to keep the path but strip any authentication data, as well as
+  // query and ref portions of URL, for the form action and form origin.
+  GURL::Replacements rep;
+  rep.ClearUsername();
+  rep.ClearPassword();
+  rep.ClearQuery();
+  rep.ClearRef();
+  return gurl.ReplaceComponents(rep);
+}
+
 }  // namespace
 
-const size_t kMaxParseableFields = 200;
+namespace form_util {
+
+bool IsNamedElementVisible(
+    const std::vector<blink::WebFormControlElement>& control_elements,
+    const base::string16& name) {
+  for (size_t i = 0; i < control_elements.size(); ++i) {
+    if (control_elements[i].nameForAutofill() == name) {
+      return IsWebNodeVisible(control_elements[i]);
+    }
+  }
+  return false;
+}
+
+bool IsFormVisible(blink::WebFrame* frame,
+                   const GURL& action,
+                   const GURL& origin,
+                   const FormData& form_data,
+                   const FormsPredictionsMap& form_predictions) {
+  const GURL frame_url = GURL(frame->document().url().string().utf8());
+  blink::WebVector<blink::WebFormElement> forms;
+  frame->document().forms(forms);
+
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+  const bool action_is_empty = action == origin;
+#endif
+
+  // Since empty or unspecified action fields are automatically set to page URL,
+  // action field for forms cannot be used for comparing (all forms with
+  // empty/unspecified actions have the same value). If an action field is set
+  // to the page URL, this method checks ALL fields of the form instead (using
+  // FormData.SameFormAs). This is also true if the action was set to the page
+  // URL on purpose.
+  for (size_t i = 0; i < forms.size(); ++i) {
+    const blink::WebFormElement& form = forms[i];
+    if (!IsWebNodeVisible(form))
+      continue;
+
+    GURL canonical_action = GetCanonicalActionForForm(form);
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+    bool form_action_is_empty = canonical_action == frame_url;
+
+    if (action_is_empty != form_action_is_empty)
+      continue;
+
+    if (action_is_empty) {  // Both actions are empty, compare all fields.
+      FormData extracted_form_data;
+      WebFormElementToFormData(form, blink::WebFormControlElement(),
+                               EXTRACT_NONE, &extracted_form_data, nullptr);
+      if (form_data.SameFormAs(extracted_form_data)) {
+        return true;  // Form still exists.
+      }
+    } else {  // Both actions are non-empty, compare actions only.
+      if (action == canonical_action) {
+        return true;  // Form still exists.
+      }
+    }
+#else  // OS_MACOSX or OS_ANDROID
+    if (action == canonical_action) {
+      return true;  // Form still exists.
+    }
+#endif
+  }
+
+  return false;
+}
+
+GURL GetCanonicalActionForForm(const WebFormElement& form) {
+  WebString action = form.action();
+  if (action.isNull())
+    action = WebString("");  // missing 'action' attribute implies current URL.
+  GURL full_action(form.document().completeURL(action));
+  return StripAuthAndParams(full_action);
+}
+
+GURL GetCanonicalOriginForDocument(const WebDocument& document) {
+  GURL full_origin(document.url());
+  return StripAuthAndParams(full_origin);
+}
+
+}  // namespace form_util
 
 bool IsMonthInput(const WebInputElement* element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kMonth, ("month"));

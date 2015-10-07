@@ -627,8 +627,8 @@ void AutofillAgent::OnSamePageNavigationCompleted() {
   render_frame()->GetWebFrame()->document().forms(forms);
   for (size_t i = 0; i < forms.size(); ++i) {
     const blink::WebFormElement& form = forms[i];
-    if (GetCanonicalActionForForm(last_interacted_form_) ==
-            GetCanonicalActionForForm(form) &&
+    if (form_util::GetCanonicalActionForForm(last_interacted_form_) ==
+            form_util::GetCanonicalActionForForm(form) &&
         IsWebNodeVisible(form)) {
       // Found our candidate form, and it is still visible.
       return;

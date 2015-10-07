@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -52,6 +53,36 @@ enum ExtractMask {
 // Google code project settings.
 // Copied to components/autofill/ios/browser/resources/autofill_controller.js.
 extern const size_t kMaxParseableFields;
+
+namespace form_util {
+// TODO(mathp): Move more functions in the form_util namespace.
+
+// Returns true if |control_elements| contains an element named |name| and is
+// visible.
+bool IsNamedElementVisible(
+    const std::vector<blink::WebFormControlElement>& control_elements,
+    const base::string16& name);
+
+// Helper function to check if there exist any form on |frame| where its action
+// equals |action|. Returns true if so. For forms with empty or unspecified
+// actions, all form data are used for comparison. Form data comparison is
+// disabled on Mac and Android because the update prompt isn't implemented.
+// It may cause many false password updates.
+// TODO(kolos) Turn on all data comparing when the update prompt will be
+// implemented on Mac and Android.
+bool IsFormVisible(blink::WebFrame* frame,
+                   const GURL& action,
+                   const GURL& origin,
+                   const FormData& form_data,
+                   const FormsPredictionsMap& form_predictions);
+
+// Helper functions to assist in getting the canonical form of the action and
+// origin. The action will proplerly take into account <BASE>, and both will
+// strip unnecessary data (e.g. query params and HTTP credentials).
+GURL GetCanonicalActionForForm(const blink::WebFormElement& form);
+GURL GetCanonicalOriginForDocument(const blink::WebDocument& document);
+
+}  // namespace form_util
 
 // Returns true if |element| is a month input element.
 bool IsMonthInput(const blink::WebInputElement* element);
