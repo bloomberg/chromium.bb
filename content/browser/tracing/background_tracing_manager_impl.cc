@@ -511,7 +511,9 @@ BackgroundTracingManagerImpl::GetCategoryFilterStringForCategoryPreset(
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_IPC:
       return "benchmark,toplevel,ipc";
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_STARTUP:
-      return "benchmark,toplevel,startup,disabled-by-default-file";
+      return "benchmark,toplevel,startup,disabled-by-default-file,"
+             "disabled-by-default-toplevel.flow,"
+             "disabled-by-default-ipc.flow";
   }
   NOTREACHED();
   return "";
