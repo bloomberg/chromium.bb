@@ -4,6 +4,8 @@
 
 #include "media/cast/net/rtp/rtp_packetizer.h"
 
+#include <string>
+
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "media/cast/net/pacing/paced_sender.h"
@@ -55,6 +57,12 @@ void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
 
   size_t remaining_size = frame.data.size();
   std::string::const_iterator data_iter = frame.data.begin();
+
+  uint8 num_extensions = 0;
+  if (frame.new_playout_delay_ms)
+    num_extensions++;
+  DCHECK_LE(num_extensions, kCastExtensionCountmask);
+
   while (remaining_size > 0) {
     PacketRef packet(new base::RefCountedData<Packet>);
 
@@ -68,14 +76,12 @@ void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
     // Build Cast header.
     // TODO(miu): Should we always set the ref frame bit and the ref_frame_id?
     DCHECK_NE(frame.dependency, EncodedFrame::UNKNOWN_DEPENDENCY);
-    uint8 num_extensions = 0;
-    if (frame.new_playout_delay_ms)
-      num_extensions++;
     uint8 byte0 = kCastReferenceFrameIdBitMask;
     if (frame.dependency == EncodedFrame::KEY)
       byte0 |= kCastKeyFrameBitMask;
-    DCHECK_LE(num_extensions, kCastExtensionCountmask);
-    byte0 |= num_extensions;
+    // Extensions only go on the first packet of the frame
+    if (packet_id_ == 0)
+      byte0 |= num_extensions;
     packet->data.push_back(byte0);
     packet->data.push_back(static_cast<uint8>(frame.frame_id));
     size_t start_size = packet->data.size();
@@ -85,7 +91,8 @@ void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
     big_endian_writer.WriteU16(packet_id_);
     big_endian_writer.WriteU16(static_cast<uint16>(num_packets - 1));
     packet->data.push_back(static_cast<uint8>(frame.referenced_frame_id));
-    if (frame.new_playout_delay_ms) {
+    // Add extension details only on the first packet of the frame
+    if (packet_id_ == 0 && frame.new_playout_delay_ms) {
       packet->data.push_back(kCastRtpExtensionAdaptiveLatency << 2);
       packet->data.push_back(2);  // 2 bytes
       packet->data.push_back(

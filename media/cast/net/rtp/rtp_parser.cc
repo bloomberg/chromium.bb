@@ -95,7 +95,8 @@ bool RtpParser::ParsePacket(const uint8* packet,
     return false;
   }
 
-  for (int i = 0; i < (bits & kCastExtensionCountmask); i++) {
+  header->num_extensions = bits & kCastExtensionCountmask;
+  for (int i = 0; i < header->num_extensions; i++) {
     uint16 type_and_size;
     if (!reader.ReadU16(&type_and_size))
       return false;
