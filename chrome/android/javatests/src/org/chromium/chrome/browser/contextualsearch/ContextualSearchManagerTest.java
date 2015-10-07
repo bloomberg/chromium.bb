@@ -1948,10 +1948,13 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that long-press triggers the Peek Promo, and expanding the Panel dismisses it.
+     *
+     * Re-enable the test after fixing http://crbug.com/540820.
+     * @SmallTest
+     * @Feature({"ContextualSearch"})
      */
-    @SmallTest
-    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @FlakyTest
     @CommandLineFlags.Add(ContextualSearchFieldTrial.PEEK_PROMO_ENABLED + "=true")
     public void testLongPressShowsPeekPromo() throws InterruptedException, TimeoutException {
         // Must be in undecided state in order to trigger the Peek Promo.
