@@ -100,11 +100,11 @@ remoting.Error.Tag = {
   // not normally cause the error text to be shown to the user, so the
   // i18n-content prefix is not needed in this case.
   CANCELLED: '__CANCELLED__',
+
   // Used to signify that the local computer was suspended for long enough that
   // the connection is expected to drop, allowing a reconnect attempt to be
-  // scheduled sooner. This is not shown to the user so i18n-content prefix is
-  // not needed in this case.
-  CLIENT_SUSPENDED: '__CLIENT_SUSPENDED__',
+  // scheduled sooner.
+  CLIENT_SUSPENDED: /*i18n-content*/ 'ERROR_NETWORK_FAILURE',
 
   INVALID_ACCESS_CODE: /*i18n-content*/ 'ERROR_INVALID_ACCESS_CODE',
   MISSING_PLUGIN: /*i18n-content*/ 'ERROR_MISSING_PLUGIN',

@@ -31,8 +31,8 @@ remoting.Me2MeActivity = function(host, hostList) {
   /** @private */
   this.retryOnHostOffline_ = true;
 
-  /** @private {remoting.SmartReconnector} */
-  this.reconnector_ = null;
+  /** @private {remoting.NetworkConnectivityDetector} */
+  this.networkDetector_ = null;
 
   /** @private {remoting.SessionLogger} */
   this.logger_ = null;
@@ -44,6 +44,8 @@ remoting.Me2MeActivity = function(host, hostList) {
 remoting.Me2MeActivity.prototype.dispose = function() {
   base.dispose(this.desktopActivity_);
   this.desktopActivity_ = null;
+  base.dispose(this.networkDetector_);
+  this.networkDetector_ = null;
 };
 
 remoting.Me2MeActivity.prototype.start = function() {
@@ -227,26 +229,27 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
   plugin.extensions().register(new remoting.GnubbyAuthHandler());
   this.pinDialog_.requestPairingIfNecessary(connectionInfo.plugin());
 
-  var SessionEntryPoint = remoting.ChromotingEvent.SessionEntryPoint;
-
-  base.dispose(this.reconnector_);
-  this.reconnector_ = new remoting.SmartReconnector(
-      this.desktopActivity_.getConnectingDialog(),
-      this.reconnect_.bind(
-          this, SessionEntryPoint.AUTO_RECONNECT_ON_CONNECTION_DROPPED),
-      this.stop.bind(this), connectionInfo.session());
+  // Drop the session after 30s of suspension.  If this timeout is too short, we
+  // risk dropping a connection that is self-recoverable. If this timeout is too
+  // long, the user may lose his/her patience and just manually reconnects.
+  this.desktopActivity_.getSession().dropSessionOnSuspend(30 * 1000);
 };
 
 remoting.Me2MeActivity.prototype.onDisconnected = function(error) {
+  base.dispose(this.desktopActivity_);
+  this.desktopActivity_ = null;
+
   if (error.isNone()) {
     this.showFinishDialog_(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
   } else {
-    this.reconnector_.onConnectionDropped(error);
     this.showErrorMessage_(error);
+    var SessionEntryPoint = remoting.ChromotingEvent.SessionEntryPoint;
+    base.dispose(this.networkDetector_);
+    this.networkDetector_ = remoting.NetworkConnectivityDetector.create();
+    this.networkDetector_.waitForOnline().then(
+      this.reconnect_.bind(
+          this, SessionEntryPoint.AUTO_RECONNECT_ON_CONNECTION_DROPPED));
   }
-
-  base.dispose(this.desktopActivity_);
-  this.desktopActivity_ = null;
 };
 
 /**
@@ -274,6 +277,9 @@ remoting.Me2MeActivity.prototype.showFinishDialog_ = function(mode) {
   var that = this;
 
   dialog.show().then(function(/** Result */result) {
+    base.dispose(that.networkDetector_);
+    that.networkDetector_ = null;
+
     if (result === Result.PRIMARY) {
       remoting.setMode(remoting.AppMode.HOME);
     } else {

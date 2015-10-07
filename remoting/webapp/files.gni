@@ -94,6 +94,7 @@ remoting_webapp_unittests_js_files = [
   "base/js/identity_unittest.js",
   "base/js/ipc_unittest.js",
   "base/js/l10n_unittest.js",
+  "base/js/network_connectivity_detector_unittest.js",
   "base/js/platform_unittest.js",
   "base/js/protocol_extension_manager_unittest.js",
   "base/js/session_logger_unittest.js",
@@ -174,7 +175,6 @@ remoting_webapp_shared_js_client_files = [
   "base/js/credentials_provider.js",
   "base/js/experiments.js",
   "base/js/host_desktop.js",
-  "base/js/smart_reconnector.js",
   "base/js/telemetry_event_writer.js",
   "base/js/xmpp_error_cache.js",
 ]
@@ -191,6 +191,7 @@ remoting_webapp_shared_js_core_files = [
   "base/js/protocol_extension_manager.js",
   "base/js/protocol_extension.js",
   "base/js/error.js",
+  "base/js/network_connectivity_detector.js",
   "base/js/plugin_settings.js",
   "base/js/suspend_detector.js",
   "base/js/typecheck.js",

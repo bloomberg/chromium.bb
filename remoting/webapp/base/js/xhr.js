@@ -355,6 +355,8 @@ remoting.Xhr.urlencodeParamHash = function(paramHash) {
  *
  * @param {remoting.Xhr.Params} params
  * @param {number=} opt_maxRetryAttempts
+ * @implements {base.Disposable}
+  *
  * @constructor
  */
 remoting.AutoRetryXhr = function(params, opt_maxRetryAttempts) {
@@ -368,6 +370,11 @@ remoting.AutoRetryXhr = function(params, opt_maxRetryAttempts) {
       Number.isInteger(opt_maxRetryAttempts) ? opt_maxRetryAttempts : 60;
   /** @private */
   this.deferred_ = new base.Deferred();
+};
+
+remoting.AutoRetryXhr.prototype.dispose = function() {
+  this.retryAttemptsRemaining_ = 0;
+  this.deferred_.reject(new remoting.Error(remoting.Error.Tag.CANCELLED));
 };
 
 /**

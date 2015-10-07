@@ -53,6 +53,21 @@ MockDesktopConnectedView.prototype.dispose = function() {};
 MockDesktopConnectedView.prototype.setRemapKeys = function() {};
 
 /**
+ * @constructor
+ * @extends {remoting.NetworkConnectivityDetector}
+ */
+var MockNetworkConnectivityDetector = function() {};
+/** @override */
+MockNetworkConnectivityDetector.prototype.waitForOnline = function() {
+  return Promise.resolve();
+};
+
+/** @override */
+MockNetworkConnectivityDetector.prototype.cancel = function() {};
+/** @override */
+MockNetworkConnectivityDetector.prototype.dispose = function() {};
+
+/**
  * A test driver that mocks out the UI components that are required by the
  * DesktopRemotingActivity.
  *
@@ -77,6 +92,12 @@ var BaseTestDriver = function(mockHTML) {
   this.eventWriterMock_ = sinon.mock(remoting.TelemetryEventWriter.Client);
   /** @private */
   this.setModeStub_ = sinon.stub(remoting, 'setMode');
+  /** @private */
+  this.createNetworkConnectivityDetectorStub_ =
+      sinon.stub(remoting.NetworkConnectivityDetector, 'create', function(){
+        return new MockNetworkConnectivityDetector();
+      });
+
   /**
    * Use fake timers to prevent the generation of session ID expiration events.
    * @private
@@ -103,7 +124,7 @@ BaseTestDriver.prototype.dispose = function() {
   this.setModeStub_.restore();
   this.eventWriterMock_.restore();
   this.desktopConnectedViewCreateStub_.restore();
-
+  this.createNetworkConnectivityDetectorStub_.restore();
   if (Boolean(this.mockConnection_)) {
     this.mockConnection_.restore();
     this.mockConnection_ = null;
@@ -203,6 +224,9 @@ remoting.Me2MeTestDriver.prototype.mockHostList = function() {
 /** @return {remoting.Me2MeActivity} */
 remoting.Me2MeTestDriver.prototype.me2meActivity = function() {
   return this.me2meActivity_;
+};
+
+remoting.Me2MeTestDriver.prototype.mockOnline = function() {
 };
 
 /** @return {Promise} */
