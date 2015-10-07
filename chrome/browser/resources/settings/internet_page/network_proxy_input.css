@@ -7,8 +7,6 @@
 }
 
 span {
-  @apply(--paper-font-subhead);
-  @apply(--paper-input-container-input);
   margin-right: 5px;
 }
 

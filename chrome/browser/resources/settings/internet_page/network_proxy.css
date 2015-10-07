@@ -14,8 +14,6 @@ select {
 }
 
 span {
-  @apply(--paper-font-subhead);
-  @apply(--paper-input-container-input);
   margin: 5px;
 }
 

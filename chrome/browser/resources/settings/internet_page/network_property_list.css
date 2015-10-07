@@ -3,8 +3,6 @@
  * found in the LICENSE file. */
 
 span {
-  @apply(--paper-font-subhead);
-  @apply(--paper-input-container-input);
   margin: 0 5px 5px 0;
 }
 
