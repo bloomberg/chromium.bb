@@ -4,6 +4,9 @@
 
 #include "ui/ozone/platform/cast/surface_factory_cast.h"
 
+#include <dlfcn.h>
+#include <EGL/egl.h>
+
 #include "base/callback_helpers.h"
 #include "chromecast/public/cast_egl_platform.h"
 #include "chromecast/public/graphics_types.h"
@@ -14,7 +17,12 @@
 using chromecast::CastEglPlatform;
 
 namespace ui {
+
 namespace {
+
+typedef EGLDisplay (*EGLGetDisplayFn)(NativeDisplayType);
+typedef EGLBoolean (*EGLTerminateFn)(EGLDisplay);
+
 chromecast::Size FromGfxSize(const gfx::Size& size) {
   return chromecast::Size(size.width(), size.height());
 }
@@ -57,6 +65,24 @@ void SurfaceFactoryCast::InitializeHardware() {
     ShutdownHardware();
     state_ = kFailed;
   }
+}
+
+void SurfaceFactoryCast::TerminateDisplay() {
+  void* egl_lib_handle = egl_platform_->GetEglLibrary();
+  DCHECK(egl_lib_handle);
+
+  EGLGetDisplayFn get_display =
+      reinterpret_cast<EGLGetDisplayFn>(dlsym(egl_lib_handle, "eglGetDisplay"));
+  EGLTerminateFn terminate =
+      reinterpret_cast<EGLTerminateFn>(dlsym(egl_lib_handle, "eglTerminate"));
+  DCHECK(get_display);
+  DCHECK(terminate);
+
+  EGLDisplay display = get_display(GetNativeDisplay());
+  DCHECK_NE(display, EGL_NO_DISPLAY);
+
+  EGLBoolean terminate_result = terminate(display);
+  DCHECK_EQ(terminate_result, static_cast<EGLBoolean>(EGL_TRUE));
 }
 
 void SurfaceFactoryCast::ShutdownHardware() {

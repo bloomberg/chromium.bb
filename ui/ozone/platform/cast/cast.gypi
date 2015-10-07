@@ -26,6 +26,9 @@
         '../../chromecast/chromecast.gyp:libcast_graphics_1.0',
         '../../chromecast/media/media.gyp:media_base',
       ],
+      'include_dirs': [
+        '<(DEPTH)/third_party/khronos',
+      ],
 
       'sources': [
         'client_native_pixmap_factory_cast.cc',
@@ -43,6 +46,11 @@
         'surface_ozone_egl_cast.cc',
         'surface_ozone_egl_cast.h',
       ],
+      'link_settings': {
+        'libraries': [
+          '-ldl',
+        ],
+      },
     },
   ],
 }

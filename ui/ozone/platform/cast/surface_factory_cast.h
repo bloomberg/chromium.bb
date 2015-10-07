@@ -39,6 +39,7 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   intptr_t GetNativeWindow();
   bool ResizeDisplay(gfx::Size viewport_size);
   void ChildDestroyed();
+  void TerminateDisplay();
   void ShutdownHardware();
 
  private:

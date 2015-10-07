@@ -14,6 +14,9 @@ GpuPlatformSupportCast::GpuPlatformSupportCast(SurfaceFactoryCast* parent)
 }
 
 GpuPlatformSupportCast::~GpuPlatformSupportCast() {
+  // eglTerminate must be called first on display before releasing resources
+  // and shutting down hardware
+  parent_->TerminateDisplay();
   parent_->ShutdownHardware();
 }
 
