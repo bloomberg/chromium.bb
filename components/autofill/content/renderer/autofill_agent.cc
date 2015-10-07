@@ -223,7 +223,8 @@ void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,
 
   if (is_same_page_navigation) {
     OnSamePageNavigationCompleted();
-  } else if (is_new_navigation) {
+  } else {
+    // Navigation to a new page or a page refresh.
     form_cache_.Reset();
     submitted_forms_.clear();
     last_interacted_form_.reset();
