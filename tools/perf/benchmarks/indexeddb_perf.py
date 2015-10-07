@@ -22,12 +22,12 @@ Cursors:
 import json
 import os
 
+from core import path_util
 from core import perf_benchmark
 
 from telemetry import benchmark
 from telemetry import page as page_module
 from telemetry import story
-from telemetry.core import util
 from telemetry.page import page_test
 from telemetry.value import scalar
 
@@ -100,8 +100,8 @@ class IndexedDbOriginal(perf_benchmark.PerfBenchmark):
     return 'indexeddb_perf'
 
   def CreateStorySet(self, options):
-    indexeddb_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
-                                 'data', 'indexeddb')
+    indexeddb_dir = os.path.join(path_util.GetChromiumSrcDir(), 'chrome',
+                                 'test', 'data', 'indexeddb')
     ps = story.StorySet(base_dir=indexeddb_dir)
     ps.AddStory(page_module.Page('file://perf_test.html', ps, ps.base_dir))
     return ps

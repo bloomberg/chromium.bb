@@ -5,6 +5,8 @@
 import os
 import sys
 
+from core import path_util
+
 from telemetry.core import local_server
 from telemetry.core import util
 
@@ -15,7 +17,7 @@ class PywebsocketServerBackend(local_server.LocalServerBackend):
     super(PywebsocketServerBackend, self).__init__()
     self.port = 8001
     self.base_dir = os.path.relpath(
-        os.path.join(util.GetChromiumSrcDir(),
+        os.path.join(path_util.GetChromiumSrcDir(),
                      'third_party', 'pywebsocket', 'src'),
         start=util.GetTelemetryDir())
 

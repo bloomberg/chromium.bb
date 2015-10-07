@@ -4,10 +4,10 @@
 
 import os
 
+from core import path_util
 from core import perf_benchmark
 
 from telemetry import benchmark
-from telemetry.core import util
 from telemetry import page as page_module
 from telemetry.page import page_test
 from telemetry.page import shared_page_state
@@ -18,7 +18,7 @@ from benchmarks import pywebsocket_server
 from page_sets import webgl_supported_shared_state
 
 
-BLINK_PERF_BASE_DIR = os.path.join(util.GetChromiumSrcDir(),
+BLINK_PERF_BASE_DIR = os.path.join(path_util.GetChromiumSrcDir(),
                                    'third_party', 'WebKit', 'PerformanceTests')
 SKIPPED_FILE = os.path.join(BLINK_PERF_BASE_DIR, 'Skipped')
 

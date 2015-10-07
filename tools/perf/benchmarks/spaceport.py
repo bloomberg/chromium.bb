@@ -7,10 +7,10 @@
 import logging
 import os
 
+from core import path_util
 from core import perf_benchmark
 
 from telemetry import benchmark
-from telemetry.core import util
 from telemetry import page as page_module
 from telemetry.page import page_test
 from telemetry import story
@@ -114,8 +114,8 @@ class Spaceport(perf_benchmark.PerfBenchmark):
     return 'spaceport'
 
   def CreateStorySet(self, options):
-    spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
-        'data', 'third_party', 'spaceport')
+    spaceport_dir = os.path.join(path_util.GetChromiumSrcDir(), 'chrome',
+                                 'test', 'data', 'third_party', 'spaceport')
     ps = story.StorySet(base_dir=spaceport_dir)
     ps.AddStory(page_module.Page('file://index.html', ps, ps.base_dir))
     return ps
