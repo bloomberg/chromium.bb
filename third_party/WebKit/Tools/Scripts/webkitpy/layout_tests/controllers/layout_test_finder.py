@@ -44,7 +44,7 @@ class LayoutTestFinder(object):
         self._port = port
         self._options = options
         self._filesystem = self._port.host.filesystem
-        self.LAYOUT_TESTS_DIRECTORY = 'LayoutTests'
+        self.LAYOUT_TESTS_DIRECTORIES = ('src', 'third_party', 'WebKit', 'LayoutTests')
 
     def find_tests(self, args, test_list=None, fastest_percentile=None):
         paths = self._strip_test_dir_prefixes(args)
@@ -115,12 +115,15 @@ class LayoutTestFinder(object):
         return [self._strip_test_dir_prefix(path) for path in paths if path]
 
     def _strip_test_dir_prefix(self, path):
-        # Handle both "LayoutTests/foo/bar.html" and "LayoutTests\foo\bar.html" if
-        # the filesystem uses '\\' as a directory separator.
-        if path.startswith(self.LAYOUT_TESTS_DIRECTORY + self._port.TEST_PATH_SEPARATOR):
-            return path[len(self.LAYOUT_TESTS_DIRECTORY + self._port.TEST_PATH_SEPARATOR):]
-        if path.startswith(self.LAYOUT_TESTS_DIRECTORY + self._filesystem.sep):
-            return path[len(self.LAYOUT_TESTS_DIRECTORY + self._filesystem.sep):]
+        # Remove src/third_party/WebKit/LayoutTests/ from the front of the test path,
+        # or any subset of these.
+        for i in range(len(self.LAYOUT_TESTS_DIRECTORIES)):
+            # Handle both "LayoutTests/foo/bar.html" and "LayoutTests\foo\bar.html" if
+            # the filesystem uses '\\' as a directory separator
+            for separator in (self._port.TEST_PATH_SEPARATOR, self._filesystem.sep):
+                directory_prefix = separator.join(self.LAYOUT_TESTS_DIRECTORIES[i:]) + separator
+                if path.startswith(directory_prefix):
+                    return path[len(directory_prefix):]
         return path
 
     def _read_test_names_from_file(self, filenames, test_path_separator):
