@@ -87,7 +87,9 @@ void SearchEngineTabHelper::DidNavigateMainFrame(
   GenerateKeywordIfNecessary(params);
 }
 
-bool SearchEngineTabHelper::OnMessageReceived(const IPC::Message& message) {
+bool SearchEngineTabHelper::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchEngineTabHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PageHasOSDD, OnPageHasOSDD)
