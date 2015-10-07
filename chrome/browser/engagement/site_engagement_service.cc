@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -254,8 +255,17 @@ SiteEngagementService* SiteEngagementService::Get(Profile* profile) {
 
 // static
 bool SiteEngagementService::IsEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSiteEngagementService);
+  const std::string group_name =
+      base::FieldTrialList::FindFullName(kEngagementParams);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSiteEngagementService)) {
+    return true;
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSiteEngagementService)) {
+    return false;
+  }
+  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
 // static
