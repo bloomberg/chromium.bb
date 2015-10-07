@@ -342,7 +342,7 @@ int GlassBrowserFrameView::NonClientTopBorderHeight() const {
   // frame has a 0 frame border around most edges and a CYSIZEFRAME-thick border
   // at the top (see AeroGlassFrame::OnGetMinMaxInfo()).
   return gfx::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME) +
-      (!frame()->ShouldLeaveOffsetNearTopBorder() ?
+      (frame()->IsMaximized() ?
           -GetLayoutConstant(TABSTRIP_TOP_SHADOW_HEIGHT) :
           kNonClientRestoredExtraThickness);
 }

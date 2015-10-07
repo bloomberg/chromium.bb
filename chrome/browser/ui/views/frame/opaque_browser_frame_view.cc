@@ -406,10 +406,6 @@ int OpaqueBrowserFrameView::GetIconSize() const {
 #endif
 }
 
-bool OpaqueBrowserFrameView::ShouldLeaveOffsetNearTopBorder() const {
-  return frame()->ShouldLeaveOffsetNearTopBorder();
-}
-
 gfx::Size OpaqueBrowserFrameView::GetBrowserViewMinimumSize() const {
   return browser_view()->GetMinimumSize();
 }

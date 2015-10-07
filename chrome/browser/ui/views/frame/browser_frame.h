@@ -108,11 +108,6 @@ class BrowserFrame
                               const gfx::Point& p,
                               ui::MenuSourceType source_type) override;
 
-  // Returns true if we should leave any offset at the frame caption. Typically
-  // when the frame is maximized/full screen we want to leave no offset at the
-  // top.
-  bool ShouldLeaveOffsetNearTopBorder();
-
   AvatarMenuButton* GetAvatarMenuButton();
 
 #if defined(FRAME_AVATAR_BUTTON)

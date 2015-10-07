@@ -74,7 +74,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   bool ShouldShowWindowTitle() const override;
   base::string16 GetWindowTitle() const override;
   int GetIconSize() const override;
-  bool ShouldLeaveOffsetNearTopBorder() const override;
   gfx::Size GetBrowserViewMinimumSize() const override;
   bool ShouldShowCaptionButtons() const override;
   bool ShouldShowAvatar() const override;

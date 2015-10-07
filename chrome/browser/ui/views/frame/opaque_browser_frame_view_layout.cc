@@ -222,18 +222,17 @@ int OpaqueBrowserFrameViewLayout::NonClientTopBorderHeight(
 
   int thickness = FrameBorderThickness(restored);
   if (!restored && delegate_->IsTabStripVisible() &&
-      (!delegate_->ShouldLeaveOffsetNearTopBorder() || IsTitleBarCondensed())) {
+      (delegate_->IsMaximized() || IsTitleBarCondensed())) {
     thickness -= kTabstripTopShadowThickness;
   }
   return thickness;
 }
 
 int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
-  return NonClientTopBorderHeight(restored) + ((!restored &&
-      (!delegate_->ShouldLeaveOffsetNearTopBorder() ||
-      IsTitleBarCondensed() ||
-      delegate_->IsFullscreen())) ?
-      0 : kNonClientRestoredExtraThickness);
+  return NonClientTopBorderHeight(restored) +
+      ((!restored &&
+        (delegate_->IsMaximized() || IsTitleBarCondensed() ||
+         delegate_->IsFullscreen())) ? 0 : kNonClientRestoredExtraThickness);
 }
 
 int OpaqueBrowserFrameViewLayout::TitlebarBottomThickness(bool restored) const {

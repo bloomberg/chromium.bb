@@ -76,10 +76,6 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     return 17;
   }
 
-  bool ShouldLeaveOffsetNearTopBorder() const override {
-    return !IsMaximized();
-  }
-
   gfx::Size GetBrowserViewMinimumSize() const override {
     // Taken from a calculation in BrowserViewLayout.
     return gfx::Size(168, 64);

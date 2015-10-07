@@ -23,11 +23,6 @@ class OpaqueBrowserFrameViewLayoutDelegate {
   // because of differences in fonts, so its part of the interface.
   virtual int GetIconSize() const = 0;
 
-  // Returns true if we should leave any offset at the frame caption. Typically
-  // when the frame is maximized/full screen we want to leave no offset at the
-  // top.
-  virtual bool ShouldLeaveOffsetNearTopBorder() const = 0;
-
   // Returns the browser's minimum view size. Used because we need to calculate
   // the minimum size for the entire non-client area.
   virtual gfx::Size GetBrowserViewMinimumSize() const = 0;
