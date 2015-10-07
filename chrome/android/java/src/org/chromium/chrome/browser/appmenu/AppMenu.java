@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -183,8 +184,11 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             mPopup.setAnimationStyle(R.style.OverflowMenuAnim);
         }
 
-        // Turn off window animations for low end devices.
-        if (SysUtils.isLowEndDevice()) mPopup.setAnimationStyle(0);
+        // Turn off window animations for low end devices, and on Android M, which has built-in menu
+        // animations.
+        if (SysUtils.isLowEndDevice() || Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mPopup.setAnimationStyle(0);
+        }
 
         Rect bgPadding = new Rect();
         mPopup.getBackground().getPadding(bgPadding);
