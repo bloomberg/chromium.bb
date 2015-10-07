@@ -16,11 +16,10 @@
   <link rel="import" type="css" href="../shared-icon-style.css">
   <link rel="import" type="css" href="viewer-pdf-toolbar.css">
   <template>
-    <paper-progress value="{{loadProgress}}"></paper-progress>
 
     <paper-toolbar>
-      <div id="aligner" class="horizontal layout center">
-        <span id="title" class="invisible flex-5" title="{{docTitle}}">
+      <div id="aligner" class="middle horizontal layout center">
+        <span id="title" class="flex-5" title="{{docTitle}}">
           <span>{{docTitle}}</span>
         </span>
 
@@ -61,6 +60,9 @@
               title="{{strings.tooltipPrint}}">
           </paper-icon-button>
         </div>
+      </div>
+      <div class="bottom fit">
+        <paper-progress id="progress" value="{{loadProgress}}"></paper-progress>
       </div>
     </paper-toolbar>
   </template>

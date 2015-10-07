@@ -5,6 +5,7 @@
 /* We introduce a wrapper aligner element as setting the relevant attributes
  * (horizontal justified layout center) have no effect on the core-toolbar. */
 #aligner {
+  padding: 0 16px;
   width: 100%;
 }
 
@@ -38,20 +39,19 @@ viewer-toolbar-dropdown {
 }
 
 paper-progress {
-  --paper-progress-active-color: rgb(50, 54, 57);
-  --paper-progress-container-color: rgb(34, 36, 38);
-  --paper-progress-height: 48px;
-  position: absolute;
+  --paper-progress-active-color: var(--google-blue-300);
+  --paper-progress-container-color: transparent;
+  --paper-progress-height: 3px;
+  transition: opacity 150ms;
   width: 100%;
 }
 
 paper-toolbar {
+  --paper-toolbar-background: rgb(50, 54, 57);
   @apply(--shadow-elevation-2dp);
-  background-color: transparent;
   color: rgb(241, 241, 241);
   font-size: 1.5em;
   height: 48px;
-  padding: 0 16px;
 }
 
 paper-toolbar /deep/ ::selection {

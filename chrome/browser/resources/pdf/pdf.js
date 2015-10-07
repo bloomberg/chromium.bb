@@ -241,6 +241,9 @@ function PDFViewer(browserApi) {
       // and click events.
       this.plugin_.addEventListener('mouseup',
           this.materialToolbar_.hideDropdowns.bind(this.materialToolbar_));
+
+      this.materialToolbar_.docTitle =
+          getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl);
     }
 
     document.body.addEventListener('change-page', function(e) {

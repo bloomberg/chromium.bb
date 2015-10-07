@@ -84,9 +84,9 @@
 
     loadProgressChanged: function() {
       if (this.loadProgress >= 100) {
-        this.$.title.classList.toggle('invisible', false);
         this.$.pageselector.classList.toggle('invisible', false);
         this.$.buttons.classList.toggle('invisible', false);
+        this.$.progress.style.opacity = 0;
       }
     },
 
