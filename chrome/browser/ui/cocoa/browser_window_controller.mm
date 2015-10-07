@@ -455,6 +455,7 @@ using content::WebContents;
   [downloadShelfController_ browserWillBeDestroyed];
   [bookmarkBarController_ browserWillBeDestroyed];
   [avatarButtonController_ browserWillBeDestroyed];
+  [bookmarkBubbleController_ browserWillBeDestroyed];
 
   [super dealloc];
 }

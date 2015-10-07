@@ -104,6 +104,10 @@ using bookmarks::BookmarkNode;
   }
 }
 
+- (void)browserWillBeDestroyed {
+  bookmarkBubbleObserver_ = nullptr;
+}
+
 - (void)notifyBubbleClosed {
   if (!bookmarkBubbleObserver_)
     return;
