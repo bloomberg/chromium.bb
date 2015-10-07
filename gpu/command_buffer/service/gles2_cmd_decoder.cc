@@ -9286,10 +9286,9 @@ error::Error GLES2DecoderImpl::GetAttribLocationHelper(
   if (!location) {
     return error::kOutOfBounds;
   }
-  // Require the client to init this incase the context is lost and we are no
-  // longer executing commands.
+  // Check that the client initialized the result.
   if (*location != -1) {
-    return error::kGenericError;
+    return error::kInvalidArguments;
   }
   *location = program->GetAttribLocation(name_str);
   return error::kNoError;
@@ -9335,10 +9334,9 @@ error::Error GLES2DecoderImpl::GetUniformLocationHelper(
   if (!location) {
     return error::kOutOfBounds;
   }
-  // Require the client to init this incase the context is lost an we are no
-  // longer executing commands.
+  // Check that the client initialized the result.
   if (*location != -1) {
-    return error::kGenericError;
+    return error::kInvalidArguments;
   }
   *location = program->GetUniformFakeLocation(name_str);
   return error::kNoError;
@@ -9421,10 +9419,9 @@ error::Error GLES2DecoderImpl::GetFragDataLocationHelper(
   if (!location) {
     return error::kOutOfBounds;
   }
-  // Require the client to init this incase the context is lost and we are no
-  // longer executing commands.
+  // Check that the client initialized the result.
   if (*location != -1) {
-    return error::kGenericError;
+    return error::kInvalidArguments;
   }
   Program* program = GetProgramInfoNotShader(
       client_id, "glGetFragDataLocation");
@@ -9473,10 +9470,9 @@ error::Error GLES2DecoderImpl::HandleGetUniformBlockIndex(
   if (!index) {
     return error::kOutOfBounds;
   }
-  // Require the client to init this in case the context is lost and we are no
-  // longer executing commands.
+  // Check that the client initialized the result.
   if (*index != GL_INVALID_INDEX) {
-    return error::kGenericError;
+    return error::kInvalidArguments;
   }
   Program* program = GetProgramInfoNotShader(
       c.program, "glGetUniformBlockIndex");
