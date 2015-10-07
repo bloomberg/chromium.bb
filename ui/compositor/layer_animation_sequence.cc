@@ -48,6 +48,8 @@ void LayerAnimationSequence::Start(LayerAnimationDelegate* delegate) {
   if (elements_.empty())
     return;
 
+  NotifyStarted();
+
   elements_[0]->set_requested_start_time(start_time_);
   elements_[0]->Start(delegate, animation_group_id_);
 }
@@ -256,6 +258,11 @@ void LayerAnimationSequence::NotifyScheduled() {
   FOR_EACH_OBSERVER(LayerAnimationObserver,
                     observers_,
                     OnLayerAnimationScheduled(this));
+}
+
+void LayerAnimationSequence::NotifyStarted() {
+  FOR_EACH_OBSERVER(LayerAnimationObserver, observers_,
+                    OnLayerAnimationStarted(this));
 }
 
 void LayerAnimationSequence::NotifyEnded() {

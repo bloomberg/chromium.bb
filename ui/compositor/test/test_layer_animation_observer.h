@@ -6,6 +6,7 @@
 #define UI_COMPOSITOR_TEST_TEST_LAYER_ANIMATION_OBSERVER_H_
 
 #include "base/compiler_specific.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer_animation_observer.h"
 
 namespace ui {
@@ -19,34 +20,110 @@ class TestLayerAnimationObserver : public LayerAnimationObserver {
   TestLayerAnimationObserver();
   ~TestLayerAnimationObserver() override;
 
-  void OnLayerAnimationEnded(LayerAnimationSequence* sequence) override;
+  // Resets all the data tracking LayerAnimationObserver observations.
+  void ResetLayerAnimationObserverations();
 
-  void OnLayerAnimationAborted(LayerAnimationSequence* sequence) override;
-
+  // LayerAnimationObserver:
   void OnLayerAnimationScheduled(LayerAnimationSequence* sequence) override;
-
+  void OnLayerAnimationStarted(LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationAborted(LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationEnded(LayerAnimationSequence* sequence) override;
   bool RequiresNotificationWhenAnimatorDestroyed() const override;
 
-  const LayerAnimationSequence* last_ended_sequence() const {
-    return last_ended_sequence_;
+  const LayerAnimationSequence* last_attached_sequence() const {
+    return last_attached_sequence_;
+  }
+
+  int last_attached_sequence_epoch() const {
+    return last_attached_sequence_epoch_;
   }
 
   const LayerAnimationSequence* last_scheduled_sequence() const {
     return last_scheduled_sequence_;
   }
 
+  int last_scheduled_sequence_epoch() const {
+    return last_scheduled_sequence_epoch_;
+  }
+
+  const LayerAnimationSequence* last_started_sequence() const {
+    return last_started_sequence_;
+  }
+
+  int last_started_sequence_epoch() const {
+    return last_started_sequence_epoch_;
+  }
+
   const LayerAnimationSequence* last_aborted_sequence() const {
     return last_aborted_sequence_;
+  }
+
+  int last_aborted_sequence_epoch() const {
+    return last_aborted_sequence_epoch_;
+  }
+
+  const LayerAnimationSequence* last_ended_sequence() const {
+    return last_ended_sequence_;
+  }
+
+  int last_ended_sequence_epoch() const { return last_ended_sequence_epoch_; }
+
+  const LayerAnimationSequence* last_detached_sequence() const {
+    return last_detached_sequence_;
+  }
+
+  int last_detached_sequence_epoch() const {
+    return last_detached_sequence_epoch_;
   }
 
   void set_requires_notification_when_animator_destroyed(bool value) {
     requires_notification_when_animator_destroyed_ = value;
   }
 
+  testing::AssertionResult NoEventsObserved();
+
+  testing::AssertionResult AttachedEpochIsBeforeScheduledEpoch();
+
+  testing::AssertionResult ScheduledEpochIsBeforeStartedEpoch();
+
+  testing::AssertionResult StartedEpochIsBeforeEndedEpoch();
+
+  testing::AssertionResult StartedEpochIsBeforeAbortedEpoch();
+
+  testing::AssertionResult AbortedEpochIsBeforeStartedEpoch();
+
+  testing::AssertionResult AbortedEpochIsBeforeDetachedEpoch();
+
+  testing::AssertionResult EndedEpochIsBeforeStartedEpoch();
+
+  testing::AssertionResult EndedEpochIsBeforeDetachedEpoch();
+
+ protected:
+  // LayerAnimationObserver:
+  void OnAttachedToSequence(LayerAnimationSequence* sequence) override;
+  void OnDetachedFromSequence(LayerAnimationSequence* sequence) override;
+
  private:
-  const LayerAnimationSequence* last_ended_sequence_;
+  int next_epoch_;
+
+  const LayerAnimationSequence* last_attached_sequence_;
+  int last_attached_sequence_epoch_;
+
   const LayerAnimationSequence* last_scheduled_sequence_;
+  int last_scheduled_sequence_epoch_;
+
+  const LayerAnimationSequence* last_started_sequence_;
+  int last_started_sequence_epoch_;
+
   const LayerAnimationSequence* last_aborted_sequence_;
+  int last_aborted_sequence_epoch_;
+
+  const LayerAnimationSequence* last_ended_sequence_;
+  int last_ended_sequence_epoch_;
+
+  const LayerAnimationSequence* last_detached_sequence_;
+  int last_detached_sequence_epoch_;
+
   bool requires_notification_when_animator_destroyed_;
 
   // Copy and assign are allowed.

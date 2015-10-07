@@ -18,6 +18,9 @@ LayerAnimationObserver::~LayerAnimationObserver() {
   StopObserving();
 }
 
+void LayerAnimationObserver::OnLayerAnimationStarted(
+    LayerAnimationSequence* sequence) {}
+
 bool LayerAnimationObserver::RequiresNotificationWhenAnimatorDestroyed() const {
   return false;
 }

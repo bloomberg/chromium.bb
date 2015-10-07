@@ -140,6 +140,9 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   // Notifies the observers that this sequence has been scheduled.
   void NotifyScheduled();
 
+  // Notifies the observers that this sequence has been started.
+  void NotifyStarted();
+
   // Notifies the observers that this sequence has ended.
   void NotifyEnded();
 

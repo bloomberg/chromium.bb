@@ -22,6 +22,9 @@ class ImplicitAnimationObserver;
 // LayerAnimationObservers are notified when animations complete.
 class COMPOSITOR_EXPORT LayerAnimationObserver  {
  public:
+  // Called when the |sequence| starts.
+  virtual void OnLayerAnimationStarted(LayerAnimationSequence* sequence);
+
   // Called when the |sequence| ends. Not called if |sequence| is aborted.
   virtual void OnLayerAnimationEnded(
       LayerAnimationSequence* sequence) = 0;
