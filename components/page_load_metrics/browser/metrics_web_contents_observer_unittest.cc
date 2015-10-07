@@ -9,11 +9,13 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
+#include "components/rappor/rappor_utils.h"
 #include "components/rappor/test_rappor_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace page_load_metrics {
 
@@ -22,6 +24,9 @@ namespace {
 const char kDefaultTestUrl[] = "https://google.com";
 const char kDefaultTestUrlAnchor[] = "https://google.com#samepage";
 const char kDefaultTestUrl2[] = "https://whatever.com";
+
+const char kRapporMetricsNameCoarseTiming[] =
+    "PageLoad.CoarseTiming.NavigationToFirstLayout";
 
 const char kHistogramNameFirstLayout[] =
     "PageLoad.Timing2.NavigationToFirstLayout";
@@ -460,4 +465,69 @@ TEST_F(MetricsWebContentsObserverTest,
   histogram_tester_.ExpectBucketCount(
       kHistogramNameEvents, PAGE_LOAD_SUCCESSFUL_FIRST_LAYOUT_BACKGROUND, 1);
 }
+
+TEST_F(MetricsWebContentsObserverTest, NoRappor) {
+  rappor::TestSample::Shadow* sample_obj =
+      rappor_tester_.GetRecordedSampleForMetric(kRapporMetricsNameCoarseTiming);
+  EXPECT_EQ(sample_obj, nullptr);
+}
+
+TEST_F(MetricsWebContentsObserverTest, RapporLongPageLoad) {
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_layout = base::TimeDelta::FromSeconds(40);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      main_rfh());
+
+  // Navigate again to force logging RAPPOR.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  // TODO(csharrison) Check coarse histogram has no samples once we have support
+  // for multi-dimensional rappor testing.
+  rappor::TestSample::Shadow* sample_obj =
+      rappor_tester_.GetRecordedSampleForMetric(kRapporMetricsNameCoarseTiming);
+  const auto& string_it = sample_obj->string_fields.find("Domain");
+  EXPECT_NE(string_it, sample_obj->string_fields.end());
+  EXPECT_EQ(string_it->second,
+            rappor::GetDomainAndRegistrySampleFromGURL(GURL(kDefaultTestUrl)));
+
+  const auto& flag_it = sample_obj->flag_fields.find("IsSlow");
+  EXPECT_NE(flag_it, sample_obj->flag_fields.end());
+  EXPECT_EQ(flag_it->second, static_cast<uint64_t>(true));
+}
+
+TEST_F(MetricsWebContentsObserverTest, RapporQuickPageLoad) {
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_layout = base::TimeDelta::FromSeconds(1);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      main_rfh());
+
+  // Navigate again to force logging RAPPOR.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  // TODO(csharrison) Check coarse histogram has no samples once we have support
+  // for multi-dimensional rappor testing.
+  rappor::TestSample::Shadow* sample_obj =
+      rappor_tester_.GetRecordedSampleForMetric(kRapporMetricsNameCoarseTiming);
+  const auto& string_it = sample_obj->string_fields.find("Domain");
+  EXPECT_NE(string_it, sample_obj->string_fields.end());
+  EXPECT_EQ(string_it->second,
+            rappor::GetDomainAndRegistrySampleFromGURL(GURL(kDefaultTestUrl)));
+
+  const auto& flag_it = sample_obj->flag_fields.find("IsSlow");
+  EXPECT_NE(flag_it, sample_obj->flag_fields.end());
+  EXPECT_EQ(flag_it->second, static_cast<uint64_t>(false));
+}
+
 }  // namespace page_load_metrics
