@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_DNS_RELOADER_H_
-#define NET_BASE_DNS_RELOADER_H_
+#ifndef NET_DNS_DNS_RELOADER_H_
+#define NET_DNS_DNS_RELOADER_H_
 
 #include "build/build_config.h"
 
@@ -20,4 +20,4 @@ void DnsReloaderMaybeReload();
 }  // namespace net
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
 
-#endif  // NET_BASE_DNS_RELOADER_H_
+#endif  // NET_DNS_DNS_RELOADER_H_
