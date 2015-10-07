@@ -487,11 +487,6 @@ class EpollServer {
   void CallReadyListCallbacks();
 
  protected:
-  virtual int GetFlags(int fd);
-  inline int SetFlags(int fd, int flags) {
-    return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-  }
-
   virtual void SetNonblocking(int fd);
 
   // This exists here so that we can override this function in unittests

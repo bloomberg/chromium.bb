@@ -221,12 +221,8 @@ void EpollServer::RegisterFD(int fd, CB* cb, int event_mask) {
   cb->OnRegistration(this, fd, event_mask);
 }
 
-int EpollServer::GetFlags(int fd) {
-  return fcntl(fd, F_GETFL, 0);
-}
-
 void EpollServer::SetNonblocking(int fd) {
-  int flags = GetFlags(fd);
+  int flags = fcntl(fd, F_GETFL, 0);
   if (flags == -1) {
     int saved_errno = errno;
     char buf[kErrorBufferSize];
@@ -236,7 +232,7 @@ void EpollServer::SetNonblocking(int fd) {
   }
   if (!(flags & O_NONBLOCK)) {
     int saved_flags = flags;
-    flags = SetFlags(fd, flags | O_NONBLOCK);
+    flags = fcntl(fd, F_SETFL, flags | O_NONBLOCK);
     if (flags == -1) {
       // bad.
       int saved_errno = errno;
