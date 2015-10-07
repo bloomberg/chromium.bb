@@ -99,7 +99,7 @@ struct ShapeResult::RunInfo {
 
 float ShapeResult::RunInfo::xPositionForOffset(unsigned offset) const
 {
-    ASSERT(offset < m_numCharacters);
+    ASSERT(offset <= m_numCharacters);
     unsigned glyphIndex = 0;
     float position = 0;
     if (m_direction == HB_DIRECTION_RTL) {
@@ -404,6 +404,7 @@ FloatRect ShapeResult::selectionRect(Vector<RefPtr<ShapeResult>>& results,
     int from = absoluteFrom;
     int to = absoluteTo;
 
+    unsigned totalNumCharacters = 0;
     for (unsigned j = 0; j < results.size(); j++) {
         RefPtr<ShapeResult> result = results[j];
         for (unsigned i = 0; i < result->m_runs.size(); i++) {
@@ -431,9 +432,18 @@ FloatRect ShapeResult::selectionRect(Vector<RefPtr<ShapeResult>>& results,
             if (direction != RTL)
                 currentX += result->m_runs[i]->m_width;
         }
+        totalNumCharacters += result->numCharacters();
     }
 
     // The position in question might be just after the text.
+    if (!foundFromX && absoluteFrom == totalNumCharacters) {
+        fromX = direction == RTL ? 0 : totalWidth;
+        foundFromX = true;
+    }
+    if (!foundToX && absoluteTo == totalNumCharacters) {
+        toX = direction == RTL ? 0 : totalWidth;
+        foundToX = true;
+    }
     if (!foundFromX)
         fromX = 0;
     if (!foundToX)
