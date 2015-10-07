@@ -67,8 +67,10 @@ class SupervisedUserService : public KeyedService,
                               public extensions::ManagementPolicy::Provider,
 #endif
                               public SyncTypePreferenceProvider,
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
                               public sync_driver::SyncServiceObserver,
                               public chrome::BrowserListObserver,
+#endif
                               public SupervisedUserURLFilter::Observer {
  public:
   using NavigationBlockedCallback = base::Callback<void(content::WebContents*)>;
@@ -85,10 +87,10 @@ class SupervisedUserService : public KeyedService,
 
   ~SupervisedUserService() override;
 
-  // ProfileKeyedService override:
-  void Shutdown() override;
-
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Initializes this object.
+  void Init();
 
   void SetDelegate(Delegate* delegate);
 
@@ -130,14 +132,11 @@ class SupervisedUserService : public KeyedService,
   // is empty, or the empty string is there is no second custodian.
   std::string GetSecondCustodianName() const;
 
-  // Initializes this object.
-  void Init();
-
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Initializes this profile for syncing, using the provided |refresh_token| to
   // mint access tokens for Sync.
   void InitSync(const std::string& refresh_token);
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Convenience method that registers this supervised user using
   // |registration_utility| and initializes sync with the returned token.
   // The |callback| will be called when registration is complete,
@@ -159,14 +158,19 @@ class SupervisedUserService : public KeyedService,
   void AddPermissionRequestCreator(
       scoped_ptr<PermissionRequestCreator> creator);
 
+  // ProfileKeyedService override:
+  void Shutdown() override;
+
   // SyncTypePreferenceProvider implementation:
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // sync_driver::SyncServiceObserver implementation:
   void OnStateChanged() override;
 
   // chrome::BrowserListObserver implementation:
   void OnBrowserSetLastActive(Browser* browser) override;
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // SupervisedUserURLFilter::Observer implementation:
   void OnSiteListUpdated() override;
@@ -234,6 +238,7 @@ class SupervisedUserService : public KeyedService,
 
   void SetActive(bool active);
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   void OnCustodianProfileDownloaded(const base::string16& full_name);
 
   void OnSupervisedUserRegistered(const AuthErrorCallback& callback,
@@ -245,6 +250,7 @@ class SupervisedUserService : public KeyedService,
   void StartSetupSync();
   void FinishSetupSyncWhenReady();
   void FinishSetupSync();
+#endif
 
   bool ProfileIsSupervised() const;
 
