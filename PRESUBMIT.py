@@ -1447,6 +1447,26 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
   return results
 
 
+def _CheckAndroidNewMdpiAssetLocation(input_api, output_api):
+  """Checks if MDPI assets are placed in a correct directory."""
+  file_filter = lambda f: (f.LocalPath().endswith('.png') and
+                           ('/res/drawable/' in f.LocalPath() or
+                            '/res/drawable-ldrtl/' in f.LocalPath()))
+  errors = []
+  for f in input_api.AffectedFiles(include_deletes=False,
+                                   file_filter=file_filter):
+    errors.append('    %s' % f.LocalPath())
+
+  results = []
+  if errors:
+    results.append(output_api.PresubmitError(
+        'MDPI assets should be placed in /res/drawable-mdpi/ or '
+        '/res/drawable-ldrtl-mdpi/\ninstead of /res/drawable/ and'
+        '/res/drawable-ldrtl/.\n'
+        'Contact newt@chromium.org if you have questions.', errors))
+  return results
+
+
 def _CheckForCopyrightedCode(input_api, output_api):
   """Verifies that newly added code doesn't contain copyrighted material
   and is properly licensed under the standard Chromium license.
@@ -1576,6 +1596,7 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups checks that target android code."""
   results = []
   results.extend(_CheckAndroidCrLogUsage(input_api, output_api))
+  results.extend(_CheckAndroidNewMdpiAssetLocation(input_api, output_api))
   results.extend(_CheckAndroidToastUsage(input_api, output_api))
   return results
 
