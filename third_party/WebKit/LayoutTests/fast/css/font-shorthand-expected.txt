@@ -54,17 +54,17 @@ font-family: serif
 
 Longhands for font: italic bold 12px/24px serif
 font-style: italic
-font-weight: bold
 font-variant: normal
+font-weight: bold
 font-stretch: normal
 font-size: 12px
 line-height: 24px
 font-family: serif
 
 Longhands for font: small-caps bold 14px/28px Arial, sans-serif
+font-style: normal
 font-variant: small-caps
 font-weight: bold
-font-style: normal
 font-stretch: normal
 font-size: 14px
 line-height: 28px

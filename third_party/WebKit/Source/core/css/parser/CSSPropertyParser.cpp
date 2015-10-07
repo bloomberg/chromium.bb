@@ -9,11 +9,14 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFeatureValue.h"
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValuePool.h"
+#include "core/css/FontFace.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/frame/UseCounter.h"
+#include "core/layout/LayoutTheme.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -25,7 +28,6 @@ CSSPropertyParser::CSSPropertyParser(CSSParserValueList* valueList, const CSSPar
     , m_range(range)
     , m_context(context)
     , m_parsedProperties(parsedProperties)
-    , m_ruleType(ruleType)
     , m_inParseShorthand(0)
     , m_currentShorthand(CSSPropertyInvalid)
     , m_implicitShorthand(false)
@@ -500,7 +502,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFontVariantList(CSSParserTokenRan
     return nullptr;
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeFontWeight(CSSParserTokenRange& range)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeFontWeight(CSSParserTokenRange& range)
 {
     const CSSParserToken& token = range.peek();
     if (token.id() >= CSSValueNormal && token.id() <= CSSValueLighter)
@@ -582,11 +584,11 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTabSize(CSSParserTokenRange& rang
     return consumeLength(range, cssParserMode, ValueRangeNonNegative);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeFontSize(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFontSize(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless = UnitlessQuirk::Forbid)
 {
     if (range.peek().id() >= CSSValueXxSmall && range.peek().id() <= CSSValueLarger)
         return consumeIdent(range);
-    return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative, UnitlessQuirk::Allow);
+    return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative, unitless);
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineHeight(CSSParserTokenRange& range, CSSParserMode cssParserMode)
@@ -651,7 +653,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyTabSize:
         return consumeTabSize(m_range, m_context.mode());
     case CSSPropertyFontSize:
-        return consumeFontSize(m_range, m_context.mode());
+        return consumeFontSize(m_range, m_context.mode(), UnitlessQuirk::Allow);
     case CSSPropertyLineHeight:
         return consumeLineHeight(m_range, m_context.mode());
     case CSSPropertyRotate:
@@ -784,9 +786,113 @@ bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
     return true;
 }
 
+bool CSSPropertyParser::consumeSystemFont(bool important)
+{
+    CSSValueID systemFontID = m_range.consumeIncludingWhitespace().id();
+    ASSERT(systemFontID >= CSSValueCaption && systemFontID <= CSSValueStatusBar);
+    if (!m_range.atEnd())
+        return false;
+
+    FontStyle fontStyle = FontStyleNormal;
+    FontWeight fontWeight = FontWeightNormal;
+    float fontSize = 0;
+    AtomicString fontFamily;
+    LayoutTheme::theme().systemFont(systemFontID, fontStyle, fontWeight, fontSize, fontFamily);
+
+    addProperty(CSSPropertyFontStyle, cssValuePool().createIdentifierValue(fontStyle == FontStyleItalic ? CSSValueItalic : CSSValueNormal), important);
+    addProperty(CSSPropertyFontWeight, cssValuePool().createValue(fontWeight), important);
+    addProperty(CSSPropertyFontSize, cssValuePool().createValue(fontSize, CSSPrimitiveValue::UnitType::Pixels), important);
+    RefPtrWillBeRawPtr<CSSValueList> fontFamilyList = CSSValueList::createCommaSeparated();
+    fontFamilyList->append(cssValuePool().createFontFamilyValue(fontFamily));
+    addProperty(CSSPropertyFontFamily, fontFamilyList.release(), important);
+
+    addProperty(CSSPropertyFontStretch, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariant, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyLineHeight, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    return true;
+}
+
+bool CSSPropertyParser::consumeFont(bool important)
+{
+    // Let's check if there is an inherit or initial somewhere in the shorthand.
+    CSSParserTokenRange range = m_range;
+    while (!range.atEnd()) {
+        CSSValueID id = range.consumeIncludingWhitespace().id();
+        if (id == CSSValueInherit || id == CSSValueInitial)
+            return false;
+    }
+    // Optional font-style, font-variant, font-stretch and font-weight.
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> fontStyle = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> fontVariant = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> fontWeight = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> fontStretch = nullptr;
+    while (!m_range.atEnd()) {
+        CSSValueID id = m_range.peek().id();
+        if (!fontStyle && CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyFontStyle, id)) {
+            fontStyle = consumeIdent(m_range);
+            continue;
+        }
+        if (!fontVariant) {
+            // Font variant in the shorthand is particular, it only accepts normal or small-caps.
+            fontVariant = consumeFontVariant(m_range);
+            if (fontVariant)
+                continue;
+        }
+        if (!fontWeight) {
+            fontWeight = consumeFontWeight(m_range);
+            if (fontWeight)
+                continue;
+        }
+        if (!fontStretch && CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyFontStretch, id))
+            fontStretch = consumeIdent(m_range);
+        else
+            break;
+    }
+
+    if (m_range.atEnd())
+        return false;
+
+    addProperty(CSSPropertyFontStyle, fontStyle ? fontStyle.release() : cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariant, fontVariant ? fontVariant.release() : cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontWeight, fontWeight ? fontWeight.release() : cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontStretch, fontStretch ? fontStretch.release() : cssValuePool().createIdentifierValue(CSSValueNormal), important);
+
+    // Now a font size _must_ come.
+    RefPtrWillBeRawPtr<CSSValue> fontSize = consumeFontSize(m_range, m_context.mode());
+    if (!fontSize || m_range.atEnd())
+        return false;
+
+    addProperty(CSSPropertyFontSize, fontSize.release(), important);
+
+    if (m_range.peek().type() == DelimiterToken && m_range.peek().delimiter() == '/') {
+        m_range.consumeIncludingWhitespace();
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> lineHeight = consumeLineHeight(m_range, m_context.mode());
+        if (!lineHeight)
+            return false;
+        addProperty(CSSPropertyLineHeight, lineHeight.release(), important);
+    } else {
+        addProperty(CSSPropertyLineHeight, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    }
+
+    // Font family must come now.
+    RefPtrWillBeRawPtr<CSSValue> parsedFamilyValue = consumeFontFamily(m_range);
+    if (!parsedFamilyValue)
+        return false;
+
+    addProperty(CSSPropertyFontFamily, parsedFamilyValue.release(), important);
+
+    // FIXME: http://www.w3.org/TR/2011/WD-css3-fonts-20110324/#font-prop requires that
+    // "font-stretch", "font-size-adjust", and "font-kerning" be reset to their initial values
+    // but we don't seem to support them at the moment. They should also be added here once implemented.
+    return m_range.atEnd();
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, bool important)
 {
     m_range.consumeWhitespace();
+    CSSPropertyID oldShorthand = m_currentShorthand;
+    // TODO(rob.buis): Remove this when the legacy property parser is gone
+    m_currentShorthand = propId;
     switch (propId) {
     case CSSPropertyWebkitMarginCollapse: {
         CSSValueID id = m_range.consumeIncludingWhitespace().id();
@@ -826,7 +932,14 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, bool important)
         addProperty(CSSPropertyOverflowY, overflowYValue.release(), important);
         return true;
     }
+    case CSSPropertyFont: {
+        const CSSParserToken& token = m_range.peek();
+        if (token.id() >= CSSValueCaption && token.id() <= CSSValueStatusBar)
+            return consumeSystemFont(important);
+        return consumeFont(important);
+    }
     default:
+        m_currentShorthand = oldShorthand;
         return false;
     }
 }

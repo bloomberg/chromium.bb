@@ -193,9 +193,8 @@ private:
     PassRefPtrWillBeRawPtr<CSSBasicShapePolygonValue> parseBasicShapePolygon(CSSParserValueList* args);
     PassRefPtrWillBeRawPtr<CSSBasicShapeInsetValue> parseBasicShapeInset(CSSParserValueList* args);
 
-    bool parseFont(bool important);
-    bool parseSystemFont(bool important);
-    PassRefPtrWillBeRawPtr<CSSValueList> parseFontFamily();
+    bool consumeFont(bool important);
+    bool consumeSystemFont(bool important);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseCounter(int defaultValue);
     PassRefPtrWillBeRawPtr<CSSValue> parseCounterContent(CSSParserValueList* args, bool counters);
@@ -207,9 +206,6 @@ private:
 
     bool acceptQuirkyColors(CSSPropertyID) const;
 
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseLineHeight();
-    bool parseFontSize(bool important);
-    bool parseFontWeight(bool important);
     PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFaceSrc();
 
     bool parseSVGValue(CSSPropertyID propId, bool important);
@@ -372,7 +368,6 @@ private:
 
     // Outputs:
     WillBeHeapVector<CSSProperty, 256>& m_parsedProperties;
-    StyleRule::Type m_ruleType;
 
     // Locals during parsing:
     int m_inParseShorthand;
