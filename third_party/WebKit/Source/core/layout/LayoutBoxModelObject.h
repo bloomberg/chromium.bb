@@ -65,8 +65,8 @@ class InlineFlowBox;
 
 // This class is the base class for all CSS objects.
 //
-// All CSS objects follow the box model object:
-// http://www.w3.org/TR/CSS21/box.html
+// All CSS objects follow the box model object. See THE BOX MODEL section in
+// LayoutBox for more information.
 //
 // This class actually doesn't have the box model but it exposes some common
 // functions or concepts that sub-classes can extend upon. For example, there
@@ -85,6 +85,9 @@ class InlineFlowBox;
 // can't have a PaintLayer. This is an unfortunate artifact of our
 // design as it limits code sharing and prevents hardware accelerating SVG
 // (the current design require a PaintLayer for compositing).
+//
+//
+// ***** COORDINATE SYSTEMS *****
 //
 // In order to fully understand LayoutBoxModelObject and the inherited classes,
 // we need to introduce the concept of coordinate systems.
