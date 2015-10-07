@@ -25,6 +25,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/invalidation/InvalidationSet.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -48,7 +49,7 @@ public:
     bool hasDocumentSecurityOrigin;
 };
 
-using InvalidationSetVector = WillBeHeapVector<RefPtrWillBeMember<InvalidationSet>, 8>;
+using InvalidationSetVector = WillBeHeapVector<RefPtr<InvalidationSet>, 8>;
 
 class CORE_EXPORT RuleFeatureSet {
     DISALLOW_ALLOCATION();
@@ -101,8 +102,8 @@ protected:
     InvalidationSet* invalidationSetForSelector(const CSSSelector&);
 
 private:
-    using InvalidationSetMap = WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<InvalidationSet>>;
-    using PseudoTypeInvalidationSetMap = WillBeHeapHashMap<CSSSelector::PseudoType, RefPtrWillBeMember<InvalidationSet>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
+    using InvalidationSetMap = HashMap<AtomicString, RefPtr<InvalidationSet>>;
+    using PseudoTypeInvalidationSetMap = HashMap<CSSSelector::PseudoType, RefPtr<InvalidationSet>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
 
     struct FeatureMetadata {
         DISALLOW_ALLOCATION();

@@ -401,7 +401,7 @@ void StyleEngine::createResolver()
 
     ASSERT(document().frame());
 
-    m_resolver = adoptPtrWillBeNoop(new StyleResolver(*m_document));
+    m_resolver = StyleResolver::create(*m_document);
 
     // A scoped style resolver for document will be created during
     // appendActiveAuthorStyleSheets if needed.

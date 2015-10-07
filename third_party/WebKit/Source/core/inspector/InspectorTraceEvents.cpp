@@ -247,7 +247,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvali
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvalidateEvent::invalidationList(Element& element, const WillBeHeapVector<RefPtrWillBeMember<InvalidationSet>>& invalidationList)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvalidateEvent::invalidationList(Element& element, const Vector<RefPtr<InvalidationSet>>& invalidationList)
 {
     RefPtr<TracedValue> value = fillCommonPart(element, ElementHasPendingInvalidationList);
     value->beginArray("invalidationList");

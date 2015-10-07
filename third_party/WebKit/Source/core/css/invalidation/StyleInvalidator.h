@@ -21,7 +21,7 @@ public:
     StyleInvalidator();
     ~StyleInvalidator();
     void invalidate(Document&);
-    void scheduleInvalidation(PassRefPtrWillBeRawPtr<InvalidationSet>, Element&);
+    void scheduleInvalidation(PassRefPtr<InvalidationSet>, Element&);
     void clearInvalidation(Element&);
 
     void clearPendingInvalidations();
@@ -87,8 +87,8 @@ private:
         RecursionData* m_data;
     };
 
-    using InvalidationList = WillBeHeapVector<RefPtrWillBeMember<InvalidationSet>>;
-    using PendingInvalidationMap = WillBeHeapHashMap<RawPtrWillBeMember<Element>, OwnPtrWillBeMember<InvalidationList>>;
+    using InvalidationList = Vector<RefPtr<InvalidationSet>>;
+    using PendingInvalidationMap = WillBeHeapHashMap<RawPtrWillBeMember<Element>, OwnPtr<InvalidationList>>;
 
     InvalidationList& ensurePendingInvalidationList(Element&);
 

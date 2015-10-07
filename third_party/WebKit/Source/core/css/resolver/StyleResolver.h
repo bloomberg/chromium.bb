@@ -82,8 +82,11 @@ using ActiveInterpolationsMap = HashMap<PropertyHandle, Vector<RefPtr<Interpolat
 class CORE_EXPORT StyleResolver final : public NoBaseWillBeGarbageCollectedFinalized<StyleResolver> {
     WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleResolver);
 public:
-    explicit StyleResolver(Document&);
-    virtual ~StyleResolver();
+    static PassOwnPtrWillBeRawPtr<StyleResolver> create(Document& document)
+    {
+        return adoptPtrWillBeNoop(new StyleResolver(document));
+    }
+    ~StyleResolver();
 
     // FIXME: StyleResolver should not be keeping tree-walk state.
     // These should move to some global tree-walk state, or should be contained in a
@@ -185,6 +188,8 @@ public:
     void addTreeBoundaryCrossingScope(ContainerNode& scope);
 
 private:
+    explicit StyleResolver(Document&);
+
     PassRefPtr<ComputedStyle> initialStyleForElement();
 
     void initWatchedSelectorRules();

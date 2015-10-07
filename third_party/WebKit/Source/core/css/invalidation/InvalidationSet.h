@@ -32,7 +32,6 @@
 #define InvalidationSet_h
 
 #include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefCounted.h"
@@ -47,12 +46,12 @@ class TracedValue;
 
 // Tracks data to determine which elements of a DOM subtree need to have style
 // recalculated.
-class CORE_EXPORT InvalidationSet final : public RefCountedWillBeGarbageCollected<InvalidationSet> {
+class CORE_EXPORT InvalidationSet final : public RefCounted<InvalidationSet> {
     WTF_MAKE_NONCOPYABLE(InvalidationSet);
 public:
-    static PassRefPtrWillBeRawPtr<InvalidationSet> create()
+    static PassRefPtr<InvalidationSet> create()
     {
-        return adoptRefWillBeNoop(new InvalidationSet);
+        return adoptRef(new InvalidationSet);
     }
 
     static void cacheTracingFlag();
@@ -83,8 +82,6 @@ public:
 
     bool isEmpty() const { return !m_classes && !m_ids && !m_tagNames && !m_attributes && !m_customPseudoInvalid; }
 
-    DECLARE_TRACE();
-
     void toTracedValue(TracedValue*) const;
 
 #ifndef NDEBUG
@@ -94,16 +91,16 @@ public:
 private:
     InvalidationSet();
 
-    WillBeHeapHashSet<AtomicString>& ensureClassSet();
-    WillBeHeapHashSet<AtomicString>& ensureIdSet();
-    WillBeHeapHashSet<AtomicString>& ensureTagNameSet();
-    WillBeHeapHashSet<AtomicString>& ensureAttributeSet();
+    HashSet<AtomicString>& ensureClassSet();
+    HashSet<AtomicString>& ensureIdSet();
+    HashSet<AtomicString>& ensureTagNameSet();
+    HashSet<AtomicString>& ensureAttributeSet();
 
     // FIXME: optimize this if it becomes a memory issue.
-    OwnPtrWillBeMember<WillBeHeapHashSet<AtomicString>> m_classes;
-    OwnPtrWillBeMember<WillBeHeapHashSet<AtomicString>> m_ids;
-    OwnPtrWillBeMember<WillBeHeapHashSet<AtomicString>> m_tagNames;
-    OwnPtrWillBeMember<WillBeHeapHashSet<AtomicString>> m_attributes;
+    OwnPtr<HashSet<AtomicString>> m_classes;
+    OwnPtr<HashSet<AtomicString>> m_ids;
+    OwnPtr<HashSet<AtomicString>> m_tagNames;
+    OwnPtr<HashSet<AtomicString>> m_attributes;
 
     // If true, all descendants might be invalidated, so a full subtree recalc is required.
     unsigned m_allDescendantsMightBeInvalid : 1;

@@ -90,7 +90,7 @@ extern const char PreventStyleSharingForParent[];
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Element&, const char* reason);
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> selectorPart(Element&, const char* reason, const InvalidationSet&, const String&);
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> invalidationList(Element&, const WillBeHeapVector<RefPtrWillBeMember<InvalidationSet>>&);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> invalidationList(Element&, const Vector<RefPtr<InvalidationSet>>&);
 }
 
 #define TRACE_STYLE_INVALIDATOR_INVALIDATION(element, reason) \

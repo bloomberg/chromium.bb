@@ -159,6 +159,10 @@ StyleResolver::StyleResolver(Document& document)
     initWatchedSelectorRules();
 }
 
+StyleResolver::~StyleResolver()
+{
+}
+
 void StyleResolver::initWatchedSelectorRules()
 {
     CSSSelectorWatch* watch = CSSSelectorWatch::fromIfExists(*m_document);
@@ -344,10 +348,6 @@ void StyleResolver::pushParentElement(Element& parent)
 void StyleResolver::popParentElement(Element& parent)
 {
     m_selectorFilter.popParent(parent);
-}
-
-StyleResolver::~StyleResolver()
-{
 }
 
 static inline ScopedStyleResolver* scopedResolverFor(const Element* element)

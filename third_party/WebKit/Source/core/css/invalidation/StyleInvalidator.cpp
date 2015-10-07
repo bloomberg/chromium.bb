@@ -40,7 +40,7 @@ void StyleInvalidator::invalidate(Document& document)
     clearPendingInvalidations();
 }
 
-void StyleInvalidator::scheduleInvalidation(PassRefPtrWillBeRawPtr<InvalidationSet> invalidationSet, Element& element)
+void StyleInvalidator::scheduleInvalidation(PassRefPtr<InvalidationSet> invalidationSet, Element& element)
 {
     ASSERT(element.inActiveDocument());
     if (element.styleChangeType() >= SubtreeStyleChange)
@@ -65,7 +65,7 @@ StyleInvalidator::InvalidationList& StyleInvalidator::ensurePendingInvalidationL
 {
     PendingInvalidationMap::AddResult addResult = m_pendingInvalidationMap.add(&element, nullptr);
     if (addResult.isNewEntry)
-        addResult.storedValue->value = adoptPtrWillBeNoop(new InvalidationList);
+        addResult.storedValue->value = adoptPtr(new InvalidationList);
     return *addResult.storedValue->value;
 }
 

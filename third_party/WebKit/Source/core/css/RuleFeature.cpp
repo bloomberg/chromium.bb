@@ -588,10 +588,6 @@ DEFINE_TRACE(RuleFeatureSet)
 #if ENABLE(OILPAN)
     visitor->trace(siblingRules);
     visitor->trace(uncommonAttributeRules);
-    visitor->trace(m_classInvalidationSets);
-    visitor->trace(m_attributeInvalidationSets);
-    visitor->trace(m_idInvalidationSets);
-    visitor->trace(m_pseudoInvalidationSets);
 #endif
 }
 

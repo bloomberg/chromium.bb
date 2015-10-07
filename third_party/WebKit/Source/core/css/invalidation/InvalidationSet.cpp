@@ -141,31 +141,31 @@ void InvalidationSet::combine(const InvalidationSet& other)
     }
 }
 
-WillBeHeapHashSet<AtomicString>& InvalidationSet::ensureClassSet()
+HashSet<AtomicString>& InvalidationSet::ensureClassSet()
 {
     if (!m_classes)
-        m_classes = adoptPtrWillBeNoop(new WillBeHeapHashSet<AtomicString>);
+        m_classes = adoptPtr(new HashSet<AtomicString>);
     return *m_classes;
 }
 
-WillBeHeapHashSet<AtomicString>& InvalidationSet::ensureIdSet()
+HashSet<AtomicString>& InvalidationSet::ensureIdSet()
 {
     if (!m_ids)
-        m_ids = adoptPtrWillBeNoop(new WillBeHeapHashSet<AtomicString>);
+        m_ids = adoptPtr(new HashSet<AtomicString>);
     return *m_ids;
 }
 
-WillBeHeapHashSet<AtomicString>& InvalidationSet::ensureTagNameSet()
+HashSet<AtomicString>& InvalidationSet::ensureTagNameSet()
 {
     if (!m_tagNames)
-        m_tagNames = adoptPtrWillBeNoop(new WillBeHeapHashSet<AtomicString>);
+        m_tagNames = adoptPtr(new HashSet<AtomicString>);
     return *m_tagNames;
 }
 
-WillBeHeapHashSet<AtomicString>& InvalidationSet::ensureAttributeSet()
+HashSet<AtomicString>& InvalidationSet::ensureAttributeSet()
 {
     if (!m_attributes)
-        m_attributes = adoptPtrWillBeNoop(new WillBeHeapHashSet<AtomicString>);
+        m_attributes = adoptPtr(new HashSet<AtomicString>);
     return *m_attributes;
 }
 
@@ -210,16 +210,6 @@ void InvalidationSet::setWholeSubtreeInvalid()
     m_ids = nullptr;
     m_tagNames = nullptr;
     m_attributes = nullptr;
-}
-
-DEFINE_TRACE(InvalidationSet)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_classes);
-    visitor->trace(m_ids);
-    visitor->trace(m_tagNames);
-    visitor->trace(m_attributes);
-#endif
 }
 
 void InvalidationSet::toTracedValue(TracedValue* value) const
