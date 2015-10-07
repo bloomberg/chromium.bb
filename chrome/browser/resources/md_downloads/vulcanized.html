@@ -2130,7 +2130,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
 
       <div id="details">
-        <div id="title-area"><a is="action-link" id="file-link" href="[[data.url]]" on-click="onFileLinkClick_" hidden="[[!completelyOnDisk_]]">[[data.file_name]]</a><span id="name" hidden="[[completelyOnDisk_]]">[[data.file_name]]</span>
+        <div id="title-area"><a is="action-link" id="file-link" href="[[data.url]]" on-tap="onFileLinkTap_" hidden="[[!completelyOnDisk_]]">[[data.file_name]]</a><span id="name" hidden="[[completelyOnDisk_]]">[[data.file_name]]</span>
           <span id="tag">[[computeTag_(data.state, data.last_reason_text, data.file_externally_removed)]]</span>
         </div>
 
@@ -2143,18 +2143,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </template>
 
         <div id="safe" class="controls" hidden="[[isDangerous_]]">
-          <a is="action-link" id="show" i18n-content="controlShowInFolder" on-click="onShowClick_" hidden="[[!completelyOnDisk_]]"></a>
+          <a is="action-link" id="show" i18n-content="controlShowInFolder" on-tap="onShowTap_" hidden="[[!completelyOnDisk_]]"></a>
           <template is="dom-if" if="[[data.retry]]">
-            <paper-button id="retry" on-click="onRetryClick_">[[i18n_.retry]]</paper-button>
+            <paper-button id="retry" on-tap="onRetryTap_">[[i18n_.retry]]</paper-button>
           </template>
           <template is="dom-if" if="[[isInProgress_]]">
-            <paper-button id="pause" on-click="onPauseClick_">[[i18n_.pause]]</paper-button>
+            <paper-button id="pause" on-tap="onPauseTap_">[[i18n_.pause]]</paper-button>
           </template>
           <template is="dom-if" if="[[data.resume]]">
-            <paper-button id="resume" on-click="onResumeClick_">[[i18n_.resume]]</paper-button>
+            <paper-button id="resume" on-tap="onResumeTap_">[[i18n_.resume]]</paper-button>
           </template>
           <template is="dom-if" if="[[showCancel_]]">
-            <paper-button id="cancel" on-click="onCancelClick_">[[i18n_.cancel]]</paper-button>
+            <paper-button id="cancel" on-tap="onCancelTap_">[[i18n_.cancel]]</paper-button>
           </template>
           <span id="controlled-by"></span>
         </div>
@@ -2163,21 +2163,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <div id="dangerous" class="controls">
             
             <template is="dom-if" if="[[!isMalware_]]">
-              <paper-button id="discard" on-click="onDiscardDangerous_" class="discard">[[i18n_.discard]]</paper-button>
-              <paper-button id="save" on-click="onSaveDangerous_" class="keep">[[i18n_.save]]</paper-button>
+              <paper-button id="discard" on-tap="onDiscardDangerousTap_" class="discard">[[i18n_.discard]]</paper-button>
+              <paper-button id="save" on-tap="onSaveDangerousTap_" class="keep">[[i18n_.save]]</paper-button>
             </template>
 
             
             <template is="dom-if" if="[[isMalware_]]">
-              <paper-button id="danger-remove" on-click="onDiscardDangerous_" class="discard">[[i18n_.remove]]</paper-button>
-              <paper-button id="restore" on-click="onSaveDangerous_" class="keep">[[i18n_.restore]</paper-button>
+              <paper-button id="danger-remove" on-tap="onDiscardDangerousTap_" class="discard">[[i18n_.remove]]</paper-button>
+              <paper-button id="restore" on-tap="onSaveDangerousTap_" class="keep">[[i18n_.restore]</paper-button>
             </template>
           </div>
         </template>
       </div>
 
       <div id="remove-wrapper" class="icon-wrapper">
-        <paper-icon-button id="remove" icon="clear" i18n-values="title:controlRemoveFromList" style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]" on-click="onRemoveClick_"></paper-icon-button>
+        <paper-icon-button id="remove" icon="clear" i18n-values="title:controlRemoveFromList" style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]" on-tap="onRemoveTap_"></paper-icon-button>
       </div>
 
       <div id="incognito" i18n-values="title:inIncognito" hidden="[[!data.otr]]"></div>
@@ -3254,16 +3254,16 @@ paper-icon-button {
       <h1 i18n-content="title"></h1>
     </div>
     <div id="actions">
-      <paper-button class="clear-all" i18n-content="clearAll" on-click="onClearAllClick_"></paper-button>
-      <paper-button i18n-content="openDownloadsFolder" on-click="onOpenDownloadsFolderClick_"></paper-button>
+      <paper-button class="clear-all" i18n-content="clearAll" on-tap="onClearAllTap_"></paper-button>
+      <paper-button i18n-content="openDownloadsFolder" on-tap="onOpenDownloadsFolderTap_"></paper-button>
     </div>
     <div id="search">
       <cr-search-field id="search-input" i18n-values="label:search;clear-label:clearSearch"></cr-search-field>
       <paper-menu-button id="more" horizontal-align="[[overflowAlign_]]">
         <paper-icon-button icon="more-vert" i18n-values="title:moreActions" class="dropdown-trigger"></paper-icon-button>
         <paper-menu class="dropdown-content">
-          <paper-item class="clear-all" i18n-content="clearAll" on-click="onClearAllClick_"></paper-item>
-          <paper-item i18n-content="openDownloadsFolder" on-click="onOpenDownloadsFolderClick_"></paper-item>
+          <paper-item class="clear-all" i18n-content="clearAll" on-tap="onClearAllTap_"></paper-item>
+          <paper-item i18n-content="openDownloadsFolder" on-tap="onOpenDownloadsFolderTap_"></paper-item>
         </paper-menu>
       </paper-menu-button>
     </div>

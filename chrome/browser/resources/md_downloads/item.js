@@ -263,12 +263,12 @@ cr.define('downloads', function() {
     },
 
     /** @private */
-    onCancelClick_: function() {
+    onCancelTap_: function() {
       downloads.ActionService.getInstance().cancel(this.data.id);
     },
 
     /** @private */
-    onDiscardDangerous_: function() {
+    onDiscardDangerousTap_: function() {
       downloads.ActionService.getInstance().discardDangerous(this.data.id);
     },
 
@@ -285,38 +285,38 @@ cr.define('downloads', function() {
      * @param {Event} e
      * @private
      */
-    onFileLinkClick_: function(e) {
+    onFileLinkTap_: function(e) {
       e.preventDefault();
       downloads.ActionService.getInstance().openFile(this.data.id);
     },
 
     /** @private */
-    onPauseClick_: function() {
+    onPauseTap_: function() {
       downloads.ActionService.getInstance().pause(this.data.id);
     },
 
     /** @private */
-    onRemoveClick_: function() {
+    onRemoveTap_: function() {
       downloads.ActionService.getInstance().remove(this.data.id);
     },
 
     /** @private */
-    onResumeClick_: function() {
+    onResumeTap_: function() {
       downloads.ActionService.getInstance().resume(this.data.id);
     },
 
     /** @private */
-    onRetryClick_: function() {
+    onRetryTap_: function() {
       downloads.ActionService.getInstance().download(this.data.url);
     },
 
     /** @private */
-    onSaveDangerous_: function() {
+    onSaveDangerousTap_: function() {
       downloads.ActionService.getInstance().saveDangerous(this.data.id);
     },
 
     /** @private */
-    onShowClick_: function() {
+    onShowTap_: function() {
       downloads.ActionService.getInstance().show(this.data.id);
     },
   });

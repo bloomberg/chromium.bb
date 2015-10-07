@@ -40,7 +40,7 @@ cr.define('downloads', function() {
     },
 
     /** @private */
-    onClearAllClick_: function() {
+    onClearAllTap_: function() {
       assert(this.canClearAll());
       downloads.ActionService.getInstance().clearAll();
     },
@@ -57,7 +57,7 @@ cr.define('downloads', function() {
     },
 
     /** @private */
-    onOpenDownloadsFolderClick_: function() {
+    onOpenDownloadsFolderTap_: function() {
       downloads.ActionService.getInstance().openDownloadsFolder();
     },
 
