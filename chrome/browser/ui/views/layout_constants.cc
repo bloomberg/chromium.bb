@@ -27,7 +27,6 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kTabstripTabOverlap[] = {26, 26, 26};
 #endif
   const int kTabstripToolbarOverlap[] = {3, 3, 3};
-  const int kTabstripTopShadowHeight[] = {3, 3, 3};
   const int kToolbarContentShadowHeight[] = {0, 0, 0};
   const int kToolbarContentShadowHeightAsh[] = {2, 0, 0};
   const int kToolbarElementPadding[] = {0, 0, 8};
@@ -58,8 +57,6 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kTabstripTabOverlap[mode];
     case TABSTRIP_TOOLBAR_OVERLAP:
       return kTabstripToolbarOverlap[mode];
-    case TABSTRIP_TOP_SHADOW_HEIGHT:
-      return kTabstripTopShadowHeight[mode];
     case TAB_CLOSE_BUTTON_TRAILING_PADDING_OVERLAP:
       return kTabCloseButtonTrailingPaddingOverlap[mode];
     case TAB_FAVICON_TITLE_SPACING:

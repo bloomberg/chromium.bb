@@ -48,7 +48,7 @@ const int kNonClientBorderThicknessWin10 = 1;
 const int kNonClientRestoredExtraThickness = 9;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of the top and bottom edges triggers diagonal resizing.
-const int kResizeAreaCornerSize = 16;
+const int kResizeCornerWidth = 16;
 // The avatar ends 2 px above the bottom of the tabstrip (which, given the
 // way the tabstrip draws its bottom edge, will appear like a 1 px gap to the
 // user).
@@ -243,7 +243,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // first so that clicks in a tab don't get treated as sysmenu clicks.
   int nonclient_border_thickness = NonClientBorderThickness();
   if (gfx::Rect(nonclient_border_thickness,
-                gfx::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME),
+                gfx::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME),
                 gfx::win::GetSystemMetricsInDIP(SM_CXSMICON),
                 gfx::win::GetSystemMetricsInDIP(SM_CYSMICON)).Contains(point))
     return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
@@ -251,11 +251,17 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (frame_component != HTNOWHERE)
     return frame_component;
 
-  int frame_border_thickness = FrameBorderThickness();
-  int window_component = GetHTComponentForFrame(point, frame_border_thickness,
-      nonclient_border_thickness, frame_border_thickness,
-      kResizeAreaCornerSize - frame_border_thickness,
-      frame()->widget_delegate()->CanResize());
+  int frame_top_border_height = FrameTopBorderHeight();
+  // We want the resize corner behavior to apply to the kResizeCornerWidth
+  // pixels at each end of the top and bottom edges.  Because |point|'s x
+  // coordinate is based on the DWM-inset portion of the window (so, it's 0 at
+  // the first pixel inside the left DWM margin), we need to subtract the DWM
+  // margin thickness, which we calculate as the total frame border thickness
+  // minus the nonclient border thickness.
+  const int dwm_margin = FrameBorderThickness() - nonclient_border_thickness;
+  int window_component = GetHTComponentForFrame(point, frame_top_border_height,
+      nonclient_border_thickness, frame_top_border_height,
+      kResizeCornerWidth - dwm_margin, frame()->widget_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -325,6 +331,14 @@ int GlassBrowserFrameView::FrameBorderThickness() const {
       0 : gfx::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
 }
 
+int GlassBrowserFrameView::FrameTopBorderHeight() const {
+  // We'd like to use FrameBorderThickness() here, but the maximized Aero glass
+  // frame has a 0 frame border around most edges and a CYSIZEFRAME-thick border
+  // at the top (see AeroGlassFrame::OnGetMinMaxInfo()).
+  return frame()->IsFullscreen() ?
+      0 : gfx::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME);
+}
+
 int GlassBrowserFrameView::NonClientBorderThickness() const {
   if (frame()->IsMaximized() || frame()->IsFullscreen())
     return 0;
@@ -338,13 +352,13 @@ int GlassBrowserFrameView::NonClientTopBorderHeight() const {
   if (frame()->IsFullscreen())
     return 0;
 
-  // We'd like to use FrameBorderThickness() here, but the maximized Aero glass
-  // frame has a 0 frame border around most edges and a CYSIZEFRAME-thick border
-  // at the top (see AeroGlassFrame::OnGetMinMaxInfo()).
-  return gfx::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME) +
+  // The tab top inset is equal to the height of any shadow region above the
+  // tabs, plus a 1 px top stroke.  In maximized mode, we want to push the
+  // shadow region off the top of the screen.
+  const int tab_shadow_height = GetLayoutInsets(TAB).top() - 1;
+  return FrameTopBorderHeight() +
       (frame()->IsMaximized() ?
-          -GetLayoutConstant(TABSTRIP_TOP_SHADOW_HEIGHT) :
-          kNonClientRestoredExtraThickness);
+          -tab_shadow_height : kNonClientRestoredExtraThickness);
 }
 
 void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
@@ -497,13 +511,19 @@ void GlassBrowserFrameView::LayoutNewStyleAvatar() {
     button_x = width() - frame()->GetMinimizeButtonOffset() +
         kNewAvatarButtonOffset;
 
-  // We need to offset the button correctly in maximized mode, so that the
-  // custom glass style aligns with the native control glass style. The
-  // glass shadow is off by 1px, which was determined by visual inspection.
-  const int shadow_height = GetLayoutConstant(TABSTRIP_TOP_SHADOW_HEIGHT);
-  int button_y = frame()->IsMaximized() ?
-      (NonClientTopBorderHeight() + shadow_height - 1) : 1;
-
+  // The caption button position and size is confusing.  In maximized mode, the
+  // caption buttons are SM_CYMENUSIZE pixels high and are placed
+  // FrameTopBorderHeight() pixels from the top of the window; all those top
+  // border pixels are offscreen, so this result in caption buttons flush with
+  // the top of the screen.  In restored mode, the caption buttons are first
+  // placed just below a 2 px border at the top of the window (which is the
+  // first two pixels' worth of FrameTopBorderHeight()), then extended upwards
+  // one extra pixel to overlap part of this border.
+  //
+  // To match both of these, we size the button as if it's always the extra one
+  // pixel in height, then we place it at the correct position in restored mode,
+  // or one pixel above the top of the screen in maximized mode.
+  int button_y = frame()->IsMaximized() ? (FrameTopBorderHeight() - 1) : 1;
   new_avatar_button()->SetBounds(
       button_x,
       button_y,
@@ -524,10 +544,8 @@ void GlassBrowserFrameView::LayoutAvatar() {
 
   int avatar_bottom = GetTopInset() +
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
-  int avatar_restored_y = avatar_bottom - incognito_icon.height();
-  const int shadow_height = GetLayoutConstant(TABSTRIP_TOP_SHADOW_HEIGHT);
   int avatar_y = frame()->IsMaximized() ?
-      (NonClientTopBorderHeight() + shadow_height) : avatar_restored_y;
+      FrameTopBorderHeight() : (avatar_bottom - incognito_icon.height());
   avatar_bounds_.SetRect(avatar_x, avatar_y, incognito_icon.width(),
       browser_view()->ShouldShowAvatar() ? (avatar_bottom - avatar_y) : 0);
   if (avatar_button())

@@ -53,9 +53,12 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
 
-  // Returns the thickness of the border that makes up the window frame edges.
-  // This does not include any client edge.
+  // Returns the thickness of the border that makes up the window left, right,
+  // and bottom frame edges.  This does not include any client edge.
   int FrameBorderThickness() const;
+
+  // Returns the height of the window top frame edge.
+  int FrameTopBorderHeight() const;
 
   // Returns the thickness of the entire nonclient left, right, and bottom
   // borders, including both the window frame and any client edge.

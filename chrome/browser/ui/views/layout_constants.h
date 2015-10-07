@@ -46,9 +46,6 @@ enum LayoutConstant {
   // The vertical overlap of the tabstrip atop the toolbar.
   TABSTRIP_TOOLBAR_OVERLAP,
 
-  // The height of the shadow region above the top of the tabs.
-  TABSTRIP_TOP_SHADOW_HEIGHT,
-
   // The amount by which the tab close button should overlap the trailing
   // padding region after the tab's contents region.
   TAB_CLOSE_BUTTON_TRAILING_PADDING_OVERLAP,
