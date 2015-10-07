@@ -7,9 +7,12 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSStringValue.h"
+#include "core/css/CSSURIValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/FontFace.h"
@@ -83,18 +86,18 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeIdent(CSSParserTokenRang
     return cssValuePool().createIdentifierValue(range.consumeIncludingWhitespace().id());
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeCustomIdent(CSSParserTokenRange& range)
+static PassRefPtrWillBeRawPtr<CSSCustomIdentValue> consumeCustomIdent(CSSParserTokenRange& range)
 {
     if (range.peek().type() != IdentToken)
         return nullptr;
-    return cssValuePool().createValue(range.consumeIncludingWhitespace().value(), CSSPrimitiveValue::UnitType::CustomIdentifier);
+    return CSSCustomIdentValue::create(range.consumeIncludingWhitespace().value());
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeString(CSSParserTokenRange& range)
+static PassRefPtrWillBeRawPtr<CSSStringValue> consumeString(CSSParserTokenRange& range)
 {
     if (range.peek().type() != StringToken)
         return nullptr;
-    return cssValuePool().createValue(range.consumeIncludingWhitespace().value(), CSSPrimitiveValue::UnitType::String);
+    return CSSStringValue::create(range.consumeIncludingWhitespace().value());
 }
 
 static String consumeUrl(CSSParserTokenRange& range)
@@ -396,7 +399,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFontFeatureSettings(CSSParserToke
     return settings.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePage(CSSParserTokenRange& range)
+static PassRefPtrWillBeRawPtr<CSSValue> consumePage(CSSParserTokenRange& range)
 {
     if (range.peek().id() == CSSValueAuto)
         return consumeIdent(range);
@@ -409,7 +412,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeQuotes(CSSParserTokenRange& range
         return consumeIdent(range);
     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
     while (!range.atEnd()) {
-        RefPtrWillBeRawPtr<CSSValue> parsedValue = consumeString(range);
+        RefPtrWillBeRawPtr<CSSStringValue> parsedValue = consumeString(range);
         if (!parsedValue)
             return nullptr;
         values->append(parsedValue.release());

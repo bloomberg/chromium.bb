@@ -31,6 +31,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/css/CSSBorderImageSliceValue.h"
+#include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
@@ -346,10 +347,10 @@ AtomicString CSSToStyleMap::mapAnimationName(const CSSValue& value)
 {
     if (value.isInitialValue())
         return CSSAnimationData::initialName();
-    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue.getValueID() == CSSValueNone)
-        return CSSAnimationData::initialName();
-    return AtomicString(primitiveValue.getStringValue());
+    if (value.isCustomIdentValue())
+        return AtomicString(toCSSCustomIdentValue(value).value());
+    ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
+    return CSSAnimationData::initialName();
 }
 
 EAnimPlayState CSSToStyleMap::mapAnimationPlayState(const CSSValue& value)
@@ -366,9 +367,9 @@ CSSTransitionData::TransitionProperty CSSToStyleMap::mapAnimationProperty(const 
 {
     if (value.isInitialValue())
         return CSSTransitionData::initialProperty();
+    if (value.isCustomIdentValue())
+        return CSSTransitionData::TransitionProperty(toCSSCustomIdentValue(value).value());
     const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue.isCustomIdent())
-        return CSSTransitionData::TransitionProperty(primitiveValue.getStringValue());
     if (primitiveValue.getValueID() == CSSValueNone)
         return CSSTransitionData::TransitionProperty(CSSTransitionData::TransitionNone);
     return CSSTransitionData::TransitionProperty(primitiveValue.getPropertyID());

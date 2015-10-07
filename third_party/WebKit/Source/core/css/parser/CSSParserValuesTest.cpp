@@ -106,13 +106,13 @@ TEST(CSSParserValuesTest, CSSParserTokenUrlConversion)
     CSSTokenizer::Scope scope("url(some) uRL('test') UrL(  \"words\" /**/ ) URl( /**/hi/**/ )");
     CSSParserValueList valueList(scope.tokenRange());
     ASSERT_EQ(valueList.size(), 4u);
-    ASSERT_EQ(valueList.valueAt(0)->unit(), CSSPrimitiveValue::UnitType::URI);
+    ASSERT_EQ(valueList.valueAt(0)->m_unit, CSSParserValue::URI);
     EXPECT_EQ(String(valueList.valueAt(0)->string), "some");
-    ASSERT_EQ(valueList.valueAt(1)->unit(), CSSPrimitiveValue::UnitType::URI);
+    ASSERT_EQ(valueList.valueAt(1)->m_unit, CSSParserValue::URI);
     EXPECT_EQ(String(valueList.valueAt(1)->string), "test");
-    ASSERT_EQ(valueList.valueAt(2)->unit(), CSSPrimitiveValue::UnitType::URI);
+    ASSERT_EQ(valueList.valueAt(2)->m_unit, CSSParserValue::URI);
     EXPECT_EQ(String(valueList.valueAt(2)->string), "words");
-    ASSERT_EQ(valueList.valueAt(3)->unit(), CSSPrimitiveValue::UnitType::URI);
+    ASSERT_EQ(valueList.valueAt(3)->m_unit, CSSParserValue::URI);
     EXPECT_EQ(String(valueList.valueAt(3)->string), "/**/hi/**/");
 }
 

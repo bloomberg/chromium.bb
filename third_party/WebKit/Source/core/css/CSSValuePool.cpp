@@ -126,11 +126,11 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createValue(const Length
     return CSSPrimitiveValue::create(value, style.effectiveZoom());
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createFontFamilyValue(const String& familyName)
+PassRefPtrWillBeRawPtr<CSSCustomIdentValue> CSSValuePool::createFontFamilyValue(const String& familyName)
 {
-    RefPtrWillBeMember<CSSPrimitiveValue>& value = m_fontFamilyValueCache.add(familyName, nullptr).storedValue->value;
+    RefPtrWillBeMember<CSSCustomIdentValue>& value = m_fontFamilyValueCache.add(familyName, nullptr).storedValue->value;
     if (!value)
-        value = CSSPrimitiveValue::create(familyName, CSSPrimitiveValue::UnitType::CustomIdentifier);
+        value = CSSCustomIdentValue::create(familyName);
     return value;
 }
 

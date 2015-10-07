@@ -27,6 +27,7 @@
 #ifndef StyleBuilderConverter_h
 #define StyleBuilderConverter_h
 
+#include "core/css/CSSStringValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
@@ -153,11 +154,10 @@ T StyleBuilderConverter::convertLineWidth(StyleResolverState& state, CSSValue* v
 template <CSSValueID IdForNone>
 AtomicString StyleBuilderConverter::convertString(StyleResolverState&, CSSValue* value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == IdForNone)
-        return nullAtom;
-    ASSERT(primitiveValue->isString());
-    return AtomicString(primitiveValue->getStringValue());
+    if (value->isStringValue())
+        return AtomicString(toCSSStringValue(value)->value());
+    ASSERT(toCSSPrimitiveValue(value)->getValueID() == IdForNone);
+    return nullAtom;
 }
 
 } // namespace blink

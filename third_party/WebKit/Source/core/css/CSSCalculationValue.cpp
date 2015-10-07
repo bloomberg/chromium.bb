@@ -120,9 +120,6 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::UnitType::Integer:
         return true;
     case CSSPrimitiveValue::UnitType::Unknown:
-    case CSSPrimitiveValue::UnitType::CustomIdentifier:
-    case CSSPrimitiveValue::UnitType::String:
-    case CSSPrimitiveValue::UnitType::URI:
     case CSSPrimitiveValue::UnitType::RGBColor:
     case CSSPrimitiveValue::UnitType::Calc:
     case CSSPrimitiveValue::UnitType::CalcPercentageWithNumber:

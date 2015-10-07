@@ -37,6 +37,8 @@
 #include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSShadowValue.h"
+#include "core/css/CSSStringValue.h"
+#include "core/css/CSSURIValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
@@ -95,9 +97,8 @@ Color StyleBuilderConverter::convertColor(StyleResolverState& state, CSSValue* v
 
 AtomicString StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState& state, CSSValue* value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->isURI())
-        return SVGURIReference::fragmentIdentifierFromIRIString(primitiveValue->getStringValue(), state.element()->treeScope());
+    if (value->isURIValue())
+        return SVGURIReference::fragmentIdentifierFromIRIString(toCSSURIValue(value)->value(), state.element()->treeScope());
     return nullAtom;
 }
 
@@ -133,14 +134,14 @@ static FontDescription::GenericFamilyType convertGenericFamily(CSSValueID valueI
     }
 }
 
-static bool convertFontFamilyName(StyleResolverState& state, CSSPrimitiveValue* primitiveValue,
+static bool convertFontFamilyName(StyleResolverState& state, CSSValue& value,
     FontDescription::GenericFamilyType& genericFamily, AtomicString& familyName)
 {
-    if (primitiveValue->isCustomIdent()) {
+    if (value.isCustomIdentValue()) {
         genericFamily = FontDescription::NoFamily;
-        familyName = AtomicString(primitiveValue->getStringValue());
+        familyName = AtomicString(toCSSCustomIdentValue(value).value());
     } else if (state.document().settings()) {
-        genericFamily = convertGenericFamily(primitiveValue->getValueID());
+        genericFamily = convertGenericFamily(toCSSPrimitiveValue(value).getValueID());
         familyName = state.fontBuilder().genericFontFamilyName(genericFamily);
     }
 
@@ -158,7 +159,7 @@ FontDescription::FamilyDescription StyleBuilderConverter::convertFontFamily(Styl
         FontDescription::GenericFamilyType genericFamily = FontDescription::NoFamily;
         AtomicString familyName;
 
-        if (!convertFontFamilyName(state, toCSSPrimitiveValue(family.get()), genericFamily, familyName))
+        if (!convertFontFamilyName(state, *family, genericFamily, familyName))
             continue;
 
         if (!currFamily) {
@@ -418,16 +419,15 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSS
 
     GridPosition position;
 
-    if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (value->isCustomIdentValue()) {
         // We translate <custom-ident> to <string> during parsing as it
         // makes handling it more simple.
-        if (primitiveValue->isCustomIdent()) {
-            position.setNamedGridArea(primitiveValue->getStringValue());
-            return position;
-        }
+        position.setNamedGridArea(toCSSCustomIdentValue(value)->value());
+        return position;
+    }
 
-        ASSERT(primitiveValue->getValueID() == CSSValueAuto);
+    if (value->isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto);
         return position;
     }
 
@@ -440,21 +440,21 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSS
     String gridLineName;
 
     auto it = values->begin();
-    CSSPrimitiveValue* currentValue = toCSSPrimitiveValue(it->get());
-    if (currentValue->getValueID() == CSSValueSpan) {
+    CSSValue* currentValue = it->get();
+    if (currentValue->isPrimitiveValue() && toCSSPrimitiveValue(currentValue)->getValueID() == CSSValueSpan) {
         isSpanPosition = true;
         ++it;
-        currentValue = it != values->end() ? toCSSPrimitiveValue(it->get()) : nullptr;
+        currentValue = it != values->end() ? it->get() : nullptr;
     }
 
-    if (currentValue && currentValue->isNumber()) {
-        gridLineNumber = currentValue->getIntValue();
+    if (currentValue && currentValue->isPrimitiveValue() && toCSSPrimitiveValue(currentValue)->isNumber()) {
+        gridLineNumber = toCSSPrimitiveValue(currentValue)->getIntValue();
         ++it;
-        currentValue = it != values->end() ? toCSSPrimitiveValue(it->get()) : nullptr;
+        currentValue = it != values->end() ? it->get() : nullptr;
     }
 
-    if (currentValue && currentValue->isCustomIdent()) {
-        gridLineName = currentValue->getStringValue();
+    if (currentValue && currentValue->isCustomIdentValue()) {
+        gridLineName = toCSSCustomIdentValue(currentValue)->value();
         ++it;
     }
 
@@ -490,8 +490,7 @@ void StyleBuilderConverter::convertGridTrackList(CSSValue* value, Vector<GridTra
     for (auto& currValue : *toCSSValueList(value)) {
         if (currValue->isGridLineNamesValue()) {
             for (auto& namedGridLineValue : toCSSGridLineNamesValue(*currValue)) {
-                ASSERT(toCSSPrimitiveValue(namedGridLineValue.get())->isCustomIdent());
-                String namedGridLine = toCSSPrimitiveValue(namedGridLineValue.get())->getStringValue();
+                String namedGridLine = toCSSCustomIdentValue(*namedGridLineValue).value();
                 NamedGridLinesMap::AddResult result = namedGridLines.add(namedGridLine, Vector<size_t>());
                 result.storedValue->value.append(currentNamedGridLine);
                 OrderedNamedGridLines::AddResult orderedInsertionResult = orderedNamedGridLines.add(currentNamedGridLine, Vector<String>());
@@ -750,12 +749,8 @@ PassRefPtr<QuotesData> StyleBuilderConverter::convertQuotes(StyleResolverState&,
         CSSValueList* list = toCSSValueList(value);
         RefPtr<QuotesData> quotes = QuotesData::create();
         for (size_t i = 0; i < list->length(); i += 2) {
-            CSSValue* first = list->item(i);
-            CSSValue* second = list->item(i + 1);
-            ASSERT(toCSSPrimitiveValue(first)->isString());
-            ASSERT(toCSSPrimitiveValue(second)->isString());
-            String startQuote = toCSSPrimitiveValue(first)->getStringValue();
-            String endQuote = toCSSPrimitiveValue(second)->getStringValue();
+            String startQuote = toCSSStringValue(list->item(i))->value();
+            String endQuote = toCSSStringValue(list->item(i + 1))->value();
             quotes->addPair(std::make_pair(startQuote, endQuote));
         }
         return quotes.release();

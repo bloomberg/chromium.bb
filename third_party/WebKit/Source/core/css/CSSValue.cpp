@@ -34,6 +34,7 @@
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCursorImageValue.h"
+#include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
@@ -50,7 +51,9 @@
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
+#include "core/css/CSSStringValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
+#include "core/css/CSSURIValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSUnsetValue.h"
 #include "core/css/CSSValueList.h"
@@ -123,6 +126,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSRadialGradientValue>(*this, other);
         case CrossfadeClass:
             return compareCSSValues<CSSCrossfadeValue>(*this, other);
+        case CustomIdentClass:
+            return compareCSSValues<CSSCustomIdentValue>(*this, other);
         case ImageClass:
             return compareCSSValues<CSSImageValue>(*this, other);
         case InheritedClass:
@@ -145,12 +150,16 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSReflectValue>(*this, other);
         case ShadowClass:
             return compareCSSValues<CSSShadowValue>(*this, other);
+        case StringClass:
+            return compareCSSValues<CSSStringValue>(*this, other);
         case CubicBezierTimingFunctionClass:
             return compareCSSValues<CSSCubicBezierTimingFunctionValue>(*this, other);
         case StepsTimingFunctionClass:
             return compareCSSValues<CSSStepsTimingFunctionValue>(*this, other);
         case UnicodeRangeClass:
             return compareCSSValues<CSSUnicodeRangeValue>(*this, other);
+        case URIClass:
+            return compareCSSValues<CSSURIValue>(*this, other);
         case ValueListClass:
             return compareCSSValues<CSSValueList>(*this, other);
         case ValuePairClass:
@@ -199,6 +208,8 @@ String CSSValue::cssText() const
         return toCSSRadialGradientValue(this)->customCSSText();
     case CrossfadeClass:
         return toCSSCrossfadeValue(this)->customCSSText();
+    case CustomIdentClass:
+        return toCSSCustomIdentValue(this)->customCSSText();
     case ImageClass:
         return toCSSImageValue(this)->customCSSText();
     case InheritedClass:
@@ -221,12 +232,16 @@ String CSSValue::cssText() const
         return toCSSReflectValue(this)->customCSSText();
     case ShadowClass:
         return toCSSShadowValue(this)->customCSSText();
+    case StringClass:
+        return toCSSStringValue(this)->customCSSText();
     case CubicBezierTimingFunctionClass:
         return toCSSCubicBezierTimingFunctionValue(this)->customCSSText();
     case StepsTimingFunctionClass:
         return toCSSStepsTimingFunctionValue(this)->customCSSText();
     case UnicodeRangeClass:
         return toCSSUnicodeRangeValue(this)->customCSSText();
+    case URIClass:
+        return toCSSURIValue(this)->customCSSText();
     case ValuePairClass:
         return toCSSValuePair(this)->customCSSText();
     case ValueListClass:
@@ -287,6 +302,9 @@ void CSSValue::destroy()
     case CrossfadeClass:
         delete toCSSCrossfadeValue(this);
         return;
+    case CustomIdentClass:
+        delete toCSSCustomIdentValue(this);
+        return;
     case ImageClass:
         delete toCSSImageValue(this);
         return;
@@ -320,6 +338,9 @@ void CSSValue::destroy()
     case ShadowClass:
         delete toCSSShadowValue(this);
         return;
+    case StringClass:
+        delete toCSSStringValue(this);
+        return;
     case CubicBezierTimingFunctionClass:
         delete toCSSCubicBezierTimingFunctionValue(this);
         return;
@@ -328,6 +349,9 @@ void CSSValue::destroy()
         return;
     case UnicodeRangeClass:
         delete toCSSUnicodeRangeValue(this);
+        return;
+    case URIClass:
+        delete toCSSURIValue(this);
         return;
     case ValuePairClass:
         delete toCSSValuePair(this);
@@ -393,6 +417,9 @@ void CSSValue::finalizeGarbageCollectedObject()
     case CrossfadeClass:
         toCSSCrossfadeValue(this)->~CSSCrossfadeValue();
         return;
+    case CustomIdentClass:
+        toCSSCustomIdentValue(this)->~CSSCustomIdentValue();
+        return;
     case ImageClass:
         toCSSImageValue(this)->~CSSImageValue();
         return;
@@ -426,6 +453,9 @@ void CSSValue::finalizeGarbageCollectedObject()
     case ShadowClass:
         toCSSShadowValue(this)->~CSSShadowValue();
         return;
+    case StringClass:
+        toCSSStringValue(this)->~CSSStringValue();
+        return;
     case CubicBezierTimingFunctionClass:
         toCSSCubicBezierTimingFunctionValue(this)->~CSSCubicBezierTimingFunctionValue();
         return;
@@ -434,6 +464,9 @@ void CSSValue::finalizeGarbageCollectedObject()
         return;
     case UnicodeRangeClass:
         toCSSUnicodeRangeValue(this)->~CSSUnicodeRangeValue();
+        return;
+    case URIClass:
+        toCSSURIValue(this)->~CSSURIValue();
         return;
     case ValueListClass:
         toCSSValueList(this)->~CSSValueList();
@@ -499,6 +532,9 @@ DEFINE_TRACE(CSSValue)
     case CrossfadeClass:
         toCSSCrossfadeValue(this)->traceAfterDispatch(visitor);
         return;
+    case CustomIdentClass:
+        toCSSCustomIdentValue(this)->traceAfterDispatch(visitor);
+        return;
     case ImageClass:
         toCSSImageValue(this)->traceAfterDispatch(visitor);
         return;
@@ -532,6 +568,9 @@ DEFINE_TRACE(CSSValue)
     case ShadowClass:
         toCSSShadowValue(this)->traceAfterDispatch(visitor);
         return;
+    case StringClass:
+        toCSSStringValue(this)->traceAfterDispatch(visitor);
+        return;
     case CubicBezierTimingFunctionClass:
         toCSSCubicBezierTimingFunctionValue(this)->traceAfterDispatch(visitor);
         return;
@@ -540,6 +579,9 @@ DEFINE_TRACE(CSSValue)
         return;
     case UnicodeRangeClass:
         toCSSUnicodeRangeValue(this)->traceAfterDispatch(visitor);
+        return;
+    case URIClass:
+        toCSSURIValue(this)->traceAfterDispatch(visitor);
         return;
     case ValueListClass:
         toCSSValueList(this)->traceAfterDispatch(visitor);

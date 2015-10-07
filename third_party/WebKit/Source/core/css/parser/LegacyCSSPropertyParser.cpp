@@ -35,6 +35,7 @@
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCursorImageValue.h"
+#include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSImageSetValue.h"
@@ -47,7 +48,9 @@
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
+#include "core/css/CSSStringValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
+#include "core/css/CSSURIValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/HashTools.h"
@@ -255,16 +258,16 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::createPrimitiveNume
     return cssValuePool().createValue(value->fValue, value->unit());
 }
 
-inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::createPrimitiveStringValue(CSSParserValue* value)
+inline PassRefPtrWillBeRawPtr<CSSStringValue> CSSPropertyParser::createPrimitiveStringValue(CSSParserValue* value)
 {
-    ASSERT(value->unit() == CSSPrimitiveValue::UnitType::String || value->m_unit == CSSParserValue::Identifier);
-    return cssValuePool().createValue(value->string, CSSPrimitiveValue::UnitType::String);
+    ASSERT(value->m_unit == CSSParserValue::String || value->m_unit == CSSParserValue::Identifier);
+    return CSSStringValue::create(value->string);
 }
 
-inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::createPrimitiveCustomIdentValue(CSSParserValue* value)
+inline PassRefPtrWillBeRawPtr<CSSCustomIdentValue> CSSPropertyParser::createPrimitiveCustomIdentValue(CSSParserValue* value)
 {
-    ASSERT(value->unit() == CSSPrimitiveValue::UnitType::String || value->m_unit == CSSParserValue::Identifier);
-    return cssValuePool().createValue(value->string, CSSPrimitiveValue::UnitType::CustomIdentifier);
+    ASSERT(value->m_unit == CSSParserValue::String || value->m_unit == CSSParserValue::Identifier);
+    return CSSCustomIdentValue::create(value->string);
 }
 
 inline PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::createCSSImageValueWithReferrer(const AtomicString& rawValue, const KURL& url)
@@ -524,7 +527,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         RefPtrWillBeRawPtr<CSSValueList> list = nullptr;
         while (value) {
             RefPtrWillBeRawPtr<CSSValue> image = nullptr;
-            if (value->unit() == CSSPrimitiveValue::UnitType::URI) {
+            if (value->m_unit == CSSParserValue::URI) {
                 AtomicString uri = value->string;
                 if (!uri.isNull())
                     image = createCSSImageValueWithReferrer(uri, completeURL(uri));
@@ -653,7 +656,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         if (id == CSSValueNone) {
             parsedValue = cssValuePool().createIdentifierValue(CSSValueNone);
             m_valueList->next();
-        } else if (value->unit() == CSSPrimitiveValue::UnitType::URI) {
+        } else if (value->m_unit == CSSParserValue::URI) {
             parsedValue = createCSSImageValueWithReferrer(value->string, completeURL(value->string));
             m_valueList->next();
         } else if (isGeneratedImageValue(value)) {
@@ -1198,7 +1201,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitLocale:
         if (id == CSSValueAuto) {
             validPrimitive = true;
-        } else if (value->unit() == CSSPrimitiveValue::UnitType::String) {
+        } else if (value->m_unit == CSSParserValue::String) {
             parsedValue = createPrimitiveStringValue(value);
             m_valueList->next();
         }
@@ -1315,8 +1318,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = true;
         } else if (value->m_unit == CSSParserValue::Function) {
             parsedValue = parseBasicShape();
-        } else if (value->unit() == CSSPrimitiveValue::UnitType::URI) {
-            parsedValue = CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::UnitType::URI);
+        } else if (value->m_unit == CSSParserValue::URI) {
+            parsedValue = CSSURIValue::create(value->string);
             addProperty(propId, parsedValue.release(), important);
             return true;
         }
@@ -1602,8 +1605,7 @@ static bool isValidTransitionPropertyList(CSSValueList* value)
         // FIXME: Shorthand parsing shouldn't add initial to the list since it won't round-trip
         if (property->isInitialValue())
             continue;
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(property.get());
-        if (primitiveValue->isValueID() && primitiveValue->getValueID() == CSSValueNone)
+        if (property->isPrimitiveValue() && toCSSPrimitiveValue(*property).isValueID() && toCSSPrimitiveValue(*property).getValueID() == CSSValueNone)
             return false;
     }
     return true;
@@ -1999,7 +2001,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseContent()
 
     while (CSSParserValue* val = m_valueList->current()) {
         RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
-        if (val->unit() == CSSPrimitiveValue::UnitType::URI) {
+        if (val->m_unit == CSSParserValue::URI) {
             // url
             parsedValue = createCSSImageValueWithReferrer(val->string, completeURL(val->string));
         } else if (val->m_unit == CSSParserValue::Function) {
@@ -2031,7 +2033,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseContent()
             default:
                 break;
             }
-        } else if (val->unit() == CSSPrimitiveValue::UnitType::String) {
+        } else if (val->m_unit == CSSParserValue::String) {
             parsedValue = createPrimitiveStringValue(val);
         }
         if (!parsedValue)
@@ -2064,7 +2066,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAttr(CSSParserValueList
         attrName = attrName.lower();
 
     RefPtrWillBeRawPtr<CSSFunctionValue> attrValue = CSSFunctionValue::create(CSSValueAttr);
-    attrValue->append(CSSPrimitiveValue::create(attrName, CSSPrimitiveValue::UnitType::CustomIdentifier));
+    attrValue->append(CSSCustomIdentValue::create(attrName));
     return attrValue.release();
 }
 
@@ -2145,7 +2147,7 @@ bool CSSPropertyParser::parseFillImage(CSSParserValueList* valueList, RefPtrWill
         value = cssValuePool().createIdentifierValue(CSSValueNone);
         return true;
     }
-    if (valueList->current()->unit() == CSSPrimitiveValue::UnitType::URI) {
+    if (valueList->current()->m_unit == CSSParserValue::URI) {
         value = createCSSImageValueWithReferrer(valueList->current()->string, completeURL(valueList->current()->string));
         return true;
     }
@@ -2839,7 +2841,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationName(bool allo
     if (value->m_unit == CSSParserValue::Identifier)
         return createPrimitiveCustomIdentValue(value);
 
-    if (allowQuotedName && value->unit() == CSSPrimitiveValue::UnitType::String) {
+    if (allowQuotedName && value->m_unit == CSSParserValue::String) {
         // Legacy support for strings in prefixed animations
         if (m_context.useCounter())
             m_context.useCounter()->count(UseCounter::QuotedAnimationName);
@@ -3045,7 +3047,7 @@ static inline bool isValidCustomIdentForGridPositions(const CSSParserValue& valu
 }
 
 // The function parses [ <integer> || <custom-ident> ] in <grid-line> (which can be stand alone or with 'span').
-bool CSSPropertyParser::parseIntegerOrCustomIdentFromGridPosition(RefPtrWillBeRawPtr<CSSPrimitiveValue>& numericValue, RefPtrWillBeRawPtr<CSSPrimitiveValue>& gridLineName)
+bool CSSPropertyParser::parseIntegerOrCustomIdentFromGridPosition(RefPtrWillBeRawPtr<CSSPrimitiveValue>& numericValue, RefPtrWillBeRawPtr<CSSCustomIdentValue>& gridLineName)
 {
     CSSParserValue* value = m_valueList->current();
     if (validUnit(value, FInteger) && value->fValue) {
@@ -3082,7 +3084,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridPosition()
     }
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> numericValue = nullptr;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> gridLineName = nullptr;
+    RefPtrWillBeRawPtr<CSSCustomIdentValue> gridLineName = nullptr;
     bool hasSeenSpanKeyword = false;
 
     if (parseIntegerOrCustomIdentFromGridPosition(numericValue, gridLineName)) {
@@ -3114,7 +3116,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridPosition()
 
     // For the <custom-ident> case.
     if (gridLineName && !numericValue && !hasSeenSpanKeyword)
-        return cssValuePool().createValue(gridLineName->getStringValue(), CSSPrimitiveValue::UnitType::CustomIdentifier);
+        return CSSCustomIdentValue::create(gridLineName->value());
 
     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
     if (hasSeenSpanKeyword)
@@ -3129,7 +3131,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridPosition()
 
 static PassRefPtrWillBeRawPtr<CSSValue> gridMissingGridPositionValue(CSSValue* value)
 {
-    if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->isCustomIdent())
+    if (value->isCustomIdentValue())
         return value;
 
     return cssValuePool().createIdentifierValue(CSSValueAuto);
@@ -3188,7 +3190,7 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSS
         ++rowCount;
 
         // Handle template-rows's track-size.
-        if (m_valueList->current() && m_valueList->current()->unit() != CSSPrimitiveValue::UnitType::String) {
+        if (m_valueList->current() && m_valueList->current()->m_unit != CSSParserValue::String) {
             RefPtrWillBeRawPtr<CSSValue> value = parseGridTrackSize(*m_valueList);
             if (!value)
                 return false;
@@ -3411,7 +3413,7 @@ bool CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSVal
         if (!isValidCustomIdentForGridPositions(*identValue))
             return false;
 
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> lineName = createPrimitiveCustomIdentValue(identValue);
+        RefPtrWillBeRawPtr<CSSCustomIdentValue> lineName = createPrimitiveCustomIdentValue(identValue);
         lineNames->append(lineName.release());
         inputList.next();
     }
@@ -3615,7 +3617,7 @@ static Vector<String> parseGridTemplateAreasColumnNames(const String& gridRowNam
 bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap, const size_t rowCount, size_t& columnCount)
 {
     CSSParserValue* currentValue = m_valueList->current();
-    if (!currentValue || currentValue->unit() != CSSPrimitiveValue::UnitType::String)
+    if (!currentValue || currentValue->m_unit != CSSParserValue::String)
         return false;
 
     String gridRowNames = currentValue->string;
@@ -3747,18 +3749,18 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounterContent(CSSParse
     CSSParserValue* i = args->current();
     if (i->m_unit != CSSParserValue::Identifier)
         return nullptr;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> identifier = createPrimitiveCustomIdentValue(i);
+    RefPtrWillBeRawPtr<CSSCustomIdentValue> identifier = createPrimitiveCustomIdentValue(i);
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> separator = nullptr;
+    RefPtrWillBeRawPtr<CSSCustomIdentValue> separator = nullptr;
     if (!counters)
-        separator = cssValuePool().createValue(String(), CSSPrimitiveValue::UnitType::CustomIdentifier);
+        separator = CSSCustomIdentValue::create(String());
     else {
         args->next();
         if (!consumeComma(args))
             return nullptr;
 
         i = args->current();
-        if (i->unit() != CSSPrimitiveValue::UnitType::String)
+        if (i->m_unit != CSSParserValue::String)
             return nullptr;
 
         separator = createPrimitiveCustomIdentValue(i);
@@ -4875,7 +4877,7 @@ bool CSSPropertyParser::buildBorderImageParseContext(CSSPropertyID propId, Borde
             context.commitForwardSlashOperator();
 
         if (!context.canAdvance() && context.allowImage()) {
-            if (val->unit() == CSSPrimitiveValue::UnitType::URI) {
+            if (val->m_unit == CSSParserValue::URI) {
                 context.commitImage(createCSSImageValueWithReferrer(val->string, m_context.completeURL(val->string)));
             } else if (isGeneratedImageValue(val)) {
                 RefPtrWillBeRawPtr<CSSValue> value = nullptr;
@@ -5276,7 +5278,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounter(int defaultValu
         CSSParserValue* val = m_valueList->current();
         if (val->m_unit != CSSParserValue::Identifier)
             return nullptr;
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> counterName = createPrimitiveCustomIdentValue(val);
+        RefPtrWillBeRawPtr<CSSCustomIdentValue> counterName = createPrimitiveCustomIdentValue(val);
         m_valueList->next();
 
         val = m_valueList->current();
@@ -6103,7 +6105,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseImageSet(CSSParserValue
 
     while (functionArgs->current()) {
         CSSParserValue* arg = functionArgs->current();
-        if (arg->unit() != CSSPrimitiveValue::UnitType::URI)
+        if (arg->m_unit != CSSParserValue::URI)
             return nullptr;
 
         RefPtrWillBeRawPtr<CSSValue> image = createCSSImageValueWithReferrer(arg->string, completeURL(arg->string));
@@ -6228,11 +6230,11 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFilter()
     // The filter is a list of functional primitives that specify individual operations.
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
-        if (value->unit() != CSSPrimitiveValue::UnitType::URI && (value->m_unit != CSSParserValue::Function || !value->function))
+        if (value->m_unit != CSSParserValue::URI && (value->m_unit != CSSParserValue::Function || !value->function))
             return nullptr;
 
         // See if the specified primitive is one we understand.
-        if (value->unit() == CSSPrimitiveValue::UnitType::URI) {
+        if (value->m_unit == CSSParserValue::URI) {
             RefPtrWillBeRawPtr<CSSFunctionValue> referenceFilterValue = CSSFunctionValue::create(CSSValueUrl);
             referenceFilterValue->append(CSSSVGDocumentValue::create(value->string));
             list->append(referenceFilterValue.release());
@@ -6412,7 +6414,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextEmphasisStyle()
     RefPtrWillBeRawPtr<CSSPrimitiveValue> shape = nullptr;
 
     for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
-        if (value->unit() == CSSPrimitiveValue::UnitType::String) {
+        if (value->m_unit == CSSParserValue::String) {
             if (fill || shape)
                 return nullptr;
             m_valueList->next();
@@ -6697,8 +6699,8 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyMask:
         if (id == CSSValueNone) {
             validPrimitive = true;
-        } else if (value->unit() == CSSPrimitiveValue::UnitType::URI) {
-            parsedValue = CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::UnitType::URI);
+        } else if (value->m_unit == CSSParserValue::URI) {
+            parsedValue = CSSURIValue::create(value->string);
             if (parsedValue)
                 m_valueList->next();
         }
@@ -6739,10 +6741,10 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
         {
             if (id == CSSValueNone) {
                 parsedValue = cssValuePool().createIdentifierValue(id);
-            } else if (value->unit() == CSSPrimitiveValue::UnitType::URI) {
+            } else if (value->m_unit == CSSParserValue::URI) {
                 if (m_valueList->next()) {
                     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
-                    values->append(CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::UnitType::URI));
+                    values->append(CSSURIValue::create(value->string));
                     if (m_valueList->current()->id == CSSValueNone)
                         parsedValue = cssValuePool().createIdentifierValue(m_valueList->current()->id);
                     else
@@ -6753,7 +6755,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
                     }
                 }
                 if (!parsedValue)
-                    parsedValue = CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::UnitType::URI);
+                    parsedValue = CSSURIValue::create(value->string);
             } else {
                 parsedValue = parseColor(m_valueList->current());
             }
@@ -6822,8 +6824,8 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     if (validPrimitive) {
         if (id)
             parsedValue = CSSPrimitiveValue::createIdentifier(id);
-        else if (value->unit() == CSSPrimitiveValue::UnitType::String)
-            parsedValue = CSSPrimitiveValue::create(value->string, value->unit());
+        else if (value->m_unit == CSSParserValue::String)
+            parsedValue = CSSStringValue::create(value->string);
         else if (value->unit() >= CSSPrimitiveValue::UnitType::Number && value->unit() <= CSSPrimitiveValue::UnitType::Kilohertz)
             parsedValue = CSSPrimitiveValue::create(value->fValue, value->unit());
         else if (value->unit() == CSSPrimitiveValue::UnitType::Rems || value->unit() == CSSPrimitiveValue::UnitType::Chs)
@@ -7130,7 +7132,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseMotionPath()
         return nullptr;
 
     CSSParserValue* arg = functionArgs->current();
-    if (arg->unit() != CSSPrimitiveValue::UnitType::String)
+    if (arg->m_unit != CSSParserValue::String)
         return nullptr;
 
     String pathString = arg->string;

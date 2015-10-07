@@ -232,15 +232,6 @@ CSSPrimitiveValue::CSSPrimitiveValue(double num, UnitType type)
     m_value.num = num;
 }
 
-CSSPrimitiveValue::CSSPrimitiveValue(const String& str, UnitType type)
-    : CSSValue(PrimitiveClass)
-{
-    init(type);
-    m_value.string = str.impl();
-    if (m_value.string)
-        m_value.string->ref();
-}
-
 CSSPrimitiveValue::CSSPrimitiveValue(RGBA32 color)
     : CSSValue(PrimitiveClass)
 {
@@ -340,12 +331,6 @@ CSSPrimitiveValue::~CSSPrimitiveValue()
 void CSSPrimitiveValue::cleanup()
 {
     switch (type()) {
-    case UnitType::CustomIdentifier:
-    case UnitType::String:
-    case UnitType::URI:
-        if (m_value.string)
-            m_value.string->deref();
-        break;
     case UnitType::Calc:
         // We must not call deref() when oilpan is enabled because m_value.calc is traced.
 #if !ENABLE(OILPAN)
@@ -727,21 +712,6 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::lengthUnitTypeToUnitType(LengthUn
     return CSSPrimitiveValue::UnitType::Unknown;
 }
 
-String CSSPrimitiveValue::getStringValue() const
-{
-    switch (type()) {
-    case UnitType::CustomIdentifier:
-    case UnitType::String:
-    case UnitType::URI:
-        return m_value.string;
-    default:
-        break;
-    }
-
-    ASSERT_NOT_REACHED();
-    return String();
-}
-
 static String formatNumber(double number, const char* suffix, unsigned suffixLength)
 {
 #if OS(WIN) && _MSC_VER < 1900
@@ -828,9 +798,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case UnitType::ViewportMax:
         return "vmax";
     case UnitType::Unknown:
-    case UnitType::CustomIdentifier:
-    case UnitType::String:
-    case UnitType::URI:
     case UnitType::ValueID:
     case UnitType::PropertyID:
     case UnitType::RGBColor:
@@ -888,16 +855,6 @@ String CSSPrimitiveValue::customCSSText() const
     case UnitType::ViewportMin:
     case UnitType::ViewportMax:
         text = formatNumber(m_value.num, unitTypeToString(type()));
-        break;
-    case UnitType::CustomIdentifier:
-        text = quoteCSSStringIfNeeded(m_value.string);
-        break;
-    case UnitType::String: {
-        text = serializeString(m_value.string);
-        break;
-    }
-    case UnitType::URI:
-        text = serializeURI(m_value.string);
         break;
     case UnitType::ValueID:
         text = valueName(m_value.valueID);
@@ -964,10 +921,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
         return m_value.propertyID == other.m_value.propertyID;
     case UnitType::ValueID:
         return m_value.valueID == other.m_value.valueID;
-    case UnitType::CustomIdentifier:
-    case UnitType::String:
-    case UnitType::URI:
-        return equal(m_value.string, other.m_value.string);
     case UnitType::RGBColor:
         return m_value.rgbcolor == other.m_value.rgbcolor;
     case UnitType::Calc:

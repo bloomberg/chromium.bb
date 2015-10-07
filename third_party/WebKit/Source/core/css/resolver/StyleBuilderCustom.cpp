@@ -54,6 +54,7 @@
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
+#include "core/css/CSSURIValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
@@ -569,16 +570,14 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolverSta
     if (value->isBasicShapeValue()) {
         state.style()->setClipPath(ShapeClipPathOperation::create(basicShapeForValue(state, *value)));
     }
-    if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        if (primitiveValue->getValueID() == CSSValueNone) {
-            state.style()->setClipPath(nullptr);
-        } else if (primitiveValue->isURI()) {
-            String cssURLValue = primitiveValue->getStringValue();
-            KURL url = state.document().completeURL(cssURLValue);
-            // FIXME: It doesn't work with forward or external SVG references (see https://bugs.webkit.org/show_bug.cgi?id=90405)
-            state.style()->setClipPath(ReferenceClipPathOperation::create(cssURLValue, AtomicString(url.fragmentIdentifier())));
-        }
+    if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNone) {
+        state.style()->setClipPath(nullptr);
+    }
+    if (value->isURIValue()) {
+        String cssURLValue = toCSSURIValue(value)->value();
+        KURL url = state.document().completeURL(cssURLValue);
+        // FIXME: It doesn't work with forward or external SVG references (see https://bugs.webkit.org/show_bug.cgi?id=90405)
+        state.style()->setClipPath(ReferenceClipPathOperation::create(cssURLValue, AtomicString(url.fragmentIdentifier())));
     }
 }
 
@@ -628,14 +627,14 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(StyleRe
         return;
     }
 
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-
-    if (primitiveValue->isString()) {
+    if (value->isStringValue()) {
         state.style()->setTextEmphasisFill(TextEmphasisFillFilled);
         state.style()->setTextEmphasisMark(TextEmphasisMarkCustom);
-        state.style()->setTextEmphasisCustomMark(AtomicString(primitiveValue->getStringValue()));
+        state.style()->setTextEmphasisCustomMark(AtomicString(toCSSStringValue(value)->value()));
         return;
     }
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
     state.style()->setTextEmphasisCustomMark(nullAtom);
 
@@ -738,22 +737,20 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
                 state.style()->setUnique();
             else
                 state.parentStyle()->setUnique();
-            QualifiedName attr(nullAtom, AtomicString(toCSSPrimitiveValue(functionValue->item(0))->getStringValue()), nullAtom);
+            QualifiedName attr(nullAtom, AtomicString(toCSSCustomIdentValue(functionValue->item(0))->value()), nullAtom);
             const AtomicString& value = state.element()->getAttribute(attr);
             state.style()->setContent(value.isNull() ? emptyString() : value.string(), didSet);
             didSet = true;
         }
 
-        if (!item->isPrimitiveValue())
+        if (!item->isPrimitiveValue() && !item->isStringValue())
             continue;
 
-        CSSPrimitiveValue* contentValue = toCSSPrimitiveValue(item.get());
-
-        if (contentValue->isString()) {
-            state.style()->setContent(contentValue->getStringValue().impl(), didSet);
+        if (item->isStringValue()) {
+            state.style()->setContent(toCSSStringValue(*item).value().impl(), didSet);
             didSet = true;
         } else {
-            switch (contentValue->getValueID()) {
+            switch (toCSSPrimitiveValue(*item).getValueID()) {
             case CSSValueOpenQuote:
                 state.style()->setContent(OPEN_QUOTE, didSet);
                 didSet = true;
@@ -782,12 +779,11 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitLocale(StyleResolverState& state, CSSValue* value)
 {
-    const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == CSSValueAuto) {
+    if (value->isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto);
         state.style()->setLocale(nullAtom);
     } else {
-        ASSERT(primitiveValue->isString());
-        state.style()->setLocale(AtomicString(primitiveValue->getStringValue()));
+        state.style()->setLocale(AtomicString(toCSSStringValue(value)->value()));
     }
     state.fontBuilder().setScript(state.style()->locale());
 }

@@ -38,6 +38,7 @@ class CSSBasicShapeEllipseValue;
 class CSSBasicShapeCircleValue;
 class CSSBasicShapeInsetValue;
 class CSSBasicShapePolygonValue;
+class CSSCustomIdentValue;
 class CSSFunctionValue;
 class CSSGradientValue;
 class CSSGridLineNamesValue;
@@ -48,6 +49,7 @@ class CSSPrimitiveValue;
 class CSSProperty;
 class CSSQuadValue;
 class CSSShadowValue;
+class CSSStringValue;
 class CSSValue;
 class CSSValueList;
 class StylePropertyShorthand;
@@ -161,7 +163,7 @@ private:
     bool parseColumnsShorthand(bool important);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseGridPosition();
-    bool parseIntegerOrCustomIdentFromGridPosition(RefPtrWillBeRawPtr<CSSPrimitiveValue>& numericValue, RefPtrWillBeRawPtr<CSSPrimitiveValue>& gridLineName);
+    bool parseIntegerOrCustomIdentFromGridPosition(RefPtrWillBeRawPtr<CSSPrimitiveValue>& numericValue, RefPtrWillBeRawPtr<CSSCustomIdentValue>& gridLineName);
     bool parseGridItemPositionShorthand(CSSPropertyID, bool important);
     bool parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSSValue>, bool important);
     bool parseGridTemplateShorthand(bool important);
@@ -268,8 +270,8 @@ private:
     bool parseGeneratedImage(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveNumericValue(CSSParserValue*);
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveStringValue(CSSParserValue*);
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveCustomIdentValue(CSSParserValue*);
+    PassRefPtrWillBeRawPtr<CSSStringValue> createPrimitiveStringValue(CSSParserValue*);
+    PassRefPtrWillBeRawPtr<CSSCustomIdentValue> createPrimitiveCustomIdentValue(CSSParserValue*);
 
     PassRefPtrWillBeRawPtr<CSSValue> createCSSImageValueWithReferrer(const AtomicString& rawValue, const KURL&);
 

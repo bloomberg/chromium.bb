@@ -21,6 +21,7 @@
 #ifndef CSSCounterValue_h
 #define CSSCounterValue_h
 
+#include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
 #include "wtf/text/WTFString.h"
@@ -29,14 +30,14 @@ namespace blink {
 
 class CSSCounterValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSCounterValue> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)
+    static PassRefPtrWillBeRawPtr<CSSCounterValue> create(PassRefPtrWillBeRawPtr<CSSCustomIdentValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSCustomIdentValue> separator)
     {
         return adoptRefWillBeNoop(new CSSCounterValue(identifier, listStyle, separator));
     }
 
-    String identifier() const { return m_identifier->getStringValue(); }
+    String identifier() const { return m_identifier->value(); }
     CSSValueID listStyle() const { return m_listStyle->getValueID(); }
-    String separator() const { return m_separator->getStringValue(); }
+    String separator() const { return m_separator->value(); }
 
     bool equals(const CSSCounterValue& other) const
     {
@@ -50,20 +51,18 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSCounterValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)
+    CSSCounterValue(PassRefPtrWillBeRawPtr<CSSCustomIdentValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSCustomIdentValue> separator)
         : CSSValue(CounterClass)
         , m_identifier(identifier)
         , m_listStyle(listStyle)
         , m_separator(separator)
     {
-        ASSERT(m_identifier->isCustomIdent());
         ASSERT(m_listStyle->isValueID());
-        ASSERT(m_separator->isCustomIdent());
     }
 
-    RefPtrWillBeMember<CSSPrimitiveValue> m_identifier; // string
+    RefPtrWillBeMember<CSSCustomIdentValue> m_identifier; // string
     RefPtrWillBeMember<CSSPrimitiveValue> m_listStyle; // ident
-    RefPtrWillBeMember<CSSPrimitiveValue> m_separator; // string
+    RefPtrWillBeMember<CSSCustomIdentValue> m_separator; // string
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCounterValue, isCounterValue());

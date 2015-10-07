@@ -78,6 +78,7 @@ public:
     bool isFontFeatureValue() const { return m_classType == FontFeatureClass; }
     bool isFontFaceSrcValue() const { return m_classType == FontFaceSrcClass; }
     bool isFunctionValue() const { return m_classType == FunctionClass; }
+    bool isCustomIdentValue() const { return m_classType == CustomIdentClass; }
     bool isImageGeneratorValue() const { return m_classType >= CanvasClass && m_classType <= RadialGradientClass; }
     bool isGradientValue() const { return m_classType >= LinearGradientClass && m_classType <= RadialGradientClass; }
     bool isImageSetValue() const { return m_classType == ImageSetClass; }
@@ -93,6 +94,8 @@ public:
     bool isRadialGradientValue() const { return m_classType == RadialGradientClass; }
     bool isReflectValue() const { return m_classType == ReflectClass; }
     bool isShadowValue() const { return m_classType == ShadowClass; }
+    bool isStringValue() const { return m_classType == StringClass; }
+    bool isURIValue() const { return m_classType == URIClass; }
     bool isCubicBezierTimingFunctionValue() const { return m_classType == CubicBezierTimingFunctionClass; }
     bool isStepsTimingFunctionValue() const { return m_classType == StepsTimingFunctionClass; }
     bool isGridTemplateAreasValue() const { return m_classType == GridTemplateAreasClass; }
@@ -116,12 +119,14 @@ public:
     ~CSSValue() { }
 
 protected:
-
     static const size_t ClassTypeBits = 6;
     enum ClassType {
         PrimitiveClass,
         CounterClass,
         QuadClass,
+        CustomIdentClass,
+        StringClass,
+        URIClass,
         ValuePairClass,
 
         // Basic shape classes.

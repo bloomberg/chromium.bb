@@ -86,8 +86,6 @@ public:
         Seconds,
         Hertz,
         Kilohertz,
-        CustomIdentifier,
-        URI,
         RGBColor,
         ViewportWidth,
         ViewportHeight,
@@ -103,7 +101,6 @@ public:
         Calc,
         CalcPercentageWithNumber,
         CalcPercentageWithLength,
-        String,
         PropertyID,
         ValueID,
 
@@ -161,7 +158,6 @@ public:
             || type() == UnitType::Gradians
             || type() == UnitType::Turns;
     }
-    bool isCustomIdent() const { return type() == UnitType::CustomIdentifier; }
     bool isFontRelativeLength() const
     {
         return type() == UnitType::QuirkyEms
@@ -183,9 +179,7 @@ public:
     bool isPropertyID() const { return type() == UnitType::PropertyID; }
     bool isPx() const { return typeWithCalcResolved() == UnitType::Pixels; }
     bool isRGBColor() const { return type() == UnitType::RGBColor; }
-    bool isString() const { return type() == UnitType::String; }
     bool isTime() const { return type() == UnitType::Seconds || type() == UnitType::Milliseconds; }
-    bool isURI() const { return type() == UnitType::URI; }
     bool isCalculated() const { return type() == UnitType::Calc; }
     bool isCalculatedPercentageWithNumber() const { return typeWithCalcResolved() == UnitType::CalcPercentageWithNumber; }
     bool isCalculatedPercentageWithLength() const { return typeWithCalcResolved() == UnitType::CalcPercentageWithLength; }
@@ -210,10 +204,6 @@ public:
         return adoptRefWillBeNoop(new CSSPrimitiveValue(rgbValue));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(double value, UnitType type)
-    {
-        return adoptRefWillBeNoop(new CSSPrimitiveValue(value, type));
-    }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(const String& value, UnitType type)
     {
         return adoptRefWillBeNoop(new CSSPrimitiveValue(value, type));
     }
@@ -246,7 +236,6 @@ public:
     int getIntValue() const { return getValue<int>(); }
     template<typename T> inline T getValue() const { return clampTo<T>(getDoubleValue()); }
 
-    String getStringValue() const;
     RGBA32 getRGBA32Value() const { ASSERT(isRGBColor()); return m_value.rgbcolor; }
 
     CSSCalcValue* cssCalcValue() const { ASSERT(isCalculated()); return m_value.calc; }
@@ -275,7 +264,6 @@ private:
     CSSPrimitiveValue(CSSPropertyID);
     CSSPrimitiveValue(RGBA32 color);
     CSSPrimitiveValue(const Length&, float zoom);
-    CSSPrimitiveValue(const String&, UnitType);
     CSSPrimitiveValue(double, UnitType);
 
     template<typename T> CSSPrimitiveValue(T); // Defined in CSSPrimitiveValueMappings.h
@@ -307,7 +295,6 @@ private:
         CSSPropertyID propertyID;
         CSSValueID valueID;
         double num;
-        StringImpl* string;
         RGBA32 rgbcolor;
         // FIXME: oilpan: Should be a member, but no support for members in unions. Just trace the raw ptr for now.
         CSSCalcValue* calc;

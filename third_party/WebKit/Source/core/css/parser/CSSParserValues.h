@@ -63,6 +63,8 @@ struct CSSParserValue {
         DimensionList = 0x100006,
         // Represents a unicode range by a pair of UChar32 values
         UnicodeRange = 0x100007,
+        String = 0x100008,
+        URI = 0x100009,
     };
     int m_unit;
     CSSPrimitiveValue::UnitType unit() const { return static_cast<CSSPrimitiveValue::UnitType>(m_unit); }

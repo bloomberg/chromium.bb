@@ -36,6 +36,7 @@
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "core/CSSValueKeywords.h"
 #include "core/css/BinaryDataFontFaceSource.h"
+#include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontSelector.h"
@@ -112,7 +113,7 @@ PassRefPtrWillBeRawPtr<FontFace> FontFace::create(Document* document, const Styl
 
     // Obtain the font-family property and the src property. Both must be defined.
     RefPtrWillBeRawPtr<CSSValue> family = properties.getPropertyCSSValue(CSSPropertyFontFamily);
-    if (!family || !family->isPrimitiveValue())
+    if (!family || (!family->isCustomIdentValue() && !family->isPrimitiveValue()))
         return nullptr;
     RefPtrWillBeRawPtr<CSSValue> src = properties.getPropertyCSSValue(CSSPropertySrc);
     if (!src || !src->isValueList())
@@ -120,7 +121,7 @@ PassRefPtrWillBeRawPtr<FontFace> FontFace::create(Document* document, const Styl
 
     RefPtrWillBeRawPtr<FontFace> fontFace = adoptRefWillBeNoop(new FontFace(document));
 
-    if (fontFace->setFamilyValue(toCSSPrimitiveValue(family.get()))
+    if (fontFace->setFamilyValue(*family)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontStyle)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontWeight)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontStretch)
@@ -270,15 +271,15 @@ bool FontFace::setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue> value, CSSPrope
     return true;
 }
 
-bool FontFace::setFamilyValue(CSSPrimitiveValue* familyValue)
+bool FontFace::setFamilyValue(const CSSValue& familyValue)
 {
     AtomicString family;
-    if (familyValue->isCustomIdent()) {
-        family = AtomicString(familyValue->getStringValue());
-    } else if (familyValue->isValueID()) {
+    if (familyValue.isCustomIdentValue()) {
+        family = AtomicString(toCSSCustomIdentValue(familyValue).value());
+    } else if (toCSSPrimitiveValue(familyValue).isValueID()) {
         // We need to use the raw text for all the generic family types, since @font-face is a way of actually
         // defining what font to use for those types.
-        switch (familyValue->getValueID()) {
+        switch (toCSSPrimitiveValue(familyValue).getValueID()) {
         case CSSValueSerif:
             family =  FontFamilyNames::webkit_serif;
             break;

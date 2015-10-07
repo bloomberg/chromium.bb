@@ -12,7 +12,9 @@
 #include "CSSValueKeywords.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSContentDistributionValue.h"
+#include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSURIValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/resolver/StyleResolverState.h"
 
@@ -347,7 +349,7 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
     int length = list ? list->length() : 0;
     for (int i = 0; i < length; ++i) {
         const CSSValuePair* pair = toCSSValuePair(list->item(i));
-        AtomicString identifier(toCSSPrimitiveValue(pair->first()).getStringValue());
+        AtomicString identifier(toCSSCustomIdentValue(pair->first()).value());
         int value = toCSSPrimitiveValue(pair->second()).getIntValue();
         CounterDirectives& directives = map.add(identifier, CounterDirectives()).storedValue->value;
         {% if action == 'Reset' %}
@@ -504,24 +506,26 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
     if (value->isValueList()) {
         CSSValueList* list = toCSSValueList(value);
         ASSERT(list->length() == 2);
-        url = toCSSPrimitiveValue(list->item(0))->getStringValue();
+        url = toCSSURIValue(list->item(0))->value();
         value = list->item(1);
     }
 
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     Color color;
     SVGPaintType paintType = SVG_PAINTTYPE_RGBCOLOR;
-    if (primitiveValue->getValueID() == CSSValueNone) {
-        paintType = url.isEmpty() ? SVG_PAINTTYPE_NONE : SVG_PAINTTYPE_URI_NONE;
-    } else if (primitiveValue->isURI()) {
+    if (value->isURIValue()) {
         paintType = SVG_PAINTTYPE_URI;
-        url = primitiveValue->getStringValue();
-    } else if (primitiveValue->getValueID() == CSSValueCurrentcolor) {
-        color = state.style()->color();
-        paintType = url.isEmpty() ? SVG_PAINTTYPE_CURRENTCOLOR : SVG_PAINTTYPE_URI_CURRENTCOLOR;
+        url = toCSSURIValue(value)->value();
     } else {
-        color = StyleBuilderConverter::convertColor(state, primitiveValue);
-        paintType = url.isEmpty() ? SVG_PAINTTYPE_RGBCOLOR : SVG_PAINTTYPE_URI_RGBCOLOR;
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+        if (primitiveValue->getValueID() == CSSValueNone) {
+            paintType = url.isEmpty() ? SVG_PAINTTYPE_NONE : SVG_PAINTTYPE_URI_NONE;
+        } else if (primitiveValue->getValueID() == CSSValueCurrentcolor) {
+            color = state.style()->color();
+            paintType = url.isEmpty() ? SVG_PAINTTYPE_CURRENTCOLOR : SVG_PAINTTYPE_URI_CURRENTCOLOR;
+        } else {
+            color = StyleBuilderConverter::convertColor(state, primitiveValue);
+            paintType = url.isEmpty() ? SVG_PAINTTYPE_RGBCOLOR : SVG_PAINTTYPE_URI_RGBCOLOR;
+        }
     }
     {{set_value(property)}}(paintType, color, url,
         state.applyPropertyToRegularStyle(),

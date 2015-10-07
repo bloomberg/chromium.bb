@@ -29,6 +29,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
+#include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -44,7 +45,7 @@ class CORE_EXPORT CSSValuePool :  public NoBaseWillBeGarbageCollectedFinalized<C
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CSSValuePool);
 public:
     PassRefPtrWillBeRawPtr<CSSValueList> createFontFaceValue(const AtomicString&);
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createFontFamilyValue(const String&);
+    PassRefPtrWillBeRawPtr<CSSCustomIdentValue> createFontFamilyValue(const String&);
     PassRefPtrWillBeRawPtr<CSSInheritedValue> createInheritedValue() { return m_inheritedValue; }
     PassRefPtrWillBeRawPtr<CSSInitialValue> createImplicitInitialValue() { return m_implicitInitialValue; }
     PassRefPtrWillBeRawPtr<CSSInitialValue> createExplicitInitialValue() { return m_explicitInitialValue; }
@@ -53,7 +54,6 @@ public:
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifierValue(CSSPropertyID identifier);
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createColorValue(unsigned rgbValue);
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(double value, CSSPrimitiveValue::UnitType);
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(const String& value, CSSPrimitiveValue::UnitType type) { return CSSPrimitiveValue::create(value, type); }
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(const Length& value, const ComputedStyle&);
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(const Length& value, float zoom) { return CSSPrimitiveValue::create(value, zoom); }
     template<typename T> static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(T value) { return CSSPrimitiveValue::create(value); }
@@ -85,7 +85,7 @@ private:
     using FontFaceValueCache = WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<CSSValueList>>;
     FontFaceValueCache m_fontFaceValueCache;
 
-    using FontFamilyValueCache = WillBeHeapHashMap<String, RefPtrWillBeMember<CSSPrimitiveValue>>;
+    using FontFamilyValueCache = WillBeHeapHashMap<String, RefPtrWillBeMember<CSSCustomIdentValue>>;
     FontFamilyValueCache m_fontFamilyValueCache;
 
     friend CORE_EXPORT CSSValuePool& cssValuePool();

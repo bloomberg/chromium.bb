@@ -57,7 +57,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
                 ASSERT(next.type() == StringToken);
                 value.id = CSSValueInvalid;
                 value.isInt = false;
-                value.setUnit(CSSPrimitiveValue::UnitType::URI);
+                value.m_unit = CSSParserValue::URI;
                 value.string = next.value();
                 break;
             }
@@ -164,9 +164,9 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
             if (token.type() == HashToken)
                 value.m_unit = CSSParserValue::HexColor;
             else if (token.type() == StringToken)
-                value.setUnit(CSSPrimitiveValue::UnitType::String);
+                value.m_unit = CSSParserValue::String;
             else
-                value.setUnit(CSSPrimitiveValue::UnitType::URI);
+                value.m_unit = CSSParserValue::URI;
             value.string = token.value();
             break;
         }
