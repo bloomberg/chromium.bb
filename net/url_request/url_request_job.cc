@@ -401,7 +401,9 @@ void URLRequestJob::NotifyHeadersComplete() {
 
   // This should not be called on error, and the job type should have cleared
   // IO_PENDING state before calling this method.
-  DCHECK(request_->status().is_success());
+  // TODO(mmenke): Change this to a DCHECK once https://crbug.com/508900 is
+  // resolved.
+  CHECK(request_->status().is_success());
 
   // Initialize to the current time, and let the subclass optionally override
   // the time stamps if it has that information.  The default request_time is
@@ -792,9 +794,11 @@ void URLRequestJob::SetStatus(const URLRequestStatus &status) {
     // An error status should never be replaced by a non-error status by a
     // URLRequestJob.  URLRequest has some retry paths, but it resets the status
     // itself, if needed.
-    DCHECK(request_->status().is_io_pending() ||
-           request_->status().is_success() ||
-           (!status.is_success() && !status.is_io_pending()));
+    // TODO(mmenke): Change this to a DCHECK once https://crbug.com/508900 is
+    // resolved.
+    CHECK(request_->status().is_io_pending() ||
+          request_->status().is_success() ||
+          (!status.is_success() && !status.is_io_pending()));
     request_->set_status(status);
   }
 }
