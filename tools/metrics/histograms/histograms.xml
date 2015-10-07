@@ -50194,6 +50194,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebCore.WebSocket.ReceiveType" enum="WebSocketReceiveType">
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
+  <summary>
+    Count the number of messages for each message type and set binary type.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.WebSocket.SendType" enum="WebSocketSendType">
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
@@ -74311,6 +74320,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="WebSocketPerMessageDeflateContextTakeOverMode" type="int">
   <int value="0" label="Do not take over"/>
   <int value="1" label="Take over"/>
+</enum>
+
+<enum name="WebSocketReceiveType" type="int">
+  <int value="0" label="String"/>
+  <int value="1" label="ArrayBuffer"/>
+  <int value="2" label="Blob"/>
 </enum>
 
 <enum name="WebSocketSendType" type="int">
