@@ -94,9 +94,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
 
   bool IsValid() const;
 
-  // Checks whether |now| is past the expiration time provided in the config.
-  bool IsExpired(base::Time now) const;
-
   // Finds the index (in resources) of the first Resource that matches a
   // particular URL. Returns kInvalidResourceIndex if it is not matched by any
   // Resources.
@@ -108,7 +105,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
       base::JSONValueConverter<DomainReliabilityConfig>* converter);
 
   std::string version;
-  double valid_until;
   std::string domain;
   ScopedVector<Resource> resources;
   ScopedVector<Collector> collectors;

@@ -16,7 +16,6 @@ namespace {
 scoped_ptr<DomainReliabilityConfig> MakeBaseConfig() {
   DomainReliabilityConfig* config = new DomainReliabilityConfig();
   config->domain = "example";
-  config->valid_until = 1234567890.0;
   config->version = "1";
 
   DomainReliabilityConfig::Collector* collector =
@@ -92,10 +91,6 @@ TEST_F(DomainReliabilityConfigTest, IsValid) {
   config->domain = "";
   EXPECT_FALSE(config->IsValid());
 
-  config = MakeSampleConfig();
-  config->valid_until = 0.0;
-  EXPECT_FALSE(config->IsValid());
-
   // Version is optional.
   config = MakeSampleConfig();
   config->version = "";
@@ -128,19 +123,6 @@ TEST_F(DomainReliabilityConfigTest, IsValid) {
   config = MakeSampleConfig();
   config->collectors[0]->upload_url = GURL();
   EXPECT_FALSE(config->IsValid());
-}
-
-TEST_F(DomainReliabilityConfigTest, IsExpired) {
-  base::Time now = base::Time::Now();
-  base::TimeDelta one_day = base::TimeDelta::FromDays(1);
-
-  DomainReliabilityConfig unexpired_config;
-  unexpired_config.valid_until = (now + one_day).ToDoubleT();
-  EXPECT_FALSE(unexpired_config.IsExpired(now));
-
-  DomainReliabilityConfig expired_config;
-  expired_config.valid_until = (now - one_day).ToDoubleT();
-  EXPECT_TRUE(expired_config.IsExpired(now));
 }
 
 TEST_F(DomainReliabilityConfigTest, GetResourceIndexForUrl) {
@@ -177,7 +159,6 @@ TEST_F(DomainReliabilityConfigTest, UrlPatternCantMatchFragment) {
 TEST_F(DomainReliabilityConfigTest, FromJSON) {
   std::string config_json =
     "{ \"config_version\": \"1\","
-    "  \"config_valid_until\": 1234567890.0,"
     "  \"monitored_domain\": \"test.example\","
     "  \"monitored_resources\": [ {"
     "    \"resource_name\": \"home\","
@@ -195,7 +176,6 @@ TEST_F(DomainReliabilityConfigTest, FromJSON) {
 
   EXPECT_TRUE(config);
   EXPECT_EQ("1", config->version);
-  EXPECT_EQ(1234567890.0, config->valid_until);
   EXPECT_EQ("test.example", config->domain);
   EXPECT_EQ(1u, config->resources.size());
   EXPECT_EQ("home", config->resources[0]->name);

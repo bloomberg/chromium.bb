@@ -191,7 +191,6 @@ scoped_ptr<const DomainReliabilityConfig> MakeTestConfigWithDomain(
   config->collectors.push_back(collector);
 
   config->version = "1";
-  config->valid_until = 1234567890.0;
   config->domain = domain;
 
   DCHECK(config->IsValid());

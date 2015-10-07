@@ -87,7 +87,7 @@ bool DomainReliabilityConfig::Collector::IsValid() const {
   return upload_url.is_valid();
 }
 
-DomainReliabilityConfig::DomainReliabilityConfig() : valid_until(0.0) {}
+DomainReliabilityConfig::DomainReliabilityConfig() {}
 DomainReliabilityConfig::~DomainReliabilityConfig() {}
 
 // static
@@ -108,10 +108,8 @@ scoped_ptr<const DomainReliabilityConfig> DomainReliabilityConfig::FromJSON(
 }
 
 bool DomainReliabilityConfig::IsValid() const {
-  if (valid_until == 0.0 || domain.empty() ||
-      resources.empty() || collectors.empty()) {
+  if (domain.empty() || resources.empty() || collectors.empty())
     return false;
-  }
 
   for (auto& resource : resources) {
     if (!resource->IsValid())
@@ -124,12 +122,6 @@ bool DomainReliabilityConfig::IsValid() const {
   }
 
   return true;
-}
-
-bool DomainReliabilityConfig::IsExpired(base::Time now) const {
-  DCHECK_NE(0.0, valid_until);
-  base::Time valid_until_time = base::Time::FromDoubleT(valid_until);
-  return now > valid_until_time;
 }
 
 size_t DomainReliabilityConfig::GetResourceIndexForUrl(const GURL& url) const {
@@ -149,8 +141,6 @@ void DomainReliabilityConfig::RegisterJSONConverter(
     base::JSONValueConverter<DomainReliabilityConfig>* converter) {
   converter->RegisterStringField("config_version",
                                  &DomainReliabilityConfig::version);
-  converter->RegisterDoubleField("config_valid_until",
-                                 &DomainReliabilityConfig::valid_until);
   converter->RegisterStringField("monitored_domain",
                                  &DomainReliabilityConfig::domain);
   converter->RegisterRepeatedMessage("monitored_resources",
