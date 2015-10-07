@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 import android.app.ActivityManager;
 import android.os.Build;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
@@ -48,6 +49,9 @@ public class ChromeMediaRouterTest {
     public void setUp() {
         sIsLowRamDevice = false;
         mChromeMediaRouter = new ChromeMediaRouter(0, Robolectric.application);
+
+        // Initialize the command line to avoid an assertion failure in SysUtils.
+        CommandLine.init(new String[0]);
     }
 
     @Test
