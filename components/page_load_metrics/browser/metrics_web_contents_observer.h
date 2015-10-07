@@ -23,10 +23,6 @@ namespace IPC {
 class Message;
 }  // namespace IPC
 
-namespace rappor {
-class RapporService;
-}
-
 namespace page_load_metrics {
 
 // If you add elements from this enum, make sure you update the enum
@@ -60,17 +56,11 @@ enum PageLoadEvent {
   PAGE_LOAD_LAST_ENTRY
 };
 
-// This class tracks a given page load, starting from navigation start /
-// provisional load, until a new navigation commits or the navigation fails. It
-// also records RAPPOR/UMA about the page load.
-// MetricsWebContentsObserver manages a set of provisional PageLoadTrackers, as
-// well as a committed PageLoadTracker.
 class PageLoadTracker {
  public:
-  PageLoadTracker(bool in_foreground,
-                  rappor::RapporService* const rappor_service);
+  explicit PageLoadTracker(bool in_foreground);
   ~PageLoadTracker();
-  void Commit(const GURL& committed_url);
+  void Commit();
   void WebContentsHidden();
 
   // Returns true if the timing was successfully updated.
@@ -78,12 +68,7 @@ class PageLoadTracker {
   void RecordEvent(PageLoadEvent event);
 
  private:
-  // Only valid to call post-commit.
-  const GURL& GetCommittedURL();
-
-  base::TimeDelta GetBackgroundDelta();
   void RecordTimingHistograms();
-  void RecordRappor();
 
   bool has_commit_;
 
@@ -94,12 +79,6 @@ class PageLoadTracker {
   bool started_in_foreground_;
 
   PageLoadTiming timing_;
-  GURL url_;
-
-  // This RapporService is owned by and shares a lifetime with
-  // g_browser_process's MetricsServicesManager. It can be NULL. The underlying
-  // RapporService will be freed when the when the browser process is killed.
-  rappor::RapporService* const rappor_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };
@@ -110,10 +89,6 @@ class MetricsWebContentsObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<MetricsWebContentsObserver> {
  public:
-  // The caller must guarantee that the RapporService (if non-null) will
-  // outlive the WebContents.
-  static void CreateForWebContents(content::WebContents* web_contents,
-                                   rappor::RapporService* rappor_service);
   ~MetricsWebContentsObserver() override;
 
   // content::WebContentsObserver implementation:
@@ -130,8 +105,7 @@ class MetricsWebContentsObserver
   void RenderProcessGone(base::TerminationStatus status) override;
 
  private:
-  MetricsWebContentsObserver(content::WebContents* web_contents,
-                             rappor::RapporService* rappor_service);
+  explicit MetricsWebContentsObserver(content::WebContents* web_contents);
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
   friend class MetricsWebContentsObserverTest;
 
@@ -149,8 +123,6 @@ class MetricsWebContentsObserver
   base::ScopedPtrMap<content::NavigationHandle*, scoped_ptr<PageLoadTracker>>
       provisional_loads_;
   scoped_ptr<PageLoadTracker> committed_load_;
-
-  rappor::RapporService* const rappor_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserver);
 };
