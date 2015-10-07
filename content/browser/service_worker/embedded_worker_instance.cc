@@ -74,10 +74,11 @@ void RegisterToWorkerDevToolsManagerOnUI(
       base::Bind(callback, worker_devtools_agent_route_id, wait_for_debugger));
 }
 
-void SetupMojoOnUIThread(int process_id,
-                         int thread_id,
-                         mojo::InterfaceRequest<mojo::ServiceProvider> services,
-                         mojo::ServiceProviderPtr exposed_services) {
+void SetupMojoOnUIThread(
+    int process_id,
+    int thread_id,
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::InterfacePtrInfo<mojo::ServiceProvider> exposed_services) {
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   // |rph| may be NULL in unit tests.
   if (!rph)
@@ -85,7 +86,7 @@ void SetupMojoOnUIThread(int process_id,
   EmbeddedWorkerSetupPtr setup;
   rph->GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&setup));
   setup->ExchangeServiceProviders(thread_id, services.Pass(),
-                                  exposed_services.Pass());
+                                  mojo::MakeProxy(exposed_services.Pass()));
 }
 
 }  // namespace
@@ -390,7 +391,7 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
       BrowserThread::UI, FROM_HERE,
       base::Bind(SetupMojoOnUIThread, process_id_, thread_id_,
                  base::Passed(&services_request),
-                 base::Passed(&exposed_services)));
+                 base::Passed(exposed_services.PassInterface())));
   service_registry_->BindRemoteServiceProvider(services.Pass());
 }
 

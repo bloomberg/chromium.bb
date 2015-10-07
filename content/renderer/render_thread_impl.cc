@@ -395,7 +395,7 @@ blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {
 
 void SetupEmbeddedWorkerOnWorkerThread(
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr exposed_services) {
+    mojo::InterfacePtrInfo<mojo::ServiceProvider> exposed_services) {
   ServiceWorkerContextClient* client =
       ServiceWorkerContextClient::ThreadSpecificInstance();
   // It is possible for client to be null if for some reason the worker died
@@ -403,7 +403,8 @@ void SetupEmbeddedWorkerOnWorkerThread(
   // nothing and let mojo close the connection.
   if (!client)
     return;
-  client->BindServiceRegistry(services.Pass(), exposed_services.Pass());
+  client->BindServiceRegistry(services.Pass(),
+                              mojo::MakeProxy(exposed_services.Pass()));
 }
 
 class EmbeddedWorkerSetupImpl : public EmbeddedWorkerSetup {
@@ -416,12 +417,10 @@ class EmbeddedWorkerSetupImpl : public EmbeddedWorkerSetup {
       int32_t thread_id,
       mojo::InterfaceRequest<mojo::ServiceProvider> services,
       mojo::ServiceProviderPtr exposed_services) override {
-    mojo::ServiceProviderPtr exposed_services_with_id(28);
-    exposed_services_with_id.Bind(exposed_services.PassInterface());
     WorkerTaskRunner::Instance()->GetTaskRunnerFor(thread_id)->PostTask(
         FROM_HERE,
         base::Bind(&SetupEmbeddedWorkerOnWorkerThread, base::Passed(&services),
-                   base::Passed(&exposed_services_with_id)));
+                   base::Passed(exposed_services.PassInterface())));
   }
 
  private:
