@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_RECEIVER_FRAME_RECEIVER_H_
 #define MEDIA_CAST_RECEIVER_FRAME_RECEIVER_H_
 
+#include <list>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -18,8 +20,8 @@
 #include "media/cast/net/rtcp/rtcp.h"
 #include "media/cast/net/rtp/framer.h"
 #include "media/cast/net/rtp/receiver_stats.h"
+#include "media/cast/net/rtp/rtp_defines.h"
 #include "media/cast/net/rtp/rtp_parser.h"
-#include "media/cast/net/rtp/rtp_receiver_defines.h"
 
 namespace media {
 namespace cast {

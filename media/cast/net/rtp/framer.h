@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_FRAMER_FRAMER_H_
-#define MEDIA_CAST_FRAMER_FRAMER_H_
+#ifndef MEDIA_CAST_NET_RTP_FRAMER_H_
+#define MEDIA_CAST_NET_RTP_FRAMER_H_
 
 #include <map>
 
@@ -15,7 +15,7 @@
 #include "media/cast/net/rtcp/rtcp.h"
 #include "media/cast/net/rtp/cast_message_builder.h"
 #include "media/cast/net/rtp/frame_buffer.h"
-#include "media/cast/net/rtp/rtp_receiver_defines.h"
+#include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {
 namespace cast {
@@ -93,4 +93,4 @@ class Framer {
 }  //  namespace cast
 }  //  namespace media
 
-#endif  // MEDIA_CAST_FRAMER_FRAMER_H_
+#endif  // MEDIA_CAST_NET_RTP_FRAMER_H_

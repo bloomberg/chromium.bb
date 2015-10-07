@@ -9,7 +9,7 @@
 #include "media/cast/net/rtcp/rtcp.h"
 #include "media/cast/net/rtp/cast_message_builder.h"
 #include "media/cast/net/rtp/framer.h"
-#include "media/cast/net/rtp/rtp_receiver_defines.h"
+#include "media/cast/net/rtp/rtp_defines.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -139,6 +139,7 @@ class CastMessageBuilderTest : public ::testing::Test {
   RtpCastHeader rtp_header_;
   base::SimpleTestTickClock testing_clock_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(CastMessageBuilderTest);
 };
 

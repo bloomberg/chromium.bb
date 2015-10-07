@@ -4,9 +4,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
+#include "media/cast/net/rtp/rtp_defines.h"
 #include "media/cast/net/rtp/rtp_packet_builder.h"
 #include "media/cast/net/rtp/rtp_parser.h"
-#include "media/cast/net/rtp/rtp_receiver_defines.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

@@ -51,6 +51,7 @@ bool RtpParser::ParsePacket(const uint8* packet,
   const uint8 version = bits >> 6;
   if (version != 2)
     return false;
+  header->num_csrcs = bits & kRtpNumCsrcsMask;
   if (bits & kRtpExtensionBitMask)
     return false;  // We lack the implementation to skip over an extension.
   if (!reader.ReadU8(&bits))
@@ -73,8 +74,7 @@ bool RtpParser::ParsePacket(const uint8* packet,
   if (!reader.ReadU8(&bits))
     return false;
   header->is_key_frame = !!(bits & kCastKeyFrameBitMask);
-  const bool includes_specific_frame_reference =
-      !!(bits & kCastReferenceFrameIdBitMask);
+  header->is_reference = !!(bits & kCastReferenceFrameIdBitMask);
   uint8 truncated_frame_id;
   if (!reader.ReadU8(&truncated_frame_id) ||
       !reader.ReadU16(&header->packet_id) ||
@@ -85,7 +85,7 @@ bool RtpParser::ParsePacket(const uint8* packet,
   if (header->max_packet_id < header->packet_id)
     return false;
   uint8 truncated_reference_frame_id;
-  if (!includes_specific_frame_reference) {
+  if (!header->is_reference) {
     // By default, a key frame only references itself; and non-key frames
     // reference their direct predecessor.
     truncated_reference_frame_id = truncated_frame_id;
@@ -107,7 +107,6 @@ bool RtpParser::ParsePacket(const uint8* packet,
       case kCastRtpExtensionAdaptiveLatency:
         if (!chunk.ReadU16(&header->new_playout_delay_ms))
           return false;
-
     }
   }
 

@@ -6,7 +6,7 @@
 #define MEDIA_CAST_NET_RTP_RTP_PARSER_H_
 
 #include "media/cast/net/cast_transport_defines.h"
-#include "media/cast/net/rtp/rtp_receiver_defines.h"
+#include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {
 namespace cast {

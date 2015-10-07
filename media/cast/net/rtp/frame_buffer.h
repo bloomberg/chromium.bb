@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_FRAMER_FRAME_BUFFER
-#define MEDIA_CAST_FRAMER_FRAME_BUFFER
+#ifndef MEDIA_CAST_NET_RTP_FRAME_BUFFER_H_
+#define MEDIA_CAST_NET_RTP_FRAME_BUFFER_H_
 
 #include <map>
 #include <vector>
 
 #include "media/cast/cast_config.h"
-#include "media/cast/net/rtp/rtp_receiver_defines.h"
+#include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {
 namespace cast {
@@ -55,4 +55,4 @@ class FrameBuffer {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_FRAMER_FRAME_BUFFER
+#endif  // MEDIA_CAST_NET_RTP_FRAME_BUFFER_H_

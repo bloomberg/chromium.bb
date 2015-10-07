@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_RTP_RECEIVER_RECEIVER_STATS_H_
-#define MEDIA_CAST_RTP_RECEIVER_RECEIVER_STATS_H_
+#ifndef MEDIA_CAST_NET_RTP_RECEIVER_STATS_H_
+#define MEDIA_CAST_NET_RTP_RECEIVER_STATS_H_
 
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/net/rtcp/rtcp.h"
-#include "media/cast/net/rtp/rtp_receiver_defines.h"
+#include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {
 namespace cast {
@@ -43,4 +43,4 @@ class ReceiverStats {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_RTP_RECEIVER_RECEIVER_STATS_H_
+#endif  // MEDIA_CAST_NET_RTP_RECEIVER_STATS_H_

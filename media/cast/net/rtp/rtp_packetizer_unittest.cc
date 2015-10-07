@@ -12,7 +12,7 @@
 #include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/net/rtp/packet_storage.h"
-#include "media/cast/net/rtp/rtp_header_parser.h"
+#include "media/cast/net/rtp/rtp_parser.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -39,20 +39,20 @@ class TestRtpPacketTransport : public PacketSender {
         expected_frame_id_(0),
         expected_rtp_timestamp_(0) {}
 
-  void VerifyRtpHeader(const RtpCastTestHeader& rtp_header) {
+  void VerifyRtpHeader(const RtpCastHeader& rtp_header) {
     VerifyCommonRtpHeader(rtp_header);
     VerifyCastRtpHeader(rtp_header);
   }
 
-  void VerifyCommonRtpHeader(const RtpCastTestHeader& rtp_header) {
+  void VerifyCommonRtpHeader(const RtpCastHeader& rtp_header) {
     EXPECT_EQ(kPayload, rtp_header.payload_type);
     EXPECT_EQ(sequence_number_, rtp_header.sequence_number);
     EXPECT_EQ(expected_rtp_timestamp_, rtp_header.rtp_timestamp);
-    EXPECT_EQ(config_.ssrc, rtp_header.ssrc);
+    EXPECT_EQ(config_.ssrc, rtp_header.sender_ssrc);
     EXPECT_EQ(0, rtp_header.num_csrcs);
   }
 
-  void VerifyCastRtpHeader(const RtpCastTestHeader& rtp_header) {
+  void VerifyCastRtpHeader(const RtpCastHeader& rtp_header) {
     EXPECT_FALSE(rtp_header.is_key_frame);
     EXPECT_EQ(expected_frame_id_, rtp_header.frame_id);
     EXPECT_EQ(expected_packet_id_, rtp_header.packet_id);
@@ -63,9 +63,12 @@ class TestRtpPacketTransport : public PacketSender {
 
   bool SendPacket(PacketRef packet, const base::Closure& cb) final {
     ++packets_sent_;
-    RtpHeaderParser parser(&packet->data[0], packet->data.size());
-    RtpCastTestHeader rtp_header;
-    parser.Parse(&rtp_header);
+    RtpParser parser(kSsrc, kPayload);
+    RtpCastHeader rtp_header;
+    const uint8* payload_data;
+    size_t payload_size;
+    parser.ParsePacket(&packet->data[0], packet->data.size(), &rtp_header,
+                       &payload_data, &payload_size);
     VerifyRtpHeader(rtp_header);
     ++sequence_number_;
     ++expected_packet_id_;
@@ -94,6 +97,7 @@ class TestRtpPacketTransport : public PacketSender {
   uint32 expected_frame_id_;
   uint32 expected_rtp_timestamp_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(TestRtpPacketTransport);
 };
 
@@ -140,6 +144,7 @@ class RtpPacketizerTest : public ::testing::Test {
   scoped_ptr<PacedSender> pacer_;
   scoped_ptr<RtpPacketizer> rtp_packetizer_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(RtpPacketizerTest);
 };
 

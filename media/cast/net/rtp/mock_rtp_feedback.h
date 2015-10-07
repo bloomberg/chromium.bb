@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_RTP_INCLUDE_MOCK_RTP_FEEDBACK_H_
-#define MEDIA_CAST_RTP_INCLUDE_MOCK_RTP_FEEDBACK_H_
+#ifndef MEDIA_CAST_NET_RTP_MOCK_RTP_FEEDBACK_H_
+#define MEDIA_CAST_NET_RTP_MOCK_RTP_FEEDBACK_H_
 
 #include "media/cast/net/rtp/rtp_parser/rtp_feedback.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,4 +32,4 @@ class MockRtpFeedback : public RtpFeedback {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_RTP_INCLUDE_MOCK_RTP_FEEDBACK_H_
+#endif  // MEDIA_CAST_NET_RTP_MOCK_RTP_FEEDBACK_H_

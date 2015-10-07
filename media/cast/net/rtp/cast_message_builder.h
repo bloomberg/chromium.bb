@@ -4,14 +4,14 @@
 
 // Handles NACK list and manages ACK.
 
-#ifndef MEDIA_CAST_FRAMER_CAST_MESSAGE_BUILDER_H_
-#define MEDIA_CAST_FRAMER_CAST_MESSAGE_BUILDER_H_
+#ifndef MEDIA_CAST_NET_RTP_CAST_MESSAGE_BUILDER_H_
+#define MEDIA_CAST_NET_RTP_CAST_MESSAGE_BUILDER_H_
 
 #include <deque>
 #include <map>
 
 #include "media/cast/net/rtcp/rtcp.h"
-#include "media/cast/net/rtp/rtp_receiver_defines.h"
+#include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {
 namespace cast {
@@ -66,4 +66,4 @@ class CastMessageBuilder {
 }  // namespace cast
 }  // namespace media
 
-#endif  //  MEDIA_CAST_FRAMER_CAST_MESSAGE_BUILDER_H_
+#endif  //  MEDIA_CAST_NET_RTP_CAST_MESSAGE_BUILDER_H_

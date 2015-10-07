@@ -4,10 +4,10 @@
 
 // Test helper class that builds rtp packets.
 
-#ifndef MEDIA_CAST_RTP_RECEIVER_RTP_PARSER_TEST_RTP_PACKET_BUILDER_H_
-#define MEDIA_CAST_RTP_RECEIVER_RTP_PARSER_TEST_RTP_PACKET_BUILDER_H_
+#ifndef MEDIA_CAST_NET_RTP_RTP_PACKET_BUILDER_H_
+#define MEDIA_CAST_NET_RTP_RTP_PACKET_BUILDER_H_
 
-#include "media/cast/net/rtp/rtp_receiver_defines.h"
+#include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {
 namespace cast {
@@ -49,4 +49,4 @@ class RtpPacketBuilder {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_RTP_RECEIVER_RTP_PARSER_TEST_RTP_PACKET_BUILDER_H_
+#endif  // MEDIA_CAST_NET_RTP_RTP_PACKET_BUILDER_H_

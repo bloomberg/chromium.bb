@@ -10,10 +10,6 @@
 namespace media {
 namespace cast {
 
-const uint32 kCastRtpHeaderLength = 7;
-const uint32 kGenericRtpHeaderLength = 12;
-static const uint8 kRtpMarkerBitMask = 0x80;
-
 RtpPacketBuilder::RtpPacketBuilder()
     : is_key_(false),
       frame_id_(0),
@@ -57,15 +53,14 @@ void RtpPacketBuilder::SetSsrc(uint32 ssrc) { ssrc_ = ssrc; }
 
 void RtpPacketBuilder::BuildHeader(uint8* data, uint32 data_length) {
   BuildCommonHeader(data, data_length);
-  BuildCastHeader(data + kGenericRtpHeaderLength,
-                  data_length - kGenericRtpHeaderLength);
+  BuildCastHeader(data + kRtpHeaderLength, data_length - kRtpHeaderLength);
 }
 
 void RtpPacketBuilder::BuildCastHeader(uint8* data, uint32 data_length) {
   // Build header.
-  DCHECK_LE(kCastRtpHeaderLength, data_length);
+  DCHECK_LE(kCastHeaderLength, data_length);
   // Set the first 7 bytes to 0.
-  memset(data, 0, kCastRtpHeaderLength);
+  memset(data, 0, kCastHeaderLength);
   base::BigEndianWriter big_endian_writer(reinterpret_cast<char*>(data), 56);
   const bool includes_specific_frame_reference =
       (is_key_ && (reference_frame_id_ != frame_id_)) ||
@@ -81,7 +76,7 @@ void RtpPacketBuilder::BuildCastHeader(uint8* data, uint32 data_length) {
 }
 
 void RtpPacketBuilder::BuildCommonHeader(uint8* data, uint32 data_length) {
-  DCHECK_LE(kGenericRtpHeaderLength, data_length);
+  DCHECK_LE(kRtpHeaderLength, data_length);
   base::BigEndianWriter big_endian_writer(reinterpret_cast<char*>(data), 96);
   big_endian_writer.WriteU8(0x80);
   big_endian_writer.WriteU8(payload_type_ | (marker_ ? kRtpMarkerBitMask : 0));
