@@ -47,15 +47,21 @@ public class CrashFileManager {
 
     private static final Pattern TMP_PATTERN = Pattern.compile("\\.tmp\\z");
 
-    private static Comparator<File> sFileComparator =  new Comparator<File>() {
+    /**
+     * Comparator used for sorting files by modification
+     * Note that the behavior is undecided if the files are created at the same time
+     * @return Comparator for prioritizing the more recently modified file
+     */
+    @VisibleForTesting
+    protected static final Comparator<File> sFileComparator =  new Comparator<File>() {
         @Override
         public int compare(File lhs, File rhs) {
             if (lhs == rhs) {
                 return 0;
             } else if (lhs.lastModified() < rhs.lastModified()) {
-                return -1;
-            } else {
                 return 1;
+            } else {
+                return -1;
             }
         }
     };
