@@ -182,9 +182,9 @@ per-file omnibox.gypi=pkasting@chromium.org
 per-file omnibox.gypi=mpearson@chromium.org
 
 per-file onc.gypi=armansito@chromium.org
+per-file onc.gypi=cschuet@chromium.org
 per-file onc.gypi=gauravsh@chromium.org
 per-file onc.gypi=gspencer@chromium.org
-per-file onc.gypi=pneubeck@chromium.org
 per-file onc.gypi=stevenjb@chromium.org
 
 per-file open_from_clipboard.gypi=jif@chromium.org
@@ -228,14 +228,13 @@ per-file printing*=vitalybuka@chromium.org
 
 per-file policy*=bartfab@chromium.org
 per-file policy*=atwilson@chromium.org
-per-file policy*=pneubeck@chromium.org
+per-file policy*=cschuet@chromium.org
 
 per-file proximity_auth*=isherman@chromium.org
 per-file proximity_auth*=tbarzic@chromium.org
 per-file proximity_auth*=tengs@chromium.org
 per-file proximity_auth*=xiyuan@chromium.org
 
-per-file proxy_config*=pneubeck@chromium.org
 per-file proxy_config*=stevenjb@chromium.org
 
 per-file query_parser.gypi=sky@chromium.org

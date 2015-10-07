@@ -26825,7 +26825,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 8/2015.
   </obsolete>
-  <owner>pneubeck@chromium.org</owner>
+  <owner>cschuet@chromium.org</owner>
   <summary>
     Chrome OS metric counting the number of network configurations that
     contained a NSS nickname identifying a CA certificate, which triggered the
