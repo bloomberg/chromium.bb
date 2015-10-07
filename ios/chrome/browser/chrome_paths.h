@@ -17,6 +17,9 @@ enum {
   DIR_CRASH_DUMPS,             // Directory where crash dumps are written.
   DIR_TEST_DATA,               // Directory where unit test data resides.
 
+  FILE_LOCAL_STATE,  // Path and filename to the file in which
+                     // installation-specific state is saved.
+
   PATH_END
 };
 

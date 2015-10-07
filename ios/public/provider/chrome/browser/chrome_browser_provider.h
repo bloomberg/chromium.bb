@@ -39,6 +39,10 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace variations {
+class VariationsService;
+}
+
 // TODO(ios): Determine the best way to interface with Obj-C code through
 // the ChromeBrowserProvider. crbug/298181
 #ifdef __OBJC__
@@ -75,8 +79,6 @@ class ChromeBrowserProvider {
 
   // Gets the system URL request context.
   virtual net::URLRequestContextGetter* GetSystemURLRequestContext();
-  // Gets the local state.
-  virtual PrefService* GetLocalState();
   // Asserts all iOS-specific |BrowserContextKeyedServiceFactory| are built.
   virtual void AssertBrowserContextKeyedFactoriesBuilt();
   // Registers all prefs that will be used via the local state PrefService.
@@ -110,6 +112,8 @@ class ChromeBrowserProvider {
   virtual void SetUIViewAlphaWithAnimation(UIView* view, float alpha);
   // Returns the metrics service.
   virtual metrics::MetricsService* GetMetricsService();
+  // Returns the variations service.
+  virtual variations::VariationsService* GetVariationsService();
   // Returns an instance of a CardUnmaskPromptView used to unmask Wallet cards.
   // The view is responsible for its own lifetime.
   virtual autofill::CardUnmaskPromptView* CreateCardUnmaskPromptView(

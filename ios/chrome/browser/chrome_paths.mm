@@ -60,14 +60,18 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("data"));
       break;
 
+    case FILE_LOCAL_STATE:
+      if (!PathService::Get(ios::DIR_USER_DATA, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("Local State"));
+      break;
+
     default:
       return false;
   }
 
-  if (!base::PathExists(cur)) {
-    if (!create_dir || !base::CreateDirectory(cur))
-      return false;
-  }
+  if (create_dir && !base::PathExists(cur) && !base::CreateDirectory(cur))
+    return false;
 
   *result = cur;
   return true;

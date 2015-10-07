@@ -19,6 +19,7 @@ const char kBrowserStatesNumCreated[] = "profile.profiles_created";
 const char kDefaultCharset[] = "intl.charset_default";
 const char kEnableDoNotTrack[] = "enable_do_not_track";
 const char kHttpServerProperties[] = "net.http_server_properties";
+const char kMaxConnectionsPerProxy[] = "net.max_connections_per_proxy";
 const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 

@@ -12,7 +12,8 @@
 TestingApplicationContext::TestingApplicationContext()
     : application_locale_("en"),
       local_state_(nullptr),
-      chrome_browser_state_manager_(nullptr) {
+      chrome_browser_state_manager_(nullptr),
+      was_last_shutdown_clean_(false) {
   DCHECK(!GetApplicationContext());
   SetApplicationContext(this);
 }
@@ -22,19 +23,37 @@ TestingApplicationContext::~TestingApplicationContext() {
   SetApplicationContext(nullptr);
 }
 
+// static
+TestingApplicationContext* TestingApplicationContext::GetGlobal() {
+  return static_cast<TestingApplicationContext*>(GetApplicationContext());
+}
+
 void TestingApplicationContext::SetLocalState(PrefService* local_state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   local_state_ = local_state;
 }
 
+void TestingApplicationContext::SetLastShutdownClean(bool clean) {
+  was_last_shutdown_clean_ = clean;
+}
+
 void TestingApplicationContext::SetChromeBrowserStateManager(
     ios::ChromeBrowserStateManager* manager) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   chrome_browser_state_manager_ = manager;
 }
 
-// static
-TestingApplicationContext* TestingApplicationContext::GetGlobal() {
-  return static_cast<TestingApplicationContext*>(GetApplicationContext());
+void TestingApplicationContext::OnAppEnterForeground() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void TestingApplicationContext::OnAppEnterBackground() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+bool TestingApplicationContext::WasLastShutdownClean() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return was_last_shutdown_clean_;
 }
 
 PrefService* TestingApplicationContext::GetLocalState() {
@@ -65,8 +84,19 @@ metrics::MetricsService* TestingApplicationContext::GetMetricsService() {
   return nullptr;
 }
 
+variations::VariationsService*
+TestingApplicationContext::GetVariationsService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}
+
 policy::BrowserPolicyConnector*
 TestingApplicationContext::GetBrowserPolicyConnector() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}
+
+policy::PolicyService* TestingApplicationContext::GetPolicyService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }

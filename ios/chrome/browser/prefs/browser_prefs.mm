@@ -22,7 +22,10 @@
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/variations/service/variations_service.h"
 #include "components/web_resource/promo_resource_service.h"
+#include "ios/chrome/browser/application_context_impl.h"
 #include "ios/chrome/browser/first_run/first_run.h"
+#import "ios/chrome/browser/geolocation/omnibox_geolocation_local_state.h"
+#import "ios/chrome/browser/memory/memory_debugger_manager.h"
 #include "ios/chrome/browser/net/http_server_properties_manager_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
@@ -65,6 +68,18 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
                                std::string());
   registry->RegisterIntegerPref(ios::prefs::kBrowserStatesNumCreated, 1);
   registry->RegisterListPref(ios::prefs::kBrowserStatesLastActive);
+
+  [OmniboxGeolocationLocalState registerLocalState:registry];
+  [MemoryDebuggerManager registerLocalState:registry];
+
+  // TODO(shreyasv): Remove this in M49 as almost all users would have the
+  // "do not backup" bit set by then. crbug.com/489865.
+  registry->RegisterBooleanPref(prefs::kOTRStashStatePathSystemBackupExcluded,
+                                false);
+  registry->RegisterBooleanPref(prefs::kBrowsingDataMigrationHasBeenPossible,
+                                false);
+
+  ApplicationContextImpl::RegisterPrefs(registry);
 
   ios::GetChromeBrowserProvider()->RegisterLocalState(registry);
 }

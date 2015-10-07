@@ -33,10 +33,6 @@ ChromeBrowserProvider::GetSystemURLRequestContext() {
   return nullptr;
 }
 
-PrefService* ChromeBrowserProvider::GetLocalState() {
-  return nullptr;
-}
-
 void ChromeBrowserProvider::AssertBrowserContextKeyedFactoriesBuilt() {
 }
 
@@ -94,6 +90,10 @@ void ChromeBrowserProvider::SetUIViewAlphaWithAnimation(UIView* view,
 }
 
 metrics::MetricsService* ChromeBrowserProvider::GetMetricsService() {
+  return nullptr;
+}
+
+variations::VariationsService* ChromeBrowserProvider::GetVariationsService() {
   return nullptr;
 }
 
