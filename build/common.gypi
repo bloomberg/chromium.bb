@@ -1515,6 +1515,16 @@
     # Compile d8 for the host toolset.
     'v8_toolset_for_d8': 'host',
 
+    # V8 extras
+    # Adding V8 extras files requires API owners review
+    # Be sure to synchronize with build/module_args/v8.gni
+
+    'v8_extra_library_files': [
+    ],
+    'v8_experimental_extra_library_files': [
+      '../third_party/WebKit/Source/core/streams/ByteLengthQueuingStrategy.js',
+    ],
+
     # Use brlapi from brltty for braille display support.
     'use_brlapi%': 0,
 

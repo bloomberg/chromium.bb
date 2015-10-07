@@ -11,6 +11,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method close
 [Worker]     method constructor
 [Worker]     method slice
+[Worker] interface ByteLengthQueuingStrategy
+[Worker]     method constructor
+[Worker]     method size
 [Worker] interface Cache
 [Worker]     method add
 [Worker]     method addAll

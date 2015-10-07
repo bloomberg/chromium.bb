@@ -317,6 +317,9 @@ interface BluetoothGATTService
     method getCharacteristic
 interface BluetoothUUID
     method constructor
+interface ByteLengthQueuingStrategy
+    method constructor
+    method size
 interface CDATASection
     method constructor
 interface CSS

@@ -4,6 +4,9 @@ interface Blob
     method close
     method constructor
     method slice
+interface ByteLengthQueuingStrategy
+    method constructor
+    method size
 interface Cache
     method add
     method addAll

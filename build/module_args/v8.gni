@@ -11,5 +11,10 @@ enable_correct_v8_arch = false
 
 v8_use_external_startup_data = !(is_chromeos || is_win || is_ios)
 
+# V8 extras
+# Adding V8 extras files requires API owners review
+# Be sure to synchronize with build/common.gypi
+
 v8_extra_library_files = []
-v8_experimental_extra_library_files = []
+v8_experimental_extra_library_files =
+    [ "../third_party/WebKit/Source/core/streams/ByteLengthQueuingStrategy.js" ]
