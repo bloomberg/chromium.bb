@@ -115,8 +115,11 @@ def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit):
   upstream_url = check_output(
       ['git', 'config', 'remote.origin.url'], cwd=full_dir).strip()
   log_url = get_log_url(upstream_url, head, roll_to)
+  cmd = [
+    'git', 'log', commit_range, '--date=short', '--no-merges',
+  ]
   logs = check_output(
-      ['git', 'log', commit_range, '--date=short', '--format=%ad %ae %s'],
+      cmd + ['--format=%ad %ae %s'], # Args with '=' are automatically quoted.
       cwd=full_dir)
   logs = re.sub(r'(?m)^(\d\d\d\d-\d\d-\d\d [^@]+)@[^ ]+( .*)$', r'\1\2', logs)
   nb_commits = logs.count('\n')
@@ -130,8 +133,8 @@ def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit):
   log_section = ''
   if log_url:
     log_section = log_url + '\n\n'
-  log_section += '$ git log %s --date=short --format=\'%%ad %%ae %%s\'\n' % (
-      commit_range)
+  log_section += '$ %s ' % ' '.join(cmd)
+  log_section += '--format=\'%ad %ae %s\'\n'
   if not no_log and should_show_log(upstream_url):
     if logs.count('\n') > log_limit:
       # Keep the first N log entries.
