@@ -215,8 +215,8 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
     return scoped_refptr<gfx::GLImage>();
 
   scoped_refptr<gfx::GLImageIOSurface> image(
-      new gfx::GLImageIOSurface(handle.id, size, internalformat));
-  if (!image->Initialize(it->second.get(), format))
+      new gfx::GLImageIOSurface(size, internalformat));
+  if (!image->Initialize(it->second.get(), handle.id, format))
     return scoped_refptr<gfx::GLImage>();
 
   return image;

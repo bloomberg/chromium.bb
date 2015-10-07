@@ -24,7 +24,7 @@ scoped_refptr<gfx::GLImage> TestImageFactory::CreateImageForGpuMemoryBuffer(
 
   scoped_refptr<gfx::GLImageSharedMemory> image(
       new gfx::GLImageSharedMemory(size, internalformat));
-  if (!image->Initialize(handle, format))
+  if (!image->Initialize(handle.handle, handle.id, format))
     return nullptr;
 
   return image;

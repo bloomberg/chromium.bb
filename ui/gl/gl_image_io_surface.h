@@ -22,11 +22,11 @@ namespace gfx {
 
 class GL_EXPORT GLImageIOSurface : public GLImage {
  public:
-  GLImageIOSurface(gfx::GenericSharedMemoryId io_surface_id,
-                   const gfx::Size& size,
-                   unsigned internalformat);
+  GLImageIOSurface(const gfx::Size& size, unsigned internalformat);
 
-  bool Initialize(IOSurfaceRef io_surface, BufferFormat format);
+  bool Initialize(IOSurfaceRef io_surface,
+                  gfx::GenericSharedMemoryId io_surface_id,
+                  BufferFormat format);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
@@ -59,11 +59,11 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   ~GLImageIOSurface() override;
 
  private:
-  gfx::GenericSharedMemoryId io_surface_id_;
   const gfx::Size size_;
   const unsigned internalformat_;
   BufferFormat format_;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
+  gfx::GenericSharedMemoryId io_surface_id_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageIOSurface);

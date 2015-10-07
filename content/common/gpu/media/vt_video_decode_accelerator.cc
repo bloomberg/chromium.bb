@@ -1041,9 +1041,10 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   }
 
   bool allow_overlay = false;
-  scoped_refptr<gfx::GLImageIOSurface> gl_image(new gfx::GLImageIOSurface(
-      gfx::GenericSharedMemoryId(), frame.coded_size, GL_BGRA_EXT));
-  if (gl_image->Initialize(surface, gfx::BufferFormat::BGRA_8888)) {
+  scoped_refptr<gfx::GLImageIOSurface> gl_image(
+      new gfx::GLImageIOSurface(frame.coded_size, GL_BGRA_EXT));
+  if (gl_image->Initialize(surface, gfx::GenericSharedMemoryId(),
+                           gfx::BufferFormat::BGRA_8888)) {
     allow_overlay = true;
   } else {
     gl_image = nullptr;

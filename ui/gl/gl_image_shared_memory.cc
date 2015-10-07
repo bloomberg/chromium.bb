@@ -40,16 +40,18 @@ GLImageSharedMemory::~GLImageSharedMemory() {
   DCHECK(!shared_memory_);
 }
 
-bool GLImageSharedMemory::Initialize(const gfx::GpuMemoryBufferHandle& handle,
-                                     gfx::BufferFormat format) {
+bool GLImageSharedMemory::Initialize(
+    const base::SharedMemoryHandle& handle,
+    gfx::GenericSharedMemoryId shared_memory_id,
+    gfx::BufferFormat format) {
   size_t size_in_bytes;
   if (!SizeInBytes(GetSize(), format, &size_in_bytes))
     return false;
 
-  if (!base::SharedMemory::IsHandleValid(handle.handle))
+  if (!base::SharedMemory::IsHandleValid(handle))
     return false;
 
-  base::SharedMemory shared_memory(handle.handle, true);
+  base::SharedMemory shared_memory(handle, true);
 
   // Duplicate the handle.
   base::SharedMemoryHandle duped_shared_memory_handle;
@@ -73,7 +75,7 @@ bool GLImageSharedMemory::Initialize(const gfx::GpuMemoryBufferHandle& handle,
 
   DCHECK(!shared_memory_);
   shared_memory_ = duped_shared_memory.Pass();
-  shared_memory_id_ = handle.id;
+  shared_memory_id_ = shared_memory_id;
   return true;
 }
 

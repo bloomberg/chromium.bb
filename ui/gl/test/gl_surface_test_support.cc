@@ -61,21 +61,26 @@ void GLSurfaceTestSupport::InitializeOneOff() {
 }
 
 // static
-void GLSurfaceTestSupport::InitializeOneOffWithMockBindings() {
+void GLSurfaceTestSupport::InitializeOneOffImplementation(
+    GLImplementation impl,
+    bool fallback_to_osmesa) {
   DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL))
       << "kUseGL has not effect in tests";
 
   // This method may be called multiple times in the same process to set up
-  // mock bindings in different ways.
+  // bindings in different ways.
   ClearGLBindings();
 
-  bool fallback_to_osmesa = false;
   bool gpu_service_logging = false;
   bool disable_gl_drawing = false;
 
   CHECK(GLSurface::InitializeOneOffImplementation(
-      kGLImplementationMockGL, fallback_to_osmesa, gpu_service_logging,
-      disable_gl_drawing));
+      impl, fallback_to_osmesa, gpu_service_logging, disable_gl_drawing));
+}
+
+// static
+void GLSurfaceTestSupport::InitializeOneOffWithMockBindings() {
+  InitializeOneOffImplementation(kGLImplementationMockGL, false);
 }
 
 // static
