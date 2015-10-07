@@ -15,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
@@ -23,6 +24,8 @@ import org.chromium.chrome.browser.widget.TintedDrawable;
  * Container for all parameters related to creating a custom action button.
  */
 /* package */ class ActionButtonParams {
+    private static final String TAG = "cr_CustomTabs";
+
     private Bitmap mIcon;
     private String mDescription;
     private final PendingIntent mPendingIntent;
@@ -111,6 +114,9 @@ import org.chromium.chrome.browser.widget.TintedDrawable;
         Bitmap bitmap = IntentUtils.safeGetParcelable(bundle, CustomTabsIntent.KEY_ICON);
         if (bitmap == null) return null;
         if (!checkCustomButtonIconWithinBounds(context, bitmap)) {
+            Log.w(TAG, "Action button's icon size not acceptable. Please refer to "
+                    + "https://developer.android.com/reference/android/support/customtabs/"
+                    + "CustomTabsIntent.html#KEY_ICON");
             bitmap.recycle();
             return null;
         }
