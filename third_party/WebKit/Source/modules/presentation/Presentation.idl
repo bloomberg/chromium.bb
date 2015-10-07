@@ -7,7 +7,7 @@
 [
     GarbageCollected,
     RuntimeEnabled=Presentation
-] interface Presentation : EventTarget {
+] interface Presentation {
     [MeasureAs=PresentationDefaultRequest] attribute PresentationRequest? defaultRequest;
 
     // This API is available on the receiving browsing context.

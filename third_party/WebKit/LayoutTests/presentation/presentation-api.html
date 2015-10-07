@@ -18,8 +18,8 @@ test(function() {
 }, "Test the Presentation API property types.");
 
 test(function() {
-  assert_true(navigator.presentation instanceof EventTarget);
-}, "Test that navigator.presentation is an EventTarget.");
+  assert_false(navigator.presentation instanceof EventTarget);
+}, "Test that navigator.presentation is not an EventTarget.");
 
 test(function() {
   var request = new PresentationRequest('foo.html');
