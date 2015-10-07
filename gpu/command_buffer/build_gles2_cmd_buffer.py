@@ -4629,9 +4629,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
   def WriteHandlerExtensionCheck(self, func, f):
     if func.GetInfo('extension_flag'):
       f.write("  if (!features().%s) {\n" % func.GetInfo('extension_flag'))
-      f.write("    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, \"gl%s\","
-                 " \"function not available\");\n" % func.original_name)
-      f.write("    return error::kNoError;")
+      f.write("    return error::kUnknownCommand;")
       f.write("  }\n\n")
 
   def WriteHandlerDeferReadWrite(self, func, f):

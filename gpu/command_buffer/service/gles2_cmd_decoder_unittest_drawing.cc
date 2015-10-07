@@ -938,8 +938,7 @@ TEST_P(GLES2DecoderWithShaderTest, DrawArraysInstancedANGLEFails) {
       .RetiresOnSaturation();
   DrawArraysInstancedANGLE cmd;
   cmd.Init(GL_TRIANGLES, 0, kNumVertices, 1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
 TEST_P(GLES2DecoderWithShaderTest, VertexAttribDivisorANGLEFails) {
@@ -954,8 +953,7 @@ TEST_P(GLES2DecoderWithShaderTest, VertexAttribDivisorANGLEFails) {
 
   VertexAttribDivisorANGLE cmd;
   cmd.Init(0, 1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
 TEST_P(GLES2DecoderGeometryInstancingTest,
@@ -1428,8 +1426,7 @@ TEST_P(GLES2DecoderWithShaderTest, DrawElementsInstancedANGLEFails) {
            GL_UNSIGNED_SHORT,
            kValidIndexRangeStart * 2,
            1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
 TEST_P(GLES2DecoderGeometryInstancingTest,

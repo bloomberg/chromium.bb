@@ -3984,9 +3984,7 @@ error::Error GLES2DecoderImpl::HandleBlitFramebufferCHROMIUM(
       *static_cast<const gles2::cmds::BlitFramebufferCHROMIUM*>(cmd_data);
   (void)c;
   if (!features().chromium_framebuffer_multisample) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBlitFramebufferCHROMIUM",
-                       "function not available");
-    return error::kNoError;
+    return error::kUnknownCommand;
   }
 
   error::Error error;
@@ -4024,10 +4022,7 @@ error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleCHROMIUM(
           cmd_data);
   (void)c;
   if (!features().chromium_framebuffer_multisample) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glRenderbufferStorageMultisampleCHROMIUM",
-                       "function not available");
-    return error::kNoError;
+    return error::kUnknownCommand;
   }
 
   GLenum target = static_cast<GLenum>(c.target);
@@ -4075,10 +4070,7 @@ error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleEXT(
           cmd_data);
   (void)c;
   if (!features().multisampled_render_to_texture) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glRenderbufferStorageMultisampleEXT",
-                       "function not available");
-    return error::kNoError;
+    return error::kUnknownCommand;
   }
 
   GLenum target = static_cast<GLenum>(c.target);
@@ -4124,10 +4116,7 @@ error::Error GLES2DecoderImpl::HandleFramebufferTexture2DMultisampleEXT(
           cmd_data);
   (void)c;
   if (!features().multisampled_render_to_texture) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glFramebufferTexture2DMultisampleEXT",
-                       "function not available");
-    return error::kNoError;
+    return error::kUnknownCommand;
   }
 
   GLenum target = static_cast<GLenum>(c.target);
@@ -4846,9 +4835,7 @@ error::Error GLES2DecoderImpl::HandleDiscardFramebufferEXTImmediate(
           cmd_data);
   (void)c;
   if (!features().ext_discard_framebuffer) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glDiscardFramebufferEXT",
-                       "function not available");
-    return error::kNoError;
+    return error::kUnknownCommand;
   }
 
   GLenum target = static_cast<GLenum>(c.target);
@@ -4949,9 +4936,7 @@ error::Error GLES2DecoderImpl::HandleMatrixLoadfCHROMIUMImmediate(
       *static_cast<const gles2::cmds::MatrixLoadfCHROMIUMImmediate*>(cmd_data);
   (void)c;
   if (!features().chromium_path_rendering) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glMatrixLoadfCHROMIUM",
-                       "function not available");
-    return error::kNoError;
+    return error::kUnknownCommand;
   }
 
   GLenum matrixMode = static_cast<GLenum>(c.matrixMode);
@@ -4983,9 +4968,7 @@ error::Error GLES2DecoderImpl::HandleMatrixLoadIdentityCHROMIUM(
       *static_cast<const gles2::cmds::MatrixLoadIdentityCHROMIUM*>(cmd_data);
   (void)c;
   if (!features().chromium_path_rendering) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glMatrixLoadIdentityCHROMIUM",
-                       "function not available");
-    return error::kNoError;
+    return error::kUnknownCommand;
   }
 
   GLenum matrixMode = static_cast<GLenum>(c.matrixMode);
@@ -5005,9 +4988,7 @@ error::Error GLES2DecoderImpl::HandleIsPathCHROMIUM(
       *static_cast<const gles2::cmds::IsPathCHROMIUM*>(cmd_data);
   (void)c;
   if (!features().chromium_path_rendering) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glIsPathCHROMIUM",
-                       "function not available");
-    return error::kNoError;
+    return error::kUnknownCommand;
   }
 
   GLuint path = c.path;
@@ -5028,9 +5009,7 @@ error::Error GLES2DecoderImpl::HandlePathStencilFuncCHROMIUM(
       *static_cast<const gles2::cmds::PathStencilFuncCHROMIUM*>(cmd_data);
   (void)c;
   if (!features().chromium_path_rendering) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glPathStencilFuncCHROMIUM",
-                       "function not available");
-    return error::kNoError;
+    return error::kUnknownCommand;
   }
 
   GLenum func = static_cast<GLenum>(c.func);
@@ -5057,9 +5036,7 @@ error::Error GLES2DecoderImpl::HandleBlendBarrierKHR(
       *static_cast<const gles2::cmds::BlendBarrierKHR*>(cmd_data);
   (void)c;
   if (!features().blend_equation_advanced) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBlendBarrierKHR",
-                       "function not available");
-    return error::kNoError;
+    return error::kUnknownCommand;
   }
 
   glBlendBarrierKHR();
@@ -5074,10 +5051,7 @@ error::Error GLES2DecoderImpl::HandleApplyScreenSpaceAntialiasingCHROMIUM(
           cmd_data);
   (void)c;
   if (!features().chromium_screen_space_antialiasing) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glApplyScreenSpaceAntialiasingCHROMIUM",
-                       "function not available");
-    return error::kNoError;
+    return error::kUnknownCommand;
   }
 
   DoApplyScreenSpaceAntialiasingCHROMIUM();

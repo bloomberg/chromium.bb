@@ -1604,8 +1604,7 @@ TEST_P(GLES2DecoderManualInitTest,
            GL_RGBA4,
            TestHelper::kMaxRenderbufferSize,
            1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
 class GLES2DecoderMultisampledRenderToTextureTest
@@ -1620,8 +1619,7 @@ class GLES2DecoderMultisampledRenderToTextureTest
              GL_RGBA4,
              TestHelper::kMaxRenderbufferSize,
              1);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
 
   void TestRenderbufferStorageMultisampleEXT(const char* extension,
@@ -2271,8 +2269,8 @@ TEST_P(GLES2DecoderTest, DiscardFramebufferEXTUnsupported) {
   cmd.Init(target, count, attachments);
 
   // Should not result into a call into GL.
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(attachments)));
-  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(error::kUnknownCommand,
+            ExecuteImmediateCmd(cmd, sizeof(attachments)));
 }
 
 TEST_P(GLES2DecoderManualInitTest,

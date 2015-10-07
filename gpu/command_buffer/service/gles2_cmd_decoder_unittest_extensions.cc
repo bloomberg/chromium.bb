@@ -39,92 +39,77 @@ TEST_P(GLES2DecoderTestDisabledExtensions, CHROMIUMPathRenderingDisabled) {
         0,
     };
     cmd.Init(GL_PATH_MODELVIEW_CHROMIUM, temp);
-    EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
   }
   {
     cmds::MatrixLoadIdentityCHROMIUM cmd;
     cmd.Init(GL_PATH_PROJECTION_CHROMIUM);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::GenPathsCHROMIUM cmd;
     cmd.Init(0, 0);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::DeletePathsCHROMIUM cmd;
     cmd.Init(0, 0);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::IsPathCHROMIUM cmd;
     cmd.Init(kClientPathId, shared_memory_id_, shared_memory_offset_);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::PathCommandsCHROMIUM cmd;
     cmd.Init(kClientPathId, 0, 0, 0, 0, GL_FLOAT, 0, 0);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::PathParameterfCHROMIUM cmd;
     cmd.Init(kClientPathId, GL_PATH_STROKE_WIDTH_CHROMIUM, 1.0f);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::PathParameteriCHROMIUM cmd;
     cmd.Init(kClientPathId, GL_PATH_STROKE_WIDTH_CHROMIUM, 1);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::PathStencilFuncCHROMIUM cmd;
     cmd.Init(GL_NEVER, 2, 3);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::StencilFillPathCHROMIUM cmd;
     cmd.Init(kClientPathId, GL_COUNT_UP_CHROMIUM, 1);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::StencilStrokePathCHROMIUM cmd;
     cmd.Init(kClientPathId, 1, 2);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::CoverFillPathCHROMIUM cmd;
     cmd.Init(kClientPathId, GL_BOUNDING_BOX_CHROMIUM);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::CoverStrokePathCHROMIUM cmd;
     cmd.Init(kClientPathId, GL_BOUNDING_BOX_CHROMIUM);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::StencilThenCoverFillPathCHROMIUM cmd;
     cmd.Init(kClientPathId, GL_COUNT_UP_CHROMIUM, 1, GL_BOUNDING_BOX_CHROMIUM);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
   {
     cmds::StencilThenCoverStrokePathCHROMIUM cmd;
     cmd.Init(kClientPathId, 1, 2, GL_BOUNDING_BOX_CHROMIUM);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
 }
 
