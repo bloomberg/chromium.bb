@@ -13,18 +13,14 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/test/pixel_test_output_surface.h"
-#include "cc/test/test_context_provider.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/test/test_blink_web_unit_test_support.h"
 #include "third_party/WebKit/public/platform/Platform.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 
 using blink::WebColor;
-using blink::WebGraphicsContext3D;
 using blink::WebRect;
 using blink::WebSize;
 
@@ -127,15 +123,11 @@ void WebLayerTreeViewImplForTesting::ApplyViewportDeltas(
 }
 
 void WebLayerTreeViewImplForTesting::RequestNewOutputSurface() {
-  // TODO(crbug.com/540026): Fix crashes with real OutputSurface
-  // bool flipped_output_surface = false;
-  // layer_tree_host_->SetOutputSurface(
-  //     make_scoped_ptr(new cc::PixelTestOutputSurface(
-  //         cc::TestContextProvider::Create(), flipped_output_surface)));
+  // Intentionally do not create and set an OutputSurface.
 }
 
 void WebLayerTreeViewImplForTesting::DidFailToInitializeOutputSurface() {
-  RequestNewOutputSurface();
+  NOTREACHED();
 }
 
 void WebLayerTreeViewImplForTesting::registerForAnimations(

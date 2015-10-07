@@ -19,6 +19,7 @@ namespace blink { class WebLayer; }
 
 namespace content {
 
+// Dummy WeblayerTeeView that does not support any actual compositing.
 class WebLayerTreeViewImplForTesting
     : public blink::WebLayerTreeView,
       public cc::LayerTreeHostClient,
