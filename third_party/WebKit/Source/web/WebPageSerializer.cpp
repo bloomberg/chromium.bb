@@ -79,10 +79,10 @@ KURL getSubResourceURLFromElement(Element* element)
 }
 
 void retrieveResourcesForElement(Element* element,
-                                 Vector<LocalFrame*>* visitedFrames,
-                                 Vector<LocalFrame*>* framesToVisit,
-                                 Vector<KURL>* frameURLs,
-                                 Vector<KURL>* resourceURLs)
+    WillBeHeapVector<RawPtrWillBeMember<LocalFrame>>* visitedFrames,
+    WillBeHeapVector<RawPtrWillBeMember<LocalFrame>>* framesToVisit,
+    Vector<KURL>* frameURLs,
+    Vector<KURL>* resourceURLs)
 {
     ASSERT(element);
     // If the node is a frame, we'll process it later in retrieveResourcesForFrame.
@@ -110,8 +110,8 @@ void retrieveResourcesForElement(Element* element,
 
 void retrieveResourcesForFrame(LocalFrame* frame,
     const WebVector<WebCString>& supportedSchemes,
-    Vector<LocalFrame*>* visitedFrames,
-    Vector<LocalFrame*>* framesToVisit,
+    WillBeHeapVector<RawPtrWillBeMember<LocalFrame>>* visitedFrames,
+    WillBeHeapVector<RawPtrWillBeMember<LocalFrame>>* framesToVisit,
     Vector<KURL>* frameURLs,
     Vector<KURL>* resourceURLs)
 {
@@ -231,8 +231,8 @@ bool WebPageSerializer::retrieveAllResources(WebView* view,
     if (!mainFrame)
         return false;
 
-    Vector<LocalFrame*> framesToVisit;
-    Vector<LocalFrame*> visitedFrames;
+    WillBeHeapVector<RawPtrWillBeMember<LocalFrame>> framesToVisit;
+    WillBeHeapVector<RawPtrWillBeMember<LocalFrame>> visitedFrames;
     Vector<KURL> frameKURLs;
     Vector<KURL> resourceKURLs;
 
