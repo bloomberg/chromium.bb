@@ -34,8 +34,10 @@
 
 #ifdef SHARED_BUFFER_STATS
 #include "public/platform/Platform.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/DataLog.h"
+#include <set>
 #endif
 
 namespace blink {
@@ -68,9 +70,11 @@ static Mutex& statsMutex()
     return mutex;
 }
 
-static HashSet<SharedBuffer*>& liveBuffers()
+static std::set<SharedBuffer*>& liveBuffers()
 {
-    DEFINE_STATIC_LOCAL(HashSet<SharedBuffer*>, buffers, ());
+    // Use std::set instead of WTF::HashSet to avoid increasing PartitionAlloc
+    // memory usage.
+    DEFINE_STATIC_LOCAL(std::set<SharedBuffer*>, buffers, ());
     return buffers;
 }
 
@@ -107,9 +111,9 @@ static CString snippetForBuffer(SharedBuffer* sharedBuffer)
 static void printStats()
 {
     MutexLocker locker(statsMutex());
-    Vector<SharedBuffer*> buffers;
-    for (HashSet<SharedBuffer*>::const_iterator iter = liveBuffers().begin(); iter != liveBuffers().end(); ++iter)
-        buffers.append(*iter);
+    std::vector<SharedBuffer*> buffers;
+    for (std::set<SharedBuffer*>::const_iterator iter = liveBuffers().begin(); iter != liveBuffers().end(); ++iter)
+        buffers.push_back(*iter);
     std::sort(buffers.begin(), buffers.end(), sizeComparator);
 
     dataLogF("---- Shared Buffer Stats ----\n");
@@ -122,15 +126,15 @@ static void printStats()
 static void didCreateSharedBuffer(SharedBuffer* buffer)
 {
     MutexLocker locker(statsMutex());
-    liveBuffers().add(buffer);
+    liveBuffers().insert(buffer);
 
-    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&printStats));
+    Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, bind(&printStats));
 }
 
 static void willDestroySharedBuffer(SharedBuffer* buffer)
 {
     MutexLocker locker(statsMutex());
-    liveBuffers().remove(buffer);
+    liveBuffers().erase(buffer);
 }
 
 #endif
