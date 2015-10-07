@@ -162,7 +162,6 @@ ALWAYS_INLINE void releaseStore(void* volatile* ptr, void* value)
 {
     __tsan_atomic64_store(reinterpret_cast<volatile __tsan_atomic64*>(ptr), reinterpret_cast<__tsan_atomic64>(value), __tsan_memory_order_release);
 }
-
 ALWAYS_INLINE int acquireLoad(volatile const int* ptr)
 {
     return __tsan_atomic32_load(ptr, __tsan_memory_order_acquire);
@@ -182,6 +181,29 @@ ALWAYS_INLINE unsigned long acquireLoad(volatile const unsigned long* ptr)
 ALWAYS_INLINE void* acquireLoad(void* volatile const* ptr)
 {
     return reinterpret_cast<void*>(__tsan_atomic64_load(reinterpret_cast<volatile const __tsan_atomic64*>(ptr), __tsan_memory_order_acquire));
+}
+
+// Do not use noBarrierStore/noBarrierLoad for synchronization.
+ALWAYS_INLINE void noBarrierStore(volatile float* ptr, float value)
+{
+    static_assert(sizeof(int) == sizeof(float), "int and float are different sizes");
+    union {
+        int ivalue;
+        float fvalue;
+    } u;
+    u.fvalue = value;
+    __tsan_atomic32_store(reinterpret_cast<volatile __tsan_atomic32*>(ptr), u.ivalue, __tsan_memory_order_relaxed);
+}
+
+ALWAYS_INLINE float noBarrierLoad(volatile const float* ptr)
+{
+    static_assert(sizeof(int) == sizeof(float), "int and float are different sizes");
+    union {
+        int ivalue;
+        float fvalue;
+    } u;
+    u.ivalue = __tsan_atomic32_load(reinterpret_cast<volatile const int*>(ptr), __tsan_memory_order_relaxed);
+    return u.fvalue;
 }
 #endif
 
@@ -285,6 +307,18 @@ ALWAYS_INLINE void* acquireLoad(void* volatile const* ptr)
     return value;
 }
 
+// Do not use noBarrierStore/noBarrierLoad for synchronization.
+ALWAYS_INLINE void noBarrierStore(volatile float* ptr, float value)
+{
+    *ptr = value;
+}
+
+ALWAYS_INLINE float noBarrierLoad(volatile const float* ptr)
+{
+    float value = *ptr;
+    return value;
+}
+
 #if defined(ADDRESS_SANITIZER)
 
 NO_SANITIZE_ADDRESS ALWAYS_INLINE void asanUnsafeReleaseStore(volatile unsigned* ptr, unsigned value)
@@ -330,6 +364,8 @@ using WTF::atomicTestAndSetToOne;
 using WTF::atomicSetOneToZero;
 using WTF::acquireLoad;
 using WTF::releaseStore;
+using WTF::noBarrierLoad;
+using WTF::noBarrierStore;
 
 // These methods allow loading from and storing to poisoned memory. Only
 // use these methods if you know what you are doing since they will

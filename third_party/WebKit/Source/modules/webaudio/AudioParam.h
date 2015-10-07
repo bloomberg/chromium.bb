@@ -87,7 +87,7 @@ public:
     // Returns true if smoothed value has already snapped exactly to value.
     bool smooth();
 
-    void resetSmoothedValue() { m_smoothedValue = m_value; }
+    void resetSmoothedValue() { m_smoothedValue = intrinsicValue(); }
 
     bool hasSampleAccurateValues() { return m_timeline.hasValues() || numberOfRenderingConnections(); }
 
@@ -102,7 +102,7 @@ public:
 private:
     AudioParamHandler(AbstractAudioContext& context, double defaultValue)
         : AudioSummingJunction(context.deferredTaskHandler())
-        , m_value(defaultValue)
+        , m_intrinsicValue(defaultValue)
         , m_defaultValue(defaultValue)
         , m_smoothedValue(defaultValue)
         , m_context(context) { }
@@ -111,11 +111,15 @@ private:
     void calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate);
     void calculateTimelineValues(float* values, unsigned numberOfValues);
 
-    double m_value;
-    double m_defaultValue;
+    // Intrinsic value
+    float m_intrinsicValue;
+    float intrinsicValue() const { return noBarrierLoad(&m_intrinsicValue); }
+    void setIntrinsicValue(float newValue) { noBarrierStore(&m_intrinsicValue, newValue); }
+
+    float m_defaultValue;
 
     // Smoothing (de-zippering)
-    double m_smoothedValue;
+    float m_smoothedValue;
 
     AudioParamTimeline m_timeline;
 
