@@ -87,6 +87,10 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
     return index_file_;
   }
 
+  const base::FilePath& GetTempIndexFilePath() const {
+    return temp_index_file_;
+  }
+
   bool CreateIndexFileDirectory() const {
     return base::CreateDirectory(index_file_.DirName());
   }
@@ -308,6 +312,35 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
                                       &when_index_last_saw_cache,
                                       &deserialize_result);
   EXPECT_TRUE(deserialize_result.did_load);
+}
+
+TEST_F(SimpleIndexFileTest, OverwritesStaleTempFile) {
+  base::ScopedTempDir cache_dir;
+  ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
+  const base::FilePath cache_path = cache_dir.path();
+  WrappedSimpleIndexFile simple_index_file(cache_path);
+  ASSERT_TRUE(simple_index_file.CreateIndexFileDirectory());
+
+  // Create an temporary index file.
+  const base::FilePath& temp_index_path =
+      simple_index_file.GetTempIndexFilePath();
+  const std::string kDummyData = "nothing to be seen here";
+  EXPECT_EQ(
+      static_cast<int>(kDummyData.size()),
+      base::WriteFile(temp_index_path, kDummyData.data(), kDummyData.size()));
+  ASSERT_TRUE(base::PathExists(simple_index_file.GetTempIndexFilePath()));
+
+  // Write the index file.
+  SimpleIndex::EntrySet entries;
+  SimpleIndex::InsertInEntrySet(11, EntryMetadata(Time(), 11), &entries);
+  net::TestClosure closure;
+  simple_index_file.WriteToDisk(entries, 120U, base::TimeTicks(), false,
+                                closure.closure());
+  closure.WaitForResult();
+
+  // Check that the temporary file was deleted and the index file was created.
+  EXPECT_FALSE(base::PathExists(simple_index_file.GetTempIndexFilePath()));
+  EXPECT_TRUE(base::PathExists(simple_index_file.GetIndexFilePath()));
 }
 
 #endif  // defined(OS_POSIX)

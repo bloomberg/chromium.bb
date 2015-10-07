@@ -72,7 +72,7 @@ void UmaRecordIndexInitMethod(IndexInitMethod method,
 bool WritePickleFile(base::Pickle* pickle, const base::FilePath& file_name) {
   File file(
       file_name,
-      File::FLAG_CREATE | File::FLAG_WRITE | File::FLAG_SHARE_DELETE);
+      File::FLAG_CREATE_ALWAYS | File::FLAG_WRITE | File::FLAG_SHARE_DELETE);
   if (!file.IsValid())
     return false;
 
