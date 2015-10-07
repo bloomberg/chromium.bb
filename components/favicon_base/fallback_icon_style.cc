@@ -20,6 +20,7 @@ const int kDarkTextLuminanceThreshold = 190;
 // The maximum luminance of the background color to ensure light text is
 // readable.
 const double kMaxBackgroundColorLuminance = 0.67;
+const double kMinBackgroundColorLuminance = 0.15;
 
 // Default values for FallbackIconStyle.
 const SkColor kDefaultBackgroundColor = SkColorSetRGB(0x78, 0x78, 0x78);
@@ -63,10 +64,17 @@ bool ValidateFallbackIconStyle(const FallbackIconStyle& style) {
 void SetDominantColorAsBackground(
     const scoped_refptr<base::RefCountedMemory>& bitmap_data,
     FallbackIconStyle* style) {
-  SkColor dominant_color =
-      color_utils::CalculateKMeanColorOfPNG(bitmap_data);
-  // Assumes |style.text_color| is light, and clamps luminance down to a
-  // reasonable maximum value so text is readable.
+  // Try to ensure color's luminance isn't too large so that light text is
+  // visible. Set an upper bound for the dominant color.
+  const color_utils::HSL lower_bound{-1.0, -1.0, kMinBackgroundColorLuminance};
+  const color_utils::HSL upper_bound{-1.0, -1.0, kMaxBackgroundColorLuminance};
+  color_utils::GridSampler sampler;
+  SkColor dominant_color = color_utils::CalculateKMeanColorOfPNG(
+      bitmap_data, lower_bound, upper_bound, &sampler);
+  // |CalculateKMeanColorOfPNG| will try to return a color that lies within the
+  // specified bounds if one exists in the image. If there's no such color, it
+  // will return the dominant color which may be lighter than our upper bound.
+  // Clamp luminance down to a reasonable maximum value so text is readable.
   color_utils::HSL color_hsl;
   color_utils::SkColorToHSL(dominant_color, &color_hsl);
   color_hsl.l = std::min(color_hsl.l, kMaxBackgroundColorLuminance);
