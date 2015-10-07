@@ -77,10 +77,10 @@ namespace networkingPrivate {
   // SharedSetting: The value set for all users of the device. Only provided if
   //     DeviceEditiable is true (i.e. no policy affects the property or the
   //     policy provided value is recommened only).
-  // UserEditable: True if the UserPolicy allows the property to be edited
-  //     (i.e. is a recommended value). Defaults to True.
-  // DeviceEditable: True if the DevicePolicy allows the property to be
-  //     edited (i.e. is a recommended value). Defaults to True.
+  // UserEditable: True if a UserPolicy exists and allows the property to be
+  //     edited (i.e. is a recommended value). Defaults to False.
+  // DeviceEditable: True if a DevicePolicy exists and allows the property to be
+  //     edited (i.e. is a recommended value). Defaults to False.
 
   dictionary ManagedBoolean {
     boolean? Active;
@@ -555,11 +555,13 @@ namespace networkingPrivate {
   };
 
   dictionary EthernetProperties {
+    boolean? AutoConnect;
     DOMString? Authentication;
     EAPProperties? EAP;
   };
 
   dictionary ManagedEthernetProperties {
+    ManagedBoolean? AutoConnect;
     ManagedDOMString? Authentication;
     ManagedEAPProperties? EAP;
   };

@@ -731,6 +731,7 @@ chrome.networkingPrivate.CellularStateProperties;
 
 /**
  * @typedef {{
+ *   AutoConnect: (boolean|undefined),
  *   Authentication: (string|undefined),
  *   EAP: (!chrome.networkingPrivate.EAPProperties|undefined)
  * }}
@@ -740,6 +741,7 @@ chrome.networkingPrivate.EthernetProperties;
 
 /**
  * @typedef {{
+ *   AutoConnect: (!chrome.networkingPrivate.ManagedBoolean|undefined),
  *   Authentication: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   EAP: (!chrome.networkingPrivate.ManagedEAPProperties|undefined)
  * }}
@@ -1308,5 +1310,3 @@ chrome.networkingPrivate.onDeviceStateListChanged;
  * @see https://developer.chrome.com/extensions/networkingPrivate#event-onPortalDetectionCompleted
  */
 chrome.networkingPrivate.onPortalDetectionCompleted;
-
-

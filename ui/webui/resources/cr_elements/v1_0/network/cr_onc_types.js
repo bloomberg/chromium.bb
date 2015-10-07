@@ -257,11 +257,32 @@ CrOnc.getSignalStrength = function(properties) {
   var type = properties.Type;
   if (type == CrOnc.Type.CELLULAR && properties.Cellular)
     return properties.Cellular.SignalStrength || 0;
-  else if (type == CrOnc.Type.WI_FI && properties.WiFi)
+  if (type == CrOnc.Type.WI_FI && properties.WiFi)
     return properties.WiFi.SignalStrength || 0;
-  else if (type == CrOnc.Type.WI_MAX && properties.WiMAX)
+  if (type == CrOnc.Type.WI_MAX && properties.WiMAX)
     return properties.WiMAX.SignalStrength || 0;
   return 0;
+}
+
+/**
+ * Gets the Managed AutoConnect dictionary from |properties| based on
+ * properties.Type.
+ * @param {!CrOnc.NetworkProperties|undefined}
+ *     properties The ONC network properties or state properties.
+ * @return {!chrome.networkingPrivate.ManagedBoolean|undefined} The AutoConnect
+ *     managed dictionary or undefined.
+ */
+CrOnc.getManagedAutoConnect = function(properties) {
+  var type = properties.Type;
+  if (type == CrOnc.Type.CELLULAR && properties.Cellular)
+    return properties.Cellular.AutoConnect;
+  if (type == CrOnc.Type.VPN && properties.VPN)
+    return properties.VPN.AutoConnect;
+  if (type == CrOnc.Type.WI_FI && properties.WiFi)
+    return properties.WiFi.AutoConnect;
+  if (type == CrOnc.Type.WI_MAX && properties.WiMAX)
+    return properties.WiMAX.AutoConnect;
+  return undefined;
 }
 
 /**
@@ -271,17 +292,7 @@ CrOnc.getSignalStrength = function(properties) {
  * @return {boolean} The AutoConnect value if it exists or false.
  */
 CrOnc.getAutoConnect = function(properties) {
-  var type = properties.Type;
-  /** @type {!chrome.networkingPrivate.ManagedBoolean|undefined} */
-  var autoconnect;
-  if (type == CrOnc.Type.CELLULAR && properties.Cellular)
-    autoconnect = properties.Cellular.AutoConnect;
-  else if (type == CrOnc.Type.VPN && properties.VPN)
-    autoconnect = properties.VPN.AutoConnect;
-  else if (type == CrOnc.Type.WI_FI && properties.WiFi)
-    autoconnect = properties.WiFi.AutoConnect;
-  else if (type == CrOnc.Type.WI_MAX && properties.WiMAX)
-    autoconnect = properties.WiMAX.AutoConnect;
+  var autoconnect = CrOnc.getManagedAutoConnect(properties);
   return !!CrOnc.getActiveValue(autoconnect);
 }
 
