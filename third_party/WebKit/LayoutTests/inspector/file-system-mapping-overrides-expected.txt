@@ -1,0 +1,15 @@
+Tests FileSystemMapping overrides
+
+
+Running: testFileSystemClashDirectOrder
+http://localhost:1234/right_url/file.txt
+
+Running: testFileSystemClashReversedOrder
+http://localhost:1234/right_url/file.txt
+
+Running: testNetworkClashDirectOrder
+right/file.txt
+
+Running: testNetworkClashReversedOrder
+right/file.txt
+

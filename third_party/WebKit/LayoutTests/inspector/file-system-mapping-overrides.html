@@ -1,0 +1,62 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.runTestSuite([
+        function testFileSystemClashDirectOrder(next)
+        {
+            var fileSystemMapping = new WebInspector.FileSystemMapping();
+            fileSystemMapping.addFileSystem("//Source/devtools");
+
+            fileSystemMapping.addNonConfigurableFileMapping("//Source/devtools", "chrome-devtools://devtools/bundled/wrong_url", "/");
+            fileSystemMapping.addFileMapping("//Source/devtools", "http://localhost:1234/right_url", "/");
+
+            InspectorTest.addResult(fileSystemMapping.urlForPath("//Source/devtools", "/file.txt"));
+            next();
+        },
+
+        function testFileSystemClashReversedOrder(next)
+        {
+            var fileSystemMapping = new WebInspector.FileSystemMapping();
+            fileSystemMapping.addFileSystem("//Source/devtools");
+
+            fileSystemMapping.addFileMapping("//Source/devtools", "http://localhost:1234/right_url", "/");
+            fileSystemMapping.addNonConfigurableFileMapping("//Source/devtools", "chrome-devtools://devtools/wrong_url", "/");
+
+            InspectorTest.addResult(fileSystemMapping.urlForPath("//Source/devtools", "/file.txt"));
+            next();
+        },
+
+        function testNetworkClashDirectOrder(next)
+        {
+            var fileSystemMapping = new WebInspector.FileSystemMapping();
+            fileSystemMapping.addFileSystem("//Source/devtools");
+
+            fileSystemMapping.addNonConfigurableFileMapping("//Source/devtools", "http://localhost:1234/front_end", "/wrong");
+            fileSystemMapping.addFileMapping("//Source/devtools", "http://localhost:1234/front_end", "/right");
+
+            InspectorTest.addResult(fileSystemMapping.fileForURL("http://localhost:1234/front_end/file.txt").filePath);
+            next();
+        },
+
+        function testNetworkClashReversedOrder(next)
+        {
+            var fileSystemMapping = new WebInspector.FileSystemMapping();
+            fileSystemMapping.addFileSystem("//Source/devtools");
+
+            fileSystemMapping.addFileMapping("//Source/devtools", "http://localhost:1234/front_end", "/right");
+            fileSystemMapping.addNonConfigurableFileMapping("//Source/devtools", "http://localhost:1234/front_end", "/wrong");
+
+            InspectorTest.addResult(fileSystemMapping.fileForURL("http://localhost:1234/front_end/file.txt").filePath);
+            next();
+        },
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests FileSystemMapping overrides</p>
+</body>
+</html>
