@@ -51,9 +51,7 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   // Called upon a change to SETTINGS_HEADER_TABLE_SIZE. Specifically, this
   // is to be called after receiving (and sending an acknowledgement for) a
   // SETTINGS_HEADER_TABLE_SIZE update from the remote decoding endpoint.
-  void ApplyHeaderTableSizeSetting(size_t size_setting) {
-    header_table_.SetSettingsHeaderTableSize(size_setting);
-  }
+  void ApplyHeaderTableSizeSetting(size_t size_setting);
 
   // Sets externally-owned storage for aggregating character counts of emitted
   // literal representations.
@@ -81,6 +79,10 @@ class NET_EXPORT_PRIVATE HpackEncoder {
 
   void UpdateCharacterCounts(base::StringPiece str);
 
+  // Emits the current dynamic table size if the table size was recently
+  // updated and we have not yet emitted it (Section 6.3).
+  void MaybeEmitTableSize();
+
   // Crumbles a cookie header into ";" delimited crumbs.
   static void CookieToCrumbs(const Representation& cookie,
                              Representations* crumbs_out);
@@ -92,8 +94,10 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   HpackHeaderTable header_table_;
   HpackOutputStream output_stream_;
 
-  bool allow_huffman_compression_;
   const HpackHuffmanTable& huffman_table_;
+  size_t min_table_size_setting_received_;
+  bool allow_huffman_compression_;
+  bool should_emit_table_size_;
 
   // Externally-owned, nullable storage for character counts of literals.
   std::vector<size_t>* char_counts_;

@@ -135,6 +135,10 @@ class HpackEncoderTest : public ::testing::Test {
     expected_.AppendUint32(value.size());
     expected_.AppendBytes(value);
   }
+  void ExpectHeaderTableSizeUpdate(uint32 size) {
+    expected_.AppendPrefix(kHeaderTableSizeUpdateOpcode);
+    expected_.AppendUint32(size);
+  }
   void CompareWithExpectedEncoding(const SpdyHeaderBlock& header_set) {
     string expected_out, actual_out;
     expected_.TakeString(&expected_out);
@@ -457,6 +461,70 @@ TEST_F(HpackEncoderTest, CrumbleNullByteDelimitedValue) {
   expected_.AppendUint32(3);
   expected_.AppendBytes("bar");
   CompareWithExpectedEncoding(headers);
+}
+
+TEST_F(HpackEncoderTest, HeaderTableSizeUpdate) {
+  encoder_.ApplyHeaderTableSizeSetting(1024);
+  ExpectHeaderTableSizeUpdate(1024);
+  ExpectIndexedLiteral("key3", "value3");
+
+  SpdyHeaderBlock headers;
+  headers["key3"] = "value3";
+  CompareWithExpectedEncoding(headers);
+
+  HpackEntry* new_entry = &peer_.table_peer().dynamic_entries()->front();
+  EXPECT_EQ(new_entry->name(), "key3");
+  EXPECT_EQ(new_entry->value(), "value3");
+}
+
+TEST_F(HpackEncoderTest, HeaderTableSizeUpdateWithMin) {
+  const size_t starting_size = peer_.table()->settings_size_bound();
+  encoder_.ApplyHeaderTableSizeSetting(starting_size - 2);
+  encoder_.ApplyHeaderTableSizeSetting(starting_size - 1);
+  // We must encode the low watermark, so the peer knows to evict entries
+  // if necessary.
+  ExpectHeaderTableSizeUpdate(starting_size - 2);
+  ExpectHeaderTableSizeUpdate(starting_size - 1);
+  ExpectIndexedLiteral("key3", "value3");
+
+  SpdyHeaderBlock headers;
+  headers["key3"] = "value3";
+  CompareWithExpectedEncoding(headers);
+
+  HpackEntry* new_entry = &peer_.table_peer().dynamic_entries()->front();
+  EXPECT_EQ(new_entry->name(), "key3");
+  EXPECT_EQ(new_entry->value(), "value3");
+}
+
+TEST_F(HpackEncoderTest, HeaderTableSizeUpdateWithExistingSize) {
+  encoder_.ApplyHeaderTableSizeSetting(peer_.table()->settings_size_bound());
+  // No encoded size update.
+  ExpectIndexedLiteral("key3", "value3");
+
+  SpdyHeaderBlock headers;
+  headers["key3"] = "value3";
+  CompareWithExpectedEncoding(headers);
+
+  HpackEntry* new_entry = &peer_.table_peer().dynamic_entries()->front();
+  EXPECT_EQ(new_entry->name(), "key3");
+  EXPECT_EQ(new_entry->value(), "value3");
+}
+
+TEST_F(HpackEncoderTest, HeaderTableSizeUpdatesWithGreaterSize) {
+  const size_t starting_size = peer_.table()->settings_size_bound();
+  encoder_.ApplyHeaderTableSizeSetting(starting_size + 1);
+  encoder_.ApplyHeaderTableSizeSetting(starting_size + 2);
+  // Only a single size update to the final size.
+  ExpectHeaderTableSizeUpdate(starting_size + 2);
+  ExpectIndexedLiteral("key3", "value3");
+
+  SpdyHeaderBlock headers;
+  headers["key3"] = "value3";
+  CompareWithExpectedEncoding(headers);
+
+  HpackEntry* new_entry = &peer_.table_peer().dynamic_entries()->front();
+  EXPECT_EQ(new_entry->name(), "key3");
+  EXPECT_EQ(new_entry->value(), "value3");
 }
 
 }  // namespace
