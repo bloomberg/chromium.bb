@@ -6,6 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/mac/scoped_nsobject.h"
+#import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view_client.h"
 
@@ -49,10 +50,12 @@ const CGFloat kSuggestionHorizontalMargin = 6;
           // the width.
           CGRect proposedFrame =
               CGRectMake(currentX, kSuggestionVerticalMargin, 0, labelHeight);
-          base::scoped_nsobject<UIView> label(
-              [[FormSuggestionLabel alloc] initWithSuggestion:suggestion
-                                                proposedFrame:proposedFrame
-                                                       client:client]);
+          base::scoped_nsobject<UIView> label([[FormSuggestionLabel alloc]
+              initWithSuggestion:suggestion
+                   proposedFrame:proposedFrame
+                           index:idx
+                  numSuggestions:[_suggestions count]
+                          client:client]);
           [self addSubview:label];
           currentX +=
               CGRectGetWidth([label frame]) + kSuggestionHorizontalMargin;

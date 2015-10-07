@@ -21,6 +21,8 @@
 // |suggestion| and width in |proposedFrame| is ignored.
 - (id)initWithSuggestion:(FormSuggestion*)suggestion
            proposedFrame:(CGRect)proposedFrame
+                   index:(NSUInteger)index
+          numSuggestions:(NSUInteger)numSuggestions
                   client:(id<FormSuggestionViewClient>)client;
 
 @end
