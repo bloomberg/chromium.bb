@@ -1232,6 +1232,8 @@ bool LayoutBox::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) c
     // FIXME: Use rounded rect if border radius is present.
     if (style()->hasBorderRadius())
         return false;
+    if (hasClipPath())
+        return false;
     // FIXME: The background color clip is defined by the last layer.
     if (style()->backgroundLayers().next())
         return false;
