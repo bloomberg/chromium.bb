@@ -248,11 +248,8 @@ public class ImeTest extends ContentShellTestBase {
         }));
     }
 
-    /*
     @SmallTest
     @Feature({"TextInput"})
-    */
-    @DisabledTest
     public void testSelectActionBarClearedOnTappingInput() throws Exception {
         commitText("Sample Text", 1);
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
