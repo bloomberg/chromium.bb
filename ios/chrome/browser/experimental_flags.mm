@@ -21,8 +21,6 @@
 namespace {
 NSString* const kEnableAlertOnBackgroundUpload =
     @"EnableAlertsOnBackgroundUpload";
-NSString* const kEnableBookmarkRefreshImageOnEachVisit =
-    @"EnableBookmarkRefreshImageOnEachVisit";
 NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
 }  // namespace
 
@@ -54,20 +52,6 @@ bool IsExternalURLBlockingEnabled() {
 
 bool IsBookmarkCollectionEnabled() {
   return enhanced_bookmarks::IsEnhancedBookmarksEnabled();
-}
-
-bool IsBookmarkImageFetchingOnVisitEnabled() {
-  if (!IsBookmarkCollectionEnabled())
-    return false;
-
-  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
-  if ([user_defaults boolForKey:kEnableBookmarkRefreshImageOnEachVisit])
-    return true;
-
-  const char kFieldTrialName[] = "EnhancedBookmarks";
-  std::string enable_fetching = variations::GetVariationParamValue(
-      kFieldTrialName, "EnableImagesFetchingOnVisit");
-  return !enable_fetching.empty();
 }
 
 bool IsWKWebViewEnabled() {
