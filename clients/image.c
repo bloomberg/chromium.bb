@@ -359,7 +359,7 @@ image_create(struct display *display, const char *filename,
 	     int *image_counter)
 {
 	struct image *image;
-	char *b, *copy, title[512];;
+	char *b, *copy, title[512];
 
 	image = zalloc(sizeof *image);
 	if (image == NULL)

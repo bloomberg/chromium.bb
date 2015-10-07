@@ -270,7 +270,7 @@ ZUC_TEST_F(config_test_t1, test007)
 	int r;
 	int32_t n;
 	struct weston_config_section *section;
-	struct weston_config *config = data;;
+	struct weston_config *config = data;
 
 	section = weston_config_get_section(config, "bar", NULL, NULL);
 	r = weston_config_section_get_int(section, "+++", &n, 700);

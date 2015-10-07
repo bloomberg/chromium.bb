@@ -4272,7 +4272,7 @@ xdg_get_xdg_popup(struct wl_client *client,
 	}
 
 	parent = wl_resource_get_user_data(parent_resource);
-	seat = get_shell_seat(wl_resource_get_user_data(seat_resource));;
+	seat = get_shell_seat(wl_resource_get_user_data(seat_resource));
 
 	/* Verify that we are creating the top most popup when mapping,
 	 * as it's not until then we know whether it was mapped as most
