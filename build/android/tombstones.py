@@ -23,7 +23,6 @@ from devil.android import device_errors
 from devil.android import device_utils
 from devil.utils import run_tests_helper
 
-
 _TZ_UTC = {'TZ': 'UTC'}
 
 def _ListTombstones(device):

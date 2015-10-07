@@ -16,20 +16,85 @@
 
 """stack symbolizes native crash dumps."""
 
+import itertools
 import logging
+import multiprocessing
+import os
 import re
+import subprocess
+import time
 
 import symbol
+
+UNKNOWN = '<unknown>'
+HEAP = '[heap]'
+STACK = '[stack]'
+_DEFAULT_JOBS=8
+_CHUNK_SIZE = 1000
+
+_PROCESS_INFO_LINE = re.compile('(pid: [0-9]+, tid: [0-9]+.*)')
+_SIGNAL_LINE = re.compile('(signal [0-9]+ \(.*\).*)')
+_REGISTER_LINE = re.compile('(([ ]*[0-9a-z]{2} [0-9a-f]{8}){4})')
+_THREAD_LINE = re.compile('(.*)(\-\-\- ){15}\-\-\-')
+_DALVIK_JNI_THREAD_LINE = re.compile("(\".*\" prio=[0-9]+ tid=[0-9]+ NATIVE.*)")
+_DALVIK_NATIVE_THREAD_LINE = re.compile("(\".*\" sysTid=[0-9]+ nice=[0-9]+.*)")
+
+_WIDTH = '{8}'
+if symbol.ARCH == 'arm64' or symbol.ARCH == 'x86_64' or symbol.ARCH == 'x64':
+  _WIDTH = '{16}'
+
+# Matches LOG(FATAL) lines, like the following example:
+#   [FATAL:source_file.cc(33)] Check failed: !instances_.empty()
+_LOG_FATAL_LINE = re.compile('(\[FATAL\:.*\].*)$')
+
+# Note that both trace and value line matching allow for variable amounts of
+# whitespace (e.g. \t). This is because the we want to allow for the stack
+# tool to operate on AndroidFeedback provided system logs. AndroidFeedback
+# strips out double spaces that are found in tombsone files and logcat output.
+#
+# Examples of matched trace lines include lines from tombstone files like:
+#   #00  pc 001cf42e  /data/data/com.my.project/lib/libmyproject.so
+#   #00  pc 001cf42e  /data/data/com.my.project/lib/libmyproject.so (symbol)
+# Or lines from AndroidFeedback crash report system logs like:
+#   03-25 00:51:05.520 I/DEBUG ( 65): #00 pc 001cf42e /data/data/com.my.project/lib/libmyproject.so
+# Please note the spacing differences.
+_TRACE_LINE = re.compile('(.*)\#(?P<frame>[0-9]+)[ \t]+(..)[ \t]+(0x)?(?P<address>[0-9a-f]{0,16})[ \t]+(?P<lib>[^\r\n \t]*)(?P<symbol_present> \((?P<symbol_name>.*)\))?')  # pylint: disable-msg=C6310
+
+# Matches lines emitted by src/base/debug/stack_trace_android.cc, like:
+#   #00 0x7324d92d /data/app-lib/org.chromium.native_test-1/libbase.cr.so+0x0006992d
+# This pattern includes the unused named capture groups <symbol_present> and
+# <symbol_name> so that it can interoperate with the |_TRACE_LINE| regex.
+_DEBUG_TRACE_LINE = re.compile(
+    '(.*)(?P<frame>\#[0-9]+ 0x[0-9a-f]' + _WIDTH + ') '
+    '(?P<lib>[^+]+)\+0x(?P<address>[0-9a-f]' + _WIDTH + ')'
+    '(?P<symbol_present>)(?P<symbol_name>)')
+
+# Examples of matched value lines include:
+#   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so
+#   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so (symbol)
+#   03-25 00:51:05.530 I/DEBUG ( 65): bea4170c 8018e4e9 /data/data/com.my.project/lib/libmyproject.so
+# Again, note the spacing differences.
+_VALUE_LINE = re.compile('(.*)([0-9a-f]' + _WIDTH + ')[ \t]+([0-9a-f]' + _WIDTH + ')[ \t]+([^\r\n \t]*)( \((.*)\))?')
+# Lines from 'code around' sections of the output will be matched before
+# value lines because otheriwse the 'code around' sections will be confused as
+# value lines.
+#
+# Examples include:
+#   801cf40c ffffc4cc 00b2f2c5 00b2f1c7 00c1e1a8
+#   03-25 00:51:05.530 I/DEBUG ( 65): 801cf40c ffffc4cc 00b2f2c5 00b2f1c7 00c1e1a8
+code_line = re.compile('(.*)[ \t]*[a-f0-9]' + _WIDTH + '[ \t]*[a-f0-9]' + _WIDTH +
+                       '[ \t]*[a-f0-9]' + _WIDTH + '[ \t]*[a-f0-9]' + _WIDTH +
+                       '[ \t]*[a-f0-9]' + _WIDTH + '[ \t]*[ \r\n]')  # pylint: disable-msg=C6310
 
 def PrintTraceLines(trace_lines):
   """Print back trace."""
   maxlen = max(map(lambda tl: len(tl[1]), trace_lines))
   print
-  print "Stack Trace:"
-  print "  RELADDR   " + "FUNCTION".ljust(maxlen) + "  FILE:LINE"
+  print 'Stack Trace:'
+  print '  RELADDR   ' + 'FUNCTION'.ljust(maxlen) + '  FILE:LINE'
   for tl in trace_lines:
     (addr, symbol_with_offset, location) = tl
-    print "  %8s  %s  %s" % (addr, symbol_with_offset.ljust(maxlen), location)
+    print '  %8s  %s  %s' % (addr, symbol_with_offset.ljust(maxlen), location)
   return
 
 
@@ -37,16 +102,12 @@ def PrintValueLines(value_lines):
   """Print stack data values."""
   maxlen = max(map(lambda tl: len(tl[2]), value_lines))
   print
-  print "Stack Data:"
-  print "  ADDR      VALUE     " + "FUNCTION".ljust(maxlen) + "  FILE:LINE"
+  print 'Stack Data:'
+  print '  ADDR      VALUE     ' + 'FUNCTION'.ljust(maxlen) + '  FILE:LINE'
   for vl in value_lines:
     (addr, value, symbol_with_offset, location) = vl
-    print "  %8s  %8s  %s  %s" % (addr, value, symbol_with_offset.ljust(maxlen), location)
+    print '  %8s  %8s  %s  %s' % (addr, value, symbol_with_offset.ljust(maxlen), location)
   return
-
-UNKNOWN = "<unknown>"
-HEAP = "[heap]"
-STACK = "[stack]"
 
 
 def PrintOutput(trace_lines, value_lines, more_info):
@@ -63,66 +124,60 @@ def PrintOutput(trace_lines, value_lines, more_info):
 
 def PrintDivider():
   print
-  print "-----------------------------------------------------\n"
+  print '-----------------------------------------------------\n'
 
 def ConvertTrace(lines, more_info):
   """Convert strings containing native crash to a stack."""
-  process_info_line = re.compile("(pid: [0-9]+, tid: [0-9]+.*)")
-  signal_line = re.compile("(signal [0-9]+ \(.*\).*)")
-  register_line = re.compile("(([ ]*[0-9a-z]{2} [0-9a-f]{8}){4})")
-  thread_line = re.compile("(.*)(\-\-\- ){15}\-\-\-")
-  dalvik_jni_thread_line = re.compile("(\".*\" prio=[0-9]+ tid=[0-9]+ NATIVE.*)")
-  dalvik_native_thread_line = re.compile("(\".*\" sysTid=[0-9]+ nice=[0-9]+.*)")
+  start = time.time()
 
-  width = "{8}"
-  if symbol.ARCH == "arm64" or symbol.ARCH == "x86_64" or symbol.ARCH == "x64":
-    width = "{16}"
+  chunks = [lines[i: i+_CHUNK_SIZE] for i in xrange(0, len(lines), _CHUNK_SIZE)]
+  pool = multiprocessing.Pool(processes=_DEFAULT_JOBS)
+  useful_log = itertools.chain(*pool.map(PreProcessLog, chunks))
+  pool.close()
+  pool.join()
+  end = time.time()
+  logging.debug('Finished processing. Elapsed time: %.4fs', (end - start))
 
-  # Matches LOG(FATAL) lines, like the following example:
-  #   [FATAL:source_file.cc(33)] Check failed: !instances_.empty()
-  log_fatal_line = re.compile("(\[FATAL\:.*\].*)$")
+  ResolveCrashSymbol(list(useful_log), more_info)
+  end = time.time()
+  logging.debug('Finished resolving symbols. Elapsed time: %.4fs',
+                (end - start))
 
-  # Note that both trace and value line matching allow for variable amounts of
-  # whitespace (e.g. \t). This is because the we want to allow for the stack
-  # tool to operate on AndroidFeedback provided system logs. AndroidFeedback
-  # strips out double spaces that are found in tombsone files and logcat output.
-  #
-  # Examples of matched trace lines include lines from tombstone files like:
-  #   #00  pc 001cf42e  /data/data/com.my.project/lib/libmyproject.so
-  #   #00  pc 001cf42e  /data/data/com.my.project/lib/libmyproject.so (symbol)
-  # Or lines from AndroidFeedback crash report system logs like:
-  #   03-25 00:51:05.520 I/DEBUG ( 65): #00 pc 001cf42e /data/data/com.my.project/lib/libmyproject.so
-  # Please note the spacing differences.
-  trace_line = re.compile("(.*)\#(?P<frame>[0-9]+)[ \t]+(..)[ \t]+(0x)?(?P<address>[0-9a-f]{0,16})[ \t]+(?P<lib>[^\r\n \t]*)(?P<symbol_present> \((?P<symbol_name>.*)\))?")  # pylint: disable-msg=C6310
 
-  # Matches lines emitted by src/base/debug/stack_trace_android.cc, like:
-  #   #00 0x7324d92d /data/app-lib/org.chromium.native_test-1/libbase.cr.so+0x0006992d
-  # This pattern includes the unused named capture groups <symbol_present> and
-  # <symbol_name> so that it can interoperate with the |trace_line| regex.
-  debug_trace_line = re.compile(
-      '(.*)(?P<frame>\#[0-9]+ 0x[0-9a-f]' + width + ') '
-      '(?P<lib>[^+]+)\+0x(?P<address>[0-9a-f]' + width + ')'
-      '(?P<symbol_present>)(?P<symbol_name>)')
+def PreProcessLog(lines):
+  """Preprocess the strings, only keep the useful ones.
+  Args:
+    lines: a list of byte strings read from logcat
 
-  # Examples of matched value lines include:
-  #   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so
-  #   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so (symbol)
-  #   03-25 00:51:05.530 I/DEBUG ( 65): bea4170c 8018e4e9 /data/data/com.my.project/lib/libmyproject.so
-  # Again, note the spacing differences.
-  value_line = re.compile("(.*)([0-9a-f]" + width + ")[ \t]+([0-9a-f]" + width + ")[ \t]+([^\r\n \t]*)( \((.*)\))?")
-  # Lines from 'code around' sections of the output will be matched before
-  # value lines because otheriwse the 'code around' sections will be confused as
-  # value lines.
-  #
-  # Examples include:
-  #   801cf40c ffffc4cc 00b2f2c5 00b2f1c7 00c1e1a8
-  #   03-25 00:51:05.530 I/DEBUG ( 65): 801cf40c ffffc4cc 00b2f2c5 00b2f1c7 00c1e1a8
-  code_line = re.compile("(.*)[ \t]*[a-f0-9]" + width +
-                         "[ \t]*[a-f0-9]" + width +
-                         "[ \t]*[a-f0-9]" + width +
-                         "[ \t]*[a-f0-9]" + width +
-                         "[ \t]*[a-f0-9]" + width +
-                         "[ \t]*[ \r\n]")  # pylint: disable-msg=C6310
+  Returns:
+    A list of unicode strings related to native crash
+  """
+  useful_log = []
+  for ln in lines:
+    line = unicode(ln, errors='ignore')
+    if (_PROCESS_INFO_LINE.search(line)
+        or _SIGNAL_LINE.search(line)
+        or _REGISTER_LINE.search(line)
+        or _THREAD_LINE.search(line)
+        or _DALVIK_JNI_THREAD_LINE.search(line)
+        or _DALVIK_NATIVE_THREAD_LINE.search(line)
+        or _LOG_FATAL_LINE.search(line)
+        or _TRACE_LINE.match(line)
+        or _DEBUG_TRACE_LINE.match(line)):
+      useful_log.append(line)
+      continue
+
+    if code_line.match(line):
+      # Code lines should be ignored. If this were excluded the 'code around'
+      # sections would trigger value_line matches.
+      continue
+    if _VALUE_LINE.match(line):
+      useful_log.append(line)
+  return useful_log
+
+def ResolveCrashSymbol(lines, more_info):
+  """Convert unicode strings which contains native crash to a stack
+  """
 
   trace_lines = []
   value_lines = []
@@ -134,15 +189,14 @@ def ConvertTrace(lines, more_info):
   # from the log and call symbol.SymbolInformation so that the results are
   # cached in the following lookups.
   code_addresses = {}
-  for ln in lines:
-    line = unicode(ln, errors='ignore')
+  for line in lines:
     lib, address = None, None
 
-    match = trace_line.match(line) or debug_trace_line.match(line)
+    match = _TRACE_LINE.match(line) or _DEBUG_TRACE_LINE.match(line)
     if match:
       address, lib = match.group('address', 'lib')
 
-    match = value_line.match(line)
+    match = _VALUE_LINE.match(line)
     if match and not code_line.match(line):
       (_0, _1, address, lib, _2, _3) = match.groups()
 
@@ -153,17 +207,16 @@ def ConvertTrace(lines, more_info):
     symbol.SymbolInformationForSet(
         symbol.TranslateLibPath(lib), code_addresses[lib], more_info)
 
-  for ln in lines:
+  for line in lines:
     # AndroidFeedback adds zero width spaces into its crash reports. These
     # should be removed or the regular expresssions will fail to match.
-    line = unicode(ln, errors='ignore')
-    process_header = process_info_line.search(line)
-    signal_header = signal_line.search(line)
-    register_header = register_line.search(line)
-    thread_header = thread_line.search(line)
-    dalvik_jni_thread_header = dalvik_jni_thread_line.search(line)
-    dalvik_native_thread_header = dalvik_native_thread_line.search(line)
-    log_fatal_header = log_fatal_line.search(line)
+    process_header = _PROCESS_INFO_LINE.search(line)
+    signal_header = _SIGNAL_LINE.search(line)
+    register_header = _REGISTER_LINE.search(line)
+    thread_header = _THREAD_LINE.search(line)
+    dalvik_jni_thread_header = _DALVIK_JNI_THREAD_LINE.search(line)
+    dalvik_native_thread_header = _DALVIK_NATIVE_THREAD_LINE.search(line)
+    log_fatal_header = _LOG_FATAL_LINE.search(line)
     if (process_header or signal_header or register_header or thread_header or
         dalvik_jni_thread_header or dalvik_native_thread_header or
         log_fatal_header) :
@@ -189,7 +242,7 @@ def ConvertTrace(lines, more_info):
         print log_fatal_header.group(1)
       continue
 
-    match = trace_line.match(line) or debug_trace_line.match(line)
+    match = _TRACE_LINE.match(line) or _DEBUG_TRACE_LINE.match(line)
     if match:
       frame, code_addr, area, symbol_present, symbol_name = match.group(
           'frame', 'address', 'lib', 'symbol_present', 'symbol_name')
@@ -203,7 +256,7 @@ def ConvertTrace(lines, more_info):
       last_frame = frame
 
       if area == UNKNOWN or area == HEAP or area == STACK:
-        trace_lines.append((code_addr, "", area))
+        trace_lines.append((code_addr, '', area))
       else:
         logging.debug('Identified lib: %s' % area)
         # If a calls b which further calls c and c is inlined to b, we want to
@@ -221,22 +274,18 @@ def ConvertTrace(lines, more_info):
             source_location = area
           if nest_count > 0:
             nest_count = nest_count - 1
-            trace_lines.append(("v------>", source_symbol, source_location))
+            trace_lines.append(('v------>', source_symbol, source_location))
           else:
             if not object_symbol_with_offset:
               object_symbol_with_offset = source_symbol
             trace_lines.append((code_addr,
                                 object_symbol_with_offset,
                                 source_location))
-    if code_line.match(line):
-      # Code lines should be ignored. If this were exluded the 'code around'
-      # sections would trigger value_line matches.
-      continue;
-    match = value_line.match(line)
+    match = _VALUE_LINE.match(line)
     if match:
       (unused_, addr, value, area, symbol_present, symbol_name) = match.groups()
       if area == UNKNOWN or area == HEAP or area == STACK or not area:
-        value_lines.append((addr, value, "", area))
+        value_lines.append((addr, value, '', area))
       else:
         info = symbol.SymbolInformation(area, value, more_info)
         (source_symbol, source_location, object_symbol_with_offset) = info.pop()
@@ -255,3 +304,5 @@ def ConvertTrace(lines, more_info):
                             source_location))
 
   PrintOutput(trace_lines, value_lines, more_info)
+
+
