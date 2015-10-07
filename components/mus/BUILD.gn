@@ -58,7 +58,6 @@ source_set("lib") {
     "//mojo/common:tracing_impl",
     "//ui/events",
     "//ui/gl:gl",
-    "//ui/gl:test_support",
     "//ui/platform_window:platform_impls",
     "//ui/platform_window:platform_window",
   ]

@@ -157,6 +157,9 @@ component("gl") {
   if (is_linux) {
     deps += [ "//third_party/libevent" ]
   }
+  if (!is_android) {  # TODO(GYP) Enable on Android when osmesa links.
+    deps += [ "//third_party/mesa:osmesa" ]
+  }
   if (use_x11) {
     sources += [
       "gl_bindings_autogen_glx.cc",
@@ -285,14 +288,21 @@ source_set("gl_unittest_utils") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
+    "test/gl_image_test_support.cc",
+    "test/gl_image_test_support.h",
+    "test/gl_image_test_template.h",
     "test/gl_surface_test_support.cc",
     "test/gl_surface_test_support.h",
+    "test/gl_test_helper.cc",
+    "test/gl_test_helper.h",
   ]
 
   configs += [ "//third_party/khronos:khronos_headers" ]
 
   deps = [
+    "//testing/gtest",
     ":gl",
   ]
 
@@ -317,6 +327,8 @@ group("gl_unittests_run") {
 test("gl_unittests") {
   sources = [
     "gl_api_unittest.cc",
+    "gl_image_ref_counted_memory_unittest.cc",
+    "gl_image_shared_memory_unittest.cc",
     "gpu_timing_unittest.cc",
     "test/run_all_unittests.cc",
   ]
@@ -340,8 +352,14 @@ test("gl_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/gfx",
+  ]
+
+  data_deps = [
+    "//third_party/mesa:osmesa",
   ]
 }
 

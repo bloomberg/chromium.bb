@@ -105,7 +105,7 @@ GpuMemoryBufferFactorySharedMemory::CreateImageForGpuMemoryBuffer(
 #endif
   scoped_refptr<gfx::GLImageSharedMemory> image(
       new gfx::GLImageSharedMemory(size, internalformat));
-  if (!image->Initialize(handle, format))
+  if (!image->Initialize(handle.handle, handle.id, format))
     return scoped_refptr<gfx::GLImage>();
 
   return image;

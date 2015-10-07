@@ -40,6 +40,7 @@ class GLApiTest : public testing::Test {
     num_fake_extension_strings_ = 0;
     fake_extension_strings_ = nullptr;
 
+    DCHECK(!g_current_gl_context_tls);
     g_current_gl_context_tls = new base::ThreadLocalPointer<GLApi>;
 
     SetGLGetProcAddressProc(
@@ -53,6 +54,7 @@ class GLApiTest : public testing::Test {
   void TearDown() override {
     api_.reset(nullptr);
     delete g_current_gl_context_tls;
+    g_current_gl_context_tls = nullptr;
 
     SetGLImplementation(kGLImplementationNone);
     fake_extension_string_ = "";

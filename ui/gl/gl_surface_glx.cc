@@ -34,7 +34,6 @@ namespace gfx {
 namespace {
 
 Display* g_display = nullptr;
-const char* g_glx_extensions = nullptr;
 bool g_glx_context_create = false;
 bool g_glx_create_context_robustness_supported = false;
 bool g_glx_texture_from_pixmap_supported = false;
@@ -349,7 +348,6 @@ bool GLSurfaceGLX::InitializeOneOff() {
     return false;
   }
 
-  g_glx_extensions = glXQueryExtensionsString(g_display, 0);
   g_glx_context_create =
       HasGLXExtension("GLX_ARB_create_context");
   g_glx_create_context_robustness_supported =
@@ -371,7 +369,7 @@ bool GLSurfaceGLX::InitializeOneOff() {
 
 // static
 const char* GLSurfaceGLX::GetGLXExtensions() {
-  return g_glx_extensions;
+  return glXQueryExtensionsString(g_display, 0);
 }
 
 // static

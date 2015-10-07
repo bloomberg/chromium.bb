@@ -298,6 +298,7 @@
       'target_name': 'gl_test_support',
       'type': 'static_library',
       'dependencies': [
+        '<(DEPTH)/testing/gtest.gyp:gtest',
         '../../third_party/khronos/khronos.gyp:khronos_headers',
         'gl',
       ],
@@ -305,8 +306,13 @@
         '../..',
       ],
       'sources': [
+        'test/gl_image_test_support.cc',
+        'test/gl_image_test_support.h',
+        'test/gl_image_test_template.h',
         'test/gl_surface_test_support.cc',
         'test/gl_surface_test_support.h',
+        'test/gl_test_helper.cc',
+        'test/gl_test_helper.h',
       ],
       'conditions': [
         ['use_x11==1', {
