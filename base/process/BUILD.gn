@@ -95,6 +95,10 @@ source_set("process") {
     ]
   }
 
+  if (is_nacl) {
+    sources += [ "process_metrics_nacl.cc" ]
+  }
+
   if (is_ios) {
     sources += [
       "memory_stubs.cc",
