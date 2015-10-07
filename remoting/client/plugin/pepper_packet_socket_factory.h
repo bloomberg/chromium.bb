@@ -5,6 +5,7 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_PACKET_SOCKET_FACTORY_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_PACKET_SOCKET_FACTORY_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ppapi/cpp/instance_handle.h"
