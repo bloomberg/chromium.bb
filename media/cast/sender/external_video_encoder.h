@@ -109,7 +109,7 @@ class SizeAdaptableExternalVideoEncoder : public SizeAdaptableVideoEncoderBase {
 class QuantizerEstimator {
  public:
   enum {
-    NO_RESULT = 0,
+    NO_RESULT = -1,
     MIN_VP8_QUANTIZER = 4,
     MAX_VP8_QUANTIZER = 63,
   };
