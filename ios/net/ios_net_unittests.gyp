@@ -7,6 +7,7 @@
   },
   'targets': [
     {
+      # GN version: //ios/net:ios_net_unittests
       'target_name': 'ios_net_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [

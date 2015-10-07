@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //ios/net
       'target_name': 'ios_net',
       'type': 'static_library',
       'include_dirs': [

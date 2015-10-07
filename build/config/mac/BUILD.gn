@@ -31,6 +31,8 @@ config("compiler") {
     common_mac_flags += [
       "-arch",
       "arm64",
+      "-arch",
+      "armv7",
     ]
   }
 

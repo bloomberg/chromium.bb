@@ -176,6 +176,8 @@ group("both_gn_and_gyp") {
       "//ui/gl:gl_unittests",
       "//ui/touch_selection:ui_touch_selection_unittests",
     ]
+  } else {
+    deps += [ "//ios/net:ios_net_unittests" ]
   }
 
   deps += root_extra_deps
