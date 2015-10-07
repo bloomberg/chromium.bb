@@ -11,20 +11,19 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
 
+namespace message_center {
+
 namespace {
 
-base::TimeDelta GetTimeoutForPriority(int priority) {
-  if (priority > message_center::DEFAULT_PRIORITY) {
-    return base::TimeDelta::FromSeconds(
-        message_center::kAutocloseHighPriorityDelaySeconds);
-  }
-  return base::TimeDelta::FromSeconds(
-      message_center::kAutocloseDefaultDelaySeconds);
+base::TimeDelta GetTimeoutForNotification(Notification* notification) {
+  if (notification->priority() > message_center::DEFAULT_PRIORITY)
+    return base::TimeDelta::FromSeconds(kAutocloseHighPriorityDelaySeconds);
+  if (notification->is_web_notification())
+    return base::TimeDelta::FromSeconds(kAutocloseWebNotificationDelaySeconds);
+  return base::TimeDelta::FromSeconds(kAutocloseDefaultDelaySeconds);
 }
 
 }  // namespace
-
-namespace message_center {
 
 ////////////////////////////////////////////////////////////////////////////////
 // PopupTimer
@@ -165,7 +164,7 @@ void PopupTimersController::OnNotificationUpdated(const std::string& id) {
 
   // Start the timer if not yet.
   if (popup_timers_.find(id) == popup_timers_.end())
-    StartTimer(id, GetTimeoutForPriority((*iter)->priority()));
+    StartTimer(id, GetTimeoutForNotification(*iter));
 }
 
 void PopupTimersController::OnNotificationRemoved(const std::string& id,

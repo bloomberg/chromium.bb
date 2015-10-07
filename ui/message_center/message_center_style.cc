@@ -54,6 +54,10 @@ const size_t kNotificationMaximumItems = 5;
 // Timing.
 const int kAutocloseDefaultDelaySeconds = 8;
 const int kAutocloseHighPriorityDelaySeconds = 25;
+// Web notifications use a larger timeout for now, which improves re-engagement.
+// TODO(johnme): Use Finch to experiment with different values for this, then
+// consider replacing kAutocloseDefaultDelaySeconds with this.
+const int kAutocloseWebNotificationDelaySeconds = 20;
 
 // Colors.
 const SkColor kBackgroundLightColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);

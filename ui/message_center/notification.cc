@@ -26,6 +26,7 @@ ButtonInfo::ButtonInfo(const base::string16& title)
 
 RichNotificationData::RichNotificationData()
     : priority(DEFAULT_PRIORITY),
+      is_web_notification(false),
       never_timeout(false),
       timestamp(base::Time::Now()),
       context_message(base::string16()),
@@ -36,6 +37,7 @@ RichNotificationData::RichNotificationData()
 
 RichNotificationData::RichNotificationData(const RichNotificationData& other)
     : priority(other.priority),
+      is_web_notification(other.is_web_notification),
       never_timeout(other.never_timeout),
       timestamp(other.timestamp),
       context_message(other.context_message),
@@ -139,6 +141,7 @@ void Notification::CopyState(Notification* base) {
   is_read_ = base->is_read_;
   if (!delegate_.get())
     delegate_ = base->delegate();
+  optional_fields_.is_web_notification = base->is_web_notification();
   optional_fields_.never_timeout = base->never_timeout();
 }
 

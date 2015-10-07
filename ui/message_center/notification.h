@@ -41,6 +41,7 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   ~RichNotificationData();
 
   int priority;
+  bool is_web_notification;
   bool never_timeout;
   base::Time timestamp;
   base::string16 context_message;
@@ -75,7 +76,7 @@ class MESSAGE_CENTER_EXPORT Notification {
   virtual ~Notification();
 
   // Copies the internal on-memory state from |base|, i.e. shown_as_popup,
-  // is_read, and never_timeout.
+  // is_read, is_web_notification and never_timeout.
   void CopyState(Notification* base);
 
   NotificationType type() const { return type_; }
@@ -193,13 +194,19 @@ class MESSAGE_CENTER_EXPORT Notification {
   // The notification with lesser serial_number is considered 'older'.
   unsigned serial_number() { return serial_number_; }
 
-  // Marks this explicitly to prevent the timeout dismiss of notification.
-  // This is used by webkit notifications to keep the existing behavior.
+  // Gets and sets whether this was shown using the Web Notifications API.
+  bool is_web_notification() const {
+    return optional_fields_.is_web_notification;
+  }
+  void set_is_web_notification(bool is_web_notification) {
+    optional_fields_.is_web_notification = is_web_notification;
+  }
+
+  // Gets and sets whether the notifiction should remain onscreen permanently.
+  bool never_timeout() const { return optional_fields_.never_timeout; }
   void set_never_timeout(bool never_timeout) {
     optional_fields_.never_timeout = never_timeout;
   }
-
-  bool never_timeout() const { return optional_fields_.never_timeout; }
 
   bool clickable() const { return optional_fields_.clickable; }
   void set_clickable(bool clickable) {

@@ -387,6 +387,8 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
 
   notification.set_buttons(buttons);
 
+  notification.set_is_web_notification(true);
+
   // On desktop, notifications with require_interaction==true stay on-screen
   // rather than minimizing to the notification center after a timeout.
   // On mobile, this is ignored (notifications are minimized at all times).
