@@ -83,7 +83,7 @@ DEFINE_TRACE(NavigatorVRDevice)
 NavigatorVRDevice::NavigatorVRDevice(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
-    m_hardwareUnits = new VRHardwareUnitCollection(controller());
+    m_hardwareUnits = new VRHardwareUnitCollection(this);
 }
 
 NavigatorVRDevice::~NavigatorVRDevice()

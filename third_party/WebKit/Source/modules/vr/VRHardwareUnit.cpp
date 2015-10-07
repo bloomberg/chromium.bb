@@ -14,10 +14,10 @@
 
 namespace blink {
 
-VRHardwareUnit::VRHardwareUnit(VRController* controller)
+VRHardwareUnit::VRHardwareUnit(NavigatorVRDevice* navigatorVRDevice)
     : m_nextDeviceId(1)
     , m_frameIndex(0)
-    , m_controller(controller)
+    , m_navigatorVRDevice(navigatorVRDevice)
 {
     m_positionState = VRPositionState::create();
 }
@@ -59,13 +59,13 @@ void VRHardwareUnit::addDevicesToVector(HeapVector<Member<VRDevice>>& vrDevices)
 
 VRController* VRHardwareUnit::controller()
 {
-    return m_controller;
+    return m_navigatorVRDevice->controller();
 }
 
 VRPositionState* VRHardwareUnit::getSensorState()
 {
     WebHMDSensorState state;
-    m_controller->getSensorState(m_index, state);
+    controller()->getSensorState(m_index, state);
     m_positionState->setState(state);
     m_frameIndex = state.frameIndex;
     return m_positionState;
@@ -73,7 +73,7 @@ VRPositionState* VRHardwareUnit::getSensorState()
 
 DEFINE_TRACE(VRHardwareUnit)
 {
-    visitor->trace(m_controller);
+    visitor->trace(m_navigatorVRDevice);
     visitor->trace(m_positionState);
     visitor->trace(m_hmd);
     visitor->trace(m_positionSensor);

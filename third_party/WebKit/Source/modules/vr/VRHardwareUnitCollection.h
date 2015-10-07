@@ -16,7 +16,7 @@ struct WebVRDevice;
 
 class VRHardwareUnitCollection final : public GarbageCollected<VRHardwareUnitCollection> {
 public:
-    explicit VRHardwareUnitCollection(VRController*);
+    explicit VRHardwareUnitCollection(NavigatorVRDevice*);
 
     VRDeviceVector updateVRHardwareUnits(const WebVector<WebVRDevice>&);
     VRHardwareUnit* getHardwareUnitForIndex(unsigned index);
@@ -24,7 +24,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    Member<VRController> m_controller;
+    Member<NavigatorVRDevice> m_navigatorVRDevice;
     HeapVector<Member<VRHardwareUnit>> m_hardwareUnits;
 };
 

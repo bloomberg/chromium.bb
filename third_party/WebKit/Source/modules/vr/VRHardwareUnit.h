@@ -26,7 +26,7 @@ enum VREye {
 
 class VRHardwareUnit : public GarbageCollectedFinalized<VRHardwareUnit> {
 public:
-    explicit VRHardwareUnit(VRController*);
+    explicit VRHardwareUnit(NavigatorVRDevice*);
     virtual ~VRHardwareUnit();
 
     void updateFromWebVRDevice(const WebVRDevice&);
@@ -55,7 +55,7 @@ private:
 
     unsigned m_frameIndex;
 
-    Member<VRController> m_controller;
+    Member<NavigatorVRDevice> m_navigatorVRDevice;
     Member<VRPositionState> m_positionState;
 
     // Device types
