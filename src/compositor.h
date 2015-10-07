@@ -144,20 +144,18 @@ struct weston_spring {
 	uint32_t clip;
 };
 
-struct weston_fixed_point {
-	wl_fixed_t x, y;
-};
-
 struct weston_output_zoom {
 	bool active;
 	float increment;
 	float level;
 	float max_level;
 	float trans_x, trans_y;
+	struct {
+		double x, y;
+	} current;
 	struct weston_seat *seat;
 	struct weston_animation animation_z;
 	struct weston_spring spring_z;
-	struct weston_fixed_point current;
 	struct wl_listener motion_listener;
 };
 

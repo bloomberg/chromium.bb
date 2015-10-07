@@ -65,13 +65,13 @@ weston_zoom_frame_z(struct weston_animation *animation,
 
 static void
 zoom_area_center_from_point(struct weston_output *output,
-			    wl_fixed_t *x, wl_fixed_t *y)
+			    double *x, double *y)
 {
 	float level = output->zoom.spring_z.current;
-	wl_fixed_t offset_x = wl_fixed_from_int(output->x);
-	wl_fixed_t offset_y = wl_fixed_from_int(output->y);
-	wl_fixed_t w = wl_fixed_from_int(output->width);
-	wl_fixed_t h = wl_fixed_from_int(output->height);
+	double offset_x = output->x;
+	double offset_y = output->y;
+	double w = output->width;
+	double h = output->height;
 
 	*x = (*x - offset_x) * level + w / 2;
 	*y = (*y - offset_y) * level + h / 2;
@@ -81,8 +81,8 @@ static void
 weston_output_update_zoom_transform(struct weston_output *output)
 {
 	float global_x, global_y;
-	wl_fixed_t x = output->zoom.current.x; /* global pointer coords */
-	wl_fixed_t y = output->zoom.current.y;
+	double x = output->zoom.current.x; /* global pointer coords */
+	double y = output->zoom.current.y;
 	float level;
 
 	level = output->zoom.spring_z.current;
@@ -93,8 +93,8 @@ weston_output_update_zoom_transform(struct weston_output *output)
 
 	zoom_area_center_from_point(output, &x, &y);
 
-	global_x = wl_fixed_to_double(x);
-	global_y = wl_fixed_to_double(y);
+	global_x = x;
+	global_y = y;
 
 	output->zoom.trans_x = global_x - output->width / 2;
 	output->zoom.trans_y = global_y - output->height / 2;
@@ -133,8 +133,8 @@ weston_output_update_zoom(struct weston_output *output)
 
 	assert(output->zoom.active);
 
-	output->zoom.current.x = pointer->x;
-	output->zoom.current.y = pointer->y;
+	output->zoom.current.x = wl_fixed_to_double(pointer->x);
+	output->zoom.current.y = wl_fixed_to_double(pointer->y);
 
 	weston_zoom_transition(output);
 	weston_output_update_zoom_transform(output);
