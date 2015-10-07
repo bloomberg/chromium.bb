@@ -304,7 +304,7 @@ class LayerTreeHostImplTest : public testing::Test,
   LayerImpl* SetupScrollAndContentsLayers(const gfx::Size& content_size) {
     LayerImpl* scroll_layer = CreateScrollAndContentsLayers(
         host_impl_->active_tree(), content_size);
-    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+    RebuildPropertyTrees();
     host_impl_->active_tree()->DidBecomeActive();
     return scroll_layer;
   }
@@ -8582,6 +8582,47 @@ TEST_F(LayerTreeHostImplTest, BeginCommitReclaimsResources) {
   CreateHostImpl(DefaultSettings(), output_surface.Pass());
   EXPECT_CALL(*mock_output_surface, ForceReclaimResources()).Times(1);
   host_impl_->BeginCommit();
+}
+
+TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
+  // Check page scale factor update in property trees when an update is made
+  // on the active tree.
+  host_impl_->CreatePendingTree();
+  host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 3.f);
+  CreateScrollAndContentsLayers(host_impl_->pending_tree(),
+                                gfx::Size(100, 100));
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->ActivateSyncTree();
+  DrawFrame();
+
+  host_impl_->CreatePendingTree();
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(2.f);
+  LayerImpl* page_scale_layer = host_impl_->active_tree()->PageScaleLayer();
+
+  TransformNode* active_tree_node =
+      host_impl_->active_tree()->property_trees()->transform_tree.Node(
+          page_scale_layer->transform_tree_index());
+  EXPECT_EQ(active_tree_node->data.post_local_scale_factor, 1.f);
+  EXPECT_EQ(host_impl_->active_tree()->current_page_scale_factor(), 2.f);
+
+  TransformNode* pending_tree_node =
+      host_impl_->pending_tree()->property_trees()->transform_tree.Node(
+          page_scale_layer->transform_tree_index());
+  EXPECT_EQ(pending_tree_node->data.post_local_scale_factor, 1.f);
+  EXPECT_EQ(host_impl_->pending_tree()->current_page_scale_factor(), 2.f);
+
+  host_impl_->pending_tree()->UpdateDrawProperties(false);
+  pending_tree_node =
+      host_impl_->pending_tree()->property_trees()->transform_tree.Node(
+          page_scale_layer->transform_tree_index());
+  EXPECT_EQ(pending_tree_node->data.post_local_scale_factor, 2.f);
+
+  host_impl_->ActivateSyncTree();
+  host_impl_->active_tree()->UpdateDrawProperties(false);
+  active_tree_node =
+      host_impl_->active_tree()->property_trees()->transform_tree.Node(
+          page_scale_layer->transform_tree_index());
+  EXPECT_EQ(active_tree_node->data.post_local_scale_factor, 2.f);
 }
 
 }  // namespace

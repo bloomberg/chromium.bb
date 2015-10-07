@@ -425,22 +425,6 @@ void LayerTreeImpl::DidUpdatePageScale() {
         ClampPageScaleFactorToLimits(current_page_scale_factor()));
 
   set_needs_update_draw_properties();
-
-  if (PageScaleLayer() && PageScaleLayer()->transform_tree_index() != -1) {
-    TransformNode* node = property_trees_.transform_tree.Node(
-        PageScaleLayer()->transform_tree_index());
-    node->data.post_local_scale_factor = current_page_scale_factor();
-    node->data.needs_local_transform_update = true;
-    // TODO(enne): property trees can't ask the layer these things, but
-    // the page scale layer should *just* be the page scale.
-    DCHECK_EQ(PageScaleLayer()->position().ToString(),
-              gfx::PointF().ToString());
-    DCHECK_EQ(PageScaleLayer()->transform_origin().ToString(),
-              gfx::Point3F().ToString());
-    node->data.update_post_local_transform(gfx::PointF(), gfx::Point3F());
-    property_trees_.transform_tree.set_needs_update(true);
-  }
-
   ForceScrollbarParameterUpdateAfterScaleChange(PageScaleLayer());
   HideInnerViewportScrollbarsIfNeeded();
 }

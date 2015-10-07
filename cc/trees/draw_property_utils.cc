@@ -887,4 +887,43 @@ void ComputeSurfaceDrawPropertiesUsingPropertyTrees(
       draw_properties->is_clipped);
 }
 
+template <typename LayerType>
+void UpdatePageScaleFactorInPropertyTreesInternal(
+    PropertyTrees* property_trees,
+    const LayerType* page_scale_layer,
+    float page_scale_factor) {
+  if (property_trees->transform_tree.page_scale_factor() == page_scale_factor)
+    return;
+
+  property_trees->transform_tree.set_page_scale_factor(page_scale_factor);
+  DCHECK(page_scale_layer);
+  DCHECK_GE(page_scale_layer->transform_tree_index(), 0);
+  TransformNode* node = property_trees->transform_tree.Node(
+      page_scale_layer->transform_tree_index());
+  // TODO(enne): property trees can't ask the layer these things, but
+  // the page scale layer should *just* be the page scale.
+  DCHECK_EQ(page_scale_layer->position().ToString(), gfx::PointF().ToString());
+  DCHECK_EQ(page_scale_layer->transform_origin().ToString(),
+            gfx::Point3F().ToString());
+
+  node->data.post_local_scale_factor = page_scale_factor;
+  node->data.needs_local_transform_update = true;
+  node->data.update_post_local_transform(gfx::PointF(), gfx::Point3F());
+  property_trees->transform_tree.set_needs_update(true);
+}
+
+void UpdatePageScaleFactorInPropertyTrees(PropertyTrees* property_trees,
+                                          const LayerImpl* page_scale_layer,
+                                          float page_scale_factor) {
+  UpdatePageScaleFactorInPropertyTreesInternal(property_trees, page_scale_layer,
+                                               page_scale_factor);
+}
+
+void UpdatePageScaleFactorInPropertyTrees(PropertyTrees* property_trees,
+                                          const Layer* page_scale_layer,
+                                          float page_scale_factor) {
+  UpdatePageScaleFactorInPropertyTreesInternal(property_trees, page_scale_layer,
+                                               page_scale_factor);
+}
+
 }  // namespace cc

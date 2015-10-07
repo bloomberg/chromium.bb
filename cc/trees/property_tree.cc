@@ -23,7 +23,8 @@ template <typename T>
 PropertyTree<T>::~PropertyTree() {
 }
 
-TransformTree::TransformTree() : source_to_parent_updates_allowed_(true) {}
+TransformTree::TransformTree()
+    : source_to_parent_updates_allowed_(true), page_scale_factor_(1.f) {}
 
 TransformTree::~TransformTree() {
 }

@@ -2709,6 +2709,13 @@ void CalculateDrawPropertiesAndVerify(
         TRACE_EVENT0(
             TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
             "LayerTreeHostCommon::ComputeJustVisibleRectsWithPropertyTrees");
+        // Since page scale is a SyncedProperty, changes to page scale on the
+        // active tree immediately affect the pending tree, so instead of
+        // trying to update property trees whenever page scale changes, we
+        // update their page scale before using them.
+        UpdatePageScaleFactorInPropertyTrees(inputs->property_trees,
+                                             inputs->page_scale_layer,
+                                             inputs->page_scale_factor);
         ComputeVisibleRectsUsingPropertyTrees(
             inputs->root_layer, inputs->property_trees, &update_layer_list);
         break;

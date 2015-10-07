@@ -103,6 +103,15 @@ gfx::Transform CC_EXPORT
 ScreenSpaceTransformFromPropertyTrees(const LayerImpl* layer,
                                       const TransformTree& tree);
 
+void CC_EXPORT
+UpdatePageScaleFactorInPropertyTrees(PropertyTrees* property_trees,
+                                     const LayerImpl* page_scale_layer,
+                                     float page_scale_factor);
+
+void CC_EXPORT
+UpdatePageScaleFactorInPropertyTrees(PropertyTrees* property_trees,
+                                     const Layer* page_scale_layer,
+                                     float page_scale_factor);
 }  // namespace cc
 
 #endif  // CC_TREES_DRAW_PROPERTY_UTILS_H_

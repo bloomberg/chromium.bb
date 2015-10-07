@@ -318,6 +318,13 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return source_to_parent_updates_allowed_;
   }
 
+  // We store the page scale factor on the transform tree so that it can be
+  // easily be retrieved and updated in UpdatePageScaleInPropertyTrees.
+  void set_page_scale_factor(float page_scale_factor) {
+    page_scale_factor_ = page_scale_factor;
+  }
+  float page_scale_factor() const { return page_scale_factor_; }
+
   void SetInnerViewportBoundsDelta(gfx::Vector2dF bounds_delta);
   gfx::Vector2dF inner_viewport_bounds_delta() const {
     return inner_viewport_bounds_delta_;
@@ -370,6 +377,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   bool NeedsSourceToParentUpdate(TransformNode* node);
 
   bool source_to_parent_updates_allowed_;
+  float page_scale_factor_;
   gfx::Vector2dF inner_viewport_bounds_delta_;
   gfx::Vector2dF outer_viewport_bounds_delta_;
   std::vector<int> nodes_affected_by_inner_viewport_bounds_delta_;

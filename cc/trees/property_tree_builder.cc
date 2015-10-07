@@ -10,6 +10,7 @@
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -347,8 +348,11 @@ bool AddTransformNodeIfNeeded(
     post_local_scale_factor = data_from_ancestor.device_scale_factor;
   }
 
-  if (is_page_scale_layer)
+  if (is_page_scale_layer) {
     post_local_scale_factor *= data_from_ancestor.page_scale_factor;
+    data_for_children->transform_tree->set_page_scale_factor(
+        data_from_ancestor.page_scale_factor);
+  }
 
   if (has_surface && !is_root) {
     node->data.needs_sublayer_scale = true;
@@ -535,8 +539,11 @@ void BuildPropertyTreesTopLevelInternal(
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     PropertyTrees* property_trees) {
-  if (!property_trees->needs_rebuild)
+  if (!property_trees->needs_rebuild) {
+    UpdatePageScaleFactorInPropertyTrees(property_trees, page_scale_layer,
+                                         page_scale_factor);
     return;
+  }
 
   property_trees->sequence_number++;
 
