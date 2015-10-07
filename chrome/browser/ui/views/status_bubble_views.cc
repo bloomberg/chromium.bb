@@ -620,6 +620,8 @@ void StatusBubbleViews::Reposition() {
 void StatusBubbleViews::RepositionPopup() {
   if (popup_.get()) {
     gfx::Point top_left;
+    // TODO(flackr): Get the non-transformed point so that the status bubble
+    // popup window's position is consistent with the base_view_'s window.
     views::View::ConvertPointToScreen(base_view_, &top_left);
 
     popup_->SetBounds(gfx::Rect(top_left.x() + position_.x(),

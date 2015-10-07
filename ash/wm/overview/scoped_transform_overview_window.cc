@@ -225,6 +225,12 @@ bool ScopedTransformOverviewWindow::Contains(const aura::Window* target) const {
 gfx::Rect ScopedTransformOverviewWindow::GetTargetBoundsInScreen() const {
   gfx::Rect bounds;
   for (const auto& window : GetTransientTreeIterator(window_)) {
+    // Ignore other window types when computing bounding box of window
+    // selector target item.
+    if (window != window_ && window->type() != ui::wm::WINDOW_TYPE_NORMAL &&
+        window->type() != ui::wm::WINDOW_TYPE_PANEL) {
+      continue;
+    }
     bounds.Union(ScreenUtil::ConvertRectToScreen(window->parent(),
                                                  window->GetTargetBounds()));
   }
