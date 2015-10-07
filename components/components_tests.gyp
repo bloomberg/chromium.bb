@@ -1459,9 +1459,7 @@
           'target_name': 'components_browsertests_apk',
           'type': 'none',
           'dependencies': [
-            '../content/content.gyp:content_icudata',
             '../content/content.gyp:content_java',
-            '../content/content.gyp:content_v8_external_data',
             '../content/content_shell_and_tests.gyp:content_java_test_support',
             '../content/content_shell_and_tests.gyp:content_shell_browsertests_java',
             '../content/content_shell_and_tests.gyp:content_shell_java',
