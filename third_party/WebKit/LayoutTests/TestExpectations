@@ -555,6 +555,8 @@ crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vr
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vrl-220.xht [ ImageOnlyFailure ]
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vrl-224.xht [ ImageOnlyFailure ]
 
+crbug.com/535897 [ Mac Linux ] fast/text/international/complex-joining-using-gpos.html [ NeedsRebaseline ]
+
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-007.xht [ ImageOnlyFailure ]
@@ -869,7 +871,6 @@ crbug.com/498021 [ Linux ] svg/custom/use-on-symbol-inside-pattern.svg [ Failure
 crbug.com/498021 [ Linux ] fast/forms/month/month-appearance-l10n.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] fast/text/ellipsis-stroked.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] fast/text/emphasis-complex.html [ ImageOnlyFailure ]
-crbug.com/498021 [ Linux ] fast/text/international/complex-joining-using-gpos.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] fast/text/international/danda-space.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-whitespace.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] fast/text/international/thai-line-breaks.html [ ImageOnlyFailure ]
