@@ -265,6 +265,9 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Returns true if this node is an cell or an table header.
   bool IsCellOrTableHeaderRole() const;
 
+  // Returns true if the caret is active on this object.
+  bool HasCaret() const;
+
   // Returns true if this node is an editable text field of any kind.
   bool IsEditableText() const;
 

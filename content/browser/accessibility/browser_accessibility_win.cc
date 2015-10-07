@@ -2013,9 +2013,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
   if (!offset)
     return E_INVALIDARG;
 
+  if (!HasCaret())
+    return S_FALSE;
+
   int selection_start, selection_end;
   GetSelectionOffsets(&selection_start, &selection_end);
-  // The caret is always at the end of the selection, if a selection exists.
+  // The caret is always at the end of the selection.
   *offset = selection_end;
   if (*offset < 0)
     return S_FALSE;
@@ -3847,27 +3850,22 @@ void BrowserAccessibilityWin::GetSelectionOffsets(
   if (*selection_start < 0 || *selection_end < 0)
     return;
 
-  // If the selection is collapsed or if it only spans one character, return the
-  // selection offsets only if the caret is active on this object or any of its
-  // children.
-  // The focus object indicates the caret position.
-  if (*selection_start == *selection_end) {
-    BrowserAccessibility* root = manager()->GetRoot();
-    int32 focus_id;
-    if (!root || !root->GetIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, &focus_id))
-      return;
-
-    BrowserAccessibilityWin* focus_object =
-        manager()->GetFromID(focus_id)->ToBrowserAccessibilityWin();
-    if (!focus_object)
-      return;
-
-    if (!focus_object->IsDescendantOf(this) &&
-        !(IsTextOnlyObject() && GetParent() == focus_object)) {
-      *selection_start = -1;
-      *selection_end = -1;
-      return;
-    }
+  // There are three cases when a selection would start and end on the same
+  // character:
+  // 1. Anchor and focus are both in a subtree that is to the right of this
+  // object.
+  // 2. Anchor and focus are both in a subtree that is to the left of this
+  // object.
+  // 3. Anchor and focus are in a subtree represented by a single embedded
+  // object character.
+  // Only case 3 refers to a valid selection because cases 1 and 2 fall
+  // outside this object in their entirety.
+  // Selections that span more than one character are by definition inside this
+  // object, so checking them is not necessary.
+  if (*selection_start == *selection_end && !HasCaret()) {
+    *selection_start = -1;
+    *selection_end = -1;
+    return;
   }
 
   // The IA2 Spec says that if the largest of the two offsets falls on an

@@ -640,6 +640,29 @@ bool BrowserAccessibility::IsCellOrTableHeaderRole() const {
           GetRole() == ui::AX_ROLE_ROW_HEADER);
 }
 
+bool BrowserAccessibility::HasCaret() const {
+  if (IsEditableText() && !HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
+      HasIntAttribute(ui::AX_ATTR_TEXT_SEL_START) &&
+      HasIntAttribute(ui::AX_ATTR_TEXT_SEL_END)) {
+    return true;
+  }
+
+  BrowserAccessibility* root = manager()->GetRoot();
+  // The caret is always at the focus of the selection.
+  int32 focus_id;
+  if (!root || !root->GetIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, &focus_id))
+    return false;
+
+  BrowserAccessibility* focus_object = manager()->GetFromID(focus_id);
+  if (!focus_object)
+    return false;
+
+  if (!focus_object->IsDescendantOf(this))
+    return false;
+
+  return true;
+}
+
 bool BrowserAccessibility::IsEditableText() const {
   return HasState(ui::AX_STATE_EDITABLE);
 }

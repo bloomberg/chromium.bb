@@ -951,9 +951,9 @@ TEST_F(BrowserAccessibilityTest, TestCaretInContentEditables) {
   link_text.SetName("here");
 
   // Place the caret between 'h' and 'e'.
-  root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OBJECT_ID, 4);
+  root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OBJECT_ID, 5);
   root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OFFSET, 1);
-  root.AddIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, 4);
+  root.AddIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, 5);
   root.AddIntAttribute(ui::AX_ATTR_FOCUS_OFFSET, 1);
 
   root.child_ids.push_back(2);
@@ -1065,7 +1065,7 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
   link_text.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
   link_text.SetName("here");
 
-  // Select the part of the text "lick here".
+  // Select the following part of the text: "lick here".
   root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OBJECT_ID, 3);
   root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OFFSET, 1);
   root.AddIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, 5);
