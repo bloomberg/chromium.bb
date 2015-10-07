@@ -18,6 +18,9 @@ class IssuesObserver {
   explicit IssuesObserver(MediaRouter* router);
   virtual ~IssuesObserver();
 
+  void RegisterObserver();
+  void UnregisterObserver();
+
   // Called when there is an updated Media Router Issue.
   // If |issue| is nullptr, then there is currently no issue.
   virtual void OnIssueUpdated(const Issue* issue) {}

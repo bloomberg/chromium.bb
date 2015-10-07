@@ -11,10 +11,16 @@ namespace media_router {
 
 IssuesObserver::IssuesObserver(MediaRouter* router) : router_(router) {
   DCHECK(router_);
-  router_->RegisterIssuesObserver(this);
 }
 
 IssuesObserver::~IssuesObserver() {
+}
+
+void IssuesObserver::RegisterObserver() {
+  router_->RegisterIssuesObserver(this);
+}
+
+void IssuesObserver::UnregisterObserver() {
   router_->UnregisterIssuesObserver(this);
 }
 

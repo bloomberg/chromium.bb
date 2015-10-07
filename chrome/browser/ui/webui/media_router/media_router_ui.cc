@@ -157,6 +157,9 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
 }
 
 MediaRouterUI::~MediaRouterUI() {
+  if (issues_observer_)
+    issues_observer_->UnregisterObserver();
+
   if (query_result_manager_.get())
     query_result_manager_->RemoveObserver(this);
   if (presentation_service_delegate_.get())
@@ -204,8 +207,7 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator,
   DCHECK(initiator);
   DCHECK(router_);
 
-  // Register for Issue and MediaRoute updates.
-  issues_observer_.reset(new UIIssuesObserver(router_, this));
+  // Register for MediaRoute updates.
   routes_observer_.reset(new UIMediaRoutesObserver(
       router_,
       base::Bind(&MediaRouterUI::OnRoutesUpdated, base::Unretained(this))));
@@ -253,6 +255,11 @@ void MediaRouterUI::Close() {
 
 void MediaRouterUI::UIInitialized() {
   ui_initialized_ = true;
+
+  // Register for Issue updates.
+  if (!issues_observer_)
+    issues_observer_.reset(new UIIssuesObserver(router_, this));
+  issues_observer_->RegisterObserver();
 }
 
 bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id) {

@@ -283,6 +283,9 @@ TEST_F(MediaRouterMojoImplTest, CloseRoute) {
 TEST_F(MediaRouterMojoImplTest, HandleIssue) {
   MockIssuesObserver issue_observer1(router());
   MockIssuesObserver issue_observer2(router());
+  issue_observer1.RegisterObserver();
+  issue_observer2.RegisterObserver();
+
   interfaces::IssuePtr mojo_issue1 = CreateMojoIssue("title 1");
   const Issue& expected_issue1 = mojo_issue1.To<Issue>();
 
@@ -322,6 +325,9 @@ TEST_F(MediaRouterMojoImplTest, HandleIssue) {
               OnIssueUpdated(Pointee(EqualsIssue(expected_issue2))));
   media_router_proxy_->OnIssue(mojo_issue2.Pass());
   ProcessEventLoop();
+
+  issue_observer1.UnregisterObserver();
+  issue_observer2.UnregisterObserver();
 }
 
 TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {

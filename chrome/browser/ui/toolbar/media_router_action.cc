@@ -57,10 +57,13 @@ MediaRouterAction::MediaRouterAction(Browser* browser)
       weak_ptr_factory_(this) {
   DCHECK(browser_);
   tab_strip_model_observer_.Add(browser_->tab_strip_model());
+
+  RegisterObserver();
   OnHasLocalRouteUpdated(GetMediaRouter(browser)->HasLocalRoute());
 }
 
 MediaRouterAction::~MediaRouterAction() {
+  UnregisterObserver();
 }
 
 std::string MediaRouterAction::GetId() const {
