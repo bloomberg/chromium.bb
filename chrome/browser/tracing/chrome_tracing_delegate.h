@@ -29,6 +29,8 @@ class ChromeTracingDelegate : public content::TracingDelegate,
       const content::BackgroundTracingConfig& config,
       bool requires_anonymized_data) override;
 
+  void GenerateMetadataDict(base::DictionaryValue* metadata_dict) override;
+
  private:
   // chrome::BrowserListObserver implementation.
   void OnBrowserAdded(Browser* browser) override;

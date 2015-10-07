@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/pref_names.h"
+#include "components/variations/active_field_trials.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -128,4 +129,17 @@ bool ChromeTracingDelegate::IsAllowedToEndBackgroundScenario(
   }
 
   return true;
+}
+
+void ChromeTracingDelegate::GenerateMetadataDict(
+    base::DictionaryValue* metadata_dict) {
+  DCHECK(metadata_dict);
+  std::vector<std::string> variations;
+  variations::GetFieldTrialActiveGroupIdsAsStrings(&variations);
+
+  scoped_ptr<base::ListValue> variations_list(new base::ListValue());
+  for (const auto& it : variations)
+    variations_list->Append(new base::StringValue(it));
+
+  metadata_dict->Set("field-trials", variations_list.Pass());
 }

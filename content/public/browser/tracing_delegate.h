@@ -9,6 +9,7 @@
 #include "content/common/content_export.h"
 
 namespace base {
+class DictionaryValue;
 class Time;
 }
 
@@ -38,6 +39,9 @@ class CONTENT_EXPORT TracingDelegate {
   virtual bool IsAllowedToEndBackgroundScenario(
       const content::BackgroundTracingConfig& config,
       bool requires_anonymized_data);
+
+  // Used to add any additional metadata to traces.
+  virtual void GenerateMetadataDict(base::DictionaryValue* metadata_dict) {}
 };
 
 }  // namespace content

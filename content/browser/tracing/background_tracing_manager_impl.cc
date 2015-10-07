@@ -440,6 +440,9 @@ BackgroundTracingManagerImpl::GenerateMetadataDict() const {
   metadata_dict->SetString("gpu-gl-renderer", gpu_info.gl_renderer);
 #endif
 
+  if (delegate_)
+    delegate_->GenerateMetadataDict(metadata_dict.get());
+
   return metadata_dict.Pass();
 }
 
