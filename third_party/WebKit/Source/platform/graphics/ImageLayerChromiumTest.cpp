@@ -43,27 +43,9 @@ public:
 
 class TestImage : public Image {
 public:
-    static PassRefPtr<TestImage> create(const IntSize& size, bool isOpaque)
+    static PassRefPtr<TestImage> create(const IntSize& size, bool opaque)
     {
-        return adoptRef(new TestImage(size, isOpaque));
-    }
-
-    TestImage(const IntSize& size, bool isOpaque)
-        : Image(0)
-        , m_size(size)
-    {
-        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRaster(SkImageInfo::MakeN32(
-            size.width(), size.height(), isOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType)));
-        if (!surface)
-            return;
-
-        surface->getCanvas()->clear(SK_ColorTRANSPARENT);
-        m_image = adoptRef(surface->newImageSnapshot());
-    }
-
-    bool isBitmapImage() const override
-    {
-        return true;
+        return adoptRef(new TestImage(size, opaque));
     }
 
     bool currentFrameKnownToBeOpaque() override
@@ -81,16 +63,34 @@ public:
         return m_image;
     }
 
-    // Stub implementations of pure virtual Image functions.
     void destroyDecodedData(bool) override
     {
+        // Image pure virtual stub.
     }
 
     void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override
     {
+        // Image pure virtual stub.
     }
 
 private:
+    TestImage(IntSize size, bool opaque)
+        : Image(0)
+        , m_size(size)
+    {
+        RefPtr<SkSurface> surface = adoptRef(createSkSurface(size, opaque));
+        if (!surface)
+            return;
+
+        surface->getCanvas()->clear(SK_ColorTRANSPARENT);
+        m_image = adoptRef(surface->newImageSnapshot());
+    }
+
+    static SkSurface* createSkSurface(IntSize size, bool opaque)
+    {
+        return SkSurface::NewRaster(SkImageInfo::MakeN32(size.width(), size.height(), opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType));
+    }
+
     IntSize m_size;
     RefPtr<SkImage> m_image;
 };
@@ -98,7 +98,9 @@ private:
 class GraphicsLayerForTesting : public GraphicsLayer {
 public:
     explicit GraphicsLayerForTesting(GraphicsLayerClient* client)
-        : GraphicsLayer(client) { }
+        : GraphicsLayer(client)
+    {
+    }
 
     WebLayer* contentsLayer() const { return GraphicsLayer::contentsLayer(); }
 };
@@ -114,7 +116,8 @@ TEST(ImageLayerChromiumTest, imageLayerContentReset)
     ASSERT_FALSE(graphicsLayer->hasContentsLayer());
     ASSERT_FALSE(graphicsLayer->contentsLayer());
 
-    RefPtr<Image> image = TestImage::create(IntSize(100, 100), false);
+    bool opaque = false;
+    RefPtr<Image> image = TestImage::create(IntSize(100, 100), opaque);
     ASSERT_TRUE(image.get());
 
     graphicsLayer->setContentsToImage(image.get());
@@ -132,9 +135,10 @@ TEST(ImageLayerChromiumTest, opaqueImages)
     OwnPtr<GraphicsLayerForTesting> graphicsLayer = adoptPtr(new GraphicsLayerForTesting(&client));
     ASSERT_TRUE(graphicsLayer.get());
 
-    RefPtr<Image> opaqueImage = TestImage::create(IntSize(100, 100), true /* opaque */);
+    bool opaque = true;
+    RefPtr<Image> opaqueImage = TestImage::create(IntSize(100, 100), opaque);
     ASSERT_TRUE(opaqueImage.get());
-    RefPtr<Image> nonOpaqueImage = TestImage::create(IntSize(100, 100), false /* opaque */);
+    RefPtr<Image> nonOpaqueImage = TestImage::create(IntSize(100, 100), !opaque);
     ASSERT_TRUE(nonOpaqueImage.get());
 
     ASSERT_FALSE(graphicsLayer->contentsLayer());
