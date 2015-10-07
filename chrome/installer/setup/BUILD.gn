@@ -51,7 +51,9 @@ if (is_win) {
       "//chrome/common:constants",
       "//chrome/installer/util",
       "//chrome_elf:constants",
+      "//courgette:courgette_lib",
       "//rlz:rlz_lib",
+      "//third_party/bspatch",
       "//third_party/zlib",
     ]
   }

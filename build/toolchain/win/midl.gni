@@ -6,7 +6,8 @@ assert(is_win)
 
 import("//build/config/win/visual_studio_version.gni")
 
-# This template defines a rule to invoke the MS IDL compiler.
+# This template defines a rule to invoke the MS IDL compiler. The generated
+# source code will be compiled and linked into targets that depend on this.
 #
 # Parameters
 #

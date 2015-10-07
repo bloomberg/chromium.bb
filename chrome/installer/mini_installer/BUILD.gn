@@ -68,6 +68,7 @@ source_set("unit_tests") {
     ":lib",
   ]
   deps = [
+    "//base",
     "//testing/gtest",
   ]
 }

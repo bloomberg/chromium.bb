@@ -254,14 +254,6 @@ static_library("common") {
   }
 }
 
-# This target allows other targets to depend on result_codes.h which is a
-# header-only dependency, without bringing in all of content.
-source_set("result_codes") {
-  sources = [
-    "chrome_result_codes.h",
-  ]
-}
-
 process_version("make_chrome_version") {
   template_file = "chrome_version.cc.version"
   output = "$target_gen_dir/chrome_version.cc"
@@ -281,6 +273,7 @@ static_library("constants") {
     "chrome_paths_linux.cc",
     "chrome_paths_mac.mm",
     "chrome_paths_win.cc",
+    "chrome_result_codes.h",
     "chrome_switches.cc",
     "chrome_switches.h",
     "env_vars.cc",
@@ -293,6 +286,9 @@ static_library("constants") {
     "widevine_cdm_constants.h",
   ]
 
+  public_deps = [
+    "//content/public/common:result_codes",
+  ]
   deps = [
     ":make_chrome_version",
     "//base",

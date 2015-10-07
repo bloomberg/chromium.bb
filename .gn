@@ -24,7 +24,7 @@ check_targets = [
   "//cc/*",
 
   #"//chrome/*",  # Epic number of errors.
-  #"//chrome/installer/*", # A few errors, need to verify the size after fixing.
+  "//chrome/installer/*",
   "//chromecast/*",
 
   # TODO(brettw): Fix http://crbug.com/460828 and uncomment the following
@@ -62,6 +62,7 @@ check_targets = [
   "//components/webdata_services/*",
 
   #"//content/*",  # A whole lot of errors.
+  "//content/public/common:result_codes",
   "//courgette/*",
   "//crypto/*",
   "//data/*",

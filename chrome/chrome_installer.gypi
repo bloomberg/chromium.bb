@@ -12,6 +12,7 @@
     ['OS=="win"', {
       'targets': [
         {
+          # GN version: //chrome/installer/gcapi
           'target_name': 'gcapi_dll',
           'type': 'loadable_module',
           'dependencies': [
@@ -26,6 +27,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/gcapi:lib
           'target_name': 'gcapi_lib',
           'type': 'static_library',
           'dependencies': [
@@ -46,10 +48,9 @@
             'installer/gcapi/gcapi_reactivation.cc',
             'installer/gcapi/gcapi_reactivation.h',
           ],
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
         },
         {
+          # GN version: //chrome/installer/gcapi:gcapi_test
           'target_name': 'gcapi_test',
           'type': 'executable',
           'dependencies': [

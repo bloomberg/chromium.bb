@@ -220,7 +220,10 @@ group("both_gn_and_gyp") {
   }
 
   if (is_win) {
-    deps += [ "//chrome/tools/build/win/syzygy:chrome_dll_syzygy" ]
+    deps += [
+      "//chrome/installer/gcapi",
+      "//chrome/tools/build/win/syzygy:chrome_dll_syzygy",
+    ]
   }
 
   if (is_android) {

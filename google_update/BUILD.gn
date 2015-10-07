@@ -4,27 +4,8 @@
 
 import("//build/toolchain/win/midl.gni")
 
-config("google_update_config") {
-  # Chromium uses include paths like "google_update/google_update_idl.h",
-  # so add root_gen_dir, rather then target_gen_dir to include dirs.
-  include_dirs = [ "$root_gen_dir" ]
-}
-
-midl("google_update_idl") {
+midl("google_update") {
   sources = [
     "google_update_idl.idl",
-  ]
-}
-
-static_library("google_update") {
-  sources = [
-    "$target_gen_dir/google_update_idl.h",
-    "$target_gen_dir/google_update_idl_i.c",
-  ]
-
-  public_configs = [ ":google_update_config" ]
-
-  deps = [
-    ":google_update_idl",
   ]
 }

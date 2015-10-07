@@ -316,7 +316,8 @@ bool IsRunningElevated() {
 }
 
 bool GetUserIdForProcess(size_t pid, wchar_t** user_sid) {
-  HANDLE process_handle = ::OpenProcess(PROCESS_QUERY_INFORMATION, TRUE, pid);
+  HANDLE process_handle =
+      ::OpenProcess(PROCESS_QUERY_INFORMATION, TRUE, static_cast<DWORD>(pid));
   if (process_handle == NULL)
     return false;
 
