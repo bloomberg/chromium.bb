@@ -1571,7 +1571,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 			/* Unexpected condition: We have non-initial touch but
 			 * there is no focused surface.
 			 */
-			weston_log("touch event received with %d points down"
+			weston_log("touch event received with %d points down "
 				   "but no surface focused\n", touch->num_tp);
 			return;
 		}
