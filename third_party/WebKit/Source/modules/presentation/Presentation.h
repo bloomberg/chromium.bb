@@ -46,13 +46,8 @@ public:
     PresentationRequest* defaultRequest() const;
     void setDefaultRequest(PresentationRequest*);
 
-    PresentationConnection* connection() const;
-
 private:
     explicit Presentation(LocalFrame*);
-
-    // The connection object provided to the presentation page. Not supported.
-    Member<PresentationConnection> m_connection;
 
     // Default PresentationRequest used by the embedder.
     Member<PresentationRequest> m_defaultRequest;

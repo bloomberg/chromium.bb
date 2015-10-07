@@ -44,7 +44,6 @@ ExecutionContext* Presentation::executionContext() const
 
 DEFINE_TRACE(Presentation)
 {
-    visitor->trace(m_connection);
     visitor->trace(m_defaultRequest);
     RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::trace(visitor);
     DOMWindowProperty::trace(visitor);
@@ -66,11 +65,6 @@ void Presentation::setDefaultRequest(PresentationRequest* request)
     if (!controller)
         return;
     controller->setDefaultRequestUrl(request ? request->url() : KURL());
-}
-
-PresentationConnection* Presentation::connection() const
-{
-    return m_connection.get();
 }
 
 } // namespace blink

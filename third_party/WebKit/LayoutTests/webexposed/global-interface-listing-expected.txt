@@ -3741,7 +3741,6 @@ interface PopStateEvent
     getter state
     method constructor
 interface Presentation
-    getter connection
     getter defaultRequest
     method constructor
     setter defaultRequest

@@ -10,8 +10,7 @@
 ] interface Presentation : EventTarget {
     [MeasureAs=PresentationDefaultRequest] attribute PresentationRequest? defaultRequest;
 
-    // This API used by presenting browsing context.
-    // TODO(mlamouri): The spec has |getSession()| and |getSessions()| instead.
-    readonly attribute PresentationConnection? connection;
-    // TODO(mlamouri): attribute EventHandler onconnectionavailable;
+    // This API is available on the receiving browsing context.
+    // TODO(mlamouri): implement PresentationReceiver, see https://crbug.com/525660
+    // [SameObject] readonly attribute PresentationReceiver? receiver;
 };
