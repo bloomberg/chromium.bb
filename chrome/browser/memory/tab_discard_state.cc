@@ -61,10 +61,16 @@ void TabDiscardState::SetDiscardState(WebContents* web_contents, bool state) {
     static int reload_count = 0;
     UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.ReloadCount",
                                 ++reload_count, 1, 1000, 50);
+    auto delta = base::TimeTicks::Now() - discard_state->last_discard_time_;
+    // Capped to one day for now, will adjust if necessary.
+    UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.DiscardToReloadTime",
+                               delta, base::TimeDelta::FromSeconds(1),
+                               base::TimeDelta::FromDays(1), 100);
   } else if (!discard_state->is_discarded_ && state) {
     static int discard_count = 0;
     UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.DiscardCount",
                                 ++discard_count, 1, 1000, 50);
+    discard_state->last_discard_time_ = base::TimeTicks::Now();
   }
 
   discard_state->is_discarded_ = state;

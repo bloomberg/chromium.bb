@@ -74,6 +74,9 @@ class TabDiscardState : public base::SupportsUserData::Data {
   // Last time the tab started or stopped playing audio (we record the
   // transition time).
   base::TimeTicks last_audio_change_time_;
+
+  // The last time the tab was discarded.
+  base::TimeTicks last_discard_time_;
 };
 
 }  // namespace memory
