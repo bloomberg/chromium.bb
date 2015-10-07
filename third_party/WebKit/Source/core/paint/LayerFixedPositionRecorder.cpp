@@ -23,9 +23,6 @@ LayerFixedPositionRecorder::LayerFixedPositionRecorder(GraphicsContext& graphics
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
 
-    if (m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
-        return;
-
     if (m_isFixedPosition)
         m_graphicsContext.displayItemList()->createAndAppend<BeginFixedPositionDisplayItem>(m_layoutObject);
 

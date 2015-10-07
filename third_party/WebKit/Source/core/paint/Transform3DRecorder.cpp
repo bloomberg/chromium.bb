@@ -28,8 +28,6 @@ Transform3DRecorder::Transform3DRecorder(
         return;
 
     ASSERT(m_context.displayItemList());
-    if (m_context.displayItemList()->displayItemConstructionIsDisabled())
-        return;
     m_context.displayItemList()->createAndAppend<BeginTransform3DDisplayItem>(m_client, m_type, transform, transformOrigin);
 }
 

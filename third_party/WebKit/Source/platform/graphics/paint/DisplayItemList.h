@@ -83,16 +83,17 @@ public:
     void updateCurrentPaintProperties(const PaintProperties&);
 
     template <typename DisplayItemClass, typename... Args>
-    DisplayItemClass& createAndAppend(Args&&... args)
+    void createAndAppend(Args&&... args)
     {
         static_assert(WTF::IsSubclass<DisplayItemClass, DisplayItem>::value,
             "Can only createAndAppend subclasses of DisplayItem.");
         static_assert(sizeof(DisplayItemClass) <= kMaximumDisplayItemSize,
             "DisplayItem subclass is larger than kMaximumDisplayItemSize.");
 
+        if (displayItemConstructionIsDisabled())
+            return;
         DisplayItemClass& displayItem = m_newDisplayItems.allocateAndConstruct<DisplayItemClass>(WTF::forward<Args>(args)...);
         processNewItem(displayItem);
-        return displayItem;
     }
 
     // Creates and appends an ending display item to pair with a preceding

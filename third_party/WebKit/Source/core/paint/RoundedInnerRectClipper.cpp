@@ -50,8 +50,6 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(const LayoutObject& layoutObjec
 
     if (m_useDisplayItemList) {
         ASSERT(m_paintInfo.context->displayItemList());
-        if (m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled())
-            return;
         m_paintInfo.context->displayItemList()->createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, LayoutRect::infiniteIntRect(), roundedRectClips);
     } else {
         ClipDisplayItem clipDisplayItem(layoutObject, m_clipType, LayoutRect::infiniteIntRect(), roundedRectClips);

@@ -29,8 +29,6 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphicsContext, const Lay
     }
 
     ASSERT(m_graphicsContext.displayItemList());
-    if (m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
-        return;
     m_graphicsContext.displayItemList()->createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, snappedClipRect, roundedRects);
 }
 

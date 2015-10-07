@@ -2144,8 +2144,7 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
         {
             ASSERT(context->displayItemList());
-            if (!context->displayItemList()->displayItemConstructionIsDisabled())
-                context->displayItemList()->createAndAppend<ClipDisplayItem>(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
+            context->displayItemList()->createAndAppend<ClipDisplayItem>(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
         }
         PaintLayerPainter(*paintInfo.paintLayer).paintLayer(context, paintingInfo, paintLayerFlags);
         {

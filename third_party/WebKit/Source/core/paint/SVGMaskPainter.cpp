@@ -29,10 +29,7 @@ bool SVGMaskPainter::prepareEffect(const LayoutObject& object, GraphicsContext* 
         return false;
 
     ASSERT(context->displayItemList());
-    if (context->displayItemList()->displayItemConstructionIsDisabled())
-        return true;
     context->displayItemList()->createAndAppend<BeginCompositingDisplayItem>(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
-
     return true;
 }
 

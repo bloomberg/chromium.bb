@@ -21,8 +21,6 @@ TransformRecorder::TransformRecorder(GraphicsContext& context, const DisplayItem
         return;
 
     ASSERT(m_context.displayItemList());
-    if (m_context.displayItemList()->displayItemConstructionIsDisabled())
-        return;
     m_context.displayItemList()->createAndAppend<BeginTransformDisplayItem>(m_client, transform);
 }
 

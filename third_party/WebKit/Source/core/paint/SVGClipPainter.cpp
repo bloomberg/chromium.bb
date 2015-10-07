@@ -60,8 +60,7 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
     if (m_clip.asPath(animatedLocalTransform, targetBoundingBox, clipPath)) {
         clipperState = ClipperAppliedPath;
         ASSERT(context->displayItemList());
-        if (!context->displayItemList()->displayItemConstructionIsDisabled())
-            context->displayItemList()->createAndAppend<BeginClipPathDisplayItem>(target, clipPath);
+        context->displayItemList()->createAndAppend<BeginClipPathDisplayItem>(target, clipPath);
         return true;
     }
 

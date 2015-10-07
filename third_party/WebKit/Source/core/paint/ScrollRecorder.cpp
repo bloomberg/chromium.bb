@@ -17,8 +17,6 @@ ScrollRecorder::ScrollRecorder(GraphicsContext& context, const DisplayItemClient
     , m_context(context)
 {
     ASSERT(m_context.displayItemList());
-    if (m_context.displayItemList()->displayItemConstructionIsDisabled())
-        return;
     m_context.displayItemList()->createAndAppend<BeginScrollDisplayItem>(m_client, m_beginItemType, currentOffset);
 }
 

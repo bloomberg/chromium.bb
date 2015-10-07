@@ -28,8 +28,6 @@ CompositingRecorder::~CompositingRecorder()
 void CompositingRecorder::beginCompositing(GraphicsContext& graphicsContext, const DisplayItemClientWrapper& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter)
 {
     ASSERT(graphicsContext.displayItemList());
-    if (graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
-        return;
     graphicsContext.displayItemList()->createAndAppend<BeginCompositingDisplayItem>(client, xferMode, opacity, bounds, colorFilter);
 }
 

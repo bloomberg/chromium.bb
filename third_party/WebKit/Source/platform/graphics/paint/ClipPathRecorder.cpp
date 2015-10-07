@@ -16,8 +16,6 @@ ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, const DisplayItemCl
     , m_client(client)
 {
     ASSERT(m_context.displayItemList());
-    if (m_context.displayItemList()->displayItemConstructionIsDisabled())
-        return;
     m_context.displayItemList()->createAndAppend<BeginClipPathDisplayItem>(m_client, clipPath);
 }
 

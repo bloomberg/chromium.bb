@@ -19,9 +19,6 @@ bool DrawingRecorder::useCachedDrawingIfPossible(GraphicsContext& context, const
     ASSERT(context.displayItemList());
     ASSERT(DisplayItem::isDrawingType(type));
 
-    if (context.displayItemList()->displayItemConstructionIsDisabled())
-        return false;
-
     if (!context.displayItemList()->clientCacheIsValid(client.displayItemClient()))
         return false;
 
