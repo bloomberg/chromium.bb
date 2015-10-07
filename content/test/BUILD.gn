@@ -337,6 +337,7 @@ if (!is_mac) {
       "//content/test:test_support",
       "//device/battery",
       "//device/battery:mojo_bindings",
+      "//device/vibration:mojo_bindings",
       "//gin",
       "//gpu",
       "//ipc:test_support",

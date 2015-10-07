@@ -1,0 +1,15 @@
+<html>
+  <head>
+    <title>Vibration Manager API test : Cancel</title>
+    <script type="text/javascript">
+
+      function testCancel() {
+        navigator.vibrate(10000);
+        navigator.vibrate(0);
+      }
+
+    </script>
+  </head>
+  <body onLoad="testCancel()">
+  </body>
+</html>
