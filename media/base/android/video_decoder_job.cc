@@ -27,12 +27,10 @@ base::LazyInstance<VideoDecoderThread>::Leaky
 
 VideoDecoderJob::VideoDecoderJob(
     const base::Closure& request_data_cb,
-    const base::Closure& on_demuxer_config_changed_cb,
-    FrameStatistics* frame_statistics)
+    const base::Closure& on_demuxer_config_changed_cb)
     : MediaDecoderJob(g_video_decoder_thread.Pointer()->task_runner(),
                       request_data_cb,
-                      on_demuxer_config_changed_cb,
-                      frame_statistics),
+                      on_demuxer_config_changed_cb),
       video_codec_(kUnknownVideoCodec),
       config_width_(0),
       config_height_(0),
@@ -81,10 +79,12 @@ void VideoDecoderJob::ReleaseOutputBuffer(
     size_t offset,
     size_t size,
     bool render_output,
+    bool is_late_frame,
     base::TimeDelta current_presentation_timestamp,
     const ReleaseOutputCompletionCallback& callback) {
   media_codec_bridge_->ReleaseOutputBuffer(output_buffer_index, render_output);
-  callback.Run(current_presentation_timestamp, current_presentation_timestamp);
+  callback.Run(is_late_frame, current_presentation_timestamp,
+               current_presentation_timestamp);
 }
 
 bool VideoDecoderJob::ComputeTimeToRender() const {

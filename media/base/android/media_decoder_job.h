@@ -18,7 +18,6 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-struct FrameStatistics;
 class MediaDrmBridge;
 
 // Class for managing all the decoding tasks. Each decoding task will be posted
@@ -40,17 +39,20 @@ class MediaDecoderJob {
   };
 
   // Callback when a decoder job finishes its work. Args: whether decode
-  // finished successfully, current presentation time, max presentation time.
+  // finished successfully, a flag whether the frame is late for statistics,
+  // cacurrent presentation time, max presentation time.
   // If the current presentation time is equal to kNoTimestamp(), the decoder
   // job skipped rendering of the decoded output and the callback target should
-  // ignore the timestamps provided.
-  typedef base::Callback<void(MediaCodecStatus, base::TimeDelta,
+  // ignore the timestamps provided. The late frame flag has no meaning in this
+  // case.
+  typedef base::Callback<void(MediaCodecStatus, bool, base::TimeDelta,
                               base::TimeDelta)> DecoderCallback;
   // Callback when a decoder job finishes releasing the output buffer.
-  // Args: current presentation time, max presentation time.
+  // Args: whether the frame is a late frame, current presentation time, max
+  // presentation time.
   // If the current presentation time is equal to kNoTimestamp(), the callback
-  // target should ignore the timestamps provided.
-  typedef base::Callback<void(base::TimeDelta, base::TimeDelta)>
+  // target should ignore the timestamps provided and whether it is late.
+  typedef base::Callback<void(bool, base::TimeDelta, base::TimeDelta)>
       ReleaseOutputCompletionCallback;
 
   virtual ~MediaDecoderJob();
@@ -118,16 +120,18 @@ class MediaDecoderJob {
   MediaDecoderJob(
       const scoped_refptr<base::SingleThreadTaskRunner>& decoder_task_runner,
       const base::Closure& request_data_cb,
-      const base::Closure& config_changed_cb,
-      FrameStatistics* frame_statistics);
+      const base::Closure& config_changed_cb);
 
   // Release the output buffer at index |output_buffer_index| and render it if
   // |render_output| is true. Upon completion, |callback| will be called.
+  // |is_late_frame| can be passed with the |callback| if the implementation
+  // does not calculate it itself.
   virtual void ReleaseOutputBuffer(
       int output_buffer_index,
       size_t offset,
       size_t size,
       bool render_output,
+      bool is_late_frame,
       base::TimeDelta current_presentation_timestamp,
       const ReleaseOutputCompletionCallback& callback) = 0;
 
@@ -155,8 +159,6 @@ class MediaDecoderJob {
   bool need_to_reconfig_decoder_job_;
 
   scoped_ptr<MediaCodecBridge> media_codec_bridge_;
-
-  FrameStatistics* frame_statistics_;
 
  private:
   friend class MediaSourcePlayerTest;
@@ -200,6 +202,7 @@ class MediaDecoderJob {
   // Completes any pending job destruction or any pending decode stop. If
   // destruction was not pending, passes its arguments to |decode_cb_|.
   void OnDecodeCompleted(MediaCodecStatus status,
+                         bool is_late_frame,
                          base::TimeDelta current_presentation_timestamp,
                          base::TimeDelta max_presentation_timestamp);
 

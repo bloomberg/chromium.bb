@@ -24,8 +24,7 @@ class AudioDecoderJob : public MediaDecoderJob {
   // |on_demuxer_config_changed_cb| - Callback used to inform the caller that
   // demuxer config has changed.
   AudioDecoderJob(const base::Closure& request_data_cb,
-                  const base::Closure& on_demuxer_config_changed_cb,
-                  FrameStatistics* frame_statistics);
+                  const base::Closure& on_demuxer_config_changed_cb);
   ~AudioDecoderJob() override;
 
   // MediaDecoderJob implementation.
@@ -46,6 +45,7 @@ class AudioDecoderJob : public MediaDecoderJob {
       size_t offset,
       size_t size,
       bool render_output,
+      bool is_late_frame,
       base::TimeDelta current_presentation_timestamp,
       const ReleaseOutputCompletionCallback& callback) override;
   bool ComputeTimeToRender() const override;

@@ -8,7 +8,6 @@
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
 #include "media/base/android/media_codec_bridge.h"
-#include "media/base/android/media_statistics.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/timestamp_constants.h"
 
@@ -36,12 +35,10 @@ base::LazyInstance<AudioDecoderThread>::Leaky
 
 AudioDecoderJob::AudioDecoderJob(
     const base::Closure& request_data_cb,
-    const base::Closure& on_demuxer_config_changed_cb,
-    FrameStatistics* frame_statistics)
+    const base::Closure& on_demuxer_config_changed_cb)
     : MediaDecoderJob(g_audio_decoder_thread.Pointer()->task_runner(),
                       request_data_cb,
-                      on_demuxer_config_changed_cb,
-                      frame_statistics),
+                      on_demuxer_config_changed_cb),
       audio_codec_(kUnknownAudioCodec),
       num_channels_(0),
       config_sampling_rate_(0),
@@ -102,9 +99,11 @@ void AudioDecoderJob::ReleaseOutputBuffer(
     size_t offset,
     size_t size,
     bool render_output,
+    bool /* is_late_frame */,
     base::TimeDelta current_presentation_timestamp,
     const ReleaseOutputCompletionCallback& callback) {
   render_output = render_output && (size != 0u);
+  bool is_audio_underrun = false;
   if (render_output) {
     int64 head_position = (static_cast<AudioCodecBridge*>(
         media_codec_bridge_.get()))->PlayOutputBuffer(
@@ -125,10 +124,9 @@ void AudioDecoderJob::ReleaseOutputBuffer(
         last_buffered -
         audio_timestamp_helper_->GetFrameDuration(frames_to_play);
 
-    if (!next_frame_time_limit_.is_null() &&
-        next_frame_time_limit_ < current_time) {
-      frame_statistics_->IncrementLateFrameCount();
-    }
+    // Potential audio underrun is considered a late frame for UMA.
+    is_audio_underrun = !next_frame_time_limit_.is_null() &&
+                        next_frame_time_limit_ < current_time;
 
     next_frame_time_limit_ =
         current_time + (last_buffered - current_presentation_timestamp);
@@ -137,7 +135,7 @@ void AudioDecoderJob::ReleaseOutputBuffer(
   }
   media_codec_bridge_->ReleaseOutputBuffer(output_buffer_index, false);
 
-  callback.Run(current_presentation_timestamp,
+  callback.Run(is_audio_underrun, current_presentation_timestamp,
                audio_timestamp_helper_->GetTimestamp());
 }
 
