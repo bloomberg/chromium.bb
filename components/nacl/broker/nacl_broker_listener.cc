@@ -23,10 +23,6 @@
 #include "ipc/ipc_switches.h"
 #include "sandbox/win/src/sandbox_policy.h"
 
-#if defined(OS_WIN)
-#include "ipc/attachment_broker_unprivileged_win.h"
-#endif
-
 namespace {
 
 void SendReply(IPC::Channel* channel, int32 pid, bool result) {
@@ -36,10 +32,8 @@ void SendReply(IPC::Channel* channel, int32 pid, bool result) {
 }  // namespace
 
 NaClBrokerListener::NaClBrokerListener() {
-#if defined(OS_WIN)
-  attachment_broker_.reset(new IPC::AttachmentBrokerUnprivilegedWin);
-  IPC::AttachmentBroker::SetGlobal(attachment_broker_.get());
-#endif
+  attachment_broker_.reset(
+      IPC::AttachmentBrokerUnprivileged::CreateBroker().release());
 }
 
 NaClBrokerListener::~NaClBrokerListener() {

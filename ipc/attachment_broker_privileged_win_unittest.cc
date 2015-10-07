@@ -220,7 +220,6 @@ class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
   // Takes ownership of |broker|. Has no effect if called after CommonSetUp().
   void set_broker(IPC::AttachmentBrokerUnprivilegedWin* broker) {
     broker_.reset(broker);
-    IPC::AttachmentBroker::SetGlobal(broker);
   }
 
   void CommonSetUp() {
@@ -427,7 +426,6 @@ int CommonPrivilegedProcessMain(OnMessageReceivedCallback callback,
 
   // Set up IPC channel.
   IPC::AttachmentBrokerPrivilegedWin broker;
-  IPC::AttachmentBroker::SetGlobal(&broker);
   scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
       IPCTestBase::GetChannelName(channel_name), &listener));
   broker.RegisterCommunicationChannel(channel.get());

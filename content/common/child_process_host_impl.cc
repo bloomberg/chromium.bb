@@ -33,7 +33,6 @@
 #include "base/linux_util.h"
 #elif defined(OS_WIN)
 #include "content/common/font_cache_dispatcher_win.h"
-#include "ipc/attachment_broker_privileged_win.h"
 #endif  // OS_LINUX
 
 namespace {
@@ -45,15 +44,16 @@ namespace {
 class AttachmentBrokerWrapper {
  public:
   AttachmentBrokerWrapper() {
-    IPC::AttachmentBroker::SetGlobal(&attachment_broker_);
+    attachment_broker_.reset(
+        IPC::AttachmentBrokerPrivileged::CreateBroker().release());
   }
 
   IPC::AttachmentBrokerPrivileged* GetAttachmentBroker() {
-    return &attachment_broker_;
+    return attachment_broker_.get();
   }
 
  private:
-  IPC::AttachmentBrokerPrivilegedWin attachment_broker_;
+  scoped_ptr<IPC::AttachmentBrokerPrivileged> attachment_broker_;
 };
 
 base::LazyInstance<AttachmentBrokerWrapper>::Leaky

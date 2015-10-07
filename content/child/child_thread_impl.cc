@@ -72,10 +72,6 @@
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #endif
 
-#if defined(OS_WIN)
-#include "ipc/attachment_broker_unprivileged_win.h"
-#endif
-
 using tracked_objects::ThreadData;
 
 namespace content {
@@ -385,8 +381,8 @@ void ChildThreadImpl::Init(const Options& options) {
   // The only reason a global would already exist is if the thread is being run
   // in the browser process because of a command line switch.
   if (!IPC::AttachmentBroker::GetGlobal()) {
-    attachment_broker_.reset(new IPC::AttachmentBrokerUnprivilegedWin());
-    IPC::AttachmentBroker::SetGlobal(attachment_broker_.get());
+    attachment_broker_.reset(
+        IPC::AttachmentBrokerUnprivileged::CreateBroker().release());
   }
 #endif
 

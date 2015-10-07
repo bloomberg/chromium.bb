@@ -9,11 +9,30 @@
 #include "base/metrics/histogram_macros.h"
 #include "ipc/ipc_endpoint.h"
 
+#if defined(OS_WIN)
+#include "ipc/attachment_broker_privileged_win.h"
+#endif
+
 namespace IPC {
 
-AttachmentBrokerPrivileged::AttachmentBrokerPrivileged() {}
+AttachmentBrokerPrivileged::AttachmentBrokerPrivileged() {
+  IPC::AttachmentBroker::SetGlobal(this);
+}
 
-AttachmentBrokerPrivileged::~AttachmentBrokerPrivileged() {}
+AttachmentBrokerPrivileged::~AttachmentBrokerPrivileged() {
+  IPC::AttachmentBroker::SetGlobal(nullptr);
+}
+
+// static
+scoped_ptr<AttachmentBrokerPrivileged>
+AttachmentBrokerPrivileged::CreateBroker() {
+#if defined(OS_WIN)
+  return scoped_ptr<AttachmentBrokerPrivileged>(
+      new IPC::AttachmentBrokerPrivilegedWin);
+#else
+  return nullptr;
+#endif
+}
 
 void AttachmentBrokerPrivileged::RegisterCommunicationChannel(
     Endpoint* endpoint) {

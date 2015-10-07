@@ -45,7 +45,6 @@
 #include <io.h>
 
 #include "content/public/common/sandbox_init.h"
-#include "ipc/attachment_broker_unprivileged_win.h"
 #endif
 
 namespace {
@@ -207,10 +206,8 @@ NaClListener::NaClListener()
 #endif
       main_loop_(NULL),
       is_started_(false) {
-#if defined(OS_WIN)
-  attachment_broker_.reset(new IPC::AttachmentBrokerUnprivilegedWin);
-  IPC::AttachmentBroker::SetGlobal(attachment_broker_.get());
-#endif
+  attachment_broker_.reset(
+      IPC::AttachmentBrokerUnprivileged::CreateBroker().release());
   io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   DCHECK(g_listener == NULL);

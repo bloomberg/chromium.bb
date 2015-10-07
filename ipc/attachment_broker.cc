@@ -14,8 +14,9 @@ namespace IPC {
 
 // static
 void AttachmentBroker::SetGlobal(AttachmentBroker* broker) {
-  CHECK(!g_attachment_broker)
-      << "An attachment broker already exists with memory address: " << broker;
+  CHECK(!g_attachment_broker || !broker)
+      << "Global attachment broker address: " << broker
+      << ". New attachment broker address: " << broker;
   g_attachment_broker = broker;
 }
 

@@ -8,12 +8,31 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_endpoint.h"
 
+#if defined(OS_WIN)
+#include "ipc/attachment_broker_unprivileged_win.h"
+#endif
+
 namespace IPC {
 
 AttachmentBrokerUnprivileged::AttachmentBrokerUnprivileged()
-    : sender_(nullptr) {}
+    : sender_(nullptr) {
+  IPC::AttachmentBroker::SetGlobal(this);
+}
 
-AttachmentBrokerUnprivileged::~AttachmentBrokerUnprivileged() {}
+AttachmentBrokerUnprivileged::~AttachmentBrokerUnprivileged() {
+  IPC::AttachmentBroker::SetGlobal(nullptr);
+}
+
+// static
+scoped_ptr<AttachmentBrokerUnprivileged>
+AttachmentBrokerUnprivileged::CreateBroker() {
+#if defined(OS_WIN)
+  return scoped_ptr<AttachmentBrokerUnprivileged>(
+      new IPC::AttachmentBrokerUnprivilegedWin);
+#else
+  return nullptr;
+#endif
+}
 
 void AttachmentBrokerUnprivileged::DesignateBrokerCommunicationChannel(
     Endpoint* endpoint) {
