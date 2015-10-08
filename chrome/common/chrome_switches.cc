@@ -1358,11 +1358,17 @@ bool MdPolicyPageEnabled() {
 
 bool MediaRouterEnabled() {
 #if defined(ENABLE_MEDIA_ROUTER)
+
+#if defined(OS_ANDROID)
+  return true;
+#else
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableMediaRouter);
+#endif  // defined(OS_ANDROID).
+
 #else
   return false;
-#endif
+#endif  // defined(ENABLE_MEDIA_ROUTER)
 }
 
 bool PdfMaterialUIEnabled() {
