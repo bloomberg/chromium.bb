@@ -1602,3 +1602,7 @@ crbug.com/502267 fast/css/image-orientation/image-orientation-from-image-composi
 crbug.com/502267 fast/css/image-orientation/image-orientation-default.html [ NeedsRebaseline ]
 
 crbug.com/499780 fast/css/font_property_normal.html [ NeedsRebaseline ]
+
+crbug.com/541357 [ XP ] svg/text/text-selection-align-06-b.svg [ Failure ]
+crbug.com/541357 [ XP ] svg/W3C-SVG-1.1/text-align-06-b.svg [ Failure ]
+crbug.com/541357 [ XP ] svg/batik/text/verticalTextOnPath.svg [ Failure ]
