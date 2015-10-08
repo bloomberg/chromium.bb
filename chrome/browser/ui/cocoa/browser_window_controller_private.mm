@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#import "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
@@ -216,6 +217,9 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)layoutSubviews {
+  if (blockLayoutSubviews_)
+    return;
+
   // Suppress title drawing if necessary.
   if ([self.window respondsToSelector:@selector(setShouldHideTitle:)])
     [(id)self.window setShouldHideTitle:![self hasTitleBar]];
@@ -684,21 +688,18 @@ willPositionSheet:(NSWindow*)sheet
   enteringAppKitFullscreenOnPrimaryScreen_ =
       [[[self window] screen] isEqual:[[NSScreen screens] firstObject]];
 
-  fullscreen_mac::SlidingStyle style;
-  if (browser_->exclusive_access_manager()
-          ->fullscreen_controller()
-          ->IsWindowFullscreenForTabOrPending()) {
-    style = fullscreen_mac::OMNIBOX_TABS_NONE;
-  } else if (enteringPresentationMode_) {
-    style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
-  } else {
-    style = fullscreen_mac::OMNIBOX_TABS_PRESENT;
-  }
-
-  [self adjustUIForSlidingFullscreenStyle:style];
+  // If we are using custom fullscreen animations, the layout will resize
+  // in startCustomAnimationToEnterFullScreenWithDuration. In order to prevent
+  // multiple resizing messages from being sent to the renderer, we should call
+  // adjustUIForEnteringFullscreen after the layout gets resized.
+  if ([self shouldUseCustomAppKitFullscreenTransition:YES])
+    blockLayoutSubviews_ = YES;
+  else
+    [self adjustUIForEnteringFullscreen];
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification {
+  blockLayoutSubviews_ = NO;
   fullscreenTransition_.reset();
 
   // In Yosemite, some combination of the titlebar and toolbar always show in
@@ -755,8 +756,13 @@ willPositionSheet:(NSWindow*)sheet
     [self registerForContentViewResizeNotifications];
   exitingAppKitFullscreen_ = YES;
 
-  [self destroyFullscreenExitBubbleIfNecessary];
-  [self adjustUIForExitingFullscreenAndStopOmniboxSliding];
+  // Like windowWillEnterFullScreen, if we use custom animations,
+  // adjustUIForExitingFullscreen should be called after the layout resizes in
+  // startCustomAnimationToExitFullScreenWithDuration.
+  if ([self shouldUseCustomAppKitFullscreenTransition:NO])
+    blockLayoutSubviews_ = YES;
+  else
+    [self adjustUIForExitingFullscreen];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification*)notification {
@@ -765,19 +771,19 @@ willPositionSheet:(NSWindow*)sheet
   if (notification)  // For System Fullscreen when non-nil.
     [self deregisterForContentViewResizeNotifications];
 
-  // Since the content view was forcefully resized during the transition, we
-  // want to ensure that the subviews are layout correctly after it ended.
-  [self layoutSubviews];
   browser_->WindowFullscreenStateChanged();
 
   exitingAppKitFullscreen_ = NO;
   fullscreenTransition_.reset();
+
+  blockLayoutSubviews_ = NO;
 }
 
 - (void)windowDidFailToEnterFullScreen:(NSWindow*)window {
   [self deregisterForContentViewResizeNotifications];
   enteringAppKitFullscreen_ = NO;
   fullscreenTransition_.reset();
+  blockLayoutSubviews_ = NO;
   [self adjustUIForExitingFullscreenAndStopOmniboxSliding];
 }
 
@@ -785,8 +791,29 @@ willPositionSheet:(NSWindow*)sheet
   [self deregisterForContentViewResizeNotifications];
   exitingAppKitFullscreen_ = NO;
   fullscreenTransition_.reset();
+  blockLayoutSubviews_ = NO;
   // Force a relayout to try and get the window back into a reasonable state.
   [self layoutSubviews];
+}
+
+- (void)adjustUIForExitingFullscreen {
+  [self destroyFullscreenExitBubbleIfNecessary];
+  [self adjustUIForExitingFullscreenAndStopOmniboxSliding];
+}
+
+- (void)adjustUIForEnteringFullscreen {
+  fullscreen_mac::SlidingStyle style;
+  if (browser_->exclusive_access_manager()
+          ->fullscreen_controller()
+          ->IsWindowFullscreenForTabOrPending()) {
+    style = fullscreen_mac::OMNIBOX_TABS_NONE;
+  } else if (enteringPresentationMode_) {
+    style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
+  } else {
+    style = fullscreen_mac::OMNIBOX_TABS_PRESENT;
+  }
+
+  [self adjustUIForSlidingFullscreenStyle:style];
 }
 
 - (void)enableBarVisibilityUpdates {
@@ -1137,6 +1164,9 @@ willPositionSheet:(NSWindow*)sheet
     startCustomAnimationToEnterFullScreenWithDuration:(NSTimeInterval)duration {
   DCHECK([window isEqual:self.window]);
   [fullscreenTransition_ startCustomFullScreenAnimationWithDuration:duration];
+
+  base::AutoReset<BOOL> autoReset(&blockLayoutSubviews_, NO);
+  [self adjustUIForEnteringFullscreen];
 }
 
 - (void)window:(NSWindow*)window
@@ -1144,6 +1174,9 @@ willPositionSheet:(NSWindow*)sheet
   DCHECK([window isEqual:self.window]);
 
   [fullscreenTransition_ startCustomFullScreenAnimationWithDuration:duration];
+
+  base::AutoReset<BOOL> autoReset(&blockLayoutSubviews_, NO);
+  [self adjustUIForExitingFullscreen];
 }
 
 - (BOOL)shouldConstrainFrameRect {

@@ -172,6 +172,11 @@ class Command;
   // in visible state when the following is |YES|.
   BOOL barVisibilityUpdatesEnabled_;
 
+  // If this ivar is set to YES, layoutSubviews calls will be ignored. This is
+  // used in fullscreen transition to prevent spurious resize messages from
+  // being sent to the renderer, which causes the transition to be janky.
+  BOOL blockLayoutSubviews_;
+
   // When going fullscreen for a tab, we need to store the URL and the
   // fullscreen type, since we can't show the bubble until
   // -windowDidEnterFullScreen: gets called.

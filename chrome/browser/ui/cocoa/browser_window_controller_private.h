@@ -179,6 +179,14 @@ class WebContents;
 - (void)windowDidEnterFullScreen:(NSNotification*)notification;
 - (void)windowDidExitFullScreen:(NSNotification*)notification;
 - (void)windowWillExitFullScreen:(NSNotification*)notification;
+
+// Adjusts the UI and destroys the exit bubble when we are exiting fullscreen.
+- (void)adjustUIForExitingFullscreen;
+
+// Determines the appropriate sliding fullscreen style and adjusts the UI to
+// it when we are entering fullscreen.
+- (void)adjustUIForEnteringFullscreen;
+
 #endif
 
 @end  // @interface BrowserWindowController(Private)

@@ -421,6 +421,8 @@ using content::WebContents;
             extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
             windowShim_.get()));
 
+    blockLayoutSubviews_ = NO;
+
     // We are done initializing now.
     initializing_ = NO;
   }
@@ -1970,7 +1972,13 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 - (void)enterWebContentFullscreenForURL:(const GURL&)url
                              bubbleType:(ExclusiveAccessBubbleType)bubbleType {
-  [self enterImmersiveFullscreen];
+  // HTML5 Fullscreen should only use AppKit fullscreen in 10.10+.
+  if (chrome::mac::SupportsSystemFullscreen() &&
+      base::mac::IsOSYosemiteOrLater())
+    [self enterAppKitFullscreen];
+  else
+    [self enterImmersiveFullscreen];
+
   if (!url.is_empty())
     [self updateFullscreenExitBubbleURL:url bubbleType:bubbleType];
 }
