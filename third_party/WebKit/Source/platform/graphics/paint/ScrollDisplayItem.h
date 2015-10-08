@@ -21,7 +21,7 @@ public:
         ASSERT(isScrollType(type));
     }
 
-    void replay(GraphicsContext&) override;
+    void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
     const IntSize& currentOffset() const { return m_currentOffset; }
@@ -49,7 +49,7 @@ public:
         ASSERT(isEndScrollType(type));
     }
 
-    void replay(GraphicsContext&) override;
+    void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:

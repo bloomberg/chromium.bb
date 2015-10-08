@@ -11,7 +11,7 @@
 
 namespace blink {
 
-void BeginTransformDisplayItem::replay(GraphicsContext& context)
+void BeginTransformDisplayItem::replay(GraphicsContext& context) const
 {
     context.save();
     context.concatCTM(m_transform);
@@ -31,7 +31,7 @@ void BeginTransformDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& 
 }
 #endif
 
-void EndTransformDisplayItem::replay(GraphicsContext& context)
+void EndTransformDisplayItem::replay(GraphicsContext& context) const
 {
     context.restore();
 }

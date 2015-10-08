@@ -12,7 +12,7 @@
 
 namespace blink {
 
-void ClipDisplayItem::replay(GraphicsContext& context)
+void ClipDisplayItem::replay(GraphicsContext& context) const
 {
     context.save();
     context.clipRect(m_clipRect, NotAntiAliased, SkRegion::kIntersect_Op);
@@ -42,7 +42,7 @@ void ClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
     list->appendClipItem(m_clipRect, webRoundedRects);
 }
 
-void EndClipDisplayItem::replay(GraphicsContext& context)
+void EndClipDisplayItem::replay(GraphicsContext& context) const
 {
     context.restore();
 }

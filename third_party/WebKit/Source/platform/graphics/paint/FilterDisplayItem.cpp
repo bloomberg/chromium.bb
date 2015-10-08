@@ -18,7 +18,7 @@ static FloatRect mapImageFilterRect(SkImageFilter* filter, const FloatRect& boun
     return filterBounds;
 }
 
-void BeginFilterDisplayItem::replay(GraphicsContext& context)
+void BeginFilterDisplayItem::replay(GraphicsContext& context) const
 {
     context.save();
 
@@ -50,7 +50,7 @@ void BeginFilterDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& str
 }
 #endif
 
-void EndFilterDisplayItem::replay(GraphicsContext& context)
+void EndFilterDisplayItem::replay(GraphicsContext& context) const
 {
     context.endLayer();
     context.restore();

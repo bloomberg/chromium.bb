@@ -12,7 +12,7 @@
 
 namespace blink {
 
-void BeginCompositingDisplayItem::replay(GraphicsContext& context)
+void BeginCompositingDisplayItem::replay(GraphicsContext& context) const
 {
     context.beginLayer(m_opacity, m_xferMode, m_hasBounds ? &m_bounds : nullptr, m_colorFilter);
 }
@@ -33,7 +33,7 @@ void BeginCompositingDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder
 }
 #endif
 
-void EndCompositingDisplayItem::replay(GraphicsContext& context)
+void EndCompositingDisplayItem::replay(GraphicsContext& context) const
 {
     context.endLayer();
 }

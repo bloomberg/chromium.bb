@@ -238,7 +238,7 @@ private:
     void checkNoRemainingCachedDisplayItems();
 #endif
 
-    void replay(GraphicsContext&);
+    void replay(GraphicsContext&) const;
 
     DisplayItems m_currentDisplayItems;
     DisplayItems m_newDisplayItems;

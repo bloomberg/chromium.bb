@@ -27,7 +27,7 @@ public:
         ASSERT(DisplayItem::isTransform3DType(type));
     }
 
-    void replay(GraphicsContext&) override;
+    void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
     const TransformationMatrix& transform() const { return m_transform; }
@@ -58,7 +58,7 @@ public:
         ASSERT(DisplayItem::isEndTransform3DType(type));
     }
 
-    void replay(GraphicsContext&) override;
+    void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:

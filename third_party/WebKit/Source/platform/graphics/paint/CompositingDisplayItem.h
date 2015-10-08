@@ -29,7 +29,7 @@ public:
             m_bounds = FloatRect(*bounds);
     }
 
-    void replay(GraphicsContext&) override;
+    void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
@@ -60,7 +60,7 @@ public:
     EndCompositingDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndCompositing, sizeof(*this)) { }
 
-    void replay(GraphicsContext&) override;
+    void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:

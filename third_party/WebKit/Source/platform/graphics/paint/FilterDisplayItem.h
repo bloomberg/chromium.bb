@@ -24,7 +24,7 @@ public:
         , m_webFilterOperations(filterOperations)
         , m_bounds(bounds) { }
 
-    void replay(GraphicsContext&) override;
+    void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
     bool drawsContent() const override;
 
@@ -52,7 +52,7 @@ public:
     EndFilterDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndFilter, sizeof(*this)) { }
 
-    void replay(GraphicsContext&) override;
+    void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:

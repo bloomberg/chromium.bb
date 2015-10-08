@@ -30,7 +30,7 @@ public:
         m_roundedRectClips.swap(roundedRectClips);
     }
 
-    void replay(GraphicsContext&) override;
+    void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
@@ -58,7 +58,7 @@ public:
         ASSERT(isEndClipType(type));
     }
 
-    void replay(GraphicsContext&) override;
+    void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:

@@ -17,7 +17,7 @@
 
 namespace blink {
 
-void DrawingDisplayItem::replay(GraphicsContext& context)
+void DrawingDisplayItem::replay(GraphicsContext& context) const
 {
     if (m_picture)
         context.drawPicture(m_picture.get());

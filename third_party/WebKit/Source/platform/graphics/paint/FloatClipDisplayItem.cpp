@@ -11,7 +11,7 @@
 
 namespace blink {
 
-void FloatClipDisplayItem::replay(GraphicsContext& context)
+void FloatClipDisplayItem::replay(GraphicsContext& context) const
 {
     context.save();
     context.clip(m_clipRect);
@@ -22,7 +22,7 @@ void FloatClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) 
     list->appendFloatClipItem(m_clipRect);
 }
 
-void EndFloatClipDisplayItem::replay(GraphicsContext& context)
+void EndFloatClipDisplayItem::replay(GraphicsContext& context) const
 {
     context.restore();
 }

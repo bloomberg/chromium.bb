@@ -11,7 +11,7 @@
 
 namespace blink {
 
-void BeginTransform3DDisplayItem::replay(GraphicsContext& context)
+void BeginTransform3DDisplayItem::replay(GraphicsContext& context) const
 {
     TransformationMatrix transform(m_transform);
     transform.applyTransformOrigin(m_transformOrigin);
@@ -45,7 +45,7 @@ void BeginTransform3DDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder
 }
 #endif
 
-void EndTransform3DDisplayItem::replay(GraphicsContext& context)
+void EndTransform3DDisplayItem::replay(GraphicsContext& context) const
 {
     context.restore();
 }

@@ -11,7 +11,7 @@
 
 namespace blink {
 
-void BeginScrollDisplayItem::replay(GraphicsContext& context)
+void BeginScrollDisplayItem::replay(GraphicsContext& context) const
 {
     context.save();
     context.translate(-m_currentOffset.width(), -m_currentOffset.height());
@@ -31,7 +31,7 @@ void BeginScrollDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& str
 }
 #endif
 
-void EndScrollDisplayItem::replay(GraphicsContext& context)
+void EndScrollDisplayItem::replay(GraphicsContext& context) const
 {
     context.restore();
 }

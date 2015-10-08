@@ -93,7 +93,7 @@ class TestDisplayItem final : public DisplayItem {
 public:
     TestDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type, sizeof(*this)) { }
 
-    void replay(GraphicsContext&) final { ASSERT_NOT_REACHED(); }
+    void replay(GraphicsContext&) const final { ASSERT_NOT_REACHED(); }
     void appendToWebDisplayItemList(WebDisplayItemList*) const final { ASSERT_NOT_REACHED(); }
 };
 

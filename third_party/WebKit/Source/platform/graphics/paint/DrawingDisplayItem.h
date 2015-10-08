@@ -38,7 +38,7 @@ public:
         ASSERT(isDrawingType(type));
     }
 
-    virtual void replay(GraphicsContext&);
+    void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
     bool drawsContent() const override;
 

@@ -16,7 +16,7 @@ public:
     BeginFixedPositionContainerDisplayItem(const DisplayItemClientWrapper& client)
         : PairedBeginDisplayItem(client, BeginFixedPositionContainer, sizeof(*this)) { }
 
-    void replay(GraphicsContext&) final { }
+    void replay(GraphicsContext&) const final { }
     void appendToWebDisplayItemList(WebDisplayItemList*) const final;
 };
 
@@ -25,7 +25,7 @@ public:
     EndFixedPositionContainerDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndFixedPositionContainer, sizeof(*this)) { }
 
-    void replay(GraphicsContext&) final { }
+    void replay(GraphicsContext&) const final { }
     void appendToWebDisplayItemList(WebDisplayItemList*) const final;
 
 private:

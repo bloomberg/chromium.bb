@@ -246,7 +246,7 @@ public:
         return Id(m_client, nonCachedType(m_type), m_scope);
     }
 
-    virtual void replay(GraphicsContext&) { }
+    virtual void replay(GraphicsContext&) const { }
 
     DisplayItemClient client() const { return m_client; }
     Type type() const { return m_type; }

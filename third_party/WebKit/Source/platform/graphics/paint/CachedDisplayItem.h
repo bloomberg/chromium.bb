@@ -23,7 +23,7 @@ public:
 
 private:
     // CachedDisplayItem is never replayed or appended to WebDisplayItemList.
-    void replay(GraphicsContext&) final { ASSERT_NOT_REACHED(); }
+    void replay(GraphicsContext&) const final { ASSERT_NOT_REACHED(); }
     void appendToWebDisplayItemList(WebDisplayItemList*) const final { ASSERT_NOT_REACHED(); }
 };
 

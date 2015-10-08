@@ -577,11 +577,11 @@ void DisplayItemList::showDebugData() const
 
 #endif // ifndef NDEBUG
 
-void DisplayItemList::replay(GraphicsContext& context)
+void DisplayItemList::replay(GraphicsContext& context) const
 {
     TRACE_EVENT0("blink,benchmark", "DisplayItemList::replay");
     ASSERT(m_newDisplayItems.isEmpty());
-    for (DisplayItem& displayItem : m_currentDisplayItems)
+    for (const DisplayItem& displayItem : m_currentDisplayItems)
         displayItem.replay(context);
 }
 
