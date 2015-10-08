@@ -19,7 +19,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.HistoryUtils;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
@@ -95,9 +94,7 @@ public class LoadUrlTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                LoadUrlParams params = new LoadUrlParams(url);
-                params.setExtraHeaders(extraHeaders);
-                awContents.loadUrl(params);
+                awContents.loadUrl(url, extraHeaders);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,

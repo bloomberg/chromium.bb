@@ -189,8 +189,7 @@ public class AwTestBase
             }
             @Override
             public void run() {
-                awContents.loadUrl(LoadUrlParams.createLoadHttpPostParams(url,
-                        mPostData));
+                awContents.postUrl(url, mPostData);
             }
         }
         getInstrumentation().runOnMainSync(new PostUrl(postData));
@@ -235,8 +234,7 @@ public class AwTestBase
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                awContents.loadUrl(LoadUrlParams.createLoadDataParams(
-                        data, mimeType, isBase64Encoded));
+                awContents.loadData(data, mimeType, isBase64Encoded ? "base64" : null);
             }
         });
     }

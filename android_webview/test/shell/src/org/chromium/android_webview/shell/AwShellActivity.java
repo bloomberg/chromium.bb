@@ -42,7 +42,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.content.app.ContentApplication;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 
@@ -106,7 +105,7 @@ public class AwShellActivity extends Activity {
             startupUrl = INITIAL_URL;
         }
 
-        mAwTestContainerView.getAwContents().loadUrl(new LoadUrlParams(startupUrl));
+        mAwTestContainerView.getAwContents().loadUrl(startupUrl);
         AwContents.setShouldDownloadFavicons();
         mUrlTextView.setText(startupUrl);
 
@@ -226,7 +225,7 @@ public class AwShellActivity extends Activity {
                 } catch (URISyntaxException e) {
                     // Ignore syntax errors.
                 }
-                mAwTestContainerView.getAwContents().loadUrl(new LoadUrlParams(url));
+                mAwTestContainerView.getAwContents().loadUrl(url);
                 mUrlTextView.clearFocus();
                 setKeyboardVisibilityForUrl(false);
                 mAwTestContainerView.requestFocus();

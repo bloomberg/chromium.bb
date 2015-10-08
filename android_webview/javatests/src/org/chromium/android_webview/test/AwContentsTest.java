@@ -38,7 +38,6 @@ import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.io.InputStream;
@@ -124,7 +123,7 @@ public class AwContentsTest extends AwTestBase {
         // we fail gracefully and do not crash when APIs are invoked after destruction.
         // Due to the large number of APIs we only test a representative selection here.
         awContents.clearHistory();
-        awContents.loadUrl(new LoadUrlParams("http://www.google.com"));
+        awContents.loadUrl("http://www.google.com");
         awContents.findAllAsync("search");
         assertNull(awContents.getUrl());
         assertFalse(awContents.canGoBack());
