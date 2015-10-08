@@ -6,9 +6,18 @@ import os
 
 
 def GetChromiumSrcDir():
-  return os.path.abspath(os.path.join(
-      os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
+  return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__)))))
 
-def GetStorySetsDir():
-  return os.path.abspath(os.path.join(
-      os.path.dirname(__file__), os.pardir , 'page_sets'))
+def GetTelemetryDir():
+  return os.path.join(GetChromiumSrcDir(), 'tools', 'telemetry')
+
+def GetPerfDir():
+  return os.path.join(GetChromiumSrcDir(), 'tools', 'perf')
+
+def GetPerfStorySetsDir():
+  return os.path.join(GetPerfDir(), 'page_sets')
+
+def GetPerfBenchmarksDir():
+  return os.path.join(GetPerfDir(), 'benchmarks')
+

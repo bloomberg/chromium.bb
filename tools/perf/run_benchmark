@@ -10,7 +10,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
 from telemetry import benchmark_runner
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'core'))
-from core import project_config
+from core import chromium_config
 
 if __name__ == '__main__':
-  sys.exit(benchmark_runner.main(project_config.config))
+  config = chromium_config.ChromiumConfig()
+  sys.exit(benchmark_runner.main(config))
