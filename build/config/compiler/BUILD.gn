@@ -50,20 +50,20 @@ declare_args() {
   use_gold = is_linux && current_cpu == "x64"
 
   # When we are going to use gold we need to find it.
-  if (use_gold) {
-    gold_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
-                            root_build_dir)
-  } else {
-    gold_path = ""
-  }
+  # This is initialized below, after use_gold might have been overridden.
+  gold_path = false
 
   # use_debug_fission: whether to use split DWARF debug info
   # files. This can reduce link time significantly, but is incompatible
   # with some utilities such as icecc and ccache. Requires gold and
   # gcc >= 4.8 or clang.
   # http://gcc.gnu.org/wiki/DebugFission
-  use_debug_fission = is_debug && !is_win && use_gold &&
-                      linux_use_bundled_binutils && !use_ccache
+  #
+  # This is a placeholder value indicating that the code below should set
+  # the default.  This is necessary to delay the evaluation of the default
+  # value expression until after its input values such as use_gold have
+  # been set, e.g. by a toolchain_args() block.
+  use_debug_fission = "default"
 
   if (is_win) {
     # Whether the VS xtree header has been patched to disable warning 4702. If
@@ -71,6 +71,21 @@ declare_args() {
     # The patch is preapplied to the internal toolchain and hence all bots.
     msvs_xtree_patched = false
   }
+}
+
+# Apply the default logic for these values if they were not set explicitly.
+if (gold_path == false) {
+  if (use_gold) {
+    gold_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
+                            root_build_dir)
+  } else {
+    gold_path = ""
+  }
+}
+
+if (use_debug_fission == "default") {
+  use_debug_fission = is_debug && !is_win && use_gold &&
+                      linux_use_bundled_binutils && !use_ccache
 }
 
 # default_include_dirs ---------------------------------------------------------

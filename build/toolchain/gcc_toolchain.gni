@@ -81,6 +81,9 @@ concurrent_links = exec_script("get_concurrent_links.py", [], "value")
 #  - use_goma
 #      Override the global use_goma setting, useful to opt-out of goma in a
 #      particular toolchain by setting use_gome = false in it.
+#  - use_gold
+#      Override the global use_gold setting, useful if the particular
+#      toolchain has a custom link step that is not actually using Gold.
 template("gcc_toolchain") {
   toolchain(target_name) {
     assert(defined(invoker.cc), "gcc_toolchain() must specify a \"cc\" value")
@@ -344,6 +347,7 @@ template("gcc_toolchain") {
                                "is_clang",
                                "is_component_build",
                                "is_nacl_glibc",
+                               "use_gold",
                              ])
 
       if (defined(invoker.clear_sanitizers) && invoker.clear_sanitizers) {
@@ -358,5 +362,44 @@ template("gcc_toolchain") {
     }
 
     forward_variables_from(invoker, [ "deps" ])
+  }
+}
+
+# This is a shorthand for gcc_toolchain instances based on the
+# Chromium-built version of Clang.  Only the toolchain_cpu and
+# toolchain_os variables need to be specified by the invoker, and
+# optionally toolprefix if it's a cross-compile case.  Note that for
+# a cross-compile case this toolchain requires a config to pass the
+# appropriate -target option, or else it will actually just be doing
+# a native compile.  The invoker can optionally override use_gold too.
+template("clang_toolchain") {
+  assert(defined(invoker.toolchain_cpu),
+         "clang_toolchain() must specify a \"toolchain_cpu\"")
+  assert(defined(invoker.toolchain_os),
+         "clang_toolchain() must specify a \"toolchain_os\"")
+  if (defined(invoker.toolprefix)) {
+    toolprefix = invoker.toolprefix
+  } else {
+    toolprefix = ""
+  }
+
+  gcc_toolchain(target_name) {
+    prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                         root_build_dir)
+    cc = "$prefix/clang"
+    cxx = "$prefix/clang++"
+    ld = cxx
+    is_clang = true
+
+    readelf = "${toolprefix}readelf"
+    ar = "${toolprefix}ar"
+    nm = "${toolprefix}nm"
+
+    forward_variables_from(invoker,
+                           [
+                             "toolchain_cpu",
+                             "toolchain_os",
+                             "use_gold",
+                           ])
   }
 }

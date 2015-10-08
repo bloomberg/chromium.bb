@@ -5,22 +5,10 @@
 import("//build/config/sysroot.gni")
 import("//build/toolchain/gcc_toolchain.gni")
 
-gcc_toolchain("clang_arm") {
-  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                       root_build_dir)
-  cc = "$prefix/clang"
-  cxx = "$prefix/clang++"
-
-  toolprefix = "arm-linux-gnueabihf-"
-  readelf = "${toolprefix}readelf"
-  ar = "${toolprefix}ar"
-  ld = cxx
-  readelf = "${toolprefix}readelf"
-  nm = "${toolprefix}nm"
-
+clang_toolchain("clang_arm") {
   toolchain_cpu = "arm"
   toolchain_os = "linux"
-  is_clang = true
+  toolprefix = "arm-linux-gnueabihf-"
 }
 
 gcc_toolchain("arm") {
@@ -39,19 +27,9 @@ gcc_toolchain("arm") {
   is_clang = false
 }
 
-gcc_toolchain("clang_x86") {
-  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                       root_build_dir)
-  cc = "$prefix/clang"
-  cxx = "$prefix/clang++"
-  readelf = "readelf"
-  nm = "nm"
-  ar = "ar"
-  ld = cxx
-
+clang_toolchain("clang_x86") {
   toolchain_cpu = "x86"
   toolchain_os = "linux"
-  is_clang = true
 }
 
 gcc_toolchain("x86") {
@@ -68,20 +46,9 @@ gcc_toolchain("x86") {
   is_clang = false
 }
 
-gcc_toolchain("clang_x64") {
-  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                       root_build_dir)
-  cc = "$prefix/clang"
-  cxx = "$prefix/clang++"
-
-  readelf = "readelf"
-  nm = "nm"
-  ar = "ar"
-  ld = cxx
-
+clang_toolchain("clang_x64") {
   toolchain_cpu = "x64"
   toolchain_os = "linux"
-  is_clang = true
 }
 
 gcc_toolchain("x64") {
