@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
-#include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_view_host.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -861,7 +861,7 @@ void ManagePasswordsBubbleView::ShowBubble(
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   bool is_fullscreen = browser_view->IsFullscreen();
-  ManagePasswordsIconView* anchor_view =
+  ManagePasswordsIconViews* anchor_view =
       is_fullscreen
           ? NULL
           : browser_view->GetLocationBarView()->manage_passwords_icon_view();
@@ -903,7 +903,7 @@ content::WebContents* ManagePasswordsBubbleView::web_contents() const {
 
 ManagePasswordsBubbleView::ManagePasswordsBubbleView(
     content::WebContents* web_contents,
-    ManagePasswordsIconView* anchor_view,
+    ManagePasswordsIconViews* anchor_view,
     ManagePasswordsBubbleModel::DisplayReason reason)
     : ManagedFullScreenBubbleDelegateView(anchor_view, web_contents),
       model_(web_contents, reason),

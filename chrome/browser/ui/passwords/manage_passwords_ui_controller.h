@@ -24,7 +24,7 @@ struct CredentialInfo;
 class PasswordFormManager;
 }
 
-class ManagePasswordsIcon;
+class ManagePasswordsIconView;
 
 // Per-tab class to control the Omnibox password icon and bubble.
 class ManagePasswordsUIController
@@ -119,7 +119,7 @@ class ManagePasswordsUIController
 #if !defined(OS_ANDROID)
   // Set the state of the Omnibox icon, and possibly show the associated bubble
   // without user interaction.
-  virtual void UpdateIconAndBubbleState(ManagePasswordsIcon* icon);
+  virtual void UpdateIconAndBubbleState(ManagePasswordsIconView* icon);
 #endif
 
   // Called from the model when the bubble is displayed.

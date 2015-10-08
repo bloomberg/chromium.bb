@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_BUBBLE_ICON_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_BUBBLE_ICON_VIEW_H_
 
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 
 class CommandUpdater;
@@ -51,6 +53,10 @@ class BubbleIconView : public views::ImageView {
 
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+
+  // Gets the given vector icon in the correct color and size based on |active|
+  // and whether Chrome's in material design mode.
+  static gfx::ImageSkia GetVectorIcon(gfx::VectorIconId id, bool active);
 
  private:
   // The CommandUpdater for the Browser object that owns the location bar.

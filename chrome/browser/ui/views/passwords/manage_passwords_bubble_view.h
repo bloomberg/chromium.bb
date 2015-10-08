@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/managed_full_screen_bubble_delegate_view.h"
 
-class ManagePasswordsIconView;
+class ManagePasswordsIconViews;
 
 namespace content {
 class WebContents;
@@ -64,7 +64,7 @@ class ManagePasswordsBubbleView : public ManagedFullScreenBubbleDelegateView {
   class WebContentMouseHandler;
 
   ManagePasswordsBubbleView(content::WebContents* web_contents,
-                            ManagePasswordsIconView* anchor_view,
+                            ManagePasswordsIconViews* anchor_view,
                             ManagePasswordsBubbleModel::DisplayReason reason);
   ~ManagePasswordsBubbleView() override;
 
@@ -99,7 +99,7 @@ class ManagePasswordsBubbleView : public ManagedFullScreenBubbleDelegateView {
 
   ManagePasswordsBubbleModel model_;
 
-  ManagePasswordsIconView* anchor_view_;
+  ManagePasswordsIconViews* anchor_view_;
 
   views::View* initially_focused_view_;
 

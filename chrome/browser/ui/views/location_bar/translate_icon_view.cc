@@ -13,8 +13,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 
 TranslateIconView::TranslateIconView(CommandUpdater* command_updater)
@@ -28,8 +26,7 @@ TranslateIconView::~TranslateIconView() {
 }
 
 void TranslateIconView::SetToggled(bool on) {
-  SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::TRANSLATE, 16,
-                                 on ? gfx::kGoogleBlue : gfx::kChromeIconGrey));
+  SetImage(GetVectorIcon(gfx::VectorIconId::TRANSLATE, on));
 }
 
 void TranslateIconView::OnExecuting(

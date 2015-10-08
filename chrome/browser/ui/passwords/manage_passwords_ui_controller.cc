@@ -30,7 +30,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #else
-#include "chrome/browser/ui/passwords/manage_passwords_icon.h"
+#include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #endif
 
 using autofill::PasswordFormMap;
@@ -364,7 +364,7 @@ bool ManagePasswordsUIController::PasswordOverridden() const {
 
 #if !defined(OS_ANDROID)
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
-    ManagePasswordsIcon* icon) {
+    ManagePasswordsIconView* icon) {
   if (should_pop_up_bubble_) {
     // We must display the icon before showing the bubble, as the bubble would
     // be otherwise unanchored.

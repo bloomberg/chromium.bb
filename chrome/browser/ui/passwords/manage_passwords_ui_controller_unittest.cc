@@ -24,8 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/ui/passwords/manage_passwords_icon.h"
-#include "chrome/browser/ui/passwords/manage_passwords_icon_mock.h"
+#include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #endif
 
 using ::testing::ElementsAre;
@@ -35,6 +34,28 @@ namespace {
 
 const int64 kSlowNavigationDelayInMS = 6000;
 const int64 kQuickNavigationDelayInMS = 500;
+
+#if !defined(OS_ANDROID)
+class TestManagePasswordsIconView : public ManagePasswordsIconView {
+ public:
+  TestManagePasswordsIconView() {}
+
+  void SetState(password_manager::ui::State state) override {
+    state_ = state;
+  }
+  password_manager::ui::State state() { return state_; }
+  void SetActive(bool active) override {
+    active_ = active;
+  }
+  bool active() { return active_; }
+
+ private:
+  password_manager::ui::State state_;
+  bool active_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestManagePasswordsIconView);
+};
+#endif
 
 // This sublass is used to disable some code paths which are not essential for
 // testing.
@@ -134,9 +155,9 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
   void ExpectIconStateIs(password_manager::ui::State state) {
 // No op on Android, where there is no icon.
 #if !defined(OS_ANDROID)
-    ManagePasswordsIconMock mock;
-    controller()->UpdateIconAndBubbleState(&mock);
-    EXPECT_EQ(state, mock.state());
+    TestManagePasswordsIconView view;
+    controller()->UpdateIconAndBubbleState(&view);
+    EXPECT_EQ(state, view.state());
 #endif
   }
 

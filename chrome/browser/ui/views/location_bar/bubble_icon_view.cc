@@ -6,7 +6,10 @@
 
 #include "chrome/browser/command_updater.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/events/event.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
 BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
@@ -86,4 +89,13 @@ void BubbleIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   views::BubbleDelegateView* bubble = GetBubble();
   if (bubble)
     bubble->OnAnchorBoundsChanged();
+}
+
+// static
+gfx::ImageSkia BubbleIconView::GetVectorIcon(gfx::VectorIconId id,
+                                             bool active) {
+  const int icon_size =
+      ui::MaterialDesignController::IsModeMaterial() ? 16 : 18;
+  SkColor icon_color = active ? gfx::kGoogleBlue : gfx::kChromeIconGrey;
+  return gfx::CreateVectorIcon(id, icon_size, icon_color);
 }

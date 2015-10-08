@@ -40,7 +40,7 @@ class InstantController;
 class KeywordHintView;
 class LocationIconView;
 class OpenPDFInReaderView;
-class ManagePasswordsIconView;
+class ManagePasswordsIconViews;
 class PageActionWithBadgeView;
 class PageActionImageView;
 class Profile;
@@ -154,7 +154,7 @@ class LocationBarView : public LocationBar,
   ZoomView* zoom_view() { return zoom_view_; }
 
   // The passwords icon. It may not be visible.
-  ManagePasswordsIconView* manage_passwords_icon_view() {
+  ManagePasswordsIconViews* manage_passwords_icon_view() {
     return manage_passwords_icon_view_;
   }
 
@@ -447,7 +447,7 @@ class LocationBarView : public LocationBar,
   OpenPDFInReaderView* open_pdf_in_reader_view_;
 
   // The manage passwords icon.
-  ManagePasswordsIconView* manage_passwords_icon_view_;
+  ManagePasswordsIconViews* manage_passwords_icon_view_;
 
   // The page action icon views.
   PageActionViews page_action_views_;

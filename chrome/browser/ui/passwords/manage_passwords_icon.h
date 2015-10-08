@@ -6,18 +6,20 @@
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_ICON_H_
 
 #include "base/basictypes.h"
+#include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 
-// Abstract base class for platform-specific password management icon views.
-class ManagePasswordsIcon {
+// Base class for platform-specific password management icon views.
+// TODO(estade): remove this class from Cocoa as it has been from Views.
+class ManagePasswordsIcon : public ManagePasswordsIconView {
  public:
   // Get/set the icon's state. Implementations of this class must implement
   // SetStateInternal to do reasonable platform-specific things to represent
   // the icon's state to the user.
-  void SetState(password_manager::ui::State state);
+  void SetState(password_manager::ui::State state) override;
   password_manager::ui::State state() const { return state_; }
 
-  void SetActive(bool active);
+  void SetActive(bool active) override;
   bool active() const { return active_; }
 
  protected:

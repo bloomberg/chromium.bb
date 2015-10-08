@@ -15,7 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ManagePasswordsUIController;
-class ManagePasswordsIcon;
+class ManagePasswordsIconView;
 class GURL;
 
 // Test class for the various password management view bits and pieces. Sets
@@ -30,7 +30,7 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override;
 
   // Get the icon view for the current WebContents.
-  virtual ManagePasswordsIcon* view() = 0;
+  virtual ManagePasswordsIconView* view() = 0;
 
   // Execute the browser command to open the manage passwords bubble.
   void ExecuteManagePasswordsCommand();
