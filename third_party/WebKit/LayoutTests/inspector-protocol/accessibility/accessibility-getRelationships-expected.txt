@@ -49,44 +49,16 @@ Ginger Ale
                 "idref": "rg1_label",
                 "nodeResult": "h3#rg1_label"
               }
-            ],
-            "value": "rg1_label"
+            ]
           }
         }
       ],
       "name": {
-        "type": "computedString",
-        "value": "Lunch Options",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "value": {
-              "type": "idrefList",
-              "relatedNodeArrayValue": [
-                {
-                  "idref": "rg1_label",
-                  "text": "Lunch Options",
-                  "nodeResult": "h3#rg1_label"
-                }
-              ],
-              "value": "rg1_label"
-            },
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label",
-            "superseded": true
-          },
-          {
-            "type": "attribute",
-            "attribute": "title",
-            "superseded": true
-          }
-        ]
+        "type": "string",
+        "value": "Lunch Options"
       },
       "description": {
-        "type": "computedString",
+        "type": "string",
         "value": "Lunch Options"
       }
     }
@@ -119,44 +91,16 @@ Ginger Ale
                 "idref": "rg2_label",
                 "nodeResult": "h3#rg2_label"
               }
-            ],
-            "value": "rg2_label"
+            ]
           }
         }
       ],
       "name": {
-        "type": "computedString",
-        "value": "Drink Options",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "value": {
-              "type": "idrefList",
-              "relatedNodeArrayValue": [
-                {
-                  "idref": "rg2_label",
-                  "text": "Drink Options",
-                  "nodeResult": "h3#rg2_label"
-                }
-              ],
-              "value": "rg2_label"
-            },
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label",
-            "superseded": true
-          },
-          {
-            "type": "attribute",
-            "attribute": "title",
-            "superseded": true
-          }
-        ]
+        "type": "string",
+        "value": "Drink Options"
       },
       "description": {
-        "type": "computedString",
+        "type": "string",
         "value": "Drink Options"
       }
     }

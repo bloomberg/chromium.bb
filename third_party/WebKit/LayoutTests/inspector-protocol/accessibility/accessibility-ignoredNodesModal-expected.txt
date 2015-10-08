@@ -36,25 +36,7 @@ Non-hidden element inside dialog
         "type": "role",
         "value": "dialog"
       },
-      "properties": [],
-      "name": {
-        "type": "computedString",
-        "value": "",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label"
-          },
-          {
-            "type": "attribute",
-            "attribute": "title"
-          }
-        ]
-      }
+      "properties": []
     }
   }
 }
@@ -68,25 +50,7 @@ Non-hidden element inside dialog
         "type": "internalRole",
         "value": "Div"
       },
-      "properties": [],
-      "name": {
-        "type": "computedString",
-        "value": "",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label"
-          },
-          {
-            "type": "attribute",
-            "attribute": "title"
-          }
-        ]
-      }
+      "properties": []
     }
   }
 }

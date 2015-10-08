@@ -17,25 +17,7 @@ Content within label refers to label container
         "type": "internalRole",
         "value": "Div"
       },
-      "properties": [],
-      "name": {
-        "type": "computedString",
-        "value": "",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label"
-          },
-          {
-            "type": "attribute",
-            "attribute": "title"
-          }
-        ]
-      }
+      "properties": []
     }
   }
 }
@@ -71,33 +53,7 @@ Content within label refers to label container
             "value": false
           }
         }
-      ],
-      "name": {
-        "type": "computedString",
-        "value": "non-hidden treeitem",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label"
-          },
-          {
-            "type": "contents",
-            "value": {
-              "type": "string",
-              "value": "non-hidden treeitem"
-            }
-          },
-          {
-            "type": "attribute",
-            "attribute": "title",
-            "superseded": true
-          }
-        ]
-      }
+      ]
     }
   }
 }
@@ -230,34 +186,7 @@ Content within label refers to label container
         "type": "role",
         "value": "img"
       },
-      "properties": [],
-      "name": {
-        "type": "computedString",
-        "value": "",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label"
-          },
-          {
-            "type": "attribute",
-            "value": {
-              "type": "string",
-              "value": ""
-            },
-            "attribute": "alt"
-          },
-          {
-            "type": "attribute",
-            "attribute": "title",
-            "superseded": true
-          }
-        ]
-      }
+      "properties": []
     }
   }
 }
@@ -318,25 +247,7 @@ Content within label refers to label container
         "type": "internalRole",
         "value": "Div"
       },
-      "properties": [],
-      "name": {
-        "type": "computedString",
-        "value": "",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label"
-          },
-          {
-            "type": "attribute",
-            "attribute": "title"
-          }
-        ]
-      }
+      "properties": []
     }
   }
 }

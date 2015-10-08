@@ -578,7 +578,7 @@ void AXNodeObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Ele
     }
 }
 
-void AXNodeObject::accessibilityChildrenFromAttribute(QualifiedName attr, AXObject::AccessibilityChildrenVector& children) const
+void AXNodeObject::accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector& children) const
 {
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     elementsFromAttribute(elements, attr);
@@ -1843,11 +1843,11 @@ String AXNodeObject::computedName() const
 // New AX name calculation.
 //
 
-String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXRelatedObjectVector* relatedObjects, NameSources* nameSources) const
+String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXObjectVector* nameObjects, NameSources* nameSources) const
 {
-    // If nameSources is non-null, relatedObjects is used in filling it in, so it must be non-null as well.
+    // If nameSources is non-null, nameObjects is used in filling it in, so it must be non-null as well.
     if (nameSources)
-        ASSERT(relatedObjects);
+        ASSERT(nameObjects);
 
     bool alreadyVisited = visited.contains(this);
     bool foundTextAlternative = false;
@@ -1878,13 +1878,13 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
             if (nameSources)
                 nameSources->last().attributeValue = ariaLabelledby;
 
-            textAlternative = textFromAriaLabelledby(visited, relatedObjects);
+            textAlternative = textFromAriaLabelledby(visited, nameObjects);
 
             if (!textAlternative.isNull()) {
                 if (nameSources) {
                     NameSource& source = nameSources->last();
                     source.type = nameFrom;
-                    source.relatedObjects = *relatedObjects;
+                    source.nameObjects = *nameObjects;
                     source.text = textAlternative;
                     foundTextAlternative = true;
                 } else {
@@ -1917,7 +1917,7 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
     }
 
     // Step 2D from: http://www.w3.org/TR/accname-aam-1.1
-    textAlternative = nativeTextAlternative(visited, nameFrom, relatedObjects, nameSources, &foundTextAlternative);
+    textAlternative = nativeTextAlternative(visited, nameFrom, nameObjects, nameSources, &foundTextAlternative);
     if (!textAlternative.isNull() && !nameSources)
         return textAlternative;
 
@@ -1982,8 +1982,8 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
             if (!(*nameSources)[i].text.isNull() && !(*nameSources)[i].superseded) {
                 NameSource& nameSource = (*nameSources)[i];
                 nameFrom = nameSource.type;
-                if (!nameSource.relatedObjects.isEmpty())
-                    *relatedObjects = nameSource.relatedObjects;
+                if (!nameSource.nameObjects.isEmpty())
+                    *nameObjects = nameSource.nameObjects;
                 return nameSource.text;
             }
         }
@@ -2015,19 +2015,19 @@ String AXNodeObject::textFromDescendants(AXObjectSet& visited) const
     return accumulatedText.toString();
 }
 
-String AXNodeObject::textFromElements(bool inAriaLabelledbyTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXRelatedObjectVector* relatedObjects) const
+String AXNodeObject::textFromElements(bool inAriaLabelledbyTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXObjectVector* nameObjects) const
 {
     StringBuilder accumulatedText;
     bool foundValidElement = false;
-    AXRelatedObjectVector localRelatedObjects;
+    AXObjectVector localNameObjects;
 
     for (const auto& element : elements) {
         AXObject* axElement = axObjectCache().getOrCreate(element);
         if (axElement) {
             foundValidElement = true;
+            localNameObjects.append(axElement);
 
             String result = recursiveTextAlternative(*axElement, inAriaLabelledbyTraversal, visited);
-            localRelatedObjects.append(new NameSourceRelatedObject(axElement, result));
             if (!result.isEmpty()) {
                 if (!accumulatedText.isEmpty())
                     accumulatedText.append(" ");
@@ -2037,16 +2037,16 @@ String AXNodeObject::textFromElements(bool inAriaLabelledbyTraversal, AXObjectSe
     }
     if (!foundValidElement)
         return String();
-    if (relatedObjects)
-        *relatedObjects = localRelatedObjects;
+    if (nameObjects)
+        *nameObjects = localNameObjects;
     return accumulatedText.toString();
 }
 
-String AXNodeObject::textFromAriaLabelledby(AXObjectSet& visited, AXRelatedObjectVector* relatedObjects) const
+String AXNodeObject::textFromAriaLabelledby(AXObjectSet& visited, AXObjectVector* nameObjects) const
 {
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     ariaLabelledbyElements(elements);
-    return textFromElements(true, visited, elements, relatedObjects);
+    return textFromElements(true, visited, elements, nameObjects);
 }
 
 LayoutRect AXNodeObject::elementRect() const
@@ -2551,17 +2551,17 @@ void AXNodeObject::deprecatedAriaLabelledbyText(HeapVector<Member<AccessibilityT
 }
 
 // Based on http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
-String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nameFrom, AXRelatedObjectVector* relatedObjects, NameSources* nameSources, bool* foundTextAlternative) const
+String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nameFrom, AXObjectVector* nameObjects, NameSources* nameSources, bool* foundTextAlternative) const
 {
     if (!node())
         return String();
 
-    // If nameSources is non-null, relatedObjects is used in filling it in, so it must be non-null as well.
+    // If nameSources is non-null, nameObjects is used in filling it in, so it must be non-null as well.
     if (nameSources)
-        ASSERT(relatedObjects);
+        ASSERT(nameObjects);
 
     String textAlternative;
-    AXRelatedObjectVector localRelatedObjects;
+    AXObjectVector localNameObjects;
 
     const HTMLInputElement* inputElement = nullptr;
     if (isHTMLInputElement(node()))
@@ -2584,17 +2584,16 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
             AXObject* labelAXObject = axObjectCache().getOrCreate(label);
             // Avoid an infinite loop for label wrapped
             if (labelAXObject && !visited.contains(labelAXObject)) {
-                textAlternative = recursiveTextAlternative(*labelAXObject, false, visited);
-
-                if (relatedObjects) {
-                    localRelatedObjects.append(new NameSourceRelatedObject(labelAXObject, textAlternative));
-                    *relatedObjects = localRelatedObjects;
-                    localRelatedObjects.clear();
+                if (nameObjects) {
+                    localNameObjects.append(labelAXObject);
+                    *nameObjects = localNameObjects;
+                    localNameObjects.clear();
                 }
+                textAlternative = recursiveTextAlternative(*labelAXObject, false, visited);
 
                 if (nameSources) {
                     NameSource& source = nameSources->last();
-                    source.relatedObjects = *relatedObjects;
+                    source.nameObjects = *nameObjects;
                     source.text = textAlternative;
                     if (label->getAttribute(forAttr).isNull())
                         source.nativeSource = AXTextFromNativeHTMLLabelWrapped;
@@ -2727,19 +2726,18 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
         if (figcaption) {
             AXObject* figcaptionAXObject = axObjectCache().getOrCreate(figcaption);
             if (figcaptionAXObject) {
-                textAlternative = recursiveTextAlternative(*figcaptionAXObject, false, visited);
-
-                if (relatedObjects) {
-                    localRelatedObjects.append(new NameSourceRelatedObject(figcaptionAXObject, textAlternative));
-                    *relatedObjects = localRelatedObjects;
-                    localRelatedObjects.clear();
+                if (nameObjects) {
+                    localNameObjects.append(figcaptionAXObject);
+                    *nameObjects = localNameObjects;
+                    localNameObjects.clear();
                 }
+
+                textAlternative = recursiveTextAlternative(*figcaptionAXObject, false, visited);
 
                 if (nameSources) {
                     NameSource& source = nameSources->last();
-                    source.relatedObjects = *relatedObjects;
+                    source.nameObjects = *nameObjects;
                     source.text = textAlternative;
-                    *foundTextAlternative = true;
                 } else {
                     return textAlternative;
                 }
@@ -2786,18 +2784,17 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
         if (caption) {
             AXObject* captionAXObject = axObjectCache().getOrCreate(caption);
             if (captionAXObject) {
-                textAlternative = recursiveTextAlternative(*captionAXObject, false, visited);
-                if (relatedObjects) {
-                    localRelatedObjects.append(new NameSourceRelatedObject(captionAXObject, textAlternative));
-                    *relatedObjects = localRelatedObjects;
-                    localRelatedObjects.clear();
+                if (nameObjects) {
+                    localNameObjects.append(captionAXObject);
+                    *nameObjects = localNameObjects;
+                    localNameObjects.clear();
                 }
 
+                textAlternative = recursiveTextAlternative(*captionAXObject, false, visited);
                 if (nameSources) {
                     NameSource& source = nameSources->last();
-                    source.relatedObjects = *relatedObjects;
+                    source.nameObjects = *nameObjects;
                     source.text = textAlternative;
-                    *foundTextAlternative = true;
                 } else {
                     return textAlternative;
                 }
@@ -2807,7 +2804,7 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
         // summary
         nameFrom = AXNameFromAttribute;
         if (nameSources) {
-            nameSources->append(NameSource(*foundTextAlternative, summaryAttr));
+            nameSources->append(NameSource(*foundTextAlternative));
             nameSources->last().type = nameFrom;
         }
         const AtomicString& summary = getAttribute(summaryAttr);
