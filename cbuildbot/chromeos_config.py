@@ -363,7 +363,6 @@ _arm_internal_release_boards = frozenset([
     'veyron_romy',
     'veyron_shark',
     'veyron_speedy',
-    'veyron_thea',
     'whirlwind',
 ])
 
@@ -2580,7 +2579,6 @@ def GetConfig():
   _AddGroupConfig(
       'veyron-c', 'veyron_brain', (
           'veyron_danger',
-          'veyron_thea',
           'veyron_mickey',
       ),
   )

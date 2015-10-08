@@ -20424,22 +20424,6 @@
             {
                 "_template": "full",
                 "boards": [
-                    "veyron_thea"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "veyron_thea-full",
-                "prebuilts": "public",
-                "unittests": null,
-                "useflags": [
-                    "-chrome_internal"
-                ],
-                "vm_tests": []
-            },
-            {
-                "_template": "full",
-                "boards": [
                     "veyron_mickey"
                 ],
                 "build_packages_in_background": true,
@@ -20454,7 +20438,7 @@
                 "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: veyron_brain, veyron_danger, veyron_thea, veyron_mickey)",
+        "description": "Full Builds; Group config (boards: veyron_brain, veyron_danger, veyron_mickey)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -20492,18 +20476,6 @@
             {
                 "_template": "release",
                 "boards": [
-                    "veyron_thea"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "veyron_thea-release",
-                "unittests": null,
-                "vm_tests": []
-            },
-            {
-                "_template": "release",
-                "boards": [
                     "veyron_mickey"
                 ],
                 "build_packages_in_background": true,
@@ -20515,7 +20487,7 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: veyron_brain, veyron_danger, veyron_thea, veyron_mickey)",
+        "description": "Release Builds (canary) (internal); Group config (boards: veyron_brain, veyron_danger, veyron_mickey)",
         "important": true,
         "vm_tests": []
     },
@@ -23122,173 +23094,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_thea-chrome-pfq": {
-        "_template": "chrome-pfq",
-        "boards": [
-            "veyron_thea"
-        ],
-        "important": false,
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
-    "veyron_thea-chromium-pfq": {
-        "_template": "chromium-pfq",
-        "boards": [
-            "veyron_thea"
-        ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_thea-compile-only-pre-cq": {
-        "_template": "compile-only-pre-cq",
-        "boards": [
-            "veyron_thea"
-        ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "veyron_thea-full": {
-        "_template": "full",
-        "boards": [
-            "veyron_thea"
-        ],
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_thea-no-vmtest-pre-cq": {
-        "_template": "no-vmtest-pre-cq",
-        "boards": [
-            "veyron_thea"
-        ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "veyron_thea-paladin": {
-        "_template": "paladin",
-        "boards": [
-            "veyron_thea"
-        ],
-        "description": "Commit Queue (internal)",
-        "important": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "veyron_thea-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "veyron_thea"
-        ]
-    },
-    "veyron_thea-pre-cq": {
-        "_template": "pre-cq",
-        "boards": [
-            "veyron_thea"
-        ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_thea-release": {
-        "_template": "release",
-        "boards": [
-            "veyron_thea"
-        ],
-        "vm_tests": []
-    },
-    "veyron_thea-release-afdo": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "veyron_thea"
-        ],
-        "child_configs": [
-            {
-                "_template": "release-afdo-generate",
-                "boards": [
-                    "veyron_thea"
-                ],
-                "grouped": true,
-                "name": "veyron_thea-release-afdo-generate",
-                "vm_tests": []
-            },
-            {
-                "_template": "release-afdo-use",
-                "boards": [
-                    "veyron_thea"
-                ],
-                "grouped": true,
-                "name": "veyron_thea-release-afdo-use",
-                "vm_tests": []
-            }
-        ],
-        "vm_tests": []
-    },
-    "veyron_thea-release-afdo-generate": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "veyron_thea"
-        ],
-        "vm_tests": []
-    },
-    "veyron_thea-release-afdo-use": {
-        "_template": "release-afdo-use",
-        "boards": [
-            "veyron_thea"
-        ],
-        "vm_tests": []
-    },
-    "veyron_thea-tot-chrome-pfq-informational": {
-        "_template": "chrome-pfq-informational",
-        "boards": [
-            "veyron_thea"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
-    "veyron_thea-tot-chromium-pfq-informational": {
-        "_template": "chromium-pfq-informational",
-        "boards": [
-            "veyron_thea"
-        ],
-        "useflags": [
-            "-chrome_internal"
         ],
         "vm_tests": []
     },
