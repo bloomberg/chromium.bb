@@ -177,7 +177,10 @@ group("both_gn_and_gyp") {
       "//ui/touch_selection:ui_touch_selection_unittests",
     ]
   } else {
-    deps += [ "//ios/net:ios_net_unittests" ]
+    deps += [
+      "//ios/net:ios_net_unittests",
+      "//ios/third_party/gcdwebserver",
+    ]
   }
 
   deps += root_extra_deps

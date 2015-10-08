@@ -4,6 +4,7 @@
 {
   'targets' : [
     {
+      # GN version: //ios/third_party/gcdwebserver
       'target_name' : 'gcdwebserver',
       'type': 'static_library',
       'include_dirs': [
