@@ -119,6 +119,8 @@
       'common/variations/variations_util.h',
       'common/web_application_info.cc',
       'common/web_application_info.h',
+      'common/widevine_cdm_constants.cc',
+      'common/widevine_cdm_constants.h',
       'common/worker_thread_ticker.cc',
       'common/worker_thread_ticker.h',
     ],

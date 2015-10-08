@@ -14,6 +14,10 @@ static_library("util") {
     "//content/public/common:result_codes",
   ]
 
+  # The constants target checks the Chrome distribution from this target. Both
+  # targets have to be linked together in practice.
+  allow_circular_includes_from = [ "//chrome/common:constants" ]
+
   if (is_win) {
     # TODO(GYP) installer_util on Windows.
     # This is a bit tricky. It seems that what's currently called

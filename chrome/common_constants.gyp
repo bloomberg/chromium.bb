@@ -32,8 +32,6 @@
       'common/pref_font_webkit_names.h',
       'common/pref_names.cc',
       'common/pref_names.h',
-      'common/widevine_cdm_constants.cc',
-      'common/widevine_cdm_constants.h',
     ],
     'actions': [
       {

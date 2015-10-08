@@ -15,12 +15,12 @@
 #include "base/version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chrome/common/widevine_cdm_constants.h"
-#include "ui/base/ui_base_paths.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"
 #include "base/base_paths_android.h"
+// ui/base must only be used on Android. See BUILD.gn for dependency info.
+#include "ui/base/ui_base_paths.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX)
@@ -364,7 +364,7 @@ bool PathProvider(int key, base::FilePath* result) {
     case chrome::DIR_COMPONENT_WIDEVINE_CDM:
       if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
-      cur = cur.Append(kWidevineCdmBaseDirectory);
+      cur = cur.Append(FILE_PATH_LITERAL("WidevineCDM"));
       break;
 #endif  // defined(WIDEVINE_CDM_IS_COMPONENT)
     // TODO(xhwang): FILE_WIDEVINE_CDM_ADAPTER has different meanings.
