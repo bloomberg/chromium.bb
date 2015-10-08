@@ -88,6 +88,7 @@ class WebglConformanceValidator(gpu_test_base.ValidatorBase):
         '--disable-gesture-requirement-for-media-playback',
         '--disable-domain-blocking-for-3d-apis',
         '--disable-gpu-process-crash-limit',
+        '--js-flags=--expose-gc',
         '--test-type=gpu'
     ])
     browser = browser_finder.FindBrowser(options.finder_options)
@@ -116,6 +117,7 @@ class Webgl2ConformanceValidator(WebglConformanceValidator):
         '--disable-gesture-requirement-for-media-playback',
         '--disable-domain-blocking-for-3d-apis',
         '--disable-gpu-process-crash-limit',
+        '--js-flags=--expose-gc',
         '--enable-unsafe-es3-apis',
         '--test-type=gpu'
     ])
