@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/chrome_network_delegate.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,6 +22,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/data_usage/core/data_use_aggregator.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_switches.h"
@@ -49,10 +52,11 @@ namespace {
 // request's user data. (As an example suggestions service tag is attached). if
 // |redirect| is true, it adds necessary socket data to have it follow redirect
 // before getting the final response.
-void RequestURL(net::URLRequestContext* context,
-                net::MockClientSocketFactory* socket_factory,
-                bool from_user,
-                bool redirect) {
+scoped_ptr<net::URLRequest> RequestURL(
+    net::URLRequestContext* context,
+    net::MockClientSocketFactory* socket_factory,
+    bool from_user,
+    bool redirect) {
   net::MockRead redirect_mock_reads[] = {
       net::MockRead("HTTP/1.1 302 Found\r\n"
                     "Location: http://bar.com/\r\n\r\n"),
@@ -87,7 +91,44 @@ void RequestURL(net::URLRequestContext* context,
   }
   request->Start();
   base::RunLoop().RunUntilIdle();
+  return request.Pass();
 }
+
+// A fake DataUseAggregator for testing that only counts how many times its
+// respective methods have been called.
+class FakeDataUseAggregator : public data_usage::DataUseAggregator {
+ public:
+  FakeDataUseAggregator()
+      : on_the_record_tx_bytes_(0),
+        on_the_record_rx_bytes_(0),
+        off_the_record_tx_bytes_(0),
+        off_the_record_rx_bytes_(0) {}
+  ~FakeDataUseAggregator() override {}
+
+  void ReportDataUse(const net::URLRequest& request,
+                     int32_t tab_id,
+                     int64_t tx_bytes,
+                     int64_t rx_bytes) override {
+    on_the_record_tx_bytes_ += tx_bytes;
+    on_the_record_rx_bytes_ += rx_bytes;
+  }
+
+  void ReportOffTheRecordDataUse(int64_t tx_bytes, int64_t rx_bytes) override {
+    off_the_record_tx_bytes_ += tx_bytes;
+    off_the_record_rx_bytes_ += rx_bytes;
+  }
+
+  int64_t on_the_record_tx_bytes() const { return on_the_record_tx_bytes_; }
+  int64_t on_the_record_rx_bytes() const { return on_the_record_rx_bytes_; }
+  int64_t off_the_record_tx_bytes() const { return off_the_record_tx_bytes_; }
+  int64_t off_the_record_rx_bytes() const { return off_the_record_rx_bytes_; }
+
+ private:
+  int64_t on_the_record_tx_bytes_;
+  int64_t on_the_record_rx_bytes_;
+  int64_t off_the_record_tx_bytes_;
+  int64_t off_the_record_rx_bytes_;
+};
 
 }  // namespace
 
@@ -122,6 +163,10 @@ class ChromeNetworkDelegateTest : public testing::Test {
   net::NetworkDelegate* network_delegate() { return network_delegate_.get(); }
   net::MockClientSocketFactory* socket_factory() { return &socket_factory_; }
 
+  ChromeNetworkDelegate* chrome_network_delegate() {
+    return network_delegate_.get();
+  }
+
   extensions::EventRouterForwarder* forwarder() {
 #if defined(ENABLE_EXTENSIONS)
     return forwarder_.get();
@@ -138,7 +183,7 @@ class ChromeNetworkDelegateTest : public testing::Test {
 #endif
   TestingProfile profile_;
   BooleanPrefMember enable_referrers_;
-  scoped_ptr<net::NetworkDelegate> network_delegate_;
+  scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   net::MockClientSocketFactory socket_factory_;
   scoped_ptr<net::TestURLRequestContext> context_;
 };
@@ -245,6 +290,40 @@ TEST_F(ChromeNetworkDelegateTest, EnableFirstPartyOnlyCookiesIffFlagEnabled) {
       switches::kEnableExperimentalWebPlatformFeatures);
   Initialize();
   EXPECT_TRUE(network_delegate()->FirstPartyOnlyCookieExperimentEnabled());
+}
+
+TEST_F(ChromeNetworkDelegateTest, ReportDataUseToAggregator) {
+  FakeDataUseAggregator fake_aggregator;
+  Initialize();
+
+  chrome_network_delegate()->set_data_use_aggregator(
+      &fake_aggregator, false /* is_data_usage_off_the_record */);
+
+  scoped_ptr<net::URLRequest> request =
+      RequestURL(context(), socket_factory(), true, false);
+  EXPECT_EQ(request->GetTotalSentBytes(),
+            fake_aggregator.on_the_record_tx_bytes());
+  EXPECT_EQ(request->GetTotalReceivedBytes(),
+            fake_aggregator.on_the_record_rx_bytes());
+  EXPECT_EQ(0, fake_aggregator.off_the_record_tx_bytes());
+  EXPECT_EQ(0, fake_aggregator.off_the_record_rx_bytes());
+}
+
+TEST_F(ChromeNetworkDelegateTest, ReportOffTheRecordDataUseToAggregator) {
+  FakeDataUseAggregator fake_aggregator;
+  Initialize();
+
+  chrome_network_delegate()->set_data_use_aggregator(
+      &fake_aggregator, true /* is_data_usage_off_the_record */);
+  scoped_ptr<net::URLRequest> request =
+      RequestURL(context(), socket_factory(), true, false);
+
+  EXPECT_EQ(0, fake_aggregator.on_the_record_tx_bytes());
+  EXPECT_EQ(0, fake_aggregator.on_the_record_rx_bytes());
+  EXPECT_EQ(request->GetTotalSentBytes(),
+            fake_aggregator.off_the_record_tx_bytes());
+  EXPECT_EQ(request->GetTotalReceivedBytes(),
+            fake_aggregator.off_the_record_rx_bytes());
 }
 
 class ChromeNetworkDelegateSafeSearchTest : public testing::Test {

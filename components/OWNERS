@@ -69,6 +69,9 @@ per-file data_reduction_proxy*=bolian@chromium.org
 per-file data_reduction_proxy*=sclittle@chromium.org
 per-file data_reduction_proxy*=megjablon@chromium.org
 
+per-file data_usage*=bengr@chromium.org
+per-file data_usage*=sclittle@chromium.org
+
 per-file data_use_measurement*=sclittle@chromium.org
 per-file data_use_measurement*=bengr@chromium.org
 

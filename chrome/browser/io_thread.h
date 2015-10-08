@@ -43,6 +43,10 @@ namespace extensions {
 class EventRouterForwarder;
 }
 
+namespace data_usage {
+class DataUseAggregator;
+}
+
 namespace net {
 class CertPolicyEnforcer;
 class CertVerifier;
@@ -122,6 +126,9 @@ class IOThread : public content::BrowserThreadDelegate {
     Globals();
     ~Globals();
 
+    // Global aggregator of data use. It must outlive the
+    // |system_network_delegate|.
+    scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator;
     // The "system" NetworkDelegate, used for Profile-agnostic network events.
     scoped_ptr<net::NetworkDelegate> system_network_delegate;
     scoped_ptr<net::HostResolver> host_resolver;

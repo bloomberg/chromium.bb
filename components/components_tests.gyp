@@ -150,6 +150,9 @@
       'data_reduction_proxy/core/common/data_reduction_proxy_headers_unittest.cc',
       'data_reduction_proxy/core/common/data_reduction_proxy_params_unittest.cc',
     ],
+    'data_usage_unittest_sources': [
+      'data_usage/core/data_use_aggregator_unittest.cc',
+    ],
     'device_event_log_unittest_sources': [
       'device_event_log/device_event_log_impl_unittest.cc',
     ],
@@ -819,6 +822,7 @@
         '<@(crash_unittest_sources)',
         '<@(crx_file_unittest_sources)',
         '<@(data_reduction_proxy_unittest_sources)',
+        '<@(data_usage_unittest_sources)',
         '<@(data_use_measurement_unittest_sources)',
         '<@(device_event_log_unittest_sources)',
         '<@(dom_distiller_unittest_sources)',
@@ -921,6 +925,7 @@
         'components.gyp:data_reduction_proxy_core_browser',
         'components.gyp:data_reduction_proxy_core_common',
         'components.gyp:data_reduction_proxy_test_support',
+        'components.gyp:data_usage_core',
         'components.gyp:data_use_measurement_core',
         'components.gyp:device_event_log_component',
         'components.gyp:dom_distiller_core',

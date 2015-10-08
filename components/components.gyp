@@ -25,6 +25,7 @@
     'cronet.gypi',
     'crx_file.gypi',
     'data_reduction_proxy.gypi',
+    'data_usage.gypi',
     'data_use_measurement.gypi',
     'device_event_log.gypi',
     'dom_distiller.gypi',

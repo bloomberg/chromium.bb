@@ -36,6 +36,7 @@
 #include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/data_usage/core/data_use_aggregator.h"
 #include "components/domain_reliability/monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -293,8 +294,10 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
 #endif
       domain_reliability_monitor_(NULL),
       experimental_web_platform_features_enabled_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableExperimentalWebPlatformFeatures)) {
+          base::CommandLine::ForCurrentProcess()
+              ->HasSwitch(switches::kEnableExperimentalWebPlatformFeatures)),
+      data_use_aggregator_(nullptr),
+      is_data_usage_off_the_record_(true) {
   DCHECK(enable_referrers);
   extensions_delegate_.reset(
       ChromeExtensionsNetworkDelegate::Create(event_router));
@@ -321,6 +324,13 @@ void ChromeNetworkDelegate::set_predictor(
     chrome_browser_net::Predictor* predictor) {
   connect_interceptor_.reset(
       new chrome_browser_net::ConnectInterceptor(predictor));
+}
+
+void ChromeNetworkDelegate::set_data_use_aggregator(
+    data_usage::DataUseAggregator* data_use_aggregator,
+    bool is_data_usage_off_the_record) {
+  data_use_aggregator_ = data_use_aggregator;
+  is_data_usage_off_the_record_ = is_data_usage_off_the_record;
 }
 
 // static
@@ -491,6 +501,29 @@ void ChromeNetworkDelegate::OnNetworkBytesReceived(
   task_management::TaskManagerInterface::OnRawBytesRead(request,
                                                         bytes_received);
 #endif  // defined(ENABLE_TASK_MANAGER)
+
+  if (data_use_aggregator_) {
+    if (is_data_usage_off_the_record_) {
+      data_use_aggregator_->ReportOffTheRecordDataUse(0 /* tx_bytes */,
+                                                      bytes_received);
+    } else {
+      data_use_aggregator_->ReportDataUse(request, -1 /* tab_id */,
+                                          0 /* tx_bytes */, bytes_received);
+    }
+  }
+}
+
+void ChromeNetworkDelegate::OnNetworkBytesSent(const net::URLRequest& request,
+                                               int64_t bytes_sent) {
+  if (data_use_aggregator_) {
+    if (is_data_usage_off_the_record_) {
+      data_use_aggregator_->ReportOffTheRecordDataUse(bytes_sent,
+                                                      0 /* rx_bytes */);
+    } else {
+      data_use_aggregator_->ReportDataUse(request, -1 /* tab_id */, bytes_sent,
+                                          0 /* rx_bytes */);
+    }
+  }
 }
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
