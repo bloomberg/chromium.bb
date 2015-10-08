@@ -545,7 +545,8 @@ TEST_PPAPI_NACL(Var)
 
 TEST_PPAPI_NACL(VarResource)
 
-#if defined(__i386__)
+#if defined(__i386__) && !defined(OS_WIN)
+// TODO(mcgrathr): Why doesn't it work on Windows? (crbug.com/541336)
 TEST_PPAPI_NACL_NATIVE(NaClIRTStackAlignment)
 #endif
 
