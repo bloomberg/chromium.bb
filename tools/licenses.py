@@ -159,11 +159,6 @@ SPECIAL_CASES = {
         "License": "BSD",
         "License File": "/LICENSE",
     },
-    os.path.join('third_party', 'ots'): {
-        "Name": "OTS (OpenType Sanitizer)",
-        "URL": "http://code.google.com/p/ots/",
-        "License": "BSD",
-    },
     os.path.join('third_party', 'pdfium'): {
         "Name": "PDFium",
         "URL": "http://code.google.com/p/pdfium/",
