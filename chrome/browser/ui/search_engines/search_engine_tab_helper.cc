@@ -90,9 +90,7 @@ void SearchEngineTabHelper::DidNavigateMainFrame(
   GenerateKeywordIfNecessary(params);
 }
 
-bool SearchEngineTabHelper::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
+bool SearchEngineTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchEngineTabHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PageHasOSDD, OnPageHasOSDD)
@@ -100,6 +98,12 @@ bool SearchEngineTabHelper::OnMessageReceived(
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+bool SearchEngineTabHelper::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
+  return OnMessageReceived(message);
 }
 
 SearchEngineTabHelper::SearchEngineTabHelper(WebContents* web_contents)
