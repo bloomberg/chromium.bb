@@ -83,6 +83,10 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 // features.
 const char kDisableBlinkFeatures[]          = "disable-blink-features";
 
+// Disables new cc/animation system (Project Heaviside). crbug.com/394772
+const char kDisableCompositorAnimationTimelines[] =
+    "disable-compositor-animation-timelines";
+
 // Disable the creation of compositing layers when it would prevent LCD text.
 const char kDisablePreferCompositingToLCDText[] =
     "disable-prefer-compositing-to-lcd-text";
@@ -288,10 +292,6 @@ const char kEnable2dCanvasClipAntialiasing[] = "enable-2d-canvas-clip-aa";
 // Has no effect unless GPU rasterization is enabled.
 const char kDisableAcceleratedJpegDecoding[] =
     "disable-accelerated-jpeg-decoding";
-
-// Enables new cc/animation system (Project Heaviside). crbug.com/394772
-const char kEnableCompositorAnimationTimelines[] =
-    "enable-compositor-animation-timelines";
 
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";
