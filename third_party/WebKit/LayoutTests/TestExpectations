@@ -1203,7 +1203,7 @@ crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirLTR-ubOverride-in-ltr-context.s
 crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubEmbed-in-default-context.svg [ ImageOnlyFailure ]
 crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubNone-in-ltr-context.svg [ ImageOnlyFailure ImageOnlyFailure Timeout ImageOnlyFailure ]
 crbug.com/521730 [ Win10 ] svg/W3C-SVG-1.1/text-intro-03-b.svg [ ImageOnlyFailure ImageOnlyFailure Timeout ImageOnlyFailure ]
-crbug.com/521730 [ Win10 ] svg/batik/text/verticalText.svg [ ImageOnlyFailure ImageOnlyFailure ImageOnlyFailure Timeout ]
+crbug.com/521730 [ XP Win10 ] svg/batik/text/verticalText.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/carto.net/combobox.svg [ ImageOnlyFailure Timeout ImageOnlyFailure ImageOnlyFailure ]
 crbug.com/521730 [ Win10 ] svg/css/text-gradient-shadow.svg [ ImageOnlyFailure ImageOnlyFailure ImageOnlyFailure Timeout ]
 crbug.com/521730 [ Win10 ] compositing/plugins/invalidate_rect.html [ Crash ]
