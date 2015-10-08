@@ -520,7 +520,6 @@ long long EBMLHeader::Parse(IMkvReader* pReader, long long& pos) {
     return status;
 
   pos = 0;
-  long long end = (available >= 1024) ? 1024 : available;
 
   // Scan until we find what looks like the first byte of the EBML header.
   const long long kMaxScanBytes = (available >= 1024) ? 1024 : available;
@@ -584,7 +583,7 @@ long long EBMLHeader::Parse(IMkvReader* pReader, long long& pos) {
   if ((available - pos) < result)
     return pos + result;
 
-  end = pos + result;
+  const long long end = pos + result;
 
   Init();
 
