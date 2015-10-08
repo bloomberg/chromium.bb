@@ -35,6 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "content/public/renderer/media_stream_api.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -220,6 +221,23 @@ class MockGamepadProvider : public RendererGamepadProvider {
   scoped_ptr<test_runner::GamepadController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MockGamepadProvider);
+};
+
+class MockVideoCapturerSource : public media::VideoCapturerSource {
+ public:
+  MockVideoCapturerSource() = default;
+  ~MockVideoCapturerSource() override {}
+
+  void GetCurrentSupportedFormats(
+      int max_requested_width,
+      int max_requested_height,
+      double max_requested_frame_rate,
+      const VideoCaptureDeviceFormatsCB& callback) override {}
+  void StartCapture(
+      const media::VideoCaptureParams& params,
+      const VideoCaptureDeliverFrameCB& new_frame_callback,
+      const RunningCallback& running_callback) override {}
+  void StopCapture() override {}
 };
 
 }  // namespace
@@ -713,6 +731,20 @@ blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(
 
 void BlinkTestRunner::OnWebTestProxyBaseDestroy(
     test_runner::WebTestProxyBase* proxy) {
+}
+
+bool BlinkTestRunner::AddMediaStreamSourceAndTrack(
+    blink::WebMediaStream* stream) {
+  DCHECK(stream);
+#if defined(ENABLE_WEBRTC)
+  return AddVideoTrackToMediaStream(
+      make_scoped_ptr(new MockVideoCapturerSource()),
+      false /* is_remote */,
+      false /* is_readonly */,
+      stream);
+#else
+  return false;
+#endif
 }
 
 // RenderViewObserver  --------------------------------------------------------

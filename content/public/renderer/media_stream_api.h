@@ -10,17 +10,19 @@
 #include "media/base/video_capturer_source.h"
 
 namespace blink {
-class WebMediaStreamSource;
+class WebMediaStream;
 }
 
-namespace Media {
+namespace media {
 class AudioParameters;
 }
 
 namespace content {
-
-// These two methods will initialize a WebMediaStreamSource object to take
-// data from the provided audio or video capturer source.
+// These methods create a WebMediaStreamSource + MediaStreamSource pair with the
+// provided audio or video capturer source. A new WebMediaStreamTrack +
+// MediaStreamTrack pair is created, holding the previous MediaStreamSource, and
+// is plugged into the stream identified by |media_stream_url| (or passed as
+// |web_stream|).
 // |is_remote| should be true if the source of the data is not a local device.
 // |is_readonly| should be true if the format of the data cannot be changed by
 //     MediaTrackConstraints.
@@ -29,8 +31,14 @@ CONTENT_EXPORT bool AddVideoTrackToMediaStream(
     bool is_remote,
     bool is_readonly,
     const std::string& media_stream_url);
+CONTENT_EXPORT bool AddVideoTrackToMediaStream(
+    scoped_ptr<media::VideoCapturerSource> source,
+    bool is_remote,
+    bool is_readonly,
+    blink::WebMediaStream* web_stream);
+
 CONTENT_EXPORT bool AddAudioTrackToMediaStream(
-    scoped_refptr<media::AudioCapturerSource> source,
+    const scoped_refptr<media::AudioCapturerSource>& source,
     const media::AudioParameters& params,
     bool is_remote,
     bool is_readonly,

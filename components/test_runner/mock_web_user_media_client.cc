@@ -18,7 +18,6 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebMediaDevicesRequest.h"
-#include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 
 using blink::WebMediaConstraints;
@@ -161,33 +160,33 @@ void MockWebUserMediaClient::requestUserMedia(
       return;
     }
 
-    const size_t zero = 0;
-    const size_t one = 1;
-    WebVector<WebMediaStreamTrack> audio_tracks(request.audio() ? one : zero);
-    WebVector<WebMediaStreamTrack> video_tracks(request.video() ? one : zero);
+    WebMediaStream stream;
+    stream.initialize(WebVector<WebMediaStreamTrack>(),
+                      WebVector<WebMediaStreamTrack>());
+    stream.setExtraData(new MockExtraData());
 
     if (request.audio()) {
       WebMediaStreamSource source;
       source.initialize("MockAudioDevice#1",
                         WebMediaStreamSource::TypeAudio,
                         "Mock audio device",
-                        false /* remote */, true /* readonly */);
-      audio_tracks[0].initialize(source);
+                        false /* remote */,
+                        true /* readonly */);
+      WebMediaStreamTrack web_track;
+      web_track.initialize(source);
+      stream.addTrack(web_track);
     }
 
-    if (request.video()) {
+    if (request.video() && !delegate_->AddMediaStreamSourceAndTrack(&stream)) {
       WebMediaStreamSource source;
       source.initialize("MockVideoDevice#1",
                         WebMediaStreamSource::TypeVideo,
                         "Mock video device",
                         false /* remote */, true /* readonly */);
-      video_tracks[0].initialize(source);
+      WebMediaStreamTrack web_track;
+      web_track.initialize(source);
+      stream.addTrack(web_track);
     }
-
-    WebMediaStream stream;
-    stream.initialize(audio_tracks, video_tracks);
-
-    stream.setExtraData(new MockExtraData());
 
     delegate_->PostTask(new UserMediaRequestTask(this, request, stream));
 }

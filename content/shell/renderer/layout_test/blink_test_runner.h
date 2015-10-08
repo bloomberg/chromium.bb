@@ -132,6 +132,7 @@ class BlinkTestRunner : public RenderViewObserver,
                      const GURL& origin,
                      const GURL& embedding_origin) override;
   void ResetPermissions() override;
+  bool AddMediaStreamSourceAndTrack(blink::WebMediaStream* stream) override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   void DispatchBeforeInstallPromptEvent(
       int request_id,

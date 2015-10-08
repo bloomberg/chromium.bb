@@ -23,6 +23,7 @@ class SkBitmap;
 namespace blink {
 class WebContentSettingsClient;
 class WebFrame;
+class WebMediaStream;
 class WebString;
 class WebView;
 class WebURLResponse;

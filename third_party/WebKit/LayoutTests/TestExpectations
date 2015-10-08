@@ -405,9 +405,6 @@ crbug.com/505364 crbug.com/520616 imported/web-platform-tests/shadow-dom/untriag
 
 crbug.com/539623 [ SnowLeopard ] fast/repaint/selection-change-in-iframe-with-relative-parent.html [ Pass Failure ImageOnlyFailure ]
 
-# Temporarily disabled until Chromium side supports meaningful MediaStreamTracks.
-crbug.com/532509 fast/mediarecorder/MediaRecorder-basic-video.html [ Skip ]
-
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-audio-silence.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-video-black.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/mediastreamtrack/mediastreamtrack-end.html [ Skip ]

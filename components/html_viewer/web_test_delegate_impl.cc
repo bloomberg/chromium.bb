@@ -310,6 +310,12 @@ void WebTestDelegateImpl::ResetPermissions() {
   NOTIMPLEMENTED();
 }
 
+bool WebTestDelegateImpl::AddMediaStreamSourceAndTrack(
+    blink::WebMediaStream* stream) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 cc::SharedBitmapManager* WebTestDelegateImpl::GetSharedBitmapManager() {
   NOTIMPLEMENTED();
   return nullptr;

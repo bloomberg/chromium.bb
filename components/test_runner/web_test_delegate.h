@@ -27,13 +27,14 @@ class WebGamepads;
 class WebHistoryItem;
 class WebLayer;
 class WebLocalFrame;
+class WebMediaStream;
 class WebPlugin;
 struct WebPluginParams;
-class WebURLResponse;
-class WebView;
 struct WebRect;
 struct WebSize;
 struct WebURLError;
+class WebURLResponse;
+class WebView;
 }
 
 namespace cc {
@@ -243,6 +244,9 @@ class WebTestDelegate {
 
   // Clear all the permissions set via SetPermission().
   virtual void ResetPermissions() = 0;
+
+  // Add content MediaStream classes to the Blink MediaStream ones.
+  virtual bool AddMediaStreamSourceAndTrack(blink::WebMediaStream* stream) = 0;
 
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
 
