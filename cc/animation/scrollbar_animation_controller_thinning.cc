@@ -19,23 +19,23 @@ namespace cc {
 
 scoped_ptr<ScrollbarAnimationControllerThinning>
 ScrollbarAnimationControllerThinning::Create(
-    LayerImpl* scroll_layer,
+    int scroll_layer_id,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta delay_before_starting,
     base::TimeDelta resize_delay_before_starting,
     base::TimeDelta duration) {
   return make_scoped_ptr(new ScrollbarAnimationControllerThinning(
-      scroll_layer, client, delay_before_starting, resize_delay_before_starting,
-      duration));
+      scroll_layer_id, client, delay_before_starting,
+      resize_delay_before_starting, duration));
 }
 
 ScrollbarAnimationControllerThinning::ScrollbarAnimationControllerThinning(
-    LayerImpl* scroll_layer,
+    int scroll_layer_id,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta delay_before_starting,
     base::TimeDelta resize_delay_before_starting,
     base::TimeDelta duration)
-    : ScrollbarAnimationController(scroll_layer,
+    : ScrollbarAnimationController(scroll_layer_id,
                                    client,
                                    delay_before_starting,
                                    resize_delay_before_starting,
@@ -135,24 +135,18 @@ float ScrollbarAnimationControllerThinning::AdjustScale(
 void ScrollbarAnimationControllerThinning::ApplyOpacityAndThumbThicknessScale(
     float opacity,
     float thumb_thickness_scale) {
-  if (!scroll_layer_->scrollbars())
-    return;
+  for (ScrollbarLayerImplBase* scrollbar : Scrollbars()) {
+    if (!scrollbar->is_overlay_scrollbar())
+      continue;
+    float effective_opacity =
+        scrollbar->CanScrollOrientation()
+            ? AdjustScale(opacity, scrollbar->opacity(), opacity_change_)
+            : 0;
 
-  LayerImpl::ScrollbarSet* scrollbars = scroll_layer_->scrollbars();
-  for (LayerImpl::ScrollbarSet::iterator it = scrollbars->begin();
-       it != scrollbars->end(); ++it) {
-    ScrollbarLayerImplBase* scrollbar = *it;
-    if (scrollbar->is_overlay_scrollbar()) {
-      float effectiveOpacity =
-          scrollbar->CanScrollOrientation()
-              ? AdjustScale(opacity, scrollbar->opacity(), opacity_change_)
-              : 0;
-
-      scrollbar->OnOpacityAnimated(effectiveOpacity);
-      scrollbar->SetThumbThicknessScaleFactor(AdjustScale(
-          thumb_thickness_scale, scrollbar->thumb_thickness_scale_factor(),
-          thickness_change_));
-    }
+    scrollbar->OnOpacityAnimated(effective_opacity);
+    scrollbar->SetThumbThicknessScaleFactor(AdjustScale(
+        thumb_thickness_scale, scrollbar->thumb_thickness_scale_factor(),
+        thickness_change_));
   }
 }
 

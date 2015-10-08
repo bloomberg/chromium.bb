@@ -10,7 +10,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_registrar.h"
-#include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/base/math_util.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/debug/debug_colors.h"
@@ -18,8 +17,8 @@
 #include "cc/debug/micro_benchmark_impl.h"
 #include "cc/debug/traced_value.h"
 #include "cc/input/scroll_state.h"
+#include "cc/layers/layer.h"
 #include "cc/layers/layer_utils.h"
-#include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
@@ -50,7 +49,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       layer_id_(id),
       layer_tree_impl_(tree_impl),
       scroll_offset_(scroll_offset),
-      scroll_clip_layer_(nullptr),
+      scroll_clip_layer_id_(Layer::INVALID_ID),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
       have_scroll_event_handlers_(false),
@@ -118,6 +117,7 @@ LayerImpl::~LayerImpl() {
 
   if (!copy_requests_.empty() && layer_tree_impl_->IsActiveTree())
     layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
+  layer_tree_impl_->UnregisterScrollLayer(this);
   layer_tree_impl_->UnregisterLayer(this);
 
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
@@ -459,7 +459,20 @@ gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
 }
 
 void LayerImpl::SetScrollClipLayer(int scroll_clip_layer_id) {
-  scroll_clip_layer_ = layer_tree_impl()->LayerById(scroll_clip_layer_id);
+  if (scroll_clip_layer_id_ == scroll_clip_layer_id)
+    return;
+
+  layer_tree_impl()->UnregisterScrollLayer(this);
+  scroll_clip_layer_id_ = scroll_clip_layer_id;
+  layer_tree_impl()->RegisterScrollLayer(this);
+}
+
+LayerImpl* LayerImpl::scroll_clip_layer() const {
+  return layer_tree_impl()->LayerById(scroll_clip_layer_id_);
+}
+
+bool LayerImpl::scrollable() const {
+  return scroll_clip_layer_id_ != Layer::INVALID_ID;
 }
 
 bool LayerImpl::user_scrollable(ScrollbarOrientation orientation) const {
@@ -575,8 +588,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
 
-  layer->SetScrollClipLayer(scroll_clip_layer_ ? scroll_clip_layer_->id()
-                                               : Layer::INVALID_ID);
+  layer->SetScrollClipLayer(scroll_clip_layer_id_);
   layer->set_user_scrollable_horizontal(user_scrollable_horizontal_);
   layer->set_user_scrollable_vertical(user_scrollable_vertical_);
 
@@ -661,15 +673,12 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 }
 
 gfx::Vector2dF LayerImpl::FixedContainerSizeDelta() const {
-  if (!scroll_clip_layer_)
+  LayerImpl* scroll_clip_layer =
+      layer_tree_impl()->LayerById(scroll_clip_layer_id_);
+  if (!scroll_clip_layer)
     return gfx::Vector2dF();
 
-  gfx::Vector2dF delta_from_scroll = scroll_clip_layer_->bounds_delta();
-
-  // In virtual-viewport mode, we don't need to compensate for pinch zoom or
-  // scale since the fixed container is the outer viewport, which sits below
-  // the page scale.
-  return delta_from_scroll;
+  return scroll_clip_layer->bounds_delta();
 }
 
 base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
@@ -874,6 +883,8 @@ void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
 void LayerImpl::UpdatePropertyTreeOpacity() {
   if (effect_tree_index_ != -1) {
     EffectTree& effect_tree = layer_tree_impl()->property_trees()->effect_tree;
+    if (effect_tree_index_ >= static_cast<int>(effect_tree.size()))
+      return;
     EffectNode* node = effect_tree.Node(effect_tree_index_);
     // A LayerImpl's own current state is insufficient for determining whether
     // it owns an OpacityNode, since this depends on the state of the
@@ -958,7 +969,7 @@ void LayerImpl::SetBounds(const gfx::Size& bounds) {
 
   bounds_ = bounds;
 
-  ScrollbarParametersDidChange(true);
+  layer_tree_impl()->DidUpdateScrollState(id());
   if (masks_to_bounds())
     NoteLayerPropertyChangedForSubtree();
   else
@@ -979,7 +990,7 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
   else if (this == layer_tree_impl()->OuterViewportContainerLayer())
     transform_tree.SetOuterViewportBoundsDelta(bounds_delta);
 
-  ScrollbarParametersDidChange(true);
+  layer_tree_impl()->DidUpdateScrollState(id());
 
   if (masks_to_bounds()) {
     // If layer is clipping, then update the clip node using the new bounds.
@@ -1479,8 +1490,8 @@ void LayerImpl::UpdatePropertyTreeScrollOffset() {
 void LayerImpl::DidUpdateScrollOffset() {
   DCHECK(scroll_offset_);
 
+  layer_tree_impl()->DidUpdateScrollState(id());
   NoteLayerPropertyChangedForSubtree();
-  ScrollbarParametersDidChange(false);
 
   UpdatePropertyTreeScrollOffset();
 
@@ -1514,7 +1525,9 @@ void LayerImpl::RecreateResources() {
 }
 
 gfx::ScrollOffset LayerImpl::MaxScrollOffset() const {
-  if (!scroll_clip_layer_ || bounds().IsEmpty())
+  LayerImpl* scroll_clip_layer =
+      layer_tree_impl()->LayerById(scroll_clip_layer_id_);
+  if (!scroll_clip_layer || bounds().IsEmpty())
     return gfx::ScrollOffset();
 
   LayerImpl const* page_scale_layer = layer_tree_impl()->PageScaleLayer();
@@ -1524,7 +1537,7 @@ gfx::ScrollOffset LayerImpl::MaxScrollOffset() const {
 
   float scale_factor = 1.f;
   for (LayerImpl const* current_layer = this;
-       current_layer != scroll_clip_layer_->parent();
+       current_layer != scroll_clip_layer->parent();
        current_layer = current_layer->parent()) {
     if (current_layer == page_scale_layer)
       scale_factor = layer_tree_impl()->current_page_scale_factor();
@@ -1536,8 +1549,8 @@ gfx::ScrollOffset LayerImpl::MaxScrollOffset() const {
                                std::floor(scaled_scroll_bounds.height()));
 
   gfx::ScrollOffset max_offset(
-      scaled_scroll_bounds.width() - scroll_clip_layer_->bounds().width(),
-      scaled_scroll_bounds.height() - scroll_clip_layer_->bounds().height());
+      scaled_scroll_bounds.width() - scroll_clip_layer->bounds().width(),
+      scaled_scroll_bounds.height() - scroll_clip_layer->bounds().height());
   // We need the final scroll offset to be in CSS coords.
   max_offset.Scale(1 / scale_factor);
   max_offset.SetToMax(gfx::ScrollOffset());
@@ -1558,147 +1571,6 @@ gfx::Vector2dF LayerImpl::ClampScrollToMaxScrollOffset() {
   if (!delta.IsZero())
     ScrollBy(delta);
   return delta;
-}
-
-void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
-                                     LayerImpl* scrollbar_clip_layer,
-                                     bool on_resize) const {
-  DCHECK(scrollbar_layer);
-  LayerImpl* page_scale_layer = layer_tree_impl()->PageScaleLayer();
-
-  DCHECK(this != page_scale_layer);
-  DCHECK(scrollbar_clip_layer);
-  gfx::RectF clip_rect(gfx::PointF(),
-                       scrollbar_clip_layer->BoundsForScrolling());
-
-  // See comment in MaxScrollOffset() regarding the use of the content layer
-  // bounds here.
-  gfx::RectF scroll_rect(gfx::PointF(), BoundsForScrolling());
-
-  if (scroll_rect.size().IsEmpty())
-    return;
-
-  gfx::ScrollOffset current_offset;
-  for (LayerImpl const* current_layer = this;
-       current_layer != scrollbar_clip_layer->parent();
-       current_layer = current_layer->parent()) {
-    current_offset += current_layer->CurrentScrollOffset();
-    if (current_layer == page_scale_layer) {
-      float scale_factor = layer_tree_impl()->current_page_scale_factor();
-      current_offset.Scale(scale_factor);
-      scroll_rect.Scale(scale_factor);
-    }
-  }
-
-  bool scrollbar_needs_animation = false;
-  scrollbar_needs_animation |= scrollbar_layer->SetVerticalAdjust(
-      scrollbar_clip_layer->bounds_delta().y());
-  if (scrollbar_layer->orientation() == HORIZONTAL) {
-    float visible_ratio = clip_rect.width() / scroll_rect.width();
-    scrollbar_needs_animation |=
-        scrollbar_layer->SetCurrentPos(current_offset.x());
-    scrollbar_needs_animation |=
-        scrollbar_layer->SetMaximum(scroll_rect.width() - clip_rect.width());
-    scrollbar_needs_animation |=
-        scrollbar_layer->SetVisibleToTotalLengthRatio(visible_ratio);
-  } else {
-    float visible_ratio = clip_rect.height() / scroll_rect.height();
-    bool y_offset_did_change =
-        scrollbar_layer->SetCurrentPos(current_offset.y());
-    scrollbar_needs_animation |= y_offset_did_change;
-    scrollbar_needs_animation |=
-        scrollbar_layer->SetMaximum(scroll_rect.height() - clip_rect.height());
-    scrollbar_needs_animation |=
-        scrollbar_layer->SetVisibleToTotalLengthRatio(visible_ratio);
-    if (y_offset_did_change && layer_tree_impl()->IsActiveTree() &&
-        this == layer_tree_impl()->OuterViewportScrollLayer()) {
-      TRACE_COUNTER_ID1("cc", "scroll_offset_y", this->id(),
-                        current_offset.y());
-    }
-  }
-  if (scrollbar_needs_animation) {
-    layer_tree_impl()->set_needs_update_draw_properties();
-    // TODO(wjmaclean) The scrollbar animator for the pinch-zoom scrollbars
-    // should activate for every scroll on the main frame, not just the
-    // scrolls that move the pinch virtual viewport (i.e. trigger from
-    // either inner or outer viewport).
-    if (scrollbar_animation_controller_) {
-      // Non-overlay scrollbars shouldn't trigger animations.
-      if (scrollbar_layer->is_overlay_scrollbar())
-        scrollbar_animation_controller_->DidScrollUpdate(on_resize);
-    }
-  }
-}
-
-void LayerImpl::DidBecomeActive() {
-  if (layer_tree_impl_->settings().scrollbar_animator ==
-      LayerTreeSettings::NO_ANIMATOR) {
-    return;
-  }
-
-  bool need_scrollbar_animation_controller = scrollable() && scrollbars_;
-  if (!need_scrollbar_animation_controller) {
-    scrollbar_animation_controller_ = nullptr;
-    return;
-  }
-
-  if (scrollbar_animation_controller_)
-    return;
-
-  scrollbar_animation_controller_ =
-      layer_tree_impl_->CreateScrollbarAnimationController(this);
-}
-
-void LayerImpl::ClearScrollbars() {
-  if (!scrollbars_)
-    return;
-
-  scrollbars_.reset(nullptr);
-}
-
-void LayerImpl::AddScrollbar(ScrollbarLayerImplBase* layer) {
-  DCHECK(layer);
-  DCHECK(!scrollbars_ || scrollbars_->find(layer) == scrollbars_->end());
-  if (!scrollbars_)
-    scrollbars_.reset(new ScrollbarSet());
-
-  scrollbars_->insert(layer);
-}
-
-void LayerImpl::RemoveScrollbar(ScrollbarLayerImplBase* layer) {
-  DCHECK(scrollbars_);
-  DCHECK(layer);
-  DCHECK(scrollbars_->find(layer) != scrollbars_->end());
-
-  scrollbars_->erase(layer);
-  if (scrollbars_->empty())
-    scrollbars_ = nullptr;
-}
-
-bool LayerImpl::HasScrollbar(ScrollbarOrientation orientation) const {
-  if (!scrollbars_)
-    return false;
-
-  for (ScrollbarSet::iterator it = scrollbars_->begin();
-       it != scrollbars_->end();
-       ++it)
-    if ((*it)->orientation() == orientation)
-      return true;
-
-  return false;
-}
-
-void LayerImpl::ScrollbarParametersDidChange(bool on_resize) {
-  if (!scrollbars_)
-    return;
-
-  for (ScrollbarSet::iterator it = scrollbars_->begin();
-       it != scrollbars_->end();
-       ++it) {
-    bool is_scroll_layer = (*it)->ScrollLayerId() == layer_id_;
-    bool scroll_layer_resized = is_scroll_layer && on_resize;
-    (*it)->ScrollbarParametersDidChange(scroll_layer_resized);
-  }
 }
 
 void LayerImpl::SetNeedsPushProperties() {

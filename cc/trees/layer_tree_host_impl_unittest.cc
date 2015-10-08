@@ -1014,22 +1014,14 @@ TEST_F(LayerTreeHostImplTest, ScrollVerticallyByPageReturnsCorrectValue) {
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::WHEEL));
 
-  // Trying to scroll without a vertical scrollbar will fail.
+  // Trying to scroll if not user_scrollable_vertical will fail.
+  host_impl_->InnerViewportScrollLayer()->set_user_scrollable_vertical(false);
   EXPECT_FALSE(host_impl_->ScrollVerticallyByPage(
       gfx::Point(), SCROLL_FORWARD));
   EXPECT_FALSE(host_impl_->ScrollVerticallyByPage(
       gfx::Point(), SCROLL_BACKWARD));
 
-  scoped_ptr<PaintedScrollbarLayerImpl> vertical_scrollbar(
-      PaintedScrollbarLayerImpl::Create(
-          host_impl_->active_tree(),
-          20,
-          VERTICAL));
-  vertical_scrollbar->SetBounds(gfx::Size(15, 1000));
-  host_impl_->InnerViewportScrollLayer()->AddScrollbar(
-      vertical_scrollbar.get());
-
-  // Trying to scroll with a vertical scrollbar will succeed.
+  host_impl_->InnerViewportScrollLayer()->set_user_scrollable_vertical(true);
   EXPECT_TRUE(host_impl_->ScrollVerticallyByPage(
       gfx::Point(), SCROLL_FORWARD));
   EXPECT_FLOAT_EQ(875.f,
@@ -2207,9 +2199,9 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
                                              VERTICAL, 10, 0, false, true);
     EXPECT_FLOAT_EQ(0.f, scrollbar->opacity());
 
-    LayerImpl* scroll = host_impl_->InnerViewportScrollLayer();
-    LayerImpl* root = scroll->parent()->parent();
-    scrollbar->SetScrollLayerAndClipLayerByIds(scroll->id(), root->id());
+    LayerImpl* scroll = host_impl_->active_tree()->OuterViewportScrollLayer();
+    LayerImpl* root = host_impl_->active_tree()->InnerViewportContainerLayer();
+    scrollbar->SetScrollLayerId(scroll->id());
     root->AddChild(scrollbar.Pass());
 
     host_impl_->active_tree()->DidBecomeActive();
@@ -2226,10 +2218,12 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
 
     base::TimeTicks fake_now = base::TimeTicks::Now();
 
+    // A task will be posted to fade the initial scrollbar.
     EXPECT_FALSE(did_request_animate_);
     EXPECT_FALSE(did_request_redraw_);
-    EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
-    EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+    EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+    requested_animation_delay_ = base::TimeDelta();
+    animation_task_ = base::Closure();
 
     // If no scroll happened during a scroll gesture, it should have no effect.
     host_impl_->ScrollBegin(gfx::Point(), InputHandler::WHEEL);
@@ -2341,9 +2335,9 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar =
         SolidColorScrollbarLayerImpl::Create(host_impl_->pending_tree(), 400,
                                              VERTICAL, 10, 0, false, true);
-    LayerImpl* scroll = host_impl_->pending_tree()->InnerViewportScrollLayer();
-    LayerImpl* root = scroll->parent()->parent();
-    scrollbar->SetScrollLayerAndClipLayerByIds(scroll->id(), root->id());
+    LayerImpl* scroll = host_impl_->pending_tree()->OuterViewportScrollLayer();
+    LayerImpl* root = host_impl_->pending_tree()->InnerViewportContainerLayer();
+    scrollbar->SetScrollLayerId(scroll->id());
     root->AddChild(scrollbar.Pass());
     host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     host_impl_->pending_tree()->BuildPropertyTreesForTesting();
@@ -2356,6 +2350,8 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
             scrollbar_layer->effect_tree_index());
     EXPECT_FLOAT_EQ(scrollbar_layer->opacity(), active_tree_node->data.opacity);
 
+    host_impl_->ScrollbarAnimationControllerForId(scroll->id())
+        ->DidMouseMoveNear(0);
     host_impl_->ScrollBegin(gfx::Point(), InputHandler::WHEEL);
     host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(0, 5));
     host_impl_->ScrollEnd();
@@ -2383,6 +2379,126 @@ TEST_F(LayerTreeHostImplTestScrollbarOpacity, Thinning) {
   RunTest(LayerTreeSettings::THINNING);
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
+  LayerTreeSettings settings;
+  settings.scrollbar_animator = LayerTreeSettings::LINEAR_FADE;
+  settings.scrollbar_fade_delay_ms = 20;
+  settings.scrollbar_fade_duration_ms = 20;
+  CreateHostImpl(settings, CreateOutputSurface());
+
+  gfx::Size viewport_size(300, 200);
+  gfx::Size content_size(1000, 1000);
+
+  const int vert_1_id = 10;
+  const int horiz_1_id = 11;
+  const int vert_2_id = 12;
+  const int horiz_2_id = 13;
+  const int child_clip_id = 14;
+  const int child_scroll_id = 15;
+
+  CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
+  host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
+      viewport_size);
+  LayerImpl* root_scroll =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+  scoped_ptr<SolidColorScrollbarLayerImpl> vert_1_scrollbar =
+      SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), vert_1_id,
+                                           VERTICAL, 5, 5, true, true);
+  scoped_ptr<SolidColorScrollbarLayerImpl> horiz_1_scrollbar =
+      SolidColorScrollbarLayerImpl::Create(
+          host_impl_->active_tree(), horiz_1_id, HORIZONTAL, 5, 5, true, true);
+  scoped_ptr<SolidColorScrollbarLayerImpl> vert_2_scrollbar =
+      SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), vert_2_id,
+                                           VERTICAL, 5, 5, true, true);
+  scoped_ptr<SolidColorScrollbarLayerImpl> horiz_2_scrollbar =
+      SolidColorScrollbarLayerImpl::Create(
+          host_impl_->active_tree(), horiz_2_id, HORIZONTAL, 5, 5, true, true);
+  scoped_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl_->active_tree(), child_scroll_id);
+  child->SetBounds(content_size);
+  scoped_ptr<LayerImpl> child_clip =
+      LayerImpl::Create(host_impl_->active_tree(), child_clip_id);
+  child->SetBounds(viewport_size);
+  LayerImpl* child_ptr = child.get();
+  LayerImpl* child_clip_ptr = child_clip.get();
+
+  // Check scrollbar registration on the viewport layers.
+  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(root_scroll->id()).size());
+  EXPECT_EQ(nullptr,
+            host_impl_->ScrollbarAnimationControllerForId(root_scroll->id()));
+  vert_1_scrollbar->SetScrollLayerId(root_scroll->id());
+  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(root_scroll->id()).size());
+  EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForId(root_scroll->id()));
+  horiz_1_scrollbar->SetScrollLayerId(root_scroll->id());
+  EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(root_scroll->id()).size());
+  EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForId(root_scroll->id()));
+
+  // Changing one of the viewport layers should result in a scrollbar animation
+  // update.
+  animation_task_ = base::Closure();
+  host_impl_->active_tree()->InnerViewportContainerLayer()->SetBoundsDelta(
+      gfx::Vector2dF(10, 10));
+  EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+  animation_task_ = base::Closure();
+  host_impl_->active_tree()->OuterViewportScrollLayer()->SetCurrentScrollOffset(
+      gfx::ScrollOffset(10, 10));
+  EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+  animation_task_ = base::Closure();
+  host_impl_->active_tree()->InnerViewportScrollLayer()->SetCurrentScrollOffset(
+      gfx::ScrollOffset(10, 10));
+  EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+  animation_task_ = base::Closure();
+
+  // Check scrollbar registration on a sublayer.
+  child->SetScrollClipLayer(child_clip->id());
+  child_clip->AddChild(child.Pass());
+  root_scroll->AddChild(child_clip.Pass());
+  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
+  EXPECT_EQ(nullptr,
+            host_impl_->ScrollbarAnimationControllerForId(child_scroll_id));
+  vert_2_scrollbar->SetScrollLayerId(child_scroll_id);
+  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
+  EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForId(child_scroll_id));
+  horiz_2_scrollbar->SetScrollLayerId(child_scroll_id);
+  EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
+  EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForId(child_scroll_id));
+
+  // Changing one of the child layers should result in a scrollbar animation
+  // update.
+  animation_task_ = base::Closure();
+  child_clip_ptr->SetBounds(gfx::Size(200, 200));
+  EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+  animation_task_ = base::Closure();
+  child_ptr->SetCurrentScrollOffset(gfx::ScrollOffset(10, 10));
+  EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+  animation_task_ = base::Closure();
+
+  // Check scrollbar unregistration.
+  vert_1_scrollbar.reset();
+  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(root_scroll->id()).size());
+  EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForId(root_scroll->id()));
+  horiz_1_scrollbar.reset();
+  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(root_scroll->id()).size());
+  EXPECT_EQ(nullptr,
+            host_impl_->ScrollbarAnimationControllerForId(root_scroll->id()));
+
+  EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
+  vert_2_scrollbar.reset();
+  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
+  EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForId(child_scroll_id));
+  horiz_2_scrollbar.reset();
+  EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
+  EXPECT_EQ(nullptr,
+            host_impl_->ScrollbarAnimationControllerForId(root_scroll->id()));
+
+  // Changing scroll offset should no longer trigger any animation.
+  host_impl_->active_tree()->InnerViewportScrollLayer()->SetCurrentScrollOffset(
+      gfx::ScrollOffset(20, 20));
+  EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+  child_ptr->SetCurrentScrollOffset(gfx::ScrollOffset(20, 20));
+  EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+}
+
 void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
     float device_scale_factor) {
   LayerTreeSettings settings;
@@ -2394,75 +2510,60 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   gfx::Size device_viewport_size =
       gfx::ScaleToFlooredSize(viewport_size, device_scale_factor);
   gfx::Size content_size(1000, 1000);
+  gfx::Size scrollbar_size(gfx::Size(15, viewport_size.height()));
 
   CreateHostImpl(settings, CreateOutputSurface());
   host_impl_->active_tree()->SetDeviceScaleFactor(device_scale_factor);
   host_impl_->SetViewportSize(device_viewport_size);
 
-  scoped_ptr<LayerImpl> root =
-      LayerImpl::Create(host_impl_->active_tree(), 1);
-  root->SetBounds(viewport_size);
-  root->SetHasRenderSurface(true);
-
-  scoped_ptr<LayerImpl> scroll =
-      LayerImpl::Create(host_impl_->active_tree(), 2);
-  scroll->SetScrollClipLayer(root->id());
-  scroll->PushScrollOffsetFromMainThread(gfx::ScrollOffset());
-  scroll->SetBounds(content_size);
-  scroll->SetIsContainerForFixedPositionLayers(true);
-
-  scoped_ptr<LayerImpl> contents =
-      LayerImpl::Create(host_impl_->active_tree(), 3);
-  contents->SetDrawsContent(true);
-  contents->SetBounds(content_size);
-
-  // The scrollbar is on the right side.
-  scoped_ptr<PaintedScrollbarLayerImpl> scrollbar =
-      PaintedScrollbarLayerImpl::Create(host_impl_->active_tree(), 5, VERTICAL);
-  scrollbar->SetDrawsContent(true);
-  scrollbar->SetBounds(gfx::Size(15, viewport_size.height()));
-  scrollbar->SetPosition(gfx::Point(285, 0));
-
-  scroll->AddChild(contents.Pass());
-  root->AddChild(scroll.Pass());
-  scrollbar->SetScrollLayerAndClipLayerByIds(2, 1);
-  root->AddChild(scrollbar.Pass());
-
-  host_impl_->active_tree()->SetRootLayer(root.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 2,
-                                                      Layer::INVALID_ID);
-  host_impl_->active_tree()->DidBecomeActive();
-  DrawFrame();
-
+  CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
+  host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
+      viewport_size);
   LayerImpl* root_scroll =
-      host_impl_->active_tree()->InnerViewportScrollLayer();
-  ASSERT_TRUE(root_scroll->scrollbar_animation_controller());
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+  // The scrollbar is on the left side.
+  scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar =
+      SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), 6,
+                                           VERTICAL, 5, 5, true, true);
+  scrollbar->SetScrollLayerId(root_scroll->id());
+  scrollbar->SetDrawsContent(true);
+  scrollbar->SetBounds(scrollbar_size);
+  scrollbar->SetTouchEventHandlerRegion(gfx::Rect(scrollbar_size));
+  host_impl_->active_tree()->InnerViewportContainerLayer()->AddChild(
+      scrollbar.Pass());
+  host_impl_->active_tree()->DidBecomeActive();
+
+  DrawFrame();
+  host_impl_->active_tree()->UpdateDrawProperties(false);
+
   ScrollbarAnimationControllerThinning* scrollbar_animation_controller =
       static_cast<ScrollbarAnimationControllerThinning*>(
-          root_scroll->scrollbar_animation_controller());
+          host_impl_->ScrollbarAnimationControllerForId(root_scroll->id()));
   scrollbar_animation_controller->set_mouse_move_distance_for_test(100.f);
 
-  host_impl_->MouseMoveAt(gfx::Point(1, 1));
+  host_impl_->MouseMoveAt(gfx::Point(200, 1));
   EXPECT_FALSE(scrollbar_animation_controller->mouse_is_near_scrollbar());
 
-  host_impl_->MouseMoveAt(gfx::Point(200, 50));
+  host_impl_->MouseMoveAt(gfx::Point(100, 50));
   EXPECT_TRUE(scrollbar_animation_controller->mouse_is_near_scrollbar());
 
-  host_impl_->MouseMoveAt(gfx::Point(184, 100));
+  host_impl_->MouseMoveAt(gfx::Point(116, 100));
   EXPECT_FALSE(scrollbar_animation_controller->mouse_is_near_scrollbar());
 
   scrollbar_animation_controller->set_mouse_move_distance_for_test(102.f);
-  host_impl_->MouseMoveAt(gfx::Point(184, 100));
+  host_impl_->MouseMoveAt(gfx::Point(116, 100));
   EXPECT_TRUE(scrollbar_animation_controller->mouse_is_near_scrollbar());
 
   did_request_redraw_ = false;
-  EXPECT_EQ(0, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
-  host_impl_->MouseMoveAt(gfx::Point(290, 100));
-  EXPECT_EQ(2, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
-  host_impl_->MouseMoveAt(gfx::Point(290, 120));
-  EXPECT_EQ(2, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
+  EXPECT_EQ(Layer::INVALID_ID,
+            host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
+  host_impl_->MouseMoveAt(gfx::Point(10, 100));
+  EXPECT_EQ(117, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
+  host_impl_->MouseMoveAt(gfx::Point(10, 120));
+  EXPECT_EQ(117, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
   host_impl_->MouseMoveAt(gfx::Point(150, 120));
-  EXPECT_EQ(0, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
+  EXPECT_EQ(Layer::INVALID_ID,
+            host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
 }
 
 TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf1) {

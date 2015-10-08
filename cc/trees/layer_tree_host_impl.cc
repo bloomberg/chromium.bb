@@ -173,7 +173,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       did_lock_scrolling_layer_(false),
       wheel_scrolling_(false),
       scroll_affects_scroll_handler_(false),
-      scroll_layer_id_when_mouse_over_scrollbar_(0),
+      scroll_layer_id_when_mouse_over_scrollbar_(Layer::INVALID_ID),
       tile_priorities_dirty_(false),
       settings_(settings),
       visible_(false),
@@ -2753,9 +2753,6 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(const gfx::Point& viewport_point,
     if (!layer_impl->scrollable() || layer_impl == OuterViewportScrollLayer())
       continue;
 
-    if (!layer_impl->HasScrollbar(VERTICAL))
-      continue;
-
     float height = layer_impl->clip_height();
 
     // These magical values match WebKit and are designed to scroll nearly the
@@ -2835,66 +2832,56 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
       gfx::ScalePoint(viewport_point, active_tree_->device_scale_factor());
   LayerImpl* layer_impl =
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
-  if (HandleMouseOverScrollbar(layer_impl, device_viewport_point))
+  HandleMouseOverScrollbar(layer_impl);
+  if (scroll_layer_id_when_mouse_over_scrollbar_ != Layer::INVALID_ID)
     return;
-
-  if (scroll_layer_id_when_mouse_over_scrollbar_) {
-    LayerImpl* scroll_layer_impl = active_tree_->LayerById(
-        scroll_layer_id_when_mouse_over_scrollbar_);
-
-    // The check for a null scroll_layer_impl below was added to see if it will
-    // eliminate the crashes described in http://crbug.com/326635.
-    // TODO(wjmaclean) Add a unit test if this fixes the crashes.
-    ScrollbarAnimationController* animation_controller =
-        scroll_layer_impl ? scroll_layer_impl->scrollbar_animation_controller()
-                          : NULL;
-    if (animation_controller)
-      animation_controller->DidMouseMoveOffScrollbar();
-    scroll_layer_id_when_mouse_over_scrollbar_ = 0;
-  }
 
   bool scroll_on_main_thread = false;
   LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
       device_viewport_point, InputHandler::GESTURE, layer_impl,
       &scroll_on_main_thread, NULL);
+  if (scroll_layer_impl == InnerViewportScrollLayer())
+    scroll_layer_impl = OuterViewportScrollLayer();
   if (scroll_on_main_thread || !scroll_layer_impl)
     return;
 
   ScrollbarAnimationController* animation_controller =
-      scroll_layer_impl->scrollbar_animation_controller();
+      ScrollbarAnimationControllerForId(scroll_layer_impl->id());
   if (!animation_controller)
     return;
 
-  // TODO(wjmaclean) Is it ok to choose distance from more than two scrollbars?
   float distance_to_scrollbar = std::numeric_limits<float>::max();
-  for (LayerImpl::ScrollbarSet::iterator it =
-           scroll_layer_impl->scrollbars()->begin();
-       it != scroll_layer_impl->scrollbars()->end();
-       ++it)
+  for (ScrollbarLayerImplBase* scrollbar :
+       ScrollbarsFor(scroll_layer_impl->id()))
     distance_to_scrollbar =
         std::min(distance_to_scrollbar,
-                 DeviceSpaceDistanceToLayer(device_viewport_point, *it));
+                 DeviceSpaceDistanceToLayer(device_viewport_point, scrollbar));
 
   animation_controller->DidMouseMoveNear(distance_to_scrollbar /
                                          active_tree_->device_scale_factor());
 }
 
-bool LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl,
-    const gfx::PointF& device_viewport_point) {
-  if (layer_impl && layer_impl->ToScrollbarLayer()) {
-    int scroll_layer_id = layer_impl->ToScrollbarLayer()->ScrollLayerId();
-    layer_impl = active_tree_->LayerById(scroll_layer_id);
-    if (layer_impl && layer_impl->scrollbar_animation_controller()) {
-      scroll_layer_id_when_mouse_over_scrollbar_ = scroll_layer_id;
-      layer_impl->scrollbar_animation_controller()->DidMouseMoveNear(0);
-    } else {
-      scroll_layer_id_when_mouse_over_scrollbar_ = 0;
-    }
+void LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl) {
+  int new_id = Layer::INVALID_ID;
+  if (layer_impl && layer_impl->ToScrollbarLayer())
+    new_id = layer_impl->ToScrollbarLayer()->ScrollLayerId();
 
-    return true;
-  }
+  if (new_id == scroll_layer_id_when_mouse_over_scrollbar_)
+    return;
 
-  return false;
+  ScrollbarAnimationController* old_animation_controller =
+      ScrollbarAnimationControllerForId(
+          scroll_layer_id_when_mouse_over_scrollbar_);
+  if (old_animation_controller)
+    old_animation_controller->DidMouseMoveOffScrollbar();
+
+  scroll_layer_id_when_mouse_over_scrollbar_ = new_id;
+
+  ScrollbarAnimationController* new_animation_controller =
+      ScrollbarAnimationControllerForId(
+          scroll_layer_id_when_mouse_over_scrollbar_);
+  if (new_animation_controller)
+    new_animation_controller->DidMouseMoveNear(0);
 }
 
 void LayerTreeHostImpl::PinchGestureBegin() {
@@ -3044,16 +3031,8 @@ void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
 }
 
 void LayerTreeHostImpl::AnimateScrollbars(base::TimeTicks monotonic_time) {
-  if (scrollbar_animation_controllers_.empty())
-    return;
-
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::AnimateScrollbars");
-  std::set<ScrollbarAnimationController*> controllers_copy =
-      scrollbar_animation_controllers_;
-  for (auto& it : controllers_copy)
-    it->Animate(monotonic_time);
-
-  SetNeedsAnimate();
+  for (auto& it : scrollbar_animation_controllers_)
+    it.second->Animate(monotonic_time);
 }
 
 void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
@@ -3132,15 +3111,32 @@ std::string LayerTreeHostImpl::LayerTreeAsJson() const {
   return str;
 }
 
-void LayerTreeHostImpl::StartAnimatingScrollbarAnimationController(
-    ScrollbarAnimationController* controller) {
-  scrollbar_animation_controllers_.insert(controller);
-  SetNeedsAnimate();
+void LayerTreeHostImpl::RegisterScrollbarAnimationController(
+    int scroll_layer_id) {
+  if (settings().scrollbar_animator == LayerTreeSettings::NO_ANIMATOR)
+    return;
+  if (ScrollbarAnimationControllerForId(scroll_layer_id))
+    return;
+  scrollbar_animation_controllers_.add(
+      scroll_layer_id,
+      active_tree_->CreateScrollbarAnimationController(scroll_layer_id));
 }
 
-void LayerTreeHostImpl::StopAnimatingScrollbarAnimationController(
-    ScrollbarAnimationController* controller) {
-  scrollbar_animation_controllers_.erase(controller);
+void LayerTreeHostImpl::UnregisterScrollbarAnimationController(
+    int scroll_layer_id) {
+  scrollbar_animation_controllers_.erase(scroll_layer_id);
+}
+
+ScrollbarAnimationController*
+LayerTreeHostImpl::ScrollbarAnimationControllerForId(
+    int scroll_layer_id) const {
+  if (InnerViewportScrollLayer() && OuterViewportScrollLayer() &&
+      scroll_layer_id == InnerViewportScrollLayer()->id())
+    scroll_layer_id = OuterViewportScrollLayer()->id();
+  auto i = scrollbar_animation_controllers_.find(scroll_layer_id);
+  if (i == scrollbar_animation_controllers_.end())
+    return nullptr;
+  return i->second;
 }
 
 void LayerTreeHostImpl::PostDelayedScrollbarAnimationTask(
@@ -3149,8 +3145,17 @@ void LayerTreeHostImpl::PostDelayedScrollbarAnimationTask(
   client_->PostDelayedAnimationTaskOnImplThread(task, delay);
 }
 
+void LayerTreeHostImpl::SetNeedsAnimateForScrollbarAnimation() {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::SetNeedsAnimateForScrollbarAnimation");
+  SetNeedsAnimate();
+}
+
 void LayerTreeHostImpl::SetNeedsRedrawForScrollbarAnimation() {
   SetNeedsRedraw();
+}
+
+ScrollbarSet LayerTreeHostImpl::ScrollbarsFor(int scroll_layer_id) const {
+  return active_tree_->ScrollbarsFor(scroll_layer_id);
 }
 
 void LayerTreeHostImpl::AddVideoFrameController(

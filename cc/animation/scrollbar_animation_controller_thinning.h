@@ -18,7 +18,7 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
     : public ScrollbarAnimationController {
  public:
   static scoped_ptr<ScrollbarAnimationControllerThinning> Create(
-      LayerImpl* scroll_layer,
+      int scroll_layer_id,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta delay_before_starting,
       base::TimeDelta resize_delay_before_starting,
@@ -38,7 +38,7 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
 
  protected:
   ScrollbarAnimationControllerThinning(
-      LayerImpl* scroll_layer,
+      int scroll_layer_id,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta delay_before_starting,
       base::TimeDelta resize_delay_before_starting,

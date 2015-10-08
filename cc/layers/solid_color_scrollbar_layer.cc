@@ -43,7 +43,6 @@ SolidColorScrollbarLayer::SolidColorScrollbarLayer(
     int scroll_layer_id)
     : Layer(settings),
       scroll_layer_id_(Layer::INVALID_ID),
-      clip_layer_id_(scroll_layer_id),
       orientation_(orientation),
       thumb_thickness_(thumb_thickness),
       track_start_(track_start),
@@ -58,15 +57,10 @@ ScrollbarLayerInterface* SolidColorScrollbarLayer::ToScrollbarLayer() {
 
 void SolidColorScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
-  PushScrollClipPropertiesTo(layer);
-}
-
-void SolidColorScrollbarLayer::PushScrollClipPropertiesTo(LayerImpl* layer) {
   SolidColorScrollbarLayerImpl* scrollbar_layer =
       static_cast<SolidColorScrollbarLayerImpl*>(layer);
 
-  scrollbar_layer->SetScrollLayerAndClipLayerByIds(scroll_layer_id_,
-                                                   clip_layer_id_);
+  scrollbar_layer->SetScrollLayerId(scroll_layer_id_);
 }
 
 void SolidColorScrollbarLayer::SetNeedsDisplayRect(const gfx::Rect& rect) {
@@ -86,14 +80,6 @@ void SolidColorScrollbarLayer::SetScrollLayer(int layer_id) {
     return;
 
   scroll_layer_id_ = layer_id;
-  SetNeedsFullTreeSync();
-}
-
-void SolidColorScrollbarLayer::SetClipLayer(int layer_id) {
-  if (layer_id == clip_layer_id_)
-    return;
-
-  clip_layer_id_ = layer_id;
   SetNeedsFullTreeSync();
 }
 

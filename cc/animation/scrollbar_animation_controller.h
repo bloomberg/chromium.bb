@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/scrollbar_layer_impl_base.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
@@ -18,13 +19,11 @@ class ScrollbarAnimationController;
 
 class CC_EXPORT ScrollbarAnimationControllerClient {
  public:
-  virtual void StartAnimatingScrollbarAnimationController(
-      ScrollbarAnimationController* controller) = 0;
-  virtual void StopAnimatingScrollbarAnimationController(
-      ScrollbarAnimationController* controller) = 0;
   virtual void PostDelayedScrollbarAnimationTask(const base::Closure& task,
                                                  base::TimeDelta delay) = 0;
   virtual void SetNeedsRedrawForScrollbarAnimation() = 0;
+  virtual void SetNeedsAnimateForScrollbarAnimation() = 0;
+  virtual ScrollbarSet ScrollbarsFor(int scroll_layer_id) const = 0;
 
  protected:
   virtual ~ScrollbarAnimationControllerClient() {}
@@ -46,7 +45,7 @@ class CC_EXPORT ScrollbarAnimationController {
   virtual void DidMouseMoveNear(float distance) {}
 
  protected:
-  ScrollbarAnimationController(LayerImpl* scroll_layer,
+  ScrollbarAnimationController(int scroll_layer_id,
                                ScrollbarAnimationControllerClient* client,
                                base::TimeDelta delay_before_starting,
                                base::TimeDelta resize_delay_before_starting,
@@ -56,8 +55,8 @@ class CC_EXPORT ScrollbarAnimationController {
 
   void StartAnimation();
   void StopAnimation();
+  ScrollbarSet Scrollbars() const;
 
-  LayerImpl* scroll_layer_;
   ScrollbarAnimationControllerClient* client_;
 
  private:
@@ -74,6 +73,7 @@ class CC_EXPORT ScrollbarAnimationController {
 
   bool is_animating_;
 
+  int scroll_layer_id_;
   bool currently_scrolling_;
   bool scroll_gesture_has_scrolled_;
   base::CancelableClosure delayed_scrollbar_fade_;

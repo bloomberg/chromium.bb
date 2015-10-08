@@ -298,6 +298,11 @@ class CC_EXPORT LayerTreeHostImpl
 
   size_t SourceAnimationFrameNumberForTesting() const;
 
+  void RegisterScrollbarAnimationController(int scroll_layer_id);
+  void UnregisterScrollbarAnimationController(int scroll_layer_id);
+  ScrollbarAnimationController* ScrollbarAnimationControllerForId(
+      int scroll_layer_id) const;
+
   DrawMode GetDrawMode() const;
 
   // Viewport size in draw space: this size is in physical pixels and is used
@@ -323,13 +328,11 @@ class CC_EXPORT LayerTreeHostImpl
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
 
   // ScrollbarAnimationControllerClient implementation.
-  void StartAnimatingScrollbarAnimationController(
-      ScrollbarAnimationController* controller) override;
-  void StopAnimatingScrollbarAnimationController(
-      ScrollbarAnimationController* controller) override;
   void PostDelayedScrollbarAnimationTask(const base::Closure& task,
                                          base::TimeDelta delay) override;
+  void SetNeedsAnimateForScrollbarAnimation() override;
   void SetNeedsRedrawForScrollbarAnimation() override;
+  ScrollbarSet ScrollbarsFor(int scroll_layer_id) const override;
 
   // VideoBeginFrameSource implementation.
   void AddVideoFrameController(VideoFrameController* controller) override;
@@ -652,8 +655,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   void ClearCurrentlyScrollingLayer();
 
-  bool HandleMouseOverScrollbar(LayerImpl* layer_impl,
-                                const gfx::PointF& device_viewport_point);
+  void HandleMouseOverScrollbar(LayerImpl* layer_impl);
 
   LayerImpl* FindScrollLayerForDeviceViewportPoint(
       const gfx::PointF& device_viewport_point,
@@ -783,8 +785,12 @@ class CC_EXPORT LayerTreeHostImpl
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
   scoped_ptr<AnimationHost> animation_host_;
-  std::set<ScrollbarAnimationController*> scrollbar_animation_controllers_;
   std::set<VideoFrameController*> video_frame_controllers_;
+
+  // Map from scroll layer ID to scrollbar animation controller.
+  // There is one animation controller per pair of overlay scrollbars.
+  base::ScopedPtrHashMap<int, scoped_ptr<ScrollbarAnimationController>>
+      scrollbar_animation_controllers_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
   MicroBenchmarkControllerImpl micro_benchmark_controller_;

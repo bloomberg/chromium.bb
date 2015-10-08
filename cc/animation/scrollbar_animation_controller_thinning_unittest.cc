@@ -23,14 +23,6 @@ class ScrollbarAnimationControllerThinningTest
   ScrollbarAnimationControllerThinningTest()
       : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_) {}
 
-  void StartAnimatingScrollbarAnimationController(
-      ScrollbarAnimationController* controller) override {
-    is_animating_ = true;
-  }
-  void StopAnimatingScrollbarAnimationController(
-      ScrollbarAnimationController* controller) override {
-    is_animating_ = false;
-  }
   void PostDelayedScrollbarAnimationTask(const base::Closure& start_fade,
                                          base::TimeDelta delay) override {
     start_fade_ = start_fade;
@@ -38,6 +30,12 @@ class ScrollbarAnimationControllerThinningTest
   }
   void SetNeedsRedrawForScrollbarAnimation() override {
     did_request_redraw_ = true;
+  }
+  void SetNeedsAnimateForScrollbarAnimation() override {
+    did_request_animate_ = true;
+  }
+  ScrollbarSet ScrollbarsFor(int scroll_layer_id) const override {
+    return host_impl_.ScrollbarsFor(scroll_layer_id);
   }
 
  protected:
@@ -63,13 +61,12 @@ class ScrollbarAnimationControllerThinningTest
                                              kIsLeftSideVerticalScrollbar,
                                              kIsOverlayScrollbar);
 
-    scrollbar_layer_->SetScrollLayerAndClipLayerByIds(scroll_layer_ptr->id(),
-                                                      clip_layer_->id());
+    scrollbar_layer_->SetScrollLayerId(scroll_layer_ptr->id());
     clip_layer_->SetBounds(gfx::Size(100, 100));
     scroll_layer_ptr->SetBounds(gfx::Size(200, 200));
 
     scrollbar_controller_ = ScrollbarAnimationControllerThinning::Create(
-        scroll_layer_ptr, this, base::TimeDelta::FromSeconds(2),
+        scroll_layer_ptr->id(), this, base::TimeDelta::FromSeconds(2),
         base::TimeDelta::FromSeconds(5), base::TimeDelta::FromSeconds(3));
   }
 
@@ -83,8 +80,8 @@ class ScrollbarAnimationControllerThinningTest
 
   base::Closure start_fade_;
   base::TimeDelta delay_;
-  bool is_animating_;
   bool did_request_redraw_;
+  bool did_request_animate_;
 };
 
 // Check initialization of scrollbar.

@@ -12,26 +12,22 @@
 namespace cc {
 
 ScrollbarAnimationController::ScrollbarAnimationController(
-    LayerImpl* scroll_layer,
+    int scroll_layer_id,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta delay_before_starting,
     base::TimeDelta resize_delay_before_starting,
     base::TimeDelta duration)
-    : scroll_layer_(scroll_layer),
-      client_(client),
+    : client_(client),
       delay_before_starting_(delay_before_starting),
       resize_delay_before_starting_(resize_delay_before_starting),
       duration_(duration),
       is_animating_(false),
+      scroll_layer_id_(scroll_layer_id),
       currently_scrolling_(false),
       scroll_gesture_has_scrolled_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
-ScrollbarAnimationController::~ScrollbarAnimationController() {
-  if (is_animating_)
-    client_->StopAnimatingScrollbarAnimationController(this);
-}
+ScrollbarAnimationController::~ScrollbarAnimationController() {}
 
 void ScrollbarAnimationController::Animate(base::TimeTicks now) {
   if (!is_animating_)
@@ -42,6 +38,9 @@ void ScrollbarAnimationController::Animate(base::TimeTicks now) {
 
   float progress = AnimationProgressAtTime(now);
   RunAnimationFrame(progress);
+
+  if (is_animating_)
+    client_->SetNeedsAnimateForScrollbarAnimation();
 }
 
 float ScrollbarAnimationController::AnimationProgressAtTime(
@@ -90,12 +89,15 @@ void ScrollbarAnimationController::StartAnimation() {
   delayed_scrollbar_fade_.Cancel();
   is_animating_ = true;
   last_awaken_time_ = base::TimeTicks();
-  client_->StartAnimatingScrollbarAnimationController(this);
+  client_->SetNeedsAnimateForScrollbarAnimation();
 }
 
 void ScrollbarAnimationController::StopAnimation() {
   is_animating_ = false;
-  client_->StopAnimatingScrollbarAnimationController(this);
+}
+
+ScrollbarSet ScrollbarAnimationController::Scrollbars() const {
+  return client_->ScrollbarsFor(scroll_layer_id_);
 }
 
 }  // namespace cc

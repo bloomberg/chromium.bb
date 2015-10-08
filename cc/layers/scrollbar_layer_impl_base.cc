@@ -17,19 +17,19 @@ ScrollbarLayerImplBase::ScrollbarLayerImplBase(
     bool is_left_side_vertical_scrollbar,
     bool is_overlay)
     : LayerImpl(tree_impl, id),
-      scroll_layer_(nullptr),
-      clip_layer_(nullptr),
+      scroll_layer_id_(Layer::INVALID_ID),
       is_overlay_scrollbar_(is_overlay),
       thumb_thickness_scale_factor_(1.f),
       current_pos_(0.f),
-      maximum_(0),
+      clip_layer_length_(0.f),
+      scroll_layer_length_(0.f),
       orientation_(orientation),
       is_left_side_vertical_scrollbar_(is_left_side_vertical_scrollbar),
-      vertical_adjust_(0.f),
-      visible_to_total_length_ratio_(1.f) {
-}
+      vertical_adjust_(0.f) {}
 
-ScrollbarLayerImplBase::~ScrollbarLayerImplBase() {}
+ScrollbarLayerImplBase::~ScrollbarLayerImplBase() {
+  layer_tree_impl()->UnregisterScrollbar(this);
+}
 
 void ScrollbarLayerImplBase::PushPropertiesTo(LayerImpl* layer) {
   float active_opacity = layer->opacity();
@@ -39,7 +39,7 @@ void ScrollbarLayerImplBase::PushPropertiesTo(LayerImpl* layer) {
   layer->SetHideLayerAndSubtree(active_hidden);
   DCHECK(layer->ToScrollbarLayer());
   layer->ToScrollbarLayer()->set_is_overlay_scrollbar(is_overlay_scrollbar_);
-  PushScrollClipPropertiesTo(layer);
+  layer->ToScrollbarLayer()->SetScrollLayerId(ScrollLayerId());
 }
 
 void ScrollbarLayerImplBase::DidBecomeActive() {
@@ -47,56 +47,19 @@ void ScrollbarLayerImplBase::DidBecomeActive() {
   UpdatePropertyTreeOpacity();
 }
 
-void ScrollbarLayerImplBase::PushScrollClipPropertiesTo(LayerImpl* layer) {
-  DCHECK(layer->ToScrollbarLayer());
-  layer->ToScrollbarLayer()->SetScrollLayerAndClipLayerByIds(ScrollLayerId(),
-                                                             ClipLayerId());
-}
-
 ScrollbarLayerImplBase* ScrollbarLayerImplBase::ToScrollbarLayer() {
   return this;
 }
 
-namespace {
-
-typedef void (LayerImpl::*ScrollbarRegistrationOperation)(
-    ScrollbarLayerImplBase*);
-
-void RegisterScrollbarWithLayers(ScrollbarLayerImplBase* scrollbar,
-                                 LayerImpl* container_layer,
-                                 LayerImpl* scroll_layer,
-                                 ScrollbarRegistrationOperation operation) {
-  if (!container_layer || !scroll_layer)
+void ScrollbarLayerImplBase::SetScrollLayerId(int scroll_layer_id) {
+  if (scroll_layer_id_ == scroll_layer_id)
     return;
 
-  DCHECK(scrollbar);
+  layer_tree_impl()->UnregisterScrollbar(this);
 
-  // Scrollbars must be notifed of changes to their scroll and container layers
-  // and all scrollable layers in between.
-  for (LayerImpl* current_layer = scroll_layer;
-       current_layer && current_layer != container_layer->parent();
-       current_layer = current_layer->parent()) {
-    (current_layer->*operation)(scrollbar);
-  }
-}
-}  // namespace
+  scroll_layer_id_ = scroll_layer_id;
 
-void ScrollbarLayerImplBase::SetScrollLayerAndClipLayerByIds(
-    int scroll_layer_id,
-    int clip_layer_id) {
-  LayerImpl* scroll_layer = layer_tree_impl()->LayerById(scroll_layer_id);
-  LayerImpl* clip_layer = layer_tree_impl()->LayerById(clip_layer_id);
-  if (scroll_layer_ == scroll_layer && clip_layer_ == clip_layer)
-    return;
-
-  RegisterScrollbarWithLayers(
-      this, clip_layer_, scroll_layer_, &LayerImpl::RemoveScrollbar);
-  scroll_layer_ = scroll_layer;
-  clip_layer_ = clip_layer;
-  RegisterScrollbarWithLayers(
-      this, clip_layer_, scroll_layer_, &LayerImpl::AddScrollbar);
-
-  ScrollbarParametersDidChange(false);
+  layer_tree_impl()->RegisterScrollbar(this);
 }
 
 bool ScrollbarLayerImplBase::SetCurrentPos(float current_pos) {
@@ -107,18 +70,12 @@ bool ScrollbarLayerImplBase::SetCurrentPos(float current_pos) {
   return true;
 }
 
-bool ScrollbarLayerImplBase::SetMaximum(int maximum) {
-  if (maximum_ == maximum)
-    return false;
-  maximum_ = maximum;
-  NoteLayerPropertyChanged();
-  return true;
-}
-
 bool ScrollbarLayerImplBase::CanScrollOrientation() const {
-  if (!scroll_layer_)
+  LayerImpl* scroll_layer = layer_tree_impl()->LayerById(scroll_layer_id_);
+  if (!scroll_layer)
     return false;
-  return scroll_layer_->user_scrollable(orientation()) && (0 < maximum());
+  return scroll_layer->user_scrollable(orientation()) &&
+         clip_layer_length_ < scroll_layer_length_;
 }
 
 bool ScrollbarLayerImplBase::SetVerticalAdjust(float vertical_adjust) {
@@ -129,13 +86,18 @@ bool ScrollbarLayerImplBase::SetVerticalAdjust(float vertical_adjust) {
   return true;
 }
 
-bool ScrollbarLayerImplBase::SetVisibleToTotalLengthRatio(float ratio) {
-  if (!IsThumbResizable())
+bool ScrollbarLayerImplBase::SetClipLayerLength(float clip_layer_length) {
+  if (clip_layer_length_ == clip_layer_length)
     return false;
+  clip_layer_length_ = clip_layer_length;
+  NoteLayerPropertyChanged();
+  return true;
+}
 
-  if (visible_to_total_length_ratio_ == ratio)
+bool ScrollbarLayerImplBase::SetScrollLayerLength(float scroll_layer_length) {
+  if (scroll_layer_length_ == scroll_layer_length)
     return false;
-  visible_to_total_length_ratio_ = ratio;
+  scroll_layer_length_ = scroll_layer_length;
   NoteLayerPropertyChanged();
   return true;
 }
@@ -213,14 +175,14 @@ gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
   float track_length = TrackLength();
   int thumb_length = ThumbLength();
   int thumb_thickness = ThumbThickness();
+  float maximum = scroll_layer_length_ - clip_layer_length_;
 
   // With the length known, we can compute the thumb's position.
-  float clamped_current_pos =
-      std::min(std::max(current_pos_, 0.f), static_cast<float>(maximum_));
+  float clamped_current_pos = std::min(std::max(current_pos_, 0.f), maximum);
 
   int thumb_offset = TrackStart();
-  if (maximum_ > 0) {
-    float ratio = clamped_current_pos / maximum_;
+  if (maximum > 0) {
+    float ratio = clamped_current_pos / maximum;
     float max_offset = track_length - thumb_length;
     thumb_offset += static_cast<int>(ratio * max_offset);
   }
@@ -245,13 +207,6 @@ gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
   }
 
   return gfx::ToEnclosingRect(thumb_rect);
-}
-
-void ScrollbarLayerImplBase::ScrollbarParametersDidChange(bool on_resize) {
-  if (!clip_layer_ || !scroll_layer_)
-    return;
-
-  scroll_layer_->SetScrollbarPosition(this, clip_layer_, on_resize);
 }
 
 }  // namespace cc

@@ -1364,29 +1364,27 @@ TEST_F(LayerTreeImplTest, MakeScrollbarsInvisibleNearMinPageScale) {
 
   scoped_ptr<LayerImpl> clip_layer = LayerImpl::Create(active_tree, 4);
   scoped_ptr<LayerImpl> page_scale_layer = LayerImpl::Create(active_tree, 5);
+  scoped_ptr<LayerImpl> outer_scroll_layer = LayerImpl::Create(active_tree, 6);
 
   scroll_layer->SetScrollClipLayer(clip_layer->id());
 
   LayerImpl* scroll_layer_ptr = scroll_layer.get();
+  LayerImpl* outer_scroll_layer_ptr = outer_scroll_layer.get();
   LayerImpl* page_scale_layer_ptr = page_scale_layer.get();
 
+  scroll_layer->AddChild(outer_scroll_layer.Pass());
   clip_layer->AddChild(page_scale_layer.Pass());
   page_scale_layer_ptr->AddChild(scroll_layer.Pass());
 
-  vertical_scrollbar_layer->SetScrollLayerAndClipLayerByIds(
-      scroll_layer_ptr->id(),
-      clip_layer->id());
-  horizontal_scrollbar_layer->SetScrollLayerAndClipLayerByIds(
-      scroll_layer_ptr->id(),
-      clip_layer->id());
+  active_tree->SetViewportLayersFromIds(Layer::INVALID_ID,  // Overscroll
+                                        page_scale_layer_ptr->id(),
+                                        scroll_layer_ptr->id(),
+                                        outer_scroll_layer_ptr->id());
+
+  vertical_scrollbar_layer->SetScrollLayerId(outer_scroll_layer_ptr->id());
+  horizontal_scrollbar_layer->SetScrollLayerId(outer_scroll_layer_ptr->id());
 
   active_tree->PushPageScaleFromMainThread(1.0f, 1.0f, 4.0f);
-  active_tree->SetViewportLayersFromIds(
-      Layer::INVALID_ID,  // Overscroll
-      page_scale_layer_ptr->id(),
-      scroll_layer_ptr->id(),
-      Layer::INVALID_ID);  // Outer Scroll
-
   EXPECT_TRUE(vertical_scrollbar_layer->hide_layer_and_subtree());
   EXPECT_TRUE(horizontal_scrollbar_layer->hide_layer_and_subtree());
 

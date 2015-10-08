@@ -370,8 +370,6 @@ void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation)
         ScrollbarOrientation webcoreOrientation = isHorizontal ? HorizontalScrollbar : VerticalScrollbar;
         webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(webcoreOrientation, thumbThickness, scrollbarMargin, false);
 
-        webScrollbarLayer->setClipLayer(m_innerViewportContainerLayer->platformLayer());
-
         // The compositor will control the scrollbar's visibility. Set to invisible by defualt
         // so scrollbars don't show up in layout tests.
         webScrollbarLayer->layer()->setOpacity(0);

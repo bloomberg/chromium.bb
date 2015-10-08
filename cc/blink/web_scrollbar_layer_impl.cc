@@ -67,11 +67,4 @@ void WebScrollbarLayerImpl::setScrollLayer(blink::WebLayer* layer) {
       scroll_layer ? scroll_layer->id() : cc::Layer::INVALID_ID);
 }
 
-void WebScrollbarLayerImpl::setClipLayer(blink::WebLayer* layer) {
-  cc::Layer* clip_layer =
-      layer ? static_cast<WebLayerImpl*>(layer)->layer() : 0;
-  layer_->layer()->ToScrollbarLayer()->SetClipLayer(
-      clip_layer ? clip_layer->id() : cc::Layer::INVALID_ID);
-}
-
 }  // namespace cc_blink

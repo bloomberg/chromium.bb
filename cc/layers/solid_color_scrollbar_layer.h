@@ -29,14 +29,12 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
   ScrollbarLayerInterface* ToScrollbarLayer() override;
 
   void PushPropertiesTo(LayerImpl* layer) override;
-  void PushScrollClipPropertiesTo(LayerImpl* layer) override;
 
   void SetNeedsDisplayRect(const gfx::Rect& rect) override;
 
   // ScrollbarLayerInterface
   int ScrollLayerId() const override;
   void SetScrollLayer(int layer_id) override;
-  void SetClipLayer(int layer_id) override;
 
   ScrollbarOrientation orientation() const override;
 
@@ -51,7 +49,6 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
 
  private:
   int scroll_layer_id_;
-  int clip_layer_id_;
   ScrollbarOrientation orientation_;
   int thumb_thickness_;
   int track_start_;

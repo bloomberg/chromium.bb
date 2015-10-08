@@ -75,9 +75,11 @@ int SolidColorScrollbarLayerImpl::ThumbThickness() const {
 }
 
 int SolidColorScrollbarLayerImpl::ThumbLength() const {
-  return std::max(
-      static_cast<int>(visible_to_total_length_ratio() * TrackLength()),
-      ThumbThickness());
+  float thumb_length = TrackLength();
+  if (scroll_layer_length())
+    thumb_length *= clip_layer_length() / scroll_layer_length();
+
+  return std::max(static_cast<int>(thumb_length), ThumbThickness());
 }
 
 float SolidColorScrollbarLayerImpl::TrackLength() const {

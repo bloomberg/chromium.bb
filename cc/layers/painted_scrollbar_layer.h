@@ -31,7 +31,6 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   // ScrollbarLayerInterface
   int ScrollLayerId() const override;
   void SetScrollLayer(int layer_id) override;
-  void SetClipLayer(int layer_id) override;
 
   ScrollbarOrientation orientation() const override;
 
@@ -39,7 +38,6 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   bool Update() override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
-  void PushScrollClipPropertiesTo(LayerImpl* layer) override;
 
   const gfx::Size& internal_content_bounds() const {
     return internal_content_bounds_;
@@ -83,7 +81,6 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
 
   scoped_ptr<Scrollbar> scrollbar_;
   int scroll_layer_id_;
-  int clip_layer_id_;
 
   float internal_contents_scale_;
   gfx::Size internal_content_bounds_;

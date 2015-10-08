@@ -45,7 +45,6 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(const LayerSettings& settings,
     : Layer(settings),
       scrollbar_(scrollbar.Pass()),
       scroll_layer_id_(scroll_layer_id),
-      clip_layer_id_(Layer::INVALID_ID),
       internal_contents_scale_(1.f),
       thumb_thickness_(scrollbar_->ThumbThickness()),
       thumb_length_(scrollbar_->ThumbLength()),
@@ -66,14 +65,6 @@ void PaintedScrollbarLayer::SetScrollLayer(int layer_id) {
     return;
 
   scroll_layer_id_ = layer_id;
-  SetNeedsFullTreeSync();
-}
-
-void PaintedScrollbarLayer::SetClipLayer(int layer_id) {
-  if (layer_id == clip_layer_id_)
-    return;
-
-  clip_layer_id_ = layer_id;
   SetNeedsFullTreeSync();
 }
 
@@ -108,11 +99,10 @@ float PaintedScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
 void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
 
-  PushScrollClipPropertiesTo(layer);
-
   PaintedScrollbarLayerImpl* scrollbar_layer =
       static_cast<PaintedScrollbarLayerImpl*>(layer);
 
+  scrollbar_layer->SetScrollLayerId(scroll_layer_id_);
   scrollbar_layer->set_internal_contents_scale_and_bounds(
       internal_contents_scale_, internal_content_bounds_);
 
@@ -142,14 +132,6 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
 
 ScrollbarLayerInterface* PaintedScrollbarLayer::ToScrollbarLayer() {
   return this;
-}
-
-void PaintedScrollbarLayer::PushScrollClipPropertiesTo(LayerImpl* layer) {
-  PaintedScrollbarLayerImpl* scrollbar_layer =
-      static_cast<PaintedScrollbarLayerImpl*>(layer);
-
-  scrollbar_layer->SetScrollLayerAndClipLayerByIds(scroll_layer_id_,
-                                                   clip_layer_id_);
 }
 
 void PaintedScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {

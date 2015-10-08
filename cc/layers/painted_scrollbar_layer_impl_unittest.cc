@@ -46,8 +46,8 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
   scrollbar_layer_impl->SetThumbLength(500);
   scrollbar_layer_impl->SetTrackLength(layer_size.height());
   scrollbar_layer_impl->SetCurrentPos(100.f / 4);
-  scrollbar_layer_impl->SetMaximum(100);
-  scrollbar_layer_impl->SetVisibleToTotalLengthRatio(1.f / 2);
+  scrollbar_layer_impl->SetClipLayerLength(100.f);
+  scrollbar_layer_impl->SetScrollLayerLength(200.f);
   scrollbar_layer_impl->set_track_ui_resource_id(track_uid);
   scrollbar_layer_impl->set_thumb_ui_resource_id(thumb_uid);
 

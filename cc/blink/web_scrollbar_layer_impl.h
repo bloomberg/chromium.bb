@@ -35,7 +35,6 @@ class WebScrollbarLayerImpl : public blink::WebScrollbarLayer {
   // blink::WebScrollbarLayer implementation.
   blink::WebLayer* layer() override;
   void setScrollLayer(blink::WebLayer* layer) override;
-  void setClipLayer(blink::WebLayer* layer) override;
 
  private:
   scoped_ptr<WebLayerImpl> layer_;

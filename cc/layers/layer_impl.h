@@ -23,7 +23,6 @@
 #include "cc/base/synced_property.h"
 #include "cc/debug/frame_timing_request.h"
 #include "cc/input/input_handler.h"
-#include "cc/input/scrollbar.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/layer_position_constraint.h"
@@ -62,7 +61,6 @@ class PrioritizedTile;
 class RenderPass;
 class RenderPassId;
 class Renderer;
-class ScrollbarAnimationController;
 class ScrollbarLayerImplBase;
 class SimpleEnclosedRegion;
 class Tile;
@@ -451,9 +449,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::ScrollOffset MaxScrollOffset() const;
   gfx::ScrollOffset ClampScrollOffsetToLimits(gfx::ScrollOffset offset) const;
   gfx::Vector2dF ClampScrollToMaxScrollOffset();
-  void SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
-                            LayerImpl* scrollbar_clip_layer,
-                            bool on_resize) const;
   void SetScrollCompensationAdjustment(const gfx::Vector2dF& scroll_offset) {
     scroll_compensation_adjustment_ = scroll_offset;
   }
@@ -466,8 +461,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF& scroll);
 
   void SetScrollClipLayer(int scroll_clip_layer_id);
-  LayerImpl* scroll_clip_layer() const { return scroll_clip_layer_; }
-  bool scrollable() const { return !!scroll_clip_layer_; }
+  int scroll_clip_layer_id() const { return scroll_clip_layer_id_; }
+  LayerImpl* scroll_clip_layer() const;
+  bool scrollable() const;
 
   void set_user_scrollable_horizontal(bool scrollable) {
     user_scrollable_horizontal_ = scrollable;
@@ -582,7 +578,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   virtual SimpleEnclosedRegion VisibleOpaqueRegion() const;
 
-  virtual void DidBecomeActive();
+  virtual void DidBecomeActive() {}
 
   virtual void DidBeginTracing();
 
@@ -594,19 +590,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // ReleaseResources call.
   virtual void RecreateResources();
 
-  ScrollbarAnimationController* scrollbar_animation_controller() const {
-    return scrollbar_animation_controller_.get();
-  }
-
-  typedef std::set<ScrollbarLayerImplBase*> ScrollbarSet;
-  ScrollbarSet* scrollbars() { return scrollbars_.get(); }
-  void ClearScrollbars();
-  void AddScrollbar(ScrollbarLayerImplBase* layer);
-  void RemoveScrollbar(ScrollbarLayerImplBase* layer);
-  bool HasScrollbar(ScrollbarOrientation orientation) const;
-  void ScrollbarParametersDidChange(bool on_resize);
   int clip_height() {
-    return scroll_clip_layer_ ? scroll_clip_layer_->bounds().height() : 0;
+    return scroll_clip_layer() ? scroll_clip_layer()->bounds().height() : 0;
   }
 
   virtual skia::RefPtr<SkPicture> GetPicture();
@@ -763,7 +748,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Properties synchronized from the associated Layer.
   gfx::Point3F transform_origin_;
   gfx::Size bounds_;
-  LayerImpl* scroll_clip_layer_;
+  int scroll_clip_layer_id_;
 
   gfx::Vector2dF offset_to_transform_parent_;
 
@@ -862,11 +847,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   // Manages animations for this layer.
   scoped_refptr<LayerAnimationController> layer_animation_controller_;
-
-  // Manages scrollbars for this layer
-  scoped_ptr<ScrollbarAnimationController> scrollbar_animation_controller_;
-
-  scoped_ptr<ScrollbarSet> scrollbars_;
 
   ScopedPtrVector<CopyOutputRequest> copy_requests_;
 

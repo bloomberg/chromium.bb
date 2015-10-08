@@ -112,6 +112,108 @@ void LayerTreeImpl::GatherFrameTimingRequestIds(
       });
 }
 
+bool LayerTreeImpl::IsViewportLayerId(int id) const {
+  if (id == inner_viewport_scroll_layer_id_ ||
+      id == outer_viewport_scroll_layer_id_)
+    return true;
+  if (InnerViewportContainerLayer() &&
+      id == InnerViewportContainerLayer()->id())
+    return true;
+  if (OuterViewportContainerLayer() &&
+      id == OuterViewportContainerLayer()->id())
+    return true;
+
+  return false;
+}
+
+void LayerTreeImpl::DidUpdateScrollState(int layer_id) {
+  if (!IsActiveTree())
+    return;
+
+  if (layer_id == Layer::INVALID_ID)
+    return;
+
+  int scroll_layer_id, clip_layer_id;
+  if (IsViewportLayerId(layer_id)) {
+    if (!InnerViewportContainerLayer())
+      return;
+
+    // For scrollbar purposes, a change to any of the four viewport layers
+    // should affect the scrollbars tied to the outermost layers, which express
+    // the sum of the entire viewport.
+    scroll_layer_id = outer_viewport_scroll_layer_id_;
+    clip_layer_id = InnerViewportContainerLayer()->id();
+  } else {
+    // If the clip layer id was passed in, then look up the scroll layer, or
+    // vice versa.
+    auto i = clip_scroll_map_.find(layer_id);
+    if (i != clip_scroll_map_.end()) {
+      scroll_layer_id = i->second;
+      clip_layer_id = layer_id;
+    } else {
+      scroll_layer_id = layer_id;
+      clip_layer_id = LayerById(scroll_layer_id)->scroll_clip_layer_id();
+    }
+  }
+  UpdateScrollbars(scroll_layer_id, clip_layer_id);
+}
+
+void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
+  DCHECK(IsActiveTree());
+
+  LayerImpl* clip_layer = LayerById(clip_layer_id);
+  LayerImpl* scroll_layer = LayerById(scroll_layer_id);
+
+  if (!clip_layer || !scroll_layer)
+    return;
+
+  gfx::SizeF clip_size(clip_layer->BoundsForScrolling());
+  gfx::SizeF scroll_size(scroll_layer->BoundsForScrolling());
+
+  if (scroll_size.IsEmpty())
+    return;
+
+  gfx::ScrollOffset current_offset = scroll_layer->CurrentScrollOffset();
+  if (IsViewportLayerId(scroll_layer_id)) {
+    current_offset += InnerViewportScrollLayer()->CurrentScrollOffset();
+    clip_size.Scale(1 / current_page_scale_factor());
+  }
+
+  bool scrollbar_needs_animation = false;
+  bool scroll_layer_size_did_change = false;
+  bool y_offset_did_change = false;
+  for (ScrollbarLayerImplBase* scrollbar : ScrollbarsFor(scroll_layer_id)) {
+    if (scrollbar->orientation() == HORIZONTAL) {
+      scrollbar_needs_animation |= scrollbar->SetCurrentPos(current_offset.x());
+      scrollbar_needs_animation |=
+          scrollbar->SetClipLayerLength(clip_size.width());
+      scrollbar_needs_animation |= scroll_layer_size_did_change |=
+          scrollbar->SetScrollLayerLength(scroll_size.width());
+    } else {
+      scrollbar_needs_animation |= y_offset_did_change |=
+          scrollbar->SetCurrentPos(current_offset.y());
+      scrollbar_needs_animation |=
+          scrollbar->SetClipLayerLength(clip_size.height());
+      scrollbar_needs_animation |= scroll_layer_size_did_change |=
+          scrollbar->SetScrollLayerLength(scroll_size.height());
+    }
+    scrollbar_needs_animation |=
+        scrollbar->SetVerticalAdjust(clip_layer->bounds_delta().y());
+  }
+
+  if (y_offset_did_change && IsViewportLayerId(scroll_layer_id))
+    TRACE_COUNTER_ID1("cc", "scroll_offset_y", scroll_layer->id(),
+                      current_offset.y());
+
+  if (scrollbar_needs_animation) {
+    ScrollbarAnimationController* controller =
+        layer_tree_host_impl_->ScrollbarAnimationControllerForId(
+            scroll_layer_id);
+    if (controller)
+      controller->DidScrollUpdate(scroll_layer_size_did_change);
+  }
+}
+
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
   root_layer_ = layer.Pass();
 
@@ -272,31 +374,22 @@ void LayerTreeImpl::SetCurrentlyScrollingLayer(LayerImpl* layer) {
   if (currently_scrolling_layer_id_ == new_id)
     return;
 
-  if (CurrentlyScrollingLayer() &&
-      CurrentlyScrollingLayer()->scrollbar_animation_controller())
-    CurrentlyScrollingLayer()->scrollbar_animation_controller()->DidScrollEnd();
+  ScrollbarAnimationController* old_animation_controller =
+      layer_tree_host_impl_->ScrollbarAnimationControllerForId(
+          currently_scrolling_layer_id_);
+  ScrollbarAnimationController* new_animation_controller =
+      layer_tree_host_impl_->ScrollbarAnimationControllerForId(new_id);
+
+  if (old_animation_controller)
+    old_animation_controller->DidScrollEnd();
   currently_scrolling_layer_id_ = new_id;
-  if (layer && layer->scrollbar_animation_controller())
-    layer->scrollbar_animation_controller()->DidScrollBegin();
+  if (new_animation_controller)
+    new_animation_controller->DidScrollBegin();
 }
 
 void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
   SetCurrentlyScrollingLayer(NULL);
 }
-
-namespace {
-
-void ForceScrollbarParameterUpdateAfterScaleChange(LayerImpl* current_layer) {
-  if (!current_layer)
-    return;
-
-  while (current_layer) {
-    current_layer->ScrollbarParametersDidChange(false);
-    current_layer = current_layer->parent();
-  }
-}
-
-}  // namespace
 
 float LayerTreeImpl::ClampPageScaleFactorToLimits(
     float page_scale_factor) const {
@@ -425,7 +518,7 @@ void LayerTreeImpl::DidUpdatePageScale() {
         ClampPageScaleFactorToLimits(current_page_scale_factor()));
 
   set_needs_update_draw_properties();
-  ForceScrollbarParameterUpdateAfterScaleChange(PageScaleLayer());
+  DidUpdateScrollState(inner_viewport_scroll_layer_id_);
   HideInnerViewportScrollbarsIfNeeded();
 }
 
@@ -439,23 +532,14 @@ void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
 }
 
 void LayerTreeImpl::HideInnerViewportScrollbarsIfNeeded() {
-  if (!InnerViewportContainerLayer())
-    return;
-
-  LayerImpl::ScrollbarSet* scrollbars =
-      InnerViewportContainerLayer()->scrollbars();
-
-  if (!scrollbars)
-    return;
-
   float minimum_scale_to_show_at = min_page_scale_factor() * 1.05f;
   bool hide_scrollbars =
       hide_pinch_scrollbars_near_min_scale_ &&
       (current_page_scale_factor() < minimum_scale_to_show_at);
 
-  for (LayerImpl::ScrollbarSet::iterator it = scrollbars->begin();
-       it != scrollbars->end(); ++it)
-    (*it)->SetHideLayerAndSubtree(hide_scrollbars);
+  for (ScrollbarLayerImplBase* scrollbar_layer :
+       ScrollbarsFor(outer_viewport_scroll_layer_id_))
+    scrollbar_layer->SetHideLayerAndSubtree(hide_scrollbars);
 }
 
 SyncedProperty<ScaleGroup>* LayerTreeImpl::page_scale_factor() {
@@ -916,7 +1000,7 @@ const gfx::Rect LayerTreeImpl::ViewportRectForTilePriority() const {
 }
 
 scoped_ptr<ScrollbarAnimationController>
-LayerTreeImpl::CreateScrollbarAnimationController(LayerImpl* scrolling_layer) {
+LayerTreeImpl::CreateScrollbarAnimationController(int scroll_layer_id) {
   DCHECK(settings().scrollbar_fade_delay_ms);
   DCHECK(settings().scrollbar_fade_duration_ms);
   base::TimeDelta delay =
@@ -928,18 +1012,13 @@ LayerTreeImpl::CreateScrollbarAnimationController(LayerImpl* scrolling_layer) {
   switch (settings().scrollbar_animator) {
     case LayerTreeSettings::LINEAR_FADE: {
       return ScrollbarAnimationControllerLinearFade::Create(
-          scrolling_layer,
-          layer_tree_host_impl_,
-          delay,
-          resize_delay,
+          scroll_layer_id, layer_tree_host_impl_, delay, resize_delay,
           duration);
     }
     case LayerTreeSettings::THINNING: {
-      return ScrollbarAnimationControllerThinning::Create(scrolling_layer,
-                                                          layer_tree_host_impl_,
-                                                          delay,
-                                                          resize_delay,
-                                                          duration);
+      return ScrollbarAnimationControllerThinning::Create(
+          scroll_layer_id, layer_tree_host_impl_, delay, resize_delay,
+          duration);
     }
     case LayerTreeSettings::NO_ANIMATOR:
       NOTREACHED();
@@ -1132,6 +1211,62 @@ void LayerTreeImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
       std::find(picture_layers_.begin(), picture_layers_.end(), layer);
   DCHECK(it != picture_layers_.end());
   picture_layers_.erase(it);
+}
+
+void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
+  if (scrollbar_layer->ScrollLayerId() == Layer::INVALID_ID)
+    return;
+
+  scrollbar_map_.insert(std::pair<int, int>(scrollbar_layer->ScrollLayerId(),
+                                            scrollbar_layer->id()));
+  if (IsActiveTree() && scrollbar_layer->is_overlay_scrollbar())
+    layer_tree_host_impl_->RegisterScrollbarAnimationController(
+        scrollbar_layer->ScrollLayerId());
+
+  DidUpdateScrollState(scrollbar_layer->ScrollLayerId());
+}
+
+void LayerTreeImpl::UnregisterScrollbar(
+    ScrollbarLayerImplBase* scrollbar_layer) {
+  int scroll_layer_id = scrollbar_layer->ScrollLayerId();
+  if (scroll_layer_id == Layer::INVALID_ID)
+    return;
+
+  auto scrollbar_range = scrollbar_map_.equal_range(scroll_layer_id);
+  for (auto i = scrollbar_range.first; i != scrollbar_range.second; ++i)
+    if (i->second == scrollbar_layer->id()) {
+      scrollbar_map_.erase(i);
+      break;
+    }
+
+  if (IsActiveTree() && scrollbar_map_.count(scroll_layer_id) == 0)
+    layer_tree_host_impl_->UnregisterScrollbarAnimationController(
+        scroll_layer_id);
+}
+
+ScrollbarSet LayerTreeImpl::ScrollbarsFor(int scroll_layer_id) const {
+  ScrollbarSet scrollbars;
+  auto scrollbar_range = scrollbar_map_.equal_range(scroll_layer_id);
+  for (auto i = scrollbar_range.first; i != scrollbar_range.second; ++i)
+    scrollbars.insert(LayerById(i->second)->ToScrollbarLayer());
+  return scrollbars;
+}
+
+void LayerTreeImpl::RegisterScrollLayer(LayerImpl* layer) {
+  if (layer->scroll_clip_layer_id() == Layer::INVALID_ID)
+    return;
+
+  clip_scroll_map_.insert(
+      std::pair<int, int>(layer->scroll_clip_layer_id(), layer->id()));
+
+  DidUpdateScrollState(layer->id());
+}
+
+void LayerTreeImpl::UnregisterScrollLayer(LayerImpl* layer) {
+  if (layer->scroll_clip_layer_id() == Layer::INVALID_ID)
+    return;
+
+  clip_scroll_map_.erase(layer->scroll_clip_layer_id());
 }
 
 void LayerTreeImpl::AddLayerWithCopyOutputRequest(LayerImpl* layer) {
