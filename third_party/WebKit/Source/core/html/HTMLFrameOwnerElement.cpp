@@ -123,10 +123,11 @@ LayoutPart* HTMLFrameOwnerElement::layoutPart() const
 
 void HTMLFrameOwnerElement::setContentFrame(Frame& frame)
 {
+    // TODO(bokan): Temporarily made RELEASE_ASSERT to trackdown crbug.com/519752.
     // Make sure we will not end up with two frames referencing the same owner element.
-    ASSERT(!m_contentFrame || m_contentFrame->owner() != this);
+    RELEASE_ASSERT(!m_contentFrame || m_contentFrame->owner() != this);
     // Disconnected frames should not be allowed to load.
-    ASSERT(inDocument());
+    RELEASE_ASSERT(inDocument());
     m_contentFrame = &frame;
 
     for (ContainerNode* node = this; node; node = node->parentOrShadowHostNode())
@@ -167,9 +168,15 @@ void HTMLFrameOwnerElement::disconnectContentFrame()
 
 HTMLFrameOwnerElement::~HTMLFrameOwnerElement()
 {
+#if !ENABLE(OILPAN)
+    // TODO(bokan): Temporarily made RELEASE_ASSERT to trackdown crbug.com/519752.
     // An owner must by now have been informed of detachment
     // when the frame was closed.
-    ASSERT(!m_contentFrame);
+    if (m_contentFrame) {
+        RELEASE_ASSERT(m_contentFrame->owner() == this);
+    }
+    RELEASE_ASSERT(!m_contentFrame);
+#endif
 }
 
 Document* HTMLFrameOwnerElement::contentDocument() const

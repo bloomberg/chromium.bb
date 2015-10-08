@@ -85,8 +85,9 @@ public:
     void incrementConnectedSubframeCount(unsigned amount);
     void decrementConnectedSubframeCount(unsigned amount)
     {
-        ASSERT(m_connectedFrameCount);
-        ASSERT(amount <= m_connectedFrameCount);
+        // TODO(bokan): Temporarily made RELEASE_ASSERT to trackdown crbug.com/519752.
+        RELEASE_ASSERT(m_connectedFrameCount);
+        RELEASE_ASSERT(amount <= m_connectedFrameCount);
         m_connectedFrameCount -= amount;
     }
 
