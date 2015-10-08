@@ -165,8 +165,10 @@ class TestJar(object):
     return sorted(tests_missing_annotations)
 
   def _IsTestValidForSdkRange(self, test_name, attached_min_sdk_level):
-    required_min_sdk_level = int(
-        self.GetTestAnnotations(test_name).get('MinAndroidSdkLevel', 0))
+    required_min_sdk_level = self.GetTestAnnotations(
+      test_name).get('MinAndroidSdkLevel', None)
+    if required_min_sdk_level:
+      required_min_sdk_level = int(required_min_sdk_level['value'])
     return (required_min_sdk_level is None or
             attached_min_sdk_level >= required_min_sdk_level)
 

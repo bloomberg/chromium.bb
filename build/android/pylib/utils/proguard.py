@@ -18,7 +18,9 @@ _PROGUARD_SECTION_RE = re.compile(
 _PROGUARD_METHOD_RE = re.compile(r'\s*?- Method:\s*(\S*)[(].*$')
 _PROGUARD_ANNOTATION_RE = re.compile(r'\s*?- Annotation \[L(\S*);\]:$')
 _PROGUARD_ANNOTATION_CONST_RE = (
-    re.compile(r'\s*?- Constant element value.*$'))
+    re.compile(r'\s*?- Constant element value \[(\S*) .*\]$'))
+_PROGUARD_ANNOTATION_ARRAY_RE = (
+    re.compile(r'\s*?- Array element value \[(\S*)\]:$'))
 _PROGUARD_ANNOTATION_VALUE_RE = re.compile(r'\s*?- \S+? \[(.*)\]$')
 
 _PROGUARD_PATH_SDK = os.path.join(
@@ -44,11 +46,11 @@ def Dump(jar_path):
           {
             'class': '',
             'superclass': '',
-            'annotations': {},
+            'annotations': {/* dict -- see below */},
             'methods': [
               {
                 'method': '',
-                'annotations': {},
+                'annotations': {/* dict -- see below */},
               },
               ...
             ],
@@ -56,6 +58,26 @@ def Dump(jar_path):
           ...
         ],
       }
+
+    Annotations dict format:
+      {
+        'empty-annotation-class-name': None,
+        'annotation-class-name': {
+          'field': 'primitive-value',
+          'field': [ 'array-item-1', 'array-item-2', ... ],
+          /* Object fields are not supported yet, coming soon! */
+          'field': {
+            /* Object value */
+            'field': 'primitive-value',
+            'field': [ 'array-item-1', 'array-item-2', ... ],
+            'field': { /* Object value */ }
+          }
+        }
+      }
+
+    Note that for top-level annotations their class names are used for
+    identification, whereas for any nested annotations the corresponding
+    field names are used.
   """
 
   with tempfile.NamedTemporaryFile() as proguard_output:
@@ -69,15 +91,66 @@ def Dump(jar_path):
                        '-dump', proguard_output.name])
     return Parse(proguard_output)
 
+class _ParseState(object):
+  def __init__(self):
+    self.class_result = None
+    self.method_result = None
+    self.annotation = None
+    self.annotation_field = None
+
+  def ResetPerSection(self):
+    self.InitMethod(None)
+
+  def InitClass(self, class_result):
+    self.InitMethod(None)
+    self.class_result = class_result
+
+  def InitMethod(self, method_result):
+    self.annotation = None
+    self.ResetAnnotationField()
+    self.method_result = method_result
+    if method_result:
+      self.class_result['methods'].append(method_result)
+
+  def InitAnnotation(self, annotation):
+    self.annotation = annotation
+    self.GetAnnotations()[annotation] = None
+    self.ResetAnnotationField()
+
+  def ResetAnnotationField(self):
+    self.annotation_field = None
+
+  def InitAnnotationField(self, field, value):
+    if not self.GetCurrentAnnotation():
+      self.GetAnnotations()[self.annotation] = {}
+    self.GetCurrentAnnotation()[field] = value
+    self.annotation_field = field
+
+  def UpdateCurrentAnnotationField(self, value):
+    ann = self.GetCurrentAnnotation()
+    assert ann
+    if type(ann[self.annotation_field]) is list:
+      ann[self.annotation_field].append(value)
+    else:
+      ann[self.annotation_field] = value
+      self.ResetAnnotationField()
+
+  def GetAnnotations(self):
+    if self.method_result:
+      return self.method_result['annotations']
+    else:
+      return self.class_result['annotations']
+
+  def GetCurrentAnnotation(self):
+    assert self.annotation
+    return self.GetAnnotations()[self.annotation]
+
 def Parse(proguard_output):
   results = {
     'classes': [],
   }
 
-  annotation = None
-  annotation_has_value = False
-  class_result = None
-  method_result = None
+  state = _ParseState()
 
   for line in proguard_output:
     line = line.strip('\r\n')
@@ -91,57 +164,56 @@ def Parse(proguard_output):
         'methods': [],
       }
       results['classes'].append(class_result)
-      annotation = None
-      annotation_has_value = False
-      method_result = None
+      state.InitClass(class_result)
       continue
 
-    if not class_result:
+    if not state.class_result:
       continue
 
     m = _PROGUARD_SUPERCLASS_RE.match(line)
     if m:
-      class_result['superclass'] = m.group(1).replace('/', '.')
+      state.class_result['superclass'] = m.group(1).replace('/', '.')
       continue
 
     m = _PROGUARD_SECTION_RE.match(line)
     if m:
-      annotation = None
-      annotation_has_value = False
-      method_result = None
+      state.ResetPerSection()
       continue
 
     m = _PROGUARD_METHOD_RE.match(line)
     if m:
-      method_result = {
+      state.InitMethod({
         'method': m.group(1),
         'annotations': {},
-      }
-      class_result['methods'].append(method_result)
-      annotation = None
-      annotation_has_value = False
+      })
       continue
 
     m = _PROGUARD_ANNOTATION_RE.match(line)
     if m:
       # Ignore the annotation package.
-      annotation = m.group(1).split('/')[-1]
-      if method_result:
-        method_result['annotations'][annotation] = None
-      else:
-        class_result['annotations'][annotation] = None
+      state.InitAnnotation(m.group(1).split('/')[-1])
       continue
 
-    if annotation:
-      if not annotation_has_value:
-        m = _PROGUARD_ANNOTATION_CONST_RE.match(line)
-        annotation_has_value = bool(m)
-      else:
+    if state.annotation:
+      if state.annotation_field:
         m = _PROGUARD_ANNOTATION_VALUE_RE.match(line)
         if m:
-          if method_result:
-            method_result['annotations'][annotation] = m.group(1)
-          else:
-            class_result['annotations'][annotation] = m.group(1)
-        annotation_has_value = None
+          state.UpdateCurrentAnnotationField(m.group(1))
+          continue
+        m = _PROGUARD_ANNOTATION_CONST_RE.match(line)
+        if m:
+          if not m.group(1) == '(default)':
+            state.ResetAnnotationField()
+        else:
+          m = _PROGUARD_ANNOTATION_ARRAY_RE.match(line)
+          if m:
+            state.ResetAnnotationField()
+      if not state.annotation_field:
+        m = _PROGUARD_ANNOTATION_CONST_RE.match(line)
+        if m:
+          state.InitAnnotationField(m.group(1), None)
+          continue
+        m = _PROGUARD_ANNOTATION_ARRAY_RE.match(line)
+        if m:
+          state.InitAnnotationField(m.group(1), [])
   return results

@@ -62,7 +62,8 @@ class TestRunner(instr_test_runner.TestRunner):
     self.device.ClearApplicationState(self._package)
     if self.flags:
       annotations = self.test_pkg.GetTestAnnotations(test)
-      if 'FirstRunExperience' == annotations.get('Feature', None):
+      feature = annotations.get('Feature', None)
+      if feature and 'FirstRunExperience' in feature['value']:
         self.flags.RemoveFlags(['--disable-fre'])
       else:
         self.flags.AddFlags(['--disable-fre'])
