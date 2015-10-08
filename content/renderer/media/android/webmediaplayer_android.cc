@@ -538,10 +538,6 @@ bool WebMediaPlayerAndroid::seeking() const {
 
 double WebMediaPlayerAndroid::duration() const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  // HTML5 spec requires duration to be NaN if readyState is HAVE_NOTHING
-  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
-    return std::numeric_limits<double>::quiet_NaN();
-
   if (duration_ == media::kInfiniteDuration())
     return std::numeric_limits<double>::infinity();
 
