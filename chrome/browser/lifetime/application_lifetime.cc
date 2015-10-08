@@ -5,14 +5,12 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
-#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -31,9 +29,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/tracing/tracing_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
@@ -48,10 +44,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
-#endif
-
-#if defined(USE_ASH)
-#include "ash/shell.h"
 #endif
 
 namespace chrome {
@@ -148,7 +140,7 @@ void CloseAllBrowsers() {
 
 void AttemptUserExit() {
 #if defined(OS_CHROMEOS)
-  StartShutdownTracing();
+  browser_shutdown::StartShutdownTracing();
   chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker("LogoutStarted",
                                                           false);
 
@@ -178,19 +170,6 @@ void AttemptUserExit() {
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, false);
   AttemptExitInternal(false);
 #endif
-}
-
-void StartShutdownTracing() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kTraceShutdown)) {
-    base::trace_event::TraceConfig trace_config(
-        command_line.GetSwitchValueASCII(switches::kTraceShutdown), "");
-    base::trace_event::TraceLog::GetInstance()->SetEnabled(
-        trace_config,
-        base::trace_event::TraceLog::RECORDING_MODE);
-  }
-  TRACE_EVENT0("shutdown", "StartShutdownTracing");
 }
 
 // The Android implementation is in application_lifetime_android.cc
@@ -386,25 +365,6 @@ void OnAppExiting() {
     return;
   notified = true;
   HandleAppExitingForPlatform();
-}
-
-bool ShouldStartShutdown(Browser* browser) {
-  if (BrowserList::GetInstance(browser->host_desktop_type())->size() > 1)
-    return false;
-#if defined(OS_WIN)
-  // On Windows 8 the desktop and ASH environments could be active
-  // at the same time.
-  // We should not start the shutdown process in the following cases:-
-  // 1. If the desktop type of the browser going away is ASH and there
-  //    are browser windows open in the desktop.
-  // 2. If the desktop type of the browser going away is desktop and the ASH
-  //    environment is still active.
-  if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE)
-    return !ash::Shell::HasInstance();
-  else if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
-    return BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->empty();
-#endif
-  return true;
 }
 
 void DisableShutdownForTesting(bool disable_shutdown_for_testing) {

@@ -219,6 +219,7 @@
 
 #if defined(USE_ASH)
 #include "ash/ash_switches.h"
+#include "ash/shell.h"
 #endif
 
 using base::TimeDelta;
@@ -713,7 +714,7 @@ void Browser::OnWindowClosing() {
   bool should_quit_if_last_browser =
       browser_shutdown::IsTryingToQuit() || !chrome::WillKeepAlive();
 
-  if (should_quit_if_last_browser && chrome::ShouldStartShutdown(this))
+  if (should_quit_if_last_browser && ShouldStartShutdown())
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);
 
   // Don't use GetForProfileIfExisting here, we want to force creation of the
@@ -2599,6 +2600,25 @@ bool Browser::ShouldHideUIForFullscreen() const {
   // Windows and GTK remove the top controls in fullscreen, but Mac and Ash
   // keep the controls in a slide-down panel.
   return window_ && window_->ShouldHideUIForFullscreen();
+}
+
+bool Browser::ShouldStartShutdown() const {
+  if (BrowserList::GetInstance(host_desktop_type())->size() > 1)
+    return false;
+#if defined(OS_WIN)
+  // On Windows 8 the desktop and ASH environments could be active
+  // at the same time.
+  // We should not start the shutdown process in the following cases:-
+  // 1. If the desktop type of the browser going away is ASH and there
+  //    are browser windows open in the desktop.
+  // 2. If the desktop type of the browser going away is desktop and the ASH
+  //    environment is still active.
+  if (host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE)
+    return !ash::Shell::HasInstance();
+  if (host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
+    return BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->empty();
+#endif
+  return true;
 }
 
 bool Browser::MaybeCreateBackgroundContents(

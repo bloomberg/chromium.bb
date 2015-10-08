@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSER_SHUTDOWN_H__
-#define CHROME_BROWSER_BROWSER_SHUTDOWN_H__
+#ifndef CHROME_BROWSER_BROWSER_SHUTDOWN_H_
+#define CHROME_BROWSER_BROWSER_SHUTDOWN_H_
 
 class PrefRegistrySimple;
 
@@ -68,6 +68,11 @@ void SetTryingToQuit(bool quitting);
 // General accessor.
 bool IsTryingToQuit();
 
+// Starts to collect shutdown traces. On ChromeOS this will start immediately
+// on AttemptUserExit() and all other systems will start once all tabs are
+// closed.
+void StartShutdownTracing();
+
 }  // namespace browser_shutdown
 
-#endif  // CHROME_BROWSER_BROWSER_SHUTDOWN_H__
+#endif  // CHROME_BROWSER_BROWSER_SHUTDOWN_H_

@@ -826,6 +826,10 @@ class Browser : public TabStripModelObserver,
 
   bool ShouldHideUIForFullscreen() const;
 
+  // Returns true if we can start the shutdown sequence for the browser, i.e.
+  // the last browser window is being closed.
+  bool ShouldStartShutdown() const;
+
   // Creates a BackgroundContents if appropriate; return true if one was
   // created.
   bool MaybeCreateBackgroundContents(

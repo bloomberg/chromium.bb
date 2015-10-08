@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -30,6 +31,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/switch_utils.h"
 #include "components/metrics/metrics_service.h"
+#include "components/tracing/tracing_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -112,7 +114,7 @@ void OnShutdownStarting(ShutdownType type) {
 #if !defined(OS_CHROMEOS)
   // Start the shutdown tracing. Note that On ChromeOS this has already been
   // called in AttemptUserExit().
-  chrome::StartShutdownTracing();
+  StartShutdownTracing();
 #endif
 
   g_shutdown_type = type;
@@ -218,7 +220,7 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
 
 #if defined(OS_WIN)
   if (!browser_util::IsBrowserAlreadyRunning() &&
-      g_shutdown_type != browser_shutdown::END_SESSION) {
+      g_shutdown_type != END_SESSION) {
     upgrade_util::SwapNewChromeExeIfPresent();
   }
 #endif
@@ -344,6 +346,19 @@ void SetTryingToQuit(bool quitting) {
 
 bool IsTryingToQuit() {
   return g_trying_to_quit;
+}
+
+void StartShutdownTracing() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kTraceShutdown)) {
+    base::trace_event::TraceConfig trace_config(
+        command_line.GetSwitchValueASCII(switches::kTraceShutdown), "");
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(
+        trace_config,
+        base::trace_event::TraceLog::RECORDING_MODE);
+  }
+  TRACE_EVENT0("shutdown", "StartShutdownTracing");
 }
 
 }  // namespace browser_shutdown
