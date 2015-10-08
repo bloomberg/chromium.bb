@@ -24,13 +24,6 @@ typedef String ErrorString;
 
 class CORE_EXPORT V8DebuggerAgent {
 public:
-    class CORE_EXPORT Client {
-    public:
-        virtual ~Client() { }
-        virtual void asyncCallTrackingStateChanged(bool tracking) = 0;
-        virtual void resetAsyncOperations() = 0;
-    };
-
     // FIXME: remove this enum from public interface once InjectedScriptHost is moved to the implementation.
     enum BreakpointSource {
         UserBreakpointSource,
@@ -40,8 +33,8 @@ public:
 
     static const char backtraceObjectGroup[];
 
-    // FIXME: injected script management should be an implementation details. This method should only accept client.
-    static PassOwnPtr<V8DebuggerAgent> create(InjectedScriptManager*, V8Debugger*, V8DebuggerAgent::Client*, int contextGroupId);
+    // FIXME: injected script management should be an implementation details.
+    static PassOwnPtr<V8DebuggerAgent> create(InjectedScriptManager*, V8Debugger*, int contextGroupId);
     virtual ~V8DebuggerAgent() { }
 
     // Protocol methods.

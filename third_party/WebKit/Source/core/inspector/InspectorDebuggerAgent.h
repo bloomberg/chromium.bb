@@ -38,8 +38,7 @@ namespace blink {
 
 class CORE_EXPORT InspectorDebuggerAgent
     : public InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>
-    , public InspectorBackendDispatcher::DebuggerCommandHandler
-    , public V8DebuggerAgent::Client {
+    , public InspectorBackendDispatcher::DebuggerCommandHandler {
 public:
     ~InspectorDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -83,10 +82,6 @@ public:
     void setAsyncOperationBreakpoint(ErrorString*, int inOperationId) override;
     void removeAsyncOperationBreakpoint(ErrorString*, int inOperationId) override;
 
-    // V8DebuggerAgent::Client implementation.
-    void asyncCallTrackingStateChanged(bool tracking) override;
-    void resetAsyncOperations() override;
-
     // Called by InspectorInstrumentation.
     bool isPaused();
     PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole();
@@ -110,6 +105,9 @@ protected:
 
     OwnPtr<V8DebuggerAgent> m_v8DebuggerAgent;
     OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
+
+private:
+    void setTrackingAsyncCalls(bool);
 };
 
 } // namespace blink

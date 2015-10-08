@@ -36,6 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/AsyncCallTracker.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorPageAgent.h"
@@ -127,6 +128,7 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     // FIXME: what about nested objects?
     if (frame != m_pageAgent->inspectedFrame())
         return;
+    m_asyncCallTracker->resetAsyncOperations();
     m_v8DebuggerAgent->reset();
 }
 

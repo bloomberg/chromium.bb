@@ -47,7 +47,7 @@ class CORE_EXPORT V8DebuggerAgentImpl
     WTF_MAKE_NONCOPYABLE(V8DebuggerAgentImpl);
     WTF_MAKE_FAST_ALLOCATED(V8DebuggerAgentImpl);
 public:
-    V8DebuggerAgentImpl(InjectedScriptManager*, V8DebuggerImpl*, V8DebuggerAgent::Client*, int contextGroupId);
+    V8DebuggerAgentImpl(InjectedScriptManager*, V8DebuggerImpl*, int contextGroupId);
     ~V8DebuggerAgentImpl() override;
     DECLARE_TRACE();
 
@@ -192,7 +192,6 @@ private:
 
     RawPtrWillBeWeakPersistent<InjectedScriptManager> m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;
-    V8DebuggerAgent::Client* m_client;
     int m_contextGroupId;
     bool m_enabled;
     InspectorState* m_state;

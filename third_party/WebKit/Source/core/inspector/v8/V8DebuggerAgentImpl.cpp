@@ -122,15 +122,14 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(v8::Local<v8::O
     return jsCallFrame ? toScriptCallStack(jsCallFrame.get()) : nullptr;
 }
 
-PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, V8DebuggerAgentImpl::Client* client, int contextGroupId)
+PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, int contextGroupId)
 {
-    return adoptPtr(new V8DebuggerAgentImpl(injectedScriptManager, static_cast<V8DebuggerImpl*>(debugger), client, contextGroupId));
+    return adoptPtr(new V8DebuggerAgentImpl(injectedScriptManager, static_cast<V8DebuggerImpl*>(debugger), contextGroupId));
 }
 
-V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptManager, V8DebuggerImpl* debugger, V8DebuggerAgentImpl::Client* client, int contextGroupId)
+V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptManager, V8DebuggerImpl* debugger, int contextGroupId)
     : m_injectedScriptManager(injectedScriptManager)
     , m_debugger(debugger)
-    , m_client(client)
     , m_contextGroupId(contextGroupId)
     , m_enabled(false)
     , m_state(nullptr)
@@ -263,7 +262,6 @@ void V8DebuggerAgentImpl::internalSetAsyncCallStackDepth(int depth)
     } else {
         m_maxAsyncCallStackDepth = depth;
     }
-    m_client->asyncCallTrackingStateChanged(m_maxAsyncCallStackDepth);
     m_v8AsyncCallTracker->asyncCallTrackingStateChanged(m_maxAsyncCallStackDepth);
 }
 
@@ -1284,7 +1282,6 @@ void V8DebuggerAgentImpl::resetAsyncCallTracker()
 {
     clearCurrentAsyncOperation();
     clearStepIntoAsync();
-    m_client->resetAsyncOperations();
     m_v8AsyncCallTracker->resetAsyncOperations();
     m_asyncOperations.clear();
     m_asyncOperationNotifications.clear();
