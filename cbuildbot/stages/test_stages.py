@@ -319,7 +319,8 @@ class AUTestStage(HWTestStage):
     # Wait for UploadHWTestArtifacts to generate the payloads.
     if not self.GetParallel('delta_payloads_generated',
                             pretty_name='delta payloads'):
-      logging.PrintBuildbotStepWarnings('missing delta payloads')
+      logging.PrintBuildbotStepText('Missing delta payloads.')
+      logging.PrintBuildbotStepWarnings()
       logging.warning('Cannot run HWTest because UploadTestArtifacts failed. '
                       'See UploadTestArtifacts for details.')
       return
