@@ -308,11 +308,6 @@ C = Conditions
 _COPY_PATHS_COMMON = (
     Path('chrome_sandbox', mode=0o4755, dest=_CHROME_SANDBOX_DEST),
     Path('icudtl.dat'),
-    # Set as optional for backwards compatibility.
-    Path('lib/libpeerconnection.so',
-         exe=True,
-         cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG),
-         optional=True),
     Path('libffmpegsumo.so', exe=True, optional=True),
     Path('libosmesa.so', exe=True, optional=True),
     Path('libpdf.so', exe=True, optional=True),
