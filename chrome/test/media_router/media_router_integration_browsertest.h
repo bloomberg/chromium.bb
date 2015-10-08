@@ -77,9 +77,15 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // route did not show up before the timeout.
   void WaitUntilRouteCreated();
 
-  // Wait for route creation to timeout. Fails if a route shows up before the
-  // timeout.
-  void WaitUntilRouteCreationTimeout();
+  // Wait until there is an issue showing in the UI.
+  void WaitUntilIssue();
+
+  // Returns true if there is an issue showing in the UI.
+  bool IsUIShowingIssue();
+
+  // Returns the title of issue showing in UI. It is an error to call this if
+  // there are no issues showing in UI.
+  std::string GetIssueTitle();
 
  private:
   // Get the full path of the resource file.

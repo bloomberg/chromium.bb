@@ -7,9 +7,10 @@
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
+#include "ui/base/l10n/l10n_util.h"
 
 namespace media_router {
 
@@ -54,6 +55,42 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
 
   // Close route.
   CloseRouteOnUI();
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_Dialog_RouteCreationTimedOut) {
+  SetTestData(FILE_PATH_LITERAL("route_creation_timed_out.json"));
+  OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* dialog_contents = OpenMRDialog(web_contents);
+
+  // Verify the sink list.
+  std::string sink_length_script = base::StringPrintf(
+      "domAutomationController.send("
+      "window.document.getElementById('media-router-container')."
+      "sinkList.length)");
+  ASSERT_EQ(2, ExecuteScriptAndExtractInt(dialog_contents, sink_length_script));
+
+  base::TimeTicks start_time(base::TimeTicks::Now());
+  ChooseSink(web_contents, kTestSinkName);
+  WaitUntilIssue();
+
+  base::TimeDelta elapsed(base::TimeTicks::Now() - start_time);
+  // The hardcoded timeout route creation timeout for the UI.
+  // See kCreateRouteTimeoutSeconds in media_router_ui.cc.
+  base::TimeDelta expected_timeout(base::TimeDelta::FromSeconds(20));
+
+  EXPECT_GE(elapsed, expected_timeout);
+  EXPECT_LE(elapsed - expected_timeout, base::TimeDelta::FromSeconds(5));
+
+  std::string issue_title = GetIssueTitle();
+  ASSERT_EQ(l10n_util::GetStringUTF8(
+                IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB),
+            issue_title);
+
+  // Route will still get created, it just takes longer than usual.
+  WaitUntilRouteCreated();
 }
 
 }  // namespace media_router

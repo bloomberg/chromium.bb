@@ -13,6 +13,7 @@
       'resources/fail_reconnect_session.json',
       'resources/no_provider.html',
       'resources/no_provider.json',
+      'resources/route_creation_timed_out.json',
     ],
   }, # end of variables
   'targets': [
