@@ -244,8 +244,7 @@ Polymer({
    * @private
    */
   isConnectedState_: function(properties) {
-    return !!properties && properties.ConnectionState ==
-        CrOnc.ConnectionState.CONNECTED;
+    return properties.ConnectionState == CrOnc.ConnectionState.CONNECTED;
   },
 
   /**
@@ -254,7 +253,7 @@ Polymer({
    * @private
    */
   showConnect_: function(properties) {
-    return !!properties && properties.Type != CrOnc.Type.ETHERNET &&
+    return properties.Type != CrOnc.Type.ETHERNET &&
            properties.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;
   },
 
@@ -327,7 +326,7 @@ Polymer({
    * @private
    */
   showDisconnect_: function(properties) {
-    return !!properties && properties.Type != CrOnc.Type.ETHERNET &&
+    return properties.Type != CrOnc.Type.ETHERNET &&
            properties.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED;
   },
 
@@ -487,8 +486,7 @@ Polymer({
    * @private
    */
   showShared_: function(properties) {
-    return !!properties && (properties.Source == 'Device' ||
-                            properties.Source == 'DevicePolicy');
+    return properties.Source == 'Device' || properties.Source == 'DevicePolicy';
   },
 
   /**
@@ -497,7 +495,7 @@ Polymer({
    * @private
    */
   showAutoConnect_: function(properties) {
-    return !!properties && properties.Type != CrOnc.Type.ETHERNET &&
+    return properties.Type != CrOnc.Type.ETHERNET &&
            properties.Source != CrOnc.Source.NONE;
   },
 
@@ -509,7 +507,7 @@ Polymer({
   showPreferNetwork_: function(properties) {
     // TODO(stevenjb): Resolve whether or not we want to allow "preferred" for
     // properties.Type == CrOnc.Type.ETHERNET.
-    return !!properties && properties.Source != CrOnc.Source.NONE;
+    return properties.Source != CrOnc.Source.NONE;
   },
 
   /**
@@ -637,7 +635,7 @@ Polymer({
    * @private
    */
   hasNetworkSection_: function(properties) {
-    return !!properties && properties.Type != CrOnc.Type.VPN;
+    return properties.Type != CrOnc.Type.VPN;
   },
 
   /**
@@ -647,7 +645,7 @@ Polymer({
    * @private
    */
   isType_: function(properties, type) {
-    return !!properties && properties.Type == type;
+    return properties.Type == type;
   },
 
   /**
