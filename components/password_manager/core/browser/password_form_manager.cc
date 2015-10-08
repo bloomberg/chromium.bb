@@ -443,6 +443,14 @@ void PasswordFormManager::OnRequestDone(
       // http://crbug.com/294468 to look into this.
       is_credential_protected |= login->type == PasswordForm::TYPE_GENERATED;
 
+      // Websites that participate in affiliation-based matching will normally
+      // have a single authentication system per domain, therefore affiliation
+      // based matches are desired to be offered on any login form on the site.
+      // However, for Android credentials, most meta-data attributes are empty,
+      // so they will have a very low score, hence need to be protected against
+      // the high-scoring logins saved from the website.
+      is_credential_protected |= IsValidAndroidFacetURI(login->signon_realm);
+
       if (is_credential_protected)
         protected_credentials.push_back(login.Pass());
       else

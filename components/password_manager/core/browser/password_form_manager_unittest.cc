@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
@@ -1166,6 +1167,54 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreAutofilled) {
   EXPECT_TRUE(fill_data.additional_logins.empty());
   EXPECT_FALSE(fill_data.wait_for_username);
   EXPECT_EQ(1u, form_manager()->best_matches().size());
+}
+
+// Credentials saved through Android apps should always be shown in the drop-
+// down menu, unless there is a better-scoring match with the same username.
+TEST_F(PasswordFormManagerTest, AndroidCredentialsAreProtected) {
+  const char kTestUsername1[] = "test-user@gmail.com";
+  const char kTestUsername2[] = "test-other-user@gmail.com";
+  const char kTestWebPassword[] = "web-password";
+  const char kTestAndroidPassword1[] = "android-password-alpha";
+  const char kTestAndroidPassword2[] = "android-password-beta";
+
+  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
+
+  // Suppose there is one login saved through the website, and two other coming
+  // from Android: the first has the same username as the web-based credential,
+  // so it should be suppressed, but the second has a different username, so it
+  // should be shown.
+  ScopedVector<PasswordForm> simulated_results;
+  simulated_results.push_back(CreateSavedMatch(false));
+  simulated_results[0]->username_value = ASCIIToUTF16(kTestUsername1);
+  simulated_results[0]->password_value = ASCIIToUTF16(kTestWebPassword);
+  simulated_results.push_back(new PasswordForm);
+  simulated_results[1]->signon_realm = "android://hash@com.google.android";
+  simulated_results[1]->origin = GURL("android://hash@com.google.android/");
+  simulated_results[1]->username_value = ASCIIToUTF16(kTestUsername1);
+  simulated_results[1]->password_value = ASCIIToUTF16(kTestAndroidPassword1);
+  simulated_results.push_back(new PasswordForm(*simulated_results[1]));
+  simulated_results[2]->username_value = ASCIIToUTF16(kTestUsername2);
+  simulated_results[2]->password_value = ASCIIToUTF16(kTestAndroidPassword2);
+
+  ScopedVector<PasswordForm> expected_matches;
+  expected_matches.push_back(new PasswordForm(*simulated_results[0]));
+  expected_matches.push_back(new PasswordForm(*simulated_results[2]));
+
+  autofill::PasswordFormFillData fill_data;
+  EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
+      .WillOnce(SaveArg<0>(&fill_data));
+  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager()->OnGetPasswordStoreResults(simulated_results.Pass());
+
+  EXPECT_FALSE(fill_data.wait_for_username);
+  EXPECT_EQ(1u, fill_data.additional_logins.size());
+
+  std::vector<PasswordForm*> actual_matches;
+  for (const auto& username_match_pair : form_manager()->best_matches())
+    actual_matches.push_back(username_match_pair.second);
+  EXPECT_THAT(actual_matches,
+              UnorderedPasswordFormElementsAre(expected_matches.get()));
 }
 
 TEST_F(PasswordFormManagerTest, InvalidActionURLsDoNotMatch) {
