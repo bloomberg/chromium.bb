@@ -44,5 +44,5 @@
     boolean checkValidity();
     boolean reportValidity();
 
-    [RuntimeEnabled=RequestAutocomplete] void requestAutocomplete();
+    [RuntimeEnabled=RequestAutocomplete, MeasureAs=RequestAutocomplete] void requestAutocomplete();
 };

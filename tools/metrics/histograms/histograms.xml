@@ -60127,6 +60127,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="957" label="BackspaceNavigatedBack"/>
   <int value="958" label="BackspaceNavigatedBackAfterFormInteraction"/>
   <int value="959" label="CSPSourceWildcardWouldMatchExactHost"/>
+  <int value="960" label="CredentialManagerGet"/>
+  <int value="961" label="CredentialManagerGetWithUI"/>
+  <int value="962" label="CredentialManagerGetWithoutUI"/>
+  <int value="963" label="CredentialManagerStore"/>
+  <int value="964" label="CredentialManagerRequireUserMediation"/>
+  <int value="965" label="RequestAutocomplete"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
