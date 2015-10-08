@@ -50,16 +50,16 @@ using namespace HTMLNames;
 
 // -----------------------------------------------------------------
 
+static bool containsUncommonAttributeSelector(const CSSSelector&);
+
 static inline bool selectorListContainsUncommonAttributeSelector(const CSSSelector* selector)
 {
     const CSSSelectorList* selectorList = selector->selectorList();
     if (!selectorList)
         return false;
     for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector)) {
-        for (const CSSSelector* component = selector; component; component = component->tagHistory()) {
-            if (component->isAttributeSelector())
-                return true;
-        }
+        if (containsUncommonAttributeSelector(*selector))
+            return true;
     }
     return false;
 }
@@ -70,7 +70,7 @@ static inline bool isCommonAttributeSelectorAttribute(const QualifiedName& attri
     return attribute == typeAttr || attribute == readonlyAttr;
 }
 
-static inline bool containsUncommonAttributeSelector(const CSSSelector& selector)
+static bool containsUncommonAttributeSelector(const CSSSelector& selector)
 {
     const CSSSelector* current = &selector;
     for (; current; current = current->tagHistory()) {
