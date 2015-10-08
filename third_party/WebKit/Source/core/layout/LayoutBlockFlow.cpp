@@ -416,6 +416,8 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
             // TODO(robhogan): We should exclude blocks that create formatting contexts, not just out of flow or floating blocks.
             if (child->isLayoutBlockFlow() && !child->isFloatingOrOutOfFlowPositioned()) {
                 LayoutBlockFlow* block = toLayoutBlockFlow(child);
+                if (!block->containsFloats())
+                    continue;
                 lowestBlock = block;
                 if (oldHeight <= newHeight || block->lowestFloatLogicalBottom() + block->logicalTop() <= newHeight)
                     break;
@@ -423,6 +425,8 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
                 addedOverhangingFloats = true;
             }
         }
+        // If we have no overhanging floats we still pass a record of the lowest non-overhanging float up the tree so we can enclose it if
+        // we are a formatting context and allow siblings to avoid it if they have negative margin and find themselves in its vicinity.
         if (!addedOverhangingFloats)
             addLowestFloatFromChildren(lowestBlock);
     }
