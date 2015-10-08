@@ -25,8 +25,6 @@ import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import org.chromium.base.ApplicationState;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 
@@ -35,9 +33,7 @@ import org.chromium.base.VisibleForTesting;
  * Note that use of this class requires that the app have the platform
  * ACCESS_NETWORK_STATE permission.
  */
-public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
-        implements ApplicationStatus.ApplicationStateListener {
-
+public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     static class NetworkState {
         private final boolean mConnected;
         private final int mType;
@@ -300,13 +296,48 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
         }
     }
 
+    /**
+     * Abstract class for providing a policy regarding when the NetworkChangeNotifier
+     * should listen for network changes.
+     */
+    public abstract static class RegistrationPolicy {
+        private NetworkChangeNotifierAutoDetect mNotifier;
+
+        /**
+         * Start listening for network changes.
+         */
+        protected final void register() {
+            assert mNotifier != null;
+            mNotifier.register();
+        }
+
+        /**
+         * Stop listening for network changes.
+         */
+        protected final void unregister() {
+            assert mNotifier != null;
+            mNotifier.unregister();
+        }
+
+        /**
+         * Initializes the policy with the notifier, overriding subclasses should always
+         * call this method.
+         */
+        protected void init(NetworkChangeNotifierAutoDetect notifier) {
+            mNotifier = notifier;
+        }
+
+        protected abstract void destroy();
+    }
+
     private static final String TAG = "NetworkChangeNotifierAutoDetect";
     private static final int UNKNOWN_LINK_SPEED = -1;
+
     private final NetworkConnectivityIntentFilter mIntentFilter;
-
     private final Observer mObserver;
-
     private final Context mContext;
+    private final RegistrationPolicy mRegistrationPolicy;
+
     // mConnectivityManagerDelegates and mWifiManagerDelegate are only non-final for testing.
     private ConnectivityManagerDelegate mConnectivityManagerDelegate;
     private WifiManagerDelegate mWifiManagerDelegate;
@@ -314,7 +345,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
     private final NetworkCallback mNetworkCallback;
     private final NetworkRequest mNetworkRequest;
     private boolean mRegistered;
-    private final boolean mApplicationStateRegistered;
     private int mConnectionType;
     private String mWifiSSID;
     private double mMaxBandwidthMbps;
@@ -369,7 +399,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
      */
     @SuppressLint("NewApi")
     public NetworkChangeNotifierAutoDetect(
-            Observer observer, Context context, boolean alwaysWatchForChanges) {
+            Observer observer, Context context, RegistrationPolicy policy) {
         // Since BroadcastReceiver is always called back on UI thread, ensure
         // running on UI thread so notification logic can be single-threaded.
         ThreadUtils.assertOnUiThread();
@@ -391,15 +421,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
         mMaxBandwidthMbps = getCurrentMaxBandwidthInMbps(networkState);
         mIntentFilter =
                 new NetworkConnectivityIntentFilter(mWifiManagerDelegate.getHasWifiPermission());
-
-        if (alwaysWatchForChanges) {
-            registerReceiver();
-            mApplicationStateRegistered = false;
-        } else {
-            ApplicationStatus.registerApplicationStateListener(this);
-            onApplicationStateChange(getApplicationState());
-            mApplicationStateRegistered = true;
-        }
+        mRegistrationPolicy = policy;
+        mRegistrationPolicy.init(this);
     }
 
     /**
@@ -416,13 +439,9 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
         mWifiManagerDelegate = delegate;
     }
 
-    /**
-     * Returns the activity's status.
-     * @return an {@code int} that is one of {@code ApplicationState.HAS_*_ACTIVITIES}.
-     */
     @VisibleForTesting
-    int getApplicationState() {
-        return ApplicationStatus.getStateForApplication();
+    RegistrationPolicy getRegistrationPolicy() {
+        return mRegistrationPolicy;
     }
 
     /**
@@ -434,46 +453,48 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
     }
 
     public void destroy() {
-        if (mApplicationStateRegistered) ApplicationStatus.unregisterApplicationStateListener(this);
-        unregisterReceiver();
+        mRegistrationPolicy.destroy();
+        unregister();
     }
 
     /**
      * Registers a BroadcastReceiver in the given context.
      */
-    private void registerReceiver() {
-        if (!mRegistered) {
-            mRegistered = true;
-            mContext.registerReceiver(this, mIntentFilter);
-            if (mNetworkCallback != null) {
-                mConnectivityManagerDelegate.registerNetworkCallback(
-                        mNetworkRequest, mNetworkCallback);
-                // registerNetworkCallback() will rematch our NetworkRequest
-                // against active networks, so a cached list of active networks
-                // will be repopulated immediatly after this. However we need to
-                // purge any cached networks as they may have been disconnected
-                // while mNetworkCallback was unregistered.
-                final Network[] networks = mConnectivityManagerDelegate.getAllNetworks();
-                // Convert Networks to NetIDs.
-                final int[] netIds = new int[networks.length];
-                for (int i = 0; i < networks.length; i++) {
-                    netIds[i] = networkToNetId(networks[i]);
-                }
-                mObserver.updateActiveNetworkList(netIds);
+    public void register() {
+        if (mRegistered) return;
+
+        final NetworkState networkState = getCurrentNetworkState();
+        connectionTypeChanged(networkState);
+        maxBandwidthChanged(networkState);
+        mContext.registerReceiver(this, mIntentFilter);
+        mRegistered = true;
+
+        if (mNetworkCallback != null) {
+            mConnectivityManagerDelegate.registerNetworkCallback(mNetworkRequest, mNetworkCallback);
+            // registerNetworkCallback() will rematch our NetworkRequest
+            // against active networks, so a cached list of active networks
+            // will be repopulated immediatly after this. However we need to
+            // purge any cached networks as they may have been disconnected
+            // while mNetworkCallback was unregistered.
+            final Network[] networks = mConnectivityManagerDelegate.getAllNetworks();
+            // Convert Networks to NetIDs.
+            final int[] netIds = new int[networks.length];
+            for (int i = 0; i < networks.length; i++) {
+                netIds[i] = networkToNetId(networks[i]);
             }
+            mObserver.updateActiveNetworkList(netIds);
         }
     }
 
     /**
-     * Unregisters the BroadcastReceiver in the given context.
+     * Unregisters a BroadcastReceiver in the given context.
      */
-    private void unregisterReceiver() {
-        if (mRegistered) {
-            mRegistered = false;
-            mContext.unregisterReceiver(this);
-            if (mNetworkCallback != null) {
-                mConnectivityManagerDelegate.unregisterNetworkCallback(mNetworkCallback);
-            }
+    public void unregister() {
+        if (!mRegistered) return;
+        mContext.unregisterReceiver(this);
+        mRegistered = false;
+        if (mNetworkCallback != null) {
+            mConnectivityManagerDelegate.unregisterNetworkCallback(mNetworkCallback);
         }
     }
 
@@ -649,19 +670,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
             maxBandwidthChanged(networkState);
         } else if (WifiManager.RSSI_CHANGED_ACTION.equals(intent.getAction())) {
             maxBandwidthChanged(networkState);
-        }
-    }
-
-    // ApplicationStatus.ApplicationStateListener
-    @Override
-    public void onApplicationStateChange(int newState) {
-        final NetworkState networkState = getCurrentNetworkState();
-        if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
-            connectionTypeChanged(networkState);
-            maxBandwidthChanged(networkState);
-            registerReceiver();
-        } else if (newState == ApplicationState.HAS_PAUSED_ACTIVITIES) {
-            unregisterReceiver();
         }
     }
 

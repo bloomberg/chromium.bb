@@ -14,6 +14,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
+import org.chromium.net.RegistrationPolicyAlwaysRegister;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,8 +74,8 @@ class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.O
 
         // Create the NetworkChangeNotifierAutoDetect if it does not exist already.
         if (mNotifier == null) {
-            mNotifier =
-                    new NetworkChangeNotifierAutoDetect(this, mContext, true /* always listen */);
+            mNotifier = new NetworkChangeNotifierAutoDetect(this, mContext,
+                                new RegistrationPolicyAlwaysRegister());
         }
         mNativePtrs.add(nativePtr);
 

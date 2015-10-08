@@ -134,20 +134,15 @@ public class NetworkChangeNotifier {
     /**
      * Enables auto detection of the current network state based on notifications from the system.
      * Note that passing true here requires the embedding app have the platform ACCESS_NETWORK_STATE
-     * permission.
+     * permission. Also note that in this case the auto detection is enabled based on the status of
+     * the application (@see ApplicationStatus).
      *
      * @param shouldAutoDetect true if the NetworkChangeNotifier should listen for system changes in
      *    network connectivity.
      */
     public static void setAutoDetectConnectivityState(boolean shouldAutoDetect) {
-        getInstance().setAutoDetectConnectivityStateInternal(shouldAutoDetect, false);
-    }
-
-    private void destroyAutoDetector() {
-        if (mAutoDetector != null) {
-            mAutoDetector.destroy();
-            mAutoDetector = null;
-        }
+        getInstance().setAutoDetectConnectivityStateInternal(
+                shouldAutoDetect, new RegistrationPolicyApplicationStatus());
     }
 
     /**
@@ -159,42 +154,57 @@ public class NetworkChangeNotifier {
      * might perform expensive work depending on the network connectivity.
      */
     public static void registerToReceiveNotificationsAlways() {
-        getInstance().setAutoDetectConnectivityStateInternal(true, true);
+        getInstance().setAutoDetectConnectivityStateInternal(
+                true, new RegistrationPolicyAlwaysRegister());
+    }
+
+    /**
+     * Registers to receive network change notification based on the provided registration policy.
+     */
+    public static void setAutoDetectConnectivityState(
+            NetworkChangeNotifierAutoDetect.RegistrationPolicy policy) {
+        getInstance().setAutoDetectConnectivityStateInternal(true, policy);
+    }
+
+    private void destroyAutoDetector() {
+        if (mAutoDetector != null) {
+            mAutoDetector.destroy();
+            mAutoDetector = null;
+        }
     }
 
     private void setAutoDetectConnectivityStateInternal(
-            boolean shouldAutoDetect, boolean alwaysWatchForChanges) {
+            boolean shouldAutoDetect, NetworkChangeNotifierAutoDetect.RegistrationPolicy policy) {
         if (shouldAutoDetect) {
             if (mAutoDetector == null) {
                 mAutoDetector = new NetworkChangeNotifierAutoDetect(
-                    new NetworkChangeNotifierAutoDetect.Observer() {
-                        @Override
-                        public void onConnectionTypeChanged(int newConnectionType) {
-                            updateCurrentConnectionType(newConnectionType);
-                        }
-                        @Override
-                        public void onMaxBandwidthChanged(double maxBandwidthMbps) {
-                            updateCurrentMaxBandwidth(maxBandwidthMbps);
-                        }
-                        @Override
-                        public void onNetworkConnect(int netId, int connectionType) {
-                            notifyObserversOfNetworkConnect(netId, connectionType);
-                        }
-                        @Override
-                        public void onNetworkSoonToDisconnect(int netId) {
-                            notifyObserversOfNetworkSoonToDisconnect(netId);
-                        }
-                        @Override
-                        public void onNetworkDisconnect(int netId) {
-                            notifyObserversOfNetworkDisconnect(netId);
-                        }
-                        @Override
-                        public void updateActiveNetworkList(int[] activeNetIds) {
-                            notifyObserversToUpdateActiveNetworkList(activeNetIds);
-                        }
-                    },
-                    mContext,
-                    alwaysWatchForChanges);
+                        new NetworkChangeNotifierAutoDetect.Observer() {
+                            @Override
+                            public void onConnectionTypeChanged(int newConnectionType) {
+                                updateCurrentConnectionType(newConnectionType);
+                            }
+                            @Override
+                            public void onMaxBandwidthChanged(double maxBandwidthMbps) {
+                                updateCurrentMaxBandwidth(maxBandwidthMbps);
+                            }
+                            @Override
+                            public void onNetworkConnect(int netId, int connectionType) {
+                                notifyObserversOfNetworkConnect(netId, connectionType);
+                            }
+                            @Override
+                            public void onNetworkSoonToDisconnect(int netId) {
+                                notifyObserversOfNetworkSoonToDisconnect(netId);
+                            }
+                            @Override
+                            public void onNetworkDisconnect(int netId) {
+                                notifyObserversOfNetworkDisconnect(netId);
+                            }
+                            @Override
+                            public void updateActiveNetworkList(int[] activeNetIds) {
+                                notifyObserversToUpdateActiveNetworkList(activeNetIds);
+                            }
+                        },
+                        mContext, policy);
                 final NetworkChangeNotifierAutoDetect.NetworkState networkState =
                         mAutoDetector.getCurrentNetworkState();
                 updateCurrentConnectionType(mAutoDetector.getCurrentConnectionType(networkState));
