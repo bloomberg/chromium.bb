@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.dom_distiller.ReaderModeStaticEventFilter;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeStaticEventFilter.ReaderModePanelSelector;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeStaticEventFilter.ReaderModeTapHandler;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -256,7 +255,7 @@ public class LayoutManagerDocument extends LayoutManager
         if (getTabModelSelector() == null || getActiveLayout() == null) return;
 
         TabModelSelector selector = getTabModelSelector();
-        ChromeTab tab = ChromeTab.fromTab(selector.getTabById(tabId));
+        Tab tab = selector.getTabById(tabId);
         if (tab == null) return;
 
         LayoutTab layoutTab = mTabCache.get(tabId);

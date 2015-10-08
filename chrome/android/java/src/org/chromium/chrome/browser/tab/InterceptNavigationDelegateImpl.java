@@ -24,7 +24,7 @@ import org.chromium.content_public.common.ConsoleMessageLevel;
  */
 public class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
     private final ChromeActivity mActivity;
-    private final ChromeTab mTab;
+    private final Tab mTab;
     private final ExternalNavigationHandler mExternalNavHandler;
     private final AuthenticatorNavigationInterceptor mAuthenticatorHelper;
     private ExternalNavigationHandler.OverrideUrlLoadingResult mLastOverrideUrlLoadingResult =
@@ -39,7 +39,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
     /**
      * Default constructor of {@link InterceptNavigationDelegateImpl}.
      */
-    public InterceptNavigationDelegateImpl(ChromeActivity activity, ChromeTab tab) {
+    public InterceptNavigationDelegateImpl(ChromeActivity activity, Tab tab) {
         this(new ExternalNavigationHandler(activity), activity, tab);
     }
 
@@ -48,7 +48,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
      * {@link ExternalNavigationHandler}.
      */
     public InterceptNavigationDelegateImpl(ExternalNavigationHandler externalNavHandler,
-            ChromeActivity activity, ChromeTab tab) {
+            ChromeActivity activity, Tab tab) {
         mActivity = activity;
         mTab = tab;
         mExternalNavHandler = externalNavHandler;

@@ -37,7 +37,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout.OmniboxLivenessListener;
-import org.chromium.chrome.browser.tab.ChromeTab;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.VerticallyFixedEditText;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.UiUtils;
@@ -133,9 +133,9 @@ public class UrlBar extends VerticallyFixedEditText {
      */
     public interface UrlBarDelegate {
         /**
-         * @return The current active {@link ChromeTab}.
+         * @return The current active {@link Tab}.
          */
-        ChromeTab getCurrentTab();
+        Tab getCurrentTab();
 
         /**
          * Notify the linked {@link TextWatcher} to ignore any changes made in the UrlBar text.
@@ -445,7 +445,7 @@ public class UrlBar extends VerticallyFixedEditText {
             return true;
         }
 
-        ChromeTab currentTab = mUrlBarDelegate.getCurrentTab();
+        Tab currentTab = mUrlBarDelegate.getCurrentTab();
         if (event.getAction() == MotionEvent.ACTION_DOWN && currentTab != null) {
             // Make sure to hide the current ContentView ActionBar.
             ContentViewCore viewCore = currentTab.getContentViewCore();
@@ -948,7 +948,7 @@ public class UrlBar extends VerticallyFixedEditText {
 
         // We retrieve the domain and registry from the full URL (the url bar shows a simplified
         // version of the URL).
-        ChromeTab currentTab = mUrlBarDelegate.getCurrentTab();
+        Tab currentTab = mUrlBarDelegate.getCurrentTab();
         if (currentTab == null || currentTab.getProfile() == null) return;
 
         boolean isInternalPage = false;

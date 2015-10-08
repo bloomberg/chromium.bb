@@ -13,6 +13,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.tab.ChromeTab;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -37,8 +38,8 @@ public class ChromeTabCreatorTest extends ChromeTabbedActivityTestBase  {
     @Feature({"Browser"})
     public void testCreateNewTabInBackgroundLowEnd()
             throws ExecutionException, InterruptedException {
-        final ChromeTab fgTab = ChromeTab.fromTab(getActivity().getActivityTab());
-        final ChromeTab bgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<ChromeTab>() {
+        final Tab fgTab = getActivity().getActivityTab();
+        final Tab bgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<ChromeTab>() {
             @Override
             public ChromeTab call() {
                 return getActivity().getCurrentTabCreator().createNewTab(
@@ -73,7 +74,7 @@ public class ChromeTabCreatorTest extends ChromeTabbedActivityTestBase  {
     @Feature({"Browser"})
     public void testCreateNewTabInBackground()
             throws ExecutionException, InterruptedException {
-        final ChromeTab fgTab = ChromeTab.fromTab(getActivity().getActivityTab());
+        final Tab fgTab = getActivity().getActivityTab();
         ChromeTab bgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<ChromeTab>() {
             @Override
             public ChromeTab call() {
@@ -91,7 +92,7 @@ public class ChromeTabCreatorTest extends ChromeTabbedActivityTestBase  {
     /**
      * @return the index of the given tab in the current tab model
      */
-    private int indexOf(ChromeTab tab) {
+    private int indexOf(Tab tab) {
         return getActivity().getCurrentTabModel().indexOf(tab);
     }
 

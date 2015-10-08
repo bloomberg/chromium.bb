@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.printing.TabPrinter;
@@ -310,7 +311,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * allows presenting the intent picker to the user so that a native Android application can be
      * used if available.
      */
-    private InterceptNavigationDelegate mInterceptNavigationDelegate;
+    private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
+
+    private TabRedirectHandler mTabRedirectHandler;
 
     private FullscreenManager mFullscreenManager;
     private float mPreviousFullscreenTopControlsOffsetY = Float.NaN;
@@ -627,6 +630,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 }
             }
         };
+
+        mTabRedirectHandler = new TabRedirectHandler(activity);
     }
 
     /**
@@ -1105,6 +1110,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * @return Whether the tab is ready to display or it should be faded in as it loads.
+     */
+    public boolean shouldStall() {
+        return (isFrozen() || needsReload())
+                && !NativePageFactory.isNativePageUrl(getUrl(), isIncognito());
+    }
+
+    /**
      * Prepares the tab to be shown. This method is supposed to be called before the tab is
      * displayed. It restores the ContentView if it is not available after the cold start and
      * reloads the tab if its renderer has crashed.
@@ -1168,6 +1181,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         if (mTabUma != null) mTabUma.onHide();
+
+        mTabRedirectHandler.clear();
 
         hideInternal();
 
@@ -1518,6 +1533,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mDownloadDelegate = new ChromeDownloadDelegate(mActivity,
                 mActivity.getTabModelSelector(), this);
         cvc.setDownloadDelegate(mDownloadDelegate);
+
+        setInterceptNavigationDelegate(createInterceptNavigationDelegate());
     }
 
     /**
@@ -2576,22 +2593,44 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return True if the Tab should block the creation of new tabs via {@link #openNewTab}.
      */
     protected boolean shouldIgnoreNewTab(String url, boolean incognito) {
-        return false;
+        InterceptNavigationDelegateImpl delegate = getInterceptNavigationDelegate();
+        return delegate != null && delegate.shouldIgnoreNewTab(url, incognito);
     }
 
     /**
      * See {@link #mInterceptNavigationDelegate}.
      */
-    protected InterceptNavigationDelegate getInterceptNavigationDelegate() {
+    public InterceptNavigationDelegateImpl getInterceptNavigationDelegate() {
         return mInterceptNavigationDelegate;
     }
 
+    @VisibleForTesting
+    public AuthenticatorNavigationInterceptor getAuthenticatorHelper() {
+        return getInterceptNavigationDelegate().getAuthenticatorNavigationInterceptor();
+    }
+
+    /**
+     * Factory method for {@link InterceptNavigationDelegateImpl}. Meant to be overridden by
+     * subclasses.
+     * @return A new instance of {@link InterceptNavigationDelegateImpl}.
+     */
+    protected InterceptNavigationDelegateImpl createInterceptNavigationDelegate() {
+        return new InterceptNavigationDelegateImpl(mActivity, this);
+    }
+
     /**
      * See {@link #mInterceptNavigationDelegate}.
      */
-    protected void setInterceptNavigationDelegate(InterceptNavigationDelegate delegate) {
+    protected void setInterceptNavigationDelegate(InterceptNavigationDelegateImpl delegate) {
         mInterceptNavigationDelegate = delegate;
         nativeSetInterceptNavigationDelegate(mNativeTabAndroid, delegate);
+    }
+
+    /**
+     * @return the TabRedirectHandler for the tab.
+     */
+    public TabRedirectHandler getTabRedirectHandler() {
+        return mTabRedirectHandler;
     }
 
     /**

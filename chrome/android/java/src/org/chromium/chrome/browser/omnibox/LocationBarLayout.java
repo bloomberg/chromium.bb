@@ -82,7 +82,6 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ActionModeController;
 import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
@@ -1671,9 +1670,9 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     /**
-     * Performs a search query on the current {@link ChromeTab}.  This calls
+     * Performs a search query on the current {@link Tab}.  This calls
      * {@link TemplateUrlService#getUrlForSearchQuery(String)} to get a url based on {@code query}
-     * and loads that url in the current {@link ChromeTab}.
+     * and loads that url in the current {@link Tab}.
      * @param query The {@link String} that represents the text query that should be searched for.
      */
     @VisibleForTesting
@@ -2078,12 +2077,12 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     /**
-     * @return The ChromeTab currently showing.
+     * @return The Tab currently showing.
      */
     @Override
-    public ChromeTab getCurrentTab() {
+    public Tab getCurrentTab() {
         if (mToolbarDataProvider == null) return null;
-        return ChromeTab.fromTab(mToolbarDataProvider.getTab());
+        return mToolbarDataProvider.getTab();
     }
 
     private ContentViewCore getContentViewCore() {

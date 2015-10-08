@@ -46,8 +46,6 @@ public class ChromeTab extends Tab {
 
     private ReaderModeManager mReaderModeManager;
 
-    private TabRedirectHandler mTabRedirectHandler;
-
     private boolean mIsFullscreenWaitingForLoad = false;
 
     /**
@@ -103,23 +101,9 @@ public class ChromeTab extends Tab {
         mReaderModeManager = new ReaderModeManager(this, activity);
         RevenueStats.getInstance().tabCreated(this);
 
-        mTabRedirectHandler = new TabRedirectHandler(activity);
-
         ContextualSearchTabHelper.createForTab(this);
         if (nativeWindow != null) ThumbnailTabHelper.createForTab(this);
         MediaSessionTabHelper.createForTab(this);
-    }
-
-    /**
-     * Creates a minimal {@link ChromeTab} for testing. Do not use outside testing.
-     *
-     * @param id        The id of the tab.
-     * @param incognito Whether the tab is incognito.
-     */
-    @VisibleForTesting
-    public ChromeTab(int id, boolean incognito) {
-        super(id, incognito, null);
-        mTabRedirectHandler = new TabRedirectHandler(null);
     }
 
     /**
@@ -233,8 +217,6 @@ public class ChromeTab extends Tab {
             TraceEvent.begin("ChromeTab.setContentViewCore");
             super.setContentViewCore(cvc);
 
-            setInterceptNavigationDelegate(createInterceptNavigationDelegate());
-
             if (mGestureStateListener == null) mGestureStateListener = createGestureStateListener();
             cvc.addGestureStateListener(mGestureStateListener);
         } finally {
@@ -282,14 +264,6 @@ public class ChromeTab extends Tab {
         }
     }
 
-    /**
-     * @return Whether the tab is ready to display or it should be faded in as it loads.
-     */
-    public boolean shouldStall() {
-        return (isFrozen() || needsReload())
-                && !NativePageFactory.isNativePageUrl(getUrl(), isIncognito());
-    }
-
     @Override
     protected void showInternal(TabSelectionType type) {
         super.showInternal(type);
@@ -314,8 +288,6 @@ public class ChromeTab extends Tab {
 
         // Allow this tab's NativePage to be frozen if it stays hidden for a while.
         NativePageAssassin.getInstance().tabHidden(this);
-
-        mTabRedirectHandler.clear();
     }
 
     @Override
@@ -341,38 +313,6 @@ public class ChromeTab extends Tab {
         } finally {
             TraceEvent.end("ChromeTab.loadUrl");
         }
-    }
-
-    @VisibleForTesting
-    public AuthenticatorNavigationInterceptor getAuthenticatorHelper() {
-        return getInterceptNavigationDelegate().getAuthenticatorNavigationInterceptor();
-    }
-
-    /**
-     * @return the TabRedirectHandler for the tab.
-     */
-    public TabRedirectHandler getTabRedirectHandler() {
-        return mTabRedirectHandler;
-    }
-
-    @Override
-    protected boolean shouldIgnoreNewTab(String url, boolean incognito) {
-        InterceptNavigationDelegateImpl delegate = getInterceptNavigationDelegate();
-        return delegate != null && delegate.shouldIgnoreNewTab(url, incognito);
-    }
-
-    @Override
-    public InterceptNavigationDelegateImpl getInterceptNavigationDelegate() {
-        return (InterceptNavigationDelegateImpl) super.getInterceptNavigationDelegate();
-    }
-
-    /**
-     * Factory method for {@link InterceptNavigationDelegateImpl}. Meant to be overridden by
-     * subclasses.
-     * @return A new instance of {@link InterceptNavigationDelegateImpl}.
-     */
-    protected InterceptNavigationDelegateImpl createInterceptNavigationDelegate() {
-        return new InterceptNavigationDelegateImpl(mActivity, this);
     }
 
     /**

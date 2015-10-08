@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.compositor.scene_layer.StaticTabSceneLayer;
 import org.chromium.chrome.browser.dom_distiller.ReaderModePanel;
 import org.chromium.chrome.browser.dom_distiller.ReaderModePanel.ReaderModePanelLayoutDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
@@ -31,8 +30,8 @@ import java.util.LinkedList;
 
 /**
  * A {@link Layout} that shows a single tab at full screen. This tab is chosen based on the
- * {@link #tabSelecting(long, int)} call, and is used to show a thumbnail of a {@link ChromeTab}
- * until that {@link ChromeTab} is ready to be shown.
+ * {@link #tabSelecting(long, int)} call, and is used to show a thumbnail of a {@link Tab}
+ * until that {@link Tab} is ready to be shown.
  */
 public class StaticLayout extends ContextualSearchSupportedLayout {
     public static final String TAG = "StaticLayout";
