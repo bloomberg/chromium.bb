@@ -1499,10 +1499,6 @@ crbug.com/521764 [ Win10 ] transitions/equivalent-background-image-no-transition
 
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ ImageOnlyFailure ]
 crbug.com/474759 fast/block/line-layout/selection-highlight-overlap.html [ ImageOnlyFailure ]
-crbug.com/505086 css3/filters/effect-blur-hw.html [ NeedsRebaseline ]
-crbug.com/505086 css3/filters/effect-brightness-clamping-hw.html [ NeedsRebaseline ]
-crbug.com/505086 css3/filters/effect-combined-hw.html [ NeedsRebaseline ]
-crbug.com/505086 css3/filters/effect-reference-zoom-hw.html [ NeedsRebaseline ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
 crbug.com/502927 [ XP ] virtual/spv2/paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Skip ]
