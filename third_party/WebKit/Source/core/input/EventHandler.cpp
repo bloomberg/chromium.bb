@@ -2489,7 +2489,7 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request, 
 {
     ASSERT(m_frame == m_frame->localFrameRoot());
 
-    WillBeHeapVector<LocalFrame*> newHoverFrameChain;
+    WillBeHeapVector<RawPtrWillBeMember<LocalFrame>> newHoverFrameChain;
     LocalFrame* newHoverFrameInDocument = innerElement ? innerElement->document().frame() : nullptr;
     // Insert the ancestors of the frame having the new hovered node to the frame chain
     // The frame chain doesn't include the main frame to avoid the redundant work that cleans the hover state.
@@ -2549,7 +2549,7 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(const GestureEventWithHi
     // - Dispatch mouseover/mouseenter events of the entered frames into the inside.
 
     // Insert the ancestors of the frame having the new target node to the entered frame chain
-    WillBeHeapVector<LocalFrame*> enteredFrameChain;
+    WillBeHeapVector<RawPtrWillBeMember<LocalFrame>> enteredFrameChain;
     LocalFrame* enteredFrameInDocument = targetedEvent.hitTestResult().innerNodeFrame();
     while (enteredFrameInDocument) {
         enteredFrameChain.append(enteredFrameInDocument);
@@ -2559,7 +2559,7 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(const GestureEventWithHi
 
     size_t indexEnteredFrameChain = enteredFrameChain.size();
     LocalFrame* exitedFrameInDocument = m_frame;
-    WillBeHeapVector<LocalFrame*> exitedFrameChain;
+    WillBeHeapVector<RawPtrWillBeMember<LocalFrame>> exitedFrameChain;
     // Insert the frame from the disagreement between last frames and entered frames
     while (exitedFrameInDocument) {
         Node* lastNodeUnderTap = exitedFrameInDocument->eventHandler().m_nodeUnderMouse.get();

@@ -609,7 +609,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
     const unsigned size = shorthand.length();
 
     // Begin by collecting the properties into a vector.
-    WillBeHeapVector<const CSSValue*> values(size);
+    WillBeHeapVector<RawPtrWillBeMember<const CSSValue>> values(size);
     // If the below loop succeeds, there should always be at minimum 1 layer.
     size_t numLayers = 1U;
 
@@ -662,7 +662,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
                 ASSERT(shorthand.properties()[propertyIndex + 1] == CSSPropertyBackgroundRepeatY
                     || shorthand.properties()[propertyIndex + 1] == CSSPropertyWebkitMaskRepeatY);
                 const CSSValue* yValue = values[propertyIndex + 1]->isValueList() ?
-                    toCSSValueList(values[propertyIndex + 1])->item(layer) : values[propertyIndex + 1];
+                    toCSSValueList(values[propertyIndex + 1])->item(layer) : values[propertyIndex + 1].get();
 
 
                 // FIXME: At some point we need to fix this code to avoid returning an invalid shorthand,
