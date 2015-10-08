@@ -18,8 +18,6 @@ source_set("ble") {
     "fake_wire_message.h",
     "pref_names.cc",
     "pref_names.h",
-    "proximity_auth_ble_system.cc",
-    "proximity_auth_ble_system.h",
     "remote_attribute.h",
   ]
 
@@ -42,7 +40,6 @@ source_set("unit_tests") {
     "bluetooth_low_energy_connection_finder_unittest.cc",
     "bluetooth_low_energy_connection_unittest.cc",
     "bluetooth_low_energy_device_whitelist_unittest.cc",
-    "proximity_auth_ble_system_unittest.cc",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

@@ -36,8 +36,6 @@
         "proximity_auth/ble/fake_wire_message.h",
         "proximity_auth/ble/pref_names.cc",
         "proximity_auth/ble/pref_names.h",
-        "proximity_auth/ble/proximity_auth_ble_system.cc",
-        "proximity_auth/ble/proximity_auth_ble_system.h",
         "proximity_auth/bluetooth_connection.cc",
         "proximity_auth/bluetooth_connection.h",
         "proximity_auth/bluetooth_connection_finder.cc",
