@@ -17,7 +17,13 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.net.urlconnection.CronetHttpURLConnection;
+import org.chromium.net.urlconnection.CronetURLStreamHandlerFactory;
 
+import java.net.Proxy;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandlerFactory;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -252,6 +258,28 @@ class CronetUrlRequestContext extends CronetEngine {
                 }
             }
         }
+    }
+
+    @Override
+    public URLConnection openConnection(URL url) {
+        return openConnection(url, Proxy.NO_PROXY);
+    }
+
+    @Override
+    public URLConnection openConnection(URL url, Proxy proxy) {
+        if (proxy.type() != Proxy.Type.DIRECT) {
+            throw new UnsupportedOperationException();
+        }
+        String protocol = url.getProtocol();
+        if ("http".equals(protocol) || "https".equals(protocol)) {
+            return new CronetHttpURLConnection(url, this);
+        }
+        throw new UnsupportedOperationException("Unexpected protocol:" + protocol);
+    }
+
+    @Override
+    public URLStreamHandlerFactory createURLStreamHandlerFactory() {
+        return new CronetURLStreamHandlerFactory(this);
     }
 
     /**

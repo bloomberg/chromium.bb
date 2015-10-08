@@ -144,22 +144,25 @@ Chrome browser.
 # Using the java.net.HttpURLConnection API
 Cronet offers an implementation of the [java.net.HttpURLConnection] API to make
 it easier for apps which rely on this API to use Cronet.
-To use Cronet's implementation instead of the system's default implementation,
-simply do the following:
+To open individual connections using Cronet's implementation, do the following:
 
-    CronetURLStreamHandlerFactory streamHandlerFactory =
-            new CronetURLStreamHandlerFactory(engine);
-    URL.setURLStreamHandlerFactory(streamHandlerFactory);
+    HttpURLConnection connection =
+            (HttpURLConnection)engine.openConnection(url);
+
+To use Cronet's implementation instead of the system's default implementation
+for all connections established using `URL.openConnection()` do the following:
+
+    URL.setURLStreamHandlerFactory(engine.createURLStreamHandlerFactory());
 
 Cronet's
 HttpURLConnection implementation has some limitations as compared to the system
 implementation, including not utilizing the default system HTTP cache (Please
-see {@link org.chromium.net.urlconnection.CronetURLStreamHandlerFactory} for
+see {@link org.chromium.net.CronetEngine#createURLStreamHandlerFactory} for
 more information).
 You can configure Cronet and control caching through the
 `CronetEngine.Builder` instance, `engineBuilder`
-(See [Configuring Cronet](#configuring-cronet) section), before you pass it
-into the `CronetURLStreamHandlerFactory` constructor.
+(See [Configuring Cronet](#configuring-cronet) section), before you build the
+`CronetEngine` and then call `CronetEngine.createURLStreamHandlerFactory()`.
 
 [ByteBuffer]: https://developer.android.com/reference/java/nio/ByteBuffer.html
 [chrome://net-internals#import]: chrome://net-internals#import

@@ -1,4 +1,5 @@
 android.content
+android.net.http
 android.util
 java
 java.io
@@ -7,4 +8,5 @@ java.net
 java.nio
 java.util
 java.util.concurrent
+javax.net.ssl
 org.json

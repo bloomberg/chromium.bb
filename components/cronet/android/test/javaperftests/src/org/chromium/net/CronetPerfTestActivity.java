@@ -11,7 +11,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Debug;
 
-import org.chromium.net.urlconnection.CronetHttpURLStreamHandler;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -292,17 +291,11 @@ public class CronetPerfTestActivity extends Activity {
         // GET or POST to one particular URL using Cronet HttpURLConnection API
         private class CronetHttpURLConnectionFetchTask implements Callable<Boolean> {
             private final byte[] mBuffer = new byte[mBufferSize];
-            private final CronetHttpURLStreamHandler mStreamHandler;
-
-            public CronetHttpURLConnectionFetchTask(
-                    CronetHttpURLStreamHandler cronetStreamHandler) {
-                mStreamHandler = cronetStreamHandler;
-            }
 
             @Override
             public Boolean call() {
                 try {
-                    return exerciseHttpURLConnection(mStreamHandler.openConnection(mUrl), mBuffer);
+                    return exerciseHttpURLConnection(mCronetEngine.openConnection(mUrl), mBuffer);
                 } catch (IOException e) {
                     System.out.println("Cronet HttpURLConnection failed with " + e);
                     return false;
@@ -480,10 +473,8 @@ public class CronetPerfTestActivity extends Activity {
                     }
                     break;
                 case CRONET_HUC: {
-                    final CronetHttpURLStreamHandler cronetStreamHandler =
-                            new CronetHttpURLStreamHandler(mCronetEngine);
                     for (int i = 0; i < mIterations; i++) {
-                        tasks.add(new CronetHttpURLConnectionFetchTask(cronetStreamHandler));
+                        tasks.add(new CronetHttpURLConnectionFetchTask());
                     }
                     break;
                 }

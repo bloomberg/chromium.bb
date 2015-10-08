@@ -22,7 +22,7 @@ import java.net.URLStreamHandler;
  * <b>Note:</b> Cronet's {@code HttpURLConnection} implementation is subject to some limitations
  * listed {@link CronetURLStreamHandlerFactory here}.
  */
-public class CronetHttpURLStreamHandler extends URLStreamHandler {
+class CronetHttpURLStreamHandler extends URLStreamHandler {
     private final CronetEngine mCronetEngine;
 
     public CronetHttpURLStreamHandler(CronetEngine cronetEngine) {
@@ -35,12 +35,7 @@ public class CronetHttpURLStreamHandler extends URLStreamHandler {
      */
     @Override
     public URLConnection openConnection(URL url) throws IOException {
-        String protocol = url.getProtocol();
-        if ("http".equals(protocol) || "https".equals(protocol)) {
-            return new CronetHttpURLConnection(url, mCronetEngine);
-        }
-        throw new UnsupportedOperationException(
-                "Unexpected protocol:" + protocol);
+        return mCronetEngine.openConnection(url);
     }
 
     /**
@@ -50,6 +45,6 @@ public class CronetHttpURLStreamHandler extends URLStreamHandler {
      */
     @Override
     public URLConnection openConnection(URL url, Proxy proxy) {
-        throw new UnsupportedOperationException();
+        return mCronetEngine.openConnection(url, proxy);
     }
 }

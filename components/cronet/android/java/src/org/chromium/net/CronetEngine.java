@@ -13,6 +13,10 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.net.Proxy;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandlerFactory;
 import java.util.concurrent.Executor;
 
 /**
@@ -167,6 +171,8 @@ public abstract class CronetEngine {
          * proxy is allowed.
          * @return the builder to facilitate chaining.
          * @hide
+         * @deprecated Marked as deprecated because @hide doesn't properly hide but
+         *         javadocs are built with nodeprecated="yes".
          */
         public Builder setDataReductionProxyOptions(
                 String primaryProxy, String fallbackProxy, String secureProxyCheckUrl) {
@@ -371,7 +377,7 @@ public abstract class CronetEngine {
      * priorities see {@link #createRequest(String, UrlRequestListener,
      * Executor, int priority)}.
      *
-     * @param url {@link java.net.URL} for the request.
+     * @param url {@link URL} for the request.
      * @param listener callback class that gets called on different events.
      * @param executor {@link Executor} on which all callbacks will be called.
      * @return new request.
@@ -387,7 +393,7 @@ public abstract class CronetEngine {
      * tasks on the current thread to prevent blocking networking operations
      * and causing exceptions during shutdown.
      *
-     * @param url {@link java.net.URL} for the request.
+     * @param url {@link URL} for the request.
      * @param listener callback class that gets called on different events.
      * @param executor {@link Executor} on which all callbacks will be called.
      * @param priority priority of the request which should be one of the
@@ -515,6 +521,68 @@ public abstract class CronetEngine {
      */
     @Deprecated
     public abstract void removeThroughputListener(NetworkQualityThroughputListener listener);
+
+    /**
+     * Establishes a new connection to the resource specified by the {@link URL} {@code url}.
+     * <p>
+     * <b>Note:</b> Cronet's {@link java.net.HttpURLConnection} implementation is subject to certain
+     * limitations, see {@link #createURLStreamHandlerFactory} for details.
+     *
+     * @param url URL of resource to connect to.
+     * @return an {@link java.net.HttpURLConnection} instance implemented by this CronetEngine.
+     */
+    public abstract URLConnection openConnection(URL url);
+
+    /**
+     * Establishes a new connection to the resource specified by the {@link URL} {@code url}
+     * using the given proxy.
+     * <p>
+     * <b>Note:</b> Cronet's {@link java.net.HttpURLConnection} implementation is subject to certain
+     * limitations, see {@link #createURLStreamHandlerFactory} for details.
+     *
+     * @param url URL of resource to connect to.
+     * @param proxy proxy to use when establishing connection.
+     * @return an {@link java.net.HttpURLConnection} instance implemented by this CronetEngine.
+     * @hide
+     * @deprecated Marked as deprecated because @hide doesn't properly hide but
+     *         javadocs are built with nodeprecated="yes".
+     *         TODO(pauljensen): Expose once implemented, http://crbug.com/418111
+     */
+    public abstract URLConnection openConnection(URL url, Proxy proxy);
+
+    /**
+     * Creates a {@link URLStreamHandlerFactory} to handle HTTP and HTTPS
+     * traffic. An instance of this class can be installed via
+     * {@link URL#setURLStreamHandlerFactory} thus using this CronetEngine by default for
+     * all requests created via {@link URL#openConnection}.
+     * <p>
+     * Cronet does not use certain HTTP features provided via the system:
+     * <ul>
+     * <li>the HTTP cache installed via
+     *     {@link android.net.http.HttpResponseCache#install(java.io.File, long)
+     *            HttpResponseCache.install()}</li>
+     * <li>the HTTP authentication method installed via
+     *     {@link java.net.Authenticator#setDefault}</li>
+     * <li>the HTTP cookie storage installed via {@link java.net.CookieHandler#setDefault}</li>
+     * </ul>
+     * <p>
+     * While Cronet supports and encourages requests using the HTTPS protocol,
+     * Cronet does not provide support for the
+     * {@link javax.net.ssl.HttpsURLConnection} API. This lack of support also
+     * includes not using certain HTTPS features provided via the system:
+     * <ul>
+     * <li>the HTTPS hostname verifier installed via {@link
+     *   javax.net.ssl.HttpsURLConnection#setDefaultHostnameVerifier(javax.net.ssl.HostnameVerifier)
+     *     HttpsURLConnection.setDefaultHostnameVerifier()}</li>
+     * <li>the HTTPS socket factory installed via {@link
+     *   javax.net.ssl.HttpsURLConnection#setDefaultSSLSocketFactory(javax.net.ssl.SSLSocketFactory)
+     *     HttpsURLConnection.setDefaultSSLSocketFactory()}</li>
+     * </ul>
+     *
+     * @return an {@link URLStreamHandlerFactory} instance implemented by this
+     *         CronetEngine.
+     */
+    public abstract URLStreamHandlerFactory createURLStreamHandlerFactory();
 
     /**
      * Creates a {@link CronetEngine} with the given {@link Builder}.
