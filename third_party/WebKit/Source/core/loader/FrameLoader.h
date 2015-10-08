@@ -132,7 +132,7 @@ public:
 
     void receivedFirstData();
 
-    String userAgent(const KURL&) const;
+    String userAgent() const;
 
     void dispatchDidClearWindowObjectInMainWorld();
     void dispatchDidClearDocumentOfWindowObject();

@@ -136,7 +136,7 @@ public:
 
     virtual PassRefPtrWillBeRawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) = 0;
 
-    virtual String userAgent(const KURL&) = 0;
+    virtual String userAgent() = 0;
 
     virtual String doNotTrackValue() = 0;
 

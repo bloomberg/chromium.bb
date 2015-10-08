@@ -1172,9 +1172,9 @@ void FrameLoader::restoreScrollPositionAndViewState()
     documentLoader()->initialScrollState().didRestoreFromHistory = true;
 }
 
-String FrameLoader::userAgent(const KURL& url) const
+String FrameLoader::userAgent() const
 {
-    String userAgent = client()->userAgent(url);
+    String userAgent = client()->userAgent();
     InspectorInstrumentation::applyUserAgentOverride(m_frame, &userAgent);
     return userAgent;
 }
@@ -1372,7 +1372,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
 
 void FrameLoader::applyUserAgent(ResourceRequest& request)
 {
-    String userAgent = this->userAgent(request.url());
+    String userAgent = this->userAgent();
     ASSERT(!userAgent.isNull());
     request.setHTTPUserAgent(AtomicString(userAgent));
 }

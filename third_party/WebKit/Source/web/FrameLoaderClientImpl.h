@@ -117,7 +117,7 @@ public:
     void didChangePerformanceTiming() override;
     void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) override;
     PassRefPtrWillBeRawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
-    WTF::String userAgent(const KURL&) override;
+    WTF::String userAgent() override;
     WTF::String doNotTrackValue() override;
     void transitionToCommittedForNewPage() override;
     PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const FrameLoadRequest&, const WTF::AtomicString& name, HTMLFrameOwnerElement*) override;

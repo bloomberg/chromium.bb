@@ -87,7 +87,7 @@ public:
     KURL completeURL(const String& url) const;
     virtual void disableEval(const String& errorMessage) = 0;
     virtual LocalDOMWindow* executingWindow() { return 0; }
-    virtual String userAgent(const KURL&) const = 0;
+    virtual String userAgent() const = 0;
     virtual void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>) = 0; // Executes the task on context's thread asynchronously.
     virtual double timerAlignmentInterval() const = 0;
 

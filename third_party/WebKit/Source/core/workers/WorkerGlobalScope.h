@@ -78,7 +78,7 @@ public:
     const KURL& url() const { return m_url; }
     KURL completeURL(const String&) const;
 
-    String userAgent(const KURL&) const final;
+    String userAgent() const final;
     void disableEval(const String& errorMessage) final;
 
     WorkerScriptController* script() { return m_script.get(); }

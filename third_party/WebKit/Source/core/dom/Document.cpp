@@ -2958,9 +2958,9 @@ void Document::processBaseElement()
     m_baseTarget = target ? *target : nullAtom;
 }
 
-String Document::userAgent(const KURL& url) const
+String Document::userAgent() const
 {
-    return frame() ? frame()->loader().userAgent(url) : String();
+    return frame() ? frame()->loader().userAgent() : String();
 }
 
 void Document::disableEval(const String& errorMessage)

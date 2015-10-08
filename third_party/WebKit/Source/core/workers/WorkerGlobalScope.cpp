@@ -137,7 +137,7 @@ KURL WorkerGlobalScope::completeURL(const String& url) const
     return KURL(m_url, url);
 }
 
-String WorkerGlobalScope::userAgent(const KURL&) const
+String WorkerGlobalScope::userAgent() const
 {
     return m_userAgent;
 }

@@ -220,7 +220,7 @@ public:
 
     PassRefPtrWillBeRawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
 
-    String userAgent(const KURL&) override { return ""; }
+    String userAgent() override { return ""; }
 
     String doNotTrackValue() override { return String(); }
 

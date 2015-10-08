@@ -102,7 +102,7 @@ void InProcessWorkerBase::onFinished()
         WorkerThreadStartMode startMode = DontPauseWorkerGlobalScopeOnStart;
         if (InspectorInstrumentation::shouldPauseDedicatedWorkerOnStart(executionContext()))
             startMode = PauseWorkerGlobalScopeOnStart;
-        m_contextProxy->startWorkerGlobalScope(m_scriptLoader->url(), executionContext()->userAgent(m_scriptLoader->url()), m_scriptLoader->script(), startMode);
+        m_contextProxy->startWorkerGlobalScope(m_scriptLoader->url(), executionContext()->userAgent(), m_scriptLoader->script(), startMode);
         InspectorInstrumentation::scriptImported(executionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
     }
     m_contentSecurityPolicy = m_scriptLoader->releaseContentSecurityPolicy();

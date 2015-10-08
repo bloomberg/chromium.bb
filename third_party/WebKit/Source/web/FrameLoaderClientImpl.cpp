@@ -680,9 +680,9 @@ PassRefPtrWillBeRawPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoad
     return ds.release();
 }
 
-String FrameLoaderClientImpl::userAgent(const KURL& url)
+String FrameLoaderClientImpl::userAgent()
 {
-    WebString override = m_webFrame->client()->userAgentOverride(m_webFrame, WebURL(url));
+    WebString override = m_webFrame->client()->userAgentOverride(m_webFrame);
     if (!override.isEmpty())
         return override;
 

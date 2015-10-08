@@ -555,10 +555,10 @@ public:
         WebSecurityOrigin target,
         WebDOMMessageEvent event) { return false; }
 
-    // Asks the embedder if a specific user agent should be used for the given
-    // URL. Non-empty strings indicate an override should be used. Otherwise,
+    // Asks the embedder if a specific user agent should be used. Non-empty
+    // strings indicate an override should be used. Otherwise,
     // Platform::current()->userAgent() will be called to provide one.
-    virtual WebString userAgentOverride(WebLocalFrame*, const WebURL& url) { return WebString(); }
+    virtual WebString userAgentOverride(WebLocalFrame*) { return WebString(); }
 
     // Asks the embedder what value the network stack will send for the DNT
     // header. An empty string indicates that no DNT header will be send.

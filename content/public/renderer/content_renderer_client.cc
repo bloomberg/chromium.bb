@@ -216,10 +216,6 @@ BrowserPluginDelegate* ContentRendererClient::CreateBrowserPluginDelegate(
   return nullptr;
 }
 
-std::string ContentRendererClient::GetUserAgentOverrideForURL(const GURL& url) {
-  return std::string();
-}
-
 scoped_ptr<blink::WebAppBannerClient>
 ContentRendererClient::CreateAppBannerClient(RenderFrame* render_frame) {
   return nullptr;

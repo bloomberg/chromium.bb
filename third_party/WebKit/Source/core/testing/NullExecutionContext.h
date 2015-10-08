@@ -22,7 +22,7 @@ public:
     NullExecutionContext();
 
     void disableEval(const String&) override { }
-    String userAgent(const KURL&) const override { return String(); }
+    String userAgent() const override { return String(); }
 
     void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>) override;
 

@@ -526,7 +526,7 @@ public:
     KURL completeURL(const String&) const;
     KURL completeURLWithOverride(const String&, const KURL& baseURLOverride) const;
 
-    String userAgent(const KURL&) const final;
+    String userAgent() const final;
     void disableEval(const String& errorMessage) final;
 
     CSSStyleSheet& elementSheet();

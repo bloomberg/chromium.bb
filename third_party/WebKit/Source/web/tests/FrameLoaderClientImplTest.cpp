@@ -54,14 +54,14 @@ class MockWebFrameClient : public WebFrameClient {
 public:
     ~MockWebFrameClient() override { }
 
-    MOCK_METHOD2(userAgentOverride, WebString(WebLocalFrame*, const WebURL&));
+    MOCK_METHOD1(userAgentOverride, WebString(WebLocalFrame*));
 };
 
 class FrameLoaderClientImplTest : public ::testing::Test {
 protected:
     void SetUp() override
     {
-        ON_CALL(m_webFrameClient, userAgentOverride(_, _)).WillByDefault(Return(WebString()));
+        ON_CALL(m_webFrameClient, userAgentOverride(_)).WillByDefault(Return(WebString()));
 
         FrameTestHelpers::TestWebViewClient webViewClient;
         m_webView = WebView::create(&webViewClient);
@@ -80,9 +80,8 @@ protected:
 
     WebString userAgent()
     {
-        // The test always returns the same user agent, regardless of the URL passed in.
-        KURL dummyURL(ParsedURLString, "about:blank");
-        WTF::CString userAgent = frameLoaderClient().userAgent(dummyURL).utf8();
+        // The test always returns the same user agent .
+        WTF::CString userAgent = frameLoaderClient().userAgent().utf8();
         return WebString::fromUTF8(userAgent.data(), userAgent.length());
     }
 
@@ -103,12 +102,12 @@ TEST_F(FrameLoaderClientImplTest, UserAgentOverride)
     const WebString overrideUserAgent = WebString::fromUTF8("dummy override");
 
     // Override the user agent and make sure we get it back.
-    EXPECT_CALL(webFrameClient(), userAgentOverride(_, _)).WillOnce(Return(overrideUserAgent));
+    EXPECT_CALL(webFrameClient(), userAgentOverride(_)).WillOnce(Return(overrideUserAgent));
     EXPECT_TRUE(overrideUserAgent.equals(userAgent()));
     Mock::VerifyAndClearExpectations(&webFrameClient());
 
     // Remove the override and make sure we get the original back.
-    EXPECT_CALL(webFrameClient(), userAgentOverride(_, _)).WillOnce(Return(WebString()));
+    EXPECT_CALL(webFrameClient(), userAgentOverride(_)).WillOnce(Return(WebString()));
     EXPECT_TRUE(defaultUserAgent.equals(userAgent()));
 }
 

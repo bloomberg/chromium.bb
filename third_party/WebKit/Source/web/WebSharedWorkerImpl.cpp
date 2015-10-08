@@ -337,7 +337,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     RefPtrWillBeRawPtr<ContentSecurityPolicy> contentSecurityPolicy = m_mainScriptLoader->releaseContentSecurityPolicy();
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
         m_url,
-        m_loadingDocument->userAgent(m_url),
+        m_loadingDocument->userAgent(),
         m_mainScriptLoader->script(),
         nullptr,
         startMode,

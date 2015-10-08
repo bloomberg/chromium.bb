@@ -289,10 +289,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns true if dev channel APIs are available for plugins.
   virtual bool IsPluginAllowedToUseDevChannelAPIs();
 
-  // Returns a user agent override specific for |url|, or empty string if
-  // default user agent should be used.
-  virtual std::string GetUserAgentOverrideForURL(const GURL& url);
-
   // Records a sample string to a Rappor privacy-preserving metric.
   // See: https://www.chromium.org/developers/design-documents/rappor
   virtual void RecordRappor(const std::string& metric,

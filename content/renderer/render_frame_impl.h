@@ -530,8 +530,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrame* target_frame,
       blink::WebSecurityOrigin target_origin,
       blink::WebDOMMessageEvent event) override;
-  blink::WebString userAgentOverride(blink::WebLocalFrame* frame,
-                                     const blink::WebURL& url) override;
+  blink::WebString userAgentOverride(blink::WebLocalFrame* frame) override;
   blink::WebString doNotTrackValue(blink::WebLocalFrame* frame) override;
   bool allowWebGL(blink::WebLocalFrame* frame, bool default_value) override;
   void didLoseWebGLContext(blink::WebLocalFrame* frame,
