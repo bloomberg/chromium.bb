@@ -7,6 +7,7 @@ files to combine them and reduce blocking load/parse time.
 ## Required software
 
 Vulcanization currently requires:
+
 - node.js: v0.10.25 (can be found with `node --version`)
 - npm: 1.3.10 (can be found with `npm --version`)
 - vulcanize: 1.12.3 (can be found with `vulcanize --version`)
