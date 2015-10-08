@@ -28,6 +28,18 @@
         'defines': ['DISABLE_DISPLAY'],
       }],
     ],
+    'target_conditions': [
+      ['_type=="executable"', {
+        'ldflags': [
+          # Allow  OEMs to override default libraries that are shipped with
+          # cast receiver package by installed OEM-specific libraries in
+          # /oem_cast_shlib.
+          '-Wl,-rpath=/oem_cast_shlib',
+          # Some shlibs are built in same directory of executables.
+          '-Wl,-rpath=\$$ORIGIN',
+        ],
+      }],
+    ],
   },
   'targets': [
     # Public API target for OEM partners to replace shlibs.
@@ -739,16 +751,6 @@
           ],
           'sources': [
             'app/cast_main.cc',
-          ],
-          'ldflags': [
-            # Allow  OEMs to override default libraries that are shipped with
-            # cast receiver package by installed OEM-specific libraries in
-            # /oem_cast_shlib.
-            '-Wl,-rpath=/oem_cast_shlib',
-            # TODO(dougsteed): remove when Chromecast moves to boringssl.
-            # Allow the cast shell to find the NSS module in the same
-            # directory.
-            '-Wl,-rpath=\$$ORIGIN'
           ],
         },
       ],  # end of targets

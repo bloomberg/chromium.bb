@@ -9,7 +9,8 @@
   },
   'target_defaults': {
     'include_dirs': [
-      '../public/', # Public APIs
+      '../..',  # Root of Chromium checkout
+      '../public/',  # Public APIs
     ],
   },
   'targets': [
@@ -314,6 +315,23 @@
         'cma/test/mock_frame_provider.h',
         'cma/test/run_all_unittests.cc',
       ],
+      'ldflags': [
+        # Allow  OEMs to override default libraries that are shipped with
+        # cast receiver package by installed OEM-specific libraries in
+        # /oem_cast_shlib.
+        '-Wl,-rpath=/oem_cast_shlib',
+        # Some shlibs are built in same directory of executables.
+        '-Wl,-rpath=\$$ORIGIN',
+      ],
+      'conditions': [
+        ['chromecast_branding=="public"', {
+          'dependencies': [
+            # Link default libcast_media_1.0 statically not to link dummy one
+            # dynamically for public unittests.
+            'libcast_media_1.0_default_core',
+          ],
+        }],
+      ],
     },
     { # Target for OEM partners to override media shared library, i.e.
       # libcast_media_1.0.so. This target is only used to build executables
@@ -322,14 +340,29 @@
       'type': 'shared_library',
       'dependencies': [
         '../../chromecast/chromecast.gyp:cast_public_api',
-        'default_cma_backend'
       ],
-      'include_dirs': [
-        '../..',
+      'sources': [
+        'base/cast_media_dummy.cc',
+      ],
+    },
+    { # This target can be statically linked into unittests, but production
+      # binaries should not depend on this target.
+      'target_name': 'libcast_media_1.0_default_core',
+      'type': '<(component)',
+      'dependencies': [
+        '../../chromecast/chromecast.gyp:cast_public_api',
+        'default_cma_backend'
       ],
       'sources': [
         'base/cast_media_default.cc',
       ],
-    }
+    },
+    { # Default implementation of libcast_media_1.0.so.
+      'target_name': 'libcast_media_1.0_default',
+      'type': 'loadable_module',
+      'dependencies': [
+        'libcast_media_1.0_default_core'
+      ],
+    },
   ], # end of targets
 }
