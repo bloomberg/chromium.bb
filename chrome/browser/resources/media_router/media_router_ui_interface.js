@@ -50,27 +50,25 @@ cr.define('media_router.ui', function() {
   /**
    * Populates the WebUI with data obtained from Media Router.
    *
-   * @param {headerText: string,
-   *         headerTextTooltip: string,
-   *         deviceMissingUrl: string,
+   * @param {deviceMissingUrl: string,
    *         sinks: !Array<!media_router.Sink>,
    *         routes: !Array<!media_router.Route>,
-   *         castModes: !Array<!media_router.CastMode>} data
+   *         castModes: !Array<!media_router.CastMode>,
+   *         initialCastModeType: number} data
    * Parameters in data:
-   *   headerText - text to be displayed in the header of the WebUI.
-   *   headerTextTooltip - tooltip to be displayed for the header of the WebUI.
    *   deviceMissingUrl - url to be opened on "Device missing?" clicked.
    *   sinks - list of sinks to be displayed.
    *   routes - list of routes that are associated with the sinks.
    *   castModes - list of available cast modes.
+   *   initialCastModeType - cast mode to show initially. Expected to be
+   *       included in |castModes|.
    */
   function setInitialData(data) {
-    container.headerText = data['headerText'];
-    container.headerTextTooltip = data['headerTextTooltip'];
     container.deviceMissingUrl = data['deviceMissingUrl'];
-    container.sinkList = data['sinks'];
+    container.allSinks = data['sinks'];
     container.routeList = data['routes'];
-    container.castModeList = data['castModes'];
+    container.initializeCastModes(data['castModes'],
+        data['initialCastModeType']);
   }
 
   /**
@@ -98,7 +96,7 @@ cr.define('media_router.ui', function() {
    * @param {!Array<!media_router.Sink>} sinkList
    */
   function setSinkList(sinkList) {
-    container.sinkList = sinkList;
+    container.allSinks = sinkList;
   }
 
   return {
@@ -158,7 +156,7 @@ cr.define('media_router.browserApi', function() {
    *
    * @param {string} sinkId The sink ID.
    * @param {number} selectedCastMode The value of the cast mode the user
-   *   selected, or -1 if the user has not explicitly selected a mode.
+   *   selected.
    */
   function requestRoute(sinkId, selectedCastMode) {
     chrome.send('requestRoute',

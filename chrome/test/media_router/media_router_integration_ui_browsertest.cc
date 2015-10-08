@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   std::string sink_length_script = base::StringPrintf(
       "domAutomationController.send("
       "window.document.getElementById('media-router-container')."
-      "sinkList.length)");
+      "sinksToShow_.length)");
   ASSERT_EQ(2, ExecuteScriptAndExtractInt(dialog_contents, sink_length_script));
 
   ChooseSink(web_contents, kTestSinkName);

@@ -87,20 +87,12 @@ class MediaRouterUI
   // Notifies this instance that the UI has been initialized.
   void UIInitialized();
 
-  // Requests a route be created from the source determined by the preferred
-  // MediaCastMode, to the sink given by |sink_id|.
-  // The preferred cast mode is determined from the set of currently supported
-  // cast modes in |cast_modes_|.
-  // Returns false if unable to request the route.
+  // Requests a route be created from the source mapped to
+  // |cast_mode|, to the sink given by |sink_id|.
+  // Returns true if a route request is successfully submitted.
   // |OnRouteResponseReceived()| will be invoked when the route request
   // completes.
-  bool CreateRoute(const MediaSink::Id& sink_id);
-
-  // Requests a route be created from the source mapped to
-  // |cast_mode_override|, to the sink given by |sink_id|.
-  // Returns true if a route request is successfully submitted.
-  bool CreateRouteWithCastModeOverride(const MediaSink::Id& sink_id,
-                                       MediaCastMode cast_mode_override);
+  bool CreateRoute(const MediaSink::Id& sink_id, MediaCastMode cast_mode);
 
   // Calls MediaRouter to close the given route.
   void CloseRoute(const MediaRoute::Id& route_id);
@@ -110,15 +102,6 @@ class MediaRouterUI
 
   // Calls MediaRouter to clear the given issue.
   void ClearIssue(const Issue::Id& issue_id);
-
-  // Returns the header text that should be displayed in the UI when it is
-  // initially loaded. The header text is determined by the preferred cast mode.
-  std::string GetInitialHeaderText() const;
-
-  // Returns the tooltip text for the header that should be displayed
-  // in the UI when it is initially loaded. At present, this text is
-  // just the full hostname of the current site.
-  std::string GetInitialHeaderTextTooltip() const;
 
   // Returns the hostname of the default source's parent frame URL.
   std::string GetFrameURLHost() const;
@@ -176,8 +159,6 @@ class MediaRouterUI
                                const MediaRoute* route,
                                const std::string& presentation_id,
                                const std::string& error);
-
-  bool DoCreateRoute(const MediaSink::Id& sink_id, MediaCastMode cast_mode);
 
   // Creates and sends an issue if route creation times out.
   void RouteCreationTimeout();

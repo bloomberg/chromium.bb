@@ -262,86 +262,8 @@ void MediaRouterUI::UIInitialized() {
   issues_observer_->RegisterObserver();
 }
 
-bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id) {
-  return DoCreateRoute(sink_id, GetPreferredCastMode(cast_modes_));
-}
-
-bool MediaRouterUI::CreateRouteWithCastModeOverride(
-    const MediaSink::Id& sink_id,
-    MediaCastMode cast_mode_override) {
-  // NOTE: It's actually not an override if
-  // |cast_mode_override| == |GetPreferredCastMode(cast_modes_)|.
-  return DoCreateRoute(sink_id, cast_mode_override);
-}
-
-void MediaRouterUI::CloseRoute(const MediaRoute::Id& route_id) {
-  router_->CloseRoute(route_id);
-}
-
-void MediaRouterUI::AddIssue(const Issue& issue) {
-  router_->AddIssue(issue);
-}
-
-void MediaRouterUI::ClearIssue(const std::string& issue_id) {
-  router_->ClearIssue(issue_id);
-}
-
-std::string MediaRouterUI::GetInitialHeaderText() const {
-  if (cast_modes_.empty())
-    return std::string();
-
-  return MediaCastModeToDescription(GetPreferredCastMode(cast_modes_),
-                                    GetTruncatedHostFromURL(frame_url_));
-}
-
-std::string MediaRouterUI::GetInitialHeaderTextTooltip() const {
-  if (cast_modes_.empty())
-    return std::string();
-
-  return GetHostFromURL(frame_url_);
-}
-
-void MediaRouterUI::OnResultsUpdated(
-    const std::vector<MediaSinkWithCastModes>& sinks) {
-  sinks_ = sinks;
-  if (ui_initialized_)
-    handler_->UpdateSinks(sinks_);
-}
-
-void MediaRouterUI::SetIssue(const Issue* issue) {
-  if (ui_initialized_)
-    handler_->UpdateIssue(issue);
-}
-
-void MediaRouterUI::OnRoutesUpdated(const std::vector<MediaRoute>& routes) {
-  routes_ = routes;
-  if (ui_initialized_)
-    handler_->UpdateRoutes(routes_);
-}
-
-void MediaRouterUI::OnRouteResponseReceived(const int route_request_id,
-                                            const MediaSink::Id& sink_id,
-                                            const MediaRoute* route,
-                                            const std::string& presentation_id,
-                                            const std::string& error) {
-  DVLOG(1) << "OnRouteResponseReceived";
-  // If we receive a new route that we aren't expecting, do nothing.
-  if (route_request_id != current_route_request_id_)
-    return;
-
-  if (!route) {
-    // The provider will handle sending an issue for a failed route request.
-    DVLOG(0) << "MediaRouteResponse returned error: " << error;
-  }
-
-  handler_->OnCreateRouteResponseReceived(sink_id, route);
-  requesting_route_for_default_source_ = false;
-  current_route_request_id_ = -1;
-  route_creation_timer_.Stop();
-}
-
-bool MediaRouterUI::DoCreateRoute(const MediaSink::Id& sink_id,
-                                  MediaCastMode cast_mode) {
+bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
+                                MediaCastMode cast_mode) {
   DCHECK(query_result_manager_.get());
   DCHECK(initiator_);
 
@@ -410,6 +332,57 @@ bool MediaRouterUI::DoCreateRoute(const MediaSink::Id& sink_id,
                        SessionTabHelper::IdForTab(initiator_),
                        route_response_callbacks);
   return true;
+}
+
+void MediaRouterUI::CloseRoute(const MediaRoute::Id& route_id) {
+  router_->CloseRoute(route_id);
+}
+
+void MediaRouterUI::AddIssue(const Issue& issue) {
+  router_->AddIssue(issue);
+}
+
+void MediaRouterUI::ClearIssue(const std::string& issue_id) {
+  router_->ClearIssue(issue_id);
+}
+
+void MediaRouterUI::OnResultsUpdated(
+    const std::vector<MediaSinkWithCastModes>& sinks) {
+  sinks_ = sinks;
+  if (ui_initialized_)
+    handler_->UpdateSinks(sinks_);
+}
+
+void MediaRouterUI::SetIssue(const Issue* issue) {
+  if (ui_initialized_)
+    handler_->UpdateIssue(issue);
+}
+
+void MediaRouterUI::OnRoutesUpdated(const std::vector<MediaRoute>& routes) {
+  routes_ = routes;
+  if (ui_initialized_)
+    handler_->UpdateRoutes(routes_);
+}
+
+void MediaRouterUI::OnRouteResponseReceived(const int route_request_id,
+                                            const MediaSink::Id& sink_id,
+                                            const MediaRoute* route,
+                                            const std::string& presentation_id,
+                                            const std::string& error) {
+  DVLOG(1) << "OnRouteResponseReceived";
+  // If we receive a new route that we aren't expecting, do nothing.
+  if (route_request_id != current_route_request_id_)
+    return;
+
+  if (!route) {
+    // The provider will handle sending an issue for a failed route request.
+    DVLOG(0) << "MediaRouteResponse returned error: " << error;
+  }
+
+  handler_->OnCreateRouteResponseReceived(sink_id, route);
+  requesting_route_for_default_source_ = false;
+  current_route_request_id_ = -1;
+  route_creation_timer_.Stop();
 }
 
 void MediaRouterUI::RouteCreationTimeout() {

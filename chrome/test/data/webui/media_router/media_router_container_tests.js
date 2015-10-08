@@ -160,6 +160,9 @@ cr.define('media_router_container', function() {
             'issue id 2', 'Issue Title 2', 'Issue Message 2', 0, 1,
             'route id 2', false, 1234);
 
+        container.initializeCastModes(
+            fakeCastModeList, fakeCastModeList[1].type);
+
         // Allow for the media router container to be created and attached.
         setTimeout(done);
       });
@@ -176,21 +179,20 @@ cr.define('media_router_container', function() {
       // Tests for 'create-route' event firing when a sink with no associated
       // route is clicked.
       test('select sink without a route', function(done) {
-        container.sinkList = fakeSinkList;
+        container.allSinks = fakeSinkList;
 
         setTimeout(function() {
           var sinkList =
               container.$['sink-list'].querySelectorAll('paper-item');
-
           container.addEventListener('create-route', function(data) {
             assertEquals(fakeSinkList[2].id, data.detail.sinkId);
             assertEquals(container.selectedCastModeValue_,
                 data.detail.selectedCastModeValue);
             done();
           });
-
           // Tap on a sink without a route, which should fire a 'create-route'
           // event.
+          assertEquals(fakeSinkList.length, sinkList.length);
           MockInteractions.tap(sinkList[2]);
         });
       });
@@ -198,7 +200,7 @@ cr.define('media_router_container', function() {
       // Tests that selecting a sink with an associated route will make the
       // |container| switch to ROUTE_DETAILS view.
       test('select sink with a route', function(done) {
-        container.sinkList = fakeSinkList;
+        container.allSinks = fakeSinkList;
         container.routeList = fakeRouteList;
 
         setTimeout(function() {
@@ -217,7 +219,7 @@ cr.define('media_router_container', function() {
       // Tests that |container| returns to SINK_LIST view and arrow drop icon
       // toggles after a cast mode is selected.
       test('select cast mode', function(done) {
-        container.castModeList = fakeCastModeListWithNonDefaultModesOnly;
+        container.castModeList_ = fakeCastModeListWithNonDefaultModesOnly;
 
         MockInteractions.tap(container.$['arrow-drop-icon']);
         checkArrowDropIcon(container.CONTAINER_VIEW_.CAST_MODE_LIST);
@@ -265,21 +267,16 @@ cr.define('media_router_container', function() {
       test('header text with no default cast modes', function(done) {
         checkElementTextWithId(loadTimeData.getString('selectCastModeHeader'),
             'cast-mode-header-text');
+        checkElementTextWithId(fakeCastModeList[1].description,
+            'sink-list-header-text');
 
-        var fakeHeaderText = 'fake header text';
-        container.headerText = fakeHeaderText;
-        checkElementTextWithId(fakeHeaderText, 'sink-list-header-text');
-
-        // Set the cast mode list to update the header text when one is
-        // selected.
-        container.castModeList = fakeCastModeListWithNonDefaultModesOnly;
-
+        container.castModeList_ = fakeCastModeListWithNonDefaultModesOnly;
         setTimeout(function() {
           var castModeList =
               container.$['cast-mode-list'].querySelectorAll('paper-item');
-
-          for (var i = 0; i < fakeCastModeListWithNonDefaultModesOnly.length;
-              i++) {
+          assertEquals(fakeCastModeListWithNonDefaultModesOnly.length,
+              castModeList.length);
+          for (var i = 0; i < castModeList.length; i++) {
             MockInteractions.tap(castModeList[i]);
             checkElementTextWithId(
                 fakeCastModeListWithNonDefaultModesOnly[i].description,
@@ -296,7 +293,7 @@ cr.define('media_router_container', function() {
       // Tests the header text when updated with a cast mode list with a mix of
       // default and non-default cast modes.
       test('cast modes with one default mode', function(done) {
-        container.castModeList = fakeCastModeList;
+        container.castModeList_ = fakeCastModeList;
 
         setTimeout(function() {
           var castModeList =
@@ -323,12 +320,12 @@ cr.define('media_router_container', function() {
 
       // Tests that text shown for each sink matches their names.
       test('sink list text', function(done) {
-        container.sinkList = fakeSinkList;
+        container.allSinks = fakeSinkList;
 
         setTimeout(function() {
           var sinkList =
               container.$['sink-list'].querySelectorAll('paper-item');
-
+          assertEquals(fakeSinkList.length, sinkList.length);
           for (var i = 0; i < fakeSinkList.length; i++) {
             checkElementText(fakeSinkList[i].name, sinkList[i]);
           }
@@ -338,13 +335,13 @@ cr.define('media_router_container', function() {
 
       // Tests the text shown for the sink list.
       test('initial sink list route text', function(done) {
-        container.sinkList = fakeSinkList;
+        container.allSinks = fakeSinkList;
         container.routeList = fakeRouteList;
 
         setTimeout(function() {
           var routeList =
               container.$['sink-list'].querySelectorAll('.route');
-
+          assertEquals(fakeSinkList.length, routeList.length);
           checkElementText(fakeRouteList[0].description, routeList[0]);
           checkElementText(fakeRouteList[1].description, routeList[1]);
           checkElementText('', routeList[2]);
@@ -354,7 +351,7 @@ cr.define('media_router_container', function() {
 
       // Tests the visibility of routes in the sink list.
       test('initial route visibility', function(done) {
-        container.sinkList = fakeSinkList;
+        container.allSinks = fakeSinkList;
         container.routeList = fakeRouteList;
 
         setTimeout(function() {
@@ -371,7 +368,7 @@ cr.define('media_router_container', function() {
       // Tests the expected view when there is only one local active route and
       // media_router_container is created for the first time.
       test('initial view with one local route', function() {
-        container.sinkList = fakeSinkList;
+        container.allSinks = fakeSinkList;
         container.routeList = fakeRouteList;
 
         checkCurrentView(container.CONTAINER_VIEW_.ROUTE_DETAILS);
@@ -380,7 +377,7 @@ cr.define('media_router_container', function() {
       // Tests the expected view when there are multiple local active routes
       // and media_router_container is created for the first time.
       test('initial view with multiple local routes', function() {
-        container.sinkList = fakeSinkList;
+        container.allSinks = fakeSinkList;
         container.routeList = fakeRouteListWithLocalRoutesOnly;
 
         checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
@@ -389,7 +386,7 @@ cr.define('media_router_container', function() {
       // Tests the expected view when there are no local active routes and
       // media_router_container is created for the first time.
       test('initial view with no local route', function() {
-        container.sinkList = fakeSinkList;
+        container.allSinks = fakeSinkList;
         container.routeList = [];
 
         checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
@@ -398,7 +395,7 @@ cr.define('media_router_container', function() {
       // Tests the expected view when there are no local active routes and
       // media_router_container is created for the first time.
       test('view after route is closed remotely', function() {
-        container.sinkList = fakeSinkList;
+        container.allSinks = fakeSinkList;
         container.routeList = fakeRouteList;
         checkCurrentView(container.CONTAINER_VIEW_.ROUTE_DETAILS);
 
@@ -414,7 +411,6 @@ cr.define('media_router_container', function() {
                                     'container-header',
                                     'device-missing',
                                     'sink-list']);
-
         // Set a non-blocking issue. The issue should stay hidden.
         container.issue = fakeNonBlockingIssue;
         checkElementsVisibleWithId(['cast-mode-header-text',
@@ -464,7 +460,7 @@ cr.define('media_router_container', function() {
                                     'sink-list-view']);
 
         // Set an non-empty sink list.
-        container.sinkList = fakeSinkList;
+        container.allSinks = fakeSinkList;
         checkElementsVisibleWithId(['container-header',
                                     'sink-list',
                                     'sink-list-header-text',
@@ -482,6 +478,81 @@ cr.define('media_router_container', function() {
         // else, hidden.
         container.issue = fakeBlockingIssue;
         checkElementsVisibleWithId(['issue-banner', 'sink-list']);
+      });
+
+      // Tests that the sink list does not contain any sinks that are not
+      // compatible with the current cast mode and are not associated with a
+      // route.
+      test('sink list filtering based on initial cast mode', function(done) {
+        var newSinks = [
+          new media_router.Sink('sink id 10', 'Sink 10',
+              media_router.SinkIconType.CAST,
+              media_router.SinkStatus.ACTIVE, [2, 3]),
+          new media_router.Sink('sink id 20', 'Sink 20',
+              media_router.SinkIconType.CAST,
+              media_router.SinkStatus.ACTIVE, [1, 2, 3]),
+          new media_router.Sink('sink id 30', 'Sink 30',
+              media_router.SinkIconType.CAST,
+              media_router.SinkStatus.PENDING, [2, 3]),
+        ];
+
+        container.allSinks = newSinks;
+        container.routeList = [
+          new media_router.Route('id 1', 'sink id 30', 'Title 1', 1, false),
+        ];
+
+        setTimeout(function() {
+          var sinkList =
+              container.$['sink-list'].querySelectorAll('paper-item');
+
+          // newSinks[0] got filtered out since it is not compatible with cast
+          // mode 1.
+          // 'Sink 20' should be on the list because it contains the selected
+          // cast mode. (sinkList[0] = newSinks[1])
+          // 'Sink 30' should be on the list because it has a route
+          // (sinkList[1] = newSinks[2])
+          assertEquals(2, sinkList.length);
+
+          checkElementText(newSinks[1].name, sinkList[0]);
+
+          // |sinkList[1]| contains route title in addition to sink name.
+          assertTrue(sinkList[1].textContent.trim().startsWith(
+              newSinks[2].name.trim()));
+
+          done();
+        });
+      });
+
+      // Tests that after a different cast mode is selected, the sink list will
+      // change based on the sinks compatibility with the new cast mode.
+      test('changing cast mode changes sink list', function(done) {
+        container.allSinks = fakeSinkList;
+
+        var castModeList =
+              container.$['cast-mode-list'].querySelectorAll('paper-item');
+        MockInteractions.tap(castModeList[0]);
+        checkElementTextWithId(
+            fakeCastModeList[0].description, 'sink-list-header-text');
+
+        setTimeout(function() {
+          var sinkList =
+              container.$['sink-list'].querySelectorAll('paper-item');
+
+          // The sink list is empty because none of the sinks in fakeSinkList
+          // is compatible with cast mode 0.
+          assertEquals(0, sinkList.length);
+          MockInteractions.tap(castModeList[2]);
+          checkElementTextWithId(
+              fakeCastModeList[2].description, 'sink-list-header-text');
+
+          setTimeout(function() {
+            var sinkList =
+                container.$['sink-list'].querySelectorAll('paper-item');
+
+            assertEquals(3, sinkList.length);
+            done();
+          });
+         });
       });
     });
   }

@@ -9,15 +9,6 @@ Polymer({
 
   properties: {
     /**
-     * The list of CastModes to show.
-     * @type {!Array<!media_router.CastMode>}
-     */
-    castModeList: {
-      type: Array,
-      value: [],
-    },
-
-    /**
      * The possible states of media-router-container. Used to determine which
      * components of media-router-container to show.
      * This is a property of media-router-container because it is used in
@@ -35,6 +26,26 @@ Polymer({
         ROUTE_DETAILS: 'route-details',
         SINK_LIST: 'sink-list',
       },
+    },
+
+    /**
+     * The list of available sinks.
+     * @type {!Array<!media_router.Sink>}
+     */
+    allSinks: {
+      type: Array,
+      value: [],
+      observer: 'reindexSinksAndRebuildSinksToShow_',
+    },
+
+    /**
+     * The list of CastModes to show.
+     * @private {!Array<!media_router.CastMode>}
+     */
+    castModeList_: {
+      type: Array,
+      value: [],
+      observer: 'checkCurrentCastMode_',
     },
 
     /**
@@ -158,14 +169,11 @@ Polymer({
     },
 
     /**
-     * The value of the selected cast mode in |castModeList|, or -1 if the
-     * user has not explicitly selected a cast mode.
+     * The value of the selected cast mode in |castModeList_|.
      * @private {number}
      */
     selectedCastModeValue_: {
       type: Number,
-      value: -1,
-      observer: 'showSinkList_',
     },
 
     /**
@@ -175,16 +183,6 @@ Polymer({
     shareYourScreenSubheadingText_: {
       type: String,
       value: loadTimeData.getString('shareYourScreenSubheading'),
-    },
-
-    /**
-     * The list of available sinks.
-     * @type {!Array<!media_router.Sink>}
-     */
-    sinkList: {
-      type: Array,
-      value: [],
-      observer: 'rebuildSinkMap_',
     },
 
     /**
@@ -198,11 +196,20 @@ Polymer({
 
     /**
      * Maps media_router.Sink.id to corresponding media_router.Route.
-     * @private {!Object<!string, ?media_router.Route>}
+     * @private {!Object<!string, !media_router.Route>}
      */
     sinkToRouteMap_: {
       type: Object,
       value: {},
+    },
+
+    /**
+     * Sinks to show for the currently selected cast mode.
+     * @private {!Array<!media_router.Sink>}
+     */
+    sinksToShow_: {
+      type: Array,
+      value: [],
     },
   },
 
@@ -216,6 +223,18 @@ Polymer({
     this.async(function() {
       this.justOpened_ = false;
     }, 3000 /* 3 seconds */);
+  },
+
+  /**
+   * Checks that the currently selected cast mode is still in the
+   * updated list of available cast modes. If not, then update the selected
+   * cast mode to the first available cast mode on the list.
+   */
+  checkCurrentCastMode_: function() {
+    if (this.castModeList_.length > 0 &&
+        !this.findCastModeByType_(this.selectedCastModeValue_)) {
+      this.setSelectedCastMode_(this.castModeList_[0]);
+    }
   },
 
   /**
@@ -242,7 +261,7 @@ Polymer({
    *     icon for.
    * @return {string} The Polymer <iron-icon> icon to use. The format is
    *     <iconset>:<icon>, where <iconset> is the set ID and <icon> is the name
-   *     of the icon. <iconset>: may be ommitted if <icon> is from the default
+   *     of the icon. <iconset>: may be omitted if <icon> is from the default
    *     set.
    * @private
    */
@@ -425,8 +444,8 @@ Polymer({
    * @return {boolean} Whether or not to hide the sink list.
    * @private
    */
-  computeSinkListHidden_: function(sinkList) {
-    return sinkList.length == 0;
+  computeSinkListHidden_: function(sinksToShow) {
+    return sinksToShow.length == 0;
   },
 
   /**
@@ -447,6 +466,37 @@ Polymer({
    */
   computeSpinnerHidden_: function(justOpened) {
     return !justOpened;
+  },
+
+  /**
+   * Helper function to locate the CastMode object with the given type in
+   * castModeList.
+   *
+   * @param {number} castModeType Type of cast mode to look for.
+   * @return {?media_router.CastMode} CastMode object with the given type in
+   *     castModeList, or undefined if not found.
+   */
+  findCastModeByType_: function(castModeType) {
+    return this.castModeList_.find(function(element, index, array) {
+      return element.type == castModeType;
+    });
+  },
+
+  /**
+   * Sets the list of available cast modes and the initial cast mode.
+   *
+   * @param {!Array<!media_router.CastMode>} availableCastModes The list
+   *     of available cast modes.
+   * @param {number} initialCastModeType The initial cast mode when dialog is
+   *     opened.
+   */
+  initializeCastModes: function(availableCastModes, initialCastModeType) {
+    this.castModeList_ = availableCastModes;
+    var castMode = this.findCastModeByType_(initialCastModeType);
+    if (!castMode)
+      return;
+
+    this.setSelectedCastMode_(castMode);
   },
 
   /**
@@ -478,9 +528,8 @@ Polymer({
     if (!clickedMode)
       return;
 
-    this.headerText = clickedMode.description;
-    this.headerTextTooltip = clickedMode.host;
-    this.selectedCastModeValue_ = clickedMode.type;
+    this.setSelectedCastMode_(clickedMode);
+    this.showSinkList_();
   },
 
   /**
@@ -577,19 +626,53 @@ Polymer({
 
     this.sinkToRouteMap_ = tempSinkToRouteMap;
     this.maybeShowRouteDetailsOnOpen_(localRoute);
+    this.rebuildSinksToShow_();
   },
 
   /**
-   * Called when |sinkList| is updated. Rebuilds |sinkMap_|.
+   * Rebuilds the list of sinks to be shown for the current cast mode.
+   * A sink should be shown if it is compatible with the current cast mode, or
+   * if the sink is associated with a route.
+   */
+  rebuildSinksToShow_: function() {
+    var sinksToShow = [];
+    this.allSinks.forEach(function(element, index, array) {
+      if (element.castModes.indexOf(this.selectedCastModeValue_) != -1 ||
+          this.sinkToRouteMap_[element.id]) {
+        sinksToShow.push(element);
+      }
+    }, this);
+    this.sinksToShow_ = sinksToShow;
+  },
+
+  /**
+   * Called when |allSinks| is updated.
    *
    * @private
    */
-  rebuildSinkMap_: function() {
+  reindexSinksAndRebuildSinksToShow_: function() {
     this.sinkMap_ = {};
 
-    this.sinkList.forEach(function(sink) {
+    this.allSinks.forEach(function(sink) {
       this.sinkMap_[sink.id] = sink;
     }, this);
+
+    this.rebuildSinksToShow_();
+  },
+
+  /**
+   * Updates the selected cast mode, and updates the header text fields
+   * according to the cast mode.
+   *
+   * @param {!media_router.CastMode} castMode
+   */
+  setSelectedCastMode_: function(castMode) {
+    if (castMode.type != this.selectedCastModeValue_) {
+      this.headerText = castMode.description;
+      this.headerTextTooltip = castMode.host;
+      this.selectedCastModeValue_ = castMode.type;
+      this.rebuildSinksToShow_();
+    }
   },
 
   /**

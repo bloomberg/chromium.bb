@@ -253,11 +253,6 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
   DVLOG(1) << "OnRequestInitialData";
   base::DictionaryValue initial_data;
 
-  initial_data.SetString("headerText",
-      media_router_ui_->GetInitialHeaderText());
-  initial_data.SetString("headerTextTooltip",
-      media_router_ui_->GetInitialHeaderTextTooltip());
-
   // "No Cast devices found?" Chromecast help center page.
   initial_data.SetString("deviceMissingUrl",
       base::StringPrintf(kHelpPageUrlPrefix, 3249268));
@@ -269,10 +264,14 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
       media_router_ui_->GetRouteProviderExtensionId()));
   initial_data.Set("routes", routes.release());
 
-  scoped_ptr<base::ListValue> cast_modes(CastModesToValue(
-      media_router_ui_->cast_modes(),
-      media_router_ui_->GetFrameURLHost()));
-  initial_data.Set("castModes", cast_modes.release());
+  const std::set<MediaCastMode> cast_modes = media_router_ui_->cast_modes();
+  scoped_ptr<base::ListValue> cast_modes_list(
+      CastModesToValue(cast_modes, media_router_ui_->GetFrameURLHost()));
+  initial_data.Set("castModes", cast_modes_list.release());
+  if (!cast_modes.empty()) {
+    initial_data.SetInteger("initialCastModeType",
+                            GetPreferredCastMode(cast_modes));
+  }
 
   web_ui()->CallJavascriptFunction(kSetInitialData, initial_data);
   media_router_ui_->UIInitialized();
@@ -297,6 +296,11 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
     return;
   }
 
+  if (!IsValidCastModeNum(cast_mode_num)) {
+    DVLOG(1) << "Invalid cast mode: " << cast_mode_num << ". Aborting.";
+    return;
+  }
+
   MediaRouterUI* media_router_ui =
       static_cast<MediaRouterUI*>(web_ui()->GetController());
   if (media_router_ui->HasPendingRouteRequest()) {
@@ -310,22 +314,15 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
     return;
   }
 
-  DVLOG(2) << "sink id: " << sink_id << ", cast mode: " << cast_mode_num;
+  DVLOG(2) << __FUNCTION__ << ": sink id: " << sink_id
+           << ", cast mode: " << cast_mode_num;
 
   // TODO(haibinlu): Pass additional parameters into the CreateRoute request,
   // e.g. low-fps-mirror, user-override. (crbug.com/490364)
-  bool success = false;
-  if (IsValidCastModeNum(cast_mode_num)) {
-    // User explicitly selected cast mode.
-    DVLOG(2) << "Cast mode override: " << cast_mode_num;
-    success = media_router_ui->CreateRouteWithCastModeOverride(
-        sink_id, static_cast<MediaCastMode>(cast_mode_num));
-  } else {
-    success = media_router_ui->CreateRoute(sink_id);
-  }
-
-  if (!success) {
-    // The provider will handle sending an issue for a failed route request.
+  if (!media_router_ui->CreateRoute(
+          sink_id, static_cast<MediaCastMode>(cast_mode_num))) {
+    // TODO(imcheng): Need to add an issue if failed to initiate a CreateRoute
+    // request.
     DVLOG(1) << "Error initiating route request.";
   }
 }
