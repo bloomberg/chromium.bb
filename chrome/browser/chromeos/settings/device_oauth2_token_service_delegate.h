@@ -67,14 +67,14 @@ class DeviceOAuth2TokenServiceDelegate
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
- private:
-  friend class DeviceOAuth2TokenService;
-  friend class DeviceOAuth2TokenServiceTest;
-
   class ValidationStatusDelegate {
    public:
     virtual void OnValidationCompleted(GoogleServiceAuthError::State error) {}
   };
+
+ private:
+  friend class DeviceOAuth2TokenService;
+  friend class DeviceOAuth2TokenServiceTest;
 
   // Describes the operational state of this object.
   enum State {
