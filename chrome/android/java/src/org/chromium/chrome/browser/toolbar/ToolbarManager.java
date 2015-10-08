@@ -861,6 +861,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * Reverts any pending edits of the location bar and reset to the page state.  This does not
+     * change the focus state of the location bar.
+     */
+    public void revertLocationBarChanges() {
+        mLocationBar.revertChanges();
+    }
+
+    /**
      * Handle all necessary tasks that can be delayed until initialization completes.
      * @param activityCreationTimeMs The time of creation for the activity this toolbar belongs to.
      * @param activityName Simple class name for the activity this toolbar belongs to.

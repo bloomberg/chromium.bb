@@ -351,6 +351,11 @@ jboolean WebContentsAndroid::IsShowingInterstitialPage(JNIEnv* env,
   return web_contents_->ShowingInterstitialPage();
 }
 
+jboolean WebContentsAndroid::FocusLocationBarByDefault(JNIEnv* env,
+                                                       jobject obj) {
+  return web_contents_->FocusLocationBarByDefault();
+}
+
 jboolean WebContentsAndroid::IsRenderWidgetHostViewReady(
     JNIEnv* env,
     jobject obj) {

@@ -232,6 +232,11 @@ import java.util.UUID;
     }
 
     @Override
+    public boolean focusLocationBarByDefault() {
+        return nativeFocusLocationBarByDefault(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public boolean isReady() {
         return nativeIsRenderWidgetHostViewReady(mNativeWebContentsAndroid);
     }
@@ -426,6 +431,7 @@ import java.util.UUID;
     private native void nativeShowInterstitialPage(long nativeWebContentsAndroid,
             String url, long nativeInterstitialPageDelegateAndroid);
     private native boolean nativeIsShowingInterstitialPage(long nativeWebContentsAndroid);
+    private native boolean nativeFocusLocationBarByDefault(long nativeWebContentsAndroid);
     private native boolean nativeIsRenderWidgetHostViewReady(long nativeWebContentsAndroid);
     private native void nativeExitFullscreen(long nativeWebContentsAndroid);
     private native void nativeUpdateTopControlsState(long nativeWebContentsAndroid,

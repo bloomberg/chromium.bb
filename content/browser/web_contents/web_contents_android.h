@@ -66,6 +66,7 @@ class CONTENT_EXPORT WebContentsAndroid
   void ShowInterstitialPage(
       JNIEnv* env, jobject obj, jstring jurl, jlong delegate_ptr);
   jboolean IsShowingInterstitialPage(JNIEnv* env, jobject obj);
+  jboolean FocusLocationBarByDefault(JNIEnv* env, jobject obj);
   jboolean IsRenderWidgetHostViewReady(JNIEnv* env, jobject obj);
   void ExitFullscreen(JNIEnv* env, jobject obj);
   void UpdateTopControlsState(

@@ -47,6 +47,7 @@ class TabWebContentsDelegateAndroid
       const content::BluetoothChooser::EventHandler& event_handler,
       const GURL& origin) override;
   void CloseContents(content::WebContents* web_contents) override;
+  bool ShouldFocusLocationBarByDefault(content::WebContents* source) override;
   blink::WebDisplayMode GetDisplayMode(
       const content::WebContents* web_contents) const override;
   void FindReply(content::WebContents* web_contents,

@@ -215,10 +215,26 @@ public class KeyboardShortcuts {
                     cvc = activity.getCurrentContentViewCore();
                     if (cvc != null) cvc.zoomReset();
                     return true;
+                case SHIFT | CTRL | KeyEvent.KEYCODE_R:
                 case CTRL | KeyEvent.KEYCODE_R:
+                case SHIFT | KeyEvent.KEYCODE_F5:
                 case KeyEvent.KEYCODE_F5:
                     Tab tab = activity.getActivityTab();
-                    if (tab != null) tab.reload();
+                    if (tab != null) {
+                        if ((keyCodeAndMeta & SHIFT) == SHIFT) {
+                            tab.reloadIgnoringCache();
+                        } else {
+                            tab.reload();
+                        }
+
+                        if (activity.getToolbarManager() != null
+                                && tab.getWebContents() != null
+                                && tab.getWebContents().focusLocationBarByDefault()) {
+                            activity.getToolbarManager().revertLocationBarChanges();
+                        } else {
+                            tab.requestFocus();
+                        }
+                    }
                     return true;
                 case ALT | KeyEvent.KEYCODE_DPAD_LEFT:
                     tab = activity.getActivityTab();

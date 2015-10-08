@@ -509,6 +509,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public void setUrlBarFocus(boolean shouldBeFocused) { }
 
     @Override
+    public void revertChanges() { }
+
+    @Override
     public long getFirstUrlBarFocusTime() {
         return 0;
     }

@@ -5,14 +5,19 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
+import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarModel.ToolbarModelDelegate;
+import org.chromium.components.dom_distiller.core.DomDistillerService;
+import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -68,6 +73,39 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
             return (NewTabPage) currentTab.getNativePage();
         }
         return null;
+    }
+
+    @Override
+    public String getText() {
+        String displayText = super.getText();
+
+        if (mTab == null) return displayText;
+
+        String url = mTab.getUrl().trim();
+        if (DomDistillerUrlUtils.isDistilledPage(url)) {
+            if (isStoredArticle(url)) {
+                DomDistillerService domDistillerService =
+                        DomDistillerServiceFactory.getForProfile(mTab.getProfile());
+                String originalUrl = domDistillerService.getUrlForEntry(
+                        DomDistillerUrlUtils.getValueForKeyInUrl(url, "entry_id"));
+                displayText =
+                        DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl);
+            } else if (DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url) != null) {
+                String originalUrl = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
+                displayText =
+                        DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl);
+            }
+        }
+
+        return displayText;
+    }
+
+    private boolean isStoredArticle(String url) {
+        DomDistillerService domDistillerService =
+                DomDistillerServiceFactory.getForProfile(mTab.getProfile());
+        String entryIdFromUrl = DomDistillerUrlUtils.getValueForKeyInUrl(url, "entry_id");
+        if (TextUtils.isEmpty(entryIdFromUrl)) return false;
+        return domDistillerService.hasEntry(entryIdFromUrl);
     }
 
     @Override

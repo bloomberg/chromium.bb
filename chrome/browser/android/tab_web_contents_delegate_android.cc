@@ -26,8 +26,10 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/infobars/core/infobar.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -140,6 +142,24 @@ void TabWebContentsDelegateAndroid::CloseContents(
 
   WebContentsDelegateAndroid::CloseContents(web_contents);
 }
+
+bool TabWebContentsDelegateAndroid::ShouldFocusLocationBarByDefault(
+    WebContents* source) {
+  const content::NavigationEntry* entry =
+      source->GetController().GetActiveEntry();
+  if (entry) {
+    GURL url = entry->GetURL();
+    GURL virtual_url = entry->GetVirtualURL();
+    if ((url.SchemeIs(chrome::kChromeUINativeScheme) &&
+        url.host() == chrome::kChromeUINewTabHost) ||
+        (virtual_url.SchemeIs(chrome::kChromeUINativeScheme) &&
+        virtual_url.host() == chrome::kChromeUINewTabHost)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 
 void TabWebContentsDelegateAndroid::Observe(
     int type,

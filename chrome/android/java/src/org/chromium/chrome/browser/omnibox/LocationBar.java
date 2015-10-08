@@ -115,6 +115,12 @@ public interface LocationBar extends UrlBarDelegate {
     void setUrlBarFocus(boolean shouldBeFocused);
 
     /**
+     * Reverts any pending edits of the location bar and reset to the page state.  This does not
+     * change the focus state of the location bar.
+     */
+    void revertChanges();
+
+    /**
      * @return The timestamp for the {@link UrlBar} gaining focus for the first time.
      */
     long getFirstUrlBarFocusTime();

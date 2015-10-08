@@ -140,6 +140,11 @@ public interface WebContents extends Parcelable {
     boolean isShowingInterstitialPage();
 
     /**
+     * @return Whether the location bar should be focused by default for this page.
+     */
+    boolean focusLocationBarByDefault();
+
+    /**
      * If the view is ready to draw contents to the screen. In hardware mode,
      * the initialization of the surface texture may not occur until after the
      * view has been added to the layout. This method will return {@code true}
