@@ -32,6 +32,11 @@ namespace content {
 
 namespace {
 
+enum StartMode {
+  START_SYNC,
+  START_ASYNC
+};
+
 // Field trial constants
 const char kThrottleCoalesceFieldTrial[] = "RequestThrottlingAndCoalescing";
 const char kThrottleCoalesceFieldTrialThrottle[] = "Throttle";
@@ -193,7 +198,8 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
         attributes_(kAttributeNone),
         scheduler_(scheduler),
         priority_(priority),
-        fifo_ordering_(0) {
+        fifo_ordering_(0),
+        weak_ptr_factory_(this) {
     DCHECK(!request_->GetUserData(kUserDataKey));
     request_->SetUserData(kUserDataKey, new UnownedPointer(this));
   }
@@ -208,10 +214,39 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
         ->get();
   }
 
-  void Start() {
-    ready_ = true;
+  // Starts the request. If |start_mode| is START_ASYNC, the request will not
+  // be started immediately.
+  void Start(StartMode start_mode) {
+    DCHECK(!ready_);
+
+    // If the request was cancelled, do nothing.
     if (!request_->status().is_success())
       return;
+
+    bool was_deferred = deferred_;
+
+    // If the request was deferred, need to start it.  Otherwise, will just not
+    // defer starting it in the first place, and the value of |start_mode|
+    // makes no difference.
+    if (deferred_) {
+      // If can't start the request synchronously, post a task to start the
+      // request.
+      if (start_mode == START_ASYNC) {
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::Bind(&ScheduledResourceRequest::Start,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       START_SYNC));
+        return;
+      }
+      deferred_ = false;
+      controller()->Resume();
+    }
+
+    ready_ = true;
+
+    // The rest of this method is just collecting histograms.
+
     base::TimeTicks time = base::TimeTicks::Now();
     ClientState current_state = scheduler_->GetClientState(client_id_);
     // Note: the client state isn't perfectly accurate since it won't capture
@@ -227,11 +262,8 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
     }
 
     base::TimeDelta time_was_deferred = base::TimeDelta::FromMicroseconds(0);
-    if (deferred_) {
-      deferred_ = false;
-      controller()->Resume();
+    if (was_deferred)
       time_was_deferred = time - time_deferred_;
-    }
     PostHistogram("RequestTimeDeferred", client_state, NULL, time_was_deferred);
     PostHistogram("RequestTimeThrottled", client_state, NULL,
                   time - request_->creation_time());
@@ -297,6 +329,9 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
   uint32 fifo_ordering_;
   base::TimeTicks time_deferred_;
 
+  base::WeakPtrFactory<ResourceScheduler::ScheduledResourceRequest>
+      weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ScheduledResourceRequest);
 };
 
@@ -356,10 +391,12 @@ class ResourceScheduler::Client {
   void ScheduleRequest(net::URLRequest* url_request,
                        ScheduledResourceRequest* request) {
     SetRequestAttributes(request, DetermineRequestAttributes(request));
-    if (ShouldStartRequest(request) == START_REQUEST)
-      StartRequest(request);
-    else
+    if (ShouldStartRequest(request) == START_REQUEST) {
+      // New requests can be started synchronously without issue.
+      StartRequest(request, START_SYNC);
+    } else {
       pending_requests_.Insert(request);
+    }
   }
 
   void RemoveRequest(ScheduledResourceRequest* request) {
@@ -385,8 +422,9 @@ class ResourceScheduler::Client {
       ScheduledResourceRequest* request =
           *pending_requests_.GetNextHighestIterator();
       pending_requests_.Erase(request);
-      // StartRequest() may modify pending_requests_. TODO(ricea): Does it?
-      StartRequest(request);
+      // Starting requests asynchronously ensures no side effects, and avoids
+      // starting a bunch of requests that may be about to be deleted.
+      StartRequest(request, START_ASYNC);
     }
     RequestSet unowned_requests;
     for (RequestSet::iterator it = in_flight_requests_.begin();
@@ -716,9 +754,10 @@ class ResourceScheduler::Client {
     return false;
   }
 
-  void StartRequest(ScheduledResourceRequest* request) {
+  void StartRequest(ScheduledResourceRequest* request,
+                    StartMode start_mode) {
     InsertInFlightRequest(request);
-    request->Start();
+    request->Start(start_mode);
   }
 
   // ShouldStartRequest is the main scheduling algorithm.
@@ -890,7 +929,7 @@ class ResourceScheduler::Client {
 
       if (query_result == START_REQUEST) {
         pending_requests_.Erase(request);
-        StartRequest(request);
+        StartRequest(request, START_ASYNC);
 
         // StartRequest can modify the pending list, so we (re)start evaluation
         // from the currently highest priority request. Avoid copying a singular
@@ -1043,7 +1082,7 @@ scoped_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
     // 2. Most unittests don't send the IPCs needed to register Clients.
     // 3. The tab is closed while a RequestResource IPC is in flight.
     unowned_requests_.insert(request.get());
-    request->Start();
+    request->Start(START_SYNC);
     return request.Pass();
   }
 
@@ -1086,7 +1125,7 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   DCHECK(CalledOnValidThread());
   ClientId client_id = MakeClientId(child_id, route_id);
   ClientMap::iterator it = client_map_.find(client_id);
-  CHECK(it != client_map_.end());
+  DCHECK(it != client_map_.end());
 
   Client* client = it->second;
   // ResourceDispatcherHost cancels all requests except for cross-renderer

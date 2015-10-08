@@ -51,6 +51,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_util.h"
+#include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -181,6 +182,7 @@ class ResourceIPCAccumulator {
   // within the groups will be in the order that they appeared.
   // Note that this clears messages_. The caller takes ownership of any
   // SharedMemoryHandles in messages placed into |msgs|.
+  // TODO(mmenke):  This seems really fragile.  Consider reworking ownership.
   typedef std::vector< std::vector<IPC::Message> > ClassifiedMessages;
   void GetClassifiedMessages(ClassifiedMessages* msgs);
 
@@ -336,12 +338,6 @@ class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
   URLRequestTestDelayedStartJob(net::URLRequest* request,
                                 net::NetworkDelegate* network_delegate)
       : net::URLRequestTestJob(request, network_delegate) {
-    Init();
-  }
-  URLRequestTestDelayedStartJob(net::URLRequest* request,
-                                net::NetworkDelegate* network_delegate,
-                                bool auto_advance)
-      : net::URLRequestTestJob(request, network_delegate, auto_advance) {
     Init();
   }
   URLRequestTestDelayedStartJob(net::URLRequest* request,
@@ -534,6 +530,7 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
  public:
   explicit TestURLRequestJobFactory(ResourceDispatcherHostTest* test_fixture)
       : test_fixture_(test_fixture),
+        hang_after_start_(false),
         delay_start_(false),
         delay_complete_(false),
         network_start_notification_(false),
@@ -546,6 +543,11 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
 
   int url_request_jobs_created_count() const {
     return url_request_jobs_created_count_;
+  }
+
+  // When set, jobs will hang eternally once started.
+  void SetHangAfterStartJobGeneration(bool hang_after_start) {
+    hang_after_start_ = hang_after_start;
   }
 
   void SetDelayedStartJobGeneration(bool delay_job_start) {
@@ -588,6 +590,7 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
 
  private:
   ResourceDispatcherHostTest* test_fixture_;
+  bool hang_after_start_;
   bool delay_start_;
   bool delay_complete_;
   bool network_start_notification_;
@@ -1669,9 +1672,6 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   child_ids_.insert(test_filter->child_id());
 
   // request 1 goes to the test delegate
-  ResourceHostMsg_Request request = CreateResourceRequest(
-      "GET", RESOURCE_TYPE_SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
-
   MakeTestRequestWithResourceType(test_filter.get(), 0, 1,
                                   net::URLRequestTestJob::test_url_1(),
                                   RESOURCE_TYPE_SUB_RESOURCE);
@@ -1739,6 +1739,55 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   EXPECT_EQ(4, network_delegate()->completed_requests());
   EXPECT_EQ(0, network_delegate()->canceled_requests());
   EXPECT_EQ(0, network_delegate()->error_count());
+}
+
+// Tests whether the correct requests get canceled when a RenderViewHost is
+// deleted.
+TEST_F(ResourceDispatcherHostTest, CancelRequestsOnRenderViewHostDeleted) {
+  // Requests all hang once started.  This prevents requests from being
+  // destroyed due to completion.
+  job_factory_->SetHangAfterStartJobGeneration(true);
+  HandleScheme("http");
+
+  TestResourceDispatcherHostDelegate delegate;
+  host_.SetDelegate(&delegate);
+  host_.OnRenderViewHostCreated(filter_->child_id(), 0, true, false);
+
+  // One RenderView issues a high priority request and a low priority one. Both
+  // should be started.
+  MakeTestRequestWithPriority(0, 1, net::HIGHEST);
+  MakeTestRequestWithPriority(0, 2, net::LOWEST);
+  KickOffRequest();
+  EXPECT_EQ(2, network_delegate_.created_requests());
+  EXPECT_EQ(0, network_delegate_.canceled_requests());
+
+  // The same RenderView issues two more low priority requests. The
+  // ResourceScheduler shouldn't let them start immediately.
+  MakeTestRequestWithPriority(0, 3, net::LOWEST);
+  MakeTestRequestWithPriority(0, 4, net::LOWEST);
+  KickOffRequest();
+  EXPECT_EQ(2, network_delegate_.created_requests());
+  EXPECT_EQ(0, network_delegate_.canceled_requests());
+
+  // Another RenderView in the same process as the old one issues a request,
+  // which is then started.
+  MakeTestRequestWithPriority(1, 5, net::LOWEST);
+  KickOffRequest();
+  EXPECT_EQ(3, network_delegate_.created_requests());
+  EXPECT_EQ(0, network_delegate_.canceled_requests());
+
+  // The first RenderView is destroyed.  All 4 of its requests should be
+  // cancelled, and none of the two deferred requests should be started.
+  host_.OnRenderViewHostDeleted(filter_->child_id(), 0);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3, network_delegate_.created_requests());
+  EXPECT_EQ(4, network_delegate_.canceled_requests());
+
+  // No messages should have been sent, since none of the jobs made any
+  // progress.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+  EXPECT_EQ(0U, msgs.size());
 }
 
 TEST_F(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
@@ -3447,6 +3496,10 @@ net::URLRequestJob* TestURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
         test_fixture_->loader_test_request_info_.Pass();
     return new URLRequestLoadInfoJob(request, network_delegate,
                                      info->load_state, info->upload_progress);
+  }
+  if (hang_after_start_) {
+    return new net::URLRequestFailedJob(request, network_delegate,
+                                        net::ERR_IO_PENDING);
   }
   if (test_fixture_->response_headers_.empty()) {
     if (delay_start_) {
