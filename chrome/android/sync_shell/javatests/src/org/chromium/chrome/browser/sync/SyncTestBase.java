@@ -42,7 +42,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                 ModelType.TYPED_URLS,
             }));
 
-    protected SyncTestUtil.SyncTestContext mContext;
+    protected Context mContext;
     protected SyncController mSyncController;
     protected FakeServerHelper mFakeServerHelper;
     protected ProfileSyncService mProfileSyncService;
@@ -65,8 +65,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         SigninTestUtil.setUpAuthForTest(getInstrumentation());
 
         super.setUp();
-        Context targetContext = getInstrumentation().getTargetContext();
-        mContext = new SyncTestUtil.SyncTestContext(targetContext);
+        mContext = getInstrumentation().getTargetContext();
 
         setUpMockAndroidSyncSettings();
 
@@ -79,7 +78,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                 mFakeServerHelper = FakeServerHelper.get();
             }
         });
-        FakeServerHelper.useFakeServer(targetContext);
+        FakeServerHelper.useFakeServer(mContext);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
