@@ -13,8 +13,8 @@
 #include "base/win/scoped_hdc.h"
 
 namespace {
-typedef scoped_ptr<uint32_t> PixelData;
-typedef std::map<HCURSOR, int> HeightStorage;
+using PixelData = scoped_ptr<uint32_t[]>;
+using HeightStorage = std::map<HCURSOR, int>;
 
 const uint32_t kBitsPeruint32 = sizeof(uint32_t) * 8;
 // All bits are 1 for transparent portion of monochromatic mask.
@@ -26,7 +26,7 @@ const size_t kNumberOfColors = 2;
 const size_t KHeaderAndPalette =
       sizeof(BITMAPINFOHEADER) + kNumberOfColors * sizeof(RGBQUAD);
 
-static HeightStorage* cached_heights = NULL;
+HeightStorage* cached_heights = nullptr;
 
 // Extracts the pixel data of provided bitmap
 PixelData GetBitmapData(HBITMAP handle, const BITMAPINFO& info, HDC hdc) {
@@ -38,8 +38,7 @@ PixelData GetBitmapData(HBITMAP handle, const BITMAPINFO& info, HDC hdc) {
 
   // When getting pixel data palette is appended to memory pointed by
   // BITMAPINFO passed so allocate additional memory to store additional data.
-  scoped_ptr<BITMAPINFO> header(
-      reinterpret_cast<BITMAPINFO*>(new char[KHeaderAndPalette]));
+  scoped_ptr<char[]> header(new char[KHeaderAndPalette]);
   memcpy(header.get(), &(info.bmiHeader), sizeof(info.bmiHeader));
 
   data.reset(new uint32_t[info.bmiHeader.biSizeImage / sizeof(uint32_t)]);
@@ -49,7 +48,7 @@ PixelData GetBitmapData(HBITMAP handle, const BITMAPINFO& info, HDC hdc) {
                          0,
                          info.bmiHeader.biHeight,
                          data.get(),
-                         header.get(),
+                         reinterpret_cast<BITMAPINFO*>(header.get()),
                          DIB_RGB_COLORS);
 
   if (result == 0)
