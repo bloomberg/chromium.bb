@@ -11,6 +11,7 @@
     <string name="title_activity_startup_time">WebView Startup Time Tester</string>
     <string name="title_activity_browser">WebView Browser Tester</string>
     <string name="title_activity_layout_test">WebView Layout Test</string>
+    <string name="title_activity_page_cycler">WebView Page Cycler Test</string>
     <string name="menu_about">About WebView</string>
     <string name="load_url">Load URL</string>
 </resources>

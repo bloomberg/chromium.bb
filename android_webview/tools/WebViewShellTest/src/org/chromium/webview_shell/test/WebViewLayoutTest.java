@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.webview_shell;
+package org.chromium.webview_shell.test;
 
 import android.os.Environment;
 import android.test.ActivityInstrumentationTestCase2;
@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import junit.framework.ComparisonFailure;
 
 import org.chromium.base.Log;
+import org.chromium.webview_shell.WebViewLayoutTestActivity;
 
 import java.io.BufferedReader;
 import java.io.File;

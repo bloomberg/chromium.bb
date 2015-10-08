@@ -28,30 +28,30 @@
         android:label="@string/app_name"
         android:theme="@android:style/Theme.Light" >
         <activity
-            android:name=".TelemetryActivity"
+            android:name="org.chromium.webview_shell.TelemetryActivity"
             android:label="@string/title_activity_telemetry"
             android:exported="true">
         </activity>
         <activity
-            android:name=".TelemetryMemoryPressureActivity"
+            android:name="org.chromium.webview_shell.TelemetryMemoryPressureActivity"
             android:launchMode="singleTask"
             android:label="@string/title_activity_telemetry"
             android:exported="true">
         </activity>
         <activity
-            android:name=".JankActivity"
+            android:name="org.chromium.webview_shell.JankActivity"
             android:label="@string/title_activity_jank"
             android:noHistory="true"
             android:exported="true">
         </activity>
         <activity
-            android:name=".StartupTimeActivity"
+            android:name="org.chromium.webview_shell.StartupTimeActivity"
             android:label="@string/title_activity_startup_time"
             android:noHistory="true"
             android:exported="true">
         </activity>
         <activity
-            android:name=".WebViewBrowserActivity"
+            android:name="org.chromium.webview_shell.WebViewBrowserActivity"
             android:label="@string/title_activity_browser"
             android:exported="true">
             <intent-filter>
@@ -80,17 +80,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".WebViewLayoutTestActivity"
+            android:name="org.chromium.webview_shell.WebViewLayoutTestActivity"
             android:label="@string/title_activity_layout_test"
             android:exported="true">
         </activity>
         <activity android:name="org.chromium.test.broker.OnDeviceInstrumentationBroker"
             android:exported="true"/>
 
+        <activity
+            android:name="org.chromium.webview_shell.PageCyclerTestActivity"
+            android:label="@string/title_activity_page_cycler"
+            android:exported="true">
+        </activity>
+
         <uses-library android:name="android.test.runner" />
     </application>
-
-    <instrumentation android:name="org.chromium.webview_shell.WebViewLayoutTestRunner"
-        android:targetPackage="org.chromium.webview_shell"
-        android:label="Tests for org.chromium.webview_shell" />
 </manifest>

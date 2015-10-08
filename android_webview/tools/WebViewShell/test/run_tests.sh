@@ -11,7 +11,7 @@ TESTRUNNER="../../../../build/android/test_runner.py"
 $TESTRUNNER instrumentation \
     --test-apk AndroidWebViewShell \
     -f 'WebViewLayoutTest*' \
-    --isolate-file-path android_webview/android_webview_shell_test_apk.isolate
+    --isolate-file-path android_webview/system_webview_shell_test_apk.isolate
 
 if [ "$1" = "rebaseline" ]; then
   adb shell am instrument -w -e mode rebaseline -e class \
