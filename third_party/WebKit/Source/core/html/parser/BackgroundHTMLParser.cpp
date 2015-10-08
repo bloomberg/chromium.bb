@@ -81,7 +81,7 @@ static void checkThatXSSInfosAreSafeToSendToAnotherThread(const XSSInfoStream& i
 
 #endif
 
-void BackgroundHTMLParser::start(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, PassOwnPtr<Configuration> config, WebTaskRunner* loadingTaskRunner)
+void BackgroundHTMLParser::start(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, PassOwnPtr<Configuration> config, PassOwnPtr<WebTaskRunner> loadingTaskRunner)
 {
     new BackgroundHTMLParser(reference, config, loadingTaskRunner);
     // Caller must free by calling stop().
@@ -93,7 +93,7 @@ BackgroundHTMLParser::Configuration::Configuration()
 {
 }
 
-BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, PassOwnPtr<Configuration> config, WebTaskRunner* loadingTaskRunner)
+BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, PassOwnPtr<Configuration> config, PassOwnPtr<WebTaskRunner> loadingTaskRunner)
     : m_weakFactory(reference, this)
     , m_token(adoptPtr(new HTMLToken))
     , m_tokenizer(HTMLTokenizer::create(config->options))
@@ -106,7 +106,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHT
     , m_xssAuditor(config->xssAuditor.release())
     , m_preloadScanner(config->preloadScanner.release())
     , m_decoder(config->decoder.release())
-    , m_loadingTaskRunner(adoptPtr(loadingTaskRunner->clone()))
+    , m_loadingTaskRunner(loadingTaskRunner)
     , m_startingScript(false)
 {
     ASSERT(m_outstandingTokenLimit > 0);

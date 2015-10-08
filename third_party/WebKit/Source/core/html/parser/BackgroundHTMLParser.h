@@ -63,7 +63,7 @@ public:
         size_t pendingTokenLimit;
     };
 
-    static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, WebTaskRunner*);
+    static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, PassOwnPtr<WebTaskRunner>);
 
     struct Checkpoint {
         WTF_MAKE_FAST_ALLOCATED(CheckPoint);
@@ -90,7 +90,7 @@ public:
     void forcePlaintextForTextDocument();
 
 private:
-    BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, WebTaskRunner*);
+    BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, PassOwnPtr<WebTaskRunner>);
     ~BackgroundHTMLParser();
 
     void appendDecodedBytes(const String&);

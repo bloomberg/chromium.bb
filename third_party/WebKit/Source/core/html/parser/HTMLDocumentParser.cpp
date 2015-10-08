@@ -804,7 +804,7 @@ void HTMLDocumentParser::startBackgroundParser()
     ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());
     ASSERT(config->preloadScanner->isSafeToSendToAnotherThread());
     HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::start, reference.release(), config.release(),
-        AllowCrossThreadAccess(m_loadingTaskRunner.get())));
+        adoptPtr(m_loadingTaskRunner->clone())));
 }
 
 void HTMLDocumentParser::stopBackgroundParser()
