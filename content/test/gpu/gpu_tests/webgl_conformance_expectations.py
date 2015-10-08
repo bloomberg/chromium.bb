@@ -100,7 +100,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win / OpenGL / AMD failures
     self.Skip('conformance/glsl/misc/shader-struct-scope.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
+    self.Skip('conformance/glsl/misc/shaders-with-invariance.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/misc/struct-nesting-of-variable-names.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
