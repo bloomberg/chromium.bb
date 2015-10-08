@@ -312,7 +312,12 @@ protected:
 
     int firstLineBoxBaseline() const override;
     int inlineBlockBaseline(LineDirectionMode) const override;
-    int lastLineBoxBaseline(LineDirectionMode) const;
+
+    // This function disables the 'overflow' check in inlineBlockBaseline.
+    // For 'inline-block', CSS says that the baseline is the bottom margin edge
+    // if 'overflow' is not visible. But some descendant classes want to ignore
+    // this condition.
+    virtual bool shouldIgnoreOverflowPropertyForInlineBlockBaseline() const { return false; }
 
     void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
 

@@ -2287,7 +2287,7 @@ int LayoutBlock::firstLineBoxBaseline() const
     return -1;
 }
 
-int LayoutBlock::inlineBlockBaseline(LineDirectionMode direction) const
+int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const
 {
     // CSS2.1 states that the baseline of an 'inline-block' is:
     // the baseline of the last line box in the normal flow, unless it has
@@ -2295,19 +2295,11 @@ int LayoutBlock::inlineBlockBaseline(LineDirectionMode direction) const
     // value other than 'visible', in which case the baseline is the bottom
     // margin edge.
 
-    // TODO(jchaffraix): A lot of sub-classes overriding this funtion want to
-    // ignore overflow for baseline computation. Expose a function to do so and
-    // merge this function with lastLineBoxBaseline.
-    if (!style()->isOverflowVisible()) {
+    if (!style()->isOverflowVisible() && !shouldIgnoreOverflowPropertyForInlineBlockBaseline()) {
         // We are not calling LayoutBox::baselinePosition here because the caller should add the margin-top/margin-right, not us.
-        return direction == HorizontalLine ? size().height() + marginBottom() : size().width() + marginLeft();
+        return lineDirection == HorizontalLine ? size().height() + marginBottom() : size().width() + marginLeft();
     }
 
-    return lastLineBoxBaseline(direction);
-}
-
-int LayoutBlock::lastLineBoxBaseline(LineDirectionMode lineDirection) const
-{
     if (isWritingModeRoot() && !isRubyRun())
         return -1;
 

@@ -88,7 +88,7 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControlSingleLine, isTextField());
 class LayoutTextControlInnerBlock : public LayoutBlockFlow {
 public:
     LayoutTextControlInnerBlock(Element* element) : LayoutBlockFlow(element) { }
-    int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
+    bool shouldIgnoreOverflowPropertyForInlineBlockBaseline() const override { return true; }
 
 private:
     bool isIntrinsicallyScrollable(ScrollbarOrientation orientation) const override

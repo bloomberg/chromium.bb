@@ -70,7 +70,7 @@ protected:
     // We need to override this function because we don't want overflow:hidden on an <input>
     // to affect the baseline calculation. This is necessary because we are an inline-block
     // element as an implementation detail which would normally be affected by this.
-    int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
+    bool shouldIgnoreOverflowPropertyForInlineBlockBaseline() const override { return true; }
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextControl || LayoutBlockFlow::isOfType(type); }
 
@@ -105,7 +105,8 @@ public:
         return LayoutBlock::baselinePosition(baseline, firstLine, direction, position);
     }
     int firstLineBoxBaseline() const override { return LayoutBlock::firstLineBoxBaseline(); }
-    int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
+    int inlineBlockBaseline(LineDirectionMode direction) const override { return LayoutBlock::inlineBlockBaseline(direction); }
+    bool shouldIgnoreOverflowPropertyForInlineBlockBaseline() const override { return true; }
 };
 
 
