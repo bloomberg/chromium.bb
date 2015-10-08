@@ -5,6 +5,7 @@
 #ifndef WindowProxyManager_h
 #define WindowProxyManager_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include <utility>
@@ -18,7 +19,7 @@ class ScriptState;
 class SecurityOrigin;
 class WindowProxy;
 
-class WindowProxyManager final : public NoBaseWillBeGarbageCollectedFinalized<WindowProxyManager> {
+class CORE_EXPORT WindowProxyManager final : public NoBaseWillBeGarbageCollectedFinalized<WindowProxyManager> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WindowProxyManager);
 public:
     static PassOwnPtrWillBeRawPtr<WindowProxyManager> create(Frame&);
@@ -39,7 +40,8 @@ public:
     WindowProxy* existingWindowProxy(DOMWrapperWorld&);
     void collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*>>&);
 
-    void takeGlobalFrom(WindowProxyManager*);
+    void releaseGlobals(HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>&);
+    void setGlobals(const HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>&);
 
 private:
     typedef WillBeHeapHashMap<int, OwnPtrWillBeMember<WindowProxy>> IsolatedWorldMap;

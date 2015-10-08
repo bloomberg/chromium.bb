@@ -414,4 +414,46 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSitePauseInBeforeUnload) {
   observer.Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
+                       InspectDuringLocalToRemoteFrameSwap) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  content::SetupCrossSiteRedirector(embedded_test_server());
+
+  GURL test_url1 =
+      embedded_test_server()->GetURL("A.com", "/devtools/navigation.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url1, 1);
+
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "window.open('about:blank','foo');"));
+  Shell* new_shell = new_shell_observer.GetShell();
+  EXPECT_TRUE(new_shell->web_contents()->HasOpener());
+
+  agent_host_ = DevToolsAgentHost::GetOrCreateFor(new_shell->web_contents());
+  agent_host_->AttachClient(this);
+
+  GURL test_url2 =
+      embedded_test_server()->GetURL("B.com", "/devtools/navigation.html");
+
+  // After this navigation, if the bug exists, the process will crash.
+  NavigateToURLBlockUntilNavigationsComplete(new_shell, test_url2, 1);
+
+  // Ensure that the A.com process is still alive by executing a script in the
+  // original tab.
+  //
+  // TODO(alexmos, nasko):  A better way to do this is to navigate the original
+  // tab to another site, watch for process exit, and check whether there was a
+  // crash. However, currently there's no way to wait for process exit
+  // regardless of whether it's a crash or not.  RenderProcessHostWatcher
+  // should be fixed to support waiting on both WATCH_FOR_PROCESS_EXIT and
+  // WATCH_FOR_HOST_DESTRUCTION, and then used here.
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
+                                          "window.domAutomationController.send("
+                                          "    !!window.open('', 'foo'));",
+                                          &success));
+  EXPECT_TRUE(success);
+}
+
 }  // namespace content

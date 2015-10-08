@@ -30,7 +30,6 @@
 #include "config.h"
 #include "core/frame/Frame.h"
 
-#include "bindings/core/v8/WindowProxyManager.h"
 #include "core/dom/DocumentType.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -159,13 +158,6 @@ ChromeClient& Frame::chromeClient() const
     if (Page* page = this->page())
         return page->chromeClient();
     return emptyChromeClient();
-}
-
-void Frame::finishSwapFrom(Frame* old)
-{
-    WindowProxyManager* oldManager = old->windowProxyManager();
-    oldManager->clearForNavigation();
-    windowProxyManager()->takeGlobalFrom(oldManager);
 }
 
 Frame* Frame::findFrameForNavigation(const AtomicString& name, Frame& activeFrame)

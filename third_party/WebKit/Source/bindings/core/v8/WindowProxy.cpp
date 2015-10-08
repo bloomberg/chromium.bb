@@ -145,16 +145,22 @@ void WindowProxy::clearForNavigation()
     disposeContext(DetachGlobal);
 }
 
-void WindowProxy::takeGlobalFrom(WindowProxy* windowProxy)
+v8::Local<v8::Object> WindowProxy::releaseGlobal()
 {
-    v8::HandleScope handleScope(m_isolate);
-    ASSERT(!windowProxy->isContextInitialized());
+    ASSERT(!isContextInitialized());
     // If a ScriptState was created, the context was initialized at some point.
     // Make sure the global object was detached from the proxy by calling clearForNavigation().
-    if (windowProxy->m_scriptState)
-        ASSERT(windowProxy->m_scriptState->isGlobalObjectDetached());
-    m_global.set(m_isolate, windowProxy->m_global.newLocal(m_isolate));
-    windowProxy->m_global.clear();
+    if (m_scriptState)
+        ASSERT(m_scriptState->isGlobalObjectDetached());
+    v8::Local<v8::Object> global = m_global.newLocal(m_isolate);
+    m_global.clear();
+    return global;
+}
+
+void WindowProxy::setGlobal(v8::Local<v8::Object> global)
+{
+    m_global.set(m_isolate, global);
+
     // Initialize the window proxy now, to re-establish the connection between
     // the global object and the v8::Context. This is really only needed for a
     // RemoteDOMWindow, since it has no scripting environment of its own.

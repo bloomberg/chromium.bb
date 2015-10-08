@@ -83,12 +83,24 @@ bool WebFrame::swap(WebFrame* frame)
         frame->m_openedFrameTracker.reset(m_openedFrameTracker.release());
     }
 
+    FrameHost* host = oldFrame->host();
+    AtomicString name = oldFrame->tree().name();
+    FrameOwner* owner = oldFrame->owner();
+    oldFrame->disconnectOwnerElement();
+
+    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
+    HashMap<DOMWrapperWorld*, v8::Local<v8::Object>> globals;
+    oldFrame->windowProxyManager()->clearForNavigation();
+    oldFrame->windowProxyManager()->releaseGlobals(globals);
+
+    // Although the Document in this frame is now unloaded, many resources
+    // associated with the frame itself have not yet been freed yet.
+    oldFrame->detach(FrameDetachType::Swap);
+
     // Finally, clone the state of the current Frame into one matching
     // the type of the passed in WebFrame.
     // FIXME: This is a bit clunky; this results in pointless decrements and
     // increments of connected subframes.
-    FrameOwner* owner = oldFrame->owner();
-    oldFrame->disconnectOwnerElement();
     if (frame->isWebLocalFrame()) {
         LocalFrame& localFrame = *toWebLocalFrameImpl(frame)->frame();
         ASSERT(owner == localFrame.owner());
@@ -104,13 +116,11 @@ bool WebFrame::swap(WebFrame* frame)
             localFrame.page()->setMainFrame(&localFrame);
         }
     } else {
-        toWebRemoteFrameImpl(frame)->initializeCoreFrame(oldFrame->host(), owner, oldFrame->tree().name());
+        toWebRemoteFrameImpl(frame)->initializeCoreFrame(host, owner, name);
     }
-    toCoreFrame(frame)->finishSwapFrom(oldFrame.get());
 
-    // Although the Document in this frame is now unloaded, many resources
-    // associated with the frame itself have not yet been freed yet.
-    oldFrame->detach(FrameDetachType::Swap);
+    toCoreFrame(frame)->windowProxyManager()->setGlobals(globals);
+
     m_parent = nullptr;
 
     return true;

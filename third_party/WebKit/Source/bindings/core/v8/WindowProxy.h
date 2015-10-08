@@ -80,7 +80,8 @@ public:
     void clearForNavigation();
     void clearForClose();
 
-    void takeGlobalFrom(WindowProxy*);
+    v8::Local<v8::Object> releaseGlobal();
+    void setGlobal(v8::Local<v8::Object>);
 
     DOMWrapperWorld& world() { return *m_world; }
 

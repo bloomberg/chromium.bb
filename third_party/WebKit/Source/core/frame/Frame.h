@@ -111,7 +111,6 @@ public:
     // Returns true if the frame is ready to receive the next commit, or false
     // otherwise.
     virtual bool prepareForCommit() = 0;
-    void finishSwapFrom(Frame*);
 
     bool canNavigate(const Frame&);
     virtual void printNavigationErrorMessage(const Frame&, const char* reason) = 0;
@@ -129,10 +128,10 @@ public:
     void setIsLoading(bool isLoading) { m_isLoading = isLoading; }
     bool isLoading() const { return m_isLoading; }
 
+    virtual WindowProxyManager* windowProxyManager() const = 0;
+
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);
-
-    virtual WindowProxyManager* windowProxyManager() const = 0;
 
     mutable FrameTree m_treeNode;
 

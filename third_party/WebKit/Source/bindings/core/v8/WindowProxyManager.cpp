@@ -83,11 +83,17 @@ void WindowProxyManager::collectIsolatedContexts(Vector<std::pair<ScriptState*, 
     }
 }
 
-void WindowProxyManager::takeGlobalFrom(WindowProxyManager* other)
+void WindowProxyManager::releaseGlobals(HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>& map)
 {
-    m_windowProxy->takeGlobalFrom(other->m_windowProxy.get());
-    for (auto& entry : other->m_isolatedWorlds)
-        windowProxy(entry.value->world())->takeGlobalFrom(entry.value.get());
+    map.add(&m_windowProxy->world(), m_windowProxy->releaseGlobal());
+    for (auto& entry : m_isolatedWorlds)
+        map.add(&entry.value->world(), windowProxy(entry.value->world())->releaseGlobal());
+}
+
+void WindowProxyManager::setGlobals(const HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>& map)
+{
+    for (auto& entry : map)
+        windowProxy(*entry.key)->setGlobal(entry.value);
 }
 
 WindowProxyManager::WindowProxyManager(Frame& frame)
