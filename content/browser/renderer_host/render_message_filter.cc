@@ -540,19 +540,6 @@ void RenderMessageFilter::OnDeletedDiscardableSharedMemory(
           this, id));
 }
 
-net::URLRequestContext* RenderMessageFilter::GetRequestContextForURL(
-    const GURL& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  net::URLRequestContext* context =
-      GetContentClient()->browser()->OverrideRequestContextForURL(
-          url, resource_context_);
-  if (!context)
-    context = request_context_->GetURLRequestContext();
-
-  return context;
-}
-
 void RenderMessageFilter::OnCacheableMetadataAvailable(
     const GURL& url,
     base::Time expected_response_time,
