@@ -44,12 +44,13 @@ CommandBufferDriver::~CommandBufferDriver() {
 }
 
 void CommandBufferDriver::Initialize(
-    mojo::CommandBufferSyncClientPtr sync_client,
-    mojo::CommandBufferLostContextObserverPtr loss_observer,
+    mojo::InterfacePtrInfo<mojo::CommandBufferSyncClient> sync_client,
+    mojo::InterfacePtrInfo<mojo::CommandBufferLostContextObserver>
+        loss_observer,
     mojo::ScopedSharedBufferHandle shared_state,
     mojo::Array<int32_t> attribs) {
-  sync_client_ = sync_client.Pass();
-  loss_observer_ = loss_observer.Pass();
+  sync_client_ = mojo::MakeProxy(sync_client.Pass());
+  loss_observer_ = mojo::MakeProxy(loss_observer.Pass());
   bool success = DoInitialize(shared_state.Pass(), attribs.Pass());
   mojo::GpuCapabilitiesPtr capabilities =
       success ? mojo::GpuCapabilities::From(decoder_->GetCapabilities())

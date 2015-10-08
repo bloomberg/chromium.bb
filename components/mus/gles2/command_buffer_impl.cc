@@ -62,9 +62,10 @@ void CommandBufferImpl::Initialize(
   driver_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CommandBufferDriver::Initialize,
-                 base::Unretained(driver_.get()), base::Passed(&sync_client),
-                 base::Passed(&loss_observer), base::Passed(&shared_state),
-                 base::Passed(&attribs)));
+                 base::Unretained(driver_.get()),
+                 base::Passed(sync_client.PassInterface()),
+                 base::Passed(loss_observer.PassInterface()),
+                 base::Passed(&shared_state), base::Passed(&attribs)));
 }
 
 void CommandBufferImpl::SetGetBuffer(int32_t buffer) {
