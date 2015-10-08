@@ -850,6 +850,24 @@ inline void LayoutObject::invalidateContainerPreferredLogicalWidths()
     }
 }
 
+LayoutObject* LayoutObject::containerForAbsolutePosition(const LayoutBoxModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
+{
+    // We technically just want our containing block, but
+    // we may not have one if we're part of an uninstalled
+    // subtree. We'll climb as high as we can though.
+    for (LayoutObject* object = parent(); object; object = object->parent()) {
+        if (object->style()->position() != StaticPosition)
+            return object;
+
+        if (object->canContainFixedPositionObjects())
+            return object;
+
+        if (paintInvalidationContainerSkipped && object == paintInvalidationContainer)
+            *paintInvalidationContainerSkipped = true;
+    }
+    return nullptr;
+}
+
 LayoutBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
 {
     ASSERT(!paintInvalidationContainerSkipped || !*paintInvalidationContainerSkipped);
@@ -868,25 +886,16 @@ LayoutBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject*
 
 LayoutBlock* LayoutObject::containingBlockForAbsolutePosition() const
 {
-    LayoutObject* o = parent();
-    while (o) {
-        if (o->style()->position() != StaticPosition && (!o->isInline() || o->isReplaced()))
-            break;
+    LayoutObject* o = containerForAbsolutePosition();
 
-        if (o->canContainFixedPositionObjects())
-            break;
-
-        // For relpositioned inlines, we return the nearest non-anonymous enclosing block. We don't try
-        // to return the inline itself.  This allows us to avoid having a positioned objects
-        // list in all LayoutInlines and lets us return a strongly-typed LayoutBlock* result
-        // from this method.  The container() method can actually be used to obtain the
-        // inline directly.
-        if (o->style()->hasInFlowPosition() && o->isInline() && !o->isReplaced()) {
-            o = o->containingBlock();
-            break;
-        }
-
-        o = o->parent();
+    // For relpositioned inlines, we return the nearest non-anonymous enclosing block. We don't try
+    // to return the inline itself.  This allows us to avoid having a positioned objects
+    // list in all LayoutInlines and lets us return a strongly-typed LayoutBlock* result
+    // from this method.  The container() method can actually be used to obtain the
+    // inline directly.
+    if (o && o->isInline() && !o->isReplaced()) {
+        ASSERT(o->style()->hasInFlowPosition());
+        o = o->containingBlock();
     }
 
     if (o && !o->isLayoutBlock())
@@ -2417,23 +2426,10 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* paintInvalidat
     if (pos == FixedPosition)
         return containerForFixedPosition(paintInvalidationContainer, paintInvalidationContainerSkipped);
 
-    if (pos == AbsolutePosition) {
-        // We technically just want our containing block, but
-        // we may not have one if we're part of an uninstalled
-        // subtree. We'll climb as high as we can though.
-        while (o) {
-            if (o->style()->position() != StaticPosition)
-                break;
+    if (pos == AbsolutePosition)
+        return containerForAbsolutePosition(paintInvalidationContainer, paintInvalidationContainerSkipped);
 
-            if (o->canContainFixedPositionObjects())
-                break;
-
-            if (paintInvalidationContainerSkipped && o == paintInvalidationContainer)
-                *paintInvalidationContainerSkipped = true;
-
-            o = o->parent();
-        }
-    } else if (isColumnSpanAll()) {
+    if (isColumnSpanAll()) {
         LayoutObject* multicolContainer = spannerPlaceholder()->container();
         if (paintInvalidationContainerSkipped && paintInvalidationContainer) {
             // We jumped directly from the spanner to the multicol container. Need to check if

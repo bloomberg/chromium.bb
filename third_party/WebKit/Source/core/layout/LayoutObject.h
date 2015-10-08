@@ -1475,6 +1475,8 @@ private:
     LayoutRect previousSelectionRectForPaintInvalidation() const;
     void setPreviousSelectionRectForPaintInvalidation(const LayoutRect&);
 
+    LayoutObject* containerForAbsolutePosition(const LayoutBoxModelObject* paintInvalidationContainer = nullptr, bool* paintInvalidationContainerSkipped = nullptr) const;
+
     const LayoutBoxModelObject* enclosingCompositedContainer() const;
 
     LayoutFlowThread* locateFlowThreadContainingBlock() const;
