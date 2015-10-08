@@ -16173,25 +16173,9 @@
                     "-chrome_internal"
                 ],
                 "vm_tests": []
-            },
-            {
-                "_template": "full",
-                "boards": [
-                    "wizpig"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "wizpig-full",
-                "prebuilts": "public",
-                "unittests": null,
-                "useflags": [
-                    "-chrome_internal"
-                ],
-                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: orco, heli, wizpig)",
+        "description": "Full Builds; Group config (boards: orco, heli)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -16223,21 +16207,9 @@
                 "name": "heli-release",
                 "unittests": null,
                 "vm_tests": []
-            },
-            {
-                "_template": "release",
-                "boards": [
-                    "wizpig"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "wizpig-release",
-                "unittests": null,
-                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: orco, heli, wizpig)",
+        "description": "Release Builds (canary) (internal); Group config (boards: orco, heli)",
         "important": true
     },
     "rambi-firmware": {
@@ -18635,9 +18607,25 @@
                     "-chrome_internal"
                 ],
                 "vm_tests": []
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "wizpig"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "wizpig-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: reks, cyan-cheets)",
+        "description": "Full Builds; Group config (boards: reks, cyan-cheets, wizpig)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -18669,9 +18657,21 @@
                 "name": "cyan-cheets-release",
                 "unittests": null,
                 "vm_tests": []
+            },
+            {
+                "_template": "release",
+                "boards": [
+                    "wizpig"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "wizpig-release",
+                "unittests": null,
+                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: reks, cyan-cheets)"
+        "description": "Release Builds (canary) (internal); Group config (boards: reks, cyan-cheets, wizpig)"
     },
     "strago-chrome-pfq": {
         "_template": "chrome-pfq",

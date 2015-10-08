@@ -2518,7 +2518,6 @@ def GetConfig():
   _AddGroupConfig(
       'rambi-e', 'orco', (
           'heli',
-          'wizpig',
       ),
   )
 
@@ -2615,6 +2614,7 @@ def GetConfig():
   _AddGroupConfig(
       'strago-b', 'reks', (
           'cyan-cheets',
+          'wizpig',
       ),
       important=False,
   )
