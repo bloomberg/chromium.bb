@@ -361,7 +361,7 @@ void RTCPeerConnection::setLocalDescription(RTCSessionDescription* sessionDescri
     m_peerHandler->setLocalDescription(request, sessionDescription->webSessionDescription());
 }
 
-RTCSessionDescription* RTCPeerConnection::localDescription(ExceptionState& exceptionState)
+RTCSessionDescription* RTCPeerConnection::localDescription()
 {
     WebRTCSessionDescription webSessionDescription = m_peerHandler->localDescription();
     if (webSessionDescription.isNull())
@@ -384,7 +384,7 @@ void RTCPeerConnection::setRemoteDescription(RTCSessionDescription* sessionDescr
     m_peerHandler->setRemoteDescription(request, sessionDescription->webSessionDescription());
 }
 
-RTCSessionDescription* RTCPeerConnection::remoteDescription(ExceptionState& exceptionState)
+RTCSessionDescription* RTCPeerConnection::remoteDescription()
 {
     WebRTCSessionDescription webSessionDescription = m_peerHandler->remoteDescription();
     if (webSessionDescription.isNull())

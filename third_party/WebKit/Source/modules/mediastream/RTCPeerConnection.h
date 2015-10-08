@@ -71,10 +71,10 @@ public:
     void createAnswer(RTCSessionDescriptionCallback*, RTCErrorCallback*, const Dictionary&, ExceptionState&);
 
     void setLocalDescription(RTCSessionDescription*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
-    RTCSessionDescription* localDescription(ExceptionState&);
+    RTCSessionDescription* localDescription();
 
     void setRemoteDescription(RTCSessionDescription*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
-    RTCSessionDescription* remoteDescription(ExceptionState&);
+    RTCSessionDescription* remoteDescription();
 
     String signalingState() const;
 

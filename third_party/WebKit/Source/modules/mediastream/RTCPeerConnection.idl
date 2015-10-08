@@ -28,56 +28,106 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://w3c.github.io/webrtc-pc/#state-definitions
+
+enum RTCSignalingState {
+    "stable",
+    "have-local-offer",
+    "have-remote-offer",
+    "have-local-pranswer",
+    "have-remote-pranswer",
+    "closed"
+};
+
+enum RTCIceGatheringState {
+    "new",
+    "gathering",
+    "complete"
+};
+
+enum RTCIceConnectionState {
+    "new",
+    "checking",
+    "connected",
+    "completed",
+    "failed",
+    "disconnected",
+    "closed"
+};
+
+// https://w3c.github.io/webrtc-pc/#interface-definition
+
+// TODO(guidou): Many types are of the wrong type in this interface:
+//  * Dictionary -> specific dictionary types like RTCConfiguration
+//  * RTCErrorCallback -> RTCPeerConnectionErrorCallback
+//  * VoidCallback -> VoidFunction
 [
     GarbageCollected,
     ActiveDOMObject,
+    // TODO(guidou): There should only be one constructor argument, and it
+    // should be optional.
     Constructor(Dictionary rtcConfiguration, optional Dictionary mediaConstraints),
     ConstructorCallWith=ExecutionContext,
     NoInterfaceObject,
     RaisesException=Constructor,
 ] interface RTCPeerConnection : EventTarget {
-    [RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
-
-    [RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
-
-    [RaisesException] void setLocalDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
-    [RaisesException=Getter] readonly attribute RTCSessionDescription localDescription;
-
-    [RaisesException] void setRemoteDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
-    [RaisesException=Getter] readonly attribute RTCSessionDescription remoteDescription;
-
-    readonly attribute DOMString signalingState;
-
-    [RaisesException] void updateIce(optional Dictionary configuration, optional Dictionary mediaConstraints);
-
-    // DEPRECATED
+    // Promise<RTCSessionDescription> createOffer(optional RTCOfferOptions options);
+    // Promise<RTCSessionDescription> createAnswer(optional RTCAnswerOptions options);
+    // Promise<void> setLocalDescription(RTCSessionDescription description);
+    readonly attribute RTCSessionDescription? localDescription;
+    // readonly attribute RTCSessionDescription? currentLocalDescription;
+    // readonly attribute RTCSessionDescription? pendingLocalDescription;
+    // Promise<void> setRemoteDescription(RTCSessionDescription description);
+    readonly attribute RTCSessionDescription? remoteDescription;
+    // readonly attribute RTCSessionDescription? currentRemoteDescription;
+    // readonly attribute RTCSessionDescription? pendingRemoteDescription;
+    // TODO(guidou): addIceCandidate() should return a Promise.
     [RaisesException] void addIceCandidate(RTCIceCandidate candidate);
-
-    [RaisesException] void addIceCandidate(RTCIceCandidate candidate, VoidCallback successCallback, RTCErrorCallback failureCallback);
-
-    readonly attribute DOMString iceGatheringState;
-    readonly attribute DOMString iceConnectionState;
-
-    sequence<MediaStream> getLocalStreams();
-    sequence<MediaStream> getRemoteStreams();
-    MediaStream getStreamById(DOMString streamId);
-
-    [TypeChecking=Interface, RaisesException] void addStream(MediaStream? stream, optional Dictionary mediaConstraints);
-    [TypeChecking=Interface, RaisesException] void removeStream(MediaStream? stream);
-
-    void getStats(RTCStatsCallback successCallback, [Default=Undefined] optional MediaStreamTrack selector);
-
-    [RaisesException] RTCDataChannel createDataChannel([TreatUndefinedAs=NullString] DOMString? label, optional Dictionary options);
-
-    [RaisesException] RTCDTMFSender createDTMFSender(MediaStreamTrack track);
-
+    readonly attribute RTCSignalingState signalingState;
+    readonly attribute RTCIceGatheringState iceGatheringState;
+    readonly attribute RTCIceConnectionState iceConnectionState;
+    // readonly attribute boolean? canTrickleIceCandidates;
+    // RTCConfiguration getConfiguration();
+    // void setConfiguration(RTCConfiguration configuration);
+    // TODO(guidou): close() should never throw an exception.
     [RaisesException] void close();
-
     attribute EventHandler onnegotiationneeded;
     attribute EventHandler onicecandidate;
     attribute EventHandler onsignalingstatechange;
+    attribute EventHandler oniceconnectionstatechange;
+    // attribute EventHandler onicegatheringstatechange;
+
+    // https://w3c.github.io/webrtc-pc/#legacy-interface-extensions
+    // TODO(guidou): The failureCallback argument should be non-optional.
+    [RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
+    // TODO(guidou): None of the arguments should be optional.
+    [RaisesException] void setLocalDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
+    // TODO(guidou): The failureCallback argument should be non-optional, and
+    // there should be no mediaConstraints argument.
+    [RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
+    // TODO(guidou): The successCallback and failureCallback arguments should be
+    // non-optional.
+    [RaisesException] void setRemoteDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
+    [RaisesException] void addIceCandidate(RTCIceCandidate candidate, VoidCallback successCallback, RTCErrorCallback failureCallback);
+    // TODO(guidou): The selector argument should the first (nullable,
+    // non-optional) argument, and there should be a third failureCallback
+    // argument.
+    void getStats(RTCStatsCallback successCallback, [Default=Undefined] optional MediaStreamTrack selector);
+
+    // https://w3c.github.io/webrtc-pc/#peer-to-peer-data-api
+    // TODO(guidou): The label argument should have [TreatNullAs=EmptyString]
+    // and be non-nullable.
+    [RaisesException] RTCDataChannel createDataChannel([TreatUndefinedAs=NullString] DOMString? label, optional Dictionary options);
+    attribute EventHandler ondatachannel;
+
+    // Non-standard or removed from the spec:
+    [RaisesException] void updateIce(optional Dictionary configuration, optional Dictionary mediaConstraints);
+    sequence<MediaStream> getLocalStreams();
+    sequence<MediaStream> getRemoteStreams();
+    MediaStream getStreamById(DOMString streamId);
+    [TypeChecking=Interface, RaisesException] void addStream(MediaStream? stream, optional Dictionary mediaConstraints);
+    [TypeChecking=Interface, RaisesException] void removeStream(MediaStream? stream);
+    [RaisesException] RTCDTMFSender createDTMFSender(MediaStreamTrack track);
     attribute EventHandler onaddstream;
     attribute EventHandler onremovestream;
-    attribute EventHandler oniceconnectionstatechange;
-    attribute EventHandler ondatachannel;
 };
