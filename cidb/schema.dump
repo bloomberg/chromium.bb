@@ -60,6 +60,7 @@ CREATE TABLE `buildMessageTable` (
   `message_subtype` varchar(240) DEFAULT NULL,
   `message_value` varchar(480) DEFAULT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `board` varchar(240) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `build_id` (`build_id`),
   CONSTRAINT `buildMessageTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
