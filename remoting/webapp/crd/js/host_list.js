@@ -321,7 +321,6 @@ remoting.HostList.prototype.showHostListEmptyMessage_ = function(
   remoting.AppsV2Migration.hasHostsInV1App().then(
     /**
      * @param {remoting.MigrationSettings} previousIdentity
-     * @this {remoting.HostList}
      */
     function(previousIdentity) {
       that.noHosts_.innerHTML = remoting.AppsV2Migration.buildMigrationTips(

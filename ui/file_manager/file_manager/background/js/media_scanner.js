@@ -204,7 +204,6 @@ importer.DefaultMediaScanner.prototype.scanMediaFiles_ =
     return Promise.all(
         batch.map(handleFileEntry))
         .then(
-            /** @this {importer.DefaultMediaScanner} */
             function() {
               if (end < entries.length) {
                 return scanBatch(end);

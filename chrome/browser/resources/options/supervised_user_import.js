@@ -77,7 +77,8 @@ cr.define('options', function() {
       $('import-existing-supervised-user-link').hidden = false;
 
       options.SupervisedUserListData.requestExistingSupervisedUsers().then(
-          this.receiveExistingSupervisedUsers_, this.onSigninError_.bind(this));
+          this.receiveExistingSupervisedUsers_.bind(this),
+          this.onSigninError_.bind(this));
       options.SupervisedUserListData.addObserver(this);
 
       this.updateImportInProgress_(false);

@@ -163,7 +163,7 @@ chromeMocks.StorageArea.prototype.get = function(keys, onDone) {
   if (!keys) {
     // No keys are specified, returns the entire storage.
     var storageCopy = base.deepCopy(this.storage_);
-    onDone(/** @type {Object} */ (storageCopy));
+    onDone(/** @type {!Object} */ (storageCopy));
     return;
   }
 
