@@ -248,10 +248,14 @@ DirectoryItem.prototype.onExpand_ = function(e) {
  */
 DirectoryItem.prototype.handleClick = function(e) {
   cr.ui.TreeItem.prototype.handleClick.call(this, e);
-  cr.dispatchSimpleEvent(this, 'click-tree-item', true);
-  if (!e.target.classList.contains('expand-icon') && this.entry) {
-    this.directoryModel_.activateDirectoryEntry(this.entry);
+
+  if (!this.entry || e.button === 2 ||
+      e.target.classList.contains('expand-icon')) {
+    return;
   }
+
+  cr.dispatchSimpleEvent(this, 'click-tree-item', true);
+  this.directoryModel_.activateDirectoryEntry(this.entry);
 };
 
 /**
@@ -385,11 +389,7 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
   var item = new DirectoryItem(label, tree);
   item.__proto__ = SubDirectoryItem.prototype;
 
-  item.dirEntry_ = dirEntry;
-
-  // Set helper attribute for testing.
-  if (window.IN_TEST)
-    item.setAttribute('full-path-for-testing', dirEntry.fullPath);
+  item.entry = dirEntry;
 
   // Sets up icons of the item.
   var icon = item.querySelector('.icon');
@@ -418,6 +418,14 @@ SubDirectoryItem.prototype = {
 
   get entry() {
     return this.dirEntry_;
+  },
+
+  set entry(value) {
+    this.dirEntry_ = value;
+
+    // Set helper attribute for testing.
+    if (window.IN_TEST)
+      this.setAttribute('full-path-for-testing', this.dirEntry_.fullPath);
   }
 };
 
@@ -773,7 +781,13 @@ ShortcutItem.prototype.searchAndSelectByEntry = function(entry) {
  */
 ShortcutItem.prototype.handleClick = function(e) {
   cr.ui.TreeItem.prototype.handleClick.call(this, e);
+
+  // Do not activate with right click.
+  if (e.button === 2)
+    return;
+
   cr.dispatchSimpleEvent(this, 'click-tree-item', true);
+
   this.activate();
   // Resets file selection when a volume is clicked.
   this.parentTree_.directoryModel.clearSelection();
@@ -1177,12 +1191,28 @@ DirectoryTree.prototype.decorateDirectoryTree = function(
  * @private
  */
 DirectoryTree.prototype.onEntriesChanged_ = function(event) {
-  // TODO(yawano): Handle other entry change kinds.
-  if (event.kind !== util.EntryChangedKind.DELETED)
+  var directories = event.entries.filter((entry) => entry.isDirectory);
+
+  if (directories.length === 0)
     return;
 
-  var directories = event.entries.filter((entry) => entry.isDirectory);
-  directories.forEach((directory) => this.updateTreeByEntry_(directory));
+  switch (event.kind) {
+    case util.EntryChangedKind.CREATED:
+      // Handle as change event of parent entry.
+      Promise.all(
+          directories.map((directory) =>
+            new Promise(directory.getParent.bind(directory))))
+          .then(function(parentDirectories) {
+        parentDirectories.forEach((parentDirectory) =>
+            this.updateTreeByEntry_(parentDirectory));
+      }.bind(this));
+      break;
+    case util.EntryChangedKind.DELETED:
+      directories.forEach((directory) => this.updateTreeByEntry_(directory));
+      break;
+    default:
+      assertNotReached();
+  }
 };
 
 /**

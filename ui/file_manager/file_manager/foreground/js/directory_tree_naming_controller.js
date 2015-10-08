@@ -136,6 +136,8 @@ DirectoryTreeNamingController.prototype.performRename_ = function(
         this.currentDirectoryItem_.firstElementChild.querySelector('.label');
     label.textContent = newName;
 
+    this.currentDirectoryItem_.entry = newEntry;
+
     this.detach_();
 
     // If renamed directory was current directory, change it to new one.

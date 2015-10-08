@@ -180,6 +180,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       "copyFromDirectoryTreeWithKeyboardShortcut"),
         TestParameter(IN_GUEST_MODE,
                       "copyFromDirectoryTreeWithKeyboardShortcut"),
+        TestParameter(NOT_IN_GUEST_MODE,
+                      "copyFromDirectoryTreeWithoutChaningCurrentDirectory"),
         TestParameter(NOT_IN_GUEST_MODE, "cutFromDirectoryTreeWithContextMenu"),
         TestParameter(IN_GUEST_MODE, "cutFromDirectoryTreeWithContextMenu"),
         TestParameter(NOT_IN_GUEST_MODE,
@@ -187,9 +189,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(IN_GUEST_MODE,
                       "cutFromDirectoryTreeWithKeyboardShortcut"),
         TestParameter(NOT_IN_GUEST_MODE,
+                      "cutFromDirectoryTreeWithoutChaningCurrentDirectory"),
+        TestParameter(NOT_IN_GUEST_MODE,
                       "pasteIntoFolderFromDirectoryTreeWithContextMenu"),
         TestParameter(IN_GUEST_MODE,
                       "pasteIntoFolderFromDirectoryTreeWithContextMenu"),
+        TestParameter(
+            NOT_IN_GUEST_MODE,
+            "pasteIntoFolderFromDirectoryTreeWithoutChaningCurrentDirectory"),
         TestParameter(NOT_IN_GUEST_MODE,
                       "renameDirectoryFromDirectoryTreeWithContextMenu"),
         TestParameter(IN_GUEST_MODE,
@@ -198,6 +205,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       "renameDirectoryFromDirectoryTreeWithKeyboardShortcut"),
         TestParameter(IN_GUEST_MODE,
                       "renameDirectoryFromDirectoryTreeWithKeyboardShortcut"),
+        TestParameter(
+            NOT_IN_GUEST_MODE,
+            "renameDirectoryFromDirectoryTreeWithoutChangingCurrentDirectory"),
         TestParameter(NOT_IN_GUEST_MODE,
                       "renameDirectoryToEmptyStringFromDirectoryTree"),
         TestParameter(IN_GUEST_MODE,
@@ -209,7 +219,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE,
                       "createDirectoryFromDirectoryTreeWithContextMenu"),
         TestParameter(NOT_IN_GUEST_MODE,
-                      "createDirectoryFromDirectoryTreeWithKeyboardShortcut")));
+                      "createDirectoryFromDirectoryTreeWithKeyboardShortcut"),
+        TestParameter(NOT_IN_GUEST_MODE,
+                      "createDirectoryFromDirectoryTreeWithoutChangingCurrentDi"
+                      "rectory")));
 
 // Fails on official build. http://crbug.com/429294
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)

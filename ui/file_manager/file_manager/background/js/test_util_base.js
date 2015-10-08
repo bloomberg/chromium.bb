@@ -380,10 +380,15 @@ test.util.sync.fakeMouseClick = function(
  */
 test.util.sync.fakeMouseRightClick = function(
     contentWindow, targetQuery, opt_iframeQuery) {
+  var mouseDownEvent = new MouseEvent('mousedown', {bubbles: true, button: 2});
+  if (!test.util.sync.sendEvent(contentWindow, targetQuery, mouseDownEvent,
+        opt_iframeQuery)) {
+    return false;
+  }
+
   var contextMenuEvent = new MouseEvent('contextmenu', {bubbles: true});
-  var result = test.util.sync.sendEvent(
-      contentWindow, targetQuery, contextMenuEvent, opt_iframeQuery);
-  return result;
+  return test.util.sync.sendEvent(contentWindow, targetQuery, contextMenuEvent,
+      opt_iframeQuery);
 };
 
 /**

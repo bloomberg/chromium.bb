@@ -39,21 +39,73 @@ var ITEMS_IN_DEST_DIR_AFTER_PASTE = TestEntryInfo.getExpectedRows([
 ]);
 
 /**
+ * Expands tree item.
+ */
+function expandTreeItemInDirectoryTree(windowId, query) {
+  return remoteCall.waitForElement(windowId, query).then(function() {
+    return remoteCall.callRemoteTestUtil('queryAllElements', windowId,
+        [`${query}[expanded]`]).then(function(elements) {
+      // If it's already expanded, do nothing.
+      if (elements.length > 0)
+        return;
+
+      // Focus to directory tree.
+      return remoteCall.callRemoteTestUtil(
+          'focus', windowId, ['#directory-tree']).then(function() {
+        // Expand download volume.
+        return remoteCall.callRemoteTestUtil('fakeMouseClick', windowId,
+            [`${query} .expand-icon`]);
+      });
+    });
+  });
+}
+
+/**
+ * Expands download volume in directory tree.
+ */
+function expandDownloadVolumeInDirectoryTree(windowId) {
+  return expandTreeItemInDirectoryTree(
+      windowId, '[volume-type-for-testing="downloads"]');
+}
+
+/**
+ * Expands directory tree for specified path.
+ * TODO(yawano): Move this to remote_call.js
+ */
+function expandDirectoryTreeFor(windowId, path) {
+  return expandDirectoryTreeForInternal_(windowId, path.split('/'), 0);
+}
+
+/**
+ * Internal function for expanding directory tree for specified path.
+ */
+function expandDirectoryTreeForInternal_(windowId, components, index) {
+  if (index >= components.length - 1)
+    return Promise.resolve();
+
+  if (index === 0) {
+    return expandDownloadVolumeInDirectoryTree(windowId).then(function() {
+      return expandDirectoryTreeForInternal_(windowId, components, index + 1);
+    });
+  }
+
+  var path = `/${components.slice(1, index + 1).join('/')}`;
+  return expandTreeItemInDirectoryTree(
+      windowId, `[full-path-for-testing="${path}"]`).then(function() {
+    return expandDirectoryTreeForInternal_(windowId, components, index + 1);
+  });
+}
+
+/**
  * Navigates to specified directory on Download volume by using directory tree.
  */
 function navigateWithDirectoryTree(windowId, path) {
-  // Focus to directory tree.
-  return remoteCall.callRemoteTestUtil(
-      'focus', windowId, ['#directory-tree']).then(function() {
-    // Expand download volume.
-    return remoteCall.callRemoteTestUtil('fakeMouseClick', windowId,
-        ['[volume-type-for-testing="downloads"] .expand-icon']);
-  }).then(function() {
-    // Select photos directory.
+  return expandDirectoryTreeFor(windowId, path).then(function() {
+    // Select target path.
     return remoteCall.callRemoteTestUtil('fakeMouseClick', windowId,
         [`[full-path-for-testing="${path}"]`]);
   }).then(function() {
-    // Wait until Files.app is navigated to photos.
+    // Wait until Files.app is navigated to the path.
     return remoteCall.waitUntilCurrentDirectoryIsChanged(
         windowId, `/Downloads${path}`);
   }).then(function() {
@@ -68,9 +120,12 @@ function navigateWithDirectoryTree(windowId, path) {
  * Clicks context menu item of id in directory tree.
  */
 function clickDirectoryTreeContextMenuItem(windowId, path, id) {
-  // Right click photos directory.
-  return remoteCall.callRemoteTestUtil('fakeMouseRightClick', windowId,
+  return remoteCall.callRemoteTestUtil('focus', windowId,
       [`[full-path-for-testing="${path}"]`]).then(function() {
+    // Right click photos directory.
+    return remoteCall.callRemoteTestUtil('fakeMouseRightClick', windowId,
+        [`[full-path-for-testing="${path}"]`])
+  }).then(function() {
     // Wait for context menu.
     return remoteCall.waitForElement(windowId,
         `#directory-tree-context-menu > [command="#${id}"]:not([disabled])`);
@@ -101,20 +156,17 @@ function navigateToDestinationDirectoryAndTestPaste(windowId) {
     return remoteCall.waitForFiles(windowId, ITEMS_IN_DEST_DIR_AFTER_PASTE,
         {ignoreLastModifiedTime: true});
   });
-};
+}
 
 /**
  * Rename photos directory to specified name by using directory tree.
  */
 function renamePhotosDirectoryTo(windowId, newName, useKeyboardShortcut) {
-  return navigateWithDirectoryTree(windowId, '/photos').then(function() {
-    if (useKeyboardShortcut) {
-      return remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', windowId, ['body', 'Enter', true /* ctrl */]);
-    } else {
-      return clickDirectoryTreeContextMenuItem(windowId, '/photos', 'rename');
-    }
-  }).then(function() {
+  return (useKeyboardShortcut ?
+      remoteCall.callRemoteTestUtil(
+          'fakeKeyDown', windowId, ['body', 'Enter', true /* ctrl */]) :
+      clickDirectoryTreeContextMenuItem(windowId, '/photos', 'rename')
+      ).then(function() {
     return remoteCall.waitForElement(windowId, '.tree-row > input');
   }).then(function() {
     return remoteCall.callRemoteTestUtil(
@@ -133,6 +185,8 @@ function renameDirectoryFromDirectoryTreeSuccessCase(useKeyboardShortcut) {
   var windowId;
   return setupForDirectoryTreeContextMenuTest().then(function(id) {
     windowId = id;
+    return navigateWithDirectoryTree(windowId, '/photos');
+  }).then(function() {
     return renamePhotosDirectoryTo(windowId, 'New photos', useKeyboardShortcut);
   }).then(function() {
     // Confirm that current directory has moved to new folder.
@@ -148,6 +202,8 @@ function renameDirectoryFromDirectoryTreeAndConfirmAlertDialog(newName) {
   var windowId;
   return setupForDirectoryTreeContextMenuTest().then(function(id) {
     windowId = id;
+    return navigateWithDirectoryTree(windowId, '/photos');
+  }).then(function() {
     return renamePhotosDirectoryTo(windowId, newName, false);
   }).then(function() {
     // Confirm that a dialog is shown.
@@ -158,11 +214,16 @@ function renameDirectoryFromDirectoryTreeAndConfirmAlertDialog(newName) {
 /**
  * Creates directory from directory tree.
  */
-function createDirectoryFromDirectoryTree(useKeyboardShortcut) {
+function createDirectoryFromDirectoryTree(
+    useKeyboardShortcut, changeCurrentDirectory) {
   var windowId;
   return setupForDirectoryTreeContextMenuTest().then(function(id) {
     windowId = id;
-    return navigateWithDirectoryTree(windowId, '/photos');
+
+    if (changeCurrentDirectory)
+      return navigateWithDirectoryTree(windowId, '/photos');
+    else
+      return expandDownloadVolumeInDirectoryTree(windowId);
   }).then(function() {
     if (useKeyboardShortcut) {
       return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
@@ -186,7 +247,7 @@ function createDirectoryFromDirectoryTree(useKeyboardShortcut) {
   }).then(function() {
     // Confirm that current directory is not changed at this timing.
     return remoteCall.waitUntilCurrentDirectoryIsChanged(
-        windowId, '/Downloads/photos');
+        windowId, changeCurrentDirectory ? '/Downloads/photos' : '/Downloads');
   }).then(function() {
     // Confirm that new directory is actually created by navigating to it.
     return navigateWithDirectoryTree(windowId, '/photos/test');
@@ -221,6 +282,22 @@ testcase.copyFromDirectoryTreeWithKeyboardShortcut = function() {
     // Press Ctrl+C.
     return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
         ['body', 'U+0043' /* c */, true /* ctrl */]);
+  }).then(function() {
+    return navigateToDestinationDirectoryAndTestPaste(windowId);
+  }));
+};
+
+/**
+ * Test case for copying a directory from directory tree without changing
+ * current directory.
+ */
+testcase.copyFromDirectoryTreeWithoutChaningCurrentDirectory = function() {
+  var windowId;
+  testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
+    windowId = id;
+    return expandDownloadVolumeInDirectoryTree(windowId);
+  }).then(function() {
+    return clickDirectoryTreeContextMenuItem(windowId, '/photos', 'copy');
   }).then(function() {
     return navigateToDestinationDirectoryAndTestPaste(windowId);
   }));
@@ -268,6 +345,25 @@ testcase.cutFromDirectoryTreeWithKeyboardShortcut = function() {
 };
 
 /**
+ * Test case for cutting a directory from directory tree without changing
+ * current directory.
+ */
+testcase.cutFromDirectoryTreeWithoutChaningCurrentDirectory = function() {
+  var windowId;
+  testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
+    windowId = id;
+    return expandDownloadVolumeInDirectoryTree(windowId);
+  }).then(function() {
+    return clickDirectoryTreeContextMenuItem(windowId, '/photos', 'cut');
+  }).then(function() {
+    return navigateToDestinationDirectoryAndTestPaste(windowId);
+  }).then(function() {
+    return remoteCall.waitForElementLost(
+        windowId, '[full-path-for-testing="/photos"]');
+  }));
+};
+
+/**
  * Test case for pasting into folder from directory tree by using context menu.
  */
 testcase.pasteIntoFolderFromDirectoryTreeWithContextMenu = function() {
@@ -307,6 +403,34 @@ testcase.pasteIntoFolderFromDirectoryTreeWithContextMenu = function() {
 };
 
 /**
+ * Test case for pasting into a folder from directory tree without changing
+ * current directory.
+ */
+testcase.pasteIntoFolderFromDirectoryTreeWithoutChaningCurrentDirectory =
+    function() {
+  var windowId;
+  testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
+    windowId = id;
+    return expandDownloadVolumeInDirectoryTree(windowId);
+  }).then(function() {
+    return clickDirectoryTreeContextMenuItem(windowId, '/photos', 'copy');
+  }).then(function() {
+    return clickDirectoryTreeContextMenuItem(
+        windowId, '/destination', 'paste-into-folder');
+  }).then(function() {
+    return remoteCall.waitForElement(windowId,
+        '[full-path-for-testing="/destination"][may-have-children]');
+  }).then(function() {
+    return remoteCall.callRemoteTestUtil('fakeMouseClick', windowId,
+        ['[full-path-for-testing="/destination"] .expand-icon']);
+  }).then(function() {
+    // Confirm the copied directory is added to the directory tree.
+    return remoteCall.waitForElement(windowId,
+        '[full-path-for-testing="/destination/photos"]');
+  }));
+};
+
+/**
  * Test case for renaming directory from directory tree by using context menu.
  */
 testcase.renameDirectoryFromDirectoryTreeWithContextMenu = function() {
@@ -321,6 +445,31 @@ testcase.renameDirectoryFromDirectoryTreeWithContextMenu = function() {
 testcase.renameDirectoryFromDirectoryTreeWithKeyboardShortcut = function() {
   testPromise(renameDirectoryFromDirectoryTreeSuccessCase(
       true /* use keyboard shortcut */));
+};
+
+/**
+ * Test case for renaming directory from directory tree without changing current
+ * directory.
+ */
+testcase.renameDirectoryFromDirectoryTreeWithoutChangingCurrentDirectory =
+    function() {
+  var windowId;
+  testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
+    windowId = id;
+    return expandDownloadVolumeInDirectoryTree(windowId);
+  }).then(function() {
+    return remoteCall.waitForElement(
+        windowId, '[full-path-for-testing="/photos"]');
+  }).then(function() {
+    return renamePhotosDirectoryTo(
+        windowId, 'New photos', false /* Do not use keyboard shortcut. */);
+  }).then(function() {
+    return remoteCall.waitForElementLost(
+        windowId, '[full-path-for-testing="/photos"]');
+  }).then(function() {
+    return remoteCall.waitForElement(
+        windowId, '[full-path-for-testing="/New photos"]');
+  }));
 };
 
 /**
@@ -343,7 +492,8 @@ testcase.renameDirectoryToExistingOneFromDirectoryTree = function() {
  */
 testcase.createDirectoryFromDirectoryTreeWithContextMenu = function() {
   testPromise(createDirectoryFromDirectoryTree(
-      false /* do not use keyboard shortcut */));
+      false /* do not use keyboard shortcut */,
+      true /* change current directory */));
 };
 
 /**
@@ -352,5 +502,17 @@ testcase.createDirectoryFromDirectoryTreeWithContextMenu = function() {
  */
 testcase.createDirectoryFromDirectoryTreeWithKeyboardShortcut = function() {
   testPromise(createDirectoryFromDirectoryTree(
-      true /* use keyboard shortcut */));
+      true /* use keyboard shortcut */,
+      true /* change current directory */));
+};
+
+/**
+ * Test case for creating directory from directory tree without changing current
+ * directory.
+ */
+testcase.createDirectoryFromDirectoryTreeWithoutChangingCurrentDirectory =
+    function() {
+  testPromise(createDirectoryFromDirectoryTree(
+      false /* Do not use keyboard shortcut */,
+      false /* Do not change current directory */))
 };
