@@ -36,7 +36,6 @@ import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Base test class for all ContentShell based tests.
@@ -110,33 +109,17 @@ public class ContentShellTestBase
         final ContentShellActivity activity = getActivity();
 
         // Wait for the Content Shell to be initialized.
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                try {
-                    final AtomicBoolean isLoaded = new AtomicBoolean(false);
-                    runTestOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Shell shell = activity.getActiveShell();
-                            if (shell != null) {
-                                // There are two cases here that need to be accounted for.
-                                // The first is that we've just created a Shell and it isn't
-                                // loading because it has no URL set yet.  The second is that
-                                // we've set a URL and it actually is loading.
-                                isLoaded.set(!shell.isLoading()
-                                        && !TextUtils.isEmpty(shell.getContentViewCore()
-                                                .getWebContents().getUrl()));
-                            } else {
-                                isLoaded.set(false);
-                            }
-                        }
-                    });
-
-                    return isLoaded.get();
-                } catch (Throwable e) {
-                    return false;
-                }
+                Shell shell = activity.getActiveShell();
+                // There are two cases here that need to be accounted for.
+                // The first is that we've just created a Shell and it isn't
+                // loading because it has no URL set yet.  The second is that
+                // we've set a URL and it actually is loading.
+                if (shell == null) return false;
+                return !shell.isLoading() && !TextUtils.isEmpty(shell.getContentViewCore()
+                        .getWebContents().getUrl());
             }
         }, WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
