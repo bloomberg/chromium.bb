@@ -389,6 +389,16 @@
       "-v",
     ],
   },
+  "telemetry_perf_unittests": {
+    "label": "//chrome/test:telemetry_perf_unittests",
+    "type": "script",
+    "script": "//testing/scripts/run_telemetry_as_googletest.py",
+    "args": [
+      "--xvfb",
+      "../../tools/perf/run_tests",
+      "-v",
+    ],
+  },
   "ui_base_unittests": {
     "label": "//ui/base:ui_base_unittests",
     "type": "windowed_test_launcher",

@@ -27,31 +27,46 @@ import sys
 
 import common
 
+# Add src/testing/ into sys.path for importing xvfb.
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import xvfb
+
 
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
-    '--isolated-script-test-output',
-    type=argparse.FileType('w'),
-    required=True)
+      '--isolated-script-test-output', type=argparse.FileType('w'),
+      required=True)
+  parser.add_argument('--xvfb', help='Start xvfb.', action='store_true')
   args, rest_args = parser.parse_known_args()
-  with common.temporary_file() as tempfile_path:
-    rc = common.run_command([sys.executable] + rest_args + [
-      '--write-full-results-to', tempfile_path,
-    ])
-    with open(tempfile_path) as f:
-      results = json.load(f)
-    parsed_results = common.parse_common_test_results(results,
-                                                      test_separator='.')
-    failures = parsed_results['unexpected_failures']
+  xvfb_proc = None
+  openbox_proc = None
+  env = os.environ.copy()
+  if args.xvfb and xvfb.should_start_xvfb(env):
+    xvfb_proc, openbox_proc = xvfb.start_xvfb(env=env, build_dir='.')
+    assert xvfb_proc and openbox_proc, 'Failed to start xvfb'
+  try:
+    with common.temporary_file() as tempfile_path:
+      rc = common.run_command([sys.executable] + rest_args + [
+        '--write-full-results-to', tempfile_path,
+      ], env=env)
+      with open(tempfile_path) as f:
+        results = json.load(f)
+      parsed_results = common.parse_common_test_results(results,
+                                                        test_separator='.')
+      failures = parsed_results['unexpected_failures']
 
-    json.dump({
-        'valid': bool(rc <= common.MAX_FAILURES_EXIT_STATUS and
-                      ((rc == 0) or failures)),
-        'failures': failures.keys(),
-    }, args.isolated_script_test_output)
+      json.dump({
+          'valid': bool(rc <= common.MAX_FAILURES_EXIT_STATUS and
+                        ((rc == 0) or failures)),
+          'failures': failures.keys(),
+      }, args.isolated_script_test_output)
 
-  return rc
+    return rc
+  finally:
+    xvfb.kill(xvfb_proc)
+    xvfb.kill(openbox_proc)
+
 
 
 # This is not really a "script test" so does not need to manually add

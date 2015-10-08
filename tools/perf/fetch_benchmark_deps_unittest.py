@@ -30,7 +30,7 @@ class FetchBenchmarkDepsUnittest(unittest.TestCase):
     sys.argv = ['./fetch_benchmark_deps', '']
 
   def _RunFetchBenchmarkDepsTest(self, benchmark_name,
-                                 expected_fetched_file_paths = None):
+                                 expected_fetched_file_paths=None):
     """Simulates './fetch_benchmark_deps [benchmark_name]'
 
     It checks if the paths returned are expected and have corresponding sha1
@@ -65,5 +65,8 @@ class FetchBenchmarkDepsUnittest(unittest.TestCase):
     self._RunFetchBenchmarkDepsTest('media.tough_video_cases')
 
   def testFetchOctane(self):
-    expected = 'src/tools/perf/page_sets/data/octane_001.wpr'
+    octane_wpr_path = os.path.join(
+        os.path.dirname(__file__), 'page_sets', 'data', 'octane_001.wpr')
+    expected = os.path.relpath(octane_wpr_path,
+                               fetch_benchmark_deps.GetChromiumDir())
     self._RunFetchBenchmarkDepsTest('octane', NormPaths(expected))

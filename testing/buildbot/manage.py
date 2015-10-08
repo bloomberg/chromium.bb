@@ -73,6 +73,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'tab_capture_end2end_tests',
   'telemetry_gpu_test',
   'telemetry_gpu_unittests',
+  'telemetry_perf_unittests',
 }
 
 
