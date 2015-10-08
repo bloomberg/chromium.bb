@@ -27,6 +27,7 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
 
     private final String mTitle;
     private final int mBackgroundColor;
+    private final int mThemeColor;
     private final IncognitoNewTabPageView mIncognitoNewTabPageView;
 
     private boolean mIsLoaded;
@@ -56,6 +57,8 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
         mTitle = activity.getResources().getString(R.string.button_new_tab);
         mBackgroundColor =
                 ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_bg_incognito);
+        mThemeColor = ApiCompatibilityUtils.getColor(activity.getResources(),
+                R.color.incognito_primary_color);
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mIncognitoNewTabPageView =
@@ -91,6 +94,11 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
     @Override
     public int getBackgroundColor() {
         return mBackgroundColor;
+    }
+
+    @Override
+    public int getThemeColor() {
+        return mThemeColor;
     }
 
     @Override

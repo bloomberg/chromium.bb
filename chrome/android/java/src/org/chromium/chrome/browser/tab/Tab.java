@@ -736,7 +736,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 color = mDefaultThemeColor;
             }
             if (color == Color.TRANSPARENT) color = mDefaultThemeColor;
+            if (isIncognito()) color = mDefaultThemeColor;
             color |= 0xFF000000;
+
             if (mThemeColor == color) return;
             mThemeColor = color;
             for (TabObserver observer : mObservers) {
@@ -1156,6 +1158,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *         security state.
      */
     public int getThemeColor() {
+        if (isNativePage()) return mNativePage.getThemeColor();
         return mThemeColor;
     }
 
@@ -2858,10 +2861,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * @return The default toolbar color for this tab.
+     * @return Whether the theme color for this tab is the default color.
      */
-    public int getDefaultThemeColor() {
-        return mDefaultThemeColor;
+    public boolean isDefaultThemeColor() {
+        return mDefaultThemeColor == mThemeColor;
     }
 
     /**

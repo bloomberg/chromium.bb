@@ -27,6 +27,7 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
     private final Tab mTab;
     private final String mTitle;
     private final int mBackgroundColor;
+    private final int mThemeColor;
     private EnhancedBookmarkManager mManager;
 
     /**
@@ -48,6 +49,8 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
                 ? R.string.offline_pages_saved_pages : R.string.bookmarks);
         mBackgroundColor = ApiCompatibilityUtils.getColor(activity.getResources(),
                 R.color.default_primary_color);
+        mThemeColor = ApiCompatibilityUtils.getColor(
+                activity.getResources(), R.color.default_primary_color);
 
         mManager = new EnhancedBookmarkManager(mActivity);
         Resources res = mActivity.getResources();
@@ -85,6 +88,11 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
     @Override
     public int getBackgroundColor() {
         return mBackgroundColor;
+    }
+
+    @Override
+    public int getThemeColor() {
+        return mThemeColor;
     }
 
     @Override

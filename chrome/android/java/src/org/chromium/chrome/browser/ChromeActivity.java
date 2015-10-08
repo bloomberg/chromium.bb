@@ -553,7 +553,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @param color The color that the status bar should be set to.
      */
     protected void setStatusBarColor(Tab tab, int color) {
-        int statusBarColor = (tab != null && tab.getDefaultThemeColor() == color)
+        int statusBarColor = (tab != null && tab.isDefaultThemeColor())
                 ? Color.BLACK : ColorUtils.getDarkenedColorForStatusBar(color);
         ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);
     }

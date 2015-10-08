@@ -36,6 +36,11 @@ public interface NativePage {
     int getBackgroundColor();
 
     /**
+     * @return The theme color of the page.
+     */
+    int getThemeColor();
+
+    /**
      * Updates the native page based on the given url.
      */
     void updateForUrl(String url);

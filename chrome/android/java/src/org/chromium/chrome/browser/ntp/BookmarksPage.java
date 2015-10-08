@@ -60,6 +60,7 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
     private final BookmarksPageView mPageView;
     private final String mTitle;
     private final int mBackgroundColor;
+    private final int mThemeColor;
 
     // Whether destroy() has been called.
     private boolean mIsDestroyed;
@@ -279,6 +280,8 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
         mFaviconHelper = new FaviconHelper();
         mTitle = context.getResources().getString(R.string.ntp_bookmarks);
         mBackgroundColor = ApiCompatibilityUtils.getColor(context.getResources(), R.color.ntp_bg);
+        mThemeColor = ApiCompatibilityUtils.getColor(
+                context.getResources(), R.color.default_primary_color);
         mCurrentFolderId = new BookmarkId(BookmarkId.INVALID_FOLDER_ID, BookmarkType.NORMAL);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
@@ -532,6 +535,11 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
     @Override
     public int getBackgroundColor() {
         return mBackgroundColor;
+    }
+
+    @Override
+    public int getThemeColor() {
+        return mThemeColor;
     }
 
     @Override

@@ -68,6 +68,11 @@ public class NativePageFactoryTest extends InstrumentationTestCase {
         }
 
         @Override
+        public int getThemeColor() {
+            return 0;
+        }
+
+        @Override
         public View getView() {
             return null;
         }

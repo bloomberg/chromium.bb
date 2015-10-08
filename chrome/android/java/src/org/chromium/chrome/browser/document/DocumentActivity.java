@@ -801,8 +801,9 @@ public class DocumentActivity extends ChromeActivity {
 
     private void updateTaskDescription(String label, Bitmap icon) {
         int color = mDefaultThemeColor;
-        if (getActivityTab() != null) color = getActivityTab().getThemeColor();
-        boolean useDefaultStatusBarColor = isIncognito() || color == mDefaultThemeColor;
+        if (getActivityTab() != null && !getActivityTab().isDefaultThemeColor()) {
+            color = getActivityTab().getThemeColor();
+        }
         ApiCompatibilityUtils.setTaskDescription(this, label, icon, color);
     }
 
