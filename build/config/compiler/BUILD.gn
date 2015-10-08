@@ -791,10 +791,6 @@ config("no_chromium_code") {
 
   if (is_clang) {
     cflags += [
-      # TODO(thakis): Move this suppression into individual third-party
-      # libraries as required. http://crbug.com/505316.
-      "-Wno-unused-function",
-
       # Lots of third-party libraries have unused variables. Instead of
       # suppressing them individually, we just blanket suppress them here.
       "-Wno-unused-variable",

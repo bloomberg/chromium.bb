@@ -3118,9 +3118,6 @@
       ['chromium_code==0', {
         'variables': {
           'clang_warning_flags': [
-            # TODO(thakis): Move this suppression into individual third-party
-            # libraries as required. http://crbug.com/505316.
-            '-Wno-unused-function',
             # Lots of third-party libraries have unused variables. Instead of
             # suppressing them individually, we just blanket suppress them here.
             '-Wno-unused-variable',
