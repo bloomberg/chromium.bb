@@ -1,7 +1,7 @@
 # What is GN?
 
 GN is a meta-build system that generates
-[NinjaBuild](https://chromium.googlesource.com/chromium/src/+/master/docs/ninja_build.md)
+[NinjaBuild](/chromium/src/+/master/docs/ninja_build.md)
 files. It's meant to be faster and simpler than GYP. It outputs only Ninja build
 files.
 
@@ -10,10 +10,7 @@ files.
 1. We believe GN files are more readable and more maintainable
    than GYP files.
 2. GN is fast:
-  * GN is 20x faster than GYP (as of mid November, building 80%
-    of what GYP builds, in one configuration rather than two, takes 500ms
-    on a z620 running Ubuntu Trusty. GYP takes 20 seconds.
-    We see similar speedups on Mac and Windows).
+  * GN is 20x faster than GYP.
   * GN supports automatically re-running itself as needed by Ninja
     as part of the build. This eliminates the need to remember to
     re-run GN when you change a build file.
@@ -25,30 +22,23 @@ files.
 
 ## What's the status?
 
-_as of 8 Feb 2015:_
+_as of 7 Oct 2015:_
 
-Chrome and most of the major test suites link on Linux and ChromeOS.
-There's probably <1000 objects left to build, in a few test suites and a
-bunch of utillities and helper binaries. We will probably have
-everything converted in another couple weeks.
+GN is now the default system for Linux, though GYP still works. It
+is mostly complete on Android, ChromeOS, and Windows (apart from NaCl
+support on Windows).
 
-Chrome also links on Android and Windows, and bringing up the remaining
-test suites should be mostly straightforward. There's some work left to
-enable NaCl on Windows but it should also be straightforward.
-
-Mac and iOS have not progressed much as attention has been focused on
-Linux and Windows; we still need support for bundles and frameworks
-before it can get to parity w/ the other platforms.
+Mac and iOS are making progress, though we still need better support
+for bundles before the major targets like Chrome can link and they get
+to parity w/ the other platforms.
 
 ## When are you going to be done?
 
-_as of 8 Feb 2015:_
+_as of 7 Oct 2015:_
 
-We're currently shooting for having the main developer configurations
-working and usable by the end of March 2015. There will probably be a
-fair amount of verification of flags, bug fixes, etc over the next
-couple months, but hopefully we will be flipping configurations from GYP
-to GN throughout Q2, targeting having everything done by the end of Q2.
+We're currently shooting for having Android, ChromeOS, and Windows
+converted over by the end of 2015, with Mac and iOS following in Q1
+of 2016.
 
 ## What does "done" mean?
 
@@ -85,21 +75,20 @@ so we would at least look at patches adding the functionality.
 Check to see if your targets build under GN yet. If they don't,
 volunteer to help convert them!
 
-_17 Nov 2014. We are updating the stuff we use to track progress. Watch
-this space and chromium-dev@ for more info!_.
+Or, look at [the list of open bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label:Proj-GN-Migration%20-type:Project&sort=pri&colspec=ID%20Pri%20Summary%20Type%20OS%20Owner%20Status%20Modified%20Blocking) related to the migration and see if there's anything that catches your fancy.
 
 ## I want more info on GN!
 
 Read these links:
 
-  * [Quick start](docs/quick_start.md)
-  * [FAQ](docs/faq.md)
-  * [GYP conversion cookbook](docs/cookbook.md)
-  * [Language and operation details](docs/language.md)
-  * [Reference](docs/reference.md) The built-in `gn help` documentation.
-  * [Style guide](docs/style_guide.md)
-  * [Cross compiling and toolchains](docs/cross_compiles.md)
-  * [Hacking on GN itself](docs/hacking.md)
-  * [GNStandalone](docs/standalone.md) Standalone GN projects
-  * [UpdateGNBinaries](docs/update_binaries.md) Pushing new binaries
-  * [Check](docs/check.md) `gn check` command reference
+  * [Quick start](/chromium/src/+/master/tools/gn/docs/quick_start.md)
+  * [FAQ](/chromium/src/+/master/tools/gn/docs/faq.md)
+  * [GYP conversion cookbook](/chromium/src/+/master/tools/gn/docs/cookbook.md)
+  * [Language and operation details](/chromium/src/+/master/tools/gn/docs/language.md)
+  * [Reference](/chromium/src/+/master/tools/gn/docs/reference.md) The built-in `gn help` documentation.
+  * [Style guide](/chromium/src/+/master/tools/gn/docs/style_guide.md)
+  * [Cross compiling and toolchains](/chromium/src/+/master/tools/gn/docs/cross_compiles.md)
+  * [Hacking on GN itself](/chromium/src/+/master/tools/gn/docs/hacking.md)
+  * [GNStandalone](/chromium/src/+/master/tools/gn/docs/standalone.md) Standalone GN projects
+  * [UpdateGNBinaries](/chromium/src/+/master/tools/gn/docs/update_binaries.md) Pushing new binaries
+  * [Check](/chromium/src/+/master/tools/gn/docs/check.md) `gn check` command reference
