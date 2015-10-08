@@ -152,7 +152,12 @@ class CONTENT_EXPORT AudioInputSyncWriter
   // since audio processing such as echo cancelling requires that to perform
   // properly.
   ScopedVector<media::AudioBus> overflow_buses_;
-  std::deque<media::AudioInputBufferParameters> overflow_params_;
+  struct OverflowParams {
+    double volume;
+    uint32_t hardware_delay_bytes;
+    bool key_pressed;
+  };
+  std::deque<OverflowParams> overflow_params_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputSyncWriter);
 };

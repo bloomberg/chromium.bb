@@ -244,8 +244,7 @@ bool AudioInputSyncWriter::PushDataToFifo(
   }
 
   // Push parameters to fifo.
-  AudioInputBufferParameters params =
-      { volume, 0, hardware_delay_bytes, 0, key_pressed };
+  OverflowParams params = { volume, hardware_delay_bytes, key_pressed };
   overflow_params_.push_back(params);
 
   // Push audio data to fifo.
