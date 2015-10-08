@@ -424,7 +424,9 @@ class DownloadExtensionTest : public ExtensionApiTest {
           1, 1,              // received_bytes, total_bytes
           history_info[i].state,  // state
           content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-          content::DOWNLOAD_INTERRUPT_REASON_NONE,
+          (history_info[i].state != content::DownloadItem::CANCELLED ?
+              content::DOWNLOAD_INTERRUPT_REASON_NONE :
+              content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED),
           false);                 // opened
       items->push_back(item);
     }
