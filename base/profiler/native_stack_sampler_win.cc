@@ -77,6 +77,7 @@ const TEB* GetThreadEnvironmentBlock(HANDLE thread_handle) {
   return basic_info.Teb;
 }
 
+#if defined(_WIN64)
 // If the value at |pointer| points to the original stack, rewrite it to point
 // to the corresponding location in the copied stack.
 void RewritePointerIfInOriginalStack(uintptr_t top, uintptr_t bottom,
@@ -87,6 +88,7 @@ void RewritePointerIfInOriginalStack(uintptr_t top, uintptr_t bottom,
         static_cast<unsigned char*>(stack_copy) + (value - bottom));
   }
 }
+#endif
 
 // Rewrites possible pointers to locations within the stack to point to the
 // corresponding locations in the copy, and rewrites the non-volatile registers
