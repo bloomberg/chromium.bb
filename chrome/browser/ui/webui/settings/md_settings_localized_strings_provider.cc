@@ -192,6 +192,23 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_CLEAR_DATA_EVERYTHING);
 }
 
+#if !defined(OS_CHROMEOS)
+void AddDefaultBrowserStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString(
+      "defaultBrowser", IDS_SETTINGS_DEFAULT_BROWSER);
+  html_source->AddLocalizedString(
+      "defaultBroswerDefault", IDS_SETTINGS_DEFAULT_BROWSER_DEFAULT);
+  html_source->AddLocalizedString(
+      "defaultBroswerNotDefault", IDS_SETTINGS_DEFAULT_BROWSER_NOT_DEFAULT);
+  html_source->AddLocalizedString(
+      "defaultBroswerMakeDefault", IDS_SETTINGS_DEFAULT_BROWSER_MAKE_DEFAULT);
+  html_source->AddLocalizedString(
+      "defaultBroswerUnknown", IDS_SETTINGS_DEFAULT_BROWSER_UNKNOWN);
+  html_source->AddLocalizedString(
+      "defaultBroswerSecondary", IDS_SETTINGS_DEFAULT_BROWSER_SECONDARY);
+}
+#endif
+
 void AddDownloadsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "downloadsPageTitle", IDS_SETTINGS_DOWNLOADS);
@@ -549,6 +566,9 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddAppearanceStrings(html_source);
   AddCertificateManagerStrings(html_source);
   AddClearBrowsingDataStrings(html_source);
+#if !defined(OS_CHROMEOS)
+  AddDefaultBrowserStrings(html_source);
+#endif
   AddDateTimeStrings(html_source);
   AddDownloadsStrings(html_source);
 #if defined(OS_CHROMEOS)
