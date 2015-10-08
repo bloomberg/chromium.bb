@@ -5,12 +5,6 @@
  */
 
 /**
- * We need a STUN server for some API calls.
- * @private
- */
-var STUN_SERVER = 'stun.l.google.com:19302';
-
-/**
  * The one and only peer connection in this page.
  * @private
  */
@@ -40,7 +34,7 @@ function preparePeerConnection() {
   if (gPeerConnection != null)
     throw failTest('creating peer connection, but we already have one.');
 
-  gPeerConnection = createPeerConnection_(STUN_SERVER);
+  gPeerConnection = createPeerConnection_();
   returnToTest('ok-peerconnection-created');
 }
 
@@ -234,10 +228,9 @@ function hasSeenCryptoInSdp() {
 // Internals.
 
 /** @private */
-function createPeerConnection_(stun_server) {
-  servers = {iceServers: [{url: 'stun:' + stun_server}]};
+function createPeerConnection_() {
   try {
-    peerConnection = new RTCPeerConnection(servers, {});
+    peerConnection = new RTCPeerConnection(null, {});
   } catch (exception) {
     throw failTest('Failed to create peer connection: ' + exception);
   }
