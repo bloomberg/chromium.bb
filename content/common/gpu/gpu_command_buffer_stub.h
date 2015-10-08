@@ -35,6 +35,7 @@
 namespace gpu {
 struct Mailbox;
 class SyncPointClient;
+class SyncPointManager;
 class ValueStateMap;
 namespace gles2 {
 class MailboxManager;
@@ -70,6 +71,7 @@ class GpuCommandBufferStub
 
   GpuCommandBufferStub(
       GpuChannel* channel,
+      gpu::SyncPointManager* sync_point_manager,
       base::SingleThreadTaskRunner* task_runner,
       GpuCommandBufferStub* share_group,
       const gfx::GLSurfaceHandle& handle,
@@ -249,6 +251,9 @@ class GpuCommandBufferStub
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they
   // are destroyed. So a raw pointer is safe.
   GpuChannel* channel_;
+
+  // Outlives the stub.
+  gpu::SyncPointManager* sync_point_manager_;
 
   // Task runner for main thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

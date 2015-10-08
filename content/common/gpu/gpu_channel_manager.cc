@@ -163,11 +163,11 @@ scoped_ptr<GpuChannel> GpuChannelManager::CreateGpuChannel(
     bool preempts,
     bool allow_future_sync_points,
     bool allow_real_time_streams) {
-  return make_scoped_ptr(
-      new GpuChannel(this, watchdog_, share_group(), mailbox_manager(),
-                     preempts ? preemption_flag() : nullptr, task_runner_.get(),
-                     io_task_runner_.get(), client_id, client_tracing_id,
-                     allow_future_sync_points, allow_real_time_streams));
+  return make_scoped_ptr(new GpuChannel(
+      this, sync_point_manager(), watchdog_, share_group(), mailbox_manager(),
+      preempts ? preemption_flag() : nullptr, task_runner_.get(),
+      io_task_runner_.get(), client_id, client_tracing_id,
+      allow_future_sync_points, allow_real_time_streams));
 }
 
 void GpuChannelManager::OnEstablishChannel(

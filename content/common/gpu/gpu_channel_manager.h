@@ -95,10 +95,6 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
 
   GpuChannel* LookupChannel(int32 client_id) const;
 
-  gpu::SyncPointManager* sync_point_manager() {
-    return sync_point_manager_;
-  }
-
   gfx::GLSurface* GetDefaultOffscreenSurface();
 
   GpuMemoryBufferFactory* gpu_memory_buffer_factory() {
@@ -123,6 +119,10 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
                                                   bool preempts,
                                                   bool allow_future_sync_points,
                                                   bool allow_real_time_streams);
+
+  gpu::SyncPointManager* sync_point_manager() const {
+    return sync_point_manager_;
+  }
 
   gfx::GLShareGroup* share_group() const { return share_group_.get(); }
   gpu::gles2::MailboxManager* mailbox_manager() const {
