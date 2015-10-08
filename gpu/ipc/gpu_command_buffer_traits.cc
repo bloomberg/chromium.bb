@@ -5,6 +5,7 @@
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 
 // Generate param traits write methods.
@@ -53,6 +54,29 @@ bool ParamTraits<gpu::CommandBuffer::State> ::Read(const Message* m,
 void ParamTraits<gpu::CommandBuffer::State> ::Log(const param_type& p,
                                                   std::string* l) {
   l->append("<CommandBuffer::State>");
+}
+
+void ParamTraits<gpu::SyncToken>::Write(Message* m, const param_type& p) {
+  m->WriteBytes(p.data, sizeof(p.data));
+}
+
+bool ParamTraits<gpu::SyncToken> ::Read(const Message* m,
+                                      base::PickleIterator* iter,
+                                      param_type* p) {
+  const char* bytes = NULL;
+  if (!iter->ReadBytes(&bytes, sizeof(p->data)))
+    return false;
+  DCHECK(bytes);
+  memcpy(p->data, bytes, sizeof(p->data));
+  return true;
+}
+
+void ParamTraits<gpu::SyncToken>::Log(const param_type& p, std::string* l) {
+  *l += base::StringPrintf(
+      "[%d:%llX] %llu",
+      static_cast<int>(p.GetNamespaceId()),
+      static_cast<unsigned long long>(p.GetCommandBufferId()),
+      static_cast<unsigned long long>(p.GetReleaseCount()));
 }
 
 void ParamTraits<gpu::Mailbox>::Write(Message* m, const param_type& p) {

@@ -29,6 +29,8 @@
     'command_buffer/common/mailbox.h',
     'command_buffer/common/mailbox_holder.cc',
     'command_buffer/common/mailbox_holder.h',
+    'command_buffer/common/sync_token.cc',
+    'command_buffer/common/sync_token.h',
     'command_buffer/common/thread_local.h',
     'command_buffer/common/time.h',
     'command_buffer/common/value_state.cc',
