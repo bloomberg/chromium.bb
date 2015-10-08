@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/bookmark_change_processor.h"
+#include "components/sync_bookmarks/bookmark_change_processor.h"
 
 #include <map>
 #include <stack>

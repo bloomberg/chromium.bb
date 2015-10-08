@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_BOOKMARK_CHANGE_PROCESSOR_H_
-#define CHROME_BROWSER_SYNC_GLUE_BOOKMARK_CHANGE_PROCESSOR_H_
+#ifndef COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_CHANGE_PROCESSOR_H_
+#define COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_CHANGE_PROCESSOR_H_
 
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/sync_bookmarks/bookmark_model_associator.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/data_type_error_handler.h"
 
@@ -254,4 +254,4 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_BOOKMARK_CHANGE_PROCESSOR_H_
+#endif  // COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_CHANGE_PROCESSOR_H_

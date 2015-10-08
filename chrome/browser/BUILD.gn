@@ -155,6 +155,7 @@ source_set("browser") {
     "//components/startup_metric_utils",
     "//components/strings",
     "//components/suggestions",
+    "//components/sync_bookmarks",
     "//components/sync_driver",
     "//components/tracing:startup_tracing",
     "//components/translate/core/browser",

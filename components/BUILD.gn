@@ -30,6 +30,7 @@ group("all_components") {
     "//components/google/core/browser",
     "//components/search",
     "//components/search_engines",
+    "//components/sync_bookmarks",
     "//components/undo",
     "//components/strings",
     "//components/leveldb_proto",

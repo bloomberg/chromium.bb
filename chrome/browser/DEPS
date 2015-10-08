@@ -93,6 +93,7 @@ include_rules = [
   "+components/startup_metric_utils",
   "+components/storage_monitor",
   "+components/suggestions",
+  "+components/sync_bookmarks",
   "+components/sync_driver",
   "+components/syncable_prefs",
   "+components/tracing",

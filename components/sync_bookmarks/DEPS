@@ -1,0 +1,9 @@
+include_rules = [
+  "+components/bookmarks/browser",
+  "+components/favicon/core",
+  "+components/history/core/browser",
+  "+components/sync_driver",
+  "+components/undo",
+  "+sync",
+  "+ui/gfx",
+]

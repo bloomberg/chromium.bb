@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
+#include "components/sync_bookmarks/bookmark_data_type_controller.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

@@ -77,6 +77,7 @@
     'ssl_errors.gypi',
     'startup_metric_utils.gypi',
     'suggestions.gypi',
+    'sync_bookmarks.gypi',
     'sync_driver.gypi',
     'syncable_prefs.gypi',
     'toolbar.gypi',

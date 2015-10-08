@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/bookmark_model_associator.h"
+#include "components/sync_bookmarks/bookmark_model_associator.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -17,9 +17,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_driver/sync_client.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "components/undo/bookmark_undo_utils.h"
