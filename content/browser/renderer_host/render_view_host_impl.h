@@ -101,8 +101,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Convenience function, just like RenderViewHost::FromID.
   static RenderViewHostImpl* FromID(int render_process_id, int render_view_id);
 
-  // |routing_id| could be a valid route id, or it could be MSG_ROUTING_NONE, in
-  // which case RenderWidgetHost will create a new one.  |swapped_out| indicates
+  // |routing_id| must be a valid route id.  |swapped_out| indicates
   // whether the view should initially be swapped out (e.g., for an opener
   // frame being rendered by another process). |hidden| indicates whether the
   // view is initially hidden or visible.

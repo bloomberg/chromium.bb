@@ -87,8 +87,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public TouchEmulatorClient,
       public IPC::Listener {
  public:
-  // routing_id can be MSG_ROUTING_NONE, in which case the next available
-  // routing id is taken from the RenderProcessHost.
+  // |routing_id| must not be MSG_ROUTING_NONE.
   // If this object outlives |delegate|, DetachDelegate() must be called when
   // |delegate| goes away.
   RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
