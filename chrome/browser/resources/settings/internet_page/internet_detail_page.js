@@ -331,34 +331,34 @@ Polymer({
   },
 
   /**
-   * Callback when the Connect button is clicked.
+   * Callback when the Connect button is tapped.
    * @private
    */
-  onConnectClicked_: function() {
+  onConnectTap_: function() {
     chrome.networkingPrivate.startConnect(this.guid);
   },
 
   /**
-   * Callback when the Disconnect button is clicked.
+   * Callback when the Disconnect button is tapped.
    * @private
    */
-  onDisconnectClicked_: function() {
+  onDisconnectTap_: function() {
     chrome.networkingPrivate.startDisconnect(this.guid);
   },
 
   /**
-   * Callback when the Activate button is clicked.
+   * Callback when the Activate button is tapped.
    * @private
    */
-  onActivateClicked_: function() {
+  onActivateTap_: function() {
     chrome.networkingPrivate.startActivate(this.guid);
   },
 
   /**
-   * Callback when the View Account button is clicked.
+   * Callback when the View Account button is tapped.
    * @private
    */
-  onViewAccountClicked_: function() {
+  onViewAccountTap_: function() {
     // startActivate() will show the account page for activated networks.
     chrome.networkingPrivate.startActivate(this.guid);
   },

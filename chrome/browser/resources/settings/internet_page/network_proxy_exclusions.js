@@ -29,7 +29,7 @@ Polymer({
    * @param {!{model: !{index: number}}} event
    * @private
    */
-  removeItem_: function(event) {
+  onRemoveTap_: function(event) {
     var index = event.model.index;
     this.splice('exclusions', index, 1);
     this.fire('proxy-change');

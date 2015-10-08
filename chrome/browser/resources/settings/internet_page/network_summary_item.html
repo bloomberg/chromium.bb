@@ -11,7 +11,7 @@
   <template>
     <div class="layout vertical" hidden$="[[isHidden]]">
       <div id="details" class="layout horizontal center"
-          on-click="onDetailsClicked_">
+          on-tap="onDetailsTap_">
         <cr-network-list-item id="detailsItem"
             network-state="[[networkState]]">
         </cr-network-list-item>
@@ -26,7 +26,7 @@
           <paper-toggle-button id="deviceEnabledButton"
               checked="[[deviceIsEnabled_(deviceState)]]"
               class$="[[getDeviceEnabledButtonClass_(deviceState)]]"
-              on-tap="onDeviceEnabledToggled_">
+              on-tap="onDeviceEnabledTap_">
           </paper-toggle-button>
         </div>
       </div>
@@ -40,7 +40,7 @@
         <div class="layout horizontal">
           <paper-button
               hidden$="[[!showKnownNetworks_(networkState, expanded)]]"
-              on-tap="onKnownNetworksClicked_">
+              on-tap="onKnownNetworksTap_">
             Known networks
           </paper-button>
         </div>

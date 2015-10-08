@@ -25,7 +25,7 @@
           <!-- SIM locked -->
           <iron-icon icon="lock"></iron-icon>
           <span>SIM card is locked.</span>
-          <paper-button on-tap="unlockPin_">Unlock</paper-button>
+          <paper-button on-tap="onUnlockPinTap_">Unlock</paper-button>
         </div>
         <div class="layout vertical"
             hidden$="[[isSimLocked_(networkProperties)]]">
@@ -38,7 +38,7 @@
           <div class="layout horizontal center"
                hidden$="[[!networkProperties.Cellular.SIMLockStatus.LockEnabled]]">
             <!-- SIM lock enabled -->
-            <paper-button on-tap="onChangePin_">Change PIN</paper-button>
+            <paper-button on-tap="onChangePinTap_">Change PIN</paper-button>
           </div>
         </div>
       </div>

@@ -220,7 +220,7 @@ Polymer({
    * @param {Event} event The add proxy exclusion event.
    * @private
    */
-  onAddProxyExclusion_: function(event) {
+  onAddProxyExclusionTap_: function(event) {
     var value = this.$.proxyExclusion.value;
     if (!value)
       return;

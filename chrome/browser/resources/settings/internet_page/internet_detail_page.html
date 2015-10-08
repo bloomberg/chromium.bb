@@ -77,20 +77,20 @@
           </paper-button>
           <span class="flex"></span>
           <paper-button hidden$="[[!showViewAccount_(networkProperties)]]"
-              on-tap="onViewAccountClicked_">
+              on-tap="onViewAccountTap_">
             View Account
           </paper-button>
           <paper-button hidden$="[[!showActivate_(networkProperties)]]"
-              on-tap="onActivateClicked_">
+              on-tap="onActivateTap_">
             Activate
           </paper-button>
           <paper-button hidden$="[[!showConnect_(networkProperties)]]"
               disabled="[[!enableConnect_(networkProperties)]]"
-              on-tap="onConnectClicked_">
+              on-tap="onConnectTap_">
             Connect
           </paper-button>
           <paper-button hidden$="[[!showDisconnect_(networkProperties)]]"
-              on-tap="onDisconnectClicked_">
+              on-tap="onDisconnectTap_">
             Disconnect
           </paper-button>
         </div>

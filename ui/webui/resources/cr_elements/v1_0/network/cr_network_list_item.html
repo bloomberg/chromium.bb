@@ -30,11 +30,11 @@
         </paper-icon-button>
         <paper-icon-button icon="[[preferredIcon_(networkState)]]"
             disabled$="[[isPolicyManaged_(networkState)]]"
-            on-click="fireTogglePreferred_">
+            on-tap="fireTogglePreferred_">
         </paper-icon-button>
         <paper-icon-button icon="clear"
             disabled$="[[isPolicyManaged_(networkState)]]"
-            on-click="fireRemove_">
+            on-tap="fireRemove_">
         </paper-icon-button>
       </div>
     </div>

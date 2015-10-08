@@ -8,7 +8,7 @@
       <template is="dom-repeat" items="[[exclusions]]">
         <div class="layout horizontal">
           <span class="flex">[[item]]</span>
-          <iron-icon icon="clear" on-click="removeItem_"></iron-icon>
+          <iron-icon icon="clear" on-tap="onRemoveTap_"></iron-icon>
         </div>
       </template>
     </div>

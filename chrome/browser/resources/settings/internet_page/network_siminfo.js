@@ -150,7 +150,7 @@ Polymer({
    * @param {Event} event
    * @private
    */
-  onChangePin_: function(event) {
+  onChangePinTap_: function(event) {
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
     this.error = ErrorType.NONE;
@@ -203,7 +203,7 @@ Polymer({
    * @param {Event} event
    * @private
    */
-  unlockPin_: function(event) {
+  onUnlockPinTap_: function(event) {
     this.error = ErrorType.NONE;
     this.$.unlockPinDialog.open();
   },

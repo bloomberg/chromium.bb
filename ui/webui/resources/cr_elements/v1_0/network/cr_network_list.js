@@ -64,12 +64,12 @@ Polymer({
   },
 
   /**
-   * Event triggered when a list item is selected.
+   * Event triggered when a list item is tapped.
    * @param {!{model: {item: !CrOnc.NetworkStateProperties}}} event
    * @private
    */
-  onSelected_: function(event) {
+  onTap_: function(event) {
     this.fire('selected', event.model.item);
-  }
+  },
 });
 })();

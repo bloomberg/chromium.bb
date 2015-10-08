@@ -206,15 +206,15 @@ Polymer({
    */
   onOtherApnChange_: function(event) {
     this.set('otherApn.' + event.detail.field, event.detail.value);
-    // Don't send a change event for 'Other' until the 'Save' button is clicked.
+    // Don't send a change event for 'Other' until the 'Save' button is tapped.
   },
 
   /**
-   * Event triggered when the Other APN 'Save' button is clicked.
+   * Event triggered when the Other APN 'Save' button is tapped.
    * @param {Event} event
    * @private
    */
-  onSaveOther_: function(event) {
+  onSaveOtherTap_: function(event) {
     this.sendApnChange_(this.selectedApn);
   },
 
