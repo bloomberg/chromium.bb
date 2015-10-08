@@ -2179,6 +2179,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
                      'importSomething ' + 'A ' * 50, 'foo.java',
                      presubmit.OutputApi.PresubmitPromptWarning)
 
+  def testCannedCheckJSLongLines(self):
+    check = lambda x, y, _: presubmit_canned_checks.CheckLongLines(x, y, 10)
+    self.ContentTest(check, 'GEN(\'#include "c/b/ui/webui/fixture.h"\');',
+                     'foo.js', "// GEN('something');", 'foo.js',
+                     presubmit.OutputApi.PresubmitPromptWarning)
+
   def testCannedCheckObjCExceptionLongLines(self):
     check = lambda x, y, _: presubmit_canned_checks.CheckLongLines(x, y, 80)
     self.ContentTest(check, '#import ' + 'A ' * 150, 'foo.mm',

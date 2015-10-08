@@ -342,15 +342,18 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
   CPP_EXCEPTIONS = ('#define', '#endif', '#if', '#include', '#pragma')
   JAVA_FILE_EXTS = ('java',)
   JAVA_EXCEPTIONS = ('import ', 'package ')
+  JS_FILE_EXTS = ('js',)
+  JS_EXCEPTIONS = ("GEN('#include",)
   OBJC_FILE_EXTS = ('h', 'm', 'mm')
   OBJC_EXCEPTIONS = ('#define', '#endif', '#if', '#import', '#include',
                      '#pragma')
-  PY_FILE_EXTS = ('py')
+  PY_FILE_EXTS = ('py',)
   PY_EXCEPTIONS = ('import', 'from')
 
   LANGUAGE_EXCEPTIONS = [
     (CPP_FILE_EXTS, CPP_EXCEPTIONS),
     (JAVA_FILE_EXTS, JAVA_EXCEPTIONS),
+    (JS_FILE_EXTS, JS_EXCEPTIONS),
     (OBJC_FILE_EXTS, OBJC_EXCEPTIONS),
     (PY_FILE_EXTS, PY_EXCEPTIONS),
   ]
