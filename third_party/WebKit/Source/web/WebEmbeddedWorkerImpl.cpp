@@ -140,8 +140,15 @@ void WebEmbeddedWorkerImpl::terminateWorkerContext()
         m_workerContextClient->workerContextFailedToStart();
         return;
     }
-    if (m_workerThread)
-        m_workerThread->terminate();
+    if (!m_workerThread) {
+        // The worker thread has not been created yet if the worker is asked to
+        // terminate during waiting for debugger.
+        ASSERT(m_workerStartData.waitForDebuggerMode == WebEmbeddedWorkerStartData::WaitForDebugger);
+        // This deletes 'this'.
+        m_workerContextClient->workerContextFailedToStart();
+        return;
+    }
+    m_workerThread->terminate();
     m_workerInspectorProxy->workerThreadTerminated();
 }
 

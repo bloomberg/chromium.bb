@@ -75,6 +75,18 @@ TEST_F(WebEmbeddedWorkerImplFailureTest, TerminateSoonAfterStart)
     ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
 }
 
+TEST_F(WebEmbeddedWorkerImplFailureTest, TerminateWhileWaitingForDebugger)
+{
+    EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
+    m_startData.waitForDebuggerMode = WebEmbeddedWorkerStartData::WaitForDebugger;
+    m_worker->startWorkerContext(m_startData);
+    ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+
+    EXPECT_CALL(*m_mockClient, workerContextFailedToStart()).Times(1);
+    m_worker->terminateWorkerContext();
+    ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+}
+
 TEST_F(WebEmbeddedWorkerImplFailureTest, TerminateWhileLoadingScript)
 {
     EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
