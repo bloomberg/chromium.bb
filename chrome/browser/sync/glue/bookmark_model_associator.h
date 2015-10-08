@@ -15,11 +15,11 @@
 #include "base/compiler_specific.h"
 #include "base/hash.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "components/sync_driver/data_type_error_handler.h"
 #include "components/sync_driver/model_associator.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
-class Profile;
 class GURL;
 
 namespace bookmarks {
@@ -32,6 +32,10 @@ class BaseNode;
 class BaseTransaction;
 struct UserShare;
 class WriteTransaction;
+}
+
+namespace sync_driver {
+class SyncClient;
 }
 
 namespace browser_sync {
@@ -50,7 +54,7 @@ class BookmarkModelAssociator
   // Should be set to true only by mobile clients.
   BookmarkModelAssociator(
       bookmarks::BookmarkModel* bookmark_model,
-      Profile* profile_,
+      sync_driver::SyncClient* sync_client,
       syncer::UserShare* user_share,
       sync_driver::DataTypeErrorHandler* unrecoverable_error_handler,
       bool expect_mobile_bookmarks_folder);
@@ -298,8 +302,9 @@ class BookmarkModelAssociator
   // the native model has a newer transaction verison.
   syncer::SyncError CheckModelSyncState(Context* context) const;
 
+  base::ThreadChecker thread_checker_;
   bookmarks::BookmarkModel* bookmark_model_;
-  Profile* profile_;
+  sync_driver::SyncClient* sync_client_;
   syncer::UserShare* user_share_;
   sync_driver::DataTypeErrorHandler* unrecoverable_error_handler_;
   const bool expect_mobile_bookmarks_folder_;

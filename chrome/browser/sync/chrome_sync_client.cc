@@ -7,6 +7,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
+#include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
@@ -100,6 +102,12 @@ bookmarks::BookmarkModel* ChromeSyncClient::GetBookmarkModel() {
   return BookmarkModelFactory::GetForProfile(profile_);
 }
 
+favicon::FaviconService* ChromeSyncClient::GetFaviconService() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return FaviconServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+}
+
 history::HistoryService* ChromeSyncClient::GetHistoryService() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return HistoryServiceFactory::GetForProfile(
@@ -123,6 +131,10 @@ ChromeSyncClient::GetWebDataService() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return WebDataServiceFactory::GetAutofillWebDataForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
+}
+
+BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoServiceIfExists() {
+  return BookmarkUndoServiceFactory::GetForProfileIfExists(profile_);
 }
 
 base::WeakPtr<syncer::SyncableService>

@@ -34,6 +34,10 @@ bookmarks::BookmarkModel* FakeSyncClient::GetBookmarkModel() {
   return nullptr;
 }
 
+favicon::FaviconService* FakeSyncClient::GetFaviconService() {
+  return nullptr;
+}
+
 history::HistoryService* FakeSyncClient::GetHistoryService() {
   return nullptr;
 }
@@ -50,6 +54,10 @@ autofill::PersonalDataManager* FakeSyncClient::GetPersonalDataManager() {
 scoped_refptr<autofill::AutofillWebDataService>
 FakeSyncClient::GetWebDataService() {
   return scoped_refptr<autofill::AutofillWebDataService>();
+}
+
+BookmarkUndoService* FakeSyncClient::GetBookmarkUndoServiceIfExists() {
+  return nullptr;
 }
 
 base::WeakPtr<syncer::SyncableService>

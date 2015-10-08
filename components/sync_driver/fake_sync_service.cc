@@ -34,6 +34,10 @@ syncer::ModelTypeSet FakeSyncService::GetActiveDataTypes() const {
   return syncer::ModelTypeSet();
 }
 
+SyncClient* FakeSyncService::GetSyncClient() const {
+  return nullptr;
+}
+
 void FakeSyncService::AddObserver(SyncServiceObserver* observer) {
 }
 

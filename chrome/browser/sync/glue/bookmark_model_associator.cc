@@ -18,12 +18,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
-#include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/sync_driver/sync_client.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "components/undo/bookmark_undo_utils.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/delete_journal.h"
@@ -39,7 +38,6 @@
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
-using content::BrowserThread;
 
 namespace browser_sync {
 
@@ -353,29 +351,28 @@ void BookmarkModelAssociator::Context::MarkForVersionUpdate(
 
 BookmarkModelAssociator::BookmarkModelAssociator(
     BookmarkModel* bookmark_model,
-    Profile* profile,
+    sync_driver::SyncClient* sync_client,
     syncer::UserShare* user_share,
     sync_driver::DataTypeErrorHandler* unrecoverable_error_handler,
     bool expect_mobile_bookmarks_folder)
     : bookmark_model_(bookmark_model),
-      profile_(profile),
+      sync_client_(sync_client),
       user_share_(user_share),
       unrecoverable_error_handler_(unrecoverable_error_handler),
       expect_mobile_bookmarks_folder_(expect_mobile_bookmarks_folder),
       optimistic_association_enabled_(IsOptimisticAssociationEnabled()),
       weak_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(bookmark_model_);
   DCHECK(user_share_);
   DCHECK(unrecoverable_error_handler_);
 }
 
 BookmarkModelAssociator::~BookmarkModelAssociator() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void BookmarkModelAssociator::UpdatePermanentNodeVisibility() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(bookmark_model_->loaded());
 
   BookmarkNode::Type bookmark_node_types[] = {
@@ -427,7 +424,7 @@ bool BookmarkModelAssociator::InitSyncNodeFromChromeId(
 
 void BookmarkModelAssociator::AddAssociation(const BookmarkNode* node,
                                              int64 sync_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   int64 node_id = node->id();
   DCHECK_NE(sync_id, syncer::kInvalidId);
   DCHECK(id_map_.find(node_id) == id_map_.end());
@@ -454,7 +451,7 @@ void BookmarkModelAssociator::Associate(const BookmarkNode* node,
 }
 
 void BookmarkModelAssociator::Disassociate(int64 sync_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   SyncIdToBookmarkNodeMap::iterator iter = id_map_inverse_.find(sync_id);
   if (iter == id_map_inverse_.end())
     return;
@@ -519,7 +516,7 @@ syncer::SyncError BookmarkModelAssociator::AssociateModels(
   // Since any changes to the bookmark model made here are not user initiated,
   // these change should not be undoable and so suspend the undo tracking.
   ScopedSuspendBookmarkUndo suspend_undo(
-      BookmarkUndoServiceFactory::GetForProfileIfExists(profile_));
+      sync_client_->GetBookmarkUndoServiceIfExists());
 
   Context context(local_merge_result, syncer_merge_result);
 
@@ -756,7 +753,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
       // nothing has changed.
       // TODO(sync): Only modify the bookmark model if necessary.
       BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
-          sync_child_node, bookmark_model_, child_node, profile_);
+          sync_child_node, bookmark_model_, child_node, sync_client_);
       bookmark_model_->Move(child_node, parent_node, index);
       context->IncrementLocalItemsModified();
     } else {
@@ -951,7 +948,7 @@ const BookmarkNode* BookmarkModelAssociator::CreateBookmarkNode(
   base::string16 bookmark_title = base::UTF8ToUTF16(sync_title);
   const BookmarkNode* child_node = BookmarkChangeProcessor::CreateBookmarkNode(
       bookmark_title, url, sync_child_node, parent_node, bookmark_model_,
-      profile_, bookmark_index);
+      sync_client_, bookmark_index);
   if (!child_node) {
     *error = unrecoverable_error_handler_->CreateAndUploadError(
         FROM_HERE, "Failed to create bookmark node with title " + sync_title +

@@ -249,6 +249,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   void RequestStop(SyncStopDataFate data_fate) override;
   void RequestStart() override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
+  sync_driver::SyncClient* GetSyncClient() const override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override;
@@ -560,9 +561,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // It should be used to persist data to disk when the process might be
   // killed in the near future.
   void FlushDirectory() const;
-
-  // Returns the SyncClient associated with this profile.
-  sync_driver::SyncClient* GetSyncClient() const;
 
   // Needed to test whether the directory is deleted properly.
   base::FilePath GetDirectoryPathForTest() const;

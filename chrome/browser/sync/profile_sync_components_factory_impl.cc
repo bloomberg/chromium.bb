@@ -531,16 +531,11 @@ sync_driver::SyncApiComponentFactory::SyncComponents
 #else
   const bool kExpectMobileBookmarksFolder = false;
 #endif
-  BookmarkModelAssociator* model_associator =
-      new BookmarkModelAssociator(bookmark_model,
-                                  profile_,
-                                  user_share,
-                                  error_handler,
-                                  kExpectMobileBookmarksFolder);
-  BookmarkChangeProcessor* change_processor =
-      new BookmarkChangeProcessor(profile_,
-                                  model_associator,
-                                  error_handler);
+  BookmarkModelAssociator* model_associator = new BookmarkModelAssociator(
+      bookmark_model, sync_service->GetSyncClient(), user_share, error_handler,
+      kExpectMobileBookmarksFolder);
+  BookmarkChangeProcessor* change_processor = new BookmarkChangeProcessor(
+      sync_service->GetSyncClient(), model_associator, error_handler);
   return SyncComponents(model_associator, change_processor);
 }
 

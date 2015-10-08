@@ -25,6 +25,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -260,8 +262,10 @@ void SetFaviconImpl(Profile* profile,
       favicon_service->SetFavicons(
           node->url(), icon_url, favicon_base::FAVICON, image);
     } else {
+      ProfileSyncService* pss =
+          ProfileSyncServiceFactory::GetForProfile(profile);
       browser_sync::BookmarkChangeProcessor::ApplyBookmarkFavicon(
-          node, profile, icon_url, image.As1xPNGBytes());
+          node, pss->GetSyncClient(), icon_url, image.As1xPNGBytes());
     }
 
     // Wait for the favicon for |node| to be invalidated.

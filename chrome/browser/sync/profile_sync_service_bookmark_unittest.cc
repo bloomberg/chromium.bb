@@ -26,6 +26,8 @@
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/common/chrome_switches.h"
@@ -36,6 +38,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/sync_driver/data_type_error_handler.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
+#include "components/sync_driver/fake_sync_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_merge_result.h"
@@ -87,6 +90,28 @@ void MakeServerUpdate(syncer::WriteTransaction* trans, int64 id) {
   EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
   MakeServerUpdate(trans, &node);
 }
+
+class TestSyncClient : public sync_driver::FakeSyncClient {
+ public:
+  explicit TestSyncClient(Profile* profile) : profile_(profile) {}
+
+  bookmarks::BookmarkModel* GetBookmarkModel() override {
+    return BookmarkModelFactory::GetForProfile(profile_);
+  }
+
+  favicon::FaviconService* GetFaviconService() override {
+    return FaviconServiceFactory::GetForProfile(
+        profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  }
+
+  history::HistoryService* GetHistoryService() override {
+    return HistoryServiceFactory::GetForProfile(
+        profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  }
+
+ private:
+  Profile* profile_;
+};
 
 // FakeServerChange constructs a list of syncer::ChangeRecords while modifying
 // the sync model, and can pass the ChangeRecord list to a
@@ -350,7 +375,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   enum SaveOption { SAVE_TO_STORAGE, DONT_SAVE_TO_STORAGE };
 
   ProfileSyncServiceBookmarkTest()
-      : model_(NULL),
+      : sync_client_(&profile_),
+        model_(NULL),
         local_merge_result_(syncer::BOOKMARKS),
         syncer_merge_result_(syncer::BOOKMARKS) {}
 
@@ -522,10 +548,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
     // Set up model associator.
     model_associator_.reset(new BookmarkModelAssociator(
-        BookmarkModelFactory::GetForProfile(&profile_),
-        &profile_,
-        test_user_share_.user_share(),
-        &mock_error_handler_,
+        BookmarkModelFactory::GetForProfile(&profile_), &sync_client_,
+        test_user_share_.user_share(), &mock_error_handler_,
         kExpectMobileBookmarks));
 
     local_merge_result_ = syncer::SyncMergeResult(syncer::BOOKMARKS);
@@ -568,10 +592,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     ASSERT_TRUE(AssociateModels());
 
     // Set up change processor.
-    change_processor_.reset(
-        new BookmarkChangeProcessor(&profile_,
-                                    model_associator_.get(),
-                                    &mock_error_handler_));
+    change_processor_.reset(new BookmarkChangeProcessor(
+        &sync_client_, model_associator_.get(), &mock_error_handler_));
     change_processor_->Start(test_user_share_.user_share());
   }
 
@@ -781,6 +803,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
  protected:
   TestingProfile profile_;
+  TestSyncClient sync_client_;
   BookmarkModel* model_;
   syncer::TestUserShare test_user_share_;
   scoped_ptr<BookmarkChangeProcessor> change_processor_;
@@ -2569,7 +2592,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, UpdateThenAdd) {
   // Recreate the change processor then update that bookmark. Sync should
   // receive the update call and gracefully treat that as if it were an add.
   change_processor_.reset(new BookmarkChangeProcessor(
-      &profile_, model_associator_.get(), &mock_error_handler_));
+      &sync_client_, model_associator_.get(), &mock_error_handler_));
   change_processor_->Start(test_user_share_.user_share());
   model_->SetTitle(node, base::ASCIIToUTF16("title2"));
   ExpectModelMatch();

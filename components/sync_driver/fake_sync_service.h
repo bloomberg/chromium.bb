@@ -28,6 +28,7 @@ class FakeSyncService : public sync_driver::SyncService {
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
+  SyncClient* GetSyncClient() const override;
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;

@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
 
+class BookmarkUndoService;
 class PrefService;
 
 namespace autofill {
@@ -21,6 +22,10 @@ class PersonalDataManager;
 namespace bookmarks {
 class BookmarkModel;
 }  // namespace bookmarks
+
+namespace favicon {
+class FaviconService;
+}  // namespace favicon
 
 namespace history {
 class HistoryService;
@@ -63,11 +68,13 @@ class SyncClient {
 
   // DataType specific service getters.
   virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
+  virtual favicon::FaviconService* GetFaviconService() = 0;
   virtual history::HistoryService* GetHistoryService() = 0;
   virtual scoped_refptr<password_manager::PasswordStore> GetPasswordStore() = 0;
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
   virtual scoped_refptr<autofill::AutofillWebDataService>
   GetWebDataService() = 0;
+  virtual BookmarkUndoService* GetBookmarkUndoServiceIfExists() = 0;
 
   // Returns a weak pointer to the syncable service specified by |type|.
   // Weak pointer may be unset if service is already destroyed.

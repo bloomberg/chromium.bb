@@ -43,6 +43,7 @@ namespace sync_driver {
 class DataTypeController;
 class LocalDeviceInfoProvider;
 class OpenTabsUIDelegate;
+class SyncClient;
 
 class SyncService : public DataTypeEncryptionHandler {
  public:
@@ -108,6 +109,9 @@ class SyncService : public DataTypeEncryptionHandler {
   // will the the empty set. Once the configuration completes the set will
   // be updated.
   virtual syncer::ModelTypeSet GetActiveDataTypes() const = 0;
+
+  // Returns the SyncClient instance associated with this service.
+  virtual SyncClient* GetSyncClient() const = 0;
 
   // Adds/removes an observer. SyncService does not take ownership of the
   // observer.

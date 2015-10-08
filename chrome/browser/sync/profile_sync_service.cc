@@ -1847,6 +1847,10 @@ syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
   return Difference(preferred_types, failed_types);
 }
 
+sync_driver::SyncClient* ProfileSyncService::GetSyncClient() const {
+  return sync_client_.get();
+}
+
 syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   const syncer::ModelTypeSet preferred_types =
@@ -2658,10 +2662,6 @@ void ProfileSyncService::FlushDirectory() const {
   // If sync is not initialized yet, we fail silently.
   if (backend_initialized_)
     backend_->FlushDirectory();
-}
-
-sync_driver::SyncClient* ProfileSyncService::GetSyncClient() const {
-  return sync_client_.get();
 }
 
 base::FilePath ProfileSyncService::GetDirectoryPathForTest() const {

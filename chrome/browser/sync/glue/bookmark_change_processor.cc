@@ -13,19 +13,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/sync_driver/sync_client.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "components/undo/bookmark_undo_utils.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/write_node.h"
@@ -37,7 +32,6 @@
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
-using content::BrowserThread;
 using syncer::ChangeRecord;
 using syncer::ChangeRecordList;
 
@@ -46,16 +40,15 @@ namespace browser_sync {
 static const char kMobileBookmarksTag[] = "synced_bookmarks";
 
 BookmarkChangeProcessor::BookmarkChangeProcessor(
-    Profile* profile,
+    sync_driver::SyncClient* sync_client,
     BookmarkModelAssociator* model_associator,
     sync_driver::DataTypeErrorHandler* error_handler)
     : sync_driver::ChangeProcessor(error_handler),
       bookmark_model_(NULL),
-      profile_(profile),
+      sync_client_(sync_client),
       model_associator_(model_associator) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(model_associator);
-  DCHECK(profile);
+  DCHECK(sync_client);
   DCHECK(error_handler);
 }
 
@@ -65,9 +58,9 @@ BookmarkChangeProcessor::~BookmarkChangeProcessor() {
 }
 
 void BookmarkChangeProcessor::StartImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!bookmark_model_);
-  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
+  bookmark_model_ = sync_client_->GetBookmarkModel();
   DCHECK(bookmark_model_->loaded());
   bookmark_model_->AddObserver(this);
 }
@@ -554,7 +547,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
     int64 model_version,
     const syncer::ImmutableChangeRecordList& changes) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   // A note about ordering.  Sync backend is responsible for ordering the change
   // records in the following order:
   //
@@ -580,7 +573,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
 
   // Changes made to the bookmark model due to sync should not be undoable.
   ScopedSuspendBookmarkUndo suspend_undo(
-      BookmarkUndoServiceFactory::GetForProfileIfExists(profile_));
+      sync_client_->GetBookmarkUndoServiceIfExists());
 
   // Notify UI intensive observers of BookmarkModel that we are about to make
   // potentially significant changes to it, so the updates may be batched. For
@@ -698,7 +691,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     if (dst) {
       DCHECK(it->action == ChangeRecord::ACTION_UPDATE)
           << "ACTION_UPDATE should be seen if and only if the node is known.";
-      UpdateBookmarkWithSyncData(src, model, dst, profile_);
+      UpdateBookmarkWithSyncData(src, model, dst, sync_client_);
 
       // Move all modified entries to the right.  We'll fix it later.
       model->Move(dst, parent, parent->child_count());
@@ -706,10 +699,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       DCHECK(it->action == ChangeRecord::ACTION_ADD)
           << "ACTION_ADD should be seen if and only if the node is unknown.";
 
-      dst = CreateBookmarkNode(&src,
-                               parent,
-                               model,
-                               profile_,
+      dst = CreateBookmarkNode(&src, parent, model, sync_client_,
                                parent->child_count());
       if (!dst) {
         // We ignore bookmarks we can't add. Chances are this is caused by
@@ -766,7 +756,7 @@ void BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
     const syncer::BaseNode& sync_node,
     BookmarkModel* model,
     const BookmarkNode* node,
-    Profile* profile) {
+    sync_driver::SyncClient* sync_client) {
   DCHECK_EQ(sync_node.GetIsFolder(), node->is_folder());
   const sync_pb::BookmarkSpecifics& specifics =
       sync_node.GetBookmarkSpecifics();
@@ -778,7 +768,7 @@ void BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
         node,
         base::Time::FromInternalValue(specifics.creation_time_us()));
   }
-  SetBookmarkFavicon(&sync_node, node, model, profile);
+  SetBookmarkFavicon(&sync_node, node, model, sync_client);
   model->SetNodeMetaInfoMap(node, *GetBookmarkMetaInfo(&sync_node));
 }
 
@@ -802,11 +792,11 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const syncer::BaseNode* sync_node,
     const BookmarkNode* parent,
     BookmarkModel* model,
-    Profile* profile,
+    sync_driver::SyncClient* sync_client,
     int index) {
   return CreateBookmarkNode(base::UTF8ToUTF16(sync_node->GetTitle()),
                             GURL(sync_node->GetBookmarkSpecifics().url()),
-                            sync_node, parent, model, profile, index);
+                            sync_node, parent, model, sync_client, index);
 }
 
 // static
@@ -818,7 +808,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const syncer::BaseNode* sync_node,
     const BookmarkNode* parent,
     BookmarkModel* model,
-    Profile* profile,
+    sync_driver::SyncClient* sync_client,
     int index) {
   DCHECK(parent);
 
@@ -837,7 +827,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
         parent, index, title, url, create_time,
         GetBookmarkMetaInfo(sync_node).get());
     if (node)
-      SetBookmarkFavicon(sync_node, node, model, profile);
+      SetBookmarkFavicon(sync_node, node, model, sync_client);
   }
 
   return node;
@@ -849,7 +839,7 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
     const syncer::BaseNode* sync_node,
     const BookmarkNode* bookmark_node,
     BookmarkModel* bookmark_model,
-    Profile* profile) {
+    sync_driver::SyncClient* sync_client) {
   const sync_pb::BookmarkSpecifics& specifics =
       sync_node->GetBookmarkSpecifics();
   const std::string& icon_bytes_str = specifics.favicon();
@@ -867,7 +857,7 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
   if (icon_url.is_empty())
     icon_url = bookmark_node->url();
 
-  ApplyBookmarkFavicon(bookmark_node, profile, icon_url, icon_bytes);
+  ApplyBookmarkFavicon(bookmark_node, sync_client, icon_url, icon_bytes);
 
   return true;
 }
@@ -938,14 +928,11 @@ void BookmarkChangeProcessor::SetSyncNodeMetaInfo(
 // static
 void BookmarkChangeProcessor::ApplyBookmarkFavicon(
     const BookmarkNode* bookmark_node,
-    Profile* profile,
+    sync_driver::SyncClient* sync_client,
     const GURL& icon_url,
     const scoped_refptr<base::RefCountedMemory>& bitmap_data) {
-  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
-      profile, ServiceAccessType::EXPLICIT_ACCESS);
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history = sync_client->GetHistoryService();
+  favicon::FaviconService* favicon_service = sync_client->GetFaviconService();
 
   history->AddPageNoVisitForBookmark(bookmark_node->url(),
                                      bookmark_node->GetTitle());
