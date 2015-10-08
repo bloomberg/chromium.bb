@@ -2217,8 +2217,6 @@
     { "name": "domainkauf.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "emptypath.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "eromixx.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "ezequiel-garzon.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "ezequiel-garzon.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "fa-works.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "flagspot.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "getmango.com", "include_subdomains": true, "mode": "force-https" },
