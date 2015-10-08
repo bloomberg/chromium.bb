@@ -13,15 +13,15 @@
 
 .cast-mode-icon,
 .sink-icon {
-  -webkit-padding-end: 16px;
-  -webkit-padding-start: 20px;
+  -webkit-padding-end: 12px;
+  -webkit-padding-start: 16px;
   height: 16px;
   width: 16px;
 }
 
 #cast-mode-list {
-  padding-bottom: 8px;
-  padding-top: 8px;
+  padding-bottom: 12px;
+  padding-top: 4px;
 }
 
 #close-button::shadow #icon {
@@ -85,7 +85,7 @@ paper-item:hover {
 
 paper-menu {
   -webkit-user-select: none;
-  color: rgb(0, 0, 0);
+  color: rgba(0, 0, 0, 0.87);
   padding: 0;
 }
 
@@ -99,10 +99,10 @@ paper-menu {
 }
 
 #share-screen-text {
-  -webkit-padding-start: 20px;
+  -webkit-padding-start: 16px;
   color: rgb(150, 150, 150);
-  padding-bottom: 8px;
-  padding-top: 8px;
+  padding-bottom: 4px;
+  padding-top: 12px;
 }
 
 .sink-content {
