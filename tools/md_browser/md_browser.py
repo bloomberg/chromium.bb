@@ -49,27 +49,34 @@ class Server(SocketServer.TCPServer):
 
 class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   def do_GET(self):
-    full_path = os.path.abspath(os.path.join(self.server.top_level,
-                                             self.path[1:]))
+    path = self.path
+
+    # strip off the repo and branch info, if present, for compatibility
+    # with gitiles.
+    if path.startswith('/chromium/src/+/master'):
+      path = path[len('/chromium/src/+/master'):]
+
+    full_path = os.path.abspath(os.path.join(self.server.top_level, path[1:]))
+
     if not full_path.startswith(SRC_DIR):
       self._DoUnknown()
-    elif self.path == '/doc.css':
+    elif path == '/doc.css':
       self._WriteTemplate('doc.css')
     elif not os.path.exists(full_path):
       self._DoNotFound()
-    elif self.path.lower().endswith('.md'):
-      self._DoMD()
+    elif path.lower().endswith('.md'):
+      self._DoMD(path)
     else:
       self._DoUnknown()
 
-  def _DoMD(self):
+  def _DoMD(self, path):
     extensions = [
         'markdown.extensions.fenced_code',
         'markdown.extensions.tables',
         'markdown.extensions.toc',
     ]
 
-    contents = self._Read(self.path[1:])
+    contents = self._Read(path[1:])
     md_fragment = markdown.markdown(contents,
                                     extensions=extensions,
                                     output_format='html4').encode('utf-8')
