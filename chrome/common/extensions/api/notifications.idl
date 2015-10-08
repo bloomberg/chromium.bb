@@ -181,11 +181,12 @@ namespace notifications {
     // The user pressed a button in the notification.
     static void onButtonClicked(DOMString notificationId, long buttonIndex);
 
-    // The user changes the permission level.
+    // The user changes the permission level.  As of Chrome 47, only ChromeOS
+    // has UI that dispatches this event.
     static void onPermissionLevelChanged(PermissionLevel level);
 
-    // The user clicked on a link for the app's notification settings.
+    // The user clicked on a link for the app's notification settings.  As of
+    // Chrome 47, only ChromeOS has UI that dispatches this event.
     static void onShowSettings();
   };
-
 };
