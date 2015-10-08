@@ -1779,6 +1779,46 @@ void LayoutBox::setPaginationStrut(LayoutUnit strut)
     ensureRareData().m_paginationStrut = strut;
 }
 
+static bool isForcedBreakAllowed(const LayoutBox* child)
+{
+    // We currently only support forced breaks on in-flow block level elements, which is the minimum
+    // requirement according to the spec.
+    if (child->isInline() || child->isFloatingOrOutOfFlowPositioned())
+        return false;
+    const LayoutBlock* curr = child->containingBlock();
+    if (!curr || !curr->isLayoutBlockFlow())
+        return false;
+    const LayoutView* layoutView = child->view();
+    while (curr && curr != layoutView) {
+        if (curr->isLayoutFlowThread())
+            return true;
+        if (curr->isFloatingOrOutOfFlowPositioned())
+            return false;
+        curr = curr->containingBlock();
+    }
+    return true;
+}
+
+bool LayoutBox::hasForcedBreakBefore() const
+{
+    LayoutFlowThread* flowThread = flowThreadContainingBlock();
+    bool checkColumnBreaks = flowThread;
+    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // TODO(mstensho): Once columns can print, we have to check this.
+    bool checkBeforeAlways = (checkColumnBreaks && style()->columnBreakBefore() == PBALWAYS)
+        || (checkPageBreaks && style()->pageBreakBefore() == PBALWAYS);
+    return checkBeforeAlways && isForcedBreakAllowed(this);
+}
+
+bool LayoutBox::hasForcedBreakAfter() const
+{
+    LayoutFlowThread* flowThread = flowThreadContainingBlock();
+    bool checkColumnBreaks = flowThread;
+    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // TODO(mstensho): Once columns can print, we have to check this.
+    bool checkAfterAlways = (checkColumnBreaks && style()->columnBreakAfter() == PBALWAYS)
+        || (checkPageBreaks && style()->pageBreakAfter() == PBALWAYS);
+    return checkAfterAlways && isForcedBreakAllowed(this);
+}
+
 LayoutRect LayoutBox::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     if (style()->visibility() != VISIBLE) {

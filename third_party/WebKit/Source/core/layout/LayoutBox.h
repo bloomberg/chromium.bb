@@ -590,6 +590,9 @@ public:
             m_rareData->m_paginationStrut = LayoutUnit();
     }
 
+    bool hasForcedBreakBefore() const;
+    bool hasForcedBreakAfter() const;
+
     LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
     void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
     virtual void invalidatePaintForOverhangingFloats(bool paintAllDescendants);

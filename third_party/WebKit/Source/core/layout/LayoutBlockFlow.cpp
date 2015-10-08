@@ -153,19 +153,6 @@ public:
     void setLastChildIsSelfCollapsingBlockWithClearance(bool value) { m_lastChildIsSelfCollapsingBlockWithClearance = value; }
     bool lastChildIsSelfCollapsingBlockWithClearance() const { return m_lastChildIsSelfCollapsingBlockWithClearance; }
 };
-static bool inNormalFlow(LayoutBox* child)
-{
-    LayoutBlock* curr = child->containingBlock();
-    LayoutView* layoutView = child->view();
-    while (curr && curr != layoutView) {
-        if (curr->isLayoutFlowThread())
-            return true;
-        if (curr->isFloatingOrOutOfFlowPositioned())
-            return false;
-        curr = curr->containingBlock();
-    }
-    return true;
-}
 
 LayoutBlockFlow::LayoutBlockFlow(ContainerNode* node)
     : LayoutBlock(node)
@@ -1716,14 +1703,8 @@ bool LayoutBlockFlow::mustSeparateMarginAfterForChild(const LayoutBox& child) co
 
 LayoutUnit LayoutBlockFlow::applyBeforeBreak(LayoutBox& child, LayoutUnit logicalOffset)
 {
-    // FIXME: Add page break checking here when we support printing.
-    LayoutFlowThread* flowThread = flowThreadContainingBlock();
-    bool checkColumnBreaks = flowThread;
-    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // FIXME: Once columns can print we have to check this.
-    bool checkBeforeAlways = (checkColumnBreaks && child.style()->columnBreakBefore() == PBALWAYS)
-        || (checkPageBreaks && child.style()->pageBreakBefore() == PBALWAYS);
-    if (checkBeforeAlways && inNormalFlow(&child)) {
-        if (checkColumnBreaks) {
+    if (child.hasForcedBreakBefore()) {
+        if (LayoutFlowThread* flowThread = flowThreadContainingBlock()) {
             LayoutUnit offsetBreakAdjustment = 0;
             if (flowThread->addForcedColumnBreak(offsetFromLogicalTopOfFirstPage() + logicalOffset, &child, true, &offsetBreakAdjustment))
                 return logicalOffset + offsetBreakAdjustment;
@@ -1735,17 +1716,11 @@ LayoutUnit LayoutBlockFlow::applyBeforeBreak(LayoutBox& child, LayoutUnit logica
 
 LayoutUnit LayoutBlockFlow::applyAfterBreak(LayoutBox& child, LayoutUnit logicalOffset, MarginInfo& marginInfo)
 {
-    // FIXME: Add page break checking here when we support printing.
-    LayoutFlowThread* flowThread = flowThreadContainingBlock();
-    bool checkColumnBreaks = flowThread;
-    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // FIXME: Once columns can print we have to check this.
-    bool checkAfterAlways = (checkColumnBreaks && child.style()->columnBreakAfter() == PBALWAYS)
-        || (checkPageBreaks && child.style()->pageBreakAfter() == PBALWAYS);
-    if (checkAfterAlways && inNormalFlow(&child)) {
+    if (child.hasForcedBreakAfter()) {
         // So our margin doesn't participate in the next collapsing steps.
         marginInfo.clearMargin();
 
-        if (checkColumnBreaks) {
+        if (LayoutFlowThread* flowThread = flowThreadContainingBlock()) {
             LayoutUnit offsetBreakAdjustment = 0;
             if (flowThread->addForcedColumnBreak(offsetFromLogicalTopOfFirstPage() + logicalOffset, &child, false, &offsetBreakAdjustment))
                 return logicalOffset + offsetBreakAdjustment;
