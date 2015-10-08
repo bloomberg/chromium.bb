@@ -510,7 +510,6 @@ void ProgramInfoManager::Program::UpdateES3TransformFeedbackVaryings(
       LocalGetAs<const TransformFeedbackVaryingsHeader*>(
           result, 0, header_size);
   DCHECK(header);
-  transform_feedback_buffer_mode_ = header->transform_feedback_buffer_mode;
   if (header->num_transform_feedback_varyings == 0) {
     DCHECK_EQ(result.size(), header_size);
     // TODO(zmo): Here we can't tell if no TransformFeedback varyings are
@@ -518,6 +517,7 @@ void ProgramInfoManager::Program::UpdateES3TransformFeedbackVaryings(
     return;
   }
   transform_feedback_varyings_.resize(header->num_transform_feedback_varyings);
+  transform_feedback_buffer_mode_ = header->transform_feedback_buffer_mode;
 
   uint32_t entry_size = sizeof(TransformFeedbackVaryingInfo) *
       header->num_transform_feedback_varyings;
