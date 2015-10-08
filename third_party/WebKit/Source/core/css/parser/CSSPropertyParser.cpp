@@ -52,7 +52,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
 
     if (ruleType == StyleRule::Viewport) {
         parseSuccess = (RuntimeEnabledFeatures::cssViewportEnabled() || isUASheetBehavior(context.mode()))
-            && parser.parseViewportProperty(resolvedProperty, important);
+            && parser.parseViewportDescriptor(resolvedProperty, important);
     } else if (ruleType == StyleRule::FontFace) {
         parseSuccess = parser.parseFontFaceDescriptor(resolvedProperty);
     } else {
@@ -258,16 +258,29 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRan
     return nullptr;
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLengthOrPercent(CSSParserTokenRange& range, CSSParserMode cssParserMode, ValueRange valueRange, UnitlessQuirk unitless = UnitlessQuirk::Forbid)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePercent(CSSParserTokenRange& range, ValueRange valueRange)
 {
     const CSSParserToken& token = range.peek();
-    if (token.type() == DimensionToken || token.type() == NumberToken)
-        return consumeLength(range, cssParserMode, valueRange, unitless);
     if (token.type() == PercentageToken) {
         if (valueRange == ValueRangeNonNegative && token.numericValue() < 0)
             return nullptr;
         return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Percentage);
     }
+    CalcParser calcParser(range, valueRange);
+    if (const CSSCalcValue* calculation = calcParser.value()) {
+        if (calculation->category() == CalcPercent)
+            return calcParser.consumeValue();
+    }
+    return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLengthOrPercent(CSSParserTokenRange& range, CSSParserMode cssParserMode, ValueRange valueRange, UnitlessQuirk unitless = UnitlessQuirk::Forbid)
+{
+    const CSSParserToken& token = range.peek();
+    if (token.type() == DimensionToken || token.type() == NumberToken)
+        return consumeLength(range, cssParserMode, valueRange, unitless);
+    if (token.type() == PercentageToken)
+        return consumePercent(range, valueRange);
     CalcParser calcParser(range, valueRange);
     if (const CSSCalcValue* calculation = calcParser.value()) {
         if (calculation->category() == CalcLength || calculation->category() == CalcPercent || calculation->category() == CalcPercentLength)
@@ -906,6 +919,96 @@ bool CSSPropertyParser::consumeBorderSpacing(bool important)
     addProperty(CSSPropertyWebkitBorderHorizontalSpacing, horizontalSpacing.release(), important);
     addProperty(CSSPropertyWebkitBorderVerticalSpacing, verticalSpacing.release(), important);
     return true;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeSingleViewportDescriptor(CSSParserTokenRange& range, CSSPropertyID propId, CSSParserMode cssParserMode)
+{
+    CSSValueID id = range.peek().id();
+    switch (propId) {
+    case CSSPropertyMinWidth:
+    case CSSPropertyMaxWidth:
+    case CSSPropertyMinHeight:
+    case CSSPropertyMaxHeight:
+        if (id == CSSValueAuto || id == CSSValueInternalExtendToZoom)
+            return consumeIdent(range);
+        return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
+    case CSSPropertyMinZoom:
+    case CSSPropertyMaxZoom:
+    case CSSPropertyZoom: {
+        if (id == CSSValueAuto)
+            return consumeIdent(range);
+        RefPtrWillBeRawPtr<CSSValue> parsedValue = consumeNumber(range, ValueRangeNonNegative);
+        if (parsedValue)
+            return parsedValue.release();
+        return consumePercent(range, ValueRangeNonNegative);
+    }
+    case CSSPropertyUserZoom:
+        if (id == CSSValueZoom || id == CSSValueFixed)
+            return consumeIdent(range);
+        break;
+    case CSSPropertyOrientation:
+        if (id == CSSValueAuto || id == CSSValuePortrait || id == CSSValueLandscape)
+            return consumeIdent(range);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+
+    return nullptr;
+}
+
+bool CSSPropertyParser::parseViewportDescriptor(CSSPropertyID propId, bool important)
+{
+    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled() || isUASheetBehavior(m_context.mode()));
+
+    m_range.consumeWhitespace();
+
+    switch (propId) {
+    case CSSPropertyWidth: {
+        RefPtrWillBeRawPtr<CSSValue> minWidth = consumeSingleViewportDescriptor(m_range, CSSPropertyMinWidth, m_context.mode());
+        if (!minWidth)
+            return false;
+        RefPtrWillBeRawPtr<CSSValue> maxWidth = minWidth;
+        if (!m_range.atEnd())
+            maxWidth = consumeSingleViewportDescriptor(m_range, CSSPropertyMaxWidth, m_context.mode());
+        if (!maxWidth || !m_range.atEnd())
+            return false;
+        addProperty(CSSPropertyMinWidth, minWidth.release(), important);
+        addProperty(CSSPropertyMaxWidth, maxWidth.release(), important);
+        return true;
+    }
+    case CSSPropertyHeight: {
+        RefPtrWillBeRawPtr<CSSValue> minHeight = consumeSingleViewportDescriptor(m_range, CSSPropertyMinHeight, m_context.mode());
+        if (!minHeight)
+            return false;
+        RefPtrWillBeRawPtr<CSSValue> maxHeight = minHeight;
+        if (!m_range.atEnd())
+            maxHeight = consumeSingleViewportDescriptor(m_range, CSSPropertyMaxHeight, m_context.mode());
+        if (!maxHeight || !m_range.atEnd())
+            return false;
+        addProperty(CSSPropertyMinHeight, minHeight.release(), important);
+        addProperty(CSSPropertyMaxHeight, maxHeight.release(), important);
+        return true;
+    }
+    case CSSPropertyMinWidth:
+    case CSSPropertyMaxWidth:
+    case CSSPropertyMinHeight:
+    case CSSPropertyMaxHeight:
+    case CSSPropertyMinZoom:
+    case CSSPropertyMaxZoom:
+    case CSSPropertyZoom:
+    case CSSPropertyUserZoom:
+    case CSSPropertyOrientation: {
+        RefPtrWillBeRawPtr<CSSValue> parsedValue = consumeSingleViewportDescriptor(m_range, propId, m_context.mode());
+        if (!parsedValue || !m_range.atEnd())
+            return false;
+        addProperty(propId, parsedValue.release(), important);
+        return true;
+    }
+    default:
+        return false;
+    }
 }
 
 bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, bool important)

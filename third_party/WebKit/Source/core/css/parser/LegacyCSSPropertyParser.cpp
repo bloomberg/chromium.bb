@@ -83,15 +83,7 @@ void CSSPropertyParser::addProperty(CSSPropertyID propId, PassRefPtrWillBeRawPtr
     if (m_currentShorthand) {
         Vector<StylePropertyShorthand, 4> shorthands;
         getMatchingShorthandsForLonghand(propId, &shorthands);
-        // Viewport descriptors have width and height as shorthands, but it doesn't
-        // make sense for CSSProperties.in to consider them as such. The shorthand
-        // index is only used by the inspector and doesn't affect viewport
-        // descriptors.
-        if (shorthands.isEmpty())
-            ASSERT(m_currentShorthand == CSSPropertyWidth || m_currentShorthand == CSSPropertyHeight);
-        else
-            setFromShorthand = true;
-
+        setFromShorthand = true;
         if (shorthands.size() > 1)
             shorthandIndex = indexOfShorthandForLonghand(m_currentShorthand, shorthands);
     }
@@ -6533,87 +6525,6 @@ bool CSSPropertyParser::parseCalculation(CSSParserValue* value, ValueRange range
         return false;
 
     return true;
-}
-
-bool CSSPropertyParser::parseViewportProperty(CSSPropertyID propId, bool important)
-{
-    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled() || isUASheetBehavior(m_context.mode()));
-
-    CSSParserValue* value = m_valueList->current();
-    if (!value)
-        return false;
-
-    CSSValueID id = value->id;
-    bool validPrimitive = false;
-
-    switch (propId) {
-    case CSSPropertyMinWidth: // auto | extend-to-zoom | <length> | <percentage>
-    case CSSPropertyMaxWidth:
-    case CSSPropertyMinHeight:
-    case CSSPropertyMaxHeight:
-        if (id == CSSValueAuto || id == CSSValueInternalExtendToZoom)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
-        break;
-    case CSSPropertyWidth: // shorthand
-        return parseViewportShorthand(propId, CSSPropertyMinWidth, CSSPropertyMaxWidth, important);
-    case CSSPropertyHeight:
-        return parseViewportShorthand(propId, CSSPropertyMinHeight, CSSPropertyMaxHeight, important);
-    case CSSPropertyMinZoom: // auto | <number> | <percentage>
-    case CSSPropertyMaxZoom:
-    case CSSPropertyZoom:
-        if (id == CSSValueAuto)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FNumber | FPercent | FNonNeg);
-        break;
-    case CSSPropertyUserZoom: // zoom | fixed
-        if (id == CSSValueZoom || id == CSSValueFixed)
-            validPrimitive = true;
-        break;
-    case CSSPropertyOrientation: // auto | portrait | landscape
-        if (id == CSSValueAuto || id == CSSValuePortrait || id == CSSValueLandscape)
-            validPrimitive = true;
-    default:
-        break;
-    }
-
-    RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
-    if (validPrimitive) {
-        parsedValue = parseValidPrimitive(id, value);
-        m_valueList->next();
-    }
-
-    if (parsedValue) {
-        if (!m_valueList->current() || inShorthand()) {
-            addProperty(propId, parsedValue.release(), important);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool CSSPropertyParser::parseViewportShorthand(CSSPropertyID propId, CSSPropertyID first, CSSPropertyID second, bool important)
-{
-    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled() || isUASheetBehavior(m_context.mode()));
-    unsigned numValues = m_valueList->size();
-
-    if (numValues > 2)
-        return false;
-
-    ShorthandScope scope(this, propId);
-
-    if (!parseViewportProperty(first, important))
-        return false;
-
-    // If just one value is supplied, the second value
-    // is implicitly initialized with the first value.
-    if (numValues == 1)
-        m_valueList->previous();
-
-    return parseViewportProperty(second, important);
 }
 
 template <typename CharacterType>
