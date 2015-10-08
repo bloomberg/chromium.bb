@@ -14,7 +14,8 @@ DataTypeController::DataTypeController(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const base::Closure& error_callback)
     : base::RefCountedDeleteOnMessageLoop<DataTypeController>(ui_thread),
-      error_callback_(error_callback) {}
+      error_callback_(error_callback),
+      ui_thread_(ui_thread) {}
 
 DataTypeController::~DataTypeController() {
 }

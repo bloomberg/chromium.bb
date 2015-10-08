@@ -151,9 +151,16 @@ class DataTypeController
 
   ~DataTypeController() override;
 
+  const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread() const {
+    return ui_thread_;
+  }
+
   // The callback that will be invoked when an unrecoverable error occurs.
   // TODO(sync): protected for use by legacy controllers.
   base::Closure error_callback_;
+
+ private:
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
 };
 
 }  // namespace sync_driver

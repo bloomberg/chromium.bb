@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_NON_FRONTEND_DATA_TYPE_CONTROLLER_H__
-#define CHROME_BROWSER_SYNC_GLUE_NON_FRONTEND_DATA_TYPE_CONTROLLER_H__
+#ifndef COMPONENTS_SYNC_DRIVER_NON_FRONTEND_DATA_TYPE_CONTROLLER_H__
+#define COMPONENTS_SYNC_DRIVER_NON_FRONTEND_DATA_TYPE_CONTROLLER_H__
 
 #include <string>
 
@@ -16,9 +16,6 @@
 #include "components/sync_driver/data_type_error_handler.h"
 #include "components/sync_driver/directory_data_type_controller.h"
 #include "components/sync_driver/sync_api_component_factory.h"
-
-class Profile;
-class ProfileSyncService;
 
 namespace base {
 class TimeDelta;
@@ -186,4 +183,4 @@ class NonFrontendDataTypeController
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_NON_FRONTEND_DATA_TYPE_CONTROLLER_H__
+#endif  // COMPONENTS_SYNC_DRIVER_NON_FRONTEND_DATA_TYPE_CONTROLLER_H__

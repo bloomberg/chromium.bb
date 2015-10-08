@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
+#include "components/sync_driver/non_frontend_data_type_controller.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 
 namespace history {

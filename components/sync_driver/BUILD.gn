@@ -66,6 +66,8 @@ source_set("sync_driver") {
     "model_associator.h",
     "non_blocking_data_type_controller.cc",
     "non_blocking_data_type_controller.h",
+    "non_frontend_data_type_controller.cc",
+    "non_frontend_data_type_controller.h",
     "non_ui_data_type_controller.cc",
     "non_ui_data_type_controller.h",
     "open_tabs_ui_delegate.cc",
@@ -177,6 +179,8 @@ source_set("test_support") {
     "local_device_info_provider_mock.h",
     "model_associator_mock.cc",
     "model_associator_mock.h",
+    "non_frontend_data_type_controller_mock.cc",
+    "non_frontend_data_type_controller_mock.h",
     "non_ui_data_type_controller_mock.cc",
     "non_ui_data_type_controller_mock.h",
   ]

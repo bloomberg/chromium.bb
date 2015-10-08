@@ -2,24 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
+#include "components/sync_driver/non_frontend_data_type_controller.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/model_associator.h"
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_service.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/util/data_type_histogram.h"
-
-using content::BrowserThread;
 
 namespace browser_sync {
 
@@ -53,7 +49,6 @@ BackendComponentsContainer::BackendComponentsContainer(
     NonFrontendDataTypeController* controller)
     : controller_(controller),
       type_(controller->type()) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   controller_handle_ =
       syncer::MakeWeakHandle(controller_->weak_ptr_factory_.GetWeakPtr());
 }
@@ -166,13 +161,13 @@ NonFrontendDataTypeController::NonFrontendDataTypeController(
       model_associator_(NULL),
       change_processor_(NULL),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(this->ui_thread()->RunsTasksOnCurrentThread());
   DCHECK(sync_client_);
 }
 
 void NonFrontendDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread()->RunsTasksOnCurrentThread());
   model_load_callback_ = model_load_callback;
   if (state_ != NOT_RUNNING) {
     model_load_callback.Run(type(),
@@ -205,7 +200,7 @@ void NonFrontendDataTypeController::LoadModels(
 
 void NonFrontendDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread()->RunsTasksOnCurrentThread());
   DCHECK(!start_callback.is_null());
   DCHECK(!components_container_);
   DCHECK_EQ(state_, MODEL_LOADED);
@@ -238,7 +233,7 @@ void DestroyComponentsInBackend(
 }
 
 void NonFrontendDataTypeController::Stop() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread()->RunsTasksOnCurrentThread());
 
   if (state_ == NOT_RUNNING)
     return;
@@ -275,7 +270,7 @@ void NonFrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
   DCHECK(IsOnBackendThread());
   DCHECK_EQ(type(), error.model_type());
   RecordUnrecoverableError(error.location(), error.message());
-  BrowserThread::PostTask(BrowserThread::UI, error.location(),
+  ui_thread()->PostTask(error.location(),
       base::Bind(&NonFrontendDataTypeController::DisableImpl,
                  this,
                  error));
@@ -291,13 +286,13 @@ NonFrontendDataTypeController::NonFrontendDataTypeController()
       weak_ptr_factory_(this) {}
 
 NonFrontendDataTypeController::~NonFrontendDataTypeController() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread()->RunsTasksOnCurrentThread());
   DCHECK(!change_processor_);
   DCHECK(!model_associator_);
 }
 
 bool NonFrontendDataTypeController::StartModels() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread()->RunsTasksOnCurrentThread());
   DCHECK_EQ(state_, MODEL_STARTING);
   // By default, no additional services need to be started before we can proceed
   // with model association, so do nothing.
@@ -305,14 +300,14 @@ bool NonFrontendDataTypeController::StartModels() {
 }
 
 bool NonFrontendDataTypeController::IsOnBackendThread() {
-  return !BrowserThread::CurrentlyOn(BrowserThread::UI);
+  return !ui_thread()->RunsTasksOnCurrentThread();
 }
 
 void NonFrontendDataTypeController::StartDone(
     DataTypeController::ConfigureResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread()->RunsTasksOnCurrentThread());
   DataTypeController::State new_state;
 
   if (IsSuccessfulResult(start_result)) {
@@ -332,7 +327,7 @@ void NonFrontendDataTypeController::StartDoneImpl(
     DataTypeController::State new_state,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread()->RunsTasksOnCurrentThread());
 
   state_ = new_state;
   if (state_ != RUNNING) {
@@ -345,7 +340,7 @@ void NonFrontendDataTypeController::StartDoneImpl(
 
 void NonFrontendDataTypeController::DisableImpl(
     const syncer::SyncError& error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread()->RunsTasksOnCurrentThread());
   if (!model_load_callback_.is_null()) {
     model_load_callback_.Run(type(), error);
   }
@@ -353,7 +348,7 @@ void NonFrontendDataTypeController::DisableImpl(
 
 void NonFrontendDataTypeController::RecordAssociationTime(
     base::TimeDelta time) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread()->RunsTasksOnCurrentThread());
 #define PER_DATA_TYPE_MACRO(type_str) \
     UMA_HISTOGRAM_TIMES("Sync." type_str "AssociationTime", time);
   SYNC_DATA_TYPE_HISTOGRAM(type());
@@ -361,7 +356,7 @@ void NonFrontendDataTypeController::RecordAssociationTime(
 }
 
 void NonFrontendDataTypeController::RecordStartFailure(ConfigureResult result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread()->RunsTasksOnCurrentThread());
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);
@@ -413,7 +408,7 @@ NonFrontendDataTypeController::GetChangeProcessor() const {
 
 void NonFrontendDataTypeController::AssociationCallback(
     AssociationResult result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread()->RunsTasksOnCurrentThread());
 
   if (result.needs_crypto) {
     StartDone(NEEDS_CRYPTO,
