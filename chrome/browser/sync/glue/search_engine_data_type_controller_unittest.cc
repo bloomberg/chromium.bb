@@ -48,8 +48,8 @@ class SyncSearchEngineDataTypeControllerTest
     service_.reset(new ProfileSyncServiceMock(&profile_));
     // Feed the DTC the profile so it is reused later.
     // This allows us to control the associated TemplateURLService.
-    search_engine_dtc_ =
-        new SearchEngineDataTypeController(this, &profile_);
+    search_engine_dtc_ = new SearchEngineDataTypeController(
+        base::Bind(&base::DoNothing), this, &profile_);
   }
 
   void TearDown() override {

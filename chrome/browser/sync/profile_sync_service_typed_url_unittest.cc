@@ -269,7 +269,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(profile_,
                                                                       callback);
       TypedUrlDataTypeController* data_type_controller =
-          new TypedUrlDataTypeController(sync_service_->GetSyncClient());
+          new TypedUrlDataTypeController(base::Bind(&base::DoNothing),
+                                         sync_service_->GetSyncClient());
       ProfileSyncComponentsFactoryMock* components =
           sync_service_->GetSyncApiComponentFactoryMock();
       EXPECT_CALL(*components, CreateTypedUrlSyncComponents(_, _, _)).

@@ -23,12 +23,7 @@ class ProfileOAuth2TokenService;
 class ProfileSyncComponentsFactoryMock;
 
 ACTION(ReturnNewDataTypeManager) {
-  return new sync_driver::DataTypeManagerImpl(base::Closure(),
-                                              arg0,
-                                              arg1,
-                                              arg2,
-                                              arg3,
-                                              arg4);
+  return new sync_driver::DataTypeManagerImpl(arg0, arg1, arg2, arg3, arg4);
 }
 
 namespace browser_sync {

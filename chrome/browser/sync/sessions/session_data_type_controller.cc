@@ -7,7 +7,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/common/pref_names.h"
 #include "components/sync_driver/glue/synced_window_delegate.h"
 #include "components/sync_driver/sessions/synced_window_delegates_getter.h"
@@ -22,13 +21,14 @@ using content::BrowserThread;
 namespace browser_sync {
 
 SessionDataTypeController::SessionDataTypeController(
+    const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client,
     Profile* profile,
     SyncedWindowDelegatesGetter* synced_window_getter,
     sync_driver::LocalDeviceInfoProvider* local_device)
     : UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          base::Bind(&ChromeReportUnrecoverableError),
+          error_callback,
           syncer::SESSIONS,
           sync_client),
       sync_client_(sync_client),

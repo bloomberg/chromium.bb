@@ -22,7 +22,8 @@ namespace browser_sync {
 class AutofillDataTypeController
     : public sync_driver::NonUIDataTypeController {
  public:
-  explicit AutofillDataTypeController(sync_driver::SyncClient* sync_client);
+  explicit AutofillDataTypeController(const base::Closure& error_callback,
+                                      sync_driver::SyncClient* sync_client);
 
   // NonUIDataTypeController implementation.
   syncer::ModelType type() const override;

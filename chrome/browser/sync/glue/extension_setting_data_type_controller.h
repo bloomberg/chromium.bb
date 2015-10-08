@@ -28,6 +28,7 @@ class ExtensionSettingDataTypeController
   ExtensionSettingDataTypeController(
       // Either EXTENSION_SETTINGS or APP_SETTINGS.
       syncer::ModelType type,
+      const base::Closure& error_callback,
       sync_driver::SyncClient* sync_client,
       Profile* profile);
 

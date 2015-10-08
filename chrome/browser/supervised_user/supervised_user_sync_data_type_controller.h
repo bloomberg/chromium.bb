@@ -20,10 +20,10 @@ class Profile;
 class SupervisedUserSyncDataTypeController
     : public sync_driver::UIDataTypeController {
  public:
-  SupervisedUserSyncDataTypeController(
-      syncer::ModelType type,
-      sync_driver::SyncClient* sync_client,
-      Profile* profile);
+  SupervisedUserSyncDataTypeController(syncer::ModelType type,
+                                       const base::Closure& error_callback,
+                                       sync_driver::SyncClient* sync_client,
+                                       Profile* profile);
 
   bool ReadyForStart() const override;
 

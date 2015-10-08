@@ -150,7 +150,8 @@ class SyncAutofillDataTypeControllerTest : public testing::Test,
   void SetUp() override {
     WebDataServiceFactory::GetInstance()->SetTestingFactory(
         &profile_, MockWebDataServiceWrapperSyncable::Build);
-    autofill_dtc_ = new AutofillDataTypeController(this);
+    autofill_dtc_ =
+        new AutofillDataTypeController(base::Bind(&base::DoNothing), this);
   }
 
   // Passed to AutofillDTC::Start().

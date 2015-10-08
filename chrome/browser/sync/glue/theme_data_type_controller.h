@@ -13,7 +13,8 @@ namespace browser_sync {
 
 class ThemeDataTypeController : public sync_driver::UIDataTypeController {
  public:
-  ThemeDataTypeController(sync_driver::SyncClient* sync_client,
+  ThemeDataTypeController(const base::Closure& error_callback,
+                          sync_driver::SyncClient* sync_client,
                           Profile* profile);
 
  private:

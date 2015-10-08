@@ -7,7 +7,6 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/syncable_service.h"
@@ -17,15 +16,15 @@ using content::BrowserThread;
 namespace browser_sync {
 
 SearchEngineDataTypeController::SearchEngineDataTypeController(
+    const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client,
     Profile* profile)
     : UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          base::Bind(&ChromeReportUnrecoverableError),
+          error_callback,
           syncer::SEARCH_ENGINES,
           sync_client),
-      profile_(profile) {
-}
+      profile_(profile) {}
 
 TemplateURLService::Subscription*
 SearchEngineDataTypeController::GetSubscriptionForTesting() {

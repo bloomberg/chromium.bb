@@ -114,10 +114,8 @@ class SessionDataTypeControllerTest
         "device_id"));
 
     controller_ = new SessionDataTypeController(
-        this,
-        &profile_,
-        synced_window_getter_.get(),
-        local_device_.get());
+        base::Bind(&base::DoNothing), this, &profile_,
+        synced_window_getter_.get(), local_device_.get());
 
     load_finished_ = false;
     last_type_ = syncer::UNSPECIFIED;

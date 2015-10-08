@@ -45,7 +45,6 @@ DataTypeManagerImpl::AssociationTypesInfo::AssociationTypesInfo() {}
 DataTypeManagerImpl::AssociationTypesInfo::~AssociationTypesInfo() {}
 
 DataTypeManagerImpl::DataTypeManagerImpl(
-    const base::Closure& unrecoverable_error_method,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
     const DataTypeController::TypeMap* controllers,
@@ -61,7 +60,6 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       model_association_manager_(controllers, this),
       observer_(observer),
       encryption_handler_(encryption_handler),
-      unrecoverable_error_method_(unrecoverable_error_method),
       catch_up_in_progress_(false),
       weak_ptr_factory_(this) {
   DCHECK(configurer_);

@@ -21,8 +21,8 @@ class AutofillProfileDataTypeController
     : public sync_driver::NonUIDataTypeController,
       public autofill::PersonalDataManagerObserver {
  public:
-  AutofillProfileDataTypeController(
-      sync_driver::SyncClient* sync_client);
+  AutofillProfileDataTypeController(const base::Closure& error_callback,
+                                    sync_driver::SyncClient* sync_client);
 
   // NonUIDataTypeController implementation.
   syncer::ModelType type() const override;

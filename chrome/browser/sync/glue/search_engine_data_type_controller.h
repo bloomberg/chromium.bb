@@ -22,7 +22,8 @@ namespace browser_sync {
 class SearchEngineDataTypeController
     : public sync_driver::UIDataTypeController {
  public:
-  SearchEngineDataTypeController(sync_driver::SyncClient* sync_client,
+  SearchEngineDataTypeController(const base::Closure& error_callback,
+                                 sync_driver::SyncClient* sync_client,
                                  Profile* profile);
 
   TemplateURLService::Subscription* GetSubscriptionForTesting();

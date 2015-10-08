@@ -25,7 +25,8 @@ class ControlTask;
 // A class that manages the startup and shutdown of typed_url sync.
 class TypedUrlDataTypeController : public NonFrontendDataTypeController {
  public:
-  explicit TypedUrlDataTypeController(sync_driver::SyncClient* sync_client);
+  explicit TypedUrlDataTypeController(const base::Closure& error_callback,
+                                      sync_driver::SyncClient* sync_client);
 
   // NonFrontendDataTypeController implementation
   syncer::ModelType type() const override;

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/sync_driver/sync_client.h"
@@ -20,10 +19,11 @@ using content::BrowserThread;
 namespace browser_sync {
 
 AutofillProfileDataTypeController::AutofillProfileDataTypeController(
+    const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client)
     : NonUIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          base::Bind(&ChromeReportUnrecoverableError),
+          error_callback,
           sync_client),
       sync_client_(sync_client),
       personal_data_(NULL),

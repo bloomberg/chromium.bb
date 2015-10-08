@@ -390,7 +390,6 @@ ACTION_P(MakeAutocompleteSyncComponents, wds) {
 
 ACTION_P(ReturnNewDataTypeManagerWithDebugListener, debug_listener) {
   return new sync_driver::DataTypeManagerImpl(
-      base::Closure(),
       debug_listener,
       arg1,
       arg2,
@@ -674,9 +673,11 @@ class ProfileSyncServiceAutofillTest
   DataTypeController* CreateDataTypeController(syncer::ModelType type) {
     DCHECK(type == AUTOFILL || type == AUTOFILL_PROFILE);
     if (type == AUTOFILL)
-      return new AutofillDataTypeController(sync_client_.get());
+      return new AutofillDataTypeController(base::Bind(&base::DoNothing),
+                                            sync_client_.get());
     else
-      return new AutofillProfileDataTypeController(sync_client_.get());
+      return new AutofillProfileDataTypeController(base::Bind(&base::DoNothing),
+                                                   sync_client_.get());
   }
 
   friend class AddAutofillHelper<AutofillEntry>;

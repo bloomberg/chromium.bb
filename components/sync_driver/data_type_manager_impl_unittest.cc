@@ -239,8 +239,7 @@ class TestDataTypeManager : public DataTypeManagerImpl {
       const DataTypeController::TypeMap* controllers,
       const DataTypeEncryptionHandler* encryption_handler,
       DataTypeManagerObserver* observer)
-      : DataTypeManagerImpl(base::Closure(),
-                            debug_info_listener,
+      : DataTypeManagerImpl(debug_info_listener,
                             controllers,
                             encryption_handler,
                             configurer,

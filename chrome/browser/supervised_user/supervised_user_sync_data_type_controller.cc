@@ -5,17 +5,17 @@
 #include "chrome/browser/supervised_user/supervised_user_sync_data_type_controller.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "content/public/browser/browser_thread.h"
 
 SupervisedUserSyncDataTypeController::SupervisedUserSyncDataTypeController(
     syncer::ModelType type,
+    const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client,
     Profile* profile)
     : sync_driver::UIDataTypeController(
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::UI),
-          base::Bind(&browser_sync::ChromeReportUnrecoverableError),
+          error_callback,
           type,
           sync_client),
       profile_(profile) {

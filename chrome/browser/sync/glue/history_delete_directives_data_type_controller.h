@@ -18,6 +18,7 @@ class HistoryDeleteDirectivesDataTypeController
       public sync_driver::SyncServiceObserver {
  public:
   HistoryDeleteDirectivesDataTypeController(
+      const base::Closure& error_callback,
       sync_driver::SyncClient* sync_client);
 
   // UIDataTypeController override.

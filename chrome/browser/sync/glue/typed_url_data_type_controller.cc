@@ -9,7 +9,6 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 #include "chrome/common/pref_names.h"
 #include "components/history/core/browser/history_db_task.h"
@@ -62,10 +61,11 @@ class RunTaskOnHistoryThread : public history::HistoryDBTask {
 }  // namespace
 
 TypedUrlDataTypeController::TypedUrlDataTypeController(
+    const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client)
     : NonFrontendDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          base::Bind(&ChromeReportUnrecoverableError),
+          error_callback,
           sync_client),
       backend_(NULL) {
   pref_registrar_.Init(sync_client->GetPrefService());

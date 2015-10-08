@@ -38,7 +38,6 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
@@ -71,6 +70,7 @@
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/favicon_cache.h"
+#include "components/sync_driver/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "components/sync_driver/sync_client.h"
@@ -552,7 +552,8 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
                            new syncer::SyncManagerFactory(GetManagerType()))
                            .Pass(),
                        MakeWeakHandle(weak_factory_.GetWeakPtr()),
-                       base::Bind(browser_sync::ChromeReportUnrecoverableError),
+                       base::Bind(browser_sync::ChromeReportUnrecoverableError,
+                                  chrome::GetChannel()),
                        network_resources_.get(), saved_nigori_state_.Pass());
 }
 

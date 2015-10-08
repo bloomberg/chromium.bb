@@ -8,7 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_service.h"
@@ -19,15 +18,15 @@ using content::BrowserThread;
 namespace browser_sync {
 
 PasswordDataTypeController::PasswordDataTypeController(
+    const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client,
     Profile* profile)
     : NonUIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          base::Bind(&ChromeReportUnrecoverableError),
+          error_callback,
           sync_client),
       sync_client_(sync_client),
-      profile_(profile) {
-}
+      profile_(profile) {}
 
 syncer::ModelType PasswordDataTypeController::type() const {
   return syncer::PASSWORDS;

@@ -27,7 +27,8 @@ namespace browser_sync {
 class PasswordDataTypeController : public sync_driver::NonUIDataTypeController,
                                    public sync_driver::SyncServiceObserver {
  public:
-  PasswordDataTypeController(sync_driver::SyncClient* sync_client,
+  PasswordDataTypeController(const base::Closure& error_callback,
+                             sync_driver::SyncClient* sync_client,
                              Profile* profile);
 
   // NonFrontendDataTypeController implementation

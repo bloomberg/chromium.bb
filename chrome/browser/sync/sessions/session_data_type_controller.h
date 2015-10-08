@@ -23,7 +23,8 @@ class SyncedWindowDelegatesGetter;
 class SessionDataTypeController : public sync_driver::UIDataTypeController,
                                   public content::NotificationObserver {
  public:
-  SessionDataTypeController(sync_driver::SyncClient* sync_client,
+  SessionDataTypeController(const base::Closure& error_callback,
+                            sync_driver::SyncClient* sync_client,
                             Profile* profile,
                             SyncedWindowDelegatesGetter* synced_window_getter,
                             sync_driver::LocalDeviceInfoProvider* local_device);
