@@ -45,7 +45,8 @@ class InterestsFetcher : public net::URLFetcherDelegate,
     double relevance;
   };
 
-  using InterestsCallback = base::Callback<void(const std::vector<Interest>&)>;
+  using InterestsCallback =
+      base::Callback<void(scoped_ptr<std::vector<Interest>>)>;
 
   InterestsFetcher(OAuth2TokenService* oauth2_token_service,
                    const std::string& account_id,
@@ -73,7 +74,8 @@ class InterestsFetcher : public net::URLFetcherDelegate,
   scoped_ptr<net::URLFetcher> CreateFetcher();
 
   // Parse the json response.
-  std::vector<Interest> ExtractInterests(const std::string& response);
+  scoped_ptr<std::vector<Interest>>
+      ExtractInterests(const std::string& response);
 
   InterestsCallback callback_;
   scoped_ptr<net::URLFetcher> fetcher_;

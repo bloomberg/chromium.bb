@@ -78,8 +78,24 @@ class InterestsFetcherTest : public testing::Test {
     command_line->AppendSwitchASCII(switches::kInterestsURL, kInterestsURL);
   }
 
-  MOCK_METHOD1(OnReceivedInterests,
-               void(const std::vector<InterestsFetcher::Interest>&));
+  MOCK_METHOD0(OnSuccessfulResponse, void());
+  MOCK_METHOD0(OnEmptyResponse, void());
+  MOCK_METHOD0(OnFailedResponse, void());
+
+  void OnReceivedInterests(
+      scoped_ptr<std::vector<InterestsFetcher::Interest>> interests) {
+    if (!interests) {
+      OnFailedResponse();
+      return;
+    }
+
+    if (*interests == GetExpectedEmptyResponse())
+      OnEmptyResponse();
+    else if (*interests == GetExpectedSuccessfulResponse())
+      OnSuccessfulResponse();
+    else
+      FAIL() << "Unexpected interests response.";
+  }
 
  protected:
   void RequestInterests() {
@@ -140,39 +156,39 @@ class InterestsFetcherTest : public testing::Test {
 
 TEST_F(InterestsFetcherTest, EmptyResponse) {
   RequestInterests();
-  EXPECT_CALL(*this, OnReceivedInterests(GetExpectedEmptyResponse()));
+  EXPECT_CALL(*this, OnEmptyResponse());
   IssueAccessTokens();
   SendValidResponse(kEmptyResponse);
 }
 
 TEST_F(InterestsFetcherTest, SuccessfullResponse) {
   RequestInterests();
-  EXPECT_CALL(*this, OnReceivedInterests(GetExpectedSuccessfulResponse()));
+  EXPECT_CALL(*this, OnSuccessfulResponse());
   IssueAccessTokens();
   SendValidResponse(kSuccessfulResponse);
 }
 
 TEST_F(InterestsFetcherTest, FailedResponse) {
   RequestInterests();
-  EXPECT_CALL(*this, OnReceivedInterests(GetExpectedEmptyResponse()));
+  EXPECT_CALL(*this, OnFailedResponse());
   IssueAccessTokens();
   SendFailedResponse();
 }
 
 TEST_F(InterestsFetcherTest, FailedOAuthRequest) {
   RequestInterests();
-  EXPECT_CALL(*this, OnReceivedInterests(GetExpectedEmptyResponse()));
+  EXPECT_CALL(*this, OnFailedResponse());
   IssueAccessTokenErrors();
 }
 
 TEST_F(InterestsFetcherTest, RetryOnAuthorizationError) {
   RequestInterests();
 
-  EXPECT_CALL(*this, OnReceivedInterests(GetExpectedEmptyResponse())).Times(0);
+  EXPECT_CALL(*this, OnEmptyResponse()).Times(0);
   IssueAccessTokens();
   SendAuthorizationError();
 
-  EXPECT_CALL(*this, OnReceivedInterests(GetExpectedEmptyResponse()));
+  EXPECT_CALL(*this, OnEmptyResponse());
   IssueAccessTokens();
   SendValidResponse(kEmptyResponse);
 }
@@ -180,11 +196,11 @@ TEST_F(InterestsFetcherTest, RetryOnAuthorizationError) {
 TEST_F(InterestsFetcherTest, RetryOnlyOnceOnAuthorizationError) {
   RequestInterests();
 
-  EXPECT_CALL(*this, OnReceivedInterests(GetExpectedEmptyResponse())).Times(0);
+  EXPECT_CALL(*this, OnEmptyResponse()).Times(0);
   IssueAccessTokens();
   SendAuthorizationError();
 
-  EXPECT_CALL(*this, OnReceivedInterests(GetExpectedEmptyResponse()));
+  EXPECT_CALL(*this, OnFailedResponse());
   IssueAccessTokens();
   SendAuthorizationError();
 }

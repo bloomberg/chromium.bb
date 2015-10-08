@@ -85,6 +85,7 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory_android.h"
 #include "chrome/browser/dom_distiller/tab_utils_android.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
+#include "chrome/browser/interests/android/interests_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory_android.h"
 #include "chrome/browser/lifetime/application_lifetime_android.h"
 #include "chrome/browser/media/android/remote/record_cast_action.h"
@@ -255,6 +256,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      RegisterGeneratedPasswordSavedInfoBarDelegate},
     {"HistoryReportJniBridge", history_report::RegisterHistoryReportJniBridge},
     {"InfoBarContainer", RegisterInfoBarContainer},
+    {"InterestsService", InterestsService::Register},
     {"InvalidationServiceFactory",
      invalidation::InvalidationServiceFactoryAndroid::Register},
     {"ShortcutHelper", ShortcutHelper::RegisterShortcutHelper},

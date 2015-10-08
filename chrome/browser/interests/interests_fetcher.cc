@@ -31,10 +31,6 @@ const char kApiScope[] = "https://www.googleapis.com/auth/googlenow";
 
 const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 
-std::vector<InterestsFetcher::Interest> EmptyResponse() {
-  return std::vector<InterestsFetcher::Interest>();
-}
-
 GURL GetInterestsURL() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -93,7 +89,7 @@ void InterestsFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   const net::URLRequestStatus& status = source->GetStatus();
   if (!status.is_success()) {
     VLOG(2) << "Network error " << status.error();
-    callback_.Run(EmptyResponse());
+    callback_.Run(nullptr);
     return;
   }
 
@@ -110,7 +106,7 @@ void InterestsFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
   if (response_code != net::HTTP_OK) {
     VLOG(2) << "HTTP error " << response_code;
-    callback_.Run(EmptyResponse());
+    callback_.Run(nullptr);
     return;
   }
 
@@ -143,7 +139,7 @@ void InterestsFetcher::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   DLOG(WARNING) << error.ToString();
 
-  callback_.Run(EmptyResponse());
+  callback_.Run(nullptr);
 }
 
 void InterestsFetcher::StartOAuth2Request() {
@@ -162,24 +158,24 @@ scoped_ptr<net::URLFetcher> InterestsFetcher::CreateFetcher() {
       net::URLFetcher::Create(0, GetInterestsURL(), net::URLFetcher::GET, this);
 }
 
-std::vector<InterestsFetcher::Interest> InterestsFetcher::ExtractInterests(
-    const std::string& response) {
+scoped_ptr<std::vector<InterestsFetcher::Interest>>
+InterestsFetcher::ExtractInterests(const std::string& response) {
   scoped_ptr<base::Value> value = base::JSONReader::Read(response);
   DVLOG(2) << response;
 
   const base::DictionaryValue* dict = nullptr;
   if (!value || !value->GetAsDictionary(&dict)) {
     DLOG(WARNING) << "Failed to parse global dictionary.";
-    return EmptyResponse();
+    return nullptr;
   }
 
   const base::ListValue* interests_list = nullptr;
   if (!dict->GetList(kIdInterests, &interests_list)) {
     DLOG(WARNING) << "Failed to parse interests list.";
-    return EmptyResponse();
+    return nullptr;
   }
 
-  std::vector<Interest> res;
+  scoped_ptr<std::vector<Interest>> res(new std::vector<Interest>());
   for (const base::Value* entry : *interests_list) {
     const base::DictionaryValue* interest_dict = nullptr;
     if (!entry->GetAsDictionary(&interest_dict)) {
@@ -207,7 +203,7 @@ std::vector<InterestsFetcher::Interest> InterestsFetcher::ExtractInterests(
       continue;
     }
 
-    res.push_back(Interest{name, GURL(image_url), relevance});
+    res->push_back(Interest{name, GURL(image_url), relevance});
   }
 
   return res;
