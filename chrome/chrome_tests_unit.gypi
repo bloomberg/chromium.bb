@@ -570,6 +570,7 @@
       'browser/spellchecker/spellcheck_service_unittest.cc',
       'browser/spellchecker/spelling_service_client_unittest.cc',
       'browser/spellchecker/word_trimmer_unittest.cc',
+      'common/spellcheck_common_unittest.cc',
       'renderer/spellchecker/custom_dictionary_engine_unittest.cc',
       'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
       'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
@@ -2673,6 +2674,7 @@
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
           'sources!': [
+            'common/spellcheck_common_unittest.cc',
             'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
             'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
             'renderer/spellchecker/spellcheck_unittest.cc',

@@ -38,12 +38,6 @@ void MultilanguageOptionsBrowserTest::SetUpOnMainThread() {
                                               std::string());
 }
 
-void MultilanguageOptionsBrowserTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  WebUIBrowserTest::SetUpCommandLine(command_line);
-  command_line->AppendSwitch(switches::kEnableMultilingualSpellChecker);
-}
-
 void MultilanguageOptionsBrowserTest::SetDictionariesPref(
     const base::ListValue& value) {
   browser()->profile()->GetPrefs()->Set(prefs::kSpellCheckDictionaries, value);

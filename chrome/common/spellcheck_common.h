@@ -39,6 +39,9 @@ static const size_t MAX_SYNCABLE_DICTIONARY_WORDS = 1300;
 // dictionary.
 static const size_t MAX_CUSTOM_DICTIONARY_WORD_BYTES = 99;
 
+// The name of the field trial for multilingual spellchecker.
+extern const char kMultilingualSpellcheckFieldTrial[];
+
 base::FilePath GetVersionedFileName(const std::string& input_language,
                                     const base::FilePath& dict_dir);
 

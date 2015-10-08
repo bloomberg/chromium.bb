@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN('#include "chrome/browser/ui/webui/options/' +
+    'single_language_options_browsertest.h"');
+
 /**
  * TestFixture for testing messages of dictionary download progress in language
  * options WebUI.
@@ -17,6 +20,9 @@ LanguagesOptionsDictionaryDownloadWebUITest.prototype = {
    * Browse to languages options.
    */
   browsePreload: 'chrome://settings-frame/languages',
+
+  /** @override */
+  typedefCppFixture: 'SingleLanguageOptionsBrowserTest',
 
   /**
    * Register a mock dictionary handler.

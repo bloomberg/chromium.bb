@@ -1204,6 +1204,7 @@ if (!is_android) {
       sources -= [
         "../browser/policy/cloud/component_cloud_policy_browsertest.cc",
         "../browser/prefs/pref_hash_browsertest.cc",
+        "../common/spellcheck_common_unittest.cc",
         "../renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc",
         "../renderer/spellchecker/spellcheck_unittest.cc",
       ]

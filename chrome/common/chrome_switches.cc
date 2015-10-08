@@ -1027,6 +1027,10 @@ const char kSpeculativeResourcePrefetchingEnabled[] = "enabled";
 const char kEnableAndroidSpellChecker[] = "enable-android-spellchecker";
 #endif
 
+// Disables the multilingual spellchecker.
+const char kDisableMultilingualSpellChecker[] =
+    "disable-multilingual-spellchecker";
+
 // Enables the multilingual spellchecker.
 const char kEnableMultilingualSpellChecker[] =
     "enable-multilingual-spellchecker";

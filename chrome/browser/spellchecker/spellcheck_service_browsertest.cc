@@ -135,8 +135,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesNotMigrated) {
 // that all languages get deselected and spellchecking gets enabled.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        SpellcheckingDisabledPreferenceMigration) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableMultilingualSpellChecker);
+  ASSERT_TRUE(chrome::spellcheck_common::IsMultilingualSpellcheckEnabled());
 
   PrefService* prefs = user_prefs::UserPrefs::Get(GetContext());
   base::ListValue dictionaries;
@@ -155,6 +154,10 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 // multilingual spellchecking.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        MultilingualToSingleLanguagePreferenceMigration) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableMultilingualSpellChecker);
+  ASSERT_FALSE(chrome::spellcheck_common::IsMultilingualSpellcheckEnabled());
+
   PrefService* prefs = user_prefs::UserPrefs::Get(GetContext());
   base::ListValue dictionaries;
   dictionaries.AppendString("en-US");
@@ -175,8 +178,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 // preference stays the same and spellchecking stays enabled.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        MultilingualPreferenceNotMigrated) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableMultilingualSpellChecker);
+  ASSERT_TRUE(chrome::spellcheck_common::IsMultilingualSpellcheckEnabled());
 
   PrefService* prefs = user_prefs::UserPrefs::Get(GetContext());
   base::ListValue dictionaries;
@@ -203,6 +205,10 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 // the preference should not change.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        SingleLanguagePreferenceNotMigrated) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableMultilingualSpellChecker);
+  ASSERT_FALSE(chrome::spellcheck_common::IsMultilingualSpellcheckEnabled());
+
   PrefService* prefs = user_prefs::UserPrefs::Get(GetContext());
   base::ListValue dictionaries;
   dictionaries.AppendString("en-US");

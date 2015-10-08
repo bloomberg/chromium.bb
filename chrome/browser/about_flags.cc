@@ -871,7 +871,8 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_ENABLE_MULTILINGUAL_SPELLCHECKER_NAME,
      IDS_FLAGS_ENABLE_MULTILINGUAL_SPELLCHECKER_DESCRIPTION,
      kOsWin | kOsLinux | kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kEnableMultilingualSpellChecker)},
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableMultilingualSpellChecker,
+                               switches::kDisableMultilingualSpellChecker)},
 #endif
     {"enable-scroll-prediction",
      IDS_FLAGS_ENABLE_SCROLL_PREDICTION_NAME,

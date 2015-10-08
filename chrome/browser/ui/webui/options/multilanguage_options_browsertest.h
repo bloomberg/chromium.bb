@@ -19,7 +19,7 @@ class MultilanguageOptionsBrowserTest : public WebUIBrowserTest {
   void ClearSpellcheckDictionaries();
 
  private:
-  void SetUpCommandLine(base::CommandLine* command_line) override;
+  // WebUIBrowserTest implementation.
   void SetUpOnMainThread() override;
   void SetDictionariesPref(const base::ListValue& value);
 
