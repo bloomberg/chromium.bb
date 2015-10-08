@@ -1283,7 +1283,7 @@ void DXVAVideoDecodeAccelerator::DoDecode() {
       return;
     }
   }
-  TRACE_EVENT_END_ETW("DXVAVideoDecodeAccelerator.Decoding", this, "");
+  TRACE_EVENT_ASYNC_END0("gpu", "DXVAVideoDecodeAccelerator.Decoding", this);
 
   TRACE_COUNTER1("DXVA Decoding", "TotalPacketsBeforeDecode",
                  inputs_before_decode_);
@@ -1613,7 +1613,8 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   }
 
   if (!inputs_before_decode_) {
-    TRACE_EVENT_BEGIN_ETW("DXVAVideoDecodeAccelerator.Decoding", this, "");
+    TRACE_EVENT_ASYNC_BEGIN0("gpu", "DXVAVideoDecodeAccelerator.Decoding",
+                             this);
   }
   inputs_before_decode_++;
 

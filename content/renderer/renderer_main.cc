@@ -78,7 +78,10 @@ base::LazyInstance<scoped_ptr<ui::ClientNativePixmapFactory>> g_pixmap_factory =
 
 // mainline routine for running as the Renderer process
 int RendererMain(const MainFunctionParams& parameters) {
-  TRACE_EVENT_BEGIN_ETW("RendererMain", 0, "");
+  // Don't use the TRACE_EVENT0 macro because the tracing infrastructure doesn't
+  // expect synchronous events around the main loop of a thread.
+  TRACE_EVENT_ASYNC_BEGIN0("startup", "RendererMain", 0);
+
   base::trace_event::TraceLog::GetInstance()->SetProcessName("Renderer");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventRendererProcessSortIndex);
@@ -204,9 +207,9 @@ int RendererMain(const MainFunctionParams& parameters) {
       if (pool)
         pool->Recycle();
 #endif
-      TRACE_EVENT_BEGIN_ETW("RendererMain.START_MSG_LOOP", 0, 0);
+      TRACE_EVENT_ASYNC_BEGIN0("toplevel", "RendererMain.START_MSG_LOOP", 0);
       base::MessageLoop::current()->Run();
-      TRACE_EVENT_END_ETW("RendererMain.START_MSG_LOOP", 0, 0);
+      TRACE_EVENT_ASYNC_END0("toplevel", "RendererMain.START_MSG_LOOP", 0);
     }
 #if defined(LEAK_SANITIZER)
     // Run leak detection before RenderProcessImpl goes out of scope. This helps
@@ -215,7 +218,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 #endif
   }
   platform.PlatformUninitialize();
-  TRACE_EVENT_END_ETW("RendererMain", 0, "");
+  TRACE_EVENT_ASYNC_END0("startup", "RendererMain", 0);
   return 0;
 }
 

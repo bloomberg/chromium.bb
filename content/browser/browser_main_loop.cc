@@ -905,7 +905,9 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
 }
 
 void BrowserMainLoop::RunMainMessageLoopParts() {
-  TRACE_EVENT_BEGIN_ETW("BrowserMain:MESSAGE_LOOP", 0, "");
+  // Don't use the TRACE_EVENT0 macro because the tracing infrastructure doesn't
+  // expect synchronous events around the main loop of a thread.
+  TRACE_EVENT_ASYNC_BEGIN0("toplevel", "BrowserMain:MESSAGE_LOOP", this);
 
   bool ran_main_loop = false;
   if (parts_)
@@ -914,7 +916,7 @@ void BrowserMainLoop::RunMainMessageLoopParts() {
   if (!ran_main_loop)
     MainMessageLoopRun();
 
-  TRACE_EVENT_END_ETW("BrowserMain:MESSAGE_LOOP", 0, "");
+  TRACE_EVENT_ASYNC_END0("toplevel", "BrowserMain:MESSAGE_LOOP", this);
 }
 
 void BrowserMainLoop::ShutdownThreadsAndCleanUp() {

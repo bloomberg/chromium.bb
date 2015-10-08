@@ -655,7 +655,7 @@ base::Process StartSandboxedProcess(
       *base::CommandLine::ForCurrentProcess();
   std::string type_str = cmd_line->GetSwitchValueASCII(switches::kProcessType);
 
-  TRACE_EVENT_BEGIN_ETW("StartProcessWithAccess", 0, type_str);
+  TRACE_EVENT1("startup", "StartProcessWithAccess", "type", type_str);
 
   // Propagate the --allow-no-job flag if present.
   if (browser_command_line.HasSwitch(switches::kAllowNoSandboxJob) &&
@@ -797,17 +797,16 @@ base::Process StartSandboxedProcess(
       return base::Process();
   }
 
-  TRACE_EVENT_BEGIN_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
+  TRACE_EVENT_BEGIN0("startup", "StartProcessWithAccess::LAUNCHPROCESS");
 
   PROCESS_INFORMATION temp_process_info = {};
   result = g_broker_services->SpawnTarget(
-               cmd_line->GetProgram().value().c_str(),
-               cmd_line->GetCommandLineString().c_str(),
-               policy, &temp_process_info);
+      cmd_line->GetProgram().value().c_str(),
+      cmd_line->GetCommandLineString().c_str(), policy, &temp_process_info);
   DWORD last_error = ::GetLastError();
   base::win::ScopedProcessInformation target(temp_process_info);
 
-  TRACE_EVENT_END_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
+  TRACE_EVENT_END0("startup", "StartProcessWithAccess::LAUNCHPROCESS");
 
   if (sandbox::SBOX_ALL_OK != result) {
     if (result == sandbox::SBOX_ERROR_GENERIC)
@@ -833,7 +832,6 @@ base::Process StartSandboxedProcess(
     delegate->PostSpawnTarget(target.process_handle());
 
   CHECK(ResumeThread(target.thread_handle()) != -1);
-  TRACE_EVENT_END_ETW("StartProcessWithAccess", 0, type_str);
   return base::Process(target.TakeProcessHandle());
 }
 

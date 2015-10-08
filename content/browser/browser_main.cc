@@ -10,9 +10,27 @@
 
 namespace content {
 
+namespace {
+
+// Generates a pair of BrowserMain async events. We don't use the TRACE_EVENT0
+// macro because the tracing infrastructure doesn't expect synchronous events
+// around the main loop of a thread.
+class ScopedBrowserMainEvent {
+ public:
+  ScopedBrowserMainEvent() {
+    TRACE_EVENT_ASYNC_BEGIN0("startup", "BrowserMain", 0);
+  }
+  ~ScopedBrowserMainEvent() {
+    TRACE_EVENT_ASYNC_END0("startup", "BrowserMain", 0);
+  }
+};
+
+}  // namespace
+
 // Main routine for running as the Browser process.
 int BrowserMain(const MainFunctionParams& parameters) {
-  TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
+  ScopedBrowserMainEvent scoped_browser_main_event;
+
   base::trace_event::TraceLog::GetInstance()->SetProcessName("Browser");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
@@ -26,8 +44,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   exit_code = main_runner->Run();
 
   main_runner->Shutdown();
-
-  TRACE_EVENT_END_ETW("BrowserMain", 0, 0);
 
   return exit_code;
 }

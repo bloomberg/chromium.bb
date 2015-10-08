@@ -553,7 +553,7 @@ RenderThreadImpl::RenderThreadImpl(
 }
 
 void RenderThreadImpl::Init() {
-  TRACE_EVENT_BEGIN_ETW("RenderThreadImpl::Init", 0, "");
+  TRACE_EVENT0("startup", "RenderThreadImpl::Init");
 
   base::trace_event::TraceLog::GetInstance()->SetThreadSortIndex(
       base::PlatformThread::CurrentId(),
@@ -760,8 +760,6 @@ void RenderThreadImpl::Init() {
       base::Bind(CreateRenderFrameSetup));
   service_registry()->AddService<EmbeddedWorkerSetup>(
       base::Bind(CreateEmbeddedWorkerSetup));
-
-  TRACE_EVENT_END_ETW("RenderThreadImpl::Init", 0, "");
 }
 
 RenderThreadImpl::~RenderThreadImpl() {

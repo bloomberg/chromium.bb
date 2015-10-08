@@ -85,7 +85,8 @@ const char* const kFilteredEventGroupNames[] = {
     "v8",                                              // 0x400
     "disabled-by-default-cc.debug",                    // 0x800
     "disabled-by-default-cc.debug.picture",            // 0x1000
-    "disabled-by-default-toplevel.flow"};              // 0x2000
+    "disabled-by-default-toplevel.flow",               // 0x2000
+    "startup"};                                        // 0x4000
 const char kOtherEventsGroupName[] = "__OTHER_EVENTS";  // 0x2000000000000000
 const char kDisabledOtherEventsGroupName[] =
     "__DISABLED_OTHER_EVENTS";  // 0x4000000000000000
