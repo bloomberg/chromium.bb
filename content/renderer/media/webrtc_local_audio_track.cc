@@ -90,7 +90,6 @@ void WebRtcLocalAudioTrack::Capture(const media::AudioBus& audio_bus,
   // disabled. This is currently done so to feed input to WebRTC typing
   // detection and should be changed when audio processing is moved from
   // WebRTC to the track.
-  std::vector<int> voe_channels = adapter_->VoeChannels();
   for (const auto& sink : sinks)
     sink->OnData(audio_bus, estimated_capture_time);
 }

@@ -32,8 +32,7 @@ class WebRtcAudioSinkAdapter;
 class WebRtcLocalAudioTrack;
 
 class CONTENT_EXPORT WebRtcLocalAudioTrackAdapter
-    : NON_EXPORTED_BASE(public cricket::AudioRenderer),
-      NON_EXPORTED_BASE(
+    : NON_EXPORTED_BASE(
           public webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>) {
  public:
   static scoped_refptr<WebRtcLocalAudioTrackAdapter> Create(
@@ -48,8 +47,6 @@ class CONTENT_EXPORT WebRtcLocalAudioTrackAdapter
   ~WebRtcLocalAudioTrackAdapter() override;
 
   void Initialize(WebRtcLocalAudioTrack* owner);
-
-  std::vector<int> VoeChannels() const;
 
   // Called on the audio thread by the WebRtcLocalAudioTrack to set the signal
   // level of the audio data.
@@ -73,12 +70,6 @@ class CONTENT_EXPORT WebRtcLocalAudioTrackAdapter
   bool GetSignalLevel(int* level) override;
   rtc::scoped_refptr<webrtc::AudioProcessorInterface> GetAudioProcessor()
       override;
-
-  // cricket::AudioCapturer implementation.
-  void AddChannel(int channel_id) override;
-  void RemoveChannel(int channel_id) override;
-
-  // webrtc::AudioTrackInterface implementation.
   webrtc::AudioSourceInterface* GetSource() const override;
   cricket::AudioRenderer* GetRenderer() override;
 

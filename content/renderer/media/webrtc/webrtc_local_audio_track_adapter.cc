@@ -140,42 +140,10 @@ WebRtcLocalAudioTrackAdapter::GetAudioProcessor() {
   return audio_processor_.get();
 }
 
-std::vector<int> WebRtcLocalAudioTrackAdapter::VoeChannels() const {
-  DCHECK(capture_thread_.CalledOnValidThread());
-  base::AutoLock auto_lock(lock_);
-  return voe_channels_;
-}
-
 void WebRtcLocalAudioTrackAdapter::SetSignalLevel(int signal_level) {
   DCHECK(capture_thread_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   signal_level_ = signal_level;
-}
-
-void WebRtcLocalAudioTrackAdapter::AddChannel(int channel_id) {
-  DCHECK(signaling_thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "WebRtcLocalAudioTrack::AddChannel(channel_id="
-           << channel_id << ")";
-  base::AutoLock auto_lock(lock_);
-  if (std::find(voe_channels_.begin(), voe_channels_.end(), channel_id) !=
-      voe_channels_.end()) {
-    // We need to handle the case when the same channel is connected to the
-    // track more than once.
-    return;
-  }
-
-  voe_channels_.push_back(channel_id);
-}
-
-void WebRtcLocalAudioTrackAdapter::RemoveChannel(int channel_id) {
-  DCHECK(signaling_thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "WebRtcLocalAudioTrack::RemoveChannel(channel_id="
-           << channel_id << ")";
-  base::AutoLock auto_lock(lock_);
-  std::vector<int>::iterator iter =
-      std::find(voe_channels_.begin(), voe_channels_.end(), channel_id);
-  DCHECK(iter != voe_channels_.end());
-  voe_channels_.erase(iter);
 }
 
 webrtc::AudioSourceInterface* WebRtcLocalAudioTrackAdapter::GetSource() const {
