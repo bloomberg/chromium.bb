@@ -151,6 +151,27 @@ bool CompareIconSize(const FaviconURL& b1, const FaviconURL& b2) {
   return area1 > area2;
 }
 
+// Sorts the entries in |image_urls| by icon size in descending order.
+// Discards all but the largest size for each FaviconURL.
+void SortAndPruneImageUrls(std::vector<FaviconURL>* image_urls) {
+  // Not using const-reference since the loop mutates FaviconURL::icon_sizes.
+  for (FaviconURL& image_url : *image_urls) {
+    if (image_url.icon_sizes.empty())
+      continue;
+
+    gfx::Size largest =
+        image_url.icon_sizes[GetLargestSizeIndex(image_url.icon_sizes)];
+    image_url.icon_sizes.clear();
+    image_url.icon_sizes.push_back(largest);
+  }
+  std::stable_sort(image_urls->begin(), image_urls->end(), CompareIconSize);
+}
+
+// Checks whether two FaviconURLs are equal ignoring the icon sizes.
+bool FaviconURLsEqualIgnoringSizes(const FaviconURL& u1, const FaviconURL& u2) {
+  return u1.icon_type == u2.icon_type && u1.icon_url == u2.icon_url;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -199,7 +220,8 @@ FaviconHandler::FaviconHandler(FaviconService* service,
       icon_types_(FaviconHandler::GetIconTypesFromHandlerType(handler_type)),
       download_largest_icon_(download_largest_icon),
       service_(service),
-      driver_(driver) {
+      driver_(driver),
+      current_candidate_index_(0u) {
   DCHECK(driver_);
 }
 
@@ -230,6 +252,7 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
   download_requests_.clear();
   image_urls_.clear();
   history_results_.clear();
+  current_candidate_index_ = 0u;
   best_favicon_candidate_ = FaviconCandidate();
 
   // Request the favicon from the history service. In parallel to this the
@@ -266,11 +289,15 @@ bool FaviconHandler::UpdateFaviconCandidate(const GURL& image_url,
     // - next candidate has sizes attribute and it is not larger than largest,
     // - current candidate is maximal one we want.
     const int maximal_size = GetMaximalIconSize(icon_type);
-    exact_match = image_urls_.size() == 1 ||
-        image_urls_[1].icon_sizes.empty() ||
-        image_urls_[1].icon_sizes[0].GetArea() <= largest.GetArea() ||
-        (image.Size().width() == maximal_size &&
-         image.Size().height() == maximal_size);
+    if (current_candidate_index_ + 1 >= image_urls_.size()) {
+      exact_match = true;
+    } else {
+      FaviconURL next_image_url = image_urls_[current_candidate_index_ + 1];
+      exact_match = next_image_url.icon_sizes.empty() ||
+          next_image_url.icon_sizes[0].GetArea() <= largest.GetArea() ||
+          (image.Size().width() == maximal_size &&
+           image.Size().height() == maximal_size);
+    }
   } else {
     exact_match = score == 1 || preferred_icon_size() == 0;
     replace_best_favicon_candidate =
@@ -326,31 +353,36 @@ void FaviconHandler::OnUpdateFaviconURL(
   if (page_url != url_)
     return;
 
-  download_requests_.clear();
-  image_urls_.clear();
-  best_favicon_candidate_ = FaviconCandidate();
-
+  std::vector<FaviconURL> pruned_candidates;
   for (const FaviconURL& candidate : candidates) {
     if (!candidate.icon_url.is_empty() && (candidate.icon_type & icon_types_))
-      image_urls_.push_back(candidate);
+      pruned_candidates.push_back(candidate);
   }
 
   if (download_largest_icon_)
-    SortAndPruneImageUrls();
+    SortAndPruneImageUrls(&pruned_candidates);
+
+  // Ignore FaviconURL::icon_sizes because FaviconURL::icon_sizes is not stored
+  // in the history database.
+  if (image_urls_.size() == pruned_candidates.size() &&
+      std::equal(pruned_candidates.begin(), pruned_candidates.end(),
+                 image_urls_.begin(), FaviconURLsEqualIgnoringSizes)) {
+    return;
+  }
+
+  download_requests_.clear();
+  image_urls_ = pruned_candidates;
+  current_candidate_index_ = 0u;
+  best_favicon_candidate_ = FaviconCandidate();
 
   // TODO(davemoore) Should clear on empty url. Currently we ignore it.
   // This appears to be what FF does as well.
-  if (!image_urls_.empty())
+  if (current_candidate())
     ProcessCurrentUrl();
 }
 
 void FaviconHandler::ProcessCurrentUrl() {
   DCHECK(!image_urls_.empty());
-
-  // current_candidate() may return NULL if download_largest_icon_ is true and
-  // all the sizes are larger than the max.
-  if (!current_candidate())
-    return;
 
   if (current_candidate()->icon_type == favicon_base::FAVICON &&
       !download_largest_icon_) {
@@ -426,9 +458,9 @@ void FaviconHandler::OnDidDownloadFavicon(
     }
   }
 
-  if (request_next_icon && image_urls_.size() > 1) {
-    // Remove the first member of image_urls_ and process the remaining.
-    image_urls_.erase(image_urls_.begin());
+  if (request_next_icon && current_candidate_index_ + 1 < image_urls_.size()) {
+    // Process the next candidate.
+    ++current_candidate_index_;
     ProcessCurrentUrl();
   } else {
     // We have either found the ideal candidate or run out of candidates.
@@ -439,8 +471,8 @@ void FaviconHandler::OnDidDownloadFavicon(
                  best_favicon_candidate_.icon_type);
     }
     // Clear download related state.
-    image_urls_.clear();
     download_requests_.clear();
+    current_candidate_index_ = image_urls_.size();
     best_favicon_candidate_ = FaviconCandidate();
   }
 }
@@ -662,21 +694,6 @@ void FaviconHandler::ScheduleDownload(const GURL& image_url,
                          std::vector<gfx::Size>());
 
   }
-}
-
-void FaviconHandler::SortAndPruneImageUrls() {
-  // Not using const-reference since the loop mutates FaviconURL::icon_sizes.
-  for (FaviconURL& image_url : image_urls_) {
-    if (image_url.icon_sizes.empty())
-      continue;
-
-    gfx::Size largest =
-        image_url.icon_sizes[GetLargestSizeIndex(image_url.icon_sizes)];
-    image_url.icon_sizes.clear();
-    image_url.icon_sizes.push_back(largest);
-  }
-  std::stable_sort(image_urls_.begin(), image_urls_.end(),
-                   CompareIconSize);
 }
 
 }  // namespace favicon

@@ -329,13 +329,12 @@ class TestFaviconHandler : public FaviconHandler {
     return download_handler_.get();
   }
 
-  // Methods to access favicon internals.
-  const std::vector<FaviconURL>& urls() {
-    return image_urls_;
-  }
-
   FaviconURL* current_candidate() {
     return FaviconHandler::current_candidate();
+  }
+
+  size_t current_candidate_index() const {
+    return current_candidate_index_;
   }
 
   const FaviconCandidate& best_favicon_candidate() {
@@ -555,7 +554,7 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
   helper.OnUpdateFaviconURL(page_url, urls);
 
   // Verify FaviconHandler status
-  EXPECT_EQ(1U, helper.urls().size());
+  EXPECT_EQ(1u, helper.image_urls().size());
   ASSERT_TRUE(helper.current_candidate());
   ASSERT_EQ(icon_url, helper.current_candidate()->icon_url);
   ASSERT_EQ(favicon_base::FAVICON, helper.current_candidate()->icon_type);
@@ -597,7 +596,7 @@ TEST_F(FaviconHandlerTest, DownloadFavicon) {
   helper.OnUpdateFaviconURL(page_url, urls);
 
   // Verify FaviconHandler status
-  EXPECT_EQ(1U, helper.urls().size());
+  EXPECT_EQ(1u, helper.image_urls().size());
   ASSERT_TRUE(helper.current_candidate());
   ASSERT_EQ(icon_url, helper.current_candidate()->icon_url);
   ASSERT_EQ(favicon_base::FAVICON, helper.current_candidate()->icon_type);
@@ -666,7 +665,7 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   helper.OnUpdateFaviconURL(page_url, urls);
 
   // Verify FaviconHandler status.
-  EXPECT_EQ(1U, helper.urls().size());
+  EXPECT_EQ(1u, helper.image_urls().size());
   ASSERT_TRUE(helper.current_candidate());
   ASSERT_EQ(new_icon_url, helper.current_candidate()->icon_url);
   ASSERT_EQ(favicon_base::FAVICON, helper.current_candidate()->icon_type);
@@ -814,7 +813,7 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
   helper.OnUpdateFaviconURL(page_url, urls);
 
   // Verify FaviconHandler status.
-  EXPECT_EQ(1U, helper.urls().size());
+  EXPECT_EQ(1u, helper.image_urls().size());
   ASSERT_TRUE(helper.current_candidate());
   ASSERT_EQ(new_icon_url, helper.current_candidate()->icon_url);
   ASSERT_EQ(favicon_base::FAVICON, helper.current_candidate()->icon_type);
@@ -883,7 +882,8 @@ TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
   helper.OnUpdateFaviconURL(page_url, urls);
 
   // Verify FaviconHandler status.
-  EXPECT_EQ(2U, helper.urls().size());
+  EXPECT_EQ(2u, helper.image_urls().size());
+  EXPECT_EQ(0u, helper.current_candidate_index());
   ASSERT_TRUE(helper.current_candidate());
   ASSERT_EQ(icon_url, helper.current_candidate()->icon_url);
   ASSERT_EQ(favicon_base::TOUCH_PRECOMPOSED_ICON,
@@ -913,7 +913,7 @@ TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
   download_handler->InvokeCallback();
 
   // Left 1 url.
-  EXPECT_EQ(1U, helper.urls().size());
+  EXPECT_EQ(1u, helper.current_candidate_index());
   ASSERT_TRUE(helper.current_candidate());
   EXPECT_EQ(new_icon_url, helper.current_candidate()->icon_url);
   EXPECT_EQ(favicon_base::TOUCH_ICON, helper.current_candidate()->icon_type);
@@ -994,8 +994,8 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   helper.OnUpdateFaviconURL(page_url, urls);
 
   // Verify FaviconHandler status.
-  EXPECT_EQ(2U, helper.urls().size());
-  ASSERT_TRUE(helper.current_candidate());
+  EXPECT_EQ(2u, helper.image_urls().size());
+  ASSERT_EQ(0u, helper.current_candidate_index());
   ASSERT_EQ(icon_url, helper.current_candidate()->icon_url);
   ASSERT_EQ(favicon_base::TOUCH_PRECOMPOSED_ICON,
             helper.current_candidate()->icon_type);
@@ -1027,7 +1027,8 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
       latest_icon_url, favicon_base::TOUCH_ICON, std::vector<gfx::Size>()));
   helper.OnUpdateFaviconURL(page_url, latest_urls);
 
-  EXPECT_EQ(1U, helper.urls().size());
+  EXPECT_EQ(1u, helper.image_urls().size());
+  EXPECT_EQ(0u, helper.current_candidate_index());
   EXPECT_EQ(latest_icon_url, helper.current_candidate()->icon_url);
   EXPECT_EQ(favicon_base::TOUCH_ICON, helper.current_candidate()->icon_type);
 
@@ -1063,6 +1064,59 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
 
   // No download request.
   EXPECT_FALSE(download_handler->HasDownload());
+}
+
+// Test that sending an icon URL update identical to the previous icon URL
+// update is a no-op.
+TEST_F(FaviconHandlerTest, UpdateSameIconURLs) {
+  const GURL page_url("http://www.google.com");
+  const GURL icon_url1("http://www.google.com/favicon1");
+  const GURL icon_url2("http://www.google.com/favicon2");
+  std::vector<FaviconURL> favicon_urls;
+  favicon_urls.push_back(FaviconURL(GURL("http://www.google.com/favicon1"),
+                                    favicon_base::FAVICON,
+                                    std::vector<gfx::Size>()));
+  favicon_urls.push_back(FaviconURL(GURL("http://www.google.com/favicon2"),
+                                    favicon_base::FAVICON,
+                                    std::vector<gfx::Size>()));
+
+  TestFaviconDriver driver;
+  TestFaviconHandler helper(page_url, &driver, FaviconHandler::FAVICON, false);
+
+  // Initiate a request for favicon data for |page_url|. History does not know
+  // about the page URL or the icon URLs.
+  helper.FetchFavicon(page_url);
+  helper.history_handler()->InvokeCallback();
+  helper.set_history_handler(nullptr);
+
+  // Got icon URLs.
+  helper.OnUpdateFaviconURL(page_url, favicon_urls);
+
+  // There should be an ongoing history request for |icon_url1|.
+  ASSERT_EQ(2u, helper.image_urls().size());
+  ASSERT_EQ(0u, helper.current_candidate_index());
+  HistoryRequestHandler* history_handler = helper.history_handler();
+  ASSERT_TRUE(history_handler);
+
+  // Calling OnUpdateFaviconURL() with the same icon URLs should have no effect.
+  helper.OnUpdateFaviconURL(page_url, favicon_urls);
+  EXPECT_EQ(history_handler, helper.history_handler());
+
+  // Complete history request for |icon_url1| and do download.
+  helper.history_handler()->InvokeCallback();
+  helper.set_history_handler(nullptr);
+  helper.download_handler()->SetImageSizes(std::vector<int>(1u, 10));
+  helper.download_handler()->InvokeCallback();
+  helper.download_handler()->Reset();
+
+  // There should now be an ongoing history request for |icon_url2|.
+  ASSERT_EQ(1u, helper.current_candidate_index());
+  history_handler = helper.history_handler();
+  ASSERT_TRUE(history_handler);
+
+  // Calling OnUpdateFaviconURL() with the same icon URLs should have no effect.
+  helper.OnUpdateFaviconURL(page_url, favicon_urls);
+  EXPECT_EQ(history_handler, helper.history_handler());
 }
 
 // Test the favicon which is selected when the web page provides several
@@ -1107,7 +1161,7 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
   DownloadTillDoneIgnoringHistory(
       &driver1, &handler1, kPageURL, urls1, kSizes1);
 
-  EXPECT_EQ(0u, handler1.image_urls().size());
+  EXPECT_EQ(nullptr, handler1.current_candidate());
   EXPECT_TRUE(driver1.GetActiveFaviconValidity());
   EXPECT_FALSE(driver1.GetActiveFaviconImage().IsEmpty());
   EXPECT_EQ(gfx::kFaviconSize, driver1.GetActiveFaviconImage().Width());
@@ -1210,7 +1264,7 @@ TEST_F(FaviconHandlerTest, MultipleFavicons404) {
   DownloadTillDoneIgnoringHistory(
       &driver, &handler, kPageURL, urls2, kSizes2);
 
-  EXPECT_EQ(0u, handler.image_urls().size());
+  EXPECT_EQ(nullptr, handler.current_candidate());
   EXPECT_TRUE(driver.GetActiveFaviconValidity());
   EXPECT_FALSE(driver.GetActiveFaviconImage().IsEmpty());
   int expected_index = 2u;
@@ -1262,7 +1316,7 @@ TEST_F(FaviconHandlerTest, MultipleFaviconsAll404) {
                                kFaviconURLs + arraysize(kFaviconURLs));
   DownloadTillDoneIgnoringHistory(&driver, &handler, kPageURL, urls, kSizes);
 
-  EXPECT_EQ(0u, handler.image_urls().size());
+  EXPECT_EQ(nullptr, handler.current_candidate());
   EXPECT_FALSE(driver.GetActiveFaviconValidity());
   EXPECT_TRUE(driver.GetActiveFaviconImage().IsEmpty());
 }
@@ -1389,23 +1443,20 @@ TEST_F(FaviconHandlerTest, TestDownloadLargestFavicon) {
   // Simulate the download failed, to check whether the icons were requested
   // to download according their size.
   struct ExpectedResult {
-    // The size of image_urls_.
-    size_t image_urls_size;
     // The favicon's index in kSourceIconURLs.
     size_t favicon_index;
     // Width of largest bitmap.
     int width;
   } results[] = {
-    {5, 0, 1024},
-    {4, 2, 512},
-    {3, 1, 15},
+    {0, 1024},
+    {2, 512},
+    {1, 15},
     // The rest of bitmaps come in order.
-    {2, 3, -1},
-    {1, 4, -1},
+    {3, -1},
+    {4, -1},
   };
 
   for (int i = 0; i < 5; ++i) {
-    ASSERT_EQ(results[i].image_urls_size, handler1.image_urls().size());
     EXPECT_EQ(kSourceIconURLs[results[i].favicon_index].icon_url,
               handler1.current_candidate()->icon_url);
     if (results[i].width != -1) {
@@ -1450,7 +1501,7 @@ TEST_F(FaviconHandlerTest, TestSelectLargestFavicon) {
                                 kSourceIconURLs + arraysize(kSourceIconURLs));
   UpdateFaviconURL(&driver1, &handler1, kPageURL, urls1);
 
-  ASSERT_EQ(2u, handler1.urls().size());
+  ASSERT_EQ(2u, handler1.image_urls().size());
 
   // Index of largest favicon in kSourceIconURLs.
   size_t i = 1;
@@ -1517,7 +1568,7 @@ TEST_F(FaviconHandlerTest, TestFaviconWasScaledAfterDownload) {
                                 kSourceIconURLs + arraysize(kSourceIconURLs));
   UpdateFaviconURL(&driver1, &handler1, kPageURL, urls1);
 
-  ASSERT_EQ(2u, handler1.urls().size());
+  ASSERT_EQ(2u, handler1.image_urls().size());
 
   // Index of largest favicon in kSourceIconURLs.
   size_t i = 1;
@@ -1577,7 +1628,7 @@ TEST_F(FaviconHandlerTest, TestKeepDownloadedLargestFavicon) {
   std::vector<FaviconURL> urls1(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSourceIconURLs));
   UpdateFaviconURL(&driver1, &handler1, kPageURL, urls1);
-  ASSERT_EQ(3u, handler1.urls().size());
+  ASSERT_EQ(3u, handler1.image_urls().size());
 
   // Simulate no favicon from history.
   handler1.history_handler()->history_results_.clear();

@@ -231,7 +231,9 @@ class FaviconHandler {
 
   // Return the current candidate if any.
   favicon::FaviconURL* current_candidate() {
-    return (!image_urls_.empty()) ? &image_urls_.front() : NULL;
+    return current_candidate_index_ < image_urls_.size()
+               ? &image_urls_[current_candidate_index_]
+               : nullptr;
   }
 
   // Returns the preferred size of the image. 0 means no preference (any size
@@ -241,11 +243,6 @@ class FaviconHandler {
       return 0;
     return handler_type_ == FAVICON ? gfx::kFaviconSize : 0;
   }
-
-  // Sorts the entries in |image_urls_| by icon size in descending order.
-  // Additionally removes any entries whose sizes are all greater than the max
-  // allowed size.
-  void SortAndPruneImageUrls();
 
   // Used for FaviconService requests.
   base::CancelableTaskTracker cancelable_task_tracker_;
@@ -287,6 +284,10 @@ class FaviconHandler {
 
   // This handler's driver, owns this object.
   FaviconDriver* driver_;
+
+  // The index of the favicon URL in |image_urls_| which is currently being
+  // requested from history or downloaded.
+  size_t current_candidate_index_;
 
   // Best image we've seen so far.  As images are downloaded from the page they
   // are stored here. When there is an exact match, or no more images are
