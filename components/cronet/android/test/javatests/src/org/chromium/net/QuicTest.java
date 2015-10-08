@@ -30,13 +30,13 @@ public class QuicTest extends CronetTestBase {
         // Load library first, since we need the Quic test server's URL.
         System.loadLibrary("cronet_tests");
         QuicTestServer.startQuicTestServer(getInstrumentation().getTargetContext());
-        UrlRequestContextConfig config = new UrlRequestContextConfig();
-        config.enableQUIC(true);
-        config.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
+        CronetEngine.Builder builder = new CronetEngine.Builder(mActivity);
+        builder.enableQUIC(true);
+        builder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
                 QuicTestServer.getServerPort());
-        config.setExperimentalQuicConnectionOptions("PACE,IW10,FOO,DEADBEEF");
+        builder.setExperimentalQuicConnectionOptions("PACE,IW10,FOO,DEADBEEF");
 
-        String[] commandLineArgs = {CronetTestActivity.CONFIG_KEY, config.toString(),
+        String[] commandLineArgs = {CronetTestActivity.CONFIG_KEY, builder.toString(),
                 CronetTestActivity.CACHE_KEY, CronetTestActivity.CACHE_DISK_NO_HTTP};
         mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(null, commandLineArgs);
     }
@@ -80,9 +80,9 @@ public class QuicTest extends CronetTestBase {
         // since there is no http server running on the corresponding TCP port,
         // QUIC will always succeed with a 200 (see
         // net::HttpStreamFactoryImpl::Request::OnStreamFailed).
-        UrlRequest request = mActivity.mUrlRequestContext.createRequest(
-                quicURL, listener, listener.getExecutor());
-        request.start();
+        UrlRequest.Builder requestBuilder = new UrlRequest.Builder(
+                quicURL, listener, listener.getExecutor(), mActivity.mCronetEngine);
+        requestBuilder.build().start();
         listener.blockForDone();
 
         assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
@@ -109,18 +109,19 @@ public class QuicTest extends CronetTestBase {
         }
         assertTrue(fileContainsString("local_prefs.json",
                 QuicTestServer.getServerHost() + ":" + QuicTestServer.getServerPort()));
-        mActivity.mUrlRequestContext.shutdown();
+        mActivity.mCronetEngine.shutdown();
 
         // Make another request using a new context but with no QUIC hints.
-        UrlRequestContextConfig config = new UrlRequestContextConfig();
-        config.setStoragePath(mActivity.getTestStorage());
-        config.enableHttpCache(UrlRequestContextConfig.HTTP_CACHE_DISK, 1000 * 1024);
-        config.enableQUIC(true);
-        CronetUrlRequestContext newContext =
-                new CronetUrlRequestContext(getInstrumentation().getTargetContext(), config);
+        CronetEngine.Builder builder =
+                new CronetEngine.Builder(getInstrumentation().getTargetContext());
+        builder.setStoragePath(mActivity.getTestStorage());
+        builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1000 * 1024);
+        builder.enableQUIC(true);
+        CronetEngine newEngine = new CronetUrlRequestContext(builder);
         TestUrlRequestListener listener2 = new TestUrlRequestListener();
-        UrlRequest request2 = newContext.createRequest(quicURL, listener2, listener2.getExecutor());
-        request2.start();
+        requestBuilder =
+                new UrlRequest.Builder(quicURL, listener2, listener2.getExecutor(), newEngine);
+        requestBuilder.build().start();
         listener2.blockForDone();
         assertEquals(200, listener2.mResponseInfo.getHttpStatusCode());
         assertEquals(expectedContent, listener2.mResponseAsString);

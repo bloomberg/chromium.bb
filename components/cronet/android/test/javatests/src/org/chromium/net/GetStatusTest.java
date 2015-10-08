@@ -45,7 +45,7 @@ public class GetStatusTest extends CronetTestBase {
     @Override
     protected void tearDown() throws Exception {
         NativeTestServer.shutdownNativeTestServer();
-        mActivity.mUrlRequestContext.shutdown();
+        mActivity.mCronetEngine.shutdown();
         super.tearDown();
     }
 
@@ -55,8 +55,9 @@ public class GetStatusTest extends CronetTestBase {
         String url = NativeTestServer.getEchoMethodURL();
         TestUrlRequestListener listener = new TestUrlRequestListener();
         listener.setAutoAdvance(false);
-        UrlRequest urlRequest =
-                mActivity.mUrlRequestContext.createRequest(url, listener, listener.getExecutor());
+        UrlRequest.Builder builder = new UrlRequest.Builder(
+                url, listener, listener.getExecutor(), mActivity.mCronetEngine);
+        UrlRequest urlRequest = builder.build();
         // Calling before request is started should give Status.INVALID,
         // since the native adapter is not created.
         TestStatusListener statusListener0 = new TestStatusListener();

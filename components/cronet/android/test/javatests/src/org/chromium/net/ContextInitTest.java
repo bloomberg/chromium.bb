@@ -138,11 +138,11 @@ public class ContextInitTest extends CronetTestBase {
         // crashes like crbug.com/453845
         final CronetTestActivity activity = launchCronetTestApp();
         HttpUrlRequestFactory firstFactory =
-                HttpUrlRequestFactory.createFactory(activity, activity.getContextConfig());
+                HttpUrlRequestFactory.createFactory(activity, activity.getCronetEngineBuilder());
         HttpUrlRequestFactory secondFactory = HttpUrlRequestFactory.createFactory(
-                activity.getApplicationContext(), activity.getContextConfig());
+                activity.getApplicationContext(), activity.getCronetEngineBuilder());
         HttpUrlRequestFactory thirdFactory = HttpUrlRequestFactory.createFactory(
-                new ContextWrapper(activity), activity.getContextConfig());
+                new ContextWrapper(activity), activity.getCronetEngineBuilder());
         // Meager attempt to extend lifetimes to ensure they're concurrently
         // alive.
         firstFactory.getName();

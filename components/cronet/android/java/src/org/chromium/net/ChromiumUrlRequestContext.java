@@ -15,7 +15,7 @@ import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Provides context for the native HTTP operations.
- * @deprecated Use {@link CronetUrlRequestContext} instead.
+ * @deprecated Use {@link CronetEngine} instead.
  */
 @JNINamespace("cronet")
 @Deprecated
@@ -34,7 +34,7 @@ public class ChromiumUrlRequestContext {
      * Constructor.
      */
     protected ChromiumUrlRequestContext(
-            final Context context, String userAgent, UrlRequestContextConfig config) {
+            final Context context, String userAgent, CronetEngine.Builder config) {
         CronetLibraryLoader.ensureInitialized(context, config);
         mChromiumUrlRequestContextAdapter =
                 nativeCreateRequestContextAdapter(userAgent, getLoggingLevel(), config.toString());

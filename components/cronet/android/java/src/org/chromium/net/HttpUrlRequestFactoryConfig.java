@@ -9,7 +9,7 @@ import org.json.JSONException;
 /**
  * A config for HttpUrlRequestFactory, which allows runtime configuration of
  * HttpUrlRequestFactory.
- * @deprecated Use {@link UrlRequestContextConfig} instead.
+ * @deprecated Use {@link CronetEngine.Builder} instead.
  */
 @Deprecated
 public class HttpUrlRequestFactoryConfig extends UrlRequestContextConfig {

@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * A factory for {@link HttpUrlRequest}'s, which uses the best HTTP stack
  * available on the current platform.
- * @deprecated Use {@link UrlRequestContext} instead.
+ * @deprecated Use {@link CronetEngine} instead.
  */
 @Deprecated
 public abstract class HttpUrlRequestFactory {
@@ -24,7 +24,7 @@ public abstract class HttpUrlRequestFactory {
             "org.chromium.net.ChromiumUrlRequestFactory";
 
     public static HttpUrlRequestFactory createFactory(
-            Context context, UrlRequestContextConfig config) {
+            Context context, CronetEngine.Builder config) {
         HttpUrlRequestFactory factory = null;
         if (!config.legacyMode()) {
             factory = createChromiumFactory(context, config);
@@ -80,7 +80,7 @@ public abstract class HttpUrlRequestFactory {
     public abstract void stopNetLog();
 
     private static HttpUrlRequestFactory createChromiumFactory(
-            Context context, UrlRequestContextConfig config) {
+            Context context, CronetEngine.Builder config) {
         HttpUrlRequestFactory factory = null;
         try {
             Class<? extends HttpUrlRequestFactory> factoryClass =
@@ -88,8 +88,7 @@ public abstract class HttpUrlRequestFactory {
                             .loadClass(CHROMIUM_URL_REQUEST_FACTORY)
                             .asSubclass(HttpUrlRequestFactory.class);
             Constructor<? extends HttpUrlRequestFactory> constructor =
-                    factoryClass.getConstructor(
-                            Context.class, UrlRequestContextConfig.class);
+                    factoryClass.getConstructor(Context.class, CronetEngine.Builder.class);
             HttpUrlRequestFactory chromiumFactory =
                     constructor.newInstance(context, config);
             if (chromiumFactory.isEnabled()) {

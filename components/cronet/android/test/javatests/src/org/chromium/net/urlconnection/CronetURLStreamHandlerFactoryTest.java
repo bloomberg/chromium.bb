@@ -7,18 +7,20 @@ package org.chromium.net.urlconnection;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.net.CronetTestActivity;
 import org.chromium.net.CronetTestBase;
 
+/**
+ * Test for CronetURLStreamHandlerFactory.
+ */
 public class CronetURLStreamHandlerFactoryTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testRequireConfig() throws Exception {
-        CronetTestActivity activity = launchCronetTestApp();
+        launchCronetTestApp();
         try {
-            new CronetURLStreamHandlerFactory(activity, null);
+            new CronetURLStreamHandlerFactory(null);
         } catch (NullPointerException e) {
-            assertEquals("UrlRequestContextConfig is null.", e.getMessage());
+            assertEquals("CronetEngine is null.", e.getMessage());
         }
     }
 }

@@ -13,7 +13,7 @@ import java.util.Map;
 
 /**
  * Network request using {@link java.net.HttpURLConnection}.
- * @deprecated Use {@link UrlRequestContext} instead.
+ * @deprecated Use {@link CronetEngine} instead.
  */
 @Deprecated
 class HttpUrlConnectionUrlRequestFactory extends HttpUrlRequestFactory {
@@ -21,8 +21,7 @@ class HttpUrlConnectionUrlRequestFactory extends HttpUrlRequestFactory {
     private final Context mContext;
     private final String mDefaultUserAgent;
 
-    public HttpUrlConnectionUrlRequestFactory(
-            Context context, UrlRequestContextConfig config) {
+    public HttpUrlConnectionUrlRequestFactory(Context context, CronetEngine.Builder config) {
         mContext = context;
         String userAgent = config.userAgent();
         if (userAgent.isEmpty()) {

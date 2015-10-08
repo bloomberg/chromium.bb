@@ -49,10 +49,10 @@
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
-          'target_name': 'cronet_url_request_context_config_list',
+          'target_name': 'cronet_engine_builder_list',
           'type': 'none',
           'sources': [
-            'cronet/android/java/src/org/chromium/net/UrlRequestContextConfigList.template',
+            'cronet/android/java/src/org/chromium/net/CronetEngineBuilderList.template',
           ],
           'variables': {
             'package_name': 'org/chromium/cronet',
@@ -214,7 +214,7 @@
           'target_name': 'cronet_api',
           'type': 'none',
           'dependencies': [
-            'cronet_url_request_context_config_list',
+            'cronet_engine_builder_list',
             'cronet_version',
             'load_states_list',
             'network_quality_observations_java',
@@ -223,6 +223,8 @@
             'java_in_dir': 'cronet/android/java',
             'javac_includes': [
               '**/ChunkedWritableByteChannel.java',
+              '**/CronetEngine.java',
+              '**/CronetEngineBuilderList.java',
               '**/ExtendedResponseInfo.java',
               '**/HistogramManager.java',
               '**/HttpUrlConnection*.java',
@@ -235,9 +237,7 @@
               '**/UploadDataProvider.java',
               '**/UploadDataSink.java',
               '**/UrlRequest.java',
-              '**/UrlRequestContext.java',
               '**/UrlRequestContextConfig.java',
-              '**/UrlRequestContextConfigList.java',
               '**/UrlRequestException.java',
               '**/UrlRequestListener.java',
               '**/UserAgent.java',

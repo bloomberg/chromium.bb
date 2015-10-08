@@ -4,15 +4,214 @@
 
 package org.chromium.net;
 
+import android.util.Pair;
+
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 
 /**
  * Controls an HTTP request (GET, PUT, POST etc).
- * Created using {@link UrlRequestContext#createRequest UrlRequestContext.createRequest()}.
+ * Created using {@link UrlRequest.Builder}.
  * Note: All methods must be called on the {@link Executor} passed in during creation.
  */
 public interface UrlRequest {
+    /**
+     * Builder for {@link UrlRequest}s. Allows configuring requests before constructing them
+     * with {@link Builder#build}.
+     */
+    public static final class Builder {
+        // All fields are temporary storage of UrlRequest configuration to be
+        // copied to built UrlRequests.
+
+        // CronetEngine to execute request.
+        final CronetEngine mCronetEngine;
+        // URL to request.
+        final String mUrl;
+        // Listener to receive progress callbacks.
+        final UrlRequestListener mListener;
+        // Executor to call listener on.
+        final Executor mExecutor;
+        // HTTP method (e.g. GET, POST etc).
+        String mMethod;
+        // List of request headers, stored as header field name and value pairs.
+        final ArrayList<Pair<String, String>> mRequestHeaders =
+                new ArrayList<Pair<String, String>>();
+        // Disable the cache for just this request.
+        boolean mDisableCache;
+        // Priority of request.
+        int mPriority = REQUEST_PRIORITY_MEDIUM;
+        // If request is an upload, this provides the request body data.
+        UploadDataProvider mUploadDataProvider;
+        // Executor to call upload data provider back on.
+        Executor mUploadDataProviderExecutor;
+
+        /**
+         * Creates a builder for {@link UrlRequest} objects. All callbacks for
+         * generated {@link UrlRequest} objects will be called on
+         * {@code executor}'s thread. {@code executor} must not run tasks on the
+         * current thread to prevent blocking networking operations and causing
+         * exceptions during shutdown.
+         *
+         * @param url {@link java.net.URL} for the generated requests.
+         * @param listener callback class that gets called on different events.
+         * @param executor {@link Executor} on which all callbacks will be called.
+         * @param cronetEngine {@link CronetEngine} used to execute this request.
+         */
+        public Builder(String url, UrlRequestListener listener, Executor executor,
+                CronetEngine cronetEngine) {
+            if (url == null) {
+                throw new NullPointerException("URL is required.");
+            }
+            if (listener == null) {
+                throw new NullPointerException("Listener is required.");
+            }
+            if (executor == null) {
+                throw new NullPointerException("Executor is required.");
+            }
+            if (cronetEngine == null) {
+                throw new NullPointerException("CronetEngine is required.");
+            }
+            mUrl = url;
+            mListener = listener;
+            mExecutor = executor;
+            mCronetEngine = cronetEngine;
+        }
+
+        /**
+         * Sets the HTTP method verb to use for this request.
+         *
+         * <p>The default when this method is not called is "GET" if the request has
+         * no body or "POST" if it does.
+         *
+         * @param method "GET", "HEAD", "DELETE", "POST" or "PUT".
+         * @return the builder to facilitate chaining.
+         */
+        public Builder setHttpMethod(String method) {
+            if (method == null) {
+                throw new NullPointerException("Method is required.");
+            }
+            mMethod = method;
+            return this;
+        }
+
+        /**
+         * Adds a request header.
+         *
+         * @param header header name.
+         * @param value header value.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder addHeader(String header, String value) {
+            if (header == null) {
+                throw new NullPointerException("Invalid header name.");
+            }
+            if (value == null) {
+                throw new NullPointerException("Invalid header value.");
+            }
+            mRequestHeaders.add(Pair.create(header, value));
+            return this;
+        }
+
+        /**
+         * Disables cache for the request. If context is not set up to use cache,
+         * this call has no effect.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder disableCache() {
+            mDisableCache = true;
+            return this;
+        }
+
+        /**
+         * Lowest request priority. Passed to {@link #setPriority}.
+         */
+        public static final int REQUEST_PRIORITY_IDLE = 0;
+        /**
+         * Very low request priority. Passed to {@link #setPriority}.
+         */
+        public static final int REQUEST_PRIORITY_LOWEST = 1;
+        /**
+         * Low request priority. Passed to {@link #setPriority}.
+         */
+        public static final int REQUEST_PRIORITY_LOW = 2;
+        /**
+         * Medium request priority. Passed to {@link #setPriority}.
+         */
+        public static final int REQUEST_PRIORITY_MEDIUM = 3;
+        /**
+         * Highest request priority. Passed to {@link #setPriority}.
+         */
+        public static final int REQUEST_PRIORITY_HIGHEST = 4;
+
+        /**
+         * Sets priority of the request which should be one of the
+         * {@link #REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*} values.
+         * Defaults to {@link #REQUEST_PRIORITY_MEDIUM}
+         *
+         * @param priority priority of the request which should be one of the
+         *         {@link #REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*} values.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder setPriority(int priority) {
+            mPriority = priority;
+            return this;
+        }
+
+        /**
+         * Sets upload data provider. Switches method to "POST" if not
+         * explicitly set. Starting the request will throw an exception if a
+         * Content-Type header is not set.
+         *
+         * @param uploadDataProvider responsible for providing the upload data.
+         * @param executor All {@code uploadDataProvider} methods will be called
+         *     using this {@code Executor}. May optionally be the same
+         *     {@code Executor} the request itself is using.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder setUploadDataProvider(
+                UploadDataProvider uploadDataProvider, Executor executor) {
+            if (uploadDataProvider == null) {
+                throw new NullPointerException("Invalid UploadDataProvider.");
+            }
+            if (executor == null) {
+                throw new NullPointerException("Invalid UploadDataProvider Executor.");
+            }
+            if (mMethod == null) {
+                mMethod = "POST";
+            }
+            mUploadDataProvider = uploadDataProvider;
+            mUploadDataProviderExecutor = executor;
+            return this;
+        }
+
+        /**
+         * Creates a {@link UrlRequest} using configuration within this
+         * {@link Builder}. The returned {@code UrlRequest} can then be started
+         * by calling {@link UrlRequest#start}.
+         *
+         * @return constructed {@link UrlRequest} using configuration within
+         *         this {@link Builder}.
+         */
+        public UrlRequest build() {
+            final UrlRequest request =
+                    mCronetEngine.createRequest(mUrl, mListener, mExecutor, mPriority);
+            if (mMethod != null) {
+                request.setHttpMethod(mMethod);
+            }
+            if (mDisableCache) {
+                request.disableCache();
+            }
+            for (Pair<String, String> header : mRequestHeaders) {
+                request.addHeader(header.first, header.second);
+            }
+            if (mUploadDataProvider != null) {
+                request.setUploadDataProvider(mUploadDataProvider, mUploadDataProviderExecutor);
+            }
+            return request;
+        }
+    }
+
     /**
      * Request status values returned by {@link #getStatus}.
      */
@@ -196,36 +395,6 @@ public interface UrlRequest {
     }
 
     /**
-     * Lowest request priority. Passed to {@link UrlRequestContext#createRequest(String,
-     * UrlRequestListener, Executor, int) UrlRequestContext.createRequest()}.
-     */
-    public static final int REQUEST_PRIORITY_IDLE = 0;
-    /**
-     * Very low request priority. Passed to {@link UrlRequestContext#createRequest(String,
-     * UrlRequestListener, Executor, int) UrlRequestContext.createRequest()}.
-     */
-    public static final int REQUEST_PRIORITY_LOWEST = 1;
-    /**
-     * Low request priority. Passed to {@link UrlRequestContext#createRequest(String,
-     * UrlRequestListener, Executor, int) UrlRequestContext.createRequest()}.
-     */
-    public static final int REQUEST_PRIORITY_LOW = 2;
-    /**
-     * Medium request priority. Passed to {@link UrlRequestContext#createRequest(String,
-     * UrlRequestListener, Executor, int) UrlRequestContext.createRequest()}.
-     */
-    public static final int REQUEST_PRIORITY_MEDIUM = 3;
-    /**
-     * Highest request priority. Passed to {@link UrlRequestContext#createRequest(String,
-     * UrlRequestListener, Executor, int) UrlRequestContext.createRequest()}.
-     */
-    public static final int REQUEST_PRIORITY_HIGHEST = 4;
-
-    // More setters go here. They may only be called before start (Maybe
-    // also allow during redirects). Could optionally instead use arguments
-    // to URLRequestFactory when creating the request.
-
-    /**
      * Sets the HTTP method verb to use for this request. Must be done before
      * request has started.
      *
@@ -233,16 +402,18 @@ public interface UrlRequest {
      * no body or "POST" if it does.
      *
      * @param method "GET", "HEAD", "DELETE", "POST" or "PUT".
+     * @deprecated Use {@link Builder#setHttpMethod}.
      */
-    public void setHttpMethod(String method);
+    @Deprecated public void setHttpMethod(String method);
 
     /**
      * Adds a request header. Must be done before request has started.
      *
      * @param header header name.
      * @param value header value.
+     * @deprecated Use {@link Builder#setPriority}.
      */
-    public void addHeader(String header, String value);
+    @Deprecated public void addHeader(String header, String value);
 
     /**
      * Sets upload data provider. Must be done before request has started. May only be
@@ -254,7 +425,9 @@ public interface UrlRequest {
      * @param executor All {@code uploadDataProvider} methods will be called
      *     using this {@code Executor}. May optionally be the same
      *     {@code Executor} the request itself is using.
+     * @deprecated Use {@link Builder#setUploadDataProvider}.
      */
+    @Deprecated
     public void setUploadDataProvider(UploadDataProvider uploadDataProvider, Executor executor);
 
     /**
@@ -346,8 +519,9 @@ public interface UrlRequest {
     /**
      * Disables cache for the request. If context is not set up to use cache,
      * this call has no effect.
+     * @deprecated Use {@link Builder#disableCache}.
      */
-    public void disableCache();
+    @Deprecated public void disableCache();
 
     /**
      * Queries the status of the request.

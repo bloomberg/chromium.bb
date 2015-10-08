@@ -7,10 +7,10 @@ package org.chromium.net.urlconnection;
 import android.util.Pair;
 
 import org.chromium.base.Log;
+import org.chromium.net.CronetEngine;
 import org.chromium.net.ExtendedResponseInfo;
 import org.chromium.net.ResponseInfo;
 import org.chromium.net.UrlRequest;
-import org.chromium.net.UrlRequestContext;
 import org.chromium.net.UrlRequestException;
 import org.chromium.net.UrlRequestListener;
 
@@ -36,9 +36,9 @@ import java.util.TreeMap;
 class CronetHttpURLConnection extends HttpURLConnection {
     private static final String TAG = "cr.CronetHttpURLConn";
     private static final String CONTENT_LENGTH = "Content-Length";
-    private final UrlRequestContext mUrlRequestContext;
+    private final CronetEngine mCronetEngine;
     private final MessageLoop mMessageLoop;
-    private final UrlRequest mRequest;
+    private UrlRequest mRequest;
     private final List<Pair<String, String>> mRequestHeaders;
 
     private CronetInputStream mInputStream;
@@ -48,13 +48,10 @@ class CronetHttpURLConnection extends HttpURLConnection {
     private boolean mOnRedirectCalled = false;
     private boolean mHasResponse = false;
 
-    public CronetHttpURLConnection(URL url,
-            UrlRequestContext urlRequestContext) {
+    public CronetHttpURLConnection(URL url, CronetEngine cronetEngine) {
         super(url);
-        mUrlRequestContext = urlRequestContext;
+        mCronetEngine = cronetEngine;
         mMessageLoop = new MessageLoop();
-        mRequest = mUrlRequestContext.createRequest(url.toString(),
-                new CronetUrlRequestListener(), mMessageLoop);
         mInputStream = new CronetInputStream(this);
         mRequestHeaders = new ArrayList<Pair<String, String>>();
     }
@@ -255,9 +252,12 @@ class CronetHttpURLConnection extends HttpURLConnection {
         if (connected) {
             return;
         }
+        final UrlRequest.Builder requestBuilder = new UrlRequest.Builder(
+                getURL().toString(), new CronetUrlRequestListener(), mMessageLoop, mCronetEngine);
         if (doOutput) {
             if (mOutputStream != null) {
-                mRequest.setUploadDataProvider(mOutputStream.getUploadDataProvider(), mMessageLoop);
+                requestBuilder.setUploadDataProvider(
+                        mOutputStream.getUploadDataProvider(), mMessageLoop);
                 if (getRequestProperty(CONTENT_LENGTH) == null && !isChunkedUpload()) {
                     addRequestProperty(CONTENT_LENGTH,
                             Long.toString(mOutputStream.getUploadDataProvider().getLength()));
@@ -277,12 +277,13 @@ class CronetHttpURLConnection extends HttpURLConnection {
             }
         }
         for (Pair<String, String> requestHeader : mRequestHeaders) {
-            mRequest.addHeader(requestHeader.first, requestHeader.second);
+            requestBuilder.addHeader(requestHeader.first, requestHeader.second);
         }
         if (!getUseCaches()) {
-            mRequest.disableCache();
+            requestBuilder.disableCache();
         }
         connected = true;
+        mRequest = requestBuilder.build();
         // Start the request.
         mRequest.start();
     }

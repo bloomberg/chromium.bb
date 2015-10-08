@@ -146,7 +146,8 @@ final class CronetBufferedOutputStream extends CronetOutputStream {
             // TODO(xunjieli): Think of a less fragile way, since getLength() can be
             // potentially called in other places in the future.
             if (mInitialContentLength == -1) {
-                return mBuffer.position();
+                // Account for the fact that setConnected() flip()s mBuffer.
+                return mConnected ? mBuffer.limit() : mBuffer.position();
             }
             return mInitialContentLength;
         }

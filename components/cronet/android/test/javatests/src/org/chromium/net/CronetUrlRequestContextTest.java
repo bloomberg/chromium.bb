@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.Executor;
 
 /**
- * Test CronetUrlRequestContext.
+ * Test CronetEngine.
  */
 public class CronetUrlRequestContextTest extends CronetTestBase {
     // URLs used for tests.
@@ -53,11 +53,11 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         @Override
         public void run() {
             mRunBlocker.block();
-            UrlRequestContext requestContext = mActivity.initRequestContext();
+            CronetEngine cronetEngine = mActivity.initCronetEngine();
             mListener = new TestUrlRequestListener();
-            UrlRequest urlRequest =
-                    requestContext.createRequest(mUrl, mListener, mListener.getExecutor());
-            urlRequest.start();
+            UrlRequest.Builder urlRequestBuilder =
+                    new UrlRequest.Builder(mUrl, mListener, mListener.getExecutor(), cronetEngine);
+            urlRequestBuilder.build().start();
             mListener.blockForDone();
         }
     }
@@ -70,7 +70,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         @Override
         public void onSucceeded(UrlRequest request, ExtendedResponseInfo info) {
             super.onSucceeded(request, info);
-            mActivity.mUrlRequestContext.shutdown();
+            mActivity.mCronetEngine.shutdown();
         }
 
         @Override
@@ -78,7 +78,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 ResponseInfo info,
                 UrlRequestException error) {
             super.onFailed(request, info, error);
-            mActivity.mUrlRequestContext.shutdown();
+            mActivity.mCronetEngine.shutdown();
         }
     }
 
@@ -127,21 +127,19 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     public void testConfigUserAgent() throws Exception {
         String userAgentName = "User-Agent";
         String userAgentValue = "User-Agent-Value";
-        UrlRequestContextConfig config = new UrlRequestContextConfig();
-        config.setUserAgent(userAgentValue);
-        config.setLibraryName("cronet_tests");
-        String[] commandLineArgs = {
-                CronetTestActivity.CONFIG_KEY, config.toString()
-        };
+        CronetEngine.Builder cronetEngineBuilder = new CronetEngine.Builder(mActivity);
+        cronetEngineBuilder.setUserAgent(userAgentValue);
+        cronetEngineBuilder.setLibraryName("cronet_tests");
+        String[] commandLineArgs = {CronetTestActivity.CONFIG_KEY, cronetEngineBuilder.toString()};
         mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(TEST_URL,
                 commandLineArgs);
         assertTrue(NativeTestServer.startNativeTestServer(
                 getInstrumentation().getTargetContext()));
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                NativeTestServer.getEchoHeaderURL(userAgentName), listener,
-                listener.getExecutor());
-        urlRequest.start();
+        UrlRequest.Builder urlRequestBuilder =
+                new UrlRequest.Builder(NativeTestServer.getEchoHeaderURL(userAgentName), listener,
+                        listener.getExecutor(), mActivity.mCronetEngine);
+        urlRequestBuilder.build().start();
         listener.blockForDone();
         assertEquals(userAgentValue, listener.mResponseAsString);
     }
@@ -152,9 +150,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mActivity = launchCronetTestAppAndSkipFactoryInit();
 
         // Ensure native code is loaded before trying to start test server.
-        UrlRequestContext.createContext(
-                getInstrumentation().getTargetContext(),
-                new UrlRequestContextConfig().setLibraryName("cronet_tests"))
+        new CronetEngine.Builder(getInstrumentation().getTargetContext())
+                .setLibraryName("cronet_tests")
+                .build()
                 .shutdown();
 
         assertTrue(NativeTestServer.startNativeTestServer(
@@ -167,23 +165,22 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // Enable the Data Reduction Proxy and configure it to use the test
         // server as its primary proxy, and to check successfully that this
         // proxy is OK to use.
-        UrlRequestContextConfig config = new UrlRequestContextConfig();
-        config.enableDataReductionProxy("test-key");
-        config.setDataReductionProxyOptions(
-                serverHostPort, "unused.net:9999",
+        CronetEngine.Builder cronetEngineBuilder =
+                new CronetEngine.Builder(getInstrumentation().getTargetContext());
+        cronetEngineBuilder.enableDataReductionProxy("test-key");
+        cronetEngineBuilder.setDataReductionProxyOptions(serverHostPort, "unused.net:9999",
                 NativeTestServer.getFileURL("/secureproxychecksuccess.txt"));
-        config.setLibraryName("cronet_tests");
-        mActivity.mUrlRequestContext = UrlRequestContext.createContext(
-                getInstrumentation().getTargetContext(), config);
+        cronetEngineBuilder.setLibraryName("cronet_tests");
+        mActivity.mCronetEngine = cronetEngineBuilder.build();
         TestUrlRequestListener listener = new TestUrlRequestListener();
 
         // Construct and start a request that can only be returned by the test
         // server. This request will fail if the configuration logic for the
         // Data Reduction Proxy is not used.
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                "http://DomainThatDoesnt.Resolve/datareductionproxysuccess.txt",
-                listener, listener.getExecutor());
-        urlRequest.start();
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
+                "http://DomainThatDoesnt.Resolve/datareductionproxysuccess.txt", listener,
+                listener.getExecutor(), mActivity.mCronetEngine);
+        urlRequestBuilder.build().start();
         listener.blockForDone();
 
         // Verify that the request is successful and that the Data Reduction
@@ -201,23 +198,23 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mActivity = launchCronetTestApp();
         TestNetworkQualityListener networkQualityListener = new TestNetworkQualityListener();
         try {
-            mActivity.mUrlRequestContext.addRttListener(networkQualityListener);
+            mActivity.mCronetEngine.addRttListener(networkQualityListener);
             fail("Should throw an exception.");
         } catch (IllegalStateException e) {
         }
         try {
-            mActivity.mUrlRequestContext.addThroughputListener(networkQualityListener);
+            mActivity.mCronetEngine.addThroughputListener(networkQualityListener);
             fail("Should throw an exception.");
         } catch (IllegalStateException e) {
         }
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                TEST_URL, listener, listener.getExecutor());
+        UrlRequest urlRequest =
+                mActivity.mCronetEngine.createRequest(TEST_URL, listener, listener.getExecutor());
         urlRequest.start();
         listener.blockForDone();
         assertEquals(0, networkQualityListener.rttObservationCount());
         assertEquals(0, networkQualityListener.throughputObservationCount());
-        mActivity.mUrlRequestContext.shutdown();
+        mActivity.mCronetEngine.shutdown();
     }
 
     @SmallTest
@@ -226,21 +223,20 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mActivity = launchCronetTestApp();
         TestExecutor testExecutor = new TestExecutor();
         TestNetworkQualityListener networkQualityListener = new TestNetworkQualityListener();
-        mActivity.mUrlRequestContext.enableNetworkQualityEstimatorForTesting(
-                true, true, testExecutor);
-        mActivity.mUrlRequestContext.addRttListener(networkQualityListener);
-        mActivity.mUrlRequestContext.addThroughputListener(networkQualityListener);
-        mActivity.mUrlRequestContext.removeRttListener(networkQualityListener);
-        mActivity.mUrlRequestContext.removeThroughputListener(networkQualityListener);
+        mActivity.mCronetEngine.enableNetworkQualityEstimatorForTesting(true, true, testExecutor);
+        mActivity.mCronetEngine.addRttListener(networkQualityListener);
+        mActivity.mCronetEngine.addThroughputListener(networkQualityListener);
+        mActivity.mCronetEngine.removeRttListener(networkQualityListener);
+        mActivity.mCronetEngine.removeThroughputListener(networkQualityListener);
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                TEST_URL, listener, listener.getExecutor());
+        UrlRequest urlRequest =
+                mActivity.mCronetEngine.createRequest(TEST_URL, listener, listener.getExecutor());
         urlRequest.start();
         listener.blockForDone();
         testExecutor.runAllTasks();
         assertEquals(0, networkQualityListener.rttObservationCount());
         assertEquals(0, networkQualityListener.throughputObservationCount());
-        mActivity.mUrlRequestContext.shutdown();
+        mActivity.mCronetEngine.shutdown();
     }
 
     @SmallTest
@@ -249,19 +245,18 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mActivity = launchCronetTestApp();
         TestExecutor testExecutor = new TestExecutor();
         TestNetworkQualityListener networkQualityListener = new TestNetworkQualityListener();
-        mActivity.mUrlRequestContext.enableNetworkQualityEstimatorForTesting(
-                true, true, testExecutor);
-        mActivity.mUrlRequestContext.addRttListener(networkQualityListener);
-        mActivity.mUrlRequestContext.addThroughputListener(networkQualityListener);
+        mActivity.mCronetEngine.enableNetworkQualityEstimatorForTesting(true, true, testExecutor);
+        mActivity.mCronetEngine.addRttListener(networkQualityListener);
+        mActivity.mCronetEngine.addThroughputListener(networkQualityListener);
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                TEST_URL, listener, listener.getExecutor());
+        UrlRequest urlRequest =
+                mActivity.mCronetEngine.createRequest(TEST_URL, listener, listener.getExecutor());
         urlRequest.start();
         listener.blockForDone();
         testExecutor.runAllTasks();
         assertTrue(networkQualityListener.rttObservationCount() > 0);
         assertTrue(networkQualityListener.throughputObservationCount() > 0);
-        mActivity.mUrlRequestContext.shutdown();
+        mActivity.mCronetEngine.shutdown();
     }
 
     @SmallTest
@@ -272,11 +267,12 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // Block listener when response starts to verify that shutdown fails
         // if there are active requests.
         listener.setAutoAdvance(false);
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                TEST_URL, listener, listener.getExecutor());
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
+                TEST_URL, listener, listener.getExecutor(), mActivity.mCronetEngine);
+        UrlRequest urlRequest = urlRequestBuilder.build();
         urlRequest.start();
         try {
-            mActivity.mUrlRequestContext.shutdown();
+            mActivity.mCronetEngine.shutdown();
             fail("Should throw an exception");
         } catch (Exception e) {
             assertEquals("Cannot shutdown with active requests.",
@@ -286,7 +282,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         listener.waitForNextStep();
         assertEquals(ResponseStep.ON_RESPONSE_STARTED, listener.mResponseStep);
         try {
-            mActivity.mUrlRequestContext.shutdown();
+            mActivity.mCronetEngine.shutdown();
             fail("Should throw an exception");
         } catch (Exception e) {
             assertEquals("Cannot shutdown with active requests.",
@@ -297,7 +293,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         listener.waitForNextStep();
         assertEquals(ResponseStep.ON_READ_COMPLETED, listener.mResponseStep);
         try {
-            mActivity.mUrlRequestContext.shutdown();
+            mActivity.mCronetEngine.shutdown();
             fail("Should throw an exception");
         } catch (Exception e) {
             assertEquals("Cannot shutdown with active requests.",
@@ -335,18 +331,18 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
         // Create new request context, but its initialization on the main thread
         // will be stuck behind blockingTask.
-        final UrlRequestContext requestContext = activity.initRequestContext();
+        final CronetEngine cronetEngine = activity.initCronetEngine();
         // Unblock the main thread, so context gets initialized and shutdown on
         // it.
         block.open();
         // Shutdown will wait for init to complete on main thread.
-        requestContext.shutdown();
+        cronetEngine.shutdown();
         // Verify that context is shutdown.
         try {
-            requestContext.stopNetLog();
+            cronetEngine.stopNetLog();
             fail("Should throw an exception.");
         } catch (Exception e) {
-            assertEquals("Context is shut down.", e.getMessage());
+            assertEquals("Engine is shut down.", e.getMessage());
         }
     }
 
@@ -360,15 +356,15 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         Runnable blockingTask = new Runnable() {
             public void run() {
                 // Create new request context, loading the library.
-                final UrlRequestContext requestContext = activity.initRequestContext();
+                final CronetEngine cronetEngine = activity.initCronetEngine();
                 // Shutdown right after init.
-                requestContext.shutdown();
+                cronetEngine.shutdown();
                 // Verify that context is shutdown.
                 try {
-                    requestContext.stopNetLog();
+                    cronetEngine.stopNetLog();
                     fail("Should throw an exception.");
                 } catch (Exception e) {
-                    assertEquals("Context is shut down.", e.getMessage());
+                    assertEquals("Engine is shut down.", e.getMessage());
                 }
                 block.open();
             }
@@ -383,12 +379,11 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     public void testMultipleShutdown() throws Exception {
         mActivity = launchCronetTestApp();
         try {
-            mActivity.mUrlRequestContext.shutdown();
-            mActivity.mUrlRequestContext.shutdown();
+            mActivity.mCronetEngine.shutdown();
+            mActivity.mCronetEngine.shutdown();
             fail("Should throw an exception");
         } catch (Exception e) {
-            assertEquals("Context is shut down.",
-                         e.getMessage());
+            assertEquals("Engine is shut down.", e.getMessage());
         }
     }
 
@@ -397,9 +392,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     public void testShutdownAfterError() throws Exception {
         mActivity = launchCronetTestApp();
         TestUrlRequestListener listener = new ShutdownTestUrlRequestListener();
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                MOCK_CRONET_TEST_FAILED_URL, listener, listener.getExecutor());
-        urlRequest.start();
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(MOCK_CRONET_TEST_FAILED_URL,
+                listener, listener.getExecutor(), mActivity.mCronetEngine);
+        urlRequestBuilder.build().start();
         listener.blockForDone();
         assertTrue(listener.mOnErrorCalled);
     }
@@ -412,11 +407,12 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // Block listener when response starts to verify that shutdown fails
         // if there are active requests.
         listener.setAutoAdvance(false);
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                TEST_URL, listener, listener.getExecutor());
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
+                TEST_URL, listener, listener.getExecutor(), mActivity.mCronetEngine);
+        UrlRequest urlRequest = urlRequestBuilder.build();
         urlRequest.start();
         try {
-            mActivity.mUrlRequestContext.shutdown();
+            mActivity.mCronetEngine.shutdown();
             fail("Should throw an exception");
         } catch (Exception e) {
             assertEquals("Cannot shutdown with active requests.",
@@ -425,7 +421,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         listener.waitForNextStep();
         assertEquals(ResponseStep.ON_RESPONSE_STARTED, listener.mResponseStep);
         urlRequest.cancel();
-        mActivity.mUrlRequestContext.shutdown();
+        mActivity.mCronetEngine.shutdown();
     }
 
     @SmallTest
@@ -434,21 +430,20 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         Context context = getInstrumentation().getTargetContext();
         File directory = new File(PathUtils.getDataDirectory(context));
         File file = File.createTempFile("cronet", "json", directory);
-        CronetUrlRequestContext requestContext = new CronetUrlRequestContext(
-                context,
-                new UrlRequestContextConfig().setLibraryName("cronet_tests"));
+        CronetEngine cronetEngine = new CronetUrlRequestContext(
+                new CronetEngine.Builder(context).setLibraryName("cronet_tests"));
         // Start NetLog immediately after the request context is created to make
         // sure that the call won't crash the app even when the native request
         // context is not fully initialized. See crbug.com/470196.
-        requestContext.startNetLogToFile(file.getPath(), false);
+        cronetEngine.startNetLogToFile(file.getPath(), false);
 
         // Start a request.
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest request = requestContext.createRequest(
-                TEST_URL, listener, listener.getExecutor());
-        request.start();
+        UrlRequest.Builder urlRequestBuilder =
+                new UrlRequest.Builder(TEST_URL, listener, listener.getExecutor(), cronetEngine);
+        urlRequestBuilder.build().start();
         listener.blockForDone();
-        requestContext.stopNetLog();
+        cronetEngine.stopNetLog();
         assertTrue(file.exists());
         assertTrue(file.length() != 0);
         assertFalse(hasBytesInNetLog(file));
@@ -461,21 +456,20 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     public void testNetLogAfterShutdown() throws Exception {
         mActivity = launchCronetTestApp();
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                TEST_URL, listener, listener.getExecutor());
-        urlRequest.start();
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
+                TEST_URL, listener, listener.getExecutor(), mActivity.mCronetEngine);
+        urlRequestBuilder.build().start();
         listener.blockForDone();
-        mActivity.mUrlRequestContext.shutdown();
+        mActivity.mCronetEngine.shutdown();
 
         File directory = new File(PathUtils.getDataDirectory(
                 getInstrumentation().getTargetContext()));
         File file = File.createTempFile("cronet", "json", directory);
         try {
-            mActivity.mUrlRequestContext.startNetLogToFile(file.getPath(),
-                    false);
+            mActivity.mCronetEngine.startNetLogToFile(file.getPath(), false);
             fail("Should throw an exception.");
         } catch (Exception e) {
-            assertEquals("Context is shut down.", e.getMessage());
+            assertEquals("Engine is shut down.", e.getMessage());
         }
         assertFalse(hasBytesInNetLog(file));
         assertTrue(file.delete());
@@ -490,17 +484,17 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 getInstrumentation().getTargetContext()));
         File file = File.createTempFile("cronet", "json", directory);
         // Start NetLog multiple times.
-        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath(), false);
-        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath(), false);
-        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath(), false);
-        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath(), false);
+        mActivity.mCronetEngine.startNetLogToFile(file.getPath(), false);
+        mActivity.mCronetEngine.startNetLogToFile(file.getPath(), false);
+        mActivity.mCronetEngine.startNetLogToFile(file.getPath(), false);
+        mActivity.mCronetEngine.startNetLogToFile(file.getPath(), false);
         // Start a request.
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                TEST_URL, listener, listener.getExecutor());
-        urlRequest.start();
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
+                TEST_URL, listener, listener.getExecutor(), mActivity.mCronetEngine);
+        urlRequestBuilder.build().start();
         listener.blockForDone();
-        mActivity.mUrlRequestContext.stopNetLog();
+        mActivity.mCronetEngine.stopNetLog();
         assertTrue(file.exists());
         assertTrue(file.length() != 0);
         assertFalse(hasBytesInNetLog(file));
@@ -515,19 +509,19 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         File directory = new File(PathUtils.getDataDirectory(
                 getInstrumentation().getTargetContext()));
         File file = File.createTempFile("cronet", "json", directory);
-        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath(), false);
+        mActivity.mCronetEngine.startNetLogToFile(file.getPath(), false);
         // Start a request.
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                TEST_URL, listener, listener.getExecutor());
-        urlRequest.start();
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
+                TEST_URL, listener, listener.getExecutor(), mActivity.mCronetEngine);
+        urlRequestBuilder.build().start();
         listener.blockForDone();
         // Stop NetLog multiple times.
-        mActivity.mUrlRequestContext.stopNetLog();
-        mActivity.mUrlRequestContext.stopNetLog();
-        mActivity.mUrlRequestContext.stopNetLog();
-        mActivity.mUrlRequestContext.stopNetLog();
-        mActivity.mUrlRequestContext.stopNetLog();
+        mActivity.mCronetEngine.stopNetLog();
+        mActivity.mCronetEngine.stopNetLog();
+        mActivity.mCronetEngine.stopNetLog();
+        mActivity.mCronetEngine.stopNetLog();
+        mActivity.mCronetEngine.stopNetLog();
         assertTrue(file.exists());
         assertTrue(file.length() != 0);
         assertFalse(hasBytesInNetLog(file));
@@ -541,18 +535,17 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         Context context = getInstrumentation().getTargetContext();
         File directory = new File(PathUtils.getDataDirectory(context));
         File file = File.createTempFile("cronet", "json", directory);
-        CronetUrlRequestContext requestContext = new CronetUrlRequestContext(
-                context,
-                new UrlRequestContextConfig().setLibraryName("cronet_tests"));
+        CronetEngine cronetEngine = new CronetUrlRequestContext(
+                new CronetEngine.Builder(context).setLibraryName("cronet_tests"));
         // Start NetLog with logAll as true.
-        requestContext.startNetLogToFile(file.getPath(), true);
+        cronetEngine.startNetLogToFile(file.getPath(), true);
         // Start a request.
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest request = requestContext.createRequest(
-                TEST_URL, listener, listener.getExecutor());
-        request.start();
+        UrlRequest.Builder urlRequestBuilder =
+                new UrlRequest.Builder(TEST_URL, listener, listener.getExecutor(), cronetEngine);
+        urlRequestBuilder.build().start();
         listener.blockForDone();
-        requestContext.stopNetLog();
+        cronetEngine.stopNetLog();
         assertTrue(file.exists());
         assertTrue(file.length() != 0);
         assertTrue(hasBytesInNetLog(file));
@@ -577,11 +570,11 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     private void enableCache(int cacheType) throws Exception {
         String cacheTypeString = "";
-        if (cacheType == UrlRequestContextConfig.HTTP_CACHE_DISK) {
+        if (cacheType == CronetEngine.Builder.HTTP_CACHE_DISK) {
             cacheTypeString = CronetTestActivity.CACHE_DISK;
-        } else if (cacheType == UrlRequestContextConfig.HTTP_CACHE_DISK_NO_HTTP) {
+        } else if (cacheType == CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP) {
             cacheTypeString = CronetTestActivity.CACHE_DISK_NO_HTTP;
-        } else if (cacheType == UrlRequestContextConfig.HTTP_CACHE_IN_MEMORY) {
+        } else if (cacheType == CronetEngine.Builder.HTTP_CACHE_IN_MEMORY) {
             cacheTypeString = CronetTestActivity.CACHE_IN_MEMORY;
         }
         String[] commandLineArgs = {CronetTestActivity.CACHE_KEY, cacheTypeString};
@@ -598,12 +591,12 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     private void checkRequestCaching(String url, boolean expectCached,
             boolean disableCache) {
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                url, listener, listener.getExecutor());
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
+                url, listener, listener.getExecutor(), mActivity.mCronetEngine);
         if (disableCache) {
-            urlRequest.disableCache();
+            urlRequestBuilder.disableCache();
         }
-        urlRequest.start();
+        urlRequestBuilder.build().start();
         listener.blockForDone();
         assertEquals(expectCached, listener.mResponseInfo.wasCached());
     }
@@ -611,7 +604,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCacheDisabled() throws Exception {
-        enableCache(UrlRequestContextConfig.HTTP_CACHE_DISABLED);
+        enableCache(CronetEngine.Builder.HTTP_CACHE_DISABLED);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, false);
@@ -621,7 +614,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCacheInMemory() throws Exception {
-        enableCache(UrlRequestContextConfig.HTTP_CACHE_IN_MEMORY);
+        enableCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, true);
@@ -632,7 +625,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCacheDisk() throws Exception {
-        enableCache(UrlRequestContextConfig.HTTP_CACHE_DISK);
+        enableCache(CronetEngine.Builder.HTTP_CACHE_DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, true);
@@ -643,7 +636,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCacheDiskNoHttp() throws Exception {
-        enableCache(UrlRequestContextConfig.HTTP_CACHE_DISABLED);
+        enableCache(CronetEngine.Builder.HTTP_CACHE_DISABLED);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, false);
@@ -653,7 +646,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testDisableCache() throws Exception {
-        enableCache(UrlRequestContextConfig.HTTP_CACHE_DISK);
+        enableCache(CronetEngine.Builder.HTTP_CACHE_DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
 
         // When cache is disabled, making a request does not write to the cache.
@@ -670,10 +663,10 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
         // Cache is disabled after server is shut down, request should fail.
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                url, listener, listener.getExecutor());
-        urlRequest.disableCache();
-        urlRequest.start();
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
+                url, listener, listener.getExecutor(), mActivity.mCronetEngine);
+        urlRequestBuilder.disableCache();
+        urlRequestBuilder.build().start();
         listener.blockForDone();
         assertNotNull(listener.mError);
         assertEquals("Exception in CronetUrlRequest: net::ERR_CONNECTION_REFUSED",
@@ -682,8 +675,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    public void testEnableHttpCacheDiskNewContext() throws Exception {
-        enableCache(UrlRequestContextConfig.HTTP_CACHE_DISK);
+    public void testEnableHttpCacheDiskNewEngine() throws Exception {
+        enableCache(CronetEngine.Builder.HTTP_CACHE_DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, true);
@@ -691,41 +684,40 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         checkRequestCaching(url, true);
 
         // Shutdown original context and create another that uses the same cache.
-        mActivity.mUrlRequestContext.shutdown();
-        mActivity.mUrlRequestContext = UrlRequestContext.createContext(
-                getInstrumentation().getTargetContext(), mActivity.getContextConfig());
+        mActivity.mCronetEngine.shutdown();
+        mActivity.mCronetEngine = mActivity.getCronetEngineBuilder().build();
         checkRequestCaching(url, true);
     }
 
     @SmallTest
     @Feature({"Cronet"})
-    public void testInitContextAndStartRequest() {
+    public void testInitEngineAndStartRequest() {
         CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
 
-        // Immediately make a request after initializing the context.
-        UrlRequestContext requestContext = activity.initRequestContext();
+        // Immediately make a request after initializing the engine.
+        CronetEngine cronetEngine = activity.initCronetEngine();
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest urlRequest =
-                requestContext.createRequest(TEST_URL, listener, listener.getExecutor());
-        urlRequest.start();
+        UrlRequest.Builder urlRequestBuilder =
+                new UrlRequest.Builder(TEST_URL, listener, listener.getExecutor(), cronetEngine);
+        urlRequestBuilder.build().start();
         listener.blockForDone();
         assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
     }
 
     @SmallTest
     @Feature({"Cronet"})
-    public void testInitContextStartTwoRequests() throws Exception {
+    public void testInitEngineStartTwoRequests() throws Exception {
         CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
 
         // Make two requests after initializing the context.
-        UrlRequestContext requestContext = activity.initRequestContext();
+        CronetEngine cronetEngine = activity.initCronetEngine();
         int[] statusCodes = {0, 0};
         String[] urls = {TEST_URL, URL_404};
         for (int i = 0; i < 2; i++) {
             TestUrlRequestListener listener = new TestUrlRequestListener();
-            UrlRequest urlRequest =
-                    requestContext.createRequest(urls[i], listener, listener.getExecutor());
-            urlRequest.start();
+            UrlRequest.Builder urlRequestBuilder =
+                    new UrlRequest.Builder(urls[i], listener, listener.getExecutor(), cronetEngine);
+            urlRequestBuilder.build().start();
             listener.blockForDone();
             statusCodes[i] = listener.mResponseInfo.getHttpStatusCode();
         }
@@ -735,7 +727,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    public void testInitTwoContextsSimultaneously() throws Exception {
+    public void testInitTwoEnginesSimultaneously() throws Exception {
         final CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
 
         // Threads will block on runBlocker to ensure simultaneous execution.
@@ -754,7 +746,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    public void testInitTwoContextsInSequence() throws Exception {
+    public void testInitTwoEnginesInSequence() throws Exception {
         final CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
 
         ConditionVariable runBlocker = new ConditionVariable(true);
@@ -771,19 +763,19 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    public void testInitDifferentContexts() throws Exception {
+    public void testInitDifferentEngines() throws Exception {
         // Test that concurrently instantiating Cronet context's upon various
         // different versions of the same Android Context does not cause crashes
         // like crbug.com/453845
         mActivity = launchCronetTestApp();
-        CronetUrlRequestContext firstContext =
-                new CronetUrlRequestContext(mActivity, mActivity.getContextConfig());
-        CronetUrlRequestContext secondContext = new CronetUrlRequestContext(
-                mActivity.getApplicationContext(), mActivity.getContextConfig());
-        CronetUrlRequestContext thirdContext = new CronetUrlRequestContext(
-                new ContextWrapper(mActivity), mActivity.getContextConfig());
-        firstContext.shutdown();
-        secondContext.shutdown();
-        thirdContext.shutdown();
+        CronetEngine firstEngine =
+                new CronetUrlRequestContext(mActivity.createCronetEngineBuilder(mActivity));
+        CronetEngine secondEngine = new CronetUrlRequestContext(
+                mActivity.createCronetEngineBuilder(mActivity.getApplicationContext()));
+        CronetEngine thirdEngine = new CronetUrlRequestContext(
+                mActivity.createCronetEngineBuilder(new ContextWrapper(mActivity)));
+        firstEngine.shutdown();
+        secondEngine.shutdown();
+        thirdEngine.shutdown();
     }
 }

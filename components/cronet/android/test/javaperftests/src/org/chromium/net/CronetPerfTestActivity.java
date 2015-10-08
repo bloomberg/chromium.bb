@@ -111,7 +111,7 @@ public class CronetPerfTestActivity extends Activity {
         private final Protocol mProtocol;
         private final URL mUrl;
         private final String mName;
-        private final UrlRequestContext mCronetContext;
+        private final CronetEngine mCronetEngine;
         // Size in bytes of content being uploaded or downloaded.
         private final int mLength;
         // How many requests to execute.
@@ -178,13 +178,14 @@ public class CronetPerfTestActivity extends Activity {
                 throw new IllegalArgumentException("Bad URL: " + getConfigString("HOST") + ":"
                         + port + "/" + resource);
             }
-            final UrlRequestContextConfig cronetConfig = new UrlRequestContextConfig();
+            final CronetEngine.Builder cronetEngineBuilder =
+                    new CronetEngine.Builder(CronetPerfTestActivity.this);
             if (mProtocol == Protocol.QUIC) {
-                cronetConfig.enableQUIC(true);
-                cronetConfig.addQuicHint(getConfigString("HOST"), getConfigInt("QUIC_PORT"),
+                cronetEngineBuilder.enableQUIC(true);
+                cronetEngineBuilder.addQuicHint(getConfigString("HOST"), getConfigInt("QUIC_PORT"),
                         getConfigInt("QUIC_PORT"));
             }
-            mCronetContext = new CronetUrlRequestContext(CronetPerfTestActivity.this, cronetConfig);
+            mCronetEngine = cronetEngineBuilder.build();
             mName = buildBenchmarkName(mode, direction, protocol, concurrency, mIterations);
             mConcurrency = concurrency;
             mResults = results;
@@ -216,8 +217,8 @@ public class CronetPerfTestActivity extends Activity {
         @SuppressLint("NewApi")
         private void startLogging() {
             if (getConfigBoolean("CAPTURE_NETLOG")) {
-                mCronetContext.startNetLogToFile(getFilesDir().getPath() + "/" + mName + ".json",
-                        false);
+                mCronetEngine.startNetLogToFile(
+                        getFilesDir().getPath() + "/" + mName + ".json", false);
             }
             if (getConfigBoolean("CAPTURE_TRACE")) {
                 Debug.startMethodTracing(getFilesDir().getPath() + "/" + mName + ".trace");
@@ -229,7 +230,7 @@ public class CronetPerfTestActivity extends Activity {
 
         private void stopLogging() {
             if (getConfigBoolean("CAPTURE_NETLOG")) {
-                mCronetContext.stopNetLog();
+                mCronetEngine.stopNetLog();
             }
             if (getConfigBoolean("CAPTURE_TRACE") || getConfigBoolean("CAPTURE_SAMPLED_TRACE")) {
                 Debug.stopMethodTracing();
@@ -343,13 +344,14 @@ public class CronetPerfTestActivity extends Activity {
                         initiateRequest(buffer);
                     }
                 };
-                final UrlRequest request = mCronetContext.createRequest(mUrl.toString(),
-                        new Listener(buffer, completionCallback), mWorkQueueExecutor);
+                final UrlRequest.Builder builder = new UrlRequest.Builder(mUrl.toString(),
+                        new Listener(buffer, completionCallback), mWorkQueueExecutor,
+                        mCronetEngine);
                 if (mDirection == Direction.UP) {
-                    request.setUploadDataProvider(new Uploader(buffer), mWorkQueueExecutor);
-                    request.addHeader("Content-Type", "application/octet-stream");
+                    builder.setUploadDataProvider(new Uploader(buffer), mWorkQueueExecutor);
+                    builder.addHeader("Content-Type", "application/octet-stream");
                 }
-                request.start();
+                builder.build().start();
             }
 
             private class Uploader extends UploadDataProvider {
@@ -479,7 +481,7 @@ public class CronetPerfTestActivity extends Activity {
                     break;
                 case CRONET_HUC: {
                     final CronetHttpURLStreamHandler cronetStreamHandler =
-                            new CronetHttpURLStreamHandler(mCronetContext);
+                            new CronetHttpURLStreamHandler(mCronetEngine);
                     for (int i = 0; i < mIterations; i++) {
                         tasks.add(new CronetHttpURLConnectionFetchTask(cronetStreamHandler));
                     }

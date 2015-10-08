@@ -5,6 +5,7 @@
 package org.chromium.net;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
@@ -67,7 +68,7 @@ public class CronetTestActivity extends Activity {
     public static final String LIBRARY_INIT_WRAPPER = "wrapperOnly";
 
     public CronetURLStreamHandlerFactory mStreamHandlerFactory;
-    public UrlRequestContext mUrlRequestContext;
+    public CronetEngine mCronetEngine;
     HttpUrlRequestFactory mRequestFactory;
     @SuppressFBWarnings("URF_UNREAD_FIELD")
     HistogramManager mHistogramManager;
@@ -78,8 +79,8 @@ public class CronetTestActivity extends Activity {
 
     int mHttpStatusCode = 0;
 
-    // UrlRequestContextConfig used for this activity.
-    private UrlRequestContextConfig mConfig;
+    // CronetEngine.Builder used for this activity.
+    private CronetEngine.Builder mCronetEngineBuilder;
 
     class TestHttpUrlRequestListener implements HttpUrlRequestListener {
         public TestHttpUrlRequestListener() {
@@ -116,21 +117,21 @@ public class CronetTestActivity extends Activity {
             }
         }
 
-        // Initializes UrlRequestContextConfig from commandLine args.
-        mConfig = initializeContextConfig();
-        Log.i(TAG, "Using Config: " + mConfig.toString());
+        // Initializes CronetEngine.Builder from commandLine args.
+        mCronetEngineBuilder = initializeCronetEngineBuilder();
+        Log.i(TAG, "Using Config: " + mCronetEngineBuilder.toString());
 
         String initString = getCommandLineArg(LIBRARY_INIT_KEY);
         if (LIBRARY_INIT_SKIP.equals(initString)) {
             return;
         }
 
+        mCronetEngine = initCronetEngine();
+
         if (LIBRARY_INIT_WRAPPER.equals(initString)) {
-            mStreamHandlerFactory =
-                new CronetURLStreamHandlerFactory(this, mConfig);
+            mStreamHandlerFactory = new CronetURLStreamHandlerFactory(mCronetEngine);
         }
 
-        mUrlRequestContext = initRequestContext();
         mHistogramManager = HistogramManager.createHistogramManager();
 
         if (LIBRARY_INIT_CRONET_ONLY.equals(initString)) {
@@ -171,19 +172,23 @@ public class CronetTestActivity extends Activity {
         return path.delete();
     }
 
-    UrlRequestContextConfig getContextConfig() {
-        return mConfig;
+    CronetEngine.Builder getCronetEngineBuilder() {
+        return mCronetEngineBuilder;
     }
 
-    private UrlRequestContextConfig initializeContextConfig() {
-        UrlRequestContextConfig config = new UrlRequestContextConfig();
-        config.enableHTTP2(true).enableQUIC(true);
+    private CronetEngine.Builder initializeCronetEngineBuilder() {
+        return createCronetEngineBuilder(this);
+    }
+
+    CronetEngine.Builder createCronetEngineBuilder(Context context) {
+        CronetEngine.Builder cronetEngineBuilder = new CronetEngine.Builder(context);
+        cronetEngineBuilder.enableHTTP2(true).enableQUIC(true);
 
         // Override config if it is passed from the launcher.
         String configString = getCommandLineArg(CONFIG_KEY);
         if (configString != null) {
             try {
-                config = new UrlRequestContextConfig(configString);
+                cronetEngineBuilder = new CronetEngine.Builder(this, configString);
             } catch (org.json.JSONException e) {
                 Log.e(TAG, "Invalid Config.", e);
                 finish();
@@ -193,33 +198,35 @@ public class CronetTestActivity extends Activity {
 
         String cacheString = getCommandLineArg(CACHE_KEY);
         if (CACHE_DISK.equals(cacheString)) {
-            config.setStoragePath(getTestStorage());
-            config.enableHttpCache(UrlRequestContextConfig.HTTP_CACHE_DISK, 1000 * 1024);
+            cronetEngineBuilder.setStoragePath(getTestStorage());
+            cronetEngineBuilder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1000 * 1024);
         } else if (CACHE_DISK_NO_HTTP.equals(cacheString)) {
-            config.setStoragePath(getTestStorage());
-            config.enableHttpCache(UrlRequestContextConfig.HTTP_CACHE_DISK_NO_HTTP, 1000 * 1024);
+            cronetEngineBuilder.setStoragePath(getTestStorage());
+            cronetEngineBuilder.enableHttpCache(
+                    CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 1000 * 1024);
         } else if (CACHE_IN_MEMORY.equals(cacheString)) {
-            config.enableHttpCache(UrlRequestContextConfig.HTTP_CACHE_IN_MEMORY, 100 * 1024);
+            cronetEngineBuilder.enableHttpCache(
+                    CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 100 * 1024);
         }
 
         String sdchString = getCommandLineArg(SDCH_KEY);
         if (SDCH_ENABLE.equals(sdchString)) {
-            config.enableSDCH(true);
+            cronetEngineBuilder.enableSDCH(true);
         }
 
         // Setting this here so it isn't overridden on the command line
-        config.setLibraryName("cronet_tests");
-        return config;
+        cronetEngineBuilder.setLibraryName("cronet_tests");
+        return cronetEngineBuilder;
     }
 
-    // Helper function to initialize request context. Also used in testing.
-    public UrlRequestContext initRequestContext() {
-        return UrlRequestContext.createContext(this, mConfig);
+    // Helper function to initialize Cronet engine. Also used in testing.
+    public CronetEngine initCronetEngine() {
+        return mCronetEngineBuilder.build();
     }
 
     // Helper function to initialize request factory. Also used in testing.
     public HttpUrlRequestFactory initRequestFactory() {
-        return HttpUrlRequestFactory.createFactory(this, mConfig);
+        return HttpUrlRequestFactory.createFactory(this, mCronetEngineBuilder);
     }
 
     private static String getUrlFromIntent(Intent intent) {
@@ -285,9 +292,9 @@ public class CronetTestActivity extends Activity {
                     + "/cronet_sample_netlog_old_api.json",
                     false);
         }
-        if (mUrlRequestContext != null) {
-            mUrlRequestContext.startNetLogToFile(Environment.getExternalStorageDirectory().getPath()
-                    + "/cronet_sample_netlog_new_api.json",
+        if (mCronetEngine != null) {
+            mCronetEngine.startNetLogToFile(Environment.getExternalStorageDirectory().getPath()
+                            + "/cronet_sample_netlog_new_api.json",
                     false);
         }
     }
@@ -296,8 +303,8 @@ public class CronetTestActivity extends Activity {
         if (mRequestFactory != null) {
             mRequestFactory.stopNetLog();
         }
-        if (mUrlRequestContext != null) {
-            mUrlRequestContext.stopNetLog();
+        if (mCronetEngine != null) {
+            mCronetEngine.stopNetLog();
         }
     }
 }

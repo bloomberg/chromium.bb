@@ -15,13 +15,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.chromium.base.Log;
+import org.chromium.net.CronetEngine;
 import org.chromium.net.ExtendedResponseInfo;
 import org.chromium.net.ResponseInfo;
 import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UploadDataSink;
 import org.chromium.net.UrlRequest;
-import org.chromium.net.UrlRequestContext;
-import org.chromium.net.UrlRequestContextConfig;
 import org.chromium.net.UrlRequestException;
 import org.chromium.net.UrlRequestListener;
 
@@ -39,7 +38,7 @@ import java.util.concurrent.Executors;
 public class CronetSampleActivity extends Activity {
     private static final String TAG = "cr.CronetSample";
 
-    private UrlRequestContext mRequestContext;
+    private CronetEngine mCronetEngine;
 
     private String mUrl;
     private boolean mLoading = false;
@@ -157,12 +156,12 @@ public class CronetSampleActivity extends Activity {
         mResultText = (TextView) findViewById(R.id.resultView);
         mReceiveDataText = (TextView) findViewById(R.id.dataView);
 
-        UrlRequestContextConfig myConfig = new UrlRequestContextConfig();
-        myConfig.enableHttpCache(UrlRequestContextConfig.HTTP_CACHE_IN_MEMORY, 100 * 1024)
+        CronetEngine.Builder myBuilder = new CronetEngine.Builder(this);
+        myBuilder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 100 * 1024)
                 .enableHTTP2(true)
                 .enableQUIC(true);
 
-        mRequestContext = UrlRequestContext.createContext(this, myConfig);
+        mCronetEngine = myBuilder.build();
 
         String appUrl = (getIntent() != null ? getIntent().getDataString() : null);
         if (appUrl == null) {
@@ -193,13 +192,14 @@ public class CronetSampleActivity extends Activity {
         alert.show();
     }
 
-    private void applyPostDataToUrlRequest(UrlRequest request, Executor executor, String postData) {
+    private void applyPostDataToUrlRequestBuilder(
+            UrlRequest.Builder builder, Executor executor, String postData) {
         if (postData != null && postData.length() > 0) {
             UploadDataProvider uploadDataProvider =
                     new SimpleUploadDataProvider(postData.getBytes());
-            request.setHttpMethod("POST");
-            request.addHeader("Content-Type", "application/x-www-form-urlencoded");
-            request.setUploadDataProvider(uploadDataProvider, executor);
+            builder.setHttpMethod("POST");
+            builder.addHeader("Content-Type", "application/x-www-form-urlencoded");
+            builder.setUploadDataProvider(uploadDataProvider, executor);
         }
     }
 
@@ -214,9 +214,9 @@ public class CronetSampleActivity extends Activity {
 
         Executor executor = Executors.newSingleThreadExecutor();
         UrlRequestListener listener = new SimpleUrlRequestListener();
-        UrlRequest request = mRequestContext.createRequest(url, listener, executor);
-        applyPostDataToUrlRequest(request, executor, postData);
-        request.start();
+        UrlRequest.Builder builder = new UrlRequest.Builder(url, listener, executor, mCronetEngine);
+        applyPostDataToUrlRequestBuilder(builder, executor, postData);
+        builder.build().start();
     }
 
     /**
@@ -241,12 +241,12 @@ public class CronetSampleActivity extends Activity {
     }
 
     private void startNetLog() {
-        mRequestContext.startNetLogToFile(
+        mCronetEngine.startNetLogToFile(
                 Environment.getExternalStorageDirectory().getPath() + "/cronet_sample_netlog.json",
                 false);
     }
 
     private void stopNetLog() {
-        mRequestContext.stopNetLog();
+        mCronetEngine.stopNetLog();
     }
 }

@@ -4,10 +4,7 @@
 
 package org.chromium.net.urlconnection;
 
-import android.content.Context;
-
-import org.chromium.net.UrlRequestContext;
-import org.chromium.net.UrlRequestContextConfig;
+import org.chromium.net.CronetEngine;
 
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
@@ -42,21 +39,19 @@ import java.net.URLStreamHandlerFactory;
  */
 public class CronetURLStreamHandlerFactory
         implements URLStreamHandlerFactory {
-    private final UrlRequestContext mRequestContext;
+    private final CronetEngine mCronetEngine;
 
     /**
      * Creates a {@link CronetURLStreamHandlerFactory} to handle HTTP and HTTPS
      * traffic.
-     * @param context application context.
-     * @param config the configuration to be used.
+     * @param cronetEngine the {@link CronetEngine} to be used.
      * @throws NullPointerException if config is null.
      */
-    public CronetURLStreamHandlerFactory(Context context,
-            UrlRequestContextConfig config) {
-        if (config == null) {
-            throw new NullPointerException("UrlRequestContextConfig is null.");
+    public CronetURLStreamHandlerFactory(CronetEngine cronetEngine) {
+        if (cronetEngine == null) {
+            throw new NullPointerException("CronetEngine is null.");
         }
-        mRequestContext = UrlRequestContext.createContext(context, config);
+        mCronetEngine = cronetEngine;
     }
 
     /**
@@ -66,7 +61,7 @@ public class CronetURLStreamHandlerFactory
     @Override
     public URLStreamHandler createURLStreamHandler(String protocol) {
         if ("http".equals(protocol) || "https".equals(protocol)) {
-            return new CronetHttpURLStreamHandler(mRequestContext);
+            return new CronetHttpURLStreamHandler(mCronetEngine);
         }
         return null;
     }

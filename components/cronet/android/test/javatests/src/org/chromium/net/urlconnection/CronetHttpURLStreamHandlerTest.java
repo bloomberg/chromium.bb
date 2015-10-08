@@ -18,6 +18,9 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 
+/**
+ * Tests for CronetHttpURLStreamHandler class.
+ */
 public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
     private CronetTestActivity mActivity;
 
@@ -40,7 +43,7 @@ public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
     public void testOpenConnectionHttp() throws Exception {
         URL url = new URL(NativeTestServer.getEchoMethodURL());
         CronetHttpURLStreamHandler streamHandler =
-                new CronetHttpURLStreamHandler(mActivity.mUrlRequestContext);
+                new CronetHttpURLStreamHandler(mActivity.mCronetEngine);
         HttpURLConnection connection =
                 (HttpURLConnection) streamHandler.openConnection(url);
         assertEquals(200, connection.getResponseCode());
@@ -54,7 +57,7 @@ public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
     public void testOpenConnectionHttps() throws Exception {
         URL url = new URL("https://example.com");
         CronetHttpURLStreamHandler streamHandler =
-                new CronetHttpURLStreamHandler(mActivity.mUrlRequestContext);
+                new CronetHttpURLStreamHandler(mActivity.mCronetEngine);
         HttpURLConnection connection =
                 (HttpURLConnection) streamHandler.openConnection(url);
         assertNotNull(connection);
@@ -65,7 +68,7 @@ public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
     public void testOpenConnectionProtocolNotSupported() throws Exception {
         URL url = new URL("ftp://example.com");
         CronetHttpURLStreamHandler streamHandler =
-                new CronetHttpURLStreamHandler(mActivity.mUrlRequestContext);
+                new CronetHttpURLStreamHandler(mActivity.mCronetEngine);
         try {
             streamHandler.openConnection(url);
             fail();
@@ -79,7 +82,7 @@ public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
     public void testOpenConnectionWithProxy() throws Exception {
         URL url = new URL(NativeTestServer.getEchoMethodURL());
         CronetHttpURLStreamHandler streamHandler =
-                new CronetHttpURLStreamHandler(mActivity.mUrlRequestContext);
+                new CronetHttpURLStreamHandler(mActivity.mCronetEngine);
         Proxy proxy = new Proxy(Proxy.Type.HTTP,
                 new InetSocketAddress("127.0.0.1", 8080));
         try {

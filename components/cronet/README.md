@@ -68,13 +68,13 @@ events during the lifetime of a request. For example:
 
 Make a request like this:
 
-    UrlRequestContextConfig myConfig = new UrlRequestContextConfig();
-    CronetUrlRequestContext myRequestContext =
-            new CronetUrlRequestContext(getContext(), myConfig);
+    CronetEngine.Builder engineBuilder = new CronetEngine.Builder(getContext());
+    CronetEngine engine = engineBuilder.build();
     Executor executor = Executors.newSingleThreadExecutor();
     MyListener listener = new MyListener();
-    UrlRequest request = myRequestContext.createRequest(
-            "https://www.example.com", listener, executor);
+    UrlRequest.Builder requestBuilder = new UrlRequest.Builder(
+            "https://www.example.com", listener, executor, engine);
+    UrlRequest request = requestBuilder.build();
     request.start();
 
 In the above example, `MyListener` extends `UrlRequestListener`. The request
@@ -97,9 +97,8 @@ which signals the completion of the request.
 
 ### Uploading Data
     MyUploadDataProvider myUploadDataProvider = new MyUploadDataProvider();
-    request.setHttpMethod("POST");
-    request.setUploadDataProvider(myUploadDataProvider, executor);
-    request.start();
+    requestBuilder.setHttpMethod("POST");
+    requestBuilder.setUploadDataProvider(myUploadDataProvider, executor);
 
 In the above example, `MyUploadDataProvider` extends `UploadDataProvider`.
 When Cronet is ready to send the request body,
@@ -112,32 +111,32 @@ request body into `byteBuffer`. Once the client is done writing into
 invoked again. For more details, please see the API reference.
 
 ### <a id=configuring-cronet></a> Configuring Cronet
-Various configuration options are available via the `UrlRequestContextConfig`
+Various configuration options are available via the `CronetEngine.Builder`
 object.
 
 Enabling HTTP/2, QUIC, or SDCH:
 
 - For Example:
 
-        myConfig.enableSPDY(true).enableQUIC(true).enableSDCH(true);
+        engineBuilder.enableSPDY(true).enableQUIC(true).enableSDCH(true);
 
 Controlling the cache:
 
 - Use a 100KiB in-memory cache:
 
-        myConfig.enableHttpCache(
-                UrlRequestContextConfig.HttpCache.IN_MEMORY, 100 * 1024);
+        engineBuilder.enableHttpCache(
+                CronetEngine.Builder.HttpCache.IN_MEMORY, 100 * 1024);
 
 - or use a 1MiB disk cache:
 
-        myConfig.setStoragePath(storagePathString);
-        myConfig.enableHttpCache(UrlRequestContextConfig.HttpCache.DISK,
+        engineBuilder.setStoragePath(storagePathString);
+        engineBuilder.enableHttpCache(CronetEngine.Builder.HttpCache.DISK,
                 1024 * 1024);
 
 ### Debugging
 To get more information about how Cronet is processing network
 requests, you can start and stop **NetLog** logging by calling
-`UrlRequestContext.startNetLogToFile` and `UrlRequestContext.stopNetLog`.
+`CronetEngine.startNetLogToFile` and `CronetEngine.stopNetLog`.
 Bear in mind that logs may contain sensitive data. You may analyze the
 generated log by navigating to [chrome://net-internals#import] using a
 Chrome browser.
@@ -149,7 +148,7 @@ To use Cronet's implementation instead of the system's default implementation,
 simply do the following:
 
     CronetURLStreamHandlerFactory streamHandlerFactory =
-            new CronetURLStreamHandlerFactory(getContext(), myConfig);
+            new CronetURLStreamHandlerFactory(engine);
     URL.setURLStreamHandlerFactory(streamHandlerFactory);
 
 Cronet's
@@ -158,7 +157,7 @@ implementation, including not utilizing the default system HTTP cache (Please
 see {@link org.chromium.net.urlconnection.CronetURLStreamHandlerFactory} for
 more information).
 You can configure Cronet and control caching through the
-`UrlRequestContextConfig` instance, `myConfig`
+`CronetEngine.Builder` instance, `engineBuilder`
 (See [Configuring Cronet](#configuring-cronet) section), before you pass it
 into the `CronetURLStreamHandlerFactory` constructor.
 

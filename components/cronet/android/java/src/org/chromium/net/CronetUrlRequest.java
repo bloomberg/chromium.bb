@@ -466,15 +466,15 @@ final class CronetUrlRequest implements UrlRequest {
 
     private static int convertRequestPriority(int priority) {
         switch (priority) {
-            case REQUEST_PRIORITY_IDLE:
+            case Builder.REQUEST_PRIORITY_IDLE:
                 return RequestPriority.IDLE;
-            case REQUEST_PRIORITY_LOWEST:
+            case Builder.REQUEST_PRIORITY_LOWEST:
                 return RequestPriority.LOWEST;
-            case REQUEST_PRIORITY_LOW:
+            case Builder.REQUEST_PRIORITY_LOW:
                 return RequestPriority.LOW;
-            case REQUEST_PRIORITY_MEDIUM:
+            case Builder.REQUEST_PRIORITY_MEDIUM:
                 return RequestPriority.MEDIUM;
-            case REQUEST_PRIORITY_HIGHEST:
+            case Builder.REQUEST_PRIORITY_HIGHEST:
                 return RequestPriority.HIGHEST;
             default:
                 return RequestPriority.MEDIUM;

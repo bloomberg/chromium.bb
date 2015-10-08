@@ -26,12 +26,12 @@ class CronetLibraryLoader {
      * any thread, the load and initialization is performed on main thread.
      */
     public static void ensureInitialized(
-            final Context context, final UrlRequestContextConfig config) {
+            final Context context, final CronetEngine.Builder builder) {
         synchronized (sLoadLock) {
             if (sInitTaskPosted) {
                 return;
             }
-            System.loadLibrary(config.libraryName());
+            System.loadLibrary(builder.libraryName());
             if (!Version.CRONET_VERSION.equals(nativeGetCronetVersion())) {
                 throw new RuntimeException(String.format(
                       "Expected Cronet version number %s, "
@@ -40,7 +40,7 @@ class CronetLibraryLoader {
                       nativeGetCronetVersion()));
             }
             nativeCronetInitApplicationContext(context.getApplicationContext());
-            // Init native Chromium URLRequestContext on Main UI thread.
+            // Init native Chromium CronetEngine on Main UI thread.
             Runnable task = new Runnable() {
                 public void run() {
                     initOnMainThread(context);

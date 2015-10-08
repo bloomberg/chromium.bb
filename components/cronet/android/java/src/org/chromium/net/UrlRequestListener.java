@@ -9,8 +9,8 @@ import java.nio.ByteBuffer;
 /**
  * Users of Cronet extend this class to receive callbacks indicating the
  * progress of a {@link UrlRequest} being processed. An instance of this class
- * is passed in when the {@code UrlRequest} is created by
- * {@link UrlRequestContext#createRequest}
+ * is passed in to {@link UrlRequest.Builder#UrlRequest.Builder UrlRequest.Builder()}
+ * when constructing the {@code UrlRequest}.
  * <p>
  * Note:  All methods will be called on the thread of the
  * {@link java.util.concurrent.Executor} used during construction of the

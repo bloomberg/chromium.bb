@@ -26,9 +26,9 @@ public class HistogramManagerTest extends CronetTestBase {
         byte delta1[] = mActivity.mHistogramManager.getHistogramDeltas();
 
         TestUrlRequestListener listener = new TestUrlRequestListener();
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                TEST_URL, listener, listener.getExecutor());
-        urlRequest.start();
+        UrlRequest.Builder builder = new UrlRequest.Builder(
+                TEST_URL, listener, listener.getExecutor(), mActivity.mCronetEngine);
+        builder.build().start();
         listener.blockForDone();
         byte delta2[] = mActivity.mHistogramManager.getHistogramDeltas();
         assertTrue(delta2.length != 0);
