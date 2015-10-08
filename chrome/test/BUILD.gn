@@ -1101,11 +1101,8 @@ if (!is_android) {
       ]
     }
     if (enable_media_router) {
-      sources += rebase_path(
-              chrome_tests_gypi_values.chrome_browser_tests_media_router_sources,
-              ".",
-              "//chrome")
-      deps += [ "//chrome/browser/media/router:test_support" ]
+      sources += [ "../browser/ui/webui/media_router/media_router_dialog_controller_impl_browsertest.cc" ]
+      deps += [ "//chrome/test/media_router:media_router_browsertests" ]
     }
     if (is_win) {
       deps += [
