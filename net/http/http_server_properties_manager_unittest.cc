@@ -83,19 +83,22 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
   MOCK_METHOD0(UpdateCacheFromPrefsOnPrefThread, void());
   MOCK_METHOD1(UpdatePrefsFromCacheOnNetworkThread, void(const base::Closure&));
   MOCK_METHOD1(ScheduleUpdatePrefsOnNetworkThread, void(Location location));
-  MOCK_METHOD6(UpdateCacheFromPrefsOnNetworkThread,
+  MOCK_METHOD7(UpdateCacheFromPrefsOnNetworkThread,
                void(std::vector<std::string>* spdy_servers,
                     SpdySettingsMap* spdy_settings_map,
                     AlternativeServiceMap* alternative_service_map,
                     IPAddressNumber* last_quic_address,
                     ServerNetworkStatsMap* server_network_stats_map,
+                    QuicServerInfoMap* quic_server_info_map,
                     bool detected_corrupted_prefs));
-  MOCK_METHOD5(UpdatePrefsOnPref,
+  MOCK_METHOD7(UpdatePrefsOnPrefThread,
                void(base::ListValue* spdy_server_list,
                     SpdySettingsMap* spdy_settings_map,
                     AlternativeServiceMap* alternative_service_map,
                     IPAddressNumber* last_quic_address,
-                    ServerNetworkStatsMap* server_network_stats_map));
+                    ServerNetworkStatsMap* server_network_stats_map,
+                    QuicServerInfoMap* quic_server_info_map,
+                    const base::Closure& completion));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingHttpServerPropertiesManager);
@@ -248,6 +251,27 @@ TEST_F(HttpServerPropertiesManagerTest,
   http_server_properties_dict->SetWithoutPathExpansion("supports_quic",
                                                        supports_quic);
 
+  // Set quic_server_info for www.google.com:80 and mail.google.com:80.
+  base::DictionaryValue* quic_servers_dict = new base::DictionaryValue;
+  base::DictionaryValue* quic_server_pref_dict1 = new base::DictionaryValue;
+  std::string quic_server_info1("quic_server_info1");
+  quic_server_pref_dict1->SetStringWithoutPathExpansion("server_info",
+                                                        quic_server_info1);
+  base::DictionaryValue* quic_server_pref_dict2 = new base::DictionaryValue;
+  std::string quic_server_info2("quic_server_info2");
+  quic_server_pref_dict2->SetStringWithoutPathExpansion("server_info",
+                                                        quic_server_info2);
+  // Set the quic_server_info1 for www.google.com server.
+  QuicServerId google_quic_server_id("www.google.com", 80, false);
+  quic_servers_dict->SetWithoutPathExpansion(google_quic_server_id.ToString(),
+                                             quic_server_pref_dict1);
+  // Set the quic_server_info2 for mail.google.com server.
+  QuicServerId mail_quic_server_id("mail.google.com", 80, false);
+  quic_servers_dict->SetWithoutPathExpansion(mail_quic_server_id.ToString(),
+                                             quic_server_pref_dict2);
+  http_server_properties_dict->SetWithoutPathExpansion("quic_servers",
+                                                       quic_servers_dict);
+
   // Set the same value for kHttpServerProperties multiple times.
   pref_service_.SetManagedPref(kTestHttpServerProperties,
                                http_server_properties_dict);
@@ -298,6 +322,12 @@ TEST_F(HttpServerPropertiesManagerTest,
   const ServerNetworkStats* stats3 =
       http_server_props_manager_->GetServerNetworkStats(mail_server);
   EXPECT_EQ(20, stats3->srtt.ToInternalValue());
+
+  // Verify QuicServerInfo.
+  EXPECT_EQ(quic_server_info1, *http_server_props_manager_->GetQuicServerInfo(
+                                   google_quic_server_id));
+  EXPECT_EQ(quic_server_info2, *http_server_props_manager_->GetQuicServerInfo(
+                                   mail_quic_server_id));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
@@ -330,10 +360,20 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   servers_dict->SetWithoutPathExpansion("www.google.com:65536",
                                         server_pref_dict);
 
+  // Set quic_server_info for www.google.com:65536.
+  base::DictionaryValue* quic_servers_dict = new base::DictionaryValue;
+  base::DictionaryValue* quic_server_pref_dict1 = new base::DictionaryValue;
+  quic_server_pref_dict1->SetStringWithoutPathExpansion("server_info",
+                                                        "quic_server_info1");
+  quic_servers_dict->SetWithoutPathExpansion("http://mail.google.com:65536",
+                                             quic_server_pref_dict1);
+
   base::DictionaryValue* http_server_properties_dict =
       new base::DictionaryValue;
   HttpServerPropertiesManager::SetVersion(http_server_properties_dict, -1);
   http_server_properties_dict->SetWithoutPathExpansion("servers", servers_dict);
+  http_server_properties_dict->SetWithoutPathExpansion("quic_servers",
+                                                       quic_servers_dict);
 
   // Set up the pref.
   pref_service_.SetManagedPref(kTestHttpServerProperties,
@@ -351,6 +391,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
       http_server_props_manager_->GetServerNetworkStats(
           HostPortPair::FromString("www.google.com:65536"));
   EXPECT_EQ(NULL, stats1);
+  EXPECT_EQ(0u, http_server_props_manager_->quic_server_info_map().size());
 }
 
 TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
@@ -703,6 +744,28 @@ TEST_F(HttpServerPropertiesManagerTest, ServerNetworkStats) {
   EXPECT_EQ(10, stats2->srtt.ToInternalValue());
 }
 
+TEST_F(HttpServerPropertiesManagerTest, QuicServerInfo) {
+  ExpectPrefsUpdate();
+  ExpectScheduleUpdatePrefsOnNetworkThread();
+
+  QuicServerId mail_quic_server_id("mail.google.com", 80, false);
+  EXPECT_EQ(nullptr,
+            http_server_props_manager_->GetQuicServerInfo(mail_quic_server_id));
+  std::string quic_server_info1("quic_server_info1");
+  http_server_props_manager_->SetQuicServerInfo(mail_quic_server_id,
+                                                quic_server_info1);
+  // ExpectScheduleUpdatePrefsOnNetworkThread() should be called only once.
+  http_server_props_manager_->SetQuicServerInfo(mail_quic_server_id,
+                                                quic_server_info1);
+
+  // Run the task.
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+
+  EXPECT_EQ(quic_server_info1, *http_server_props_manager_->GetQuicServerInfo(
+                                   mail_quic_server_id));
+}
+
 TEST_F(HttpServerPropertiesManagerTest, Clear) {
   ExpectPrefsUpdate();
   ExpectScheduleUpdatePrefsOnNetworkThreadRepeatedly();
@@ -719,11 +782,16 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
   http_server_props_manager_->SetServerNetworkStats(spdy_server_mail, stats);
 
+  QuicServerId mail_quic_server_id("mail.google.com", 80, false);
+  std::string quic_server_info1("quic_server_info1");
+  http_server_props_manager_->SetQuicServerInfo(mail_quic_server_id,
+                                                quic_server_info1);
+
   const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
   const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
   const uint32 value1 = 31337;
-  http_server_props_manager_->SetSpdySetting(
-      spdy_server_mail, id1, flags1, value1);
+  http_server_props_manager_->SetSpdySetting(spdy_server_mail, id1, flags1,
+                                             value1);
 
   // Run the task.
   base::RunLoop().RunUntilIdle();
@@ -737,6 +805,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   const ServerNetworkStats* stats1 =
       http_server_props_manager_->GetServerNetworkStats(spdy_server_mail);
   EXPECT_EQ(10, stats1->srtt.ToInternalValue());
+  EXPECT_EQ(quic_server_info1, *http_server_props_manager_->GetQuicServerInfo(
+                                   mail_quic_server_id));
 
   // Check SPDY settings values.
   const SettingsMap& settings_map1_ret =
@@ -763,6 +833,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   const ServerNetworkStats* stats2 =
       http_server_props_manager_->GetServerNetworkStats(spdy_server_mail);
   EXPECT_EQ(NULL, stats2);
+  EXPECT_EQ(nullptr,
+            http_server_props_manager_->GetQuicServerInfo(mail_quic_server_id));
 
   const SettingsMap& settings_map2_ret =
       http_server_props_manager_->GetSpdySettings(spdy_server_mail);
@@ -868,6 +940,12 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   stats.srtt = base::TimeDelta::FromInternalValue(42);
   http_server_props_manager_->SetServerNetworkStats(server_mail, stats);
 
+  // Set quic_server_info string.
+  QuicServerId mail_quic_server_id("mail.google.com", 80, false);
+  std::string quic_server_info1("quic_server_info1");
+  http_server_props_manager_->SetQuicServerInfo(mail_quic_server_id,
+                                                quic_server_info1);
+
   // Set SupportsQuic.
   IPAddressNumber actual_address;
   CHECK(ParseIPLiteralToNumber("127.0.0.1", &actual_address));
@@ -881,7 +959,9 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
 
   // Verify preferences.
   const char expected_json[] =
-      "{\"servers\":{\"mail.google.com:80\":{\"alternative_service\":[{"
+      "{\"quic_servers\":{\"http://"
+      "mail.google.com:80\":{\"server_info\":\"quic_server_info1\"}},"
+      "\"servers\":{\"mail.google.com:80\":{\"alternative_service\":[{"
       "\"expiration\":\"9223372036854775807\",\"host\":\"foo.google.com\","
       "\"port\":444,\"probability\":0.2,\"protocol_str\":\"npn-spdy/3.1\"}],"
       "\"network_stats\":{\"srtt\":42}},\"www.google.com:80\":{"

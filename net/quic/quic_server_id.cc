@@ -4,6 +4,10 @@
 
 #include "net/quic/quic_server_id.h"
 
+#include "net/base/host_port_pair.h"
+#include "net/base/port_util.h"
+#include "url/gurl.h"
+
 using std::string;
 
 namespace net {
@@ -50,6 +54,16 @@ bool QuicServerId::operator==(const QuicServerId& other) const {
   return is_https_ == other.is_https_ &&
       privacy_mode_ == other.privacy_mode_ &&
       host_port_pair_.Equals(other.host_port_pair_);
+}
+
+// static
+QuicServerId QuicServerId::FromString(const std::string& str) {
+  GURL url(str);
+  if (!url.is_valid())
+    return QuicServerId();
+  return QuicServerId(
+      HostPortPair::FromURL(url), url.scheme() == "https",
+      url.path() == "/private" ? PRIVACY_MODE_ENABLED : PRIVACY_MODE_DISABLED);
 }
 
 string QuicServerId::ToString() const {

@@ -128,6 +128,10 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   const ServerNetworkStats* GetServerNetworkStats(
       const HostPortPair& host_port_pair) override;
   const ServerNetworkStatsMap& server_network_stats_map() const override;
+  bool SetQuicServerInfo(const QuicServerId& server_id,
+                         const std::string& server_info) override;
+  const std::string* GetQuicServerInfo(const QuicServerId& server_id) override;
+  const QuicServerInfoMap& quic_server_info_map() const override;
 
  protected:
   // The location where ScheduleUpdatePrefsOnNetworkThread was called.
@@ -145,7 +149,8 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
     SET_SUPPORTS_QUIC = 10,
     SET_SERVER_NETWORK_STATS = 11,
     DETECTED_CORRUPTED_PREFS = 12,
-    NUM_LOCATIONS = 13,
+    SET_QUIC_SERVER_INFO = 13,
+    NUM_LOCATIONS = 14,
   };
 
   // --------------------
@@ -174,6 +179,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
       AlternativeServiceMap* alternative_service_map,
       IPAddressNumber* last_quic_address,
       ServerNetworkStatsMap* server_network_stats_map,
+      QuicServerInfoMap* quic_server_info_map,
       bool detected_corrupted_prefs);
 
   // These are used to delay updating the preferences when cached data in
@@ -204,6 +210,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
                                AlternativeServiceMap* alternative_service_map,
                                IPAddressNumber* last_quic_address,
                                ServerNetworkStatsMap* server_network_stats_map,
+                               QuicServerInfoMap* quic_server_info_map,
                                const base::Closure& completion);
 
  private:
@@ -229,6 +236,8 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   bool AddToNetworkStatsMap(const HostPortPair& server,
                             const base::DictionaryValue& server_dict,
                             ServerNetworkStatsMap* network_stats_map);
+  bool AddToQuicServerInfoMap(const base::DictionaryValue& server_dict,
+                              QuicServerInfoMap* quic_server_info_map);
 
   void SaveSpdySettingsToServerPrefs(const SettingsMap* spdy_settings_map,
                                      base::DictionaryValue* server_pref_dict);
@@ -238,7 +247,9 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void SaveNetworkStatsToServerPrefs(
       const ServerNetworkStats* server_network_stats,
       base::DictionaryValue* server_pref_dict);
-
+  void SaveQuicServerInfoMapToServerPrefs(
+      QuicServerInfoMap* quic_server_info_map,
+      base::DictionaryValue* http_server_properties_dict);
   void SaveSupportsQuicToPrefs(
       const IPAddressNumber* last_quic_address,
       base::DictionaryValue* http_server_properties_dict);

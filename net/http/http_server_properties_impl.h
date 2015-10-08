@@ -60,6 +60,8 @@ class NET_EXPORT HttpServerPropertiesImpl
   void InitializeServerNetworkStats(
       ServerNetworkStatsMap* server_network_stats_map);
 
+  void InitializeQuicServerInfoMap(QuicServerInfoMap* quic_server_info_map);
+
   // Get the list of servers (host/port) that support SPDY. The max_size is the
   // number of MRU servers that support SPDY that are to be returned.
   void GetSpdyServerList(base::ListValue* spdy_server_list,
@@ -125,6 +127,10 @@ class NET_EXPORT HttpServerPropertiesImpl
   const ServerNetworkStats* GetServerNetworkStats(
       const HostPortPair& host_port_pair) override;
   const ServerNetworkStatsMap& server_network_stats_map() const override;
+  bool SetQuicServerInfo(const QuicServerId& server_id,
+                         const std::string& server_info) override;
+  const std::string* GetQuicServerInfo(const QuicServerId& server_id) override;
+  const QuicServerInfoMap& quic_server_info_map() const override;
 
  private:
   friend class HttpServerPropertiesImplPeer;
@@ -176,6 +182,8 @@ class NET_EXPORT HttpServerPropertiesImpl
   CanonicalSufficList canonical_suffixes_;
 
   double alternative_service_probability_threshold_;
+
+  QuicServerInfoMap quic_server_info_map_;
 
   base::WeakPtrFactory<HttpServerPropertiesImpl> weak_ptr_factory_;
 

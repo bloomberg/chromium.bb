@@ -56,6 +56,8 @@ const char kServersKey[] = "servers";
 const char kSupportsSpdyKey[] = "supports_spdy";
 const char kSettingsKey[] = "settings";
 const char kSupportsQuicKey[] = "supports_quic";
+const char kQuicServers[] = "quic_servers";
+const char kServerInfoKey[] = "server_info";
 const char kUsedQuicKey[] = "used_quic";
 const char kAddressKey[] = "address";
 const char kAlternateProtocolKey[] = "alternate_protocol";
@@ -384,6 +386,29 @@ HttpServerPropertiesManager::server_network_stats_map() const {
   return http_server_properties_impl_->server_network_stats_map();
 }
 
+bool HttpServerPropertiesManager::SetQuicServerInfo(
+    const QuicServerId& server_id,
+    const std::string& server_info) {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  bool changed =
+      http_server_properties_impl_->SetQuicServerInfo(server_id, server_info);
+  if (changed)
+    ScheduleUpdatePrefsOnNetworkThread(SET_QUIC_SERVER_INFO);
+  return changed;
+}
+
+const std::string* HttpServerPropertiesManager::GetQuicServerInfo(
+    const QuicServerId& server_id) {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  return http_server_properties_impl_->GetQuicServerInfo(server_id);
+}
+
+const QuicServerInfoMap& HttpServerPropertiesManager::quic_server_info_map()
+    const {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  return http_server_properties_impl_->quic_server_info_map();
+}
+
 //
 // Update the HttpServerPropertiesImpl's cache with data from preferences.
 //
@@ -443,6 +468,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
       new AlternativeServiceMap(kMaxAlternateProtocolHostsToPersist));
   scoped_ptr<ServerNetworkStatsMap> server_network_stats_map(
       new ServerNetworkStatsMap(kMaxServerNetworkStatsHostsToPersist));
+  scoped_ptr<QuicServerInfoMap> quic_server_info_map(
+      new QuicServerInfoMap(kMaxQuicServersToPersist));
 
   for (base::DictionaryValue::Iterator it(*servers_dict); !it.IsAtEnd();
        it.Advance()) {
@@ -478,6 +505,11 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
     }
   }
 
+  if (!AddToQuicServerInfoMap(http_server_properties_dict,
+                              quic_server_info_map.get())) {
+    detected_corrupted_prefs = true;
+  }
+
   network_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
@@ -486,6 +518,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
           base::Owned(spdy_settings_map.release()),
           base::Owned(alternative_service_map.release()), base::Owned(addr),
           base::Owned(server_network_stats_map.release()),
+          base::Owned(quic_server_info_map.release()),
           detected_corrupted_prefs));
 }
 
@@ -713,12 +746,57 @@ bool HttpServerPropertiesManager::AddToNetworkStatsMap(
   return true;
 }
 
+bool HttpServerPropertiesManager::AddToQuicServerInfoMap(
+    const base::DictionaryValue& http_server_properties_dict,
+    QuicServerInfoMap* quic_server_info_map) {
+  const base::DictionaryValue* quic_servers_dict = NULL;
+  if (!http_server_properties_dict.GetDictionaryWithoutPathExpansion(
+          kQuicServers, &quic_servers_dict)) {
+    DVLOG(1) << "Malformed http_server_properties for quic_servers.";
+    return true;
+  }
+
+  bool detected_corrupted_prefs = false;
+  for (base::DictionaryValue::Iterator it(*quic_servers_dict); !it.IsAtEnd();
+       it.Advance()) {
+    // Get quic_server_id.
+    const std::string& quic_server_id_str = it.key();
+    QuicServerId quic_server_id = QuicServerId::FromString(quic_server_id_str);
+    if (quic_server_id.host().empty()) {
+      DVLOG(1) << "Malformed http_server_properties for quic server: "
+               << quic_server_id_str;
+      detected_corrupted_prefs = true;
+      continue;
+    }
+
+    const base::DictionaryValue* quic_server_pref_dict = NULL;
+    if (!it.value().GetAsDictionary(&quic_server_pref_dict)) {
+      DVLOG(1) << "Malformed http_server_properties quic server dict: "
+               << quic_server_id_str;
+      detected_corrupted_prefs = true;
+      continue;
+    }
+
+    std::string quic_server_info;
+    if (!quic_server_pref_dict->GetStringWithoutPathExpansion(
+            kServerInfoKey, &quic_server_info)) {
+      DVLOG(1) << "Malformed http_server_properties quic server info: "
+               << quic_server_id_str;
+      detected_corrupted_prefs = true;
+      continue;
+    }
+    quic_server_info_map->Put(quic_server_id, quic_server_info);
+  }
+  return !detected_corrupted_prefs;
+}
+
 void HttpServerPropertiesManager::UpdateCacheFromPrefsOnNetworkThread(
     StringVector* spdy_servers,
     SpdySettingsMap* spdy_settings_map,
     AlternativeServiceMap* alternative_service_map,
     IPAddressNumber* last_quic_address,
     ServerNetworkStatsMap* server_network_stats_map,
+    QuicServerInfoMap* quic_server_info_map,
     bool detected_corrupted_prefs) {
   // Preferences have the master data because admins might have pushed new
   // preferences. Update the cached data with new data from preferences.
@@ -743,6 +821,9 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnNetworkThread(
 
   http_server_properties_impl_->InitializeServerNetworkStats(
       server_network_stats_map);
+
+  http_server_properties_impl_->InitializeQuicServerInfoMap(
+      quic_server_info_map);
 
   // Update the prefs with what we have read (delete all corrupted prefs).
   if (detected_corrupted_prefs)
@@ -851,6 +932,17 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
     server_network_stats_map->Put(it->first, it->second);
   }
 
+  QuicServerInfoMap* quic_server_info_map = NULL;
+  const QuicServerInfoMap& main_quic_server_info_map =
+      http_server_properties_impl_->quic_server_info_map();
+  if (main_quic_server_info_map.size() > 0) {
+    quic_server_info_map = new QuicServerInfoMap(kMaxQuicServersToPersist);
+    for (const std::pair<const QuicServerId, std::string>& entry :
+         main_quic_server_info_map) {
+      quic_server_info_map->Put(entry.first, entry.second);
+    }
+  }
+
   IPAddressNumber* last_quic_addr = new IPAddressNumber;
   http_server_properties_impl_->GetSupportsQuic(last_quic_addr);
   // Update the preferences on the pref thread.
@@ -860,7 +952,8 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
           &HttpServerPropertiesManager::UpdatePrefsOnPrefThread, pref_weak_ptr_,
           base::Owned(spdy_server_list), base::Owned(spdy_settings_map),
           base::Owned(alternative_service_map), base::Owned(last_quic_addr),
-          base::Owned(server_network_stats_map), completion));
+          base::Owned(server_network_stats_map),
+          base::Owned(quic_server_info_map), completion));
 }
 
 // A local or temporary data structure to hold |supports_spdy|, SpdySettings,
@@ -897,6 +990,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
     AlternativeServiceMap* alternative_service_map,
     IPAddressNumber* last_quic_address,
     ServerNetworkStatsMap* server_network_stats_map,
+    QuicServerInfoMap* quic_server_info_map,
     const base::Closure& completion) {
   typedef std::map<HostPortPair, ServerPref> ServerPrefMap;
   ServerPrefMap server_pref_map;
@@ -965,6 +1059,9 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
   SetVersion(&http_server_properties_dict, kVersionNumber);
 
   SaveSupportsQuicToPrefs(last_quic_address, &http_server_properties_dict);
+
+  SaveQuicServerInfoMapToServerPrefs(quic_server_info_map,
+                                     &http_server_properties_dict);
 
   setting_prefs_ = true;
   pref_service_->Set(path_, http_server_properties_dict);
@@ -1058,6 +1155,26 @@ void HttpServerPropertiesManager::SaveNetworkStatsToServerPrefs(
   // bandwidth_estimate.
   server_pref_dict->SetWithoutPathExpansion(kNetworkStatsKey,
                                             server_network_stats_dict);
+}
+
+void HttpServerPropertiesManager::SaveQuicServerInfoMapToServerPrefs(
+    QuicServerInfoMap* quic_server_info_map,
+    base::DictionaryValue* http_server_properties_dict) {
+  if (!quic_server_info_map)
+    return;
+
+  base::DictionaryValue* quic_servers_dict = new base::DictionaryValue;
+  for (const std::pair<QuicServerId, std::string>& entry :
+       *quic_server_info_map) {
+    const QuicServerId& server_id = entry.first;
+    base::DictionaryValue* quic_server_pref_dict = new base::DictionaryValue;
+    quic_server_pref_dict->SetStringWithoutPathExpansion(kServerInfoKey,
+                                                         entry.second);
+    quic_servers_dict->SetWithoutPathExpansion(server_id.ToString(),
+                                               quic_server_pref_dict);
+  }
+  http_server_properties_dict->SetWithoutPathExpansion(kQuicServers,
+                                                       quic_servers_dict);
 }
 
 void HttpServerPropertiesManager::OnHttpServerPropertiesChanged() {

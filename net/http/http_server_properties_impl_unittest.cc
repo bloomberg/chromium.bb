@@ -1192,6 +1192,42 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, SetServerNetworkStats) {
   EXPECT_EQ(NULL, stats3);
 }
 
+typedef HttpServerPropertiesImplTest QuicServerInfoServerPropertiesTest;
+
+TEST_F(QuicServerInfoServerPropertiesTest, Initialize) {
+  HostPortPair google_server("www.google.com", 443);
+  QuicServerId quic_server_id(google_server, true, PRIVACY_MODE_ENABLED);
+
+  // Check empty map.
+  QuicServerInfoMap quic_server_info_map(QuicServerInfoMap::NO_AUTO_EVICT);
+  impl_.InitializeQuicServerInfoMap(&quic_server_info_map);
+  EXPECT_EQ(0u, impl_.quic_server_info_map().size());
+
+  // Check by adding a QuicServerInfo into the map.
+  std::string quic_server_info1("quic_server_info1");
+  quic_server_info_map.Put(quic_server_id, quic_server_info1);
+  impl_.InitializeQuicServerInfoMap(&quic_server_info_map);
+
+  EXPECT_EQ(1u, impl_.quic_server_info_map().size());
+  EXPECT_EQ(quic_server_info1, *impl_.GetQuicServerInfo(quic_server_id));
+}
+
+TEST_F(QuicServerInfoServerPropertiesTest, SetQuicServerInfo) {
+  HostPortPair foo_server("foo", 80);
+  QuicServerId quic_server_id(foo_server, true, PRIVACY_MODE_ENABLED);
+  EXPECT_EQ(0u, impl_.quic_server_info_map().size());
+
+  std::string quic_server_info1("quic_server_info1");
+  impl_.SetQuicServerInfo(quic_server_id, quic_server_info1);
+
+  EXPECT_EQ(1u, impl_.quic_server_info_map().size());
+  EXPECT_EQ(quic_server_info1, *(impl_.GetQuicServerInfo(quic_server_id)));
+
+  impl_.Clear();
+  EXPECT_EQ(0u, impl_.quic_server_info_map().size());
+  EXPECT_EQ(nullptr, impl_.GetQuicServerInfo(quic_server_id));
+}
+
 }  // namespace
 
 }  // namespace net
