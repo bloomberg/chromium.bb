@@ -45,7 +45,40 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/message_center_style.h"
+#include "ui/message_center/notification_blocker.h"
 #include "url/gurl.h"
+
+namespace {
+
+class ToggledNotificationBlocker : public message_center::NotificationBlocker {
+ public:
+  ToggledNotificationBlocker()
+      : message_center::NotificationBlocker(
+            message_center::MessageCenter::Get()),
+        notifications_enabled_(true) {}
+  ~ToggledNotificationBlocker() override {}
+
+  void SetNotificationsEnabled(bool enabled) {
+    if (notifications_enabled_ != enabled) {
+      notifications_enabled_ = enabled;
+      NotifyBlockingStateChanged();
+    }
+  }
+
+  // NotificationBlocker overrides:
+  bool ShouldShowNotificationAsPopup(
+      const message_center::NotifierId& notifier_id) const override {
+    return notifications_enabled_;
+  }
+
+ private:
+  bool notifications_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToggledNotificationBlocker);
+};
+
+}  // namespace
 
 namespace {
 
@@ -397,6 +430,24 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
             (*notifications.rbegin())->title());
   EXPECT_EQ(base::ASCIIToUTF16("My Body"),
             (*notifications.rbegin())->message());
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationsTest, NotificationBlockerTest) {
+  ToggledNotificationBlocker blocker;
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  // Creates a simple notification.
+  AllowAllOrigins();
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
+
+  std::string result = CreateSimpleNotification(browser(), true);
+  EXPECT_NE("-1", result);
+  result = CreateSimpleNotification(browser(), true);
+  EXPECT_NE("-1", result);
+
+  blocker.SetNotificationsEnabled(false);
+  EXPECT_EQ(0, GetNotificationPopupCount());
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseNotification) {

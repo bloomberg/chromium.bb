@@ -402,12 +402,15 @@ void MessageCenterImpl::OnBlockingStateChanged(NotificationBlocker* blocker) {
     // calls NotificationList::MarkSinglePopupAsShown() and then updates the
     // unread count, but the whole cache will be recreated below.
     notification_list_->MarkSinglePopupAsShown(id, true);
+  }
+  notification_cache_.Rebuild(
+      notification_list_->GetVisibleNotifications(blockers_));
+
+  for (const auto& id : blocked_ids) {
     FOR_EACH_OBSERVER(MessageCenterObserver,
                       observer_list_,
                       OnNotificationUpdated(id));
   }
-  notification_cache_.Rebuild(
-      notification_list_->GetVisibleNotifications(blockers_));
   FOR_EACH_OBSERVER(MessageCenterObserver,
                     observer_list_,
                     OnBlockingStateChanged(blocker));
