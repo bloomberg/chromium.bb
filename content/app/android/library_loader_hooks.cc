@@ -103,7 +103,6 @@ bool LibraryLoaded(JNIEnv* env, jclass clazz) {
 
   // Android's main browser loop is custom so we set the browser
   // name here as early as possible.
-  TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
   base::trace_event::TraceLog::GetInstance()->SetProcessName("Browser");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
