@@ -68,19 +68,14 @@ zoom_area_center_from_point(struct weston_output *output,
 			    double *x, double *y)
 {
 	float level = output->zoom.spring_z.current;
-	double offset_x = output->x;
-	double offset_y = output->y;
-	double w = output->width;
-	double h = output->height;
 
-	*x = (*x - offset_x) * level + w / 2;
-	*y = (*y - offset_y) * level + h / 2;
+	*x = (*x - output->x) * level + output->width / 2.;
+	*y = (*y - output->y) * level + output->height / 2.;
 }
 
 static void
 weston_output_update_zoom_transform(struct weston_output *output)
 {
-	float global_x, global_y;
 	double x = output->zoom.current.x; /* global pointer coords */
 	double y = output->zoom.current.y;
 	float level;
@@ -93,11 +88,8 @@ weston_output_update_zoom_transform(struct weston_output *output)
 
 	zoom_area_center_from_point(output, &x, &y);
 
-	global_x = x;
-	global_y = y;
-
-	output->zoom.trans_x = global_x - output->width / 2;
-	output->zoom.trans_y = global_y - output->height / 2;
+	output->zoom.trans_x = x - output->width / 2;
+	output->zoom.trans_y = y - output->height / 2;
 
 	if (output->zoom.trans_x < 0)
 		output->zoom.trans_x = 0;
