@@ -11,7 +11,9 @@ import json
 import os
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import retry_util
 
 # Location of swarming_client.py that is used to send swarming requests
 _DIR_NAME = os.path.dirname(os.path.abspath(__file__))
@@ -19,6 +21,8 @@ _SWARMING_PROXY_CLIENT = os.path.abspath(os.path.join(
     _DIR_NAME, '..', 'third_party', 'swarming.client', 'swarming.py'))
 CONNECTION_TYPE_COMMON = 'common'
 CONNECTION_TYPE_MOCK = 'mock'
+# Code 80 - bot died.
+RETRIABLE_INTERNAL_FAILURE_STATES = {80}
 
 
 def RunSwarmingCommand(cmd, swarming_server, task_name=None,
@@ -85,6 +89,55 @@ def RunSwarmingCommand(cmd, swarming_server, task_name=None,
       result = SwarmingCommandResult.CreateSwarmingCommandResult(
           task_summary_json_path=temp_json_path, command_result=e.result)
       raise cros_build_lib.RunCommandError(e.msg, result, e.exception)
+
+
+def SwarmingRetriableErrorCheck(exception):
+  """Check if a swarming error is retriable.
+
+  Args:
+    exception: A cros_build_lib.RunCommandError exception.
+
+  Returns:
+    True if retriable, otherwise False.
+  """
+  if not isinstance(exception, cros_build_lib.RunCommandError):
+    return False
+  result = exception.result
+  if not isinstance(result, SwarmingCommandResult):
+    return False
+  if result.task_summary_json:
+    try:
+      internal_failure = result.task_summary_json[
+          'shards'][0]['internal_failure']
+      state = result.task_summary_json['shards'][0]['state']
+      if internal_failure and state in RETRIABLE_INTERNAL_FAILURE_STATES:
+        logging.warning(
+            'Encountered retriable swarming internal failure: %s',
+            json.dumps(result.task_summary_json, indent=2))
+        return True
+    except (IndexError, KeyError) as e:
+      logging.warning(
+          "Could not determine if %s is retriable, error: %s. json: %s",
+          str(exception), str(e),
+          json.dumps(result.task_summary_json, indent=2))
+  return False
+
+
+def RunSwarmingCommandWithRetries(max_retry, *args, **kwargs):
+  """Wrapper for RunSwarmingCommand that will retry a command.
+
+  Args:
+    max_retry: See RetryCommand.
+    *args: See RetryCommand and RunSwarmingCommand.
+    **kwargs: See RetryCommand and RunSwarmingCommand.
+
+  Returns:
+    A SwarmingCommandResult object.
+
+  Raises:
+    RunCommandError: When the command fails.
+  """
+  return retry_util.RetryCommand(RunSwarmingCommand, max_retry, *args, **kwargs)
 
 
 class SwarmingCommandResult(cros_build_lib.CommandResult):

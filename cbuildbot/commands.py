@@ -62,6 +62,7 @@ _DEFAULT_HWTEST_TIMEOUT_MINS = 1440
 _SWARMING_EXPIRATION = 20 * 60
 _RUN_SUITE_PATH = '/usr/local/autotest/site_utils/run_suite.py'
 _ABORT_SUITE_PATH = '/usr/local/autotest/site_utils/abort_suite.py'
+_MAX_HWTEST_CMD_RETRY = 10
 
 
 # =========================== Command Helpers =================================
@@ -1109,8 +1110,10 @@ def _HWTestWait(cmd, job_id, swarming_args):
   """
   # Wait on the suite
   wait_cmd = list(cmd) + ['-m', str(job_id)]
-  result = swarming_lib.RunSwarmingCommand(
-      wait_cmd, capture_output=True, combine_stdout_stderr=True,
+  result = swarming_lib.RunSwarmingCommandWithRetries(
+      max_retry=_MAX_HWTEST_CMD_RETRY,
+      error_check=swarming_lib.SwarmingRetriableErrorCheck,
+      cmd=wait_cmd, capture_output=True, combine_stdout_stderr=True,
       **swarming_args)
   for output in result.task_summary_json['shards'][0]['outputs']:
     sys.stdout.write(output)
