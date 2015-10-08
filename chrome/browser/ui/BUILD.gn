@@ -94,6 +94,7 @@ source_set("ui") {
       "//chrome/installer/util",
       "//components/autofill/content/browser:risk_proto",
       "//components/bubble:bubble",
+      "//components/crash/core/browser",
       "//components/net_log",
       "//components/page_load_metrics/browser",
       "//components/power",

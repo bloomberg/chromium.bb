@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit-part>
+  <structure type="chrome_scaled_image" name="IDR_CRASH_SAD_FAVICON" file="crash/favicon_sad_tab.png" />
+</grit-part>

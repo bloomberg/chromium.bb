@@ -5,6 +5,23 @@
 {
   'targets': [
     {
+      # GN version: //components/crash/core/browser
+      'target_name': 'crash_core_browser',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'upload_list',
+        '../base/base.gyp:base',
+        '../components/components_strings.gyp:components_strings',
+      ],
+      'sources': [
+        'crash/core/browser/crashes_ui_util.cc',
+        'crash/core/browser/crashes_ui_util.h',
+      ],
+    },
+    {
       # GN version: //components/crash/core/common
       'target_name': 'crash_core_common',
       'type': 'static_library',

@@ -1,10 +1,10 @@
 per-file autofill_scaled_resources.grdp=estade@chromium.org
-per-file crash_resources.grdp=cpu@chromium.org
-per-file crash_resources.grdp=jochen@chromium.org
-per-file crash_resources.grdp=mark@chromium.org
-per-file crash_resources.grdp=rsesek@chromium.org
-per-file crash_resources.grdp=scottmg@chromium.org
-per-file crash_resources.grdp=thestig@chromium.org
+per-file crash_*=cpu@chromium.org
+per-file crash_*=jochen@chromium.org
+per-file crash_*=mark@chromium.org
+per-file crash_*=rsesek@chromium.org
+per-file crash_*=scottmg@chromium.org
+per-file crash_*=thestig@chromium.org
 per-file data_reduction_proxy*=bengr@chromium.org
 per-file data_reduction_proxy*=sclittle@chromium.org
 per-file data_reduction_proxy*=megjablon@chromium.org

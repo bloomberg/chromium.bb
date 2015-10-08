@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
+#include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -1372,7 +1373,8 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
   } else if (should_display_crashed_favicon_) {
     // Paint crash favicon.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    gfx::ImageSkia crashed_favicon(*rb.GetImageSkiaNamed(IDR_SAD_FAVICON));
+    gfx::ImageSkia crashed_favicon(
+        *rb.GetImageSkiaNamed(IDR_CRASH_SAD_FAVICON));
     bounds.set_y(bounds.y() + favicon_hiding_offset_);
     DrawIconCenter(canvas, crashed_favicon, 0,
                    crashed_favicon.width(),
