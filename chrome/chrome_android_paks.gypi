@@ -87,14 +87,14 @@
         '<(DEPTH)/chrome/chrome_resources.gyp:packed_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:packed_extra_resources',
       ],
-      'copies': [
-        {
-          'destination': '<(chrome_android_pak_output_folder)',
-          'files': [
-            '<@(chrome_android_pak_input_resources)',
-          ],
-        }
-      ],
+      'variables': {
+        'dest_path': '<(chrome_android_pak_output_folder)',
+        'src_files': [
+          '<@(chrome_android_pak_input_resources)',
+        ],
+        'clear': 1,
+      },
+      'includes': ['../build/android/copy_ex.gypi'],
     },
   ],
 }
