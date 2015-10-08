@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
@@ -19,6 +20,9 @@
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_listener.h"
@@ -30,7 +34,7 @@ bool WrenchToolbarButton::g_open_app_immediately_for_testing = false;
 
 WrenchToolbarButton::WrenchToolbarButton(ToolbarView* toolbar_view)
     : views::MenuButton(NULL, base::string16(), toolbar_view, false),
-      wrench_icon_painter_(nullptr),
+      severity_(WrenchIconPainter::SEVERITY_NONE),
       toolbar_view_(toolbar_view),
       allow_extension_dragging_(
           extensions::FeatureSwitch::extension_action_redesign()
@@ -45,8 +49,11 @@ WrenchToolbarButton::~WrenchToolbarButton() {
 
 void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
                                       bool animate) {
-  if (ui::MaterialDesignController::IsModeMaterial())
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    severity_ = severity;
+    UpdateIcon();
     return;
+  }
 
   wrench_icon_painter_->SetSeverity(severity, animate);
   SchedulePaint();
@@ -111,6 +118,32 @@ gfx::Size WrenchToolbarButton::GetPreferredSize() const {
 
 void WrenchToolbarButton::ScheduleWrenchIconPaint() {
   SchedulePaint();
+}
+
+void WrenchToolbarButton::UpdateIcon() {
+  DCHECK(ui::MaterialDesignController::IsModeMaterial());
+  SkColor color = SK_ColorRED;
+  switch (severity_) {
+    case WrenchIconPainter::SEVERITY_NONE:
+      color = GetThemeProvider()->GetColor(
+          ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+      break;
+    case WrenchIconPainter::SEVERITY_LOW:
+      color = gfx::kGoogleGreen700;
+      break;
+    case WrenchIconPainter::SEVERITY_MEDIUM:
+      color = gfx::kGoogleYellow700;
+      break;
+    case WrenchIconPainter::SEVERITY_HIGH:
+      color = gfx::kGoogleRed700;
+      break;
+  }
+
+  // TODO(estade): find a home for this constant.
+  const int kButtonSize = 16;
+  SetImage(views::Button::STATE_NORMAL,
+           gfx::CreateVectorIcon(gfx::VectorIconId::BROWSER_TOOLS, kButtonSize,
+                                 color));
 }
 
 const char* WrenchToolbarButton::GetClassName() const {

@@ -56,6 +56,10 @@ class WrenchToolbarButton : public views::MenuButton,
   // WrenchIconPainter::Delegate:
   void ScheduleWrenchIconPaint() override;
 
+  // Updates the presentation according to |severity_| and the theme provider.
+  // Only used in MD.
+  void UpdateIcon();
+
   // Opens the app menu immediately during a drag-and-drop operation.
   // Used only in testing.
   static bool g_open_app_immediately_for_testing;
@@ -74,7 +78,11 @@ class WrenchToolbarButton : public views::MenuButton,
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
 
+  // Only used in pre-MD.
   scoped_ptr<WrenchIconPainter> wrench_icon_painter_;
+
+  // Only used in MD.
+  WrenchIconPainter::Severity severity_;
 
   // Our owning toolbar view.
   ToolbarView* toolbar_view_;

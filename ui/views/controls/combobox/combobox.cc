@@ -686,7 +686,7 @@ void Combobox::UpdateBorder() {
   if (style_ == STYLE_ACTION)
     border->SetInsets(5, 10, 5, 10);
   if (invalid_)
-    border->SetColor(gfx::kErrorRed);
+    border->SetColor(gfx::kGoogleRed700);
   SetBorder(border.Pass());
 }
 

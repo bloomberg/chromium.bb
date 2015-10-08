@@ -209,9 +209,9 @@ void NewAvatarButton::Update() {
   if (use_generic_button) {
     SetImage(views::Button::STATE_NORMAL, generic_avatar_);
   } else if (has_auth_error_) {
-    SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 13, gfx::kAmber));
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 13,
+                                   gfx::kGoogleYellow700));
   } else {
     SetImage(views::Button::STATE_NORMAL, gfx::ImageSkia());
   }

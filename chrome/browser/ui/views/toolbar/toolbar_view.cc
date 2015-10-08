@@ -787,10 +787,7 @@ void ToolbarView::LoadImages() {
     home_->SetImage(views::Button::STATE_NORMAL,
                     gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_HOME,
                                           kButtonSize, normal_color));
-    app_menu_button_->SetImage(views::Button::STATE_NORMAL,
-                               gfx::CreateVectorIcon(
-                                  gfx::VectorIconId::BROWSER_TOOLS,
-                                  kButtonSize, normal_color));
+    app_menu_button_->UpdateIcon();
   } else {
     back_->SetImage(views::Button::STATE_NORMAL,
                     *(tp->GetImageSkiaNamed(IDR_BACK)));

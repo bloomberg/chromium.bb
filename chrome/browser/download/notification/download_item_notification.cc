@@ -497,7 +497,7 @@ void DownloadItemNotification::UpdateNotificationIcon() {
 #else
     SetNotificationVectorIcon(
         gfx::VectorIconId::WARNING,
-        model.MightBeMalicious() ? gfx::kErrorRed : gfx::kAmber);
+        model.MightBeMalicious() ? gfx::kGoogleRed700 : gfx::kGoogleYellow700);
 #endif
     return;
   }
@@ -525,7 +525,7 @@ void DownloadItemNotification::UpdateNotificationIcon() {
       SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_ERROR);
 #else
       SetNotificationVectorIcon(gfx::VectorIconId::ERROR_CIRCLE,
-                                gfx::kErrorRed);
+                                gfx::kGoogleRed700);
 #endif
       break;
 
