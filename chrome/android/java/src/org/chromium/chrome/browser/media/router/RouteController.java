@@ -22,6 +22,14 @@ public interface RouteController {
     void sendStringMessage(String message, int nativeCallbackId);
 
     /**
+    * Sends a binary message to the route and invokes the {@link RouteDelegate} with the
+    * passed callback id on success or failure.
+    * @param data The binary message to send.
+    * @param nativeCallbackId The id of the callback handling the result.
+    */
+    void sendBinaryMessage(byte[] data, int nativeCallbackId);
+
+    /**
      * @return the source id for the route.
      */
     String getSourceId();

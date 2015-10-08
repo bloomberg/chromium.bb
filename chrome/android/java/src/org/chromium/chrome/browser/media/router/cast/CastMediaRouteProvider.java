@@ -292,6 +292,15 @@ public class CastMediaRouteProvider
         route.sendStringMessage(message, nativeCallbackId);
     }
 
+    @Override
+    public void sendBinaryMessage(String routeId, byte[] data, int nativeCallbackId) {
+        // TODO(crbug.com/524128): Cast API does not support sending binary message
+        // to receiver application. Binary data may be converted to String and send as
+        // an app_message within it's own message namespace, using the string version.
+        // Sending failure in the result callback for now.
+        mManager.onMessageSentResult(false, nativeCallbackId);
+    }
+
     private CastMediaRouteProvider(
             Context applicationContext, MediaRouter androidMediaRouter, MediaRouteManager manager) {
         mApplicationContext = applicationContext;

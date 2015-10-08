@@ -5,6 +5,7 @@
 #include "chrome/browser/media/android/router/media_router_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -165,7 +166,16 @@ void MediaRouterAndroid::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
     scoped_ptr<std::vector<uint8>> data,
     const SendRouteMessageCallback& callback) {
-  NOTIMPLEMENTED();
+  int callback_id =
+      message_callbacks_.Add(new SendRouteMessageCallback(callback));
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jroute_id =
+      base::android::ConvertUTF8ToJavaString(env, route_id);
+  ScopedJavaLocalRef<jbyteArray> jbyte_array =
+      base::android::ToJavaByteArray(env, &((*data)[0]), data->size());
+  Java_ChromeMediaRouter_sendBinaryMessage(env, java_media_router_.obj(),
+                                           jroute_id.obj(), jbyte_array.obj(),
+                                           callback_id);
 }
 
 void MediaRouterAndroid::AddIssue(const Issue& issue) {

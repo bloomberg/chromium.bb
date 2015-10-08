@@ -176,6 +176,10 @@ public class CastRouteController implements RouteController {
         mRouteDelegate.onMessageSentResult(false, callbackId);
     }
 
+    public void sendBinaryMessage(byte[] data, int callbackId) {
+        // TODO(crbug.com/524128): Implement this.
+    }
+
     @Override
     public String getSourceId() {
         return mSource.getUrn();
