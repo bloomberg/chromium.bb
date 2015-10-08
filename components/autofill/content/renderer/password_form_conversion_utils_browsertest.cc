@@ -170,8 +170,9 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
     LoadWebFormFromHTML(html, &form);
 
     FormData form_data;
-    ASSERT_TRUE(WebFormElementToFormData(form, WebFormControlElement(),
-                                         EXTRACT_NONE, &form_data, nullptr));
+    ASSERT_TRUE(form_util::WebFormElementToFormData(
+        form, WebFormControlElement(), form_util::EXTRACT_NONE, &form_data,
+        nullptr));
 
     FormStructure form_structure(form_data);
 

@@ -128,7 +128,8 @@ bool IsUnownedPasswordFormVisible(blink::WebFrame* frame,
       CreatePasswordFormFromUnownedInputElements(*frame, nullptr,
                                                  &form_predictions));
   std::vector<blink::WebFormControlElement> control_elements =
-      GetUnownedAutofillableFormFieldElements(frame->document().all(), nullptr);
+      form_util::GetUnownedAutofillableFormFieldElements(
+          frame->document().all(), nullptr);
   if (unowned_password_form &&
       form_util::IsNamedElementVisible(
           control_elements, unowned_password_form->username_element) &&
@@ -299,7 +300,7 @@ void FindFormElements(content::RenderFrame* render_frame,
       continue;
 
     std::vector<blink::WebFormControlElement> control_elements =
-        ExtractAutofillableElementsInForm(fe);
+        form_util::ExtractAutofillableElementsInForm(fe);
     FormInputElementMap cur_map;
     if (FindFormInputElements(control_elements, data, ambiguous_or_empty_names,
                               &cur_map))
@@ -311,7 +312,7 @@ void FindFormElements(content::RenderFrame* render_frame,
     return;
 
   std::vector<blink::WebFormControlElement> control_elements =
-      GetUnownedAutofillableFormFieldElements(doc.all(), nullptr);
+      form_util::GetUnownedAutofillableFormFieldElements(doc.all(), nullptr);
   FormInputElementMap unowned_elements_map;
   if (FindFormInputElements(control_elements, data, ambiguous_or_empty_names,
                             &unowned_elements_map))
@@ -491,8 +492,10 @@ bool FillUserNameAndPassword(
     username_element->setValue(username, true);
     (*nonscript_modified_values)[*username_element] = username;
     username_element->setAutofilled(true);
-    if (set_selection)
-      PreviewSuggestion(username, current_username, username_element);
+    if (set_selection) {
+      form_util::PreviewSuggestion(username, current_username,
+                                   username_element);
+    }
   } else if (current_username != username) {
     // If the username can't be filled and it doesn't match a saved password
     // as is, don't autofill a password.
@@ -815,8 +818,8 @@ bool PasswordAutofillAgent::PreviewSuggestion(
   was_username_autofilled_ = username_element.isAutofilled();
   username_element.setSuggestedValue(username);
   username_element.setAutofilled(true);
-  ::autofill::PreviewSuggestion(username_element.suggestedValue(),
-                                username_query_prefix_, &username_element);
+  form_util::PreviewSuggestion(username_element.suggestedValue(),
+                               username_query_prefix_, &username_element);
   was_password_autofilled_ = password_info->password_field.isAutofilled();
   password_info->password_field.setSuggestedValue(password);
   password_info->password_field.setAutofilled(true);
@@ -977,7 +980,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
   }
 
   // Checks whether the webpage is a redirect page or an empty page.
-  if (IsWebpageEmpty(frame)) {
+  if (form_util::IsWebpageEmpty(frame)) {
     if (logger) {
       logger->LogMessage(Logger::STRING_WEBPAGE_EMPTY);
     }
@@ -993,7 +996,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
   for (size_t i = 0; i < forms.size(); ++i) {
     const blink::WebFormElement& form = forms[i];
     if (only_visible) {
-      bool is_form_visible = IsWebNodeVisible(form);
+      bool is_form_visible = form_util::IsWebNodeVisible(form);
       if (logger) {
         LogHTMLForm(logger.get(), Logger::STRING_FORM_FOUND_ON_PAGE, form);
         logger->LogBoolean(Logger::STRING_FORM_IS_VISIBLE, is_form_visible);
@@ -1387,7 +1390,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
 
   FormData form;
   FormFieldData field;
-  FindFormAndFieldForFormControlElement(user_input, &form, &field);
+  form_util::FindFormAndFieldForFormControlElement(user_input, &form, &field);
 
   blink::WebInputElement selected_element = user_input;
   if (show_on_password_field && !selected_element.isPasswordField()) {

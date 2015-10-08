@@ -32,6 +32,8 @@ struct FormData;
 struct FormFieldData;
 struct WebElementDescriptor;
 
+namespace form_util {
+
 // A bit field mask to extract data from WebFormControlElement.
 // Copied to components/autofill/ios/browser/resources/autofill_controller.js.
 enum ExtractMask {
@@ -53,9 +55,6 @@ enum ExtractMask {
 // Google code project settings.
 // Copied to components/autofill/ios/browser/resources/autofill_controller.js.
 extern const size_t kMaxParseableFields;
-
-namespace form_util {
-// TODO(mathp): Move more functions in the form_util namespace.
 
 // Returns true if |control_elements| contains an element named |name| and is
 // visible.
@@ -81,8 +80,6 @@ bool IsFormVisible(blink::WebFrame* frame,
 // strip unnecessary data (e.g. query params and HTTP credentials).
 GURL GetCanonicalActionForForm(const blink::WebFormElement& form);
 GURL GetCanonicalOriginForDocument(const blink::WebDocument& document);
-
-}  // namespace form_util
 
 // Returns true if |element| is a month input element.
 bool IsMonthInput(const blink::WebInputElement* element);
@@ -235,6 +232,7 @@ void PreviewSuggestion(const base::string16& suggestion,
                        const base::string16& user_input,
                        blink::WebFormControlElement* input_element);
 
+}  // namespace form_util
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_FORM_AUTOFILL_UTIL_H_

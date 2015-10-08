@@ -45,7 +45,7 @@ const WebInputElement GetTextWebInputElement(const WebNode& node) {
   if (!element.hasHTMLTagName("input"))
     return WebInputElement();
   const WebInputElement* input = blink::toWebInputElement(&element);
-  if (!IsTextInput(input))
+  if (!form_util::IsTextInput(input))
     return WebInputElement();
   return *input;
 }

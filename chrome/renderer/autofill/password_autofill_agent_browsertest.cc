@@ -748,19 +748,19 @@ TEST_F(PasswordAutofillAgentTest, IsWebNodeVisibleTest) {
   frame = GetMainFrame();
   frame->document().forms(forms1);
   ASSERT_EQ(1u, forms1.size());
-  EXPECT_TRUE(IsWebNodeVisible(forms1[0]));
+  EXPECT_TRUE(form_util::IsWebNodeVisible(forms1[0]));
 
   LoadHTML(kEmptyFormHTML);
   frame = GetMainFrame();
   frame->document().forms(forms2);
   ASSERT_EQ(1u, forms2.size());
-  EXPECT_FALSE(IsWebNodeVisible(forms2[0]));
+  EXPECT_FALSE(form_util::IsWebNodeVisible(forms2[0]));
 
   LoadHTML(kNonVisibleFormHTML);
   frame = GetMainFrame();
   frame->document().forms(forms3);
   ASSERT_EQ(1u, forms3.size());
-  EXPECT_FALSE(IsWebNodeVisible(forms3[0]));
+  EXPECT_FALSE(form_util::IsWebNodeVisible(forms3[0]));
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest) {
@@ -1754,9 +1754,9 @@ TEST_F(PasswordAutofillAgentTest, FindingFieldsWithAutofillPredictions) {
   // Find FormData for visible password form.
   blink::WebFormElement form_element = username_element_.form();
   FormData form_data;
-  ASSERT_TRUE(WebFormElementToFormData(form_element,
-                                       blink::WebFormControlElement(),
-                                       EXTRACT_NONE, &form_data, nullptr));
+  ASSERT_TRUE(
+      WebFormElementToFormData(form_element, blink::WebFormControlElement(),
+                               form_util::EXTRACT_NONE, &form_data, nullptr));
   // Simulate Autofill predictions: the first field is username, the third
   // one is password.
   std::map<autofill::FormData, PasswordFormFieldPredictionMap> predictions;
@@ -2012,9 +2012,9 @@ TEST_F(PasswordAutofillAgentTest, IgnoreNotPasswordFields) {
   // Find FormData for visible form.
   blink::WebFormElement form_element = credit_card_number_element.form();
   FormData form_data;
-  ASSERT_TRUE(WebFormElementToFormData(form_element,
-                                       blink::WebFormControlElement(),
-                                       EXTRACT_NONE, &form_data, nullptr));
+  ASSERT_TRUE(
+      WebFormElementToFormData(form_element, blink::WebFormControlElement(),
+                               form_util::EXTRACT_NONE, &form_data, nullptr));
   // Simulate Autofill predictions: the third field is not a password.
   std::map<autofill::FormData, PasswordFormFieldPredictionMap> predictions;
   predictions[form_data][form_data.fields[2]] = PREDICTION_NOT_PASSWORD;
@@ -2207,7 +2207,7 @@ TEST_F(PasswordAutofillAgentTest,
     document.forms(forms);
     blink::WebFormElement form_element = forms[0];
     std::vector<blink::WebFormControlElement> control_elements =
-        ExtractAutofillableElementsInForm(form_element);
+        form_util::ExtractAutofillableElementsInForm(form_element);
     bool has_fillable_username =
         (kEmpty != test_case.fill_data_username_field_name);
     if (has_fillable_username) {

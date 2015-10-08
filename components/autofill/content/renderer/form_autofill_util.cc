@@ -52,6 +52,7 @@ using blink::WebString;
 using blink::WebVector;
 
 namespace autofill {
+namespace form_util {
 
 const size_t kMaxParseableFields = 200;
 
@@ -1091,8 +1092,6 @@ GURL StripAuthAndParams(const GURL& gurl) {
 
 }  // namespace
 
-namespace form_util {
-
 bool IsNamedElementVisible(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const base::string16& name) {
@@ -1169,8 +1168,6 @@ GURL GetCanonicalOriginForDocument(const WebDocument& document) {
   GURL full_origin(document.url());
   return StripAuthAndParams(full_origin);
 }
-
-}  // namespace form_util
 
 bool IsMonthInput(const WebInputElement* element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kMonth, ("month"));
@@ -1629,4 +1626,5 @@ void PreviewSuggestion(const base::string16& suggestion,
   input_element->setSelectionRange(selection_start, suggestion.length());
 }
 
+}  // namespace form_util
 }  // namespace autofill

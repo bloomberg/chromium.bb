@@ -42,6 +42,7 @@ using blink::WebTextAreaElement;
 using blink::WebVector;
 
 namespace autofill {
+namespace form_util {
 
 namespace {
 
@@ -4128,4 +4129,5 @@ TEST_F(FormAutofillTest, UnownedFormElementsAndFieldSetsToFormDataWithForm) {
       &form, nullptr));
 }
 
+}  // namespace form_util
 }  // namespace autofill

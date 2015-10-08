@@ -132,8 +132,8 @@ PasswordForm::Layout SequenceToLayout(base::StringPiece layout_sequence) {
 
 void PopulateSyntheticFormFromWebForm(const WebFormElement& web_form,
                                       SyntheticForm* synthetic_form) {
-  synthetic_form->control_elements = ExtractAutofillableElementsInForm(
-      web_form);
+  synthetic_form->control_elements =
+      form_util::ExtractAutofillableElementsInForm(web_form);
   synthetic_form->action = web_form.action();
   synthetic_form->document = web_form.document();
 }
@@ -258,7 +258,7 @@ void FindPredictedElements(
     return;
 
   std::vector<blink::WebFormControlElement> autofillable_elements =
-      ExtractAutofillableElementsFromSet(form.control_elements);
+      form_util::ExtractAutofillableElementsFromSet(form.control_elements);
 
   const PasswordFormFieldPredictionMap& field_predictions =
       predictions_iterator->second;
@@ -589,10 +589,8 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromWebForm(
   SyntheticForm synthetic_form;
   PopulateSyntheticFormFromWebForm(web_form, &synthetic_form);
 
-  WebFormElementToFormData(web_form,
-                           blink::WebFormControlElement(),
-                           EXTRACT_NONE,
-                           &password_form->form_data,
+  WebFormElementToFormData(web_form, blink::WebFormControlElement(),
+                           form_util::EXTRACT_NONE, &password_form->form_data,
                            NULL /* FormFieldData */);
 
   if (!GetPasswordForm(synthetic_form, password_form.get(),
@@ -608,8 +606,8 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const FormsPredictionsMap* form_predictions) {
   SyntheticForm synthetic_form;
   synthetic_form.control_elements =
-      GetUnownedAutofillableFormFieldElements(frame.document().all(),
-                                              &synthetic_form.fieldsets);
+      form_util::GetUnownedAutofillableFormFieldElements(
+          frame.document().all(), &synthetic_form.fieldsets);
   synthetic_form.document = frame.document();
 
   if (synthetic_form.control_elements.empty())
@@ -617,11 +615,8 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
 
   scoped_ptr<PasswordForm> password_form(new PasswordForm());
   UnownedPasswordFormElementsAndFieldSetsToFormData(
-      synthetic_form.fieldsets,
-      synthetic_form.control_elements,
-      nullptr, frame.document(),
-      EXTRACT_NONE,
-      &password_form->form_data,
+      synthetic_form.fieldsets, synthetic_form.control_elements, nullptr,
+      frame.document(), form_util::EXTRACT_NONE, &password_form->form_data,
       nullptr /* FormFieldData */);
   if (!GetPasswordForm(synthetic_form, password_form.get(),
                        nonscript_modified_values, form_predictions))

@@ -34,11 +34,9 @@ void SetAccountCreationFormsDetectedMessage(
   document.forms(web_forms);
 
   autofill::FormData form_data;
-  WebFormElementToFormData(web_forms[form_index],
-                           blink::WebFormControlElement(),
-                           EXTRACT_NONE,
-                           &form_data,
-                           nullptr /* FormFieldData */);
+  WebFormElementToFormData(
+      web_forms[form_index], blink::WebFormControlElement(),
+      form_util::EXTRACT_NONE, &form_data, nullptr /* FormFieldData */);
 
   std::vector<autofill::FormData> forms;
   forms.push_back(form_data);

@@ -412,7 +412,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
 }
 
 void PasswordGenerationAgent::ShowGenerationPopup() {
-  gfx::RectF bounding_box_scaled = GetScaledBoundingBox(
+  gfx::RectF bounding_box_scaled = form_util::GetScaledBoundingBox(
       render_frame()->GetRenderView()->GetWebView()->pageScaleFactor(),
       &generation_element_);
 
@@ -426,7 +426,7 @@ void PasswordGenerationAgent::ShowGenerationPopup() {
 }
 
 void PasswordGenerationAgent::ShowEditingPopup() {
-  gfx::RectF bounding_box_scaled = GetScaledBoundingBox(
+  gfx::RectF bounding_box_scaled = form_util::GetScaledBoundingBox(
       render_frame()->GetRenderView()->GetWebView()->pageScaleFactor(),
       &generation_element_);
 

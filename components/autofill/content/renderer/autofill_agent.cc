@@ -133,8 +133,9 @@ void TrimStringVectorForIPC(std::vector<base::string16>* strings) {
 bool ExtractFormDataOnSave(const WebFormElement& form_element, FormData* data) {
   return WebFormElementToFormData(
       form_element, WebFormControlElement(),
-      static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTION_TEXT), data,
-      NULL);
+      static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
+                                          form_util::EXTRACT_OPTION_TEXT),
+      data, NULL);
 }
 
 }  // namespace
@@ -327,14 +328,12 @@ void AutofillAgent::didRequestAutocomplete(
   } else if (!is_safe && !allow_unsafe) {
     error_message =
         "must use a secure connection or --reduce-security-for-testing.";
-  } else if (!WebFormElementToFormData(form,
-                                       WebFormControlElement(),
-                                       static_cast<ExtractMask>(
-                                           EXTRACT_VALUE |
-                                           EXTRACT_OPTION_TEXT |
-                                           EXTRACT_OPTIONS),
-                                       &form_data,
-                                       NULL)) {
+  } else if (!WebFormElementToFormData(
+                 form, WebFormControlElement(),
+                 static_cast<form_util::ExtractMask>(
+                     form_util::EXTRACT_VALUE | form_util::EXTRACT_OPTION_TEXT |
+                     form_util::EXTRACT_OPTIONS),
+                 &form_data, NULL)) {
     error_message = "failed to parse form.";
   }
 
@@ -369,7 +368,7 @@ void AutofillAgent::FormControlElementClicked(
     return;
 
   const WebInputElement* input_element = toWebInputElement(&element);
-  if (!input_element && !IsTextAreaElement(element))
+  if (!input_element && !form_util::IsTextAreaElement(element))
     return;
 
   ShowSuggestionsOptions options;
@@ -406,7 +405,7 @@ void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
 }
 
 void AutofillAgent::textFieldDidChange(const WebFormControlElement& element) {
-  DCHECK(toWebInputElement(&element) || IsTextAreaElement(element));
+  DCHECK(toWebInputElement(&element) || form_util::IsTextAreaElement(element));
   if (ignore_text_changes_)
     return;
 
@@ -458,7 +457,8 @@ void AutofillAgent::TextFieldDidChangeImpl(
 
   FormData form;
   FormFieldData field;
-  if (FindFormAndFieldForFormControlElement(element, &form, &field)) {
+  if (form_util::FindFormAndFieldForFormControlElement(element, &form,
+                                                       &field)) {
     Send(new AutofillHostMsg_TextFieldDidChange(routing_id(), form, field,
                                                 base::TimeTicks::Now()));
   }
@@ -536,7 +536,7 @@ void AutofillAgent::OnFillForm(int query_id, const FormData& form) {
     return;
 
   was_query_node_autofilled_ = element_.isAutofilled();
-  FillForm(form, element_);
+  form_util::FillForm(form, element_);
   if (!element_.form().isNull())
     last_interacted_form_ = element_.form();
 
@@ -557,7 +557,7 @@ void AutofillAgent::OnPreviewForm(int query_id, const FormData& form) {
     return;
 
   was_query_node_autofilled_ = element_.isAutofilled();
-  PreviewForm(form, element_);
+  form_util::PreviewForm(form, element_);
   Send(new AutofillHostMsg_DidPreviewAutofillFormData(routing_id()));
 }
 
@@ -570,7 +570,8 @@ void AutofillAgent::OnClearPreviewedForm() {
     if (password_autofill_agent_->DidClearAutofillSelection(element_))
       return;
 
-    ClearPreviewedFormWithElement(element_, was_query_node_autofilled_);
+    form_util::ClearPreviewedFormWithElement(element_,
+                                             was_query_node_autofilled_);
   } else {
     // TODO(isherman): There seem to be rare cases where this code *is*
     // reachable: see [ http://crbug.com/96321#c6 ].  Ideally we would
@@ -630,7 +631,7 @@ void AutofillAgent::OnSamePageNavigationCompleted() {
     const blink::WebFormElement& form = forms[i];
     if (form_util::GetCanonicalActionForForm(last_interacted_form_) ==
             form_util::GetCanonicalActionForForm(form) &&
-        IsWebNodeVisible(form)) {
+        form_util::IsWebNodeVisible(form)) {
       // Found our candidate form, and it is still visible.
       return;
     }
@@ -649,7 +650,8 @@ void AutofillAgent::OnRequestAutocompleteResult(
     return;
 
   if (result == WebFormElement::AutocompleteResultSuccess) {
-    FillFormIncludingNonFocusableElements(form_data, in_flight_request_form_);
+    form_util::FillFormIncludingNonFocusableElements(form_data,
+                                                     in_flight_request_form_);
     if (!in_flight_request_form_.checkValidity())
       result = WebFormElement::AutocompleteResultErrorInvalid;
   }
@@ -681,7 +683,7 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
     if (!options.datalist_only && !input_element->suggestedValue().isEmpty())
       return;
   } else {
-    DCHECK(IsTextAreaElement(element));
+    DCHECK(form_util::IsTextAreaElement(element));
     if (!element.toConst<WebTextAreaElement>().suggestedValue().isEmpty())
       return;
   }
@@ -701,7 +703,7 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
   }
 
   element_ = element;
-  if (IsAutofillableInputElement(input_element) &&
+  if (form_util::IsAutofillableInputElement(input_element) &&
       password_autofill_agent_->ShowSuggestions(
           *input_element, options.show_full_suggestion_list,
           is_generation_popup_possibly_visible_)) {
@@ -729,22 +731,23 @@ void AutofillAgent::QueryAutofillSuggestions(
   if (!element.document().frame())
     return;
 
-  DCHECK(toWebInputElement(&element) || IsTextAreaElement(element));
+  DCHECK(toWebInputElement(&element) || form_util::IsTextAreaElement(element));
 
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
 
   FormData form;
   FormFieldData field;
-  if (!FindFormAndFieldForFormControlElement(element, &form, &field)) {
+  if (!form_util::FindFormAndFieldForFormControlElement(element, &form,
+                                                        &field)) {
     // If we didn't find the cached form, at least let autocomplete have a shot
     // at providing suggestions.
-    WebFormControlElementToFormField(element, EXTRACT_VALUE, &field);
+    WebFormControlElementToFormField(element, form_util::EXTRACT_VALUE, &field);
   }
   if (datalist_only)
     field.should_autocomplete = false;
 
-  gfx::RectF bounding_box_scaled = GetScaledBoundingBox(
+  gfx::RectF bounding_box_scaled = form_util::GetScaledBoundingBox(
       render_frame()->GetRenderView()->GetWebView()->pageScaleFactor(),
       &element_);
 
@@ -781,7 +784,7 @@ void AutofillAgent::PreviewFieldWithValue(const base::string16& value,
   was_query_node_autofilled_ = element_.isAutofilled();
   node->setSuggestedValue(value.substr(0, node->maxLength()));
   node->setAutofilled(true);
-  PreviewSuggestion(node->suggestedValue(), node->value(), node);
+  form_util::PreviewSuggestion(node->suggestedValue(), node->value(), node);
 }
 
 void AutofillAgent::ProcessForms() {
