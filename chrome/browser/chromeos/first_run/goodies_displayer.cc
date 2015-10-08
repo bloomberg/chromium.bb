@@ -56,11 +56,6 @@ void UpdateGoodiesPrefCantShow(bool can_show_goodies) {
 
 }  // namespace
 
-GoodiesDisplayerTestInfo::GoodiesDisplayerTestInfo()
-    : days_since_oobe(0), setup_complete(false) {}
-
-GoodiesDisplayerTestInfo::~GoodiesDisplayerTestInfo() {}
-
 const char GoodiesDisplayer::kGoodiesURL[] =
     "https://www.google.com/chrome/devices/goodies.html";
 
@@ -130,6 +125,11 @@ void GoodiesDisplayer::OnBrowserSetLastActive(Browser* browser) {
   // Regardless of how we got here, we don't henceforth need to show Goodies.
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&Delete));
 }
+
+GoodiesDisplayerTestInfo::GoodiesDisplayerTestInfo()
+    : days_since_oobe(0), setup_complete(false) {}
+
+GoodiesDisplayerTestInfo::~GoodiesDisplayerTestInfo() {}
 
 }  // namespace first_run
 }  // namespace chromeos

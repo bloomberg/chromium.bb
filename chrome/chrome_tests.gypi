@@ -703,6 +703,7 @@
       'browser/chromeos/file_manager/zip_file_creator_browsertest.cc',
       'browser/chromeos/first_run/chromeos_first_run_browsertest.cc',
       'browser/chromeos/first_run/drive_first_run_browsertest.cc',
+      'browser/chromeos/first_run/goodies_displayer_browsertest.cc',
       'browser/chromeos/input_method/input_method_engine_browsertests.cc',
       'browser/chromeos/input_method/mode_indicator_browsertest.cc',
       'browser/chromeos/login/crash_restore_browsertest.cc',
