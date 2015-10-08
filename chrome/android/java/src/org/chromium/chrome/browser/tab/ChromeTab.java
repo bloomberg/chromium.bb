@@ -30,7 +30,6 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -60,8 +59,6 @@ public class ChromeTab extends Tab {
      * didCommitProvisionalLoadForFrame().
      */
     private boolean mIsNativePageCommitPending;
-
-    private WebContentsObserver mWebContentsObserver;
 
     /**
      * Listens to gesture events fired by the ContentViewCore.
@@ -235,7 +232,6 @@ public class ChromeTab extends Tab {
         try {
             TraceEvent.begin("ChromeTab.setContentViewCore");
             super.setContentViewCore(cvc);
-            mWebContentsObserver = new TabWebContentsObserver(cvc.getWebContents(), this);
 
             setInterceptNavigationDelegate(createInterceptNavigationDelegate());
 
@@ -284,10 +280,6 @@ public class ChromeTab extends Tab {
         if (mGestureStateListener != null) {
             cvc.removeGestureStateListener(mGestureStateListener);
         }
-        if (mWebContentsObserver != null) {
-            mWebContentsObserver.destroy();
-        }
-        mWebContentsObserver = null;
     }
 
     /**
@@ -394,13 +386,9 @@ public class ChromeTab extends Tab {
         return mActivity == null ? null : mActivity.getReaderModeActivityDelegate();
     }
 
-    /**
-     * Shows a native page for url if it's a valid chrome-native URL. Otherwise, does nothing.
-     * @param url The url of the current navigation.
-     * @param isReload Whether the current navigation is a reload.
-     * @return True, if a native page was displayed for url.
-     */
+    @Override
     boolean maybeShowNativePage(String url, boolean isReload) {
+        super.maybeShowNativePage(url, isReload);
         NativePage candidateForReuse = isReload ? null : getNativePage();
         NativePage nativePage = NativePageFactory.createNativePageForURL(url, candidateForReuse,
                 this, mActivity.getTabModelSelector(), mActivity);
@@ -413,12 +401,9 @@ public class ChromeTab extends Tab {
         return false;
     }
 
-    /**
-     * Update internal Tab state when provisional load gets committed.
-     * @param url The URL that was loaded.
-     * @param transitionType The transition type to the current URL.
-     */
+    @Override
     void handleDidCommitProvisonalLoadForFrame(String url, int transitionType) {
+        super.handleDidCommitProvisonalLoadForFrame(url, transitionType);
         mIsNativePageCommitPending = false;
         boolean isReload = (transitionType == PageTransition.RELOAD);
         if (!maybeShowNativePage(url, isReload)) {
@@ -429,6 +414,10 @@ public class ChromeTab extends Tab {
         mHandler.sendEmptyMessageDelayed(
                 MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, MAX_FULLSCREEN_LOAD_DELAY_MS);
         updateFullscreenEnabledState();
+
+        if (getInterceptNavigationDelegate() != null) {
+            getInterceptNavigationDelegate().maybeUpdateNavigationHistory();
+        }
     }
 
     // TODO(dtrainor): Port more methods to the observer.

@@ -47,7 +47,7 @@ public class UmaUtils {
     }
 
     @CalledByNative
-    private static long getMainEntryPointTime() {
+    public static long getMainEntryPointTime() {
         return sApplicationStartWallClockMs;
     }
 

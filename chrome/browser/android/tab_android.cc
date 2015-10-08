@@ -935,20 +935,3 @@ static void Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 bool TabAndroid::RegisterTabAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
-
-static void RecordStartupToCommitUma(JNIEnv* env,
-                                     const JavaParamRef<jclass>& jcaller) {
-  // Currently it takes about 2000ms to commit a navigation if the measurement
-  // begins very early in the browser start. How many buckets (b) are needed to
-  // explore the _typical_ values with granularity 100ms and a maximum duration
-  // of 1 minute?
-  //   s^{n+1} / s^{n} = 2100 / 2000
-  //   s = 1.05
-  //   s^b = 60000
-  //   b = ln(60000) / ln(1.05) ~= 225
-  UMA_HISTOGRAM_CUSTOM_TIMES("Startup.FirstCommitNavigationTime",
-      base::Time::Now() - chrome::android::GetMainEntryPointTime(),
-      base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromMinutes(1),
-      225);
-}
