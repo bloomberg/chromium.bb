@@ -45,6 +45,15 @@ class CONTENT_EXPORT GpuMemoryBufferFactory {
       int client_id,
       gfx::PluginWindowHandle surface_handle) = 0;
 
+  // Creates a new GPU memory buffer instance from an existing handle. A valid
+  // handle is returned on success. It can be called on any thread.
+  virtual gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferFromHandle(
+      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferId id,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      int client_id) = 0;
+
   // Destroys GPU memory buffer identified by |id|.
   // It can be called on any thread.
   virtual void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

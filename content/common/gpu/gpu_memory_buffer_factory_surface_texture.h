@@ -41,6 +41,12 @@ class CONTENT_EXPORT GpuMemoryBufferFactorySurfaceTexture
       gfx::BufferUsage usage,
       int client_id,
       gfx::PluginWindowHandle surface_handle) override;
+  gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferFromHandle(
+      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferId id,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      int client_id) override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id) override;
   gpu::ImageFactory* AsImageFactory() override;
