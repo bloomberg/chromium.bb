@@ -106,7 +106,7 @@ static bool queryTextBox(QueryData* queryData, const SVGInlineTextBox* textBox, 
     queryData->textBox = textBox;
     queryData->textLayoutObject = &toLayoutSVGInlineText(textBox->layoutObject());
 
-    queryData->isVerticalText = textBox->layoutObject().style()->svgStyle().isVerticalWritingMode();
+    queryData->isVerticalText = !textBox->layoutObject().style()->isHorizontalWritingMode();
 
     // Loop over all text fragments in this text box, firing a callback for each.
     for (const SVGTextFragment& fragment : textBox->textFragments()) {

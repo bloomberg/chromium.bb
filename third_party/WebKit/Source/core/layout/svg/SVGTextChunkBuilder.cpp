@@ -162,7 +162,7 @@ void SVGTextPathChunkBuilder::handleTextChunk(BoxListConstIterator boxStart, Box
 {
     const ComputedStyle& style = (*boxStart)->layoutObject().styleRef();
 
-    ChunkLengthAccumulator lengthAccumulator(style.svgStyle().isVerticalWritingMode());
+    ChunkLengthAccumulator lengthAccumulator(!style.isHorizontalWritingMode());
     lengthAccumulator.processRange(boxStart, boxEnd);
 
     // Handle text-anchor as additional start offset for text paths.
@@ -209,7 +209,7 @@ void SVGTextChunkBuilder::handleTextChunk(BoxListConstIterator boxStart, BoxList
     if (!processTextAnchor && !processTextLength)
         return;
 
-    bool isVerticalText = style.svgStyle().isVerticalWritingMode();
+    bool isVerticalText = !style.isHorizontalWritingMode();
 
     // Calculate absolute length of whole text chunk (starting from text box 'start', spanning 'length' text boxes).
     ChunkLengthAccumulator lengthAccumulator(isVerticalText);

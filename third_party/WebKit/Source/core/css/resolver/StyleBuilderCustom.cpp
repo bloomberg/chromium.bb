@@ -803,6 +803,11 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitAppRegion(StyleResolverSt
     state.document().setHasAnnotatedRegions(true);
 }
 
+void StyleBuilderFunctions::applyValueCSSPropertyWritingMode(StyleResolverState& state, CSSValue* value)
+{
+    state.setWritingMode(*toCSSPrimitiveValue(value));
+}
+
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitWritingMode(StyleResolverState& state, CSSValue* value)
 {
     state.setWritingMode(*toCSSPrimitiveValue(value));

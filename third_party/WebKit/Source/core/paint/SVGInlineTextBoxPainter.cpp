@@ -247,7 +247,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
 
     float scalingFactor = 1;
     Font scaledFont;
-    LayoutSVGInlineText::computeNewScaledFontForStyle(decorationLayoutObject, &decorationStyle, scalingFactor, scaledFont);
+    LayoutSVGInlineText::computeNewScaledFontForStyle(decorationLayoutObject, scalingFactor, scaledFont);
     ASSERT(scalingFactor);
 
     float thickness = thicknessForDecoration(decoration, scaledFont);

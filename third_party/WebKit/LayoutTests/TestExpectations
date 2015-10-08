@@ -461,6 +461,11 @@ crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
 
+crbug.com/533448 svg/W3C-SVG-1.1/text-align-06-b.svg [ NeedsRebaseline ]
+crbug.com/533448 [ Linux Mac Win7 ] svg/batik/text/verticalText.svg [ NeedsRebaseline ]
+crbug.com/533448 svg/batik/text/verticalTextOnPath.svg [ NeedsRebaseline ]
+crbug.com/533448 svg/text/text-selection-align-06-b.svg [ NeedsRebaseline ]
+
 crbug.com/405389 imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ ImageOnlyFailure ]
 crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-010.html [ ImageOnlyFailure ]
 crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-024.html [ ImageOnlyFailure ]

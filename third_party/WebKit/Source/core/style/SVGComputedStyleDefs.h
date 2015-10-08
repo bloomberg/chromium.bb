@@ -72,10 +72,6 @@ enum EShapeRendering {
     SR_AUTO, SR_OPTIMIZESPEED, SR_CRISPEDGES, SR_GEOMETRICPRECISION
 };
 
-enum SVGWritingMode {
-    WM_LRTB, WM_LR, WM_RLTB, WM_RL, WM_TBRL, WM_TB
-};
-
 enum EGlyphOrientation {
     GO_0DEG, GO_90DEG, GO_180DEG, GO_270DEG, GO_AUTO
 };

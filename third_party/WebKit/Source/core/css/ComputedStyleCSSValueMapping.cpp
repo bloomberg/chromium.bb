@@ -2340,6 +2340,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     }
     case CSSPropertyPointerEvents:
         return cssValuePool().createValue(style.pointerEvents());
+    case CSSPropertyWritingMode:
     case CSSPropertyWebkitWritingMode:
         return cssValuePool().createValue(style.writingMode());
     case CSSPropertyWebkitTextCombine:
@@ -2563,8 +2564,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return CSSPrimitiveValue::create(svgStyle.dominantBaseline());
     case CSSPropertyTextAnchor:
         return CSSPrimitiveValue::create(svgStyle.textAnchor());
-    case CSSPropertyWritingMode:
-        return CSSPrimitiveValue::create(svgStyle.writingMode());
     case CSSPropertyClipPath:
         if (!svgStyle.clipperResource().isEmpty())
             return CSSURIValue::create(serializeAsFragmentIdentifier(svgStyle.clipperResource()));
