@@ -20,14 +20,12 @@ void StreamVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                  const gfx::Rect& visible_rect,
                                  unsigned resource_id,
                                  gfx::Size resource_size_in_pixels,
-                                 bool allow_overlay,
                                  const gfx::Transform& matrix) {
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::STREAM_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;
   overlay_resources.size_in_pixels[kResourceIdIndex] = resource_size_in_pixels;
-  overlay_resources.allow_overlay[kResourceIdIndex] = allow_overlay;
   resources.count = 1;
   this->matrix = matrix;
 }
@@ -39,13 +37,11 @@ void StreamVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                  bool needs_blending,
                                  unsigned resource_id,
                                  gfx::Size resource_size_in_pixels,
-                                 bool allow_overlay,
                                  const gfx::Transform& matrix) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::STREAM_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;
   overlay_resources.size_in_pixels[kResourceIdIndex] = resource_size_in_pixels;
-  overlay_resources.allow_overlay[kResourceIdIndex] = allow_overlay;
   resources.count = 1;
   this->matrix = matrix;
 }
@@ -63,8 +59,6 @@ void StreamVideoDrawQuad::ExtendValue(
 }
 
 StreamVideoDrawQuad::OverlayResources::OverlayResources() {
-  for (size_t i = 0; i < Resources::kMaxResourceIdCount; ++i)
-    allow_overlay[i] = false;
 }
 
 }  // namespace cc

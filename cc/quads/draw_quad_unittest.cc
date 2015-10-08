@@ -384,34 +384,22 @@ TEST(DrawQuadTest, CopyIOSurfaceDrawQuad) {
   gfx::Size size(58, 95);
   ResourceId resource_id = 72;
   IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::UNFLIPPED;
-  bool allow_overlay = true;
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_6_NEW(IOSurfaceDrawQuad,
-                    opaque_rect,
-                    visible_rect,
-                    size,
-                    resource_id,
-                    orientation,
-                    allow_overlay);
+  CREATE_QUAD_5_NEW(IOSurfaceDrawQuad, opaque_rect, visible_rect, size,
+                    resource_id, orientation);
   EXPECT_EQ(DrawQuad::IO_SURFACE_CONTENT, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(opaque_rect, copy_quad->opaque_rect);
   EXPECT_EQ(size, copy_quad->io_surface_size);
   EXPECT_EQ(resource_id, copy_quad->io_surface_resource_id());
   EXPECT_EQ(orientation, copy_quad->orientation);
-  EXPECT_EQ(allow_overlay, copy_quad->allow_overlay);
 
-  CREATE_QUAD_4_ALL(IOSurfaceDrawQuad,
-                    size,
-                    resource_id,
-                    orientation,
-                    allow_overlay);
+  CREATE_QUAD_3_ALL(IOSurfaceDrawQuad, size, resource_id, orientation);
   EXPECT_EQ(DrawQuad::IO_SURFACE_CONTENT, copy_quad->material);
   EXPECT_EQ(size, copy_quad->io_surface_size);
   EXPECT_EQ(resource_id, copy_quad->io_surface_resource_id());
   EXPECT_EQ(orientation, copy_quad->orientation);
-  EXPECT_EQ(allow_overlay, copy_quad->allow_overlay);
 }
 
 TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
@@ -495,25 +483,22 @@ TEST(DrawQuadTest, CopyStreamVideoDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   ResourceId resource_id = 64;
   gfx::Size resource_size_in_pixels = gfx::Size(40, 41);
-  bool allow_overlay = true;
   gfx::Transform matrix = gfx::Transform(0.5, 0.25, 1, 0.75, 0, 1);
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_6_NEW(StreamVideoDrawQuad, opaque_rect, visible_rect, resource_id,
-                    resource_size_in_pixels, allow_overlay, matrix);
+  CREATE_QUAD_5_NEW(StreamVideoDrawQuad, opaque_rect, visible_rect, resource_id,
+                    resource_size_in_pixels, matrix);
   EXPECT_EQ(DrawQuad::STREAM_VIDEO_CONTENT, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(opaque_rect, copy_quad->opaque_rect);
   EXPECT_EQ(resource_id, copy_quad->resource_id());
-  EXPECT_EQ(allow_overlay, copy_quad->allow_overlay());
   EXPECT_EQ(resource_size_in_pixels, copy_quad->resource_size_in_pixels());
   EXPECT_EQ(matrix, copy_quad->matrix);
 
-  CREATE_QUAD_4_ALL(StreamVideoDrawQuad, resource_id, resource_size_in_pixels,
-                    allow_overlay, matrix);
+  CREATE_QUAD_3_ALL(StreamVideoDrawQuad, resource_id, resource_size_in_pixels,
+                    matrix);
   EXPECT_EQ(DrawQuad::STREAM_VIDEO_CONTENT, copy_quad->material);
   EXPECT_EQ(resource_id, copy_quad->resource_id());
-  EXPECT_EQ(allow_overlay, copy_quad->allow_overlay());
   EXPECT_EQ(resource_size_in_pixels, copy_quad->resource_size_in_pixels());
   EXPECT_EQ(matrix, copy_quad->matrix);
 }
@@ -539,7 +524,6 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   unsigned resource_id = 82;
   gfx::Size resource_size_in_pixels = gfx::Size(40, 41);
-  bool allow_overlay = true;
   bool premultiplied_alpha = true;
   gfx::PointF uv_top_left(0.5f, 224.f);
   gfx::PointF uv_bottom_right(51.5f, 260.f);
@@ -570,13 +554,12 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   EXPECT_EQ(y_flipped, copy_quad->y_flipped);
   EXPECT_EQ(nearest_neighbor, copy_quad->nearest_neighbor);
 
-  CREATE_QUAD_10_ALL(TextureDrawQuad, resource_id, resource_size_in_pixels,
-                     allow_overlay, premultiplied_alpha, uv_top_left,
-                     uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
-                     y_flipped, nearest_neighbor);
+  CREATE_QUAD_9_ALL(TextureDrawQuad, resource_id, resource_size_in_pixels,
+                    premultiplied_alpha, uv_top_left, uv_bottom_right,
+                    SK_ColorTRANSPARENT, vertex_opacity, y_flipped,
+                    nearest_neighbor);
   EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copy_quad->material);
   EXPECT_EQ(resource_id, copy_quad->resource_id());
-  EXPECT_EQ(allow_overlay, copy_quad->allow_overlay());
   EXPECT_EQ(resource_size_in_pixels, copy_quad->resource_size_in_pixels());
   EXPECT_EQ(premultiplied_alpha, copy_quad->premultiplied_alpha);
   EXPECT_EQ(uv_top_left, copy_quad->uv_top_left);
@@ -745,20 +728,13 @@ TEST_F(DrawQuadIteratorTest, IOSurfaceDrawQuad) {
   gfx::Size size(58, 95);
   ResourceId resource_id = 72;
   IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::UNFLIPPED;
-  bool allow_overlay = true;
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_6_NEW(IOSurfaceDrawQuad,
-                    opaque_rect,
-                    visible_rect,
-                    size,
-                    resource_id,
-                    orientation,
-                    allow_overlay);
+  CREATE_QUAD_5_NEW(IOSurfaceDrawQuad, opaque_rect, visible_rect, size,
+                    resource_id, orientation);
   EXPECT_EQ(resource_id, quad_new->io_surface_resource_id());
   EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(resource_id + 1, quad_new->io_surface_resource_id());
-  EXPECT_EQ(allow_overlay, copy_quad->allow_overlay);
 }
 
 TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
@@ -816,14 +792,12 @@ TEST_F(DrawQuadIteratorTest, StreamVideoDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   ResourceId resource_id = 64;
   gfx::Size resource_size_in_pixels = gfx::Size(40, 41);
-  bool allow_overlay = true;
   gfx::Transform matrix = gfx::Transform(0.5, 0.25, 1, 0.75, 0, 1);
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_6_NEW(StreamVideoDrawQuad, opaque_rect, visible_rect, resource_id,
-                    resource_size_in_pixels, allow_overlay, matrix);
+  CREATE_QUAD_5_NEW(StreamVideoDrawQuad, opaque_rect, visible_rect, resource_id,
+                    resource_size_in_pixels, matrix);
   EXPECT_EQ(resource_id, quad_new->resource_id());
-  EXPECT_EQ(allow_overlay, quad_new->allow_overlay());
   EXPECT_EQ(resource_size_in_pixels, quad_new->resource_size_in_pixels());
   EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(resource_id + 1, quad_new->resource_id());

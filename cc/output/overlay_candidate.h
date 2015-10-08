@@ -25,12 +25,15 @@ class DrawQuad;
 class IOSurfaceDrawQuad;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
+class ResourceProvider;
 
 class CC_EXPORT OverlayCandidate {
  public:
   // Returns true and fills in |candidate| if |draw_quad| is of a known quad
   // type and contains an overlayable resource.
-  static bool FromDrawQuad(const DrawQuad* quad, OverlayCandidate* candidate);
+  static bool FromDrawQuad(ResourceProvider* resource_provider,
+                           const DrawQuad* quad,
+                           OverlayCandidate* candidate);
   // Returns true if |quad| will not block quads underneath from becoming
   // an overlay.
   static bool IsInvisibleQuad(const DrawQuad* quad);
@@ -69,11 +72,14 @@ class CC_EXPORT OverlayCandidate {
   bool overlay_handled;
 
  private:
-  static bool FromTextureQuad(const TextureDrawQuad* quad,
+  static bool FromTextureQuad(ResourceProvider* resource_provider,
+                              const TextureDrawQuad* quad,
                               OverlayCandidate* candidate);
-  static bool FromStreamVideoQuad(const StreamVideoDrawQuad* quad,
+  static bool FromStreamVideoQuad(ResourceProvider* resource_provider,
+                                  const StreamVideoDrawQuad* quad,
                                   OverlayCandidate* candidate);
-  static bool FromIOSurfaceQuad(const IOSurfaceDrawQuad* quad,
+  static bool FromIOSurfaceQuad(ResourceProvider* resource_provider,
+                                const IOSurfaceDrawQuad* quad,
                                 OverlayCandidate* candidate);
 };
 

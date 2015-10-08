@@ -221,6 +221,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       allocated(false),
       read_lock_fences_enabled(false),
       has_shared_bitmap_id(false),
+      is_overlay_candidate(false),
       read_lock_fence(NULL),
       size(size),
       origin(origin),
@@ -521,6 +522,7 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
       base::Bind(&SingleReleaseCallbackImpl::Run,
                  base::Owned(release_callback_impl.release()));
   resource->read_lock_fences_enabled = read_lock_fences_enabled;
+  resource->is_overlay_candidate = mailbox.is_overlay_candidate();
   return id;
 }
 
@@ -777,6 +779,11 @@ bool ResourceProvider::CanLockForWrite(ResourceId id) {
   return !resource->locked_for_write && !resource->lock_for_read_count &&
          !resource->exported_count && resource->origin == Resource::INTERNAL &&
          !resource->lost && ReadLockFenceHasPassed(resource);
+}
+
+bool ResourceProvider::IsOverlayCandidate(ResourceId id) {
+  Resource* resource = GetResource(id);
+  return resource->is_overlay_candidate;
 }
 
 void ResourceProvider::UnlockForWrite(ResourceProvider::Resource* resource) {
@@ -1220,6 +1227,7 @@ void ResourceProvider::ReceiveFromChild(
                                          it->mailbox_holder.texture_target,
                                          it->mailbox_holder.sync_point);
       resource->read_lock_fences_enabled = it->read_lock_fences_enabled;
+      resource->is_overlay_candidate = it->is_overlay_candidate;
     }
     resource->child_id = child;
     // Don't allocate a texture for a child.
@@ -1321,6 +1329,7 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   resource->size = source->size;
   resource->read_lock_fences_enabled = source->read_lock_fences_enabled;
   resource->is_repeated = (source->wrap_mode == GL_REPEAT);
+  resource->is_overlay_candidate = source->is_overlay_candidate;
 
   if (source->type == RESOURCE_TYPE_BITMAP) {
     resource->mailbox_holder.mailbox = source->shared_bitmap_id;

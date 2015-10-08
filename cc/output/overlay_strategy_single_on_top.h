@@ -17,11 +17,12 @@ class CC_EXPORT OverlayStrategySingleOnTop : public OverlayProcessor::Strategy {
       OverlayCandidateValidator* capability_checker);
   ~OverlayStrategySingleOnTop() override;
 
-  bool Attempt(RenderPassList* render_passes,
+  bool Attempt(ResourceProvider* resource_provider,
+               RenderPassList* render_passes,
                OverlayCandidateList* candidate_list) override;
 
  private:
-  bool TryOverlay(QuadList& quad_list,
+  bool TryOverlay(QuadList* quad_list,
                   OverlayCandidateList* candidate_list,
                   const OverlayCandidate& candidate,
                   QuadList::Iterator candidate_iterator);

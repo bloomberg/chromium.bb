@@ -18,12 +18,13 @@ OverlayStrategySingleOnTop::OverlayStrategySingleOnTop(
 
 OverlayStrategySingleOnTop::~OverlayStrategySingleOnTop() {}
 
-bool OverlayStrategySingleOnTop::Attempt(RenderPassList* render_passes,
+bool OverlayStrategySingleOnTop::Attempt(ResourceProvider* resource_provider,
+                                         RenderPassList* render_passes,
                                          OverlayCandidateList* candidate_list) {
-  QuadList& quad_list = render_passes->back()->quad_list;
-  for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
+  QuadList* quad_list = &render_passes->back()->quad_list;
+  for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     OverlayCandidate candidate;
-    if (OverlayCandidate::FromDrawQuad(*it, &candidate) &&
+    if (OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate) &&
         TryOverlay(quad_list, candidate_list, candidate, it)) {
       return true;
     }
@@ -33,12 +34,12 @@ bool OverlayStrategySingleOnTop::Attempt(RenderPassList* render_passes,
 }
 
 bool OverlayStrategySingleOnTop::TryOverlay(
-    QuadList& quad_list,
+    QuadList* quad_list,
     OverlayCandidateList* candidate_list,
     const OverlayCandidate& candidate,
     QuadList::Iterator candidate_iterator) {
   // Check that no prior quads overlap it.
-  for (auto overlap_iter = quad_list.cbegin();
+  for (auto overlap_iter = quad_list->cbegin();
        overlap_iter != candidate_iterator; ++overlap_iter) {
     gfx::RectF overlap_rect = MathUtil::MapClippedRect(
         overlap_iter->shared_quad_state->quad_to_target_transform,
@@ -58,7 +59,7 @@ bool OverlayStrategySingleOnTop::TryOverlay(
 
   // If the candidate can be handled by an overlay, create a pass for it.
   if (new_candidate_list.back().overlay_handled) {
-    quad_list.EraseAndInvalidateAllPointers(candidate_iterator);
+    quad_list->EraseAndInvalidateAllPointers(candidate_iterator);
     candidate_list->swap(new_candidate_list);
     return true;
   }

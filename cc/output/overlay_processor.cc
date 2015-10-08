@@ -25,10 +25,11 @@ void OverlayProcessor::Initialize() {
 
 OverlayProcessor::~OverlayProcessor() {}
 
-void OverlayProcessor::ProcessForOverlays(RenderPassList* render_passes,
+void OverlayProcessor::ProcessForOverlays(ResourceProvider* resource_provider,
+                                          RenderPassList* render_passes,
                                           OverlayCandidateList* candidates) {
   for (auto strategy : strategies_) {
-    if (strategy->Attempt(render_passes, candidates))
+    if (strategy->Attempt(resource_provider, render_passes, candidates))
       return;
   }
 }

@@ -18,12 +18,13 @@ OverlayStrategyUnderlay::OverlayStrategyUnderlay(
 
 OverlayStrategyUnderlay::~OverlayStrategyUnderlay() {}
 
-bool OverlayStrategyUnderlay::Attempt(RenderPassList* render_passes,
+bool OverlayStrategyUnderlay::Attempt(ResourceProvider* resource_provider,
+                                      RenderPassList* render_passes,
                                       OverlayCandidateList* candidate_list) {
   QuadList& quad_list = render_passes->back()->quad_list;
   for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
     OverlayCandidate candidate;
-    if (!OverlayCandidate::FromDrawQuad(*it, &candidate))
+    if (!OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate))
       continue;
 
     // Add the overlay.

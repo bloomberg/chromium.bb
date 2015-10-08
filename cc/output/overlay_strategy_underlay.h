@@ -22,7 +22,8 @@ class CC_EXPORT OverlayStrategyUnderlay : public OverlayProcessor::Strategy {
       OverlayCandidateValidator* capability_checker);
   ~OverlayStrategyUnderlay() override;
 
-  bool Attempt(RenderPassList* render_passes,
+  bool Attempt(ResourceProvider* resource_provider,
+               RenderPassList* render_passes,
                OverlayCandidateList* candidate_list) override;
 
  private:

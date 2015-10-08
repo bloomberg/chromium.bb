@@ -2007,8 +2007,9 @@ class TestOverlayProcessor : public OverlayProcessor {
    public:
     Strategy() {}
     ~Strategy() override {}
-    MOCK_METHOD2(Attempt,
-                 bool(RenderPassList* render_passes,
+    MOCK_METHOD3(Attempt,
+                 bool(ResourceProvider* resource_provider,
+                      RenderPassList* render_passes,
                       OverlayCandidateList* candidates));
   };
 
@@ -2065,7 +2066,8 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 
   unsigned sync_point = 0;
   TextureMailbox mailbox =
-      TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
+      TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point,
+                     gfx::Size(256, 256), true);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
   ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
@@ -2082,14 +2084,13 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                        premultiplied_alpha, gfx::PointF(0, 0),
                        gfx::PointF(1, 1), SK_ColorTRANSPARENT, vertex_opacity,
                        flipped, nearest_neighbor);
-  overlay_quad->set_allow_overlay(true);
 
   // DirectRenderer::DrawFrame calls into OverlayProcessor::ProcessForOverlays.
   // Attempt will be called for each strategy in OverlayProcessor. We have
   // added a fake strategy, so checking for Attempt calls checks if there was
   // any attempt to overlay, which there shouldn't be. We can't use the quad
   // list because the render pass is cleaned up by DrawFrame.
-  EXPECT_CALL(*processor->strategy_, Attempt(_, _)).Times(0);
+  EXPECT_CALL(*processor->strategy_, Attempt(_, _, _)).Times(0);
   renderer.DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_rect,
                      viewport_rect, false);
   Mock::VerifyAndClearExpectations(processor->strategy_);
@@ -2106,7 +2107,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                        gfx::PointF(1, 1), SK_ColorTRANSPARENT, vertex_opacity,
                        flipped, nearest_neighbor);
 
-  EXPECT_CALL(*processor->strategy_, Attempt(_, _)).Times(1);
+  EXPECT_CALL(*processor->strategy_, Attempt(_, _, _)).Times(1);
   renderer.DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_rect,
                      viewport_rect, false);
 }
@@ -2195,7 +2196,8 @@ TEST_F(GLRendererTest, OverlaySyncPointsAreProcessed) {
 
   unsigned sync_point = 29;
   TextureMailbox mailbox =
-      TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
+      TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point,
+                     gfx::Size(256, 256), true);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
   ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
@@ -2216,7 +2218,6 @@ TEST_F(GLRendererTest, OverlaySyncPointsAreProcessed) {
                        viewport_rect, resource_id, premultiplied_alpha,
                        uv_top_left, uv_bottom_right, SK_ColorTRANSPARENT,
                        vertex_opacity, flipped, nearest_neighbor);
-  overlay_quad->set_allow_overlay(true);
 
   // Verify that overlay_quad actually gets turned into an overlay, and even
   // though it's not drawn, that its sync point is waited on.

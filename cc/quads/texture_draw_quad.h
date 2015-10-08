@@ -36,7 +36,6 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
               bool needs_blending,
               unsigned resource_id,
               gfx::Size resource_size_in_pixels,
-              bool allow_overlay,
               bool premultiplied_alpha,
               const gfx::PointF& uv_top_left,
               const gfx::PointF& uv_bottom_right,
@@ -57,7 +56,6 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
     OverlayResources();
 
     gfx::Size size_in_pixels[Resources::kMaxResourceIdCount];
-    bool allow_overlay[Resources::kMaxResourceIdCount];
   };
   OverlayResources overlay_resources;
 
@@ -67,12 +65,6 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
   }
   void set_resource_size_in_pixels(const gfx::Size& size_in_pixels) {
     overlay_resources.size_in_pixels[kResourceIdIndex] = size_in_pixels;
-  }
-  bool allow_overlay() const {
-    return overlay_resources.allow_overlay[kResourceIdIndex];
-  }
-  void set_allow_overlay(bool allow_overlay) {
-    overlay_resources.allow_overlay[kResourceIdIndex] = allow_overlay;
   }
 
   static const TextureDrawQuad* MaterialCast(const DrawQuad*);

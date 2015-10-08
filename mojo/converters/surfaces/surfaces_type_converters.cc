@@ -152,7 +152,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
       texture_quad->SetAll(
           sqs, input->rect.To<gfx::Rect>(), input->opaque_rect.To<gfx::Rect>(),
           input->visible_rect.To<gfx::Rect>(), input->needs_blending,
-          texture_quad_state->resource_id, gfx::Size(), false,
+          texture_quad_state->resource_id, gfx::Size(),
           texture_quad_state->premultiplied_alpha,
           texture_quad_state->uv_top_left.To<gfx::PointF>(),
           texture_quad_state->uv_bottom_right.To<gfx::PointF>(),

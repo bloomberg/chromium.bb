@@ -219,7 +219,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
       to_pass->CreateAndAppendDrawQuad<IOSurfaceDrawQuad>();
   io_surface_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
                           gfx::Size(50, 50), resource7,
-                          IOSurfaceDrawQuad::FLIPPED, false);
+                          IOSurfaceDrawQuad::FLIPPED);
 
   if (child_pass.layer_id) {
     RenderPassDrawQuad* render_pass_quad =
@@ -245,7 +245,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   StreamVideoDrawQuad* stream_video_quad =
       to_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
   stream_video_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
-                            resource6, gfx::Size(), false, gfx::Transform());
+                            resource6, gfx::Size(), gfx::Transform());
 
   TextureDrawQuad* texture_quad =
       to_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();

@@ -112,12 +112,10 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
   float vertex_opacity[4] = {0.1f, 0.5f, 0.4f, 0.8f};
   bool y_flipped = false;
   bool nearest_neighbor = false;
-  bool allow_overlay = false;
   texture_quad->SetAll(sqs, rect, opaque_rect, visible_rect, needs_blending,
-                       resource_id, gfx::Size(), allow_overlay,
-                       premultiplied_alpha, uv_top_left, uv_bottom_right,
-                       background_color, vertex_opacity, y_flipped,
-                       nearest_neighbor);
+                       resource_id, gfx::Size(), premultiplied_alpha,
+                       uv_top_left, uv_bottom_right, background_color,
+                       vertex_opacity, y_flipped, nearest_neighbor);
 
   QuadPtr mojo_quad = Quad::From<cc::DrawQuad>(*texture_quad);
   ASSERT_FALSE(mojo_quad.is_null());
@@ -266,12 +264,10 @@ TEST(SurfaceLibTest, RenderPass) {
   float vertex_opacity[4] = {0.1f, 0.5f, 0.4f, 0.8f};
   bool y_flipped = false;
   bool nearest_neighbor = false;
-  bool allow_overlay = false;
   texture_quad->SetAll(sqs, rect, opaque_rect, visible_rect, needs_blending,
-                       resource_id, gfx::Size(), allow_overlay,
-                       premultiplied_alpha, uv_top_left, uv_bottom_right,
-                       background_color, vertex_opacity, y_flipped,
-                       nearest_neighbor);
+                       resource_id, gfx::Size(), premultiplied_alpha,
+                       uv_top_left, uv_bottom_right, background_color,
+                       vertex_opacity, y_flipped, nearest_neighbor);
 
   PassPtr mojo_pass = Pass::From(*pass);
   ASSERT_FALSE(mojo_pass.is_null());

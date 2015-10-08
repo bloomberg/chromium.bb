@@ -24,7 +24,8 @@ class CC_EXPORT OverlayProcessor {
     // current set of render passes. Returns true if the strategy was successful
     // and adds any additional passes necessary to represent overlays to
     // |render_passes|.
-    virtual bool Attempt(RenderPassList* render_passes,
+    virtual bool Attempt(ResourceProvider* resource_provider,
+                         RenderPassList* render_passes,
                          OverlayCandidateList* candidates) = 0;
   };
   typedef ScopedPtrVector<Strategy> StrategyList;
@@ -34,7 +35,8 @@ class CC_EXPORT OverlayProcessor {
   // Virtual to allow testing different strategies.
   virtual void Initialize();
 
-  void ProcessForOverlays(RenderPassList* render_passes,
+  void ProcessForOverlays(ResourceProvider* resource_provider,
+                          RenderPassList* render_passes,
                           OverlayCandidateList* candidates);
 
  protected:

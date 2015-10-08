@@ -203,10 +203,13 @@ scoped_ptr<RenderPass> CreateRenderPass() {
   return pass.Pass();
 }
 
-ResourceId CreateResource(ResourceProvider* resource_provider) {
+ResourceId CreateResource(ResourceProvider* resource_provider,
+                          const gfx::Size& size,
+                          bool is_overlay_candidate) {
   unsigned sync_point = 0;
   TextureMailbox mailbox =
-      TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
+      TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point, size,
+                     is_overlay_candidate);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
 
@@ -229,13 +232,14 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
                                        const SharedQuadState* shared_quad_state,
                                        RenderPass* render_pass,
                                        const gfx::Rect& rect) {
-  ResourceId resource_id = CreateResource(resource_provider);
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
   gfx::Size resource_size_in_pixels = gfx::Size(64, 64);
-  bool allow_overlay = true;
+  bool is_overlay_candidate = true;
+  ResourceId resource_id = CreateResource(
+      resource_provider, resource_size_in_pixels, is_overlay_candidate);
 
   TextureDrawQuad* overlay_quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -251,7 +255,6 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
                        vertex_opacity,
                        flipped,
                        nearest_neighbor);
-  overlay_quad->set_allow_overlay(allow_overlay);
   overlay_quad->set_resource_size_in_pixels(resource_size_in_pixels);
 
   return overlay_quad;
@@ -263,14 +266,15 @@ StreamVideoDrawQuad* CreateCandidateVideoQuadAt(
     RenderPass* render_pass,
     const gfx::Rect& rect,
     const gfx::Transform& transform) {
-  ResourceId resource_id = CreateResource(resource_provider);
   gfx::Size resource_size_in_pixels = gfx::Size(64, 64);
-  bool allow_overlay = true;
+  bool is_overlay_candidate = true;
+  ResourceId resource_id = CreateResource(
+      resource_provider, resource_size_in_pixels, is_overlay_candidate);
 
   StreamVideoDrawQuad* overlay_quad =
       render_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
   overlay_quad->SetNew(shared_quad_state, rect, rect, rect, resource_id,
-                       resource_size_in_pixels, allow_overlay, transform);
+                       resource_size_in_pixels, transform);
 
   return overlay_quad;
 }
@@ -414,7 +418,8 @@ TEST_F(SandwichTest, SuccessfulSingleOverlay) {
 
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
 
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
@@ -455,7 +460,8 @@ TEST_F(SandwichTest, CroppedSingleOverlay) {
 
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
 
   // Ensure that the display and uv rects have cropping applied to them.
   ASSERT_EQ(1U, pass_list.size());
@@ -483,7 +489,8 @@ TEST_F(SandwichTest, SuccessfulTwoOverlays) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
 
   // Both candidates should become overlays.
   EXPECT_EQ(1u, pass_list.size());
@@ -516,7 +523,8 @@ TEST_F(SandwichTest, OverlappingOverlays) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
 
   // Only one of the candidates should become an overlay.
   EXPECT_EQ(1u, pass_list.size());
@@ -550,7 +558,8 @@ TEST_F(SandwichTest, SuccessfulSandwichOverlay) {
 
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
 
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(2U, candidate_list.size());
@@ -605,7 +614,8 @@ TEST_F(SandwichTest, MultiQuadOverlay) {
   RenderPass* main_pass = pass_list.back();
   OverlayCandidateList candidate_list;
   EXPECT_EQ(4U, main_pass->quad_list.size());
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(3U, candidate_list.size());
 
@@ -656,7 +666,8 @@ TEST_F(SingleOverlayOnTopTest, SuccessfullOverlay) {
 
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
 
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
@@ -689,7 +700,8 @@ TEST_F(SingleOverlayOnTopTest, NoCandidates) {
   RenderPass::CopyAll(pass_list, &original_pass_list);
 
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   EXPECT_EQ(0U, candidate_list.size());
   // There should be nothing new here.
   CompareRenderPassLists(pass_list, original_pass_list);
@@ -713,7 +725,8 @@ TEST_F(SingleOverlayOnTopTest, OccludedCandidates) {
   RenderPass::CopyAll(pass_list, &original_pass_list);
 
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   EXPECT_EQ(0U, candidate_list.size());
   // There should be nothing new here.
   CompareRenderPassLists(pass_list, original_pass_list);
@@ -742,7 +755,8 @@ TEST_F(SingleOverlayOnTopTest, MultipleRenderPasses) {
 
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   EXPECT_EQ(1U, candidate_list.size());
 
   // This should be the same.
@@ -760,7 +774,8 @@ TEST_F(SingleOverlayOnTopTest, RejectPremultipliedAlpha) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -776,7 +791,8 @@ TEST_F(SingleOverlayOnTopTest, RejectBlending) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -792,7 +808,8 @@ TEST_F(SingleOverlayOnTopTest, RejectBackgroundColor) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -807,7 +824,8 @@ TEST_F(SingleOverlayOnTopTest, RejectBlendMode) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -822,7 +840,8 @@ TEST_F(SingleOverlayOnTopTest, RejectOpacity) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -838,7 +857,8 @@ TEST_F(SingleOverlayOnTopTest, RejectNonAxisAlignedTransform) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -854,7 +874,8 @@ TEST_F(SingleOverlayOnTopTest, AllowClipped) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -872,7 +893,8 @@ TEST_F(SingleOverlayOnTopTest, AllowVerticalFlip) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL,
@@ -892,7 +914,8 @@ TEST_F(SingleOverlayOnTopTest, AllowHorizontalFlip) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL,
@@ -911,7 +934,8 @@ TEST_F(SingleOverlayOnTopTest, AllowPositiveScaleTransform) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -928,7 +952,8 @@ TEST_F(SingleOverlayOnTopTest, Allow90DegreeRotation) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_90, candidate_list.back().transform);
@@ -946,7 +971,8 @@ TEST_F(SingleOverlayOnTopTest, Allow180DegreeRotation) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_180, candidate_list.back().transform);
@@ -964,7 +990,8 @@ TEST_F(SingleOverlayOnTopTest, Allow270DegreeRotation) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_270, candidate_list.back().transform);
@@ -987,7 +1014,8 @@ TEST_F(SingleOverlayOnTopTest, AllowNotTopIfNotOccluded) {
   RenderPass::CopyAll(pass_list, &original_pass_list);
 
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1010,7 +1038,8 @@ TEST_F(SingleOverlayOnTopTest, AllowTransparentOnTop) {
   RenderPass::CopyAll(pass_list, &original_pass_list);
 
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1031,7 +1060,8 @@ TEST_F(SingleOverlayOnTopTest, AllowTransparentColorOnTop) {
   RenderPass::CopyAll(pass_list, &original_pass_list);
 
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1054,7 +1084,8 @@ TEST_F(SingleOverlayOnTopTest, RejectOpaqueColorOnTop) {
   RenderPass::CopyAll(pass_list, &original_pass_list);
 
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -1075,7 +1106,8 @@ TEST_F(SingleOverlayOnTopTest, RejectTransparentColorOnTopWithoutBlending) {
   RenderPass::CopyAll(pass_list, &original_pass_list);
 
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -1089,7 +1121,8 @@ TEST_F(SingleOverlayOnTopTest, RejectVideoSwapTransform) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -1103,7 +1136,8 @@ TEST_F(SingleOverlayOnTopTest, AllowVideoXMirrorTransform) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1117,7 +1151,8 @@ TEST_F(SingleOverlayOnTopTest, AllowVideoBothMirrorTransform) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1131,7 +1166,8 @@ TEST_F(SingleOverlayOnTopTest, AllowVideoNormalTransform) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1145,7 +1181,8 @@ TEST_F(SingleOverlayOnTopTest, AllowVideoYMirrorTransform) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1162,7 +1199,8 @@ TEST_F(UnderlayTest, OverlayLayerUnderMainLayer) {
   pass_list.push_back(pass.Pass());
 
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   EXPECT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(-1, candidate_list[0].plane_z_order);
@@ -1184,7 +1222,8 @@ TEST_F(UnderlayTest, AllowOnTop) {
   pass_list.push_back(pass.Pass());
 
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidate_list);
   EXPECT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(-1, candidate_list[0].plane_z_order);
@@ -1206,7 +1245,8 @@ TEST_F(AllOrNothingOverlayTest, SuccessfulOverlappingOverlays) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidates;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidates);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidates);
 
   // Both quads should become overlays.
   EXPECT_EQ(2u, candidates.size());
@@ -1236,7 +1276,8 @@ TEST_F(AllOrNothingOverlayTest, RejectQuadWithTransform) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   OverlayCandidateList candidates;
-  overlay_processor_->ProcessForOverlays(&pass_list, &candidates);
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                         &candidates);
 
   // No quads should become overlays.
   EXPECT_EQ(0u, candidates.size());
@@ -1449,9 +1490,12 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   Init(use_validator);
   renderer_->set_expect_overlays(true);
 
-  ResourceId resource1 = CreateResource(resource_provider_.get());
-  ResourceId resource2 = CreateResource(resource_provider_.get());
-  ResourceId resource3 = CreateResource(resource_provider_.get());
+  ResourceId resource1 =
+      CreateResource(resource_provider_.get(), gfx::Size(32, 32), true);
+  ResourceId resource2 =
+      CreateResource(resource_provider_.get(), gfx::Size(32, 32), true);
+  ResourceId resource3 =
+      CreateResource(resource_provider_.get(), gfx::Size(32, 32), true);
 
   scoped_ptr<RenderPass> pass = CreateRenderPass();
   RenderPassList pass_list;

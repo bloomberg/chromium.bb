@@ -239,8 +239,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // If we have any copy requests, we can't remove any quads for overlays,
   // otherwise the framebuffer will be missing the overlay contents.
   if (root_render_pass->copy_requests.empty()) {
-    overlay_processor_->ProcessForOverlays(render_passes_in_draw_order,
-                                           &frame.overlay_list);
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_, render_passes_in_draw_order, &frame.overlay_list);
   }
 
   for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i) {

@@ -40,12 +40,13 @@ OverlayStrategySandwich::OverlayStrategySandwich(
 
 OverlayStrategySandwich::~OverlayStrategySandwich() {}
 
-bool OverlayStrategySandwich::Attempt(RenderPassList* render_passes,
+bool OverlayStrategySandwich::Attempt(ResourceProvider* resource_provider,
+                                      RenderPassList* render_passes,
                                       OverlayCandidateList* candidate_list) {
   QuadList& quad_list = render_passes->back()->quad_list;
   for (auto it = quad_list.begin(); it != quad_list.end();) {
     OverlayCandidate candidate;
-    if (OverlayCandidate::FromDrawQuad(*it, &candidate))
+    if (OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate))
       it = TryOverlay(render_passes->back(), candidate_list, candidate, it);
     else
       ++it;

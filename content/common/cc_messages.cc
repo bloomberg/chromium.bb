@@ -800,7 +800,6 @@ void ParamTraits<cc::StreamVideoDrawQuad::OverlayResources>::Write(
     const param_type& p) {
   for (size_t i = 0; i < cc::DrawQuad::Resources::kMaxResourceIdCount; ++i) {
     WriteParam(m, p.size_in_pixels[i]);
-    WriteParam(m, p.allow_overlay[i]);
   }
 }
 
@@ -810,8 +809,6 @@ bool ParamTraits<cc::StreamVideoDrawQuad::OverlayResources>::Read(
     param_type* p) {
   for (size_t i = 0; i < cc::DrawQuad::Resources::kMaxResourceIdCount; ++i) {
     if (!ReadParam(m, iter, &p->size_in_pixels[i]))
-      return false;
-    if (!ReadParam(m, iter, &p->allow_overlay[i]))
       return false;
   }
   return true;
@@ -823,8 +820,6 @@ void ParamTraits<cc::StreamVideoDrawQuad::OverlayResources>::Log(
   l->append("StreamVideoDrawQuad::OverlayResources([");
   for (size_t i = 0; i < cc::DrawQuad::Resources::kMaxResourceIdCount; ++i) {
     LogParam(p.size_in_pixels[i], l);
-    l->append(", ");
-    LogParam(p.allow_overlay[i], l);
     if (i < (cc::DrawQuad::Resources::kMaxResourceIdCount - 1))
       l->append(", ");
   }
@@ -836,7 +831,6 @@ void ParamTraits<cc::TextureDrawQuad::OverlayResources>::Write(
     const param_type& p) {
   for (size_t i = 0; i < cc::DrawQuad::Resources::kMaxResourceIdCount; ++i) {
     WriteParam(m, p.size_in_pixels[i]);
-    WriteParam(m, p.allow_overlay[i]);
   }
 }
 
@@ -846,8 +840,6 @@ bool ParamTraits<cc::TextureDrawQuad::OverlayResources>::Read(
     param_type* p) {
   for (size_t i = 0; i < cc::DrawQuad::Resources::kMaxResourceIdCount; ++i) {
     if (!ReadParam(m, iter, &p->size_in_pixels[i]))
-      return false;
-    if (!ReadParam(m, iter, &p->allow_overlay[i]))
       return false;
   }
   return true;
@@ -859,8 +851,6 @@ void ParamTraits<cc::TextureDrawQuad::OverlayResources>::Log(
   l->append("TextureDrawQuad::OverlayResources([");
   for (size_t i = 0; i < cc::DrawQuad::Resources::kMaxResourceIdCount; ++i) {
     LogParam(p.size_in_pixels[i], l);
-    l->append(", ");
-    LogParam(p.allow_overlay[i], l);
     if (i < (cc::DrawQuad::Resources::kMaxResourceIdCount - 1))
       l->append(", ");
   }

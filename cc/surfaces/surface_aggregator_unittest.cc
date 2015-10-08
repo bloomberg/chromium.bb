@@ -1582,9 +1582,9 @@ void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
     bool flipped = false;
     bool nearest_neighbor = false;
     quad->SetAll(sqs, rect, opaque_rect, visible_rect, needs_blending,
-                 resource_ids[i], gfx::Size(), false, premultiplied_alpha,
-                 uv_top_left, uv_bottom_right, background_color, vertex_opacity,
-                 flipped, nearest_neighbor);
+                 resource_ids[i], gfx::Size(), premultiplied_alpha, uv_top_left,
+                 uv_bottom_right, background_color, vertex_opacity, flipped,
+                 nearest_neighbor);
   }
   frame_data->render_pass_list.push_back(pass.Pass());
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);

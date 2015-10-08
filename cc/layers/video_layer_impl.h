@@ -63,13 +63,15 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   scoped_ptr<VideoResourceUpdater> updater_;
   VideoFrameExternalResources::ResourceType frame_resource_type_;
   struct FrameResource {
-    FrameResource(ResourceId id, gfx::Size size_in_pixels, bool allow_overlay)
+    FrameResource(ResourceId id,
+                  gfx::Size size_in_pixels,
+                  bool is_overlay_candidate)
         : id(id),
           size_in_pixels(size_in_pixels),
-          allow_overlay(allow_overlay) {}
+          is_overlay_candidate(is_overlay_candidate) {}
     ResourceId id;
     gfx::Size size_in_pixels;
-    bool allow_overlay;
+    bool is_overlay_candidate;
   };
   std::vector<FrameResource> frame_resources_;
 

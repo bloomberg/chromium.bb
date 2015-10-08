@@ -22,7 +22,6 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
               const gfx::Rect& visible_rect,
               unsigned resource_id,
               gfx::Size resource_size_in_pixels,
-              bool allow_overlay,
               const gfx::Transform& matrix);
 
   void SetAll(const SharedQuadState* shared_quad_state,
@@ -32,16 +31,13 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
               bool needs_blending,
               unsigned resource_id,
               gfx::Size resource_size_in_pixels,
-              bool allow_overlay,
               const gfx::Transform& matrix);
 
   gfx::Transform matrix;
 
   struct OverlayResources {
     OverlayResources();
-
     gfx::Size size_in_pixels[Resources::kMaxResourceIdCount];
-    bool allow_overlay[Resources::kMaxResourceIdCount];
   };
   OverlayResources overlay_resources;
 
@@ -50,9 +46,6 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
   ResourceId resource_id() const { return resources.ids[kResourceIdIndex]; }
   const gfx::Size& resource_size_in_pixels() const {
     return overlay_resources.size_in_pixels[kResourceIdIndex];
-  }
-  bool allow_overlay() const {
-    return overlay_resources.allow_overlay[kResourceIdIndex];
   }
 
  private:

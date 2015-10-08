@@ -128,7 +128,7 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
         external_resources.read_lock_fences_enabled);
     frame_resources_.push_back(FrameResource(
         resource_id, external_resources.mailboxes[i].size_in_pixels(),
-        external_resources.mailboxes[i].allow_overlay()));
+        external_resources.mailboxes[i].is_overlay_candidate()));
   }
 
   return true;
@@ -313,7 +313,6 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       stream_video_quad->SetNew(
           shared_quad_state, quad_rect, opaque_rect, visible_quad_rect,
           frame_resources_[0].id, frame_resources_[0].size_in_pixels,
-          frame_resources_[0].allow_overlay,
           scale * provider_client_impl_->StreamTextureMatrix());
       ValidateQuadResources(stream_video_quad);
       break;
@@ -327,8 +326,7 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       io_surface_quad->SetNew(shared_quad_state, quad_rect, opaque_rect,
                               visible_quad_rect, visible_rect.size(),
                               frame_resources_[0].id,
-                              IOSurfaceDrawQuad::UNFLIPPED,
-                              frame_resources_[0].allow_overlay);
+                              IOSurfaceDrawQuad::UNFLIPPED);
       ValidateQuadResources(io_surface_quad);
       break;
     }

@@ -177,7 +177,6 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
                nearest_neighbor_);
   if (!valid_texture_copy_) {
     quad->set_resource_size_in_pixels(texture_mailbox_.size_in_pixels());
-    quad->set_allow_overlay(texture_mailbox_.allow_overlay());
   }
   ValidateQuadResources(quad);
 }

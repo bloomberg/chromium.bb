@@ -20,7 +20,8 @@ class CC_EXPORT OverlayStrategyAllOrNothing
       OverlayCandidateValidator* capability_checker);
   ~OverlayStrategyAllOrNothing() override;
 
-  bool Attempt(RenderPassList* render_passes,
+  bool Attempt(ResourceProvider* resource_provider,
+               RenderPassList* render_passes,
                OverlayCandidateList* candidate_list) override;
 
  private:

@@ -21,7 +21,8 @@ class CC_EXPORT OverlayStrategySandwich : public OverlayProcessor::Strategy {
       OverlayCandidateValidator* capability_checker);
   ~OverlayStrategySandwich() override;
 
-  bool Attempt(RenderPassList* render_passes,
+  bool Attempt(ResourceProvider* resource_provider,
+               RenderPassList* render_passes,
                OverlayCandidateList* candidate_list) override;
 
  private:

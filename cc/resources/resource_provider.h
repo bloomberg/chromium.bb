@@ -422,6 +422,9 @@ class CC_EXPORT ResourceProvider
   // Indicates if we can currently lock this resource for write.
   bool CanLockForWrite(ResourceId id);
 
+  // Indicates if this resource may be used for a hardware overlay plane.
+  bool IsOverlayCandidate(ResourceId id);
+
   void WaitSyncPointIfNeeded(ResourceId id);
 
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
@@ -495,6 +498,7 @@ class CC_EXPORT ResourceProvider
     bool allocated : 1;
     bool read_lock_fences_enabled : 1;
     bool has_shared_bitmap_id : 1;
+    bool is_overlay_candidate : 1;
     scoped_refptr<Fence> read_lock_fence;
     gfx::Size size;
     Origin origin;

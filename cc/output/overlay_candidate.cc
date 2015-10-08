@@ -12,6 +12,8 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/quads/tile_draw_quad.h"
+#include "cc/resources/resource_provider.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -178,7 +180,8 @@ OverlayCandidate::OverlayCandidate()
 OverlayCandidate::~OverlayCandidate() {}
 
 // static
-bool OverlayCandidate::FromDrawQuad(const DrawQuad* quad,
+bool OverlayCandidate::FromDrawQuad(ResourceProvider* resource_provider,
+                                    const DrawQuad* quad,
                                     OverlayCandidate* candidate) {
   if (quad->needs_blending || quad->shared_quad_state->opacity != 1.f ||
       quad->shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode)
@@ -196,13 +199,15 @@ bool OverlayCandidate::FromDrawQuad(const DrawQuad* quad,
 
   switch (quad->material) {
     case DrawQuad::TEXTURE_CONTENT:
-      return FromTextureQuad(TextureDrawQuad::MaterialCast(quad), candidate);
+      return FromTextureQuad(resource_provider,
+                             TextureDrawQuad::MaterialCast(quad), candidate);
     case DrawQuad::STREAM_VIDEO_CONTENT:
-      return FromStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad),
+      return FromStreamVideoQuad(resource_provider,
+                                 StreamVideoDrawQuad::MaterialCast(quad),
                                  candidate);
     case DrawQuad::IO_SURFACE_CONTENT:
-      return FromIOSurfaceQuad(IOSurfaceDrawQuad::MaterialCast(quad),
-                               candidate);
+      return FromIOSurfaceQuad(
+          resource_provider, IOSurfaceDrawQuad::MaterialCast(quad), candidate);
     default:
       break;
   }
@@ -223,9 +228,10 @@ bool OverlayCandidate::IsInvisibleQuad(const DrawQuad* quad) {
 }
 
 // static
-bool OverlayCandidate::FromTextureQuad(const TextureDrawQuad* quad,
+bool OverlayCandidate::FromTextureQuad(ResourceProvider* resource_provider,
+                                       const TextureDrawQuad* quad,
                                        OverlayCandidate* candidate) {
-  if (!quad->allow_overlay())
+  if (!resource_provider->IsOverlayCandidate(quad->resource_id()))
     return false;
   gfx::OverlayTransform overlay_transform = GetOverlayTransform(
       quad->shared_quad_state->quad_to_target_transform, quad->y_flipped);
@@ -241,9 +247,10 @@ bool OverlayCandidate::FromTextureQuad(const TextureDrawQuad* quad,
 }
 
 // static
-bool OverlayCandidate::FromStreamVideoQuad(const StreamVideoDrawQuad* quad,
+bool OverlayCandidate::FromStreamVideoQuad(ResourceProvider* resource_provider,
+                                           const StreamVideoDrawQuad* quad,
                                            OverlayCandidate* candidate) {
-  if (!quad->allow_overlay())
+  if (!resource_provider->IsOverlayCandidate(quad->resource_id()))
     return false;
   gfx::OverlayTransform overlay_transform = GetOverlayTransform(
       quad->shared_quad_state->quad_to_target_transform, false);
@@ -286,9 +293,10 @@ bool OverlayCandidate::FromStreamVideoQuad(const StreamVideoDrawQuad* quad,
 }
 
 // static
-bool OverlayCandidate::FromIOSurfaceQuad(const IOSurfaceDrawQuad* quad,
+bool OverlayCandidate::FromIOSurfaceQuad(ResourceProvider* resource_provider,
+                                         const IOSurfaceDrawQuad* quad,
                                          OverlayCandidate* candidate) {
-  if (!quad->allow_overlay)
+  if (!resource_provider->IsOverlayCandidate(quad->io_surface_resource_id()))
     return false;
   gfx::OverlayTransform overlay_transform = GetOverlayTransform(
       quad->shared_quad_state->quad_to_target_transform, false);

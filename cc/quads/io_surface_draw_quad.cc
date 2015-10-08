@@ -11,9 +11,7 @@
 
 namespace cc {
 
-IOSurfaceDrawQuad::IOSurfaceDrawQuad()
-    : orientation(FLIPPED), allow_overlay(false) {
-}
+IOSurfaceDrawQuad::IOSurfaceDrawQuad() : orientation(FLIPPED) {}
 
 void IOSurfaceDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                const gfx::Rect& rect,
@@ -21,8 +19,7 @@ void IOSurfaceDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                const gfx::Rect& visible_rect,
                                const gfx::Size& io_surface_size,
                                unsigned io_surface_resource_id,
-                               Orientation orientation,
-                               bool allow_overlay) {
+                               Orientation orientation) {
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::IO_SURFACE_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
@@ -30,7 +27,6 @@ void IOSurfaceDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   resources.ids[kIOSurfaceResourceIdIndex] = io_surface_resource_id;
   resources.count = 1;
   this->orientation = orientation;
-  this->allow_overlay = allow_overlay;
 }
 
 void IOSurfaceDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -40,15 +36,13 @@ void IOSurfaceDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                bool needs_blending,
                                const gfx::Size& io_surface_size,
                                unsigned io_surface_resource_id,
-                               Orientation orientation,
-                               bool allow_overlay) {
+                               Orientation orientation) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::IO_SURFACE_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->io_surface_size = io_surface_size;
   resources.ids[kIOSurfaceResourceIdIndex] = io_surface_resource_id;
   resources.count = 1;
   this->orientation = orientation;
-  this->allow_overlay = allow_overlay;
 }
 
 const IOSurfaceDrawQuad* IOSurfaceDrawQuad::MaterialCast(
