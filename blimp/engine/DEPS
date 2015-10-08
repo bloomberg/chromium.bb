@@ -1,0 +1,10 @@
+include_rules = [
+  "+base",
+  "-chrome",
+  "+components/web_cache/renderer",
+  "+content/public",
+  "+net",
+  "+ui/base",
+  "+ui/resources",
+  "+ui/gfx",
+]
