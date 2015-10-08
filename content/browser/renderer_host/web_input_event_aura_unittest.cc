@@ -421,7 +421,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
                               ui::EF_LEFT_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
 
-    EXPECT_EQ(blink::WebPointerProperties::PointerType::PointerTypeMouse,
+    EXPECT_EQ(blink::WebPointerProperties::PointerType::Mouse,
               webkit_event.pointerType);
     EXPECT_EQ(0, webkit_event.tiltX);
     EXPECT_EQ(0, webkit_event.tiltY);
@@ -447,7 +447,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
                            /* tilt_y */ -89.5f));
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
 
-    EXPECT_EQ(blink::WebPointerProperties::PointerType::PointerTypePen,
+    EXPECT_EQ(blink::WebPointerProperties::PointerType::Pen,
               webkit_event.pointerType);
     EXPECT_EQ(90, webkit_event.tiltX);
     EXPECT_EQ(-90, webkit_event.tiltY);
@@ -475,7 +475,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseWheelEvent) {
     EXPECT_EQ(blink::WebInputEvent::MouseWheel, webkit_event.type);
     EXPECT_FLOAT_EQ(aura_event.x_offset() / 53.0f, webkit_event.wheelTicksX);
     EXPECT_FLOAT_EQ(aura_event.y_offset() / 53.0f, webkit_event.wheelTicksY);
-    EXPECT_EQ(blink::WebPointerProperties::PointerType::PointerTypeMouse,
+    EXPECT_EQ(blink::WebPointerProperties::PointerType::Mouse,
               webkit_event.pointerType);
     EXPECT_EQ(0, webkit_event.tiltX);
     EXPECT_EQ(0, webkit_event.tiltY);
@@ -500,7 +500,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseWheelEvent) {
     EXPECT_EQ(blink::WebInputEvent::MouseWheel, webkit_event.type);
     EXPECT_FLOAT_EQ(aura_event.y_offset() / 53.0f, webkit_event.wheelTicksX);
     EXPECT_FLOAT_EQ(0, webkit_event.wheelTicksY);
-    EXPECT_EQ(blink::WebPointerProperties::PointerType::PointerTypeMouse,
+    EXPECT_EQ(blink::WebPointerProperties::PointerType::Mouse,
               webkit_event.pointerType);
     EXPECT_EQ(0, webkit_event.tiltX);
     EXPECT_EQ(0, webkit_event.tiltY);

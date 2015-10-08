@@ -163,18 +163,17 @@ ui::MotionEvent::ToolType MotionEventWeb::GetToolType(
   const WebPointerProperties& pointer = event_.touches[pointer_index];
 
   switch (pointer.pointerType) {
-    case WebPointerProperties::PointerTypeUnknown:
+    case WebPointerProperties::PointerType::Unknown:
       return TOOL_TYPE_UNKNOWN;
-    case WebPointerProperties::PointerTypeMouse:
+    case WebPointerProperties::PointerType::Mouse:
       return TOOL_TYPE_MOUSE;
-    case WebPointerProperties::PointerTypePen:
+    case WebPointerProperties::PointerType::Pen:
       return TOOL_TYPE_STYLUS;
-    case WebPointerProperties::PointerTypeTouch:
+    case WebPointerProperties::PointerType::Touch:
       return TOOL_TYPE_FINGER;
-    default:
-      NOTREACHED() << "Unhandled pointer type " << pointer.pointerType;
-      return TOOL_TYPE_UNKNOWN;
   }
+  NOTREACHED() << "Unexpected pointerType";
+  return TOOL_TYPE_UNKNOWN;
 }
 
 int MotionEventWeb::GetButtonState() const {

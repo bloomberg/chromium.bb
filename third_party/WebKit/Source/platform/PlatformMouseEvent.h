@@ -31,7 +31,8 @@
 
 namespace blink {
 
-// These button numbers match the ones used in the DOM API, 0 through 2, except for NoButton which isn't specified.
+// These button numbers match the ones used in the DOM API, 0 through 2, except for NoButton which is specified in PointerEvent
+// spec but not in MouseEvent spec.
 enum MouseButton { NoButton = -1, LeftButton, MiddleButton, RightButton };
 
 class PlatformMouseEvent : public PlatformEvent {

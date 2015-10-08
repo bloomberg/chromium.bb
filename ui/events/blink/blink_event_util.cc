@@ -81,19 +81,19 @@ WebTouchPoint::PointerType ToWebTouchPointPointerType(const MotionEvent& event,
                                                       size_t pointer_index) {
   switch (event.GetToolType(pointer_index)) {
     case MotionEvent::TOOL_TYPE_UNKNOWN:
-      return WebTouchPoint::PointerTypeUnknown;
+      return WebTouchPoint::PointerType::Unknown;
     case MotionEvent::TOOL_TYPE_FINGER:
-      return WebTouchPoint::PointerTypeTouch;
+      return WebTouchPoint::PointerType::Touch;
     case MotionEvent::TOOL_TYPE_STYLUS:
-      return WebTouchPoint::PointerTypePen;
+      return WebTouchPoint::PointerType::Pen;
     case MotionEvent::TOOL_TYPE_MOUSE:
-      return WebTouchPoint::PointerTypeMouse;
+      return WebTouchPoint::PointerType::Mouse;
     case MotionEvent::TOOL_TYPE_ERASER:
-      return WebTouchPoint::PointerTypeUnknown;
+      return WebTouchPoint::PointerType::Unknown;
   }
   NOTREACHED() << "Invalid MotionEvent::ToolType = "
                << event.GetToolType(pointer_index);
-  return WebTouchPoint::PointerTypeUnknown;
+  return WebTouchPoint::PointerType::Unknown;
 }
 
 WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,

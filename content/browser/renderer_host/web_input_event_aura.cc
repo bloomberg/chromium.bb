@@ -37,16 +37,16 @@ blink::WebPointerProperties::PointerType EventPointerTypeToWebPointerType(
     ui::EventPointerType pointer_type) {
   switch (pointer_type) {
     case ui::EventPointerType::POINTER_TYPE_UNKNOWN:
-      return blink::WebPointerProperties::PointerType::PointerTypeUnknown;
+      return blink::WebPointerProperties::PointerType::Unknown;
     case ui::EventPointerType::POINTER_TYPE_MOUSE:
-      return blink::WebPointerProperties::PointerType::PointerTypeMouse;
+      return blink::WebPointerProperties::PointerType::Mouse;
     case ui::EventPointerType::POINTER_TYPE_PEN:
-      return blink::WebPointerProperties::PointerType::PointerTypePen;
+      return blink::WebPointerProperties::PointerType::Pen;
     case ui::EventPointerType::POINTER_TYPE_TOUCH:
-      return blink::WebPointerProperties::PointerType::PointerTypeTouch;
+      return blink::WebPointerProperties::PointerType::Touch;
   }
   NOTREACHED() << "Unexpected EventPointerType";
-  return blink::WebPointerProperties::PointerType::PointerTypeUnknown;
+  return blink::WebPointerProperties::PointerType::Unknown;
 }
 
 }  // namespace

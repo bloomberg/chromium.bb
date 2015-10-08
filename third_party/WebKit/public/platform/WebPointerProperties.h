@@ -20,7 +20,7 @@ public:
         , force(0.f)
         , tiltX(0)
         , tiltY(0)
-        , pointerType(PointerTypeUnknown)
+        , pointerType(PointerType::Unknown)
     {
     }
 
@@ -31,11 +31,12 @@ public:
         ButtonRight
     };
 
-    enum PointerType {
-        PointerTypeUnknown,
-        PointerTypeMouse,
-        PointerTypePen,
-        PointerTypeTouch
+    enum class PointerType : int {
+        Unknown,
+        Mouse,
+        Pen,
+        Touch,
+        LastEntry = Touch // Must be the last entry in the list
     };
 
     Button button;

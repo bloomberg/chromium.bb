@@ -32,6 +32,7 @@
 #define PageWidgetDelegate_h
 
 #include "public/platform/WebCanvas.h"
+#include "public/web/WebInputEvent.h"
 #include "public/web/WebWidget.h"
 #include "wtf/OwnPtr.h"
 
@@ -58,6 +59,8 @@ public:
     virtual bool handleGestureEvent(const WebGestureEvent&) = 0;
     virtual bool handleTouchEvent(LocalFrame& mainFrame, const WebTouchEvent&);
     virtual ~PageWidgetEventHandler() { }
+protected:
+    String inputTypeToName(WebInputEvent::Type);
 };
 
 

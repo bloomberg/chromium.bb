@@ -2405,13 +2405,13 @@ void EventSender::InitPointerProperties(gin::Arguments* args,
       return;
     }
     if (pointer_type_string == kPointerTypeStringUnknown) {
-      e->pointerType = WebMouseEvent::PointerTypeUnknown;
+      e->pointerType = WebMouseEvent::PointerType::Unknown;
     } else if (pointer_type_string == kPointerTypeStringMouse) {
-      e->pointerType = WebMouseEvent::PointerTypeMouse;
+      e->pointerType = WebMouseEvent::PointerType::Mouse;
     } else if (pointer_type_string == kPointerTypeStringPen) {
-      e->pointerType = WebMouseEvent::PointerTypePen;
+      e->pointerType = WebMouseEvent::PointerType::Pen;
     } else if (pointer_type_string == kPointerTypeStringTouch) {
-      e->pointerType = WebMouseEvent::PointerTypeTouch;
+      e->pointerType = WebMouseEvent::PointerType::Touch;
     } else {
       args->ThrowError();
       return;

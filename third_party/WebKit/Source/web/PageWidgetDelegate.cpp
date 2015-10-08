@@ -217,4 +217,53 @@ bool PageWidgetEventHandler::handleTouchEvent(LocalFrame& mainFrame, const WebTo
     return mainFrame.eventHandler().handleTouchEvent(PlatformTouchEventBuilder(mainFrame.view(), event));
 }
 
+// TODO(yoichio): Autogenerate the mapping, note the "mismatch" (GestureScrollBegin).
+String PageWidgetEventHandler::inputTypeToName(WebInputEvent::Type type)
+{
+    switch (type) {
+    case WebInputEvent::MouseDown:
+        return EventTypeNames::mousedown;
+    case WebInputEvent::MouseUp:
+        return EventTypeNames::mouseup;
+    case WebInputEvent::MouseMove:
+        return EventTypeNames::mousemove;
+    case WebInputEvent::MouseEnter:
+        return EventTypeNames::mouseenter;
+    case WebInputEvent::MouseLeave:
+        return EventTypeNames::mouseleave;
+    case WebInputEvent::ContextMenu:
+        return EventTypeNames::contextmenu;
+    case WebInputEvent::MouseWheel:
+        return EventTypeNames::mousewheel;
+    case WebInputEvent::KeyDown:
+        return EventTypeNames::keydown;
+    case WebInputEvent::KeyUp:
+        return EventTypeNames::keyup;
+    case WebInputEvent::GestureScrollBegin:
+        return EventTypeNames::gesturescrollstart;
+    case WebInputEvent::GestureScrollEnd:
+        return EventTypeNames::gesturescrollend;
+    case WebInputEvent::GestureScrollUpdate:
+        return EventTypeNames::gesturescrollupdate;
+    case WebInputEvent::GestureTapDown:
+        return EventTypeNames::gesturetapdown;
+    case WebInputEvent::GestureShowPress:
+        return EventTypeNames::gestureshowpress;
+    case WebInputEvent::GestureTap:
+        return EventTypeNames::gesturetap;
+    case WebInputEvent::GestureTapUnconfirmed:
+        return EventTypeNames::gesturetapunconfirmed;
+    case WebInputEvent::TouchStart:
+        return EventTypeNames::touchstart;
+    case WebInputEvent::TouchMove:
+        return EventTypeNames::touchmove;
+    case WebInputEvent::TouchEnd:
+        return EventTypeNames::touchend;
+    case WebInputEvent::TouchCancel:
+        return EventTypeNames::touchcancel;
+    default:
+        return String("unknown");
+    }
+}
+
 } // namespace blink
