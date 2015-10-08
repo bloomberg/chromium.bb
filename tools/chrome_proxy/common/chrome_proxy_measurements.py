@@ -27,6 +27,7 @@ def WaitForViaHeader(tab, url="http://check.googlezip.net/test.html"):
     'function ProbeViaHeader(url, wanted_via) {'
       'try {'
         'var xmlhttp = new XMLHttpRequest();'
+        'xmlhttp.timeout = 15;'
         'xmlhttp.open("HEAD",url,false);'
         'xmlhttp.send();'
         'var via=xmlhttp.getResponseHeader("via");'
