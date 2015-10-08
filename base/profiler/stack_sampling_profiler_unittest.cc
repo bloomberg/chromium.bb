@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstdlib>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
@@ -13,12 +15,24 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include <intrin.h>
+#include <malloc.h>
+#else
+#include <alloca.h>
+#endif
 
 // STACK_SAMPLING_PROFILER_SUPPORTED is used to conditionally enable the tests
 // below for supported platforms (currently Win x64).
 #if defined(_WIN64)
 #define STACK_SAMPLING_PROFILER_SUPPORTED 1
+#endif
+
+#if defined(OS_WIN)
+#pragma intrinsic(_ReturnAddress)
 #endif
 
 namespace base {
@@ -32,11 +46,19 @@ using CallStackProfiles = StackSamplingProfiler::CallStackProfiles;
 
 namespace {
 
+// Configuration for whether to allocate dynamic stack memory.
+enum DynamicStackAllocationConfig { USE_ALLOCA, NO_ALLOCA };
+
+// Signature for a target function that is expected to appear in the stack. See
+// SignalAndWaitUntilSignaled() below. The return value should be a program
+// counter pointer near the end of the function.
+using TargetFunction = const void*(*)(WaitableEvent*, WaitableEvent*);
+
 // A thread to target for profiling, whose stack is guaranteed to contain
 // SignalAndWaitUntilSignaled() when coordinated with the main thread.
 class TargetThread : public PlatformThread::Delegate {
  public:
-  TargetThread();
+  TargetThread(DynamicStackAllocationConfig allocation_config);
 
   // PlatformThread::Delegate:
   void ThreadMain() override;
@@ -50,30 +72,53 @@ class TargetThread : public PlatformThread::Delegate {
   void SignalThreadToFinish();
 
   // This function is guaranteed to be executing between calls to
-  // WaitForThreadStart() and SignalThreadToFinish(). This function is static so
-  // that we can get a straightforward address for it in one of the tests below,
-  // rather than dealing with the complexity of a member function pointer
-  // representation.
-  static void SignalAndWaitUntilSignaled(WaitableEvent* thread_started_event,
-                                         WaitableEvent* finish_event);
+  // WaitForThreadStart() and SignalThreadToFinish() when invoked with
+  // |thread_started_event_| and |finish_event_|. Returns a program counter
+  // value near the end of the function. May be invoked with null WaitableEvents
+  // to just return the program counter.
+  //
+  // This function is static so that we can get a straightforward address
+  // for it in one of the tests below, rather than dealing with the complexity
+  // of a member function pointer representation.
+  static const void* SignalAndWaitUntilSignaled(
+      WaitableEvent* thread_started_event,
+      WaitableEvent* finish_event);
+
+  // Works like SignalAndWaitUntilSignaled() but additionally allocates memory
+  // on the stack with alloca. Note that this must be a separate function from
+  // SignalAndWaitUntilSignaled because on Windows x64 the compiler sets up
+  // dynamic frame handling whenever alloca appears in a function, even if only
+  // conditionally invoked.
+  static const void* SignalAndWaitUntilSignaledWithAlloca(
+      WaitableEvent* thread_started_event,
+      WaitableEvent* finish_event);
 
   PlatformThreadId id() const { return id_; }
 
  private:
+  // Returns the current program counter, or a value very close to it.
+  static const void* GetProgramCounter();
+
   WaitableEvent thread_started_event_;
   WaitableEvent finish_event_;
   PlatformThreadId id_;
+  const DynamicStackAllocationConfig allocation_config_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetThread);
 };
 
-TargetThread::TargetThread()
+TargetThread::TargetThread(DynamicStackAllocationConfig allocation_config)
     : thread_started_event_(false, false), finish_event_(false, false),
-      id_(0) {}
+      id_(0), allocation_config_(allocation_config) {}
 
 void TargetThread::ThreadMain() {
   id_ = PlatformThread::CurrentId();
-  SignalAndWaitUntilSignaled(&thread_started_event_, &finish_event_);
+  if (allocation_config_ == USE_ALLOCA) {
+    SignalAndWaitUntilSignaledWithAlloca(&thread_started_event_,
+                                         &finish_event_);
+  } else {
+    SignalAndWaitUntilSignaled(&thread_started_event_, &finish_event_);
+  }
 }
 
 void TargetThread::WaitForThreadStart() {
@@ -86,15 +131,48 @@ void TargetThread::SignalThreadToFinish() {
 
 // static
 // Disable inlining for this function so that it gets its own stack frame.
-NOINLINE void TargetThread::SignalAndWaitUntilSignaled(
+NOINLINE const void* TargetThread::SignalAndWaitUntilSignaled(
     WaitableEvent* thread_started_event,
     WaitableEvent* finish_event) {
-  thread_started_event->Signal();
-  volatile int x = 1;
-  finish_event->Wait();
-  x = 0;  // Prevent tail call to WaitableEvent::Wait().
-  ALLOW_UNUSED_LOCAL(x);
+  if (thread_started_event && finish_event) {
+    thread_started_event->Signal();
+    finish_event->Wait();
+  }
+
+  // Volatile to prevent a tail call to GetProgramCounter().
+  const void* volatile program_counter = GetProgramCounter();
+  return program_counter;
 }
+
+// static
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE const void* TargetThread::SignalAndWaitUntilSignaledWithAlloca(
+    WaitableEvent* thread_started_event,
+    WaitableEvent* finish_event) {
+  const size_t alloca_size = 100;
+  // Memset to 0 to generate a clean failure.
+  std::memset(alloca(alloca_size), 0, alloca_size);
+
+  if (thread_started_event && finish_event) {
+    thread_started_event->Signal();
+    finish_event->Wait();
+  }
+
+  // Volatile to prevent a tail call to GetProgramCounter().
+  const void* volatile program_counter = GetProgramCounter();
+  return program_counter;
+}
+
+// static
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE const void* TargetThread::GetProgramCounter() {
+#if defined(OS_WIN)
+  return _ReturnAddress();
+#else
+  return __builtin_return_address(0);
+#endif
+}
+
 
 // Called on the profiler thread when complete, to collect profiles.
 void SaveProfiles(CallStackProfiles* profiles,
@@ -113,11 +191,13 @@ void SaveProfilesAndSignalEvent(CallStackProfiles* profiles,
 }
 
 // Executes the function with the target thread running and executing within
-// SignalAndWaitUntilSignaled(). Performs all necessary target thread startup
-// and shutdown work before and afterward.
+// SignalAndWaitUntilSignaled() or SignalAndWaitUntilSignaledWithAlloca(),
+// depending on the value of |allocation_config|. Performs all necessary target
+// thread startup and shutdown work before and afterward.
 template <class Function>
-void WithTargetThread(Function function) {
-  TargetThread target_thread;
+void WithTargetThread(Function function,
+                      DynamicStackAllocationConfig allocation_config) {
+  TargetThread target_thread(allocation_config);
   PlatformThreadHandle target_thread_handle;
   EXPECT_TRUE(PlatformThread::Create(0, &target_thread, &target_thread_handle));
 
@@ -128,6 +208,11 @@ void WithTargetThread(Function function) {
   target_thread.SignalThreadToFinish();
 
   PlatformThread::Join(target_thread_handle);
+}
+
+template <class Function>
+void WithTargetThread(Function function) {
+  WithTargetThread(function, NO_ALLOCA);
 }
 
 // Captures profiles as specified by |params| on the TargetThread, and returns
@@ -174,19 +259,19 @@ const void* MaybeFixupFunctionAddressForILT(const void* function_address) {
 }
 
 // Searches through the frames in |sample|, returning an iterator to the first
-// frame that has an instruction pointer between |function_address| and
-// |function_address| + |size|. Returns sample.end() if no such frames are
-// found.
+// frame that has an instruction pointer within |target_function|. Returns
+// sample.end() if no such frames are found.
 Sample::const_iterator FindFirstFrameWithinFunction(
     const Sample& sample,
-    const void* function_address,
-    int function_size) {
-  function_address = MaybeFixupFunctionAddressForILT(function_address);
+    TargetFunction target_function) {
+  uintptr_t function_start = reinterpret_cast<uintptr_t>(
+      MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
+          target_function)));
+  uintptr_t function_end =
+      reinterpret_cast<uintptr_t>(target_function(nullptr, nullptr));
   for (auto it = sample.begin(); it != sample.end(); ++it) {
-    if ((reinterpret_cast<const void*>(it->instruction_pointer) >=
-         function_address) &&
-        (reinterpret_cast<const void*>(it->instruction_pointer) <
-         (static_cast<const unsigned char*>(function_address) + function_size)))
+    if ((it->instruction_pointer >= function_start) &&
+        (it->instruction_pointer <= function_end))
       return it;
   }
   return sample.end();
@@ -241,23 +326,61 @@ TEST(StackSamplingProfilerTest, MAYBE_Basic) {
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled() and that the frame has this
   // executable's module.
-  //
-  // Since we don't have a good way to know the function size, use 100 bytes as
-  // a reasonable window to locate the instruction pointer.
   Sample::const_iterator loc = FindFirstFrameWithinFunction(
       sample,
-      reinterpret_cast<const void*>(&TargetThread::SignalAndWaitUntilSignaled),
-      100);
+      &TargetThread::SignalAndWaitUntilSignaled);
   ASSERT_TRUE(loc != sample.end())
       << "Function at "
-      << MaybeFixupFunctionAddressForILT(
-          reinterpret_cast<const void*>(
-              &TargetThread::SignalAndWaitUntilSignaled))
+      << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
+          &TargetThread::SignalAndWaitUntilSignaled))
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(sample, profile.modules);
   FilePath executable_path;
   EXPECT_TRUE(PathService::Get(FILE_EXE, &executable_path));
   EXPECT_EQ(executable_path, profile.modules[loc->module_index].filename);
+}
+
+// Checks that the profiler handles stacks containing dynamically-allocated
+// stack memory.
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
+#define MAYBE_Alloca Alloca
+#else
+#define MAYBE_Alloca DISABLED_Alloca
+#endif
+TEST(StackSamplingProfilerTest, MAYBE_Alloca) {
+  SamplingParams params;
+  params.sampling_interval = TimeDelta::FromMilliseconds(0);
+  params.samples_per_burst = 1;
+
+  std::vector<CallStackProfile> profiles;
+  WithTargetThread([&params, &profiles](
+      PlatformThreadId target_thread_id) {
+    WaitableEvent sampling_thread_completed(true, false);
+    const StackSamplingProfiler::CompletedCallback callback =
+        Bind(&SaveProfilesAndSignalEvent, Unretained(&profiles),
+             Unretained(&sampling_thread_completed));
+    StackSamplingProfiler profiler(target_thread_id, params, callback);
+    profiler.Start();
+    sampling_thread_completed.Wait();
+  }, USE_ALLOCA);
+
+  // Look up the sample.
+  ASSERT_EQ(1u, profiles.size());
+  const CallStackProfile& profile = profiles[0];
+  ASSERT_EQ(1u, profile.samples.size());
+  const Sample& sample = profile.samples[0];
+
+  // Check that the stack contains a frame for
+  // TargetThread::SignalAndWaitUntilSignaledWithAlloca().
+  Sample::const_iterator loc = FindFirstFrameWithinFunction(
+      sample,
+      &TargetThread::SignalAndWaitUntilSignaledWithAlloca);
+  ASSERT_TRUE(loc != sample.end())
+      << "Function at "
+      << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
+          &TargetThread::SignalAndWaitUntilSignaledWithAlloca))
+      << " was not found in stack:\n"
+      << FormatSampleForDiagnosticOutput(sample, profile.modules);
 }
 
 // Checks that the fire-and-forget interface works.

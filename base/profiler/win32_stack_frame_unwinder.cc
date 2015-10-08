@@ -10,9 +10,60 @@
 
 namespace base {
 
-// LeafUnwindBlacklist --------------------------------------------------------
+// Win32UnwindFunctions -------------------------------------------------------
 
 namespace {
+
+// Implements the UnwindFunctions interface for the corresponding Win32
+// functions.
+class Win32UnwindFunctions : public Win32StackFrameUnwinder::UnwindFunctions {
+public:
+  Win32UnwindFunctions();
+  ~Win32UnwindFunctions() override;
+
+  PRUNTIME_FUNCTION LookupFunctionEntry(DWORD64 program_counter,
+                                        PDWORD64 image_base) override;
+
+  void VirtualUnwind(DWORD64 image_base,
+                     DWORD64 program_counter,
+                     PRUNTIME_FUNCTION runtime_function,
+                     CONTEXT* context) override;
+
+private:
+  DISALLOW_COPY_AND_ASSIGN(Win32UnwindFunctions);
+};
+
+Win32UnwindFunctions::Win32UnwindFunctions() {}
+Win32UnwindFunctions::~Win32UnwindFunctions() {}
+
+PRUNTIME_FUNCTION Win32UnwindFunctions::LookupFunctionEntry(
+    DWORD64 program_counter,
+    PDWORD64 image_base) {
+#ifdef _WIN64
+  return RtlLookupFunctionEntry(program_counter, image_base, nullptr);
+#else
+  NOTREACHED();
+  return nullptr;
+#endif
+}
+
+void Win32UnwindFunctions::VirtualUnwind(DWORD64 image_base,
+                                         DWORD64 program_counter,
+                                         PRUNTIME_FUNCTION runtime_function,
+                                         CONTEXT* context) {
+#ifdef _WIN64
+  void* handler_data;
+  ULONG64 establisher_frame;
+  KNONVOLATILE_CONTEXT_POINTERS nvcontext = {};
+  RtlVirtualUnwind(UNW_FLAG_NHANDLER, image_base, program_counter,
+                   runtime_function, context, &handler_data,
+                   &establisher_frame, &nvcontext);
+#else
+  NOTREACHED();
+#endif
+}
+
+// LeafUnwindBlacklist --------------------------------------------------------
 
 // Records modules that are known to have functions that violate the Microsoft
 // x64 calling convention and would be dangerous to manually unwind if
@@ -26,13 +77,11 @@ class LeafUnwindBlacklist {
  public:
   static LeafUnwindBlacklist* GetInstance();
 
-  // This function does not allocate memory and is safe to call between
-  // SuspendThread and ResumeThread.
+  // Returns true if |module| has been blacklisted.
   bool IsBlacklisted(const void* module) const;
 
-  // Allocates memory. Must be invoked only after ResumeThread, otherwise we
-  // risk deadlocking on a heap lock held by a suspended thread.
-  void AddModuleToBlacklist(const void* module);
+  // Records |module| for blacklisting.
+  void BlacklistModule(const void* module);
 
  private:
   friend struct DefaultSingletonTraits<LeafUnwindBlacklist>;
@@ -49,7 +98,7 @@ class LeafUnwindBlacklist {
 
 // static
 LeafUnwindBlacklist* LeafUnwindBlacklist::GetInstance() {
-  // Leaky for shutdown performance.
+  // Leaky for performance reasons.
   return Singleton<LeafUnwindBlacklist,
                    LeakySingletonTraits<LeafUnwindBlacklist>>::get();
 }
@@ -58,7 +107,7 @@ bool LeafUnwindBlacklist::IsBlacklisted(const void* module) const {
   return ContainsKey(blacklisted_modules_, module);
 }
 
-void LeafUnwindBlacklist::AddModuleToBlacklist(const void* module) {
+void LeafUnwindBlacklist::BlacklistModule(const void* module) {
   CHECK(module);
   blacklisted_modules_.insert(module);
 }
@@ -73,50 +122,15 @@ LeafUnwindBlacklist::~LeafUnwindBlacklist() {}
 Win32StackFrameUnwinder::UnwindFunctions::~UnwindFunctions() {}
 Win32StackFrameUnwinder::UnwindFunctions::UnwindFunctions() {}
 
-Win32StackFrameUnwinder::Win32UnwindFunctions::Win32UnwindFunctions() {}
-
-PRUNTIME_FUNCTION Win32StackFrameUnwinder::Win32UnwindFunctions::
-LookupFunctionEntry(DWORD64 program_counter, PDWORD64 image_base) {
-#ifdef _WIN64
-  return RtlLookupFunctionEntry(program_counter, image_base, nullptr);
-#else
-  NOTREACHED();
-  return nullptr;
-#endif
-}
-
-void Win32StackFrameUnwinder::Win32UnwindFunctions::VirtualUnwind(
-    DWORD64 image_base,
-    DWORD64 program_counter,
-    PRUNTIME_FUNCTION runtime_function,
-    CONTEXT* context) {
-#ifdef _WIN64
-  void* handler_data;
-  ULONG64 establisher_frame;
-  KNONVOLATILE_CONTEXT_POINTERS nvcontext = {};
-  RtlVirtualUnwind(0, image_base, program_counter, runtime_function,
-                   context, &handler_data, &establisher_frame, &nvcontext);
-#else
-  NOTREACHED();
-#endif
-}
-
-
 Win32StackFrameUnwinder::Win32StackFrameUnwinder()
-    : Win32StackFrameUnwinder(&win32_unwind_functions_) {
+    : Win32StackFrameUnwinder(make_scoped_ptr(new Win32UnwindFunctions)) {
 }
 
-Win32StackFrameUnwinder::~Win32StackFrameUnwinder() {
-  if (pending_blacklisted_module_) {
-    LeafUnwindBlacklist::GetInstance()->AddModuleToBlacklist(
-        pending_blacklisted_module_);
-  }
-}
+Win32StackFrameUnwinder::~Win32StackFrameUnwinder() {}
 
 bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context) {
 #ifdef _WIN64
   CHECK(!at_top_frame_ || unwind_info_present_for_all_frames_);
-  CHECK(!pending_blacklisted_module_);
 
   ULONG64 image_base;
   // Try to look up unwind metadata for the current function.
@@ -179,8 +193,8 @@ bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context) {
       if (unwind_info_present_for_all_frames_) {
         // Unwind information was present for all previous frames, so we can
         // be confident this is case 2. Record the module to be blacklisted.
-        pending_blacklisted_module_ =
-            reinterpret_cast<const void *>(image_base);
+        LeafUnwindBlacklist::GetInstance()->BlacklistModule(
+            reinterpret_cast<const void *>(image_base));
       } else {
         // We started off on a function without unwind information. It's very
         // likely that all frames up to this point have been good, and this
@@ -202,11 +216,10 @@ bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context) {
 }
 
 Win32StackFrameUnwinder::Win32StackFrameUnwinder(
-    UnwindFunctions* unwind_functions)
+    scoped_ptr<UnwindFunctions> unwind_functions)
     : at_top_frame_(true),
       unwind_info_present_for_all_frames_(true),
-      pending_blacklisted_module_(nullptr),
-      unwind_functions_(unwind_functions) {
+      unwind_functions_(unwind_functions.Pass()) {
 }
 
 }  // namespace base

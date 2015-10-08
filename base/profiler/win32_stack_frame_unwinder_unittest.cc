@@ -97,7 +97,8 @@ class Win32StackFrameUnwinderTest : public testing::Test {
   // with a single friend declaration of this test fixture.
   scoped_ptr<Win32StackFrameUnwinder> CreateUnwinder();
 
-  TestUnwindFunctions unwind_functions_;
+  // Weak pointer to the unwind functions used by last created unwinder.
+  TestUnwindFunctions* unwind_functions_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Win32StackFrameUnwinderTest);
@@ -105,7 +106,9 @@ class Win32StackFrameUnwinderTest : public testing::Test {
 
 scoped_ptr<Win32StackFrameUnwinder>
 Win32StackFrameUnwinderTest::CreateUnwinder() {
-  return make_scoped_ptr(new Win32StackFrameUnwinder(&unwind_functions_));
+  scoped_ptr<TestUnwindFunctions> unwind_functions(new TestUnwindFunctions);
+  unwind_functions_ = unwind_functions.get();
+  return make_scoped_ptr(new Win32StackFrameUnwinder(unwind_functions.Pass()));
 }
 
 // Checks the case where all frames have unwind information.
@@ -124,7 +127,7 @@ TEST_F(Win32StackFrameUnwinderTest, FrameAtTopWithoutUnwindInfo) {
   CONTEXT context = {0};
   const DWORD64 original_rsp = 128;
   context.Rsp = original_rsp;
-  unwind_functions_.SetNoUnwindInfoForNextFrame();
+  unwind_functions_->SetNoUnwindInfoForNextFrame();
   EXPECT_TRUE(unwinder->TryUnwind(&context));
   EXPECT_EQ(original_rsp, context.Rip);
   EXPECT_EQ(original_rsp + 8, context.Rsp);
@@ -143,8 +146,8 @@ TEST_F(Win32StackFrameUnwinderTest, BlacklistedModule) {
     CONTEXT context = {0};
     EXPECT_TRUE(unwinder->TryUnwind(&context));
 
-    unwind_functions_.SetNoUnwindInfoForNextFrame();
-    unwind_functions_.SetImageBaseForNextFrame(
+    unwind_functions_->SetNoUnwindInfoForNextFrame();
+    unwind_functions_->SetImageBaseForNextFrame(
         image_base_for_module_with_bad_function);
     EXPECT_FALSE(unwinder->TryUnwind(&context));
   }
@@ -154,8 +157,8 @@ TEST_F(Win32StackFrameUnwinderTest, BlacklistedModule) {
     // unwind info from the previously-seen module is blacklisted.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
-    unwind_functions_.SetNoUnwindInfoForNextFrame();
-    unwind_functions_.SetImageBaseForNextFrame(
+    unwind_functions_->SetNoUnwindInfoForNextFrame();
+    unwind_functions_->SetImageBaseForNextFrame(
         image_base_for_module_with_bad_function);
     EXPECT_FALSE(unwinder->TryUnwind(&context));
   }
@@ -168,13 +171,13 @@ TEST_F(Win32StackFrameUnwinderTest, BlacklistedModule) {
     // module.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
-    unwind_functions_.SetImageBaseForNextFrame(
+    unwind_functions_->SetImageBaseForNextFrame(
         image_base_for_module_with_bad_function);
     EXPECT_TRUE(unwinder->TryUnwind(&context));
 
     EXPECT_TRUE(unwinder->TryUnwind(&context));
 
-    unwind_functions_.SetImageBaseForNextFrame(
+    unwind_functions_->SetImageBaseForNextFrame(
         image_base_for_module_with_bad_function);
     EXPECT_TRUE(unwinder->TryUnwind(&context));
   }
@@ -187,12 +190,12 @@ TEST_F(Win32StackFrameUnwinderTest, BlacklistedModule) {
     // previously-seen module.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
-    unwind_functions_.SetNoUnwindInfoForNextFrame();
+    unwind_functions_->SetNoUnwindInfoForNextFrame();
     EXPECT_TRUE(unwinder->TryUnwind(&context));
 
     EXPECT_TRUE(unwinder->TryUnwind(&context));
 
-    unwind_functions_.SetImageBaseForNextFrame(
+    unwind_functions_->SetImageBaseForNextFrame(
         image_base_for_module_with_bad_function);
     EXPECT_TRUE(unwinder->TryUnwind(&context));
   }
@@ -208,11 +211,11 @@ TEST_F(Win32StackFrameUnwinderTest, ModuleFromQuestionableFrameNotBlacklisted) {
     // First stack, with both the first and second frames missing unwind info.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
-    unwind_functions_.SetNoUnwindInfoForNextFrame();
+    unwind_functions_->SetNoUnwindInfoForNextFrame();
     EXPECT_TRUE(unwinder->TryUnwind(&context));
 
-    unwind_functions_.SetNoUnwindInfoForNextFrame();
-    unwind_functions_.SetImageBaseForNextFrame(
+    unwind_functions_->SetNoUnwindInfoForNextFrame();
+    unwind_functions_->SetImageBaseForNextFrame(
         image_base_for_questionable_module);
     EXPECT_FALSE(unwinder->TryUnwind(&context));
   }
@@ -221,8 +224,8 @@ TEST_F(Win32StackFrameUnwinderTest, ModuleFromQuestionableFrameNotBlacklisted) {
     // Second stack; check that the questionable module was not blacklisted.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
-    unwind_functions_.SetNoUnwindInfoForNextFrame();
-    unwind_functions_.SetImageBaseForNextFrame(
+    unwind_functions_->SetNoUnwindInfoForNextFrame();
+    unwind_functions_->SetImageBaseForNextFrame(
         image_base_for_questionable_module);
     EXPECT_TRUE(unwinder->TryUnwind(&context));
   }

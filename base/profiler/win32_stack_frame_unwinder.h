@@ -9,6 +9,7 @@
 
 #include "base/base_export.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace base {
 
@@ -19,7 +20,8 @@ using PRUNTIME_FUNCTION = void*;
 #endif  // !defined(_WIN64)
 
 // Instances of this class are expected to be created and destroyed for each
-// stack unwinding, outside of SuspendThread/ResumeThread.
+// stack unwinding. This class is not used while the target thread is suspended,
+// so may allocate from the default heap.
 class BASE_EXPORT Win32StackFrameUnwinder {
  public:
   // Interface for Win32 unwind-related functionality this class depends
@@ -41,39 +43,21 @@ class BASE_EXPORT Win32StackFrameUnwinder {
     DISALLOW_COPY_AND_ASSIGN(UnwindFunctions);
   };
 
-  class BASE_EXPORT Win32UnwindFunctions : public UnwindFunctions {
-   public:
-    Win32UnwindFunctions();
-
-    PRUNTIME_FUNCTION LookupFunctionEntry(DWORD64 program_counter,
-                                          PDWORD64 image_base) override;
-
-    void VirtualUnwind(DWORD64 image_base,
-                       DWORD64 program_counter,
-                       PRUNTIME_FUNCTION runtime_function,
-                       CONTEXT* context) override;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Win32UnwindFunctions);
-  };
-
   Win32StackFrameUnwinder();
   ~Win32StackFrameUnwinder();
 
   bool TryUnwind(CONTEXT* context);
 
  private:
-  // This function is for test purposes only.
-  Win32StackFrameUnwinder(UnwindFunctions* unwind_functions);
+  // This function is for internal and test purposes only.
+  Win32StackFrameUnwinder(scoped_ptr<UnwindFunctions> unwind_functions);
   friend class Win32StackFrameUnwinderTest;
 
   // State associated with each stack unwinding.
   bool at_top_frame_;
   bool unwind_info_present_for_all_frames_;
-  const void* pending_blacklisted_module_;
 
-  Win32UnwindFunctions win32_unwind_functions_;
-  UnwindFunctions* const unwind_functions_;
+  scoped_ptr<UnwindFunctions> unwind_functions_;
 
   DISALLOW_COPY_AND_ASSIGN(Win32StackFrameUnwinder);
 };
