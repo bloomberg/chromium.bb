@@ -25,11 +25,14 @@ static double GetFrameRate(const scoped_refptr<VideoFrame>& video_frame) {
   return frame_rate;
 }
 
-WebmMuxer::WebmMuxer(const WriteDataCB& write_data_callback)
-    : track_index_(0),
+WebmMuxer::WebmMuxer(VideoCodec codec, const WriteDataCB& write_data_callback)
+    : use_vp9_(codec == kCodecVP9),
+      track_index_(0),
       write_data_callback_(write_data_callback),
       position_(0) {
   DCHECK(!write_data_callback_.is_null());
+  DCHECK(codec == kCodecVP8 || codec == kCodecVP9)
+      << " Only Vp8 and VP9 are supported in WebmMuxer";
   // Creation is done on a different thread than main activities.
   thread_checker_.DetachFromThread();
 }
@@ -82,7 +85,8 @@ void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
       reinterpret_cast<mkvmuxer::VideoTrack*>(
           segment_.GetTrackByNumber(track_index_));
   DCHECK(video_track);
-  video_track->set_codec_id(mkvmuxer::Tracks::kVp8CodecId);
+  video_track->set_codec_id(use_vp9_ ? mkvmuxer::Tracks::kVp9CodecId
+                                     : mkvmuxer::Tracks::kVp8CodecId);
   DCHECK_EQ(video_track->crop_right(), 0ull);
   DCHECK_EQ(video_track->crop_left(), 0ull);
   DCHECK_EQ(video_track->crop_top(), 0ull);

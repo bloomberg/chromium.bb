@@ -19,6 +19,8 @@ using ::testing::AtLeast;
 using ::testing::InSequence;
 using ::testing::Lt;
 using ::testing::Mock;
+using ::testing::TestWithParam;
+using ::testing::ValuesIn;
 
 using blink::WebString;
 
@@ -31,9 +33,18 @@ ACTION_P(RunClosure, closure) {
 static const std::string kTestStreamUrl = "stream_url";
 static const std::string kTestVideoTrackId = "video_track_id";
 
-class MediaRecorderHandlerTest
-    : public testing::Test
-    , public blink::WebMediaRecorderHandlerClient {
+struct MediaRecorderTestParams {
+  const char* const mime_type;
+  const size_t first_encoded_frame_size;
+  const size_t second_encoded_frame_size;
+};
+
+static const MediaRecorderTestParams kMediaRecorderTestParams[] = {
+    {"video/vp8", 52, 32},
+    {"video/vp9", 33, 18}};
+
+class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
+                                 public blink::WebMediaRecorderHandlerClient {
  public:
   MediaRecorderHandlerTest()
       : media_recorder_handler_(new MediaRecorderHandler()) {
@@ -79,8 +90,11 @@ class MediaRecorderHandlerTest
 // Checks that canSupportMimeType() works as expected.
 // TODO(mcasas): revisit this when canSupportMimeType() is fully implemented.
 TEST_F(MediaRecorderHandlerTest, CanSupportMimeType) {
-  const WebString good_mime_type(base::UTF8ToUTF16("video/vp8"));
-  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(good_mime_type));
+  const WebString good_mime_type_vp8(base::UTF8ToUTF16("video/vp8"));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(good_mime_type_vp8));
+
+  const WebString good_mime_type_vp9(base::UTF8ToUTF16("video/vp9"));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(good_mime_type_vp9));
 
   const WebString bad_mime_type(base::UTF8ToUTF16("video/unsupportedcodec"));
   EXPECT_FALSE(media_recorder_handler_->canSupportMimeType(bad_mime_type));
@@ -90,11 +104,11 @@ TEST_F(MediaRecorderHandlerTest, CanSupportMimeType) {
 }
 
 // Checks that the initialization-destruction sequence works fine.
-TEST_F(MediaRecorderHandlerTest, InitializeStartStop) {
-  const WebString mime_type(base::UTF8ToUTF16(""));
+TEST_P(MediaRecorderHandlerTest, InitializeStartStop) {
+  const WebString mime_type(base::UTF8ToUTF16(GetParam().mime_type));
   EXPECT_TRUE(media_recorder_handler_->initialize(this,
-                                                 registry_.test_stream(),
-                                                 mime_type));
+                                                  registry_.test_stream(),
+                                                  mime_type));
   EXPECT_FALSE(recording());
   EXPECT_FALSE(hasVideoRecorders());
 
@@ -112,8 +126,8 @@ TEST_F(MediaRecorderHandlerTest, InitializeStartStop) {
 }
 
 // Sends 2 frames and expect them as WebM contained encoded data in writeData().
-TEST_F(MediaRecorderHandlerTest, EncodeVideoFrames) {
-  const WebString mime_type(base::UTF8ToUTF16("video/vp8"));
+TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
+  const WebString mime_type(base::UTF8ToUTF16(GetParam().mime_type));
   EXPECT_TRUE(media_recorder_handler_->initialize(this, registry_.test_stream(),
                                                   mime_type));
   EXPECT_TRUE(media_recorder_handler_->start());
@@ -127,10 +141,10 @@ TEST_F(MediaRecorderHandlerTest, EncodeVideoFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // writeData() is pinged a number of times as the WebM header is written;
     // the last time it is called it has the encoded data.
-    const size_t kEncodedDataSize = 52;
-    EXPECT_CALL(*this, writeData(_, Lt(kEncodedDataSize), false))
+    const size_t encoded_data_size = GetParam().first_encoded_frame_size;
+    EXPECT_CALL(*this, writeData(_, Lt(encoded_data_size), false))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, writeData(_, kEncodedDataSize, false))
+    EXPECT_CALL(*this, writeData(_, encoded_data_size, false))
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
@@ -143,10 +157,10 @@ TEST_F(MediaRecorderHandlerTest, EncodeVideoFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
-    const size_t kSecondEncodedDataSize = 32;
-    EXPECT_CALL(*this, writeData(_, Lt(kSecondEncodedDataSize), false))
+    const size_t encoded_data_size = GetParam().second_encoded_frame_size;
+    EXPECT_CALL(*this, writeData(_, Lt(encoded_data_size), false))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, writeData(_, kSecondEncodedDataSize, false))
+    EXPECT_CALL(*this, writeData(_, encoded_data_size, false))
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
@@ -160,5 +174,9 @@ TEST_F(MediaRecorderHandlerTest, EncodeVideoFrames) {
   EXPECT_CALL(*this, writeData(nullptr, 0, true)).Times(1);
   media_recorder_handler_.reset();
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        MediaRecorderHandlerTest,
+                        ValuesIn(kMediaRecorderTestParams));
 
 }  // namespace content

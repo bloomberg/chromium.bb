@@ -5,14 +5,13 @@
 #ifndef MEDIA_FILTERS_LIBWEBM_MUXER_H_
 #define MEDIA_FILTERS_LIBWEBM_MUXER_H_
 
-#include <set>
-
 #include "base/callback.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
+#include "media/base/video_codecs.h"
 #include "third_party/libwebm/source/mkvmuxer.hpp"
 
 namespace gfx {
@@ -40,7 +39,9 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   // either any file header or a SingleBlock.
   using WriteDataCB = base::Callback<void(base::StringPiece)>;
 
-  explicit WebmMuxer(const WriteDataCB& write_data_callback);
+  // |codec| can be VP8 or VP9 and should coincide with whatever is sent in
+  // OnEncodedVideo().
+  WebmMuxer(VideoCodec codec, const WriteDataCB& write_data_callback);
   ~WebmMuxer() override;
 
   // Adds a |video_frame| with |encoded_data.data()| to WebM Segment.
@@ -68,6 +69,9 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
 
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
+
+  // Video Codec configured: VP9 if true, otherwise VP8 is used by default.
+  const bool use_vp9_;
 
   // A caller-side identifier to interact with |segment_|, initialised upon
   // first frame arrival by AddVideoTrack().

@@ -19,12 +19,16 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 
+using media::VideoFrame;
+
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Mock;
 using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::TestWithParam;
+using ::testing::ValuesIn;
 
 namespace content {
 
@@ -32,19 +36,17 @@ ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-// Dummy interface class to be able to MOCK its methods.
-class EncodedVideoHandlerInterface {
- public:
-  virtual void OnEncodedVideo(
-                   const scoped_refptr<media::VideoFrame>& video_frame,
-                   scoped_ptr<std::string> encoded_data,
-                   base::TimeTicks timestamp,
-                   bool is_key_frame) = 0;
-  virtual ~EncodedVideoHandlerInterface() {}
+struct TrackRecorderTestParams {
+  const bool use_vp9;
+  const size_t first_encoded_frame_size;
+  const size_t second_encoded_frame_size;
+  const size_t third_encoded_frame_size;
 };
 
-class VideoTrackRecorderTest : public testing::Test,
-                               public EncodedVideoHandlerInterface {
+const TrackRecorderTestParams kTrackRecorderTestParams[] = {{false, 52, 32, 57},
+                                                            {true, 33, 18, 33}};
+
+class VideoTrackRecorderTest : public TestWithParam<TrackRecorderTestParams> {
  public:
   VideoTrackRecorderTest()
       : mock_source_(new MockMediaStreamVideoSource(false)) {
@@ -63,10 +65,10 @@ class VideoTrackRecorderTest : public testing::Test,
     blink_track_.setExtraData(track_);
 
     video_track_recorder_.reset(new VideoTrackRecorder(
+        GetParam().use_vp9 /* use_vp9 */,
         blink_track_,
         base::Bind(&VideoTrackRecorderTest::OnEncodedVideo,
                    base::Unretained(this))));
-
     // Paranoia checks.
     EXPECT_EQ(blink_track_.source().extraData(), blink_source_.extraData());
     EXPECT_TRUE(message_loop_.IsCurrent());
@@ -80,19 +82,18 @@ class VideoTrackRecorderTest : public testing::Test,
   }
 
   MOCK_METHOD4(DoOnEncodedVideo,
-               void(const scoped_refptr<media::VideoFrame>& frame,
+               void(const scoped_refptr<VideoFrame>& frame,
                     std::string encoded_data,
                     base::TimeTicks timestamp,
                     bool keyframe));
-  void OnEncodedVideo(
-                   const scoped_refptr<media::VideoFrame>& video_frame,
-                   scoped_ptr<std::string> encoded_data,
-                   base::TimeTicks timestamp,
-                   bool is_key_frame) override {
+  void OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
+                      scoped_ptr<std::string> encoded_data,
+                      base::TimeTicks timestamp,
+                      bool is_key_frame) {
     DoOnEncodedVideo(video_frame, *encoded_data, timestamp, is_key_frame);
   }
 
-  void Encode(const scoped_refptr<media::VideoFrame>& frame,
+  void Encode(const scoped_refptr<VideoFrame>& frame,
               base::TimeTicks capture_time) {
     EXPECT_TRUE(message_loop_.IsCurrent());
     video_track_recorder_->OnVideoFrameForTesting(frame, capture_time);
@@ -118,16 +119,16 @@ class VideoTrackRecorderTest : public testing::Test,
 
 // Construct and destruct all objects, in particular |video_track_recorder_| and
 // its inner object(s). This is a non trivial sequence.
-TEST_F(VideoTrackRecorderTest, ConstructAndDestruct) {}
+TEST_P(VideoTrackRecorderTest, ConstructAndDestruct) {}
 
 // Creates the encoder and encodes 2 frames of the same size; the encoder should
 // be initialised and produce a keyframe, then a non-keyframe. Finally a frame
 // of larger size is sent and is expected to be encoded as a keyframe.
-TEST_F(VideoTrackRecorderTest, VideoEncoding) {
+TEST_P(VideoTrackRecorderTest, VideoEncoding) {
   // |frame_size| cannot be arbitrarily small, should be reasonable.
   const gfx::Size frame_size(160, 80);
-  const scoped_refptr<media::VideoFrame> video_frame =
-      media::VideoFrame::CreateBlackFrame(frame_size);
+  const scoped_refptr<VideoFrame> video_frame =
+      VideoFrame::CreateBlackFrame(frame_size);
   const double kFrameRate = 60.0f;
   video_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                      kFrameRate);
@@ -150,8 +151,8 @@ TEST_F(VideoTrackRecorderTest, VideoEncoding) {
 
   // Send another Video Frame and expect only an DoOnEncodedVideo() callback.
   const gfx::Size frame_size2(180, 80);
-  const scoped_refptr<media::VideoFrame> video_frame2 =
-      media::VideoFrame::CreateBlackFrame(frame_size2);
+  const scoped_refptr<VideoFrame> video_frame2 =
+      VideoFrame::CreateBlackFrame(frame_size2);
 
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
@@ -165,14 +166,18 @@ TEST_F(VideoTrackRecorderTest, VideoEncoding) {
 
   run_loop.Run();
 
-  const size_t kFirstEncodedDataSize = 52;
-  EXPECT_EQ(first_frame_encoded_data.size(), kFirstEncodedDataSize);
-  const size_t kSecondEncodedDataSize = 32;
-  EXPECT_EQ(second_frame_encoded_data.size(), kSecondEncodedDataSize);
-  const size_t kThirdEncodedDataSize = 57;
-  EXPECT_EQ(third_frame_encoded_data.size(), kThirdEncodedDataSize);
+  EXPECT_EQ(GetParam().first_encoded_frame_size,
+            first_frame_encoded_data.size());
+  EXPECT_EQ(GetParam().second_encoded_frame_size,
+            second_frame_encoded_data.size());
+  EXPECT_EQ(GetParam().third_encoded_frame_size,
+            third_frame_encoded_data.size());
 
   Mock::VerifyAndClearExpectations(this);
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        VideoTrackRecorderTest,
+                        ValuesIn(kTrackRecorderTestParams));
 
 }  // namespace content

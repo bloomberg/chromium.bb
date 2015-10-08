@@ -32,7 +32,9 @@ class CONTENT_EXPORT VideoTrackRecorder
                           base::TimeTicks capture_timestamp,
                           bool is_key_frame)>;
 
-  VideoTrackRecorder(const blink::WebMediaStreamTrack& track,
+  // |use_vp9| forces using VP9, otherwise VP8 will be used by default.
+  VideoTrackRecorder(bool use_vp9,
+                     const blink::WebMediaStreamTrack& track,
                      const OnEncodedVideoCB& on_encoded_video_cb);
   ~VideoTrackRecorder() override;
 

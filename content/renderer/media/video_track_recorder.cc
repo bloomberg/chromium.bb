@@ -75,7 +75,7 @@ class VideoTrackRecorder::VpxEncoder final
   static void ShutdownEncoder(scoped_ptr<base::Thread> encoding_thread,
                               ScopedVpxCodecCtxPtr encoder);
 
-  explicit VpxEncoder(const OnEncodedVideoCB& on_encoded_video_callback);
+  VpxEncoder(bool use_vp9, const OnEncodedVideoCB& on_encoded_video_callback);
 
   void StartFrameEncode(const scoped_refptr<VideoFrame>& frame,
                         base::TimeTicks capture_timestamp);
@@ -87,7 +87,7 @@ class VideoTrackRecorder::VpxEncoder final
   void EncodeOnEncodingThread(const scoped_refptr<VideoFrame>& frame,
                               base::TimeTicks capture_timestamp);
 
-  void ConfigureVp8Encoding(const gfx::Size& size);
+  void ConfigureEncoding(const gfx::Size& size);
 
   // Returns true if |codec_config_| has been filled in at least once.
   bool IsInitialized() const;
@@ -95,6 +95,9 @@ class VideoTrackRecorder::VpxEncoder final
   // Estimate the frame duration from |frame| and |last_frame_timestamp_|.
   base::TimeDelta CalculateFrameDuration(
       const scoped_refptr<VideoFrame>& frame);
+
+  // Force usage of VP9 for encoding, instead of VP8 which is the default.
+  const bool use_vp9_;
 
   // Used to shutdown properly on the same thread we were created.
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -131,8 +134,10 @@ void VideoTrackRecorder::VpxEncoder::ShutdownEncoder(
 }
 
 VideoTrackRecorder::VpxEncoder::VpxEncoder(
+    bool use_vp9,
     const OnEncodedVideoCB& on_encoded_video_callback)
-    : main_task_runner_(base::MessageLoop::current()->task_runner()),
+    : use_vp9_(use_vp9),
+      main_task_runner_(base::MessageLoop::current()->task_runner()),
       on_encoded_video_callback_(on_encoded_video_callback),
       encoding_thread_(new base::Thread("EncodingThread")) {
   DCHECK(!on_encoded_video_callback_.is_null());
@@ -173,7 +178,7 @@ void VideoTrackRecorder::VpxEncoder::EncodeOnEncodingThread(
   const gfx::Size frame_size = frame->visible_rect().size();
   if (!IsInitialized() ||
       gfx::Size(codec_config_.g_w, codec_config_.g_h) != frame_size) {
-    ConfigureVp8Encoding(frame_size);
+    ConfigureEncoding(frame_size);
   }
 
   vpx_image_t vpx_image;
@@ -225,19 +230,19 @@ void VideoTrackRecorder::VpxEncoder::EncodeOnEncodingThread(
                  keyframe));
 }
 
-void VideoTrackRecorder::VpxEncoder::ConfigureVp8Encoding(
-    const gfx::Size& size) {
+void VideoTrackRecorder::VpxEncoder::ConfigureEncoding(const gfx::Size& size) {
   if (IsInitialized()) {
     // TODO(mcasas) VP8 quirk/optimisation: If the new |size| is strictly less-
     // than-or-equal than the old size, in terms of area, the existing encoder
     // instance could be reused after changing |codec_config_.{g_w,g_h}|.
     DVLOG(1) << "Destroying/Re-Creating encoder for new frame size: "
              << gfx::Size(codec_config_.g_w, codec_config_.g_h).ToString()
-             << " --> " << size.ToString();
+             << " --> " << size.ToString() << (use_vp9_ ? " vp9" : " vp8");
     encoder_.reset();
   }
 
-  const vpx_codec_iface_t* interface = vpx_codec_vp8_cx();
+  const vpx_codec_iface_t* interface =
+      use_vp9_ ? vpx_codec_vp9_cx() : vpx_codec_vp8_cx();
   const vpx_codec_err_t result = vpx_codec_enc_config_default(interface,
                                                               &codec_config_,
                                                               0 /* reserved */);
@@ -248,7 +253,20 @@ void VideoTrackRecorder::VpxEncoder::ConfigureVp8Encoding(
   DCHECK_EQ(240u, codec_config_.g_h);
   DCHECK_EQ(256u, codec_config_.rc_target_bitrate);
   codec_config_.rc_target_bitrate = size.GetArea() *
-     codec_config_.rc_target_bitrate / codec_config_.g_w / codec_config_.g_h;
+                                    codec_config_.rc_target_bitrate /
+                                    codec_config_.g_w / codec_config_.g_h;
+  // Both VP8/VP9 configuration should be Variable BitRate by default.
+  DCHECK_EQ(VPX_VBR, codec_config_.rc_end_usage);
+  if (use_vp9_) {
+    // Number of frames to consume before producing output.
+    codec_config_.g_lag_in_frames = 0;
+
+    // DCHECK that the profile selected by default is I420 (magic number 0).
+    DCHECK_EQ(0u, codec_config_.g_profile);
+  } else {
+    // VP8 always produces frames instantaneously.
+    DCHECK_EQ(0u, codec_config_.g_lag_in_frames);
+  }
 
   DCHECK(size.width());
   DCHECK(size.height());
@@ -318,10 +336,11 @@ base::TimeDelta VideoTrackRecorder::VpxEncoder::CalculateFrameDuration(
 }
 
 VideoTrackRecorder::VideoTrackRecorder(
+    bool use_vp9,
     const blink::WebMediaStreamTrack& track,
     const OnEncodedVideoCB& on_encoded_video_callback)
     : track_(track),
-      encoder_(new VpxEncoder(on_encoded_video_callback)) {
+      encoder_(new VpxEncoder(use_vp9, on_encoded_video_callback)) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!track_.isNull());
   DCHECK(track_.extraData());

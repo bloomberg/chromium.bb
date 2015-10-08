@@ -70,6 +70,9 @@ class CONTENT_EXPORT MediaRecorderHandler final
   // Bound to the main render thread.
   base::ThreadChecker main_render_thread_checker_;
 
+  // Force using VP9 for video encoding, otherwise VP8 will be used by default.
+  bool use_vp9_;
+
   bool recording_;
   blink::WebMediaStream media_stream_;  // The MediaStream being recorded.
 

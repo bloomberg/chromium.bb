@@ -15,15 +15,18 @@
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Mock;
+using ::testing::TestWithParam;
+using ::testing::Values;
 using ::testing::WithArgs;
 
 namespace media {
 
-class WebmMuxerTest : public testing::Test {
+class WebmMuxerTest : public TestWithParam<VideoCodec> {
  public:
   WebmMuxerTest()
-      : webm_muxer_(base::Bind(&WebmMuxerTest::WriteCallback,
-                               base::Unretained(this))),
+      : webm_muxer_(
+            GetParam() /* codec */,
+            base::Bind(&WebmMuxerTest::WriteCallback, base::Unretained(this))),
         last_encoded_length_(0),
         accumulated_position_(0) {
     EXPECT_EQ(webm_muxer_.Position(), 0);
@@ -62,7 +65,7 @@ class WebmMuxerTest : public testing::Test {
 
 // Checks that the WriteCallback is called with appropriate params when
 // WebmMuxer::Write() method is called.
-TEST_F(WebmMuxerTest, Write) {
+TEST_P(WebmMuxerTest, Write) {
   const base::StringPiece encoded_data("abcdefghijklmnopqrstuvwxyz");
 
   EXPECT_CALL(*this, WriteCallback(encoded_data));
@@ -73,7 +76,7 @@ TEST_F(WebmMuxerTest, Write) {
 
 // This test sends two frames and checks that the WriteCallback is called with
 // appropriate params in both cases.
-TEST_F(WebmMuxerTest, OnEncodedVideoTwoFrames) {
+TEST_P(WebmMuxerTest, OnEncodedVideoTwoFrames) {
   const gfx::Size frame_size(160, 80);
   const scoped_refptr<VideoFrame> video_frame =
       VideoFrame::CreateBlackFrame(frame_size);
@@ -114,5 +117,7 @@ TEST_F(WebmMuxerTest, OnEncodedVideoTwoFrames) {
                                  encoded_data.size()),
             accumulated_position_);
 }
+
+INSTANTIATE_TEST_CASE_P(, WebmMuxerTest, Values(kCodecVP8, kCodecVP9));
 
 }  // namespace media

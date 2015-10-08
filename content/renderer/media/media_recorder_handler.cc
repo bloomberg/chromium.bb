@@ -32,8 +32,9 @@ MediaRecorderHandler::~MediaRecorderHandler() {
 bool MediaRecorderHandler::canSupportMimeType(
     const blink::WebString& mimeType) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  // TODO(mcasas): For the time being only empty or "video/vp8" are supported.
-  return mimeType.isEmpty() || mimeType.utf8().compare("video/vp8") == 0;
+  // TODO(mcasas): So far only empty or "video/vp{8,9}" are supported.
+  return mimeType.isEmpty() || mimeType.utf8().compare("video/vp8") == 0 ||
+         mimeType.utf8().compare("video/vp9") == 0;
 }
 
 bool MediaRecorderHandler::initialize(
@@ -49,6 +50,7 @@ bool MediaRecorderHandler::initialize(
     DLOG(ERROR) << "Can't support type " << mimeType.utf8();
     return false;
   }
+  use_vp9_ = mimeType.utf8().compare("video/vp9") == 0;
   media_stream_ = media_stream;
   DCHECK(client);
   client_ = client;
@@ -68,8 +70,10 @@ bool MediaRecorderHandler::start(int timeslice) {
   DCHECK(!media_stream_.isNull());
   DCHECK(!webm_muxer_);
 
-  webm_muxer_.reset(new media::WebmMuxer(base::Bind(
-      &MediaRecorderHandler::WriteData, weak_factory_.GetWeakPtr())));
+  webm_muxer_.reset(
+      new media::WebmMuxer(use_vp9_ ? media::kCodecVP9 : media::kCodecVP8,
+                           base::Bind(&MediaRecorderHandler::WriteData,
+                                      weak_factory_.GetWeakPtr())));
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   media_stream_.videoTracks(video_tracks);
@@ -93,7 +97,8 @@ bool MediaRecorderHandler::start(int timeslice) {
       media::BindToCurrentLoop(base::Bind(&MediaRecorderHandler::OnEncodedVideo,
                                           weak_factory_.GetWeakPtr()));
 
-  video_recorders_.push_back(new VideoTrackRecorder(video_track,
+  video_recorders_.push_back(new VideoTrackRecorder(use_vp9_,
+                                                    video_track,
                                                     on_encoded_video_cb));
 
   recording_ = true;
