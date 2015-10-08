@@ -42,13 +42,6 @@ void ChannelInit::WillDestroySoon() {
     mojo::embedder::WillDestroyChannelSoon(channel_info_);
 }
 
-void ChannelInit::ShutdownOnIOThread() {
-  if (channel_info_)
-    mojo::embedder::DestroyChannelOnIOThread(channel_info_);
-  channel_info_ = nullptr;
-  ipc_support_.reset();
-}
-
 // static
 void ChannelInit::OnCreatedChannel(
     base::WeakPtr<ChannelInit> self,

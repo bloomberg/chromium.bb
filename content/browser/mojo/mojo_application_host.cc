@@ -102,11 +102,6 @@ void MojoApplicationHost::WillDestroySoon() {
   channel_init_.WillDestroySoon();
 }
 
-void MojoApplicationHost::ShutdownOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  channel_init_.ShutdownOnIOThread();
-}
-
 void MojoApplicationHost::OverrideIOTaskRunnerForTest(
     scoped_refptr<base::TaskRunner> io_task_runner) {
   io_task_runner_override_ = io_task_runner;

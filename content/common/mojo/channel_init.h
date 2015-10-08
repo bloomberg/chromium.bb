@@ -35,9 +35,6 @@ class CONTENT_EXPORT ChannelInit {
   // Notifies the channel that we (hence it) will soon be destroyed.
   void WillDestroySoon();
 
-  // Shuts down the channel. Must be called from the IO thread.
-  void ShutdownOnIOThread();
-
  private:
   // Invoked on the thread on which this object lives once the channel has been
   // established. This is a static method that takes a weak pointer to self,

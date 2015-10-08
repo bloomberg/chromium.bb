@@ -122,13 +122,6 @@ UtilityProcessHostImpl::~UtilityProcessHostImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (is_batch_mode_)
     EndBatchMode();
-
-  // We could be destroyed as a result of Chrome shutdown. When that happens,
-  // the Mojo channel doesn't get the opportunity to shut down cleanly because
-  // it posts to the IO thread (the current thread) which is being destroyed.
-  // To guarantee proper shutdown of the Mojo channel, do it explicitly here.
-  if (mojo_application_host_)
-    mojo_application_host_->ShutdownOnIOThread();
 }
 
 base::WeakPtr<UtilityProcessHost> UtilityProcessHostImpl::AsWeakPtr() {
