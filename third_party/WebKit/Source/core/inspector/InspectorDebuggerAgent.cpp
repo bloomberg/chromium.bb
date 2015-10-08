@@ -192,12 +192,12 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
     m_v8DebuggerAgent->evaluateOnCallFrame(errorString, inCallFrameId, inExpression, inObjectGroup, inIncludeCommandLineAPI, inDoNotPauseOnExceptionsAndMuteConsole, inReturnByValue, inGeneratePreview, outResult, optOutWasThrown, optOutExceptionDetails);
 }
 
-void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const String& inExpression, const String& inSourceURL, bool inPersistScript, const int* inExecutionContextId, TypeBuilder::OptOutput<TypeBuilder::Debugger::ScriptId>* optOutScriptId, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& optOutExceptionDetails)
+void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const String& inExpression, const String& inSourceURL, bool inPersistScript, int inExecutionContextId, TypeBuilder::OptOutput<TypeBuilder::Debugger::ScriptId>* optOutScriptId, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& optOutExceptionDetails)
 {
     m_v8DebuggerAgent->compileScript(errorString, inExpression, inSourceURL, inPersistScript, inExecutionContextId, optOutScriptId, optOutExceptionDetails);
 }
 
-void InspectorDebuggerAgent::runScript(ErrorString* errorString, const String& inScriptId, const int* inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& optOutExceptionDetails)
+void InspectorDebuggerAgent::runScript(ErrorString* errorString, const String& inScriptId, int inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& optOutExceptionDetails)
 {
     Optional<MuteConsoleScope<InspectorDebuggerAgent>> muteScope;
     if (asBool(inDoNotPauseOnExceptionsAndMuteConsole))

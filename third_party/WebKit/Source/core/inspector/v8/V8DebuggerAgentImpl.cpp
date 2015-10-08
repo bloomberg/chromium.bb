@@ -915,19 +915,11 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString, const St
     injectedScript.evaluateOnCallFrame(errorString, callStack, isAsync, callFrameId, expression, objectGroup ? *objectGroup : "", asBool(includeCommandLineAPI), asBool(returnByValue), asBool(generatePreview), &result, wasThrown, &exceptionDetails);
 }
 
-InjectedScript V8DebuggerAgentImpl::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
-{
-    InjectedScript injectedScript = executionContextId ? m_injectedScriptManager->injectedScriptForId(*executionContextId) : m_client->defaultInjectedScript();
-    if (injectedScript.isEmpty())
-        *errorString = "Execution context with given id not found.";
-    return injectedScript;
-}
-
-void V8DebuggerAgentImpl::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, const int* executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
+void V8DebuggerAgentImpl::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
 {
     if (!checkEnabled(errorString))
         return;
-    InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForId(executionContextId);
     if (injectedScript.isEmpty() || !injectedScript.scriptState()->contextIsValid()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -954,11 +946,11 @@ void V8DebuggerAgentImpl::compileScript(ErrorString* errorString, const String& 
     *scriptId = scriptValueId;
 }
 
-void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& scriptId, const int* executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
+void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& scriptId, int executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
 {
     if (!checkEnabled(errorString))
         return;
-    InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForId(executionContextId);
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;

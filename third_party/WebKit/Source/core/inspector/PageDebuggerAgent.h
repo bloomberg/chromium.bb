@@ -56,22 +56,22 @@ public:
     void enable(ErrorString*) final;
     void disable(ErrorString*) final;
     void restore() final;
-    void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, const int* executionContextId, TypeBuilder::OptOutput<TypeBuilder::Debugger::ScriptId>*, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override;
-    void runScript(ErrorString*, const TypeBuilder::Debugger::ScriptId&, const int* executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override;
+    void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<TypeBuilder::Debugger::ScriptId>*, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override;
+    void runScript(ErrorString*, const TypeBuilder::Debugger::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override;
 
     void didStartProvisionalLoad(LocalFrame*);
     void didClearDocumentOfWindowObject(LocalFrame*);
 
 private:
+    PageDebuggerAgent(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*);
     void muteConsole() override;
     void unmuteConsole() override;
 
     // V8DebuggerAgent::Client implemntation.
-    InjectedScript defaultInjectedScript() override;
     bool canExecuteScripts() const;
 
-    PageDebuggerAgent(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*);
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     HashMap<String, String> m_compiledScriptURLs;
 };
 

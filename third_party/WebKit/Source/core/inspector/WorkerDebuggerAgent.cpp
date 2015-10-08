@@ -59,11 +59,6 @@ DEFINE_TRACE(WorkerDebuggerAgent)
     InspectorDebuggerAgent::trace(visitor);
 }
 
-InjectedScript WorkerDebuggerAgent::defaultInjectedScript()
-{
-    return m_v8DebuggerAgent->injectedScriptManager()->injectedScriptFor(m_inspectedWorkerGlobalScope->script()->scriptState());
-}
-
 void WorkerDebuggerAgent::muteConsole()
 {
     // We don't need to mute console for workers.

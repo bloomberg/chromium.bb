@@ -27,8 +27,6 @@ public:
     class CORE_EXPORT Client {
     public:
         virtual ~Client() { }
-        virtual InjectedScript defaultInjectedScript() = 0;
-
         virtual void asyncCallTrackingStateChanged(bool tracking) = 0;
         virtual void resetAsyncOperations() = 0;
     };
@@ -71,8 +69,8 @@ public:
     virtual void getCollectionEntries(ErrorString*, const String& in_objectId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CollectionEntry>>& out_entries) = 0;
     virtual void setPauseOnExceptions(ErrorString*, const String& in_state) = 0;
     virtual void evaluateOnCallFrame(ErrorString*, const String& in_callFrameId, const String& in_expression, const String* in_objectGroup, const bool* in_includeCommandLineAPI, const bool* in_doNotPauseOnExceptionsAndMuteConsole, const bool* in_returnByValue, const bool* in_generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& out_result, TypeBuilder::OptOutput<bool>* opt_out_wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& opt_out_exceptionDetails) = 0;
-    virtual void compileScript(ErrorString*, const String& in_expression, const String& in_sourceURL, bool in_persistScript, const int* in_executionContextId, TypeBuilder::OptOutput<TypeBuilder::Debugger::ScriptId>* opt_out_scriptId, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& opt_out_exceptionDetails) = 0;
-    virtual void runScript(ErrorString*, const String& in_scriptId, const int* in_executionContextId, const String* in_objectGroup, const bool* in_doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& out_result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& opt_out_exceptionDetails) = 0;
+    virtual void compileScript(ErrorString*, const String& in_expression, const String& in_sourceURL, bool in_persistScript, int in_executionContextId, TypeBuilder::OptOutput<TypeBuilder::Debugger::ScriptId>* opt_out_scriptId, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& opt_out_exceptionDetails) = 0;
+    virtual void runScript(ErrorString*, const String& in_scriptId, int in_executionContextId, const String* in_objectGroup, const bool* in_doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& out_result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& opt_out_exceptionDetails) = 0;
     virtual void setVariableValue(ErrorString*, int in_scopeNumber, const String& in_variableName, const RefPtr<JSONObject>& in_newValue, const String* in_callFrameId, const String* in_functionObjectId) = 0;
     virtual void getStepInPositions(ErrorString*, const String& in_callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location>>& opt_out_stepInPositions) = 0;
     virtual void getBacktrace(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>>& out_callFrames, RefPtr<TypeBuilder::Debugger::StackTrace>& opt_out_asyncStackTrace) = 0;
@@ -115,9 +113,6 @@ public:
     virtual void traceAsyncCallbackCompleted() = 0;
     virtual void traceAsyncOperationCompleted(int operationId) = 0;
     virtual bool trackingAsyncCalls() const = 0;
-
-    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) = 0;
-    virtual InjectedScriptManager* injectedScriptManager() = 0;
 };
 
 } // namespace blink

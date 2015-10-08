@@ -50,7 +50,6 @@ private:
     WorkerDebuggerAgent(WorkerThreadDebugger*, WorkerGlobalScope*, InjectedScriptManager*);
 
     // V8DebuggerAgent::Client implemntation.
-    InjectedScript defaultInjectedScript() override;
     void muteConsole() override;
     void unmuteConsole() override;
 

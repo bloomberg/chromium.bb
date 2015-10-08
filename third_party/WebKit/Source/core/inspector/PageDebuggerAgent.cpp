@@ -59,6 +59,7 @@ PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDe
 PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* mainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager)
     : InspectorDebuggerAgent(injectedScriptManager, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(pageAgent->inspectedFrame()))
     , m_pageAgent(pageAgent)
+    , m_injectedScriptManager(injectedScriptManager)
 {
 }
 
@@ -69,6 +70,7 @@ PageDebuggerAgent::~PageDebuggerAgent()
 DEFINE_TRACE(PageDebuggerAgent)
 {
     visitor->trace(m_pageAgent);
+    visitor->trace(m_injectedScriptManager);
     InspectorDebuggerAgent::trace(visitor);
 }
 
@@ -112,12 +114,6 @@ void PageDebuggerAgent::unmuteConsole()
     FrameConsole::unmute();
 }
 
-InjectedScript PageDebuggerAgent::defaultInjectedScript()
-{
-    ScriptState* scriptState = ScriptState::forMainWorld(m_pageAgent->inspectedFrame());
-    return m_v8DebuggerAgent->injectedScriptManager()->injectedScriptFor(scriptState);
-}
-
 void PageDebuggerAgent::didStartProvisionalLoad(LocalFrame* frame)
 {
     if (frame == m_pageAgent->inspectedFrame()) {
@@ -134,9 +130,9 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     m_v8DebuggerAgent->reset();
 }
 
-void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, const int* executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
+void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
 {
-    InjectedScript injectedScript = m_v8DebuggerAgent->injectedScriptForEval(errorString, executionContextId);
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForId(executionContextId);
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -152,9 +148,9 @@ void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& ex
         m_compiledScriptURLs.set(scriptId->getValue(), sourceURL);
 }
 
-void PageDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scriptId, const int* executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
+void PageDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scriptId, int executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
 {
-    InjectedScript injectedScript = m_v8DebuggerAgent->injectedScriptForEval(errorString, executionContextId);
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForId(executionContextId);
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -169,7 +165,6 @@ void PageDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scri
     InspectorDebuggerAgent::runScript(errorString, scriptId, executionContextId, objectGroup, doNotPauseOnExceptionsAndMuteConsole, result, exceptionDetails);
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
-
 }
 
 } // namespace blink
