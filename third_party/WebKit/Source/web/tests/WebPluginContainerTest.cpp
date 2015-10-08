@@ -159,6 +159,22 @@ TEST_F(WebPluginContainerTest, WindowToLocalPointTest)
     ASSERT_EQ(10, point4.y);
 }
 
+TEST_F(WebPluginContainerTest, PluginDocumentPluginIsFocused)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("test.pdf"), WebString::fromUTF8("application/pdf"));
+
+    TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, &pluginWebFrameClient);
+    ASSERT(webView);
+    webView->layout();
+
+    WebDocument document = webView->mainFrame()->document();
+    EXPECT_TRUE(document.isPluginDocument());
+    WebPluginContainer* pluginContainer = getWebPluginContainer(webView, "plugin");
+    EXPECT_EQ(document.focusedElement(), pluginContainer->element());
+}
+
 TEST_F(WebPluginContainerTest, PrintOnePage)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("test.pdf"), WebString::fromUTF8("application/pdf"));

@@ -103,11 +103,13 @@ void PluginDocumentParser::createDocumentStructure()
     m_embedElement->setAttribute(widthAttr, "100%");
     m_embedElement->setAttribute(heightAttr, "100%");
     m_embedElement->setAttribute(nameAttr, "plugin");
+    m_embedElement->setAttribute(idAttr, "plugin");
     m_embedElement->setAttribute(srcAttr, AtomicString(document()->url().string()));
     m_embedElement->setAttribute(typeAttr, document()->loader()->mimeType());
     body->appendChild(m_embedElement);
 
     toPluginDocument(document())->setPluginNode(m_embedElement.get());
+    m_embedElement->focus();
 
     document()->updateLayout();
 
