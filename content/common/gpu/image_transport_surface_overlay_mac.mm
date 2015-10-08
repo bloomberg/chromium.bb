@@ -362,8 +362,7 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
       dip_damage_rect.Subtract(plane->dip_frame_rect);
 
     ScopedCAActionDisabler disabler;
-    if (swap->root_plane.get())
-      UpdateRootAndPartialDamagePlanes(swap->root_plane, dip_damage_rect);
+    UpdateRootAndPartialDamagePlanes(swap->root_plane, dip_damage_rect);
     UpdateOverlayPlanes(swap->overlay_planes);
     UpdateCALayerTree();
     swap->overlay_planes.clear();
@@ -409,6 +408,16 @@ void ImageTransportSurfaceOverlayMac::UpdateRootAndPartialDamagePlanes(
   std::list<linked_ptr<OverlayPlane>> old_partial_damage_planes;
   old_partial_damage_planes.swap(current_partial_damage_planes_);
   linked_ptr<OverlayPlane> plane_for_swap;
+
+  // If there is no new root plane, destroy the old one.
+  if (!new_root_plane.get()) {
+    for (auto& old_plane : old_partial_damage_planes)
+      old_plane->Destroy();
+    if (current_root_plane_.get())
+      current_root_plane_->Destroy();
+    current_root_plane_.reset();
+    return;
+  }
 
   // If the frame's size changed, if we haven't updated the root layer, or if
   // we have full damage, then use the root layer directly.
