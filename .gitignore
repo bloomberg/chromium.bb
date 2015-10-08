@@ -38,6 +38,10 @@
 .pydevproject
 .checkstyle
 cscope.*
+GPATH
+GRTAGS
+GSYMS
+GTAGS
 Session.vim
 tags
 Thumbs.db
