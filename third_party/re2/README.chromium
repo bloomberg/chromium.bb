@@ -1,10 +1,10 @@
 Name: re2 - an efficient, principled regular expression library
 Short Name: re2
-URL: http://code.google.com/p/re2/
+URL: https://github.com/google/re2
 Version: 7f91923f3ad4
 Date: 2012-06-20
 Revision: 100:7f91923f3ad4
-License: BSD 3-Clause License
+License: BSD 3-Clause
 License File: LICENSE
 Security Critical: yes
 
