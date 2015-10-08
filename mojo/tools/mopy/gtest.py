@@ -194,11 +194,19 @@ def _run_test_with_timeout(config, shell, args, apptest, env, seconds=10):
     timeout_exception = '\nError: Test timeout after %s seconds' % seconds
     logging.getLogger().debug('Killing the runner or shell for timeout.')
     try:
-      process_or_shell.kill()
-    except OSError:
-      pass  # The process may have ended after checking |is_alive|.
+      if sys.platform.startswith('win'):
+        # Taskkill is more reliable than Popen.kill() on Win; crbug.com/517661
+        killer = ['taskkill.exe', '/f', '/t', '/pid', str(process_or_shell.pid)]
+        logging.getLogger().debug(subprocess.check_output(killer))
+      else:
+        process_or_shell.kill()
+    except subprocess.CalledProcessError as e:
+      logging.getLogger().debug('CalledProcessError: %s' % e)
+    except OSError as e:
+      # The process may have ended after checking |thread.is_alive()|.
+      logging.getLogger().debug('OSError (likely ignorable): %s' % e)
+    thread.join(seconds)
 
-  thread.join(seconds)
   if thread.is_alive():
     raise Exception('Error: Test hung and could not be killed!')
   if result.empty():
