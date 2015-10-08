@@ -11,6 +11,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "components/html_viewer/blink_platform_impl.h"
+#include "components/html_viewer/blink_settings.h"
 #include "components/html_viewer/media_factory.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "gin/v8_initializer.h"
@@ -64,8 +65,7 @@ GlobalState::GlobalState(mojo::ApplicationImpl* app)
       did_init_(false),
       device_pixel_ratio_(1.f),
       discardable_memory_allocator_(kDesiredMaxMemory),
-      compositor_thread_("compositor thread") {
-}
+      compositor_thread_("compositor thread") {}
 
 GlobalState::~GlobalState() {
   if (blink_platform_) {
@@ -140,6 +140,8 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
   if (command_line->HasSwitch(kDisableEncryptedMedia))
     blink::WebRuntimeFeatures::enableEncryptedMedia(false);
 
+  blink_settings_.Init();
+
   base::File pak_file = resource_loader_.ReleaseFile(kResourceResourcesPak);
   base::File pak_file_2 = pak_file.Duplicate();
   ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
@@ -159,6 +161,8 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
   }
 }
 
+// TODO(rjkroege): These two functions probably do not interoperate correctly
+// with MUS.
 const mojo::GpuInfo* GlobalState::GetGpuInfo() {
   if (gpu_service_)
     CHECK(gpu_service_.WaitForIncomingResponse()) <<"Get GPU info failed!";

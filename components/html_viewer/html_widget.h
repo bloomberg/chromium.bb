@@ -40,7 +40,7 @@ class HTMLWidget {
 // Used for the root frame when the root frame is remote.
 class HTMLWidgetRootRemote : public HTMLWidget, public blink::WebViewClient {
  public:
-  HTMLWidgetRootRemote();
+  explicit HTMLWidgetRootRemote(GlobalState* global_state);
   ~HTMLWidgetRootRemote() override;
 
  private:
