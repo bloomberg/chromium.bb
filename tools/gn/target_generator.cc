@@ -247,10 +247,6 @@ bool TargetGenerator::FillDependencies() {
       return false;
   }
 
-  // This is a list of dependent targets to have their configs fowarded, so
-  // it goes here rather than in FillConfigs.
-  if (!FillForwardDependentConfigs())
-    return false;
   return true;
 }
 
@@ -356,17 +352,6 @@ bool TargetGenerator::FillGenericDeps(const char* var_name,
   if (value) {
     ExtractListOfLabels(*value, scope_->GetSourceDir(),
                         ToolchainLabelForScope(scope_), dest, err_);
-  }
-  return !err_->has_error();
-}
-
-bool TargetGenerator::FillForwardDependentConfigs() {
-  const Value* value = scope_->GetValue(
-      variables::kForwardDependentConfigsFrom, true);
-  if (value) {
-    ExtractListOfUniqueLabels(*value, scope_->GetSourceDir(),
-                              ToolchainLabelForScope(scope_),
-                              &target_->forward_dependent_configs(), err_);
   }
   return !err_->has_error();
 }

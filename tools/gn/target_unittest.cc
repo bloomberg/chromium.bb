@@ -75,8 +75,7 @@ TEST(Target, LibInheritance) {
   EXPECT_EQ(0u, exec.all_lib_dirs().size());
 }
 
-// Test all_dependent_configs, public_config inheritance, and
-// forward_dependent_configs_from
+// Test all_dependent_configs and public_config inheritance.
 TEST(Target, DependentConfigs) {
   TestWithScope setup;
   Err err;
@@ -124,15 +123,13 @@ TEST(Target, DependentConfigs) {
   TestTarget b_fwd(setup, "//foo:b_fwd", Target::STATIC_LIBRARY);
   a_fwd.private_deps().push_back(LabelTargetPair(&b_fwd));
   b_fwd.private_deps().push_back(LabelTargetPair(&c));
-  b_fwd.forward_dependent_configs().push_back(LabelTargetPair(&c));
 
   ASSERT_TRUE(b_fwd.OnResolved(&err));
   ASSERT_TRUE(a_fwd.OnResolved(&err));
 
   // A_fwd should now have both configs.
-  ASSERT_EQ(2u, a_fwd.configs().size());
+  ASSERT_EQ(1u, a_fwd.configs().size());
   EXPECT_EQ(&all, a_fwd.configs()[0].ptr);
-  EXPECT_EQ(&direct, a_fwd.configs()[1].ptr);
   ASSERT_EQ(1u, a_fwd.all_dependent_configs().size());
   EXPECT_EQ(&all, a_fwd.all_dependent_configs()[0].ptr);
 }
@@ -387,15 +384,7 @@ TEST(Target, PublicConfigs) {
   // This target has a private dependency on dest for forwards configs.
   TestTarget forward(setup, "//a:f", Target::SOURCE_SET);
   forward.private_deps().push_back(LabelTargetPair(&dest));
-  forward.forward_dependent_configs().push_back(LabelTargetPair(&dest));
   ASSERT_TRUE(forward.OnResolved(&err));
-
-  // Depending on the forward target should apply the config.
-  TestTarget dep_on_forward(setup, "//a:dof", Target::SOURCE_SET);
-  dep_on_forward.private_deps().push_back(LabelTargetPair(&forward));
-  ASSERT_TRUE(dep_on_forward.OnResolved(&err));
-  ASSERT_EQ(1u, dep_on_forward.configs().size());
-  EXPECT_EQ(&pub_config, dep_on_forward.configs()[0].ptr);
 }
 
 // Tests that different link/depend outputs work for solink tools.

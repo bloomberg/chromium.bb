@@ -731,54 +731,6 @@ const char kDeps_Help[] =
     "\n"
     "  See also \"public_deps\" and \"data_deps\".\n";
 
-// TODO(brettw) remove this, deprecated.
-const char kForwardDependentConfigsFrom[] = "forward_dependent_configs_from";
-const char kForwardDependentConfigsFrom_HelpShort[] =
-    "forward_dependent_configs_from: [label list] DEPRECATED.";
-const char kForwardDependentConfigsFrom_Help[] =
-    "forward_dependent_configs_from\n"
-    "\n"
-    "  A list of target labels.\n"
-    "\n"
-    "  DEPRECATED. Use public_deps instead which will have the same effect.\n"
-    "\n"
-    "  Exposes the public_configs from a private dependent target as\n"
-    "  public_configs of the current one. Each label in this list\n"
-    "  must also be in the deps.\n"
-    "\n"
-    "  Generally you should use public_deps instead of this variable to\n"
-    "  express the concept of exposing a dependency as part of a target's\n"
-    "  public API. We're considering removing this variable.\n"
-    "\n"
-    "Discussion\n"
-    "\n"
-    "  Sometimes you depend on a child library that exports some necessary\n"
-    "  configuration via public_configs. If your target in turn exposes the\n"
-    "  child library's headers in its public headers, it might mean that\n"
-    "  targets that depend on you won't work: they'll be seeing the child\n"
-    "  library's code but not the necessary configuration. This list\n"
-    "  specifies which of your deps' direct dependent configs to expose as\n"
-    "  your own.\n"
-    "\n"
-    "Examples\n"
-    "\n"
-    "  If we use a given library \"a\" from our public headers:\n"
-    "\n"
-    "    deps = [ \":a\", \":b\", ... ]\n"
-    "    forward_dependent_configs_from = [ \":a\" ]\n"
-    "\n"
-    "  This example makes a \"transparent\" target that forwards a dependency\n"
-    "  to another:\n"
-    "\n"
-    "    group(\"frob\") {\n"
-    "      if (use_system_frob) {\n"
-    "        deps = \":system_frob\"\n"
-    "      } else {\n"
-    "        deps = \"//third_party/fallback_frob\"\n"
-    "      }\n"
-    "      forward_dependent_configs_from = deps\n"
-    "    }\n";
-
 const char kIncludeDirs[] = "include_dirs";
 const char kIncludeDirs_HelpShort[] =
     "include_dirs: [directory list] Additional include directories.";
@@ -1393,7 +1345,6 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Defines)
     INSERT_VARIABLE(Depfile)
     INSERT_VARIABLE(Deps)
-    INSERT_VARIABLE(ForwardDependentConfigsFrom)
     INSERT_VARIABLE(IncludeDirs)
     INSERT_VARIABLE(Inputs)
     INSERT_VARIABLE(Ldflags)

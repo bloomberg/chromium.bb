@@ -16,7 +16,7 @@
 #define DEPENDENT_CONFIG_VARS \
     "  Dependent configs: all_dependent_configs, public_configs\n"
 #define DEPS_VARS \
-    "  Deps: data_deps, deps, forward_dependent_configs_from, public_deps\n"
+    "  Deps: data_deps, deps, public_deps\n"
 #define GENERAL_TARGET_VARS \
     "  General: check_includes, configs, data, inputs, output_name,\n" \
     "           output_extension, public, sources, testonly, visibility\n"
@@ -330,9 +330,7 @@ const char kGroup_Help[] =
     "  specify configs that apply to their dependents.\n"
     "\n"
     "  Depending on a group is exactly like depending directly on that\n"
-    "  group's deps. Direct dependent configs will get automatically\n"
-    "  forwarded through the group so you shouldn't need to use\n"
-    "  \"forward_dependent_configs_from.\n"
+    "  group's deps. \n"
     "\n"
     "Variables\n"
     "\n"

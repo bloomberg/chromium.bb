@@ -168,7 +168,7 @@ bool Target::OnResolved(Err* err) {
   }
 
   PullDependentTargets();
-  PullForwardedDependentConfigs();
+  PullPublicConfigs();
   PullRecursiveHardDeps();
   if (!ResolvePrecompiledHeaders(err))
     return false;
@@ -305,30 +305,13 @@ void Target::PullDependentTargets() {
     PullDependentTarget(dep.ptr, false);
 }
 
-void Target::PullForwardedDependentConfigs() {
+void Target::PullPublicConfigs() {
   // Pull public configs from each of our dependency's public deps.
   for (const auto& dep : public_deps_)
-    PullForwardedDependentConfigsFrom(dep.ptr);
-
-  // Forward public configs if explicitly requested.
-  for (const auto& dep : forward_dependent_configs_) {
-    const Target* from_target = dep.ptr;
-
-    // The forward_dependent_configs_ must be in the deps (public or private)
-    // already, so we don't need to bother copying to our configs, only
-    // forwarding.
-    DCHECK(std::find_if(private_deps_.begin(), private_deps_.end(),
-                        LabelPtrPtrEquals<Target>(from_target)) !=
-               private_deps_.end() ||
-           std::find_if(public_deps_.begin(), public_deps_.end(),
-                        LabelPtrPtrEquals<Target>(from_target)) !=
-               public_deps_.end());
-
-    PullForwardedDependentConfigsFrom(from_target);
-  }
+    PullPublicConfigsFrom(dep.ptr);
 }
 
-void Target::PullForwardedDependentConfigsFrom(const Target* from) {
+void Target::PullPublicConfigsFrom(const Target* from) {
   public_configs_.Append(from->public_configs().begin(),
                          from->public_configs().end());
 }

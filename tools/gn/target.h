@@ -174,15 +174,6 @@ class Target : public Item {
     return public_configs_;
   }
 
-  // A list of a subset of deps where we'll re-export public_configs as
-  // public_configs of this target.
-  const UniqueVector<LabelTargetPair>& forward_dependent_configs() const {
-    return forward_dependent_configs_;
-  }
-  UniqueVector<LabelTargetPair>& forward_dependent_configs() {
-    return forward_dependent_configs_;
-  }
-
   // Dependencies that can include files from this target.
   const std::set<Label>& allow_circular_includes_from() const {
     return allow_circular_includes_from_;
@@ -260,8 +251,8 @@ class Target : public Item {
 
   // These each pull specific things from dependencies to this one when all
   // deps have been resolved.
-  void PullForwardedDependentConfigs();
-  void PullForwardedDependentConfigsFrom(const Target* from);
+  void PullPublicConfigs();
+  void PullPublicConfigsFrom(const Target* from);
   void PullRecursiveHardDeps();
 
   // Fills the link and dependency output files when a target is resolved.
@@ -298,7 +289,6 @@ class Target : public Item {
   UniqueVector<LabelConfigPair> configs_;
   UniqueVector<LabelConfigPair> all_dependent_configs_;
   UniqueVector<LabelConfigPair> public_configs_;
-  UniqueVector<LabelTargetPair> forward_dependent_configs_;
 
   std::set<Label> allow_circular_includes_from_;
 

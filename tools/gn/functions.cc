@@ -265,8 +265,7 @@ const char kConfig_Help[] =
     CONFIG_VALUES_VARS_HELP
     "\n"
     "Variables on a target used to apply configs:\n"
-    "  all_dependent_configs, configs, public_configs,\n"
-    "  forward_dependent_configs_from\n"
+    "  all_dependent_configs, configs, public_configs\n"
     "\n"
     "Example:\n"
     "  config(\"myconfig\") {\n"

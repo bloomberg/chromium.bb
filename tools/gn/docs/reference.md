@@ -378,10 +378,6 @@
       Shows the labels of configs applied to targets that depend on this
       one (either directly or all of them).
 
-  forward_dependent_configs_from
-      Shows the labels of dependencies for which dependent configs will
-      be pushed to targets depending on the current one.
-
   script
   args
   depfile
@@ -1036,8 +1032,7 @@
 
 ### **Variables on a target used to apply configs**:
 ```
-  all_dependent_configs, configs, public_configs,
-  forward_dependent_configs_from
+  all_dependent_configs, configs, public_configs
 
 ```
 
@@ -1230,7 +1225,7 @@
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
          defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
-  Deps: data_deps, deps, forward_dependent_configs_from, public_deps
+  Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
   General: check_includes, configs, data, inputs, output_name,
            output_extension, public, sources, testonly, visibility
@@ -1587,16 +1582,14 @@
   specify configs that apply to their dependents.
 
   Depending on a group is exactly like depending directly on that
-  group's deps. Direct dependent configs will get automatically
-  forwarded through the group so you shouldn't need to use
-  "forward_dependent_configs_from.
+  group's deps.
 
 ```
 
 ### **Variables**
 
 ```
-  Deps: data_deps, deps, forward_dependent_configs_from, public_deps
+  Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
 
 ```
@@ -2005,7 +1998,7 @@
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
          defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
-  Deps: data_deps, deps, forward_dependent_configs_from, public_deps
+  Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
   General: check_includes, configs, data, inputs, output_name,
            output_extension, public, sources, testonly, visibility
@@ -2046,7 +2039,7 @@
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
          defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
-  Deps: data_deps, deps, forward_dependent_configs_from, public_deps
+  Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
   General: check_includes, configs, data, inputs, output_name,
            output_extension, public, sources, testonly, visibility
@@ -2070,7 +2063,7 @@
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
          defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
-  Deps: data_deps, deps, forward_dependent_configs_from, public_deps
+  Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
   General: check_includes, configs, data, inputs, output_name,
            output_extension, public, sources, testonly, visibility
@@ -3725,56 +3718,6 @@
 
 
 ```
-## **forward_dependent_configs_from**
-
-```
-  A list of target labels.
-
-  DEPRECATED. Use public_deps instead which will have the same effect.
-
-  Exposes the public_configs from a private dependent target as
-  public_configs of the current one. Each label in this list
-  must also be in the deps.
-
-  Generally you should use public_deps instead of this variable to
-  express the concept of exposing a dependency as part of a target's
-  public API. We're considering removing this variable.
-
-```
-
-### **Discussion**
-
-```
-  Sometimes you depend on a child library that exports some necessary
-  configuration via public_configs. If your target in turn exposes the
-  child library's headers in its public headers, it might mean that
-  targets that depend on you won't work: they'll be seeing the child
-  library's code but not the necessary configuration. This list
-  specifies which of your deps' direct dependent configs to expose as
-  your own.
-
-```
-
-### **Examples**
-
-```
-  If we use a given library "a" from our public headers:
-
-    deps = [ ":a", ":b", ... ]
-    forward_dependent_configs_from = [ ":a" ]
-
-  This example makes a "transparent" target that forwards a dependency
-  to another:
-
-    group("frob") {
-      if (use_system_frob) {
-        deps = ":system_frob"
-      } else {
-        deps = "//third_party/fallback_frob"
-      }
-      forward_dependent_configs_from = deps
-    }
-
 
 ```
 ## **include_dirs**: Additional include directories.

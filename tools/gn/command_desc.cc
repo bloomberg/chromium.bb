@@ -153,25 +153,6 @@ void PrintDeps(const Target* target, bool display_header) {
   }
 }
 
-void PrintForwardDependentConfigsFrom(const Target* target,
-                                      bool display_header) {
-  if (target->forward_dependent_configs().empty())
-    return;
-
-  if (display_header)
-    OutputString("\nforward_dependent_configs_from:\n");
-
-  // Collect the sorted list of deps.
-  std::vector<Label> forward;
-  for (const auto& pair : target->forward_dependent_configs())
-    forward.push_back(pair.label);
-  std::sort(forward.begin(), forward.end());
-
-  Label toolchain_label = target->label().GetToolchainLabel();
-  for (const auto& fwd : forward)
-    OutputString("  " + fwd.GetUserVisibleName(toolchain_label) + "\n");
-}
-
 // libs and lib_dirs are special in that they're inherited. We don't currently
 // implement a blame feature for this since the bottom-up inheritance makes
 // this difficult.
@@ -527,10 +508,6 @@ const char kDesc_Help[] =
     "      Shows the labels of configs applied to targets that depend on this\n"
     "      one (either directly or all of them).\n"
     "\n"
-    "  forward_dependent_configs_from\n"
-    "      Shows the labels of dependencies for which dependent configs will\n"
-    "      be pushed to targets depending on the current one.\n"
-    "\n"
     "  script\n"
     "  args\n"
     "  depfile\n"
@@ -647,8 +624,6 @@ int RunDesc(const std::vector<std::string>& args) {
       PrintPublicConfigs(target, false);
     } else if (what == variables::kAllDependentConfigs) {
       PrintAllDependentConfigs(target, false);
-    } else if (what == variables::kForwardDependentConfigsFrom) {
-      PrintForwardDependentConfigsFrom(target, false);
     } else if (what == variables::kSources) {
       PrintSources(target, false);
     } else if (what == variables::kPublic) {
@@ -736,7 +711,6 @@ int RunDesc(const std::vector<std::string>& args) {
 
   PrintPublicConfigs(target, true);
   PrintAllDependentConfigs(target, true);
-  PrintForwardDependentConfigsFrom(target, true);
 
   PrintInputs(target, true);
 

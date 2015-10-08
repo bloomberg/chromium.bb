@@ -118,7 +118,6 @@ class Builder : public base::RefCountedThreadSafe<Builder> {
   // if anything isn't found or if the type doesn't match.
   bool ResolveDeps(LabelTargetVector* deps, Err* err);
   bool ResolveConfigs(UniqueVector<LabelConfigPair>* configs, Err* err);
-  bool ResolveForwardDependentConfigs(Target* target, Err* err);
   bool ResolveToolchain(Target* target, Err* err);
 
   // Given a list of unresolved records, tries to find any circular

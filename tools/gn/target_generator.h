@@ -77,8 +77,6 @@ class TargetGenerator {
                           UniqueVector<LabelConfigPair>* dest);
   bool FillGenericDeps(const char* var_name, LabelTargetVector* dest);
 
-  bool FillForwardDependentConfigs();
-
   DISALLOW_COPY_AND_ASSIGN(TargetGenerator);
 };
 
