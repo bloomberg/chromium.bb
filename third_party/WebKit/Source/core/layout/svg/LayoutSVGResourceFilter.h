@@ -60,7 +60,7 @@ public:
     DECLARE_TRACE();
 
     RefPtrWillBeMember<Filter> filter;
-    RefPtrWillBeMember<SVGFilterBuilder> builder;
+    RefPtrWillBeMember<SVGFilterGraphNodeMap> nodeMap;
     FilterDataState m_state;
 
 private:
@@ -81,8 +81,6 @@ public:
     void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
     FloatRect resourceBoundingBox(const LayoutObject*);
-
-    PassRefPtrWillBeRawPtr<SVGFilterBuilder> buildPrimitives(Filter*);
 
     SVGUnitTypes::SVGUnitType filterUnits() const { return toSVGFilterElement(element())->filterUnits()->currentValue()->enumValue(); }
     SVGUnitTypes::SVGUnitType primitiveUnits() const { return toSVGFilterElement(element())->primitiveUnits()->currentValue()->enumValue(); }
