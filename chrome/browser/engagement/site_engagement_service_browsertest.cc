@@ -49,14 +49,14 @@ class SiteEngagementServiceBrowserTest : public InProcessBrowserTest {
     helper->input_tracker_.HandleMouseEvent(event);
   }
 
-  // Set a timer object for test purposes.
-  void SetHelperTimer(SiteEngagementHelper* helper,
-                      scoped_ptr<base::Timer> timer) {
-    helper->input_tracker_.SetTimerForTesting(timer.Pass());
+  // Set a pause timer on the input tracker for test purposes.
+  void SetInputTrackerPauseTimer(SiteEngagementHelper* helper,
+                                 scoped_ptr<base::Timer> timer) {
+    helper->input_tracker_.SetPauseTimerForTesting(timer.Pass());
   }
 
-  bool CallbacksAdded(SiteEngagementHelper* helper) {
-    return helper->input_tracker_.callbacks_added();
+  bool IsTracking(SiteEngagementHelper* helper) {
+    return helper->input_tracker_.is_tracking();
   }
 };
 
@@ -237,10 +237,9 @@ IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest,
   content::WebContents* web_contents =
     browser()->tab_strip_model()->GetActiveWebContents();
 
-  scoped_ptr<base::MockTimer> mock_timer(new base::MockTimer(true, false));
-  base::MockTimer* timer = mock_timer.get();
+  base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
   scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
-  SetHelperTimer(helper.get(), mock_timer.Pass());
+  SetInputTrackerPauseTimer(helper.get(), make_scoped_ptr(input_tracker_timer));
 
   SiteEngagementService* service =
     SiteEngagementServiceFactory::GetForProfile(browser()->profile());
@@ -250,43 +249,198 @@ IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest,
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
 
-  // Timer should not be running after navigation. It should start after input.
-  EXPECT_FALSE(timer->IsRunning());
-  EXPECT_TRUE(CallbacksAdded(helper.get()));
+  // Timer should be running for navigation delay.
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
+  input_tracker_timer->Fire();
+
+  // Timer should start running again after input.
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTracking(helper.get()));
   HandleKeyPress(helper.get(), ui::VKEY_RETURN);
-  EXPECT_TRUE(timer->IsRunning());
-  EXPECT_FALSE(CallbacksAdded(helper.get()));
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
 
   EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
-  timer->Fire();
 
-  EXPECT_FALSE(timer->IsRunning());
-  EXPECT_TRUE(CallbacksAdded(helper.get()));
+  input_tracker_timer->Fire();
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTracking(helper.get()));
+
+  // Timer should start running again after input.
   HandleMouseEvent(helper.get(), blink::WebMouseEvent::ButtonNone,
                    blink::WebInputEvent::MouseWheel);
-  EXPECT_TRUE(timer->IsRunning());
-  EXPECT_FALSE(CallbacksAdded(helper.get()));
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
 
   EXPECT_DOUBLE_EQ(0.6, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
-  timer->Fire();
 
-  EXPECT_FALSE(timer->IsRunning());
-  EXPECT_TRUE(CallbacksAdded(helper.get()));
+  input_tracker_timer->Fire();
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTracking(helper.get()));
+
+  // Timer should be running for navigation delay.
   ui_test_utils::NavigateToURL(browser(), url2);
-  EXPECT_FALSE(timer->IsRunning());
-  EXPECT_TRUE(CallbacksAdded(helper.get()));
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
 
   EXPECT_DOUBLE_EQ(0.6, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url2));
 
+  input_tracker_timer->Fire();
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTracking(helper.get()));
+
   HandleMouseEvent(helper.get(), blink::WebMouseEvent::ButtonRight,
                    blink::WebInputEvent::MouseDown);
-  EXPECT_TRUE(timer->IsRunning());
-  EXPECT_FALSE(CallbacksAdded(helper.get()));
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
 
   EXPECT_DOUBLE_EQ(0.6, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.55, service->GetScore(url2));
   EXPECT_DOUBLE_EQ(1.15, service->GetTotalEngagementPoints());
+}
+
+// Ensure that navigation does not trigger input tracking until after a delay.
+IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest, ShowAndHide) {
+  GURL url1("https://www.google.com/");
+  GURL url2("http://www.google.com/");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
+  scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
+  SetInputTrackerPauseTimer(helper.get(), make_scoped_ptr(input_tracker_timer));
+
+  ui_test_utils::NavigateToURL(browser(), url1);
+  input_tracker_timer->Fire();
+
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTracking(helper.get()));
+
+  // Hiding the tab should stop input tracking.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  EXPECT_FALSE(IsTracking(helper.get()));
+
+  // Showing the tab should start tracking again after another delay.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
+
+  input_tracker_timer->Fire();
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTracking(helper.get()));
+
+  // New background tabs should not affect the current tab's input tracking.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2, NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTracking(helper.get()));
+
+  // Ensure behavior holds when tab is hidden before the initial delay timer
+  // fires.
+  ui_test_utils::NavigateToURL(browser(), url2);
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
+
+  // Showing the tab should start tracking again after another delay.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
+
+  input_tracker_timer->Fire();
+  EXPECT_TRUE(IsTracking(helper.get()));
+}
+
+// Ensure tracking behavior is correct for multiple navigations in a single tab.
+IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest, SingleTabNavigation) {
+  GURL url1("https://www.google.com/");
+  GURL url2("https://www.example.com/");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
+  scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
+  SetInputTrackerPauseTimer(helper.get(), make_scoped_ptr(input_tracker_timer));
+
+  // Navigation should start the initial delay timer.
+  ui_test_utils::NavigateToURL(browser(), url1);
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
+
+  // Navigating before the timer fires should simply reset the timer.
+  ui_test_utils::NavigateToURL(browser(), url2);
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
+
+  // When the timer fires, callbacks are added.
+  input_tracker_timer->Fire();
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTracking(helper.get()));
+
+  // Navigation should start the initial delay timer again.
+  ui_test_utils::NavigateToURL(browser(), url1);
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
+}
+
+// Ensure tracking behavior is correct for multiple navigations in a single tab.
+IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest, SwitchRenderViewHost) {
+  GURL url1("https://www.google.com/");
+  GURL url2("https://www.example.com/");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
+  scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
+  SetInputTrackerPauseTimer(helper.get(), make_scoped_ptr(input_tracker_timer));
+
+  // Navigation starts the initial delay timer.
+  ui_test_utils::NavigateToURL(browser(), url1);
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
+
+  content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
+
+  // The timer should still be running after the RenderViewHost is changed.
+  helper->RenderViewHostChanged(rvh, rvh);
+  EXPECT_TRUE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
+
+  // Firing the timer should add the callbacks.
+  input_tracker_timer->Fire();
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTracking(helper.get()));
+
+  // The callbacks should be on readded another RVH change since the timer has
+  // already fired.
+  helper->RenderViewHostChanged(rvh, rvh);
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTracking(helper.get()));
+
+  // Ensure nothing bad happens with a destroyed RVH.
+  helper->RenderViewHostChanged(nullptr, rvh);
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_TRUE(IsTracking(helper.get()));
+
+  // Ensure nothing happens when RVH change happens for a hidden tab.
+  helper->WasHidden();
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
+
+  helper->RenderViewHostChanged(nullptr, rvh);
+  EXPECT_FALSE(input_tracker_timer->IsRunning());
+  EXPECT_FALSE(IsTracking(helper.get()));
 }

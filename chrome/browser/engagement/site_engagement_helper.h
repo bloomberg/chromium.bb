@@ -26,7 +26,18 @@ class SiteEngagementHelper
  public:
   ~SiteEngagementHelper() override;
 
-  static void SetSecondsBetweenUserInputCheck(double seconds);
+  static void SetSecondsBetweenUserInputCheck(int seconds);
+  static void SetSecondsTrackingDelayAfterNavigation(int seconds);
+  static void SetSecondsTrackingDelayAfterShow(int seconds);
+
+  // content::WebContentsObserver overrides.
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override;
+  void WasShown() override;
+  void WasHidden() override;
 
  private:
   // Class to encapsulate the user input listening.
@@ -51,30 +62,45 @@ class SiteEngagementHelper
     // Callback to handle mouse events from the RenderViewHost.
     bool HandleMouseEvent(const blink::WebMouseEvent& event);
 
-    // Register callbacks to listen for user input.
-    void StartTracking(content::RenderViewHost* host);
+    // Begin tracking input after |initial_delay|.
+    void Start(content::RenderViewHost* host, base::TimeDelta initial_delay);
 
-    // Pause listening for user input, restarting listening after
-    // g_seconds_between_user_input_check seconds.
-    void PauseTracking(content::RenderViewHost* host);
+    // Pause listening for user input, restarting listening after a delay.
+    void Pause();
 
-    // Restart listening for user input.
-    void ResumeTracking();
+    // Switches the InputTracker to another RenderViewHost, respecting the pause
+    // timer state.
+    void SwitchRenderViewHost(content::RenderViewHost* old_host,
+                              content::RenderViewHost* new_host);
 
     // Stop listening for user input.
-    void StopTracking(content::RenderViewHost* host);
+    void Stop();
+
+    // Returns whether the InputTracker has been started for a RenderViewHost.
+    bool is_active() const { return is_active_; }
+
+    // Returns whether input tracking callbacks have been added to
+    // RenderViewHost.
+    bool is_tracking() const { return is_tracking_; }
 
     // Set the timer object for testing purposes.
-    void SetTimerForTesting(scoped_ptr<base::Timer> timer);
-
-    bool callbacks_added() { return callbacks_added_; }
+    void SetPauseTimerForTesting(scoped_ptr<base::Timer> timer);
 
    private:
+    // Starts the timer for adding callbacks to the RenderViewHost.
+    void StartTimer(base::TimeDelta delay);
+
+    // Adds/removes tracking callbacks to the RenderViewHost.
+    void AddCallbacks();
+    void RemoveCallbacks();
+
     SiteEngagementHelper* helper_;
     scoped_ptr<base::Timer> pause_timer_;
+    content::RenderViewHost* host_;
     content::RenderWidgetHost::KeyPressEventCallback key_press_event_callback_;
     content::RenderWidgetHost::MouseEventCallback mouse_event_callback_;
-    bool callbacks_added_;
+    bool is_active_;
+    bool is_tracking_;
   };
 
   explicit SiteEngagementHelper(content::WebContents* web_contents);
@@ -84,19 +110,6 @@ class SiteEngagementHelper
   // Ask the SiteEngagementService to record engagement via user input at the
   // current contents location.
   void RecordUserInput(SiteEngagementMetrics::EngagementType type);
-
-  bool ShouldRecordEngagement();
-
-  // content::WebContentsObserver overrides.
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
-
-  void RenderViewHostChanged(content::RenderViewHost* old_host,
-                             content::RenderViewHost* new_host) override;
-
-  void WasShown() override;
-  void WasHidden() override;
 
   InputTracker input_tracker_;
   bool record_engagement_;
