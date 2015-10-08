@@ -129,10 +129,6 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   // composition.
   HWND composing_window_handle_;
 
-  // Set to true to suppress the next WM_CHAR, when the WM_KEYDOWN gets stopped
-  // propagation (e.g. triggered an accelerator).
-  bool suppress_next_char_;
-
   DISALLOW_COPY_AND_ASSIGN(InputMethodWin);
 };
 

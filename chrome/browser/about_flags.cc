@@ -2089,6 +2089,12 @@ const Experiment kExperiments[] = {
       IDS_FLAGS_TRACE_EXPORT_EVENTS_TO_ETW_DESRIPTION,
       kOsWin,
       SINGLE_VALUE_TYPE(switches::kTraceExportEventsToETW)},
+    {"merge-key-char-events",
+     IDS_FLAGS_MERGE_KEY_CHAR_EVENTS_NAME,
+     IDS_FLAGS_MERGE_KEY_CHAR_EVENTS_DESCRIPTION,
+     kOsWin,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableMergeKeyCharEvents,
+                               switches::kDisableMergeKeyCharEvents)},
 #endif  // defined(OS_WIN)
 #if defined(ENABLE_BACKGROUND)
     {"enable-push-api-background-mode",

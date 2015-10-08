@@ -19,6 +19,14 @@ const char kDisableRemoteCoreAnimation[] = "disable-remote-core-animation";
 const char kShowMacOverlayBorders[] = "show-mac-overlay-borders";
 #endif
 
+#if defined(OS_WIN)
+// Disables merging the key event (WM_KEY*) with the char event (WM_CHAR).
+const char kDisableMergeKeyCharEvents[]     = "disable-merge-key-char-events";
+
+// Enables merging the key event (WM_KEY*) with the char event (WM_CHAR).
+const char kEnableMergeKeyCharEvents[]     = "enable-merge-key-char-events";
+#endif
+
 // Disables use of DWM composition for top level windows.
 const char kDisableDwmComposition[] = "disable-dwm-composition";
 

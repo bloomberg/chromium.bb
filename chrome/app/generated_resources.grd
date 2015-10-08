@@ -15291,6 +15291,13 @@ After you create a new supervised user, you can manage their settings at any tim
       <message name="IDS_FLAGS_TRACE_EXPORT_EVENTS_TO_ETW_DESRIPTION" desc="Description for the flag to enable exporting of tracing events to ETW.">
         If enabled, trace events will be exported to the Event Tracing for Windows (ETW) and can then be captured by tools such as UIForETW or Xperf.
       </message>
+
+      <message name="IDS_FLAGS_MERGE_KEY_CHAR_EVENTS_NAME" desc="Name for the flag to enable/disable merging the key event with char event.">
+        Enable or disable merging merging the key event (WM_KEY*) with char event (WM_CHAR).
+      </message>
+      <message name="IDS_FLAGS_MERGE_KEY_CHAR_EVENTS_DESCRIPTION" desc="Description for the flag to enable/disable merging the key event with char event.">
+        If disabled, Chrome will handle WM_KEY* and WM_CHAR separatedly.
+      </message>
     </if>
 
     <if expr="not is_android and not is_ios">

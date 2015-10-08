@@ -64101,6 +64101,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-711890895" label="enable-website-settings-manager"/>
   <int value="-699767107" label="enable-sync-app-list"/>
   <int value="-697751423" label="disable-quickoffice-component-app"/>
+  <int value="-684900739" label="disable-merge-key-char-events"/>
   <int value="-667517406" label="overscroll-history-navigation"/>
   <int value="-661978438" label="enable-data-reduction-proxy-lo-fi"/>
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
@@ -64376,6 +64377,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1658644418" label="disable-app-list-voice-search"/>
   <int value="1661925474" label="silent-debugger-extension-api"/>
   <int value="1668611601" label="enable-encrypted-media"/>
+  <int value="1689183477" label="enable-merge-key-char-events"/>
   <int value="1694854500" label="disable-save-password-bubble"/>
   <int value="1696139514" label="enable-ble-advertising-in-apps"/>
   <int value="1705724232" label="use-android-midi-api"/>
