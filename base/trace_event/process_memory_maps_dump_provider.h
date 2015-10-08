@@ -9,10 +9,6 @@
 #include "base/memory/singleton.h"
 #include "base/trace_event/memory_dump_provider.h"
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-#include "base/files/scoped_file.h"
-#endif
-
 namespace base {
 namespace trace_event {
 
@@ -29,7 +25,7 @@ class BASE_EXPORT ProcessMemoryMapsDumpProvider : public MemoryDumpProvider {
   friend struct DefaultSingletonTraits<ProcessMemoryMapsDumpProvider>;
   FRIEND_TEST_ALL_PREFIXES(ProcessMemoryMapsDumpProviderTest, ParseProcSmaps);
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_NACL)
   static FILE* proc_smaps_for_testing;
 #endif
 

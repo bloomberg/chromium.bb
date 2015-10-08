@@ -13,7 +13,6 @@
 namespace base {
 namespace trace_event {
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
 namespace {
 const char kTestSmaps1[] =
     "00400000-004be000 r-xp 00000000 fc:01 1234              /file/1\n"
@@ -184,7 +183,6 @@ TEST(ProcessMemoryMapsDumpProviderTest, ParseProcSmaps) {
   EXPECT_EQ(4 * 1024UL, regions_2[0].byte_stats_private_dirty_resident);
   EXPECT_EQ(0 * 1024UL, regions_2[0].byte_stats_swapped);
 }
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 }  // namespace trace_event
 }  // namespace base

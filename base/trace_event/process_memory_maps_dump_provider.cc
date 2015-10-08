@@ -4,6 +4,7 @@
 
 #include "base/trace_event/process_memory_maps_dump_provider.h"
 
+#include "base/files/scoped_file.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -13,7 +14,6 @@
 namespace base {
 namespace trace_event {
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
 // static
 FILE* ProcessMemoryMapsDumpProvider::proc_smaps_for_testing = nullptr;
 
@@ -134,7 +134,6 @@ uint32 ReadLinuxProcSmapsFile(FILE* smaps_file, ProcessMemoryMaps* pmm) {
 }
 
 }  // namespace
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 // static
 ProcessMemoryMapsDumpProvider* ProcessMemoryMapsDumpProvider::GetInstance() {
@@ -157,23 +156,17 @@ bool ProcessMemoryMapsDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
     return true;
 
   uint32 res = 0;
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
   if (UNLIKELY(proc_smaps_for_testing)) {
     res = ReadLinuxProcSmapsFile(proc_smaps_for_testing, pmd->process_mmaps());
   } else {
     ScopedFILE smaps_file(fopen("/proc/self/smaps", "r"));
     res = ReadLinuxProcSmapsFile(smaps_file.get(), pmd->process_mmaps());
   }
-#else
-  LOG(ERROR) << "ProcessMemoryMaps dump provider is supported only on Linux";
-#endif
 
   if (res > 0) {
     pmd->set_has_process_mmaps();
     return true;
   }
-
   return false;
 }
 

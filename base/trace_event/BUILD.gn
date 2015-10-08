@@ -27,7 +27,6 @@ source_set("trace_event") {
     "process_memory_dump.h",
     "process_memory_maps.cc",
     "process_memory_maps.h",
-    "process_memory_maps_dump_provider.cc",
     "process_memory_maps_dump_provider.h",
     "process_memory_totals.cc",
     "process_memory_totals.h",
@@ -76,6 +75,7 @@ source_set("trace_event") {
     sources += [
       "malloc_dump_provider.cc",
       "malloc_dump_provider.h",
+      "process_memory_maps_dump_provider.cc",
     ]
   }
 
@@ -111,7 +111,6 @@ source_set("trace_event_unittests") {
     "memory_profiler_allocation_context_unittest.cc",
     "memory_profiler_allocation_register_unittest.cc",
     "process_memory_dump_unittest.cc",
-    "process_memory_maps_dump_provider_unittest.cc",
     "process_memory_totals_dump_provider_unittest.cc",
     "trace_config_memory_test_util.h",
     "trace_config_unittest.cc",
@@ -123,6 +122,10 @@ source_set("trace_event_unittests") {
     "trace_event_win_unittest.cc",
     "winheap_dump_provider_win_unittest.cc",
   ]
+
+  if (is_linux || is_android) {
+    sources += [ "process_memory_maps_dump_provider_unittest.cc" ]
+  }
 
   deps = [
     "//base/test:test_support",

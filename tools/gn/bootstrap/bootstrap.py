@@ -250,7 +250,6 @@ def write_ninja(path, options):
       'base/trace_event/memory_profiler_allocation_context.cc',
       'base/trace_event/process_memory_dump.cc',
       'base/trace_event/process_memory_maps.cc',
-      'base/trace_event/process_memory_maps_dump_provider.cc',
       'base/trace_event/process_memory_totals.cc',
       'base/trace_event/process_memory_totals_dump_provider.cc',
       'base/trace_event/trace_buffer.cc',
@@ -338,6 +337,7 @@ def write_ninja(path, options):
         'base/sys_info_linux.cc',
         'base/threading/platform_thread_linux.cc',
         'base/trace_event/malloc_dump_provider.cc',
+        'base/trace_event/process_memory_maps_dump_provider.cc',
     ])
     static_libraries['libevent']['include_dirs'].extend([
         os.path.join(SRC_ROOT, 'third_party', 'libevent', 'linux')
