@@ -155,6 +155,30 @@ const int showTreeCharacterOffset = 39;
 //   (See https://drafts.csswg.org/css-backgrounds-3/#the-background-image)
 // - image (LayoutImage, LayoutSVGImage) or video (LayoutVideo) objects that are placeholders for
 //   displaying them.
+//
+// ***** INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS *****
+// The preferred logical widths are the intrinsic sizes of this element
+// (https://drafts.csswg.org/css-sizing-3/#intrinsic). Intrinsic sizes depend
+// mostly on the content and a limited set of style properties (e.g. any
+// font-related property for text, 'min-width'/'max-width',
+// 'min-height'/'max-height').
+//
+// Those widths are used to determine the final layout logical width, which
+// depends on the layout algorithm used and the available logical width.
+//
+// LayoutObject only has getters for the widths (minPreferredLogicalWidth and
+// maxPreferredLogicalWidth). However the storage for them is in LayoutBox
+// (see m_minPreferredLogicalWidth and m_maxPreferredLogicalWidth). This is
+// because only boxes implementing the full box model have a need for them.
+// Because LayoutBlockFlow's intrinsic widths rely on the underlying text
+// content, LayoutBlockFlow may call LayoutText::computePreferredLogicalWidths.
+//
+// The 2 widths are computed lazily during layout when the getters are called.
+// The computation is done by calling computePreferredLogicalWidths() behind the
+// scene. The boolean used to control the lazy recomputation is
+// preferredLogicalWidthsDirty.
+//
+// See the individual getters below for more details about what each width is.
 class CORE_EXPORT LayoutObject : public ImageResourceClient {
     friend class LayoutObjectChildList;
     WTF_MAKE_NONCOPYABLE(LayoutObject);
@@ -908,7 +932,27 @@ public:
     // the rect that will be painted if this object is passed as the paintingRoot
     IntRect paintingRootRect(IntRect& topLevelRect);
 
+    // This function returns the minimal logical width this object can have
+    // without overflowing. This means that all the opportunities for wrapping
+    // have been taken.
+    //
+    // See INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS above.
+    //
+    // CSS 2.1 calls this width the "preferred minimum width" (thus this name)
+    // and "minimum content width" (for table).
+    // However CSS 3 calls it the "min-content inline size".
+    // https://drafts.csswg.org/css-sizing-3/#min-content-inline-size
+    // TODO(jchaffraix): We will probably want to rename it to match CSS 3.
     virtual LayoutUnit minPreferredLogicalWidth() const { return 0; }
+
+    // This function returns the maximum logical width this object can have.
+    //
+    // See INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS above.
+    //
+    // CSS 2.1 calls this width the "preferred width". However CSS 3 calls it
+    // the "max-content inline size".
+    // https://drafts.csswg.org/css-sizing-3/#max-content-inline-size
+    // TODO(jchaffraix): We will probably want to rename it to match CSS 3.
     virtual LayoutUnit maxPreferredLogicalWidth() const { return 0; }
 
     const ComputedStyle* style() const { return m_style.get(); }
@@ -1594,19 +1638,10 @@ private:
         // bleed into its containing block's so we have to recompute it in some cases.
         ADD_BOOLEAN_BITFIELD(childNeedsOverflowRecalcAfterStyleChange, ChildNeedsOverflowRecalcAfterStyleChange);
 
-        // The preferred logical widths are the intrinsic sizes of this element.
-        // Intrinsic sizes depend mostly on the content and a limited set of style
-        // properties (e.g. any font-related property for text, 'min-width'/'max-width',
-        // 'min-height'/'max-height').
+        // This boolean marks preferred logical widths for lazy recomputation.
         //
-        // Those widths are used to determine the final layout logical width, which
-        // depends on the layout algorithm used and the available logical width.
-        //
-        // Blink stores them in LayoutBox (m_minPreferredLogicalWidth and
-        // m_maxPreferredLogicalWidth).
-        //
-        // Setting this boolean marks both widths for lazy recomputation when
-        // LayoutBox::minPreferredLogicalWidth() or maxPreferredLogicalWidth() is called.
+        // See INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS above about those
+        // widths.
         ADD_BOOLEAN_BITFIELD(preferredLogicalWidthsDirty, PreferredLogicalWidthsDirty);
 
         ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint); // TODO(wangxianzhu): Remove for slimming paint v2.

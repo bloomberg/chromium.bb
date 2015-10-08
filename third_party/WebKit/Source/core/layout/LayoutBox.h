@@ -914,9 +914,14 @@ private:
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const;
 
-    // This function calculates the minimum and maximum preferred widths for an object.
-    // These values are used in shrink-to-fit layout systems.
-    // These include tables, positioned objects, floats and flexible boxes.
+    // This function calculates the preferred widths for an object.
+    //
+    // This function is only expected to be called if
+    // the boolean preferredLogicalWidthsDirty is true. It also MUST clear the
+    // boolean before returning.
+    //
+    // See INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS in LayoutObject.h for more
+    // details about those widths.
     virtual void computePreferredLogicalWidths() { clearPreferredLogicalWidthsDirty(); }
 
     LayoutBoxRareData& ensureRareData()
@@ -960,15 +965,15 @@ private:
     LayoutRectOutsets m_marginBoxOutsets;
 
 protected:
-    // The preferred logical width of the element if it were to break its lines at every
-    // possible opportunity. CSS 2.1 calls this width the "preferred minimum width" and
-    // "minimum content width".
-    // See https://drafts.csswg.org/css-sizing-3/#intrinsic for more information.
+    // The logical width of the element if it were to break its lines at every
+    // possible opportunity.
+    //
+    // See LayoutObject::minPreferredLogicalWidth() for more details.
     LayoutUnit m_minPreferredLogicalWidth;
 
-    // The preferred logical width of the element if it never breaks any lines at all.
-    // CSS 2.1 calls this width the "preferred width" and "maximum cell width".
-    // See https://drafts.csswg.org/css-sizing-3/#intrinsic for more information.
+    // The logical width of the element if it never breaks any lines at all.
+    //
+    // See LayoutObject::maxPreferredLogicalWidth() for more details.
     LayoutUnit m_maxPreferredLogicalWidth;
 
     // Our overflow information.

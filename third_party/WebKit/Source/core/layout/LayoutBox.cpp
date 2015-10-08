@@ -956,6 +956,7 @@ LayoutUnit LayoutBox::minPreferredLogicalWidth() const
         SetLayoutNeededForbiddenScope layoutForbiddenScope(const_cast<LayoutBox&>(*this));
 #endif
         const_cast<LayoutBox*>(this)->computePreferredLogicalWidths();
+        ASSERT(!preferredLogicalWidthsDirty());
     }
 
     return m_minPreferredLogicalWidth;
@@ -968,6 +969,7 @@ LayoutUnit LayoutBox::maxPreferredLogicalWidth() const
         SetLayoutNeededForbiddenScope layoutForbiddenScope(const_cast<LayoutBox&>(*this));
 #endif
         const_cast<LayoutBox*>(this)->computePreferredLogicalWidths();
+        ASSERT(!preferredLogicalWidthsDirty());
     }
 
     return m_maxPreferredLogicalWidth;
