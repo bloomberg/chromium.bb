@@ -798,12 +798,10 @@ class PatchSeries(object):
 
       # There is no need to reset the branch if it doesn't exist.
       if not git.DoesCommitExistInRepo(path, branch):
-        logging.info('Skipping reset for %s because %s is not in the repo.',
-                     path, branch)
         return
 
       if fetch:
-        git.RunGit(path, ['fetch', '--all'], capture_output=False)
+        git.RunGit(path, ['fetch', '--all'])
 
       def _LogBranch():
         branches = git.RunGit(path, ['branch', '-vv']).output.splitlines()
