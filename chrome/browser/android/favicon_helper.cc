@@ -31,8 +31,8 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -68,6 +68,16 @@ void OnLocalFaviconAvailable(
                                                j_icon_url.obj());
 }
 
+size_t GetLargestSizeIndex(const std::vector<gfx::Size>& sizes) {
+  DCHECK(!sizes.empty());
+  size_t ret = 0;
+  for (size_t i = 1; i < sizes.size(); ++i) {
+    if (sizes[ret].GetArea() < sizes[i].GetArea())
+      ret = i;
+  }
+  return ret;
+}
+
 void OnFaviconDownloaded(
     const ScopedJavaGlobalRef<jobject>& j_availability_callback,
     Profile* profile,
@@ -79,10 +89,9 @@ void OnFaviconDownloaded(
     const std::vector<gfx::Size>& original_sizes) {
   bool success = !bitmaps.empty();
   if (success) {
-    gfx::Image image = gfx::Image(CreateFaviconImageSkia(bitmaps,
-                                                         original_sizes,
-                                                         gfx::kFaviconSize,
-                                                         nullptr));
+    // Only keep the largest favicon available.
+    gfx::Image image = gfx::Image(gfx::ImageSkia(
+        gfx::ImageSkiaRep(bitmaps[GetLargestSizeIndex(original_sizes)], 0)));
     favicon_base::SetFaviconColorSpace(&image);
     favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
         profile, ServiceAccessType::IMPLICIT_ACCESS);
