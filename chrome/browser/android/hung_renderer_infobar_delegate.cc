@@ -6,12 +6,12 @@
 
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static
@@ -48,7 +48,7 @@ HungRendererInfoBarDelegate::AsHungRendererInfoBarDelegate() {
 }
 
 int HungRendererInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_FROZEN_TAB;
+  return IDR_ANDROID_INFOBAR_FROZEN_TAB;
 }
 
 base::string16 HungRendererInfoBarDelegate::GetMessageText() const {

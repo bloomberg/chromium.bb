@@ -7,6 +7,7 @@
 #include "base/android/jni_string.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -15,7 +16,6 @@
 #include "components/infobars/core/infobar.h"
 #include "components/url_formatter/elide_url.h"
 #include "grit/components_strings.h"
-#include "grit/theme_resources.h"
 #include "jni/FullscreenInfoBarDelegate_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -60,7 +60,7 @@ void FullscreenInfoBarDelegate::CloseFullscreenInfoBar(
 }
 
 int FullscreenInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_FULLSCREEN;
+  return IDR_ANDROID_INFOBAR_FULLSCREEN;
 }
 
 base::string16 FullscreenInfoBarDelegate::GetMessageText() const {

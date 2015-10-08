@@ -4,12 +4,12 @@
 
 #include "chrome/browser/geolocation/geolocation_infobar_delegate.h"
 
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/url_formatter/elide_url.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static
@@ -38,7 +38,7 @@ GeolocationInfoBarDelegate::~GeolocationInfoBarDelegate() {
 }
 
 int GeolocationInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_GEOLOCATION;
+  return IDR_ANDROID_INFOBAR_GEOLOCATION;
 }
 
 base::string16 GeolocationInfoBarDelegate::GetMessageText() const {

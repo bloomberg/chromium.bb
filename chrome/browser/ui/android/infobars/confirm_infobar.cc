@@ -58,7 +58,8 @@ base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
           env, delegate->GetLinkText());
 
   ScopedJavaLocalRef<jobject> java_bitmap;
-  if (!delegate->GetIcon().IsEmpty()) {
+  if (delegate->GetIconId() == infobars::InfoBarDelegate::kNoIconID &&
+      !delegate->GetIcon().IsEmpty()) {
     java_bitmap = gfx::ConvertToJavaBitmap(delegate->GetIcon().ToSkBitmap());
   }
 

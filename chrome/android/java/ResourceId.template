@@ -9,7 +9,8 @@ import org.chromium.chrome.R;
 public class ResourceId {
     public static int mapToDrawableId(int enumeratedId) {
         int[] resourceList = {
-#define DEFINE_RESOURCE_ID(c_id,java_id) java_id,
+#define LINK_RESOURCE_ID(c_id,java_id) java_id,
+#define DECLARE_RESOURCE_ID(c_id,java_id) java_id,
 #include "chrome/browser/android/resource_id.h"
         };
 

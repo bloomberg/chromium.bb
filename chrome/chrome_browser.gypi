@@ -30,6 +30,7 @@
       'browser/android/accessibility_util.h',
       'browser/android/activity_type_ids.cc',
       'browser/android/activity_type_ids.h',
+      'browser/android/android_theme_resources.h',
       'browser/android/appmenu/app_menu_drag_helper.cc',
       'browser/android/appmenu/app_menu_drag_helper.h',
       'browser/android/banners/app_banner_data_fetcher_android.cc',

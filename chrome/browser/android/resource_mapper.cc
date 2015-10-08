@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "chrome/browser/android/android_theme_resources.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 
@@ -39,7 +40,9 @@ void ResourceMapper::ConstructMap() {
   DCHECK(g_id_map.Get().empty());
   int next_id = 0;
 
-#define DEFINE_RESOURCE_ID(c_id,java_id) g_id_map.Get()[c_id] = next_id++;
+#define LINK_RESOURCE_ID(c_id, java_id) g_id_map.Get()[c_id] = next_id++;
+#define DECLARE_RESOURCE_ID(c_id, java_id) g_id_map.Get()[c_id] = next_id++;
 #include "chrome/browser/android/resource_id.h"
-#undef DEFINE_RESOURCE_ID
+#undef LINK_RESOURCE_ID
+#undef DECLARE_RESOURCE_ID
 }
