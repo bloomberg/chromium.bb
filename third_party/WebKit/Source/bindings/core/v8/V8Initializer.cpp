@@ -327,23 +327,6 @@ static bool codeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> conte
     return false;
 }
 
-static void idleGCTaskInMainThread(double deadlineSeconds)
-{
-    ASSERT(isMainThread());
-    ASSERT(RuntimeEnabledFeatures::v8IdleTasksEnabled());
-    bool gcFinished = false;
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-
-    Platform* platform = Platform::current();
-    if (deadlineSeconds > platform->monotonicallyIncreasingTime())
-        gcFinished = isolate->IdleNotificationDeadline(deadlineSeconds);
-
-    if (gcFinished)
-        platform->currentThread()->scheduler()->postIdleTaskAfterWakeup(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
-    else
-        platform->currentThread()->scheduler()->postIdleTask(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
-}
-
 static void timerTraceProfilerInMainThread(const char* name, int status)
 {
     if (!status) {
@@ -412,8 +395,6 @@ void V8Initializer::initializeMainThreadIfNeeded()
     if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
         WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
         V8PerIsolateData::enableIdleTasks(isolate, adoptPtr(new V8IdleTaskRunner(scheduler)));
-        // FIXME: Remove idleGCTaskInMainThread once V8 starts posting idle task explicity.
-        scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
     }
 
     isolate->SetEventLogger(timerTraceProfilerInMainThread);
