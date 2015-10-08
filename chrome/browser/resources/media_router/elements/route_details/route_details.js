@@ -18,6 +18,16 @@ Polymer({
     },
 
     /**
+     * The name of the icon used as the back button. This is set once, when
+     * the |this| is ready.
+     * @private {string}
+     */
+    arrowIcon_: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * The route to show.
      * @type {?media_router.Route}
      */
@@ -55,6 +65,12 @@ Polymer({
       type: Boolean,
       value: true,
     },
+  },
+
+  attached: function() {
+    // isRTL() only works after i18n_template.js runs to set <html dir>.
+    // Set the back button icon based on text direction.
+    this.arrowIcon_ = isRTL() ? 'arrow-forward' : 'arrow-back';
   },
 
   /**

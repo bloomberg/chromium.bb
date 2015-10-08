@@ -3,9 +3,8 @@
  * found in the LICENSE file. */
 
 #close-route-button {
+  -webkit-padding-end: 24px;
   background-color: white;
-  color: rgb(33, 150, 243);
-  height: 32px;
   line-height: 32px;
   margin: 0;
   text-align: end;
@@ -29,7 +28,7 @@
 
 #route-details-header {
   background-color: rgb(33, 150, 243);
-  font-size: 1.4em;
+  font-size: 1.25em;
 }
 
 #route-information {
