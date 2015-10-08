@@ -17,8 +17,9 @@ namespace midi {
 // Returns the length of a MIDI message in bytes. Never returns 4 or greater.
 // Returns 0 if |status_byte| is:
 // - not a valid status byte, namely data byte.
-// - the MIDI System Exclusive message.
-// - the End of System Exclusive message.
+// - MIDI System Exclusive message.
+// - End of System Exclusive message.
+// - Reserved System Common Message (0xf4, 0xf5)
 MIDI_EXPORT size_t GetMidiMessageLength(uint8 status_byte);
 
 const uint8 kSysExByte = 0xf0;
