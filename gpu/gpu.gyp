@@ -142,6 +142,13 @@
       'sources': [
         'angle_unittest_main.cc',
       ],
+      'conditions': [
+        ['OS=="android"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
+      ],
     },
     {
       # GN version: //gpu:gpu_unittests
@@ -708,6 +715,19 @@
     }],
     ['OS == "android"', {
       'targets': [
+        {
+          'target_name': 'angle_unittests_apk',
+          'type': 'none',
+          'dependencies':
+          [
+            'angle_unittests',
+          ],
+          'variables':
+          {
+            'test_suite_name': 'angle_unittests',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
         {
           'target_name': 'gl_tests_apk',
           'type': 'none',
