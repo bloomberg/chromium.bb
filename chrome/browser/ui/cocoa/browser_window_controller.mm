@@ -691,6 +691,10 @@ using content::WebContents;
 
 // Called when we have been unminimized.
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
+  // Make sure the window's show_state (which is now ui::SHOW_STATE_NORMAL)
+  // gets saved.
+  [self saveWindowPositionIfNeeded];
+
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
   if (WebContents* contents = [self webContents]) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
