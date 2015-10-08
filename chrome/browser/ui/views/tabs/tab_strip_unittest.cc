@@ -311,7 +311,7 @@ TEST_F(TabStripTest, ImmersiveMode) {
   EXPECT_FALSE(tab_strip_->IsImmersiveStyle());
 
   // Tab strip defaults to normal tab height.
-  int normal_height = Tab::GetMinimumUnselectedSize().height();
+  int normal_height = Tab::GetMinimumInactiveSize().height();
   EXPECT_EQ(normal_height, tab_strip_->GetPreferredSize().height());
 
   // Tab strip can toggle immersive mode.

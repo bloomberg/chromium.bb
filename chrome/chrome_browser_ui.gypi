@@ -2361,6 +2361,8 @@
       'browser/ui/views/tabs/tab_strip.cc',
       'browser/ui/views/tabs/tab_strip.h',
       'browser/ui/views/tabs/tab_strip_controller.h',
+      'browser/ui/views/tabs/tab_strip_layout.cc',
+      'browser/ui/views/tabs/tab_strip_layout.h',
       'browser/ui/views/tabs/window_finder.h',
       'browser/ui/views/tabs/window_finder_chromeos.cc',
       'browser/ui/views/tabs/window_finder_mac.mm',

@@ -614,7 +614,7 @@ int Tab::GetWidthOfLargestSelectableRegion() const {
   return std::min(indicator_left, close_button_left);
 }
 
-gfx::Size Tab::GetMinimumUnselectedSize() {
+gfx::Size Tab::GetMinimumInactiveSize() {
   // Since we use images, the real minimum height of the image is
   // defined most accurately by the height of the end cap images.
   InitTabResources();
@@ -623,15 +623,15 @@ gfx::Size Tab::GetMinimumUnselectedSize() {
 }
 
 // static
-gfx::Size Tab::GetMinimumSelectedSize() {
-  gfx::Size minimum_size = GetMinimumUnselectedSize();
+gfx::Size Tab::GetMinimumActiveSize() {
+  gfx::Size minimum_size = GetMinimumInactiveSize();
   minimum_size.Enlarge(gfx::kFaviconSize, 0);
   return minimum_size;
 }
 
 // static
 gfx::Size Tab::GetStandardSize() {
-  gfx::Size standard_size = GetMinimumUnselectedSize();
+  gfx::Size standard_size = GetMinimumInactiveSize();
   const int title_spacing = GetLayoutConstant(TAB_FAVICON_TITLE_SPACING);
   const int title_width = GetLayoutConstant(TAB_MAXIMUM_TITLE_WIDTH);
   standard_size.Enlarge(title_spacing + title_width, 0);
@@ -645,8 +645,8 @@ int Tab::GetTouchWidth() {
 
 // static
 int Tab::GetPinnedWidth() {
-  return GetMinimumUnselectedSize().width() +
-      GetLayoutConstant(TAB_PINNED_CONTENT_WIDTH);
+  return GetMinimumInactiveSize().width() +
+         GetLayoutConstant(TAB_PINNED_CONTENT_WIDTH);
 }
 
 // static
@@ -750,7 +750,7 @@ void Tab::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
 void Tab::OnPaint(gfx::Canvas* canvas) {
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
-  if (width() < GetMinimumUnselectedSize().width() && !data().pinned)
+  if (width() < GetMinimumInactiveSize().width() && !data().pinned)
     return;
 
   gfx::Rect clip;
@@ -1413,7 +1413,7 @@ void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
 }
 
 int Tab::IconCapacity() const {
-  const gfx::Size min_size(GetMinimumUnselectedSize());
+  const gfx::Size min_size(GetMinimumInactiveSize());
   if (height() < min_size.height())
     return 0;
   const int available_width = std::max(0, width() - min_size.width());

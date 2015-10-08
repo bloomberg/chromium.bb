@@ -109,7 +109,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   bool IsTabStripVisible() const override { return window_title_.empty(); }
 
   int GetTabStripHeight() const override {
-    return IsTabStripVisible() ? Tab::GetMinimumUnselectedSize().height() : 0;
+    return IsTabStripVisible() ? Tab::GetMinimumInactiveSize().height() : 0;
   }
 
   gfx::Size GetTabstripPreferredSize() const override {

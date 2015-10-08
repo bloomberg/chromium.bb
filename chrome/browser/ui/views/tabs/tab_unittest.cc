@@ -303,8 +303,8 @@ TEST_P(TabTest, LayoutAndVisibilityOfElements) {
           bounds.set_width(Tab::GetPinnedWidth());
           min_width = Tab::GetPinnedWidth();
         } else {
-          min_width = is_active_tab ? Tab::GetMinimumSelectedSize().width() :
-              Tab::GetMinimumUnselectedSize().width();
+          min_width = is_active_tab ? Tab::GetMinimumActiveSize().width()
+                                    : Tab::GetMinimumInactiveSize().width();
         }
         while (bounds.width() >= min_width) {
           SCOPED_TRACE(::testing::Message() << "bounds=" << bounds.ToString());

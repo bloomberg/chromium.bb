@@ -701,9 +701,9 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
   // the threshold.
   int threshold = kHorizontalMoveThreshold;
   if (!attached_tabstrip_->touch_layout_.get()) {
-    double unselected, selected;
-    attached_tabstrip_->GetCurrentTabWidths(&unselected, &selected);
-    double ratio = unselected / Tab::GetStandardSize().width();
+    double ratio =
+        static_cast<double>(attached_tabstrip_->current_inactive_width()) /
+        Tab::GetStandardSize().width();
     threshold = static_cast<int>(ratio * kHorizontalMoveThreshold);
   }
   // else case: touch tabs never shrink.
@@ -1288,10 +1288,8 @@ gfx::Rect TabDragController::GetDraggedViewTabStripBounds(
                      source_tab_drag_data()->attached_tab->height());
   }
 
-  double sel_width, unselected_width;
-  attached_tabstrip_->GetCurrentTabWidths(&sel_width, &unselected_width);
   return gfx::Rect(tab_strip_point.x(), tab_strip_point.y(),
-                   static_cast<int>(sel_width),
+                   attached_tabstrip_->current_active_width(),
                    Tab::GetStandardSize().height());
 }
 

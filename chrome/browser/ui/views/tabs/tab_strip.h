@@ -311,9 +311,6 @@ class TabStrip : public views::View,
     DISALLOW_COPY_AND_ASSIGN(DropInfo);
   };
 
-  // Horizontal gap between pinned and non-pinned tabs.
-  static const int kPinnedToNonPinnedGap;
-
   void Init();
 
   // Creates and returns a new tab. The caller owners the returned tab.
@@ -441,20 +438,11 @@ class TabStrip : public views::View,
 
   // -- Tab Resize Layout -----------------------------------------------------
 
-  // Returns the exact (unrounded) current width of each tab.
-  void GetCurrentTabWidths(double* unselected_width,
-                           double* selected_width) const;
-
-  // Returns the exact (unrounded) desired width of each tab, based on the
-  // desired strip width and number of tabs.  If
-  // |width_of_tabs_for_mouse_close_| is nonnegative we use that value in
-  // calculating the desired strip width; otherwise we use the current width.
-  // |pinned_tab_count| gives the number of pinned tabs and |tab_count| the
-  // number of pinned and non-pinned tabs.
-  void GetDesiredTabWidths(int tab_count,
-                           int pinned_tab_count,
-                           double* unselected_width,
-                           double* selected_width) const;
+  // Returns the current width of each tab. If the space for tabs is not evenly
+  // divisible into these widths, the initial tabs in the strip will be 1 px
+  // larger.
+  int current_inactive_width() const { return current_inactive_width_; }
+  int current_active_width() const { return current_active_width_; }
 
   // Perform an animated resize-relayout of the TabStrip immediately.
   void ResizeLayoutTabs();
@@ -599,20 +587,18 @@ class TabStrip : public views::View,
   // Ideal bounds of the new tab button.
   gfx::Rect newtab_button_bounds_;
 
-  // The current widths of various types of tabs.  We save these so that, as
-  // users close tabs while we're holding them at the same size, we can lay out
-  // tabs exactly and eliminate the "pixel jitter" we'd get from just leaving
-  // them all at their existing, rounded widths.
-  double current_unselected_width_;
-  double current_selected_width_;
+  // Returns the current widths of each type of tab.  If the tabstrip width is
+  // not evenly divisible into these widths, the initial tabs in the strip will
+  // be 1 px larger.
+  int current_inactive_width_;
+  int current_active_width_;
 
-  // If this value is nonnegative, it is used in GetDesiredTabWidths() to
-  // calculate how much space in the tab strip to use for tabs.  Most of the
-  // time this will be -1, but while we're handling closing a tab via the mouse,
-  // we'll set this to the edge of the last tab before closing, so that if we
-  // are closing the last tab and need to resize immediately, we'll resize only
-  // back to this width, thus once again placing the last tab under the mouse
-  // cursor.
+  // If this value is nonnegative, it is used as the width to lay out tabs
+  // (instead of tab_area_width()). Most of the time this will be -1, but while
+  // we're handling closing a tab via the mouse, we'll set this to the edge of
+  // the last tab before closing, so that if we are closing the last tab and
+  // need to resize immediately, we'll resize only back to this width, thus
+  // once again placing the last tab under the mouse cursor.
   int available_width_for_tabs_;
 
   // True if PrepareForCloseAt has been invoked. When true remove animations
