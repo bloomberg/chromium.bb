@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
-#include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync_driver/change_processor.h"

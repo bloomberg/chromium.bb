@@ -113,7 +113,9 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
     profile_sync_factory_.reset(
         new ProfileSyncComponentsFactoryMock(model_associator_,
                                              change_processor_));
-    bookmark_dtc_ = new BookmarkDataTypeController(this);
+    bookmark_dtc_ =
+        new BookmarkDataTypeController(base::ThreadTaskRunnerHandle::Get(),
+                                       base::Bind(&base::DoNothing), this);
   }
 
  protected:

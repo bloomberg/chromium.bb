@@ -5,30 +5,22 @@
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "components/sync_driver/sync_client.h"
-#include "content/public/browser/browser_thread.h"
 
 using bookmarks::BookmarkModel;
-using content::BrowserThread;
 
 namespace browser_sync {
 
 BookmarkDataTypeController::BookmarkDataTypeController(
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+    const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client)
-    : FrontendDataTypeController(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          base::Bind(&ChromeReportUnrecoverableError),
-          sync_client),
+    : FrontendDataTypeController(ui_thread, error_callback, sync_client),
       history_service_observer_(this),
-      bookmark_model_observer_(this) {
-}
+      bookmark_model_observer_(this) {}
 
 syncer::ModelType BookmarkDataTypeController::type() const {
   return syncer::BOOKMARKS;
@@ -99,7 +91,6 @@ bool BookmarkDataTypeController::DependentsLoaded() {
 
 void BookmarkDataTypeController::OnHistoryServiceLoaded(
     history::HistoryService* service) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state_, MODEL_STARTING);
   history_service_observer_.RemoveAll();
 

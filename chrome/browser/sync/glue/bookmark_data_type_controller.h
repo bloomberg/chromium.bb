@@ -13,8 +13,6 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/sync_driver/frontend_data_type_controller.h"
 
-class ProfileSyncService;
-
 namespace browser_sync {
 
 // A class that manages the startup and shutdown of bookmark sync.
@@ -22,7 +20,10 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
                                    public bookmarks::BaseBookmarkModelObserver,
                                    public history::HistoryServiceObserver {
  public:
-  explicit BookmarkDataTypeController(sync_driver::SyncClient* sync_client);
+  BookmarkDataTypeController(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      const base::Closure& error_callback,
+      sync_driver::SyncClient* sync_client);
 
   // FrontendDataTypeController:
   syncer::ModelType type() const override;

@@ -208,8 +208,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // Bookmark sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::BOOKMARKS)) {
-    sync_service->RegisterDataTypeController(
-        new BookmarkDataTypeController(sync_client));
+    sync_service->RegisterDataTypeController(new BookmarkDataTypeController(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        base::Bind(&ChromeReportUnrecoverableError), sync_client));
   }
 
   const bool history_disabled =
