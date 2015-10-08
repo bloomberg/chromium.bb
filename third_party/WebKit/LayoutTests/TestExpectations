@@ -247,7 +247,8 @@ crbug.com/418091 [ SnowLeopard Debug ] media/track/track-cue-rendering-rtl.html 
 crbug.com/418091 [ SnowLeopard Debug ] inspector/elements/bidi-dom-tree.html [ Pass Crash ]
 crbug.com/449242 [ SnowLeopard Debug ] fast/css/word-spacing-characters-complex-text.html [ Pass Crash ]
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
-
+crbug.com/423739 fast/js/string-replace-2.html [ NeedsManualRebaseline ]
+crbug.com/423739 fast/dom/Window/Location/location-override-valueOf.html [ NeedsManualRebaseline ]
 crbug.com/524859 fast/text/complex-text-opacity.html [ NeedsManualRebaseline ]
 # crbug.com/498021 [ Linux ] fast/text/complex-text-opacity.html [ ImageOnlyFailure ]
 # crbug.com/509025 [ Yosemite ] fast/text/complex-text-opacity.html [ Failure ]
