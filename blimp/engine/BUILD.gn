@@ -56,11 +56,42 @@ if (is_linux) {
     ]
   }
 
-  # A stand-in for the Blimp Engine so we can get the Docker packaging working.
   group("blimp_engine") {
     data_deps = [
       ":blimp_engine_app",
       ":pak",
+    ]
+  }
+
+  # Builds and bundles the engine into a tarball that can be used to build a
+  # Docker image.
+  action("bundle_blimp_engine") {
+    script = "//blimp/tools/bundle-engine.py"
+
+    # These form the arguments to the script.
+    build_dir = rebase_path(root_out_dir)
+    dockerfile = rebase_path("//blimp/engine/Dockerfile")
+    target = "//blimp/engine:blimp_engine"
+    bundle = "$root_out_dir/blimp_engine_bundle.tar"
+
+    deps = [
+      target,
+    ]
+    inputs = [
+      dockerfile,
+    ]
+    outputs = [
+      bundle,
+    ]
+    args = [
+      "--build-dir",
+      build_dir,
+      "--dockerfile",
+      dockerfile,
+      "--target",
+      target,
+      "--output",
+      rebase_path(bundle),
     ]
   }
 }

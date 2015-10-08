@@ -5,8 +5,7 @@ container.
 
 The steps are:
 
-1. Bundle the engine and its dependencies using
-[`bundle-engine.py`](../tools/bundle-engine.py).
+1. Bundle the engine and its dependencies.
 
 1. Build a Docker image.
 
@@ -32,16 +31,9 @@ installation instructions](https://docs.docker.com/installation/ubuntulinux/).
 
 ## Bundle Engine
 
-Assuming the current directory is `src/` and you've already built the engine,
-you can bundle it into a tarfile by running:
+The `blimp/engine:bundle_blimp_engine` build target will bundle the engine and
+its dependencies into a tarfile, which can be used to build a Docker image.
 
-```bash
-./blimp/tools/bundle-engine.py \
-    --build-dir ./out-linux/Debug \
-    --dockerfile ./blimp/engine/Dockerfile \
-    --target blimp/engine:blimp_engine \
-    --output ./out-linux/Debug/blimp_engine_deps.tar
-```
 
 ## Build Docker Image
 
