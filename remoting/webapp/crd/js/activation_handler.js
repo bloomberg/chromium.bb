@@ -95,11 +95,13 @@ remoting.ActivationHandler.prototype.onRestart_ = function(id) {
 };
 
 /**
- * @param {Event} launchData
+ * @param {Object?} launchData  |launchData| is null when this function
+ *     is invoked from an IPC.
+ *
  * @private
  */
 remoting.ActivationHandler.prototype.onLaunched_ = function(launchData) {
-  if (launchData['isPublicSession']) {
+  if (Boolean(launchData) && Boolean(launchData['isPublicSession'])) {
     this.launchIt2MeSession_();
   } else {
     this.launchDefaultSession_();
