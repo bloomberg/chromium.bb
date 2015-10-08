@@ -1144,6 +1144,7 @@
       'udp/datagram_client_socket.h',
       'udp/datagram_server_socket.h',
       'udp/datagram_socket.h',
+      'udp/diff_serv_code_point.h',
       'udp/udp_client_socket.cc',
       'udp/udp_client_socket.h',
       'udp/udp_net_log_parameters.cc',

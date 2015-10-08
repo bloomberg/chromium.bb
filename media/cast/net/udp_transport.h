@@ -11,13 +11,12 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_sender.h"
+#include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_util.h"
+#include "net/udp/diff_serv_code_point.h"
 #include "net/udp/udp_socket.h"
 
 namespace net {
-class IOBuffer;
-class IPEndPoint;
 class NetLog;
 }  // namespace net
 

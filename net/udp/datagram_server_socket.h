@@ -6,8 +6,8 @@
 #define NET_UDP_DATAGRAM_SERVER_SOCKET_H_
 
 #include "net/base/completion_callback.h"
-#include "net/base/net_util.h"
 #include "net/udp/datagram_socket.h"
+#include "net/udp/diff_serv_code_point.h"
 
 namespace net {
 
