@@ -34,6 +34,22 @@ bool ParsePositiveIntegerImpl(StringPiece::const_iterator c,
 
 }  // namespace
 
+SpdyAltSvcWireFormat::AlternativeService::AlternativeService() {}
+
+SpdyAltSvcWireFormat::AlternativeService::AlternativeService(
+    const std::string& protocol_id,
+    const std::string& host,
+    uint16 port,
+    uint16 version,
+    uint32 max_age,
+    double p)
+    : protocol_id(protocol_id),
+      host(host),
+      port(port),
+      version(version),
+      max_age(max_age),
+      p(p) {}
+
 // static
 bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
     StringPiece value,
@@ -82,6 +98,7 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
     }
     ++c;
     // Parse parameters.
+    uint16 version = 0;
     uint32 max_age = 86400;
     double p = 1.0;
     StringPiece::const_iterator parameters_end = std::find(c, value.end(), ',');
@@ -114,7 +131,11 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
       if (c == parameter_value_begin) {
         return false;
       }
-      if (parameter_name.compare("ma") == 0) {
+      if (parameter_name.compare("v") == 0) {
+        if (!ParsePositiveInteger16(parameter_value_begin, c, &version)) {
+          return false;
+        }
+      } else if (parameter_name.compare("ma") == 0) {
         if (!ParsePositiveInteger32(parameter_value_begin, c, &max_age)) {
           return false;
         }
@@ -125,7 +146,7 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
       }
     }
     altsvc_vector->push_back(
-        AlternativeService(protocol_id, host, port, max_age, p));
+        AlternativeService(protocol_id, host, port, version, max_age, p));
     for (; c != value.end() && (*c == ' ' || *c == '\t' || *c == ','); ++c) {
     }
   }
@@ -182,6 +203,9 @@ std::string SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
       value.push_back(c);
     }
     base::StringAppendF(&value, ":%d\"", altsvc.port);
+    if (altsvc.version != 0) {
+      base::StringAppendF(&value, "; v=%d", altsvc.version);
+    }
     if (altsvc.max_age != 86400) {
       base::StringAppendF(&value, "; ma=%d", altsvc.max_age);
     }

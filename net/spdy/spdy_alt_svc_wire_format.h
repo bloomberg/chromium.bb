@@ -26,28 +26,26 @@ class SpdyAltSvcWireFormatPeer;
 
 class NET_EXPORT_PRIVATE SpdyAltSvcWireFormat {
  public:
-  struct AlternativeService {
+  struct NET_EXPORT_PRIVATE AlternativeService {
     std::string protocol_id;
     std::string host;
     uint16 port;
+    uint16 version;
     uint32 max_age;
     double p;
 
-    AlternativeService() = default;
+    AlternativeService();
     AlternativeService(const std::string& protocol_id,
                        const std::string& host,
                        uint16 port,
+                       uint16 version,
                        uint32 max_age,
-                       double p)
-        : protocol_id(protocol_id),
-          host(host),
-          port(port),
-          max_age(max_age),
-          p(p) {}
+                       double p);
 
     bool operator==(const AlternativeService& other) const {
       return protocol_id == other.protocol_id && host == other.host &&
-             port == other.port && max_age == other.max_age && p == other.p;
+             port == other.port && version == other.version &&
+             max_age == other.max_age && p == other.p;
     }
   };
   typedef std::vector<AlternativeService> AlternativeServiceVector;
