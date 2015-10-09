@@ -42,8 +42,12 @@ import sys
 EXECUTABLE_EXTENSIONS = (
   'bat',
   'dll',
-  'dylib',
   'exe',
+)
+
+# Files for which the executable bit may or may not be set.
+IGNORED_EXTENSIONS = (
+  'dylib',
 )
 
 # These files must have executable bit set.
@@ -201,7 +205,8 @@ IGNORED_PATHS = (
 
 #### USER EDITABLE SECTION ENDS HERE ####
 
-assert set(EXECUTABLE_EXTENSIONS) & set(NON_EXECUTABLE_EXTENSIONS) == set()
+assert (set(EXECUTABLE_EXTENSIONS) & set(IGNORED_EXTENSIONS) &
+        set(NON_EXECUTABLE_EXTENSIONS) == set())
 assert set(EXECUTABLE_PATHS) & set(NON_EXECUTABLE_PATHS) == set()
 
 VALID_CHARS = set(string.ascii_lowercase + string.digits + '/-_.')
@@ -243,6 +248,13 @@ def must_be_executable(rel_path):
   """
   return (os.path.splitext(rel_path)[1][1:] in EXECUTABLE_EXTENSIONS or
           rel_path.lower() in EXECUTABLE_PATHS)
+
+
+def ignored_extension(rel_path):
+    """The file name represents a file type that may or may not have the
+    executable set.
+    """
+    return os.path.splitext(rel_path)[1][1:] in IGNORED_EXTENSIONS
 
 
 def must_not_be_executable(rel_path):
@@ -302,6 +314,8 @@ def check_file(root_path, rel_path):
   if must_not_be_executable(rel_path):
     if bit:
       return result_dict('Must not have executable bit set')
+    return
+  if ignored_extension(rel_path):
     return
 
   # For the others, it depends on the file header.
