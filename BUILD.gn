@@ -179,6 +179,7 @@ group("both_gn_and_gyp") {
   } else {
     deps += [
       "//ios/net:ios_net_unittests",
+      "//ios/testing:ocmock_support_unittest",
       "//ios/third_party/gcdwebserver",
     ]
   }

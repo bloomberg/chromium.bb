@@ -7,6 +7,7 @@
   },
   'targets': [
     {
+      # GN version: //ios/testing:ocmock_support
       'target_name': 'ocmock_support',
       'type': 'static_library',
       'dependencies': [
@@ -23,6 +24,7 @@
       ],
     },
     {
+      # GN version: //ios/testing:ocmock_support_unittest
       'target_name': 'ocmock_support_unittest',
       'type': 'executable',
       'variables': {
