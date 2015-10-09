@@ -39,6 +39,7 @@ from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
 from utils import file_path
+from utils import fs
 from utils import logging_utils
 from utils import tools
 
@@ -49,7 +50,7 @@ if sys.platform == 'win32':
   from ctypes.wintypes import windll # pylint: disable=E0611
 
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -316,7 +317,7 @@ class Results(object):
       assert path, path
       assert tainted or bool(root) != bool(file_path.isabs(path)), (root, path)
       assert tainted or (
-          not os.path.exists(self.full_path) or
+          not fs.exists(self.full_path) or
           (self.full_path == file_path.get_native_path_case(self.full_path))), (
               tainted,
               self.full_path,
@@ -336,7 +337,7 @@ class Results(object):
     def real_path(self):
       """Returns the path with symlinks resolved."""
       if not self._real_path:
-        self._real_path = os.path.realpath(self.full_path)
+        self._real_path = fs.path.realpath(self.full_path)
       return self._real_path
 
     @property
@@ -348,7 +349,7 @@ class Results(object):
       """
       if self._size is None and not self.tainted:
         try:
-          self._size = os.stat(self.full_path).st_size
+          self._size = fs.stat(self.full_path).st_size
         except OSError:
           self._size = -1
       return self._size
@@ -553,7 +554,7 @@ class Results(object):
     accessed through any symlink which points to the same directory.
     """
     # Resolve any symlink
-    root = os.path.realpath(root)
+    root = fs.realpath(root)
     root = (
         file_path.get_native_path_case(root).rstrip(os.path.sep) + os.path.sep)
     logging.debug('strip_root(%s)' % root)
@@ -624,7 +625,7 @@ class ApiBase(object):
           if self._blacklist(x):
             return
           # Filters out directories. Some may have passed through.
-          if os.path.isdir(x):
+          if fs.isdir(x):
             return
           return x, m
 
@@ -712,7 +713,7 @@ class ApiBase(object):
         try:
           while self._scripts_to_cleanup:
             try:
-              os.remove(self._scripts_to_cleanup.pop())
+              fs.remove(self._scripts_to_cleanup.pop())
             except OSError as e:
               logging.error('Failed to delete a temporary script: %s', e)
           tools.write_json(self._logname, self._gen_logdata(), False)
@@ -1469,12 +1470,12 @@ class Strace(ApiBase):
 
   @staticmethod
   def clean_trace(logname):
-    if os.path.isfile(logname):
-      os.remove(logname)
+    if fs.isfile(logname):
+      fs.remove(logname)
     # Also delete any pid specific file from previous traces.
     for i in glob.iglob(logname + '.*'):
       if i.rsplit('.', 1)[1].isdigit():
-        os.remove(i)
+        fs.remove(i)
 
   @classmethod
   def parse_log(cls, logname, blacklist, trace_name):
@@ -1738,7 +1739,7 @@ class Dtrace(ApiBase):
       filepath = os.path.normpath(filepath)
       # Sadly, still need to filter out directories here;
       # saw open_nocancel(".", 0, 0) = 0 lines.
-      if os.path.isdir(filepath):
+      if fs.isdir(filepath):
         return
       self._process_lookup[pid].add_file(filepath, mode)
 
@@ -2125,9 +2126,9 @@ class Dtrace(ApiBase):
           prefix=u'trace_signal_file')
 
       dtrace_path = '/usr/sbin/dtrace'
-      if not os.path.isfile(dtrace_path):
+      if not fs.isfile(dtrace_path):
         dtrace_path = 'dtrace'
-      elif use_sudo is None and (os.stat(dtrace_path).st_mode & stat.S_ISUID):
+      elif use_sudo is None and (fs.stat(dtrace_path).st_mode & stat.S_ISUID):
         # No need to sudo. For those following at home, don't do that.
         use_sudo = False
 
@@ -2149,13 +2150,13 @@ class Dtrace(ApiBase):
       if use_sudo is not False:
         trace_cmd.insert(0, 'sudo')
 
-      with open(self._logname + '.log', 'wb') as logfile:
+      with fs.open(self._logname + '.log', 'wb') as logfile:
         self._dtrace = subprocess.Popen(
             trace_cmd, stdout=logfile, stderr=subprocess.STDOUT)
       logging.debug('Started dtrace pid: %d' % self._dtrace.pid)
 
       # Reads until one line is printed, which signifies dtrace is up and ready.
-      with open(self._logname + '.log', 'rb') as logfile:
+      with fs.open(self._logname + '.log', 'rb') as logfile:
         while 'dtrace_BEGIN' not in logfile.readline():
           if self._dtrace.poll() is not None:
             # Do a busy wait. :/
@@ -2277,7 +2278,7 @@ class Dtrace(ApiBase):
           print 'dtrace failure: %s' % self._dtrace.returncode
       finally:
         os.close(self._dummy_file_id)
-        os.remove(self._dummy_file_name)
+        fs.remove(self._dummy_file_name)
 
     def post_process_log(self):
       """Sorts the log back in order when each call occured.
@@ -2287,7 +2288,7 @@ class Dtrace(ApiBase):
       """
       super(Dtrace.Tracer, self).post_process_log()
       logname = self._logname + '.log'
-      with open(logname, 'rb') as logfile:
+      with fs.open(logname, 'rb') as logfile:
         lines = [l for l in logfile if l.strip()]
       errors = [l for l in lines if l.startswith('dtrace:')]
       if errors:
@@ -2301,7 +2302,7 @@ class Dtrace(ApiBase):
             'Found errors in the trace: %s' % '\n'.join(
                 l for l in lines if l.split(' ', 1)[0].isdigit()),
             None, None, None, logname)
-      with open(logname, 'wb') as logfile:
+      with fs.open(logname, 'wb') as logfile:
         logfile.write(''.join(lines))
 
   def __init__(self, use_sudo=None):
@@ -2314,8 +2315,8 @@ class Dtrace(ApiBase):
   @staticmethod
   def clean_trace(logname):
     for ext in ('', '.log'):
-      if os.path.isfile(logname + ext):
-        os.remove(logname + ext)
+      if fs.isfile(logname + ext):
+        fs.remove(logname + ext)
 
   @classmethod
   def parse_log(cls, logname, blacklist, trace_name):
@@ -2531,7 +2532,7 @@ class LogmanTrace(ApiBase):
       if len(filepath) == 2:
         return
       file_object = line[FILE_OBJECT]
-      if os.path.isdir(filepath):
+      if fs.isdir(filepath):
         # There is no O_DIRECTORY equivalent on Windows. The closed is
         # FILE_FLAG_BACKUP_SEMANTICS but it's not exactly right either. So
         # simply discard directories are they are found.
@@ -2619,7 +2620,7 @@ class LogmanTrace(ApiBase):
       if not cmd0.endswith('.exe'):
         # TODO(maruel): That's not strictly true either.
         cmd0 += '.exe'
-      if cmd0.endswith(proc.executable) and os.path.isfile(cmd0):
+      if cmd0.endswith(proc.executable) and fs.isfile(cmd0):
         # Fix the path.
         cmd0 = cmd0.replace('/', os.path.sep)
         cmd0 = os.path.normpath(cmd0)
@@ -3021,7 +3022,9 @@ class LogmanTrace(ApiBase):
       # must not convert the trim() call into a list, since it will use too much
       # memory for large trace. use a csv file as a workaround since the json
       # parser requires a complete in-memory file.
-      with open('%s.preprocessed' % self._logname, 'wb') as f:
+      path = os.path.join(
+          unicode(os.getcwd()), u'%s.preprocessed' % self._logname)
+      with fs.open(path, 'wb') as f:
         # $ and * can't be used in file name on windows, reducing the likelihood
         # of having to escape a string.
         out = csv.writer(
@@ -3080,8 +3083,8 @@ class LogmanTrace(ApiBase):
   @staticmethod
   def clean_trace(logname):
     for ext in ('', '.csv', '.etl', '.json', '.xml', '.preprocessed'):
-      if os.path.isfile(logname + ext):
-        os.remove(logname + ext)
+      if fs.isfile(logname + ext):
+        fs.remove(logname + ext)
 
   @classmethod
   def parse_log(cls, logname, blacklist, trace_name):
@@ -3110,7 +3113,8 @@ class LogmanTrace(ApiBase):
     # The log may be too large to fit in memory and it is not efficient to read
     # it multiple times, so multiplex the contexes instead, which is slightly
     # more awkward.
-    with open('%s.preprocessed' % logname, 'rb') as f:
+    path = os.path.join(unicode(os.getcwd()), u'%s.preprocessed' % logname)
+    with fs.open(path, 'rb') as f:
       lines = csv.reader(
           f, delimiter='$', quotechar='*', quoting=csv.QUOTE_MINIMAL)
       for encoded in lines:
@@ -3167,7 +3171,7 @@ def extract_directories(root_dir, files, blacklist):
   # It is important for root_dir to not be a symlinked path, make sure to call
   # os.path.realpath() as needed.
   assert not root_dir or (
-      os.path.realpath(file_path.get_native_path_case(root_dir)) == root_dir)
+      fs.realpath(file_path.get_native_path_case(root_dir)) == root_dir)
   assert not any(isinstance(f, Results.Directory) for f in files)
   # Remove non existent files.
   files = [f for f in files if f.existent]
@@ -3198,11 +3202,11 @@ def extract_directories(root_dir, files, blacklist):
 
   root_prefix = len(root_dir) + 1 if root_dir else 0
   for directory in sorted(buckets, reverse=True):
-    if not os.path.isdir(directory):
+    if not fs.isdir(directory):
       logging.debug(
           '%s was a directory but doesn\'t exist anymore; ignoring', directory)
       continue
-    actual = set(f for f in os.listdir(directory) if not blacklist(f))
+    actual = set(f for f in fs.listdir(directory) if not blacklist(f))
     expected = set(buckets[directory])
     if not (actual - expected):
       parent = os.path.dirname(directory)
@@ -3265,7 +3269,7 @@ def CMDtrace(parser, args):
   if not can_trace():
     parser.error('Please rerun this program with admin privileges')
 
-  if not os.path.isabs(args[0]) and os.access(args[0], os.X_OK):
+  if not os.path.isabs(args[0]) and fs.access(args[0], os.X_OK):
     args[0] = os.path.abspath(args[0])
 
   # options.sudo default value is None, which is to do whatever tracer defaults
@@ -3376,7 +3380,7 @@ class OptionParserTraceInputs(logging_utils.OptionParserWithLogging):
         self, *args, **kwargs)
     if not options.log:
       self.error('Must supply a log file with -l')
-    options.log = os.path.abspath(options.log)
+    options.log = unicode(os.path.abspath(options.log))
     return options, args
 
 

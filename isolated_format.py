@@ -13,6 +13,7 @@ import stat
 import sys
 
 from utils import file_path
+from utils import fs
 from utils import tools
 
 
@@ -70,7 +71,7 @@ def hash_file(filepath, algo):
   |algo| should be one of hashlib hashing algorithm.
   """
   digest = algo()
-  with open(filepath, 'rb') as f:
+  with fs.open(filepath, 'rb') as f:
     while True:
       chunk = f.read(DISK_FILE_CHUNK)
       if not chunk:
@@ -260,7 +261,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
       relfile = relfile[2:]
     outfiles = symlinks
     try:
-      for filename in file_path.listdir(infile):
+      for filename in fs.listdir(infile):
         inner_relfile = os.path.join(relfile, filename)
         if blacklist and blacklist(inner_relfile):
           continue

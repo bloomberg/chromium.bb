@@ -13,7 +13,7 @@ See more information at
 """
 # Run ./isolate.py --help for more detailed information.
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 import datetime
 import itertools
@@ -36,6 +36,7 @@ from third_party.depot_tools import subcommand
 
 from utils import logging_utils
 from utils import file_path
+from utils import fs
 from utils import tools
 
 
@@ -79,7 +80,7 @@ def recreate_tree(outdir, indir, infiles, action, as_hash):
   assert os.path.isabs(outdir) and outdir == os.path.normpath(outdir), outdir
   if not os.path.isdir(outdir):
     logging.info('Creating %s' % outdir)
-    os.makedirs(outdir)
+    fs.makedirs(outdir)
 
   for relfile, metadata in infiles.iteritems():
     infile = os.path.join(indir, relfile)
@@ -95,22 +96,22 @@ def recreate_tree(outdir, indir, infiles, action, as_hash):
         if not 's' in metadata:
           raise isolated_format.MappingError(
               'Misconfigured item %s: %s' % (relfile, metadata))
-        if metadata['s'] == os.stat(outfile).st_size:
+        if metadata['s'] == fs.stat(outfile).st_size:
           continue
         else:
           logging.warn('Overwritting %s' % metadata['h'])
-          os.remove(outfile)
+          fs.remove(outfile)
     else:
       outfile = os.path.join(outdir, relfile)
       outsubdir = os.path.dirname(outfile)
       if not os.path.isdir(outsubdir):
-        os.makedirs(outsubdir)
+        fs.makedirs(outsubdir)
 
     if 'l' in metadata:
       pointed = metadata['l']
       logging.debug('Symlink: %s -> %s' % (outfile, pointed))
       # symlink doesn't exist on Windows.
-      os.symlink(pointed, outfile)  # pylint: disable=E1101
+      fs.symlink(pointed, outfile)  # pylint: disable=E1101
     else:
       file_path.link_file(outfile, infile, action)
 
@@ -424,14 +425,14 @@ class SavedState(Flattenable):
     # The .isolate file must be valid. If it is not present anymore, zap the
     # value as if it was not noted, so .isolate_file can safely be overriden
     # later.
-    if out.isolate_file and not os.path.isfile(out.isolate_filepath):
+    if out.isolate_file and not fs.isfile(out.isolate_filepath):
       out.isolate_file = None
     if out.isolate_file:
       # It could be absolute on Windows if the drive containing the .isolate and
       # the drive containing the .isolated files differ, .e.g .isolate is on
       # C:\\ and .isolated is on D:\\   .
       assert not os.path.isabs(out.isolate_file) or sys.platform == 'win32'
-      assert os.path.isfile(out.isolate_filepath), out.isolate_filepath
+      assert fs.isfile(out.isolate_filepath), out.isolate_filepath
     return out
 
   def flatten(self):
@@ -497,7 +498,7 @@ class CompleteState(object):
     # retrieve the paths, so update them first.
     self.saved_state.update_config(config_variables)
 
-    with open(isolate_file, 'r') as f:
+    with fs.open(isolate_file, 'r') as f:
       # At that point, variables are not replaced yet in command and infiles.
       # infiles may contain directory entries and is in posix style.
       command, infiles, read_only, isolate_cmd_dir = (
@@ -716,11 +717,11 @@ def create_isolate_tree(outdir, root_dir, files, relative_cwd, read_only):
       action=action,
       as_hash=False)
   cwd = os.path.normpath(os.path.join(outdir, relative_cwd))
-  if not os.path.isdir(cwd):
+  if not fs.isdir(cwd):
     # It can happen when no files are mapped from the directory containing the
     # .isolate file. But the directory must exist to be the current working
     # directory.
-    os.makedirs(cwd)
+    fs.makedirs(cwd)
   run_isolated.change_tree_read_only(outdir, read_only)
   return cwd
 
@@ -746,7 +747,7 @@ def prepare_for_archival(options, cwd):
         os.path.dirname(complete_state.isolated_filepath), item)
     # Do not use isolated_format.hash_file() here because the file is
     # likely smallish (under 500kb) and its file size is needed.
-    with open(item_path, 'rb') as f:
+    with fs.open(item_path, 'rb') as f:
       content = f.read()
     isolated_hash.append(
         complete_state.saved_state.algo(content).hexdigest())
@@ -857,7 +858,9 @@ def CMDarchive(parser, args):
   auth.process_auth_options(parser, options)
   isolateserver.process_isolate_server_options(parser, options, True)
   result = isolate_and_archive(
-      [(options, os.getcwd())], options.isolate_server, options.namespace)
+      [(options, unicode(os.getcwd()))],
+      options.isolate_server,
+      options.namespace)
   if result is None:
     return EXIT_CODE_UPLOAD_ERROR
   assert len(result) == 1, result
@@ -903,7 +906,7 @@ def CMDbatcharchive(parser, args):
     if data.get('version') != ISOLATED_GEN_JSON_VERSION:
       parser.error('Invalid version in %s' % gen_json_path)
     cwd = data.get('dir')
-    if not isinstance(cwd, unicode) or not os.path.isdir(cwd):
+    if not isinstance(cwd, unicode) or not fs.isdir(cwd):
       parser.error('Invalid dir in %s' % gen_json_path)
     args = data.get('args')
     if (not isinstance(args, list) or
@@ -967,10 +970,10 @@ def CMDremap(parser, args):
   process_outdir_options(parser, options, cwd)
   complete_state = load_complete_state(options, cwd, None, options.skip_refresh)
 
-  if not os.path.isdir(options.outdir):
-    os.makedirs(options.outdir)
+  if not fs.isdir(options.outdir):
+    fs.makedirs(options.outdir)
   print('Remapping into %s' % options.outdir)
-  if os.listdir(options.outdir):
+  if fs.listdir(options.outdir):
     raise ExecutionError('Can\'t remap in a non-empty directory')
 
   create_isolate_tree(
@@ -1171,8 +1174,8 @@ def process_isolate_options(parser, options, cwd=None, require_isolated=True):
 
   # Parse --isolated option.
   if options.isolated:
-    options.isolated = os.path.normpath(
-        os.path.join(cwd, options.isolated.replace('/', os.path.sep)))
+    options.isolated = os.path.abspath(
+        os.path.join(cwd, unicode(options.isolated).replace('/', os.path.sep)))
   if require_isolated and not options.isolated:
     parser.error('--isolated is required.')
   if options.isolated and not options.isolated.endswith('.isolated'):
@@ -1195,7 +1198,7 @@ def process_isolate_options(parser, options, cwd=None, require_isolated=True):
     # TODO(maruel): Work with non-ASCII.
     # The path must be in native path case for tracing purposes.
     options.isolate = unicode(options.isolate).replace('/', os.path.sep)
-    options.isolate = os.path.normpath(os.path.join(cwd, options.isolate))
+    options.isolate = os.path.abspath(os.path.join(cwd, options.isolate))
     options.isolate = file_path.get_native_path_case(options.isolate)
 
 

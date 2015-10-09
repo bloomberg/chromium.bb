@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.5.3'
+__version__ = '0.5.4'
 
 import logging
 import optparse
@@ -25,6 +25,7 @@ import tempfile
 from third_party.depot_tools import fix_encoding
 
 from utils import file_path
+from utils import fs
 from utils import logging_utils
 from utils import on_error
 from utils import subprocess42
@@ -87,7 +88,8 @@ def make_temp_dir(prefix, root_dir=None):
   """
   base_temp_dir = None
   if (root_dir and
-      not file_path.is_same_filesystem(root_dir, tempfile.gettempdir())):
+      not file_path.is_same_filesystem(
+        root_dir, unicode(tempfile.gettempdir()))):
     base_temp_dir = root_dir
   return unicode(tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir))
 
@@ -217,7 +219,7 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
   # Upload out_dir and generate a .isolated file out of this directory. It is
   # only done if files were written in the directory.
   outputs_ref = None
-  if os.path.isdir(out_dir) and os.listdir(out_dir):
+  if fs.isdir(out_dir) and fs.listdir(out_dir):
     with tools.Profiler('ArchiveOutput'):
       try:
         results = isolateserver.archive_files_to_storage(
@@ -238,13 +240,13 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
         # Re-raise, so it will be treated as an internal failure.
         raise
   try:
-    if (not leak_temp_dir and os.path.isdir(out_dir) and
+    if (not leak_temp_dir and fs.isdir(out_dir) and
         not file_path.rmtree(out_dir)):
       logging.error('Had difficulties removing out_dir %s', out_dir)
       return outputs_ref, False
   except OSError as e:
     # When this happens, it means there's a process error.
-    logging.error('Had difficulties removing out_dir %s: %s', out_dir, e)
+    logging.exception('Had difficulties removing out_dir %s: %s', out_dir, e)
     return outputs_ref, False
   return outputs_ref, True
 
@@ -262,8 +264,8 @@ def map_and_run(
     'version': 2,
   }
   if root_dir:
-    if not os.path.isdir(root_dir):
-      os.makedirs(root_dir, 0700)
+    if not fs.isdir(root_dir):
+      fs.makedirs(root_dir, 0700)
     prefix = u''
   else:
     root_dir = os.path.dirname(cache.cache_dir) if cache.cache_dir else None
@@ -289,7 +291,7 @@ def map_and_run(
   except Exception as e:
     # An internal error occured. Report accordingly so the swarming task will be
     # retried automatically.
-    logging.error('internal failure: %s', e)
+    logging.exception('internal failure: %s', e)
     result['internal_failure'] = str(e)
     on_error.report(None)
   finally:
@@ -298,7 +300,7 @@ def map_and_run(
         logging.warning(
             'Deliberately leaking %s for later examination', run_dir)
       else:
-        if os.path.isdir(run_dir) and not file_path.rmtree(run_dir):
+        if fs.isdir(run_dir) and not file_path.rmtree(run_dir):
           # On Windows rmtree(run_dir) call above has a synchronization effect:
           # it finishes only when all task child processes terminate (since a
           # running process locks *.exe file). Examine out_dir only after that
@@ -311,7 +313,7 @@ def map_and_run(
               'Fix your stuff.')
           if result['exit_code'] == 0:
             result['exit_code'] = 1
-        if os.path.isdir(tmp_dir) and not file_path.rmtree(tmp_dir):
+        if fs.isdir(tmp_dir) and not file_path.rmtree(tmp_dir):
           print >> sys.stderr, (
               'Failed to delete the temporary directory, forcibly failing\n'
               'the task because of it. No zombie process can outlive a\n'
@@ -327,7 +329,7 @@ def map_and_run(
         result['exit_code'] = 1
     except Exception as e:
       # Swallow any exception in the main finally clause.
-      logging.error('Leaking out_dir %s: %s', out_dir, e)
+      logging.exception('Leaking out_dir %s: %s', out_dir, e)
       result['internal_failure'] = str(e)
   return result
 
@@ -375,8 +377,8 @@ def run_tha_test(
     # We've found tests to delete 'work' when quitting, causing an exception
     # here. Try to recreate the directory if necessary.
     work_dir = os.path.dirname(result_json)
-    if not os.path.isdir(work_dir):
-      os.mkdir(work_dir)
+    if not fs.isdir(work_dir):
+      fs.mkdir(work_dir)
     tools.write_json(result_json, result, dense=True)
     # Only return 1 if there was an internal error.
     return int(bool(result['internal_failure']))
@@ -438,6 +440,10 @@ def main(args):
   isolateserver.process_isolate_server_options(parser, options, True)
 
   cache = isolateserver.process_cache_options(options)
+  if options.root_dir:
+    options.root_dir = unicode(os.path.abspath(options.root_dir))
+  if options.json:
+    options.json = unicode(os.path.abspath(options.json))
   with isolateserver.get_storage(
       options.isolate_server, options.namespace) as storage:
     # Hashing schemes used by |storage| and |cache| MUST match.

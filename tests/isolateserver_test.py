@@ -275,24 +275,24 @@ class StorageTest(TestCase):
 
   def test_upload_tree(self):
     files = {
-      '/a': {
+      u'/a': {
         's': 100,
         'h': 'hash_a',
       },
-      '/some/dir/b': {
+      u'/some/dir/b': {
         's': 200,
         'h': 'hash_b',
       },
-      '/another/dir/c': {
+      u'/another/dir/c': {
         's': 300,
         'h': 'hash_c',
       },
-      '/a_copy': {
+      u'/a_copy': {
         's': 100,
         'h': 'hash_a',
       },
     }
-    files_data = dict((k, 'x' * files[k]['s']) for k in files)
+    files_data = {k: 'x' * files[k]['s'] for k in files}
     all_hashes = set(f['h'] for f in files.itervalues())
     missing_hashes = {'hash_a': 'push a', 'hash_b': 'push b'}
 

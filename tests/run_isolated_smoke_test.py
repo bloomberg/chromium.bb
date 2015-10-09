@@ -10,7 +10,7 @@ import subprocess
 import sys
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = unicode(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT_DIR)
 
 import isolated_format
@@ -53,6 +53,16 @@ CONTENTS = {
         print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
         sys.exit(1)
       print('Success')""",
+  'max_path.py': """if True:
+      import os, sys
+      prefix = u'\\\\\\\\?\\\\' if sys.platform == 'win32' else u''
+      path = unicode(os.path.join(os.getcwd(), 'a' * 200, 'b' * 200))
+      with open(prefix + path, 'rb') as f:
+        actual = f.read()
+        if actual != 'File1\\n':
+          print >> sys.stderr, 'Unexpected content: %s' % actual
+          sys.exit(1)
+      print('Success')""",
 }
 
 
@@ -93,6 +103,16 @@ CONTENTS['manifest2.isolated'] = json.dumps(
       'includes': [
         isolateserver_mock.hash_content(CONTENTS['manifest1.isolated']),
       ],
+    })
+
+
+CONTENTS['max_path.isolated'] = json.dumps(
+    {
+      'command': ['python', 'max_path.py'],
+      'files': {
+        'a' * 200 + '/' + 'b' * 200: file_meta('file1.txt'),
+        'max_path.py': file_meta('max_path.py'),
+      },
     })
 
 
@@ -162,7 +182,7 @@ class RunIsolatedTest(unittest.TestCase):
   def setUp(self):
     super(RunIsolatedTest, self).setUp()
     self.tempdir = run_isolated.make_temp_dir(
-        'run_isolated_smoke_test', ROOT_DIR)
+        u'run_isolated_smoke_test', ROOT_DIR)
     logging.debug(self.tempdir)
     # run_isolated.zip executable package.
     self.run_isolated_zip = os.path.join(self.tempdir, 'run_isolated.zip')
@@ -246,6 +266,23 @@ class RunIsolatedTest(unittest.TestCase):
       self._store('repeated_files.py'),
     ]
 
+    out, err, returncode = self._run(self._cmd_args(isolated_hash))
+    self.assertEqual('', err)
+    self.assertEqual('Success\n', out, out)
+    self.assertEqual(0, returncode)
+    actual = list_files_tree(self.cache)
+    self.assertEqual(sorted(set(expected)), actual)
+
+  def test_max_path(self):
+    # Make sure we can map and delete a tree that has paths longer than
+    # MAX_PATH.
+    isolated_hash = self._store('max_path.isolated')
+    expected = [
+      'state.json',
+      isolated_hash,
+      self._store('file1.txt'),
+      self._store('max_path.py'),
+    ]
     out, err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual('', err)
     self.assertEqual('Success\n', out, out)

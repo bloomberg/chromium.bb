@@ -1417,8 +1417,10 @@ class IsolateCommand(IsolateBase):
     self.assertEqual(expected, actual)
 
     expected_json = {
-      'x': isolated_format.hash_file('x.isolated', ALGO),
-      'y': isolated_format.hash_file('y.isolated', ALGO),
+      'x': isolated_format.hash_file(
+          os.path.join(self.cwd, 'x.isolated'), ALGO),
+      'y': isolated_format.hash_file(
+          os.path.join(self.cwd, 'y.isolated'), ALGO),
     }
     self.assertEqual(expected_json, tools.read_json('json_output.json'))
 

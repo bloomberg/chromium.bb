@@ -20,6 +20,8 @@ import posixpath
 import re
 import sys
 
+from utils import fs
+
 
 # Valid variable name.
 VALID_VARIABLE = '[A-Za-z_][A-Za-z_0-9]*'
@@ -548,7 +550,7 @@ def load_included_isolate(isolate_dir, isolate_path):
     if included_isolate[0].lower() != isolate_dir[0].lower():
       raise IsolateError(
           'Can\'t reference a .isolate file from another drive')
-  with open(included_isolate, 'r') as f:
+  with fs.open(included_isolate, 'r') as f:
     return load_isolate_as_config(
         os.path.dirname(included_isolate),
         eval_content(f.read()),

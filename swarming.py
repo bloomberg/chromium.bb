@@ -24,6 +24,7 @@ from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
 from utils import file_path
+from utils import fs
 from utils import logging_utils
 from third_party.chromium import natsort
 from utils import net
@@ -360,15 +361,17 @@ class TaskOutputCollector(object):
       task_output_dir: (optional) local directory to put fetched files to.
       shard_count: expected number of task shards.
     """
-    self.task_output_dir = task_output_dir
+    self.task_output_dir = (
+        unicode(os.path.abspath(task_output_dir))
+        if task_output_dir else task_output_dir)
     self.shard_count = shard_count
 
     self._lock = threading.Lock()
     self._per_shard_results = {}
     self._storage = None
 
-    if self.task_output_dir and not os.path.isdir(self.task_output_dir):
-      os.makedirs(self.task_output_dir)
+    if self.task_output_dir and not fs.isdir(self.task_output_dir):
+      fs.makedirs(self.task_output_dir)
 
   def process_shard_result(self, shard_index, result):
     """Stores results of a single task shard, fetches output files if necessary.
@@ -429,7 +432,7 @@ class TaskOutputCollector(object):
       # Write summary.json to task_output_dir as well.
       if self.task_output_dir:
         tools.write_json(
-            os.path.join(self.task_output_dir, 'summary.json'),
+            os.path.join(self.task_output_dir, u'summary.json'),
             summary,
             False)
       if self._storage:
@@ -1060,7 +1063,7 @@ def CMDcollect(parser, args):
 
   if options.json:
     try:
-      with open(options.json) as f:
+      with fs.open(options.json, 'rb') as f:
         tasks = sorted(
             json.load(f)['tasks'].itervalues(), key=lambda x: x['shard_index'])
         args = [t['task_id'] for t in tasks]
@@ -1092,7 +1095,7 @@ def CMDput_bootstrap(parser, args):
   if len(args) != 1:
     parser.error('Must specify file to upload')
   url = options.swarming + '/_ah/api/swarming/v1/server/put_bootstrap'
-  with open(args[0], 'rb') as f:
+  with fs.open(args[0], 'rb') as f:
     content = f.read().decode('utf-8')
   data = net.url_read_json(url, data={'content': content})
   print data
@@ -1106,7 +1109,7 @@ def CMDput_bot_config(parser, args):
   if len(args) != 1:
     parser.error('Must specify file to upload')
   url = options.swarming + '/_ah/api/swarming/v1/server/put_bot_config'
-  with open(args[0], 'rb') as f:
+  with fs.open(args[0], 'rb') as f:
     content = f.read().decode('utf-8')
   data = net.url_read_json(url, data={'content': content})
   print data
@@ -1206,7 +1209,7 @@ def CMDquery_list(parser, args):
   except APIError as e:
     parser.error(str(e))
   if options.json:
-    with open(options.json, 'wb') as f:
+    with fs.open(options.json, 'wb') as f:
       json.dump(apis, f)
   else:
     help_url = (
@@ -1287,8 +1290,9 @@ def CMDreproduce(parser, args):
     print >> sys.stderr, 'Failed to retrieve request data for the task'
     return 1
 
-  if not os.path.isdir('work'):
-    os.mkdir('work')
+  workdir = unicode(os.path.abspath('work'))
+  if not fs.isdir(workdir):
+    fs.mkdir(workdir)
 
   properties = request['properties']
   env = None
@@ -1300,7 +1304,7 @@ def CMDreproduce(parser, args):
         for i in properties['env'])
 
   try:
-    return subprocess.call(properties['command'], env=env, cwd='work')
+    return subprocess.call(properties['command'], env=env, cwd=workdir)
   except OSError as e:
     print >> sys.stderr, 'Failed to run: %s' % ' '.join(properties['command'])
     print >> sys.stderr, str(e)

@@ -984,7 +984,7 @@ class TestMain(NetTestCase):
         expected = os.environ.copy()
         expected['aa'] = 'bb'
         self.assertEqual(expected, env)
-        self.assertEqual('work', cwd)
+        self.assertEqual(unicode(os.path.abspath('work')), cwd)
         return 0
 
       self.mock(subprocess, 'call', call)
