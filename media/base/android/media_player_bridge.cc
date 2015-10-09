@@ -109,17 +109,16 @@ void MediaPlayerBridge::SetDuration(base::TimeDelta duration) {
 }
 
 void MediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
-  if (j_media_player_bridge_.is_null()) {
-    if (!surface.IsEmpty())
-      surface_ =  surface.Pass();
+  surface_ =  surface.Pass();
+
+  if (j_media_player_bridge_.is_null())
     return;
-  }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
   Java_MediaPlayerBridge_setSurface(
-      env, j_media_player_bridge_.obj(), surface.j_surface().obj());
+      env, j_media_player_bridge_.obj(), surface_.j_surface().obj());
 }
 
 void MediaPlayerBridge::Prepare() {
