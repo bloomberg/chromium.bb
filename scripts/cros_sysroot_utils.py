@@ -10,7 +10,6 @@ from __future__ import print_function
 import os
 import sys
 
-from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import sysroot_lib
@@ -33,7 +32,6 @@ def ParseArgs(argv):
   config = subparser.add_parser('generate-config')
   target = config.add_mutually_exclusive_group(required=True)
   target.add_argument('--board', help='Board to generate the config for.')
-  target.add_argument('--brick', help='Brick to generate the config for.')
   config.add_argument('--out-file', dest='out_file',
                       help='File to write into. If not specified, the '
                       'configuration will be printed to stdout.')
@@ -84,11 +82,7 @@ def main(argv):
   if opts.command == 'create-wrappers':
     sysroot.CreateAllWrappers(opts.friendlyname)
   elif opts.command == 'generate-config':
-    if opts.brick:
-      config = sysroot.GenerateBrickConfig(
-          brick_lib.Brick(opts.brick).BrickStack())
-    else:
-      config = sysroot.GenerateBoardConfig(opts.board)
+    config = sysroot.GenerateBoardConfig(opts.board)
 
     output.write('\n' + config)
   elif opts.command == 'generate-make-conf':

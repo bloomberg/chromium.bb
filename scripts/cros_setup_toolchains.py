@@ -18,7 +18,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import toolchain
-from chromite.lib import workspace_lib
 
 # Needs to be after chromite imports.
 import lddtree
@@ -569,8 +568,8 @@ def ExpandTargets(targets_wanted):
     Dictionary of concrete targets and their toolchain tuples.
   """
   targets_wanted = set(targets_wanted)
-  if targets_wanted in (set(['boards']), set(['bricks'])):
-    # Only pull targets from the included boards/bricks.
+  if targets_wanted == set(['boards']):
+    # Only pull targets from the included boards.
     return {}
 
   all_targets = toolchain.GetAllTargets()
@@ -589,7 +588,7 @@ def ExpandTargets(targets_wanted):
 
 
 def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
-                     targets_wanted, boards_wanted, bricks_wanted, root='/'):
+                     targets_wanted, boards_wanted, root='/'):
   """Performs all steps to create a synchronized toolchain enviroment.
 
   Args:
@@ -599,7 +598,6 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
     reconfig: Reload crossdev config and reselect toolchains
     targets_wanted: All the targets to update
     boards_wanted: Load targets from these boards
-    bricks_wanted: Load targets from these bricks
     root: The root in which to install the toolchains.
   """
   targets, crossdev_targets, reconfig_targets = {}, {}, {}
@@ -608,12 +606,10 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
     # work on bare systems where this is useful.
     targets = ExpandTargets(targets_wanted)
 
-    # Now re-add any targets that might be from this board/brick. This is to
+    # Now re-add any targets that might be from this board. This is to
     # allow unofficial boards to declare their own toolchains.
     for board in boards_wanted:
       targets.update(toolchain.GetToolchainsForBoard(board))
-    for brick in bricks_wanted:
-      targets.update(toolchain.GetToolchainsForBrick(brick))
 
     # First check and initialize all cross targets that need to be.
     for target in targets:
@@ -647,12 +643,9 @@ def ShowConfig(name):
   """Show the toolchain tuples used by |name|
 
   Args:
-    name: The board name or brick locator to query.
+    name: The board name to query.
   """
-  if workspace_lib.IsLocator(name):
-    toolchains = toolchain.GetToolchainsForBrick(name)
-  else:
-    toolchains = toolchain.GetToolchainsForBoard(name)
+  toolchains = toolchain.GetToolchainsForBoard(name)
   # Make sure we display the default toolchain first.
   print(','.join(
       toolchain.FilterToolchains(toolchains, 'default', True).keys() +
@@ -1075,13 +1068,10 @@ def main(argv):
   parser.add_argument('-t', '--targets',
                       dest='targets', default='sdk',
                       help="Comma separated list of tuples. Special keywords "
-                           "'host', 'sdk', 'boards', 'bricks' and 'all' are "
+                           "'host', 'sdk', 'boards', and 'all' are "
                            "allowed. Defaults to 'sdk'.")
   parser.add_argument('--include-boards', default='', metavar='BOARDS',
                       help='Comma separated list of boards whose toolchains we '
-                           'will always include. Default: none')
-  parser.add_argument('--include-bricks', default='', metavar='BRICKS',
-                      help='Comma separated list of bricks whose toolchains we '
                            'will always include. Default: none')
   parser.add_argument('--hostonly',
                       dest='hostonly', default=False, action='store_true',
@@ -1089,7 +1079,7 @@ def main(argv):
                            'Useful for bootstrapping chroot')
   parser.add_argument('--show-board-cfg', '--show-cfg',
                       dest='cfg_name', default=None,
-                      help='Board or brick to list toolchains tuples for')
+                      help='Board  to list toolchains tuples for')
   parser.add_argument('--create-packages',
                       action='store_true', default=False,
                       help='Build redistributable packages')
@@ -1110,8 +1100,6 @@ def main(argv):
   targets_wanted = set(options.targets.split(','))
   boards_wanted = (set(options.include_boards.split(','))
                    if options.include_boards else set())
-  bricks_wanted = (set(options.include_bricks.split(','))
-                   if options.include_bricks else set())
 
   if options.cfg_name:
     ShowConfig(options.cfg_name)
@@ -1129,7 +1117,7 @@ def main(argv):
     root = options.sysroot or '/'
     UpdateToolchains(options.usepkg, options.deleteold, options.hostonly,
                      options.reconfig, targets_wanted, boards_wanted,
-                     bricks_wanted, root=root)
+                     root=root)
     Crossdev.Save()
 
   return 0

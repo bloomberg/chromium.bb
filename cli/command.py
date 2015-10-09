@@ -19,7 +19,6 @@ import glob
 import os
 
 from chromite.cbuildbot import constants
-from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_import
@@ -158,8 +157,6 @@ class CliCommand(object):
 
   def __init__(self, options):
     self.options = options
-    brick = brick_lib.FindBrickInPath()
-    self.curr_brick_locator = brick.brick_locator if brick else None
 
   @classmethod
   def AddParser(cls, parser):

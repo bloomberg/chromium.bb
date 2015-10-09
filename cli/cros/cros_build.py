@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 from chromite.cli import command
-from chromite.lib import brick_lib
 from chromite.lib import chroot_util
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -54,12 +53,6 @@ To just build a single package:
       self.host = True
     elif self.options.board:
       self.board = self.options.board
-    elif self.options.brick or self.curr_brick_locator:
-      self.brick = brick_lib.Brick(self.options.brick
-                                   or self.curr_brick_locator)
-      self.board = self.brick.FriendlyName()
-      if not self.build_pkgs:
-        self.build_pkgs = self.brick.MainPackages()
     else:
       # If nothing is explicitly set, use the default board.
       self.board = cros_build_lib.GetDefaultBoard()
@@ -72,8 +65,6 @@ To just build a single package:
     super(cls, BuildCommand).AddParser(parser)
     target = parser.add_mutually_exclusive_group()
     target.add_argument('--board', help='The board to build packages for.')
-    target.add_argument('--brick', type='brick_path',
-                        help='The brick to build packages for.')
     target.add_argument('--host', help='Build packages for the chroot itself.',
                         default=False, action='store_true')
     parser.add_argument('--no-binary', help="Don't use binary packages.",

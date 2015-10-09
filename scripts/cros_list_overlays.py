@@ -9,7 +9,6 @@ from __future__ import print_function
 import os
 
 from chromite.cbuildbot import constants
-from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import portage_util
@@ -28,20 +27,12 @@ def _ParseArguments(argv):
                            'only makes sense when --board is specified.')
   parser.add_argument('-a', '--all', default=False, action='store_true',
                       help='Show all overlays (even common ones).')
-  parser.add_argument('--brick', help='Main brick to use')
 
   opts = parser.parse_args(argv)
   opts.Freeze()
 
   if opts.primary_only and opts.board is None:
     parser.error('--board is required when --primary_only is supplied.')
-
-  if opts.brick:
-    if opts.board:
-      parser.error('--board and --brick are incompatible.')
-
-    if opts.all:
-      parser.error('Cannot list all overlays with --brick')
 
   return opts
 
@@ -50,21 +41,17 @@ def main(argv):
   opts = _ParseArguments(argv)
   args = (constants.BOTH_OVERLAYS, opts.board)
 
-  if opts.brick:
-    main_brick = brick_lib.Brick(opts.brick)
-    overlays = [b.OverlayDir() for b in main_brick.BrickStack()]
-  else:
-    # Verify that a primary overlay exists.
-    try:
-      primary_overlay = portage_util.FindPrimaryOverlay(*args)
-    except portage_util.MissingOverlayException as ex:
-      cros_build_lib.Die(str(ex))
+  # Verify that a primary overlay exists.
+  try:
+    primary_overlay = portage_util.FindPrimaryOverlay(*args)
+  except portage_util.MissingOverlayException as ex:
+    cros_build_lib.Die(str(ex))
 
-    # Get the overlays to print.
-    if opts.primary_only:
-      overlays = [primary_overlay]
-    else:
-      overlays = portage_util.FindOverlays(*args)
+  # Get the overlays to print.
+  if opts.primary_only:
+    overlays = [primary_overlay]
+  else:
+    overlays = portage_util.FindOverlays(*args)
 
   # Exclude any overlays in src/third_party, for backwards compatibility with
   # scripts that expected these to not be listed.

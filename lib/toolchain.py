@@ -9,7 +9,6 @@ from __future__ import print_function
 import cStringIO
 
 from chromite.cbuildbot import constants
-from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import portage_util
@@ -63,20 +62,6 @@ def GetToolchainsForBoard(board, buildroot=constants.SOURCE_ROOT):
   if board == 'sdk':
     targets = FilterToolchains(targets, 'sdk', True)
   return targets
-
-
-def GetToolchainsForBrick(brick_locator):
-  """Get a dictionary mapping toolchain targets to their options for a brick.
-
-  Args:
-    brick_locator: locator for the brick.
-
-  Returns:
-    The list of toolchain tuples for the given brick.
-  """
-  toolchains = toolchain_list.ToolchainList(
-      brick=brick_lib.Brick(brick_locator))
-  return toolchains.GetMergedToolchainSettings()
 
 
 def FilterToolchains(targets, key, value):

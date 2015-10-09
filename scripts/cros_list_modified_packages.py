@@ -34,7 +34,6 @@ except ImportError:
   import queue as Queue
 
 from chromite.cbuildbot import constants
-from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -142,12 +141,6 @@ def ListWorkonPackagesInfo(sysroot):
   vdb_path = os.path.join(sysroot.path, portage.const.VDB_PATH)
 
   for overlay in overlays:
-    # Is this a brick overlay? Get its source base directory.
-    brick_srcbase = ''
-    brick = brick_lib.FindBrickInPath(overlay)
-    if brick and brick.OverlayDir() == overlay.rstrip(os.path.sep):
-      brick_srcbase = brick.SourceDir()
-
     for filename, projects, srcpaths in portage_util.GetWorkonProjectMap(
         overlay, packages):
       # chromeos-base/power_manager/power_manager-9999
@@ -170,12 +163,9 @@ def ListWorkonPackagesInfo(sysroot):
       # Get the modificaton time of the ebuild in the overlay.
       src_ebuild_mtime = os.lstat(os.path.join(overlay, filename)).st_mtime
 
-      # Translate relative srcpath values into their absolute counterparts.
-      full_srcpaths = [os.path.join(brick_srcbase, s) for s in srcpaths]
-
       # Write info into the results dictionary, overwriting any previous
       # values. This ensures that overlays override appropriately.
-      results[cp] = WorkonPackageInfo(cp, pkg_mtime, projects, full_srcpaths,
+      results[cp] = WorkonPackageInfo(cp, pkg_mtime, projects, srcpaths,
                                       src_ebuild_mtime)
 
   return results.values()
@@ -231,7 +221,6 @@ def _ParseArguments(argv):
 
   target = parser.add_mutually_exclusive_group(required=True)
   target.add_argument('--board', help='Board name')
-  target.add_argument('--brick', help='Brick locator')
   target.add_argument('--host', default=False, action='store_true',
                       help='Look at host packages instead of board packages')
   target.add_argument('--sysroot', help='Sysroot path.')
@@ -245,12 +234,7 @@ def main(argv):
   logging.getLogger().setLevel(logging.INFO)
   flags = _ParseArguments(argv)
   sysroot = None
-  if flags.brick:
-    try:
-      sysroot = cros_build_lib.GetSysroot(brick_lib.Brick(flags.brick))
-    except brick_lib.BrickNotFound:
-      cros_build_lib.Die('Could not load brick %s.' % flags.brick)
-  elif flags.board:
+  if flags.board:
     sysroot = cros_build_lib.GetSysroot(flags.board)
   elif flags.host:
     sysroot = '/'

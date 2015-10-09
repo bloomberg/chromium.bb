@@ -357,22 +357,6 @@ def NormalizeWorkspacePath(path, default_dir=None, extension=None):
   return locator
 
 
-def NormalizeBrickPath(path):
-  """Normalize a brick path using some common assumptions.
-
-  Makes the following changes to |path|:
-    1. Put non-paths in //bricks (e.g. foo -> //bricks/foo).
-    2. Convert to a workspace locator.
-
-  Args:
-    path: brick path.
-
-  Returns:
-    Locator to the brick.
-  """
-  return NormalizeWorkspacePath(path, default_dir='//bricks')
-
-
 VALID_TYPES = {
     'bool': ParseBool,
     'date': ParseDate,
@@ -380,7 +364,6 @@ VALID_TYPES = {
     'gs_path': NormalizeGSPath,
     'local_or_gs_path': NormalizeLocalOrGSPath,
     'path_or_uri': NormalizeUri,
-    'brick_path': NormalizeBrickPath,
     'workspace_path': NormalizeWorkspacePath,
 }
 

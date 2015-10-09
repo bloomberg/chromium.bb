@@ -22,7 +22,7 @@ _DEFAULT_TOOLCHAIN_KEY = 'default'
 
 
 class NoDefaultToolchainDefinedError(Exception):
-  """Brillo brick stacks are required to define a default toolchain."""
+  """Overlays are required to define a default toolchain."""
 
 
 class MismatchedToolchainConfigsError(Exception):
@@ -32,28 +32,20 @@ class MismatchedToolchainConfigsError(Exception):
 class ToolchainList(object):
   """Represents a list of toolchains."""
 
-  def __init__(self, brick=None, overlays=None):
+  def __init__(self, overlays):
     """Construct an instance.
 
     Args:
-      brick: brick_lib.Brick object.  We'll add the toolchains used by the brick
-          and its dependencies to |self|.
       overlays: list of overlay directories to add toolchains from.
     """
-    if brick is None and overlays is None:
-      raise ValueError('Must specify either brick or overlays.')
-    if brick is not None and overlays is not None:
-      raise ValueError('Must specify one of brick or overlays.')
+    if overlays is None:
+      raise ValueError('Must specify overlays.')
 
     self._toolchains = []
     self._require_explicit_default_toolchain = True
-    if brick:
-      for each_brick in brick.BrickStack():
-        self._AddToolchainsFromBrick(each_brick)
-    else:
-      self._require_explicit_default_toolchain = False
-      for overlay_path in overlays:
-        self._AddToolchainsFromOverlayDir(overlay_path)
+    self._require_explicit_default_toolchain = False
+    for overlay_path in overlays:
+      self._AddToolchainsFromOverlayDir(overlay_path)
 
   def _AddToolchainsFromOverlayDir(self, overlay_dir):
     """Add toolchains to |self| from the given overlay.
@@ -77,15 +69,6 @@ class ToolchainList(object):
         continue
       target = line_pieces[0]
       settings = json.loads(line_pieces[1]) if len(line_pieces) > 1 else {}
-      self._AddToolchain(target, setting_overrides=settings)
-
-  def _AddToolchainsFromBrick(self, brick):
-    """Add toolchains to |self| defined by the given brick.
-
-    Args:
-      brick: brick_lib.Brick object.
-    """
-    for target, settings in brick.config.get('toolchains', {}):
       self._AddToolchain(target, setting_overrides=settings)
 
   def _AddToolchain(self, target, setting_overrides=None):

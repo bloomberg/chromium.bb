@@ -12,7 +12,6 @@ source modified and built using the unstable 'live' (9999) ebuild.
 
 from __future__ import print_function
 
-from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import terminal
@@ -23,7 +22,6 @@ def main(argv):
   shared = commandline.SharedParser()
   shared.add_argument('--board', default=cros_build_lib.GetDefaultBoard(),
                       help='The board to set package keywords for.')
-  shared.add_argument('--brick', help='The brick to set package keywords for.')
   shared.add_argument('--host', default=False, action='store_true',
                       help='Uses the host instead of board')
   shared.add_argument('--remote', default='',
@@ -81,15 +79,8 @@ def main(argv):
   elif options.board:
     friendly_name = options.board
     sysroot = cros_build_lib.GetSysroot(board=options.board)
-  elif options.brick:
-    brick = brick_lib.Brick(options.brick)
-    friendly_name = brick.FriendlyName()
-    # TODO(wiley) This is a hack.  It doesn't really make sense to calculate
-    #             the sysroot from a brick alone, since bricks are installed
-    #             into sysroots.  Revisit this when blueprints are working.
-    sysroot = cros_build_lib.GetSysroot(friendly_name)
   else:
-    cros_build_lib.Die('You must specify either --host, --board or --brick')
+    cros_build_lib.Die('You must specify either --host, --board')
 
   helper = workon_helper.WorkonHelper(sysroot, friendly_name)
   try:

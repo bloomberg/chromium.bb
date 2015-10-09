@@ -29,7 +29,6 @@ import urllib
 
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
-from chromite.lib import brick_lib
 from chromite.lib import cidb
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -1601,26 +1600,6 @@ class WorkspaceTestCase(MockTempDirTestCase):
     # Fake out workspace lookups to find this path.
     self.mock_workspace_path = self.PatchObject(
         workspace_lib, 'WorkspacePath', return_value=self.workspace_path)
-
-  def CreateBrick(self, name='thebrickfoo', main_package='category/bar',
-                  dependencies=None):
-    """Creates a new brick.
-
-    Args:
-      name: Brick name/path relative to the workspace root.
-      main_package: Main package to assign.
-      dependencies: List of bricks to depend on.
-
-    Returns:
-      The created Brick object.
-    """
-    brick_path = os.path.join(self.workspace_path, name)
-    config = {'name': name, 'main_package': main_package}
-    if dependencies:
-      config['dependencies'] = dependencies
-
-    return brick_lib.Brick(brick_path, initial_config=config)
-
 
 @contextlib.contextmanager
 def SetTimeZone(tz):
