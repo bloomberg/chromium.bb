@@ -138,24 +138,17 @@ class GtestTestInstance(test_instance.TestInstance):
 
     self._shard_timeout = args.shard_timeout
 
-    self._apk_path = os.path.join(
+    apk_path = os.path.join(
         constants.GetOutDirectory(), '%s_apk' % self._suite,
         '%s-debug.apk' % self._suite)
     self._exe_path = os.path.join(constants.GetOutDirectory(),
                                   self._suite)
-    if not os.path.exists(self._apk_path):
-      self._apk_path = None
-      self._activity = None
-      self._package = None
-      self._runner = None
+    if not os.path.exists(apk_path):
+      self._apk_helper = None
     else:
-      helper = apk_helper.ApkHelper(self._apk_path)
-      self._activity = helper.GetActivityName()
-      self._package = helper.GetPackageName()
-      self._runner = helper.GetInstrumentationName()
-      self._permissions = helper.GetPermissions()
+      self._apk_helper = apk_helper.ApkHelper(apk_path)
       self._extras = {
-        _EXTRA_NATIVE_TEST_ACTIVITY: self._activity,
+          _EXTRA_NATIVE_TEST_ACTIVITY: self._apk_helper.GetActivityName(),
       }
       if self._suite in RUN_IN_SUB_THREAD_TEST_SUITES:
         self._extras[_EXTRA_RUN_IN_SUB_THREAD] = 1
@@ -166,7 +159,7 @@ class GtestTestInstance(test_instance.TestInstance):
 
     if not os.path.exists(self._exe_path):
       self._exe_path = None
-    if not self._apk_path and not self._exe_path:
+    if not apk_path and not self._exe_path:
       error_func('Could not find apk or executable for %s' % self._suite)
 
     self._data_deps = []
@@ -318,11 +311,15 @@ class GtestTestInstance(test_instance.TestInstance):
 
   @property
   def activity(self):
-    return self._activity
+    return self._apk_helper and self._apk_helper.GetActivityName()
 
   @property
   def apk(self):
-    return self._apk_path
+    return self._apk_helper and self._apk_helper.path
+
+  @property
+  def apk_helper(self):
+    return self._apk_helper
 
   @property
   def app_file_dir(self):
@@ -342,15 +339,15 @@ class GtestTestInstance(test_instance.TestInstance):
 
   @property
   def package(self):
-    return self._package
+    return self._apk_helper and self._apk_helper.GetPackageName()
 
   @property
   def permissions(self):
-    return self._permissions
+    return self._apk_helper and self._apk_helper.GetPermissions()
 
   @property
   def runner(self):
-    return self._runner
+    return self._apk_helper and self._apk_helper.GetInstrumentationName()
 
   @property
   def shard_timeout(self):

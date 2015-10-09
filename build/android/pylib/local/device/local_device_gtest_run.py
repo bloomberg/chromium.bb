@@ -55,7 +55,7 @@ def PullAppFilesImpl(device, package, files, directory):
 class _ApkDelegate(object):
   def __init__(self, test_instance):
     self._activity = test_instance.activity
-    self._apk = test_instance.apk
+    self._apk_helper = test_instance.apk_helper
     self._package = test_instance.package
     self._runner = test_instance.runner
     self._permissions = test_instance.permissions
@@ -64,7 +64,7 @@ class _ApkDelegate(object):
     self._extras = test_instance.extras
 
   def Install(self, device):
-    device.Install(self._apk, permissions=self._permissions)
+    device.Install(self._apk_helper, permissions=self._permissions)
 
   def Run(self, test, device, flags=None, **kwargs):
     extras = dict(self._extras)

@@ -121,8 +121,8 @@ def main():
         msg += '  %s (%s)\n' % (d, desc)
       raise Exception(msg)
 
-  apk_help = apk_helper.ApkHelper(args.apk_path)
-  apk_package = apk_help.GetPackageName()
+  apk = apk_helper.ApkHelper(args.apk_path)
+  apk_package = apk.GetPackageName()
   device_incremental_dir = '/data/local/tmp/incremental-app-%s' % apk_package
 
   if args.uninstall:
@@ -139,10 +139,10 @@ def main():
       splits = []
       for split_glob in args.splits:
         splits.extend((f for f in glob.glob(split_glob)))
-      device.InstallSplitApk(args.apk_path, splits, reinstall=True,
+      device.InstallSplitApk(apk, splits, reinstall=True,
                              allow_cached_props=True, permissions=())
     else:
-      device.Install(args.apk_path, reinstall=True, permissions=())
+      device.Install(apk, reinstall=True, permissions=())
     install_timer.Stop(log=False)
 
   # Push .so and .dex files to the device (if they have changed).
@@ -173,7 +173,7 @@ def main():
     # cases where this is required...
     has_selinux = (device.build_version_sdk >= version_codes.MARSHMALLOW or
                    device.GetProp('selinux.policy_version'))
-    if has_selinux and apk_help.HasIsolatedProcesses():
+    if has_selinux and apk.HasIsolatedProcesses():
       raise Exception('Cannot use incremental installs on versions of Android '
                       'where isoloated processes cannot access the filesystem '
                       '(this includes Android M+, and Samsung L+) without '
