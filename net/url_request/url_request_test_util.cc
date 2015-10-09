@@ -200,7 +200,7 @@ void TestDelegate::OnReceivedRedirect(URLRequest* request,
   if (quit_on_redirect_) {
     *defer_redirect = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   } else if (cancel_in_rr_) {
     request->Cancel();
   }
@@ -211,7 +211,7 @@ void TestDelegate::OnBeforeNetworkStart(URLRequest* request, bool* defer) {
   if (quit_on_before_network_start_) {
     *defer = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 }
 
@@ -220,7 +220,7 @@ void TestDelegate::OnAuthRequired(URLRequest* request,
   auth_required_ = true;
   if (quit_on_auth_required_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     return;
   }
   if (!credentials_.Empty()) {
@@ -310,7 +310,7 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
 void TestDelegate::OnResponseCompleted(URLRequest* request) {
   if (quit_on_complete_)
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitClosure());
+        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 TestNetworkDelegate::TestNetworkDelegate()

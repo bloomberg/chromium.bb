@@ -236,7 +236,7 @@ class TransactionHelper {
     cancel_in_callback_ = true;
   }
 
-  // Mark to call MessageLoop::Quit() upon callback.
+  // Mark to call MessageLoop::QuitWhenIdle() upon callback.
   void set_quit_in_callback() {
     quit_in_callback_ = true;
   }
@@ -274,7 +274,7 @@ class TransactionHelper {
 
     // Tell MessageLoop to quit now, in case any ASSERT_* fails.
     if (quit_in_callback_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
 
     if (expected_answer_count_ >= 0) {
       ASSERT_EQ(OK, rv);

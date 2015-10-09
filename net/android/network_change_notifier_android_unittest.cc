@@ -95,7 +95,7 @@ class DNSChangeObserver : public NetworkChangeNotifier::DNSObserver {
 
   void OnInitialDNSConfigRead() override {
     initial_notifications_count_++;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   int change_notifications_count() const { return change_notifications_count_; }

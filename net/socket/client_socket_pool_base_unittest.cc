@@ -634,7 +634,7 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
     EXPECT_EQ(socket == NULL, result != OK);
     have_result_ = true;
     if (waiting_for_result_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   int WaitForResult() {
@@ -3651,7 +3651,7 @@ TEST_F(ClientSocketPoolBaseTest, PreconnectWithoutBackupJob) {
   // *would* complete if it were created.
   connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitClosure(),
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromSeconds(1));
   base::MessageLoop::current()->Run();
   EXPECT_FALSE(pool_->HasGroup("a"));

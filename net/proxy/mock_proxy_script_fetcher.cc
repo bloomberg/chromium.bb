@@ -30,7 +30,7 @@ int MockProxyScriptFetcher::Fetch(const GURL& url, base::string16* text,
   pending_request_text_ = text;
 
   if (waiting_for_fetch_)
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 
   return ERR_IO_PENDING;
 }

@@ -89,7 +89,7 @@ int ResolverThread::Resolve(const std::string& host, AddressList* addresses) {
 void ResolverThread::OnResolutionComplete(int rv) {
   rv_ = rv;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitClosure());
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 }  // namespace

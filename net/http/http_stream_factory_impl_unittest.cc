@@ -130,7 +130,7 @@ class MockHttpStreamFactoryImplForPreconnect : public HttpStreamFactoryImpl {
   void OnPreconnectsCompleteInternal() override {
     preconnect_done_ = true;
     if (waiting_for_preconnect_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   bool preconnect_done_;
@@ -150,7 +150,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
                      HttpStream* stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     stream_.reset(stream);
     used_ssl_config_ = used_ssl_config;
     used_proxy_info_ = used_proxy_info;
@@ -162,7 +162,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
       WebSocketHandshakeStreamBase* stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
     websocket_stream_.reset(stream);
     used_ssl_config_ = used_ssl_config;
     used_proxy_info_ = used_proxy_info;

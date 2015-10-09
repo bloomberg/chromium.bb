@@ -823,7 +823,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   ExpectPrefsUpdate();
 
   // Clear http server data, time out if we do not get a completion callback.
-  http_server_props_manager_->Clear(base::MessageLoop::QuitClosure());
+  http_server_props_manager_->Clear(base::MessageLoop::QuitWhenIdleClosure());
   base::RunLoop().Run();
 
   EXPECT_FALSE(

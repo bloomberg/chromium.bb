@@ -181,7 +181,7 @@ class DnsConfigServicePosixTest : public testing::Test {
   void OnConfigChanged(const DnsConfig& config) {
     EXPECT_TRUE(config.IsValid());
     seen_config_ = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void WriteMockHostsFile(const char* hosts_string) {

@@ -532,7 +532,7 @@ TEST_F(SSLServerSocketTest, ClientWriteAfterServerClose) {
   EXPECT_GT(client_ret, 0);
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitClosure(),
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(10));
   base::MessageLoop::current()->Run();
 }

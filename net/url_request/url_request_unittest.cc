@@ -582,7 +582,7 @@ NetworkDelegate::AuthRequiredResponse BlockingNetworkDelegate::OnAuthRequired(
       auth_callback_ = callback;
       stage_blocked_for_callback_ = ON_AUTH_REQUIRED;
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::MessageLoop::QuitClosure());
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
       return AUTH_REQUIRED_RESPONSE_IO_PENDING;
   }
   NOTREACHED();
@@ -621,7 +621,7 @@ int BlockingNetworkDelegate::MaybeBlockStage(
       callback_ = callback;
       stage_blocked_for_callback_ = stage;
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::MessageLoop::QuitClosure());
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
       return ERR_IO_PENDING;
   }
   NOTREACHED();
@@ -7967,7 +7967,7 @@ class SSLClientAuthTestDelegate : public TestDelegate {
   void OnCertificateRequested(URLRequest* request,
                               SSLCertRequestInfo* cert_request_info) override {
     on_certificate_requested_count_++;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
   int on_certificate_requested_count() {
     return on_certificate_requested_count_;

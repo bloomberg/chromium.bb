@@ -637,7 +637,7 @@ struct CookiesInputInfo {
 
 ACTION(QuitCurrentMessageLoop) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitClosure());
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 // TODO(erikwright): When the synchronous helpers 'GetCookies' etc. are removed,

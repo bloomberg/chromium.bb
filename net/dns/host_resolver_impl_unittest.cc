@@ -270,7 +270,7 @@ class Request {
   int WaitForResult() {
     if (completed())
       return result_;
-    base::CancelableClosure closure(base::MessageLoop::QuitClosure());
+    base::CancelableClosure closure(base::MessageLoop::QuitWhenIdleClosure());
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, closure.callback(), TestTimeouts::action_max_timeout());
     quit_on_complete_ = true;
@@ -298,7 +298,7 @@ class Request {
     if (handler_)
       handler_->Handle(this);
     if (quit_on_complete_) {
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
       quit_on_complete_ = false;
     }
   }
@@ -847,7 +847,7 @@ TEST_F(HostResolverImplTest, DeleteWithinCallback) {
       // Quit after returning from OnCompleted (to give it a chance at
       // incorrectly running the cancelled tasks).
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::MessageLoop::QuitClosure());
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     }
   };
   set_handler(new MyHandler());
@@ -873,7 +873,7 @@ TEST_F(HostResolverImplTest, DeleteWithinAbortedCallback) {
       // Quit after returning from OnCompleted (to give it a chance at
       // incorrectly running the cancelled tasks).
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::MessageLoop::QuitClosure());
+          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     }
   };
   set_handler(new MyHandler());
@@ -951,7 +951,7 @@ TEST_F(HostResolverImplTest, BypassCache) {
                   CreateRequest(info, DEFAULT_PRIORITY)->Resolve());
       } else if (71 == req->info().port()) {
         // Test is done.
-        base::MessageLoop::current()->Quit();
+        base::MessageLoop::current()->QuitWhenIdle();
       } else {
         FAIL() << "Unexpected request";
       }

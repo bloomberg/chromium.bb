@@ -535,7 +535,7 @@ void MDnsTest::RunFor(base::TimeDelta time_period) {
 }
 
 void MDnsTest::Stop() {
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 TEST_F(MDnsTest, PassiveListeners) {

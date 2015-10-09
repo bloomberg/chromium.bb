@@ -56,7 +56,7 @@ class CloseResultWaiter {
     result_ = result;
     have_result_ = true;
     if (waiting_for_result_)
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
  private:

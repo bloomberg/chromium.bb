@@ -38,8 +38,8 @@ void CookieCallback::CallbackEpilogue() {
 
   did_run_ = true;
   EXPECT_EQ(expected_loop, base::MessageLoop::current());
-  loop_to_quit_->task_runner()->PostTask(FROM_HERE,
-                                         base::MessageLoop::QuitClosure());
+  loop_to_quit_->task_runner()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 StringResultCookieCallback::StringResultCookieCallback() {}

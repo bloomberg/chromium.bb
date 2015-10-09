@@ -216,8 +216,8 @@ class CookieStoreTest : public testing::Test {
   void RunFor(int ms) {
     // Runs the test thread message loop for up to |ms| milliseconds.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&base::MessageLoop::Quit, weak_factory_->GetWeakPtr()),
+        FROM_HERE, base::Bind(&base::MessageLoop::QuitWhenIdle,
+                              weak_factory_->GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(ms));
     base::MessageLoop::current()->Run();
     weak_factory_->InvalidateWeakPtrs();
