@@ -115,6 +115,7 @@ void Partitions::dumpMemoryStats(bool isLightDump, PartitionStatsDumper* partiti
     // accessed only on the main thread.
     ASSERT(isMainThread());
 
+    decommitFreeableMemory();
     partitionDumpStatsGeneric(fastMallocPartition(), "fast_malloc", isLightDump, partitionStatsDumper);
     partitionDumpStatsGeneric(bufferPartition(), "buffer", isLightDump, partitionStatsDumper);
     partitionDumpStats(nodePartition(), "node", isLightDump, partitionStatsDumper);
