@@ -9,7 +9,7 @@
 
 <style>
   .test {
-    -webkit-writing-mode: vertical-rl;
+    writing-mode: vertical-rl;
   }
   [dir=rtl] {
     direction: rtl;
@@ -40,8 +40,8 @@
   .test tbody,
   .test tr,
   .test td {
-    -webkit-writing-mode: horizontal-tb; /* For UAs not supporting vertical-rl */
-    -webkit-writing-mode: vertical-lr;
+    writing-mode: horizontal-tb; /* For UAs not supporting vertical-rl */
+    writing-mode: vertical-lr;
     direction: rtl;
   }
   .test[dir=rtl] thead,

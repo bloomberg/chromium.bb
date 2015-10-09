@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS -webkit-writing-mode: lr 
-PASS -webkit-writing-mode: lr-tb 
-PASS -webkit-writing-mode: rl 
-PASS -webkit-writing-mode: rl-tb 
-FAIL -webkit-writing-mode: tb assert_equals: expected "vertical-rl" but got "horizontal-tb"
-FAIL -webkit-writing-mode: tb-rl assert_equals: expected "vertical-rl" but got "horizontal-tb"
-Harness: the test ran to completion.
-

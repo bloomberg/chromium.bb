@@ -9,7 +9,7 @@
 
 <style>
   .test {
-    -webkit-writing-mode: vertical-lr;
+    writing-mode: vertical-lr;
   }
   [dir=rtl] {
     direction: rtl;
@@ -35,8 +35,8 @@
   /* These declarations must have no effect. */
   .test col,
   .test colgroup {
-    -webkit-writing-mode: horizontal-tb;
-    -webkit-writing-mode: vertical-rl;
+    writing-mode: horizontal-tb;
+    writing-mode: vertical-rl;
     direction: rtl;
   }
   .test[dir=rtl] col,
