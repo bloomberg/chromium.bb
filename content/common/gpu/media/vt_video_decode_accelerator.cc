@@ -22,6 +22,7 @@
 #include "media/base/limits.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_io_surface.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/scoped_binders.h"
 
 using content_common_gpu_media::kModuleVt;
@@ -1019,7 +1020,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   }
 
   IOSurfaceRef surface = CVPixelBufferGetIOSurface(frame.image.get());
-  glEnable(GL_TEXTURE_RECTANGLE_ARB);
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGLCoreProfile)
+    glEnable(GL_TEXTURE_RECTANGLE_ARB);
   gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_RECTANGLE_ARB,
                                           picture_info->service_texture_id);
   CGLContextObj cgl_context =
@@ -1034,7 +1036,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
       GL_UNSIGNED_SHORT_8_8_APPLE,  // type
       surface,                      // io_surface
       0);                           // plane
-  glDisable(GL_TEXTURE_RECTANGLE_ARB);
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGLCoreProfile)
+    glDisable(GL_TEXTURE_RECTANGLE_ARB);
   if (status != kCGLNoError) {
     NOTIFY_STATUS("CGLTexImageIOSurface2D()", status, SFT_PLATFORM_ERROR);
     return false;
