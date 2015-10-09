@@ -148,14 +148,13 @@ float SVGTextLayoutEngineBaseline::calculateAlignmentBaselineShift(bool isVertic
     }
 }
 
-float SVGTextLayoutEngineBaseline::calculateGlyphOrientationAngle(bool isVerticalText, const SVGComputedStyle& style, const UChar& character) const
+float SVGTextLayoutEngineBaseline::calculateGlyphOrientationAngle(bool isVerticalText, const SVGComputedStyle& style, const UChar32 character) const
 {
     switch (isVerticalText ? style.glyphOrientationVertical() : style.glyphOrientationHorizontal()) {
     case GO_AUTO: {
         // Spec: Fullwidth ideographic and fullwidth Latin text will be set with a glyph-orientation of 0-degrees.
         // Text which is not fullwidth will be set with a glyph-orientation of 90-degrees.
-        unsigned unicodeRange = findCharUnicodeRange(character);
-        if (unicodeRange == cRangeSetLatin || unicodeRange == cRangeArabic)
+        if (!Character::isUprightInMixedVertical(character))
             return 90;
 
         return 0;

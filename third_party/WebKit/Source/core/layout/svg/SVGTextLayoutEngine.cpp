@@ -386,7 +386,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
         float angle = SVGTextLayoutAttributes::isEmptyValue(data.rotate) ? 0 : data.rotate;
 
         // Calculate glyph orientation angle.
-        UChar currentCharacter = text.characterAt(m_visualMetricsIterator.characterOffset());
+        UChar32 currentCharacter = text.codepointAt(m_visualMetricsIterator.characterOffset());
         float orientationAngle = baselineLayout.calculateGlyphOrientationAngle(m_isVerticalText, svgStyle, currentCharacter);
 
         // Calculate glyph advance & x/y orientation shifts.

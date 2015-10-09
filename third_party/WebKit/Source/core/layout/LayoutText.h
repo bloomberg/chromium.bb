@@ -114,6 +114,7 @@ public:
     UChar characterAt(unsigned) const;
     UChar uncheckedCharacterAt(unsigned) const;
     UChar operator[](unsigned i) const { return uncheckedCharacterAt(i); }
+    UChar32 codepointAt(unsigned) const;
     unsigned textLength() const { return m_text.length(); } // non virtual implementation of length()
     void positionLineBox(InlineBox*);
 
@@ -264,6 +265,15 @@ inline UChar LayoutText::characterAt(unsigned i) const
         return 0;
 
     return uncheckedCharacterAt(i);
+}
+
+inline UChar32 LayoutText::codepointAt(unsigned i) const
+{
+    UChar32 character = characterAt(i);
+    if (!U16_IS_LEAD(character))
+        return character;
+    UChar trail = characterAt(i + 1);
+    return U16_IS_TRAIL(trail) ? U16_GET_SUPPLEMENTARY(character, trail) : character;
 }
 
 inline float LayoutText::hyphenWidth(const Font& font, TextDirection direction)
