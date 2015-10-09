@@ -1,6 +1,6 @@
 Name: Compact Language Detection 2
 Short Name: cld_2
-URL: https://code.google.com/p/cld2/
+URL: https://github.com/CLD2Owners/cld2
 Version: 0
 License: Apache 2.0
 Security Critical: yes
