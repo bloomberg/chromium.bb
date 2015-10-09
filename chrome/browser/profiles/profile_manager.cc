@@ -349,23 +349,19 @@ Profile* ProfileManager::GetActiveUserProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 #if defined(OS_CHROMEOS)
   if (!profile_manager)
-    return NULL;
+    return nullptr;
 
-  if (!profile_manager->IsLoggedIn() ||
-      !user_manager::UserManager::IsInitialized()) {
-    return profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
-        profile_manager->user_data_dir());
+  if (profile_manager->IsLoggedIn() &&
+      user_manager::UserManager::IsInitialized()) {
+    user_manager::UserManager* manager = user_manager::UserManager::Get();
+    const user_manager::User* user = manager->GetActiveUser();
+    // To avoid an endless loop (crbug.com/334098) we have to additionally check
+    // if the profile of the user was already created. If the profile was not
+    // yet created we load the profile using the profile directly.
+    // TODO: This should be cleaned up with the new profile manager.
+    if (user && user->is_profile_created())
+      return chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
   }
-
-  user_manager::UserManager* manager = user_manager::UserManager::Get();
-  const user_manager::User* user = manager->GetActiveUser();
-  // To avoid an endless loop (crbug.com/334098) we have to additionally check
-  // if the profile of the user was already created. If the profile was not yet
-  // created we load the profile using the profile directly.
-  // TODO: This should be cleaned up with the new profile manager.
-  if (user && user->is_profile_created())
-    return chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
-
 #endif
   Profile* profile =
       profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
