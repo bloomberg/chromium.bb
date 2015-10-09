@@ -37,13 +37,6 @@ public:
     // Resets to an empty paint artifact.
     void reset();
 
-    // Updates the artifact with complete display items and chunks.
-    // This swaps out of the display items, making it empty.
-    // This will be more efficient if you pass an rvalue for updatedPaintChunks
-    // to avoid a copy.
-    // TODO(jbroman): Clean this up once std::move is legal in Blink.
-    void update(DisplayItems& updatedDisplayItems, Vector<PaintChunk> updatedPaintChunks);
-
     // Returns the approximate memory usage, excluding memory likely to be
     // shared with the embedder after copying to WebDisplayItemList.
     size_t approximateUnsharedMemoryUsage() const;

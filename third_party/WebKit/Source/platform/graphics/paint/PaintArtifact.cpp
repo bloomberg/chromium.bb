@@ -24,15 +24,6 @@ void PaintArtifact::reset()
     m_paintChunks.clear();
 }
 
-void PaintArtifact::update(DisplayItems& updatedDisplayItems, Vector<PaintChunk> updatedPaintChunks)
-{
-    // TODO(jbroman): This can be expressed more clearly once std::move is
-    // available.
-    m_displayItems.clear();
-    m_displayItems.swap(updatedDisplayItems);
-    m_paintChunks.swap(updatedPaintChunks);
-}
-
 size_t PaintArtifact::approximateUnsharedMemoryUsage() const
 {
     return sizeof(*this) + m_displayItems.memoryUsageInBytes()

@@ -297,7 +297,8 @@ void DisplayItemList::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
         for (const auto& item : m_newDisplayItems)
             ASSERT(!item.isCached());
 #endif
-        m_currentPaintArtifact.update(m_newDisplayItems, m_newPaintChunks.releasePaintChunks());
+        m_currentPaintArtifact.displayItems().swap(m_newDisplayItems);
+        m_currentPaintArtifact.paintChunks() = m_newPaintChunks.releasePaintChunks();
         m_validlyCachedClientsDirty = true;
         m_numCachedItems = 0;
         return;
@@ -380,7 +381,8 @@ void DisplayItemList::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
 
     // TODO(jbroman): When subsequence caching applies to SPv2, we'll need to
     // merge the paint chunks as well.
-    m_currentPaintArtifact.update(updatedList, m_newPaintChunks.releasePaintChunks());
+    m_currentPaintArtifact.displayItems().swap(updatedList);
+    m_currentPaintArtifact.paintChunks() = m_newPaintChunks.releasePaintChunks();
 
     m_newDisplayItems.clear();
     m_validlyCachedClientsDirty = true;
