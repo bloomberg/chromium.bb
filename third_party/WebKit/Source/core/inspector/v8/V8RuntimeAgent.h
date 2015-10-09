@@ -23,13 +23,7 @@ typedef String ErrorString;
 
 class CORE_EXPORT V8RuntimeAgent {
 public:
-    class CORE_EXPORT Client {
-    public:
-        virtual ~Client() { }
-        virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) = 0;
-    };
-
-    static PassOwnPtr<V8RuntimeAgent> create(InjectedScriptManager*, V8Debugger*, Client*);
+    static PassOwnPtr<V8RuntimeAgent> create(InjectedScriptManager*, V8Debugger*);
     virtual ~V8RuntimeAgent() { }
 
     // State management methods.

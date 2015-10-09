@@ -60,7 +60,7 @@ public:
 private:
     PageRuntimeAgent(InjectedScriptManager*, Client*, V8Debugger*, InspectorPageAgent*);
 
-    InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
+    ScriptState* defaultScriptState() override;
     void muteConsole() override;
     void unmuteConsole() override;
     void reportExecutionContextCreation();

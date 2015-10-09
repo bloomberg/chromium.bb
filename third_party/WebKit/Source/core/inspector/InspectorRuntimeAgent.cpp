@@ -38,6 +38,7 @@
 #include "core/inspector/MuteConsoleScope.h"
 #include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/V8RuntimeAgent.h"
 #include "platform/JSONValues.h"
 #include "wtf/Optional.h"
 
@@ -52,7 +53,7 @@ static const char runtimeEnabled[] = "runtimeEnabled";
 InspectorRuntimeAgent::InspectorRuntimeAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, Client* client)
     : InspectorBaseAgent<InspectorRuntimeAgent, InspectorFrontend::Runtime>("Runtime")
     , m_enabled(false)
-    , m_v8RuntimeAgent(V8RuntimeAgent::create(injectedScriptManager, debugger, this))
+    , m_v8RuntimeAgent(V8RuntimeAgent::create(injectedScriptManager, debugger))
     , m_injectedScriptManager(injectedScriptManager)
     , m_client(client)
 {
@@ -95,12 +96,13 @@ void InspectorRuntimeAgent::restore()
     enable(&errorString);
 }
 
-void InspectorRuntimeAgent::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* executionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
+void InspectorRuntimeAgent::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* optExecutionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
 {
+    int executionContextId = optExecutionContextId ? *optExecutionContextId : m_injectedScriptManager->injectedScriptIdFor(defaultScriptState());
     Optional<MuteConsoleScope<InspectorRuntimeAgent>> muteScope;
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
         muteScope.emplace(this);
-    m_v8RuntimeAgent->evaluate(errorString, expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, executionContextId, returnByValue, generatePreview, result, wasThrown, exceptionDetails);
+    m_v8RuntimeAgent->evaluate(errorString, expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, &executionContextId, returnByValue, generatePreview, result, wasThrown, exceptionDetails);
 }
 
 void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString, const String& objectId, const String& expression, const RefPtr<JSONArray>* const optionalArguments, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown)

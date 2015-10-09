@@ -128,19 +128,9 @@ void PageRuntimeAgent::willReleaseScriptContext(LocalFrame* frame, ScriptState* 
     frontend()->executionContextDestroyed(id);
 }
 
-InjectedScript PageRuntimeAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
+ScriptState* PageRuntimeAgent::defaultScriptState()
 {
-    if (!executionContextId) {
-        ScriptState* scriptState = ScriptState::forMainWorld(m_pageAgent->inspectedFrame());
-        InjectedScript result = injectedScriptManager()->injectedScriptFor(scriptState);
-        if (result.isEmpty())
-            *errorString = "Internal error: main world execution context not found.";
-        return result;
-    }
-    InjectedScript injectedScript = injectedScriptManager()->injectedScriptForId(*executionContextId);
-    if (injectedScript.isEmpty())
-        *errorString = "Execution context with given id not found.";
-    return injectedScript;
+    return ScriptState::forMainWorld(m_pageAgent->inspectedFrame());
 }
 
 void PageRuntimeAgent::muteConsole()

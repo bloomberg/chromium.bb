@@ -50,17 +50,16 @@ namespace V8RuntimeAgentImplState {
 static const char customObjectFormatterEnabled[] = "customObjectFormatterEnabled";
 };
 
-PassOwnPtr<V8RuntimeAgent> V8RuntimeAgent::create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, Client* client)
+PassOwnPtr<V8RuntimeAgent> V8RuntimeAgent::create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger)
 {
-    return adoptPtr(new V8RuntimeAgentImpl(injectedScriptManager, static_cast<V8DebuggerImpl*>(debugger), client));
+    return adoptPtr(new V8RuntimeAgentImpl(injectedScriptManager, static_cast<V8DebuggerImpl*>(debugger)));
 }
 
-V8RuntimeAgentImpl::V8RuntimeAgentImpl(InjectedScriptManager* injectedScriptManager, V8DebuggerImpl* debugger, Client* client)
+V8RuntimeAgentImpl::V8RuntimeAgentImpl(InjectedScriptManager* injectedScriptManager, V8DebuggerImpl* debugger)
     : m_state(nullptr)
     , m_frontend(nullptr)
     , m_injectedScriptManager(injectedScriptManager)
     , m_debugger(debugger)
-    , m_client(client)
 {
 }
 
@@ -70,10 +69,15 @@ V8RuntimeAgentImpl::~V8RuntimeAgentImpl()
 
 void V8RuntimeAgentImpl::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* executionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
 {
-    InjectedScript injectedScript = m_client->injectedScriptForEval(errorString, executionContextId);
-    if (injectedScript.isEmpty())
+    if (!executionContextId) {
+        *errorString = "Cannot find default execution context";
         return;
-
+    }
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForId(*executionContextId);
+    if (injectedScript.isEmpty()) {
+        *errorString = "Cannot find execution context with given id";
+        return;
+    }
     Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
         ignoreExceptionsScope.emplace(m_debugger);

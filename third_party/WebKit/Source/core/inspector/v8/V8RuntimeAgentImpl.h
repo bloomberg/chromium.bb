@@ -51,7 +51,7 @@ typedef String ErrorString;
 class CORE_EXPORT V8RuntimeAgentImpl : public V8RuntimeAgent, public InspectorBackendDispatcher::RuntimeCommandHandler {
     WTF_MAKE_NONCOPYABLE(V8RuntimeAgentImpl);
 public:
-    V8RuntimeAgentImpl(InjectedScriptManager*, V8DebuggerImpl*, Client*);
+    V8RuntimeAgentImpl(InjectedScriptManager*, V8DebuggerImpl*);
     ~V8RuntimeAgentImpl() override;
 
     // State management methods.
@@ -98,7 +98,6 @@ private:
     InspectorFrontend::Runtime* m_frontend;
     RawPtrWillBeWeakPersistent<InjectedScriptManager> m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;
-    Client* m_client;
 };
 
 } // namespace blink

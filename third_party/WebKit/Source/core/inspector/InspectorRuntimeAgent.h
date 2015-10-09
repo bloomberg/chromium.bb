@@ -34,7 +34,6 @@
 #include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/v8/V8RuntimeAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -51,8 +50,7 @@ typedef String ErrorString;
 
 class CORE_EXPORT InspectorRuntimeAgent
     : public InspectorBaseAgent<InspectorRuntimeAgent, InspectorFrontend::Runtime>
-    , public InspectorBackendDispatcher::RuntimeCommandHandler
-    , public V8RuntimeAgent::Client {
+    , public InspectorBackendDispatcher::RuntimeCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorRuntimeAgent);
 public:
     class Client {
@@ -108,9 +106,7 @@ public:
 
 protected:
     InspectorRuntimeAgent(InjectedScriptManager*, V8Debugger*, Client*);
-
-    // V8RuntimeAgent::Client implementation.
-    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) = 0;
+    virtual ScriptState* defaultScriptState() = 0;
 
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
     void addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId);
