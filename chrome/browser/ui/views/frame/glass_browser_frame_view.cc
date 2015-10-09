@@ -49,8 +49,6 @@ const int kNonClientRestoredExtraThickness = 9;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of the top and bottom edges triggers diagonal resizing.
 const int kResizeCornerWidth = 16;
-// Space between the right edge of the incognito icon and the tabstrip.
-const int kIncognitoRightSpacing = -2;
 // How far the new avatar button is from the left of the minimize button.
 const int kNewAvatarButtonOffset = 5;
 // The content left/right images have a shadow built into them.
@@ -63,9 +61,6 @@ const int kNewTabCaptionRestoredSpacing = 5;
 // similar vertical coordinates, we need to reserve a larger, 16 px gap to avoid
 // looking too cluttered.
 const int kNewTabCaptionMaximizedSpacing = 16;
-// How far to indent the tabstrip from the left side of the screen when there
-// is no incognito icon.
-const int kTabStripIndent = -6;
 
 // Converts the |image| to a Windows icon and returns the corresponding HICON
 // handle. |image| is resized to desired |width| and |height| if needed.
@@ -102,42 +97,36 @@ GlassBrowserFrameView::~GlassBrowserFrameView() {
 
 gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
     views::View* tabstrip) const {
-  int end_x = std::min(frame()->GetMinimizeButtonOffset(), width());
+  // In maximized RTL windows, don't let the tabstrip overlap the caption area,
+  // or the alpha-blending it does will make things like the new avatar button
+  // look glitchy.
+  const int offset =
+    (ui::MaterialDesignController::IsModeMaterial() || !base::i18n::IsRTL() ||
+     !frame()->IsMaximized()) ?
+        GetLayoutInsets(AVATAR_ICON).right() : 0;
+  const int x = incognito_bounds_.right() + offset;
+  int end_x = width() - NonClientBorderThickness();
+  if (!base::i18n::IsRTL()) {
+    end_x = std::min(frame()->GetMinimizeButtonOffset(), end_x) -
+        (frame()->IsMaximized() ?
+            kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
 
-  // The new avatar button is optionally displayed to the left of the
-  // minimize button.
-  if (new_avatar_button()) {
-    end_x -= new_avatar_button()->width() + kNewAvatarButtonOffset;
+    // The new avatar button is optionally displayed to the left of the
+    // minimize button.
+    if (new_avatar_button()) {
+      const int old_end_x = end_x;
+      end_x -= new_avatar_button()->width() + kNewAvatarButtonOffset;
 
-    // In non-maximized mode, allow the new tab button to slide completely under
-    // the avatar button.
-    if (!frame()->IsMaximized() && !base::i18n::IsRTL()) {
-      end_x += GetLayoutConstant(NEW_TAB_BUTTON_WIDTH) +
-          kNewTabCaptionRestoredSpacing;
+      // In non-maximized mode, allow the new tab button to slide completely
+      // under the avatar button.
+      if (!frame()->IsMaximized()) {
+        end_x = std::min(end_x + GetLayoutConstant(NEW_TAB_BUTTON_WIDTH) +
+                             kNewTabCaptionRestoredSpacing,
+                         old_end_x);
+      }
     }
   }
-
-  int x = browser_view()->ShouldShowAvatar() ?
-      (incognito_bounds_.right() + kIncognitoRightSpacing) :
-      NonClientBorderThickness() + kTabStripIndent;
-  // In RTL languages, we have moved an avatar icon left by the size of window
-  // controls to prevent it from being rendered over them. So, we use its x
-  // position to move this tab strip left when maximized. Also, we can render
-  // a tab strip until the left end of this window without considering the size
-  // of window controls in RTL languages.
-  if (base::i18n::IsRTL()) {
-    if (!browser_view()->ShouldShowAvatar() && frame()->IsMaximized()) {
-      x += incognito_bounds_.x();
-    } else if (browser_view()->IsRegularOrGuestSession()) {
-      x = width() - end_x;
-    }
-
-    end_x = width();
-  }
-  int tabstrip_width = end_x - x -
-      (frame()->IsMaximized() ?
-          kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
-  return gfx::Rect(x, NonClientTopBorderHeight(), std::max(0, tabstrip_width),
+  return gfx::Rect(x, NonClientTopBorderHeight(), std::max(0, end_x - x),
                    tabstrip->GetPreferredSize().height());
 }
 
@@ -269,9 +258,7 @@ void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 void GlassBrowserFrameView::Layout() {
   if (browser_view()->IsRegularOrGuestSession())
     LayoutNewStyleAvatar();
-  else
-    LayoutIncognitoIcon();
-
+  LayoutIncognitoIcon();
   LayoutClientView();
 }
 
@@ -525,14 +512,18 @@ void GlassBrowserFrameView::LayoutIncognitoIcon() {
   const gfx::Size size(browser_view()->GetOTRAvatarIcon().size());
   int x = NonClientBorderThickness();
   // In RTL, the icon needs to start after the caption buttons.
-  if (base::i18n::IsRTL())
-    x += width() - frame()->GetMinimizeButtonOffset();
+  if (base::i18n::IsRTL()) {
+    x = width() - frame()->GetMinimizeButtonOffset() +
+        (new_avatar_button() ?
+            (new_avatar_button()->width() + kNewAvatarButtonOffset) : 0);
+  }
   const int bottom =
       GetTopInset() + browser_view()->GetTabStripHeight() - insets.bottom();
-  const int y = frame()->IsMaximized() ?
-      FrameTopBorderHeight() : (bottom - size.height());
-  incognito_bounds_.SetRect(x + insets.left(), y, size.width(),
-      browser_view()->ShouldShowAvatar() ? (bottom - y) : 0);
+  const int y = (ui::MaterialDesignController::IsModeMaterial() ||
+                 !frame()->IsMaximized()) ?
+      (bottom - size.height()) : FrameTopBorderHeight();
+  incognito_bounds_.SetRect(x + (avatar_button() ? insets.left() : 0), y,
+                            avatar_button() ? size.width() : 0, bottom - y);
   if (avatar_button())
     avatar_button()->SetBoundsRect(incognito_bounds_);
 }

@@ -89,7 +89,7 @@ int GetLayoutConstant(LayoutConstant constant) {
 
 gfx::Insets GetLayoutInsets(LayoutInset inset) {
   const int kAvatarLeftPadding[] = {2, 4, 4};
-  const int kAvatarRightPadding[] = {2, 2, 2};
+  const int kAvatarRightPadding[] = {-6, 4, 4};
   const int kAvatarBottomPadding[] = {2, 4, 4};
   const int kOmniboxDropdownIconPadding[] = {2, 4, 8};
   const int kOmniboxDropdownTextPadding[] = {3, 4, 8};

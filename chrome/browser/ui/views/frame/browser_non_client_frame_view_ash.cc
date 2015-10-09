@@ -59,8 +59,6 @@ namespace {
 // Space between the new avatar button and the minimize button.
 const int kNewAvatarButtonOffset = 5;
 #endif
-// Space between left edge of window and tabstrip.
-const int kTabstripLeftSpacing = 0;
 // Space between right edge of tabstrip and maximize button.
 const int kTabstripRightSpacing = 10;
 // Height of the shadow of the content area, at the top of the toolbar.
@@ -499,9 +497,10 @@ bool BrowserNonClientFrameViewAsh::DoesIntersectRect(
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
-  const int icon_width = browser_view()->GetOTRAvatarIcon().width();
-  const int insets_width = GetLayoutInsets(AVATAR_ICON).width();
-  return avatar_button() ? (icon_width + insets_width) : kTabstripLeftSpacing;
+  const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
+  const int avatar_right = avatar_button() ?
+      (insets.left() + browser_view()->GetOTRAvatarIcon().width()) : 0;
+  return avatar_right + insets.right();
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
