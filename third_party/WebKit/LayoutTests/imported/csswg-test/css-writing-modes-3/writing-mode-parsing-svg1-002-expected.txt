@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL -webkit-writing-mode: lr-tb assert_equals: expected "lr-tb" but got "horizontal-tb"
-FAIL -webkit-writing-mode: rl-tb assert_equals: expected "rl-tb" but got "horizontal-tb"
-FAIL -webkit-writing-mode: tb-rl assert_equals: expected "tb-rl" but got "horizontal-tb"
-Harness: the test ran to completion.
-

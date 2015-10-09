@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Link with target=_blank, no rel assert_unreached: Failed to get callback from opened window Reached unreachable code
+Harness: the test ran to completion.
+
