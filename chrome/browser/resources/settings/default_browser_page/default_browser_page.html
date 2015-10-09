@@ -1,0 +1,21 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://md-settings/i18n_behavior/i18n_behavior.html">
+
+<dom-module id="settings-default-browser-page">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="default_browser_page.css">
+  <template>
+    <div>[[message_]]</div>
+    <template is="dom-if" if="[[showButton_]]">
+      <paper-button on-tap="onSetDefaultBrowserTap_"
+          >[[i18n('defaultBroswerMakeDefault')]]</paper-button>
+      <template is="dom-if" if="[[showError_]]">
+        <iron-icon icon="error" class="error-icon"></iron-icon>
+      </template>
+    </template>
+  </template>
+  <script src="default_browser_page.js"></script>
+</dom-module>

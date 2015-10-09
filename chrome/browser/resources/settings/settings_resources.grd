@@ -194,6 +194,17 @@
       <structure name="IDR_SETTINGS_CONTROLS_RADIO_GROUP_CSS"
                  file="controls/settings_radio_group.css"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_DEFAULT_BROWSER_PAGE_CSS"
+                 file="default_browser_page/default_browser_page.css"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_DEFAULT_BROWSER_PAGE_HTML"
+                 file="default_browser_page/default_browser_page.html"
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
+      <structure name="IDR_SETTINGS_DEFAULT_BROWSERE_PAGE_JS"
+                 file="default_browser_page/default_browser_page.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_CSS"
                  file="downloads_page/downloads_page.css"
                  type="chrome_html" />
