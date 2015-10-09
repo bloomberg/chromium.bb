@@ -14,7 +14,7 @@
 <dom-module id="downloads-item">
   <template>
     <template is="dom-if" if="[[!hideDate]]">
-      <h3 id="date">[[computeDate_(data.since_string, data.date_string)]]</h3>
+      <h3 id="date">[[computeDate_(hideDate, data.since_string, data.date_string)]]</h3>
     </template>
 
     <div id="content" on-dragstart="onDragStart_"
