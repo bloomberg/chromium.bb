@@ -3850,7 +3850,9 @@
     { "name": "wjglerum.nl", "include_subdomains": true, "mode": "force-https" },
     { "name": "wp-tao.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "yoloprod.fr", "include_subdomains": true, "mode": "force-https" },
-    { "name": "zzsec.org", "include_subdomains": true, "mode": "force-https" }
+    { "name": "zzsec.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "internetbank.swedbank.se", "include_subdomains": true, "mode": "force-https" },
+    { "name": "my.swedbank.se", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
