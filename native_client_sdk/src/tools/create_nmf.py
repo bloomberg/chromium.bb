@@ -367,36 +367,41 @@ class NmfUtils(object):
 
     needed = self.GetNeeded()
 
-    runnable = any(n.endswith(RUNNABLE_LD) for n in needed)
-
     extra_files_kv = [(key, ArchFile(name=key,
                                      arch=arch,
                                      path=url,
                                      url=url))
                       for key, arch, url in self.extra_files]
 
-    for need, archinfo in needed.items() + extra_files_kv:
+    manifest_items = needed.items() + extra_files_kv
+
+    # Add in runnable-ld.so entries to the program section.
+    for need, archinfo in manifest_items:
+      urlinfo = { URL_KEY: archinfo.url }
+      if need.endswith(RUNNABLE_LD):
+        manifest[PROGRAM_KEY][archinfo.arch] = urlinfo
+
+    for need, archinfo in manifest_items:
       urlinfo = { URL_KEY: archinfo.url }
       name = archinfo.name
+      arch = archinfo.arch
 
-      # If starting with runnable-ld.so, make that the main executable.
-      if runnable:
-        if need.endswith(RUNNABLE_LD):
-          manifest[PROGRAM_KEY][archinfo.arch] = urlinfo
-          continue
+      if need.endswith(RUNNABLE_LD):
+        continue
 
       if need in self.main_files:
         if need.endswith(".nexe"):
           # Place it under program if we aren't using the runnable-ld.so.
-          if not runnable:
-            manifest[PROGRAM_KEY][archinfo.arch] = urlinfo
+          program = manifest[PROGRAM_KEY]
+          if arch not in program:
+            program[arch] = urlinfo
             continue
           # Otherwise, treat it like another another file named main.nexe.
           name = MAIN_NEXE
 
       name = self.remap.get(name, name)
       fileinfo = manifest[FILES_KEY].get(name, {})
-      fileinfo[archinfo.arch] = urlinfo
+      fileinfo[arch] = urlinfo
       manifest[FILES_KEY][name] = fileinfo
     self.manifest = manifest
 
