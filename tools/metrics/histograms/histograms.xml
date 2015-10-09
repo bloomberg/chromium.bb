@@ -2509,9 +2509,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Autofill.SuggestionAcceptedIndex">
+<histogram name="Autofill.SuggestionAcceptedIndex" units="position">
   <owner>mathp@chromium.org</owner>
-  <summary>The index of the accepted suggestion in the Autofill popup.</summary>
+  <summary>The index of the accepted Autofill suggestion in the popup.</summary>
+</histogram>
+
+<histogram name="Autofill.SuggestionAcceptedIndex.Autocomplete"
+    units="position">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The index of the accepted Autocomplete suggestion in the popup.
+  </summary>
 </histogram>
 
 <histogram name="Autofill.UnmaskPrompt.Duration" units="ms">

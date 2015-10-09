@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/autofill_metrics.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -607,8 +609,17 @@ void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
 }
 
 // static
-void AutofillMetrics::LogSuggestionAcceptedIndex(int index) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Autofill.SuggestionAcceptedIndex", index);
+void AutofillMetrics::LogAutofillSuggestionAcceptedIndex(int index) {
+  // A maximum of 50 is enforced to minimize the number of buckets generated.
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Autofill.SuggestionAcceptedIndex",
+                              std::min(index, 50));
+}
+
+// static
+void AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(int index) {
+  // A maximum of 50 is enforced to minimize the number of buckets generated.
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Autofill.SuggestionAcceptedIndex.Autocomplete",
+                              std::min(index, 50));
 }
 
 // static

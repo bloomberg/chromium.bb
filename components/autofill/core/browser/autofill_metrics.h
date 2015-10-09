@@ -561,8 +561,11 @@ class AutofillMetrics {
   // form.
   static void LogAddressSuggestionsCount(size_t num_suggestions);
 
-  // Log the index of the selected suggestion in the Autofill popup.
-  static void LogSuggestionAcceptedIndex(int index);
+  // Log the index of the selected Autofill suggestion in the popup.
+  static void LogAutofillSuggestionAcceptedIndex(int index);
+
+  // Log the index of the selected Autocomplete suggestion in the popup.
+  static void LogAutocompleteSuggestionAcceptedIndex(int index);
 
   // Log password form query: current and if one-to-two fields password forms
   // were allowed.

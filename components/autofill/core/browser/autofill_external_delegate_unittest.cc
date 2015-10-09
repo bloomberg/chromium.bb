@@ -514,9 +514,12 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillFieldWithValue) {
   base::string16 dummy_string(ASCIIToUTF16("baz foo"));
   EXPECT_CALL(*autofill_driver_,
               RendererShouldFillFieldWithValue(dummy_string));
+  base::HistogramTester histogram_tester;
   external_delegate_->DidAcceptSuggestion(dummy_string,
                                           POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY,
                                           0);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SuggestionAcceptedIndex.Autocomplete", 0, 1);
 }
 
 }  // namespace autofill

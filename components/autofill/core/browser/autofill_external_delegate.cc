@@ -173,12 +173,13 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
     // User selected an Autocomplete, so we fill directly.
     driver_->RendererShouldFillFieldWithValue(value);
+    AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(position);
   } else if (identifier == POPUP_ITEM_ID_SCAN_CREDIT_CARD) {
     manager_->client()->ScanCreditCard(base::Bind(
         &AutofillExternalDelegate::OnCreditCardScanned, GetWeakPtr()));
   } else {
     if (identifier > 0)  // Denotes an Autofill suggestion.
-      AutofillMetrics::LogSuggestionAcceptedIndex(position);
+      AutofillMetrics::LogAutofillSuggestionAcceptedIndex(position);
 
     FillAutofillFormData(identifier, false);
   }
