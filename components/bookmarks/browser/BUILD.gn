@@ -31,6 +31,8 @@ source_set("browser") {
     "bookmark_pasteboard_helper_mac.mm",
     "bookmark_storage.cc",
     "bookmark_storage.h",
+    "bookmark_undo_delegate.h",
+    "bookmark_undo_provider.h",
     "bookmark_utils.cc",
     "bookmark_utils.h",
     "scoped_group_bookmark_actions.cc",

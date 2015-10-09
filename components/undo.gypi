@@ -19,7 +19,6 @@
         'keyed_service_core',
       ],
       'sources': [
-        'undo/bookmark_renumber_observer.h',
         'undo/bookmark_undo_service.cc',
         'undo/bookmark_undo_service.h',
         'undo/bookmark_undo_utils.cc',

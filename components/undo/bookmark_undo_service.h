@@ -10,8 +10,8 @@
 #include "base/scoped_observer.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
+#include "components/bookmarks/browser/bookmark_undo_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/undo/bookmark_renumber_observer.h"
 #include "components/undo/undo_manager.h"
 
 namespace bookmarks {
@@ -24,8 +24,8 @@ class BookmarkModelObserver;
 // BookmarkUndoService is owned by the profile, and is responsible for observing
 // BookmarkModel changes in order to provide an undo for those changes.
 class BookmarkUndoService : public bookmarks::BaseBookmarkModelObserver,
-                            public KeyedService,
-                            public BookmarkRenumberObserver {
+                            public bookmarks::BookmarkUndoDelegate,
+                            public KeyedService {
  public:
   BookmarkUndoService();
   ~BookmarkUndoService() override;
@@ -54,11 +54,6 @@ class BookmarkUndoService : public bookmarks::BaseBookmarkModelObserver,
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* parent,
                          int index) override;
-  void OnWillRemoveBookmarks(bookmarks::BookmarkModel* model,
-                             const bookmarks::BookmarkNode* parent,
-                             int old_index,
-                             const bookmarks::BookmarkNode* node) override;
-  void OnWillRemoveAllUserBookmarks(bookmarks::BookmarkModel* model) override;
   void OnWillChangeBookmarkNode(bookmarks::BookmarkModel* model,
                                 const bookmarks::BookmarkNode* node) override;
   void OnWillReorderBookmarkNode(bookmarks::BookmarkModel* model,
@@ -67,9 +62,15 @@ class BookmarkUndoService : public bookmarks::BaseBookmarkModelObserver,
       bookmarks::BookmarkModel* model) override;
   void GroupedBookmarkChangesEnded(bookmarks::BookmarkModel* model) override;
 
-  // BookmarkRenumberObserver:
-  void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
+  // bookmarks::BookmarkUndoDelegate:
+  void SetUndoProvider(bookmarks::BookmarkUndoProvider* undo_provider) override;
+  void OnBookmarkNodeRemoved(bookmarks::BookmarkModel* model,
+                             const bookmarks::BookmarkNode* parent,
+                             int index,
+                             scoped_ptr<bookmarks::BookmarkNode> node) override;
 
+  bookmarks::BookmarkModel* model_;
+  bookmarks::BookmarkUndoProvider* undo_provider_;
   UndoManager undo_manager_;
   ScopedObserver<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver>
       scoped_observer_;
