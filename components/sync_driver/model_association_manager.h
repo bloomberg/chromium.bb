@@ -86,7 +86,7 @@ class ModelAssociationManager {
   // Dependency injection. crbug.com/129212.
   base::OneShotTimer* GetTimerForTesting();
 
-   State state() const { return state_; }
+  State state() const { return state_; }
 
  private:
   // Called at the end of association to reset state to prepare for next

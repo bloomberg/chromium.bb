@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/tab_node_pool.h"
 
+#include <vector>
+
 #include "sync/api/sync_change.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"

@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
 #include "components/sync_driver/device_info_sync_service.h"
+
+#include <string>
+
+#include "base/message_loop/message_loop.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
@@ -130,20 +133,20 @@ class DeviceInfoSyncServiceTest : public testing::Test,
                                       AttachmentServiceProxyForTest::Create());
   }
 
-  void AddInitialData(SyncDataList& sync_data_list,
+  void AddInitialData(SyncDataList* sync_data_list,
                       const std::string& client_id,
                       const std::string& client_name) {
     SyncData sync_data = CreateRemoteData(client_id, client_name);
-    sync_data_list.push_back(sync_data);
+    sync_data_list->push_back(sync_data);
   }
 
-  void AddChange(SyncChangeList& change_list,
+  void AddChange(SyncChangeList* change_list,
                  SyncChange::SyncChangeType change_type,
                  const std::string& client_id,
                  const std::string& client_name) {
     SyncData sync_data = CreateRemoteData(client_id, client_name);
     SyncChange sync_change(FROM_HERE, change_type, sync_data);
-    change_list.push_back(sync_change);
+    change_list->push_back(sync_change);
   }
 
  protected:
@@ -196,7 +199,7 @@ TEST_F(DeviceInfoSyncServiceTest, StopSyncing) {
 // Sync with initial data matching the local device data.
 TEST_F(DeviceInfoSyncServiceTest, StartSyncMatchingInitialData) {
   SyncDataList sync_data;
-  AddInitialData(sync_data, "guid_1", "client_1");
+  AddInitialData(&sync_data, "guid_1", "client_1");
 
   SyncMergeResult merge_result =
       sync_service_->MergeDataAndStartSyncing(syncer::DEVICE_INFO,
@@ -221,10 +224,10 @@ TEST_F(DeviceInfoSyncServiceTest, StartSyncMatchingInitialData) {
 // Sync with misc initial data.
 TEST_F(DeviceInfoSyncServiceTest, StartSync) {
   SyncDataList sync_data;
-  AddInitialData(sync_data, "guid_2", "foo");
-  AddInitialData(sync_data, "guid_3", "bar");
+  AddInitialData(&sync_data, "guid_2", "foo");
+  AddInitialData(&sync_data, "guid_3", "bar");
   // This guid matches the local device but the client name is different.
-  AddInitialData(sync_data, "guid_1", "baz");
+  AddInitialData(&sync_data, "guid_1", "baz");
 
   SyncMergeResult merge_result =
       sync_service_->MergeDataAndStartSyncing(syncer::DEVICE_INFO,
@@ -267,7 +270,7 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessAddChange) {
 
   // Add a new device info with a non-matching guid.
   SyncChangeList change_list;
-  AddChange(change_list, SyncChange::ACTION_ADD, "guid_2", "foo");
+  AddChange(&change_list, SyncChange::ACTION_ADD, "guid_2", "foo");
 
   SyncError error = sync_service_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.IsSet());
@@ -284,8 +287,8 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessAddChange) {
 // Verify that callback is called multiple times.
 TEST_F(DeviceInfoSyncServiceTest, ProcessMultipleChanges) {
   SyncDataList sync_data;
-  AddInitialData(sync_data, "guid_2", "foo");
-  AddInitialData(sync_data, "guid_3", "bar");
+  AddInitialData(&sync_data, "guid_2", "foo");
+  AddInitialData(&sync_data, "guid_3", "bar");
 
   SyncMergeResult merge_result =
       sync_service_->MergeDataAndStartSyncing(syncer::DEVICE_INFO,
@@ -297,7 +300,7 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessMultipleChanges) {
   num_device_info_changed_callbacks_ = 0;
 
   SyncChangeList change_list;
-  AddChange(change_list, SyncChange::ACTION_UPDATE, "guid_2", "foo_2");
+  AddChange(&change_list, SyncChange::ACTION_UPDATE, "guid_2", "foo_2");
 
   SyncError error = sync_service_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.IsSet());
@@ -307,8 +310,8 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessMultipleChanges) {
   EXPECT_EQ("foo_2", sync_service_->GetDeviceInfo("guid_2")->client_name());
 
   change_list.clear();
-  AddChange(change_list, SyncChange::ACTION_UPDATE, "guid_3", "bar_3");
-  AddChange(change_list, SyncChange::ACTION_ADD, "guid_4", "baz_4");
+  AddChange(&change_list, SyncChange::ACTION_UPDATE, "guid_3", "bar_3");
+  AddChange(&change_list, SyncChange::ACTION_ADD, "guid_4", "baz_4");
 
   error = sync_service_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.IsSet());
@@ -331,7 +334,7 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessUpdateChangeMatchingLocalDevice) {
   num_device_info_changed_callbacks_ = 0;
 
   SyncChangeList change_list;
-  AddChange(change_list, SyncChange::ACTION_UPDATE, "guid_1", "foo_1");
+  AddChange(&change_list, SyncChange::ACTION_UPDATE, "guid_1", "foo_1");
 
   SyncError error = sync_service_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.IsSet());
@@ -345,8 +348,8 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessUpdateChangeMatchingLocalDevice) {
 // Process sync change with ACTION_DELETE.
 TEST_F(DeviceInfoSyncServiceTest, ProcessDeleteChange) {
   SyncDataList sync_data;
-  AddInitialData(sync_data, "guid_2", "foo");
-  AddInitialData(sync_data, "guid_3", "bar");
+  AddInitialData(&sync_data, "guid_2", "foo");
+  AddInitialData(&sync_data, "guid_3", "bar");
 
   SyncMergeResult merge_result =
       sync_service_->MergeDataAndStartSyncing(syncer::DEVICE_INFO,
@@ -358,7 +361,7 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessDeleteChange) {
   num_device_info_changed_callbacks_ = 0;
 
   SyncChangeList change_list;
-  AddChange(change_list, SyncChange::ACTION_DELETE, "guid_2", "foo_2");
+  AddChange(&change_list, SyncChange::ACTION_DELETE, "guid_2", "foo_2");
 
   SyncError error = sync_service_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.IsSet());
@@ -380,7 +383,7 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessInvalidChange) {
   num_device_info_changed_callbacks_ = 0;
 
   SyncChangeList change_list;
-  AddChange(change_list, (SyncChange::SyncChangeType)100, "guid_2", "foo_2");
+  AddChange(&change_list, (SyncChange::SyncChangeType)100, "guid_2", "foo_2");
 
   SyncError error = sync_service_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_TRUE(error.IsSet());
@@ -402,7 +405,7 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessChangesAfterUnsubscribing) {
   num_device_info_changed_callbacks_ = 0;
 
   SyncChangeList change_list;
-  AddChange(change_list, SyncChange::ACTION_ADD, "guid_2", "foo_2");
+  AddChange(&change_list, SyncChange::ACTION_ADD, "guid_2", "foo_2");
 
   // Unsubscribe observer before processing changes.
   sync_service_->RemoveObserver(this);

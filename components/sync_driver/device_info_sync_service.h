@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SYNC_SERVICE_H_
 #define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SYNC_SERVICE_H_
 
+#include <map>
+#include <string>
+
 #include "base/observer_list.h"
 #include "components/sync_driver/device_info_tracker.h"
 #include "sync/api/sync_change_processor.h"

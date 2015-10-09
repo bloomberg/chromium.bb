@@ -286,7 +286,7 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels(
             }
             // Should never be possible to delete all the items, since the
             // visit vector contains all the items in typed_url.visits.
-            DCHECK(visits.size() > 0);
+            DCHECK_GT(visits.size(), 0u);
           }
           DCHECK_EQ(new_url.last_visit().ToInternalValue(),
                     visits.back().visit_time.ToInternalValue());
@@ -733,7 +733,7 @@ void TypedUrlModelAssociator::WriteToTypedUrlSpecifics(
     // the history DB has an inaccurate count for some reason (there's been
     // bugs in the history code in the past which has left users in the wild
     // with incorrect counts - http://crbug.com/84258).
-    DCHECK(typed_count > 0);
+    DCHECK_GT(typed_count, 0);
 
     if (typed_count > kMaxTypedUrlVisits) {
       only_typed = true;

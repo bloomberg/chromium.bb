@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/non_ui_data_type_controller.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -161,8 +163,6 @@ class NonUIDataTypeControllerFake
  private:
   ~NonUIDataTypeControllerFake() override {}
 
-  DISALLOW_COPY_AND_ASSIGN(NonUIDataTypeControllerFake);
-
   struct PendingTask {
     PendingTask(const tracked_objects::Location& from_here,
                 const base::Closure& task)
@@ -177,6 +177,8 @@ class NonUIDataTypeControllerFake
   NonUIDataTypeControllerMock* mock_;
   scoped_refptr<SharedChangeProcessor> change_processor_;
   scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(NonUIDataTypeControllerFake);
 };
 
 class SyncNonUIDataTypeControllerTest : public testing::Test,
@@ -228,14 +230,14 @@ class SyncNonUIDataTypeControllerTest : public testing::Test,
         .WillOnce(Return(true));
     EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
         .WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
-    EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_,_))
+    EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_, _))
         .WillOnce(Return(syncer::SyncError()));
     EXPECT_CALL(*change_processor_.get(), GetSyncCount()).WillOnce(Return(0));
     EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
   }
 
   void SetActivateExpectations(DataTypeController::ConfigureResult result) {
-    EXPECT_CALL(start_callback_, Run(result,_,_));
+    EXPECT_CALL(start_callback_, Run(result, _, _));
   }
 
   void SetStopExpectations() {
@@ -293,7 +295,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartFirstRun) {
       .WillOnce(Return(true));
   EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(false), Return(true)));
-  EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_,_))
+  EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_, _))
       .WillOnce(Return(syncer::SyncError()));
   EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
   SetActivateExpectations(DataTypeController::OK_FIRST_RUN);
@@ -329,7 +331,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAssociationFailed) {
       .WillOnce(Return(true));
   EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_,_))
+  EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_, _))
       .WillOnce(Return(syncer::SyncError()));
   EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
@@ -395,7 +397,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringAssociation) {
                       WaitOnEvent(&pause_db_thread),
                       SetArgumentPointee<0>(true),
                       Return(true)));
-  EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_,_))
+  EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_, _))
       .WillOnce(
           Return(syncer::SyncError(FROM_HERE,
                                    syncer::SyncError::DATATYPE_ERROR,

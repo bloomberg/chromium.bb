@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/backup_rollback_controller.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"

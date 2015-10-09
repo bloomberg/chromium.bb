@@ -124,8 +124,9 @@ class UIDataTypeController : public DirectoryDataTypeController {
   base::WeakPtr<syncer::SyncableService> local_service_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+
  private:
-   // Associate the sync model with the service's model, then start syncing.
+  // Associate the sync model with the service's model, then start syncing.
   virtual void Associate();
 
   virtual void AbortModelLoad();

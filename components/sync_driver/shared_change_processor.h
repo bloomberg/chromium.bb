@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_
 #define COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_
 
+#include <string>
+
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

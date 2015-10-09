@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_MOCK_H__
 #define COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_MOCK_H__
 
+#include <string>
+
 #include "components/sync_driver/frontend_data_type_controller.h"
 #include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"

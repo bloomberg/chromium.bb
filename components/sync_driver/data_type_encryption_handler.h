@@ -24,6 +24,6 @@ class DataTypeEncryptionHandler {
   virtual syncer::ModelTypeSet GetEncryptedDataTypes() const = 0;
 };
 
-} // namespace sync_driver
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_ENCRYPTION_HANDLER_H_

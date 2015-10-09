@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SYNC_DRIVER_FAKE_GENERIC_CHANGE_PROCESSOR_H_
 #define COMPONENTS_SYNC_DRIVER_FAKE_GENERIC_CHANGE_PROCESSOR_H_
 
-#include "components/sync_driver/generic_change_processor.h"
+#include <string>
 
+#include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/api/sync_error.h"

@@ -46,7 +46,7 @@ void FakeDataTypeController::LoadModels(
 
 // MODEL_LOADED -> MODEL_STARTING.
 void FakeDataTypeController::StartAssociating(
-   const StartCallback& start_callback) {
+    const StartCallback& start_callback) {
   last_start_callback_ = start_callback;
   state_ = ASSOCIATING;
 }

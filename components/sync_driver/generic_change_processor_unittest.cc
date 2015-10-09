@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/generic_change_processor.h"
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"

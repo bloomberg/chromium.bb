@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/sync_prefs.h"
 
+#include <map>
+
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_notifier_impl.h"

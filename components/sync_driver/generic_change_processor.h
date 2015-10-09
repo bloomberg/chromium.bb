@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_GENERIC_CHANGE_PROCESSOR_H_
 #define COMPONENTS_SYNC_DRIVER_GENERIC_CHANGE_PROCESSOR_H_
 
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_BACKEND_MIGRATOR_H_
 #define COMPONENTS_SYNC_DRIVER_BACKEND_MIGRATOR_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"

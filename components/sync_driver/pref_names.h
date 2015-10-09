@@ -4,6 +4,9 @@
 
 // Constants for the names of various sync preferences, for easier changing.
 
+#ifndef COMPONENTS_SYNC_DRIVER_PREF_NAMES_H_
+#define COMPONENTS_SYNC_DRIVER_PREF_NAMES_H_
+
 #include "build/build_config.h"
 
 namespace sync_driver {
@@ -79,3 +82,5 @@ extern const char kSyncNigoriStateForPassphraseTransition[];
 }  // namespace prefs
 
 }  // namespace sync_driver
+
+#endif  // COMPONENTS_SYNC_DRIVER_PREF_NAMES_H_

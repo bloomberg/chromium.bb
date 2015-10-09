@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/sync_stopped_reporter.h"
 
+#include <string>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"

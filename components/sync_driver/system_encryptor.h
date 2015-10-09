@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SYSTEM_ENCRYPTOR_H_
 #define COMPONENTS_SYNC_DRIVER_SYSTEM_ENCRYPTOR_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "sync/util/encryptor.h"
 

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
 #define COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
 
+#include <string>
+
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/local_device_info_provider.h"
 

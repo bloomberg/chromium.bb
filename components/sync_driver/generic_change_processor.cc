@@ -4,6 +4,9 @@
 
 #include "components/sync_driver/generic_change_processor.h"
 
+#include <algorithm>
+#include <string>
+
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

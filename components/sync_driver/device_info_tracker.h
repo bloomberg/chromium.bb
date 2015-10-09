@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_TRACKER_H_
 #define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_TRACKER_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/sync_driver/device_info.h"

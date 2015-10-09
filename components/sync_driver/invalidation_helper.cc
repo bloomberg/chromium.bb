@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/invalidation_helper.h"
 
+#include <string>
+
 #include "google/cacheinvalidation/types.pb.h"
 
 namespace syncer {

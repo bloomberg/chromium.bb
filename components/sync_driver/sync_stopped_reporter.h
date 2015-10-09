@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SYNC_STOPPED_REPORTER_H_
 #define COMPONENTS_SYNC_DRIVER_SYNC_STOPPED_REPORTER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/timer/timer.h"
 #include "net/url_request/url_fetcher.h"

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_AUTH_PROVIDER_H_
 #define COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_AUTH_PROVIDER_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/oauth2_token_service.h"

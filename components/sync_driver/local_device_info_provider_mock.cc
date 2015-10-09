@@ -61,4 +61,3 @@ void LocalDeviceInfoProviderMock::SetInitialized(bool is_initialized) {
 }
 
 }  // namespace sync_driver
-

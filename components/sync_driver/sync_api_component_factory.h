@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SYNC_API_COMPONENT_FACTORY_H_
 #define COMPONENTS_SYNC_DRIVER_SYNC_API_COMPONENT_FACTORY_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/data_type_controller.h"

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_
 #define COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -100,7 +102,6 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   void OnModelLoaded();
 
  private:
-
   // Posted on the backend thread by StartAssociationAsync().
   void StartAssociationWithSharedChangeProcessor(
       const scoped_refptr<SharedChangeProcessor>& shared_change_processor);

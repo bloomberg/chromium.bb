@@ -6,7 +6,9 @@
 #define COMPONENTS_SYNC_DRIVER_FAVICON_CACHE_H_
 
 #include <map>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

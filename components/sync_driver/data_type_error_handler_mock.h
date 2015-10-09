@@ -4,6 +4,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DATA_TYPE_ERROR_HANDLER_MOCK_H__
 #define COMPONENTS_SYNC_DRIVER_DATA_TYPE_ERROR_HANDLER_MOCK_H__
 
+#include <string>
+
 #include "components/sync_driver/data_type_error_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,7 +22,6 @@ class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
                    syncer::SyncError(const tracked_objects::Location&,
                              const std::string&,
                              syncer::ModelType));
-
 };
 
 }  // namespace sync_driver

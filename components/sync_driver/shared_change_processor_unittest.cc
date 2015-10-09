@@ -5,6 +5,7 @@
 #include "components/sync_driver/shared_change_processor.h"
 
 #include <cstddef>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DATA_TYPE_STATUS_TABLE_H_
 #define COMPONENTS_SYNC_DRIVER_DATA_TYPE_STATUS_TABLE_H_
 
+#include <map>
 #include <string>
 
 #include "components/sync_driver/data_type_manager.h"

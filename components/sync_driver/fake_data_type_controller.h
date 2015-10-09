@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_FAKE_DATA_TYPE_CONTROLLER_H__
 #define COMPONENTS_SYNC_DRIVER_FAKE_DATA_TYPE_CONTROLLER_H__
 
+#include <string>
+
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/directory_data_type_controller.h"
 

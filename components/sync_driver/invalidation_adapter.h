@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_INVALIDATION_ADAPTER_H_
 #define COMPONENTS_SYNC_DRIVER_INVALIDATION_ADAPTER_H_
 
+#include <string>
+
 #include "components/invalidation/public/invalidation.h"
 #include "sync/internal_api/public/base/invalidation_interface.h"
 

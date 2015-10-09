@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_PROXY_DATA_TYPE_CONTROLLER_H__
 #define COMPONENTS_SYNC_DRIVER_PROXY_DATA_TYPE_CONTROLLER_H__
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/single_thread_task_runner.h"

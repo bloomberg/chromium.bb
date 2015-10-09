@@ -187,7 +187,7 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
       data_type_status_table_.GetFatalErrorTypes();
   syncer::ModelTypeSet crypto_types =
       data_type_status_table_.GetCryptoErrorTypes();
-  syncer::ModelTypeSet unready_types=
+  syncer::ModelTypeSet unready_types =
       data_type_status_table_.GetUnreadyErrorTypes();
 
   // Types with persistence errors are only purged/resynced when they're

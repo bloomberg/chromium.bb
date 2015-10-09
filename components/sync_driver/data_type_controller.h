@@ -36,20 +36,20 @@ class DataTypeController
       public DataTypeErrorHandler {
  public:
   enum State {
-    NOT_RUNNING,    // The controller has never been started or has
-                    // previously been stopped.  Must be in this state to start.
-    MODEL_STARTING, // The controller is waiting on dependent services
-                    // that need to be available before model
-                    // association.
-    MODEL_LOADED,   // The model has finished loading and can start
-                    // associating now.
-    ASSOCIATING,    // Model association is in progress.
-    RUNNING,        // The controller is running and the data type is
-                    // in sync with the cloud.
-    STOPPING,       // The controller is in the process of stopping
-                    // and is waiting for dependent services to stop.
-    DISABLED        // The controller was started but encountered an error
-                    // so it is disabled waiting for it to be stopped.
+    NOT_RUNNING,     // The controller has never been started or has previously
+                     // been stopped.  Must be in this state to start.
+    MODEL_STARTING,  // The controller is waiting on dependent services
+                     // that need to be available before model
+                     // association.
+    MODEL_LOADED,    // The model has finished loading and can start
+                     // associating now.
+    ASSOCIATING,     // Model association is in progress.
+    RUNNING,         // The controller is running and the data type is
+                     // in sync with the cloud.
+    STOPPING,        // The controller is in the process of stopping
+                     // and is waiting for dependent services to stop.
+    DISABLED         // The controller was started but encountered an error
+                     // so it is disabled waiting for it to be stopped.
   };
 
   // This enum is used for "Sync.*ConfigureFailre" histograms so the order

@@ -35,7 +35,7 @@ FakeDataTypeController* GetController(
   if (it == controllers.end()) {
     return NULL;
   }
-  return (FakeDataTypeController*)(it->second.get());
+  return static_cast<FakeDataTypeController*>(it->second.get());
 }
 
 ACTION_P(VerifyResult, expected_result) {

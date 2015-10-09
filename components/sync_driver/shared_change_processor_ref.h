@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_REF_H_
-#define COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_REF_H_
+#ifndef COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_REF_H_
+#define COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_REF_H_
+
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -46,4 +48,4 @@ class SharedChangeProcessorRef : public syncer::SyncChangeProcessor,
 
 }  // namespace sync_driver
 
-#endif  // COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_REF_H_
+#endif  // COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_REF_H_
