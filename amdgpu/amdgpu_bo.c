@@ -591,6 +591,12 @@ int amdgpu_bo_list_create(amdgpu_device_handle dev,
 	if (!list)
 		return -ENOMEM;
 
+	*result = malloc(sizeof(struct amdgpu_bo_list));
+	if (!*result) {
+		free(list);
+		return -ENOMEM;
+	}
+
 	memset(&args, 0, sizeof(args));
 	args.in.operation = AMDGPU_BO_LIST_OP_CREATE;
 	args.in.bo_number = number_of_resources;
@@ -608,10 +614,11 @@ int amdgpu_bo_list_create(amdgpu_device_handle dev,
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_BO_LIST,
 				&args, sizeof(args));
 	free(list);
-	if (r)
+	if (r) {
+		free(*result);
 		return r;
+	}
 
-	*result = malloc(sizeof(struct amdgpu_bo_list));
 	(*result)->dev = dev;
 	(*result)->handle = args.out.list_handle;
 	return 0;
