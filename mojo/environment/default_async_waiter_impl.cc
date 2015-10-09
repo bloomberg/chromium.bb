@@ -25,6 +25,7 @@ MojoAsyncWaitID AsyncWait(int id,
                           MojoDeadline deadline,
                           MojoAsyncWaitCallback callback,
                           void* closure) {
+  CHECK(handle != MOJO_HANDLE_INVALID);
   // This instance will be deleted when done or cancelled.
   common::HandleWatcher* watcher = new common::HandleWatcher(id);
   watcher->Start(Handle(handle), signals, deadline,
