@@ -58,19 +58,25 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   return buffer;
 }
 
-GbmPixmap::GbmPixmap(const scoped_refptr<GbmBuffer>& buffer,
-                     GbmSurfaceFactory* surface_manager)
-    : buffer_(buffer), surface_manager_(surface_manager) {}
+GbmPixmap::GbmPixmap(GbmSurfaceFactory* surface_manager)
+    : surface_manager_(surface_manager) {}
 
-bool GbmPixmap::Initialize() {
+void GbmPixmap::Initialize(base::ScopedFD dma_buf, int dma_buf_pitch) {
+  dma_buf_ = dma_buf.Pass();
+  dma_buf_pitch_ = dma_buf_pitch;
+}
+
+bool GbmPixmap::InitializeFromBuffer(const scoped_refptr<GbmBuffer>& buffer) {
   // We want to use the GBM API because it's going to call into libdrm
   // which might do some optimizations on buffer allocation,
   // especially when sharing buffers via DMABUF.
-  dma_buf_ = gbm_bo_get_fd(buffer_->bo());
-  if (dma_buf_ < 0) {
+  base::ScopedFD dma_buf(gbm_bo_get_fd(buffer->bo()));
+  if (!dma_buf.is_valid()) {
     PLOG(ERROR) << "Failed to export buffer to dma_buf";
     return false;
   }
+  Initialize(dma_buf.Pass(), gbm_bo_get_stride(buffer->bo()));
+  buffer_ = buffer;
   return true;
 }
 
@@ -85,20 +91,18 @@ scoped_refptr<NativePixmap> GbmPixmap::GetScaledPixmap(gfx::Size new_size) {
 gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
   gfx::NativePixmapHandle handle;
 
-  int dmabuf_fd = HANDLE_EINTR(dup(dma_buf_));
-  if (dmabuf_fd < 0) {
+  base::ScopedFD dmabuf_fd(HANDLE_EINTR(dup(dma_buf_.get())));
+  if (!dmabuf_fd.is_valid()) {
     PLOG(ERROR) << "dup";
     return handle;
   }
 
-  handle.fd = base::FileDescriptor(dmabuf_fd, true /* auto_close */);
-  handle.stride = gbm_bo_get_stride(buffer_->bo());
+  handle.fd = base::FileDescriptor(dmabuf_fd.release(), true /* auto_close */);
+  handle.stride = dma_buf_pitch_;
   return handle;
 }
 
 GbmPixmap::~GbmPixmap() {
-  if (dma_buf_ > 0)
-    close(dma_buf_);
 }
 
 void* GbmPixmap::GetEGLClientBuffer() {
@@ -106,11 +110,11 @@ void* GbmPixmap::GetEGLClientBuffer() {
 }
 
 int GbmPixmap::GetDmaBufFd() {
-  return dma_buf_;
+  return dma_buf_.get();
 }
 
 int GbmPixmap::GetDmaBufPitch() {
-  return gbm_bo_get_stride(buffer_->bo());
+  return dma_buf_pitch_;
 }
 
 bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
@@ -118,7 +122,6 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      gfx::OverlayTransform plane_transform,
                                      const gfx::Rect& display_bounds,
                                      const gfx::RectF& crop_rect) {
-  DCHECK(buffer_->GetUsage() == gfx::BufferUsage::SCANOUT);
   gfx::Size required_size;
   if (plane_z_order &&
       ShouldApplyScaling(display_bounds, crop_rect, &required_size)) {
@@ -131,6 +134,13 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
     }
   }
 
+  // TODO(reveman): Add support for imported buffers. crbug.com/541558
+  if (!buffer_) {
+    PLOG(ERROR) << "ScheduleOverlayPlane requires a buffer.";
+    return false;
+  }
+
+  DCHECK(buffer_->GetUsage() == gfx::BufferUsage::SCANOUT);
   surface_manager_->GetSurface(widget)->QueueOverlayPlane(OverlayPlane(
       buffer_, plane_z_order, plane_transform, display_bounds, crop_rect));
   return true;
@@ -141,6 +151,11 @@ bool GbmPixmap::ShouldApplyScaling(const gfx::Rect& display_bounds,
                                    gfx::Size* required_size) {
   if (crop_rect.width() == 0 || crop_rect.height() == 0) {
     PLOG(ERROR) << "ShouldApplyScaling passed zero scaling target.";
+    return false;
+  }
+
+  if (!buffer_) {
+    PLOG(ERROR) << "ShouldApplyScaling requires a buffer.";
     return false;
   }
 

@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_GBM_BUFFER_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_GBM_BUFFER_H_
 
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/buffer_types.h"
@@ -41,9 +42,9 @@ class GbmBuffer : public GbmBufferBase {
 
 class GbmPixmap : public NativePixmap {
  public:
-  GbmPixmap(const scoped_refptr<GbmBuffer>& buffer,
-            GbmSurfaceFactory* surface_manager);
-  bool Initialize();
+  explicit GbmPixmap(GbmSurfaceFactory* surface_manager);
+  void Initialize(base::ScopedFD dma_buf, int dma_buf_pitch);
+  bool InitializeFromBuffer(const scoped_refptr<GbmBuffer>& buffer);
   void SetScalingCallback(const ScalingCallback& scaling_callback) override;
   scoped_refptr<NativePixmap> GetScaledPixmap(gfx::Size new_size) override;
 
@@ -67,7 +68,8 @@ class GbmPixmap : public NativePixmap {
                           gfx::Size* required_size);
 
   scoped_refptr<GbmBuffer> buffer_;
-  int dma_buf_ = -1;
+  base::ScopedFD dma_buf_;
+  int dma_buf_pitch_ = -1;
 
   GbmSurfaceFactory* surface_manager_;
 

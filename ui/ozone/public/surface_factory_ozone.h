@@ -13,6 +13,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/ozone_base_export.h"
+#include "ui/ozone/public/native_pixmap.h"
 
 namespace ui {
 
@@ -105,6 +106,11 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage);
+
+  // Create a single native buffer from an existing handle. Takes ownership of
+  // |handle| and can be called on any thread.
+  virtual scoped_refptr<NativePixmap> CreateNativePixmapFromHandle(
+      const gfx::NativePixmapHandle& handle);
 
  protected:
   SurfaceFactoryOzone();

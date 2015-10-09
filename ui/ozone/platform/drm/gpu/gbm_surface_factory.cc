@@ -128,10 +128,17 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
   if (!buffer.get())
     return nullptr;
 
-  scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(buffer, this));
-  if (!pixmap->Initialize())
+  scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(this));
+  if (!pixmap->InitializeFromBuffer(buffer))
     return nullptr;
 
+  return pixmap;
+}
+
+scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmapFromHandle(
+    const gfx::NativePixmapHandle& handle) {
+  scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(this));
+  pixmap->Initialize(base::ScopedFD(handle.fd.fd), handle.stride);
   return pixmap;
 }
 

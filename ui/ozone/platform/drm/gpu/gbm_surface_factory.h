@@ -47,6 +47,8 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
+  scoped_refptr<NativePixmap> CreateNativePixmapFromHandle(
+      const gfx::NativePixmapHandle& handle) override;
 
  private:
   scoped_refptr<GbmDevice> GetGbmDevice(gfx::AcceleratedWidget widget);

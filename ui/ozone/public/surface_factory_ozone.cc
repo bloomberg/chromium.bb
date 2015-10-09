@@ -49,7 +49,13 @@ scoped_refptr<ui::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  return NULL;
+  return nullptr;
+}
+
+scoped_refptr<ui::NativePixmap>
+SurfaceFactoryOzone::CreateNativePixmapFromHandle(
+    const gfx::NativePixmapHandle& handle) {
+  return nullptr;
 }
 
 }  // namespace ui
