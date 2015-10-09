@@ -41,6 +41,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/framebufferblit.html', bug=483282)
     self.Skip('deqp/functional/gles3/indexedstatequery.html', bug=483282)
     self.Skip('deqp/functional/gles3/instancedrendering.html', bug=483282)
+    self.Skip('deqp/functional/gles3/integerstatequery.html', bug=483282)
     self.Skip('deqp/functional/gles3/internalformatquery.html', bug=483282)
     self.Skip('deqp/functional/gles3/lifetime.html', bug=483282)
     self.Skip('deqp/functional/gles3/multisample.html', bug=483282)
@@ -61,6 +62,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/shaderindexing.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderloop.html', bug=483282)
     self.Skip('deqp/functional/gles3/shadermatrix.html', bug=483282)
+    self.Skip('deqp/functional/gles3/shaderoperator.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderpackingfunction.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderprecision.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderstatequery.html', bug=483282)
@@ -97,6 +99,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Windows only.
     self.Skip('deqp/functional/gles3/readpixel.html', ['win'], bug=483282)
+    self.Skip('deqp/functional/gles3/texturestatequery.html',
+        ['win'], bug=483282)
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
     self.Fail('conformance2/glsl3/short-circuiting-in-loop-condition.html',
@@ -115,6 +119,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
         ['win'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
+        ['win'], bug=483282)
+    self.Skip('conformance2/transform_feedback/transform_feedback.html',
         ['win'], bug=483282)
     # Windows 8 only.
     self.Fail('conformance2/textures/image_data/tex-image-and-sub-image-2d' +
@@ -148,6 +154,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/data/gles3/shaders/scoping.html',
         ['mac'], bug=483282)
     self.Skip('deqp/functional/gles3/defaultvertexattribute.html',
+        ['mac'], bug=483282)
+    self.Skip('deqp/functional/gles3/floatstatequery.html',
+        ['mac'], bug=483282)
+    self.Skip('deqp/functional/gles3/texturestatequery.html',
         ['mac'], bug=483282)
     self.Skip('deqp/functional/gles3/vertexarrayobject.html',
         ['mac'], bug=483282)
@@ -214,6 +224,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/samplers/samplers.html',
+        ['linux'], bug=483282)
+    self.Fail('conformance2/state/gl-object-get-calls.html',
         ['linux'], bug=483282)
     # Linux NVIDIA only.
     self.Skip('deqp/functional/gles3/shaderswitch.html',

@@ -36,10 +36,14 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=478572)
     self.Fail('deqp/data/gles2/shaders/scoping.html',
         bug=478572)
+    self.Fail('conformance/extensions/ext-sRGB.html',
+        bug=540900)
+    self.Fail('conformance/extensions/oes-standard-derivatives.html',
+        bug=5400916)
+    self.Fail('conformance/extensions/ext-frag-depth.html',
+        bug=5400916)
     self.Fail('conformance/misc/expando-loss.html',
         bug=485634)
-    self.Fail('conformance/buffers/buffer-data-array-buffer.html',
-        bug=535077)
 
     # Win failures
     self.Fail('conformance/glsl/bugs/' +
