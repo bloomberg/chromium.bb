@@ -50,16 +50,23 @@ remoting.CredentialsProvider = function(args) {
   this.accessCode_ = args.accessCode;
   /** @private */
   this.fetchThirdPartyToken_ = args.fetchThirdPartyToken;
+
+  /** @private {?remoting.ChromotingEvent.AuthMethod} */
+  this.authMethod_ = null;
 };
 
 /** @returns {void}  */
 remoting.CredentialsProvider.prototype.getAccessCode_ = function(
   /** boolean */ supportsPairing, /** Function */ callback) {
+  this.authMethod_ = remoting.ChromotingEvent.AuthMethod.ACCESS_CODE;
   callback(this.accessCode_);
 };
 
 /** @returns {remoting.PairingInfo}  */
 remoting.CredentialsProvider.prototype.getPairingInfo = function() {
+  if (this.pairingInfo_) {
+    this.authMethod_ = remoting.ChromotingEvent.AuthMethod.PINLESS;
+  }
   return this.pairingInfo_ || { clientId: '', sharedSecret: ''};
 };
 
@@ -72,6 +79,8 @@ remoting.CredentialsProvider.prototype.getPIN = function(pairingSupported) {
   if (!this.fetchPin_) {
     Promise.resolve('');
   }
+
+  this.authMethod_ = remoting.ChromotingEvent.AuthMethod.PIN;
   return new Promise(function(/** function(string) */ resolve) {
     that.fetchPin_(pairingSupported, resolve);
   });
@@ -90,10 +99,17 @@ remoting.CredentialsProvider.prototype.getThirdPartyToken = function(
   if (!this.fetchThirdPartyToken_) {
     Promise.resolve({token: '', secret: ''});
   }
+
+  this.authMethod_ = remoting.ChromotingEvent.AuthMethod.THIRD_PARTY;
   return new Promise(function(/** Function */ resolve) {
     var onTokenFetched = function(/** string */ token, /** string */ secret) {
       resolve({token: token, secret: secret});
     };
     that.fetchThirdPartyToken_(tokenUrl, hostPublicKey, scope, onTokenFetched);
   });
+};
+
+/** @return {?remoting.ChromotingEvent.AuthMethod} */
+remoting.CredentialsProvider.prototype.getAuthMethod = function() {
+  return this.authMethod_;
 };

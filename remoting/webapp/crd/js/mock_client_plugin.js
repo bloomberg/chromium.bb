@@ -196,11 +196,11 @@ remoting.MockClientPlugin.prototype.mock$setConnectionStatus = function(
 };
 
 /**
- * @param {remoting.MockClientPlugin.AuthMethod} authMethod
+ * @param {remoting.ChromotingEvent.AuthMethod} authMethod
  * @return {Promise}
  */
 remoting.MockClientPlugin.prototype.mock$authenticate = function(authMethod) {
-  var AuthMethod = remoting.MockClientPlugin.AuthMethod;
+  var AuthMethod = remoting.ChromotingEvent.AuthMethod;
   var deferred = new base.Deferred();
 
   var that = this;
@@ -218,7 +218,8 @@ remoting.MockClientPlugin.prototype.mock$authenticate = function(authMethod) {
         deferred.resolve();
       });
       break;
-    case AuthMethod.PAIRING:
+    case AuthMethod.PINLESS:
+      this.credentials_.getPairingInfo();
       deferred.resolve();
   }
   return deferred.promise();
@@ -234,7 +235,7 @@ remoting.MockClientPlugin.prototype.mock$setPluginStatusChanged =
 };
 
 /**
- * @param {remoting.MockClientPlugin.AuthMethod} authMethod
+ * @param {remoting.ChromotingEvent.AuthMethod} authMethod
  */
 remoting.MockClientPlugin.prototype.mock$useDefaultBehavior =
     function(authMethod) {
@@ -252,12 +253,17 @@ remoting.MockClientPlugin.prototype.mock$useDefaultBehavior =
 
 /**
  * @param {remoting.ClientSession.ConnectionError} error
+ * @param {remoting.ChromotingEvent.AuthMethod=} opt_authMethod
  */
-remoting.MockClientPlugin.prototype.mock$returnErrorOnConnect = function(error){
+remoting.MockClientPlugin.prototype.mock$returnErrorOnConnect =
+    function(error, opt_authMethod){
   var that = this;
   var State = remoting.ClientSession.State;
   this.mock$onConnect().then(function() {
     that.mock$setConnectionStatus(State.CONNECTING);
+    var authMethod = opt_authMethod ? opt_authMethod :
+                                      remoting.ChromotingEvent.AuthMethod.PIN;
+    return that.mock$authenticate(authMethod);
   }).then(function() {
     that.mock$setConnectionStatus(State.FAILED, error);
   });
@@ -294,7 +300,7 @@ remoting.MockClientPluginFactory.prototype.createPlugin =
     this.onPluginCreated_(this.plugin_);
   } else {
     this.plugin_.mock$useDefaultBehavior(
-        remoting.MockClientPlugin.AuthMethod.PIN);
+        remoting.ChromotingEvent.AuthMethod.PIN);
   }
 
   // Listens for plugin status changed.
@@ -388,11 +394,3 @@ remoting.MockConnection.prototype.restore = function() {
 };
 
 })();
-
-/** @enum {string} */
-remoting.MockClientPlugin.AuthMethod = {
-  ACCESS_CODE: 'accessCode',
-  PIN: 'pin',
-  THIRD_PARTY: 'thirdParty',
-  PAIRING: 'pairing'
-};

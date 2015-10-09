@@ -58,6 +58,10 @@ remoting.Logger.prototype.setConnectionType = function(connectionType) {};
  */
 remoting.Logger.prototype.setLogEntryMode = function(mode) {};
 
+/**
+ * @param {remoting.ChromotingEvent.AuthMethod} method
+ */
+remoting.Logger.prototype.setAuthMethod = function(method) {};
 
 /**
  * @param {remoting.SignalStrategy.Type} strategyType

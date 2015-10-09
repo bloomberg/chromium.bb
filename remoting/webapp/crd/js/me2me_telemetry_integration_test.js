@@ -284,7 +284,7 @@ QUnit.test('HOST_OFFLINE - JID refresh succeeded', function() {
           remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE);
     } else if (count == 2) {
       plugin.mock$useDefaultBehavior(
-          remoting.MockClientPlugin.AuthMethod.PIN);
+          remoting.ChromotingEvent.AuthMethod.PIN);
     }
   }
 
@@ -404,6 +404,107 @@ QUnit.test('Connection dropped - Auto Reconnect', function() {
       onStatusChanged);
 
   return testDriver.startTest();
+});
+
+
+/**
+ * @param {remoting.Me2MeTestDriver} testDriver
+ * @param {remoting.ChromotingEvent.AuthMethod} authMethod
+ * @param {boolean} connected
+ * @return {Promise}
+ */
+function createAuthMethodTest(testDriver, authMethod, connected) {
+  var ChromotingEvent = remoting.ChromotingEvent;
+  var baseEvent = {
+    session_entry_point: ChromotingEvent.SessionEntryPoint.CONNECT_BUTTON,
+    role: ChromotingEvent.Role.CLIENT,
+    mode: ChromotingEvent.Mode.ME2ME,
+  };
+
+  expectSequence(
+      testDriver, baseEvent, [
+        ChromotingEvent.SessionState.STARTED,
+        ChromotingEvent.SessionState.SIGNALING,
+        ChromotingEvent.SessionState.CREATING_PLUGIN,
+        ChromotingEvent.SessionState.CONNECTING,
+      ]);
+
+  var copy = /** @type{Object} */ (base.deepCopy(baseEvent));
+  copy.auth_method = authMethod;
+  if (connected) {
+    expectSequence(
+        testDriver, copy, [
+          ChromotingEvent.SessionState.AUTHENTICATED,
+          ChromotingEvent.SessionState.CONNECTED,
+          ChromotingEvent.SessionState.CLOSED
+        ]);
+  } else {
+    testDriver.expectEvents([{
+        session_entry_point: ChromotingEvent.SessionEntryPoint.CONNECT_BUTTON,
+        role: ChromotingEvent.Role.CLIENT,
+        mode: ChromotingEvent.Mode.ME2ME,
+        auth_method: authMethod,
+        session_state: ChromotingEvent.SessionState.CONNECTION_FAILED,
+        connection_error: ChromotingEvent.ConnectionError.INVALID_ACCESS_CODE,
+    }]);
+  }
+
+  /**
+   * @param {remoting.MockClientPlugin} plugin
+   * @param {remoting.ClientSession.State} state
+   */
+  function onStatusChanged(plugin, state) {
+    if (state == remoting.ClientSession.State.CONNECTED  ||
+        state == remoting.ClientSession.State.FAILED) {
+      testDriver.me2meActivity().stop();
+      testDriver.endTest();
+    }
+  }
+  function onPluginCreated(/** remoting.MockClientPlugin */ plugin) {
+    if (connected) {
+      plugin.mock$useDefaultBehavior(authMethod);
+    } else {
+      plugin.mock$returnErrorOnConnect(
+          remoting.ClientSession.ConnectionError.SESSION_REJECTED, authMethod);
+    }
+  }
+
+  testDriver.mockConnection().pluginFactory().mock$setPluginCreated(
+      onPluginCreated);
+  testDriver.mockConnection().pluginFactory().mock$setPluginStatusChanged(
+      onStatusChanged);
+
+  return testDriver.startTest();
+}
+
+QUnit.test('Auth method - THIRD_PARTY (connected)', function() {
+  return createAuthMethodTest(
+      testDriver, remoting.ChromotingEvent.AuthMethod.THIRD_PARTY, true);
+});
+
+QUnit.test('Auth method - PINLESS (connected)', function() {
+  return createAuthMethodTest(
+      testDriver, remoting.ChromotingEvent.AuthMethod.PINLESS, true);
+});
+
+QUnit.test('Auth method - PIN (connected)', function() {
+  return createAuthMethodTest(
+      testDriver, remoting.ChromotingEvent.AuthMethod.PIN, true);
+});
+
+QUnit.test('Auth method - THIRD_PARTY (failed)', function() {
+  return createAuthMethodTest(
+      testDriver, remoting.ChromotingEvent.AuthMethod.THIRD_PARTY, false);
+});
+
+QUnit.test('Auth method - PINLESS (failed)', function() {
+  return createAuthMethodTest(
+      testDriver, remoting.ChromotingEvent.AuthMethod.PINLESS, false);
+});
+
+QUnit.test('Auth method - PIN (failed)', function() {
+  return createAuthMethodTest(
+      testDriver, remoting.ChromotingEvent.AuthMethod.PIN, false);
 });
 
 })();

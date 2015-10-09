@@ -51,6 +51,8 @@ remoting.SessionLogger = function(role, writeLogEntry) {
   this.hostStatusUpdateElapsedTime_;
   /** @private */
   this.mode_ = remoting.ChromotingEvent.Mode.ME2ME;
+  /** @private {remoting.ChromotingEvent.AuthMethod} */
+  this.authMethod_;
 
   this.setSessionId_();
 };
@@ -96,6 +98,11 @@ remoting.SessionLogger.prototype.setConnectionType = function(connectionType) {
 /** @override {remoting.Logger} */
 remoting.SessionLogger.prototype.setLogEntryMode = function(mode) {
   this.mode_ = mode;
+};
+
+/** @override {remoting.Logger} */
+remoting.SessionLogger.prototype.setAuthMethod = function(authMethod) {
+  this.authMethod_ = authMethod;
 };
 
 /** @override {remoting.Logger} */
@@ -259,6 +266,9 @@ remoting.SessionLogger.prototype.fillEvent_ = function(entry) {
   }
   if (this.hostStatusUpdateElapsedTime_ != undefined) {
     entry.host_status_update_elapsed_time = this.hostStatusUpdateElapsedTime_;
+  }
+  if (this.authMethod_ != undefined) {
+    entry.auth_method = this.authMethod_;
   }
   entry.host_version = this.hostVersion_;
   entry.host_os = this.hostOS_;

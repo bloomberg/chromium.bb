@@ -91,7 +91,7 @@ browserTest.Bump_Scroll.prototype.run = function(data) {
   var mockConnection = new remoting.MockConnection();
 
   function onPluginCreated(/** remoting.MockClientPlugin */ plugin) {
-    plugin.mock$useDefaultBehavior(remoting.MockClientPlugin.AuthMethod.PIN);
+    plugin.mock$useDefaultBehavior(remoting.ChromotingEvent.AuthMethod.PIN);
   }
   mockConnection.pluginFactory().mock$setPluginCreated(onPluginCreated);
 

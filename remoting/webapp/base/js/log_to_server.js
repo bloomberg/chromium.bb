@@ -311,3 +311,9 @@ remoting.LogToServer.prototype.setHostStatusUpdateElapsedTime = function(time) {
  * @return {void} Nothing.
  */
 remoting.LogToServer.prototype.setHostOSVersion = function(hostOSVersion) {};
+
+/**
+ * Stub.
+ * @override {remoting.Logger}
+ */
+remoting.LogToServer.prototype.setAuthMethod = function(authMethod) {};
