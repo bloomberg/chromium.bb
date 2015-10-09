@@ -24,6 +24,10 @@
 #include "base/memory/shared_memory_handle.h"
 #endif  // (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "ipc/mach_port_mac.h"
+#endif
+
 #if defined(OS_WIN)
 #include <tchar.h>
 #include "ipc/handle_win.h"
@@ -553,7 +557,12 @@ void ParamTraits<base::SharedMemoryHandle>::Write(Message* m,
       ParamTraits<base::FileDescriptor>::Write(m, p.GetFileDescriptor());
       break;
     case base::SharedMemoryHandle::MACH:
-      // TODO(erikchen): Implement me. http://crbug.com/535711
+      MachPortMac mach_port_mac(p.GetMemoryObject());
+      ParamTraits<MachPortMac>::Write(m, mach_port_mac);
+      size_t size = 0;
+      bool result = p.GetSize(&size);
+      DCHECK(result);
+      ParamTraits<size_t>::Write(m, size);
       break;
   }
 }
@@ -591,7 +600,16 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const Message* m,
       return true;
     }
     case base::SharedMemoryHandle::MACH: {
-      // TODO(erikchen): Implement me. http://crbug.com/535711
+      MachPortMac mach_port_mac;
+      if (!ParamTraits<MachPortMac>::Read(m, iter, &mach_port_mac))
+        return false;
+
+      size_t size;
+      if (!ParamTraits<size_t>::Read(m, iter, &size))
+        return false;
+
+      *r = base::SharedMemoryHandle(mach_port_mac.get_mach_port(), size,
+                                    base::GetCurrentProcId());
       return true;
     }
   }
@@ -605,7 +623,8 @@ void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
       ParamTraits<base::FileDescriptor>::Log(p.GetFileDescriptor(), l);
       break;
     case base::SharedMemoryHandle::MACH:
-      // TODO(erikchen): Implement me. http://crbug.com/535711
+      l->append("Mach port: ");
+      LogParam(p.GetMemoryObject(), l);
       break;
   }
 }

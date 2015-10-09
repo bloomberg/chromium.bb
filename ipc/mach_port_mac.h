@@ -22,7 +22,7 @@ class IPC_EXPORT MachPortMac {
  public:
   MachPortMac() : mach_port_(MACH_PORT_NULL) {}
 
-  explicit MachPortMac(mach_port_t mach_port) {};
+  explicit MachPortMac(mach_port_t mach_port) : mach_port_(mach_port) {}
 
   mach_port_t get_mach_port() const { return mach_port_; }
 
