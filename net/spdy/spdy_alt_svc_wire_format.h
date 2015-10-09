@@ -29,10 +29,14 @@ class NET_EXPORT_PRIVATE SpdyAltSvcWireFormat {
   struct NET_EXPORT_PRIVATE AlternativeService {
     std::string protocol_id;
     std::string host;
-    uint16 port;
-    uint16 version;
-    uint32 max_age;
-    double p;
+    // Default is 0: invalid port.
+    uint16 port = 0;
+    // Default is 0: unspecified version.
+    uint16 version = 0;
+    // Default is one day.
+    uint32 max_age = 86400;
+    // Default is always use.
+    double p = 1.0;
 
     AlternativeService();
     AlternativeService(const std::string& protocol_id,

@@ -72,7 +72,6 @@ void FuzzHeaderFieldValue(
   if (i & 1 << 1) {
     header_field_value->append(" ");
   }
-  expected_altsvc->max_age = 86400;
   if (i & 3 << 2) {
     expected_altsvc->max_age = 1111;
     header_field_value->append(";");
@@ -87,12 +86,10 @@ void FuzzHeaderFieldValue(
   if (i & 1 << 4) {
     header_field_value->append("; J=s");
   }
-  expected_altsvc->p = 1.0;
   if (i & 1 << 5) {
     expected_altsvc->p = 0.33;
     header_field_value->append("; P=.33");
   }
-  expected_altsvc->version = 0;
   if (i & 1 << 6) {
     expected_altsvc->p = 0.0;
     expected_altsvc->version = 24;
@@ -134,17 +131,14 @@ void FuzzAlternativeService(int i,
     expected_header_field_value->append("foo\\\"bar\\\\baz");
   }
   expected_header_field_value->append(":42\"");
-  altsvc->version = 0;
   if (i & 1 << 1) {
     altsvc->version = 24;
     expected_header_field_value->append("; v=24");
   }
-  altsvc->max_age = 86400;
   if (i & 1 << 2) {
     altsvc->max_age = 1111;
     expected_header_field_value->append("; ma=1111");
   }
-  altsvc->p = 1.0;
   if (i & 1 << 3) {
     altsvc->p = 0.33;
     expected_header_field_value->append("; p=0.33");
@@ -154,6 +148,16 @@ void FuzzAlternativeService(int i,
 class SpdyAltSvcWireFormatTest : public ::testing::Test {};
 
 // Tests of public API.
+
+TEST(SpdyAltSvcWireFormatTest, DefaultValues) {
+  SpdyAltSvcWireFormat::AlternativeService altsvc;
+  EXPECT_EQ("", altsvc.protocol_id);
+  EXPECT_EQ("", altsvc.host);
+  EXPECT_EQ(0u, altsvc.port);
+  EXPECT_EQ(0u, altsvc.version);
+  EXPECT_EQ(86400u, altsvc.max_age);
+  EXPECT_DOUBLE_EQ(1.0, altsvc.p);
+}
 
 TEST(SpdyAltSvcWireFormatTest, ParseEmptyHeaderFieldValue) {
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
