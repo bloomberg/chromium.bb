@@ -33,12 +33,18 @@ enum LayoutConstant {
   // The vertical padding of items in the location bar.
   LOCATION_BAR_VERTICAL_PADDING,
 
+  // The width of the New Tab button.
+  NEW_TAB_BUTTON_WIDTH,
+
   // The number of pixels in the omnibox dropdown border image interior to
   // the actual border.
   OMNIBOX_DROPDOWN_BORDER_INTERIOR,
 
   // The font size to use in the location bar and omnibox dropdown, in pixels.
   OMNIBOX_FONT_PIXEL_SIZE,
+
+  // The amount of overlap between the last tab and the new tab button.
+  TABSTRIP_NEW_TAB_BUTTON_OVERLAP,
 
   // The amount of overlap between two adjacent tabs.
   TABSTRIP_TAB_OVERLAP,

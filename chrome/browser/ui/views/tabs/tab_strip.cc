@@ -120,16 +120,15 @@ const int kStackedTabLeftClip = 20;
 const int kStackedTabRightClip = 20;
 
 #if defined(OS_MACOSX)
-const int kNewTabButtonHorizontalOffset = -8;
 const int kPinnedToNonPinnedOffset = 2;
 #else
-const int kNewTabButtonHorizontalOffset = -11;
 const int kPinnedToNonPinnedOffset = 3;
 #endif
 
 // Returns the width needed for the new tab button (and padding).
 int GetNewTabButtonWidth() {
-  return TabStrip::kNewTabButtonAssetWidth + kNewTabButtonHorizontalOffset;
+  return GetLayoutConstant(NEW_TAB_BUTTON_WIDTH) -
+      GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_OVERLAP);
 }
 
 // Animation delegate used for any automatic tab movement.  Hides the tab if it
@@ -536,7 +535,6 @@ void TabStrip::RemoveTabDelegate::AnimationCanceled(
 
 // static
 const int TabStrip::kNewTabButtonVerticalOffset = 7;
-const int TabStrip::kNewTabButtonAssetWidth = 34;
 
 TabStrip::TabStrip(TabStripController* controller)
     : controller_(controller),
@@ -1513,7 +1511,7 @@ void TabStrip::Init() {
   // So we get enter/exit on children to switch stacked layout on and off.
   set_notify_enter_exit_on_child(true);
   newtab_button_bounds_.SetRect(
-      0, 0, kNewTabButtonAssetWidth,
+      0, 0, GetLayoutConstant(NEW_TAB_BUTTON_WIDTH),
       kNewTabButtonHeight + kNewTabButtonVerticalOffset);
   newtab_button_ = new NewTabButton(this, this);
   newtab_button_->SetTooltipText(
@@ -2317,8 +2315,8 @@ void TabStrip::GenerateIdealBounds() {
       tabs_.set_ideal_bounds(i, tabs_bounds[i]);
   }
 
-  const int new_tab_x = tabs_.ideal_bounds(tabs_.view_size() - 1).right() +
-                        kNewTabButtonHorizontalOffset;
+  const int new_tab_x = tabs_.ideal_bounds(tabs_.view_size() - 1).right() -
+                        GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_OVERLAP);
   newtab_button_bounds_.set_origin(gfx::Point(new_tab_x, 0));
 }
 
@@ -2384,7 +2382,8 @@ void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
   // the new tab button should stay where it is.
   newtab_button_bounds_.set_x(std::min(
       width() - newtab_button_bounds_.width(),
-      ideal_bounds(tab_count() - 1).right() + kNewTabButtonHorizontalOffset));
+      ideal_bounds(tab_count() - 1).right() -
+          GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_OVERLAP)));
 
   PrepareForAnimation();
 

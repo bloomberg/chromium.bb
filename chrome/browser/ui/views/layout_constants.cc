@@ -15,6 +15,7 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kLocationBarHeight[] = {0, 28, 32};
   const int kLocationBarHorizontalPadding[] = {3, 6, 6};
   const int kLocationBarVerticalPadding[] = {2, 2, 2};
+  const int kNewTabButtonWidth[] = {34, 34, 34};
   const int kOmniboxDropdownBorderInterior[] = {6, 0, 0};
   const int kOmniboxFontPixelSize[] = {16, 14, 14};
   const int kTabCloseButtonTrailingPaddingOverlap[] = {2, 2, 2};
@@ -22,8 +23,10 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kTabMaximumTitleWidth[] = {175, 175, 175};
   const int kTabPinnedContentWidth[] = {25, 25, 25};
 #if defined(OS_MACOSX)
+  const int kTabstripNewTabButtonOverlap[] = {8, 8, 8};
   const int kTabstripTabOverlap[] = {19, 19, 19};
 #else
+  const int kTabstripNewTabButtonOverlap[] = {11, 11, 11};
   const int kTabstripTabOverlap[] = {26, 26, 26};
 #endif
   const int kTabstripToolbarOverlap[] = {3, 3, 3};
@@ -49,10 +52,14 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kLocationBarHorizontalPadding[mode];
     case LOCATION_BAR_VERTICAL_PADDING:
       return kLocationBarVerticalPadding[mode];
+    case NEW_TAB_BUTTON_WIDTH:
+      return kNewTabButtonWidth[mode];
     case OMNIBOX_DROPDOWN_BORDER_INTERIOR:
       return kOmniboxDropdownBorderInterior[mode];
     case OMNIBOX_FONT_PIXEL_SIZE:
       return kOmniboxFontPixelSize[mode];
+    case TABSTRIP_NEW_TAB_BUTTON_OVERLAP:
+      return kTabstripNewTabButtonOverlap[mode];
     case TABSTRIP_TAB_OVERLAP:
       return kTabstripTabOverlap[mode];
     case TABSTRIP_TOOLBAR_OVERLAP:
