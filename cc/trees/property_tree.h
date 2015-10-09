@@ -190,9 +190,8 @@ struct CC_EXPORT ClipNodeData {
   // ancestor nodes.
   bool layer_visibility_uses_only_local_clip : 1;
 
-  // True if render surfaces with this clip tree node need to be drawn with a
-  // clip applied.
-  bool render_surface_is_clipped : 1;
+  // True if target surface needs to be drawn with a clip applied.
+  bool target_is_clipped : 1;
 
   // True if layers with this clip tree node need to be drawn with a clip
   // applied.

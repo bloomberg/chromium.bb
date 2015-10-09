@@ -40,7 +40,27 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       gfx::Rect clip_rect_in_target_space;
       gfx::Rect combined_clip_rect_in_target_space;
       bool success = true;
+
+      gfx::Rect layer_content_rect = gfx::Rect(layer_bounds);
+      // When both the layer and the target are unclipped, the entire layer
+      // content rect is visible.
+      if (!clip_node->data.layers_are_clipped &&
+          !clip_node->data.target_is_clipped) {
+        layer->set_visible_rect_from_property_trees(layer_content_rect);
+        layer->set_clip_rect_in_target_space_from_property_trees(gfx::Rect());
+        continue;
+      }
+
       if (clip_node->data.target_id != target_node->id) {
+        // In this case, layer has a clip parent (or shares the target with an
+        // ancestor layer that has clip parent) and the clip parent's target is
+        // different from the layer's target. As the layer's target has
+        // unclippped descendants, it is unclippped.
+        if (!clip_node->data.layers_are_clipped) {
+          layer->set_visible_rect_from_property_trees(gfx::Rect(layer_bounds));
+          layer->set_clip_rect_in_target_space_from_property_trees(gfx::Rect());
+          continue;
+        }
         gfx::Transform clip_to_target;
         success = transform_tree.ComputeTransformWithDestinationSublayerScale(
             clip_node->data.target_id, target_node->id, &clip_to_target);
@@ -53,9 +73,15 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
           continue;
         }
         DCHECK_LT(clip_node->data.target_id, target_node->id);
+        // We use the clip node's clip_in_target_space (and not
+        // combined_clip_in_target_space) here because we want to clip
+        // with respect to clip parent's local clip and not its combined clip as
+        // the combined clip has even the clip parent's target's clip baked into
+        // it and as our target is different, we don't want to use it in our
+        // visible rect computation.
         combined_clip_rect_in_target_space =
             gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
-                clip_to_target, clip_node->data.combined_clip_in_target_space));
+                clip_to_target, clip_node->data.clip_in_target_space));
         clip_rect_in_target_space =
             gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
                 clip_to_target, clip_node->data.clip_in_target_space));
@@ -78,7 +104,6 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
 
       content_to_target.Translate(layer->offset_to_transform_parent().x(),
                                   layer->offset_to_transform_parent().y());
-      gfx::Rect layer_content_rect = gfx::Rect(layer_bounds);
       gfx::Rect layer_content_bounds_in_target_space =
           MathUtil::MapEnclosingClippedRect(content_to_target,
                                             layer_content_rect);
@@ -458,7 +483,7 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     if (use_only_parent_clip) {
       clip_node->data.combined_clip_in_target_space =
           parent_combined_clip_in_target_space;
-      if (!clip_node->data.render_surface_is_clipped) {
+      if (!clip_node->data.target_is_clipped) {
         clip_node->data.clip_in_target_space =
             parent_combined_clip_in_target_space;
       } else {
@@ -650,7 +675,7 @@ bool SurfaceIsClipped(const RenderSurfaceImpl* render_surface,
   // clipped.
   if (render_surface->OwningLayerId() != clip_node->owner_id)
     return false;
-  return clip_node->data.render_surface_is_clipped;
+  return clip_node->data.target_is_clipped;
 }
 
 gfx::Rect SurfaceClipRect(const RenderSurfaceImpl* render_surface,

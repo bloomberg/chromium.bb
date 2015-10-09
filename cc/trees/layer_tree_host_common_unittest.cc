@@ -7945,6 +7945,39 @@ TEST_F(LayerTreeHostCommonTest, LayerWithInputHandlerAndZeroOpacity) {
             render_surface->render_surface()->DrawableContentRect());
 }
 
+TEST_F(LayerTreeHostCommonTest, ClipChildVisibleRect) {
+  LayerImpl* root = root_layer();
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface);
+
+  const gfx::Transform identity_matrix;
+  clip_parent->SetMasksToBounds(true);
+  render_surface->SetMasksToBounds(true);
+  render_surface->SetDrawsContent(true);
+  clip_child->SetDrawsContent(true);
+  clip_child->SetClipParent(clip_parent);
+  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  clip_children->insert(clip_child);
+  clip_parent->SetClipChildren(clip_children.release());
+
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(clip_parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(10.f, 10.f), gfx::Size(40, 40), true,
+                               false, false);
+  SetLayerPropertiesForTesting(render_surface, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  SetLayerPropertiesForTesting(clip_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               false);
+
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(40, 40), clip_child->visible_layer_rect());
+}
+
 TEST_F(LayerTreeHostCommonTest,
        LayerClipRectLargerThanClippingRenderSurfaceRect) {
   LayerImpl* root = root_layer();
