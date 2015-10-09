@@ -379,12 +379,11 @@
       'example_value': True,
       'id': 261,
       'caption': '''Enable WPAD optimization''',
-      'desc': '''Enables WPAD optimization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+      'desc': '''Allows to turn off WPAD (Web Proxy Auto-Discovery) optimization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      Setting this to enabled causes <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to wait for a shorter interval for DNS-based WPAD servers.
+      If this policy is set to false, WPAD optimization is disabled causing <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to wait longer for DNS-based WPAD servers.  If the policy is not set or is enabled, WPAD optimization is enabled.
 
-      If this policy is left not set, this will be enabled and the user will not
-      be able to change it.''',
+      Independent of whether or how this policy is set, the WPAD optimization setting cannot be changed by users.''',
     },
     {
       'name': 'DisableSpdy',
