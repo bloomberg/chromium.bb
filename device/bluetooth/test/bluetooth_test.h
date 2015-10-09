@@ -75,14 +75,14 @@ class BluetoothTestBase : public testing::Test {
   virtual BluetoothDevice* DiscoverLowEnergyDevice(int device_ordinal);
 
   // Simulates success of implementation details of CreateGattConnection.
-  virtual void CompleteGattConnection(BluetoothDevice* device) {}
+  virtual void SimulateGattConnection(BluetoothDevice* device) {}
 
   // Simulates failure of CreateGattConnection with the given error code.
-  virtual void FailGattConnection(BluetoothDevice* device,
-                                  BluetoothDevice::ConnectErrorCode) {}
+  virtual void SimulateGattConnectionError(BluetoothDevice* device,
+                                           BluetoothDevice::ConnectErrorCode) {}
 
   // Simulates GattConnection disconnecting.
-  virtual void CompleteGattDisconnection(BluetoothDevice* device) {}
+  virtual void SimulateGattDisconnection(BluetoothDevice* device) {}
 
   // Remove the device from the adapter and delete it.
   virtual void DeleteDevice(BluetoothDevice* device);
@@ -115,8 +115,8 @@ class BluetoothTestBase : public testing::Test {
       BluetoothDevice::ERROR_UNKNOWN;
   int callback_count_ = 0;
   int error_callback_count_ = 0;
-  int gatt_connection_attempt_count_ = 0;
-  int gatt_disconnection_attempt_count_ = 0;
+  int gatt_connection_attempts_ = 0;
+  int gatt_disconnection_attempts_ = 0;
   base::WeakPtrFactory<BluetoothTestBase> weak_factory_;
 };
 

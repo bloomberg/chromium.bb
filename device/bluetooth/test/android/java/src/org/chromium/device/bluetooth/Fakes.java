@@ -218,7 +218,7 @@ class Fakes {
                         "BluetoothGattWrapper doesn't support calls to connectGatt() with "
                         + "multiple distinct callbacks.");
             }
-            nativeOnBluetoothDeviceConnectGattCalled(mAdapter.mNativeBluetoothTestAndroid);
+            nativeOnFakeBluetoothDeviceConnectGattCalled(mAdapter.mNativeBluetoothTestAndroid);
             mGattCallback = callback;
             return new FakeBluetoothGatt(this);
         }
@@ -264,8 +264,8 @@ class Fakes {
     // ---------------------------------------------------------------------------------------------
     // BluetoothTestAndroid C++ methods declared for access from java:
 
-    // Binds to BluetoothAdapterAndroid::OnBluetoothDeviceConnectGattCalled.
-    private static native void nativeOnBluetoothDeviceConnectGattCalled(
+    // Binds to BluetoothAdapterAndroid::OnFakeBluetoothDeviceConnectGattCalled.
+    private static native void nativeOnFakeBluetoothDeviceConnectGattCalled(
             long nativeBluetoothTestAndroid);
 
     // Binds to BluetoothAdapterAndroid::OnFakeBluetoothGattDisconnect.
