@@ -156,7 +156,8 @@ void PageOverlayTest::runPageOverlayTestWithAcceleratedCompositing()
     graphicsLayer->paint(graphicsContext, rect);
 
     graphicsContext.beginRecording(IntRect(rect));
-    graphicsLayer->displayItemList()->commitNewDisplayItemsAndReplay(graphicsContext);
+    graphicsLayer->displayItemList()->commitNewDisplayItems();
+    graphicsLayer->displayItemList()->paintArtifact().replay(graphicsContext);
     graphicsContext.endRecording()->playback(&canvas);
 }
 

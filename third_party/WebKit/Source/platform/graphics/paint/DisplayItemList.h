@@ -12,6 +12,8 @@
 #include "platform/graphics/ContiguousContainer.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/paint/DisplayItem.h"
+#include "platform/graphics/paint/DisplayItems.h"
+#include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/PaintChunker.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
@@ -26,36 +28,11 @@ namespace blink {
 class GraphicsLayer;
 class GraphicsContext;
 
-// kDisplayItemAlignment must be a multiple of alignof(derived display item) for
-// each derived display item; the ideal value is the least common multiple.
-// Currently the limiting factor is TransformtionMatrix (in
-// BeginTransform3DDisplayItem), which requests 16-byte alignment.
-static const size_t kDisplayItemAlignment = WTF_ALIGN_OF(BeginTransform3DDisplayItem);
 static const size_t kInitialDisplayItemsCapacity = 64;
-static const size_t kMaximumDisplayItemSize = sizeof(BeginTransform3DDisplayItem);
 
-class DisplayItems : public ContiguousContainer<DisplayItem, kDisplayItemAlignment> {
-public:
-    DisplayItems(size_t initialSizeBytes)
-        : ContiguousContainer(kMaximumDisplayItemSize, initialSizeBytes) {}
-
-    DisplayItem& appendByMoving(DisplayItem& item)
-    {
-#ifndef NDEBUG
-        WTF::String originalDebugString = item.asDebugString();
-#endif
-        ASSERT(item.isValid());
-        DisplayItem& result = ContiguousContainer::appendByMoving(item, item.derivedSize());
-        // ContiguousContainer::appendByMoving() called in-place constructor on item, which invalidated it.
-        ASSERT(!item.isValid());
-#ifndef NDEBUG
-        // Save original debug string in the old item to help debugging.
-        item.setClientDebugString(originalDebugString);
-#endif
-        return result;
-    }
-};
-
+// Responsible for processing display items as they are produced, and producing
+// a final paint artifact when complete. This class includes logic for caching,
+// cache invalidation, and merging.
 class PLATFORM_EXPORT DisplayItemList {
     WTF_MAKE_NONCOPYABLE(DisplayItemList);
     WTF_MAKE_FAST_ALLOCATED(DisplayItemList);
@@ -136,23 +113,12 @@ public:
     // Should only be called right after commitNewDisplayItems.
     size_t approximateUnsharedMemoryUsage() const;
 
-    // Get the paint list generated after the last painting.
-    const DisplayItems& displayItems() const;
-
-    // Get the paint chunks generated after the last painting.
-    const Vector<PaintChunk>& paintChunks() const;
+    // Get the artifact generated after the last commit.
+    const PaintArtifact& paintArtifact() const;
+    const DisplayItems& displayItems() const { return paintArtifact().displayItems(); }
+    const Vector<PaintChunk>& paintChunks() const { return paintArtifact().paintChunks(); }
 
     bool clientCacheIsValid(DisplayItemClient) const;
-
-    // Commits the new display items and plays back the updated display items into the given context.
-    void commitNewDisplayItemsAndReplay(GraphicsContext& context)
-    {
-        commitNewDisplayItems();
-        replay(context);
-    }
-
-    void appendToWebDisplayItemList(WebDisplayItemList*);
-    void commitNewDisplayItemsAndAppendToWebDisplayItemList(WebDisplayItemList*);
 
     bool displayItemConstructionIsDisabled() const { return m_constructionDisabled; }
     void setDisplayItemConstructionIsDisabled(const bool disable) { m_constructionDisabled = disable; }
@@ -197,8 +163,7 @@ public:
 
 protected:
     DisplayItemList()
-        : m_currentDisplayItems(0)
-        , m_newDisplayItems(kInitialDisplayItemsCapacity * kMaximumDisplayItemSize)
+        : m_newDisplayItems(kInitialDisplayItemsCapacity * kMaximumDisplayItemSize)
         , m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
         , m_textPainted(false)
@@ -238,15 +203,12 @@ private:
     void checkNoRemainingCachedDisplayItems();
 #endif
 
-    void replay(GraphicsContext&) const;
+    // The last complete paint artifact.
+    // In SPv2, this includes paint chunks as well as display items.
+    PaintArtifact m_currentPaintArtifact;
 
-    DisplayItems m_currentDisplayItems;
+    // Data being used to build the next paint artifact.
     DisplayItems m_newDisplayItems;
-
-    // In Slimming Paint v2, paint properties (e.g. transform) useful for
-    // compositing are stored in corresponding paint chunks instead of in the
-    // display items.
-    Vector<PaintChunk> m_currentPaintChunks;
     PaintChunker m_newPaintChunks;
 
     // Contains all clients having valid cached paintings if updated.

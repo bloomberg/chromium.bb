@@ -39,7 +39,8 @@ public:
     PassRefPtr<const SkPicture> endRecording()
     {
         m_context->beginRecording(m_bounds);
-        m_displayItemList->commitNewDisplayItemsAndReplay(*m_context);
+        m_displayItemList->commitNewDisplayItems();
+        m_displayItemList->paintArtifact().replay(*m_context);
         return m_context->endRecording();
     }
 

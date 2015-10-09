@@ -85,7 +85,7 @@ void ContentLayerDelegate::paintContents(
     // here so the browser is usable during development and does not crash due
     // to committing the new display items twice.
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
-        m_painter->displayItemList()->appendToWebDisplayItemList(webDisplayItemList);
+        m_painter->displayItemList()->paintArtifact().appendToWebDisplayItemList(webDisplayItemList);
         return;
     }
 
@@ -107,7 +107,8 @@ void ContentLayerDelegate::paintContents(
 
     m_painter->paint(context, clip);
 
-    displayItemList->commitNewDisplayItemsAndAppendToWebDisplayItemList(webDisplayItemList);
+    displayItemList->commitNewDisplayItems();
+    displayItemList->paintArtifact().appendToWebDisplayItemList(webDisplayItemList);
 }
 
 size_t ContentLayerDelegate::approximateUnsharedMemoryUsage() const

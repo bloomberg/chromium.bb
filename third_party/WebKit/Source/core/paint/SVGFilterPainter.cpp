@@ -49,7 +49,8 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
     ASSERT(m_context);
     context = m_context.get();
     context->beginRecording(filterData->filter->filterRegion());
-    m_displayItemList->commitNewDisplayItemsAndReplay(*context);
+    m_displayItemList->commitNewDisplayItems();
+    m_displayItemList->paintArtifact().replay(*context);
 
     sourceGraphic->setPicture(context->endRecording());
 
