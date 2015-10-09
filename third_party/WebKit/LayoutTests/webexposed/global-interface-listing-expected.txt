@@ -404,6 +404,7 @@ interface CSSStyleRule
     getter style
     method constructor
     setter selectorText
+    setter style
 interface CSSStyleSheet
     getter cssRules
     getter ownerRule
@@ -1888,6 +1889,7 @@ interface HTMLElement
     setter onwaiting
     setter outerText
     setter spellcheck
+    setter style
     setter tabIndex
     setter title
     setter translate
@@ -4168,6 +4170,7 @@ interface SVGElement
     setter ontoggle
     setter onvolumechange
     setter onwaiting
+    setter style
     setter tabIndex
 interface SVGEllipseElement
     getter cx

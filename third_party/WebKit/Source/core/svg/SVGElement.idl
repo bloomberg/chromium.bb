@@ -24,7 +24,9 @@
 
 interface SVGElement : Element {
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVGClassName] readonly attribute SVGAnimatedString className;
-    readonly attribute CSSStyleDeclaration style;
+    // CSS Object Model (CSSOM)
+    // http://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface
+    [SameObject, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
 
     readonly attribute SVGSVGElement? ownerSVGElement;
     readonly attribute SVGElement? viewportElement;

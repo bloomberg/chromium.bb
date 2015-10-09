@@ -22,6 +22,5 @@
 
 interface CSSStyleRule : CSSRule {
     attribute DOMString selectorText;
-    // TODO(philipj): style should have [PutForwards=cssText].
-    [SameObject] readonly attribute CSSStyleDeclaration style;
+    [SameObject, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
 };

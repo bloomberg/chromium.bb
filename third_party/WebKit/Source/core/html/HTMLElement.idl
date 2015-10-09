@@ -54,8 +54,7 @@ interface HTMLElement : Element {
 
     // CSS Object Model (CSSOM)
     // http://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface
-    // FIXME: style should have [PutForwards=cssText].
-    [SameObject, PerWorldBindings] readonly attribute CSSStyleDeclaration style;
+    [SameObject, PerWorldBindings, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
 
     // Non-standard APIs
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute DOMString innerText;
