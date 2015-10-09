@@ -9,24 +9,8 @@
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'files': [
-          # This list comes from running:
-          #   tools/perf/run_benchmark --print-bootstrap-deps
-          # and filtering out obvious undesired dependencies:
-          #   'src/tools/perf/page_sets/'
-          #   'src/tools/perf/measurements/'
-          #   'src/tools/perf/metrics/'
-          #   'src/tools/perf/profile_creators/'
-          #   'src/tools/perf/benchmarks/'
-          #   'src/chrome/test/data/extensions/profiles/'
-          # Note that the dependency on ../build/android/ was made more
-          # precise to ../build/android/pylib/.
           '../build/android/pylib/',
           '../build/android/devil/',
-          '../build/util/',
-          '../third_party/WebKit/PerformanceTests/resources/jquery.tablesorter.min.js',
-          '../third_party/WebKit/PerformanceTests/resources/statistics.js',
-          '../third_party/flot/jquery.flot.min.js',
-          '../third_party/webpagereplay/',
           '../tools/telemetry/',
           # For Telemetry's screenshot support.
           '<(PRODUCT_DIR)/bitmaptools<(EXECUTABLE_SUFFIX)',
