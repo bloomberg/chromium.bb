@@ -122,7 +122,8 @@ class WebTestDelegateImpl : public test_runner::WebTestDelegate {
       const blink::WebPluginParams& params) override;
   void OnWebTestProxyBaseDestroy(test_runner::WebTestProxyBase* base) override;
 
-  test_runner::TestPreferences prefs_;
+  // Must not be constructed until after blink has been initialized.
+  scoped_ptr<test_runner::TestPreferences> prefs_;
   test_runner::WebTestInterfaces* test_interfaces_;
   test_runner::WebTestProxyBase* proxy_;
   base::Closure completion_callback_;

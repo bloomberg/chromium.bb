@@ -133,7 +133,9 @@ blink::WebURL WebTestDelegateImpl::RewriteLayoutTestsURL(
 }
 
 test_runner::TestPreferences* WebTestDelegateImpl::Preferences() {
-  return &prefs_;
+  if (!prefs_)
+    prefs_.reset(new test_runner::TestPreferences);
+  return prefs_.get();
 }
 
 void WebTestDelegateImpl::ApplyPreferences() {
