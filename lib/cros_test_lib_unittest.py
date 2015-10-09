@@ -18,7 +18,6 @@ from chromite.lib import cros_build_lib_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import timeout_util
-from chromite.lib import workspace_lib
 
 
 # pylint: disable=W0212,W0233
@@ -273,19 +272,3 @@ class OutputTestCaseTest(cros_test_lib.OutputTestCase,
     # Verify that output is actually written to the correct files.
     self.assertEqual('foo\n', osutils.ReadFile(stdout_path))
     self.assertEqual('bar\n', osutils.ReadFile(stderr_path))
-
-
-class WorkspaceTestCaseTest(cros_test_lib.WorkspaceTestCase):
-  """Verification for WorkspaceTestCase."""
-
-  def testCreateWorkspace(self):
-    """Tests CreateWorkspace()."""
-    self.CreateWorkspace()
-    self.assertExists(self.workspace_path)
-    self.assertEqual(self.workspace_path, workspace_lib.WorkspacePath())
-
-  def testCreateWorkspaceSdk(self):
-    """Tests CreateWorkspace() with an SDK version."""
-    self.CreateWorkspace(sdk_version='1.2.3')
-    self.assertEqual('1.2.3',
-                     workspace_lib.GetActiveSdkVersion(self.workspace_path))

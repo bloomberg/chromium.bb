@@ -19,7 +19,6 @@ from chromite.lib import dev_server_wrapper
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
-from chromite.lib import workspace_lib
 
 
 class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
@@ -62,7 +61,6 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(dev_server_wrapper, 'GetUpdatePayloads')
     self.PatchObject(remote_access, 'CHECK_INTERVAL', new=0)
     self.PatchObject(remote_access, 'ChromiumOSDevice')
-    self.PatchObject(workspace_lib, 'WorkspacePath', return_value=None)
 
   def testUpdateAll(self):
     """Tests that update methods are called correctly."""
@@ -141,7 +139,6 @@ class USBImagerTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(os.path, 'exists', return_value=True)
     self.isgpt_mock = self.PatchObject(flash, '_IsFilePathGPTDiskImage',
                                        return_value=True)
-    self.PatchObject(workspace_lib, 'WorkspacePath', return_value=None)
 
   def testLocalImagePathCopy(self):
     """Tests that imaging methods are called correctly."""

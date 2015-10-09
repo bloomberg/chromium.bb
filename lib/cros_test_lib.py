@@ -43,7 +43,6 @@ from chromite.lib import remote_access
 from chromite.lib import retry_util
 from chromite.lib import terminal
 from chromite.lib import timeout_util
-from chromite.lib import workspace_lib
 
 
 site_config = config_lib.GetConfig()
@@ -1565,41 +1564,6 @@ class ProgressBarTestCase(MockOutputTestCase):
 class MockLoggingTestCase(MockTestCase, LoggingTestCase):
   """Convenience class mixing Logging and Mock."""
 
-
-class WorkspaceTestCase(MockTempDirTestCase):
-  """Test case that adds utilities for using workspaces."""
-
-  def setUp(self):
-    """Define variables populated below, mostly to make lint happy."""
-    self.workspace_path = None
-    self.workspace_config = None
-    self.mock_workspace_path = None
-
-  def CreateWorkspace(self, sdk_version=None):
-    """Create a fake workspace directory in self.tempdir.
-
-    self.workspace_path points to new workspace path.
-    self.workspace_config points to workspace config file.
-    self.mock_workspace_path points to mock of WorkspacePath
-
-    Args:
-      sdk_version: Mark SDK version as active in workspace. Does NOT mean
-         it's present in bootstrap.
-    """
-    # Create a workspace, inside our tempdir.
-    self.workspace_path = os.path.join(self.tempdir, 'workspace')
-    self.workspace_config = os.path.join(
-        self.workspace_path,
-        workspace_lib.WORKSPACE_CONFIG)
-    osutils.Touch(self.workspace_config, makedirs=True)
-
-    # Define an SDK version for it, if needed.
-    if sdk_version is not None:
-      workspace_lib.SetActiveSdkVersion(self.workspace_path, sdk_version)
-
-    # Fake out workspace lookups to find this path.
-    self.mock_workspace_path = self.PatchObject(
-        workspace_lib, 'WorkspacePath', return_value=self.workspace_path)
 
 @contextlib.contextmanager
 def SetTimeZone(tz):

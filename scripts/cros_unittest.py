@@ -13,7 +13,7 @@ from chromite.lib import stats_unittest
 from chromite.scripts import cros
 
 
-class RunScriptTest(cros_test_lib.WorkspaceTestCase):
+class RunScriptTest(cros_test_lib.MockTempDirTestCase):
   """Test the main functionality."""
 
   def setUp(self):

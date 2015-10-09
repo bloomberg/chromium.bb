@@ -13,7 +13,6 @@ from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import toolchain
-from chromite.lib import workspace_lib
 
 
 BASE_TOOLCHAIN_CONF = """# The root of all evil is money, err, this config.
@@ -45,9 +44,6 @@ EXPECTED_TOOLCHAINS = {
 
 class ToolchainTest(cros_test_lib.MockTempDirTestCase):
   """Tests for lib.toolchain."""
-
-  def setUp(self):
-    self.PatchObject(workspace_lib, 'WorkspacePath', return_value=self.tempdir)
 
   def testArchForToolchain(self):
     """Tests that we correctly parse crossdev's output."""

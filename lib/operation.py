@@ -24,7 +24,6 @@ except ImportError:
   # pylint: disable=import-error
   import queue as Queue
 import re
-import shutil
 import struct
 import sys
 import termios
@@ -33,7 +32,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
-from chromite.lib import workspace_lib
 from chromite.lib.terminal import Color
 
 # Define filenames for captured stdout and stderr.
@@ -76,7 +74,6 @@ class ProgressBarOperation(object):
     self._stdout_path = None
     self._stderr_path = None
     self._progress_bar_displayed = False
-    self._workspace_path = workspace_lib.WorkspacePath()
     self._isatty = os.isatty(sys.stdout.fileno())
 
   def _GetTerminalSize(self, fd=pty.STDOUT_FILENO):
@@ -174,23 +171,11 @@ class ProgressBarOperation(object):
     try:
       with cros_build_lib.OutputCapturer(
           stdout_path=self._stdout_path, stderr_path=self._stderr_path,
-          quiet_fail=self._workspace_path is not None):
+          quiet_fail=False):
         func(*args, **kwargs)
     finally:
       self._queue.put(_BackgroundTaskComplete())
       logging.getLogger().setLevel(restore_log_level)
-
-  def MoveStdoutStderrFiles(self):
-    """On failure, move stdout/stderr files to workspace/WORKSPACE_LOGS_DIR."""
-    path = os.path.join(self._workspace_path, workspace_lib.WORKSPACE_LOGS_DIR)
-    # TODO(ralphnathan): Not sure if we need this because it should be done when
-    # we store the log file for brillo commands.
-    osutils.SafeMakedirs(path)
-    osutils.SafeUnlink(os.path.join(path, STDOUT_FILE))
-    shutil.move(self._stdout_path, path)
-    osutils.SafeUnlink(os.path.join(path, STDERR_FILE))
-    shutil.move(self._stderr_path, path)
-    logging.warning('Please look at %s for more information.', path)
 
   # TODO (ralphnathan): Store PID of spawned process.
   def Run(self, func, *args, **kwargs):
@@ -235,9 +220,6 @@ class ProgressBarOperation(object):
         # touching the progress bar.
         sys.stdout.write('\n')
         logging.error('Oops. Something went wrong.')
-        # Move the stdout/stderr files to a location that the user can access.
-        if self._workspace_path is not None:
-          self.MoveStdoutStderrFiles()
         # Raise the exception so it can be caught again.
         raise
 

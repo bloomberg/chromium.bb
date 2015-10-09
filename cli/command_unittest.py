@@ -15,10 +15,8 @@ from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_import
-from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import partial_mock
-from chromite.lib import workspace_lib
 
 
 # pylint:disable=protected-access
@@ -133,47 +131,3 @@ class CommandTest(cros_test_lib.MockTestCase):
     self.assertIn('chrome-sdk', cros_commands)
     self.assertIn('flash', cros_commands)
 
-
-class FileLoggerSetupTest(cros_test_lib.WorkspaceTestCase):
-  """Test that logging to file works correctly."""
-
-  def setUp(self):
-    self.CreateWorkspace()
-
-  def testSetupFileLoggerFilename(self):
-    """Test that the filename and path are correct."""
-    patch_handler = self.PatchObject(logging, 'FileHandler',
-                                     return_value=logging.StreamHandler())
-    command.SetupFileLogger(filename='foo.log')
-
-    # Test that the filename is correct.
-    patch_handler.assert_called_with(
-        os.path.join(self.workspace_path, workspace_lib.WORKSPACE_LOGS_DIR,
-                     'foo.log'), mode='w')
-
-  def testSetupFileLoggerNoFilename(self):
-    """Test that the filename and path are correct with no arguments."""
-    patch_handler = self.PatchObject(logging, 'FileHandler',
-                                     return_value=logging.StreamHandler())
-    command.SetupFileLogger()
-
-    # Test that the filename is correct.
-    patch_handler.assert_called_with(
-        os.path.join(self.workspace_path, workspace_lib.WORKSPACE_LOGS_DIR,
-                     'brillo.log'), mode='w')
-
-  def testSetupFileLoggerLogLevels(self):
-    """Test that the logger operates at the right level."""
-    command.SetupFileLogger('foo.log', log_level=logging.INFO)
-    logging.getLogger().setLevel(logging.DEBUG)
-    logging.debug('debug')
-    logging.info('info')
-    logging.notice('notice')
-
-    # Test that the logs are correct.
-    logs = open(
-        os.path.join(self.workspace_path, workspace_lib.WORKSPACE_LOGS_DIR,
-                     'foo.log'), 'r').read()
-    self.assertNotIn('debug', logs)
-    self.assertIn('info', logs)
-    self.assertIn('notice', logs)

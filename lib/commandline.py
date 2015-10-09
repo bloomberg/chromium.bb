@@ -29,7 +29,6 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import terminal
-from chromite.lib import workspace_lib
 
 
 DEVICE_SCHEME_FILE = 'file'
@@ -318,45 +317,6 @@ class DeviceParser(object):
       raise ValueError('Unknown device scheme "%s" in "%s"' % (scheme, value))
 
 
-def NormalizeWorkspacePath(path, default_dir=None, extension=None):
-  """Normalize a workspace path.
-
-  Converts |path| into a locator and applies |default_dir| and/or
-  |extension| if specified.
-
-  Args:
-    path: Relative, absolute, or locator path in the CWD workspace.
-    default_dir: If |path| does not contain '/', prepend this
-      directory to the result.
-    extension: If |path| doesn't end in this extension, append this
-      extension to the result.
-
-  Returns:
-    Workspace locator corresponding to the modified |path|.
-
-  Raises:
-    ValueError: |path| isn't in the workspace.
-  """
-  if default_dir and '/' not in path:
-    path = os.path.join(default_dir, path)
-
-  if extension:
-    extension = '.' + extension
-    if os.path.splitext(path)[1] != extension:
-      path += extension
-
-  if workspace_lib.IsLocator(path):
-    return path
-
-  locator = workspace_lib.PathToLocator(path)
-  if not locator:
-    # argparse ignores exception messages; log it as well so the user sees it.
-    error_message = '%s is not in the current workspace.' % path
-    logging.error(error_message)
-    raise ValueError(error_message)
-  return locator
-
-
 VALID_TYPES = {
     'bool': ParseBool,
     'date': ParseDate,
@@ -364,7 +324,6 @@ VALID_TYPES = {
     'gs_path': NormalizeGSPath,
     'local_or_gs_path': NormalizeLocalOrGSPath,
     'path_or_uri': NormalizeUri,
-    'workspace_path': NormalizeWorkspacePath,
 }
 
 

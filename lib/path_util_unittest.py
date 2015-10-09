@@ -111,7 +111,7 @@ class DetermineCheckoutTest(cros_test_lib.MockTempDirTestCase):
                  path_util.CHECKOUT_TYPE_UNKNOWN, None)
 
 
-class FindCacheDirTest(cros_test_lib.WorkspaceTestCase):
+class FindCacheDirTest(cros_test_lib.MockTempDirTestCase):
   """Test cache dir specification and finding functionality."""
 
   def setUp(self):

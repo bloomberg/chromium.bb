@@ -13,9 +13,7 @@ import sys
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import operation
-from chromite.lib import osutils
 from chromite.lib import parallel
-from chromite.lib import workspace_lib
 
 
 class TestWrapperProgressBarOperation(operation.ProgressBarOperation):
@@ -40,7 +38,7 @@ class FakeException(Exception):
   """Fake exception used for testing exception handling."""
 
 
-class ProgressBarOperationTest(cros_test_lib.WorkspaceTestCase,
+class ProgressBarOperationTest(cros_test_lib.MockTestCase,
                                cros_test_lib.OutputTestCase,
                                cros_test_lib.LoggingTestCase):
   """Test the Progress Bar Operation class."""
@@ -52,16 +50,6 @@ class ProgressBarOperationTest(cros_test_lib.WorkspaceTestCase,
         operation.ProgressBarOperation, '_GetTerminalSize',
         return_value=operation._TerminalSize(100, terminal_width))
     self.PatchObject(os, 'isatty', return_value=True)
-
-  def _GetStdoutPath(self):
-    """Return path to the file where stdout is captured."""
-    return os.path.join(self.workspace_path, workspace_lib.WORKSPACE_LOGS_DIR,
-                        operation.STDOUT_FILE)
-
-  def _GetStderrPath(self):
-    """Return path to the file where stderr is captured."""
-    return os.path.join(self.workspace_path, workspace_lib.WORKSPACE_LOGS_DIR,
-                        operation.STDERR_FILE)
 
   def _VerifyProgressBar(self, width, percent, expected_shaded,
                          expected_unshaded):
@@ -130,8 +118,8 @@ class ProgressBarOperationTest(cros_test_lib.WorkspaceTestCase,
     #   called once.
     self.AssertOutputContainsLine('Calling ParseOutput')
 
-  def testExceptionHandlingNotInWorkspace(self):
-    """Test exception handling if not in a workspace."""
+  def testExceptionHandling(self):
+    """Test exception handling."""
     def func():
       print('foo')
       print('bar', file=sys.stderr)
@@ -151,64 +139,6 @@ class ProgressBarOperationTest(cros_test_lib.WorkspaceTestCase,
     self.AssertOutputContainsLine('Captured stderr was')
     self.AssertOutputContainsLine('foo')
     self.AssertOutputContainsLine('bar', check_stderr=True)
-
-  def testExceptionHandlingInWorkspace(self):
-    """Test that stdout/stderr files are moved correctly if in a workspace."""
-    def func():
-      print('foo')
-      print('bar', file=sys.stderr)
-      raise FakeException()
-
-    self.CreateWorkspace()
-    op = TestWrapperProgressBarOperation()
-    stdout_file = self._GetStdoutPath()
-    stderr_file = self._GetStderrPath()
-
-    # Check that the files don't exist before the operation is called.
-    self.assertNotExists(stdout_file)
-    self.assertNotExists(stderr_file)
-
-    try:
-      with cros_test_lib.LoggingCapturer() as logs:
-        op.Run(func)
-    except parallel.BackgroundFailure as e:
-      if not e.HasFailureType(FakeException):
-        raise e
-
-    # Check that the files have been moved to the right location.
-    self.assertExists(stdout_file)
-    self.assertExists(stderr_file)
-
-    # Check that the log message contains the path.
-    self.AssertLogsContain(logs, self.workspace_path)
-
-  def testExceptionHandlingInWorkspaceFilesAlreadyExist(self):
-    """Test that old stdout/stderr files are removed from log directory."""
-    def func():
-      print('foo')
-      print('bar', file=sys.stderr)
-      raise FakeException()
-
-    self.CreateWorkspace()
-    op = TestWrapperProgressBarOperation()
-    stdout_file = self._GetStdoutPath()
-    stderr_file = self._GetStderrPath()
-    osutils.Touch(stdout_file, makedirs=True)
-    osutils.Touch(stderr_file, makedirs=True)
-
-    # Assert that the files are empty.
-    self.assertEqual(osutils.ReadFile(stdout_file), '')
-    self.assertEqual(osutils.ReadFile(stderr_file), '')
-
-    try:
-      op.Run(func)
-    except parallel.BackgroundFailure as e:
-      if not e.HasFailureType(FakeException):
-        raise e
-
-    # Check that the files contain the right information.
-    self.assertIn('foo', osutils.ReadFile(stdout_file))
-    self.assertIn('bar', osutils.ReadFile(stderr_file))
 
   def testLogLevel(self):
     """Test that the log level of the function running is set correctly."""

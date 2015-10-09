@@ -240,67 +240,6 @@ class DeviceParseTest(cros_test_lib.OutputTestCase):
                            hostname='foo_host')
 
 
-class NormalizeWorkspacePathTest(cros_test_lib.WorkspaceTestCase):
-  """Tests for NormalizeWorkspacePath() and associated functions."""
-
-  def setUp(self):
-    self.CreateWorkspace()
-    # By default set the CWD to be the workspace directory.
-    self.cwd_mock = self.PatchObject(os, 'getcwd')
-    self.cwd_mock.return_value = self.workspace_path
-
-  def _VerifyNormalized(self, path, expected, **kwargs):
-    """Verifies tests on NormalizeWorkspacePath().
-
-    Args:
-      path: Input path to test.
-      expected: Expected output.
-      kwargs: Keyword args for NormalizeWorkspacePath().
-    """
-    self.assertEqual(expected,
-                     commandline.NormalizeWorkspacePath(path, **kwargs))
-
-
-  def testLocatorConversion(self):
-    """Tests NormalizeWorkspacePath() conversion to a locator."""
-    # Relative paths.
-    self._VerifyNormalized('a', '//a')
-    self._VerifyNormalized('a/b', '//a/b')
-
-    # Absolute paths.
-    self._VerifyNormalized(os.path.join(self.workspace_path, 'a'), '//a')
-    self._VerifyNormalized(os.path.join(self.workspace_path, 'a', 'b'), '//a/b')
-
-    # Locators should be unchanged.
-    self._VerifyNormalized('//a', '//a')
-    self._VerifyNormalized('//a/b', '//a/b')
-
-    # Paths outside the workspace should fail.
-    for path in ('/', '..'):
-      with self.assertRaises(ValueError):
-        commandline.NormalizeWorkspacePath(path)
-
-  def testDefaultDir(self):
-    """Tests the default_dir parameter."""
-    self._VerifyNormalized('a', '//default/a', default_dir='//default')
-    self._VerifyNormalized('a/b', '//a/b', default_dir='//default')
-    self._VerifyNormalized('./a', '//a', default_dir='//default')
-
-  def testExtension(self):
-    """Tests the extension parameter."""
-    self._VerifyNormalized('a', '//a.txt', extension='txt')
-    self._VerifyNormalized('a.bin', '//a.bin.txt', extension='txt')
-    self._VerifyNormalized('a.txt', '//a.txt', extension='txt')
-
-  def testParser(self):
-    """Tests adding these types to a parser."""
-    parser = commandline.ArgumentParser()
-    parser.add_argument('path', type='workspace_path')
-
-    options = parser.parse_args(['my_path'])
-    self.assertEqual('//my_path', options.path)
-
-
 class CacheTest(cros_test_lib.MockTempDirTestCase):
   """Test cache dir default / override functionality."""
 
