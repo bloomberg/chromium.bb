@@ -3256,7 +3256,10 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 		wl_pointer_add_listener(input->pointer, &pointer_listener,
 					input);
 	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
-		wl_pointer_destroy(input->pointer);
+		if (input->display->seat_version >= WL_POINTER_RELEASE_SINCE_VERSION)
+			wl_pointer_release(input->pointer);
+		else
+			wl_pointer_destroy(input->pointer);
 		input->pointer = NULL;
 	}
 
@@ -3266,7 +3269,10 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 		wl_keyboard_add_listener(input->keyboard, &keyboard_listener,
 					 input);
 	} else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
-		wl_keyboard_destroy(input->keyboard);
+		if (input->display->seat_version >= WL_KEYBOARD_RELEASE_SINCE_VERSION)
+			wl_keyboard_release(input->keyboard);
+		else
+			wl_keyboard_destroy(input->keyboard);
 		input->keyboard = NULL;
 	}
 
@@ -3275,7 +3281,10 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 		wl_touch_set_user_data(input->touch, input);
 		wl_touch_add_listener(input->touch, &touch_listener, input);
 	} else if (!(caps & WL_SEAT_CAPABILITY_TOUCH) && input->touch) {
-		wl_touch_destroy(input->touch);
+		if (input->display->seat_version >= WL_TOUCH_RELEASE_SINCE_VERSION)
+			wl_touch_release(input->touch);
+		else
+			wl_touch_destroy(input->touch);
 		input->touch = NULL;
 	}
 }
@@ -5269,11 +5278,20 @@ input_destroy(struct input *input)
 		else
 			wl_data_device_destroy(input->data_device);
 	}
-	if (input->display->seat_version >= 3) {
+	if (input->display->seat_version >= WL_POINTER_RELEASE_SINCE_VERSION) {
+		if (input->touch)
+			wl_touch_release(input->touch);
 		if (input->pointer)
 			wl_pointer_release(input->pointer);
 		if (input->keyboard)
 			wl_keyboard_release(input->keyboard);
+	} else {
+		if (input->touch)
+			wl_touch_destroy(input->touch);
+		if (input->pointer)
+			wl_pointer_destroy(input->pointer);
+		if (input->keyboard)
+			wl_keyboard_destroy(input->keyboard);
 	}
 
 	fini_xkb(input);
