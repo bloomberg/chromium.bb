@@ -3216,18 +3216,12 @@ static VisiblePositionTemplate<Strategy> previousPositionOfAlgorithm(const Visib
     if (pos.atStartOfTree())
         return VisiblePositionTemplate<Strategy>();
 
-    const VisiblePositionTemplate<Strategy> prev = createVisiblePosition(pos);
-    ASSERT(prev.deepEquivalent() != visiblePosition.deepEquivalent());
-
-#if ENABLE(ASSERT)
     // we should always be able to make the affinity |TextAffinity::Downstream|,
     // because going previous from an |TextAffinity::Upstream| position can
     // never yield another |TextAffinity::Upstream position| (unless line wrap
     // length is 0!).
-    if (prev.isNotNull() && visiblePosition.affinity() == TextAffinity::Upstream) {
-        ASSERT(inSameLine(PositionWithAffinityTemplate<Strategy>(prev.deepEquivalent()), PositionWithAffinityTemplate<Strategy>(prev.deepEquivalent(), TextAffinity::Upstream)));
-    }
-#endif
+    const VisiblePositionTemplate<Strategy> prev = createVisiblePosition(pos);
+    ASSERT(prev.deepEquivalent() != visiblePosition.deepEquivalent());
 
     switch (rule) {
     case CanCrossEditingBoundary:

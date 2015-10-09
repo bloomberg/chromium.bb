@@ -780,6 +780,22 @@ TEST_F(VisibleUnitsTest, previousPositionOf)
     EXPECT_EQ(PositionInComposedTree(one, 1), previousPositionOf(createVisiblePosition(PositionInComposedTree(five, 1))).deepEquivalent());
 }
 
+TEST_F(VisibleUnitsTest, previousPositionOfOneCharPerLine)
+{
+    const char* bodyContent = "<div id=sample style='font-size: 500px'>A&#x714a;&#xfa67;</div>";
+    setBodyContent(bodyContent);
+
+    Node* sample = document().getElementById("sample")->firstChild();
+
+    // In case of each line has one character, VisiblePosition are:
+    // [C,Dn]   [C,Up]  [B, Dn]   [B, Up]
+    //  A        A       A         A|
+    //  B        B|     |B         B
+    // |C        C       C         C
+    EXPECT_EQ(PositionWithAffinity(Position(sample, 1)), previousPositionOf(createVisiblePosition(Position(sample, 2))).toPositionWithAffinity());
+    EXPECT_EQ(PositionWithAffinity(Position(sample, 1)), previousPositionOf(createVisiblePosition(Position(sample, 2), TextAffinity::Upstream)).toPositionWithAffinity());
+}
+
 TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchor)
 {
     const char* bodyContent = "<p id='sample'>00</p>";
