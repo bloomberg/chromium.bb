@@ -417,7 +417,7 @@ void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
   SimpleAlertInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),
       IDR_INFOBAR_PLUGIN_CRASHED,
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_IOS) && !defined(OS_ANDROID)
       gfx::VectorIconId::EXTENSION_CRASHED,
 #else
       gfx::VectorIconId::VECTOR_ICON_NONE,
