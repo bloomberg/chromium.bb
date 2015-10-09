@@ -7,13 +7,11 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/event.h"
 #include "ui/mojo/events/input_event_constants.mojom.h"
 
 namespace mojo {
 namespace {
-
-// Used for scrolling. This matches Firefox behavior.
-const int kPixelsPerTick = 53;
 
 double EventTimeToWebEventTime(const EventPtr& event) {
   return base::TimeDelta::FromInternalValue(event->time_stamp).InSecondsF();
@@ -156,8 +154,10 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
     web_event->deltaX = event->wheel_data->delta_x;
     web_event->deltaY = event->wheel_data->delta_y;
 
-    web_event->wheelTicksX = web_event->deltaX / kPixelsPerTick;
-    web_event->wheelTicksY = web_event->deltaY / kPixelsPerTick;
+    web_event->wheelTicksX =
+        web_event->deltaX / ui::MouseWheelEvent::kWheelDelta;
+    web_event->wheelTicksY =
+        web_event->deltaY / ui::MouseWheelEvent::kWheelDelta;
 
     // TODO(rjkroege): Mandoline currently only generates WHEEL_MODE_LINE
     // wheel events so the other modes are not yet tested. Verify that

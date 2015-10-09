@@ -44,19 +44,11 @@ TEST(InputEventLibTest, MouseEventConversion) {
   EXPECT_EQ(4, web_mouse_event->globalY);
 }
 
-// TODO(rjkroege): Fix on windows per http://crbug.com/533588.
-#if defined(OS_WIN)
-#define MAYBE_MouseWheelEventConversionNonPrecise \
-  DISABLED_MouseWheelEventConversionNonPrecise
-#else
-#define MAYBE_MouseWheelEventConversionNonPrecise \
-  MouseWheelEventConversionNonPrecise
-#endif
-
-TEST(InputEventLibTest, MAYBE_MouseWheelEventConversionNonPrecise) {
+TEST(InputEventLibTest, MouseWheelEventConversionNonPrecise) {
   scoped_ptr<ui::Event> original_wheel(new ui::MouseWheelEvent(
-      gfx::Vector2d(-1.0 * 53, -2.0 * 53), gfx::PointF(1.0, 2.0),
-      gfx::PointF(3.0, 4.0), EventTimeForNow(), 0, 0));
+      gfx::Vector2d(-1.0 * ui::MouseWheelEvent::kWheelDelta,
+                    -2.0 * ui::MouseWheelEvent::kWheelDelta),
+      gfx::PointF(1.0, 2.0), gfx::PointF(3.0, 4.0), EventTimeForNow(), 0, 0));
 
   mojo::EventPtr mojo_event(mojo::Event::From(*original_wheel));
 
