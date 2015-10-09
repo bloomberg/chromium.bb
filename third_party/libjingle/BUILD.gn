@@ -307,8 +307,6 @@ if (enable_webrtc) {
       "overrides/talk/media/webrtc/webrtcexport.h",
       "source/talk/app/webrtc/audiotrack.cc",
       "source/talk/app/webrtc/audiotrack.h",
-      "source/talk/app/webrtc/audiotrackrenderer.cc",
-      "source/talk/app/webrtc/audiotrackrenderer.h",
       "source/talk/app/webrtc/datachannel.cc",
       "source/talk/app/webrtc/datachannel.h",
       "source/talk/app/webrtc/dtlsidentitystore.cc",

@@ -279,8 +279,6 @@
           'sources': [
             '<(libjingle_source)/talk/app/webrtc/audiotrack.cc',
             '<(libjingle_source)/talk/app/webrtc/audiotrack.h',
-            '<(libjingle_source)/talk/app/webrtc/audiotrackrenderer.cc',
-            '<(libjingle_source)/talk/app/webrtc/audiotrackrenderer.h',
             '<(libjingle_source)/talk/app/webrtc/datachannel.cc',
             '<(libjingle_source)/talk/app/webrtc/datachannel.h',
             '<(libjingle_source)/talk/app/webrtc/dtlsidentitystore.cc',
