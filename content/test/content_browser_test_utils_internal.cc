@@ -13,11 +13,13 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
+#include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/resource_throttle.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/test_frame_navigation_observer.h"
-#include "url/gurl.h"
+#include "net/url_request/url_request.h"
 
 namespace content {
 
@@ -236,6 +238,33 @@ Shell* OpenPopup(const ToRenderFrameHost& opener,
   Shell* new_shell = new_shell_observer.GetShell();
   WaitForLoadStop(new_shell->web_contents());
   return new_shell;
+}
+
+namespace {
+
+class HttpRequestStallThrottle : public ResourceThrottle {
+ public:
+  // ResourceThrottle
+  void WillStartRequest(bool* defer) override { *defer = true; }
+
+  const char* GetNameForLogging() const override {
+    return "HttpRequestStallThrottle";
+  }
+};
+
+}  // namespace
+
+NavigationStallDelegate::NavigationStallDelegate(const GURL& url) : url_(url) {}
+
+void NavigationStallDelegate::RequestBeginning(
+    net::URLRequest* request,
+    content::ResourceContext* resource_context,
+    content::AppCacheService* appcache_service,
+    ResourceType resource_type,
+    ScopedVector<content::ResourceThrottle>* throttles) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (request->url() == url_)
+    throttles->push_back(new HttpRequestStallThrottle);
 }
 
 }  // namespace content

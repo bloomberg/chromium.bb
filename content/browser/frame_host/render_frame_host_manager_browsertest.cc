@@ -24,6 +24,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
@@ -2076,5 +2077,42 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(expected_url.spec(), result);
 }
 
+// Tests that going back to the same SiteInstance as a pending RenderFrameHost
+// doesn't create a duplicate RenderFrameProxyHost. For example:
+// 1. Navigate to a page on the opener site - a.com
+// 2. Navigate to a page on site b.com
+// 3. Start a navigation to another page on a.com, but commit is delayed.
+// 4. Go back.
+// See https://crbug.com/541619.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       PopupPendingAndBackToSameSiteInstance) {
+  StartEmbeddedServer();
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  NavigateToURL(shell(), main_url);
+
+  // Open a popup to navigate.
+  Shell* new_shell =
+      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+            new_shell->web_contents()->GetSiteInstance());
+
+  // Navigate the popup to a different site.
+  NavigateToURL(new_shell,
+                embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // Navigate again to the original site, but to a page that will take a while
+  // to commit.
+  GURL same_site_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
+  NavigationStallDelegate stall_delegate(same_site_url);
+  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  new_shell->LoadURL(same_site_url);
+
+  // Going back in history should work and the test should not crash.
+  TestNavigationObserver back_nav_load_observer(new_shell->web_contents());
+  new_shell->web_contents()->GetController().GoBack();
+  back_nav_load_observer.Wait();
+
+  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
+}
 
 }  // namespace content

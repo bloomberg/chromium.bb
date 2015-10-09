@@ -1982,31 +1982,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 namespace {
 
-class HttpThrottle : public ResourceThrottle {
- public:
-  // ResourceThrottle
-  void WillStartRequest(bool* defer) override {
-    *defer = true;
-  }
-
-  const char* GetNameForLogging() const override {
-    return "HttpThrottle";
-  }
-};
-
-class StallDelegate : public ResourceDispatcherHostDelegate {
-  // ResourceDispatcherHostDelegate
-  void RequestBeginning(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      content::AppCacheService* appcache_service,
-      ResourceType resource_type,
-      ScopedVector<content::ResourceThrottle>* throttles) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    throttles->push_back(new HttpThrottle);
-  }
-};
-
 // Loads |start_url|, then loads |stalled_url| which stalls. While the page is
 // stalled, an in-page navigation happens. Make sure that all the navigations
 // are properly classified.
@@ -2026,7 +2001,7 @@ void DoReplaceStateWhilePending(Shell* shell,
   EXPECT_TRUE(NavigateToURL(shell, start_url));
 
   // Have the user decide to go to a different page which is very slow.
-  StallDelegate stall_delegate;
+  NavigationStallDelegate stall_delegate(stalled_url);
   ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
   controller.LoadURL(
       stalled_url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
@@ -2311,10 +2286,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url1));
 
   // Have the user decide to go to a different page which is very slow.
-  StallDelegate stall_delegate;
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
   GURL url2(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_2.html"));
+  NavigationStallDelegate stall_delegate(url2);
+  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
   controller.LoadURL(url2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
 
   // That should be the pending entry.

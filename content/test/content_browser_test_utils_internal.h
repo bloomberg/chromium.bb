@@ -14,8 +14,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-
-class GURL;
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -75,6 +75,27 @@ class FrameTreeVisualizer {
 Shell* OpenPopup(const ToRenderFrameHost& opener,
                  const GURL& url,
                  const std::string& name);
+
+// This class can be used to stall any resource request, based on an URL match.
+// There is no explicit way to resume the request; it should be used carefully.
+// Note: This class likely doesn't work with PlzNavigate.
+// TODO(nasko): Reimplement this class using NavigationThrottle, once it has
+// the ability to defer navigation requests.
+class NavigationStallDelegate : public ResourceDispatcherHostDelegate {
+ public:
+  explicit NavigationStallDelegate(const GURL& url);
+
+ private:
+  // ResourceDispatcherHostDelegate
+  void RequestBeginning(
+      net::URLRequest* request,
+      content::ResourceContext* resource_context,
+      content::AppCacheService* appcache_service,
+      ResourceType resource_type,
+      ScopedVector<content::ResourceThrottle>* throttles) override;
+
+  GURL url_;
+};
 
 }  // namespace content
 

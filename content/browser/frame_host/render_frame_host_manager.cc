@@ -888,17 +888,30 @@ void RenderFrameHostManager::DiscardUnusedFrame(
     // Any currently suspended navigations are no longer needed.
     render_frame_host->CancelSuspendedNavigations();
 
-    RenderFrameProxyHost* proxy = new RenderFrameProxyHost(
-        site_instance, render_frame_host->render_view_host(), frame_tree_node_);
-    proxy_hosts_->Add(site_instance->GetId(), make_scoped_ptr(proxy));
-
-    // Check if the RenderFrameHost is already swapped out, to avoid swapping it
-    // out again.
-    if (!render_frame_host->is_swapped_out())
-      render_frame_host->SwapOut(proxy, false);
+    // If a proxy already exists for the |site_instance|, just reuse it instead
+    // of creating a new one. There is no need to call SwapOut on the
+    // |render_frame_host|, as this method is only called to discard a pending
+    // or speculative RenderFrameHost, i.e. one that has never hosted an actual
+    // document.
+    RenderFrameProxyHost* proxy = proxy_hosts_->Get(site_instance->GetId());
+    if (!proxy) {
+      proxy = new RenderFrameProxyHost(site_instance,
+                                       render_frame_host->render_view_host(),
+                                       frame_tree_node_);
+      proxy_hosts_->Add(site_instance->GetId(), make_scoped_ptr(proxy));
+    }
 
     if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
       DCHECK(frame_tree_node_->IsMainFrame());
+
+      // When using swapped out RenderFrameHosts, it is possible for the pending
+      // RenderFrameHost to be an existing one in swapped out state. Since it
+      // has been used to start a navigation, it could have committed a
+      // document. Check if |render_frame_host| is already swapped out, to avoid
+      // swapping it out again.
+      if (!render_frame_host->is_swapped_out())
+        render_frame_host->SwapOut(proxy, false);
+
       proxy->TakeFrameHostOwnership(render_frame_host.Pass());
     }
   }
