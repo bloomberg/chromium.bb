@@ -85,10 +85,14 @@ class ChromeClassTester : public clang::ASTConsumer {
   clang::DiagnosticsEngine& diagnostic_;
 
   // List of banned namespaces.
-  std::vector<std::string> banned_namespaces_;
+  std::set<std::string> banned_namespaces_;
+
+  // List of directories allowed even though their parent directories are in
+  // |banned_directories_|, below.
+  std::set<std::string> allowed_directories_;
 
   // List of banned directories.
-  std::vector<std::string> banned_directories_;
+  std::set<std::string> banned_directories_;
 
   // List of types that we don't check.
   std::set<std::string> ignored_record_names_;
