@@ -58,12 +58,6 @@ void DocumentOrderedList::add(Node* node)
     m_nodes.insertBefore(followingNode, node);
 }
 
-void DocumentOrderedList::parserAdd(Node* node)
-{
-    ASSERT(m_nodes.isEmpty() || m_nodes.last()->compareDocumentPosition(node, Node::TreatShadowTreesAsComposed) & Node::DOCUMENT_POSITION_FOLLOWING);
-    m_nodes.add(node);
-}
-
 void DocumentOrderedList::remove(const Node* node)
 {
     m_nodes.remove(const_cast<Node*>(node));

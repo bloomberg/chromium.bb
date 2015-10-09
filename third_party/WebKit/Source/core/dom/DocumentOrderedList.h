@@ -43,7 +43,6 @@ public:
     DocumentOrderedList() { }
 
     void add(Node*);
-    void parserAdd(Node*);
     void remove(const Node*);
     bool isEmpty() const { return m_nodes.isEmpty(); }
     void clear() { m_nodes.clear(); }

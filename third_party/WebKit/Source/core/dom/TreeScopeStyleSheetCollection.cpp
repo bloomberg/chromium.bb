@@ -50,14 +50,7 @@ void TreeScopeStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool 
     if (!node->inDocument())
         return;
 
-    // Until the <body> exists, we have no choice but to compare document positions,
-    // since styles outside of the body and head continue to be shunted into the head
-    // (and thus can shift to end up before dynamically added DOM content that is also
-    // outside the body).
-    if (createdByParser && document().body() && !node->nextSibling())
-        m_styleSheetCandidateNodes.parserAdd(node);
-    else
-        m_styleSheetCandidateNodes.add(node);
+    m_styleSheetCandidateNodes.add(node);
 }
 
 TreeScopeStyleSheetCollection::StyleResolverUpdateType TreeScopeStyleSheetCollection::compareStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& oldStyleSheets, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& newStylesheets, WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents>>& addedSheets)
