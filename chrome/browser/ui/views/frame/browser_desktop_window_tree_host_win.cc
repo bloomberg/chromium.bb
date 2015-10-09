@@ -28,9 +28,6 @@
 namespace {
 
 const int kClientEdgeThickness = 3;
-// We need to offset the DWMFrame into the toolbar so that the blackness
-// doesn't show up on our rounded corners.
-const int kDWMFrameTopOffset = 3;
 
 // DesktopThemeProvider maps resource ids using MapThemeImage(). This is
 // necessary for BrowserDesktopWindowTreeHostWin so that it uses the windows
@@ -149,7 +146,7 @@ bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
   // client edge over part of the default frame.
   if (GetWidget()->IsFullscreen())
     border_thickness = 0;
-  else if (!IsMaximized())
+  else if (!IsMaximized() && base::win::GetVersion() < base::win::VERSION_WIN10)
     border_thickness -= kClientEdgeThickness;
   insets->Set(0, border_thickness, border_thickness, border_thickness);
   return true;
@@ -324,7 +321,14 @@ MARGINS BrowserDesktopWindowTreeHostWin::GetDWMFrameMargins() const {
       gfx::Rect tabstrip_bounds(
           browser_frame_->GetBoundsForTabStrip(browser_view_->tabstrip()));
       tabstrip_bounds = gfx::win::DIPToScreenRect(tabstrip_bounds);
-      margins.cyTopHeight = tabstrip_bounds.bottom() + kDWMFrameTopOffset;
+      margins.cyTopHeight = tabstrip_bounds.bottom();
+
+      // On pre-Win 10, we need to offset the DWM frame into the toolbar so that
+      // the blackness doesn't show up on our rounded toolbar corners.  In Win
+      // 10 and above there are no rounded corners, so this is unnecessary.
+      const int kDWMFrameTopOffset = 3;
+      if (base::win::GetVersion() < base::win::VERSION_WIN10)
+        margins.cyTopHeight += kDWMFrameTopOffset;
     }
   }
   return margins;
