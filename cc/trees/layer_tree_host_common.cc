@@ -2713,9 +2713,10 @@ void CalculateDrawPropertiesAndVerify(
         // active tree immediately affect the pending tree, so instead of
         // trying to update property trees whenever page scale changes, we
         // update their page scale before using them.
-        UpdatePageScaleFactorInPropertyTrees(inputs->property_trees,
-                                             inputs->page_scale_layer,
-                                             inputs->page_scale_factor);
+        UpdatePageScaleFactorInPropertyTrees(
+            inputs->property_trees, inputs->page_scale_layer,
+            inputs->page_scale_factor, inputs->device_scale_factor,
+            inputs->device_transform);
         ComputeVisibleRectsUsingPropertyTrees(
             inputs->root_layer, inputs->property_trees, &update_layer_list);
         break;

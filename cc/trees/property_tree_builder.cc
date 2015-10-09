@@ -542,7 +542,8 @@ void BuildPropertyTreesTopLevelInternal(
     PropertyTrees* property_trees) {
   if (!property_trees->needs_rebuild) {
     UpdatePageScaleFactorInPropertyTrees(property_trees, page_scale_layer,
-                                         page_scale_factor);
+                                         page_scale_factor, device_scale_factor,
+                                         device_transform);
     return;
   }
 

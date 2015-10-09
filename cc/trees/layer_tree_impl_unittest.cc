@@ -1496,13 +1496,14 @@ TEST_F(LayerTreeImplTest,
 
   float device_scale_factor = 3.f;
   float page_scale_factor = 5.f;
+  float max_page_scale_factor = 10.f;
   gfx::Size scaled_bounds_for_root = gfx::ScaleToCeiledSize(
       root->bounds(), device_scale_factor * page_scale_factor);
   host_impl().SetViewportSize(scaled_bounds_for_root);
 
   host_impl().active_tree()->SetDeviceScaleFactor(device_scale_factor);
   host_impl().active_tree()->PushPageScaleFromMainThread(
-      page_scale_factor, page_scale_factor, page_scale_factor);
+      page_scale_factor, page_scale_factor, max_page_scale_factor);
   host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 1,
@@ -1566,6 +1567,31 @@ TEST_F(LayerTreeImplTest,
 
   // Hit checking for a point inside the touch event handler region should
   // return the root layer.
+  test_point = gfx::Point(35, 35);
+  test_point =
+      gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
+  result_layer =
+      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
+          test_point);
+  ASSERT_TRUE(result_layer);
+  EXPECT_EQ(12345, result_layer->id());
+
+  test_point = gfx::Point(64, 64);
+  test_point =
+      gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
+  result_layer =
+      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
+          test_point);
+  ASSERT_TRUE(result_layer);
+  EXPECT_EQ(12345, result_layer->id());
+
+  // Check update of page scale factor on the active tree when page scale layer
+  // is also the root layer.
+  page_scale_factor *= 1.5f;
+  host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
+  EXPECT_EQ(host_impl().active_tree()->root_layer(),
+            host_impl().active_tree()->PageScaleLayer());
+
   test_point = gfx::Point(35, 35);
   test_point =
       gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
