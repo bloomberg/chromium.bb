@@ -35,7 +35,6 @@ struct CC_EXPORT TransferableResource {
   gfx::Size size;
   gpu::MailboxHolder mailbox_holder;
   bool read_lock_fences_enabled;
-  bool is_repeated;
   bool is_software;
   bool is_overlay_candidate;
 };

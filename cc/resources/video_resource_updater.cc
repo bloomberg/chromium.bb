@@ -153,8 +153,7 @@ VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
   // TODO(danakj): Abstract out hw/sw resource create/delete from
   // ResourceProvider and stop using ResourceProvider in this class.
   const ResourceId resource_id = resource_provider_->CreateResource(
-      plane_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      format);
+      plane_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
   if (resource_id == 0)
     return all_resources_.end();
 

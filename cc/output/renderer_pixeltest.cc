@@ -130,8 +130,7 @@ void CreateTestTwoColoredTextureDrawQuad(const gfx::Rect& rect,
     }
   }
   ResourceId resource = resource_provider->CreateResource(
-      rect.size(), GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      RGBA_8888);
+      rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
   resource_provider->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
 
@@ -164,8 +163,7 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
   std::vector<uint32_t> pixels(num_pixels, pixel_color);
 
   ResourceId resource = resource_provider->CreateResource(
-      rect.size(), GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      RGBA_8888);
+      rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
   resource_provider->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
 
@@ -1685,8 +1683,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
   }
 
   ResourceId mask_resource_id = this->resource_provider_->CreateResource(
-      mask_rect.size(), GL_CLAMP_TO_EDGE,
-      ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      mask_rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
   {
     SkAutoLockPixels lock(bitmap);
     this->resource_provider_->CopyToResource(
@@ -2459,8 +2456,7 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
 
   gfx::Size tile_size(2, 2);
   ResourceId resource = this->resource_provider_->CreateResource(
-      tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      RGBA_8888);
+      tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
 
   {
     SkAutoLockPixels lock(bitmap);
@@ -2510,8 +2506,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
 
   gfx::Size tile_size(2, 2);
   ResourceId resource = this->resource_provider_->CreateResource(
-      tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      RGBA_8888);
+      tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
 
   {
     SkAutoLockPixels lock(bitmap);
@@ -2562,8 +2557,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
 
   gfx::Size tile_size(2, 2);
   ResourceId resource = this->resource_provider_->CreateResource(
-      tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      RGBA_8888);
+      tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
 
   {
     SkAutoLockPixels lock(bitmap);
@@ -2898,58 +2892,6 @@ TEST_F(GLRendererPixelTest, CheckReadbackSubset) {
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")),
       ExactPixelComparator(true),
       &capture_rect));
-}
-
-TYPED_TEST(RendererPixelTest, WrapModeRepeat) {
-  gfx::Rect rect(this->device_viewport_size_);
-
-  RenderPassId id(1, 1);
-  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
-
-  SharedQuadState* shared_state =
-      CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
-
-  gfx::Size texture_size(4, 4);
-  SkPMColor colors[4] = {
-    SkPreMultiplyColor(SkColorSetARGB(255, 0, 255, 0)),
-    SkPreMultiplyColor(SkColorSetARGB(255, 0, 128, 0)),
-    SkPreMultiplyColor(SkColorSetARGB(255, 0,  64, 0)),
-    SkPreMultiplyColor(SkColorSetARGB(255, 0,   0, 0)),
-  };
-  uint32_t pixels[16] = {
-    colors[0], colors[0], colors[1], colors[1],
-    colors[0], colors[0], colors[1], colors[1],
-    colors[2], colors[2], colors[3], colors[3],
-    colors[2], colors[2], colors[3], colors[3],
-  };
-  ResourceId resource = this->resource_provider_->CreateResource(
-      texture_size, GL_REPEAT, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      RGBA_8888);
-  this->resource_provider_->CopyToResource(
-      resource, reinterpret_cast<uint8_t*>(pixels), texture_size);
-
-  float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-  TextureDrawQuad* texture_quad =
-      pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  texture_quad->SetNew(
-      shared_state, gfx::Rect(this->device_viewport_size_), gfx::Rect(),
-      gfx::Rect(this->device_viewport_size_), resource,
-      true,                     // premultiplied_alpha
-      gfx::PointF(0.0f, 0.0f),  // uv_top_left
-      gfx::PointF(              // uv_bottom_right
-          this->device_viewport_size_.width() / texture_size.width(),
-          this->device_viewport_size_.height() / texture_size.height()),
-      SK_ColorWHITE, vertex_opacity,
-      false,   // flipped
-      false);  // nearest_neighbor
-
-  RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
-
-  EXPECT_TRUE(this->RunPixelTest(
-      &pass_list,
-      base::FilePath(FILE_PATH_LITERAL("wrap_mode_repeat.png")),
-      FuzzyPixelOffByOneComparator(true)));
 }
 
 #endif  // !defined(OS_ANDROID)

@@ -383,8 +383,6 @@ TEST(SurfaceLibTest, TransferableResource) {
   uint32_t filter = 123u;
   gfx::Size size(17, 18);
   gpu::MailboxHolder mailbox_holder;
-  bool is_repeated = false;
-  ;
   bool is_software = false;
   cc::TransferableResource resource;
   resource.id = id;
@@ -392,7 +390,6 @@ TEST(SurfaceLibTest, TransferableResource) {
   resource.filter = filter;
   resource.size = size;
   resource.mailbox_holder = mailbox_holder;
-  resource.is_repeated = is_repeated;
   resource.is_software = is_software;
 
   TransferableResourcePtr mojo_resource = TransferableResource::From(resource);
@@ -401,7 +398,6 @@ TEST(SurfaceLibTest, TransferableResource) {
             mojo_resource->format);
   EXPECT_EQ(filter, mojo_resource->filter);
   EXPECT_TRUE(Size::From(size).Equals(mojo_resource->size));
-  EXPECT_EQ(is_repeated, mojo_resource->is_repeated);
   EXPECT_EQ(is_software, mojo_resource->is_software);
 
   cc::TransferableResource round_trip_resource =
@@ -415,7 +411,6 @@ TEST(SurfaceLibTest, TransferableResource) {
             round_trip_resource.mailbox_holder.texture_target);
   EXPECT_EQ(mailbox_holder.sync_point,
             round_trip_resource.mailbox_holder.sync_point);
-  EXPECT_EQ(is_repeated, round_trip_resource.is_repeated);
   EXPECT_EQ(is_software, round_trip_resource.is_software);
 }
 

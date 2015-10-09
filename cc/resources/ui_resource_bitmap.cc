@@ -44,7 +44,6 @@ void UIResourceBitmap::Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
   pixel_ref_ = pixel_ref;
 
   // Default values for secondary parameters.
-  wrap_mode_ = CLAMP_TO_EDGE;
   opaque_ = (format == ETC1);
 }
 

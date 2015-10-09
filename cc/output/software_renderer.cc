@@ -49,17 +49,6 @@ bool IsScaleAndIntegerTranslate(const SkMatrix& matrix) {
          SkScalarNearlyZero(matrix[SkMatrix::kMPersp2] - 1.0f);
 }
 
-static SkShader::TileMode WrapModeToTileMode(GLint wrap_mode) {
-  switch (wrap_mode) {
-    case GL_REPEAT:
-      return SkShader::kRepeat_TileMode;
-    case GL_CLAMP_TO_EDGE:
-      return SkShader::kClamp_TileMode;
-  }
-  NOTREACHED();
-  return SkShader::kClamp_TileMode;
-}
-
 }  // anonymous namespace
 
 scoped_ptr<SoftwareRenderer> SoftwareRenderer::Create(
@@ -444,21 +433,8 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
   }
   current_paint_.setFilterQuality(
       quad->nearest_neighbor ? kNone_SkFilterQuality : kLow_SkFilterQuality);
-  SkShader::TileMode tile_mode = WrapModeToTileMode(lock.wrap_mode());
-  if (tile_mode != SkShader::kClamp_TileMode) {
-    SkMatrix matrix;
-    matrix.setRectToRect(sk_uv_rect, quad_rect, SkMatrix::kFill_ScaleToFit);
-    skia::RefPtr<SkShader> shader = skia::AdoptRef(
-        SkShader::CreateBitmapShader(*bitmap, tile_mode, tile_mode, &matrix));
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setShader(shader.get());
-    current_canvas_->drawRect(quad_rect, paint);
-  } else {
-    current_canvas_->drawBitmapRect(*bitmap, sk_uv_rect, quad_rect,
-                                    &current_paint_);
-  }
-
+  current_canvas_->drawBitmapRect(*bitmap, sk_uv_rect, quad_rect,
+                                  &current_paint_);
   if (needs_layer)
     current_canvas_->restore();
 }
@@ -474,7 +450,6 @@ void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
                                                 quad->resource_id());
   if (!lock.valid())
     return;
-  DCHECK_EQ(GL_CLAMP_TO_EDGE, lock.wrap_mode());
 
   gfx::RectF visible_tex_coord_rect = MathUtil::ScaleRectProportional(
       quad->tex_coord_rect, gfx::RectF(quad->rect),
@@ -502,7 +477,6 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
                                                 content_texture->id());
   if (!lock.valid())
     return;
-  SkShader::TileMode content_tile_mode = WrapModeToTileMode(lock.wrap_mode());
 
   SkRect dest_rect = gfx::RectFToSkRect(QuadVertexRect());
   SkRect dest_visible_rect = gfx::RectFToSkRect(
@@ -527,11 +501,13 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
 
   skia::RefPtr<SkShader> shader;
   if (filter_bitmap.isNull()) {
-    shader = skia::AdoptRef(SkShader::CreateBitmapShader(
-        *content, content_tile_mode, content_tile_mode, &content_mat));
+    shader = skia::AdoptRef(
+        SkShader::CreateBitmapShader(*content, SkShader::kClamp_TileMode,
+                                     SkShader::kClamp_TileMode, &content_mat));
   } else {
-    shader = skia::AdoptRef(SkShader::CreateBitmapShader(
-        filter_bitmap, content_tile_mode, content_tile_mode, &content_mat));
+    shader = skia::AdoptRef(
+        SkShader::CreateBitmapShader(filter_bitmap, SkShader::kClamp_TileMode,
+                                     SkShader::kClamp_TileMode, &content_mat));
   }
 
   scoped_ptr<ResourceProvider::ScopedReadLockSoftware> mask_lock;
@@ -542,9 +518,6 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
 
     if (!mask_lock->valid())
       return;
-
-    SkShader::TileMode mask_tile_mode =
-        WrapModeToTileMode(mask_lock->wrap_mode());
 
     const SkBitmap* mask = mask_lock->sk_bitmap();
 
@@ -557,9 +530,9 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
     SkMatrix mask_mat;
     mask_mat.setRectToRect(mask_rect, dest_rect, SkMatrix::kFill_ScaleToFit);
 
-    skia::RefPtr<SkShader> mask_shader =
-        skia::AdoptRef(SkShader::CreateBitmapShader(
-            *mask, mask_tile_mode, mask_tile_mode, &mask_mat));
+    skia::RefPtr<SkShader> mask_shader = skia::AdoptRef(
+        SkShader::CreateBitmapShader(*mask, SkShader::kClamp_TileMode,
+                                     SkShader::kClamp_TileMode, &mask_mat));
 
     SkPaint mask_paint;
     mask_paint.setShader(mask_shader.get());
@@ -575,7 +548,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
 
   // If we have a background filter shader, render its results first.
   skia::RefPtr<SkShader> background_filter_shader =
-      GetBackgroundFilterShader(frame, quad, content_tile_mode);
+      GetBackgroundFilterShader(frame, quad, SkShader::kClamp_TileMode);
   if (background_filter_shader) {
     SkPaint paint;
     paint.setShader(background_filter_shader.get());

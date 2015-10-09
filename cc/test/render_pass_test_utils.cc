@@ -160,39 +160,32 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   *sync_point_for_mailbox_texture_quad = kSyncPointForMailboxTextureQuad;
 
   ResourceId resource1 = resource_provider->CreateResource(
-      gfx::Size(45, 5), GL_CLAMP_TO_EDGE,
-      ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      gfx::Size(45, 5), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource1);
   ResourceId resource2 = resource_provider->CreateResource(
-      gfx::Size(346, 61), GL_CLAMP_TO_EDGE,
-      ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      gfx::Size(346, 61), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource2);
   ResourceId resource3 = resource_provider->CreateResource(
-      gfx::Size(12, 134), GL_CLAMP_TO_EDGE,
-      ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      gfx::Size(12, 134), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource3);
   ResourceId resource4 = resource_provider->CreateResource(
-      gfx::Size(56, 12), GL_CLAMP_TO_EDGE,
-      ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      gfx::Size(56, 12), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource4);
   gfx::Size resource5_size(73, 26);
   ResourceId resource5 = resource_provider->CreateResource(
-      resource5_size, GL_CLAMP_TO_EDGE,
-      ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      resource5_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource5);
   ResourceId resource6 = resource_provider->CreateResource(
-      gfx::Size(64, 92), GL_CLAMP_TO_EDGE,
-      ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      gfx::Size(64, 92), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource6);
   ResourceId resource7 = resource_provider->CreateResource(
-      gfx::Size(9, 14), GL_CLAMP_TO_EDGE,
-      ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      gfx::Size(9, 14), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource7);
 
@@ -291,8 +284,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   ResourceId plane_resources[4];
   for (int i = 0; i < 4; ++i) {
     plane_resources[i] = resource_provider->CreateResource(
-        gfx::Size(20, 12), GL_CLAMP_TO_EDGE,
-        ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+        gfx::Size(20, 12), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
         resource_provider->best_texture_format());
     resource_provider->AllocateForTesting(plane_resources[i]);
   }

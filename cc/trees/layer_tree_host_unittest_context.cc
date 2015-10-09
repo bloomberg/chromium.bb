@@ -943,8 +943,7 @@ class LayerTreeHostContextTestDontUseLostResources
         delegated_resource_collection_.get(), frame_data.Pass());
 
     ResourceId resource = child_resource_provider_->CreateResource(
-        gfx::Size(4, 4), GL_CLAMP_TO_EDGE,
-        ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+        gfx::Size(4, 4), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
     ResourceProvider::ScopedWriteLockGL lock(child_resource_provider_.get(),
                                              resource);
 

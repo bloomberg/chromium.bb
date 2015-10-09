@@ -514,7 +514,6 @@ TypeConverter<TransferableResourcePtr, cc::TransferableResource>::Convert(
   transferable->filter = input.filter;
   transferable->size = Size::From(input.size);
   transferable->mailbox_holder = MailboxHolder::From(input.mailbox_holder);
-  transferable->is_repeated = input.is_repeated;
   transferable->is_software = input.is_software;
   return transferable.Pass();
 }
@@ -529,7 +528,6 @@ TypeConverter<cc::TransferableResource, TransferableResourcePtr>::Convert(
   transferable.filter = input->filter;
   transferable.size = input->size.To<gfx::Size>();
   transferable.mailbox_holder = input->mailbox_holder.To<gpu::MailboxHolder>();
-  transferable.is_repeated = input->is_repeated;
   transferable.is_software = input->is_software;
   return transferable;
 }

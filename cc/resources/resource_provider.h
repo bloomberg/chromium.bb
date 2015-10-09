@@ -119,7 +119,6 @@ class CC_EXPORT ResourceProvider
 
   // Creates a resource of the default resource type.
   ResourceId CreateResource(const gfx::Size& size,
-                            GLint wrap_mode,
                             TextureHint hint,
                             ResourceFormat format);
 
@@ -127,7 +126,6 @@ class CC_EXPORT ResourceProvider
   // accounting purposes.
   ResourceId CreateManagedResource(const gfx::Size& size,
                                    GLenum target,
-                                   GLint wrap_mode,
                                    TextureHint hint,
                                    ResourceFormat format);
 
@@ -135,11 +133,10 @@ class CC_EXPORT ResourceProvider
   ResourceId CreateGLTexture(const gfx::Size& size,
                              GLenum target,
                              GLenum texture_pool,
-                             GLint wrap_mode,
                              TextureHint hint,
                              ResourceFormat format);
 
-  ResourceId CreateBitmap(const gfx::Size& size, GLint wrap_mode);
+  ResourceId CreateBitmap(const gfx::Size& size);
   // Wraps an IOSurface into a GL resource.
   ResourceId CreateResourceFromIOSurface(const gfx::Size& size,
                                          unsigned io_surface_id);
@@ -280,7 +277,6 @@ class CC_EXPORT ResourceProvider
       DCHECK(valid());
       return &sk_bitmap_;
     }
-    GLint wrap_mode() const { return wrap_mode_; }
 
     bool valid() const { return !!sk_bitmap_.getPixels(); }
 
@@ -288,7 +284,6 @@ class CC_EXPORT ResourceProvider
     ResourceProvider* resource_provider_;
     ResourceId resource_id_;
     SkBitmap sk_bitmap_;
-    GLint wrap_mode_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
   };
@@ -462,20 +457,17 @@ class CC_EXPORT ResourceProvider
              GLenum target,
              GLenum filter,
              GLenum texture_pool,
-             GLint wrap_mode,
              TextureHint hint,
              ResourceFormat format);
     Resource(uint8_t* pixels,
              SharedBitmap* bitmap,
              const gfx::Size& size,
              Origin origin,
-             GLenum filter,
-             GLint wrap_mode);
+             GLenum filter);
     Resource(const SharedBitmapId& bitmap_id,
              const gfx::Size& size,
              Origin origin,
-             GLenum filter,
-             GLint wrap_mode);
+             GLenum filter);
 
     int child_id;
     unsigned gl_id;
@@ -509,7 +501,6 @@ class CC_EXPORT ResourceProvider
     unsigned image_id;
     unsigned bound_image_id;
     GLenum texture_pool;
-    GLint wrap_mode;
     TextureHint hint;
     ResourceType type;
     ResourceFormat format;

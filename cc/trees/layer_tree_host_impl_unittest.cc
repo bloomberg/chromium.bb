@@ -5281,7 +5281,6 @@ class BlendStateCheckLayer : public LayerImpl {
         quad_visible_rect_(5, 5, 5, 5),
         resource_id_(resource_provider->CreateResource(
             gfx::Size(1, 1),
-            GL_CLAMP_TO_EDGE,
             ResourceProvider::TEXTURE_HINT_IMMUTABLE,
             RGBA_8888)) {
     resource_provider->AllocateForTesting(resource_id_);

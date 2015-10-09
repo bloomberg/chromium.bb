@@ -20,8 +20,8 @@ TestTexture::TestTexture() : format(RGBA_8888) {
   // Initialize default parameter values.
   params[GL_TEXTURE_MAG_FILTER] = GL_LINEAR;
   params[GL_TEXTURE_MIN_FILTER] = GL_NEAREST_MIPMAP_LINEAR;
-  params[GL_TEXTURE_WRAP_S] = GL_REPEAT;
-  params[GL_TEXTURE_WRAP_T] = GL_REPEAT;
+  params[GL_TEXTURE_WRAP_S] = GL_CLAMP_TO_EDGE;
+  params[GL_TEXTURE_WRAP_T] = GL_CLAMP_TO_EDGE;
   params[GL_TEXTURE_POOL_CHROMIUM] = GL_TEXTURE_POOL_UNMANAGED_CHROMIUM;
   params[GL_TEXTURE_USAGE_ANGLE] = GL_NONE;
 }

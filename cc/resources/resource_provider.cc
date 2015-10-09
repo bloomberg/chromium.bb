@@ -202,7 +202,6 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
                                      GLenum target,
                                      GLenum filter,
                                      GLenum texture_pool,
-                                     GLint wrap_mode,
                                      TextureHint hint,
                                      ResourceFormat format)
     : child_id(0),
@@ -231,13 +230,11 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       image_id(0),
       bound_image_id(0),
       texture_pool(texture_pool),
-      wrap_mode(wrap_mode),
       hint(hint),
       type(RESOURCE_TYPE_GL_TEXTURE),
       format(format),
       shared_bitmap(NULL),
       gpu_memory_buffer(NULL) {
-  DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
   DCHECK_EQ(origin == INTERNAL, !!texture_pool);
 }
 
@@ -245,8 +242,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
                                      SharedBitmap* bitmap,
                                      const gfx::Size& size,
                                      Origin origin,
-                                     GLenum filter,
-                                     GLint wrap_mode)
+                                     GLenum filter)
     : child_id(0),
       gl_id(0),
       gl_pixel_buffer_id(0),
@@ -272,13 +268,11 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       image_id(0),
       bound_image_id(0),
       texture_pool(0),
-      wrap_mode(wrap_mode),
       hint(TEXTURE_HINT_IMMUTABLE),
       type(RESOURCE_TYPE_BITMAP),
       format(RGBA_8888),
       shared_bitmap(bitmap),
       gpu_memory_buffer(NULL) {
-  DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
   DCHECK(origin == DELEGATED || pixels);
   if (bitmap)
     shared_bitmap_id = bitmap->id();
@@ -287,8 +281,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
 ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
                                      const gfx::Size& size,
                                      Origin origin,
-                                     GLenum filter,
-                                     GLint wrap_mode)
+                                     GLenum filter)
     : child_id(0),
       gl_id(0),
       gl_pixel_buffer_id(0),
@@ -314,15 +307,12 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
       image_id(0),
       bound_image_id(0),
       texture_pool(0),
-      wrap_mode(wrap_mode),
       hint(TEXTURE_HINT_IMMUTABLE),
       type(RESOURCE_TYPE_BITMAP),
       format(RGBA_8888),
       shared_bitmap_id(bitmap_id),
       shared_bitmap(NULL),
-      gpu_memory_buffer(NULL) {
-  DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
-}
+      gpu_memory_buffer(NULL) {}
 
 ResourceProvider::Child::Child()
     : marked_for_deletion(false), needs_sync_points(true) {
@@ -394,7 +384,6 @@ void ResourceProvider::LoseResourceForTesting(ResourceId id) {
 }
 
 ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
-                                            GLint wrap_mode,
                                             TextureHint hint,
                                             ResourceFormat format) {
   DCHECK(!size.IsEmpty());
@@ -403,12 +392,11 @@ ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
       return CreateGLTexture(size,
                              GL_TEXTURE_2D,
                              GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
-                             wrap_mode,
                              hint,
                              format);
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
-      return CreateBitmap(size, wrap_mode);
+      return CreateBitmap(size);
   }
 
   LOG(FATAL) << "Invalid default resource type.";
@@ -417,7 +405,6 @@ ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
 
 ResourceId ResourceProvider::CreateManagedResource(const gfx::Size& size,
                                                    GLenum target,
-                                                   GLint wrap_mode,
                                                    TextureHint hint,
                                                    ResourceFormat format) {
   DCHECK(!size.IsEmpty());
@@ -426,12 +413,11 @@ ResourceId ResourceProvider::CreateManagedResource(const gfx::Size& size,
       return CreateGLTexture(size,
                              target,
                              GL_TEXTURE_POOL_MANAGED_CHROMIUM,
-                             wrap_mode,
                              hint,
                              format);
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
-      return CreateBitmap(size, wrap_mode);
+      return CreateBitmap(size);
   }
 
   LOG(FATAL) << "Invalid default resource type.";
@@ -441,7 +427,6 @@ ResourceId ResourceProvider::CreateManagedResource(const gfx::Size& size,
 ResourceId ResourceProvider::CreateGLTexture(const gfx::Size& size,
                                              GLenum target,
                                              GLenum texture_pool,
-                                             GLint wrap_mode,
                                              TextureHint hint,
                                              ResourceFormat format) {
   DCHECK_LE(size.width(), max_texture_size_);
@@ -449,15 +434,14 @@ ResourceId ResourceProvider::CreateGLTexture(const gfx::Size& size,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ResourceId id = next_id_++;
-  Resource* resource = InsertResource(
-      id, Resource(0, size, Resource::INTERNAL, target, GL_LINEAR, texture_pool,
-                   wrap_mode, hint, format));
+  Resource* resource =
+      InsertResource(id, Resource(0, size, Resource::INTERNAL, target,
+                                  GL_LINEAR, texture_pool, hint, format));
   resource->allocated = false;
   return id;
 }
 
-ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size,
-                                          GLint wrap_mode) {
+ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_ptr<SharedBitmap> bitmap =
@@ -466,9 +450,9 @@ ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size,
   DCHECK(pixels);
 
   ResourceId id = next_id_++;
-  Resource* resource =
-      InsertResource(id, Resource(pixels, bitmap.release(), size,
-                                  Resource::INTERNAL, GL_LINEAR, wrap_mode));
+  Resource* resource = InsertResource(
+      id,
+      Resource(pixels, bitmap.release(), size, Resource::INTERNAL, GL_LINEAR));
   resource->allocated = true;
   return id;
 }
@@ -482,7 +466,7 @@ ResourceId ResourceProvider::CreateResourceFromIOSurface(
   Resource* resource = InsertResource(
       id, Resource(0, gfx::Size(), Resource::INTERNAL, GL_TEXTURE_RECTANGLE_ARB,
                    GL_LINEAR, GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
-                   GL_CLAMP_TO_EDGE, TEXTURE_HINT_IMMUTABLE, RGBA_8888));
+                   TEXTURE_HINT_IMMUTABLE, RGBA_8888));
   LazyCreate(resource);
   GLES2Interface* gl = ContextGL();
   DCHECK(gl);
@@ -506,7 +490,7 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     resource = InsertResource(
         id, Resource(0, gfx::Size(), Resource::EXTERNAL, mailbox.target(),
                      mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR, 0,
-                     GL_CLAMP_TO_EDGE, TEXTURE_HINT_IMMUTABLE, RGBA_8888));
+                     TEXTURE_HINT_IMMUTABLE, RGBA_8888));
   } else {
     DCHECK(mailbox.IsSharedMemory());
     SharedBitmap* shared_bitmap = mailbox.shared_bitmap();
@@ -514,7 +498,7 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     DCHECK(pixels);
     resource = InsertResource(
         id, Resource(pixels, shared_bitmap, mailbox.size_in_pixels(),
-                     Resource::EXTERNAL, GL_LINEAR, GL_CLAMP_TO_EDGE));
+                     Resource::EXTERNAL, GL_LINEAR));
   }
   resource->allocated = true;
   resource->mailbox = mailbox;
@@ -861,7 +845,6 @@ ResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(
     ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   const Resource* resource = resource_provider->LockForRead(resource_id);
-  wrap_mode_ = resource->wrap_mode;
   ResourceProvider::PopulateSkBitmapWithResource(&sk_bitmap_, resource);
 }
 
@@ -1213,15 +1196,13 @@ void ResourceProvider::ReceiveFromChild(
     ResourceId local_id = next_id_++;
     Resource* resource = nullptr;
     if (it->is_software) {
-      resource = InsertResource(
-          local_id,
-          Resource(it->mailbox_holder.mailbox, it->size, Resource::DELEGATED,
-                   GL_LINEAR, it->is_repeated ? GL_REPEAT : GL_CLAMP_TO_EDGE));
+      resource = InsertResource(local_id,
+                                Resource(it->mailbox_holder.mailbox, it->size,
+                                         Resource::DELEGATED, GL_LINEAR));
     } else {
       resource = InsertResource(
           local_id, Resource(0, it->size, Resource::DELEGATED,
                              it->mailbox_holder.texture_target, it->filter, 0,
-                             it->is_repeated ? GL_REPEAT : GL_CLAMP_TO_EDGE,
                              TEXTURE_HINT_IMMUTABLE, it->format));
       resource->mailbox = TextureMailbox(it->mailbox_holder.mailbox,
                                          it->mailbox_holder.texture_target,
@@ -1328,7 +1309,6 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   resource->filter = source->filter;
   resource->size = source->size;
   resource->read_lock_fences_enabled = source->read_lock_fences_enabled;
-  resource->is_repeated = (source->wrap_mode == GL_REPEAT);
   resource->is_overlay_candidate = source->is_overlay_candidate;
 
   if (source->type == RESOURCE_TYPE_BITMAP) {
@@ -1521,8 +1501,8 @@ void ResourceProvider::LazyCreate(Resource* resource) {
                     resource->original_filter);
   gl->TexParameteri(resource->target, GL_TEXTURE_MAG_FILTER,
                     resource->original_filter);
-  gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_S, resource->wrap_mode);
-  gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_T, resource->wrap_mode);
+  gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   gl->TexParameteri(resource->target, GL_TEXTURE_POOL_CHROMIUM,
                     resource->texture_pool);
   if (use_texture_usage_hint_ && (resource->hint & TEXTURE_HINT_FRAMEBUFFER)) {
