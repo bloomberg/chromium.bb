@@ -62,12 +62,12 @@ public:
     }
 
 private:
-    class StopDetector final : public NoBaseWillBeGarbageCollectedFinalized<StopDetector>, public ActiveDOMObject {
+    class StopDetector final : public GarbageCollectedFinalized<StopDetector>, public ActiveDOMObject {
         WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StopDetector);
     public:
-        static PassOwnPtrWillBeRawPtr<StopDetector> create(ExecutionContext* executionContext, FetchManager* fetchManager)
+        static StopDetector* create(ExecutionContext* executionContext, FetchManager* fetchManager)
         {
-            return adoptPtrWillBeNoop(new StopDetector(executionContext, fetchManager));
+            return new StopDetector(executionContext, fetchManager);
         }
 
         void stop() override { m_fetchManager->stop(); }
@@ -86,9 +86,7 @@ private:
             suspendIfNeeded();
         }
 
-        // Having a raw pointer is safe, because |m_fetchManager| is owned by
-        // the owner of this object.
-        RawPtrWillBeMember<FetchManager> m_fetchManager;
+        Member<FetchManager> m_fetchManager;
     };
 
     explicit GlobalFetchImpl(ExecutionContext* executionContext)
@@ -101,8 +99,8 @@ private:
     }
     static const char* supplementName() { return "GlobalFetch"; }
 
-    OwnPtrWillBeMember<FetchManager> m_fetchManager;
-    OwnPtrWillBeMember<StopDetector> m_stopDetector;
+    PersistentWillBeMember<FetchManager> m_fetchManager;
+    PersistentWillBeMember<StopDetector> m_stopDetector;
 #if !ENABLE(OILPAN)
     WeakPtrFactory<ScopedFetcher> m_weakFactory;
 #endif

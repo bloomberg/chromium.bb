@@ -53,12 +53,12 @@ bool IsRedirectStatusCode(int statusCode)
 
 } // namespace
 
-class FetchManager::Loader final : public NoBaseWillBeGarbageCollectedFinalized<FetchManager::Loader>, public ThreadableLoaderClient, public ContextLifecycleObserver {
+class FetchManager::Loader final : public GarbageCollectedFinalized<FetchManager::Loader>, public ThreadableLoaderClient, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FetchManager::Loader);
 public:
-    static PassOwnPtrWillBeRawPtr<Loader> create(ExecutionContext* executionContext, FetchManager* fetchManager, ScriptPromiseResolver* resolver, FetchRequestData* request)
+    static Loader* create(ExecutionContext* executionContext, FetchManager* fetchManager, ScriptPromiseResolver* resolver, FetchRequestData* request)
     {
-        return adoptPtrWillBeNoop(new Loader(executionContext, fetchManager, resolver, request));
+        return new Loader(executionContext, fetchManager, resolver, request);
     }
 
     ~Loader() override;
@@ -142,7 +142,7 @@ public:
         OwnPtr<WebDataConsumerHandle> m_handle;
         Member<CompositeDataConsumerHandle::Updater> m_updater;
         Member<Response> m_response;
-        RawPtrWillBeMember<FetchManager::Loader> m_loader;
+        Member<FetchManager::Loader> m_loader;
         String m_integrityMetadata;
         KURL m_url;
         OwnPtr<WebDataConsumerHandle::Reader> m_reader;
@@ -161,14 +161,14 @@ private:
     Document* document() const;
     void loadSucceeded();
 
-    RawPtrWillBeMember<FetchManager> m_fetchManager;
-    PersistentWillBeMember<ScriptPromiseResolver> m_resolver;
-    PersistentWillBeMember<FetchRequestData> m_request;
+    Member<FetchManager> m_fetchManager;
+    Member<ScriptPromiseResolver> m_resolver;
+    Member<FetchRequestData> m_request;
     RefPtr<ThreadableLoader> m_loader;
     bool m_failed;
     bool m_finished;
     int m_responseHttpStatusCode;
-    PersistentWillBeMember<SRIVerifier> m_integrityVerifier;
+    Member<SRIVerifier> m_integrityVerifier;
     bool m_didFinishLoading;
 };
 
@@ -597,8 +597,8 @@ ScriptPromise FetchManager::fetch(ScriptState* scriptState, FetchRequestData* re
 
     request->setContext(WebURLRequest::RequestContextFetch);
 
-    OwnPtrWillBeRawPtr<Loader> ownLoader = Loader::create(m_executionContext, this, resolver, request);
-    Loader* loader = m_loaders.add(ownLoader.release()).storedValue->get();
+    Loader* loader = Loader::create(m_executionContext, this, resolver, request);
+    m_loaders.add(loader);
     loader->start();
     return promise;
 }
@@ -613,18 +613,14 @@ void FetchManager::stop()
 
 void FetchManager::onLoaderFinished(Loader* loader)
 {
-    // We don't use remove here, because it may cause recursive deletion.
-    OwnPtrWillBeRawPtr<Loader> p = m_loaders.take(loader);
-    ASSERT(p);
-    p->dispose();
+    m_loaders.remove(loader);
+    loader->dispose();
 }
 
 DEFINE_TRACE(FetchManager)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_executionContext);
     visitor->trace(m_loaders);
-#endif
 }
 
 } // namespace blink

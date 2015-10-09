@@ -6,8 +6,7 @@
 #define FetchManager_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -15,12 +14,11 @@ class ExecutionContext;
 class FetchRequestData;
 class ScriptState;
 
-class FetchManager final : public NoBaseWillBeGarbageCollectedFinalized<FetchManager> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FetchManager);
+class FetchManager final : public GarbageCollectedFinalized<FetchManager> {
 public:
-    static PassOwnPtrWillBeRawPtr<FetchManager> create(ExecutionContext* executionContext)
+    static FetchManager* create(ExecutionContext* executionContext)
     {
-        return adoptPtrWillBeNoop(new FetchManager(executionContext));
+        return new FetchManager(executionContext);
     }
     ~FetchManager();
     ScriptPromise fetch(ScriptState*, FetchRequestData*);
@@ -37,7 +35,7 @@ private:
     void onLoaderFinished(Loader*);
 
     RawPtrWillBeMember<ExecutionContext> m_executionContext;
-    WillBeHeapHashSet<OwnPtrWillBeMember<Loader>> m_loaders;
+    HeapHashSet<Member<Loader>> m_loaders;
     bool m_isStopped;
 };
 
