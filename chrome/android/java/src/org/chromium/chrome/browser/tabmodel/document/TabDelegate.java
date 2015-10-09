@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentMetricIds;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
@@ -53,7 +52,7 @@ public class TabDelegate extends TabCreator {
      */
     @Override
     public Tab createFrozenTab(TabState state, int id, int index) {
-        return ChromeTab.createFrozenTabFromState(id, null, state.isIncognito(), null,
+        return Tab.createFrozenTabFromState(id, null, state.isIncognito(), null,
                 Tab.INVALID_TAB_ID, state);
     }
 

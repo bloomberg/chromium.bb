@@ -21,7 +21,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -320,7 +319,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ChromeTab.fromTab(tab).processEnableFullscreenRunnableForTest();
+                tab.processEnableFullscreenRunnableForTest();
             }
         });
 
@@ -492,7 +491,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ChromeTab.fromTab(tab).processEnableFullscreenRunnableForTest();
+                tab.processEnableFullscreenRunnableForTest();
             }
         });
     }

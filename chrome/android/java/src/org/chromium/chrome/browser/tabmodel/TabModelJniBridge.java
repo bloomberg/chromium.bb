@@ -8,7 +8,6 @@ import android.os.SystemClock;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -151,7 +150,7 @@ public abstract class TabModelJniBridge implements TabModel {
     }
 
     /**
-     * Should be called a visible {@link ChromeTab} gets a frame to render in the browser process.
+     * Should be called a visible {@link Tab} gets a frame to render in the browser process.
      * If we don't get this call, we ignore requests to
      * {@link #flushActualTabSwitchLatencyMetric()}.
      */

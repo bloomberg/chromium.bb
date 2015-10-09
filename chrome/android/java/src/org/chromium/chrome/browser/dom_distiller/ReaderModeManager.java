@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.dom_distiller.content.DistillablePageUtils;
@@ -66,11 +65,6 @@ public class ReaderModeManager extends EmptyTabObserver
      * STARTED means reader mode is currently in reader mode.
      */
     public static final int STARTED = 2;
-
-    /**
-     * JavaScript that can be executed to tell whether or not a page can be viewed in reader mode.
-     */
-    private static final String sIsReadableJs = DomDistillerUrlUtils.getIsDistillableJs();
 
     /**
      * The url of the last page visited if the last page was reader mode page.  Otherwise null.
@@ -247,8 +241,7 @@ public class ReaderModeManager extends EmptyTabObserver
     }
 
     private ReaderModeActivityDelegate getReaderModeActivityDelegate() {
-        if (!(mTab instanceof ChromeTab)) return null;
-        return ((ChromeTab) mTab).getReaderModeActivityDelegate();
+        return mTab.getReaderModeActivityDelegate();
     }
 
     private WebContentsObserver createWebContentsObserver(WebContents webContents) {

@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -952,14 +951,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * Triggered when the selected tab has changed.
      */
     private void refreshSelectedTab() {
-        ChromeTab tab = null;
+        Tab tab = null;
         if (mPreselectedTabId != Tab.INVALID_TAB_ID) {
-            tab = ChromeTab.fromTab(mTabModelSelector.getTabById(mPreselectedTabId));
+            tab = mTabModelSelector.getTabById(mPreselectedTabId);
         }
-        if (tab == null) tab = ChromeTab.fromTab(mTabModelSelector.getCurrentTab());
+        if (tab == null) tab = mTabModelSelector.getCurrentTab();
 
         boolean wasIncognito = mToolbarModel.isIncognito();
-        ChromeTab previousTab = ChromeTab.fromTab(mToolbarModel.getTab());
+        Tab previousTab = mToolbarModel.getTab();
 
         boolean isIncognito =
                 tab != null ? tab.isIncognito() : mTabModelSelector.isIncognitoSelected();

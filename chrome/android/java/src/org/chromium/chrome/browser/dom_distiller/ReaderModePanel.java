@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeEventFilter.ScrollDirection;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeButtonView.ReaderModeButtonViewDelegate;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -845,8 +844,7 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
       * @return The panel associated with a given Tab.
       */
     public static ReaderModePanel getReaderModePanel(Tab tab) {
-        if (!(tab instanceof ChromeTab)) return null;
-        ReaderModeManager manager = ((ChromeTab) tab).getReaderModeManager();
+        ReaderModeManager manager = tab.getReaderModeManager();
         if (manager == null) return null;
         return manager.getReaderModePanel();
     }

@@ -12,7 +12,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -39,9 +38,9 @@ public class ChromeTabCreatorTest extends ChromeTabbedActivityTestBase  {
     public void testCreateNewTabInBackgroundLowEnd()
             throws ExecutionException, InterruptedException {
         final Tab fgTab = getActivity().getActivityTab();
-        final Tab bgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<ChromeTab>() {
+        final Tab bgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
             @Override
-            public ChromeTab call() {
+            public Tab call() {
                 return getActivity().getCurrentTabCreator().createNewTab(
                         new LoadUrlParams(TEST_URL), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
                         fgTab);
@@ -75,9 +74,9 @@ public class ChromeTabCreatorTest extends ChromeTabbedActivityTestBase  {
     public void testCreateNewTabInBackground()
             throws ExecutionException, InterruptedException {
         final Tab fgTab = getActivity().getActivityTab();
-        ChromeTab bgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<ChromeTab>() {
+        Tab bgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
             @Override
-            public ChromeTab call() {
+            public Tab call() {
                 return getActivity().getCurrentTabCreator().createNewTab(
                         new LoadUrlParams(TEST_URL), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
                         fgTab);

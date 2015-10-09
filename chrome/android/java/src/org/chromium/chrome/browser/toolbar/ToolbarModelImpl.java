@@ -13,7 +13,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarModel.ToolbarModelDelegate;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
@@ -25,7 +24,7 @@ import org.chromium.content_public.browser.WebContents;
  */
 class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, ToolbarModelDelegate {
 
-    private ChromeTab mTab;
+    private Tab mTab;
     private boolean mIsIncognito;
     private int mPrimaryColor;
     private boolean mIsUsingBrandColor;
@@ -39,7 +38,7 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
 
     @Override
     public WebContents getActiveWebContents() {
-        ChromeTab tab = getTab();
+        Tab tab = getTab();
         if (tab == null) return null;
         return tab.getWebContents();
     }
@@ -50,7 +49,7 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
      * @param isIncognito Whether the incognito model is currently selected, which must match the
      *                    passed in tab if non-null.
      */
-    public void setTab(ChromeTab tab, boolean isIncognito) {
+    public void setTab(Tab tab, boolean isIncognito) {
         mTab = tab;
         if (mTab != null) {
             assert mTab.isIncognito() == isIncognito;
@@ -59,7 +58,7 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
     }
 
     @Override
-    public ChromeTab getTab() {
+    public Tab getTab() {
         // TODO(dtrainor, tedchoc): Remove the isInitialized() check when we no longer wait for
         // TAB_CLOSED events to remove this tab.  Otherwise there is a chance we use this tab after
         // {@link ChromeTab#destroy()} is called.

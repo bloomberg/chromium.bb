@@ -46,7 +46,7 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
 
     class TestInterceptNavigationDelegate extends InterceptNavigationDelegateImpl {
         TestInterceptNavigationDelegate() {
-            super(mActivity, (ChromeTab) mActivity.getActivityTab());
+            super(mActivity, mActivity.getActivityTab());
         }
 
         @Override

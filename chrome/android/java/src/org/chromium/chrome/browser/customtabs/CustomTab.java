@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
@@ -46,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A chrome tab that is only used as a custom tab.
  */
-public class CustomTab extends ChromeTab {
+public class CustomTab extends Tab {
     private static class CustomTabObserver extends EmptyTabObserver {
         private CustomTabsConnection mCustomTabsConnection;
         private IBinder mSession;
@@ -164,8 +163,8 @@ public class CustomTab extends ChromeTab {
      */
     public CustomTab(ChromeActivity activity, WindowAndroid windowAndroid, IBinder session,
             String url, String referrer, int parentTabId, boolean enableUrlBarHiding) {
-        super(TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID), activity, false,
-                windowAndroid, TabLaunchType.FROM_EXTERNAL_APP, parentTabId, null, null);
+        super(TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID), parentTabId, false,
+                activity, windowAndroid, TabLaunchType.FROM_EXTERNAL_APP, null, null);
         mEnableUrlBarHiding = enableUrlBarHiding;
         CustomTabsConnection customTabsConnection =
                 CustomTabsConnection.getInstance(activity.getApplication());

@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextmenu.ContextMenuHelper;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
@@ -49,7 +48,7 @@ import java.net.URI;
  * A tab that will be used for FullScreenActivity. See {@link FullScreenActivity} for more.
  */
 @SuppressFBWarnings("URF_UNREAD_FIELD")
-public class FullScreenActivityTab extends ChromeTab {
+public class FullScreenActivityTab extends Tab {
     private static final String TAG = "FullScreenActivityTab";
 
     /**
@@ -74,15 +73,15 @@ public class FullScreenActivityTab extends ChromeTab {
 
     private FullScreenActivityTab(ChromeActivity activity, WindowAndroid window,
             TopControlsVisibilityDelegate topControlsVisibilityDelegate) {
-        super(INVALID_TAB_ID, activity, false, window, TabLaunchType.FROM_MENU_OR_OVERVIEW,
-                INVALID_TAB_ID, null, null);
+        super(INVALID_TAB_ID, INVALID_TAB_ID, false, activity, window,
+                TabLaunchType.FROM_MENU_OR_OVERVIEW, null, null);
         initializeFullScreenActivityTab(
                 activity.getTabContentManager(), false, topControlsVisibilityDelegate);
     }
 
     private FullScreenActivityTab(int id, ChromeActivity activity, WindowAndroid window,
             TabState state, TopControlsVisibilityDelegate topControlsVisibilityDelegate) {
-        super(id, activity, false, window, TabLaunchType.FROM_RESTORE, Tab.INVALID_TAB_ID,
+        super(id, Tab.INVALID_TAB_ID, false, activity, window, TabLaunchType.FROM_RESTORE,
                 TabCreationState.FROZEN_ON_RESTORE, state);
         initializeFullScreenActivityTab(
                 activity.getTabContentManager(), true, topControlsVisibilityDelegate);

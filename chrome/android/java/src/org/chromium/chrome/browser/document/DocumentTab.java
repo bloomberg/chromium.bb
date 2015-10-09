@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -31,7 +30,7 @@ import org.chromium.ui.base.WindowAndroid;
 /**
  * A Tab child class with Chrome documents specific functionality.
  */
-public class DocumentTab extends ChromeTab {
+public class DocumentTab extends Tab {
     /**
      * Observer class with extra calls specific to Chrome Documents
      */
@@ -61,8 +60,8 @@ public class DocumentTab extends ChromeTab {
      */
     private DocumentTab(DocumentActivity activity, boolean incognito, WindowAndroid windowAndroid,
             String url, int parentTabId, boolean initiallyHidden) {
-        super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), activity,
-                incognito, windowAndroid, TabLaunchType.FROM_EXTERNAL_APP, parentTabId, null, null);
+        super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), parentTabId, incognito,
+                activity, windowAndroid, TabLaunchType.FROM_EXTERNAL_APP, null, null);
         mActivity = activity;
         initialize(url, null, activity.getTabContentManager(), false, initiallyHidden);
     }
@@ -78,8 +77,8 @@ public class DocumentTab extends ChromeTab {
      */
     private DocumentTab(DocumentActivity activity, boolean incognito,
             WindowAndroid windowAndroid, String url, TabState tabState, int parentTabId) {
-        super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), activity,
-                incognito, windowAndroid, TabLaunchType.FROM_RESTORE, parentTabId, null, tabState);
+        super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), parentTabId, incognito,
+                activity, windowAndroid, TabLaunchType.FROM_RESTORE,  null, tabState);
         mActivity = activity;
         initialize(url, null, activity.getTabContentManager(), true, false);
     }
@@ -95,9 +94,8 @@ public class DocumentTab extends ChromeTab {
      */
     private DocumentTab(DocumentActivity activity, boolean incognito,
             WindowAndroid windowAndroid, String url, int parentTabId, WebContents webContents) {
-        super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), activity,
-                incognito, windowAndroid, TabLaunchType.FROM_LONGPRESS_FOREGROUND,
-                parentTabId, null, null);
+        super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), parentTabId, incognito,
+                activity, windowAndroid, TabLaunchType.FROM_LONGPRESS_FOREGROUND, null, null);
         mActivity = activity;
         initialize(url, webContents, activity.getTabContentManager(), false, false);
         mCreatedFromWebContents = true;
