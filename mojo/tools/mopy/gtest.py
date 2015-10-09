@@ -220,22 +220,33 @@ def _run_test_with_timeout(config, shell, args, apptest, env, seconds=10):
 
 def _run_test(config, shell, args, apptest, env, result):
   '''Run the test; put the shell/proc, output, and any exception in |result|.'''
+  # TODO(msw): Remove deubg logging after fixing http://crbug.com/517661
+  logging.getLogger().debug('MSW _run_test')
   output = ''
   exception = ''
   try:
     if config.target_os != Config.OS_ANDROID:
+      logging.getLogger().debug('MSW _run_test A')
       command = _build_command_line(config, args, apptest)
+      logging.getLogger().debug('MSW _run_test B')
       process = subprocess.Popen(command, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, env=env)
+      logging.getLogger().debug('MSW _run_test C')
       result.put(process)
+      logging.getLogger().debug('MSW _run_test D')
       (output, stderr_output) = process.communicate()
+      logging.getLogger().debug('MSW _run_test E')
       if process.returncode:
+        logging.getLogger().debug('MSW _run_test F')
         exception = 'Error: Test exited with code: %d\n%s' % (
             process.returncode, stderr_output)
       elif config.is_verbose:
+        logging.getLogger().debug('MSW _run_test G')
         output += '\n' + stderr_output
       if output.startswith('This program contains tests'):
+        logging.getLogger().debug('MSW _run_test H')
         exception = 'Error: GTest printed help; check command line flags.'
+      logging.getLogger().debug('MSW _run_test I')
     else:
       assert shell
       result.put(shell)
@@ -246,6 +257,9 @@ def _run_test(config, shell, args, apptest, env, result):
           shell.StartActivity('MojoShellActivity', arguments, wf, wf.close)
           output = rf.read()
   except Exception as e:
+    logging.getLogger().debug('MSW _run_test J')
     output += (e.output + '\n') if hasattr(e, 'output') else ''
     exception += str(e)
+  logging.getLogger().debug('MSW _run_test K')
   result.put((output, exception))
+  logging.getLogger().debug('MSW _run_test L')
