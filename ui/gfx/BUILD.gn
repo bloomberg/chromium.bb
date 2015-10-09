@@ -477,6 +477,7 @@ action("aggregate_vector_icons") {
     "vector_icons/photo_camera.icon",
     "vector_icons/protocol_handler.icon",
     "vector_icons/remove_box.icon",
+    "vector_icons/remove_circle.icon",
     "vector_icons/sad_tab.icon",
     "vector_icons/smartphone.icon",
     "vector_icons/star.icon",
@@ -665,9 +666,7 @@ test("gfx_unittests") {
   }
 
   if (is_android) {
-    apk_deps = [
-      "//ui/android:ui_java"
-    ]
+    apk_deps = [ "//ui/android:ui_java" ]
 
     sources -= [
       # Do not run display_change_notifier_unittest.cc on Android because it

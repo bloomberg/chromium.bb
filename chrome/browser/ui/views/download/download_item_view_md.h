@@ -174,6 +174,10 @@ class DownloadItemViewMd : public views::ButtonListener,
   // warning.
   void ShowWarningDialog();
 
+  // Returns the current warning icon (should only be called when the view is
+  // actually showing a warning).
+  gfx::ImageSkia GetWarningIcon();
+
   // Sets |size| with the size of the Save and Discard buttons (they have the
   // same size).
   gfx::Size GetButtonSize() const;
@@ -200,9 +204,6 @@ class DownloadItemViewMd : public views::ButtonListener,
   void AnimateStateTransition(State from,
                               State to,
                               gfx::SlideAnimation* animation);
-
-  // The warning icon showns for dangerous downloads.
-  const gfx::ImageSkia* warning_icon_;
 
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
