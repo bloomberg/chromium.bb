@@ -37,8 +37,8 @@ class LoginHandlerAndroid : public LoginHandler {
   }
   void OnLoginModelDestroying() override {}
 
-  void BuildView(const base::string16& explanation,
-                 LoginModelData* login_model_data) override {
+  void BuildViewImpl(const base::string16& explanation,
+                     LoginModelData* login_model_data) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // Get pointer to TabAndroid

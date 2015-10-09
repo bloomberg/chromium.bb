@@ -98,8 +98,8 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
   }
 
   // LoginHandler:
-  void BuildView(const base::string16& explanation,
-                 LoginModelData* login_model_data) override {
+  void BuildViewImpl(const base::string16& explanation,
+                     LoginModelData* login_model_data) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     // Create a new LoginView and set the model for it.  The model (password

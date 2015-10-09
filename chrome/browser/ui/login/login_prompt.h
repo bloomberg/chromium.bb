@@ -27,10 +27,6 @@ class HttpNetworkSession;
 class URLRequest;
 }  // namespace net
 
-namespace password_manager {
-class ContentPasswordManagerDriver;
-}  // namespace password_manager
-
 // This is the base implementation for the OS-specific classes that route
 // authentication info to the net::URLRequest that needs it. These functions
 // must be implemented in a thread safe manner.
@@ -38,7 +34,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
                      public password_manager::LoginModelObserver,
                      public content::NotificationObserver {
  public:
-  // The purpose of this struct is to enforce that BuildView receives either
+  // The purpose of this struct is to enforce that BuildViewImpl receives either
   // both the login model and the observed form, or none. That is a bit spoiled
   // by the fact that the model is a pointer to LoginModel, as opposed to a
   // reference. Having it as a reference would go against the style guide, which
@@ -63,16 +59,15 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // ResourceDispatcherHostLoginDelegate implementation:
   void OnRequestCancelled() override;
 
-  // Implement this to initialize the underlying platform specific view. If
-  // |login_model_data| is not null, the contained LoginModel and PasswordForm
-  // can be used to register the view.
-  virtual void BuildView(const base::string16& explanation,
-                         LoginModelData* login_model_data) = 0;
+  // Use this to build a view with password manager support. |password_manager|
+  // must not be null.
+  void BuildViewWithPasswordManager(
+      const base::string16& explanation,
+      password_manager::PasswordManager* password_manager,
+      const autofill::PasswordForm& observed_form);
 
-  // Sets information about the authentication type (|form|) and the
-  // |password_manager| for this profile.
-  void SetPasswordForm(const autofill::PasswordForm& form);
-  void SetPasswordManager(password_manager::PasswordManager* password_manager);
+  // Use this to build a view without password manager support.
+  void BuildViewWithoutPasswordManager(const base::string16& explanation);
 
   // Returns the WebContents that needs authentication.
   content::WebContents* GetWebContentsForLogin() const;
@@ -105,11 +100,17 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
  protected:
   ~LoginHandler() override;
 
+  // Implement this to initialize the underlying platform specific view. If
+  // |login_model_data| is not null, the contained LoginModel and PasswordForm
+  // can be used to register the view.
+  virtual void BuildViewImpl(const base::string16& explanation,
+                             LoginModelData* login_model_data) = 0;
+
   // Sets |model_data.model| as |login_model_| and registers |this| as an
   // observer for |model_data.form|-related events.
   void SetModel(LoginModelData model_data);
 
-  // Clear |login_model_| and remove |this| as an observer.
+  // Clears |login_model_| and removes |this| as an observer.
   void ResetModel();
 
   // Notify observers that authentication is needed.
@@ -237,11 +238,6 @@ class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
 // destroying the net::URLRequest.
 LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
                                 net::URLRequest* request);
-
-// Helper to remove the ref from an net::URLRequest to the LoginHandler.
-// Should only be called from the IO thread, since it accesses an
-// net::URLRequest.
-void ResetLoginHandlerForRequest(net::URLRequest* request);
 
 // Get the signon_realm under which the identity should be saved.
 std::string GetSignonRealm(const GURL& url,

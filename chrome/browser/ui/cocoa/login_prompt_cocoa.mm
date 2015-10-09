@@ -52,8 +52,8 @@ class LoginHandlerMac : public LoginHandler,
   void OnLoginModelDestroying() override {}
 
   // LoginHandler:
-  void BuildView(const base::string16& explanation,
-                 LoginModelData* login_model_data) override {
+  void BuildViewImpl(const base::string16& explanation,
+                     LoginModelData* login_model_data) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     sheet_controller_.reset(

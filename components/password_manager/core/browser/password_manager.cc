@@ -403,6 +403,9 @@ void PasswordManager::AddObserverAndDeliverCredentials(
   observers_.AddObserver(observer);
 
   observer->set_signon_realm(observed_form.signon_realm);
+  // TODO(vabr): Even though the observers do the realm check, this mechanism
+  // will still result in every observer being notified about every form. We
+  // could perhaps do better by registering an observer call-back instead.
 
   std::vector<PasswordForm> observed_forms;
   observed_forms.push_back(observed_form);
