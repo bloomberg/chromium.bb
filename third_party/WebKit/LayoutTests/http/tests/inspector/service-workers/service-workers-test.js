@@ -15,6 +15,25 @@ InspectorTest.postToServiceWorker = function(scope, message)
     return InspectorTest.invokePageFunctionPromise("postToServiceWorker", [scope, message]);
 }
 
+InspectorTest.waitForServiceWorker = function(callback)
+{
+    function isRightTarget(target)
+    {
+        return target.isDedicatedWorker() && target.parentTarget() && target.parentTarget().isServiceWorker();
+    }
+
+    WebInspector.targetManager.observeTargets({
+        targetAdded: function(target)
+        {
+            if (isRightTarget(target) && callback) {
+                setTimeout(callback.bind(null, target), 0);
+                callback = null;
+            }
+        },
+        targetRemoved: function(target) {}
+    });
+}
+
 function replaceInnerTextAll(rootElement, selectors, replacementString)
 {
     var elements = rootElement.querySelectorAll(selectors);

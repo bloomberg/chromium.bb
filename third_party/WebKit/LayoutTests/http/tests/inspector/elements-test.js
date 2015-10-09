@@ -437,52 +437,7 @@ InspectorTest.eventListenersWidget = function()
 
 InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 {
-    InspectorTest.addSniffer(WebInspector.EventListenersView.prototype, "_eventListenersArrivedForTest", listenersArrived);
-
-    var eventListenersWidget = InspectorTest.eventListenersWidget();
-
-    function listenersArrived()
-    {
-        var listenerTypes = eventListenersWidget._eventListenersView._treeOutline.rootElement().children();
-        for (var i = 0; i < listenerTypes.length; ++i) {
-            listenerTypes[i].expand();
-            var listenerItems = listenerTypes[i].children();
-            for (var j = 0; j < listenerItems.length; ++j)
-                listenerItems[j].expand();
-        }
-        InspectorTest.runAfterPendingDispatches(objectsExpanded);
-    }
-
-    function objectsExpanded()
-    {
-        var listenerTypes = eventListenersWidget._eventListenersView._treeOutline.rootElement().children();
-        for (var i = 0; i < listenerTypes.length; ++i) {
-            if (!listenerTypes[i].children().length)
-                continue;
-            var eventType = listenerTypes[i]._title;
-            InspectorTest.addResult("");
-            InspectorTest.addResult("======== " + eventType + " ========");
-            var listenerItems = listenerTypes[i].children();
-            for (var j = 0; j < listenerItems.length; ++j) {
-                InspectorTest.addResult("== " + listenerItems[j].eventListener().listenerType());
-                InspectorTest.dumpObjectPropertyTreeElement(listenerItems[j]);
-            }
-        }
-        callback();
-    }
-}
-
-InspectorTest.dumpObjectPropertyTreeElement = function(treeElement)
-{
-    var expandedSubstring = treeElement.expanded ? "[expanded]" : "[collapsed]";
-    InspectorTest.addResult(expandedSubstring + " " + treeElement.listItemElement.deepTextContent());
-
-    for (var i = 0; i < treeElement.childCount(); ++i) {
-        var property = treeElement.childAt(i).property;
-        var key = property.name;
-        var value = property.value._description;
-        InspectorTest.addResult("    " + key + ": " + value);
-    }
+    InspectorTest.expandAndDumpEventListeners(InspectorTest.eventListenersWidget()._eventListenersView, null, callback);
 }
 
 InspectorTest.dumpObjectPropertySectionDeep = function(section)

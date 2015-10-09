@@ -538,4 +538,26 @@ InspectorTest.scriptFormatter = function()
     });
 };
 
+InspectorTest.waitForExecutionContextInTarget = function(target, callback)
+{
+    if (target.runtimeModel.executionContexts().length) {
+        callback(target.runtimeModel.executionContexts()[0]);
+        return;
+    }
+    target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, contextCreated);
+
+    function contextCreated()
+    {
+        target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, contextCreated);
+        callback(target.runtimeModel.executionContexts()[0]);
+    }
+}
+
+InspectorTest.selectThread = function(target)
+{
+    var threadsPane = WebInspector.panels.sources.sidebarPanes.threads;
+    var listItem = threadsPane._debuggerModelToListItems.get(WebInspector.DebuggerModel.fromTarget(target));
+    threadsPane._onListItemClick(listItem);
+}
+
 };

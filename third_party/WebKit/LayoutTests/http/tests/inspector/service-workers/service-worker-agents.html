@@ -22,18 +22,10 @@ function test()
         }
     }, true);
 
+    InspectorTest.waitForServiceWorker(step1);
     InspectorTest.registerServiceWorker(scriptURL, scope);
 
-    WebInspector.targetManager.observeTargets({
-        targetAdded: function(target)
-        {
-            if (target.isDedicatedWorker())
-                setTimeout(step1);
-        },
-        targetRemoved: function(target) {}
-    });
-
-    function step1()
+    function step1(target)
     {
         InspectorTest.addResult("Suspending targets.");
         WebInspector.targetManager.suspendAllTargets();

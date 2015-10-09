@@ -1,0 +1,62 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../console-test.js"></script>
+<script src="../service-workers/service-workers-test.js"></script>
+<script>
+function test()
+{
+    WebInspector.settingForTest("showEventListenersForAncestors").set(false);
+    var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-empty.js";
+    var scope = "http://127.0.0.1:8000/inspector/service-workers/resources/scope1/";
+
+    InspectorTest.waitForServiceWorker(step1);
+    InspectorTest.registerServiceWorker(scriptURL, scope);
+
+    var objectEventListenersPane = WebInspector.panels.sources.sidebarPanes.objectEventListeners;
+
+    function forceUpdate()
+    {
+        objectEventListenersPane.expand();
+        objectEventListenersPane.update();
+    }
+
+    function step1(target)
+    {
+        InspectorTest.waitForExecutionContextInTarget(target, step2);
+    }
+
+    function step2(executionContext)
+    {
+        InspectorTest.addResult("Selecting service worker thread");
+        InspectorTest.selectThread(executionContext.target());
+        InspectorTest.addResult("Context is dedicated worker: " + WebInspector.context.flavor(WebInspector.ExecutionContext).target().isDedicatedWorker());
+        InspectorTest.addResult("Dumping listeners");
+        InspectorTest.expandAndDumpEventListeners(objectEventListenersPane._eventListenersView, forceUpdate, step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.addResult("Selecting main thread");
+        InspectorTest.selectThread(WebInspector.targetManager.mainTarget());
+        InspectorTest.addResult("Context is dedicated worker: " + WebInspector.context.flavor(WebInspector.ExecutionContext).target().isDedicatedWorker());
+        InspectorTest.addResult("Dumping listeners");
+        InspectorTest.expandAndDumpEventListeners(objectEventListenersPane._eventListenersView, forceUpdate, step4);
+    }
+
+    function step4()
+    {
+        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests framework event listeners output in Sources panel when service worker is present.
+</p>
+<button id="inspectedNode">Inspect Me</button>
+</body>
+</html>
