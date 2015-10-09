@@ -37,7 +37,6 @@ public:
     void setScriptEnabled(bool);
     void setDoubleTapToZoomEnabled(bool);
     bool doubleTapToZoomEnabled() const;
-    void setHidePinchScrollbarsNearMinScale(bool);
     void setAvailablePointerTypes(int);
     void setPrimaryPointerType(PointerType);
     void setAvailableHoverTypes(int);
@@ -86,7 +85,6 @@ private:
 
     bool m_embedderScriptEnabled;
     bool m_scriptExecutionDisabled;
-    bool m_hidePinchScrollbarsNearMinScale;
 };
 
 } // namespace blink

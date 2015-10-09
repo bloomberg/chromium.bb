@@ -411,9 +411,6 @@ void VisualViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView)
         m_pageScaleLayer->platformLayer(),
         m_innerViewportScrollLayer->platformLayer(),
         scrollLayer);
-
-    // TODO(aelias): Remove this call after this setting is deleted.
-    layerTreeView->setHidePinchScrollbarsNearMinScale(false);
 }
 
 bool VisualViewport::visualViewportSuppliesScrollbars() const

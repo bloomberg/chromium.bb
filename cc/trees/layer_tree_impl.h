@@ -199,10 +199,6 @@ class CC_EXPORT LayerTreeImpl {
   void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }
 
-  void set_hide_pinch_scrollbars_near_min_scale(bool hide) {
-    hide_pinch_scrollbars_near_min_scale_ = hide;
-  }
-
   SyncedElasticOverscroll* elastic_overscroll() {
     return elastic_overscroll_.get();
   }
@@ -420,7 +416,6 @@ class CC_EXPORT LayerTreeImpl {
   bool IsViewportLayerId(int id) const;
   void UpdateScrollbars(int scroll_layer_id, int clip_layer_id);
   void DidUpdatePageScale();
-  void HideInnerViewportScrollbarsIfNeeded();
   void PushTopControls(const float* top_controls_shown_ratio);
   LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;
@@ -441,7 +436,6 @@ class CC_EXPORT LayerTreeImpl {
   scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor_;
   float min_page_scale_factor_;
   float max_page_scale_factor_;
-  bool hide_pinch_scrollbars_near_min_scale_;
 
   float device_scale_factor_;
 

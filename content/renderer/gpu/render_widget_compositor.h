@@ -136,7 +136,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
                               bool animate) override;
   void setTopControlsHeight(float height, bool shrink) override;
   void setTopControlsShownRatio(float) override;
-  void setHidePinchScrollbarsNearMinScale(bool) override;
 
   // cc::LayerTreeHostClient implementation.
   void WillBeginMainFrame() override;

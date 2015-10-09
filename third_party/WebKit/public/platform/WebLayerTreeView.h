@@ -97,9 +97,6 @@ public:
     // layers by the top controls height.
     virtual void setTopControlsHeight(float height, bool shrinkViewport) { }
 
-    // Sets whether to hide the scrollbars of the inner viewport when we are near the minimum page scale.
-    virtual void setHidePinchScrollbarsNearMinScale(bool) { }
-
     // Flow control and scheduling ---------------------------------------
 
     // Indicates that an animation needs to be updated.

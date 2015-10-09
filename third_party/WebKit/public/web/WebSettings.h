@@ -171,7 +171,6 @@ public:
     virtual void setReportWheelOverscroll(bool) = 0;
     virtual void setForceZeroLayoutHeight(bool) = 0;
     virtual void setFullscreenSupported(bool) = 0;
-    virtual void setHidePinchScrollbarsNearMinScale(bool) = 0;
     virtual void setHyperlinkAuditingEnabled(bool) = 0;
     virtual void setIgnoreMainFrameOverflowHiddenQuirk(bool) = 0;
     virtual void setImageAnimationPolicy(ImageAnimationPolicy) = 0;

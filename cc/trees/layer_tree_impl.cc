@@ -56,7 +56,6 @@ LayerTreeImpl::LayerTreeImpl(
       page_scale_factor_(page_scale_factor),
       min_page_scale_factor_(0),
       max_page_scale_factor_(0),
-      hide_pinch_scrollbars_near_min_scale_(false),
       device_scale_factor_(1.f),
       elastic_overscroll_(elastic_overscroll),
       viewport_size_invalid_(false),
@@ -310,9 +309,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->set_top_controls_height(top_controls_height_);
   target_tree->PushTopControls(nullptr);
 
-  target_tree->set_hide_pinch_scrollbars_near_min_scale(
-      hide_pinch_scrollbars_near_min_scale_);
-
   // Active tree already shares the page_scale_factor object with pending
   // tree so only the limits need to be provided.
   target_tree->PushPageScaleFactorAndLimits(nullptr, min_page_scale_factor(),
@@ -519,7 +515,6 @@ void LayerTreeImpl::DidUpdatePageScale() {
 
   set_needs_update_draw_properties();
   DidUpdateScrollState(inner_viewport_scroll_layer_id_);
-  HideInnerViewportScrollbarsIfNeeded();
 }
 
 void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
@@ -529,17 +524,6 @@ void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
 
   if (IsActiveTree())
     layer_tree_host_impl_->SetFullRootLayerDamage();
-}
-
-void LayerTreeImpl::HideInnerViewportScrollbarsIfNeeded() {
-  float minimum_scale_to_show_at = min_page_scale_factor() * 1.05f;
-  bool hide_scrollbars =
-      hide_pinch_scrollbars_near_min_scale_ &&
-      (current_page_scale_factor() < minimum_scale_to_show_at);
-
-  for (ScrollbarLayerImplBase* scrollbar_layer :
-       ScrollbarsFor(outer_viewport_scroll_layer_id_))
-    scrollbar_layer->SetHideLayerAndSubtree(hide_scrollbars);
 }
 
 SyncedProperty<ScaleGroup>* LayerTreeImpl::page_scale_factor() {
@@ -594,8 +578,6 @@ void LayerTreeImpl::SetViewportLayersFromIds(
   page_scale_layer_id_ = page_scale_layer_id;
   inner_viewport_scroll_layer_id_ = inner_viewport_scroll_layer_id;
   outer_viewport_scroll_layer_id_ = outer_viewport_scroll_layer_id;
-
-  HideInnerViewportScrollbarsIfNeeded();
 }
 
 void LayerTreeImpl::ClearViewportLayers() {

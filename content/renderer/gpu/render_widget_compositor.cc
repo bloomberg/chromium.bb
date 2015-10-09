@@ -851,10 +851,6 @@ void RenderWidgetCompositor::setTopControlsShownRatio(float ratio) {
   layer_tree_host_->SetTopControlsShownRatio(ratio);
 }
 
-void RenderWidgetCompositor::setHidePinchScrollbarsNearMinScale(bool hide) {
-  layer_tree_host_->set_hide_pinch_scrollbars_near_min_scale(hide);
-}
-
 void RenderWidgetCompositor::WillBeginMainFrame() {
   widget_->WillBeginCompositorFrame();
 }

@@ -74,7 +74,6 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     , m_originalMaxTouchPoints(0)
     , m_embedderScriptEnabled(webViewImpl->page()->settings().scriptEnabled())
     , m_scriptExecutionDisabled(false)
-    , m_hidePinchScrollbarsNearMinScale(false)
 {
 }
 
@@ -158,13 +157,6 @@ void DevToolsEmulator::setDoubleTapToZoomEnabled(bool enabled)
 bool DevToolsEmulator::doubleTapToZoomEnabled() const
 {
     return m_touchEventEmulationEnabled ? true : m_doubleTapToZoomEnabled;
-}
-
-void DevToolsEmulator::setHidePinchScrollbarsNearMinScale(bool enabled)
-{
-    m_hidePinchScrollbarsNearMinScale = enabled;
-    if (m_webViewImpl->layerTreeView())
-        m_webViewImpl->layerTreeView()->setHidePinchScrollbarsNearMinScale(enabled);
 }
 
 void DevToolsEmulator::setAvailablePointerTypes(int types)

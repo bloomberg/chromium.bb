@@ -96,7 +96,6 @@ public:
     void setReportWheelOverscroll(bool) override;
     void setForceZeroLayoutHeight(bool) override;
     void setFullscreenSupported(bool) override;
-    void setHidePinchScrollbarsNearMinScale(bool) override;
     void setHyperlinkAuditingEnabled(bool) override;
     void setIgnoreMainFrameOverflowHiddenQuirk(bool) override;
     void setImageAnimationPolicy(ImageAnimationPolicy) override;
