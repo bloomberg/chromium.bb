@@ -97,6 +97,7 @@ void SendMachPort(mach_port_t receiving_port,
   send_hdr->msgh_remote_port = receiving_port;
   send_hdr->msgh_local_port = MACH_PORT_NULL;
   send_hdr->msgh_reserved = 0;
+  send_hdr->msgh_id = 0;
   send_msg.body.msgh_descriptor_count = 1;
   send_msg.data.name = port_to_send;
   send_msg.data.disposition = disposition;
