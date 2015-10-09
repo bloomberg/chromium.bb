@@ -50,17 +50,6 @@ namespace {
 // Max number of http redirects to follow.  Same number as gecko.
 const int kMaxRedirects = 20;
 
-// Discard headers which have meaning in POST (Content-Length, Content-Type,
-// Origin).
-void StripPostSpecificHeaders(HttpRequestHeaders* headers) {
-  // These are headers that may be attached to a POST.
-  headers->RemoveHeader(HttpRequestHeaders::kContentLength);
-  headers->RemoveHeader(HttpRequestHeaders::kContentType);
-  // TODO(jww): This is Origin header removal is probably layering violation and
-  // should be refactored into //content. See https://crbug.com/471397.
-  headers->RemoveHeader(HttpRequestHeaders::kOrigin);
-}
-
 // TODO(battre): Delete this, see http://crbug.com/89321:
 // This counter keeps track of the identifiers used for URL requests so far.
 // 0 is reserved to represent an invalid ID.
@@ -939,13 +928,18 @@ int URLRequest::Redirect(const RedirectInfo& redirect_info) {
   if (redirect_info.new_method != method_) {
     // TODO(davidben): This logic still needs to be replicated at the consumers.
     if (method_ == "POST") {
-      // If being switched from POST, must remove headers that were specific to
-      // the POST and don't have meaning in other methods. For example the
-      // inclusion of a multipart Content-Type header in GET can cause problems
-      // with some servers:
-      // http://code.google.com/p/chromium/issues/detail?id=843
-      StripPostSpecificHeaders(&extra_request_headers_);
+      // If being switched from POST, must remove Origin header.
+      // TODO(jww): This is Origin header removal is probably layering violation
+      // and
+      // should be refactored into //content. See https://crbug.com/471397.
+      extra_request_headers_.RemoveHeader(HttpRequestHeaders::kOrigin);
     }
+    // The inclusion of a multipart Content-Type header can cause problems with
+    // some
+    // servers:
+    // http://code.google.com/p/chromium/issues/detail?id=843
+    extra_request_headers_.RemoveHeader(HttpRequestHeaders::kContentLength);
+    extra_request_headers_.RemoveHeader(HttpRequestHeaders::kContentType);
     upload_data_stream_.reset();
     method_ = redirect_info.new_method;
   }

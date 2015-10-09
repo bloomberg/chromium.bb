@@ -2920,6 +2920,7 @@ class URLRequestTestHTTP : public URLRequestTest {
       HttpRequestHeaders headers;
       headers.SetHeader(HttpRequestHeaders::kContentLength,
                         base::SizeTToString(arraysize(kData) - 1));
+      headers.SetHeader(HttpRequestHeaders::kContentType, "text/plain");
       req->SetExtraRequestHeaders(headers);
     }
     req->Start();
@@ -2929,8 +2930,16 @@ class URLRequestTestHTTP : public URLRequestTest {
     EXPECT_EQ(OK, req->status().error());
     if (include_data) {
       if (request_method == redirect_method) {
+        EXPECT_TRUE(req->extra_request_headers().HasHeader(
+            HttpRequestHeaders::kContentLength));
+        EXPECT_TRUE(req->extra_request_headers().HasHeader(
+            HttpRequestHeaders::kContentType));
         EXPECT_EQ(kData, d.data_received());
       } else {
+        EXPECT_FALSE(req->extra_request_headers().HasHeader(
+            HttpRequestHeaders::kContentLength));
+        EXPECT_FALSE(req->extra_request_headers().HasHeader(
+            HttpRequestHeaders::kContentType));
         EXPECT_NE(kData, d.data_received());
       }
     }
