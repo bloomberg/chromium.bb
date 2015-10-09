@@ -259,16 +259,10 @@ void DownloadControllerAndroidImpl::PrepareDownloadInfo(
 
   net::CookieStore* cookie_store = request->context()->cookie_store();
   if (cookie_store) {
-    net::CookieMonster* cookie_monster = cookie_store->GetCookieMonster();
-    if (cookie_monster) {
-      cookie_monster->GetAllCookiesForURLAsync(
-          request->url(),
-          base::Bind(&DownloadControllerAndroidImpl::CheckPolicyAndLoadCookies,
-                     base::Unretained(this), info_android, callback,
-                     global_id));
-    } else {
-      DoLoadCookies(info_android, callback, global_id);
-    }
+    cookie_store->GetAllCookiesForURLAsync(
+        request->url(),
+        base::Bind(&DownloadControllerAndroidImpl::CheckPolicyAndLoadCookies,
+                   base::Unretained(this), info_android, callback, global_id));
   } else {
     // Can't get any cookies, start android download.
     callback.Run(info_android);
