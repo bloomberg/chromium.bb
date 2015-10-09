@@ -526,15 +526,15 @@ bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
 #if defined(OS_ANDROID)
   return false;
 #elif defined(OS_MACOSX)
+  // Query the group first for correct UMA reporting.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("PasswordManagerUI");
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableSavePasswordBubble))
     return false;
 
   if (command_line->HasSwitch(switches::kEnableSavePasswordBubble))
     return true;
-
-  std::string group_name =
-      base::FieldTrialList::FindFullName("PasswordManagerUI");
 
   // The bubble should be the default case that runs on the bots.
   return group_name != "Infobar";
