@@ -202,7 +202,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new browser_sync::AutofillWalletDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-            error_callback, sync_client, syncer::AUTOFILL_WALLET_DATA));
+            error_callback, sync_client, syncer::AUTOFILL_WALLET_METADATA));
   }
 
   // Bookmark sync is enabled by default.  Register unless explicitly
