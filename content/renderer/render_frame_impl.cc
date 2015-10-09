@@ -513,6 +513,16 @@ bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
          navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
 }
 
+// Returns the routing ID of the RenderFrameImpl or RenderFrameProxy
+// associated with |web_frame|.
+int GetRoutingIdForFrameOrProxy(WebFrame* web_frame) {
+  if (!web_frame)
+    return MSG_ROUTING_NONE;
+  if (web_frame->isWebRemoteFrame())
+    return RenderFrameProxy::FromWebFrame(web_frame)->routing_id();
+  return RenderFrameImpl::FromWebFrame(web_frame)->GetRoutingID();
+}
+
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
 
@@ -798,20 +808,7 @@ void RenderFrameImpl::Initialize() {
   bool is_tracing = false;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("navigation", &is_tracing);
   if (is_tracing) {
-    int parent_id = MSG_ROUTING_NONE;
-    if (!is_main_frame_) {
-      if (frame_->parent()->isWebRemoteFrame()) {
-        RenderFrameProxy* parent_proxy = RenderFrameProxy::FromWebFrame(
-            frame_->parent());
-        if (parent_proxy)
-          parent_id = parent_proxy->routing_id();
-      } else {
-        RenderFrameImpl* parent_frame = RenderFrameImpl::FromWebFrame(
-            frame_->parent());
-        if (parent_frame)
-          parent_id = parent_frame->GetRoutingID();
-      }
-    }
+    int parent_id = GetRoutingIdForFrameOrProxy(frame_->parent());
     TRACE_EVENT2("navigation", "RenderFrameImpl::Initialize",
                  "id", routing_id_,
                  "parent", parent_id);
@@ -2353,17 +2350,8 @@ void RenderFrameImpl::didChangeName(blink::WebLocalFrame* frame,
 
 void RenderFrameImpl::didChangeSandboxFlags(blink::WebFrame* child_frame,
                                             blink::WebSandboxFlags flags) {
-  int frame_routing_id = MSG_ROUTING_NONE;
-  if (child_frame->isWebRemoteFrame()) {
-    frame_routing_id =
-        RenderFrameProxy::FromWebFrame(child_frame)->routing_id();
-  } else {
-    frame_routing_id =
-        RenderFrameImpl::FromWebFrame(child_frame)->GetRoutingID();
-  }
-
-  Send(new FrameHostMsg_DidChangeSandboxFlags(routing_id_, frame_routing_id,
-                                              flags));
+  Send(new FrameHostMsg_DidChangeSandboxFlags(
+      routing_id_, GetRoutingIdForFrameOrProxy(child_frame), flags));
 }
 
 void RenderFrameImpl::didMatchCSS(
@@ -3360,14 +3348,7 @@ void RenderFrameImpl::willSendRequest(
   }
 
   WebFrame* parent = frame->parent();
-  int parent_routing_id = MSG_ROUTING_NONE;
-  if (!parent) {
-    parent_routing_id = -1;
-  } else if (parent->isWebLocalFrame()) {
-    parent_routing_id = FromWebFrame(parent)->GetRoutingID();
-  } else {
-    parent_routing_id = RenderFrameProxy::FromWebFrame(parent)->routing_id();
-  }
+  int parent_routing_id = parent ? GetRoutingIdForFrameOrProxy(parent) : -1;
 
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_visibility_state(render_view_->visibilityState());
