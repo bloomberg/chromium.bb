@@ -64,6 +64,10 @@ public class AccountSwitcherBasic extends AccountSwitcherBase {
     }
 
     @Override
+    public void setDrawer(View drawerView) {
+    }
+
+    @Override
     public void setSelectedAndRecentAccounts(String selected, String[] recents) {
         // This implementation does not support recents.
         mSelectedAccount = selected;

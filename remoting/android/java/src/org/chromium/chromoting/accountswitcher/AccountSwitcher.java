@@ -47,6 +47,12 @@ public interface AccountSwitcher {
     void setNavigation(View view);
 
     /**
+     * Sets the view that holds the navigation drawer. The account-switcher may register with
+     * {@link View.setOnApplyWindowInsetsListener} in order to render into the status-bar area.
+     */
+    void setDrawer(View drawerView);
+
+    /**
      * Sets the user preferences for the currently-selected and most-recently-used accounts.
      * The caller is responsible for loading these preferences when the activity is started. This
      * should be called before calling {@link reloadAccounts} to load the device's active accounts.

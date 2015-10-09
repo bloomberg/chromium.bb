@@ -17,6 +17,11 @@
         <item name="windowNoTitle">true</item>
         <!--suppress NewApi -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!-- The status bar is normally fully opaque and rendered above the
+             activity. Make it fully transparent to allow the DrawerLayout to
+             control the rendering of the status bar background -->
+        <!--suppress NewApi -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
     <style name="EmptyStateText" parent="@android:style/TextAppearance.Large">

@@ -220,6 +220,7 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
         mAccountSwitcher = AccountSwitcherFactory.getInstance().createAccountSwitcher(this, this);
         mAccountSwitcher.setNavigation(navigationMenu);
         LinearLayout navigationDrawer = (LinearLayout) findViewById(R.id.navigation_drawer);
+        mAccountSwitcher.setDrawer(navigationDrawer);
         View switcherView = mAccountSwitcher.getView();
         switcherView.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
