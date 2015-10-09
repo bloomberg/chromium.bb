@@ -14,6 +14,7 @@
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
+#include "core/css/CSSValuePair.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/FontFace.h"
 #include "core/css/parser/CSSParserFastPaths.h"
@@ -168,7 +169,7 @@ private:
     RefPtrWillBeMember<CSSCalcValue> m_calcValue;
 };
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRange& range, CSSParserMode cssParserMode, double minimumValue = std::numeric_limits<int>::min())
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRange& range, CSSParserMode cssParserMode, double minimumValue = -std::numeric_limits<double>::max())
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == NumberToken) {
@@ -641,6 +642,27 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeRotation(CSSParserTokenRange&
     return list.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeCounter(CSSParserTokenRange& range, CSSParserMode cssParserMode, int defaultValue)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+
+    // TODO(rwlbuis): should be space separated list.
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+    do {
+        RefPtrWillBeRawPtr<CSSCustomIdentValue> counterName = consumeCustomIdent(range);
+        if (!counterName)
+            return nullptr;
+        int i = defaultValue;
+        if (RefPtrWillBeRawPtr<CSSPrimitiveValue> counterValue = consumeInteger(range, cssParserMode))
+            i = clampTo<int>(counterValue->getDoubleValue());
+        list->append(CSSValuePair::create(counterName.release(),
+            cssValuePool().createValue(i, CSSPrimitiveValue::UnitType::Number),
+            CSSValuePair::DropIdenticalValues));
+    } while (!range.atEnd());
+    return list.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -677,6 +699,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
         return consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);
+    case CSSPropertyCounterIncrement:
+    case CSSPropertyCounterReset:
+        return consumeCounter(m_range, m_context.mode(), propId == CSSPropertyCounterIncrement ? 1 : 0);
     default:
         return nullptr;
     }

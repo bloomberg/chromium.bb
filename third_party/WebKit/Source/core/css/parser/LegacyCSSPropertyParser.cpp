@@ -750,19 +750,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         }
         break;
 
-    case CSSPropertyCounterIncrement:
-        if (id == CSSValueNone)
-            validPrimitive = true;
-        else
-            parsedValue = parseCounter(1);
-        break;
-    case CSSPropertyCounterReset:
-        if (id == CSSValueNone)
-            validPrimitive = true;
-        else
-            parsedValue = parseCounter(0);
-        break;
-
     case CSSPropertyTextDecoration:
         // Fall through 'text-decoration-line' parsing if CSS 3 Text Decoration
         // is disabled to match CSS 2.1 rules for parsing 'text-decoration'.
@@ -1368,6 +1355,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
     case CSSPropertyBorderSpacing:
+    case CSSPropertyCounterIncrement:
+    case CSSPropertyCounterReset:
         validPrimitive = false;
         break;
 
@@ -5286,34 +5275,6 @@ bool CSSPropertyParser::parseBorderRadius(CSSPropertyID unresolvedProperty, bool
     addProperty(CSSPropertyBorderBottomRightRadius, CSSValuePair::create(radii[0][2].release(), radii[1][2].release(), CSSValuePair::DropIdenticalValues), important);
     addProperty(CSSPropertyBorderBottomLeftRadius, CSSValuePair::create(radii[0][3].release(), radii[1][3].release(), CSSValuePair::DropIdenticalValues), important);
     return true;
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounter(int defaultValue)
-{
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-
-    while (m_valueList->current()) {
-        CSSParserValue* val = m_valueList->current();
-        if (val->m_unit != CSSParserValue::Identifier)
-            return nullptr;
-        RefPtrWillBeRawPtr<CSSCustomIdentValue> counterName = createPrimitiveCustomIdentValue(val);
-        m_valueList->next();
-
-        val = m_valueList->current();
-        int i = defaultValue;
-        if (val && validUnit(val, FInteger)) {
-            i = clampTo<int>(val->fValue);
-            m_valueList->next();
-        }
-
-        list->append(CSSValuePair::create(counterName.release(),
-            cssValuePool().createValue(i, CSSPrimitiveValue::UnitType::Number),
-            CSSValuePair::DropIdenticalValues));
-    }
-
-    if (!list->length())
-        return nullptr;
-    return list.release();
 }
 
 // This should go away once we drop support for -webkit-gradient

@@ -200,7 +200,6 @@ private:
 
     bool consumeBorderSpacing(bool important);
 
-    PassRefPtrWillBeRawPtr<CSSValue> parseCounter(int defaultValue);
     PassRefPtrWillBeRawPtr<CSSValue> parseCounterContent(CSSParserValueList* args, bool counters);
 
     bool parseColorParameters(const CSSParserValue*, int* colorValues, bool parseAlpha);
