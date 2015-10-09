@@ -65,25 +65,6 @@ void WriteLocationToStream(const base::StringPiece& file,
   *out << filename << '(' << line << ')';
 }
 
-// Returns a pretty string for the trace event types that appear in ETW logs.
-const char* GetTraceTypeString(char event_type) {
-  switch (event_type) {
-    case TRACE_EVENT_PHASE_BEGIN:
-      return "BEGIN";
-      break;
-    case TRACE_EVENT_PHASE_END:
-      return "END";
-      break;
-    case TRACE_EVENT_PHASE_INSTANT:
-      return "INSTANT";
-      break;
-    default:
-      NOTREACHED();
-      return "";
-      break;
-  }
-}
-
 class EventPrinter : public logging_win::LogFileDelegate {
  public:
   explicit EventPrinter(std::ostream* out);
@@ -107,14 +88,6 @@ class EventPrinter : public logging_win::LogFileDelegate {
                         int line,
                         const base::StringPiece& file,
                         const base::StringPiece& message) override;
-
-  void OnTraceEvent(const EVENT_TRACE* event,
-                    const base::StringPiece& name,
-                    char type,
-                    intptr_t id,
-                    const base::StringPiece& extra,
-                    DWORD stack_depth,
-                    const intptr_t* backtrace) override;
 
  private:
   void PrintTimeStamp(LARGE_INTEGER time_stamp);
@@ -223,18 +196,6 @@ void EventPrinter::OnLogMessageFull(const EVENT_TRACE* event,
   WriteLocationToStream(file, line, &location_stream);
   PrintEventContext(event, level_stream.str(), location_stream.str());
   *out_ << message << std::endl;
-}
-
-void EventPrinter::OnTraceEvent(const EVENT_TRACE* event,
-                                const base::StringPiece& name,
-                                char type,
-                                intptr_t id,
-                                const base::StringPiece& extra,
-                                DWORD stack_depth,
-                                const intptr_t* backtrace) {
-  PrintEventContext(event, GetTraceTypeString(type), base::StringPiece());
-  *out_ << name << " (id=0x" << std::hex << id << std::dec << ") " << extra
-        << std::endl;
 }
 
 }  // namespace

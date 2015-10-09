@@ -53,8 +53,6 @@
       'trace_event/trace_event_synthetic_delay.h',
       'trace_event/trace_event_system_stats_monitor.cc',
       'trace_event/trace_event_system_stats_monitor.h',
-      'trace_event/trace_event_win.cc',
-      'trace_event/trace_event_win.h',
       'trace_event/trace_log.cc',
       'trace_event/trace_log.h',
       'trace_event/trace_log_constants.cc',
@@ -78,7 +76,6 @@
       'trace_event/trace_event_synthetic_delay_unittest.cc',
       'trace_event/trace_event_system_stats_monitor_unittest.cc',
       'trace_event/trace_event_unittest.cc',
-      'trace_event/trace_event_win_unittest.cc',
       'trace_event/winheap_dump_provider_win_unittest.cc',
     ],
     'conditions': [

@@ -402,11 +402,6 @@ const char kControlCharacters[] = "\001\002\003\n\r";
 
 void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
   {
-    TRACE_EVENT_BEGIN_ETW("TRACE_EVENT_BEGIN_ETW call", 0x1122, "extrastring1");
-    TRACE_EVENT_END_ETW("TRACE_EVENT_END_ETW call", 0x3344, "extrastring2");
-    TRACE_EVENT_INSTANT_ETW("TRACE_EVENT_INSTANT_ETW call",
-                            0x5566, "extrastring3");
-
     TRACE_EVENT0("all", "TRACE_EVENT0 call");
     TRACE_EVENT1("all", "TRACE_EVENT1 call", "name1", "value1");
     TRACE_EVENT2("all", "TRACE_EVENT2 call",
@@ -458,13 +453,6 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
                            kFlowId, "step1");
     TRACE_EVENT_FLOW_END_BIND_TO_ENCLOSING0("all",
         "TRACE_EVENT_FLOW_END_BIND_TO_ENCLOSING0 call", kFlowId);
-
-    TRACE_EVENT_BEGIN_ETW("TRACE_EVENT_BEGIN_ETW0 call", kAsyncId, NULL);
-    TRACE_EVENT_BEGIN_ETW("TRACE_EVENT_BEGIN_ETW1 call", kAsyncId, "value");
-    TRACE_EVENT_END_ETW("TRACE_EVENT_END_ETW0 call", kAsyncId, NULL);
-    TRACE_EVENT_END_ETW("TRACE_EVENT_END_ETW1 call", kAsyncId, "value");
-    TRACE_EVENT_INSTANT_ETW("TRACE_EVENT_INSTANT_ETW0 call", kAsyncId, NULL);
-    TRACE_EVENT_INSTANT_ETW("TRACE_EVENT_INSTANT_ETW1 call", kAsyncId, "value");
 
     TRACE_COUNTER1("all", "TRACE_COUNTER1 call", 31415);
     TRACE_COUNTER2("all", "TRACE_COUNTER2 call",
@@ -524,17 +512,6 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     if (item) \
       EXPECT_TRUE(IsStringInDict(string, item));
 
-  EXPECT_FIND_("ETW Trace Event");
-  EXPECT_FIND_("all");
-  EXPECT_FIND_("TRACE_EVENT_BEGIN_ETW call");
-  {
-    std::string str_val;
-    EXPECT_TRUE(item && item->GetString("args.id", &str_val));
-    EXPECT_STREQ("0x1122", str_val.c_str());
-  }
-  EXPECT_SUB_FIND_("extrastring1");
-  EXPECT_FIND_("TRACE_EVENT_END_ETW call");
-  EXPECT_FIND_("TRACE_EVENT_INSTANT_ETW call");
   EXPECT_FIND_("TRACE_EVENT0 call");
   {
     std::string ph;
@@ -652,37 +629,6 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
   EXPECT_FIND_("TRACE_EVENT_FLOW_END_BIND_TO_ENCLOSING0 call");
   EXPECT_SUB_FIND_("id");
   EXPECT_SUB_FIND_(kFlowIdStr);
-
-  EXPECT_FIND_("TRACE_EVENT_BEGIN_ETW0 call");
-  EXPECT_SUB_FIND_("id");
-  EXPECT_SUB_FIND_(kAsyncIdStr);
-  EXPECT_SUB_FIND_("extra");
-  EXPECT_SUB_FIND_("NULL");
-  EXPECT_FIND_("TRACE_EVENT_BEGIN_ETW1 call");
-  EXPECT_SUB_FIND_("id");
-  EXPECT_SUB_FIND_(kAsyncIdStr);
-  EXPECT_SUB_FIND_("extra");
-  EXPECT_SUB_FIND_("value");
-  EXPECT_FIND_("TRACE_EVENT_END_ETW0 call");
-  EXPECT_SUB_FIND_("id");
-  EXPECT_SUB_FIND_(kAsyncIdStr);
-  EXPECT_SUB_FIND_("extra");
-  EXPECT_SUB_FIND_("NULL");
-  EXPECT_FIND_("TRACE_EVENT_END_ETW1 call");
-  EXPECT_SUB_FIND_("id");
-  EXPECT_SUB_FIND_(kAsyncIdStr);
-  EXPECT_SUB_FIND_("extra");
-  EXPECT_SUB_FIND_("value");
-  EXPECT_FIND_("TRACE_EVENT_INSTANT_ETW0 call");
-  EXPECT_SUB_FIND_("id");
-  EXPECT_SUB_FIND_(kAsyncIdStr);
-  EXPECT_SUB_FIND_("extra");
-  EXPECT_SUB_FIND_("NULL");
-  EXPECT_FIND_("TRACE_EVENT_INSTANT_ETW1 call");
-  EXPECT_SUB_FIND_("id");
-  EXPECT_SUB_FIND_(kAsyncIdStr);
-  EXPECT_SUB_FIND_("extra");
-  EXPECT_SUB_FIND_("value");
 
   EXPECT_FIND_("TRACE_COUNTER1 call");
   {

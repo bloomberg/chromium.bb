@@ -54,15 +54,6 @@ class LogFileDelegate {
                                 const base::StringPiece& file,
                                 const base::StringPiece& message) = 0;
 
-  // Invoked for trace events produced by TraceEventETWProvider.
-  virtual void OnTraceEvent(const EVENT_TRACE* event,
-                            const base::StringPiece& name,
-                            char type,
-                            intptr_t id,
-                            const base::StringPiece& extra,
-                            DWORD stack_depth,
-                            const intptr_t* backtrace) = 0;
-
  protected:
   LogFileDelegate();
 };

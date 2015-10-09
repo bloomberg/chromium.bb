@@ -38,14 +38,11 @@ class FileLogger {
     CHROME_FRAME_LOG_PROVIDER   = 1 << 1,
     // Log messages from the current process.
     CHROME_TESTS_LOG_PROVIDER   = 1 << 2,
-    // Trace events.
-    CHROME_TRACE_EVENT_PROVIDER = 1 << 3,
   };
 
   static const uint32 kAllEventProviders = (CHROME_LOG_PROVIDER |
                                             CHROME_FRAME_LOG_PROVIDER |
-                                            CHROME_TESTS_LOG_PROVIDER |
-                                            CHROME_TRACE_EVENT_PROVIDER);
+                                            CHROME_TESTS_LOG_PROVIDER);
 
   FileLogger();
   ~FileLogger();

@@ -37,7 +37,6 @@
 
 #if defined(OS_WIN)
 #include "base/trace_event/trace_event_etw_export_win.h"
-#include "base/trace_event/trace_event_win.h"
 #endif
 
 // The thread buckets for the sampling profiler.
@@ -1379,28 +1378,6 @@ std::string TraceLog::EventToConsoleMessage(unsigned char phase,
     thread_event_start_times_[thread_id].push(timestamp);
 
   return log.str();
-}
-
-void TraceLog::AddTraceEventEtw(char phase,
-                                const char* name,
-                                const void* id,
-                                const char* extra) {
-#if defined(OS_WIN)
-  TraceEventETWProvider::Trace(name, phase, id, extra);
-#endif
-  INTERNAL_TRACE_EVENT_ADD(phase, "ETW Trace Event", name,
-                           TRACE_EVENT_FLAG_COPY, "id", id, "extra", extra);
-}
-
-void TraceLog::AddTraceEventEtw(char phase,
-                                const char* name,
-                                const void* id,
-                                const std::string& extra) {
-#if defined(OS_WIN)
-  TraceEventETWProvider::Trace(name, phase, id, extra);
-#endif
-  INTERNAL_TRACE_EVENT_ADD(phase, "ETW Trace Event", name,
-                           TRACE_EVENT_FLAG_COPY, "id", id, "extra", extra);
 }
 
 void TraceLog::UpdateTraceEventDuration(

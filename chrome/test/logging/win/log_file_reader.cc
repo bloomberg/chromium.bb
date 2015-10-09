@@ -8,7 +8,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging_win.h"
 #include "base/synchronization/lock.h"
-#include "base/trace_event/trace_event_win.h"
 #include "base/win/event_trace_consumer.h"
 #include "chrome/test/logging/win/mof_data_parser.h"
 
@@ -39,28 +38,6 @@ logging::LogSeverity EventLevelToSeverity(uint8 level) {
   }
 }
 
-// TODO(grt): This reverses a mapping produced by
-// base/trace_event/trace_event_win.cc's TraceEventETWProvider::TraceEvent.
-// TraceEventETWProvider should expose a way to map an event type back to a
-// trace type.
-char EventTypeToTraceType(uint8 event_type) {
-  switch (event_type) {
-    case base::trace_event::kTraceEventTypeBegin:
-      return TRACE_EVENT_PHASE_BEGIN;
-      break;
-    case base::trace_event::kTraceEventTypeEnd:
-      return TRACE_EVENT_PHASE_END;
-      break;
-    case base::trace_event::kTraceEventTypeInstant:
-      return TRACE_EVENT_PHASE_INSTANT;
-      break;
-    default:
-      NOTREACHED();
-      return '\0';
-      break;
-  }
-}
-
 class LogFileReader {
  public:
   explicit LogFileReader(LogFileDelegate* delegate);
@@ -88,7 +65,6 @@ class LogFileReader {
   // Handlers for the supported event types.
   bool OnLogMessageEvent(const EVENT_TRACE* event);
   bool OnLogMessageFullEvent(const EVENT_TRACE* event);
-  bool OnTraceEvent(const EVENT_TRACE* event);
   bool OnFileHeader(const EVENT_TRACE* event);
 
   // Parses an event and passes it along to the delegate for processing.
@@ -170,28 +146,6 @@ bool LogFileReader::OnLogMessageFullEvent(const EVENT_TRACE* event) {
   return false;
 }
 
-bool LogFileReader::OnTraceEvent(const EVENT_TRACE* event) {
-  MofDataParser parser(event);
-  base::StringPiece name;
-  intptr_t id = 0;
-  base::StringPiece extra;
-  DWORD stack_depth = 0;
-  const intptr_t* backtrace = NULL;
-
-  // See TraceEventETWProvider::TraceEvent.
-  if (parser.ReadString(&name) && parser.ReadPointer(&id) &&
-      parser.ReadString(&extra) &&
-      (parser.empty() ||
-       (parser.ReadDWORD(&stack_depth) &&
-        parser.ReadPointerArray(stack_depth, &backtrace) && parser.empty()))) {
-    delegate_->OnTraceEvent(event, name,
-        EventTypeToTraceType(event->Header.Class.Type), id, extra, stack_depth,
-        backtrace);
-    return true;
-  }
-  return false;
-}
-
 bool LogFileReader::OnFileHeader(const EVENT_TRACE* event) {
   MofDataParser parser(event);
   const TRACE_LOGFILE_HEADER* header = NULL;
@@ -211,9 +165,6 @@ void LogFileReader::DispatchEvent(const EVENT_TRACE* event) {
       parsed = OnLogMessageEvent(event);
     else if (event->Header.Class.Type == logging::LOG_MESSAGE_FULL)
       parsed = OnLogMessageFullEvent(event);
-  } else if (IsEqualGUID(event->Header.Guid,
-                         base::trace_event::kTraceEventClass32)) {
-    parsed = OnTraceEvent(event);
   } else if (IsEqualGUID(event->Header.Guid, EventTraceGuid)) {
     parsed = OnFileHeader(event);
   } else {
