@@ -49,9 +49,6 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x0BC2, "GL_ALPHA_TEST_REF_QCOM",
     },
     {
-        0x78EF, "GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM",
-    },
-    {
         0x884D, "GL_TEXTURE_COMPARE_FUNC_EXT",
     },
     {
@@ -1159,9 +1156,6 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8A44, "GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER",
     },
     {
-        0x6000, "GL_TEXTURE_POOL_CHROMIUM",
-    },
-    {
         0x0B74, "GL_DEPTH_FUNC",
     },
     {
@@ -2266,9 +2260,6 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x84DC, "GL_TEXTURE28",
     },
     {
-        0x6002, "GL_TEXTURE_POOL_UNMANAGED_CHROMIUM",
-    },
-    {
         0x84DA, "GL_TEXTURE26",
     },
     {
@@ -2845,7 +2836,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x78EE, "GL_PIXEL_PACK_TRANSFER_BUFFER_BINDING_CHROMIUM",
     },
     {
-        0x6001, "GL_TEXTURE_POOL_MANAGED_CHROMIUM",
+        0x78EF, "GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM",
     },
     {
         0x0B45, "GL_CULL_FACE_MODE",
@@ -4641,7 +4632,6 @@ std::string GLES2Util::GetStringTextureParameter(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_TEXTURE_MAG_FILTER, "GL_TEXTURE_MAG_FILTER"},
       {GL_TEXTURE_MIN_FILTER, "GL_TEXTURE_MIN_FILTER"},
-      {GL_TEXTURE_POOL_CHROMIUM, "GL_TEXTURE_POOL_CHROMIUM"},
       {GL_TEXTURE_WRAP_S, "GL_TEXTURE_WRAP_S"},
       {GL_TEXTURE_WRAP_T, "GL_TEXTURE_WRAP_T"},
       {GL_TEXTURE_BASE_LEVEL, "GL_TEXTURE_BASE_LEVEL"},
@@ -4653,16 +4643,6 @@ std::string GLES2Util::GetStringTextureParameter(uint32_t value) {
       {GL_TEXTURE_MAX_LOD, "GL_TEXTURE_MAX_LOD"},
       {GL_TEXTURE_MIN_LOD, "GL_TEXTURE_MIN_LOD"},
       {GL_TEXTURE_WRAP_R, "GL_TEXTURE_WRAP_R"},
-  };
-  return GLES2Util::GetQualifiedEnumString(string_table,
-                                           arraysize(string_table), value);
-}
-
-std::string GLES2Util::GetStringTexturePool(uint32_t value) {
-  static const EnumToString string_table[] = {
-      {GL_TEXTURE_POOL_MANAGED_CHROMIUM, "GL_TEXTURE_POOL_MANAGED_CHROMIUM"},
-      {GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
-       "GL_TEXTURE_POOL_UNMANAGED_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

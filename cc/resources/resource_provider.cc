@@ -201,7 +201,6 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
                                      Origin origin,
                                      GLenum target,
                                      GLenum filter,
-                                     GLenum texture_pool,
                                      TextureHint hint,
                                      ResourceFormat format)
     : child_id(0),
@@ -229,13 +228,11 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       filter(filter),
       image_id(0),
       bound_image_id(0),
-      texture_pool(texture_pool),
       hint(hint),
       type(RESOURCE_TYPE_GL_TEXTURE),
       format(format),
       shared_bitmap(NULL),
       gpu_memory_buffer(NULL) {
-  DCHECK_EQ(origin == INTERNAL, !!texture_pool);
 }
 
 ResourceProvider::Resource::Resource(uint8_t* pixels,
@@ -267,7 +264,6 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       filter(filter),
       image_id(0),
       bound_image_id(0),
-      texture_pool(0),
       hint(TEXTURE_HINT_IMMUTABLE),
       type(RESOURCE_TYPE_BITMAP),
       format(RGBA_8888),
@@ -306,7 +302,6 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
       filter(filter),
       image_id(0),
       bound_image_id(0),
-      texture_pool(0),
       hint(TEXTURE_HINT_IMMUTABLE),
       type(RESOURCE_TYPE_BITMAP),
       format(RGBA_8888),
@@ -391,7 +386,6 @@ ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
     case RESOURCE_TYPE_GL_TEXTURE:
       return CreateGLTexture(size,
                              GL_TEXTURE_2D,
-                             GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
                              hint,
                              format);
     case RESOURCE_TYPE_BITMAP:
@@ -412,7 +406,6 @@ ResourceId ResourceProvider::CreateManagedResource(const gfx::Size& size,
     case RESOURCE_TYPE_GL_TEXTURE:
       return CreateGLTexture(size,
                              target,
-                             GL_TEXTURE_POOL_MANAGED_CHROMIUM,
                              hint,
                              format);
     case RESOURCE_TYPE_BITMAP:
@@ -426,7 +419,6 @@ ResourceId ResourceProvider::CreateManagedResource(const gfx::Size& size,
 
 ResourceId ResourceProvider::CreateGLTexture(const gfx::Size& size,
                                              GLenum target,
-                                             GLenum texture_pool,
                                              TextureHint hint,
                                              ResourceFormat format) {
   DCHECK_LE(size.width(), max_texture_size_);
@@ -434,9 +426,9 @@ ResourceId ResourceProvider::CreateGLTexture(const gfx::Size& size,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ResourceId id = next_id_++;
-  Resource* resource =
-      InsertResource(id, Resource(0, size, Resource::INTERNAL, target,
-                                  GL_LINEAR, texture_pool, hint, format));
+  Resource* resource = InsertResource(
+      id,
+      Resource(0, size, Resource::INTERNAL, target, GL_LINEAR, hint, format));
   resource->allocated = false;
   return id;
 }
@@ -465,8 +457,7 @@ ResourceId ResourceProvider::CreateResourceFromIOSurface(
   ResourceId id = next_id_++;
   Resource* resource = InsertResource(
       id, Resource(0, gfx::Size(), Resource::INTERNAL, GL_TEXTURE_RECTANGLE_ARB,
-                   GL_LINEAR, GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
-                   TEXTURE_HINT_IMMUTABLE, RGBA_8888));
+                   GL_LINEAR, TEXTURE_HINT_IMMUTABLE, RGBA_8888));
   LazyCreate(resource);
   GLES2Interface* gl = ContextGL();
   DCHECK(gl);
@@ -489,7 +480,7 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   if (mailbox.IsTexture()) {
     resource = InsertResource(
         id, Resource(0, gfx::Size(), Resource::EXTERNAL, mailbox.target(),
-                     mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR, 0,
+                     mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR,
                      TEXTURE_HINT_IMMUTABLE, RGBA_8888));
   } else {
     DCHECK(mailbox.IsSharedMemory());
@@ -1202,7 +1193,7 @@ void ResourceProvider::ReceiveFromChild(
     } else {
       resource = InsertResource(
           local_id, Resource(0, it->size, Resource::DELEGATED,
-                             it->mailbox_holder.texture_target, it->filter, 0,
+                             it->mailbox_holder.texture_target, it->filter,
                              TEXTURE_HINT_IMMUTABLE, it->format));
       resource->mailbox = TextureMailbox(it->mailbox_holder.mailbox,
                                          it->mailbox_holder.texture_target,
@@ -1487,7 +1478,6 @@ void ResourceProvider::LazyCreate(Resource* resource) {
   if (resource->gl_id)
     return;
 
-  DCHECK(resource->texture_pool);
   DCHECK(resource->origin == Resource::INTERNAL);
   DCHECK(!resource->mailbox.IsValid());
   resource->gl_id = texture_id_allocator_->NextId();
@@ -1503,8 +1493,6 @@ void ResourceProvider::LazyCreate(Resource* resource) {
                     resource->original_filter);
   gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  gl->TexParameteri(resource->target, GL_TEXTURE_POOL_CHROMIUM,
-                    resource->texture_pool);
   if (use_texture_usage_hint_ && (resource->hint & TEXTURE_HINT_FRAMEBUFFER)) {
     gl->TexParameteri(resource->target, GL_TEXTURE_USAGE_ANGLE,
                       GL_FRAMEBUFFER_ATTACHMENT_ANGLE);

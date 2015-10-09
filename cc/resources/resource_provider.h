@@ -122,8 +122,8 @@ class CC_EXPORT ResourceProvider
                             TextureHint hint,
                             ResourceFormat format);
 
-  // Creates a resource which is tagged as being managed for GPU memory
-  // accounting purposes.
+  // Creates a resource for a particular texture target (the distinction between
+  // texture targets has no effect in software mode).
   ResourceId CreateManagedResource(const gfx::Size& size,
                                    GLenum target,
                                    TextureHint hint,
@@ -132,7 +132,6 @@ class CC_EXPORT ResourceProvider
   // You can also explicitly create a specific resource type.
   ResourceId CreateGLTexture(const gfx::Size& size,
                              GLenum target,
-                             GLenum texture_pool,
                              TextureHint hint,
                              ResourceFormat format);
 
@@ -456,7 +455,6 @@ class CC_EXPORT ResourceProvider
              Origin origin,
              GLenum target,
              GLenum filter,
-             GLenum texture_pool,
              TextureHint hint,
              ResourceFormat format);
     Resource(uint8_t* pixels,
@@ -500,7 +498,6 @@ class CC_EXPORT ResourceProvider
     GLenum filter;
     unsigned image_id;
     unsigned bound_image_id;
-    GLenum texture_pool;
     TextureHint hint;
     ResourceType type;
     ResourceFormat format;

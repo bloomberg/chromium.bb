@@ -24,7 +24,7 @@ namespace gles2 {
 BufferManager::BufferManager(MemoryTracker* memory_tracker,
                              FeatureInfo* feature_info)
     : memory_type_tracker_(
-          new MemoryTypeTracker(memory_tracker, MemoryTracker::kManaged)),
+          new MemoryTypeTracker(memory_tracker)),
       memory_tracker_(memory_tracker),
       feature_info_(feature_info),
       allow_buffers_on_multiple_targets_(false),

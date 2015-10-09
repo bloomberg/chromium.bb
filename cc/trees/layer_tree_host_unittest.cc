@@ -2296,10 +2296,6 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
         .Times(1);
     EXPECT_CALL(*mock_context_,
                 texParameteri(GL_TEXTURE_RECTANGLE_ARB,
-                              GL_TEXTURE_POOL_CHROMIUM,
-                              GL_TEXTURE_POOL_UNMANAGED_CHROMIUM)).Times(1);
-    EXPECT_CALL(*mock_context_,
-                texParameteri(GL_TEXTURE_RECTANGLE_ARB,
                               GL_TEXTURE_WRAP_S,
                               GL_CLAMP_TO_EDGE)).Times(1);
     EXPECT_CALL(*mock_context_,

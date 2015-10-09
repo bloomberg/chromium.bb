@@ -10,8 +10,7 @@ GpuMemoryTracker::GpuMemoryTracker() {}
 
 void GpuMemoryTracker::TrackMemoryAllocatedChange(
     size_t old_size,
-    size_t new_size,
-    gpu::gles2::MemoryTracker::Pool pool) {}
+    size_t new_size) {}
 
 bool GpuMemoryTracker::EnsureGPUMemoryAvailable(size_t size_needed) {
   return true;

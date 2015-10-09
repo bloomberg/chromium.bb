@@ -27,23 +27,6 @@ typedef void (GL_APIENTRYP PFNGLTEXIMAGEIOSURFACE2DCHROMIUMPROC) (
     GLuint plane);
 #endif  /* GL_CHROMIUM_iosurface */
 
-/* GL_CHROMIUM_gpu_memory_manager */
-#ifndef GL_CHROMIUM_gpu_memory_manager
-#define GL_CHROMIUM_gpu_memory_manager 1
-
-#ifndef GL_TEXTURE_POOL_UNMANAGED_CHROMIUM
-#define GL_TEXTURE_POOL_UNMANAGED_CHROMIUM 0x6002
-#endif
-
-#ifndef GL_TEXTURE_POOL_CHROMIUM
-#define GL_TEXTURE_POOL_CHROMIUM 0x6000
-#endif
-
-#ifndef GL_TEXTURE_POOL_MANAGED_CHROMIUM
-#define GL_TEXTURE_POOL_MANAGED_CHROMIUM 0x6001
-#endif
-#endif  /* GL_CHROMIUM_gpu_memory_manager */
-
 /* GL_CHROMIUM_texture_mailbox */
 #ifndef GL_CHROMIUM_texture_mailbox
 #define GL_CHROMIUM_texture_mailbox 1

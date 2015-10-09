@@ -1111,65 +1111,27 @@ TEST_P(GLES2DecoderTest, IsEnabledReturnsCachedValue) {
   }
 }
 
-TEST_P(GLES2DecoderManualInitTest, GpuMemoryManagerCHROMIUM) {
-  InitState init;
-  init.extensions = "GL_ARB_texture_rectangle";
-  init.bind_generates_resource = true;
-  InitDecoder(init);
-
-  Texture* texture = GetTexture(client_texture_id_)->texture();
-  EXPECT_TRUE(texture != NULL);
-  EXPECT_TRUE(texture->pool() == GL_TEXTURE_POOL_UNMANAGED_CHROMIUM);
-
-  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-
-  TexParameteri cmd;
-  cmd.Init(GL_TEXTURE_2D,
-           GL_TEXTURE_POOL_CHROMIUM,
-           GL_TEXTURE_POOL_UNMANAGED_CHROMIUM);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-
-  cmd.Init(GL_TEXTURE_2D,
-           GL_TEXTURE_POOL_CHROMIUM,
-           GL_TEXTURE_POOL_MANAGED_CHROMIUM);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-
-  EXPECT_TRUE(texture->pool() == GL_TEXTURE_POOL_MANAGED_CHROMIUM);
-
-  cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_POOL_CHROMIUM, GL_NONE);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
 namespace {
 
 class SizeOnlyMemoryTracker : public MemoryTracker {
  public:
   SizeOnlyMemoryTracker() {
-    // These are the default textures. 1 for TEXTURE_2D and 6 faces for
-    // TEXTURE_CUBE_MAP.
-    const size_t kInitialUnmanagedPoolSize = 7 * 4;
-    const size_t kInitialManagedPoolSize = 0;
-    pool_infos_[MemoryTracker::kUnmanaged].initial_size =
-        kInitialUnmanagedPoolSize;
-    pool_infos_[MemoryTracker::kManaged].initial_size = kInitialManagedPoolSize;
+    // Account for the 7 default textures. 1 for TEXTURE_2D and 6 faces for
+    // TEXTURE_CUBE_MAP. Each is 1x1, with 4 bytes per channel.
+    pool_info_.initial_size = 28;
+    pool_info_.size = 0;
   }
 
   // Ensure a certain amount of GPU memory is free. Returns true on success.
   MOCK_METHOD1(EnsureGPUMemoryAvailable, bool(size_t size_needed));
 
   virtual void TrackMemoryAllocatedChange(size_t old_size,
-                                          size_t new_size,
-                                          Pool pool) {
-    PoolInfo& info = pool_infos_[pool];
-    info.size += new_size - old_size;
+                                          size_t new_size) {
+    pool_info_.size += new_size - old_size;
   }
 
-  size_t GetPoolSize(Pool pool) {
-    const PoolInfo& info = pool_infos_[pool];
-    return info.size - info.initial_size;
+  size_t GetPoolSize() {
+    return pool_info_.size - pool_info_.initial_size;
   }
 
   uint64_t ClientTracingId() const override { return 0; }
@@ -1183,7 +1145,7 @@ class SizeOnlyMemoryTracker : public MemoryTracker {
     size_t initial_size;
     size_t size;
   };
-  std::map<Pool, PoolInfo> pool_infos_;
+  PoolInfo pool_info_;
 };
 
 }  // anonymous namespace.
@@ -1196,8 +1158,8 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerInitialSize) {
   init.bind_generates_resource = true;
   InitDecoder(init);
   // Expect that initial size - size is 0.
-  EXPECT_EQ(0u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
-  EXPECT_EQ(0u, memory_tracker->GetPoolSize(MemoryTracker::kManaged));
+  EXPECT_EQ(0u, memory_tracker->GetPoolSize());
+  EXPECT_EQ(0u, memory_tracker->GetPoolSize());
 }
 
 TEST_P(GLES2DecoderManualInitTest, MemoryTrackerTexImage2D) {
@@ -1221,7 +1183,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerTexImage2D) {
                GL_UNSIGNED_BYTE,
                kSharedMemoryId,
                kSharedMemoryOffset);
-  EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
+  EXPECT_EQ(128u, memory_tracker->GetPoolSize());
   EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(64))
       .WillOnce(Return(true))
       .RetiresOnSaturation();
@@ -1235,7 +1197,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerTexImage2D) {
                GL_UNSIGNED_BYTE,
                kSharedMemoryId,
                kSharedMemoryOffset);
-  EXPECT_EQ(64u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
+  EXPECT_EQ(64u, memory_tracker->GetPoolSize());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   // Check we get out of memory and no call to glTexImage2D if Ensure fails.
   EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(64))
@@ -1253,7 +1215,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerTexImage2D) {
            kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
-  EXPECT_EQ(64u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
+  EXPECT_EQ(64u, memory_tracker->GetPoolSize());
 }
 
 TEST_P(GLES2DecoderManualInitTest, MemoryTrackerTexStorage2DEXT) {
@@ -1272,7 +1234,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerTexStorage2DEXT) {
   TexStorage2DEXT cmd;
   cmd.Init(GL_TEXTURE_2D, 1, GL_RGBA8, 8, 4);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(0u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
+  EXPECT_EQ(0u, memory_tracker->GetPoolSize());
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
 
@@ -1307,7 +1269,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerCopyTexImage2D) {
   CopyTexImage2D cmd;
   cmd.Init(target, level, internal_format, 0, 0, width, height);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
+  EXPECT_EQ(128u, memory_tracker->GetPoolSize());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   // Check we get out of memory and no call to glCopyTexImage2D if Ensure fails.
   EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(128))
@@ -1315,7 +1277,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerCopyTexImage2D) {
       .RetiresOnSaturation();
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
-  EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
+  EXPECT_EQ(128u, memory_tracker->GetPoolSize());
 }
 
 TEST_P(GLES2DecoderManualInitTest, MemoryTrackerRenderbufferStorage) {
@@ -1342,7 +1304,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerRenderbufferStorage) {
   cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 8, 4);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
+  EXPECT_EQ(128u, memory_tracker->GetPoolSize());
   // Check we get out of memory and no call to glRenderbufferStorage if Ensure
   // fails.
   EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(128))
@@ -1350,7 +1312,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerRenderbufferStorage) {
       .RetiresOnSaturation();
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
-  EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
+  EXPECT_EQ(128u, memory_tracker->GetPoolSize());
 }
 
 TEST_P(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
@@ -1360,6 +1322,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
   InitState init;
   init.bind_generates_resource = true;
   InitDecoder(init);
+  EXPECT_EQ(0u, memory_tracker->GetPoolSize());
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -1375,7 +1338,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
   cmd.Init(GL_ARRAY_BUFFER, 128, 0, 0, GL_STREAM_DRAW);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kManaged));
+  EXPECT_EQ(128u, memory_tracker->GetPoolSize());
   // Check we get out of memory and no call to glBufferData if Ensure
   // fails.
   EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(128))
@@ -1383,7 +1346,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
       .RetiresOnSaturation();
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
-  EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kManaged));
+  EXPECT_EQ(128u, memory_tracker->GetPoolSize());
 }
 
 TEST_P(GLES2DecoderManualInitTest, ImmutableCopyTexImage2D) {

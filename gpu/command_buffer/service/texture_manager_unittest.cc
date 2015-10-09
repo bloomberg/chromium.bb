@@ -550,9 +550,9 @@ class TextureMemoryTrackerTest : public TextureTestBase {
   scoped_refptr<MockMemoryTracker> mock_memory_tracker_;
 };
 
-#define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size, pool)   \
-  EXPECT_CALL(*mock_memory_tracker_.get(),                          \
-              TrackMemoryAllocatedChange(old_size, new_size, pool)) \
+#define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size)   \
+  EXPECT_CALL(*mock_memory_tracker_.get(),                    \
+              TrackMemoryAllocatedChange(old_size, new_size)) \
       .Times(1).RetiresOnSaturation()
 
 TEST_F(TextureTest, Basic) {
@@ -623,33 +623,16 @@ TEST_F(TextureTest, EstimatedSize) {
 
 TEST_F(TextureMemoryTrackerTest, EstimatedSize) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 128, MemoryTracker::kUnmanaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 128);
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 8, 4, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(8, 4));
-  EXPECT_MEMORY_ALLOCATION_CHANGE(128, 0, MemoryTracker::kUnmanaged);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 256, MemoryTracker::kUnmanaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(128, 0);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 256);
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 2, GL_RGBA, 8, 4, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(8, 4));
   // Add expectation for texture deletion.
-  EXPECT_MEMORY_ALLOCATION_CHANGE(256, 0, MemoryTracker::kUnmanaged);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0, MemoryTracker::kUnmanaged);
-}
-
-TEST_F(TextureMemoryTrackerTest, SetParameterPool) {
-  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 128, MemoryTracker::kUnmanaged);
-  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 8, 4, 1,
-                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(8, 4));
-  EXPECT_MEMORY_ALLOCATION_CHANGE(128, 0, MemoryTracker::kUnmanaged);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 128, MemoryTracker::kManaged);
-  SetParameter(texture_ref_.get(),
-               GL_TEXTURE_POOL_CHROMIUM,
-               GL_TEXTURE_POOL_MANAGED_CHROMIUM,
-               GL_NO_ERROR);
-  // Add expectation for texture deletion.
-  EXPECT_MEMORY_ALLOCATION_CHANGE(128, 0, MemoryTracker::kManaged);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0, MemoryTracker::kUnmanaged);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0, MemoryTracker::kManaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(256, 0);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0);
 }
 
 TEST_F(TextureTest, POT2D) {
@@ -703,14 +686,14 @@ TEST_F(TextureTest, POT2D) {
 
 TEST_F(TextureMemoryTrackerTest, MarkMipmapsGenerated) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 64, MemoryTracker::kUnmanaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 64);
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
-  EXPECT_MEMORY_ALLOCATION_CHANGE(64, 0, MemoryTracker::kUnmanaged);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 84, MemoryTracker::kUnmanaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(64, 0);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 84);
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_ref_.get()));
-  EXPECT_MEMORY_ALLOCATION_CHANGE(84, 0, MemoryTracker::kUnmanaged);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0, MemoryTracker::kUnmanaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(84, 0);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0);
 }
 
 TEST_F(TextureTest, UnusedMips) {
@@ -1804,22 +1787,18 @@ TEST_F(ProduceConsumeTextureTest, ProduceConsumeCube) {
 class CountingMemoryTracker : public MemoryTracker {
  public:
   CountingMemoryTracker() {
-    current_size_[0] = 0;
-    current_size_[1] = 0;
+    current_size_ = 0;
   }
 
   void TrackMemoryAllocatedChange(size_t old_size,
-                                  size_t new_size,
-                                  Pool pool) override {
-    DCHECK_LT(static_cast<size_t>(pool), arraysize(current_size_));
-    current_size_[pool] += new_size - old_size;
+                                  size_t new_size) override {
+    current_size_ += new_size - old_size;
   }
 
   bool EnsureGPUMemoryAvailable(size_t size_needed) override { return true; }
 
-  size_t GetSize(Pool pool) {
-    DCHECK_LT(static_cast<size_t>(pool), arraysize(current_size_));
-    return current_size_[pool];
+  size_t GetSize() {
+    return current_size_;
   }
 
   uint64_t ClientTracingId() const override { return 0; }
@@ -1831,7 +1810,7 @@ class CountingMemoryTracker : public MemoryTracker {
  private:
   ~CountingMemoryTracker() override {}
 
-  size_t current_size_[2];
+  size_t current_size_;
   DISALLOW_COPY_AND_ASSIGN(CountingMemoryTracker);
 };
 
@@ -2026,8 +2005,8 @@ TEST_F(SharedTextureTest, FBOCompletenessCheck) {
 }
 
 TEST_F(SharedTextureTest, Memory) {
-  size_t initial_memory1 = memory_tracker1_->GetSize(MemoryTracker::kUnmanaged);
-  size_t initial_memory2 = memory_tracker2_->GetSize(MemoryTracker::kUnmanaged);
+  size_t initial_memory1 = memory_tracker1_->GetSize();
+  size_t initial_memory2 = memory_tracker2_->GetSize();
 
   // Newly created texture is unrenderable.
   scoped_refptr<TextureRef> ref1 = texture_manager1_->CreateTexture(10, 10);
@@ -2037,24 +2016,23 @@ TEST_F(SharedTextureTest, Memory) {
 
   EXPECT_LT(0u, ref1->texture()->estimated_size());
   EXPECT_EQ(initial_memory1 + ref1->texture()->estimated_size(),
-            memory_tracker1_->GetSize(MemoryTracker::kUnmanaged));
+            memory_tracker1_->GetSize());
 
   // Associate new texture ref to other texture manager, it doesn't account for
   // the texture memory, the first memory tracker still has it.
   scoped_refptr<TextureRef> ref2 =
       texture_manager2_->Consume(20, ref1->texture());
   EXPECT_EQ(initial_memory1 + ref1->texture()->estimated_size(),
-            memory_tracker1_->GetSize(MemoryTracker::kUnmanaged));
-  EXPECT_EQ(initial_memory2,
-            memory_tracker2_->GetSize(MemoryTracker::kUnmanaged));
+            memory_tracker1_->GetSize());
+  EXPECT_EQ(initial_memory2, memory_tracker2_->GetSize());
 
   // Delete the texture, memory should go to the remaining tracker.
   texture_manager1_->RemoveTexture(10);
   ref1 = NULL;
   EXPECT_EQ(initial_memory1,
-            memory_tracker1_->GetSize(MemoryTracker::kUnmanaged));
+            memory_tracker1_->GetSize());
   EXPECT_EQ(initial_memory2 + ref2->texture()->estimated_size(),
-            memory_tracker2_->GetSize(MemoryTracker::kUnmanaged));
+            memory_tracker2_->GetSize());
 
   EXPECT_CALL(*gl_, DeleteTextures(1, _))
       .Times(1)
@@ -2062,7 +2040,7 @@ TEST_F(SharedTextureTest, Memory) {
   ref2 = NULL;
   texture_manager2_->RemoveTexture(20);
   EXPECT_EQ(initial_memory2,
-            memory_tracker2_->GetSize(MemoryTracker::kUnmanaged));
+            memory_tracker2_->GetSize());
 }
 
 TEST_F(SharedTextureTest, Images) {

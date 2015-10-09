@@ -28,8 +28,6 @@ static void expect_default_parameter_values(TestWebGraphicsContext3D* context) {
       check_parameter_value(context, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
   EXPECT_TRUE(
       check_parameter_value(context, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-  EXPECT_TRUE(check_parameter_value(
-      context, GL_TEXTURE_POOL_CHROMIUM, GL_TEXTURE_POOL_UNMANAGED_CHROMIUM));
   EXPECT_TRUE(check_parameter_value(context, GL_TEXTURE_USAGE_ANGLE, GL_NONE));
 }
 

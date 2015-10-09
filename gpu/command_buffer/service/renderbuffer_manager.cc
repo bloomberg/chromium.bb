@@ -49,7 +49,7 @@ RenderbufferManager::RenderbufferManager(MemoryTracker* memory_tracker,
                                          GLint max_samples,
                                          FeatureInfo* feature_info)
     : memory_type_tracker_(
-          new MemoryTypeTracker(memory_tracker, MemoryTracker::kUnmanaged)),
+          new MemoryTypeTracker(memory_tracker)),
       memory_tracker_(memory_tracker),
       max_renderbuffer_size_(max_renderbuffer_size),
       max_samples_(max_samples),

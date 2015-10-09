@@ -65,10 +65,6 @@ class GPU_EXPORT Texture {
     return usage_;
   }
 
-  GLenum pool() const {
-    return pool_;
-  }
-
   GLenum compare_func() const {
     return compare_func_;
   }
@@ -439,7 +435,6 @@ class GPU_EXPORT Texture {
   GLenum wrap_s_;
   GLenum wrap_t_;
   GLenum usage_;
-  GLenum pool_;
   GLenum compare_func_;
   GLenum compare_mode_;
   GLfloat max_lod_;
@@ -792,9 +787,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   }
 
   size_t mem_represented() const {
-    return
-        memory_tracker_managed_->GetMemRepresented() +
-        memory_tracker_unmanaged_->GetMemRepresented();
+    return memory_type_tracker_->GetMemRepresented();
   }
 
   void SetLevelImage(
@@ -910,9 +903,8 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   void DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
                       TextureRef* ref);
 
-  MemoryTypeTracker* GetMemTracker(GLenum texture_pool);
-  scoped_ptr<MemoryTypeTracker> memory_tracker_managed_;
-  scoped_ptr<MemoryTypeTracker> memory_tracker_unmanaged_;
+  MemoryTypeTracker* GetMemTracker();
+  scoped_ptr<MemoryTypeTracker> memory_type_tracker_;
   MemoryTracker* memory_tracker_;
 
   scoped_refptr<FeatureInfo> feature_info_;

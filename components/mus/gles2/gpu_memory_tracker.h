@@ -18,8 +18,7 @@ class GpuMemoryTracker : public gpu::gles2::MemoryTracker {
   // gpu::MemoryTracker implementation:
   void TrackMemoryAllocatedChange(
       size_t old_size,
-      size_t new_size,
-      gpu::gles2::MemoryTracker::Pool pool) override;
+      size_t new_size) override;
   bool EnsureGPUMemoryAvailable(size_t size_needed) override;
   uint64_t ClientTracingId() const override;
   int ClientId() const override;

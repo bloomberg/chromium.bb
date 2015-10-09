@@ -854,8 +854,8 @@ static const GLenum valid_texture_min_filter_mode_table[] = {
 };
 
 static const GLenum valid_texture_parameter_table[] = {
-    GL_TEXTURE_MAG_FILTER, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_POOL_CHROMIUM,
-    GL_TEXTURE_WRAP_S,     GL_TEXTURE_WRAP_T,
+    GL_TEXTURE_MAG_FILTER, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_WRAP_S,
+    GL_TEXTURE_WRAP_T,
 };
 
 static const GLenum valid_texture_parameter_table_es3[] = {
@@ -864,10 +864,6 @@ static const GLenum valid_texture_parameter_table_es3[] = {
     GL_TEXTURE_IMMUTABLE_LEVELS, GL_TEXTURE_MAX_LEVEL,
     GL_TEXTURE_MAX_LOD,          GL_TEXTURE_MIN_LOD,
     GL_TEXTURE_WRAP_R,
-};
-
-static const GLenum valid_texture_pool_table[] = {
-    GL_TEXTURE_POOL_MANAGED_CHROMIUM, GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
 };
 
 static const GLenum valid_texture_target_table[] = {
@@ -1086,8 +1082,6 @@ Validators::Validators()
                               arraysize(valid_texture_min_filter_mode_table)),
       texture_parameter(valid_texture_parameter_table,
                         arraysize(valid_texture_parameter_table)),
-      texture_pool(valid_texture_pool_table,
-                   arraysize(valid_texture_pool_table)),
       texture_target(valid_texture_target_table,
                      arraysize(valid_texture_target_table)),
       texture_usage(valid_texture_usage_table,

@@ -18,14 +18,8 @@ namespace gles2 {
 // statistics to the global GpuMemoryManager.
 class MemoryTracker : public base::RefCounted<MemoryTracker> {
  public:
-   enum Pool {
-     kUnmanaged,
-     kManaged
-   };
-
    virtual void TrackMemoryAllocatedChange(size_t old_size,
-                                           size_t new_size,
-                                           Pool pool) = 0;
+                                           size_t new_size) = 0;
 
    // Ensure a certain amount of GPU memory is free. Returns true on success.
    virtual bool EnsureGPUMemoryAvailable(size_t size_needed) = 0;
@@ -54,9 +48,8 @@ class MemoryTracker : public base::RefCounted<MemoryTracker> {
 // MemoryTracker.
 class MemoryTypeTracker {
  public:
-  MemoryTypeTracker(MemoryTracker* memory_tracker, MemoryTracker::Pool pool)
+  MemoryTypeTracker(MemoryTracker* memory_tracker)
     : memory_tracker_(memory_tracker),
-      pool_(pool),
       has_done_update_(false),
       mem_represented_(0),
       mem_represented_at_last_update_(0) {
@@ -100,15 +93,13 @@ class MemoryTypeTracker {
     if (memory_tracker_) {
       memory_tracker_->TrackMemoryAllocatedChange(
         mem_represented_at_last_update_,
-        mem_represented_,
-        pool_);
+        mem_represented_);
     }
     has_done_update_ = true;
     mem_represented_at_last_update_ = mem_represented_;
   }
 
   MemoryTracker* memory_tracker_;
-  MemoryTracker::Pool pool_;
   bool has_done_update_;
   size_t mem_represented_;
   size_t mem_represented_at_last_update_;

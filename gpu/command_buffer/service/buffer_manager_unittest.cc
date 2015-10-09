@@ -102,9 +102,9 @@ class BufferManagerClientSideArraysTest : public BufferManagerTestBase {
   scoped_refptr<FeatureInfo> feature_info_;
 };
 
-#define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size, pool)   \
+#define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size)   \
   EXPECT_CALL(*mock_memory_tracker_.get(),                          \
-              TrackMemoryAllocatedChange(old_size, new_size, pool)) \
+              TrackMemoryAllocatedChange(old_size, new_size)) \
       .Times(1).RetiresOnSaturation()
 
 TEST_F(BufferManagerTest, Basic) {
@@ -154,22 +154,22 @@ TEST_F(BufferManagerMemoryTrackerTest, Basic) {
   const GLsizeiptr kBuffer1Size1 = 123;
   const GLsizeiptr kBuffer1Size2 = 456;
   // Check we can create buffer.
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0, MemoryTracker::kManaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0);
   manager_->CreateBuffer(kClientBuffer1Id, kServiceBuffer1Id);
   // Check buffer got created.
   Buffer* buffer1 = manager_->GetBuffer(kClientBuffer1Id);
   ASSERT_TRUE(buffer1 != NULL);
   manager_->SetTarget(buffer1, kTarget);
   // Check we and set its size.
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, kBuffer1Size1, MemoryTracker::kManaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, kBuffer1Size1);
   DoBufferData(
       buffer1, kTarget, kBuffer1Size1, GL_DYNAMIC_DRAW, NULL, GL_NO_ERROR);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(kBuffer1Size1, 0, MemoryTracker::kManaged);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(0, kBuffer1Size2, MemoryTracker::kManaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(kBuffer1Size1, 0);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, kBuffer1Size2);
   DoBufferData(
       buffer1, kTarget, kBuffer1Size2, GL_DYNAMIC_DRAW, NULL, GL_NO_ERROR);
   // On delete it will get freed.
-  EXPECT_MEMORY_ALLOCATION_CHANGE(kBuffer1Size2, 0, MemoryTracker::kManaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(kBuffer1Size2, 0);
 }
 
 TEST_F(BufferManagerTest, Destroy) {

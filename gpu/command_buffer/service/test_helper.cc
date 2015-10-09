@@ -822,12 +822,10 @@ void TestHelper::SetTexParameteriWithExpectations(
     TextureManager* manager, TextureRef* texture_ref,
     GLenum pname, GLint value, GLenum error) {
   if (error == GL_NO_ERROR) {
-    if (pname != GL_TEXTURE_POOL_CHROMIUM) {
-      EXPECT_CALL(*gl, TexParameteri(texture_ref->texture()->target(),
-                                     pname, value))
-          .Times(1)
-          .RetiresOnSaturation();
-    }
+    EXPECT_CALL(*gl, TexParameteri(texture_ref->texture()->target(),
+                                   pname, value))
+        .Times(1)
+        .RetiresOnSaturation();
   } else if (error == GL_INVALID_ENUM) {
     EXPECT_CALL(*error_state, SetGLErrorInvalidEnum(_, _, _, value, _))
         .Times(1)

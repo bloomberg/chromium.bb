@@ -118,16 +118,14 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   // Get the current number of bytes allocated.
   uint64 GetCurrentUsage() const {
-    return bytes_allocated_managed_current_ +
-        bytes_allocated_unmanaged_current_;
+    return bytes_allocated_current_;
   }
 
   // GpuMemoryTrackingGroup interface
   void TrackMemoryAllocatedChange(
       GpuMemoryTrackingGroup* tracking_group,
       uint64 old_size,
-      uint64 new_size,
-      gpu::gles2::MemoryTracker::Pool tracking_pool);
+      uint64 new_size);
   void OnDestroyTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
   bool EnsureGPUMemoryAvailable(uint64 size_needed);
 
@@ -168,8 +166,7 @@ class CONTENT_EXPORT GpuMemoryManager :
   uint64 client_hard_limit_bytes_;
 
   // The current total memory usage, and historical maximum memory usage
-  uint64 bytes_allocated_managed_current_;
-  uint64 bytes_allocated_unmanaged_current_;
+  uint64 bytes_allocated_current_;
   uint64 bytes_allocated_historical_max_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryManager);

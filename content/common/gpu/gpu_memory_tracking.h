@@ -21,8 +21,7 @@ class CONTENT_EXPORT GpuMemoryTrackingGroup {
   ~GpuMemoryTrackingGroup();
   void TrackMemoryAllocatedChange(
       uint64 old_size,
-      uint64 new_size,
-      gpu::gles2::MemoryTracker::Pool tracking_pool);
+      uint64 new_size);
   bool EnsureGPUMemoryAvailable(uint64 size_needed);
   base::ProcessId GetPid() const {
     return pid_;

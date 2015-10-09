@@ -27,7 +27,7 @@ namespace {
 
 const int kDelayedScheduleManageTimeoutMs = 67;
 
-const uint64 kBytesAllocatedUnmanagedStep = 16 * 1024 * 1024;
+const uint64 kBytesAllocatedStep = 16 * 1024 * 1024;
 
 void TrackValueChanged(uint64 old_size, uint64 new_size, uint64* total_size) {
   DCHECK(new_size > old_size || *total_size >= (old_size - new_size));
@@ -45,8 +45,7 @@ GpuMemoryManager::GpuMemoryManager(
       max_surfaces_with_frontbuffer_soft_limit_(
           max_surfaces_with_frontbuffer_soft_limit),
       client_hard_limit_bytes_(0),
-      bytes_allocated_managed_current_(0),
-      bytes_allocated_unmanaged_current_(0),
+      bytes_allocated_current_(0),
       bytes_allocated_historical_max_(0)
 { }
 
@@ -55,8 +54,7 @@ GpuMemoryManager::~GpuMemoryManager() {
   DCHECK(clients_visible_mru_.empty());
   DCHECK(clients_nonvisible_mru_.empty());
   DCHECK(clients_nonsurface_.empty());
-  DCHECK(!bytes_allocated_managed_current_);
-  DCHECK(!bytes_allocated_unmanaged_current_);
+  DCHECK(!bytes_allocated_current_);
 }
 
 void GpuMemoryManager::ScheduleManage(
@@ -85,25 +83,12 @@ void GpuMemoryManager::ScheduleManage(
 void GpuMemoryManager::TrackMemoryAllocatedChange(
     GpuMemoryTrackingGroup* tracking_group,
     uint64 old_size,
-    uint64 new_size,
-    gpu::gles2::MemoryTracker::Pool tracking_pool) {
+    uint64 new_size) {
   TrackValueChanged(old_size, new_size, &tracking_group->size_);
-  switch (tracking_pool) {
-    case gpu::gles2::MemoryTracker::kManaged:
-      TrackValueChanged(old_size, new_size, &bytes_allocated_managed_current_);
-      break;
-    case gpu::gles2::MemoryTracker::kUnmanaged:
-      TrackValueChanged(old_size,
-                        new_size,
-                        &bytes_allocated_unmanaged_current_);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  TrackValueChanged(old_size, new_size, &bytes_allocated_current_);
 
   if (GetCurrentUsage() > bytes_allocated_historical_max_ +
-                          kBytesAllocatedUnmanagedStep) {
+                          kBytesAllocatedStep) {
       bytes_allocated_historical_max_ = GetCurrentUsage();
       // If we're blowing into new memory usage territory, spam the browser
       // process with the most up-to-date information about our memory usage.

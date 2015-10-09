@@ -2534,7 +2534,7 @@ ScopedResolvedFrameBufferBinder::~ScopedResolvedFrameBufferBinder() {
 BackTexture::BackTexture(
     MemoryTracker* memory_tracker,
     ContextState* state)
-    : memory_tracker_(memory_tracker, MemoryTracker::kUnmanaged),
+    : memory_tracker_(memory_tracker),
       state_(state),
       bytes_allocated_(0),
       id_(0) {
@@ -2647,7 +2647,7 @@ BackRenderbuffer::BackRenderbuffer(
     MemoryTracker* memory_tracker,
     ContextState* state)
     : renderbuffer_manager_(renderbuffer_manager),
-      memory_tracker_(memory_tracker, MemoryTracker::kUnmanaged),
+      memory_tracker_(memory_tracker),
       state_(state),
       bytes_allocated_(0),
       id_(0) {

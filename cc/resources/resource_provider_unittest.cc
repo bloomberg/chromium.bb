@@ -1903,10 +1903,6 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     EXPECT_CALL(
         *child_context,
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-    EXPECT_CALL(*child_context,
-                texParameteri(GL_TEXTURE_2D,
-                              GL_TEXTURE_POOL_CHROMIUM,
-                              GL_TEXTURE_POOL_UNMANAGED_CHROMIUM));
     child_resource_provider->AllocateForTesting(id);
     Mock::VerifyAndClearExpectations(child_context);
 
@@ -2531,10 +2527,6 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
   EXPECT_CALL(
       *context,
       texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-  EXPECT_CALL(*context,
-              texParameteri(GL_TEXTURE_2D,
-                            GL_TEXTURE_POOL_CHROMIUM,
-                            GL_TEXTURE_POOL_UNMANAGED_CHROMIUM));
 
   resource_provider->AllocateForTesting(id);
   Mock::VerifyAndClearExpectations(context);
@@ -2612,10 +2604,6 @@ TEST_P(ResourceProviderTest, ManagedResource) {
   EXPECT_CALL(
       *context,
       texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-  EXPECT_CALL(*context,
-              texParameteri(GL_TEXTURE_2D,
-                            GL_TEXTURE_POOL_CHROMIUM,
-                            GL_TEXTURE_POOL_MANAGED_CHROMIUM));
   resource_provider->CreateForTesting(id);
   EXPECT_NE(0u, id);
 
@@ -2643,13 +2631,11 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
-  GLenum texture_pool = GL_TEXTURE_POOL_UNMANAGED_CHROMIUM;
 
   for (int texture_id = 1; texture_id <= 2; ++texture_id) {
     // Check that the texture gets created with the right sampler settings.
     ResourceId id = resource_provider->CreateGLTexture(
-        size, GL_TEXTURE_2D, texture_pool,
-        ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+        size, GL_TEXTURE_2D, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
     EXPECT_CALL(*context,
                 texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -2659,10 +2645,6 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
                                         GL_CLAMP_TO_EDGE));
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
                                         GL_CLAMP_TO_EDGE));
-    EXPECT_CALL(*context,
-                texParameteri(GL_TEXTURE_2D,
-                              GL_TEXTURE_POOL_CHROMIUM,
-                              GL_TEXTURE_POOL_UNMANAGED_CHROMIUM));
     resource_provider->CreateForTesting(id);
     EXPECT_NE(0u, id);
 
@@ -2693,7 +2675,6 @@ TEST_P(ResourceProviderTest, TextureHint) {
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
-  GLenum texture_pool = GL_TEXTURE_POOL_UNMANAGED_CHROMIUM;
 
   const ResourceProvider::TextureHint hints[4] = {
       ResourceProvider::TEXTURE_HINT_DEFAULT,
@@ -2704,7 +2685,7 @@ TEST_P(ResourceProviderTest, TextureHint) {
   for (GLuint texture_id = 1; texture_id <= arraysize(hints); ++texture_id) {
     // Check that the texture gets created with the right sampler settings.
     ResourceId id = resource_provider->CreateGLTexture(
-        size, GL_TEXTURE_2D, texture_pool, hints[texture_id - 1], format);
+        size, GL_TEXTURE_2D, hints[texture_id - 1], format);
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
     EXPECT_CALL(*context,
                 texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -2716,10 +2697,6 @@ TEST_P(ResourceProviderTest, TextureHint) {
     EXPECT_CALL(
         *context,
         texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-    EXPECT_CALL(*context,
-                texParameteri(GL_TEXTURE_2D,
-                              GL_TEXTURE_POOL_CHROMIUM,
-                              GL_TEXTURE_POOL_UNMANAGED_CHROMIUM));
     // Check only TEXTURE_HINT_FRAMEBUFFER set GL_TEXTURE_USAGE_ANGLE.
     bool is_framebuffer_hint =
         hints[texture_id - 1] & ResourceProvider::TEXTURE_HINT_FRAMEBUFFER;

@@ -302,8 +302,7 @@ void TextureManager::Destroy(bool have_context) {
     glDeleteTextures(arraysize(black_texture_ids_), black_texture_ids_);
   }
 
-  DCHECK_EQ(0u, memory_tracker_managed_->GetMemRepresented());
-  DCHECK_EQ(0u, memory_tracker_unmanaged_->GetMemRepresented());
+  DCHECK_EQ(0u, memory_type_tracker_->GetMemRepresented());
 }
 
 Texture::Texture(GLuint service_id)
@@ -320,7 +319,6 @@ Texture::Texture(GLuint service_id)
       wrap_s_(GL_REPEAT),
       wrap_t_(GL_REPEAT),
       usage_(GL_NONE),
-      pool_(GL_TEXTURE_POOL_UNMANAGED_CHROMIUM),
       compare_func_(GL_LEQUAL),
       compare_mode_(GL_NONE),
       max_lod_(1000.0f),
@@ -381,7 +379,7 @@ void Texture::RemoveTextureRef(TextureRef* ref, bool have_context) {
 
 MemoryTypeTracker* Texture::GetMemTracker() {
   DCHECK(memory_tracking_ref_);
-  return memory_tracking_ref_->manager()->GetMemTracker(pool_);
+  return memory_tracking_ref_->manager()->GetMemTracker();
 }
 
 Texture::LevelInfo::LevelInfo()
@@ -953,14 +951,6 @@ GLenum Texture::SetParameteri(
       }
       mag_filter_ = param;
       break;
-    case GL_TEXTURE_POOL_CHROMIUM:
-      if (!feature_info->validators()->texture_pool.IsValid(param)) {
-        return GL_INVALID_ENUM;
-      }
-      GetMemTracker()->TrackMemFree(estimated_size());
-      pool_ = param;
-      GetMemTracker()->TrackMemAlloc(estimated_size());
-      break;
     case GL_TEXTURE_WRAP_R:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
@@ -1029,7 +1019,6 @@ GLenum Texture::SetParameterf(
   switch (pname) {
     case GL_TEXTURE_MIN_FILTER:
     case GL_TEXTURE_MAG_FILTER:
-    case GL_TEXTURE_POOL_CHROMIUM:
     case GL_TEXTURE_WRAP_R:
     case GL_TEXTURE_WRAP_S:
     case GL_TEXTURE_WRAP_T:
@@ -1365,10 +1354,7 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
                                GLint max_rectangle_texture_size,
                                GLint max_3d_texture_size,
                                bool use_default_textures)
-    : memory_tracker_managed_(
-          new MemoryTypeTracker(memory_tracker, MemoryTracker::kManaged)),
-      memory_tracker_unmanaged_(
-          new MemoryTypeTracker(memory_tracker, MemoryTracker::kUnmanaged)),
+    : memory_type_tracker_(new MemoryTypeTracker(memory_tracker)),
       memory_tracker_(memory_tracker),
       feature_info_(feature_info),
       framebuffer_manager_(NULL),
@@ -1614,11 +1600,7 @@ void TextureManager::SetParameteri(
           error_state, result, function_name, pname, param);
     }
   } else {
-    // Texture tracking pools exist only for the command decoder, so
-    // do not pass them on to the native GL implementation.
-    if (pname != GL_TEXTURE_POOL_CHROMIUM) {
-      glTexParameteri(texture->target(), pname, param);
-    }
+    glTexParameteri(texture->target(), pname, param);
   }
 }
 
@@ -1638,11 +1620,7 @@ void TextureManager::SetParameterf(
           error_state, result, function_name, pname, param);
     }
   } else {
-    // Texture tracking pools exist only for the command decoder, so
-    // do not pass them on to the native GL implementation.
-    if (pname != GL_TEXTURE_POOL_CHROMIUM) {
-      glTexParameterf(texture->target(), pname, param);
-    }
+    glTexParameterf(texture->target(), pname, param);
   }
 }
 
@@ -1719,19 +1697,8 @@ void TextureManager::StopTracking(TextureRef* ref) {
   DCHECK_GE(num_uncleared_mips_, 0);
 }
 
-MemoryTypeTracker* TextureManager::GetMemTracker(GLenum tracking_pool) {
-  switch (tracking_pool) {
-    case GL_TEXTURE_POOL_MANAGED_CHROMIUM:
-      return memory_tracker_managed_.get();
-      break;
-    case GL_TEXTURE_POOL_UNMANAGED_CHROMIUM:
-      return memory_tracker_unmanaged_.get();
-      break;
-    default:
-      break;
-  }
-  NOTREACHED();
-  return NULL;
+MemoryTypeTracker* TextureManager::GetMemTracker() {
+  return memory_type_tracker_.get();
 }
 
 Texture* TextureManager::GetTextureForServiceId(GLuint service_id) const {
@@ -1962,7 +1929,7 @@ bool TextureManager::ValidateTexImage(
     return false;
   }
 
-  if (!memory_tracker_managed_->EnsureGPUMemoryAvailable(args.pixels_size)) {
+  if (!memory_type_tracker_->EnsureGPUMemoryAvailable(args.pixels_size)) {
     ERRORSTATE_SET_GL_ERROR(error_state, GL_OUT_OF_MEMORY, function_name,
                             "out of memory");
     return false;
@@ -2015,7 +1982,7 @@ void TextureManager::ValidateAndDoTexImage(
     }
 
     DCHECK(undefined_faces.size());
-    if (!memory_tracker_managed_->EnsureGPUMemoryAvailable(
+    if (!memory_type_tracker_->EnsureGPUMemoryAvailable(
             undefined_faces.size() * args.pixels_size)) {
       ERRORSTATE_SET_GL_ERROR(state->GetErrorState(), GL_OUT_OF_MEMORY,
                               function_name, "out of memory");

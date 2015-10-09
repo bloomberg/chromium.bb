@@ -76,11 +76,9 @@ class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
         share_group_tracing_guid_(share_group_tracing_guid) {}
 
   void TrackMemoryAllocatedChange(
-      size_t old_size,
-      size_t new_size,
-      gpu::gles2::MemoryTracker::Pool pool) override {
+      size_t old_size, size_t new_size) override {
     tracking_group_->TrackMemoryAllocatedChange(
-        old_size, new_size, pool);
+        old_size, new_size);
   }
 
   bool EnsureGPUMemoryAvailable(size_t size_needed) override {
