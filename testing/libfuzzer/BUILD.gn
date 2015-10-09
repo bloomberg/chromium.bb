@@ -1,0 +1,30 @@
+# LibFuzzer is a LLVM tool for coverage-guided fuzz testing.
+# See http://www.chromium.org/developers/testing/libfuzzer
+#
+# To enable libfuzzer, 'use_libfuzzer' GN option should be set to true.
+
+import("//testing/test.gni")
+
+static_library("libfuzzer_main") {
+  sources = [
+    "../../third_party/llvm/lib/Fuzzer/FuzzerCrossOver.cpp",
+    "../../third_party/llvm/lib/Fuzzer/FuzzerDriver.cpp",
+    "../../third_party/llvm/lib/Fuzzer/FuzzerFlags.def",
+    "../../third_party/llvm/lib/Fuzzer/FuzzerIO.cpp",
+    "../../third_party/llvm/lib/Fuzzer/FuzzerInterface.cpp",
+    "../../third_party/llvm/lib/Fuzzer/FuzzerLoop.cpp",
+    "../../third_party/llvm/lib/Fuzzer/FuzzerMain.cpp",
+    "../../third_party/llvm/lib/Fuzzer/FuzzerMutate.cpp",
+    "../../third_party/llvm/lib/Fuzzer/FuzzerSHA1.cpp",
+    "../../third_party/llvm/lib/Fuzzer/FuzzerSanitizerOptions.cpp",
+    "../../third_party/llvm/lib/Fuzzer/FuzzerTraceState.cpp",
+    "../../third_party/llvm/lib/Fuzzer/FuzzerUtil.cpp",
+  ]
+
+  # libfuzzer should be compiled without sanitizers and coverage (doesn't work).
+  configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
+  include_dirs = [
+    "//buildtools/third_party/libc++/trunk/include",
+    "//buildtools/third_party/libc++abi/trunk/include",
+  ]
+}

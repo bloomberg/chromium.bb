@@ -41,6 +41,10 @@ declare_args() {
   # By default, Control Flow Integrity will crash the program if it detects a
   # violation. Set this to true to print detailed diagnostics instead.
   use_cfi_diag = false
+
+  # Compile for fuzzing with LLVM LibFuzzer.
+  # See http://www.chromium.org/developers/testing/libfuzzer
+  use_libfuzzer = false
 }
 
 # Args that are in turn dependent on other args must be in a separate

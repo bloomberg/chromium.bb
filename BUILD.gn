@@ -10,6 +10,7 @@
 
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/module_args/v8.gni")
 import("//media/media_options.gni")
@@ -728,6 +729,10 @@ group("gn_only") {
 
   if (is_mac) {
     deps -= [ "//mandoline:all" ]  # TODO(GYP)
+  }
+
+  if (use_libfuzzer) {
+    deps += [ "//testing/libfuzzer:libfuzzer_main" ]
   }
 }
 

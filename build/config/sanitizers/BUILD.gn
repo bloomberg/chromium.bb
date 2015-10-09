@@ -8,6 +8,11 @@ import("//build/config/sanitizers/sanitizers.gni")
 # shared_libraries. Unconditionally depend upon this target as it is empty if
 # |is_asan|, |is_lsan|, |is_tsan|, |is_msan| and |use_custom_libcxx| are false.
 group("deps") {
+  if (use_libfuzzer) {
+    is_asan = true
+    use_custom_libcxx = true
+  }
+
   if (is_asan || is_lsan || is_tsan || is_msan || is_ubsan) {
     public_configs = [ ":sanitizer_options_link_helper" ]
     deps = [
