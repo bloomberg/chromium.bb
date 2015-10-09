@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
@@ -77,12 +78,12 @@ public class WebsiteSettingsPopup implements OnClickListener {
     private static final class PageInfoPermissionEntry {
         public final String name;
         public final int type;
-        public final int value;
+        public final ContentSetting setting;
 
-        PageInfoPermissionEntry(String name, int type, int value) {
+        PageInfoPermissionEntry(String name, int type, ContentSetting setting) {
             this.name = name;
             this.type = type;
-            this.value = value;
+            this.setting = setting;
         }
 
         @Override
@@ -551,13 +552,14 @@ public class WebsiteSettingsPopup implements OnClickListener {
      *
      * @param name The title of the permission to display to the user.
      * @param type The ContentSettingsType of the permission.
-     * @param currentSetting The ContentSetting of the currently selected setting.
+     * @param currentSettingValue The ContentSetting value of the currently selected setting.
      */
     @CalledByNative
-    private void addPermissionSection(String name, int type, int currentSetting) {
+    private void addPermissionSection(String name, int type, int currentSettingValue) {
         // We have at least one permission, so show the lower permissions area.
         setVisibilityOfPermissionsList(true);
-        mDisplayedPermissions.add(new PageInfoPermissionEntry(name, type, currentSetting));
+        mDisplayedPermissions.add(new PageInfoPermissionEntry(name, type, ContentSetting
+                .fromInt(currentSettingValue)));
     }
 
     /**
@@ -579,7 +581,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
                 R.id.website_settings_permission_icon);
         permissionIcon.setImageResource(getImageResourceForPermission(permission.type));
 
-        if (permission.value == ContentSetting.ALLOW) {
+        if (permission.setting == ContentSetting.ALLOW) {
             int warningTextResource = 0;
 
             // If warningTextResource is non-zero, then the view must be tagged with either
@@ -619,17 +621,17 @@ public class WebsiteSettingsPopup implements OnClickListener {
         builder.append(nameString);
         builder.append(" – ");  // en-dash.
         String status_text = "";
-        switch (permission.value) {
-            case ContentSetting.ALLOW:
+        switch (permission.setting) {
+            case ALLOW:
                 status_text =
                         mContext.getResources().getString(R.string.page_info_permission_allowed);
                 break;
-            case ContentSetting.BLOCK:
+            case BLOCK:
                 status_text =
                         mContext.getResources().getString(R.string.page_info_permission_blocked);
                 break;
             default:
-                assert false : "Invalid setting " + permission.value + " for permission "
+                assert false : "Invalid setting " + permission.setting + " for permission "
                         + permission.type;
         }
         builder.append(status_text);

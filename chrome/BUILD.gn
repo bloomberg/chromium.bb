@@ -886,7 +886,7 @@ if (is_android) {
       "../components/content_settings/core/common/content_settings.h",
     ]
     outputs = [
-      "org/chromium/chrome/browser/ContentSetting.java",
+      "org/chromium/chrome/browser/preferences/website/ContentSettingValues.java",
     ]
   }
 

@@ -75,27 +75,6 @@ bool GetBooleanForContentSetting(ContentSettingsType type) {
   }
 }
 
-std::string GetStringForContentSettingsType(
-    ContentSetting content_setting) {
-  switch (content_setting) {
-    case CONTENT_SETTING_BLOCK:
-      return "block";
-    case CONTENT_SETTING_ALLOW:
-      return "allow";
-    case CONTENT_SETTING_ASK:
-      return "ask";
-    case CONTENT_SETTING_SESSION_ONLY:
-      return "session";
-    case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
-      return "detect";
-    case CONTENT_SETTING_NUM_SETTINGS:
-      return "num_settings";
-    case CONTENT_SETTING_DEFAULT:
-    default:
-      return "default";
-  }
-}
-
 bool IsContentSettingManaged(ContentSettingsType content_settings_type) {
   std::string source;
   HostContentSettingsMap* content_settings =
@@ -150,18 +129,10 @@ static jboolean IsContentSettingEnabled(JNIEnv* env,
   // Before we migrate functions over to this central function, we must verify
   // that the functionality provided below is correct.
   DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_IMAGES ||
          content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS);
   ContentSettingsType type =
       static_cast<ContentSettingsType>(content_settings_type);
-  if (type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-      type == CONTENT_SETTINGS_TYPE_POPUPS)
-    return GetBooleanForContentSetting(type);
-
-  HostContentSettingsMap* content_settings =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  return content_settings->GetDefaultContentSetting(
-      type, nullptr) == CONTENT_SETTING_ALLOW;
+  return GetBooleanForContentSetting(type);
 }
 
 static void SetContentSettingEnabled(JNIEnv* env,
@@ -170,9 +141,12 @@ static void SetContentSettingEnabled(JNIEnv* env,
                                      jboolean allow) {
   // Before we migrate functions over to this central function, we must verify
   // that the new category supports ALLOW/BLOCK pairs and, if not, handle them.
+  // IMAGES is included to allow migrating the setting back for users who had
+  // disabled images in M44 (see https://crbug.com/505844).
+  // TODO(bauerb): Remove this when the migration code is removed.
   DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_IMAGES ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS);
+         content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_IMAGES);
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
@@ -191,7 +165,7 @@ static void SetContentSettingForPattern(JNIEnv* env,
       ContentSettingsPattern::FromString(ConvertJavaStringToUTF8(env, pattern)),
       ContentSettingsPattern::Wildcard(),
       static_cast<ContentSettingsType>(content_settings_type),
-      "",
+      std::string(),
       static_cast<ContentSetting>(setting));
 }
 
@@ -210,8 +184,7 @@ static void GetContentSettingsExceptions(JNIEnv* env,
         content_settings_type,
         ConvertUTF8ToJavaString(
             env, entries[i].primary_pattern.ToString()).obj(),
-        ConvertUTF8ToJavaString(
-            env, GetStringForContentSettingsType(entries[i].setting)).obj(),
+        entries[i].setting,
         ConvertUTF8ToJavaString(env, entries[i].source).obj());
   }
 }

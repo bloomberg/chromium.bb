@@ -555,7 +555,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        ContentSetting permission = ContentSetting.fromString((String) newValue);
+        ContentSetting permission = ContentSetting.fromInt(Integer.parseInt((String) newValue));
         if (PREF_CAMERA_CAPTURE_PERMISSION.equals(preference.getKey())) {
             mSite.setCameraPermission(permission);
         } else if (PREF_COOKIES_PERMISSION.equals(preference.getKey())) {
@@ -610,17 +610,17 @@ public class SingleWebsitePreferences extends PreferenceFragment
         }
 
         // Clear the permissions.
-        mSite.setCameraPermission(null);
-        mSite.setCookiePermission(null);
+        mSite.setCameraPermission(ContentSetting.DEFAULT);
+        mSite.setCookiePermission(ContentSetting.DEFAULT);
         WebsitePreferenceBridge.nativeClearCookieData(mSite.getAddress().getOrigin());
-        mSite.setFullscreenPermission(null);
-        mSite.setGeolocationPermission(null);
-        mSite.setJavaScriptPermission(null);
-        mSite.setMicrophonePermission(null);
-        mSite.setMidiPermission(null);
-        mSite.setPopupPermission(null);
-        mSite.setProtectedMediaIdentifierPermission(null);
-        mSite.setPushNotificationPermission(null);
+        mSite.setFullscreenPermission(ContentSetting.DEFAULT);
+        mSite.setGeolocationPermission(ContentSetting.DEFAULT);
+        mSite.setJavaScriptPermission(ContentSetting.DEFAULT);
+        mSite.setMicrophonePermission(ContentSetting.DEFAULT);
+        mSite.setMidiPermission(ContentSetting.DEFAULT);
+        mSite.setPopupPermission(ContentSetting.DEFAULT);
+        mSite.setProtectedMediaIdentifierPermission(ContentSetting.DEFAULT);
+        mSite.setPushNotificationPermission(ContentSetting.DEFAULT);
 
         // Clear the storage and finish the activity if necessary.
         if (mSite.getTotalUsage() > 0) {

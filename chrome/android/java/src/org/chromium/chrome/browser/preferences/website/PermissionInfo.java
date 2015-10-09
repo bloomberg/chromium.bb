@@ -49,7 +49,7 @@ public abstract class PermissionInfo implements Serializable {
      */
     public void setContentSetting(ContentSetting value) {
         setNativePreferenceValue(
-                mOrigin, getEmbedderSafe(), ContentSetting.toInt(value), mIsIncognito);
+                mOrigin, getEmbedderSafe(), value.toInt(), mIsIncognito);
     }
 
     protected abstract int getNativePreferenceValue(

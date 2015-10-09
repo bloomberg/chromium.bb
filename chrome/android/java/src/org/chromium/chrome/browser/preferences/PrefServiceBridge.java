@@ -27,11 +27,6 @@ import java.util.List;
  * preferences.
  */
 public final class PrefServiceBridge {
-    // Does not need sync with native; used for the popup settings check
-    public static final String EXCEPTION_SETTING_ALLOW = "allow";
-    public static final String EXCEPTION_SETTING_BLOCK = "block";
-    public static final String EXCEPTION_SETTING_DEFAULT = "default";
-
     // These values must match the native enum values in
     // SupervisedUserURLFilter::FilteringBehavior
     public static final int SUPERVISED_USER_FILTERING_ALLOW = 0;
@@ -196,10 +191,10 @@ public final class PrefServiceBridge {
             ArrayList<ContentSettingException> list,
             int contentSettingsType,
             String pattern,
-            String setting,
+            int contentSetting,
             String source) {
         ContentSettingException exception = new ContentSettingException(
-                contentSettingsType, pattern, setting, source);
+                contentSettingsType, pattern, ContentSetting.fromInt(contentSetting), source);
         list.add(exception);
     }
 
