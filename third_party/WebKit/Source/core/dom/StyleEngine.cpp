@@ -586,7 +586,7 @@ void StyleEngine::removeSheet(StyleSheetContents* contents)
 
 void StyleEngine::collectScopedStyleFeaturesTo(RuleFeatureSet& features) const
 {
-    HashSet<const StyleSheetContents*> visitedSharedStyleSheetContents;
+    WillBeHeapHashSet<RawPtrWillBeMember<const StyleSheetContents>> visitedSharedStyleSheetContents;
     if (document().scopedStyleResolver())
         document().scopedStyleResolver()->collectFeaturesTo(features, visitedSharedStyleSheetContents);
     for (TreeScope* treeScope : m_activeTreeScopes) {

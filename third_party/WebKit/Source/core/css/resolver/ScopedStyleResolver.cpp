@@ -93,7 +93,7 @@ void ScopedStyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet, const Med
     treeScope().document().styleResolver()->addMediaQueryResults(ruleSet.viewportDependentMediaQueryResults());
 }
 
-void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents) const
+void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features, WillBeHeapHashSet<RawPtrWillBeMember<const StyleSheetContents>>& visitedSharedStyleSheetContents) const
 {
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
         ASSERT(m_authorStyleSheets[i]->ownerNode());
