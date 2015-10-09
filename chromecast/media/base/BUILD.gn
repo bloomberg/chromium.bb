@@ -118,6 +118,6 @@ source_set("libcast_media_1.0_default_core") {
 # TODO(slan): Make this target a loadable_module (crbug/380327)
 shared_library("libcast_media_1.0_default") {
   deps = [
-    "libcast_media_1.0_default_core",
+    ":libcast_media_1.0_default_core",
   ]
 }
