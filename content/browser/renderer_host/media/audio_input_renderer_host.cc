@@ -428,7 +428,8 @@ void AudioInputRendererHost::DoCreateStream(
 
   scoped_ptr<AudioInputSyncWriter> writer(new AudioInputSyncWriter(
       entry->shared_memory.memory(), entry->shared_memory.requested_size(),
-      entry->shared_memory_segment_count, audio_params));
+      entry->shared_memory_segment_count, audio_params,
+      config.params.format() == media::AudioParameters::AUDIO_PCM_LOW_LATENCY));
 
   if (!writer->Init()) {
     SendErrorMessage(stream_id, SYNC_WRITER_INIT_FAILED);
