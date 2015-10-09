@@ -82,10 +82,6 @@ void RemoveEntryUnless(base::DictionaryValue* dict,
 void Normalizer::NormalizeCertificate(base::DictionaryValue* cert) {
   using namespace ::onc::certificate;
 
-  bool remove = false;
-  cert->GetBooleanWithoutPathExpansion(::onc::kRemove, &remove);
-  RemoveEntryUnless(cert, ::onc::certificate::kType, !remove);
-
   std::string type;
   cert->GetStringWithoutPathExpansion(::onc::certificate::kType, &type);
   RemoveEntryUnless(cert, kPKCS12, type == kClient);

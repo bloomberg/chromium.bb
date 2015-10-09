@@ -116,69 +116,6 @@ void CertificateImporterImpl::ParseAndStoreCertificates(
   done_callback.Run(success, onc_trusted_certificates);
 }
 
-// static
-void CertificateImporterImpl::ListCertsWithNickname(
-    const std::string& label,
-    net::CertificateList* result,
-    net::NSSCertDatabase* target_nssdb) {
-  net::CertificateList all_certs;
-  // TODO(tbarzic): Use async |ListCerts|.
-  target_nssdb->ListCertsSync(&all_certs);
-  result->clear();
-  for (net::CertificateList::iterator iter = all_certs.begin();
-       iter != all_certs.end(); ++iter) {
-    if (iter->get()->os_cert_handle()->nickname) {
-      // Separate the nickname stored in the certificate at the colon, since
-      // NSS likes to store it as token:nickname.
-      const char* delimiter =
-          ::strchr(iter->get()->os_cert_handle()->nickname, ':');
-      if (delimiter) {
-        ++delimiter;  // move past the colon.
-        if (strcmp(delimiter, label.c_str()) == 0) {
-          result->push_back(*iter);
-          continue;
-        }
-      }
-    }
-    // Now we find the private key for this certificate and see if it has a
-    // nickname that matches.  If there is a private key, and it matches,
-    // then this is a client cert that we are looking for.
-    SECKEYPrivateKey* private_key = PK11_FindPrivateKeyFromCert(
-        iter->get()->os_cert_handle()->slot,
-        iter->get()->os_cert_handle(),
-        NULL);  // wincx
-    if (private_key) {
-      char* private_key_nickname = PK11_GetPrivateKeyNickname(private_key);
-      if (private_key_nickname && std::string(label) == private_key_nickname)
-        result->push_back(*iter);
-      PORT_Free(private_key_nickname);
-      SECKEY_DestroyPrivateKey(private_key);
-    }
-  }
-}
-
-// static
-bool CertificateImporterImpl::DeleteCertAndKeyByNickname(
-    const std::string& label,
-    net::NSSCertDatabase* target_nssdb) {
-  net::CertificateList cert_list;
-  ListCertsWithNickname(label, &cert_list, target_nssdb);
-  bool result = true;
-  for (net::CertificateList::iterator iter = cert_list.begin();
-       iter != cert_list.end(); ++iter) {
-    // If we fail, we try and delete the rest still.
-    // TODO(gspencer): this isn't very "transactional".  If we fail on some, but
-    // not all, then it's possible to leave things in a weird state.
-    // Luckily there should only be one cert with a particular
-    // label, and the cert not being found is one of the few reasons the
-    // delete could fail, but still...  The other choice is to return
-    // failure immediately, but that doesn't seem to do what is intended.
-    if (!target_nssdb->DeleteCertAndKey(iter->get()))
-      result = false;
-  }
-  return result;
-}
-
 void CertificateImporterImpl::RunDoneCallback(
     const CertificateImporter::DoneCallback& callback,
     bool success,
@@ -193,23 +130,10 @@ bool CertificateImporterImpl::ParseAndStoreCertificate(
     const base::DictionaryValue& certificate,
     net::NSSCertDatabase* nssdb,
     net::CertificateList* onc_trusted_certificates) {
-  // Get out the attributes of the given certificate.
   std::string guid;
   certificate.GetStringWithoutPathExpansion(::onc::certificate::kGUID, &guid);
   DCHECK(!guid.empty());
 
-  bool remove = false;
-  if (certificate.GetBooleanWithoutPathExpansion(::onc::kRemove, &remove) &&
-      remove) {
-    if (!DeleteCertAndKeyByNickname(guid, nssdb)) {
-      LOG(ERROR) << "Unable to delete certificate";
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-  // Not removing, so let's get the data we need to add this certificate.
   std::string cert_type;
   certificate.GetStringWithoutPathExpansion(::onc::certificate::kType,
                                             &cert_type);

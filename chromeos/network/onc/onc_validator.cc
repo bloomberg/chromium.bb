@@ -998,14 +998,19 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
 
   bool remove = false;
   result->GetBooleanWithoutPathExpansion(::onc::kRemove, &remove);
-  if (!remove) {
-    all_required_exist &= RequireField(*result, kType);
-
-    if (type == kClient)
-      all_required_exist &= RequireField(*result, kPKCS12);
-    else if (type == kServer || type == kAuthority)
-      all_required_exist &= RequireField(*result, kX509);
+  if (remove) {
+    error_or_warning_found_ = true;
+    LOG(ERROR) << MessageHeader()
+               << "Removal of certificates is not supported.";
+    return false;
   }
+
+  all_required_exist &= RequireField(*result, kType);
+
+  if (type == kClient)
+    all_required_exist &= RequireField(*result, kPKCS12);
+  else if (type == kServer || type == kAuthority)
+    all_required_exist &= RequireField(*result, kX509);
 
   return !error_on_missing_field_ || all_required_exist;
 }
