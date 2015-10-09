@@ -107,11 +107,33 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   std::vector<ServiceWorkerRegistrationInfo> GetAllLiveRegistrationInfo();
   std::vector<ServiceWorkerVersionInfo> GetAllLiveVersionInfo();
 
+  // Returns the registration whose scope longest matches |document_url|.
+  // Returns ERROR_NOT_FOUND if it is not found.
   void FindRegistrationForDocument(const GURL& document_url,
                                    const FindRegistrationCallback& callback);
+
+  // Returns the registration for |registration_id| and |origin|. Returns
+  // ERROR_NOT_FOUND if it is not found.
   void FindRegistrationForId(int64_t registration_id,
                              const GURL& origin,
                              const FindRegistrationCallback& callback);
+
+  // Returns the registration for |registration_id|. It is guaranteed that the
+  // returned registration has the activated worker.
+  //
+  //  - If the registration is not found, returns ERROR_NOT_FOUND.
+  //  - If the registration has neither the waiting version nor the active
+  //    version, returns ERROR_NOT_FOUND.
+  //  - If the registration does not have the active version but has the waiting
+  //    version, activates the waiting version and runs |callback| when it is
+  //    activated.
+  //
+  // TODO(nhiroki): Consider merging this into FindRegistrationForId because
+  // external modules might not be interested in non-ready registration.
+  void FindReadyRegistrationForId(int64_t registration_id,
+                                  const GURL& origin,
+                                  const FindRegistrationCallback& callback);
+
   void GetAllRegistrations(const GetRegistrationsInfosCallback& callback);
   void GetRegistrationUserData(int64_t registration_id,
                                const std::string& key,
@@ -158,6 +180,14 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy);
   void ShutdownOnIO();
+
+  void DidFindRegistrationForFindReady(
+      const FindRegistrationCallback& callback,
+      ServiceWorkerStatusCode status,
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
+  void OnStatusChangedForFindReadyRegistration(
+      const FindRegistrationCallback& callback,
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   void DidDeleteAndStartOver(ServiceWorkerStatusCode status);
 

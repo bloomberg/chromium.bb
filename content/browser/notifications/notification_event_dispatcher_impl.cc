@@ -80,6 +80,7 @@ void DispatchNotificationClickEventOnRegistration(
                    dispatch_complete_callback,
                    service_worker_registration);
 
+    DCHECK(service_worker_registration->active_version());
     service_worker_registration->active_version()->
         DispatchNotificationClickEvent(
             dispatch_event_callback,
@@ -143,7 +144,7 @@ void FindServiceWorkerRegistration(
     return;
   }
 
-  service_worker_context->FindRegistrationForId(
+  service_worker_context->FindReadyRegistrationForId(
       notification_database_data.service_worker_registration_id,
       origin,
       base::Bind(&DispatchNotificationClickEventOnRegistration,
