@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+@font-face {
+    font-family: NotoSansCJK;
+    src: url("../../../third_party/NotoSansCJK/NotoSansCJKjp-Regular-cid03075.otf") format("opentype");
+}
+</style>
+<p>Editable text should be centered vertically.</p>
+<div><input style="border: solid 1px black; line-height:18px; height:18px; font-size:16px; font-family:NotoSansCJK;" value="&#x3075; ABCgjy"></div>
+<div><input style="border: solid 1px black; line-height:16px; height:24px; font-size:24px;" value="ABCgjy"></div>
+
+<!-- crbug.com/539858 -->
+<div><input style="font-size:100%; height:22px; line-height: 1px;" value="ABCgjy"></div>
+<script>
+if (window.testRunner)
+    testRunner.waitUntilDone();
+document.fonts.ready.then(function() {
+    testRunner.notifyDone();
+});
+</script>
