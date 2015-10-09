@@ -1,6 +1,6 @@
 Name: Google Cache Invalidation API
 Short Name: google-cache-invalidation-api
-URL: n/a
+URL: https://chromium.googlesource.com/chromium/src/+/master/third_party/cacheinvalidation/README.chromium
 Version: unknown
 License: Apache 2.0
 License File: src/google/cacheinvalidation/COPYING
