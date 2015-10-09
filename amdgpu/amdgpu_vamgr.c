@@ -124,8 +124,10 @@ amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
 	}
 
 	if (base_required) {
-		if (base_required < mgr->va_offset)
+		if (base_required < mgr->va_offset) {
+			pthread_mutex_unlock(&mgr->bo_va_mutex);
 			return AMDGPU_INVALID_VA_ADDRESS;
+		}
 		offset = mgr->va_offset;
 		waste = base_required - mgr->va_offset;
 	} else {
