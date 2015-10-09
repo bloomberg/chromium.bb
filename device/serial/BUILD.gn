@@ -48,7 +48,6 @@ static_library("serial") {
   ]
   deps = [
     "//third_party/mojo/src/mojo/public/cpp/system",
-    "//third_party/re2",
   ]
 
   if (use_udev) {
